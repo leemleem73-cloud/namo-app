@@ -1,4 +1,4 @@
-{{
+{
   "name": "quality-system",
   "version": "1.0.0",
   "description": "Namo quality system",
@@ -20,6 +20,4 @@
     "nodemailer": "^6.9.15",
     "sqlite3": "^5.1.7"
   }
-}
-  "type": "commonjs"
 }
