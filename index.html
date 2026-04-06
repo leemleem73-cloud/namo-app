@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>나모케미칼 품질현황 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --bg-2:#eef3f8;
+      --panel:#ffffff;
+      --panel-2:#f8fbff;
+      --line:#e4ebf3;
+      --line-2:#d6e1ed;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --title:#163a5f;
+      --navy:#12395f;
+      --navy-2:#0f2d49;
+      --blue:#1f6fd1;
+      --blue-2:#48a7ff;
+      --green:#18a36b;
+      --red:#da4f4f;
+      --amber:#c99116;
+      --soft-blue:#eef6ff;
+      --soft-green:#edf9f3;
+      --soft-red:#fff2f2;
+      --soft-gray:#f3f6f9;
+      --shadow:0 10px 32px rgba(15,23,42,.08);
+      --shadow-sm:0 4px 14px rgba(15,23,42,.05);
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --radius-sm:10px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-size:14px;
+      font-family:"Malgun Gothic","Apple SD Gothic Neo",Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(72,167,255,.10), transparent 26%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 42%, var(--bg-2) 100%);
+      min-height:100vh;
+    }
+    button,input,select,textarea{font:inherit}
+    .hidden{display:none!important}
+    table{font-size:13px}
+    th{font-size:13px}
+    td{font-size:13px}
+
+    .top{
+      position:sticky; top:0; z-index:100; min-height:78px; padding:14px 24px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      background:rgba(255,255,255,.82); backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(214,225,237,.9); box-shadow:0 6px 22px rgba(15,23,42,.05);
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-home{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
+    .brand-logo{
+      width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-size:18px;font-weight:800;
+      box-shadow:0 10px 24px rgba(18,57,95,.22);
+      flex:none;
+    }
+    .brand h1{margin:0;font-size:28px;font-weight:800;color:var(--title);letter-spacing:-.03em}
+    .top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .status-pill,.live,.top-chip{
+      min-height:38px; padding:0 14px; border-radius:999px; display:flex; align-items:center; gap:6px;
+      border:1px solid var(--line); background:#fff; color:var(--text); font-size:12px; font-weight:800;
+      box-shadow:var(--shadow-sm);
+    }
+    .live{background:var(--soft-green);color:var(--green);border-color:#ccebd8}
+    .top-chip{background:var(--soft-blue);color:var(--navy);border-color:#dbe8f6}
+
+    .shell{padding:18px}
+    .bar,.tabs,.main{max-width:1800px;margin:0 auto}
+    .glass{background:rgba(255,255,255,.9);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+
+    .bar{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-radius:20px;margin-bottom:14px;
+      backdrop-filter:blur(10px);
+    }
+    .bar label{font-size:12px;color:var(--muted);font-weight:800}
+    .bar select,.field input,.field select,.trace-input,.auth-input{
+      color:var(--text);background:#fff;border:1px solid var(--line-2);border-radius:12px;transition:.16s ease;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+    }
+    .bar select{height:42px;padding:0 14px;min-width:100px}
+    .bar select:focus,.field input:focus,.field select:focus,.trace-input:focus,.auth-input:focus{
+      outline:none;border-color:#97c0eb;box-shadow:0 0 0 4px rgba(31,111,209,.08)
+    }
+
+    .btn{
+      font-size:14px;height:42px;padding:0 14px;border:none;border-radius:12px;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:800;letter-spacing:-.01em;
+      transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+    .btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.08)}
+    .btn[disabled]{opacity:.45;cursor:not-allowed;filter:none;transform:none;box-shadow:none}
+    .b1{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
+    .b2{background:#fff;border:1px solid var(--line-2);color:var(--text)}
+    .b3{background:linear-gradient(135deg,#16986c,#1db87d);color:#fff}
+    .b4{background:linear-gradient(135deg,#d44343,#ea6767);color:#fff}
+
+    .chip{
+      min-height:42px;padding:0 14px;border-radius:12px;display:flex;align-items:center;
+      background:var(--soft-blue);border:1px solid #d9e7f6;color:var(--navy);font-weight:800;font-size:12px;
+    }
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .tab{
+      font-size:14px;padding:11px 16px;border-radius:12px;cursor:pointer;font-weight:800;color:#46556a;
+      background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);transition:.18s ease;
+    }
+    .tab:hover{background:#eef6ff;color:var(--navy)}
+    .tab.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--navy),var(--blue))}
+
+    .main{padding-bottom:24px}
+    .panel{display:none}
+    .panel.active{display:block}
+
+    .week{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-radius:18px;
+      padding:14px 16px;margin-bottom:14px;background:rgba(255,255,255,.92);
+      border:1px solid var(--line);box-shadow:var(--shadow-sm);
+    }
+    .week strong,.week span{font-size:12px}
+    .week .muted{color:var(--muted)}
+    .pill{
+      padding:7px 12px;border-radius:999px;background:#f8fbff;border:1px solid var(--line);
+      font-size:12px;font-weight:800;color:#44556a;
+    }
+    .pill.on{background:linear-gradient(135deg,var(--navy),var(--blue));border-color:transparent;color:#fff}
+
+    .card,.trace-card,.auth-card{
+      background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    }
+    .head{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+      padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line);
+    }
+    .title{font-size:18px;font-weight:800;color:var(--title);letter-spacing:-.02em}
+    .badge{
+      min-height:30px;padding:0 12px;border-radius:999px;display:flex;align-items:center;
+      font-size:11px;font-weight:800;background:var(--soft-blue);border:1px solid #d9e7f6;color:#44556a;
+    }
+
+    .card{padding:18px;min-height:180px}
+    .table-box{min-height:60px}
+    .table{overflow:auto;border-radius:16px;border:1px solid var(--line);background:#fff}
+
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{
+      padding:12px 10px;white-space:nowrap;font-weight:800;background:linear-gradient(180deg,#f8fbff 0%, #eef4fa 100%);
+      color:#243447;border-bottom:1px solid var(--line);
+    }
+    td{padding:11px 10px;border-bottom:1px solid #edf2f7;text-align:center;color:var(--text)}
+    tbody tr:nth-child(even){background:#fbfdff}
+    tbody tr:hover{background:#f3f8fe}
+
+    .state{
+      display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:28px;
+      padding:0 10px;border-radius:999px;font-size:11px;font-weight:800;
+    }
+    .ok{background:var(--soft-green);border:1px solid #c8e6d0;color:#148154}
+    .ng{background:var(--soft-red);border:1px solid #ffd0d0;color:#d13d3d}
+    .hold{background:#f3f4f6;border:1px solid #d8dee6;color:#6b7280}
+    .empty-row{text-align:center;color:#7a8796;padding:26px}
+
+    .modal-bg{
+      display:none;position:fixed;inset:0;background:rgba(17,24,39,.35);backdrop-filter:blur(6px);z-index:9999;
+      align-items:center;justify-content:center;padding:20px;
+    }
+    .modal{
+      width:980px;max-width:96%;max-height:90vh;overflow:auto;padding:22px;background:#fff;
+      border:1px solid var(--line);border-radius:24px;box-shadow:0 16px 44px rgba(15,23,42,.18);
+    }
+    .modal h3{margin:0 0 16px;font-size:22px;color:var(--title);letter-spacing:-.02em}
+    .field label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
+    .field input,.field select{width:100%;height:42px;padding:0 14px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px}
+    .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+
+    .barcode-preview-wrap{
+      margin-top:14px;padding:16px;border-radius:18px;border:1px solid var(--line);background:#f8fbff;
+    }
+    .barcode-meta{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;
+    }
+    .barcode-preview-box{
+      display:flex;align-items:center;justify-content:center;min-height:180px;border-radius:16px;
+      background:#fff;padding:12px;border:1px solid var(--line);
+    }
+    .barcode-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+    .trace-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .trace-card{overflow:hidden}
+    .trace-head{
+      padding:18px;color:var(--title);display:flex;justify-content:space-between;align-items:flex-start;
+      gap:12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbfdff 0%, #f4f8fc 100%);
+    }
+    .trace-title h3{margin:0;font-size:22px;letter-spacing:-.02em}
+    .trace-title p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.7}
+    .trace-body{padding:16px}
+    .trace-search{
+      display:grid;grid-template-columns:160px minmax(0,1fr) auto;gap:10px;align-items:center;
+      background:#f8fbff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px;
+    }
+    .trace-label{font-size:13px;font-weight:800;color:#44556a}
+    .trace-input{width:100%;height:44px;padding:0 14px;font-size:15px;font-weight:800;text-align:left}
+    .trace-tools{display:flex;gap:8px;flex-wrap:wrap}
+    .trace-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px}
+    .trace-meta strong{font-size:14px;color:var(--title)}
+    .trace-meta span{font-size:12px;color:var(--muted)}
+    .trace-count{
+      padding:7px 10px;border-radius:999px;background:#eef3f8;border:1px solid var(--line);
+      font-size:11px;font-weight:800;color:#44556a;
+    }
+    .trace-table-wrap{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+    .trace-empty{padding:38px 20px;text-align:center;color:#7a8796;font-size:13px}
+
+    .upgrade-list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto}
+    .upgrade-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,#ffffff 0%,#f9fbfe 100%)}
+    .upgrade-date{font-size:11px;font-weight:800;color:var(--blue);margin-bottom:8px}
+    .upgrade-text{font-size:12px;color:var(--text);line-height:1.7}
+    .upgrade-empty{color:#7a8796;font-size:12px;padding:14px 4px}
+
+    .toast{
+      position:fixed;right:16px;bottom:16px;z-index:10000;padding:12px 14px;border-radius:16px;
+      background:#111827;box-shadow:0 12px 34px rgba(15,23,42,.24);
+      color:#fff;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s ease;
+      max-width:360px;line-height:1.6;font-size:12px;
+    }
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    .save-status-ok{color:#2e7d32}
+    .save-status-fail{color:#c62828}
+
+    .auth-gate{
+      position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;
+      padding:24px;background:linear-gradient(135deg,#eef4fb 0%, #f7fbff 55%, #edf2f8 100%);
+    }
+    .auth-layout{width:100%;max-width:1180px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .auth-showcase{
+      overflow:hidden;border-radius:28px;padding:30px;background:linear-gradient(135deg,var(--navy) 0%, var(--navy-2) 100%);
+      border:1px solid rgba(18,57,95,.84);box-shadow:var(--shadow);color:#fff;position:relative;
+    }
+    .auth-showcase::after{
+      content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;
+      background:radial-gradient(circle, rgba(72,167,255,.26) 0%, rgba(72,167,255,0) 70%);
+    }
+    .auth-eyebrow{
+      display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);font-size:11px;font-weight:800;color:#eef6ff;
+    }
+    .auth-showcase h2{margin:16px 0 10px;font-size:34px;line-height:1.2;letter-spacing:-.04em}
+    .auth-showcase p{margin:0;color:#dbe7f3;line-height:1.8;font-size:14px}
+    .auth-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+    .auth-metric{padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+    .auth-metric div{font-size:11px;color:#dbe8ff;font-weight:800}
+    .auth-metric strong{display:block;margin-top:8px;font-size:18px}
+    .auth-list{display:grid;gap:10px;margin-top:18px}
+    .auth-item{
+      display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:18px;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+    }
+    .auth-icon{
+      width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.12);font-size:16px;
+    }
+    .auth-item strong{display:block;font-size:13px}
+    .auth-item span{display:block;margin-top:4px;font-size:12px;color:#dbe7f3;line-height:1.6}
+    .auth-card{padding:22px 22px 18px}
+    .auth-tabs{
+      display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;padding:4px;border-radius:16px;
+      background:#f4f7fa;border:1px solid var(--line);
+    }
+    .auth-tab{
+      height:42px;border-radius:12px;border:none;background:transparent;color:#44556a;font-weight:800;cursor:pointer;
+    }
+    .auth-tab.active{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
+    .auth-title{font-size:28px;font-weight:800;margin:8px 0;color:var(--title);letter-spacing:-.03em}
+    .auth-subtitle{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+    .auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .auth-grid .full{grid-column:1 / -1}
+    .auth-field label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
+    .auth-input{width:100%;height:44px;padding:0 14px}
+    .auth-hint{font-size:11px;color:#7a8796;margin-top:5px}
+    .auth-error{
+      display:none;margin:0 0 12px;padding:12px 14px;border-radius:14px;background:#ffeff0;
+      border:1px solid #ffcdd2;font-size:12px;color:#c62828;line-height:1.6;
+    }
+    .auth-error.show{display:block}
+    .auth-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}
+    .auth-footer small{color:#7a8796;line-height:1.7}
+    .auth-social-proof{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+    .auth-pill{
+      height:28px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:11px;color:#e7f2ff;font-weight:800;
+    }
+
+    .overview-board-wrap{display:grid;gap:16px}
+    .overview-hero{
+      display:grid;grid-template-columns:1.15fr 1.85fr;gap:16px;
+    }
+    .overview-brief{
+      background:linear-gradient(135deg,#184a7b 0%, #1f6fd1 62%, #63b3ff 100%);
+      color:#fff;border-radius:24px;padding:22px;position:relative;overflow:hidden;
+      box-shadow:0 18px 36px rgba(31,111,209,.18);
+      min-height:250px;
+    }
+    .overview-brief::before{
+      content:"";position:absolute;right:-30px;top:-20px;width:180px;height:180px;border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 68%);
+    }
+    .overview-brief::after{
+      content:"";position:absolute;left:-20px;bottom:-40px;width:220px;height:120px;border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%);
+    }
+    .overview-brief-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;z-index:1}
+    .overview-brief-title{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.2;margin:0}
+    .overview-brief-sub{margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.9)}
+    .overview-brief-badge{
+      min-height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;font-size:12px;font-weight:800;white-space:nowrap;
+    }
+    .overview-alert-list{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px;position:relative;z-index:1}
+    .overview-alert-item{
+      display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:16px;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);
+    }
+    .overview-alert-icon{
+      width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:800;flex:none;
+    }
+    .overview-alert-item strong{display:block;font-size:13px}
+    .overview-alert-item span{display:block;margin-top:4px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.88)}
+    .overview-kpi-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+    }
+    .overview-kpi-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);border:1px solid var(--line);border-radius:22px;padding:18px;
+      box-shadow:var(--shadow-sm);min-height:250px;
+    }
+    .overview-kpi-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+    .overview-kpi-head h3{margin:0;font-size:22px;font-weight:800;color:var(--title);letter-spacing:-.03em}
+    .overview-kpi-badge{
+      min-height:28px;padding:0 10px;border-radius:999px;background:var(--soft-blue);border:1px solid #dbe8f6;color:var(--navy);
+      font-size:11px;font-weight:800;display:inline-flex;align-items:center;
+    }
+    .overview-kpi-number{display:flex;align-items:flex-end;gap:8px;margin:4px 0 14px}
+    .overview-kpi-number strong{font-size:46px;line-height:1;color:var(--title);letter-spacing:-.04em}
+    .overview-kpi-number span{font-size:14px;color:var(--muted);font-weight:800;padding-bottom:6px}
+    .overview-kpi-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+    .overview-kpi-mini{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
+    .overview-kpi-mini em{display:block;font-style:normal;font-size:11px;font-weight:800;color:#667085}
+    .overview-kpi-mini b{display:block;margin-top:6px;font-size:20px;color:var(--title);letter-spacing:-.02em}
+    .overview-bottom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    .overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .ov-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid var(--line);padding:18px 16px 14px;min-height:320px;position:relative;
+      border-radius:22px;box-shadow:var(--shadow-sm);
+    }
+    .ov-card::before{display:none}
+    .ov-title{
+      position:relative;z-index:1;width:100%;margin:0 0 16px;min-height:54px;display:flex;align-items:center;
+      justify-content:center;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;
+      font-size:22px;font-weight:800;border-radius:16px;letter-spacing:-.03em;
+      box-shadow:0 10px 24px rgba(18,57,95,.16);
+    }
+    .ov-chart-box{background:#fff;padding:10px;border-radius:16px;border:1px solid var(--line)}
+    .ov-chart{height:180px}
+    .ov-donut{height:210px}
+    .ov-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+    .ov-mini{background:#fff;border:1px solid var(--line);padding:12px 8px;text-align:center;border-radius:16px}
+    .ov-mini .k{font-size:11px;color:#667085;font-weight:800}
+    .ov-mini .v{margin-top:8px;font-size:22px;color:var(--title);font-weight:800}
+    .overview-progress-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow-sm);
+    }
+    .overview-progress-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+    .overview-progress-head h3{margin:0;font-size:22px;font-weight:800;color:var(--title);letter-spacing:-.03em}
+    .overview-progress-bar-wrap{display:grid;gap:14px}
+    .overview-progress-row{display:grid;grid-template-columns:140px 1fr 64px;gap:12px;align-items:center}
+    .overview-progress-label{font-size:13px;font-weight:800;color:#44556a}
+    .overview-progress-track{height:16px;border-radius:999px;background:#edf3fa;overflow:hidden;border:1px solid #e1e9f2}
+    .overview-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--navy),var(--blue-2))}
+    .overview-progress-fill.green{background:linear-gradient(90deg,#159768,#59c98f)}
+    .overview-progress-fill.amber{background:linear-gradient(90deg,#d8991b,#f2bf58)}
+    .overview-progress-value{text-align:right;font-size:13px;font-weight:800;color:var(--title)}
+
+    .trace-table,.table table{min-width:100%}
+
+    @media(max-width:1320px){
+      .trace-wrap,.form-grid,.auth-layout,.overview-grid,.overview-bottom-grid,.overview-hero,.overview-kpi-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:860px){
+      .top{padding:12px 14px}
+      .shell{padding:12px}
+      .trace-search{grid-template-columns:1fr}
+      .trace-tools{width:100%}
+      .trace-tools .btn{flex:1}
+      .auth-metrics,.auth-grid,.ov-summary{grid-template-columns:1fr}
+      .auth-footer{flex-direction:column;align-items:stretch}
+    }
+    @media(max-width:640px){
+      .brand h1{font-size:20px}
+      .auth-showcase h2{font-size:24px}
+      .trace-head{flex-direction:column}
+      .tabs{gap:6px}
+      .tab{padding:10px 12px;font-size:13px}
+      .bar{padding:12px}
+      .auth-card,.auth-showcase,.card,.ov-card{padding:16px}
+      .ov-title{font-size:18px;min-height:46px}
+    }
+  </style>
+</head>
+<body>
+  <div id="authGate" class="auth-gate">
+    <div class="auth-layout">
+      <section class="auth-showcase">
+        <div class="auth-eyebrow">품질관리 시스템</div>
+        <h2>회원가입 · 로그인 후<br>대시보드 접근</h2>
+        <p>인증된 사용자만 품질관리 대시보드에 접근할 수 있도록 구성했습니다. 회원가입 신청 후 관리자 승인 완료 시 로그인할 수 있습니다.</p>
+        <div class="auth-metrics">
+          <div class="auth-metric"><div>접근 방식</div><strong>회원 전용</strong></div>
+          <div class="auth-metric"><div>인증 구조</div><strong>세션 기반</strong></div>
+          <div class="auth-metric"><div>진입 흐름</div><strong>가입 신청 → 승인 → 로그인</strong></div>
+        </div>
+        <div class="auth-list">
+          <div class="auth-item"><div class="auth-icon">📊</div><div><strong>대시보드 보호</strong><span>비로그인 상태에서는 인증 화면만 노출됩니다.</span></div></div>
+          <div class="auth-item"><div class="auth-icon">🛡️</div><div><strong>권한 분리</strong><span>관리자만 전체삭제와 회원 승인 기능을 사용할 수 있습니다.</span></div></div>
+          <div class="auth-item"><div class="auth-icon">⚡</div><div><strong>승인 기반 진입</strong><span>회원가입 완료 후 자동 로그인되지 않으며, 관리자 승인 후 접근 가능합니다.</span></div></div>
+        </div>
+        <div class="auth-social-proof">
+          <span class="auth-pill">MES Style</span>
+          <span class="auth-pill">Role-based Access</span>
+          <span class="auth-pill">Approval Workflow</span>
+        </div>
+      </section>
+
+      <section class="auth-card">
+  <div class="head">
+    <div class="title">사용자 인증</div>
+    <div class="badge" id="authModeBadge">로그인</div>
+  </div>
+
+  <div class="auth-tabs">
+    <button class="auth-tab active" id="showLoginBtn" onclick="switchAuthMode('login')">로그인</button>
+    <button class="auth-tab" id="showSignupBtn" onclick="switchAuthMode('signup')">회원가입</button>
+  </div>
+
+  <div class="auth-title" id="authTitle">다시 오신 것을 환영합니다</div>
+  <div class="auth-subtitle" id="authSubtitle">승인된 계정으로 로그인하면 품질 대시보드가 열립니다.</div>
+  <div id="authError" class="auth-error"></div>
+
+  <div class="auth-grid">
+    <div class="auth-field full hidden" id="authNameWrap">
+      <label>이름</label>
+      <input id="authName" class="auth-input" placeholder="홍길동" />
+      <div class="auth-hint">회원가입 시 표시 이름으로 사용됩니다.</div>
+    </div>
+
+    <div class="auth-field full">
+      <label>이메일</label>
+      <input id="authEmail" type="email" class="auth-input" placeholder="example@namochemical.com" />
+    </div>
+
+    <div class="auth-field full">
+      <label>비밀번호</label>
+      <input id="authPassword" type="password" class="auth-input" placeholder="비밀번호 입력" />
+    </div>
+
+    <div class="auth-field full hidden" id="authPasswordConfirmWrap">
+      <label>비밀번호 확인</label>
+      <input id="authPasswordConfirm" type="password" class="auth-input" placeholder="비밀번호 다시 입력" />
+    </div>
+
+    <div class="auth-field full hidden" id="authCompanyWrap">
+      <label>부서 / 팀</label>
+      <input id="authCompany" class="auth-input" placeholder="예: 품질부" />
+    </div>
+  </div>
+
+  <div class="auth-footer">
+    <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
+    <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
+  </div>
+</section>
+    </div>
+  </div>
+
+  <div id="appShell" class="hidden">
+    <div class="top">
+      <div class="brand">
+        <a href="#" class="brand-home" onclick="goHome(event)">
+        <div><img src="/assets/logo.png" alt="Namochemical" 
+                style="height:36px;margin-right:10px;vertical-align:middle">
+                        </div>
+        </a>
+      </div>
+      <div class="top-right">
+        <div class="status-pill" id="userBadge">사용자 확인 중…</div>
+        <button class="btn b2" onclick="logoutUser()">로그아웃</button>
+        <div class="live">운영 중</div>
+        <div class="top-chip" id="clock"></div>
+      </div>
+    </div>
+
+    <div class="shell">
+      <div class="bar glass">
+        <label>연도</label><select id="yearSel"></select>
+        <label>월</label><select id="monthSel"></select>
+        <label>일</label><select id="daySel"></select>
+        <button class="btn b1" onclick="refreshDashboard()">조회</button>
+        <button class="btn b4" id="deleteAllBtn" onclick="confirmDeleteAll()" disabled>전체삭제</button>
+        <button class="btn b2" onclick="loadFromServer()">서버동기화</button>
+        <button class="btn b2" onclick="document.getElementById('excelFile').click()">엑셀업로드</button>
+        <button class="btn b3" onclick="downloadExcel()">엑셀다운로드</button>
+        <button class="btn b2" onclick="openBarcodeModal()">바코드생성</button>
+        <input id="excelFile" type="file" accept=".xlsx,.xls" style="display:none" onchange="uploadExcel(event)">
+        <div class="chip" id="weekChip">-</div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('overview',this)">종합현황</div>
+        <div class="tab" onclick="switchTab('iqc',this)">입고검사</div>
+        <div class="tab" onclick="switchTab('ipqc',this)">공정검사</div>
+        <div class="tab" onclick="switchTab('oqc',this)">출하검사</div>
+        <div class="tab" onclick="switchTab('supplier',this)">기준정보</div>
+        <div class="tab" onclick="switchTab('trace',this)">추적성조회</div>
+        <div class="tab" onclick="switchTab('nonconform',this)">부적합관리</div>
+        <div class="tab hidden" id="adminApprovalTab" onclick="switchTab('approval',this)">전체회원관리</div>
+      </div>
+
+      <div class="main">
+        <div class="week glass">
+          <span class="muted"><strong>조회 범위</strong></span>
+          <span id="weekRangeText" style="font-weight:800;color:#163a5f"></span>
+          <span class="muted"><strong>선택</strong></span>
+          <div id="dayPills" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+
+        <div id="panel-overview" class="panel active">
+          <div class="overview-board-wrap">
+            <div class="overview-hero">
+              <section class="overview-brief">
+                <div class="overview-brief-top">
+                  <div>
+                    <h2 class="overview-brief-title">품질 운영 브리핑</h2>
+                    <div class="overview-brief-sub">실시간 품질 현황과 주요 이슈를 한 화면에서 확인할 수 있도록 구성했습니다.</div>
+                  </div>
+                  <div class="overview-brief-badge">LIVE BOARD</div>
+                </div>
+                <ul class="overview-alert-list">
+                  <li class="overview-alert-item">
+                    <div class="overview-alert-icon">!</div>
+                    <div><strong>수입검사 모니터링</strong><span>월간 검사량과 합격/불합격 추이를 즉시 확인합니다.</span></div>
+                  </li>
+                  <li class="overview-alert-item">
+                    <div class="overview-alert-icon">✓</div>
+                    <div><strong>공정 안정성 확인</strong><span>공정검사 판정 비율과 월별 변동을 직관적으로 보여줍니다.</span></div>
+                  </li>
+                  <li class="overview-alert-item">
+                    <div class="overview-alert-icon">→</div>
+                    <div><strong>출하 품질 대응</strong><span>출하검사 결과를 바탕으로 고객 대응 우선순위를 빠르게 판단합니다.</span></div>
+                  </li>
+                </ul>
+              </section>
+
+              <div class="overview-kpi-grid">
+                <section class="overview-kpi-card">
+                  <div class="overview-kpi-head"><h3>수입검사</h3><div class="overview-kpi-badge">IQC</div></div>
+                  <div class="overview-kpi-number"><strong id="ovIqcTotalHero">0</strong><span>건</span></div>
+                  <div class="ov-chart-box"><div class="ov-chart"><canvas id="iqcMonthlyChart"></canvas></div></div>
+                  <div class="overview-kpi-stats">
+                    <div class="overview-kpi-mini"><em>합격</em><b id="ovIqcPass">0</b></div>
+                    <div class="overview-kpi-mini"><em>불합격</em><b id="ovIqcFail">0</b></div>
+                    <div class="overview-kpi-mini"><em>검사건수</em><b id="ovIqcTotal">0</b></div>
+                  </div>
+                </section>
+                <section class="overview-kpi-card">
+                  <div class="overview-kpi-head"><h3>공정검사</h3><div class="overview-kpi-badge">PQC</div></div>
+                  <div class="overview-kpi-number"><strong id="ovIpqcTotalHero">0</strong><span>건</span></div>
+                  <div class="ov-chart-box"><div class="ov-chart"><canvas id="ipqcMonthlyChart"></canvas></div></div>
+                  <div class="overview-kpi-stats">
+                    <div class="overview-kpi-mini"><em>합격</em><b id="ovIpqcPass">0</b></div>
+                    <div class="overview-kpi-mini"><em>불합격</em><b id="ovIpqcFail">0</b></div>
+                    <div class="overview-kpi-mini"><em>검사건수</em><b id="ovIpqcTotal">0</b></div>
+                  </div>
+                </section>
+                <section class="overview-kpi-card">
+                  <div class="overview-kpi-head"><h3>출하검사</h3><div class="overview-kpi-badge">OQC</div></div>
+                  <div class="overview-kpi-number"><strong id="ovOqcTotalHero">0</strong><span>건</span></div>
+                  <div class="ov-chart-box"><div class="ov-chart"><canvas id="oqcMonthlyChart"></canvas></div></div>
+                  <div class="overview-kpi-stats">
+                    <div class="overview-kpi-mini"><em>합격</em><b id="ovOqcPass">0</b></div>
+                    <div class="overview-kpi-mini"><em>불합격</em><b id="ovOqcFail">0</b></div>
+                    <div class="overview-kpi-mini"><em>검사건수</em><b id="ovOqcTotal">0</b></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="overview-bottom-grid">
+              <div class="ov-card">
+                <div class="ov-title">수입검사 판정현황</div>
+                <div class="ov-chart-box"><div class="ov-donut"><canvas id="iqcDonutChart"></canvas></div></div>
+              </div>
+
+              <div class="ov-card">
+                <div class="ov-title">공정검사 판정현황</div>
+                <div class="ov-chart-box"><div class="ov-donut"><canvas id="ipqcDonutChart"></canvas></div></div>
+              </div>
+
+              <div class="ov-card">
+                <div class="ov-title">출하검사 판정현황</div>
+                <div class="ov-chart-box"><div class="ov-donut"><canvas id="oqcDonutChart"></canvas></div></div>
+              </div>
+            </div>
+
+            <div class="overview-bottom-grid">
+              <section class="overview-progress-card">
+                <div class="overview-progress-head"><h3>품질 운영 지표</h3><div class="badge">월간 기준</div></div>
+                <div class="overview-progress-bar-wrap">
+                  <div class="overview-progress-row">
+                    <div class="overview-progress-label">수입검사 합격률</div>
+                    <div class="overview-progress-track"><div id="iqcPassRateBar" class="overview-progress-fill" style="width:0%"></div></div>
+                    <div id="iqcPassRateText" class="overview-progress-value">0%</div>
+                  </div>
+                  <div class="overview-progress-row">
+                    <div class="overview-progress-label">공정검사 합격률</div>
+                    <div class="overview-progress-track"><div id="ipqcPassRateBar" class="overview-progress-fill green" style="width:0%"></div></div>
+                    <div id="ipqcPassRateText" class="overview-progress-value">0%</div>
+                  </div>
+                  <div class="overview-progress-row">
+                    <div class="overview-progress-label">출하검사 합격률</div>
+                    <div class="overview-progress-track"><div id="oqcPassRateBar" class="overview-progress-fill amber" style="width:0%"></div></div>
+                    <div id="oqcPassRateText" class="overview-progress-value">0%</div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="card" style="width:100%; margin:0;">
+                <div class="head"><div class="title" id="upgradeTitle">업그레이드 내역</div><div class="badge">최근 10건</div></div>
+                <div id="upgradeHistory" class="table-box"></div>
+              </div>
+
+              <section class="overview-progress-card">
+                <div class="overview-progress-head"><h3>운영 안내</h3><div class="badge">Dashboard</div></div>
+                <div class="upgrade-list">
+                  <div class="upgrade-item"><div class="upgrade-date">종합현황</div><div class="upgrade-text">검사 흐름과 판정현황을 경영진 보고용으로 한 번에 볼 수 있도록 재구성했습니다.</div></div>
+                  <div class="upgrade-item"><div class="upgrade-date">실사용 화면</div><div class="upgrade-text">기존 기능 로직은 유지하고 화면만 현대적인 업무용 UI로 리뉴얼했습니다.</div></div>
+                  <div class="upgrade-item"><div class="upgrade-date">확장 가능</div><div class="upgrade-text">원하시면 다음 단계로 불량률 게이지, 업무 메시지 패널, 생산 현황 카드도 추가 가능합니다.</div></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-iqc" class="panel">
+          <div class="card">
+            <div class="head"><div class="title">입고검사 IQC</div><button class="btn b1" onclick="openRegisterModal('iqc')">등록</button></div>
+            <div class="table-box table">
+              <table>
+                <thead><tr><th>검사일</th><th>LOT No</th><th>업체명</th><th>원료명</th><th>검사자</th><th>검사수량</th><th>불합격</th><th>불량률</th><th>판정</th><th>관리</th></tr></thead>
+                <tbody id="iqcBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-ipqc" class="panel">
+          <div class="card">
+            <div class="head"><div class="title">공정검사 PQC</div><button class="btn b1" onclick="openRegisterModal('ipqc')">등록</button></div>
+            <div class="table-box table">
+              <table>
+                <thead><tr><th>검사일자</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도</th><th>고형분</th><th>입도</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead>
+                <tbody id="ipqcBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-oqc" class="panel">
+          <div class="card">
+            <div class="head"><div class="title">출하검사 OQC</div><button class="btn b1" onclick="openRegisterModal('oqc')">등록</button></div>
+            <div class="table-box table">
+              <table>
+                <thead><tr><th>검사일자</th><th>고객사명</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도(cP)</th><th>고형분(wt.%)</th><th>입도(㎛)</th><th>접착력(mm)</th><th>절연저항(MΩ)</th><th>전해액 팽윤성(%)</th><th>수분(ppm)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead>
+                <tbody id="oqcBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-supplier" class="panel">
+          <div class="card">
+            <div class="head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="title">공급업체 목록 관리</div>
+                <div class="badge" id="supplierCount">0개</div>
+              </div>
+              <button class="btn b1" onclick="openSupplierModal()">작성</button>
+            </div>
+            <div class="table">
+              <table>
+                <thead><tr><th>#</th><th>공급업체명</th><th>담당자</th><th>연락처</th><th>카테고리</th><th>상태</th><th>관리</th></tr></thead>
+                <tbody id="supplierMasterBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px">
+            <div class="head"><div class="title">생산 작업일지</div><button class="btn b1" onclick="openWorklogModal()">작성</button></div>
+            <div class="table">
+              <table>
+                <thead><tr><th>생산일자</th><th>완제품 LOT No.</th><th>투입순서</th><th>원자재명</th><th>공급업체</th><th>투입량 (kg)</th><th>투입비율 (%)</th><th>LOT No.</th><th>투입시간</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead>
+                <tbody id="worklogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-trace" class="panel">
+          <div class="trace-wrap">
+            <div class="trace-card">
+              <div class="trace-head">
+                <div class="trace-title">
+                  <h3>원자재 → 완제품</h3>
+                  <p>부품 Lot 기준으로 연결된 완제품과 출하 품질 이력을 조회합니다.</p>
+                </div>
+              </div>
+              <div class="trace-body">
+                <div class="trace-search">
+                  <div class="trace-label">부품 Lot 번호</div>
+                  <input id="traceRawInput" class="trace-input" placeholder="예: 0002708935 · 바코드 스캔 가능" />
+                  <div class="trace-tools"><button class="btn b1" onclick="runRawToFinishedTrace()">조회</button><button class="btn b2" onclick="clearTrace('raw')">초기화</button></div>
+                </div>
+                <div class="trace-meta">
+                  <div><strong>조회 결과</strong> <span>부품 Lot과 연결된 완제품 이력</span></div>
+                  <div class="trace-count" id="traceRawCount">총 0건</div>
+                </div>
+                <div class="trace-table-wrap">
+                  <table class="trace-table">
+                    <thead><tr><th style="width:28%">완제품 LOT No</th><th style="width:18%">제품명</th><th style="width:18%">출하검사일자</th><th style="width:16%">검사결과</th><th style="width:20%">출하처</th></tr></thead>
+                    <tbody id="traceRawBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="trace-card">
+              <div class="trace-head">
+                <div class="trace-title">
+                  <h3>완제품 → 원자재</h3>
+                  <p>완제품 Lot 기준으로 투입 원자재, 협력사, 검사 이력을 역추적합니다.</p>
+                </div>
+              </div>
+              <div class="trace-body">
+                <div class="trace-search">
+                  <div class="trace-label">완제품 Lot 번호</div>
+                  <input id="traceFinishedInput" class="trace-input" placeholder="예: DBA1501 · 바코드 스캔 가능" />
+                  <div class="trace-tools"><button class="btn b3" onclick="runFinishedToRawTrace()">조회</button><button class="btn b2" onclick="clearTrace('finished')">초기화</button></div>
+                </div>
+                <div class="trace-meta">
+                  <div><strong>조회 결과</strong> <span>완제품에 연결된 원자재 및 품질 이력</span></div>
+                  <div class="trace-count" id="traceFinishedCount">총 0건</div>
+                </div>
+                <div class="trace-table-wrap">
+                  <table class="trace-table">
+                    <thead><tr><th style="width:22%">원료명</th><th style="width:14%">생산일자</th><th style="width:18%">부품 Lot</th><th style="width:22%">협력사명</th><th style="width:12%">검사결과</th><th style="width:12%">불량률</th></tr></thead>
+                    <tbody id="traceFinishedBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-nonconform" class="panel">
+          <div class="card">
+            <div class="head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="title">부적합 관리</div>
+                <div class="badge" id="ncCount">0건</div>
+              </div>
+              <button class="btn b1" onclick="openNonconformModal()">등록</button>
+            </div>
+
+            <div class="week" style="margin-bottom:12px;padding:12px 14px">
+              <span class="muted"><strong>조회</strong></span>
+              <input id="ncKeyword" class="auth-input" style="width:260px;height:40px" placeholder="LOT No / 품목명 / 원인 / 조치내용 검색" oninput="renderNonconformTable()" />
+              <select id="ncStatusFilter" style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:12px" onchange="renderNonconformTable()">
+                <option value="">전체 상태</option>
+                <option value="대기">대기</option>
+                <option value="진행중">진행중</option>
+                <option value="완료">완료</option>
+              </select>
+            </div>
+
+            <div class="table-box table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>발생일자</th>
+                    <th>구분</th>
+                    <th>LOT No</th>
+                    <th>품목명</th>
+                    <th>부적합 내용</th>
+                    <th>원인</th>
+                    <th>조치내용</th>
+                    <th>담당자</th>
+                    <th>상태</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="nonconformBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-approval" class="panel">
+          <div class="card">
+            <div class="head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="title">전체 승인 관리</div>
+                <div class="badge" id="pendingUserCount">0명</div>
+              </div>
+              <button class="btn b2" onclick="loadAllUsers()">새로고침</button>
+            </div>
+            <div class="table-box table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>이름</th>
+                    <th>이메일</th>
+                    <th>부서 / 팀</th>
+                    <th>권한</th>
+                    <th>상태</th>
+                    <th>가입일</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="pendingUserBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="saveStatus" style="margin-top:12px;font-size:12px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="registerModal" class="modal-bg"><div class="modal"><h3 id="registerTitle">등록</h3><input type="hidden" id="registerType"><div id="registerFields"></div><div class="actions"><button class="btn b2" onclick="closeRegisterModal()">취소</button><button class="btn b1" onclick="saveRegisterData()">저장</button></div></div></div>
+
+  <div id="supplierModal" class="modal-bg"><div class="modal"><h3 id="supplierModalTitle">공급업체 등록</h3><div class="form-grid"><div class="field"><label>공급업체명</label><input id="supModalName"></div><div class="field"><label>담당자</label><input id="supModalManager"></div><div class="field"><label>연락처</label><input id="supModalPhone"></div><div class="field"><label>카테고리</label><select id="supModalCategory"><option>원자재</option><option>부자재</option><option>외주</option><option>기타</option></select></div><div class="field"><label>상태</label><select id="supModalStatus"><option>사용</option><option>중지</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeSupplierModal()">취소</button><button class="btn b1" onclick="saveSupplierModal()">저장</button></div></div></div>
+
+  <div id="worklogModal" class="modal-bg"><div class="modal"><h3 id="worklogModalTitle">생산 작업일지 작성</h3><div class="form-grid"><div class="field"><label>생산일자</label><input id="wlDate" type="date"></div><div class="field"><label>완제품 LOT No.</label><input id="wlFinishedLot"></div><div class="field"><label>투입순서</label><input id="wlSeq"></div><div class="field"><label>원자재명</label><input id="wlMaterial"></div><div class="field"><label>공급업체명</label><input id="wlSupName"></div><div class="field"><label>투입량(kg)</label><input id="wlInputQty"></div><div class="field"><label>투입비율(%)</label><input id="wlInputRatio"></div><div class="field"><label>LOT No.</label><input id="wlLotNo"></div><div class="field"><label>투입시간</label><input id="wlInputTime" type="time"></div><div class="field"><label>작업자</label><input id="wlWorker"></div><div class="field"><label>비고</label><input id="wlNote"></div></div><div class="actions"><button class="btn b2" onclick="closeWorklogModal()">취소</button><button class="btn b1" onclick="saveWorklogModal()">저장</button></div></div></div>
+
+  <div id="nonconformModal" class="modal-bg"><div class="modal"><h3 id="nonconformModalTitle">부적합 등록</h3><div class="form-grid"><div class="field"><label>발생일자</label><input id="ncDate" type="date"></div><div class="field"><label>구분</label><select id="ncType"><option>입고</option><option>공정</option><option>출하</option><option>기타</option></select></div><div class="field"><label>LOT No</label><input id="ncLot"></div><div class="field"><label>품목명</label><input id="ncItem"></div><div class="field"><label>부적합 내용</label><input id="ncIssue"></div><div class="field"><label>원인</label><input id="ncCause"></div><div class="field"><label>조치내용</label><input id="ncAction"></div><div class="field"><label>담당자</label><input id="ncOwner"></div><div class="field"><label>상태</label><select id="ncStatus"><option>대기</option><option>진행중</option><option>완료</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeNonconformModal()">취소</button><button class="btn b1" onclick="saveNonconformModal()">저장</button></div></div></div>
+
+  <div id="barcodeModal" class="modal-bg"><div class="modal"><h3 style="margin-top:0">바코드 생성</h3><div class="form-grid"><div class="field"><label>바코드 값</label><input id="barcodeValue" placeholder="예: DBA1501 또는 8801234567890"></div><div class="field"><label>형식</label><select id="barcodeFormat"><option value="CODE128">CODE128</option><option value="CODE39">CODE39</option><option value="EAN13">EAN13</option><option value="EAN8">EAN8</option></select></div><div class="field"><label>표시 텍스트</label><input id="barcodeLabel" placeholder="비워두면 바코드 값 표시"></div><div class="field"><label>높이</label><select id="barcodeHeight"><option value="60">60</option><option value="80" selected>80</option><option value="100">100</option><option value="120">120</option></select></div></div><div class="actions" style="justify-content:flex-start;margin-top:4px"><button class="btn b1" onclick="generateBarcodePreview()">생성</button><button class="btn b3" onclick="downloadBarcodePng()">PNG 저장</button><button class="btn b2" onclick="printBarcodeLabel()">인쇄</button></div><div class="barcode-preview-wrap"><div class="barcode-meta"><strong>미리보기</strong><span class="badge" id="barcodeStatus">생성 대기</span></div><div class="barcode-preview-box"><svg id="barcodeSvg"></svg></div><div class="barcode-note">LOT No, 완제품 LOT, 원자재 LOT를 입력해 라벨용 바코드를 바로 생성할 수 있습니다.</div></div><div class="actions"><button class="btn b2" onclick="closeBarcodeModal()">닫기</button></div></div></div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const MAX_UPLOAD_ROWS = 2000;
+    const UI_PAGE_SIZE = 200;
+    const state = {
+      user: { id:'', name:'', role:'guest', authenticated:false },
+      db: { suppliers:[], iqc:[], ipqc:[], oqc:[], worklog:[], traceability:[], changeLogs:[], nonconform:[] },
+      admin: { pendingUsers: [], users: [] },
+      iqcMonthlyChart: null,
+      ipqcMonthlyChart: null,
+      oqcMonthlyChart: null,
+      iqcDonutChart: null,
+      ipqcDonutChart: null,
+      oqcDonutChart: null,
+      registerEditIndex: null,
+      supplierEditIndex: null,
+      worklogEditIndex: null,
+      nonconformEditIndex: null,
+      lastBarcodeReady: false,
+      authMode: 'login'
+    };
+
+    const $ = id => document.getElementById(id);
+    const pad = n => String(n).padStart(2,'0');
+    const fmt = n => Number(n || 0).toLocaleString();
+    const toText = v => v == null ? '' : String(v).trim();
+    const toNumber = v => { if (v == null || v === '') return 0; const n = Number(String(v).replace(/,/g,'').trim()); return Number.isFinite(n) ? n : 0; };
+    const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+    const escapeHtml = str => String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
+    const normalizeKeyword = v => toText(v).replace(/\s+/g,'').toUpperCase();
+
+    function setSaveStatus(message, tone='ok') {
+      const el = $('saveStatus');
+      if (!el) return;
+      el.textContent = message;
+      el.className = tone === 'fail' ? 'save-status-fail' : 'save-status-ok';
+    }
+    function tickClock(){ $('clock').textContent = new Date().toLocaleString('ko-KR'); }
+    function showToast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(showToast.t); showToast.t=setTimeout(()=>el.classList.remove('show'),2200); }
+    function badgeState(t){ return t === '불합격' ? '<span class="state ng">불합격</span>' : '<span class="state ok">합격</span>'; }
+    function calcRate(fail, qty){ const q=Number(qty||0), f=Number(fail||0); return q>0 ? Number(((f/q)*100).toFixed(2)) : 0; }
+    function calcJudgeFromFail(fail){ return Number(fail||0) > 0 ? '불합격' : '합격'; }
+    function goHome(e){ if(e) e.preventDefault(); const overviewTab = document.querySelector('.tab'); if(overviewTab) switchTab('overview', overviewTab); window.scrollTo({ top:0, behavior:'smooth' }); }
+
+    async function apiRequest(url, options = {}) {
+      const config = { method:'GET', credentials:'include', headers:{ ...(options.headers || {}) }, ...options };
+      if (config.body && !(config.body instanceof FormData) && !config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+      }
+      let res;
+      try { res = await fetch(url, config); }
+      catch (err) { throw new Error(`네트워크 오류: ${url}`); }
+
+      const contentType = res.headers.get('content-type') || '';
+      let data = null;
+      if (contentType.includes('application/json')) data = await res.json().catch(() => null);
+      else data = await res.text().catch(() => null);
+
+      if (!res.ok) {
+        const msg = data?.error || data?.message || (typeof data === 'string' ? data : '') || `요청 실패 (${res.status})`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    const api = {
+      get: url => apiRequest(url),
+      post: (url, body) => apiRequest(url, { method:'POST', body: body instanceof FormData ? body : JSON.stringify(body) }),
+      put: (url, body) => apiRequest(url, { method:'PUT', body: JSON.stringify(body) }),
+      delete: url => apiRequest(url, { method:'DELETE' })
+    };
+
+    function setAuthError(message=''){
+      const el = $('authError');
+      el.textContent = message;
+      el.classList.toggle('show', !!message);
+    }
+
+    function switchAuthMode(mode){
+      state.authMode = mode;
+      const isSignup = mode === 'signup';
+      $('showLoginBtn').classList.toggle('active', !isSignup);
+      $('showSignupBtn').classList.toggle('active', isSignup);
+      $('authModeBadge').textContent = isSignup ? '회원가입' : '로그인';
+      $('authTitle').textContent = isSignup ? '품질 대시보드 계정 신청' : '다시 오신 것을 환영합니다';
+      $('authSubtitle').textContent = isSignup ? '회원가입 신청 후 관리자 승인 완료 시 대시보드에 접근할 수 있습니다.' : '승인된 계정으로 로그인하면 품질 대시보드가 열립니다.';
+      $('authSubmitBtn').textContent = isSignup ? '회원가입 신청' : '로그인';
+      $('authFooterText').textContent = isSignup ? '회원가입 후 자동 로그인되지 않으며, 관리자 승인 후 로그인 가능합니다.' : '회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.';
+      $('authNameWrap').classList.toggle('hidden', !isSignup);
+      $('authPasswordConfirmWrap').classList.toggle('hidden', !isSignup);
+      $('authCompanyWrap').classList.toggle('hidden', !isSignup);
+      setAuthError('');
+    }
+
+    function renderUserBadge() {
+      const badge = $('userBadge');
+      badge.textContent = state.user.authenticated ? `${state.user.name || '사용자'} · ${state.user.role}` : '비로그인';
+      const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+      $('deleteAllBtn').disabled = !isAdmin;
+      $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
+    }
+
+    function openDashboard(){
+      $('authGate').classList.add('hidden');
+      $('appShell').classList.remove('hidden');
+      renderUserBadge();
+    }
+
+    function closeDashboard(){
+      $('appShell').classList.add('hidden');
+      $('authGate').classList.remove('hidden');
+    }
+
+    async function bootstrapUser() {
+      try {
+        const me = await api.get('/api/me');
+        const role = String(me?.role || 'user').toLowerCase();
+
+        state.user = {
+          id: me?.id || '',
+          name: toText(me?.name || '사용자'),
+          role,
+          authenticated: true
+        };
+
+        openDashboard();
+        return true;
+      } catch (_) {
+        state.user = { id:'', name:'', role:'guest', authenticated:false };
+        closeDashboard();
+        return false;
+      }
+    }
+
+    async function submitAuth(){
+      const mode = state.authMode;
+      const name = toText($('authName').value);
+      const email = toText($('authEmail').value);
+      const password = toText($('authPassword').value);
+      const passwordConfirm = toText($('authPasswordConfirm').value);
+      const department = toText($('authCompany').value);
+
+      try {
+        setAuthError('');
+        if (!email) throw new Error('이메일을 입력하세요.');
+        if (!password) throw new Error('비밀번호를 입력하세요.');
+
+        if (mode === 'signup') {
+          if (!name) throw new Error('이름을 입력하세요.');
+          if (password.length < 8) throw new Error('비밀번호는 8자 이상으로 입력하세요.');
+          if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+          const result = await api.post('/api/auth/signup', { name, email, password, department });
+          showToast(result.message || '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.');
+          $('authName').value = '';
+          $('authEmail').value = '';
+          $('authPassword').value = '';
+          $('authPasswordConfirm').value = '';
+          $('authCompany').value = '';
+          switchAuthMode('login');
+          return;
+        }
+
+        await api.post('/api/auth/login', { email, password });
+        const ok = await bootstrapUser();
+        if (ok) {
+          await loadFromServer();
+          if (String(state.user.role).toLowerCase() === 'admin') {
+            await loadAllUsers();
+          }
+          showToast('로그인 완료');
+        }
+      } catch (err) {
+        console.error(err);
+        setAuthError(err.message || '인증 처리 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function logoutUser(){
+      try { await api.post('/api/auth/logout', {}); } catch (_) {}
+      state.user = { id:'', name:'', role:'guest', authenticated:false };
+      state.admin.pendingUsers = [];
+      closeDashboard();
+      switchAuthMode('login');
+      showToast('로그아웃되었습니다.');
+    }
+
+    function initFilters() {
+      const y=$('yearSel'),m=$('monthSel'),d=$('daySel');
+      y.innerHTML=''; m.innerHTML=''; d.innerHTML='';
+      for(let i=2025;i<=2035;i++) y.innerHTML += `<option value="${i}">${i}년</option>`;
+      for(let i=1;i<=12;i++) m.innerHTML += `<option value="${i}">${i}월</option>`;
+      d.innerHTML='<option value="all">전체</option>';
+      for(let i=1;i<=31;i++) d.innerHTML += `<option value="${i}">${i}일</option>`;
+      const n=new Date(); y.value=n.getFullYear(); m.value=n.getMonth()+1; d.value='all';
+    }
+
+    function getDateValue(row){ return toText(row?.date || row?.workDate || ''); }
+    function getFilteredData(arr){
+      const y=String($('yearSel').value), m=pad($('monthSel').value), d=$('daySel').value;
+      return (arr||[]).filter(r=>{ const date=getDateValue(r); if(!date) return false; const [yy,mm,dd]=date.split('-'); if(yy!==y||mm!==m) return false; if(d!=='all'&&dd!==pad(d)) return false; return true; });
+    }
+
+    function refreshWeek(){
+      const y=$('yearSel').value, m=$('monthSel').value, d=$('daySel').value;
+      $('weekChip').textContent = d==='all' ? `${y}년 ${m}월 전체` : `${y}년 ${m}월 ${d}일`;
+      $('weekRangeText').textContent = d==='all' ? `${y}년 ${m}월 전체 조회` : `${y}년 ${m}월 ${d}일 조회`;
+      $('dayPills').innerHTML = d==='all' ? '<span class="pill on">전체 조회</span>' : `<span class="pill">${m}월</span><span class="pill on">${d}일</span>`;
+    }
+
+    function buildTraceabilityData(){
+      const traces = state.db.worklog.map(w => {
+        let iqc = state.db.iqc.find(x => toText(x.lot) === toText(w.lotNo)) || null;
+        if(!iqc) iqc = state.db.iqc.find(x => toText(x.item) === toText(w.material)) || null;
+        const pqc = state.db.ipqc.find(x => toText(x.lot) === toText(w.finishedLot)) || null;
+        const oqc = state.db.oqc.find(x => toText(x.lot) === toText(w.finishedLot)) || null;
+        const supplierName = toText(w.supName || (iqc?.supplier || ''));
+        const iqcJudge = iqc ? calcJudgeFromFail(iqc.fail) : '';
+        const pqcJudge = pqc ? (pqc.judge || calcJudgeFromFail(pqc.fail)) : '';
+        const oqcJudge = oqc ? (oqc.judge || calcJudgeFromFail(oqc.fail)) : '';
+        return {
+          workDate:toText(w.workDate), finishedLot:toText(w.finishedLot), material:toText(w.material), lotNo:toText(w.lotNo),
+          supplierName, iqcResult:iqcJudge||'미확인', defectRate:iqc?calcRate(iqc.fail, iqc.qty):0,
+          productName:(oqc&&oqc.product)?toText(oqc.product):(pqc?toText(pqc.product):''), oqcDate:oqc?toText(oqc.date):'',
+          destination:oqc?toText(oqc.customer):'', finalJudge:oqcJudge || pqcJudge || iqcJudge || '미확인'
+        };
+      });
+      state.db.traceability = traces;
+      return traces;
+    }
+
+    function destroyChartSafe(chartRefName){
+      if(state[chartRefName]){
+        state[chartRefName].destroy();
+        state[chartRefName] = null;
+      }
+    }
+
+    function monthLabels(){ return ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']; }
+
+    function getMonthlyCounts(rows, dateKey='date'){
+      const year = String($('yearSel').value);
+      return Array.from({length:12}, (_,i) => {
+        const mm = pad(i+1);
+        return (rows || []).filter(r => {
+          const date = toText(r?.[dateKey] || r?.date || r?.workDate || '');
+          if(!date) return false;
+          const [yy, month] = date.split('-');
+          return yy === year && month === mm;
+        }).length;
+      });
+    }
+
+    function calcPassFail(rows, judgeGetter){
+      const total = rows.length;
+      const pass = rows.filter(judgeGetter).length;
+      const fail = total - pass;
+      return { total, pass, fail };
+    }
+
+    function renderSimpleBarChart(canvasId, chartRefName, labels, data, color){
+      destroyChartSafe(chartRefName);
+      state[chartRefName] = new Chart($(canvasId), {
+        type:'bar',
+        data:{ labels, datasets:[{ label:'Data Quality', data, backgroundColor: color, borderColor: color, borderWidth:1, borderRadius:10, maxBarThickness:38 }]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ position:'bottom', labels:{ color:'#425466', boxWidth:10, font:{weight:'700'} } } },
+          scales:{
+            x:{ ticks:{ color:'#425466', font:{ size:11 } }, grid:{ display:false } },
+            y:{ beginAtZero:true, ticks:{ precision:0, color:'#425466', font:{ size:11 } }, grid:{ color:'rgba(148,163,184,.18)' } }
+          }
+        }
+      });
+    }
+
+    function renderSimpleDonutChart(canvasId, chartRefName, values){
+      destroyChartSafe(chartRefName);
+      state[chartRefName] = new Chart($(canvasId), {
+        type:'doughnut',
+        data:{ labels:['합격','불합격','기타'], datasets:[{ data:values, backgroundColor:['#1654b9','#54aaf5','#d7e8fb'], borderColor:'#f7f7f7', borderWidth:3, hoverOffset:2 }]},
+        options:{
+          responsive:true, maintainAspectRatio:false, cutout:'60%',
+          plugins:{ legend:{ position:'right', labels:{ color:'#425466', boxWidth:12, font:{weight:'700'} } } }
+        }
+      });
+    }
+
+    function renderOverviewBoard(){
+      const selectedYear = String($('yearSel').value);
+      const iqcYearRows = (state.db.iqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
+      const ipqcYearRows = (state.db.ipqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
+      const oqcYearRows = (state.db.oqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
+
+      const iqcStats = calcPassFail(iqcYearRows, r => calcJudgeFromFail(r.fail) === '합격');
+      const ipqcStats = calcPassFail(ipqcYearRows, r => (r.judge || calcJudgeFromFail(r.fail)) === '합격');
+      const oqcStats = calcPassFail(oqcYearRows, r => (r.judge || calcJudgeFromFail(r.fail)) === '합격');
+
+      $('ovIqcTotal').textContent = fmt(iqcStats.total);
+      $('ovIqcPass').textContent = fmt(iqcStats.pass);
+      $('ovIqcFail').textContent = fmt(iqcStats.fail);
+      $('ovIpqcTotal').textContent = fmt(ipqcStats.total);
+      $('ovIpqcPass').textContent = fmt(ipqcStats.pass);
+      $('ovIpqcFail').textContent = fmt(ipqcStats.fail);
+      $('ovOqcTotal').textContent = fmt(oqcStats.total);
+      $('ovOqcPass').textContent = fmt(oqcStats.pass);
+      $('ovOqcFail').textContent = fmt(oqcStats.fail);
+      $('ovIqcTotalHero').textContent = fmt(iqcStats.total);
+      $('ovIpqcTotalHero').textContent = fmt(ipqcStats.total);
+      $('ovOqcTotalHero').textContent = fmt(oqcStats.total);
+
+      const iqcRate = iqcStats.total ? ((iqcStats.pass / iqcStats.total) * 100) : 0;
+      const ipqcRate = ipqcStats.total ? ((ipqcStats.pass / ipqcStats.total) * 100) : 0;
+      const oqcRate = oqcStats.total ? ((oqcStats.pass / oqcStats.total) * 100) : 0;
+      $('iqcPassRateBar').style.width = `${iqcRate.toFixed(1)}%`;
+      $('ipqcPassRateBar').style.width = `${ipqcRate.toFixed(1)}%`;
+      $('oqcPassRateBar').style.width = `${oqcRate.toFixed(1)}%`;
+      $('iqcPassRateText').textContent = `${iqcRate.toFixed(1)}%`;
+      $('ipqcPassRateText').textContent = `${ipqcRate.toFixed(1)}%`;
+      $('oqcPassRateText').textContent = `${oqcRate.toFixed(1)}%`;
+
+      renderSimpleBarChart('iqcMonthlyChart', 'iqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.iqc), '#1654b9');
+      renderSimpleBarChart('ipqcMonthlyChart', 'ipqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.ipqc), '#48a7ff');
+      renderSimpleBarChart('oqcMonthlyChart', 'oqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.oqc), '#164d8f');
+
+      renderSimpleDonutChart('iqcDonutChart', 'iqcDonutChart', [iqcStats.pass, iqcStats.fail, 0]);
+      renderSimpleDonutChart('ipqcDonutChart', 'ipqcDonutChart', [ipqcStats.pass, ipqcStats.fail, 0]);
+      renderSimpleDonutChart('oqcDonutChart', 'oqcDonutChart', [oqcStats.pass, oqcStats.fail, 0]);
+    }
+
+    function renderUpgradeHistory(){
+      const box = $('upgradeHistory');
+      const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+
+      const filteredLogs = (state.db.changeLogs || []).filter(log => {
+        const msg = String(log.message || '').toLowerCase();
+        const isLoginLog =
+          msg.includes('login') ||
+          msg.includes('log in') ||
+          msg.includes('로그인') ||
+          msg.includes('로그아웃') ||
+          msg.includes('logout');
+
+        if (isAdmin) return true;
+        return !isLoginLog;
+      });
+
+      const rows = filteredLogs.slice(0, 10);
+
+      if(!rows.length){
+        $('upgradeTitle').textContent = '업그레이드 내역';
+        box.innerHTML = `<div class="upgrade-empty">표시할 업그레이드 내역이 없습니다.</div>`;
+        return;
+      }
+
+      $('upgradeTitle').textContent = `${rows[0].logDate || ''} 업그레이드 내역`;
+      box.innerHTML = `<div class="upgrade-list">${rows.map(r => `<div class="upgrade-item"><div class="upgrade-date">${escapeHtml(r.logDate || '')}</div><div class="upgrade-text">${escapeHtml(r.message || '')}</div></div>`).join('')}</div>`;
+    }
+
+    function renderEmptyRow(tbodyId, colCount, msg='데이터 없음'){ $(tbodyId).innerHTML = `<tr><td colspan="${colCount}" class="empty-row">${msg}</td></tr>`; }
+    function sliceForUI(rows){ return rows.slice(0, UI_PAGE_SIZE); }
+
+    function renderTables(){
+     const iqcRows = sliceForUI(state.db.iqc);
+     const ipqcRows = sliceForUI(state.db.ipqc);
+     const oqcRows = sliceForUI(state.db.oqc);
+
+      if(!iqcRows.length) renderEmptyRow('iqcBody',10); else $('iqcBody').innerHTML = iqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.lot)}</td><td>${escapeHtml(r.supplier || '-')}</td><td>${escapeHtml(r.item || '-')}</td><td>${escapeHtml(r.inspector || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${calcRate(r.fail, r.qty).toFixed(2)}%</td><td>${badgeState(calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('iqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('iqc','${r.id}')">삭제</button></td></tr>`).join('');
+      if(!ipqcRows.length) renderEmptyRow('ipqcBody',11); else $('ipqcBody').innerHTML = ipqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('ipqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('ipqc','${r.id}')">삭제</button></td></tr>`).join('');
+      if(!oqcRows.length) renderEmptyRow('oqcBody',16); else $('oqcBody').innerHTML = oqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.customer || '-')}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${escapeHtml(r.adhesion || '-')}</td><td>${escapeHtml(r.resistance || '-')}</td><td>${escapeHtml(r.swelling || '-')}</td><td>${escapeHtml(r.moisture || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('oqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('oqc','${r.id}')">삭제</button></td></tr>`).join('');
+
+      $('supplierCount').textContent = `${state.db.suppliers.length}개`;
+      if(!state.db.suppliers.length) renderEmptyRow('supplierMasterBody',7); else $('supplierMasterBody').innerHTML = sliceForUI(state.db.suppliers).map((s, idx)=>`<tr><td>${idx+1}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.manager || '-')}</td><td>${escapeHtml(s.phone || '-')}</td><td>${escapeHtml(s.category || '-')}</td><td><span class="state ${(s.status||'사용')==='사용'?'ok':'ng'}">${escapeHtml(s.status||'사용')}</span></td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('suppliers','${s.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('suppliers','${s.id}')">삭제</button></td></tr>`).join('');
+
+      const worklogRows = sliceForUI(state.db.worklog);
+      if(!worklogRows.length) renderEmptyRow('worklogBody',12); else $('worklogBody').innerHTML = worklogRows.map(r=>`<tr><td>${escapeHtml(r.workDate || '')}</td><td>${escapeHtml(r.finishedLot || '')}</td><td>${escapeHtml(r.seq || '')}</td><td>${escapeHtml(r.material || '')}</td><td>${escapeHtml(r.supName || '')}</td><td>${escapeHtml(r.inputQty || '')}</td><td>${escapeHtml(r.inputRatio || '')}</td><td>${escapeHtml(r.lotNo || '')}</td><td>${escapeHtml(r.inputTime || '')}</td><td>${escapeHtml(r.worker || '')}</td><td>${escapeHtml(r.note || '')}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('worklog','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('worklog','${r.id}')">삭제</button></td></tr>`).join('');
+    }
+
+    function renderNonconformTable(){
+      const keyword = normalizeKeyword($('ncKeyword')?.value || '');
+      const status = toText($('ncStatusFilter')?.value || '');
+      const rows = sliceForUI((state.db.nonconform || []).filter(r => {
+        const okStatus = !status || toText(r.status) === status;
+        const bag = [r.date, r.type, r.lot, r.item, r.issue, r.cause, r.action, r.owner, r.status].map(normalizeKeyword).join(' ');
+        const okKeyword = !keyword || bag.includes(keyword);
+        return okStatus && okKeyword;
+      }));
+
+      $('ncCount').textContent = `${(rows || []).length}건`;
+      if(!rows.length){ renderEmptyRow('nonconformBody',10,'등록된 부적합 데이터가 없습니다.'); return; }
+
+      const statusBadge = s => {
+        if(s === '완료') return '<span class="state ok">완료</span>';
+        if(s === '진행중') return '<span class="state ng" style="background:#fff7ed;border-color:#fed7aa;color:#c2410c">진행중</span>';
+        return '<span class="state hold">대기</span>';
+      };
+
+      $('nonconformBody').innerHTML = rows.map(r => `
+        <tr>
+          <td>${escapeHtml(r.date || '')}</td>
+          <td>${escapeHtml(r.type || '')}</td>
+          <td>${escapeHtml(r.lot || '')}</td>
+          <td>${escapeHtml(r.item || '')}</td>
+          <td>${escapeHtml(r.issue || '')}</td>
+          <td>${escapeHtml(r.cause || '')}</td>
+          <td>${escapeHtml(r.action || '')}</td>
+          <td>${escapeHtml(r.owner || '')}</td>
+          <td>${statusBadge(r.status || '대기')}</td>
+          <td><button class="btn b2" style="height:32px;padding:0 10px" onclick="openNonconformModal('${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteNonconform('${r.id}')">삭제</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function openNonconformModal(id=null){
+      state.nonconformEditIndex = id;
+      const row = (state.db.nonconform || []).find(x => String(x.id) === String(id));
+      $('nonconformModalTitle').textContent = row ? '부적합 수정' : '부적합 등록';
+      $('ncDate').value = row?.date || todayStr();
+      $('ncType').value = row?.type || '입고';
+      $('ncLot').value = row?.lot || '';
+      $('ncItem').value = row?.item || '';
+      $('ncIssue').value = row?.issue || '';
+      $('ncCause').value = row?.cause || '';
+      $('ncAction').value = row?.action || '';
+      $('ncOwner').value = row?.owner || '';
+      $('ncStatus').value = row?.status || '대기';
+      $('nonconformModal').style.display='flex';
+    }
+
+    function closeNonconformModal(){ $('nonconformModal').style.display='none'; state.nonconformEditIndex = null; }
+
+    async function saveNonconformModal(){
+      const payload = {
+        id: state.nonconformEditIndex || `nc_${Date.now()}`,
+        date: toText($('ncDate').value) || todayStr(),
+        type: toText($('ncType').value),
+        lot: toText($('ncLot').value),
+        item: toText($('ncItem').value),
+        issue: toText($('ncIssue').value),
+        cause: toText($('ncCause').value),
+        action: toText($('ncAction').value),
+        owner: toText($('ncOwner').value),
+        status: toText($('ncStatus').value) || '대기'
+      };
+      if(!payload.lot && !payload.item){ showToast('LOT No 또는 품목명을 입력하세요.'); return; }
+      try {
+        if(state.nonconformEditIndex){
+          await api.put(`/api/nonconform/${payload.id}`, payload);
+        } else {
+          await api.post('/api/nonconform', payload);
+        }
+        closeNonconformModal();
+        await loadFromServer();
+        showToast('부적합 데이터 저장 완료');
+      } catch(err) {
+        console.error(err);
+        showToast(`부적합 저장 실패: ${err.message}`);
+      }
+    }
+
+    async function deleteNonconform(id){
+      if(!confirm('이 부적합 데이터를 삭제할까요?')) return;
+      try {
+        await api.delete(`/api/nonconform/${id}`);
+        await loadFromServer();
+        showToast('부적합 데이터 삭제 완료');
+      } catch(err) {
+        console.error(err);
+        showToast(`부적합 삭제 실패: ${err.message}`);
+      }
+    }
+
+    function renderTraceEmptyRows(){
+      $('traceRawBody').innerHTML = `<tr><td colspan="5" class="trace-empty">부품 Lot 번호를 입력하면 결과가 표시됩니다.</td></tr>`;
+      $('traceFinishedBody').innerHTML = `<tr><td colspan="6" class="trace-empty">완제품 Lot 번호를 입력하면 결과가 표시됩니다.</td></tr>`;
+      $('traceRawCount').textContent='총 0건';
+      $('traceFinishedCount').textContent='총 0건';
+    }
+
+    function runRawToFinishedTrace(){
+      const keyword = toText($('traceRawInput').value);
+      if(!keyword){ clearTrace('raw'); return; }
+      const rows = buildTraceabilityData().filter(r => normalizeKeyword(r.lotNo).includes(normalizeKeyword(keyword)) || normalizeKeyword(r.material).includes(normalizeKeyword(keyword)) || normalizeKeyword(r.finishedLot).includes(normalizeKeyword(keyword)));
+      const uniqueRows=[]; const seen=new Set();
+      rows.forEach(r=>{ const key=`${r.finishedLot}|${r.productName}|${r.oqcDate}|${r.finalJudge}|${r.destination}`; if(!seen.has(key)){ seen.add(key); uniqueRows.push(r); } });
+      $('traceRawCount').textContent = `총 ${uniqueRows.length}건`;
+      if(!uniqueRows.length){ $('traceRawBody').innerHTML = `<tr><td colspan="5" class="trace-empty">조회 결과가 없습니다.</td></tr>`; return; }
+      $('traceRawBody').innerHTML = uniqueRows.map(r=>`<tr><td>${escapeHtml(r.finishedLot || '')}</td><td>${escapeHtml(r.productName || '')}</td><td>${escapeHtml(r.oqcDate || '')}</td><td>${badgeState(r.finalJudge || '')}</td><td>${escapeHtml(r.destination || '')}</td></tr>`).join('');
+    }
+
+    function runFinishedToRawTrace(){
+      const keyword = toText($('traceFinishedInput').value);
+      if(!keyword){ clearTrace('finished'); return; }
+      const rows = buildTraceabilityData().filter(r => normalizeKeyword(r.finishedLot).includes(normalizeKeyword(keyword)) || normalizeKeyword(r.productName).includes(normalizeKeyword(keyword)));
+      $('traceFinishedCount').textContent = `총 ${rows.length}건`;
+      if(!rows.length){ $('traceFinishedBody').innerHTML = `<tr><td colspan="6" class="trace-empty">조회 결과가 없습니다.</td></tr>`; return; }
+      $('traceFinishedBody').innerHTML = rows.map(r=>`<tr><td>${escapeHtml(r.material || '')}</td><td>${escapeHtml(r.workDate || '')}</td><td>${escapeHtml(r.lotNo || '')}</td><td>${escapeHtml(r.supplierName || '')}</td><td>${badgeState(r.iqcResult || '')}</td><td>${Number(r.defectRate || 0).toFixed(2)}%</td></tr>`).join('');
+    }
+
+    function clearTrace(type){
+      if(type==='raw'){ $('traceRawInput').value=''; $('traceRawBody').innerHTML = `<tr><td colspan="5" class="trace-empty">부품 Lot 번호를 입력하면 결과가 표시됩니다.</td></tr>`; $('traceRawCount').textContent='총 0건'; }
+      else { $('traceFinishedInput').value=''; $('traceFinishedBody').innerHTML = `<tr><td colspan="6" class="trace-empty">완제품 Lot 번호를 입력하면 결과가 표시됩니다.</td></tr>`; $('traceFinishedCount').textContent='총 0건'; }
+    }
+
+    function renderUserStatus(status) {
+      const s = String(status || '').toUpperCase();
+      if (s === 'APPROVED') return '<span class="state ok">승인완료</span>';
+      if (s === 'REJECTED') return '<span class="state ng">반려</span>';
+      if (s === 'PENDING') return '<span class="state hold">승인대기</span>';
+      return `<span class="state hold">${escapeHtml(status || '-')}</span>`;
+    }
+    function renderPendingUsers() {
+      const rows = state.admin.users || [];
+      $('pendingUserCount').textContent = `${rows.length}명`;
+
+      if (!rows.length) {
+        $('pendingUserBody').innerHTML = `<tr><td colspan="8" class="empty-row">등록된 회원이 없습니다.</td></tr>`;
+        return;
+      }
+
+      $('pendingUserBody').innerHTML = rows.map((user, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(user.name || '')}</td>
+          <td>${escapeHtml(user.email || '')}</td>
+          <td>${escapeHtml(user.department || '-')}</td>
+          <td>${escapeHtml(user.role || 'user')}</td>
+          <td>${renderUserStatus(user.status)}</td>
+          <td>${escapeHtml(user.createdAt || '-')}</td>
+          <td>
+            <button class="btn b3" style="height:32px;padding:0 10px" onclick="approveUser('${user.id}')">승인</button>
+            <button class="btn b4" style="height:32px;padding:0 10px" onclick="rejectUser('${user.id}')">반려</button>
+            <button class="btn b2" style="height:32px;padding:0 10px" onclick="deleteUser('${user.id}', '${user.name || ''}')">삭제</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadAllUsers() {
+      if (String(state.user.role).toLowerCase() !== 'admin') return;
+
+      try {
+        const rows = await api.get('/api/admin/users');
+        state.admin.users = Array.isArray(rows) ? rows : [];
+        renderPendingUsers();
+      } catch (err) {
+        console.error(err);
+        showToast(`전체 회원 조회 실패: ${err.message}`);
+      }
+    }
+
+    async function approveUser(id) {
+      if (!confirm('이 회원을 승인하시겠습니까?')) return;
+      try {
+        const result = await api.post(`/api/admin/users/${id}/approve`, {});
+        showToast(result.message || '회원 승인이 완료되었습니다.');
+        await loadAllUsers();
+      } catch (err) {
+        console.error(err);
+        showToast(`회원 승인 실패: ${err.message}`);
+      }
+    }
+
+    async function rejectUser(id) {
+      if (!confirm('이 회원을 반려하시겠습니까?')) return;
+      try {
+        const result = await api.post(`/api/admin/users/${id}/reject`, {});
+        showToast(result.message || '회원 반려가 완료되었습니다.');
+        await loadAllUsers();
+      } catch (err) {
+        console.error(err);
+        showToast(`회원 반려 실패: ${err.message}`);
+      }
+    }
+
+    async function deleteUser(id, name) {
+      const ok = confirm(`${name || '해당 회원'} 계정을 삭제하시겠습니까?`);
+      if (!ok) return;
+
+      try {
+        const result = await api.delete(`/api/admin/users/${id}`);
+        showToast(result?.message || '회원 삭제가 완료되었습니다.');
+        await loadAllUsers();
+      } catch (err) {
+        console.error(err);
+        showToast(`회원 삭제 실패: ${err.message}`);
+      }
+    }
+
+    async function loadFromServer(){
+      try {
+        const [suppliers, iqc, ipqc, oqc, worklog, changeLogs, nonconform] = await Promise.all([
+          api.get('/api/suppliers'),
+          api.get('/api/iqc'),
+          api.get('/api/ipqc'),
+          api.get('/api/oqc'),
+          api.get('/api/worklog'),
+          api.get('/api/change-logs'),
+          api.get('/api/nonconform').catch(() => [])
+        ]);
+        state.db.suppliers = Array.isArray(suppliers) ? suppliers : [];
+        state.db.iqc = Array.isArray(iqc) ? iqc : [];
+        state.db.ipqc = Array.isArray(ipqc) ? ipqc : [];
+        state.db.oqc = Array.isArray(oqc) ? oqc : [];
+        state.db.worklog = Array.isArray(worklog) ? worklog : [];
+        state.db.changeLogs = Array.isArray(changeLogs) ? changeLogs : [];
+        state.db.nonconform = Array.isArray(nonconform) ? nonconform : [];
+        refreshDashboard();
+        if (String(state.user.role).toLowerCase() === 'admin') {
+          await loadAllUsers();
+        }
+        setSaveStatus(`서버 동기화 완료: ${new Date().toLocaleString('ko-KR')}`, 'ok');
+        showToast('서버 데이터 동기화 완료');
+      } catch (err) {
+        console.error(err);
+        setSaveStatus(`서버 동기화 실패: ${err.message}`, 'fail');
+        showToast(`불러오기 실패: ${err.message}`);
+      }
+    }
+
+    function getRowIndexById(type,id){ return state.db[type].findIndex(r => String(r.id) === String(id)); }
+    function editRowById(type,id){
+      const idx=getRowIndexById(type,id); if(idx<0) return;
+      if(type === 'suppliers') openSupplierModal(idx);
+      else if(type === 'worklog') openWorklogModal(idx);
+      else openRegisterModal(type, idx);
+    }
+    function deleteRowById(type,id){
+      const idx=getRowIndexById(type,id); if(idx<0) return;
+      if(type === 'suppliers') deleteSupplier(idx);
+      else if(type === 'worklog') deleteWorklog(idx);
+      else deleteInspection(type, idx);
+    }
+
+    function updateRegisterRate(){
+      const qtyEl=$('reg_qty'), failEl=$('reg_fail'), rateEl=$('reg_rate');
+      if(!qtyEl||!failEl||!rateEl) return;
+      const qty=toNumber(qtyEl.value); let fail=toNumber(failEl.value);
+      if(fail>qty&&qty>0){ fail=qty; failEl.value=qty; }
+      rateEl.value = (qty>0 ? (fail/qty)*100 : 0).toFixed(2);
+      $('reg_judge').value = calcJudgeFromFail(fail);
+    }
+
+    function registerCommonFieldset(extraFields=''){
+      return `<div class="form-grid">${extraFields}<div class="field"><label>검사수량</label><input id="reg_qty" type="number" min="0" value="0"></div><div class="field"><label>불량수량</label><input id="reg_fail" type="number" min="0" value="0"></div><div class="field"><label>불량률(%)</label><input id="reg_rate" type="number" step="0.01" value="0" readonly></div><div class="field"><label>판정</label><select id="reg_judge"><option>합격</option><option>불합격</option></select></div></div>`;
+    }
+
+    function openRegisterModal(type, index=null){
+      state.registerEditIndex = index; $('registerType').value = type; $('registerModal').style.display = 'flex'; const title = $('registerTitle'); const fields = $('registerFields');
+      if(type === 'iqc'){
+        title.textContent = index===null ? '입고검사 IQC 등록' : '입고검사 IQC 수정';
+        fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일</label><input id="reg_date" type="date"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>업체명</label><input id="reg_supplier"></div><div class="field"><label>원료명</label><input id="reg_item"></div><div class="field"><label>검사자</label><input id="reg_inspector"></div>`);
+        const row = index!==null ? state.db.iqc[index] : null; $('reg_date').value = row?.date || todayStr(); $('reg_lot').value=row?.lot||''; $('reg_supplier').value=row?.supplier||''; $('reg_item').value=row?.item||''; $('reg_inspector').value=row?.inspector||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=calcJudgeFromFail(row?.fail ?? 0);
+      }
+      if(type === 'ipqc'){
+        title.textContent = index===null ? '공정검사 PQC 등록' : '공정검사 PQC 수정';
+        fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일자</label><input id="reg_date" type="date"></div><div class="field"><label>제품명</label><input id="reg_product"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>육안검사</label><input id="reg_visual"></div><div class="field"><label>점도</label><input id="reg_viscosity"></div><div class="field"><label>고형분</label><input id="reg_solid"></div><div class="field"><label>입도</label><input id="reg_particle"></div>`);
+        const row = index!==null ? state.db.ipqc[index] : null; $('reg_date').value=row?.date || todayStr(); $('reg_product').value=row?.product||''; $('reg_lot').value=row?.lot||''; $('reg_visual').value=row?.visual||''; $('reg_viscosity').value=row?.viscosity||''; $('reg_solid').value=row?.solid||''; $('reg_particle').value=row?.particle||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=row?.judge||calcJudgeFromFail(row?.fail ?? 0);
+      }
+      if(type === 'oqc'){
+        title.textContent = index===null ? '출하검사 OQC 등록' : '출하검사 OQC 수정';
+        fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일자</label><input id="reg_date" type="date"></div><div class="field"><label>고객사명</label><input id="reg_customer"></div><div class="field"><label>제품명</label><input id="reg_product"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>육안검사</label><input id="reg_visual"></div><div class="field"><label>점도(cP)</label><input id="reg_viscosity"></div><div class="field"><label>고형분(wt.%)</label><input id="reg_solid"></div><div class="field"><label>입도(㎛)</label><input id="reg_particle"></div><div class="field"><label>접착력(mm)</label><input id="reg_adhesion"></div><div class="field"><label>절연저항(MΩ)</label><input id="reg_resistance"></div><div class="field"><label>전해액 팽윤성(%)</label><input id="reg_swelling"></div><div class="field"><label>수분(ppm)</label><input id="reg_moisture"></div>`);
+        const row = index!==null ? state.db.oqc[index] : null; $('reg_date').value=row?.date || todayStr(); $('reg_customer').value=row?.customer||''; $('reg_product').value=row?.product||''; $('reg_lot').value=row?.lot||''; $('reg_visual').value=row?.visual||''; $('reg_viscosity').value=row?.viscosity||''; $('reg_solid').value=row?.solid||''; $('reg_particle').value=row?.particle||''; $('reg_adhesion').value=row?.adhesion||''; $('reg_resistance').value=row?.resistance||''; $('reg_swelling').value=row?.swelling||''; $('reg_moisture').value=row?.moisture||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=row?.judge||calcJudgeFromFail(row?.fail ?? 0);
+      }
+      updateRegisterRate();
+    }
+
+    function closeRegisterModal(){ $('registerModal').style.display='none'; state.registerEditIndex=null; }
+
+    function buildRegisterPayload(type){
+      if(type==='iqc') return { date:toText($('reg_date').value), lot:toText($('reg_lot').value), supplier:toText($('reg_supplier').value), item:toText($('reg_item').value), inspector:toText($('reg_inspector').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value) };
+      if(type==='ipqc') return { date:toText($('reg_date').value), product:toText($('reg_product').value), lot:toText($('reg_lot').value), visual:toText($('reg_visual').value), viscosity:toText($('reg_viscosity').value), solid:toText($('reg_solid').value), particle:toText($('reg_particle').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value), judge:toText($('reg_judge').value) };
+      if(type==='oqc') return { date:toText($('reg_date').value), customer:toText($('reg_customer').value), product:toText($('reg_product').value), lot:toText($('reg_lot').value), visual:toText($('reg_visual').value), viscosity:toText($('reg_viscosity').value), solid:toText($('reg_solid').value), particle:toText($('reg_particle').value), adhesion:toText($('reg_adhesion').value), resistance:toText($('reg_resistance').value), swelling:toText($('reg_swelling').value), moisture:toText($('reg_moisture').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value), judge:toText($('reg_judge').value) };
+      return {};
+    }
+
+    async function saveRegisterData(){
+      const type=$('registerType').value;
+      try{
+        const payload=buildRegisterPayload(type);
+        if (!payload.date) throw new Error('검사일자를 입력하세요.');
+        if (!payload.lot) throw new Error('LOT No를 입력하세요.');
+        if(state.registerEditIndex!==null){ const row=state.db[type][state.registerEditIndex]; await api.put(`/api/${type}/${row.id}`, payload); }
+        else { await api.post(`/api/${type}`, payload); }
+        closeRegisterModal(); await loadFromServer(); showToast('검사 데이터 저장 완료');
+      } catch(err){ console.error(err); showToast(`저장 실패: ${err.message}`); }
+    }
+
+    async function deleteInspection(type, index){
+      const row=state.db[type]?.[index]; if(!row) return;
+      if(!confirm('이 데이터를 삭제할까요?')) return;
+      try{ await api.delete(`/api/${type}/${row.id}`); await loadFromServer(); showToast('데이터 삭제 완료'); }
+      catch(err){ console.error(err); showToast(`삭제 실패: ${err.message}`); }
+    }
+
+    function openSupplierModal(index=null){
+      state.supplierEditIndex=index; const row=index!==null ? state.db.suppliers[index] : null;
+      $('supplierModalTitle').textContent = index===null ? '공급업체 등록' : '공급업체 수정';
+      $('supModalName').value=row?.name||''; $('supModalManager').value=row?.manager||''; $('supModalPhone').value=row?.phone||''; $('supModalCategory').value=row?.category||'원자재'; $('supModalStatus').value=row?.status||'사용'; $('supplierModal').style.display='flex';
+    }
+
+    function closeSupplierModal(){ $('supplierModal').style.display='none'; state.supplierEditIndex=null; }
+
+    async function saveSupplierModal(){
+      const payload={ name:toText($('supModalName').value), manager:toText($('supModalManager').value), phone:toText($('supModalPhone').value), category:toText($('supModalCategory').value)||'원자재', status:toText($('supModalStatus').value)||'사용' };
+      if(!payload.name){ showToast('공급업체명을 입력하세요.'); return; }
+      try{
+        if(state.supplierEditIndex!==null){ const row=state.db.suppliers[state.supplierEditIndex]; await api.put(`/api/suppliers/${row.id}`, payload); }
+        else { await api.post('/api/suppliers', payload); }
+        closeSupplierModal(); await loadFromServer(); showToast('공급업체 저장 완료');
+      } catch(err){ console.error(err); showToast(`공급업체 저장 실패: ${err.message}`); }
+    }
+
+    async function deleteSupplier(index){
+      const row=state.db.suppliers[index]; if(!row) return;
+      if(!confirm(`'${row.name}' 공급업체를 삭제할까요?`)) return;
+      try{ await api.delete(`/api/suppliers/${row.id}`); await loadFromServer(); showToast('공급업체 삭제 완료'); }
+      catch(err){ console.error(err); showToast(`공급업체 삭제 실패: ${err.message}`); }
+    }
+
+    function openWorklogModal(index=null){
+      state.worklogEditIndex=index; const row=index!==null ? state.db.worklog[index] : null;
+      $('worklogModalTitle').textContent = index===null ? '생산 작업일지 작성' : '생산 작업일지 수정';
+      $('wlDate').value=row?.workDate || todayStr(); $('wlFinishedLot').value=row?.finishedLot||''; $('wlSeq').value=row?.seq||''; $('wlMaterial').value=row?.material||''; $('wlSupName').value=row?.supName||''; $('wlInputQty').value=row?.inputQty||''; $('wlInputRatio').value=row?.inputRatio||''; $('wlLotNo').value=row?.lotNo||''; $('wlInputTime').value=row?.inputTime||''; $('wlWorker').value=row?.worker||''; $('wlNote').value=row?.note||''; $('worklogModal').style.display='flex';
+    }
+
+    function closeWorklogModal(){ $('worklogModal').style.display='none'; state.worklogEditIndex=null; }
+
+    async function saveWorklogModal(){
+      const payload={ workDate:toText($('wlDate').value)||todayStr(), finishedLot:toText($('wlFinishedLot').value), seq:toText($('wlSeq').value), material:toText($('wlMaterial').value), supName:toText($('wlSupName').value), inputQty:toText($('wlInputQty').value), inputRatio:toText($('wlInputRatio').value), lotNo:toText($('wlLotNo').value), inputTime:toText($('wlInputTime').value), worker:toText($('wlWorker').value), note:toText($('wlNote').value) };
+      if(!payload.workDate || !payload.material){ showToast('생산일자와 원자재명을 입력하세요.'); return; }
+      try{
+        if(state.worklogEditIndex!==null){ const row=state.db.worklog[state.worklogEditIndex]; await api.put(`/api/worklog/${row.id}`, payload); }
+        else { await api.post('/api/worklog', payload); }
+        closeWorklogModal(); await loadFromServer(); showToast('작업일지 저장 완료');
+      } catch(err){ console.error(err); showToast(`작업일지 저장 실패: ${err.message}`); }
+    }
+
+    async function deleteWorklog(index){
+      const row=state.db.worklog[index]; if(!row) return;
+      if(!confirm('이 작업일지를 삭제할까요?')) return;
+      try{ await api.delete(`/api/worklog/${row.id}`); await loadFromServer(); showToast('작업일지 삭제 완료'); }
+      catch(err){ console.error(err); showToast(`작업일지 삭제 실패: ${err.message}`); }
+    }
+
+    function downloadExcel(){
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.ipqc), 'PQC');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog');
+      const t=new Date(); XLSX.writeFile(wb, `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`);
+    }
+
+    async function uploadExcel(event){
+      const file = event.target.files?.[0];
+      if(!file) return;
+      try{
+        const ok = confirm('엑셀 데이터 업로드를 진행합니다. 계속하시겠습니까?');
+        if(!ok){ event.target.value=''; return; }
+        const rows = await readWorkbook(file);
+        const totalRows = rows.iqcRows.length + rows.ipqcRows.length + rows.oqcRows.length + rows.supplierRows.length + rows.worklogRows.length;
+        if (totalRows > MAX_UPLOAD_ROWS) throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`);
+        await api.post('/api/import/preview', { ...rows, fileName:file.name });
+        const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`);
+        if(!second){ event.target.value=''; return; }
+        await api.post('/api/import/commit', { ...rows, fileName:file.name });
+        await loadFromServer();
+        showToast('엑셀 반영 완료');
+      } catch (err) {
+        console.error(err);
+        showToast(`엑셀 업로드 실패: ${err.message}`);
+      } finally {
+        event.target.value='';
+      }
+    }
+
+    function readWorkbook(file){
+      return new Promise((resolve, reject) => {
+        const reader=new FileReader();
+        reader.onload = e => {
+          try {
+            const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+            const readSheet = name => wb.SheetNames.includes(name) ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:'' }) : [];
+            resolve({ iqcRows:readSheet('IQC'), ipqcRows:readSheet('PQC'), oqcRows:readSheet('OQC'), supplierRows:readSheet('Suppliers'), worklogRows:readSheet('Worklog') });
+          } catch (err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function openBarcodeModal(){ $('barcodeModal').style.display='flex'; $('barcodeStatus').textContent='생성 대기'; setTimeout(() => $('barcodeValue').focus(), 0); }
+    function closeBarcodeModal(){ $('barcodeModal').style.display='none'; }
+
+    function generateBarcodePreview(){
+      const value = toText($('barcodeValue').value);
+      const format = $('barcodeFormat').value || 'CODE128';
+      const label = toText($('barcodeLabel').value) || value;
+      const height = Number($('barcodeHeight').value || 80);
+      try{
+        if(!value) throw new Error('바코드 값을 입력하세요.');
+        if(format === 'EAN13' && !/^\d{13}$/.test(value)) throw new Error('EAN13은 숫자 13자리여야 합니다.');
+        if(format === 'EAN8' && !/^\d{8}$/.test(value)) throw new Error('EAN8은 숫자 8자리여야 합니다.');
+        JsBarcode('#barcodeSvg', value, { format, lineColor:'#111827', width:2, height, displayValue:true, text:label, fontOptions:'bold', margin:12, background:'#ffffff' });
+        state.lastBarcodeReady = true;
+        $('barcodeStatus').textContent = format + ' 생성 완료';
+        showToast('바코드 생성 완료');
+      } catch(err){
+        state.lastBarcodeReady = false;
+        $('barcodeStatus').textContent = '생성 실패';
+        showToast(err.message || '바코드 생성 실패');
+      }
+    }
+
+    function downloadBarcodePng(){
+      const svg = $('barcodeSvg');
+      if(!svg || !svg.innerHTML.trim() || !state.lastBarcodeReady){ showToast('먼저 바코드를 생성하세요.'); return; }
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], { type:'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      img.onload = function(){
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * 2; canvas.height = img.height * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        const link = document.createElement('a');
+        link.download = (toText($('barcodeValue').value) || 'barcode') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
+    function printBarcodeLabel(){
+      const svg = $('barcodeSvg');
+      if(!svg || !svg.innerHTML.trim() || !state.lastBarcodeReady){ showToast('먼저 바코드를 생성하세요.'); return; }
+      const win = window.open('', '_blank', 'width=520,height=420');
+      if(!win) return;
+      const html = '<!DOCTYPE html><html><head><title>Barcode Print</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fff}.wrap{text-align:center;font-family:Arial,sans-serif}svg{max-width:100%;height:auto}</style></head><body><div class="wrap">' + svg.outerHTML + '</div></body></html>';
+      win.document.write(html); win.document.close();
+      setTimeout(() => { win.print(); setTimeout(() => win.close(), 300); }, 200);
+    }
+
+    async function confirmDeleteAll(){
+      if (String(state.user.role).toLowerCase() !== 'admin') { showToast('관리자만 전체 데이터 삭제가 가능합니다.'); return; }
+      const first = confirm('⚠️ 전체 데이터를 삭제합니다. 진행하시겠습니까?'); if(!first) return;
+      const second = prompt("삭제를 진행하려면 'DELETE'를 입력하세요"); if(second !== 'DELETE'){ showToast('삭제가 취소되었습니다.'); return; }
+      try {
+        await api.post('/api/admin/delete-all', { confirm:'DELETE' });
+        await loadFromServer();
+        showToast('전체 데이터 삭제 완료');
+      } catch (err) {
+        console.error(err);
+        showToast(`데이터 삭제 실패: ${err.message}`);
+      }
+    }
+
+    function refreshDashboard(){
+      refreshWeek();
+      renderOverviewBoard();
+      renderUpgradeHistory();
+      renderTables();
+      renderNonconformTable();
+    }
+
+    function switchTab(name, el){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      $(`panel-${name}`).classList.add('active');
+    }
+
+    async function initApp(){
+      initFilters();
+      tickClock();
+      setInterval(tickClock, 1000);
+      renderTraceEmptyRows();
+      switchAuthMode('login');
+      $('pendingUserBody').innerHTML = `<tr><td colspan="8" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`;
+
+      document.addEventListener('input', e => {
+        if(['reg_qty','reg_fail'].includes(e.target.id)) updateRegisterRate();
+        if(e.target.id === 'traceRawInput') runRawToFinishedTrace();
+        if(e.target.id === 'traceFinishedInput') runFinishedToRawTrace();
+      });
+
+      document.addEventListener('change', e => {
+        if(['yearSel','monthSel','daySel'].includes(e.target.id)) refreshDashboard();
+        if(['reg_qty','reg_fail'].includes(e.target.id)) updateRegisterRate();
+      });
+
+      const authed = await bootstrapUser();
+      if (authed) {
+        await loadFromServer();
+        if (String(state.user.role).toLowerCase() === 'admin') {
+          await loadAllUsers();
+        }
+      }
+    }
+
+    initApp();
+  </script>
+<script>
+async function login() {
+  const emailInput = document.getElementById('authEmail');
+  const passwordInput = document.getElementById('authPassword');
+
+  if (!emailInput || !passwordInput) {
+    alert('입력창 못 찾음');
+    return;
+  }
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || '로그인 실패');
+      return;
+    }
+
+    window.location.reload();
+  } catch (err) {
+    alert('서버 오류');
+  }
+}
+</script>
+</body>
+</html>
+
