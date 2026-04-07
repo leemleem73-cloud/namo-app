@@ -37,10 +37,6 @@ function resolveDbPath() {
     return process.env.DB_PATH.trim();
   }
 
-  if (process.env.RENDER) {
-    return '/tmp/quality.db';
-  }
-
   return path.join(__dirname, 'quality.db');
 }
 
