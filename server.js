@@ -254,22 +254,58 @@ db.serialize(() => {
 });
 app.get('/reset-admin-password-now', async (req, res) => {
   try {
-    const hashed = await bcrypt.hash('1234', 10);
+    const email = 'admin@namochemical.com';
+    const plainPassword = '1234';
+    const hashed = await bcrypt.hash(plainPassword, 10);
 
-    const result = await runAsync(
-      `UPDATE users
-       SET password = ?, role = 'admin', status = 'APPROVED'
-       WHERE email = ?`,
-      [hashed, 'admin@namochemical.com']
+    const existing = await getAsync(
+      `SELECT id, email, role, status FROM users WHERE email = ?`,
+      [email]
     );
 
-    if (!result || result.changes === 0) {
-      return res.send('관리자 계정 없음');
+    if (existing) {
+      await runAsync(
+        `UPDATE users
+         SET password = ?, role = 'admin', status = 'APPROVED'
+         WHERE email = ?`,
+        [hashed, email]
+      );
+
+      const updated = await getAsync(
+        `SELECT id, email, role, status FROM users WHERE email = ?`,
+        [email]
+      );
+
+      return res.json({
+        ok: true,
+        mode: 'updated',
+        message: '기존 관리자 비밀번호가 1234로 초기화되었습니다.',
+        user: updated,
+        dbPath
+      });
     }
 
-    res.send('관리자 비밀번호 1234로 초기화 완료');
+    await runAsync(
+      `INSERT INTO users (name, email, password, department, role, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      ['관리자', email, hashed, '관리부', 'admin', 'APPROVED']
+    );
+
+    const created = await getAsync(
+      `SELECT id, email, role, status FROM users WHERE email = ?`,
+      [email]
+    );
+
+    return res.json({
+      ok: true,
+      mode: 'created',
+      message: '관리자 계정이 새로 생성되었고 비밀번호는 1234입니다.',
+      user: created,
+      dbPath
+    });
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('관리자 초기화 오류:', err);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 // =============================
