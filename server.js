@@ -73,7 +73,12 @@ function normalizeEmail(email) {
 }
 
 function isAdmin(req) {
-  return !!req.session.user && String(req.session.user.role).toLowerCase() === 'admin';
+  console.log('session:', req.session?.user);
+  console.log('user:', req.user);
+
+  return String(
+    req.session?.user?.role || req.user?.role || ''
+  ).toLowerCase() === 'admin';
 }
 
 function runAsync(sql, params = []) {
@@ -458,7 +463,14 @@ app.delete('/api/admin/users/:id', async (req, res) => {
       return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
     }
 
-    await runAsync(`DELETE FROM users WHERE id = ?`, [req.params.id]);
+    const targetId = String(req.params.id);
+    const me = req.session?.user || req.user || {};
+
+    if (String(me.id || '') === targetId) {
+      return res.status(400).json({ error: '본인 계정은 삭제할 수 없습니다.' });
+    }
+
+    await runAsync(`DELETE FROM users WHERE id = ?`, [targetId]);
     res.json({ ok: true, message: '회원 삭제가 완료되었습니다.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
