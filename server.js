@@ -305,22 +305,36 @@ app.post('/api/auth/login', async (req, res) => {
       status: user.status
     };
 
+    console.log('로그인 직전 세션 ID:', req.sessionID);
+    console.log('로그인 직전 세션 user:', req.session.user);
+    console.log('로그인 요청 쿠키:', req.headers.cookie);
+
     req.session.save((saveErr) => {
-      if (saveErr) return res.status(500).json({ error: '세션 저장 실패' });
+      if (saveErr) {
+        console.error('세션 저장 실패:', saveErr);
+        return res.status(500).json({ error: '세션 저장 실패' });
+      }
+
+      console.log('로그인 후 세션 저장 완료:', req.sessionID);
       res.json({ ok: true });
     });
   } catch (err) {
+    console.error('로그인 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.get('/api/auth/me', (req, res) => {
+  console.log('/api/auth/me 세션 ID:', req.sessionID);
+  console.log('/api/auth/me 세션:', req.session);
+  console.log('/api/auth/me 쿠키:', req.headers.cookie);
+
   if (!req.session.user) {
     return res.status(401).json({ error: '로그인 필요' });
   }
+
   res.json(req.session.user);
 });
-
 app.post('/api/auth/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: '로그아웃 실패' });
@@ -355,26 +369,29 @@ app.post('/api/admin/users/:id/approve', async (req, res) => {
       return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
     }
 
-    await runAsync(`UPDATE users SET status = 'APPROVED' WHERE id = ?`, [req.params.id]);
-    res.json({ ok: true, message: '회원 승인이 완료되었습니다.' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+    const result = await runAsync(
+      `UPDATE users SET status = 'APPROVED' WHERE id = ?`,
+      [req.params.id]
+    );
 
-app.post('/api/admin/users/:id/reject', async (req, res) => {
-  try {
-    if (!isAdmin(req)) {
-      return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
+    if (!result || result.changes === 0) {
+      return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
     }
 
-    await runAsync(`UPDATE users SET status = 'REJECTED' WHERE id = ?`, [req.params.id]);
-    res.json({ ok: true, message: '회원 반려가 완료되었습니다.' });
+    const updatedUser = await getAsync(
+      `SELECT id, name, email, department, role, status FROM users WHERE id = ?`,
+      [req.params.id]
+    );
+
+    res.json({
+      ok: true,
+      message: '회원 승인이 완료되었습니다.',
+      user: updatedUser
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 app.delete('/api/admin/users/:id', async (req, res) => {
   try {
     if (!isAdmin(req)) {
