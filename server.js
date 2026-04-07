@@ -252,7 +252,26 @@ db.serialize(() => {
     }
   );
 });
+app.get('/reset-admin-password-now', async (req, res) => {
+  try {
+    const hashed = await bcrypt.hash('1234', 10);
 
+    const result = await runAsync(
+      `UPDATE users
+       SET password = ?, role = 'admin', status = 'APPROVED'
+       WHERE email = ?`,
+      [hashed, 'admin@namochemical.com']
+    );
+
+    if (!result || result.changes === 0) {
+      return res.send('관리자 계정 없음');
+    }
+
+    res.send('관리자 비밀번호 1234로 초기화 완료');
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
 // =============================
 // 메인 페이지
 // =============================
