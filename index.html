@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>나모케미칼 품질관리 시스템</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #eef3f8;
+      --panel: #ffffff;
+      --line: #dbe3ee;
+      --navy: #163a5f;
+      --blue: #1f6fd1;
+      --green: #16825d;
+      --red: #c83d3d;
+      --amber: #b78112;
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .top {
+      background: linear-gradient(135deg, var(--navy), #28598a);
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-size: 30px;
+      font-weight: 800;
+    }
+    .wrap {
+      max-width: 1500px;
+      margin: 18px auto;
+      padding: 0 16px 30px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .tab {
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .tab.active {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    }
+    .card h3 {
+      margin: 0 0 14px;
+      color: var(--navy);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .kpi {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .kpi .value {
+      font-size: 34px;
+      font-weight: 800;
+      margin-top: 8px;
+      color: var(--navy);
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font: inherit;
+    }
+    textarea { min-height: 90px; }
+    button {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.secondary { background: #475569; }
+    button.green { background: var(--green); }
+    button.red { background: var(--red); }
+    button.amber { background: var(--amber); }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .full { grid-column: 1 / -1; }
+    .hidden { display: none !important; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f8fbff;
+      color: var(--navy);
+    }
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .row-actions button {
+      width: auto;
+      padding: 8px 10px;
+    }
+    .status-pass { color: var(--green); font-weight: 800; }
+    .status-fail { color: var(--red); font-weight: 800; }
+    .status-pending { color: var(--amber); font-weight: 800; }
+    .top-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pill {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .msg {
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #edf6ff;
+      color: #1d4f91;
+      border: 1px solid #cfe0f5;
+    }
+    .chart-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 320px;
+    }
+    .chart-canvas {
+      width: 100%;
+      height: 260px !important;
+    }
+    pre {
+      margin: 0;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+    }
+    @media (max-width: 1100px) {
+      .grid-2, .grid-3, .form-grid { grid-template-columns: 1fr; }
+      .full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand">나모케미칼 품질관리 시스템</div>
+    <div class="top-right">
+      <div id="userInfo" class="pill">비로그인</div>
+      <button id="logoutBtn" class="secondary hidden" style="width:auto" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="messageBox"></div>
+
+    <div id="authCard" class="card">
+      <h3>로그인 / 회원가입</h3>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <h3>로그인</h3>
+          <div class="form-grid">
+            <input id="loginEmail" class="full" type="email" placeholder="이메일" />
+            <input id="loginPassword" class="full" type="password" placeholder="비밀번호" />
+            <button class="full" onclick="login()">로그인</button>
+          </div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>회원가입</h3>
+          <div class="form-grid">
+            <input id="signupName" placeholder="이름" />
+            <input id="signupDepartment" placeholder="부서 / 팀" />
+            <input id="signupEmail" class="full" type="email" placeholder="이메일" />
+            <input id="signupPassword" class="full" type="password" placeholder="비밀번호" />
+            <button class="full" onclick="signup()">회원가입 신청</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="appCard" class="hidden">
+      <div class="toolbar">
+        <button style="width:auto" onclick="loadAll()">새로고침</button>
+        <button id="adminRefreshBtn" style="width:auto" class="secondary hidden" onclick="loadUsers()">회원관리 새로고침</button>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('dashboard', this)">대시보드</div>
+        <div class="tab" onclick="switchTab('iqc', this)">수입검사 IQC</div>
+        <div class="tab" onclick="switchTab('pqc', this)">공정검사 PQC</div>
+        <div class="tab" onclick="switchTab('oqc', this)">출하검사 OQC</div>
+        <div class="tab" onclick="switchTab('worklog', this)">생산작업일지</div>
+        <div class="tab" onclick="switchTab('trace', this)">LOT 추적</div>
+        <div class="tab" onclick="switchTab('ncr', this)">NCR 관리</div>
+        <div class="tab" onclick="switchTab('notice', this)">공지사항</div>
+        <div id="adminTab" class="tab hidden" onclick="switchTab('users', this)">회원관리</div>
+      </div>
+
+      <div id="panel-dashboard" class="panel active">
+        <div class="grid-3">
+          <div class="card chart-wrap">
+            <h3>수입검사 (IQC) 합격률 (1월~12월)</h3>
+            <canvas id="iqcChart" class="chart-canvas"></canvas>
+          </div>
+          <div class="card chart-wrap">
+            <h3>공정검사 (PQC) 합격률 (1월~12월)</h3>
+            <canvas id="pqcChart" class="chart-canvas"></canvas>
+          </div>
+          <div class="card chart-wrap">
+            <h3>출하검사 (OQC) 합격률 (1월~12월)</h3>
+            <canvas id="oqcChart" class="chart-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="kpi"><div class="label">IQC 총 검사건수</div><div id="kpiIqcTotal" class="value">0</div></div>
+          <div class="kpi"><div class="label">PQC 총 검사건수</div><div id="kpiPqcTotal" class="value">0</div></div>
+          <div class="kpi"><div class="label">OQC 총 검사건수</div><div id="kpiOqcTotal" class="value">0</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>NCR 상태 요약</h3>
+            <table>
+              <tbody>
+                <tr><th>전체</th><td id="kpiNcrTotal">0</td></tr>
+                <tr><th>대기</th><td id="kpiNcrWaiting">0</td></tr>
+                <tr><th>진행중</th><td id="kpiNcrProgress">0</td></tr>
+                <tr><th>완료</th><td id="kpiNcrDone">0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3>최근 공지 5건</h3>
+            <table>
+              <thead><tr><th>제목</th><th>등록일</th></tr></thead>
+              <tbody id="dashboardNoticeBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-iqc" class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>IQC 등록</h3>
+            <div class="form-grid">
+              <input id="iqcDate" type="date" />
+              <input id="iqcLot" placeholder="LOT No" />
+              <input id="iqcSupplier" placeholder="업체명" />
+              <input id="iqcItem" placeholder="원료명" />
+              <input id="iqcInspector" placeholder="검사자" />
+              <input id="iqcQty" type="number" placeholder="검사수량" />
+              <input id="iqcFailQty" type="number" placeholder="불량수량" />
+              <select id="iqcResult">
+                <option>합격</option>
+                <option>불합격</option>
+              </select>
+              <button class="full" onclick="saveIqc()">저장</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>IQC 목록</h3>
+            <table>
+              <thead><tr><th>일자</th><th>LOT</th><th>업체</th><th>품목</th><th>판정</th><th>관리</th></tr></thead>
+              <tbody id="iqcBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-pqc" class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>PQC 등록</h3>
+            <div class="form-grid">
+              <input id="pqcDate" type="date" />
+              <input id="pqcProduct" placeholder="제품명" />
+              <input id="pqcLot" placeholder="LOT No" />
+              <input id="pqcVisual" placeholder="육안검사" />
+              <input id="pqcViscosity" placeholder="점도" />
+              <input id="pqcSolid" placeholder="고형분" />
+              <input id="pqcParticle" placeholder="입도" />
+              <input id="pqcQty" type="number" placeholder="검사수량" />
+              <input id="pqcFailQty" type="number" placeholder="불량수량" />
+              <select id="pqcResult">
+                <option>합격</option>
+                <option>불합격</option>
+              </select>
+              <button class="full" onclick="savePqc()">저장</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>PQC 목록</h3>
+            <table>
+              <thead><tr><th>일자</th><th>LOT</th><th>제품</th><th>판정</th><th>관리</th></tr></thead>
+              <tbody id="pqcBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-oqc" class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>OQC 등록</h3>
+            <div class="form-grid">
+              <input id="oqcDate" type="date" />
+              <input id="oqcCustomer" placeholder="고객사" />
+              <input id="oqcProduct" placeholder="제품명" />
+              <input id="oqcLot" placeholder="LOT No" />
+              <input id="oqcVisual" placeholder="육안검사" />
+              <input id="oqcViscosity" placeholder="점도" />
+              <input id="oqcSolid" placeholder="고형분" />
+              <input id="oqcParticle" placeholder="입도" />
+              <input id="oqcQty" type="number" placeholder="검사수량" />
+              <input id="oqcFailQty" type="number" placeholder="불량수량" />
+              <select id="oqcResult">
+                <option>합격</option>
+                <option>불합격</option>
+              </select>
+              <button class="full" onclick="saveOqc()">저장</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>OQC 목록</h3>
+            <table>
+              <thead><tr><th>일자</th><th>LOT</th><th>제품</th><th>판정</th><th>관리</th></tr></thead>
+              <tbody id="oqcBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-worklog" class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>생산작업일지 등록</h3>
+            <div class="form-grid">
+              <input id="workDate" type="date" />
+              <input id="workFinishedLot" placeholder="완제품 LOT" />
+              <input id="workSeq" placeholder="투입순서" />
+              <input id="workMaterial" placeholder="원자재명" />
+              <input id="workSupName" placeholder="공급업체" />
+              <input id="workQty" placeholder="투입량" />
+              <input id="workRatio" placeholder="투입비율" />
+              <input id="workLotNo" placeholder="원자재 LOT" />
+              <input id="workTime" type="time" />
+              <input id="workWorker" placeholder="작업자" />
+              <textarea id="workNote" class="full" placeholder="비고"></textarea>
+              <button class="full" onclick="saveWorklog()">저장</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>생산작업일지 목록</h3>
+            <table>
+              <thead><tr><th>일자</th><th>완제품 LOT</th><th>원자재</th><th>원자재 LOT</th><th>작업자</th></tr></thead>
+              <tbody id="worklogBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-trace" class="panel">
+        <div class="card">
+          <h3>LOT 추적</h3>
+          <div class="form-grid">
+            <input id="traceLotNo" class="full" placeholder="조회할 LOT No 입력" />
+            <button class="full" onclick="traceLot()">조회</button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h3>IQC</h3><pre id="traceIqc" style="white-space:pre-wrap"></pre></div>
+          <div class="card"><h3>PQC</h3><pre id="tracePqc" style="white-space:pre-wrap"></pre></div>
+          <div class="card"><h3>OQC</h3><pre id="traceOqc" style="white-space:pre-wrap"></pre></div>
+          <div class="card"><h3>작업일지 / NCR</h3><pre id="traceEtc" style="white-space:pre-wrap"></pre></div>
+        </div>
+      </div>
+
+      <div id="panel-ncr" class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>NCR 등록</h3>
+            <div class="form-grid">
+              <input id="ncrDate" type="date" />
+              <input id="ncrCategory" placeholder="구분" />
+              <input id="ncrLotNo" placeholder="LOT No" />
+              <input id="ncrItemName" placeholder="품목명" />
+              <input id="ncrIssueText" class="full" placeholder="부적합 내용" />
+              <input id="ncrCauseText" class="full" placeholder="원인" />
+              <input id="ncrActionText" class="full" placeholder="조치내용" />
+              <input id="ncrOwner" placeholder="담당자" />
+              <select id="ncrStatus">
+                <option>대기</option>
+                <option>진행중</option>
+                <option>완료</option>
+              </select>
+              <button class="full" onclick="saveNcr()">저장</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>NCR 목록</h3>
+            <table>
+              <thead><tr><th>일자</th><th>LOT</th><th>품목</th><th>상태</th><th>관리</th></tr></thead>
+              <tbody id="ncrBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-notice" class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>공지 등록</h3>
+            <div class="form-grid">
+              <input id="noticeTitle" class="full" placeholder="제목" />
+              <textarea id="noticeContent" class="full" placeholder="내용"></textarea>
+              <button class="full" onclick="saveNotice()">공지 저장</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>공지 목록</h3>
+            <table>
+              <thead><tr><th>제목</th><th>내용</th><th>등록일</th></tr></thead>
+              <tbody id="noticeBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-users" class="panel">
+        <div class="card">
+          <h3>회원 승인 관리</h3>
+          <table>
+            <thead><tr><th>ID</th><th>이름</th><th>이메일</th><th>부서</th><th>권한</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead>
+            <tbody id="userBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let iqcChart = null;
+    let pqcChart = null;
+    let oqcChart = null;
+
+    async function request(url, options = {}) {
+      const isFormData = options.body instanceof FormData;
+      const res = await fetch(url, {
+        credentials: 'include',
+        headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+        ...options
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || '요청 실패');
+      return data;
+    }
+
+    function msg(text) {
+      const box = document.getElementById('messageBox');
+      box.innerHTML = `<div class="msg">${text}</div>`;
+      setTimeout(() => { box.innerHTML = ''; }, 2500);
+    }
+
+    function setUserInfo() {
+      document.getElementById('userInfo').textContent = currentUser ? `${currentUser.name} (${currentUser.role})` : '비로그인';
+      document.getElementById('logoutBtn').classList.toggle('hidden', !currentUser);
+      document.getElementById('authCard').classList.toggle('hidden', !!currentUser);
+      document.getElementById('appCard').classList.toggle('hidden', !currentUser);
+      const isAdmin = currentUser && String(currentUser.role).toLowerCase() === 'admin';
+      document.getElementById('adminTab').classList.toggle('hidden', !isAdmin);
+      document.getElementById('adminRefreshBtn').classList.toggle('hidden', !isAdmin);
+    }
+
+    function switchTab(name, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(`panel-${name}`).classList.add('active');
+    }
+
+    function makeMonthlyRate(rows) {
+      const months = Array.from({ length: 12 }, (_, i) => i + 1);
+      return months.map(month => {
+        const monthRows = rows.filter(r => {
+          const d = String(r.inspectDate || '');
+          if (!d) return false;
+          const parts = d.split('-');
+          return Number(parts[1]) === month;
+        });
+
+        if (!monthRows.length) return 0;
+
+        const pass = monthRows.filter(r => String(r.result || '') === '합격').length;
+        return Number(((pass / monthRows.length) * 100).toFixed(1));
+      });
+    }
+
+    function drawLineChart(canvasId, label, data, color) {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return null;
+
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+          datasets: [{
+            label,
+            data,
+            borderColor: color,
+            backgroundColor: color,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 4,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: value => value + '%'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    async function bootstrap() {
+      try {
+        currentUser = await request('/api/auth/me');
+      } catch (_) {
+        currentUser = null;
+      }
+      setUserInfo();
+      if (currentUser) {
+        await loadAll();
+      }
+    }
+
+    async function loadAll() {
+      await Promise.all([
+        loadDashboard(),
+        loadIqc(),
+        loadPqc(),
+        loadOqc(),
+        loadWorklog(),
+        loadNcr(),
+        loadNotices(),
+        (currentUser && currentUser.role === 'admin') ? loadUsers() : Promise.resolve()
+      ]);
+    }
+
+    async function signup() {
+      try {
+        await request('/api/auth/signup', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: document.getElementById('signupName').value,
+            email: document.getElementById('signupEmail').value,
+            password: document.getElementById('signupPassword').value,
+            department: document.getElementById('signupDepartment').value
+          })
+        });
+        msg('회원가입 신청 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function login() {
+      try {
+        await request('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+          })
+        });
+        await bootstrap();
+        msg('로그인 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function logout() {
+      await request('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });
+      currentUser = null;
+      setUserInfo();
+      msg('로그아웃 완료');
+    }
+
+    async function loadDashboard() {
+      const [summary, iqcRows, pqcRows, oqcRows] = await Promise.all([
+        request('/api/dashboard/summary'),
+        request('/api/iqc'),
+        request('/api/pqc'),
+        request('/api/oqc')
+      ]);
+
+      document.getElementById('kpiIqcTotal').textContent = summary.iqc.total;
+      document.getElementById('kpiPqcTotal').textContent = summary.pqc.total;
+      document.getElementById('kpiOqcTotal').textContent = summary.oqc.total;
+      document.getElementById('kpiNcrTotal').textContent = summary.ncr.total;
+      document.getElementById('kpiNcrWaiting').textContent = summary.ncr.waiting;
+      document.getElementById('kpiNcrProgress').textContent = summary.ncr.progress;
+      document.getElementById('kpiNcrDone').textContent = summary.ncr.done;
+      document.getElementById('dashboardNoticeBody').innerHTML =
+        summary.notices.map(row => `<tr><td>${row.title || ''}</td><td>${row.createdAt || ''}</td></tr>`).join('');
+
+      const iqcMonthly = makeMonthlyRate(iqcRows);
+      const pqcMonthly = makeMonthlyRate(pqcRows);
+      const oqcMonthly = makeMonthlyRate(oqcRows);
+
+      if (iqcChart) iqcChart.destroy();
+      if (pqcChart) pqcChart.destroy();
+      if (oqcChart) oqcChart.destroy();
+
+      iqcChart = drawLineChart('iqcChart', '수입검사 합격률', iqcMonthly, '#2563eb');
+      pqcChart = drawLineChart('pqcChart', '공정검사 합격률', pqcMonthly, '#16a34a');
+      oqcChart = drawLineChart('oqcChart', '출하검사 합격률', oqcMonthly, '#d97706');
+    }
+
+    async function loadIqc() {
+      const rows = await request('/api/iqc');
+      document.getElementById('iqcBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.inspectDate || ''}</td>
+          <td>${row.lotNo || ''}</td>
+          <td>${row.supplier || ''}</td>
+          <td>${row.itemName || ''}</td>
+          <td class="${row.result === '합격' ? 'status-pass' : 'status-fail'}">${row.result || ''}</td>
+          <td class="row-actions"><button class="red" onclick="deleteIqc(${row.id})">삭제</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveIqc() {
+      try {
+        await request('/api/iqc', {
+          method: 'POST',
+          body: JSON.stringify({
+            inspectDate: document.getElementById('iqcDate').value,
+            lotNo: document.getElementById('iqcLot').value,
+            supplier: document.getElementById('iqcSupplier').value,
+            itemName: document.getElementById('iqcItem').value,
+            inspector: document.getElementById('iqcInspector').value,
+            qty: document.getElementById('iqcQty').value,
+            failQty: document.getElementById('iqcFailQty').value,
+            result: document.getElementById('iqcResult').value
+          })
+        });
+        await loadIqc();
+        await loadDashboard();
+        msg('IQC 저장 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function deleteIqc(id) {
+      await request(`/api/iqc/${id}`, { method: 'DELETE' });
+      await loadIqc();
+      await loadDashboard();
+    }
+
+    async function loadPqc() {
+      const rows = await request('/api/pqc');
+      document.getElementById('pqcBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.inspectDate || ''}</td>
+          <td>${row.lotNo || ''}</td>
+          <td>${row.productName || ''}</td>
+          <td class="${row.result === '합격' ? 'status-pass' : 'status-fail'}">${row.result || ''}</td>
+          <td class="row-actions"><button class="red" onclick="deletePqc(${row.id})">삭제</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function savePqc() {
+      try {
+        await request('/api/pqc', {
+          method: 'POST',
+          body: JSON.stringify({
+            inspectDate: document.getElementById('pqcDate').value,
+            productName: document.getElementById('pqcProduct').value,
+            lotNo: document.getElementById('pqcLot').value,
+            visual: document.getElementById('pqcVisual').value,
+            viscosity: document.getElementById('pqcViscosity').value,
+            solid: document.getElementById('pqcSolid').value,
+            particle: document.getElementById('pqcParticle').value,
+            qty: document.getElementById('pqcQty').value,
+            failQty: document.getElementById('pqcFailQty').value,
+            result: document.getElementById('pqcResult').value
+          })
+        });
+        await loadPqc();
+        await loadDashboard();
+        msg('PQC 저장 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function deletePqc(id) {
+      await request(`/api/pqc/${id}`, { method: 'DELETE' });
+      await loadPqc();
+      await loadDashboard();
+    }
+
+    async function loadOqc() {
+      const rows = await request('/api/oqc');
+      document.getElementById('oqcBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.inspectDate || ''}</td>
+          <td>${row.lotNo || ''}</td>
+          <td>${row.productName || ''}</td>
+          <td class="${row.result === '합격' ? 'status-pass' : 'status-fail'}">${row.result || ''}</td>
+          <td class="row-actions"><button class="red" onclick="deleteOqc(${row.id})">삭제</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveOqc() {
+      try {
+        await request('/api/oqc', {
+          method: 'POST',
+          body: JSON.stringify({
+            inspectDate: document.getElementById('oqcDate').value,
+            customer: document.getElementById('oqcCustomer').value,
+            productName: document.getElementById('oqcProduct').value,
+            lotNo: document.getElementById('oqcLot').value,
+            visual: document.getElementById('oqcVisual').value,
+            viscosity: document.getElementById('oqcViscosity').value,
+            solid: document.getElementById('oqcSolid').value,
+            particle: document.getElementById('oqcParticle').value,
+            qty: document.getElementById('oqcQty').value,
+            failQty: document.getElementById('oqcFailQty').value,
+            result: document.getElementById('oqcResult').value
+          })
+        });
+        await loadOqc();
+        await loadDashboard();
+        msg('OQC 저장 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function deleteOqc(id) {
+      await request(`/api/oqc/${id}`, { method: 'DELETE' });
+      await loadOqc();
+      await loadDashboard();
+    }
+
+    async function loadWorklog() {
+      const rows = await request('/api/worklog');
+      document.getElementById('worklogBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.workDate || ''}</td>
+          <td>${row.finishedLot || ''}</td>
+          <td>${row.material || ''}</td>
+          <td>${row.lotNo || ''}</td>
+          <td>${row.worker || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveWorklog() {
+      try {
+        await request('/api/worklog', {
+          method: 'POST',
+          body: JSON.stringify({
+            workDate: document.getElementById('workDate').value,
+            finishedLot: document.getElementById('workFinishedLot').value,
+            seq: document.getElementById('workSeq').value,
+            material: document.getElementById('workMaterial').value,
+            supName: document.getElementById('workSupName').value,
+            inputQty: document.getElementById('workQty').value,
+            inputRatio: document.getElementById('workRatio').value,
+            lotNo: document.getElementById('workLotNo').value,
+            inputTime: document.getElementById('workTime').value,
+            worker: document.getElementById('workWorker').value,
+            note: document.getElementById('workNote').value
+          })
+        });
+        await loadWorklog();
+        msg('작업일지 저장 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function loadNcr() {
+      const rows = await request('/api/ncr');
+      document.getElementById('ncrBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.issueDate || ''}</td>
+          <td>${row.lotNo || ''}</td>
+          <td>${row.itemName || ''}</td>
+          <td class="${row.status === '완료' ? 'status-pass' : row.status === '진행중' ? 'status-pending' : 'status-fail'}">${row.status || ''}</td>
+          <td class="row-actions"><button class="red" onclick="deleteNcr(${row.id})">삭제</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveNcr() {
+      try {
+        await request('/api/ncr', {
+          method: 'POST',
+          body: JSON.stringify({
+            issueDate: document.getElementById('ncrDate').value,
+            category: document.getElementById('ncrCategory').value,
+            lotNo: document.getElementById('ncrLotNo').value,
+            itemName: document.getElementById('ncrItemName').value,
+            issueText: document.getElementById('ncrIssueText').value,
+            causeText: document.getElementById('ncrCauseText').value,
+            actionText: document.getElementById('ncrActionText').value,
+            owner: document.getElementById('ncrOwner').value,
+            status: document.getElementById('ncrStatus').value
+          })
+        });
+        await loadNcr();
+        await loadDashboard();
+        msg('NCR 저장 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function deleteNcr(id) {
+      await request(`/api/ncr/${id}`, { method: 'DELETE' });
+      await loadNcr();
+      await loadDashboard();
+    }
+
+    async function loadNotices() {
+      const rows = await request('/api/notices');
+      document.getElementById('noticeBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.title || ''}</td>
+          <td>${row.content || ''}</td>
+          <td>${row.createdAt || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveNotice() {
+      try {
+        await request('/api/notices', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: document.getElementById('noticeTitle').value,
+            content: document.getElementById('noticeContent').value
+          })
+        });
+        await loadNotices();
+        await loadDashboard();
+        msg('공지 저장 완료');
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    async function loadUsers() {
+      const rows = await request('/api/admin/users');
+      document.getElementById('userBody').innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.id}</td>
+          <td>${row.name}</td>
+          <td>${row.email}</td>
+          <td>${row.department || ''}</td>
+          <td>${row.role}</td>
+          <td class="${row.status === 'APPROVED' ? 'status-pass' : row.status === 'REJECTED' ? 'status-fail' : 'status-pending'}">${row.status}</td>
+          <td>${row.createdAt || ''}</td>
+          <td class="row-actions">
+            <button class="green" onclick="approveUser(${row.id})">승인</button>
+            <button class="amber" onclick="rejectUser(${row.id})">반려</button>
+            <button class="red" onclick="deleteUser(${row.id})">삭제</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function approveUser(id) {
+      await request(`/api/admin/users/${id}/approve`, { method: 'POST', body: JSON.stringify({}) });
+      await loadUsers();
+      msg('회원 승인 완료');
+    }
+
+    async function rejectUser(id) {
+      await request(`/api/admin/users/${id}/reject`, { method: 'POST', body: JSON.stringify({}) });
+      await loadUsers();
+      msg('회원 반려 완료');
+    }
+
+    async function deleteUser(id) {
+      await request(`/api/admin/users/${id}`, { method: 'DELETE' });
+      await loadUsers();
+      msg('회원 삭제 완료');
+    }
+
+    async function traceLot() {
+      try {
+        const lotNo = document.getElementById('traceLotNo').value.trim();
+        if (!lotNo) return msg('LOT 번호를 입력하세요.');
+        const data = await request(`/api/trace/${encodeURIComponent(lotNo)}`);
+        document.getElementById('traceIqc').textContent = JSON.stringify(data.iqc, null, 2);
+        document.getElementById('tracePqc').textContent = JSON.stringify(data.pqc, null, 2);
+        document.getElementById('traceOqc').textContent = JSON.stringify(data.oqc, null, 2);
+        document.getElementById('traceEtc').textContent = JSON.stringify({ worklog: data.worklog, ncr: data.ncr }, null, 2);
+      } catch (err) {
+        msg(err.message);
+      }
+    }
+
+    bootstrap();
+  </script>
+</body>
+</html>
