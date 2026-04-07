@@ -343,6 +343,66 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
+app.post('/api/auth/find-id', async (req, res) => {
+  try {
+    const { name, department } = req.body;
+
+    if (!name || !department) {
+      return res.status(400).json({ error: '이름과 부서를 입력하세요.' });
+    }
+
+    const user = await getAsync(
+      `SELECT email FROM users WHERE name = ? AND department = ?`,
+      [name, department]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: '일치하는 계정을 찾을 수 없습니다.' });
+    }
+
+    res.json({ ok: true, email: user.email });
+  } catch (err) {
+    console.error('ID 찾기 오류:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/change-password', async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ error: '값 누락' });
+    }
+
+    const user = await getAsync(
+      `SELECT * FROM users WHERE email = ?`,
+      [normalizeEmail(email)]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: '사용자 없음' });
+    }
+
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok) {
+      return res.status(401).json({ error: '현재 비밀번호 틀림' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await runAsync(
+      `UPDATE users SET password = ? WHERE email = ?`,
+      [hashed, normalizeEmail(email)]
+    );
+
+    res.json({ ok: true, message: '비밀번호 변경 완료' });
+  } catch (err) {
+    console.error('비밀번호 변경 오류:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // =============================
 // 관리자 회원 관리
 // =============================
