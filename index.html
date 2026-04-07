@@ -512,6 +512,16 @@
 
   <div class="auth-footer">
     <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
+
+  <div style="display:flex; gap:12px; margin-top:20px; margin-bottom:20px;">
+  <button type="button" onclick="findUserId()" style="padding:10px 18px; border:none; border-radius:10px; background:#e9eef7; color:#163d6b; font-weight:700; cursor:pointer;">
+    ID 찾기
+  </button>
+
+  <button type="button" onclick="changePassword()" style="padding:10px 18px; border:none; border-radius:10px; background:#e9eef7; color:#163d6b; font-weight:700; cursor:pointer;">
+    비번 변경하기
+  </button>
+</div>
     <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
   </div>
 </section>
@@ -1847,6 +1857,54 @@ async function login() {
     window.location.reload();
   } catch (err) {
     alert('서버 오류');
+  }
+}
+</script>
+<script>
+async function findUserId() {
+  const name = prompt('이름 입력');
+  if (!name) return;
+
+  const department = prompt('부서 입력');
+  if (!department) return;
+
+  const res = await fetch('/api/auth/find-id', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, department })
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    alert('ID(이메일): ' + data.email);
+  } else {
+    alert(data.error || '찾기 실패');
+  }
+}
+
+async function changePassword() {
+  const email = prompt('아이디(이메일)');
+  if (!email) return;
+
+  const currentPassword = prompt('현재 비밀번호');
+  if (!currentPassword) return;
+
+  const newPassword = prompt('새 비밀번호');
+  if (!newPassword) return;
+
+  const res = await fetch('/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, currentPassword, newPassword })
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    alert('비밀번호 변경 완료');
+  } else {
+    alert(data.error || '실패');
   }
 }
 </script>
