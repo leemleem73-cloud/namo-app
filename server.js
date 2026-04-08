@@ -236,7 +236,7 @@ db.serialize(() => {
       }
 
       try {
-        const hashed = await bcrypt.hash('1234', 10);
+        const hashed = await bcrypt.hash('Admin1234!', 10);
         db.run(
           `INSERT INTO users (name, email, password, department, role, status)
            VALUES (?, ?, ?, ?, ?, ?)`,
