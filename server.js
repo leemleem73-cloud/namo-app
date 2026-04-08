@@ -553,8 +553,8 @@ app.post('/api/iqc', async (req, res) => {
         data.supplier || '',
         data.item || '',
         data.inspector || '',
-        data.qty || 0,
-        data.fail || 0
+        Number(data.qty ?? 0),
+        Number(data.fail ?? 0)
       ]
     );
     res.json({ ok: true, id: data.id });
@@ -608,25 +608,25 @@ app.get('/api/pqc', async (req, res) => {
   }
 });
 
-app.post('/api/ipqc', async (req, res) => {
+app.post('/api/pqc', async (req, res) => {
   try {
     const data = { id: `ipqc_${Date.now()}`, ...req.body };
     await runAsync(
       `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-     [
-  data.id,
-  data.date || '',
-  data.product || '',
-  data.lot || '',
-  data.visual || '',
-  data.viscosity || '',
-  data.solid || '',
-  data.particle || '',
-  Number(data.qty) || 0,
-  Number(data.fail) || 0,
-  data.judge || '합격'
-]
+      [
+        data.id,
+        data.date || '',
+        data.product || '',
+        data.lot || '',
+        data.visual || '',
+        data.viscosity || '',
+        data.solid || '',
+        data.particle || '',
+        Number(data.qty ?? 0),
+        Number(data.fail ?? 0),
+        data.judge || '합격'
+      ]
     );
     res.json({ ok: true, id: data.id });
   } catch (err) {
@@ -649,8 +649,8 @@ app.put('/api/pqc/:id', async (req, res) => {
         d.viscosity || '',
         d.solid || '',
         d.particle || '',
-        d.qty || 0,
-        d.fail || 0,
+        Number(data.qty) || 0,
+        Number(data.fail) || 0
         d.judge || '합격',
         req.params.id
       ]
@@ -733,8 +733,8 @@ app.put('/api/oqc/:id', async (req, res) => {
         d.resistance || '',
         d.swelling || '',
         d.moisture || '',
-        d.qty || 0,
-        d.fail || 0,
+        Number(d.qty ?? 0),
+        Number(d.fail ?? 0),
         d.judge || '합격',
         req.params.id
       ]
