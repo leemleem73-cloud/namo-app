@@ -119,7 +119,11 @@ db.serialize(() => {
       status TEXT DEFAULT 'PENDING'
     )
   `);
-
+db.run(`ALTER TABLE users ADD COLUMN title TEXT DEFAULT 'staff'`, (err) => {
+    if (err && !String(err.message).includes('duplicate column name')) {
+      console.error('title 컬럼 추가 실패:', err.message);
+    }
+  });
   db.run(`
     CREATE TABLE IF NOT EXISTS iqc (
       id TEXT PRIMARY KEY,
