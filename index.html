@@ -257,6 +257,31 @@
   </div>
 </div>
   <script>
+function openChangePasswordModal(){
+  $('changePasswordModal').style.display = 'flex';
+}
+
+function closeChangePasswordModal(){
+  $('changePasswordModal').style.display = 'none';
+}
+
+async function changePassword(){
+  const pw = $('newPassword').value;
+  const confirm = $('confirmPassword').value;
+
+  if(!pw) return showToast('비밀번호를 입력하세요.');
+  if(pw !== confirm) return showToast('비밀번호가 일치하지 않습니다.');
+
+  try{
+    await api.post('/api/auth/change-password', { password: pw });
+
+    showToast('비밀번호가 변경되었습니다.');
+    closeChangePasswordModal();
+
+  }catch(err){
+    showToast(err.message);
+  }
+}    
  const API = {
   me:'/api/auth/me',
   login:'/api/auth/login',
