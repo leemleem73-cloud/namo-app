@@ -342,7 +342,37 @@ app.post('/api/auth/signup', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.post('/api/auth/change-password', async (req, res) => {
+  try {
+    const { newPassword, confirmPassword } = req.body;
 
+    const userId = req.session?.user?.id || req.session?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    if (!newPassword) {
+      return res.status(400).json({ error: '비밀번호 입력하세요.' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: '비밀번호 불일치' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await runAsync(
+      `UPDATE users SET password = ? WHERE id = ?`,
+      [hashed, userId]
+    );
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
