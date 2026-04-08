@@ -405,6 +405,8 @@ async function changePassword(){
   const signup = mode === 'signup';
 
   $('showLoginBtn').classList.toggle('active', !signup);
+  $('showSignupBtn').classList.toggle('active', signup);    
+      
   $('authModeBadge').textContent = signup ? '회원가입' : '로그인';
   $('authTitle').textContent = signup ? '품질 대시보드 계정 신청' : '다시 오신 것을 환영합니다';
   $('authSubtitle').textContent = signup
