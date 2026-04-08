@@ -454,7 +454,19 @@
     function runRawToFinishedTrace(){ const keyword=safe($('traceRawInput').value); if(!keyword){ renderTraceEmpty(); return; } const rows=(state.db.worklogs||[]).filter(w=>safe(w.lotNo).includes(keyword)); $('traceRawBody').innerHTML = rows.length ? rows.map(w=>`<tr><td>${escapeHtml(w.finishedLot || '-')}</td><td>${escapeHtml(w.material)}</td><td>${escapeHtml(w.supName || '-')}</td><td>${escapeHtml(w.workDate)}</td></tr>`).join('') : '<tr><td colspan="4">조회 결과 없음</td></tr>'; }
     function runFinishedToRawTrace(){ const keyword=safe($('traceFinishedInput').value); if(!keyword){ renderTraceEmpty(); return; } const rows=(state.db.worklogs||[]).filter(w=>safe(w.finishedLot).includes(keyword)); $('traceFinishedBody').innerHTML = rows.length ? rows.map(w=>`<tr><td>${escapeHtml(w.material)}</td><td>${escapeHtml(w.lotNo)}</td><td>${escapeHtml(w.supName || '-')}</td><td>${escapeHtml(w.worker || '-')}</td></tr>`).join('') : '<tr><td colspan="4">조회 결과 없음</td></tr>'; }
     function clearTrace(which){ if(which==='raw') $('traceRawInput').value=''; else $('traceFinishedInput').value=''; renderTraceEmpty(); }
+    async function resetPassword(id){
+  if(!confirm('비밀번호를 초기화하시겠습니까? (초기 비밀번호: 1234)')) return;
 
+  try{
+    await api.post(`${API.users}/${id}/reset-password`, {
+      password: '1234'
+    });
+
+    showToast('비밀번호가 1234로 초기화되었습니다.');
+  }catch(err){
+    showToast(err.message);
+  }
+}
     function sampleStd(values){ const n=values.length; if(n<=1) return 0; const mean=values.reduce((a,b)=>a+b,0)/n; const variance=values.reduce((a,b)=>a+Math.pow(b-mean,2),0)/(n-1); return Math.sqrt(variance); }
     function cpValue(lsl,usl,std){ return (!std||std<=0)?0:(usl-lsl)/(6*std); }
     function cpkValue(lsl,usl,mean,std){ if(!std||std<=0) return 0; return Math.min((usl-mean)/(3*std),(mean-lsl)/(3*std)); }
