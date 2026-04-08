@@ -178,10 +178,41 @@
 
         <section id="panel-trace" class="panel"><div class="trace-wrap"><div class="trace-card"><div class="trace-head"><h3>원자재 → 완제품</h3><p>부품 LOT 기준으로 연결된 완제품을 조회합니다.</p></div><div class="trace-body"><div class="trace-search"><div class="trace-label">원자재 LOT</div><input id="traceRawInput" class="trace-input" placeholder="예: RAW-001"><div class="trace-tools"><button class="btn b1" onclick="runRawToFinishedTrace()">조회</button><button class="btn b2" onclick="clearTrace('raw')">초기화</button></div></div><div class="table"><table><thead><tr><th>완제품 LOT</th><th>원자재명</th><th>공급업체</th><th>생산일자</th></tr></thead><tbody id="traceRawBody"></tbody></table></div></div></div><div class="trace-card"><div class="trace-head"><h3>완제품 → 원자재</h3><p>완제품 LOT 기준으로 투입 원자재를 역추적합니다.</p></div><div class="trace-body"><div class="trace-search"><div class="trace-label">완제품 LOT</div><input id="traceFinishedInput" class="trace-input" placeholder="예: FIN-001"><div class="trace-tools"><button class="btn b3" onclick="runFinishedToRawTrace()">조회</button><button class="btn b2" onclick="clearTrace('finished')">초기화</button></div></div><div class="table"><table><thead><tr><th>원자재명</th><th>원자재 LOT</th><th>공급업체</th><th>작업자</th></tr></thead><tbody id="traceFinishedBody"></tbody></table></div></div></div></div></section>
 
-        <section id="panel-members" class="panel"><div class="card"><div class="head"><div class="title">전체회원관리</div><div class="badge" id="pendingUserCount">0명</div></div><div class="table"><table><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>부서</th><th>직책</th><th>권한</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead><tbody id="memberBody"></tbody></table></div></div></section>
-      </div>
+    <section id="panel-members" class="panel">
+
+  <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+    <button class="btn b2" onclick="openChangePasswordModal()">
+      비밀번호 변경
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="head">
+      <div class="title">전체회원관리</div>
+      <div class="badge" id="pendingUserCount">0명</div>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>이름</th>
+            <th>이메일</th>
+            <th>부서</th>
+            <th>직책</th>
+            <th>권한</th>
+            <th>상태</th>
+            <th>가입일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="memberBody"></tbody>
+      </table>
     </div>
   </div>
+
+</section>
 
   <div id="inspectionModal" class="modal-bg"><div class="modal"><h3 id="inspectionModalTitle">검사 등록</h3><input type="hidden" id="inspectionType"><input type="hidden" id="inspectionId"><div id="inspectionFields"></div><div class="actions"><button class="btn b2" onclick="closeInspectionModal()">취소</button><button class="btn b1" onclick="saveInspectionModal()">저장</button></div></div></div>
   <div id="ncrModal" class="modal-bg"><div class="modal"><h3>NCR 등록</h3><input type="hidden" id="ncrId"><div class="form-grid"><div class="field"><label>발생일</label><input id="ncr_date" type="date"></div><div class="field"><label>공정</label><select id="ncr_process"><option>IQC</option><option>PQC</option><option>OQC</option></select></div><div class="field"><label>LOT 번호</label><input id="ncr_lot"></div><div class="field"><label>품목명</label><input id="ncr_item"></div><div class="field"><label>불량 유형</label><input id="ncr_type"></div><div class="field"><label>불량 수량</label><input id="ncr_qty" type="number" min="0" value="0"></div><div class="field"><label>부적합 내용</label><textarea id="ncr_content"></textarea></div><div class="field"><label>원인 분석</label><textarea id="ncr_cause"></textarea></div><div class="field"><label>조치 내용</label><textarea id="ncr_action"></textarea></div><div class="field"><label>담당자</label><input id="ncr_owner"></div><div class="field"><label>재발 여부</label><select id="ncr_repeat"><option>정상</option><option>재발</option></select></div><div class="field"><label>상태</label><select id="ncr_status"><option>DRAFT</option><option>REVIEW</option><option>APPROVED</option><option>완료</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeNcrModal()">취소</button><button class="btn b1" onclick="saveNcrModal()">저장</button></div></div></div>
