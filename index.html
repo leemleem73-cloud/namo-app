@@ -378,7 +378,28 @@
     function renderSpcDashboard(rows){ if(!rows.length){ ['spcCount','spcMean','spcStd','spcLsl','spcUsl','spcCp','spcCpk'].forEach(id=>$(id).textContent='0'); $('spcLot').textContent='-'; $('spcJudge').textContent='분석 대기'; destroyChart('spcXbar'); destroyChart('spcHist'); return; } const values=rows.map(r=>Number(r.value)).filter(v=>Number.isFinite(v)); const lsl=Number(rows.find(r=>Number.isFinite(Number(r.lsl)))?.lsl || 0), usl=Number(rows.find(r=>Number.isFinite(Number(r.usl)))?.usl || 0), mean=values.reduce((a,b)=>a+b,0)/values.length, std=sampleStd(values), cp=cpValue(lsl,usl,std), cpk=cpkValue(lsl,usl,mean,std); $('spcCount').textContent=fmt(values.length); $('spcLot').textContent=rows[0].lot || '-'; $('spcMean').textContent=mean.toFixed(4); $('spcStd').textContent=std.toFixed(4); $('spcLsl').textContent=lsl.toFixed(4); $('spcUsl').textContent=usl.toFixed(4); $('spcCp').textContent=cp.toFixed(3); $('spcCpk').textContent=cpk.toFixed(3); $('spcJudge').textContent = cpk >= 1.67 ? '매우 우수' : cpk >= 1.33 ? '양호' : cpk >= 1.0 ? '개선 필요' : '불량 위험'; const groupMap={}; rows.forEach(r=>{ const g=String(r.group || ''); if(!groupMap[g]) groupMap[g]=[]; groupMap[g].push(Number(r.value)); }); const labels=Object.keys(groupMap).sort((a,b)=>Number(a)-Number(b)), means=labels.map(g=>groupMap[g].reduce((a,b)=>a+b,0)/groupMap[g].length); drawChart('spcXbar','spcXbarChart',{type:'line',data:{labels,datasets:[{label:'그룹 평균',data:means,borderColor:'#1f4e79',backgroundColor:'#1f4e79',tension:.25}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}}); const hist=buildHistogram(values,8); drawChart('spcHist','spcHistChart',{type:'bar',data:{labels:hist.labels,datasets:[{label:'빈도',data:hist.counts,backgroundColor:'#2d8cff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}}); }
 
     function normalizeSpcRows(rows){ return rows.map(r=>({ lot:r['LOT'] ?? r['lot'] ?? '', date:r['검사일'] ?? r['date'] ?? '', stage:r['구간(초/중/종)'] ?? r['구간'] ?? '', group:r['그룹'] ?? r['group'] ?? '', value:Number(r['측정값'] ?? r['value'] ?? 0), lsl:Number(r['LSL'] ?? r['lsl'] ?? 0), usl:Number(r['USL'] ?? r['usl'] ?? 0) })).filter(r=>Number.isFinite(r.value)); }
-    async function processSpcFile(){ const file=$('spcFile').files?.[0]; if(!file){ showToast('파일을 선택하세요.'); return; } try{ const rows=await readSpcFile(file); const filteredLot=safe($('spcLotFilter').value); const normalized=normalizeSpcRows(rows).filter(r=>!filteredLot || String(r.lot).includes(filteredLot)); await api.post(API.spc, { rows:normalized, metricName:safe($('spcMetricName').value) }); state.db.spcUploads = normalized; renderSpcDashboard(normalized); showToast('SPC 데이터 업로드 완료'); }catch(err){ showToast(`SPC 업로드 실패: ${err.message}`); } }
+    async function processSpcFile(){
+  const file = $('spcFile').files?.[0];
+  if(!file){
+    showToast('파일을 선택하세요.');
+    return;
+  }
+
+  try{
+    const rows = await readSpcFile(file);
+    const filteredLot = safe($('spcLotFilter').value);
+
+    const normalized = normalizeSpcRows(rows).filter(r =>
+      !filteredLot || String(r.lot).includes(filteredLot)
+    );
+
+    state.db.spcUploads = normalized;
+    renderSpcDashboard(normalized);
+    showToast('SPC 데이터 업로드 완료');
+  }catch(err){
+    showToast(`SPC 업로드 실패: ${err.message}`);
+  }
+}
     function readSpcFile(file){ return new Promise((resolve,reject)=>{ const name=file.name.toLowerCase(); const reader=new FileReader(); if(name.endsWith('.csv')){ reader.onload=e=>{ const text=String(e.target.result || '').trim(); const lines=text.split(/\r?\n/); const headers=lines[0].split(',').map(s=>s.trim()); resolve(lines.slice(1).map(line=>{ const cols=line.split(','); const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]); return obj; })); }; reader.onerror=reject; reader.readAsText(file,'utf-8'); return; } reader.onload=e=>{ const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const sheet=wb.Sheets[wb.SheetNames[0]]; resolve(XLSX.utils.sheet_to_json(sheet,{defval:''})); }; reader.onerror=reject; reader.readAsArrayBuffer(file); }); }
     function downloadSpcGuide(){ showToast('권장 형식: LOT / 검사일 / 구간 / 그룹 / 측정값 / LSL / USL'); }
 
