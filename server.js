@@ -552,6 +552,43 @@ app.put('/api/admin/users/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// 비밀번호 초기화 API ⭐
+app.post('/api/admin/users/:id/reset-password', async (req, res) => {
+  try {
+    if (!isAdmin(req)) {
+      return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
+    }
+
+    const targetId = String(req.params.id);
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ error: '비밀번호가 없습니다.' });
+    }
+
+    const user = await db.get(
+      `SELECT id FROM users WHERE id = ?`,
+      [targetId]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    await db.run(
+      `UPDATE users SET password = ? WHERE id = ?`,
+      [hashed, targetId]
+    );
+
+    res.json({ ok: true, message: '비밀번호 초기화 완료' });
+
+  } catch (err) {
+    console.error('reset-password error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 app.delete('/api/admin/users/:id', async (req, res) => {
   try {
     if (!isAdmin(req)) {
