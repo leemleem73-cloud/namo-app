@@ -690,31 +690,33 @@ app.get('/api/oqc', async (req, res) => {
 
 app.post('/api/oqc', async (req, res) => {
   try {
-    const data = { id: `oqc_${Date.now()}`, ...req.body };
+    const d = req.body;
+
     await runAsync(
-      `INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO oqc (date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-  data.id,
-  String(data.date || ''),
-  String(data.customer || ''),
-  String(data.product || ''),
-  String(data.lot || ''),
-  String(data.visual || ''),
-  String(data.viscosity || ''),
-  String(data.solid || ''),
-  String(data.particle || ''),
-  String(data.adhesion || ''),
-  String(data.resistance || ''),
-  String(data.swelling || ''),
-  String(data.moisture || ''),
-  Number(data.qty ?? 0),
-  Number(data.fail ?? 0),
-  String(data.judge || '합격')
-       ]
+        String(d.date || ''),
+        String(d.customer || ''),
+        String(d.product || ''),
+        String(d.lot || ''),
+        String(d.visual || ''),
+        String(d.viscosity || ''),
+        String(d.solid || ''),
+        String(d.particle || ''),
+        String(d.adhesion || ''),
+        String(d.resistance || ''),
+        String(d.swelling || ''),
+        String(d.moisture || ''),
+        Number(d.qty ?? 0),
+        Number(d.fail ?? 0),
+        String(d.judge || '합격')
+      ]
     );
-    res.json({ ok: true, id: data.id });
+
+    res.json({ ok: true });
   } catch (err) {
+    console.error('OQC 저장 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
