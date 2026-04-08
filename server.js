@@ -608,59 +608,66 @@ app.get('/api/pqc', async (req, res) => {
   }
 });
 
+// 등록
 app.post('/api/pqc', async (req, res) => {
   try {
     const data = { id: `ipqc_${Date.now()}`, ...req.body };
+
     await runAsync(
       `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.id,
-        String(data.date || ''),
-        String(data.product || ''),
-        String(data.lot || ''),
-        String(data.visual || ''),
-        String(data.viscosity || ''),
-        String(data.solid || ''),
-        String(data.particle || ''),
-        Number(data.qty ?? 0),
-        Number(data.fail ?? 0),
-        String(data.judge || '합격')
+        data.date || '',
+        data.product || '',
+        data.lot || '',
+        data.visual || '',
+        data.viscosity || '',
+        data.solid || '',
+        data.particle || '',
+        data.qty ?? 0,
+        data.fail ?? 0,
+        data.judge || '합격'
       ]
     );
-    res.json({ ok: true, id: data.id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
-app.put('/api/pqc/:id', async (req, res) => {
-  try {
-    const d = req.body;
-    await runAsync(
-      `UPDATE ipqc
-       SET date=?, product=?, lot=?, visual=?, viscosity=?, solid=?, particle=?, qty=?, fail=?, judge=?
-       WHERE id=?`,
-      [
-        String(d.date || ''),
-        String(d.product || ''),
-        String(d.lot || ''),
-        String(d.visual || ''),
-        String(d.viscosity || ''),
-        String(d.solid || ''),
-        String(d.particle || ''),
-        Number(d.qty ?? 0),
-        Number(d.fail ?? 0),
-        String(d.judge || '합격'),
-        req.params.id
-      ]
-    );
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// 수정
+app.put('/api/pqc/:id', async (req, res) => {
+  try {
+    const d = req.body;
+
+    await runAsync(
+      `UPDATE ipqc
+       SET date=?, product=?, lot=?, visual=?, viscosity=?, solid=?, particle=?, qty=?, fail=?, judge=?
+       WHERE id=?`,
+      [
+        d.date || '',
+        d.product || '',
+        d.lot || '',
+        d.visual || '',
+        d.viscosity || '',
+        d.solid || '',
+        d.particle || '',
+        d.qty ?? 0,
+        d.fail ?? 0,
+        d.judge || '합격',
+        req.params.id
+      ]
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 삭제
 app.delete('/api/pqc/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM ipqc WHERE id=?`, [req.params.id]);
