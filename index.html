@@ -188,7 +188,57 @@
   <div id="supplierModal" class="modal-bg"><div class="modal"><h3>공급업체 등록</h3><input type="hidden" id="supplierId"><div class="form-grid"><div class="field"><label>업체명</label><input id="sup_name"></div><div class="field"><label>담당자</label><input id="sup_manager"></div><div class="field"><label>연락처</label><input id="sup_phone"></div><div class="field"><label>카테고리</label><input id="sup_category"></div><div class="field"><label>상태</label><select id="sup_status"><option>사용</option><option>중지</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeSupplierModal()">취소</button><button class="btn b1" onclick="saveSupplierModal()">저장</button></div></div></div>
   <div id="worklogModal" class="modal-bg"><div class="modal"><h3>생산 작업일지 작성</h3><input type="hidden" id="worklogId"><div class="form-grid"><div class="field"><label>생산일자</label><input id="wl_date" type="date"></div><div class="field"><label>완제품 LOT</label><input id="wl_finishedLot"></div><div class="field"><label>투입순서</label><input id="wl_seq"></div><div class="field"><label>원자재명</label><input id="wl_material"></div><div class="field"><label>공급업체</label><input id="wl_supName"></div><div class="field"><label>투입량</label><input id="wl_inputQty"></div><div class="field"><label>투입비율</label><input id="wl_inputRatio"></div><div class="field"><label>LOT 번호</label><input id="wl_lotNo"></div><div class="field"><label>투입시간</label><input id="wl_inputTime" type="time"></div><div class="field"><label>작업자</label><input id="wl_worker"></div><div class="field"><label>비고</label><input id="wl_note"></div></div><div class="actions"><button class="btn b2" onclick="closeWorklogModal()">취소</button><button class="btn b1" onclick="saveWorklogModal()">저장</button></div></div></div>
   <div id="barcodeModal" class="modal-bg"><div class="modal"><h3>바코드 생성</h3><div class="form-grid"><div class="field"><label>LOT 번호</label><input id="barcodeValue"></div><div class="field"><label>표시 텍스트</label><input id="barcodeLabel"></div><div class="field"><label>형식</label><select id="barcodeFormat"><option value="CODE128">CODE128</option><option value="CODE39">CODE39</option><option value="EAN13">EAN13</option></select></div><div class="field"><label>높이</label><select id="barcodeHeight"><option value="60">60</option><option value="80" selected>80</option><option value="100">100</option></select></div></div><div class="actions" style="justify-content:flex-start"><button class="btn b1" onclick="generateBarcodePreview()">생성</button><button class="btn b3" onclick="downloadBarcodePng()">PNG 저장</button></div><div class="signature-wrap" style="text-align:center"><svg id="barcodeSvg"></svg></div><div class="actions"><button class="btn b2" onclick="closeBarcodeModal()">닫기</button></div></div></div>
+  <div id="userEditModal" class="modal-bg">
+  <div class="modal">
+    <h3>회원 정보 수정</h3>
+    <input type="hidden" id="editUserId">
 
+    <div class="form-grid">
+      <div class="field">
+        <label>이름</label>
+        <input id="editUserName">
+      </div>
+      <div class="field">
+        <label>이메일</label>
+        <input id="editUserEmail">
+      </div>
+      <div class="field">
+        <label>부서</label>
+        <input id="editUserDepartment">
+      </div>
+      <div class="field">
+        <label>직책</label>
+        <select id="editUserTitle">
+          <option value="staff">사원</option>
+          <option value="manager">부장</option>
+          <option value="executive">임원</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>권한</label>
+        <select id="editUserRole">
+          <option value="user">일반</option>
+          <option value="manager">부장</option>
+          <option value="executive">임원</option>
+          <option value="admin">관리자</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>상태</label>
+        <select id="editUserStatus">
+          <option value="PENDING">대기</option>
+          <option value="APPROVED">승인</option>
+          <option value="REJECTED">반려</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn b2" onclick="closeUserEditModal()">취소</button>
+      <button class="btn b1" onclick="saveUserEdit()">저장</button>
+    </div>
+  </div>
+</div>
   <div id="toast" class="toast"></div>
 
   <script>
