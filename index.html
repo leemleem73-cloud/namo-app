@@ -505,14 +505,31 @@ async function setApproval(type,id,status){
     async function confirmDeleteAll(){ if(!isAdmin()){ showToast('관리자만 전체삭제가 가능합니다.'); return; } const ok=prompt("삭제를 진행하려면 'DELETE'를 입력하세요")==='DELETE'; if(!ok) return; try{ await api.post(API.deleteAll,{confirm:'DELETE'}); await loadAllData(); showToast('전체 데이터 삭제 완료'); }catch(err){ showToast(err.message); } }
 
     async function loadAllData(){
-      try{
-        const [iqc,pqc,oqc,ncr,annualReports,suppliers,worklogs,changeLogs] = await Promise.all([
-          api.get(API.iqc).catch(()=>[]), api.get(API.pqc).catch(()=>[]), api.get(API.oqc).catch(()=>[]), api.get(API.ncr).catch(()=>[]), api.get(API.annual).catch(()=>[]), api.get(API.suppliers).catch(()=>[]), api.get(API.worklogs).catch(()=>[]), api.get(API.changeLogs).catch(()=>[])
-        ]);
-        state.db.iqc=Array.isArray(iqc)?iqc:[]; state.db.pqc=Array.isArray(pqc)?pqc:[]; state.db.oqc=Array.isArray(oqc)?oqc:[]; state.db.ncr=Array.isArray(ncr)?ncr:[]; state.db.annualReports=Array.isArray(annualReports)?annualReports:[]; state.db.suppliers=Array.isArray(suppliers)?suppliers:[]; state.db.worklogs=Array.isArray(worklogs)?worklogs:[]; state.db.changeLogs=Array.isArray(changeLogs)?changeLogs:[];
-        refreshDashboard();
-      }catch(err){ showToast(`서버 동기화 실패: ${err.message}`); }
-    }
+  try{
+    const [iqc,pqc,oqc,ncr,suppliers,worklogs,changeLogs] = await Promise.all([
+      api.get(API.iqc).catch(()=>[]),
+      api.get(API.pqc).catch(()=>[]),
+      api.get(API.oqc).catch(()=>[]),
+      api.get(API.ncr).catch(()=>[]),
+      api.get(API.suppliers).catch(()=>[]),
+      api.get(API.worklogs).catch(()=>[]),
+      api.get(API.changeLogs).catch(()=>[])
+    ]);
+
+    state.db.iqc = Array.isArray(iqc) ? iqc : [];
+    state.db.pqc = Array.isArray(pqc) ? pqc : [];
+    state.db.oqc = Array.isArray(oqc) ? oqc : [];
+    state.db.ncr = Array.isArray(ncr) ? ncr : [];
+    state.db.annualReports = []; // 서버 아직 없으니까 빈값
+    state.db.suppliers = Array.isArray(suppliers) ? suppliers : [];
+    state.db.worklogs = Array.isArray(worklogs) ? worklogs : [];
+    state.db.changeLogs = Array.isArray(changeLogs) ? changeLogs : [];
+
+    refreshDashboard();
+  }catch(err){
+    showToast(`서버 동기화 실패: ${err.message}`);
+  }
+}
 
     function refreshDashboard(){ refreshWeek(); renderOverview(); renderStats(); renderInspectionTable('iqc','iqcBody'); renderInspectionTable('pqc','pqcBody'); renderInspectionTable('oqc','oqcBody'); renderNcr(); renderAnnual(); renderSuppliers(); renderWorklogs(); renderSavedSignature(); if(state.db.spcUploads?.length) renderSpcDashboard(state.db.spcUploads); }
     function switchTab(name,el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); $(`panel-${name}`).classList.add('active'); }
