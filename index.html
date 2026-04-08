@@ -545,7 +545,52 @@ async function setApproval(type,id,status){
     async function approveUser(id){ if(!confirm('이 회원을 승인하시겠습니까?')) return; try{ await api.post(`${API.users}/${id}/approve`, {}); await loadUsers(); showToast('회원 승인 완료'); }catch(err){ showToast(err.message); } }
     async function rejectUser(id){ if(!confirm('이 회원을 반려하시겠습니까?')) return; try{ await api.post(`${API.users}/${id}/reject`, {}); await loadUsers(); showToast('회원 반려 완료'); }catch(err){ showToast(err.message); } }
     async function deleteUser(id){ if(!confirm('이 회원을 삭제하시겠습니까?')) return; try{ await api.delete(`${API.users}/${id}`); await loadUsers(); showToast('회원 삭제 완료'); }catch(err){ showToast(err.message); } }
+    function openUserEditModal(id){
+  const user = (state.db.users || []).find(u => String(u.id) === String(id));
+  if(!user){
+    showToast('회원 정보를 찾을 수 없습니다.');
+    return;
+  }
 
+  $('editUserId').value = user.id || '';
+  $('editUserName').value = user.name || '';
+  $('editUserEmail').value = user.email || '';
+  $('editUserDepartment').value = user.department || '';
+  $('editUserTitle').value = user.title || 'staff';
+  $('editUserRole').value = user.role || 'user';
+  $('editUserStatus').value = user.status || 'PENDING';
+
+  $('userEditModal').style.display = 'flex';
+}
+
+function closeUserEditModal(){
+  $('userEditModal').style.display = 'none';
+}
+
+async function saveUserEdit(){
+  const id = $('editUserId').value;
+
+  const payload = {
+    name: safe($('editUserName').value),
+    email: safe($('editUserEmail').value),
+    department: safe($('editUserDepartment').value),
+    title: $('editUserTitle').value,
+    role: $('editUserRole').value,
+    status: $('editUserStatus').value
+  };
+
+  try{
+    if(!payload.name) throw new Error('이름을 입력하세요.');
+    if(!payload.email) throw new Error('이메일을 입력하세요.');
+
+    await api.put(`${API.users}/${id}`, payload);
+    closeUserEditModal();
+    await loadUsers();
+    showToast('회원 정보가 수정되었습니다.');
+  }catch(err){
+    showToast(err.message);
+  }
+}
     async function deleteRow(type,id){ if(!confirm('삭제하시겠습니까?')) return; const map={iqc:API.iqc,pqc:API.pqc,oqc:API.oqc,ncr:API.ncr,annual:API.annual,supplier:API.suppliers,worklog:API.worklogs}; try{ await api.delete(`${map[type]}/${id}`); await loadAllData(); showToast('삭제 완료'); }catch(err){ showToast(err.message); } }
    async function confirmDeleteAll(){
   if(!isAdmin()){
