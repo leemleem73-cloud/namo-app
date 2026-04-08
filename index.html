@@ -434,6 +434,7 @@
         <td>${escapeHtml(u.createdAt || '-')}</td>
         <td>
           <button class="btn b2" style="height:32px" onclick="openUserEditModal('${u.id}')">수정</button>
+          <button class="btn b3" onclick="resetPassword('${u.id}')">비번초기화</button>
           ${
             u.status === 'PENDING'
               ? `
