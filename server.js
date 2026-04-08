@@ -472,11 +472,11 @@ app.get('/api/admin/users', async (req, res) => {
       return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
     }
 
-    const rows = await allAsync(
-      `SELECT id, name, email, department, role, status
-       FROM users
-       ORDER BY id DESC`
-    );
+   const rows = await allAsync(
+  `SELECT id, name, email, department, title, role, status
+   FROM users
+   ORDER BY id DESC`
+);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
