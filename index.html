@@ -192,7 +192,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API = {
+ const API = {
   me:'/api/auth/me',
   login:'/api/auth/login',
   signup:'/api/auth/signup',
@@ -384,7 +384,85 @@
       fields += `<div class="field"><label>검사수량</label><input id="reg_qty" type="number" min="0" value="${escapeHtml(row?.qty ?? 0)}"></div><div class="field"><label>불합격수량</label><input id="reg_fail" type="number" min="0" value="${escapeHtml(row?.fail ?? 0)}"></div></div>`;
       $('inspectionFields').innerHTML = fields; $('inspectionModal').style.display='flex'; }
     function closeInspectionModal(){ $('inspectionModal').style.display='none'; }
-    async function saveInspectionModal(){ const type=$('inspectionType').value, id=$('inspectionId').value; const payload={ date:safe($('reg_date').value), lot:safe($('reg_lot').value), qty:toNum($('reg_qty').value), fail:toNum($('reg_fail').value), approvalStatus:'DRAFT' }; if(type==='iqc'){ Object.assign(payload,{ supplier:safe($('reg_supplier').value), item:safe($('reg_item').value), inspector:safe($('reg_inspector').value) }); } if(type==='pqc'){ Object.assign(payload,{ product:safe($('reg_product').value), viscosity:safe($('reg_viscosity').value), solid:safe($('reg_solid').value), particle:safe($('reg_particle').value) }); } if(type==='oqc'){ Object.assign(payload,{ customer:safe($('reg_customer').value), product:safe($('reg_product').value), viscosity:safe($('reg_viscosity').value), solid:safe($('reg_solid').value) }); } try{ if(!payload.date || !payload.lot) throw new Error('검사일과 LOT를 입력하세요.'); if(id) await api.put(`${API[type]}/${id}`, payload); else await api.post(API[type], payload); closeInspectionModal(); await loadAllData(); showToast('검사 데이터 저장 완료'); } catch(err){ showToast(err.message); } }
+    async function saveInspectionModal(){
+  const type = $('inspectionType').value;
+  const id = $('inspectionId').value;
+
+  const payload = {
+    date: safe($('reg_date').value),
+    lot: safe($('reg_lot').value),
+    qty: toNum($('reg_qty').value),
+    fail: toNum($('reg_fail').value),
+    approvalStatus: 'DRAFT'
+  };
+
+  if(type === 'iqc'){
+    Object.assign(payload, {
+      supplier: safe($('reg_supplier').value),
+      item: safe($('reg_item').value),
+      inspector: safe($('reg_inspector').value)
+    });
+  }
+
+  if(type === 'pqc'){
+    Object.assign(payload, {
+      product: safe($('reg_product').value),
+      visual: '',
+      viscosity: safe($('reg_viscosity').value),
+      solid: safe($('reg_solid').value),
+      particle: safe($('reg_particle').value),
+      judge: payload.fail > 0 ? '불합격' : '합격'
+    });
+  }
+
+  if(type === 'oqc'){
+    Object.assign(payload, {
+      customer: safe($('reg_customer').value),
+      product: safe($('reg_product').value),
+      visual: '',
+      viscosity: safe($('reg_viscosity').value),
+      solid: safe($('reg_solid').value),
+      particle: '',
+      adhesion: '',
+      resistance: '',
+      swelling: '',
+      moisture: '',
+      judge: payload.fail > 0 ? '불합격' : '합격'
+    });
+  }
+
+  try{
+    if(!payload.date || !payload.lot) throw new Error('검사일과 LOT를 입력하세요.');
+
+    if(id) await api.put(`${API[type]}/${id}`, payload);
+    else await api.post(API[type], payload);
+
+    closeInspectionModal();
+    await loadAllData();
+    showToast('검사 데이터 저장 완료');
+  } catch(err){
+    showToast(err.message);
+  }
+}
+
+async function setApproval(type,id,status){
+  try{
+    if(status === 'REVIEW' && !isManager()) throw new Error('검토 권한이 없습니다.');
+    if(['APPROVED','REJECTED','완료'].includes(status) && !isExecutive()) throw new Error('승인 권한이 없습니다.');
+
+    await api.put(`${API[type]}/${id}`, {
+      approvalStatus: status,
+      status,
+      reviewedBy: state.user.name,
+      approvedBy: state.user.name
+    });
+
+    await loadAllData();
+    showToast('상태 변경 완료');
+  }catch(err){
+    showToast(err.message);
+  }
+}
     async function setApproval(type,id,status){ try{ if(status==='REVIEW' && !isManager()) throw new Error('검토 권한이 없습니다.'); if(['APPROVED','REJECTED','완료'].includes(status) && !isExecutive()) throw new Error('승인 권한이 없습니다.'); await api.put(`${API[type]}/${id}`, { approvalStatus:status, status, reviewedBy:state.user.name, approvedBy:state.user.name }); await loadAllData(); showToast('상태 변경 완료'); }catch(err){ showToast(err.message); } }
 
     function openNcrModal(id=''){ const row=(state.db.ncr||[]).find(r=>String(r.id)===String(id)); $('ncrId').value=id || ''; $('ncr_date').value=row?.date || todayStr(); $('ncr_process').value=row?.process || 'IQC'; $('ncr_lot').value=row?.lot || ''; $('ncr_item').value=row?.item || ''; $('ncr_type').value=row?.defectType || ''; $('ncr_qty').value=row?.qty ?? 0; $('ncr_content').value=row?.content || ''; $('ncr_cause').value=row?.cause || ''; $('ncr_action').value=row?.action || ''; $('ncr_owner').value=row?.owner || ''; $('ncr_repeat').value=row?.repeat || '정상'; $('ncr_status').value=row?.status || 'DRAFT'; $('ncrModal').style.display='flex'; }
