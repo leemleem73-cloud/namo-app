@@ -599,32 +599,6 @@ app.delete('/api/iqc/:id', async (req, res) => {
 // =============================
 // PQC
 // =============================
-app.put('/api/pqc/:id', async (req, res) => {
-  try {
-    const d = req.body;
-    await runAsync(
-      `UPDATE ipqc
-       SET date=?, product=?, lot=?, visual=?, viscosity=?, solid=?, particle=?, qty=?, fail=?, judge=?
-       WHERE id=?`,
-      [
-        String(d.date || ''),
-        String(d.product || ''),
-        String(d.lot || ''),
-        String(d.visual || ''),
-        String(d.viscosity || ''),
-        String(d.solid || ''),
-        String(d.particle || ''),
-        Number(d.qty ?? 0),
-        Number(d.fail ?? 0),
-        String(d.judge || '합격'),
-        req.params.id
-      ]
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 app.get('/api/pqc', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM ipqc ORDER BY date DESC`);
@@ -634,18 +608,27 @@ app.get('/api/pqc', async (req, res) => {
   }
 });
 
-app.delete('/api/pqc/:id', async (req, res) => {
+app.post('/api/pqc', async (req, res) => {
   try {
-    await runAsync(`DELETE FROM ipqc WHERE id=?`, [req.params.id]);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-app.delete('/api/pqc/:id', async (req, res) => {
-  try {
-    await runAsync(`DELETE FROM ipqc WHERE id=?`, [req.params.id]);
-    res.json({ ok: true });
+    const data = { id: `ipqc_${Date.now()}`, ...req.body };
+    await runAsync(
+      `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.id,
+        String(data.date || ''),
+        String(data.product || ''),
+        String(data.lot || ''),
+        String(data.visual || ''),
+        String(data.viscosity || ''),
+        String(data.solid || ''),
+        String(data.particle || ''),
+        Number(data.qty ?? 0),
+        Number(data.fail ?? 0),
+        String(data.judge || '합격')
+      ]
+    );
+    res.json({ ok: true, id: data.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -686,7 +669,6 @@ app.delete('/api/pqc/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // =============================
 // OQC
 // =============================
