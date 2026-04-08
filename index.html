@@ -85,20 +85,30 @@
           <div class="auth-field full hidden" id="authTitleWrap"><label>직책</label><select id="authTitleSelect" class="auth-input"><option value="staff">사원</option><option value="assistant_manager">대리</option><option value="manager_level">과장</option><option value="deputy_general_manager">차장</option><option value="manager">부장</option><option value="executive">임원</option></select></div>
         </div>
         <div class="actions" style="justify-content:space-between;align-items:center">
-          <div style="display:flex;flex-direction:column;gap:4px">
-  <small id="authFooterText" style="color:var(--muted)">
-    회원가입 후 관리자 승인을 기다려주세요.
-  </small>
-            
-  <small style="color:#dc2626;font-weight:700">
-    비밀번호 초기화 시 1234로 로그인 후 변경하세요.
-  </small>
-            
-  <button class="btn b2"
-          style="width:120px;height:32px;font-size:12px"
-          onclick="openChangePasswordModal()">
-    비번 변경
-  </button>     
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <small id="authFooterText" style="color:var(--muted)">
+      회원가입 후 관리자 승인을 기다려주세요.
+    </small>
+
+    <small style="color:#dc2626;font-weight:700">
+      비밀번호 초기화 시 1234로 로그인 후 변경하세요.
+    </small>
+  </div>
+
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn b2"
+            style="width:120px;height:32px;font-size:12px"
+            onclick="openChangePasswordModal()">
+      비번 변경
+    </button>
+
+    <button id="authSubmitBtn"
+            class="btn b1"
+            style="min-width:140px"
+            onclick="submitAuth()">
+      로그인
+    </button>
+  </div>
 </div>
       </section>
     </div>
