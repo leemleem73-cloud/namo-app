@@ -489,7 +489,23 @@ async function setApproval(type,id,status){
     function initSignaturePad(){ const canvas=$('signatureCanvas'); if(!canvas || typeof SignaturePad==='undefined') return; state.signaturePad = new SignaturePad(canvas,{minWidth:1,maxWidth:2.5}); renderSavedSignature(); }
     function clearSignaturePad(){ if(state.signaturePad) state.signaturePad.clear(); }
     function renderSavedSignature(){ const el=$('signatureStatusText'); if(!el) return; if(!state.user.authenticated){ el.textContent='로그인 후 서명 등록 가능'; return; } if(state.signaturePad){ state.signaturePad.clear(); if(state.user.signatureData) state.signaturePad.fromDataURL(state.user.signatureData); } el.textContent = state.user.signatureData ? '저장된 서명 있음' : '서명 미등록'; }
-    async function saveMySignature(){ try{ if(!state.signaturePad || state.signaturePad.isEmpty()) throw new Error('서명을 입력하세요.'); const signatureData = state.signaturePad.toDataURL('image/png'); await api.put(API.me, { signatureData }); state.user.signatureData = signatureData; renderSavedSignature(); showToast('전자서명이 저장되었습니다.'); }catch(err){ showToast(err.message); } }
+    async function saveMySignature(){
+  try{
+    if(!state.signaturePad || state.signaturePad.isEmpty()){
+      throw new Error('서명을 입력하세요.');
+    }
+
+    const signatureData = state.signaturePad.toDataURL('image/png');
+
+    // 서버 호출 제거 (404 방지)
+    state.user.signatureData = signatureData;
+
+    renderSavedSignature();
+    showToast('전자서명이 저장되었습니다.');
+  }catch(err){
+    showToast(err.message);
+  }
+}
 
     function openBarcodeModal(){ $('barcodeModal').style.display='flex'; }
     function closeBarcodeModal(){ $('barcodeModal').style.display='none'; }
