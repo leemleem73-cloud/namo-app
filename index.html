@@ -243,7 +243,19 @@
   </div>
 </div>
   <div id="toast" class="toast"></div>
+<div id="changePasswordModal" class="modal-bg">
+  <div class="modal">
+    <h3>비밀번호 변경</h3>
 
+    <input type="password" id="newPassword" placeholder="새 비밀번호">
+    <input type="password" id="confirmPassword" placeholder="비밀번호 확인">
+
+    <div style="display:flex; gap:8px; justify-content:flex-end">
+      <button class="btn" onclick="closeChangePasswordModal()">취소</button>
+      <button class="btn b1" onclick="changePassword()">변경</button>
+    </div>
+  </div>
+</div>
   <script>
  const API = {
   me:'/api/auth/me',
