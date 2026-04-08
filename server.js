@@ -634,6 +634,14 @@ app.delete('/api/pqc/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.delete('/api/pqc/:id', async (req, res) => {
+  try {
+    await runAsync(`DELETE FROM ipqc WHERE id=?`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.put('/api/pqc/:id', async (req, res) => {
   try {
