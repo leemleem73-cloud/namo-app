@@ -367,8 +367,7 @@ app.post('/api/auth/change-password', async (req, res) => {
       [hashed, userId]
     );
 
-    res.json({ ok: true });
-
+    res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
