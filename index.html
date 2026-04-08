@@ -323,22 +323,28 @@ function closeChangePasswordModal(){
 }
 
 async function changePassword(){
-  const pw = $('newPassword').value;
-  const confirm = $('confirmPassword').value;
+  const pw = document.getElementById('newPassword')?.value?.trim();
+  const confirm = document.getElementById('confirmPassword')?.value?.trim();
+
+  console.log('payload:', { newPassword: pw, confirmPassword: confirm });
 
   if(!pw) return showToast('비밀번호를 입력하세요.');
+  if(!confirm) return showToast('비밀번호 확인 입력하세요.');
   if(pw !== confirm) return showToast('비밀번호가 일치하지 않습니다.');
 
   try{
-    await api.post('/api/auth/change-password', { password: pw });
+    await api.post('/api/auth/change-password', {
+      newPassword: pw,
+      confirmPassword: confirm
+    });
 
     showToast('비밀번호가 변경되었습니다.');
     closeChangePasswordModal();
 
   }catch(err){
-    showToast(err.message);
+    showToast(err.message || '실패');
   }
-}    
+} 
  const API = {
   me:'/api/auth/me',
   login:'/api/auth/login',
