@@ -570,16 +570,16 @@ app.put('/api/iqc/:id', async (req, res) => {
       `UPDATE iqc
        SET date=?, lot=?, supplier=?, item=?, inspector=?, qty=?, fail=?
        WHERE id=?`,
-      [
-        d.date || '',
-        d.lot || '',
-        d.supplier || '',
-        d.item || '',
-        d.inspector || '',
-        d.qty || 0,
-        d.fail || 0,
-        req.params.id
-      ]
+     [
+  d.date || '',
+  d.lot || '',
+  d.supplier || '',
+  d.item || '',
+  d.inspector || '',
+  Number(d.qty) || 0,
+  Number(d.fail) || 0,
+  req.params.id
+]
     );
     res.json({ ok: true });
   } catch (err) {
@@ -597,9 +597,9 @@ app.delete('/api/iqc/:id', async (req, res) => {
 });
 
 // =============================
-// IPQC
+// PQC
 // =============================
-app.get('/api/ipqc', async (req, res) => {
+app.get('/api/pqc', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM ipqc ORDER BY date DESC`);
     res.json(rows);
@@ -614,19 +614,19 @@ app.post('/api/ipqc', async (req, res) => {
     await runAsync(
       `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        data.id,
-        data.date || '',
-        data.product || '',
-        data.lot || '',
-        data.visual || '',
-        data.viscosity || '',
-        data.solid || '',
-        data.particle || '',
-        data.qty || 0,
-        data.fail || 0,
-        data.judge || '합격'
-      ]
+     [
+  data.id,
+  data.date || '',
+  data.product || '',
+  data.lot || '',
+  data.visual || '',
+  data.viscosity || '',
+  data.solid || '',
+  data.particle || '',
+  Number(data.qty) || 0,
+  Number(data.fail) || 0,
+  data.judge || '합격'
+]
     );
     res.json({ ok: true, id: data.id });
   } catch (err) {
@@ -634,11 +634,11 @@ app.post('/api/ipqc', async (req, res) => {
   }
 });
 
-app.put('/api/ipqc/:id', async (req, res) => {
+app.put('/api/pqc/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
-      `UPDATE ipqc
+      `UPDATE pqc
        SET date=?, product=?, lot=?, visual=?, viscosity=?, solid=?, particle=?, qty=?, fail=?, judge=?
        WHERE id=?`,
       [
@@ -661,7 +661,7 @@ app.put('/api/ipqc/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/ipqc/:id', async (req, res) => {
+app.delete('/api/pqc/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM ipqc WHERE id=?`, [req.params.id]);
     res.json({ ok: true });
@@ -702,8 +702,8 @@ app.post('/api/oqc', async (req, res) => {
         data.resistance || '',
         data.swelling || '',
         data.moisture || '',
-        data.qty || 0,
-        data.fail || 0,
+        Number(data.qty) || 0,
+        Number(data.fail) || 0,
         data.judge || '합격'
       ]
     );
