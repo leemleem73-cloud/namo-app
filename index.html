@@ -392,14 +392,13 @@
     `).join('')
     : '<tr><td colspan="9">회원이 없습니다.</td></tr>';
 }
- <button class="btn b2" style="height:32px" onclick="openUserEditModal('${u.id}')">수정</button>
+<button class="btn b2" style="height:32px" onclick="openUserEditModal('${u.id}')">수정</button>
 ${u.status==='PENDING'
   ? `<button class="btn b3" style="height:32px" onclick="approveUser('${u.id}')">승인</button>
      <button class="btn b4" style="height:32px" onclick="rejectUser('${u.id}')">반려</button>`
   : ''
 }
-  <button class="btn b4" style="height:32px" onclick="deleteUser('${u.id}')">삭제</button>
-</td>lass="btn b4" style="height:32px" onclick="rejectUser('${u.id}')">반려</button>`:''} <button class="btn b2" style="height:32px" onclick="deleteUser('${u.id}')">삭제</button></td></tr>`).join('') : '<tr><td colspan="9">회원이 없습니다.</td></tr>'; }
+<button class="btn b4" style="height:32px" onclick="deleteUser('${u.id}')">삭제</button>
 
     function renderTraceEmpty(){ $('traceRawBody').innerHTML='<tr><td colspan="4">원자재 LOT를 입력하세요.</td></tr>'; $('traceFinishedBody').innerHTML='<tr><td colspan="4">완제품 LOT를 입력하세요.</td></tr>'; }
     function runRawToFinishedTrace(){ const keyword=safe($('traceRawInput').value); if(!keyword){ renderTraceEmpty(); return; } const rows=(state.db.worklogs||[]).filter(w=>safe(w.lotNo).includes(keyword)); $('traceRawBody').innerHTML = rows.length ? rows.map(w=>`<tr><td>${escapeHtml(w.finishedLot || '-')}</td><td>${escapeHtml(w.material)}</td><td>${escapeHtml(w.supName || '-')}</td><td>${escapeHtml(w.workDate)}</td></tr>`).join('') : '<tr><td colspan="4">조회 결과 없음</td></tr>'; }
