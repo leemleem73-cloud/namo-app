@@ -625,6 +625,14 @@ app.put('/api/pqc/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.get('/api/pqc', async (req, res) => {
+  try {
+    const rows = await allAsync(`SELECT * FROM ipqc ORDER BY date DESC`);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.delete('/api/pqc/:id', async (req, res) => {
   try {
