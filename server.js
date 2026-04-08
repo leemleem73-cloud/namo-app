@@ -508,6 +508,50 @@ app.post('/api/admin/users/:id/approve', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.put('/api/admin/users/:id', async (req, res) => {
+  try {
+    if (!isAdmin(req)) {
+      return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
+    }
+
+    const d = req.body;
+
+    const result = await runAsync(
+      `UPDATE users
+       SET name = ?, email = ?, department = ?, title = ?, role = ?, status = ?
+       WHERE id = ?`,
+      [
+        String(d.name || ''),
+        String(d.email || '').trim().toLowerCase(),
+        String(d.department || ''),
+        String(d.title || 'staff'),
+        String(d.role || 'user'),
+        String(d.status || 'PENDING'),
+        req.params.id
+      ]
+    );
+
+    if (!result || result.changes === 0) {
+      return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
+    }
+
+    const updatedUser = await getAsync(
+      `SELECT id, name, email, department, title, role, status
+       FROM users
+       WHERE id = ?`,
+      [req.params.id]
+    );
+
+    res.json({
+      ok: true,
+      message: '회원 정보가 수정되었습니다.',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error('회원 수정 오류:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 app.delete('/api/admin/users/:id', async (req, res) => {
   try {
     if (!isAdmin(req)) {
