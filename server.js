@@ -489,11 +489,7 @@ app.post('/api/admin/users/:id/approve', async (req, res) => {
       return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
     }
 
-    const result = await runAsync(
-      `UPDATE users SET status = 'APPROVED' WHERE id = ?`,
-      [req.params.id]
-    );
-
+    
     if (!result || result.changes === 0) {
       return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
     }
