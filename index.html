@@ -407,7 +407,10 @@ async function changePassword(){
       $('authModeBadge').textContent = signup ? '회원가입' : '로그인';
       $('authTitle').textContent = signup ? '품질 대시보드 계정 신청' : '다시 오신 것을 환영합니다';
       $('authSubtitle').textContent = signup ? '회원가입 신청 후 관리자 승인 완료 시 대시보드에 접근할 수 있습니다.' : '승인된 계정으로 로그인하면 품질 대시보드가 열립니다.';
-      $('authSubmitBtn').textContent = signup ? '회원가입 신청' : '로그인';
+      $('authSubmitBtn').textContent = sigconst submitBtn = $('authSubmitBtn');
+if (submitBtn) {
+  submitBtn.textContent = signup ? '회원가입 신청' : '로그인';
+}nup ? '회원가입 신청' : '로그인';
       $('authNameWrap').classList.toggle('hidden', !signup); $('authPasswordConfirmWrap').classList.toggle('hidden', !signup); $('authDeptWrap').classList.toggle('hidden', !signup); $('authTitleWrap').classList.toggle('hidden', !signup);
       setAuthError('');
     }
