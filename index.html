@@ -364,7 +364,34 @@
     function renderAnnual(){ const rows=state.db.annualReports||[]; $('annualBody').innerHTML = rows.length ? rows.map(r=>`<tr><td>${escapeHtml(r.docNo || '-')}</td><td style="text-align:left">${escapeHtml(r.title)}</td><td>${escapeHtml(r.year)}</td><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.writer || '-')}</td><td>${approvalBadge(r.status)}</td><td><button class="btn b2" style="height:32px" onclick="openAnnualModal('${r.id}')">수정</button> <button class="btn b4" style="height:32px" onclick="deleteRow('annual','${r.id}')">삭제</button></td></tr>`).join('') : '<tr><td colspan="7">데이터 없음</td></tr>'; }
     function renderSuppliers(){ const rows=state.db.suppliers||[]; $('supplierBody').innerHTML = rows.length ? rows.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.manager || '-')}</td><td>${escapeHtml(r.phone || '-')}</td><td>${escapeHtml(r.category || '-')}</td><td>${r.status==='사용'?'<span class="state ok">사용</span>':'<span class="state ng">중지</span>'}</td><td><button class="btn b2" style="height:32px" onclick="openSupplierModal('${r.id}')">수정</button> <button class="btn b4" style="height:32px" onclick="deleteRow('supplier','${r.id}')">삭제</button></td></tr>`).join('') : '<tr><td colspan="7">데이터 없음</td></tr>'; }
     function renderWorklogs(){ const rows=filtered(state.db.worklogs,'workDate'); $('worklogBody').innerHTML = rows.length ? rows.map(r=>`<tr><td>${escapeHtml(r.workDate)}</td><td>${escapeHtml(r.finishedLot || '-')}</td><td>${escapeHtml(r.seq || '-')}</td><td>${escapeHtml(r.material)}</td><td>${escapeHtml(r.supName || '-')}</td><td>${escapeHtml(r.inputQty || '-')}</td><td>${escapeHtml(r.inputRatio || '-')}</td><td>${escapeHtml(r.lotNo)}</td><td>${escapeHtml(r.inputTime || '-')}</td><td>${escapeHtml(r.worker || '-')}</td><td>${escapeHtml(r.note || '-')}</td><td><button class="btn b2" style="height:32px" onclick="openWorklogModal('${r.id}')">수정</button> <button class="btn b4" style="height:32px" onclick="deleteRow('worklog','${r.id}')">삭제</button></td></tr>`).join('') : '<tr><td colspan="12">데이터 없음</td></tr>'; }
-    function renderMembers(){ const rows=state.db.users||[]; $('pendingUserCount').textContent=`${rows.length}명`; $('memberBody').innerHTML = rows.length ? rows.map((u,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(u.name || '-')}</td><td>${escapeHtml(u.email || '-')}</td><td>${escapeHtml(u.department || '-')}</td><td>${escapeHtml(titleLabel(u.title || 'staff'))}</td><td>${escapeHtml(roleLabel(u.role || titleToRole(u.title)))}</td><td>${approvalBadge(u.status || 'PENDING')}</td><td>${escapeHtml(u.createdAt || '-')}</td><td>${u.status==='PENDING'?`<button class="btn b3" style="height:32px" onclick="approveUser('${u.id}')">승인</button> <button c<td>
+    function function renderMembers(){
+  const rows = state.db.users || [];
+  $('pendingUserCount').textContent = `${rows.length}명`;
+
+  $('memberBody').innerHTML = rows.length
+    ? rows.map((u, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${escapeHtml(u.name || '-')}</td>
+        <td>${escapeHtml(u.email || '-')}</td>
+        <td>${escapeHtml(u.department || '-')}</td>
+        <td>${escapeHtml(titleLabel(u.title || 'staff'))}</td>
+        <td>${escapeHtml(roleLabel(u.role || titleToRole(u.title)))}</td>
+        <td>${approvalBadge(u.status || 'PENDING')}</td>
+        <td>${escapeHtml(u.createdAt || '-')}</td>
+        <td>
+          <button class="btn b2" style="height:32px" onclick="openUserEditModal('${u.id}')">수정</button>
+          ${u.status === 'PENDING'
+            ? `<button class="btn b3" style="height:32px" onclick="approveUser('${u.id}')">승인</button>
+               <button class="btn b4" style="height:32px" onclick="rejectUser('${u.id}')">반려</button>`
+            : ''
+          }
+          <button class="btn b4" style="height:32px" onclick="deleteUser('${u.id}')">삭제</button>
+        </td>
+      </tr>
+    `).join('')
+    : '<tr><td colspan="9">회원이 없습니다.</td></tr>';
+}
   <button class="btn b2" style="height:32px" onclick="openUserEditModal('${u.id}')">수정</button>
   ${u.status==='PENDING'
     ? `<button class="btn b3" style="height:32px" onclick="approveUser('${u.id}')">승인</button>
