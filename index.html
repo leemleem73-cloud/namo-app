@@ -193,9 +193,21 @@
 
   <script>
     const API = {
-      me:'/api/me', login:'/api/auth/login', signup:'/api/auth/signup', logout:'/api/auth/logout',
-      iqc:'/api/iqc', pqc:'/api/pqc', oqc:'/api/oqc', ncr:'/api/ncr', annual:'/api/annual-reports', spc:'/api/spc', suppliers:'/api/suppliers', worklogs:'/api/worklogs', changeLogs:'/api/change-logs', users:'/api/admin/users', deleteAll:'/api/admin/delete-all'
-    };
+  me:'/api/auth/me',
+  login:'/api/auth/login',
+  signup:'/api/auth/signup',
+  logout:'/api/auth/logout',
+
+  iqc:'/api/iqc',
+  pqc:'/api/ipqc',
+  oqc:'/api/oqc',
+  ncr:'/api/nonconform',
+
+  suppliers:'/api/suppliers',
+  worklogs:'/api/worklog',
+  changeLogs:'/api/change-logs',
+  users:'/api/admin/users'
+};
 
     const state = {
       user:{id:'',name:'',role:'guest',title:'',department:'',authenticated:false,signatureData:''},
