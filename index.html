@@ -1929,9 +1929,6 @@ function formatTitle(title) {
     default: return title || '-';
   }
 }
-</script>
-
-function submitAuth() {}
 
 const __oldEditRowById = typeof editRowById === 'function' ? editRowById : null;
 
@@ -1961,11 +1958,21 @@ function editRowById(type, id) {
     fetch(`/api/admin/users/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ name, email, department, title, role, status })
     })
-      .then(res => res.json())
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.error || data?.message || '회원 수정 실패');
+        }
+        return data;
+      })
       .then(() => loadAllUsers())
-      .catch(err => alert(err.message));
+      .catch(err => {
+        console.error(err);
+        alert(err.message || '회원 수정 실패');
+      });
 
     return;
   }
@@ -1974,7 +1981,6 @@ function editRowById(type, id) {
     return __oldEditRowById(type, id);
   }
 }
-  
 </script>
 </body>
 </html>
