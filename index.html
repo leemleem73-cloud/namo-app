@@ -1059,6 +1059,61 @@ async function saveUserModal() {
     console.error(err);
     showToast(`회원 수정 실패: ${err.message}`);
   }
+}  
+  function openUserModal(id) {
+  const user = (state.admin.users || []).find(u => String(u.id) === String(id));
+  if (!user) return;
+
+  state.userEditId = id;
+  $('userModalTitle').textContent = `${user.name || '회원'} 정보 수정`;
+
+  $('userEditName').value = user.name || '';
+  $('userEditEmail').value = user.email || '';
+  $('userEditDepartment').value = user.department || '';
+  $('userEditTitle').value = user.title || 'staff';
+  $('userEditRole').value = user.role || 'user';
+  $('userEditStatus').value = user.status || 'PENDING';
+
+  $('userModal').style.display = 'flex';
+}
+
+function closeUserModal() {
+  $('userModal').style.display = 'none';
+  state.userEditId = null;
+}
+
+async function saveUserModal() {
+  const id = state.userEditId;
+  if (!id) return;
+
+  const payload = {
+    name: toText($('userEditName').value),
+    email: toText($('userEditEmail').value),
+    department: toText($('userEditDepartment').value),
+    title: toText($('userEditTitle').value),
+    role: toText($('userEditRole').value),
+    status: toText($('userEditStatus').value)
+  };
+
+  if (!payload.name) {
+    showToast('이름을 입력하세요.');
+    return;
+  }
+
+  if (!payload.email) {
+    showToast('이메일을 입력하세요.');
+    return;
+  }
+
+  try {
+    const result = await api.put(`/api/admin/users/${id}`, payload);
+    showToast(result?.message || '회원 정보가 저장되었습니다.');
+    closeUserModal();
+    await loadAllUsers();
+  } catch (err) {
+    console.error(err);
+    showToast(`회원 수정 실패: ${err.message}`);
+  }
 }
     
     function setSaveStatus(message, tone='ok') {
