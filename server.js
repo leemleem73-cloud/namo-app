@@ -442,6 +442,33 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ ok: true });
   });
 });
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ error: '이메일과 새 비밀번호를 입력하세요.' });
+    }
+
+    if (String(newPassword).length < 4) {
+      return res.status(400).json({ error: '비밀번호는 4자 이상 입력하세요.' });
+    }
+
+    const result = await runAsync(
+      `UPDATE users SET password=? WHERE email=?`,
+      [String(newPassword), String(email)]
+    );
+
+    if (!result || result.changes === 0) {
+      return res.status(404).json({ error: '해당 이메일의 회원을 찾을 수 없습니다.' });
+    }
+
+    res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
+  } catch (err) {
+    console.error('비밀번호 초기화 오류:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/api/auth/find-id', async (req, res) => {
   try {
