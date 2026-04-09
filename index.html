@@ -1134,27 +1134,6 @@ async function saveUserModal() {
     title: toText($('userEditTitle').value),
     role: toText($('userEditRole').value),
     status: toText($('userEditStatus').value)
-  };
-
-  if (!payload.name) {
-    showToast('이름을 입력하세요.');
-    return;
-  }
-
-  if (!payload.email) {
-    showToast('이메일을 입력하세요.');
-    return;
-  }
-
-  try {
-    const result = await api.put(`/api/admin/users/${id}`, payload);
-    showToast(result?.message || '회원 정보가 저장되었습니다.');
-    closeUserModal();
-    await loadAllUsers();
-  } catch (err) {
-    console.error(err);
-    showToast(`회원 수정 실패: ${err.message}`);
-  }
 }
     
     function setSaveStatus(message, tone='ok') {
