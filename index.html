@@ -1029,22 +1029,7 @@
     setAuthError(err.message || '로그인 실패');
   }
 }
-  function openUserModal(id) {
-  const user = (state.admin.users || []).find(u => String(u.id) === String(id));
-  if (!user) return;
-
-  state.userEditId = id;
-  $('userModalTitle').textContent = `${user.name || '회원'} 정보 수정`;
-
-  $('userEditName').value = user.name || '';
-  $('userEditEmail').value = user.email || '';
-  $('userEditDepartment').value = user.department || '';
-  $('userEditTitle').value = user.title || 'staff';
-  $('userEditRole').value = user.role || 'user';
-  $('userEditStatus').value = user.status || 'PENDING';
-
-  $('userModal').style.display = 'flex';
-}
+ 
 
 function closeUserModal() {
   $('userModal').style.display = 'none';
@@ -1116,7 +1101,17 @@ function closeUserModal() {
       el.className = tone === 'fail' ? 'save-status-fail' : 'save-status-ok';
     }
     function tickClock(){ $('clock').textContent = new Date().toLocaleString('ko-KR'); }
-    function showToast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(showToast.t); showToast.t=setTimeout(()=>el.classList.remove('show'),2200); }
+    function showToast(msg){
+  const el = $('toast');
+  if (!el) {
+    console.warn('toast element not found:', msg);
+    return;
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast.t);
+  showToast.t = setTimeout(() => el.classList.remove('show'), 2200);
+}
     function badgeState(t){ return t === '불합격' ? '<span class="state ng">불합격</span>' : '<span class="state ok">합격</span>'; }
     function calcRate(fail, qty){ const q=Number(qty||0), f=Number(fail||0); return q>0 ? Number(((f/q)*100).toFixed(2)) : 0; }
     function calcJudgeFromFail(fail){ return Number(fail||0) > 0 ? '불합격' : '합격'; }
