@@ -1084,6 +1084,9 @@ async function saveUserModal() {
     showToast(`회원 수정 실패: ${err.message}`);
   }
 }  
+  function changePassword() {
+  showToast('비밀번호 초기화 기능은 아직 연결되지 않았습니다.');
+}  
   function openUserModal(id) {
   const user = (state.admin.users || []).find(u => String(u.id) === String(id));
   if (!user) return;
