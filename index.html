@@ -1500,36 +1500,53 @@ async function deleteUser(id, name) {
   }
 }
 
-    async function loadFromServer(){
-      try {
-        const [suppliers, iqc, ipqc, oqc, worklog, changeLogs, nonconform] = await Promise.all([
-          api.get('/api/suppliers'),
-          api.get('/api/iqc'),
-          api.get('/api/ipqc'),
-          api.get('/api/oqc'),
-          api.get('/api/worklog'),
-          api.get('/api/change-logs'),
-          api.get('/api/nonconform').catch(() => [])
-        ]);
-        state.db.suppliers = Array.isArray(suppliers) ? suppliers : [];
-        state.db.iqc = Array.isArray(iqc) ? iqc : [];
-        state.db.ipqc = Array.isArray(ipqc) ? ipqc : [];
-        state.db.oqc = Array.isArray(oqc) ? oqc : [];
-        state.db.worklog = Array.isArray(worklog) ? worklog : [];
-        state.db.changeLogs = Array.isArray(changeLogs) ? changeLogs : [];
-        state.db.nonconform = Array.isArray(nonconform) ? nonconform : [];
-        refreshDashboard();
-        if (String(state.user.role).toLowerCase() === 'admin') {
-          await loadAllUsers();
-        }
-        setSaveStatus(`서버 동기화 완료: ${new Date().toLocaleString('ko-KR')}`, 'ok');
-        showToast('서버 데이터 동기화 완료');
-      } catch (err) {
-        console.error(err);
-        setSaveStatus(`서버 동기화 실패: ${err.message}`, 'fail');
-        showToast(`불러오기 실패: ${err.message}`);
-      }
+   async function loadFromServer(){
+  try {
+    const results = await Promise.allSettled([
+      api.get('/api/suppliers'),
+      api.get('/api/iqc'),
+      api.get('/api/ipqc'),
+      api.get('/api/oqc'),
+      api.get('/api/worklog'),
+      api.get('/api/change-logs'),
+      api.get('/api/nonconform')
+    ]);
+
+    const pick = i =>
+      results[i].status === 'fulfilled' && Array.isArray(results[i].value)
+        ? results[i].value
+        : [];
+
+    state.db.suppliers = pick(0);
+    state.db.iqc = pick(1);
+    state.db.ipqc = pick(2);
+    state.db.oqc = pick(3);
+    state.db.worklog = pick(4);
+    state.db.changeLogs = pick(5);
+    state.db.nonconform = pick(6);
+
+    refreshDashboard();
+
+    if (String(state.user.role).toLowerCase() === 'admin') {
+      await loadAllUsers();
     }
+
+    const hasFail = results.some(r => r.status === 'rejected');
+
+    if (hasFail) {
+      console.warn('일부 API 로딩 실패', results);
+      setSaveStatus(`일부 데이터 동기화 완료: ${new Date().toLocaleString('ko-KR')}`, 'fail');
+      showToast('일부 데이터만 불러왔습니다.');
+    } else {
+      setSaveStatus(`서버 동기화 완료: ${new Date().toLocaleString('ko-KR')}`, 'ok');
+      showToast('서버 데이터 동기화 완료');
+    }
+  } catch (err) {
+    console.error(err);
+    setSaveStatus(`서버 동기화 실패: ${err.message}`, 'fail');
+    showToast(`불러오기 실패: ${err.message}`);
+  }
+}
 
     function getRowIndexById(type,id){ return state.db[type].findIndex(r => String(r.id) === String(id)); }
     function editRowById(type,id){
