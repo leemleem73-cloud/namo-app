@@ -1573,34 +1573,14 @@ async function deleteUser(id, name) {
 
     function getRowIndexById(type,id){ return state.db[type].findIndex(r => String(r.id) === String(id)); }
    function editRowById(type, id) {
-  if (type === 'users') {
-    const user = (state.admin.users || []).find(u => String(u.id) === String(id));
-    if (!user) return;
-
-    const name = prompt('이름', user.name || '');
-    if (name === null) return;
-
-    const email = prompt('이메일', user.email || '');
-    if (email === null) return;
-
-    const department = prompt('부서 / 팀', user.department || '');
-    if (department === null) return;
-
-    const title = prompt('직책', user.title || 'staff');
-    if (title === null) return;
-
-    const role = prompt('권한', user.role || 'user');
-    if (role === null) return;
-
-    const status = prompt('상태', user.status || 'PENDING');
-    if (status === null) return;
-
-    fetch(`/api/admin/users/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name, email, department, title, role, status })
-    })
+  <td>
+  ${user.status === 'PENDING' ? `
+    <button class="btn b3" style="height:32px;padding:0 10px" onclick="approveUser('${user.id}')">승인</button>
+    <button class="btn b4" style="height:32px;padding:0 10px" onclick="rejectUser('${user.id}')">반려</button>
+  ` : ''}
+  <button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('users', '${user.id}')">수정</button>
+  <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteUser('${user.id}', '${user.name || ''}')">삭제</button>
+</td>
       .then(async res => {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
