@@ -370,7 +370,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
     await runAsync(
   `INSERT INTO users (name, email, password, department, role, status, title, createdAt)
-   VALUES (?, ?, ?, ?, 'user', 'APPROVED', 'staff', datetime('now', 'localtime'))`,
+   VALUES (?, ?, ?, ?, 'user', 'PENDING', 'staff', datetime('now', 'localtime'))`,
   [name, normalizeEmail(email), hashed, department || '']
 );
 
@@ -454,9 +454,11 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(400).json({ error: '비밀번호는 4자 이상 입력하세요.' });
     }
 
+    const hashed = await bcrypt.hash(String(newPassword), 10);
+
     const result = await runAsync(
       `UPDATE users SET password=? WHERE email=?`,
-      [String(newPassword), String(email)]
+      [hashed, normalizeEmail(email)]
     );
 
     if (!result || result.changes === 0) {
