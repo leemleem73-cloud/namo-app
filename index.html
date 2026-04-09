@@ -1601,7 +1601,7 @@ async function deleteUser(id, name) {
 }
       
     function deleteRowById(type,id){
-      const idx=getRowIndexById(type,id); if(idx<0) return;
+     
       if(type === 'suppliers') deleteSupplier(idx);
       else if(type === 'worklog') deleteWorklog(idx);
       else deleteInspection(type, idx);
