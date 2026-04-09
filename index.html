@@ -1123,19 +1123,6 @@ function closeUserModal() {
   state.userEditId = null;
 }
 
-async function saveUserModal() {
-  const id = state.userEditId;
-  if (!id) return;
-
-  const payload = {
-    name: toText($('userEditName').value),
-    email: toText($('userEditEmail').value),
-    department: toText($('userEditDepartment').value),
-    title: toText($('userEditTitle').value),
-    role: toText($('userEditRole').value),
-    status: toText($('userEditStatus').value)
-}
-    
     function setSaveStatus(message, tone='ok') {
       const el = $('saveStatus');
       if (!el) return;
