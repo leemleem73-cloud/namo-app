@@ -1930,6 +1930,62 @@ function formatTitle(title) {
     default: return title || '-';
   }
 } 
+function formatTitle(title) {
+  switch (String(title || '').toLowerCase()) {
+    case 'staff': return '사원';
+    case 'assistant_manager': return '대리';
+    case 'manager': return '과장';
+    case 'deputy_general_manager': return '차장';
+    case 'general_manager': return '부장';
+    case 'admin': return '관리자';
+    default: return title || '-';
+  }
+}
+
+function submitAuth() {}
+
+const __oldEditRowById = typeof editRowById === 'function' ? editRowById : null;
+
+function editRowById(type, id) {
+  if (type === 'users') {
+    const user = (state.admin.users || []).find(u => String(u.id) === String(id));
+    if (!user) return;
+
+    const name = prompt('이름', user.name || '');
+    if (name === null) return;
+
+    const email = prompt('이메일', user.email || '');
+    if (email === null) return;
+
+    const department = prompt('부서 / 팀', user.department || '');
+    if (department === null) return;
+
+    const title = prompt('직책', user.title || 'staff');
+    if (title === null) return;
+
+    const role = prompt('권한', user.role || 'user');
+    if (role === null) return;
+
+    const status = prompt('상태', user.status || 'PENDING');
+    if (status === null) return;
+
+    fetch(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, department, title, role, status })
+    })
+      .then(res => res.json())
+      .then(() => loadAllUsers())
+      .catch(err => alert(err.message));
+
+    return;
+  }
+
+  if (__oldEditRowById) {
+    return __oldEditRowById(type, id);
+  }
+}
+  
 </script>
 </body>
 </html>
