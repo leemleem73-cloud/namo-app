@@ -1441,22 +1441,12 @@
       `).join('');
     }
 
-    async function loadAllUsers() {
+   async function loadAllUsers() {
   try {
-    const me = await api.get('/api/auth/me');
-    const role = String(me?.role || '').toLowerCase();
-
-    if (role !== 'admin') {
+    if (String(state.user.role).toLowerCase() !== 'admin') {
       showToast('관리자만 접근 가능합니다.');
       return;
     }
-
-    state.user = {
-      id: me?.id || '',
-      name: me?.name || '사용자',
-      role,
-      authenticated: true
-    };
 
     const rows = await api.get('/api/admin/users');
     state.admin.users = Array.isArray(rows) ? rows : [];
