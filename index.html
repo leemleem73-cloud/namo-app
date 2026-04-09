@@ -1847,7 +1847,7 @@ async function deleteUser(id, name) {
       setInterval(tickClock, 1000);
       renderTraceEmptyRows();
       switchAuthMode('login');
-      $('pendingUserBody').innerHTML = `<tr><td colspan="8" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`;
+      $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`;
 
       document.addEventListener('input', e => {
         if(['reg_qty','reg_fail'].includes(e.target.id)) updateRegisterRate();
