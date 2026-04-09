@@ -34,7 +34,7 @@ app.use(express.static(__dirname));
 // DB 경로 설정
 // =============================
 function resolveDbPath() {
-  return path.join(__dirname, 'quality.db');
+  return process.env.DB_PATH || '/var/data/quality.db';
 }
 
 const dbPath = resolveDbPath();
