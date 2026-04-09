@@ -1835,37 +1835,7 @@ async function deleteUser(id, name) {
     initApp();
   </script>
 <script>
-async function login() {
-  const emailInput = document.getElementById('authEmail');
-  const passwordInput = document.getElementById('authPassword');
 
-  if (!emailInput || !passwordInput) {
-    alert('입력창 못 찾음');
-    return;
-  }
-
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || '로그인 실패');
-      return;
-    }
-
-    window.location.reload();
-  } catch (err) {
-    alert('서버 오류');
-  }
-}
 </script>
 </body>
 </html>
