@@ -1265,7 +1265,9 @@
      const ipqcRows = sliceForUI(state.db.ipqc);
      const oqcRows = sliceForUI(state.db.oqc);
 
-      if(!iqcRows.length) renderEmptyRow('iqcBody',10); else $('iqcBody').innerHTML = iqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.lot)}</td><td>${escapeHtml(r.supplier || '-')}</td><td>${escapeHtml(r.item || '-')}</td><td>${escapeHtml(r.inspector || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${calcRate(r.fail, r.qty).toFixed(2)}%</td><td>${badgeState(calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('iqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('iqc','${r.id}')">삭제</button></td></tr>`).join('');
+      if(!iqcRows.length) renderEmptyRow('iqcBody',10); else $('iqcBody').innerHTML = iqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.lot)}</td><td>${escapeHtml(r.supplier || '-')}</td><td>${escapeHtml(r.item || '-')}</td><td>${escapeHtml(r.inspector || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${calcRate(r.fail, r.qty).toFixed(2)}%</td><td>${badgeState(calcJudgeFromFail(r.fail))}</td><td>
+      <button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('iqc','${r.id}')">수정</button> 
+      <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('iqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!ipqcRows.length) renderEmptyRow('ipqcBody',11); else $('ipqcBody').innerHTML = ipqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('ipqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('ipqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!oqcRows.length) renderEmptyRow('oqcBody',16); else $('oqcBody').innerHTML = oqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.customer || '-')}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${escapeHtml(r.adhesion || '-')}</td><td>${escapeHtml(r.resistance || '-')}</td><td>${escapeHtml(r.swelling || '-')}</td><td>${escapeHtml(r.moisture || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('oqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('oqc','${r.id}')">삭제</button></td></tr>`).join('');
 
@@ -1555,6 +1557,48 @@ async function deleteUser(id, name) {
 
     function getRowIndexById(type,id){ return state.db[type].findIndex(r => String(r.id) === String(id)); }
     function editRowById(type,id){
+      if (type === 'users') {
+    const user = (state.admin.users || []).find(u => String(u.id) === String(id));
+    if (!user) return;
+
+    const name = prompt('이름', user.name || '');
+    if (name === null) return;
+
+    const email = prompt('이메일', user.email || '');
+    if (email === null) return;
+
+    const department = prompt('부서 / 팀', user.department || '');
+    if (department === null) return;
+
+    const title = prompt('직책', user.title || 'staff');
+    if (title === null) return;
+
+    const role = prompt('권한', user.role || 'user');
+    if (role === null) return;
+
+    const status = prompt('상태', user.status || 'PENDING');
+    if (status === null) return;
+
+    fetch(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, department, title, role, status })
+    })
+    .then(res => res.json())
+    .then(() => loadAllUsers())
+    .catch(err => alert(err.message));
+
+    return;
+  }
+
+  // 기존 로직
+  const idx = getRowIndexById(type,id);
+  if(idx < 0) return;
+
+  if(type === 'suppliers') openSupplierModal(idx);
+  else if(type === 'worklog') openWorklogModal(idx);
+  else openRegisterModal(type, idx);
+}
       const idx=getRowIndexById(type,id); if(idx<0) return;
       if(type === 'suppliers') openSupplierModal(idx);
       else if(type === 'worklog') openWorklogModal(idx);
