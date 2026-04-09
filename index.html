@@ -1035,11 +1035,6 @@ async function saveUserModal() {
     default: return title || '-';
   }
 }
-
-  const el = $('authError');
-  el.textContent = message;
-  el.classList.toggle('show', !!message);
-}
     function setAuthError(message=''){
       const el = $('authError');
       el.textContent = message;
