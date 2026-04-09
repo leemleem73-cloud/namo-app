@@ -34,9 +34,6 @@ app.use(express.static(__dirname));
 // DB 경로 설정
 // =============================
 function resolveDbPath() {
-  if (process.env.DB_PATH && process.env.DB_PATH.trim() !== '') {
-    return process.env.DB_PATH.trim();
-  }
   return path.join(__dirname, 'quality.db');
 }
 
@@ -763,7 +760,7 @@ app.delete('/api/iqc/:id', async (req, res) => {
 });
 
 // =============================
-// PQC / IPQC
+// PQC / PQC
 // =============================
 async function listIpqc(req, res) {
   try {
