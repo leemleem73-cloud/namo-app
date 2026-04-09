@@ -1878,8 +1878,20 @@ async function deleteUser(id, name) {
     initApp();
   </script>
 <script>
-
 </script>
+function editRowById(type, id) {
+  if (type === 'users') {
+    openUserEditModal(id);
+    return;
+  }
+
+  const idx = getRowIndexById(type, id);
+  if (idx < 0) return;
+
+  if (type === 'suppliers') openSupplierModal(idx);
+  else if (type === 'worklog') openWorklogModal(idx);
+  else openRegisterModal(type, idx);
+}  
 </body>
 </html>
 
