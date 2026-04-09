@@ -1601,11 +1601,13 @@ async function deleteUser(id, name) {
 }
       
     function deleteRowById(type,id){
-     
-      if(type === 'suppliers') deleteSupplier(idx);
-      else if(type === 'worklog') deleteWorklog(idx);
-      else deleteInspection(type, idx);
-    }
+  const idx = getRowIndexById(type,id);
+  if(idx < 0) return;
+
+  if(type === 'suppliers') deleteSupplier(idx);
+  else if(type === 'worklog') deleteWorklog(idx);
+  else deleteInspection(type, idx);
+}
 
     function updateRegisterRate(){
       const qtyEl=$('reg_qty'), failEl=$('reg_fail'), rateEl=$('reg_rate');
@@ -1927,6 +1929,7 @@ function formatTitle(title) {
     default: return title || '-';
   }
 }
+</script>
 
 function submitAuth() {}
 
