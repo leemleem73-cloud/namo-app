@@ -986,50 +986,7 @@
     const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
     const escapeHtml = str => String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
     const normalizeKeyword = v => toText(v).replace(/\s+/g,'').toUpperCase();
-    async function submitAuth() {
-    
-  const isSignup = state.authMode === 'signup';
-
-  const email = toText($('authEmail')?.value);
-  const password = toText($('authPassword')?.value);
-
-  if (!email || !password) {
-    setAuthError('이메일과 비밀번호를 입력하세요.');
-    return;
-  }
-
-  try {
-    const url = isSignup ? '/api/auth/signup' : '/api/auth/login';
-
-    const payload = { email, password };
-
-    if (isSignup) {
-      payload.name = toText($('authName')?.value);
-      payload.company = toText($('authCompany')?.value);
-    }
-
-    const res = await api.post(url, payload);
-
-    if (!isSignup) {
-      state.user = res.user;
-      state.user.authenticated = true;
-
-      $('authSection').style.display = 'none';
-      $('appShell').classList.remove('hidden');
-
-      await loadAllUsers();
-      renderUserBadge();
-    } else {
-      showToast(res?.message || '회원가입 요청 완료');
-      switchAuthMode('login');
-    }
-
-  } catch (err) {
-    console.error(err);
-    setAuthError(err.message || '로그인 실패');
-  }
-}
- 
+  
 
 function closeUserModal() {
   $('userModal').style.display = 'none';
