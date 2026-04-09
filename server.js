@@ -372,10 +372,10 @@ app.post('/api/auth/signup', async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     await runAsync(
-      `INSERT INTO users (name, email, password, department, role, status, title, createdAt)
-       VALUES (?, ?, ?, ?, 'user', 'PENDING', 'staff', datetime('now', 'localtime'))`,
-      [name, normalizeEmail(email), hashed, department || '']
-    );
+  `INSERT INTO users (name, email, password, department, role, status, title, createdAt)
+   VALUES (?, ?, ?, ?, 'user', 'APPROVED', 'staff', datetime('now', 'localtime'))`,
+  [name, normalizeEmail(email), hashed, department || '']
+);
 
     res.json({ ok: true, message: '회원가입 신청이 완료되었습니다.' });
   } catch (err) {
