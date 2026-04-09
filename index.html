@@ -1875,6 +1875,17 @@ async function changePassword() {
     alert(err.message || '비밀번호 변경 실패');
   }
 }
+function formatTitle(title) {
+  switch (String(title || '').toLowerCase()) {
+    case 'staff': return '사원';
+    case 'assistant_manager': return '대리';
+    case 'manager': return '과장';
+    case 'deputy_general_manager': return '차장';
+    case 'general_manager': return '부장';
+    case 'admin': return '관리자';
+    default: return title || '-';
+  }
+} 
 </script>
 </body>
 </html>
