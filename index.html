@@ -511,9 +511,12 @@
   </div>
 
   <div class="auth-footer">
-    <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
+  <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <button type="button" class="btn b2" onclick="changePassword()">비밀번호 초기화</button>
     <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
   </div>
+</div>
 </section>
     </div>
   </div>
@@ -1835,7 +1838,43 @@ async function deleteUser(id, name) {
     initApp();
   </script>
 <script>
+<script>
+async function changePassword() {
+  try {
+    const email = prompt('아이디(이메일)를 입력하세요');
+    if (!email) return;
 
+    const currentPassword = prompt('현재 비밀번호를 입력하세요');
+    if (!currentPassword) return;
+
+    const newPassword = prompt('새 비밀번호를 입력하세요');
+    if (!newPassword) return;
+
+    const confirmPassword = prompt('새 비밀번호를 다시 입력하세요');
+    if (!confirmPassword) return;
+
+    if (newPassword !== confirmPassword) {
+      alert('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    const result = await api.post('/api/auth/change-password', {
+      email,
+      currentPassword,
+      newPassword
+    });
+
+    if (result?.ok) {
+      alert('비밀번호 변경 완료');
+    } else {
+      alert(result?.error || '비밀번호 변경 실패');
+    }
+  } catch (err) {
+    console.error(err);
+    alert(err.message || '비밀번호 변경 실패');
+  }
+}
+</script>
 </script>
 </body>
 </html>
