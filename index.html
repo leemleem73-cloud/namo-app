@@ -870,6 +870,7 @@
                     <th>이름</th>
                     <th>이메일</th>
                     <th>부서 / 팀</th>
+                    <th>직책</th>
                     <th>권한</th>
                     <th>상태</th>
                     <th>가입일</th>
@@ -1415,7 +1416,7 @@
       $('pendingUserCount').textContent = `${rows.length}명`;
 
       if (!rows.length) {
-        $('pendingUserBody').innerHTML = `<tr><td colspan="8" class="empty-row">등록된 회원이 없습니다.</td></tr>`;
+     $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">등록된 회원이 없습니다.</td></tr>`;
         return;
       }
 
@@ -1425,6 +1426,7 @@
           <td>${escapeHtml(user.name || '')}</td>
           <td>${escapeHtml(user.email || '')}</td>
           <td>${escapeHtml(user.department || '-')}</td>
+          <td>${formatTitle(user.title)}</td>
           <td>${escapeHtml(user.role || 'user')}</td>
           <td>${renderUserStatus(user.status)}</td>
           <td>${escapeHtml(user.createdAt || '-')}</td>
