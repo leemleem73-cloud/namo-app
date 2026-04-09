@@ -1155,25 +1155,41 @@ function closeUserModal() {
     }
 
     async function bootstrapUser() {
-      try {
-        const me = await api.get('/api/auth/me');
-        const role = String(me?.role || 'user').toLowerCase();
+  try {
+    const res = await fetch('/api/auth/me', {
+      method: 'GET',
+      credentials: 'include'
+    });
 
-        state.user = {
-          id: me?.id || '',
-          name: toText(me?.name || '사용자'),
-          role,
-          authenticated: true
-        };
-
-        openDashboard();
-        return true;
-      } catch (_) {
-        state.user = { id:'', name:'', role:'guest', authenticated:false };
-        closeDashboard();
-        return false;
-      }
+    if (res.status === 401) {
+      state.user = { id:'', name:'', role:'guest', authenticated:false };
+      closeDashboard();
+      return false;
     }
+
+    if (!res.ok) {
+      throw new Error(`사용자 확인 실패 (${res.status})`);
+    }
+
+    const me = await res.json();
+    const role = String(me?.role || 'user').toLowerCase();
+
+    state.user = {
+      id: me?.id || '',
+      name: toText(me?.name || '사용자'),
+      role,
+      authenticated: true
+    };
+
+    openDashboard();
+    return true;
+  } catch (err) {
+    console.error(err);
+    state.user = { id:'', name:'', role:'guest', authenticated:false };
+    closeDashboard();
+    return false;
+  }
+}
 
     async function submitAuth() {
   const mode = state.authMode;
