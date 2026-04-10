@@ -513,13 +513,15 @@
   <div class="auth-footer">
     <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
 
-  <div style="display:flex; gap:12px; margin-top:20px; margin-bottom:20px;">
-  <button type="button" onclick="findUserId()" style="padding:10px 18px; border:none; border-radius:10px; background:#e9eef7; color:#163d6b; font-weight:700; cursor:pointer;">
-    ID 찾기
+ <div style="display:flex; gap:12px; margin-top:20px; margin-bottom:20px;">
+  <button
+    type="button"
+    onclick="changePassword()"
+    style="padding:10px 18px; border:none; border-radius:10px; background:#e9eef7; color:#163d6b; font-weight:700; cursor:pointer;"
+  >
+    비밀번호 변경
   </button>
-
-  <button type="button" onclick="changePassword()" style="padding:10px 18px; border:none; border-radius:10px; background:#e9eef7; color:#163d6b; font-weight:700; cursor:pointer;">
-    비번 변경하기
+</div>
   </button>
 </div>
     <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
@@ -1000,12 +1002,15 @@
     }
 
     function renderUserBadge() {
-      const badge = $('userBadge');
-      badge.textContent = state.user.authenticated ? `${state.user.name || '사용자'} · ${state.user.role}` : '비로그인';
-      const isAdmin = String(state.user.role).toLowerCase() === 'admin';
-      $('deleteAllBtn').disabled = !isAdmin;
-      $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
-    }
+  const badge = $('userBadge');
+  badge.textContent = state.user.authenticated
+    ? `${state.user.name || '사용자'} · ${state.user.role}`
+    : '비로그인';
+
+  const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+  $('deleteAllBtn').disabled = !isAdmin;
+  $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
+}
 
     function openDashboard(){
       $('authGate').classList.add('hidden');
@@ -1418,41 +1423,56 @@
   return `<span class="state hold">${escapeHtml(status || '-')}</span>`;
 }
     function renderPendingUsers() {
-      const rows = state.admin.users || [];
-      $('pendingUserCount').textContent = `${rows.length}명`;
+  const rows = state.admin.users || [];
+  $('pendingUserCount').textContent = `${rows.length}명`;
 
-      if (!rows.length) {
-        $('pendingUserBody').innerHTML = `<tr><td colspan="8" class="empty-row">등록된 회원이 없습니다.</td></tr>`;
-        return;
-      }
+  if (!rows.length) {
+    $('pendingUserBody').innerHTML =
+      `<tr><td colspan="8" class="empty-row">등록된 회원이 없습니다.</td></tr>`;
+    return;
+  }
 
-      $('pendingUserBody').innerHTML = rows.map((user, idx) => `
-        <tr>
-          <td>${idx + 1}</td>
-          <td>${escapeHtml(user.name || '')}</td>
-          <td>${escapeHtml(user.email || '')}</td>
-          <td>${escapeHtml(user.department || '-')}</td>
-          <td>${escapeHtml(user.role || 'user')}</td>
-          <td>${renderUserStatus(user.status)}</td>
-          <td>${escapeHtml(user.createdAt || '-')}</td>
-          <td>
-            <button class="btn b3" style="height:32px;padding:0 10px" onclick="approveUser('${user.id}')">승인</button>
-            <button class="btn b4" style="height:32px;padding:0 10px" onclick="rejectUser('${user.id}')">반려</button>
-            <button class="btn b2" style="height:32px;padding:0 10px" onclick="deleteUser('${user.id}', '${user.name || ''}')">삭제</button>
-          </td>
-        </tr>
-      `).join('');
+  const myId = String(state.user.id || '');
+  const adminCount = rows.filter(user => String(user.role || '').toLowerCase() === 'admin').length;
+
+  $('pendingUserBody').innerHTML = rows.map((user, idx) => {
+    const userId = String(user.id || '');
+    const userRole = String(user.role || '').toLowerCase();
+    const isSelf = userId === myId;
+    const isLastAdmin = userRole === 'admin' && adminCount <= 1;
+    const canDelete = !isSelf && !isLastAdmin;
+
+    let deleteButton = '';
+    if (canDelete) {
+      deleteButton = `<button class="btn b2" style="height:32px;padding:0 10px" onclick="deleteUser('${user.id}', '${escapeHtml(user.name || '')}')">삭제</button>`;
+    } else if (isSelf) {
+      deleteButton = `<button class="btn b2" style="height:32px;padding:0 10px" disabled>본인삭제불가</button>`;
+    } else if (isLastAdmin) {
+      deleteButton = `<button class="btn b2" style="height:32px;padding:0 10px" disabled>마지막관리자</button>`;
     }
 
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(user.name || '')}</td>
+        <td>${escapeHtml(user.email || '')}</td>
+        <td>${escapeHtml(user.department || '-')}</td>
+        <td>${escapeHtml(user.role || 'user')}</td>
+        <td>${renderUserStatus(user.status)}</td>
+        <td>-</td>
+        <td>
+          <button class="btn b3" style="height:32px;padding:0 10px" onclick="approveUser('${user.id}')">승인</button>
+          <button class="btn b4" style="height:32px;padding:0 10px" onclick="rejectUser('${user.id}')">반려</button>
+          ${deleteButton}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
     async function loadAllUsers() {
   try {
     const me = await api.get('/api/auth/me');
     const role = String(me?.role || '').toLowerCase();
-
-    if (role !== 'admin') {
-      showToast('관리자만 접근 가능합니다.');
-      return;
-    }
 
     state.user = {
       id: me?.id || '',
@@ -1461,11 +1481,21 @@
       authenticated: true
     };
 
+    renderUserBadge();
+
+    if (role !== 'admin') {
+      $('pendingUserBody').innerHTML =
+        `<tr><td colspan="8" class="empty-row">관리자만 회원목록을 볼 수 있습니다.</td></tr>`;
+      return;
+    }
+
     const rows = await api.get('/api/admin/users');
     state.admin.users = Array.isArray(rows) ? rows : [];
     renderPendingUsers();
   } catch (err) {
     console.error(err);
+    $('pendingUserBody').innerHTML =
+      `<tr><td colspan="8" class="empty-row">회원목록을 불러오지 못했습니다.</td></tr>`;
     showToast(`전체 회원 조회 실패: ${err.message}`);
   }
 }
@@ -1497,6 +1527,28 @@ async function rejectUser(id) {
 }
 
 async function deleteUser(id, name) {
+  const rows = state.admin.users || [];
+  const myId = String(state.user.id || '');
+  const target = rows.find(user => String(user.id) === String(id));
+
+  if (!target) {
+    showToast('삭제할 회원 정보를 찾을 수 없습니다.');
+    return;
+  }
+
+  const targetRole = String(target.role || '').toLowerCase();
+  const adminCount = rows.filter(user => String(user.role || '').toLowerCase() === 'admin').length;
+
+  if (String(id) === myId) {
+    showToast('본인 계정은 삭제할 수 없습니다.');
+    return;
+  }
+
+  if (targetRole === 'admin' && adminCount <= 1) {
+    showToast('최소 1명의 관리자는 유지되어야 합니다.');
+    return;
+  }
+
   const ok = confirm(`${name || '해당 회원'} 계정을 삭제하시겠습니까?`);
   if (!ok) return;
 
@@ -1861,50 +1913,30 @@ async function login() {
 }
 </script>
 <script>
-async function findUserId() {
-  const name = prompt('이름 입력');
-  if (!name) return;
-
-  const department = prompt('부서 입력');
-  if (!department) return;
-
-  const res = await fetch('/api/auth/find-id', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, department })
-  });
-
-  const data = await res.json();
-
-  if (data.ok) {
-    alert('ID(이메일): ' + data.email);
-  } else {
-    alert(data.error || '찾기 실패');
-  }
-}
-
 async function changePassword() {
-  const email = prompt('아이디(이메일)');
-  if (!email) return;
-
   const currentPassword = prompt('현재 비밀번호');
   if (!currentPassword) return;
 
-  const newPassword = prompt('새 비밀번호');
+  const newPassword = prompt('새 비밀번호 (8자 이상)');
   if (!newPassword) return;
 
-  const res = await fetch('/api/auth/change-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, currentPassword, newPassword })
-  });
+  try {
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (data.ok) {
-    alert('비밀번호 변경 완료');
-  } else {
-    alert(data.error || '실패');
+    if (data.ok) {
+      alert('비밀번호 변경 완료');
+    } else {
+      alert(data.error || '실패');
+    }
+  } catch (err) {
+    alert('서버 오류');
   }
 }
 </script>
