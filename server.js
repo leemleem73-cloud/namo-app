@@ -154,7 +154,7 @@ db.serialize(() => {
       password TEXT,
       department TEXT,
       role TEXT DEFAULT 'user',
-      status TEXT DEFAULT 'PENDING'
+      status TEXT DEFAULT 'APPROVED'
     )
   `);
 
@@ -346,7 +346,7 @@ app.post('/api/auth/signup', async (req, res) => {
         department || '',
         'staff',
         'user',
-        'PENDING',
+        'APPROVED',
         todayText()
       ]
     );
@@ -535,7 +535,7 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
         department || '',
         title || 'staff',
         role || 'user',
-        status || 'PENDING',
+        status || 'APPROVED',
         id
       ]
     );
