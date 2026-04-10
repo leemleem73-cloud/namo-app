@@ -22,8 +22,8 @@ app.use(
     proxy: true,
     cookie: {
       httpOnly: true,
-      sameSite: isProduction ? 'none' : 'lax',
-      secure: isProduction,
+     sameSite: 'none',
+      secure: true,
       maxAge: 1000 * 60 * 60 * 8
     }
   })
@@ -436,8 +436,8 @@ app.post('/api/auth/logout', (req, res) => {
 
    res.clearCookie('connect.sid', {
   httpOnly: true,
-  sameSite: isProduction ? 'none' : 'lax',
-  secure: isProduction
+  sameSite: 'none',
+  secure: true
 });
 
     res.json({ ok: true });
