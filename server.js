@@ -434,11 +434,11 @@ app.post('/api/auth/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: '로그아웃 실패' });
 
-    res.clearCookie('connect.sid', {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: isProduction
-    });
+   res.clearCookie('connect.sid', {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' : 'lax',
+  secure: isProduction
+});
 
     res.json({ ok: true });
   });
