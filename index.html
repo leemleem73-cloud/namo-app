@@ -902,6 +902,25 @@
   <div id="nonconformModal" class="modal-bg"><div class="modal"><h3 id="nonconformModalTitle">부적합 등록</h3><div class="form-grid"><div class="field"><label>발생일자</label><input id="ncDate" type="date"></div><div class="field"><label>구분</label><select id="ncType"><option>입고</option><option>공정</option><option>출하</option><option>기타</option></select></div><div class="field"><label>LOT No</label><input id="ncLot"></div><div class="field"><label>품목명</label><input id="ncItem"></div><div class="field"><label>부적합 내용</label><input id="ncIssue"></div><div class="field"><label>원인</label><input id="ncCause"></div><div class="field"><label>조치내용</label><input id="ncAction"></div><div class="field"><label>담당자</label><input id="ncOwner"></div><div class="field"><label>상태</label><select id="ncStatus"><option>대기</option><option>진행중</option><option>완료</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeNonconformModal()">취소</button><button class="btn b1" onclick="saveNonconformModal()">저장</button></div></div></div>
 
   <div id="barcodeModal" class="modal-bg"><div class="modal"><h3 style="margin-top:0">바코드 생성</h3><div class="form-grid"><div class="field"><label>바코드 값</label><input id="barcodeValue" placeholder="예: DBA1501 또는 8801234567890"></div><div class="field"><label>형식</label><select id="barcodeFormat"><option value="CODE128">CODE128</option><option value="CODE39">CODE39</option><option value="EAN13">EAN13</option><option value="EAN8">EAN8</option></select></div><div class="field"><label>표시 텍스트</label><input id="barcodeLabel" placeholder="비워두면 바코드 값 표시"></div><div class="field"><label>높이</label><select id="barcodeHeight"><option value="60">60</option><option value="80" selected>80</option><option value="100">100</option><option value="120">120</option></select></div></div><div class="actions" style="justify-content:flex-start;margin-top:4px"><button class="btn b1" onclick="generateBarcodePreview()">생성</button><button class="btn b3" onclick="downloadBarcodePng()">PNG 저장</button><button class="btn b2" onclick="printBarcodeLabel()">인쇄</button></div><div class="barcode-preview-wrap"><div class="barcode-meta"><strong>미리보기</strong><span class="badge" id="barcodeStatus">생성 대기</span></div><div class="barcode-preview-box"><svg id="barcodeSvg"></svg></div><div class="barcode-note">LOT No, 완제품 LOT, 원자재 LOT를 입력해 라벨용 바코드를 바로 생성할 수 있습니다.</div></div><div class="actions"><button class="btn b2" onclick="closeBarcodeModal()">닫기</button></div></div></div>
+  <h3 style="margin-top:0">비밀번호 초기화</h3>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>이메일</label>
+        <input id="resetEmail" type="email" placeholder="가입한 이메일 입력" />
+      </div>
+    </div>
+
+    <div class="auth-hint" style="margin-top:8px">
+      가입한 이메일을 입력한 뒤 비밀번호를 초기화합니다.
+    </div>
+
+    <div class="actions">
+      <button class="btn b2" onclick="closePasswordResetModal()">취소</button>
+      <button class="btn b4" onclick="submitPasswordReset()">초기화</button>
+    </div>
+  </div>
+</div>
 
   <div id="toast" class="toast"></div>
 
