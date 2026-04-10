@@ -638,17 +638,12 @@
     default: return title || '-';
   }
 }
-    function setAuthError(message=''){ const el = $('authError'); el.textContent = message; el.classList.tofunction setAuthError(message = '') {
+  function setAuthError(message = '') {
   const el = $('authError');
   if (!el) return;
   el.textContent = message;
   el.classList.toggle('show', !!message);
-}(message = '') {
-  const el = $('authError');
-  if (!el) return;
-  el.textContent = message;
-  el.classList.toggle('show', !!message);
-}ggle('show', !!message); }
+}
     function switchAuthMode(mode){
       state.authMode = mode;
       const isSignup = mode === 'signup';
