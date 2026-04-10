@@ -189,16 +189,18 @@ async function bootstrapUser(showError = false){
       credentials: 'include'
     });
 
-    if (res.status === 401) {
-      state.user = {
-        id: '',
-        name: '',
-        role: 'guest',
-        authenticated: false
-      };
-      closeDashboard();
-      return false;
-    }
+const me = await res.json();
+
+if (!me || me.authenticated === false) {
+  state.user = {
+    id: '',
+    name: '',
+    role: 'guest',
+    authenticated: false
+  };
+  closeDashboard();
+  return false;
+}
 
     if (!res.ok) {
       throw new Error(`사용자 확인 실패 (${res.status})`);
