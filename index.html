@@ -313,7 +313,7 @@
         <div class="auth-footer">
           <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn b2" onclick="changePassword()">비밀번호 초기화</button>
+           <button type="button" class="btn b2" onclick="openResetPasswordModal()">비밀번호 초기화</button>
             <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
           </div>
         </div>
@@ -888,5 +888,36 @@
     initApp();
   </script>
   <div id="toast" class="toast"></div>
+  <div id="resetPasswordModal" class="modal-bg">
+  <div class="modal">
+    <h3>비밀번호 재설정</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>이름</label>
+        <input id="resetName">
+      </div>
+      <div class="field">
+        <label>이메일</label>
+        <input id="resetEmail" type="email">
+      </div>
+      <div class="field">
+        <label>부서 / 팀</label>
+        <input id="resetDepartment">
+      </div>
+      <div class="field">
+        <label>새 비밀번호</label>
+        <input id="resetNewPassword" type="password">
+      </div>
+      <div class="field">
+        <label>새 비밀번호 확인</label>
+        <input id="resetNewPasswordConfirm" type="password">
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn b2" onclick="closeResetPasswordModal()">취소</button>
+      <button type="button" class="btn b1" onclick="submitResetPassword()">변경</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
