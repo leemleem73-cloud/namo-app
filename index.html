@@ -182,7 +182,7 @@ function closeDashboard(){
   renderUserBadge();
 }
 
-async function bootstrapUser(){
+async function bootstrapUser(showError = false){
   try{
     const res = await fetch('/api/auth/me', {
       method: 'GET',
@@ -217,7 +217,10 @@ async function bootstrapUser(){
     openDashboard();
     return true;
   } catch (err) {
-    console.error('bootstrapUser error:', err);
+    if (showError) {
+      console.error('bootstrapUser error:', err);
+    }
+
     state.user = {
       id: '',
       name: '',
@@ -228,7 +231,6 @@ async function bootstrapUser(){
     return false;
   }
 }
-
 async function submitAuth(){
   const mode = state.authMode;
   const name = toText($('authName').value);
@@ -269,15 +271,16 @@ async function submitAuth(){
 
     await api.post('/api/auth/login', { email, password });
 
-    let ok = await bootstrapUser();
+   let ok = await bootstrapUser(true);
     if (!ok) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      ok = await bootstrapUser();
+  await new Promise(resolve => setTimeout(resolve, 500));
+  ok = await bootstrapUser(true);
+}
     }
 
     if (!ok) {
-      throw new Error('로그인은 되었지만 사용자 정보를 불러오지 못했습니다. 세션 또는 쿠키 설정을 확인하세요.');
-    }
+  throw new Error('로그인은 되었지만 사용자 정보를 불러오지 못했습니다. 다시 시도하세요.');
+}
 
     await loadFromServer();
 
