@@ -1865,7 +1865,7 @@ function submitPasswordReset(){
       document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
       $(`panel-${name}`).classList.add('active');
     }
-    function getSelectedDateParts(){
+    
   return {
     year: $('yearSel').value === 'all' ? 'all' : String($('yearSel').value),
     month: $('monthSel').value === 'all' ? 'all' : pad($('monthSel').value),
