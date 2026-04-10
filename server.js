@@ -9,17 +9,9 @@ require('dotenv').config();
 const app = express();
 
 app.set('trust proxy', 1);
-app.disable('x-powered-by');
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Referrer-Policy', 'no-referrer');
-  next();
-});
 
 app.use(
   session({
@@ -44,6 +36,11 @@ function resolveDbPath() {
   if (process.env.DB_PATH && process.env.DB_PATH.trim() !== '') {
     return process.env.DB_PATH.trim();
   }
+
+  if (process.env.RENDER) {
+    return '/tmp/quality.db';
+  }
+
   return path.join(__dirname, 'quality.db');
 }
 
@@ -76,22 +73,7 @@ function normalizeEmail(email) {
 }
 
 function isAdmin(req) {
-  if (!req.session?.user) return false;
-  return String(req.session.user.role || '').toLowerCase() === 'admin';
-}
-
-function requireLogin(req, res, next) {
-  if (!req.session?.user) {
-    return res.status(401).json({ error: '로그인 필요' });
-  }
-  next();
-}
-
-function requireAdmin(req, res, next) {
-  if (!isAdmin(req)) {
-    return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
-  }
-  next();
+  return !!req.session.user && String(req.session.user.role).toLowerCase() === 'admin';
 }
 
 function runAsync(sql, params = []) {
@@ -121,21 +103,11 @@ function allAsync(sql, params = []) {
   });
 }
 
-function todayText() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-async function addColumnIfMissing(tableName, columnName, definitionSql) {
-  const columns = await allAsync(`PRAGMA table_info(${tableName})`);
-  const exists = columns.some((col) => col.name === columnName);
-  if (!exists) {
-    await runAsync(`ALTER TABLE ${tableName} ADD COLUMN ${definitionSql}`);
-    console.log(`컬럼 추가 완료: ${tableName}.${columnName}`);
-  }
-}
-
-async function initDb() {
-  await runAsync(`
+// =============================
+// DB 초기화
+// =============================
+db.serialize(() => {
+  db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
@@ -147,10 +119,7 @@ async function initDb() {
     )
   `);
 
-  await addColumnIfMissing('users', 'title', `title TEXT DEFAULT 'staff'`);
-  await addColumnIfMissing('users', 'createdAt', `createdAt TEXT`);
-
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS iqc (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -163,7 +132,7 @@ async function initDb() {
     )
   `);
 
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS ipqc (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -179,7 +148,7 @@ async function initDb() {
     )
   `);
 
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS oqc (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -200,7 +169,7 @@ async function initDb() {
     )
   `);
 
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS suppliers (
       id TEXT PRIMARY KEY,
       name TEXT,
@@ -211,7 +180,7 @@ async function initDb() {
     )
   `);
 
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS worklog (
       id TEXT PRIMARY KEY,
       workDate TEXT,
@@ -228,7 +197,7 @@ async function initDb() {
     )
   `);
 
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS change_logs (
       id TEXT PRIMARY KEY,
       logDate TEXT,
@@ -236,7 +205,7 @@ async function initDb() {
     )
   `);
 
-  await runAsync(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS nonconform (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -251,36 +220,36 @@ async function initDb() {
     )
   `);
 
-  const adminEmail = 'admin@namochemical.com';
-  const existingAdmin = await getAsync(`SELECT * FROM users WHERE email = ?`, [adminEmail]);
+  db.get(
+    `SELECT * FROM users WHERE email = ?`,
+    ['admin@namochemical.com'],
+    async (err, user) => {
+      if (err) {
+        console.error('관리자 조회 실패:', err.message);
+        return;
+      }
 
-  if (!existingAdmin) {
-    const initPassword = process.env.ADMIN_INIT_PASSWORD || 'ChangeMeNow!2025';
-    const hashed = await bcrypt.hash(initPassword, 10);
+      if (user) {
+        console.log('관리자 이미 존재');
+        return;
+      }
 
-    await runAsync(
-      `INSERT INTO users (name, email, password, department, title, role, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        '관리자',
-        adminEmail,
-        hashed,
-        '관리부',
-        'admin',
-        'admin',
-        'APPROVED',
-        todayText()
-      ]
-    );
-
-    console.log('기본 관리자 계정 생성 완료');
-  } else {
-    console.log('관리자 이미 존재');
-  }
-}
-
-initDb().catch((err) => {
-  console.error('DB 초기화 실패:', err);
+      try {
+        const hashed = await bcrypt.hash('1234', 10);
+        db.run(
+          `INSERT INTO users (name, email, password, department, role, status)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'APPROVED'],
+          (err2) => {
+            if (err2) console.error('관리자 생성 실패:', err2.message);
+            else console.log('기본 관리자 계정 생성 완료');
+          }
+        );
+      } catch (e) {
+        console.error('관리자 생성 오류:', e.message);
+      }
+    }
+  );
 });
 
 // =============================
@@ -301,37 +270,15 @@ app.post('/api/auth/signup', async (req, res) => {
       return res.status(400).json({ error: '필수값 누락' });
     }
 
-    if (String(password).length < 8) {
-      return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
-    }
-
-    const normalizedEmail = normalizeEmail(email);
-    const existing = await getAsync(`SELECT id FROM users WHERE email = ?`, [normalizedEmail]);
-
-    if (existing) {
-      return res.status(409).json({ error: '이미 등록된 이메일입니다.' });
-    }
-
     const hashed = await bcrypt.hash(password, 10);
 
     await runAsync(
-      `INSERT INTO users (name, email, password, department, title, role, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        name,
-        normalizedEmail,
-        hashed,
-        department || '',
-        'staff',
-        'user',
-        'PENDING',
-        todayText()
-      ]
+      `INSERT INTO users (name, email, password, department) VALUES (?, ?, ?, ?)`,
+      [name, normalizeEmail(email), hashed, department || '']
     );
 
     res.json({ ok: true, message: '회원가입 신청이 완료되었습니다.' });
   } catch (err) {
-    console.error('회원가입 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -341,14 +288,10 @@ app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     const user = await getAsync(`SELECT * FROM users WHERE email = ?`, [normalizeEmail(email)]);
 
-    if (!user) {
-      return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
-    }
+    if (!user) return res.status(401).json({ error: '사용자 없음' });
 
     const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
-    }
+    if (!ok) return res.status(401).json({ error: '비밀번호 틀림' });
 
     if (user.status !== 'APPROVED') {
       return res.status(403).json({ error: '승인 대기 계정입니다.' });
@@ -359,16 +302,20 @@ app.post('/api/auth/login', async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      status: user.status,
-      title: user.title || 'staff'
+      status: user.status
     };
+
+    console.log('로그인 직전 세션 ID:', req.sessionID);
+    console.log('로그인 직전 세션 user:', req.session.user);
+    console.log('로그인 요청 쿠키:', req.headers.cookie);
 
     req.session.save((saveErr) => {
       if (saveErr) {
         console.error('세션 저장 실패:', saveErr);
         return res.status(500).json({ error: '세션 저장 실패' });
       }
-      console.log('로그인 성공:', user.email);
+
+      console.log('로그인 후 세션 저장 완료:', req.sessionID);
       res.json({ ok: true });
     });
   } catch (err) {
@@ -378,26 +325,16 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.get('/api/auth/me', (req, res) => {
-  if (!req.session?.user) {
-    return res.json({
-      authenticated: false,
-      id: '',
-      name: '',
-      role: 'guest'
-    });
+  console.log('/api/auth/me 세션 ID:', req.sessionID);
+  console.log('/api/auth/me 세션:', req.session);
+  console.log('/api/auth/me 쿠키:', req.headers.cookie);
+
+  if (!req.session.user) {
+    return res.status(401).json({ error: '로그인 필요' });
   }
 
-  return res.json({
-    authenticated: true,
-    id: req.session.user.id || '',
-    name: req.session.user.name || '',
-    role: req.session.user.role || 'user',
-    email: req.session.user.email || '',
-    status: req.session.user.status || '',
-    title: req.session.user.title || 'staff'
-  });
+  res.json(req.session.user);
 });
-
 app.post('/api/auth/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: '로그아웃 실패' });
@@ -406,7 +343,7 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
-app.post('/api/auth/find-id', requireAdmin, async (req, res) => {
+app.post('/api/auth/find-id', async (req, res) => {
   try {
     const { name, department } = req.body;
 
@@ -430,20 +367,18 @@ app.post('/api/auth/find-id', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/auth/change-password', requireLogin, async (req, res) => {
+app.post('/api/auth/change-password', async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
-    const email = req.session.user.email;
+    const { email, currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
+    if (!email || !currentPassword || !newPassword) {
       return res.status(400).json({ error: '값 누락' });
     }
 
-    if (String(newPassword).length < 8) {
-      return res.status(400).json({ error: '새 비밀번호는 8자 이상이어야 합니다.' });
-    }
-
-    const user = await getAsync(`SELECT * FROM users WHERE email = ?`, [normalizeEmail(email)]);
+    const user = await getAsync(
+      `SELECT * FROM users WHERE email = ?`,
+      [normalizeEmail(email)]
+    );
 
     if (!user) {
       return res.status(404).json({ error: '사용자 없음' });
@@ -456,10 +391,10 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
-    await runAsync(`UPDATE users SET password = ? WHERE email = ?`, [
-      hashed,
-      normalizeEmail(email)
-    ]);
+    await runAsync(
+      `UPDATE users SET password = ? WHERE email = ?`,
+      [hashed, normalizeEmail(email)]
+    );
 
     res.json({ ok: true, message: '비밀번호 변경 완료' });
   } catch (err) {
@@ -471,10 +406,14 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
 // =============================
 // 관리자 회원 관리
 // =============================
-app.get('/api/admin/users', requireAdmin, async (req, res) => {
+app.get('/api/admin/users', async (req, res) => {
   try {
+    if (!isAdmin(req)) {
+      return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
+    }
+
     const rows = await allAsync(
-      `SELECT id, name, email, department, title, role, status, createdAt
+      `SELECT id, name, email, department, role, status
        FROM users
        ORDER BY id DESC`
     );
@@ -484,69 +423,12 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+app.post('/api/admin/users/:id/approve', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, email, department, title, role, status } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: '이름을 입력하세요.' });
+    if (!isAdmin(req)) {
+      return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
     }
 
-    if (!email) {
-      return res.status(400).json({ error: '이메일을 입력하세요.' });
-    }
-
-    const normalizedEmail = normalizeEmail(email);
-
-    const existing = await getAsync(
-      `SELECT id FROM users WHERE email = ? AND id != ?`,
-      [normalizedEmail, id]
-    );
-
-    if (existing) {
-      return res.status(409).json({ error: '이미 사용 중인 이메일입니다.' });
-    }
-
-    const result = await runAsync(
-      `UPDATE users
-       SET name = ?, email = ?, department = ?, title = ?, role = ?, status = ?
-       WHERE id = ?`,
-      [
-        name,
-        normalizedEmail,
-        department || '',
-        title || 'staff',
-        role || 'user',
-        status || 'PENDING',
-        id
-      ]
-    );
-
-    if (!result || result.changes === 0) {
-      return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
-    }
-
-    const updatedUser = await getAsync(
-      `SELECT id, name, email, department, title, role, status, createdAt
-       FROM users
-       WHERE id = ?`,
-      [id]
-    );
-
-    res.json({
-      ok: true,
-      message: '회원 정보가 저장되었습니다.',
-      user: updatedUser
-    });
-  } catch (err) {
-    console.error('회원 수정 오류:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
-  try {
     const result = await runAsync(
       `UPDATE users SET status = 'APPROVED' WHERE id = ?`,
       [req.params.id]
@@ -557,9 +439,7 @@ app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
     }
 
     const updatedUser = await getAsync(
-      `SELECT id, name, email, department, title, role, status, createdAt
-       FROM users
-       WHERE id = ?`,
+      `SELECT id, name, email, department, role, status FROM users WHERE id = ?`,
       [req.params.id]
     );
 
@@ -572,224 +452,14 @@ app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
+app.delete('/api/admin/users/:id', async (req, res) => {
   try {
-    const result = await runAsync(
-      `UPDATE users SET status = 'REJECTED' WHERE id = ?`,
-      [req.params.id]
-    );
-
-    if (!result || result.changes === 0) {
-      return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
+    if (!isAdmin(req)) {
+      return res.status(403).json({ error: '관리자만 접근 가능합니다.' });
     }
 
-    const updatedUser = await getAsync(
-      `SELECT id, name, email, department, title, role, status, createdAt
-       FROM users
-       WHERE id = ?`,
-      [req.params.id]
-    );
-
-    res.json({
-      ok: true,
-      message: '회원 반려가 완료되었습니다.',
-      user: updatedUser
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
-  try {
-    const targetId = String(req.params.id);
-    const me = req.session?.user || {};
-
-    if (String(me.id || '') === targetId) {
-      return res.status(400).json({ error: '본인 계정은 삭제할 수 없습니다.' });
-    }
-
-    const targetUser = await getAsync(`SELECT id, role FROM users WHERE id = ?`, [targetId]);
-
-    if (!targetUser) {
-      return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
-    }
-
-    if (String(targetUser.role || '').toLowerCase() === 'admin') {
-      const adminCountRow = await getAsync(
-        `SELECT COUNT(*) AS cnt FROM users WHERE LOWER(role) = 'admin'`
-      );
-
-      if (Number(adminCountRow?.cnt || 0) <= 1) {
-        return res.status(400).json({ error: '최소 1명의 관리자는 유지되어야 합니다.' });
-      }
-    }
-
-    await runAsync(`DELETE FROM users WHERE id = ?`, [targetId]);
+    await runAsync(`DELETE FROM users WHERE id = ?`, [req.params.id]);
     res.json({ ok: true, message: '회원 삭제가 완료되었습니다.' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
-  try {
-    if (req.body.confirm !== 'DELETE') {
-      return res.status(400).json({ error: '삭제 확인값이 올바르지 않습니다.' });
-    }
-
-    await runAsync(`DELETE FROM iqc`);
-    await runAsync(`DELETE FROM ipqc`);
-    await runAsync(`DELETE FROM oqc`);
-    await runAsync(`DELETE FROM suppliers`);
-    await runAsync(`DELETE FROM worklog`);
-    await runAsync(`DELETE FROM change_logs`);
-    await runAsync(`DELETE FROM nonconform`);
-
-    res.json({ ok: true, message: '전체 데이터 삭제 완료' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// =============================
-// Import
-// =============================
-app.post('/api/import/preview', requireAdmin, async (req, res) => {
-  try {
-    const {
-      iqcRows = [],
-      ipqcRows = [],
-      oqcRows = [],
-      supplierRows = [],
-      worklogRows = []
-    } = req.body || {};
-
-    res.json({
-      ok: true,
-      summary: {
-        iqc: Array.isArray(iqcRows) ? iqcRows.length : 0,
-        ipqc: Array.isArray(ipqcRows) ? ipqcRows.length : 0,
-        oqc: Array.isArray(oqcRows) ? oqcRows.length : 0,
-        suppliers: Array.isArray(supplierRows) ? supplierRows.length : 0,
-        worklog: Array.isArray(worklogRows) ? worklogRows.length : 0
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/import/commit', requireAdmin, async (req, res) => {
-  try {
-    const {
-      iqcRows = [],
-      ipqcRows = [],
-      oqcRows = [],
-      supplierRows = [],
-      worklogRows = []
-    } = req.body || {};
-
-    for (const r of iqcRows) {
-      await runAsync(
-        `INSERT OR REPLACE INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          r.id || `iqc_${Date.now()}_${Math.random()}`,
-          r.date || '',
-          r.lot || '',
-          r.supplier || '',
-          r.item || '',
-          r.inspector || '',
-          Number(r.qty || 0),
-          Number(r.fail || 0)
-        ]
-      );
-    }
-
-    for (const r of ipqcRows) {
-      await runAsync(
-        `INSERT OR REPLACE INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          r.id || `ipqc_${Date.now()}_${Math.random()}`,
-          r.date || '',
-          r.product || '',
-          r.lot || '',
-          r.visual || '',
-          r.viscosity || '',
-          r.solid || '',
-          r.particle || '',
-          Number(r.qty || 0),
-          Number(r.fail || 0),
-          r.judge || '합격'
-        ]
-      );
-    }
-
-    for (const r of oqcRows) {
-      await runAsync(
-        `INSERT OR REPLACE INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          r.id || `oqc_${Date.now()}_${Math.random()}`,
-          r.date || '',
-          r.customer || '',
-          r.product || '',
-          r.lot || '',
-          r.visual || '',
-          r.viscosity || '',
-          r.solid || '',
-          r.particle || '',
-          r.adhesion || '',
-          r.resistance || '',
-          r.swelling || '',
-          r.moisture || '',
-          Number(r.qty || 0),
-          Number(r.fail || 0),
-          r.judge || '합격'
-        ]
-      );
-    }
-
-    for (const r of supplierRows) {
-      await runAsync(
-        `INSERT OR REPLACE INTO suppliers (id, name, manager, phone, category, status)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          r.id || `sup_${Date.now()}_${Math.random()}`,
-          r.name || '',
-          r.manager || '',
-          r.phone || '',
-          r.category || '',
-          r.status || '사용'
-        ]
-      );
-    }
-
-    for (const r of worklogRows) {
-      await runAsync(
-        `INSERT OR REPLACE INTO worklog (id, workDate, finishedLot, seq, material, supName, inputQty, inputRatio, lotNo, inputTime, worker, note)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          r.id || `work_${Date.now()}_${Math.random()}`,
-          r.workDate || '',
-          r.finishedLot || '',
-          r.seq || '',
-          r.material || '',
-          r.supName || '',
-          r.inputQty || '',
-          r.inputRatio || '',
-          r.lotNo || '',
-          r.inputTime || '',
-          r.worker || '',
-          r.note || ''
-        ]
-      );
-    }
-
-    res.json({ ok: true, message: '엑셀 반영 완료' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -798,7 +468,7 @@ app.post('/api/import/commit', requireAdmin, async (req, res) => {
 // =============================
 // IQC
 // =============================
-app.get('/api/iqc', requireLogin, async (req, res) => {
+app.get('/api/iqc', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM iqc ORDER BY date DESC`);
     res.json(rows);
@@ -807,7 +477,7 @@ app.get('/api/iqc', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/iqc', requireLogin, async (req, res) => {
+app.post('/api/iqc', async (req, res) => {
   try {
     const data = { id: `iqc_${Date.now()}`, ...req.body };
     await runAsync(
@@ -820,8 +490,8 @@ app.post('/api/iqc', requireLogin, async (req, res) => {
         data.supplier || '',
         data.item || '',
         data.inspector || '',
-        Number(data.qty || 0),
-        Number(data.fail || 0)
+        data.qty || 0,
+        data.fail || 0
       ]
     );
     res.json({ ok: true, id: data.id });
@@ -830,7 +500,7 @@ app.post('/api/iqc', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/iqc/:id', requireLogin, async (req, res) => {
+app.put('/api/iqc/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
@@ -843,8 +513,8 @@ app.put('/api/iqc/:id', requireLogin, async (req, res) => {
         d.supplier || '',
         d.item || '',
         d.inspector || '',
-        Number(d.qty || 0),
-        Number(d.fail || 0),
+        d.qty || 0,
+        d.fail || 0,
         req.params.id
       ]
     );
@@ -854,7 +524,7 @@ app.put('/api/iqc/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/iqc/:id', requireAdmin, async (req, res) => {
+app.delete('/api/iqc/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM iqc WHERE id=?`, [req.params.id]);
     res.json({ ok: true });
@@ -866,7 +536,7 @@ app.delete('/api/iqc/:id', requireAdmin, async (req, res) => {
 // =============================
 // IPQC
 // =============================
-app.get('/api/ipqc', requireLogin, async (req, res) => {
+app.get('/api/ipqc', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM ipqc ORDER BY date DESC`);
     res.json(rows);
@@ -875,7 +545,7 @@ app.get('/api/ipqc', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/ipqc', requireLogin, async (req, res) => {
+app.post('/api/ipqc', async (req, res) => {
   try {
     const data = { id: `ipqc_${Date.now()}`, ...req.body };
     await runAsync(
@@ -890,8 +560,8 @@ app.post('/api/ipqc', requireLogin, async (req, res) => {
         data.viscosity || '',
         data.solid || '',
         data.particle || '',
-        Number(data.qty || 0),
-        Number(data.fail || 0),
+        data.qty || 0,
+        data.fail || 0,
         data.judge || '합격'
       ]
     );
@@ -901,7 +571,7 @@ app.post('/api/ipqc', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/ipqc/:id', requireLogin, async (req, res) => {
+app.put('/api/ipqc/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
@@ -916,8 +586,8 @@ app.put('/api/ipqc/:id', requireLogin, async (req, res) => {
         d.viscosity || '',
         d.solid || '',
         d.particle || '',
-        Number(d.qty || 0),
-        Number(d.fail || 0),
+        d.qty || 0,
+        d.fail || 0,
         d.judge || '합격',
         req.params.id
       ]
@@ -928,7 +598,7 @@ app.put('/api/ipqc/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/ipqc/:id', requireAdmin, async (req, res) => {
+app.delete('/api/ipqc/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM ipqc WHERE id=?`, [req.params.id]);
     res.json({ ok: true });
@@ -940,7 +610,7 @@ app.delete('/api/ipqc/:id', requireAdmin, async (req, res) => {
 // =============================
 // OQC
 // =============================
-app.get('/api/oqc', requireLogin, async (req, res) => {
+app.get('/api/oqc', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM oqc ORDER BY date DESC`);
     res.json(rows);
@@ -949,7 +619,7 @@ app.get('/api/oqc', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/oqc', requireLogin, async (req, res) => {
+app.post('/api/oqc', async (req, res) => {
   try {
     const data = { id: `oqc_${Date.now()}`, ...req.body };
     await runAsync(
@@ -969,8 +639,8 @@ app.post('/api/oqc', requireLogin, async (req, res) => {
         data.resistance || '',
         data.swelling || '',
         data.moisture || '',
-        Number(data.qty || 0),
-        Number(data.fail || 0),
+        data.qty || 0,
+        data.fail || 0,
         data.judge || '합격'
       ]
     );
@@ -980,7 +650,7 @@ app.post('/api/oqc', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/oqc/:id', requireLogin, async (req, res) => {
+app.put('/api/oqc/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
@@ -1000,8 +670,8 @@ app.put('/api/oqc/:id', requireLogin, async (req, res) => {
         d.resistance || '',
         d.swelling || '',
         d.moisture || '',
-        Number(d.qty || 0),
-        Number(d.fail || 0),
+        d.qty || 0,
+        d.fail || 0,
         d.judge || '합격',
         req.params.id
       ]
@@ -1012,7 +682,7 @@ app.put('/api/oqc/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/oqc/:id', requireAdmin, async (req, res) => {
+app.delete('/api/oqc/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM oqc WHERE id=?`, [req.params.id]);
     res.json({ ok: true });
@@ -1024,7 +694,7 @@ app.delete('/api/oqc/:id', requireAdmin, async (req, res) => {
 // =============================
 // Suppliers
 // =============================
-app.get('/api/suppliers', requireLogin, async (req, res) => {
+app.get('/api/suppliers', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM suppliers ORDER BY name ASC`);
     res.json(rows);
@@ -1033,7 +703,7 @@ app.get('/api/suppliers', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/suppliers', requireAdmin, async (req, res) => {
+app.post('/api/suppliers', async (req, res) => {
   try {
     const data = { id: `sup_${Date.now()}`, ...req.body };
     await runAsync(
@@ -1054,7 +724,7 @@ app.post('/api/suppliers', requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/api/suppliers/:id', requireAdmin, async (req, res) => {
+app.put('/api/suppliers/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
@@ -1076,7 +746,7 @@ app.put('/api/suppliers/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.delete('/api/suppliers/:id', requireAdmin, async (req, res) => {
+app.delete('/api/suppliers/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM suppliers WHERE id=?`, [req.params.id]);
     res.json({ ok: true });
@@ -1088,7 +758,7 @@ app.delete('/api/suppliers/:id', requireAdmin, async (req, res) => {
 // =============================
 // Worklog
 // =============================
-app.get('/api/worklog', requireLogin, async (req, res) => {
+app.get('/api/worklog', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM worklog ORDER BY workDate DESC`);
     res.json(rows);
@@ -1097,7 +767,7 @@ app.get('/api/worklog', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/worklog', requireLogin, async (req, res) => {
+app.post('/api/worklog', async (req, res) => {
   try {
     const data = { id: `work_${Date.now()}`, ...req.body };
     await runAsync(
@@ -1124,7 +794,7 @@ app.post('/api/worklog', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/worklog/:id', requireLogin, async (req, res) => {
+app.put('/api/worklog/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
@@ -1152,7 +822,7 @@ app.put('/api/worklog/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/worklog/:id', requireAdmin, async (req, res) => {
+app.delete('/api/worklog/:id', async (req, res) => {
   try {
     await runAsync(`DELETE FROM worklog WHERE id=?`, [req.params.id]);
     res.json({ ok: true });
@@ -1164,7 +834,7 @@ app.delete('/api/worklog/:id', requireAdmin, async (req, res) => {
 // =============================
 // Change logs
 // =============================
-app.get('/api/change-logs', requireLogin, async (req, res) => {
+app.get('/api/change-logs', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM change_logs ORDER BY logDate DESC`);
     res.json(rows);
@@ -1176,7 +846,7 @@ app.get('/api/change-logs', requireLogin, async (req, res) => {
 // =============================
 // Nonconform
 // =============================
-app.get('/api/nonconform', requireLogin, async (req, res) => {
+app.get('/api/nonconform', async (req, res) => {
   try {
     const rows = await allAsync(`SELECT * FROM nonconform ORDER BY date DESC`);
     res.json(rows);
@@ -1185,14 +855,14 @@ app.get('/api/nonconform', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/nonconform', requireLogin, async (req, res) => {
+app.post('/api/nonconform', async (req, res) => {
   try {
     const data = { id: req.body.id || `nc_${Date.now()}`, ...req.body };
     await runAsync(
       `INSERT INTO nonconform (id, date, type, lot, item, issue, cause, action, owner, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        String(data.id),
+        data.id,
         data.date || '',
         data.type || '',
         data.lot || '',
@@ -1206,12 +876,11 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
     );
     res.json({ ok: true, message: '부적합 데이터가 저장되었습니다.' });
   } catch (err) {
-    console.error('부적합 저장 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
+app.put('/api/nonconform/:id', async (req, res) => {
   try {
     const d = req.body;
     await runAsync(
@@ -1228,19 +897,18 @@ app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
         d.action || '',
         d.owner || '',
         d.status || '대기',
-        String(req.params.id)
+        req.params.id
       ]
     );
     res.json({ ok: true, message: '부적합 데이터가 수정되었습니다.' });
   } catch (err) {
-    console.error('부적합 수정 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.delete('/api/nonconform/:id', requireAdmin, async (req, res) => {
+app.delete('/api/nonconform/:id', async (req, res) => {
   try {
-    await runAsync(`DELETE FROM nonconform WHERE id=?`, [String(req.params.id)]);
+    await runAsync(`DELETE FROM nonconform WHERE id=?`, [req.params.id]);
     res.json({ ok: true, message: '부적합 데이터가 삭제되었습니다.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
