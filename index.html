@@ -118,13 +118,179 @@
     function getDateValue(row){ return toText(row?.date || row?.workDate || ''); }
     function isRowInSelectedRange(row){ const {year,month,day}=getSelectedDateParts(); const date=getDateValue(row); if(!date) return false; const [yy,mm,dd]=date.split('-'); if(yy!==year || mm!==month) return false; if(day!=='all' && dd!==day) return false; return true; }
     function getFilteredData(arr){ return (arr||[]).filter(isRowInSelectedRange); }
-    function setAuthError(message=''){ const el=$('authError'); el.textContent=message; el.classList.toggle('show', !!message); }
-    function switchAuthMode(mode){ state.authMode=mode; const isSignup=mode==='signup'; $('showLoginBtn').classList.toggle('active', !isSignup); $('showSignupBtn').classList.toggle('active', isSignup); $('authModeBadge').textContent=isSignup?'회원가입':'로그인'; $('authTitle').textContent=isSignup?'품질 대시보드 계정 신청':'다시 오신 것을 환영합니다'; $('authSubtitle').textContent=isSignup?'회원가입 신청 후 관리자 승인 완료 시 대시보드에 접근할 수 있습니다.':'승인된 계정으로 로그인하면 품질 대시보드가 열립니다.'; $('authSubmitBtn').textContent=isSignup?'회원가입 신청':'로그인'; $('authFooterText').textContent=isSignup?'회원가입 후 자동 로그인되지 않으며, 관리자 승인 후 로그인 가능합니다.':'회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.'; $('authNameWrap').classList.toggle('hidden', !isSignup); $('authPasswordConfirmWrap').classList.toggle('hidden', !isSignup); $('authCompanyWrap').classList.toggle('hidden', !isSignup); setAuthError(''); }
-    function renderUserBadge(){ const badge=$('userBadge'); badge.textContent=state.user.authenticated ? `${state.user.name||'사용자'} · ${state.user.role}` : '비로그인'; const isAdmin=String(state.user.role).toLowerCase()==='admin'; $('deleteAllBtn').disabled=!isAdmin; $('adminApprovalTab').classList.toggle('hidden', !isAdmin); }
-    function openDashboard(){ $('authGate').classList.add('hidden'); $('appShell').classList.remove('hidden'); renderUserBadge(); }
-    function closeDashboard(){ $('appShell').classList.add('hidden'); $('authGate').classList.remove('hidden'); }
-    async function bootstrapUser(){ try{ const res=await fetch('/api/auth/me',{method:'GET', credentials:'include'}); if(res.status===401){ state.user={id:'',name:'',role:'guest',authenticated:false}; closeDashboard(); return false; } if(!res.ok) throw new Error(`사용자 확인 실패 (${res.status})`); const me=await res.json(); const role=String(me?.role||'user').toLowerCase(); state.user={ id:me?.id||'', name:toText(me?.name||'사용자'), role, authenticated:true }; openDashboard(); return true; }catch(err){ console.error(err); state.user={id:'',name:'',role:'guest',authenticated:false}; closeDashboard(); return false; } }
-    async function submitAuth(){ const mode=state.authMode; const name=toText($('authName').value); const email=toText($('authEmail').value); const password=toText($('authPassword').value); const passwordConfirm=toText($('authPasswordConfirm').value); const department=toText($('authCompany').value); try{ setAuthError(''); if(!email) throw new Error('이메일을 입력하세요.'); if(!password) throw new Error('비밀번호를 입력하세요.'); if(mode==='signup'){ if(!name) throw new Error('이름을 입력하세요.'); if(password.length<8) throw new Error('비밀번호는 8자 이상으로 입력하세요.'); if(password!==passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.'); const result=await api.post('/api/auth/signup',{name,email,password,department}); showToast(result.message || '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.'); $('authName').value=''; $('authEmail').value=''; $('authPassword').value=''; $('authPasswordConfirm').value=''; $('authCompany').value=''; switchAuthMode('login'); return; } await api.post('/api/auth/login',{ email,password }); const ok=await bootstrapUser(); if(!ok) throw new Error('로그인은 되었지만 사용자 정보를 불러오지 못했습니다. 세션 설정을 확인하세요.'); await loadFromServer(); if(String(state.user.role).toLowerCase()==='admin') await loadAllUsers(); showToast('로그인 완료'); }catch(err){ console.error(err); setAuthError(err.message || '인증 처리 중 오류가 발생했습니다.'); } }
+    function setAuthError(message=''){
+  const el = $('authError');
+  el.textContent = message;
+  el.classList.toggle('show', !!message);
+}
+
+function switchAuthMode(mode){
+  state.authMode = mode;
+  const isSignup = mode === 'signup';
+
+  $('showLoginBtn').classList.toggle('active', !isSignup);
+  $('showSignupBtn').classList.toggle('active', isSignup);
+
+  $('authModeBadge').textContent = isSignup ? '회원가입' : '로그인';
+  $('authTitle').textContent = isSignup
+    ? '품질 대시보드 계정 신청'
+    : '다시 오신 것을 환영합니다';
+
+  $('authSubtitle').textContent = isSignup
+    ? '회원가입 신청 후 관리자 승인 완료 시 대시보드에 접근할 수 있습니다.'
+    : '승인된 계정으로 로그인하면 품질 대시보드가 열립니다.';
+
+  $('authSubmitBtn').textContent = isSignup ? '회원가입 신청' : '로그인';
+
+  $('authFooterText').textContent = isSignup
+    ? '회원가입 후 자동 로그인되지 않으며, 관리자 승인 후 로그인 가능합니다.'
+    : '회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.';
+
+  $('authNameWrap').classList.toggle('hidden', !isSignup);
+  $('authPasswordConfirmWrap').classList.toggle('hidden', !isSignup);
+  $('authCompanyWrap').classList.toggle('hidden', !isSignup);
+
+  setAuthError('');
+}
+
+function renderUserBadge(){
+  const badge = $('userBadge');
+  const deleteBtn = $('deleteAllBtn');
+  const adminTab = $('adminApprovalTab');
+
+  if (badge) {
+    badge.textContent = state.user.authenticated
+      ? `${state.user.name || '사용자'} · ${state.user.role}`
+      : '비로그인';
+  }
+
+  const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+
+  if (deleteBtn) deleteBtn.disabled = !isAdmin;
+  if (adminTab) adminTab.classList.toggle('hidden', !isAdmin);
+}
+
+function openDashboard(){
+  $('authGate').classList.add('hidden');
+  $('appShell').classList.remove('hidden');
+  renderUserBadge();
+}
+
+function closeDashboard(){
+  $('appShell').classList.add('hidden');
+  $('authGate').classList.remove('hidden');
+  renderUserBadge();
+}
+
+async function bootstrapUser(){
+  try{
+    const res = await fetch('/api/auth/me', {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (res.status === 401) {
+      state.user = {
+        id: '',
+        name: '',
+        role: 'guest',
+        authenticated: false
+      };
+      closeDashboard();
+      return false;
+    }
+
+    if (!res.ok) {
+      throw new Error(`사용자 확인 실패 (${res.status})`);
+    }
+
+    const me = await res.json();
+    const role = String(me?.role || 'user').toLowerCase();
+
+    state.user = {
+      id: me?.id || '',
+      name: toText(me?.name || '사용자'),
+      role,
+      authenticated: true
+    };
+
+    openDashboard();
+    return true;
+  } catch (err) {
+    console.error('bootstrapUser error:', err);
+    state.user = {
+      id: '',
+      name: '',
+      role: 'guest',
+      authenticated: false
+    };
+    closeDashboard();
+    return false;
+  }
+}
+
+async function submitAuth(){
+  const mode = state.authMode;
+  const name = toText($('authName').value);
+  const email = toText($('authEmail').value);
+  const password = toText($('authPassword').value);
+  const passwordConfirm = toText($('authPasswordConfirm').value);
+  const department = toText($('authCompany').value);
+
+  try{
+    setAuthError('');
+
+    if (!email) throw new Error('이메일을 입력하세요.');
+    if (!password) throw new Error('비밀번호를 입력하세요.');
+
+    if (mode === 'signup') {
+      if (!name) throw new Error('이름을 입력하세요.');
+      if (password.length < 8) throw new Error('비밀번호는 8자 이상으로 입력하세요.');
+      if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+
+      const result = await api.post('/api/auth/signup', {
+        name,
+        email,
+        password,
+        department
+      });
+
+      showToast(result.message || '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.');
+
+      $('authName').value = '';
+      $('authEmail').value = '';
+      $('authPassword').value = '';
+      $('authPasswordConfirm').value = '';
+      $('authCompany').value = '';
+
+      switchAuthMode('login');
+      return;
+    }
+
+    await api.post('/api/auth/login', { email, password });
+
+    let ok = await bootstrapUser();
+    if (!ok) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      ok = await bootstrapUser();
+    }
+
+    if (!ok) {
+      throw new Error('로그인은 되었지만 사용자 정보를 불러오지 못했습니다. 세션 또는 쿠키 설정을 확인하세요.');
+    }
+
+    await loadFromServer();
+
+    if (String(state.user.role).toLowerCase() === 'admin') {
+      await loadAllUsers();
+    }
+
+    showToast('로그인 완료');
+  } catch (err) {
+    console.error(err);
+    setAuthError(err.message || '인증 처리 중 오류가 발생했습니다.');
+  }
+}
     async function logoutUser(){ try{ await api.post('/api/auth/logout', {}); }catch(_){} state.user={id:'',name:'',role:'guest',authenticated:false}; state.admin.users=[]; closeDashboard(); switchAuthMode('login'); showToast('로그아웃되었습니다.'); }
     function initFilters(){ const y=$('yearSel'),m=$('monthSel'),d=$('daySel'); y.innerHTML=''; m.innerHTML=''; d.innerHTML=''; for(let i=2025;i<=2035;i++) y.innerHTML += `<option value="${i}">${i}년</option>`; for(let i=1;i<=12;i++) m.innerHTML += `<option value="${i}">${i}월</option>`; d.innerHTML='<option value="all">전체</option>'; for(let i=1;i<=31;i++) d.innerHTML += `<option value="${i}">${i}일</option>`; const n=new Date(); y.value=n.getFullYear(); m.value=n.getMonth()+1; d.value='all'; }
     function refreshWeek(){ const y=$('yearSel').value,m=$('monthSel').value,d=$('daySel').value; $('weekChip').textContent=d==='all'?`${y}년 ${m}월 전체`:`${y}년 ${m}월 ${d}일`; $('weekRangeText').textContent=d==='all'?`${y}년 ${m}월 전체 조회`:`${y}년 ${m}월 ${d}일 조회`; $('dayPills').innerHTML=d==='all'?'<span class="pill on">전체 조회</span>':`<span class="pill">${m}월</span><span class="pill on">${d}일</span>`; }
