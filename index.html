@@ -692,18 +692,22 @@
         if (!email) throw new Error('이메일을 입력하세요.');
         if (!password) throw new Error('비밀번호를 입력하세요.');
         if (mode === 'signup') {
-          if (!name) throw new Error('이름을 입력하세요.');
-          if (password.length < 8) throw new Error('비밀번호는 8자 이상으로 입력하세요.');
-          if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
-          const result = await api.post('/api/auth/signup', { name, email, password, department });
-          showToast(result.message || '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.');
-          $('authName').value = '';
-          $('authEmail').value = '';
-          $('authPassword').value = '';
-          $('authPasswordConfirm').value = '';
-          $('authCompany').value = '';
-          switchAuthMode('login');
-          return;
+  if (!name) throw new Error('이름을 입력하세요.');
+  if (password.length < 8) throw new Error('비밀번호는 8자 이상으로 입력하세요.');
+  if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+
+  await api.post('/api/auth/signup', { name, email, password, department });
+
+  await api.post('/api/auth/login', { email, password });
+
+  const ok = await bootstrapUser();
+  if (ok) {
+    await loadFromServer();
+    if (String(state.user.role).toLowerCase() === 'admin') await loadAllUsers();
+    showToast('회원가입 및 로그인 완료');
+  }
+  return;
+}
         }
         await api.post('/api/auth/login', { email, password });
         const ok = await bootstrapUser();
