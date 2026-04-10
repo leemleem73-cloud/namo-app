@@ -1753,11 +1753,31 @@ async function deleteUser(id, name) {
 
     function openBarcodeModal(){ $('barcodeModal').style.display='flex'; $('barcodeStatus').textContent='생성 대기'; setTimeout(() => $('barcodeValue').focus(), 0); }
     function closeBarcodeModal(){ $('barcodeModal').style.display='none'; }
-    if (emailInput && resetInput) {
+   function openPasswordResetModal(){
+  const emailInput = document.getElementById('authEmail');
+  const resetInput = document.getElementById('resetEmail');
+
+  if (emailInput && resetInput) {
     resetInput.value = emailInput.value || '';
   }
 
   document.getElementById('passwordResetModal').style.display = 'flex';
+}
+
+function closePasswordResetModal(){
+  document.getElementById('passwordResetModal').style.display = 'none';
+}
+
+function submitPasswordReset(){
+  const email = document.getElementById('resetEmail').value.trim();
+
+  if(!email){
+    alert('이메일을 입력하세요.');
+    return;
+  }
+
+  alert('다음 단계에서 서버 연결 예정입니다.');
+}
 }
 
 function closePasswordResetModal(){
