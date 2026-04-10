@@ -276,7 +276,6 @@ async function submitAuth(){
   await new Promise(resolve => setTimeout(resolve, 500));
   ok = await bootstrapUser(true);
 }
-    }
 
     if (!ok) {
   throw new Error('로그인은 되었지만 사용자 정보를 불러오지 못했습니다. 다시 시도하세요.');
