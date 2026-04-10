@@ -1500,18 +1500,7 @@
   }
 }
 
-   async function approveUser(id) {
-  if (!confirm('이 회원을 승인하시겠습니까?')) return;
-
-  try {
-    const result = await api.post(`/api/admin/users/${id}/approve`, {});
-    showToast(result.message || '회원 승인이 완료되었습니다.');
-    await loadAllUsers();
-  } catch (err) {
-    console.error(err);
-    showToast(`회원 승인 실패: ${err.message}`);
-  }
-}
+  async function approveUser(id) {
 
 async function rejectUser(id) {
   if (!confirm('이 회원을 반려하시겠습니까?')) return;
