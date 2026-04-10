@@ -680,7 +680,51 @@
         return false;
       }
     }
-   async function submitAuth() {
+   async function submiasync function submitAuth() {
+  const mode = state.authMode;
+  const name = toText($('authName').value);
+  const email = toText($('authEmail').value);
+  const password = toText($('authPassword').value);
+  const passwordConfirm = toText($('authPasswordConfirm').value);
+  const department = toText($('authCompany').value);
+
+  try {
+    setAuthError('');
+
+    if (!email) throw new Error('이메일을 입력하세요.');
+    if (!password) throw new Error('비밀번호를 입력하세요.');
+
+    if (mode === 'signup') {
+      if (!name) throw new Error('이름을 입력하세요.');
+      if (password.length < 8) throw new Error('비밀번호는 8자 이상으로 입력하세요.');
+      if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+
+      await api.post('/api/auth/signup', { name, email, password, department });
+      await api.post('/api/auth/login', { email, password });
+
+      const ok = await bootstrapUser();
+      if (ok) {
+        await loadFromServer();
+        showToast('회원가입 및 로그인 완료');
+      }
+      return;
+    }
+
+    await api.post('/api/auth/login', { email, password });
+
+    const ok = await bootstrapUser();
+    if (ok) {
+      await loadFromServer();
+      if (String(state.user.role).toLowerCase() === 'admin') {
+        await loadAllUsers();
+      }
+      showToast('로그인 완료');
+    }
+  } catch (err) {
+    console.error(err);
+    setAuthError(err.message || '인증 처리 중 오류가 발생했습니다.');
+  }
+}tAuth() {
   const mode = state.authMode;
   const name = toText($('authName').value);
   const email = toText($('authEmail').value);
