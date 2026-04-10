@@ -725,49 +725,53 @@
     setAuthError(err.message || '인증 처리 중 오류가 발생했습니다.');
   }
 }
-    function openResetPasswordModal() {
-  $('resetName').value = '';
-  $('resetEmail').value = '';
-  $('resetDepartment').value = '';
-  $('resetNewPassword').value = '';
-  $('resetNewPasswordConfirm').value = '';
-  $('resetPasswordModal').style.display = 'flex';
-}
+  <script>
+  // 기존 JS 코드...
 
-function closeResetPasswordModal() {
-  $('resetPasswordModal').style.display = 'none';
-}
-
-async function submitResetPassword() {
-  const name = toText($('resetName').value);
-  const email = toText($('resetEmail').value);
-  const department = toText($('resetDepartment').value);
-  const newPassword = toText($('resetNewPassword').value);
-  const newPasswordConfirm = toText($('resetNewPasswordConfirm').value);
-
-  try {
-    if (!name) throw new Error('이름을 입력하세요.');
-    if (!email) throw new Error('이메일을 입력하세요.');
-    if (!department) throw new Error('부서 / 팀을 입력하세요.');
-    if (!newPassword) throw new Error('새 비밀번호를 입력하세요.');
-    if (newPassword.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다.');
-    if (newPassword !== newPasswordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
-
-    const result = await api.post('/api/auth/reset-password', {
-      name,
-      email,
-      department,
-      newPassword
-    });
-
-    closeResetPasswordModal();
-    showToast(result.message || '비밀번호가 재설정되었습니다.');
-    switchAuthMode('login');
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || '비밀번호 재설정 실패');
+  function openResetPasswordModal() {
+    $('resetName').value = '';
+    $('resetEmail').value = '';
+    $('resetDepartment').value = '';
+    $('resetNewPassword').value = '';
+    $('resetNewPasswordConfirm').value = '';
+    $('resetPasswordModal').style.display = 'flex';
   }
-}
+
+  function closeResetPasswordModal() {
+    $('resetPasswordModal').style.display = 'none';
+  }
+
+  async function submitResetPassword() {
+    const name = toText($('resetName').value);
+    const email = toText($('resetEmail').value);
+    const department = toText($('resetDepartment').value);
+    const newPassword = toText($('resetNewPassword').value);
+    const newPasswordConfirm = toText($('resetNewPasswordConfirm').value);
+
+    try {
+      if (!name) throw new Error('이름을 입력하세요.');
+      if (!email) throw new Error('이메일을 입력하세요.');
+      if (!department) throw new Error('부서 / 팀을 입력하세요.');
+      if (!newPassword) throw new Error('새 비밀번호를 입력하세요.');
+      if (newPassword.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다.');
+      if (newPassword !== newPasswordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+
+      const result = await api.post('/api/auth/reset-password', {
+        name,
+        email,
+        department,
+        newPassword
+      });
+
+      closeResetPasswordModal();
+      showToast(result.message || '비밀번호가 재설정되었습니다.');
+      switchAuthMode('login');
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || '비밀번호 재설정 실패');
+    }
+  }
+</script>
     async function logoutUser(){ try { await api.post('/api/auth/logout', {}); } catch (_) {} state.user = { id:'', name:'', role:'guest', authenticated:false }; state.admin.pendingUsers = []; closeDashboard(); switchAuthMode('login'); showToast('로그아웃되었습니다.'); }
     function initFilters() {
       const y=$('yearSel'),m=$('monthSel'),d=$('daySel');
