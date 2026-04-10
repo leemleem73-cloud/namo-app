@@ -44,7 +44,6 @@ function resolveDbPath() {
   if (process.env.DB_PATH && process.env.DB_PATH.trim() !== '') {
     return process.env.DB_PATH.trim();
   }
-
   return path.join(__dirname, 'quality.db');
 }
 
@@ -78,7 +77,6 @@ function normalizeEmail(email) {
 
 function isAdmin(req) {
   if (!req.session?.user) return false;
-
   return String(req.session.user.role || '').toLowerCase() === 'admin';
 }
 
@@ -123,11 +121,21 @@ function allAsync(sql, params = []) {
   });
 }
 
-// =============================
-// DB 초기화
-// =============================
-db.serialize(() => {
-  db.run(`
+function todayText() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function addColumnIfMissing(tableName, columnName, definitionSql) {
+  const columns = await allAsync(`PRAGMA table_info(${tableName})`);
+  const exists = columns.some((col) => col.name === columnName);
+  if (!exists) {
+    await runAsync(`ALTER TABLE ${tableName} ADD COLUMN ${definitionSql}`);
+    console.log(`컬럼 추가 완료: ${tableName}.${columnName}`);
+  }
+}
+
+async function initDb() {
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
@@ -139,7 +147,10 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await addColumnIfMissing('users', 'title', `title TEXT DEFAULT 'staff'`);
+  await addColumnIfMissing('users', 'createdAt', `createdAt TEXT`);
+
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS iqc (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -152,7 +163,7 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS ipqc (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -168,7 +179,7 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS oqc (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -189,7 +200,7 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS suppliers (
       id TEXT PRIMARY KEY,
       name TEXT,
@@ -200,7 +211,7 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS worklog (
       id TEXT PRIMARY KEY,
       workDate TEXT,
@@ -217,7 +228,7 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS change_logs (
       id TEXT PRIMARY KEY,
       logDate TEXT,
@@ -225,7 +236,7 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
+  await runAsync(`
     CREATE TABLE IF NOT EXISTS nonconform (
       id TEXT PRIMARY KEY,
       date TEXT,
@@ -240,38 +251,36 @@ db.serialize(() => {
     )
   `);
 
-  db.get(
-    `SELECT * FROM users WHERE email = ?`,
-    ['admin@namochemical.com'],
-    async (err, user) => {
-      if (err) {
-        console.error('관리자 조회 실패:', err.message);
-        return;
-      }
+  const adminEmail = 'admin@namochemical.com';
+  const existingAdmin = await getAsync(`SELECT * FROM users WHERE email = ?`, [adminEmail]);
 
-      if (user) {
-        console.log('관리자 이미 존재');
-        return;
-      }
+  if (!existingAdmin) {
+    const initPassword = process.env.ADMIN_INIT_PASSWORD || 'ChangeMeNow!2025';
+    const hashed = await bcrypt.hash(initPassword, 10);
 
-      try {
-        const initPassword = process.env.ADMIN_INIT_PASSWORD || 'ChangeMeNow!2025';
-        const hashed = await bcrypt.hash(initPassword, 10);
+    await runAsync(
+      `INSERT INTO users (name, email, password, department, title, role, status, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        '관리자',
+        adminEmail,
+        hashed,
+        '관리부',
+        'admin',
+        'admin',
+        'APPROVED',
+        todayText()
+      ]
+    );
 
-        db.run(
-          `INSERT INTO users (name, email, password, department, role, status)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'APPROVED'],
-          (err2) => {
-            if (err2) console.error('관리자 생성 실패:', err2.message);
-            else console.log('기본 관리자 계정 생성 완료');
-          }
-        );
-      } catch (e) {
-        console.error('관리자 생성 오류:', e.message);
-      }
-    }
-  );
+    console.log('기본 관리자 계정 생성 완료');
+  } else {
+    console.log('관리자 이미 존재');
+  }
+}
+
+initDb().catch((err) => {
+  console.error('DB 초기화 실패:', err);
 });
 
 // =============================
@@ -306,12 +315,23 @@ app.post('/api/auth/signup', async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     await runAsync(
-      `INSERT INTO users (name, email, password, department) VALUES (?, ?, ?, ?)`,
-      [name, normalizedEmail, hashed, department || '']
+      `INSERT INTO users (name, email, password, department, title, role, status, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        name,
+        normalizedEmail,
+        hashed,
+        department || '',
+        'staff',
+        'user',
+        'PENDING',
+        todayText()
+      ]
     );
 
     res.json({ ok: true, message: '회원가입 신청이 완료되었습니다.' });
   } catch (err) {
+    console.error('회원가입 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -319,10 +339,7 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await getAsync(
-      `SELECT * FROM users WHERE email = ?`,
-      [normalizeEmail(email)]
-    );
+    const user = await getAsync(`SELECT * FROM users WHERE email = ?`, [normalizeEmail(email)]);
 
     if (!user) {
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
@@ -342,7 +359,8 @@ app.post('/api/auth/login', async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      status: user.status
+      status: user.status,
+      title: user.title || 'staff'
     };
 
     req.session.save((saveErr) => {
@@ -350,7 +368,6 @@ app.post('/api/auth/login', async (req, res) => {
         console.error('세션 저장 실패:', saveErr);
         return res.status(500).json({ error: '세션 저장 실패' });
       }
-
       console.log('로그인 성공:', user.email);
       res.json({ ok: true });
     });
@@ -360,8 +377,25 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/auth/me', requireLogin, (req, res) => {
-  res.json(req.session.user);
+app.get('/api/auth/me', (req, res) => {
+  if (!req.session?.user) {
+    return res.json({
+      authenticated: false,
+      id: '',
+      name: '',
+      role: 'guest'
+    });
+  }
+
+  return res.json({
+    authenticated: true,
+    id: req.session.user.id || '',
+    name: req.session.user.name || '',
+    role: req.session.user.role || 'user',
+    email: req.session.user.email || '',
+    status: req.session.user.status || '',
+    title: req.session.user.title || 'staff'
+  });
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -372,7 +406,6 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
-// 관리자 전용 ID 찾기
 app.post('/api/auth/find-id', requireAdmin, async (req, res) => {
   try {
     const { name, department } = req.body;
@@ -397,7 +430,6 @@ app.post('/api/auth/find-id', requireAdmin, async (req, res) => {
   }
 });
 
-// 로그인한 본인만 비밀번호 변경
 app.post('/api/auth/change-password', requireLogin, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -411,10 +443,7 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
       return res.status(400).json({ error: '새 비밀번호는 8자 이상이어야 합니다.' });
     }
 
-    const user = await getAsync(
-      `SELECT * FROM users WHERE email = ?`,
-      [normalizeEmail(email)]
-    );
+    const user = await getAsync(`SELECT * FROM users WHERE email = ?`, [normalizeEmail(email)]);
 
     if (!user) {
       return res.status(404).json({ error: '사용자 없음' });
@@ -427,10 +456,10 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
-    await runAsync(
-      `UPDATE users SET password = ? WHERE email = ?`,
-      [hashed, normalizeEmail(email)]
-    );
+    await runAsync(`UPDATE users SET password = ? WHERE email = ?`, [
+      hashed,
+      normalizeEmail(email)
+    ]);
 
     res.json({ ok: true, message: '비밀번호 변경 완료' });
   } catch (err) {
@@ -445,12 +474,73 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const rows = await allAsync(
-      `SELECT id, name, email, department, role, status
+      `SELECT id, name, email, department, title, role, status, createdAt
        FROM users
        ORDER BY id DESC`
     );
     res.json(rows);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, department, title, role, status } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: '이름을 입력하세요.' });
+    }
+
+    if (!email) {
+      return res.status(400).json({ error: '이메일을 입력하세요.' });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+
+    const existing = await getAsync(
+      `SELECT id FROM users WHERE email = ? AND id != ?`,
+      [normalizedEmail, id]
+    );
+
+    if (existing) {
+      return res.status(409).json({ error: '이미 사용 중인 이메일입니다.' });
+    }
+
+    const result = await runAsync(
+      `UPDATE users
+       SET name = ?, email = ?, department = ?, title = ?, role = ?, status = ?
+       WHERE id = ?`,
+      [
+        name,
+        normalizedEmail,
+        department || '',
+        title || 'staff',
+        role || 'user',
+        status || 'PENDING',
+        id
+      ]
+    );
+
+    if (!result || result.changes === 0) {
+      return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
+    }
+
+    const updatedUser = await getAsync(
+      `SELECT id, name, email, department, title, role, status, createdAt
+       FROM users
+       WHERE id = ?`,
+      [id]
+    );
+
+    res.json({
+      ok: true,
+      message: '회원 정보가 저장되었습니다.',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error('회원 수정 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -467,7 +557,7 @@ app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
     }
 
     const updatedUser = await getAsync(
-      `SELECT id, name, email, department, role, status
+      `SELECT id, name, email, department, title, role, status, createdAt
        FROM users
        WHERE id = ?`,
       [req.params.id]
@@ -495,7 +585,7 @@ app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
     }
 
     const updatedUser = await getAsync(
-      `SELECT id, name, email, department, role, status
+      `SELECT id, name, email, department, title, role, status, createdAt
        FROM users
        WHERE id = ?`,
       [req.params.id]
@@ -520,10 +610,7 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: '본인 계정은 삭제할 수 없습니다.' });
     }
 
-    const targetUser = await getAsync(
-      `SELECT id, role FROM users WHERE id = ?`,
-      [targetId]
-    );
+    const targetUser = await getAsync(`SELECT id, role FROM users WHERE id = ?`, [targetId]);
 
     if (!targetUser) {
       return res.status(404).json({ error: '해당 회원을 찾을 수 없습니다.' });
@@ -1105,7 +1192,7 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
       `INSERT INTO nonconform (id, date, type, lot, item, issue, cause, action, owner, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        data.id,
+        String(data.id),
         data.date || '',
         data.type || '',
         data.lot || '',
@@ -1119,6 +1206,7 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
     );
     res.json({ ok: true, message: '부적합 데이터가 저장되었습니다.' });
   } catch (err) {
+    console.error('부적합 저장 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -1140,18 +1228,19 @@ app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
         d.action || '',
         d.owner || '',
         d.status || '대기',
-        req.params.id
+        String(req.params.id)
       ]
     );
     res.json({ ok: true, message: '부적합 데이터가 수정되었습니다.' });
   } catch (err) {
+    console.error('부적합 수정 오류:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.delete('/api/nonconform/:id', requireAdmin, async (req, res) => {
   try {
-    await runAsync(`DELETE FROM nonconform WHERE id=?`, [req.params.id]);
+    await runAsync(`DELETE FROM nonconform WHERE id=?`, [String(req.params.id)]);
     res.json({ ok: true, message: '부적합 데이터가 삭제되었습니다.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
