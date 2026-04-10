@@ -643,6 +643,11 @@
   if (!el) return;
   el.textContent = message;
   el.classList.toggle('show', !!message);
+}(message = '') {
+  const el = $('authError');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('show', !!message);
 }ggle('show', !!message); }
     function switchAuthMode(mode){
       state.authMode = mode;
