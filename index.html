@@ -438,7 +438,7 @@
                 </div>
               </section>
 
-              <div class="card" style="width:100%; margin:0;">
+              <div class="card" id="upgradeCard" style="width:100%; margin:0;">
                 <div class="head"><div class="title" id="upgradeTitle">업그레이드 내역</div><div class="badge">최근 10건</div></div>
                 <div id="upgradeHistory" class="table-box"></div>
               </div>
@@ -655,11 +655,33 @@
       setAuthError('');
     }
     function renderUserBadge() {
-      const badge = $('userBadge');
-      badge.textContent = state.user.authenticated ? `${state.user.name || '사용자'} · ${state.user.role}` : '비로그인';
-      const isAdmin = String(state.user.role).toLowerCase() === 'admin';
-      $('deleteAllBtn').disabled = !isAdmin;
-      $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
+  const badge = $('userBadge');
+  const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+
+  if (!state.user.authenticated) {
+    badge.textContent = '비로그인';
+  } else if (isAdmin) {
+    badge.textContent = `${state.user.name || '사용자'} · 관리자`;
+  } else {
+    badge.textContent = `${state.user.name || '사용자'}`;
+  }
+
+  $('deleteAllBtn').disabled = !isAdmin;
+  $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
+
+  toggleAdminOnlyViews();
+}
+
+function toggleAdminOnlyViews() {
+  const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+
+  const upgradeCard = $('upgradeCard');
+  if (upgradeCard) {
+    upgradeCard.style.display = isAdmin ? '' : 'none';
+  }
+}
+
+function openDashboard() {
     }
     function openDashboard(){ $('authGate').classList.add('hidden'); $('appShell').classList.remove('hidden'); renderUserBadge(); }
     function closeDashboard(){ $('appShell').classList.add('hidden'); $('authGate').classList.remove('hidden'); }
