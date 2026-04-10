@@ -19,9 +19,10 @@ app.use(
     secret: process.env.SESSION_SECRET || 'namochemical-secret-key',
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: isProduction ? 'none' : 'lax',
       secure: isProduction,
       maxAge: 1000 * 60 * 60 * 8
     }
