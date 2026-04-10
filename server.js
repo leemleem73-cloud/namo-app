@@ -273,9 +273,19 @@ app.post('/api/auth/signup', async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     await runAsync(
-      `INSERT INTO users (name, email, password, department) VALUES (?, ?, ?, ?)`,
-      [name, normalizeEmail(email), hashed, department || '']
-    );
+  `INSERT INTO users (name, email, password, department, title, role, status, createdAt)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  [
+    name,
+    normalizeEmail(email),
+    hashed,
+    department || '',
+    'staff',
+    'user',
+    'PENDING',
+    new Date().toISOString().slice(0, 10)
+  ]
+);
 
     res.json({ ok: true, message: '회원가입 신청이 완료되었습니다.' });
   } catch (err) {
@@ -325,15 +335,24 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.get('/api/auth/me', (req, res) => {
-  console.log('/api/auth/me 세션 ID:', req.sessionID);
-  console.log('/api/auth/me 세션:', req.session);
-  console.log('/api/auth/me 쿠키:', req.headers.cookie);
-
-  if (!req.session.user) {
-    return res.status(401).json({ error: '로그인 필요' });
+  if (!req.session?.user) {
+    return res.json({
+      authenticated: false,
+      id: '',
+      name: '',
+      role: 'guest'
+    });
   }
 
-  res.json(req.session.user);
+  return res.json({
+    authenticated: true,
+    id: req.session.user.id || '',
+    name: req.session.user.name || '',
+    role: req.session.user.role || 'user',
+    email: req.session.user.email || '',
+    status: req.session.user.status || '',
+    title: req.session.user.title || 'staff'
+  });
 });
 app.post('/api/auth/logout', (req, res) => {
   req.session.destroy((err) => {
@@ -413,10 +432,10 @@ app.get('/api/admin/users', async (req, res) => {
     }
 
     const rows = await allAsync(
-      `SELECT id, name, email, department, role, status
-       FROM users
-       ORDER BY id DESC`
-    );
+  `SELECT id, name, email, department, title, role, status, createdAt
+   FROM users
+   ORDER BY id DESC`
+);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
