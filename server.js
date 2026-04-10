@@ -77,7 +77,9 @@ function normalizeEmail(email) {
 }
 
 function isAdmin(req) {
-  return String(req.session?.user?.role || '').toLowerCase() === 'admin';
+  if (!req.session?.user) return false;
+
+  return String(req.session.user.role || '').toLowerCase() === 'admin';
 }
 
 function requireLogin(req, res, next) {
