@@ -695,12 +695,30 @@
       const department = toText($('authCompany').value);
       try {
         setAuthError('');
-        if (!email) throw new Error('이메일을 입력하세요.');
-        if (!password) throw new Error('비밀번호를 입력하세요.');
-        if (mode === 'signup') {
-          if (!name) throw new Error('이름을 입력하세요.');
-          if (password.length < 8) throw new Error('비밀번호는 8자 이상으로 입력하세요.');
-          if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+    if (!password) {
+  setAuthError('비밀번호를 입력하세요.');
+  return;
+}
+
+if (mode === 'signup') {
+  if (!name) {
+    setAuthError('이름을 입력하세요.');
+    return;
+
+  if (password.length < 8) {
+    setAuthError('비밀번호는 8자 이상으로 입력하세요.');
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    setAuthError('비밀번호 확인이 일치하지 않습니다.');
+    return;
+  }
+
+  const result = await api.post('/api/auth/signup', { name, email, password, department });
+  ...
+  return;
+}
           const result = await api.post('/api/auth/signup', { name, email, password, department });
           showToast(result.message || '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.');
           $('authName').value = '';
