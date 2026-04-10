@@ -189,29 +189,28 @@ async function bootstrapUser(showError = false){
       credentials: 'include'
     });
 
-const me = await res.json();
-
-if (!me || me.authenticated === false) {
-  state.user = {
-    id: '',
-    name: '',
-    role: 'guest',
-    authenticated: false
-  };
-  closeDashboard();
-  return false;
-}
-
     if (!res.ok) {
       throw new Error(`사용자 확인 실패 (${res.status})`);
     }
 
     const me = await res.json();
-    const role = String(me?.role || 'user').toLowerCase();
+
+    if (!me || me.authenticated === false) {
+      state.user = {
+        id: '',
+        name: '',
+        role: 'guest',
+        authenticated: false
+      };
+      closeDashboard();
+      return false;
+    }
+
+    const role = String(me.role || 'user').toLowerCase();
 
     state.user = {
-      id: me?.id || '',
-      name: toText(me?.name || '사용자'),
+      id: me.id || '',
+      name: toText(me.name || '사용자'),
       role,
       authenticated: true
     };
