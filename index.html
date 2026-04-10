@@ -1885,6 +1885,56 @@ function isRowInSelectedRange(row){
   if (month !== 'all' && mm !== month) return false;
   if (day !== 'all' && dd !== day) return false;
 
+  function initFilters(){
+  const y = $('yearSel');
+  const m = $('monthSel');
+  const d = $('daySel');
+
+  y.innerHTML = '<option value="all">전체</option>';
+  m.innerHTML = '<option value="all">전체</option>';
+  d.innerHTML = '<option value="all">전체</option>';
+
+  for(let i = 2025; i <= 2035; i++){
+    y.innerHTML += `<option value="${i}">${i}년</option>`;
+  }
+
+  for(let i = 1; i <= 12; i++){
+    m.innerHTML += `<option value="${i}">${i}월</option>`;
+  }
+
+  for(let i = 1; i <= 31; i++){
+    d.innerHTML += `<option value="${i}">${i}일</option>`;
+  }
+
+  y.value = 'all';
+  m.value = 'all';
+  d.value = 'all';
+}
+
+function getSelectedDateParts(){
+  return {
+    year: $('yearSel').value === 'all' ? 'all' : String($('yearSel').value),
+    month: $('monthSel').value === 'all' ? 'all' : pad($('monthSel').value),
+    day: $('daySel').value === 'all' ? 'all' : pad($('daySel').value)
+  };
+}
+
+function getDateValue(row){
+  return toText(row?.date || row?.workDate || '');
+}
+
+function isRowInSelectedRange(row){
+  const { year, month, day } = getSelectedDateParts();
+  const date = getDateValue(row);
+
+  if (!date) return false;
+
+  const [yy, mm, dd] = date.split('-');
+
+  if (year !== 'all' && yy !== year) return false;
+  if (month !== 'all' && mm !== month) return false;
+  if (day !== 'all' && dd !== day) return false;
+
   return true;
 }
 
@@ -1904,7 +1954,7 @@ function refreshWeek(){
     <span class="pill ${m === 'all' ? 'on' : ''}">${mText}</span>
     <span class="pill ${d === 'all' ? 'on' : ''}">${dText}</span>
   `;
-} 
+}
     async function initApp(){
       initFilters();
       tickClock();
