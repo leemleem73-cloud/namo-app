@@ -1128,15 +1128,7 @@
       showToast('로그아웃되었습니다.');
     }
 
-    function initFilters() {
-      const y=$('yearSel'),m=$('monthSel'),d=$('daySel');
-      y.innerHTML=''; m.innerHTML=''; d.innerHTML='';
-      for(let i=2025;i<=2035;i++) y.innerHTML += `<option value="${i}">${i}년</option>`;
-      for(let i=1;i<=12;i++) m.innerHTML += `<option value="${i}">${i}월</option>`;
-      d.innerHTML='<option value="all">전체</option>';
-      for(let i=1;i<=31;i++) d.innerHTML += `<option value="${i}">${i}일</option>`;
-      const n=new Date(); y.value=n.getFullYear(); m.value=n.getMonth()+1; d.value='all';
-    }
+    
 
     function getDateValue(row){ return toText(row?.date || row?.workDate || ''); }
     function getFilteredData(arr){
