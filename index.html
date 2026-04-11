@@ -774,13 +774,11 @@ function closeDashboard() {
   // 기존 JS 코드...
 
   function openResetPasswordModal() {
-    $('resetName').value = '';
-    $('resetEmail').value = '';
-    $('resetDepartment').value = '';
-    $('resetNewPassword').value = '';
-    $('resetNewPasswordConfirm').value = '';
-    $('resetPasswordModal').style.display = 'flex';
-  }
+  $('resetEmail').value = '';
+  $('resetNewPassword').value = '';
+  $('resetNewPasswordConfirm').value = '';
+  $('resetPasswordModal').style.display = 'flex';
+}
 
   function closeResetPasswordModal() {
     $('resetPasswordModal').style.display = 'none';
