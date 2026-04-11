@@ -290,7 +290,7 @@ db.serialize(() => {
             '관리부',
             'admin',
             'admin',
-           'PENDING',
+           'APPROVED',
             todayText()
           ],
           (err2) => {
@@ -346,7 +346,7 @@ app.post('/api/auth/signup', async (req, res) => {
         department || '',
         'staff',
         'user',
-        'PENDING'
+        'PENDING',
         todayText()
       ]
     );
@@ -570,7 +570,7 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
         department || '',
         title || 'staff',
         role || 'user',
-        status || 'PENDING'
+        status || 'PENDING',
         id
       ]
     );
