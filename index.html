@@ -555,7 +555,25 @@
     const escapeHtml = str => String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
     const normalizeKeyword = v => toText(v).replace(/\s+/g,'').toUpperCase();
 
-    function closeUserModal() { $('userModal').style.display = 'none'; state.userEditId = null; }
+function matchesSelectedDate(dateStr) {
+  const y = String($('yearSel').value);
+  const m = pad(Number($('monthSel').value));
+  const d = $('daySel').value;
+
+  if (!dateStr) return false;
+  const [yy, mm, dd] = String(dateStr).split('-');
+
+  if (yy !== y) return false;
+  if (mm !== m) return false;
+  if (d !== 'all' && dd !== pad(Number(d))) return false;
+
+  return true;
+}
+
+function closeUserModal() {
+  $('userModal').style.display = 'none';
+  state.userEditId = null;
+}
     async function saveUserModal() {
       const id = state.userEditId;
       if (!id) return;
@@ -859,7 +877,9 @@ function openDashboard() {
     function renderEmptyRow(tbodyId, colCount, msg='데이터 없음'){ $(tbodyId).innerHTML = `<tr><td colspan="${colCount}" class="empty-row">${msg}</td></tr>`; }
     function sliceForUI(rows){ return rows.slice(0, UI_PAGE_SIZE); }
     function renderTables(){
-      const iqcRows = sliceForUI(state.db.iqc); const ipqcRows = sliceForUI(state.db.ipqc); const oqcRows = sliceForUI(state.db.oqc);
+      const iqcRows = sliceForUI((state.db.iqc || []).filter(r => matchesSelectedDate(r.date)));
+const ipqcRows = sliceForUI((state.db.ipqc || []).filter(r => matchesSelectedDate(r.date)));
+const oqcRows = sliceForUI((state.db.oqc || []).filter(r => matchesSelectedDate(r.date)));
       if(!iqcRows.length) renderEmptyRow('iqcBody',10); else $('iqcBody').innerHTML = iqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.lot)}</td><td>${escapeHtml(r.supplier || '-')}</td><td>${escapeHtml(r.item || '-')}</td><td>${escapeHtml(r.inspector || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${calcRate(r.fail, r.qty).toFixed(2)}%</td><td>${badgeState(calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('iqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('iqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!ipqcRows.length) renderEmptyRow('ipqcBody',11); else $('ipqcBody').innerHTML = ipqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('ipqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('ipqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!oqcRows.length) renderEmptyRow('oqcBody',16); else $('oqcBody').innerHTML = oqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.customer || '-')}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${escapeHtml(r.adhesion || '-')}</td><td>${escapeHtml(r.resistance || '-')}</td><td>${escapeHtml(r.swelling || '-')}</td><td>${escapeHtml(r.moisture || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('oqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('oqc','${r.id}')">삭제</button></td></tr>`).join('');
