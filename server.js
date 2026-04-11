@@ -9,6 +9,7 @@ const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
+
 try {
   require('dotenv').config();
 } catch (e) {
@@ -27,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-   secret: SESSION_SECRET,
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -61,17 +62,31 @@ const adminLimiter = rateLimit({
 function resolveDbPath() {
   if (process.env.DB_PATH) return process.env.DB_PATH;
 
+  // Render에서는 쓰기 가능한 경로를 사용해야 함
+  // Persistent Disk를 연결했다면 /var/data 사용 권장
   if (process.env.RENDER) {
-    return '/opt/render/project/src/storage/quality.db';
+    return '/var/data/quality.db';
   }
 
   return path.join(__dirname, 'quality.db');
 }
 
 const dbPath = resolveDbPath();
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
-const db = new sqlite3.Database(dbPath);
+try {
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+} catch (err) {
+  console.error('DB 디렉토리 생성 실패:', err);
+  process.exit(1);
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('DB 연결 실패:', err);
+    process.exit(1);
+  }
+  console.log('DB 연결 성공:', dbPath);
+});
 
 // =============================
 // 공통 함수
@@ -82,13 +97,16 @@ const safeNumber = (v) => Number(v) || 0;
 const makeId = (p) => `${p}_${crypto.randomUUID()}`;
 
 const requireLogin = (req, res, next) => {
-  if (!req.session.user) return res.status(401).json({ error: '로그인 필요' });
+  if (!req.session.user) {
+    return res.status(401).json({ error: '로그인 필요' });
+  }
   next();
 };
 
 const requireAdmin = (req, res, next) => {
-  if (req.session.user?.role !== 'admin')
+  if (req.session.user?.role !== 'admin') {
     return res.status(403).json({ error: '관리자만' });
+  }
   next();
 };
 
@@ -107,6 +125,19 @@ db.serialize(() => {
       status TEXT DEFAULT 'APPROVED'
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS iqc (
+      id TEXT PRIMARY KEY,
+      date TEXT,
+      lot TEXT,
+      supplier TEXT,
+      item TEXT,
+      inspector TEXT,
+      qty INTEGER,
+      fail INTEGER
+    )
+  `);
 });
 
 // =============================
@@ -115,6 +146,10 @@ db.serialize(() => {
 app.post('/api/auth/signup', authLimiter, async (req, res) => {
   try {
     const { name, email, password, department } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: '이메일과 비밀번호 필요' });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -127,11 +162,17 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
         hashed,
         safeText(department),
         'user',
-        'APPROVED' // 🔥 자동 승인
+        'APPROVED'
       ],
-      (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ ok: true });
+      function (err) {
+        if (err) {
+          if (err.message && err.message.includes('UNIQUE')) {
+            return res.status(409).json({ error: '이미 존재하는 이메일' });
+          }
+          return res.status(500).json({ error: err.message });
+        }
+
+        res.json({ ok: true, id: this.lastID });
       }
     );
   } catch (e) {
@@ -146,12 +187,21 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
     `SELECT * FROM users WHERE email=?`,
     [normalizeEmail(email)],
     async (err, user) => {
+      if (err) return res.status(500).json({ error: err.message });
       if (!user) return res.status(401).json({ error: '없음' });
 
-      const ok = await bcrypt.compare(password, user.password);
+      const ok = await bcrypt.compare(password || '', user.password || '');
       if (!ok) return res.status(401).json({ error: '틀림' });
 
-      req.session.user = user;
+      req.session.user = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        department: user.department,
+        role: user.role,
+        status: user.status
+      };
+
       res.json({ ok: true });
     }
   );
@@ -165,7 +215,7 @@ app.post('/api/auth/logout', requireLogin, (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-// ❌ 비밀번호 재설정 막음
+// 비밀번호 재설정 비활성화
 app.post('/api/auth/reset-password', (req, res) => {
   res.status(403).json({ error: '비활성화됨' });
 });
@@ -173,24 +223,33 @@ app.post('/api/auth/reset-password', (req, res) => {
 // =============================
 // 관리자
 // =============================
-app.get('/api/admin/users', requireAdmin, (req, res) => {
-  db.all(`SELECT * FROM users`, [], (err, rows) => {
-    res.json(rows);
-  });
+app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
+  db.all(
+    `SELECT id, name, email, department, role, status FROM users ORDER BY id DESC`,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
 });
 
 // =============================
-// IQC 예시 (CRUD 보호)
+// IQC
 // =============================
 app.get('/api/iqc', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM iqc ORDER BY date DESC`, [], (e, r) => res.json(r));
+  db.all(`SELECT * FROM iqc ORDER BY date DESC`, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
 });
 
 app.post('/api/iqc', requireLogin, (req, res) => {
   const d = req.body;
 
   db.run(
-    `INSERT INTO iqc VALUES (?,?,?,?,?,?,?,?)`,
+    `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
+     VALUES (?,?,?,?,?,?,?,?)`,
     [
       makeId('iqc'),
       safeText(d.date),
@@ -201,19 +260,32 @@ app.post('/api/iqc', requireLogin, (req, res) => {
       safeNumber(d.qty),
       safeNumber(d.fail)
     ],
-    () => res.json({ ok: true })
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ ok: true });
+    }
   );
 });
 
 app.delete('/api/iqc/:id', requireAdmin, (req, res) => {
-  db.run(`DELETE FROM iqc WHERE id=?`, [req.params.id], () =>
-    res.json({ ok: true })
-  );
+  db.run(`DELETE FROM iqc WHERE id=?`, [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
+});
+
+// =============================
+// 헬스체크
+// =============================
+app.get('/health', (req, res) => {
+  res.json({ ok: true });
 });
 
 // =============================
 // 서버 실행
 // =============================
-app.listen(process.env.PORT || 3000, () => {
-  console.log('서버 실행');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`서버 실행: ${PORT}`);
 });
