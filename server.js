@@ -15,9 +15,7 @@ try {
   console.log('dotenv 없음, 계속 진행');
 }
 
-if (!process.env.SESSION_SECRET) {
-  throw new Error('SESSION_SECRET is required');
-}
+const SESSION_SECRET = process.env.SESSION_SECRET || 'namo-default-secret';
 
 const app = express();
 
@@ -29,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+   secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
