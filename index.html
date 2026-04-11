@@ -313,7 +313,7 @@
         <div class="auth-footer">
           <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-           <button type="button" class="btn b2" onclick="openResetPasswordModal(document.getElementById('authEmail').value)">비밀번호 초기화</button>
+           <button type="button" class="btn b2" onclick="openResetPasswordModal()">비밀번호 초기화</button>
             <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
           </div>
         </div>
@@ -438,7 +438,7 @@
                 </div>
               </section>
 
-              <div class="card" id="upgradeCard" style="width:100%; margin:0;">
+              <div class="card" style="width:100%; margin:0;">
                 <div class="head"><div class="title" id="upgradeTitle">업그레이드 내역</div><div class="badge">최근 10건</div></div>
                 <div id="upgradeHistory" class="table-box"></div>
               </div>
@@ -525,10 +525,8 @@
   <div id="userModal" class="modal-bg"><div class="modal"><h3 id="userModalTitle">회원 수정</h3><div class="form-grid"><div class="field"><label>이름</label><input id="userEditName"></div><div class="field"><label>이메일</label><input id="userEditEmail" type="email"></div><div class="field"><label>부서</label><input id="userEditDepartment"></div><div class="field"><label>직책</label><select id="userEditTitle"><option value="staff">사원</option><option value="assistant_manager">대리</option><option value="manager">과장</option><option value="deputy_general_manager">차장</option><option value="general_manager">부장</option><option value="executive">임원</option><option value="admin">관리자</option></select></div><div class="field"><label>권한</label><select id="userEditRole"><option value="user">user</option><option value="admin">admin</option></select></div><div class="field"><label>상태</label><select id="userEditStatus"><option value="PENDING">승인대기</option><option value="APPROVED">승인완료</option><option value="REJECTED">반려</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeUserModal()">취소</button><button class="btn b1" onclick="saveUserModal()">저장</button></div></div></div>
 
   <script>
-  let resetPasswordEmail = '';
-
-  const MAX_UPLOAD_ROWS = 2000;
-  const UI_PAGE_SIZE = 200;
+    const MAX_UPLOAD_ROWS = 2000;
+    const UI_PAGE_SIZE = 200;
     const state = {
       user: { id:'', name:'', role:'guest', authenticated:false },
       db: { suppliers:[], iqc:[], ipqc:[], oqc:[], worklog:[], traceability:[], changeLogs:[], nonconform:[] },
@@ -557,25 +555,7 @@
     const escapeHtml = str => String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');
     const normalizeKeyword = v => toText(v).replace(/\s+/g,'').toUpperCase();
 
-function matchesSelectedDate(dateStr) {
-  const y = String($('yearSel').value);
-  const m = pad(Number($('monthSel').value));
-  const d = $('daySel').value;
-
-  if (!dateStr) return false;
-  const [yy, mm, dd] = String(dateStr).split('-');
-
-  if (yy !== y) return false;
-  if (mm !== m) return false;
-  if (d !== 'all' && dd !== pad(Number(d))) return false;
-
-  return true;
-}
-
-function closeUserModal() {
-  $('userModal').style.display = 'none';
-  state.userEditId = null;
-}
+    function closeUserModal() { $('userModal').style.display = 'none'; state.userEditId = null; }
     async function saveUserModal() {
       const id = state.userEditId;
       if (!id) return;
@@ -675,43 +655,14 @@ function closeUserModal() {
       setAuthError('');
     }
     function renderUserBadge() {
-  const badge = $('userBadge');
-  const isAdmin = String(state.user.role).toLowerCase() === 'admin';
-
-  if (!state.user.authenticated) {
-    badge.textContent = '비로그인';
-  } else if (isAdmin) {
-    badge.textContent = `${state.user.name || '사용자'} · 관리자`;
-  } else {
-    badge.textContent = `${state.user.name || '사용자'}`;
-  }
-
-  $('deleteAllBtn').disabled = !isAdmin;
-  $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
-
-  toggleAdminOnlyViews();
-}
-
-function toggleAdminOnlyViews() {
-  const isAdmin = String(state.user.role).toLowerCase() === 'admin';
-
-  const upgradeCard = $('upgradeCard');
-  if (upgradeCard) {
-    upgradeCard.style.display = isAdmin ? '' : 'none';
-  }
-}
-
-function openDashboard() {
-  $('authGate').classList.add('hidden');
-  $('appShell').classList.remove('hidden');
-  renderUserBadge();
-}
-
-function closeDashboard() {
-  $('appShell').classList.add('hidden');
-  $('authGate').classList.remove('hidden');
-}
-  
+      const badge = $('userBadge');
+      badge.textContent = state.user.authenticated ? `${state.user.name || '사용자'} · ${state.user.role}` : '비로그인';
+      const isAdmin = String(state.user.role).toLowerCase() === 'admin';
+      $('deleteAllBtn').disabled = !isAdmin;
+      $('adminApprovalTab').classList.toggle('hidden', !isAdmin);
+    }
+    function openDashboard(){ $('authGate').classList.add('hidden'); $('appShell').classList.remove('hidden'); renderUserBadge(); }
+    function closeDashboard(){ $('appShell').classList.add('hidden'); $('authGate').classList.remove('hidden'); }
     async function bootstrapUser() {
       try {
         const res = await fetch('/api/auth/me', { method: 'GET', credentials: 'include' });
@@ -740,7 +691,7 @@ function closeDashboard() {
   try {
     setAuthError('');
 
-  
+    if (!email) throw new Error('이메일을 입력하세요.');
     if (!password) throw new Error('비밀번호를 입력하세요.');
 
     if (mode === 'signup') {
@@ -749,11 +700,13 @@ function closeDashboard() {
       if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
 
       await api.post('/api/auth/signup', { name, email, password, department });
+      await api.post('/api/auth/login', { email, password });
 
-      showToast('회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.');
-      switchAuthMode('login');
-      $('authPassword').value = '';
-      $('authPasswordConfirm').value = '';
+      const ok = await bootstrapUser();
+      if (ok) {
+        await loadFromServer();
+        showToast('회원가입 및 로그인 완료');
+      }
       return;
     }
 
@@ -774,44 +727,50 @@ function closeDashboard() {
 }
  
   // 기존 JS 코드...
- function openResetPasswordModal(email) {
- resetPasswordEmail = String(email || '').trim();
-  if (!resetPasswordEmail) { 
-  showToast('이메일을 먼저 입력하세요.');
-   return;
-   }
-   
-  $('resetNewPassword').value = '';
-  $('resetNewPasswordConfirm').value = ''; 
-  $('resetPasswordModal').style.display = 'flex';
-}
+
+  function openResetPasswordModal() {
+    $('resetName').value = '';
+    $('resetEmail').value = '';
+    $('resetDepartment').value = '';
+    $('resetNewPassword').value = '';
+    $('resetNewPasswordConfirm').value = '';
+    $('resetPasswordModal').style.display = 'flex';
+  }
+
   function closeResetPasswordModal() {
-    resetPasswordEmail = '';
     $('resetPasswordModal').style.display = 'none';
   }
+
   async function submitResetPassword() {
-  const newPassword = toText($('resetNewPassword').value);
-  const newPasswordConfirm = toText($('resetNewPasswordConfirm').value);
+    const name = toText($('resetName').value);
+    const email = toText($('resetEmail').value);
+    const department = toText($('resetDepartment').value);
+    const newPassword = toText($('resetNewPassword').value);
+    const newPasswordConfirm = toText($('resetNewPasswordConfirm').value);
 
-  try {
-   if (!resetPasswordEmail) throw new Error('초기화할 회원 이메일 정보가 없습니다.');
-   if (!newPassword) throw new Error('새 비밀번호를 입력하세요.');
-   if (newPassword.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다.');
-   if (newPassword !== newPasswordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+    try {
+      if (!name) throw new Error('이름을 입력하세요.');
+      if (!email) throw new Error('이메일을 입력하세요.');
+      if (!department) throw new Error('부서 / 팀을 입력하세요.');
+      if (!newPassword) throw new Error('새 비밀번호를 입력하세요.');
+      if (newPassword.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다.');
+      if (newPassword !== newPasswordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
 
-    const result = await api.post('/api/auth/reset-password', {
-      email: resetPasswordEmail,
-      newPassword
-    });
+      const result = await api.post('/api/auth/reset-password', {
+        name,
+        email,
+        department,
+        newPassword
+      });
 
-    closeResetPasswordModal();
-    showToast(result.message || '비밀번호가 재설정되었습니다.');
-    switchAuthMode('login');
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || '비밀번호 재설정 실패');
+      closeResetPasswordModal();
+      showToast(result.message || '비밀번호가 재설정되었습니다.');
+      switchAuthMode('login');
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || '비밀번호 재설정 실패');
+    }
   }
-}
 
     async function logoutUser(){ try { await api.post('/api/auth/logout', {}); } catch (_) {} state.user = { id:'', name:'', role:'guest', authenticated:false }; state.admin.pendingUsers = []; closeDashboard(); switchAuthMode('login'); showToast('로그아웃되었습니다.'); }
     function initFilters() {
@@ -880,15 +839,13 @@ function closeDashboard() {
     function renderEmptyRow(tbodyId, colCount, msg='데이터 없음'){ $(tbodyId).innerHTML = `<tr><td colspan="${colCount}" class="empty-row">${msg}</td></tr>`; }
     function sliceForUI(rows){ return rows.slice(0, UI_PAGE_SIZE); }
     function renderTables(){
-      const iqcRows = sliceForUI((state.db.iqc || []).filter(r => matchesSelectedDate(r.date)));
-const ipqcRows = sliceForUI((state.db.ipqc || []).filter(r => matchesSelectedDate(r.date)));
-const oqcRows = sliceForUI((state.db.oqc || []).filter(r => matchesSelectedDate(r.date)));
+      const iqcRows = sliceForUI(state.db.iqc); const ipqcRows = sliceForUI(state.db.ipqc); const oqcRows = sliceForUI(state.db.oqc);
       if(!iqcRows.length) renderEmptyRow('iqcBody',10); else $('iqcBody').innerHTML = iqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.lot)}</td><td>${escapeHtml(r.supplier || '-')}</td><td>${escapeHtml(r.item || '-')}</td><td>${escapeHtml(r.inspector || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${calcRate(r.fail, r.qty).toFixed(2)}%</td><td>${badgeState(calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('iqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('iqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!ipqcRows.length) renderEmptyRow('ipqcBody',11); else $('ipqcBody').innerHTML = ipqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('ipqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('ipqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!oqcRows.length) renderEmptyRow('oqcBody',16); else $('oqcBody').innerHTML = oqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.customer || '-')}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${escapeHtml(r.adhesion || '-')}</td><td>${escapeHtml(r.resistance || '-')}</td><td>${escapeHtml(r.swelling || '-')}</td><td>${escapeHtml(r.moisture || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('oqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('oqc','${r.id}')">삭제</button></td></tr>`).join('');
       $('supplierCount').textContent = `${state.db.suppliers.length}개`;
       if(!state.db.suppliers.length) renderEmptyRow('supplierMasterBody',7); else $('supplierMasterBody').innerHTML = sliceForUI(state.db.suppliers).map((s, idx)=>`<tr><td>${idx+1}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.manager || '-')}</td><td>${escapeHtml(s.phone || '-')}</td><td>${escapeHtml(s.category || '-')}</td><td><span class="state ${(s.status||'사용')==='사용'?'ok':'ng'}">${escapeHtml(s.status||'사용')}</span></td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('suppliers','${s.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('suppliers','${s.id}')">삭제</button></td></tr>`).join('');
-      const worklogRows = sliceForUI((state.db.worklog || []).filter(r => matchesSelectedDate(r.workDate)));
+      const worklogRows = sliceForUI(state.db.worklog);
       if(!worklogRows.length) renderEmptyRow('worklogBody',12); else $('worklogBody').innerHTML = worklogRows.map(r=>`<tr><td>${escapeHtml(r.workDate || '')}</td><td>${escapeHtml(r.finishedLot || '')}</td><td>${escapeHtml(r.seq || '')}</td><td>${escapeHtml(r.material || '')}</td><td>${escapeHtml(r.supName || '')}</td><td>${escapeHtml(r.inputQty || '')}</td><td>${escapeHtml(r.inputRatio || '')}</td><td>${escapeHtml(r.lotNo || '')}</td><td>${escapeHtml(r.inputTime || '')}</td><td>${escapeHtml(r.worker || '')}</td><td>${escapeHtml(r.note || '')}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('worklog','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('worklog','${r.id}')">삭제</button></td></tr>`).join('');
     }
     function renderNonconformTable(){
@@ -983,12 +940,24 @@ const oqcRows = sliceForUI((state.db.oqc || []).filter(r => matchesSelectedDate(
     <h3>비밀번호 재설정</h3>
     <div class="form-grid">
       <div class="field">
+        <label>이름</label>
+        <input id="resetName">
+      </div>
+      <div class="field">
+        <label>이메일</label>
+        <input id="resetEmail" type="email">
+      </div>
+      <div class="field">
+        <label>부서 / 팀</label>
+        <input id="resetDepartment">
+      </div>
+      <div class="field">
         <label>새 비밀번호</label>
-        <input id="resetNewPassword" type="password" placeholder="새 비밀번호 입력">
+        <input id="resetNewPassword" type="password">
       </div>
       <div class="field">
         <label>새 비밀번호 확인</label>
-        <input id="resetNewPasswordConfirm" type="password" placeholder="새 비밀번호 다시 입력">
+        <input id="resetNewPasswordConfirm" type="password">
       </div>
     </div>
     <div class="actions">
@@ -997,5 +966,6 @@ const oqcRows = sliceForUI((state.db.oqc || []).filter(r => matchesSelectedDate(
     </div>
   </div>
 </div>
+</script>  
 </body>
 </html>
