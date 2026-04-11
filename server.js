@@ -154,7 +154,7 @@ db.serialize(() => {
       password TEXT,
       department TEXT,
       role TEXT DEFAULT 'user',
-      status TEXT DEFAULT 'APPROVED'
+      status TEXT DEFAULT 'PENDING'
     )
   `);
 
