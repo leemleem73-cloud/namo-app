@@ -313,7 +313,7 @@
         <div class="auth-footer">
           <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-           <button type="button" class="btn b2" onclick="openResetPasswordModal()">비밀번호 초기화</button>
+           <button type="button" class="btn b2" onclick="openResetPasswordModal(document.getElementById('authEmail').value)">비밀번호 초기화</button>
             <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
           </div>
         </div>
@@ -774,28 +774,33 @@ function closeDashboard() {
 }
  
   // 기존 JS 코드...
-
-  function openResetPasswordModal() {
-
+ function openResetPasswordModal(email) {
+ resetPasswordEmail = String(email || '').trim();
+  if (!resetPasswordEmail) { 
+  showToast('이메일을 먼저 입력하세요.');
+   return;
+   }
+   
   $('resetNewPassword').value = '';
- 
+  $('resetNewPasswordConfirm').value = ''; 
   $('resetPasswordModal').style.display = 'flex';
 }
-
   function closeResetPasswordModal() {
+    resetPasswordEmail = '';
     $('resetPasswordModal').style.display = 'none';
   }
-
   async function submitResetPassword() {
   const newPassword = toText($('resetNewPassword').value);
   const newPasswordConfirm = toText($('resetNewPasswordConfirm').value);
 
   try {
-    if (!newPassword) throw new Error('새 비밀번호를 입력하세요.');
-    if (newPassword.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다.');
-    if (newPassword !== newPasswordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
+   if (!resetPasswordEmail) throw new Error('초기화할 회원 이메일 정보가 없습니다.');
+   if (!newPassword) throw new Error('새 비밀번호를 입력하세요.');
+   if (newPassword.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다.');
+   if (newPassword !== newPasswordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
 
     const result = await api.post('/api/auth/reset-password', {
+      email: resetPasswordEmail,
       newPassword
     });
 
