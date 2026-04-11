@@ -484,13 +484,9 @@ app.post('/api/auth/change-password', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-app.post('/api/auth/reset-password', async (req, res) => {
+app.post('/api/auth/reset-password', requireLogin, async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: '이메일을 입력하세요.' });
-    }
+    const { newPassword } = req.body;
 
     if (!newPassword) {
       return res.status(400).json({ error: '새 비밀번호를 입력하세요.' });
@@ -500,23 +496,16 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
     }
 
-    const normalizedEmail = normalizeEmail(email);
-    const user = await getAsync(`SELECT * FROM users WHERE email = ?`, [normalizedEmail]);
-
-    if (!user) {
-      return res.status(404).json({ error: '일치하는 사용자가 없습니다.' });
-    }
-
     const hashed = await bcrypt.hash(String(newPassword), 10);
 
     await runAsync(
-      `UPDATE users SET password = ? WHERE email = ?`,
-      [hashed, normalizedEmail]
+      `UPDATE users SET password = ? WHERE id = ?`,
+      [hashed, req.session.user.id]
     );
 
     res.json({ ok: true, message: '비밀번호가 재설정되었습니다.' });
   } catch (err) {
-    console.error('비밀번호 재설정 오류:', err);
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
