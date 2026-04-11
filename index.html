@@ -722,13 +722,11 @@ function openDashboard() {
       if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
 
       await api.post('/api/auth/signup', { name, email, password, department });
-      await api.post('/api/auth/login', { email, password });
 
-      const ok = await bootstrapUser();
-      if (ok) {
-        await loadFromServer();
-        showToast('회원가입 및 로그인 완료');
-      }
+      showToast('회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.');
+      switchAuthMode('login');
+      $('authPassword').value = '';
+      $('authPasswordConfirm').value = '';
       return;
     }
 
