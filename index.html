@@ -987,24 +987,12 @@ const oqcRows = sliceForUI((state.db.oqc || []).filter(r => matchesSelectedDate(
     <h3>비밀번호 재설정</h3>
     <div class="form-grid">
       <div class="field">
-        <label>이름</label>
-        <input id="resetName" type="text">
-      </div>
-      <div class="field">
-        <label>이메일</label>
-        <input id="resetEmail" type="email">
-      </div>
-      <div class="field">
-        <label>부서 / 팀</label>
-        <input id="resetDepartment" type="text">
-      </div>
-      <div class="field">
         <label>새 비밀번호</label>
-        <input id="resetNewPassword" type="password">
+        <input id="resetNewPassword" type="password" placeholder="새 비밀번호 입력">
       </div>
       <div class="field">
         <label>새 비밀번호 확인</label>
-        <input id="resetNewPasswordConfirm" type="password">
+        <input id="resetNewPasswordConfirm" type="password" placeholder="새 비밀번호 다시 입력">
       </div>
     </div>
     <div class="actions">
