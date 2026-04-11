@@ -570,7 +570,7 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
         department || '',
         title || 'staff',
         role || 'user',
-        status || 'APPROVED',
+        status || 'PENDING'
         id
       ]
     );
