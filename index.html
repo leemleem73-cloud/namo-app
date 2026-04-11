@@ -700,8 +700,15 @@ function toggleAdminOnlyViews() {
 }
 
 function openDashboard() {
-    }
-    function openDashboard(){ $('authGate').classList.add('hidden'); $('appShell').classList.remove('hidden'); renderUserBadge(); }
+  $('authGate').classList.add('hidden');
+  $('appShell').classList.remove('hidden');
+  renderUserBadge();
+}
+
+function closeDashboard() {
+  $('appShell').classList.add('hidden');
+  $('authGate').classList.remove('hidden');
+}
   
     async function bootstrapUser() {
       try {
