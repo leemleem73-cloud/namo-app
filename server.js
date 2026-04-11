@@ -9,7 +9,11 @@ const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+try {
+  require('dotenv').config();
+} catch (e) {
+  console.log('dotenv 없음, 계속 진행');
+}
 
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET is required');
