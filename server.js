@@ -290,7 +290,7 @@ db.serialize(() => {
             '관리부',
             'admin',
             'admin',
-            'APPROVED',
+           'PENDING',
             todayText()
           ],
           (err2) => {
