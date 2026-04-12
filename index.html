@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>나모케미칼 QMS</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--line:#e4ebf3;--text:#1f2937;--muted:#6b7280;--navy:#12395f;--blue:#1f6fd1}
+*{box-sizing:border-box} html,body{margin:0;padding:0} body{font-family:"Malgun Gothic",Arial,sans-serif;background:#f5f8fc;color:var(--text)}
+.hidden{display:none!important} button,input,select{font:inherit}.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eef4fb 0%,#f8fbff 55%,#edf2f8 100%)}
+.auth-box{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.auth-left,.auth-right{background:#fff;border:1px solid var(--line);border-radius:28px;padding:28px}
+.auth-left{background:linear-gradient(135deg,#12395f 0%,#1f6fd1 100%);color:#fff}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:16px;background:#f4f7fa;border:1px solid var(--line);margin-bottom:18px}
+.tab-btn{height:42px;border:none;border-radius:12px;background:transparent;font-weight:800;color:#526173;cursor:pointer}.tab-btn.active{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1 / -1} label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
+input,select{width:100%;height:44px;padding:0 14px;border:1px solid #d6e1ed;border-radius:14px;background:#fff}.btn{height:44px;padding:0 16px;border:none;border-radius:14px;cursor:pointer;font-weight:800}.btn-primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}.btn-light{background:#fff;border:1px solid #d6e1ed;color:var(--text)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#fff;border-bottom:1px solid var(--line)}.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 73px)}.sidebar{padding:16px;border-right:1px solid var(--line);background:#f8fbff}.menu{display:grid;gap:10px}.menu button{height:50px;border:none;border-radius:16px;background:#fff;border:1px solid var(--line);text-align:left;padding:0 16px;font-weight:800}
+.main{padding:18px}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.kpi{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px}.kpi .num{font-size:42px;font-weight:900}.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px}.title{font-size:18px;font-weight:900;margin-bottom:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid #edf2f7;font-size:12px;text-align:center}.table th{background:#f8fbff}.chart-box{height:320px}.error{margin-bottom:12px;padding:10px 12px;border-radius:12px;background:#ffeff0;color:#c62828}
+@media(max-width:1100px){.auth-box,.layout,.cards,.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="authWrap" class="auth-wrap">
+  <div class="auth-box">
+    <section class="auth-left"><h1>나모케미칼 QMS</h1><p>입고검사 / 공정검사 / 출하검사 / NCR / 회원승인관리</p></section>
+    <section class="auth-right">
+      <div class="tabs"><button class="tab-btn active" id="loginTabBtn">로그인</button><button class="tab-btn" id="signupTabBtn">회원가입</button></div>
+      <div id="authError" class="error hidden"></div>
+      <div class="grid">
+        <div class="full hidden" id="nameWrap"><label>성명</label><input id="nameInput" /></div>
+        <div class="full"><label>이메일</label><input id="emailInput" type="email" /></div>
+        <div class="full"><label>비밀번호</label><input id="passwordInput" type="password" /></div>
+        <div class="full hidden" id="deptWrap"><label>부서</label><input id="deptInput" /></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn btn-primary" id="authSubmitBtn">로그인</button></div>
+    </section>
+  </div>
+</div>
+<div id="appWrap" class="hidden">
+  <div class="top"><div><b style="color:#2f70c8">NAMO</b> 케미칼 QMS</div><div style="display:flex;gap:8px"><select id="yearSelect"></select><button class="btn btn-light" id="logoutBtn">로그아웃</button></div></div>
+  <div class="layout">
+    <aside class="sidebar"><div class="menu"><button>대시보드</button><button>입고검사</button><button>공정검사</button><button>출하검사</button><button>NCR</button><button>회원관리</button></div></aside>
+    <main class="main">
+      <section class="cards">
+        <div class="kpi"><div>입고검사</div><div class="num" id="kpiIqc">0</div></div>
+        <div class="kpi"><div>공정검사</div><div class="num" id="kpiIpqc">0</div></div>
+        <div class="kpi"><div>출하검사</div><div class="num" id="kpiOqc">0</div></div>
+        <div class="kpi"><div>NCR</div><div class="num" id="kpiNcr">0</div></div>
+        <div class="kpi"><div>승인대기</div><div class="num" id="kpiPending">0</div></div>
+      </section>
+      <section class="card"><div class="title">월별 검사 추이 (1~12월)</div><div class="chart-box"><canvas id="monthlyChart"></canvas></div></section>
+      <section class="card"><div class="title">입고검사 등록</div><div class="grid">
+        <div><label>검사일자</label><input type="date" id="iqcDate"></div><div><label>입고일자</label><input type="date" id="iqcReceiptDate"></div>
+        <div><label>공급업체명</label><input id="iqcSupplier"></div><div><label>품목명</label><input id="iqcItem"></div>
+        <div><label>LOT No</label><input id="iqcLot"></div><div><label>CoA 번호</label><input id="iqcCoaNo"></div>
+        <div><label>입고수량</label><input type="number" id="iqcInQty"></div><div><label>검사수량</label><input type="number" id="iqcQty"></div>
+        <div><label>불량수량</label><input type="number" id="iqcFail"></div><div><label>검사자</label><input id="iqcInspector"></div>
+        <div class="full"><label>비고</label><input id="iqcRemark"></div>
+      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveIqc()">저장</button></div></section>
+      <section class="card"><div class="title">공정검사 등록</div><div class="grid">
+        <div><label>검사일자</label><input type="date" id="ipqcDate"></div><div><label>공정명</label><input id="ipqcProcessName"></div>
+        <div><label>제품명</label><input id="ipqcProduct"></div><div><label>LOT No</label><input id="ipqcLot"></div>
+        <div><label>설비명</label><input id="ipqcEquipment"></div><div><label>작업자</label><input id="ipqcWorker"></div>
+        <div><label>생산수량</label><input type="number" id="ipqcProductionQty"></div><div><label>검사수량</label><input type="number" id="ipqcQty"></div>
+        <div><label>불량수량</label><input type="number" id="ipqcFail"></div><div><label>검사자</label><input id="ipqcInspector"></div>
+        <div class="full"><label>비고</label><input id="ipqcRemark"></div>
+      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveIpqc()">저장</button></div></section>
+      <section class="card"><div class="title">출하검사 등록</div><div class="grid">
+        <div><label>검사일자</label><input type="date" id="oqcDate"></div><div><label>고객사명</label><input id="oqcCustomer"></div>
+        <div><label>제품명</label><input id="oqcProduct"></div><div><label>LOT No</label><input id="oqcLot"></div>
+        <div><label>CoA 번호</label><input id="oqcCoaNo"></div><div><label>출하수량</label><input type="number" id="oqcShipQty"></div>
+        <div><label>검사수량</label><input type="number" id="oqcQty"></div><div><label>불량수량</label><input type="number" id="oqcFail"></div>
+        <div><label>검사자</label><input id="oqcInspector"></div><div><label>비고</label><input id="oqcRemark"></div>
+      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveOqc()">저장</button></div></section>
+      <section class="card"><div class="title">NCR 등록</div><div class="grid">
+        <div><label>발생일자</label><input type="date" id="ncrDate"></div><div><label>발생구분</label><select id="ncrSourceType"><option value="IQC">입고검사</option><option value="IPQC">공정검사</option><option value="OQC">출하검사</option></select></div>
+        <div><label>원본번호</label><input id="ncrSourceNo"></div><div><label>품목명</label><input id="ncrItemName"></div>
+        <div><label>LOT No</label><input id="ncrLotNo"></div><div><label>부적합유형</label><input id="ncrDefectType"></div>
+        <div><label>중대도</label><select id="ncrSeverity"><option>Minor</option><option>Major</option><option>Critical</option></select></div><div><label>즉시조치</label><input id="ncrDisposition"></div>
+        <div><label>담당자</label><input id="ncrOwnerName"></div><div class="full"><label>상세내용</label><input id="ncrDescription"></div>
+      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveNcr()">저장</button></div></section>
+      <section class="card"><div class="title">회원 승인관리</div><table class="table"><thead><tr><th>이름</th><th>이메일</th><th>부서</th><th>상태</th><th>관리</th></tr></thead><tbody id="userBody"><tr><td colspan="5">로그인 후 조회</td></tr></tbody></table></section>
+    </main>
+  </div>
+</div>
+<script>
+const state={authMode:'login',db:{iqc:[],ipqc:[],oqc:[],ncrs:[],users:[]},chart:null}; const $=id=>document.getElementById(id);
+async function apiGet(url){const r=await fetch(url,{credentials:'include'});const d=await r.json().catch(()=>({}));if(!r.ok) throw new Error(d.error||'요청 실패');return d;}
+async function apiPost(url,body){const r=await fetch(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});const d=await r.json().catch(()=>({}));if(!r.ok) throw new Error(d.error||'요청 실패');return d;}
+function setAuthMode(mode){state.authMode=mode;$('loginTabBtn').classList.toggle('active',mode==='login');$('signupTabBtn').classList.toggle('active',mode==='signup');$('nameWrap').classList.toggle('hidden',mode!=='signup');$('deptWrap').classList.toggle('hidden',mode!=='signup');$('authSubmitBtn').textContent=mode==='signup'?'회원가입 신청':'로그인';$('authError').classList.add('hidden');}
+function showErr(msg){$('authError').textContent=msg;$('authError').classList.remove('hidden');}
+async function doAuth(){try{const email=$('emailInput').value.trim();const password=$('passwordInput').value.trim();if(!email||!password) return showErr('이메일과 비밀번호를 입력하세요.');if(state.authMode==='signup'){const name=$('nameInput').value.trim();if(!name) return showErr('성명을 입력하세요.');await apiPost('/api/auth/signup',{name,email,password,department:$('deptInput').value.trim()});alert('회원가입 신청 완료');setAuthMode('login');return;}await apiPost('/api/auth/login',{email,password});$('authWrap').classList.add('hidden');$('appWrap').classList.remove('hidden');await bootstrap();}catch(e){showErr(e.message);}}
+async function logout(){await apiPost('/api/auth/logout',{});location.reload();}
+function initYears(){const y=$('yearSelect');for(let i=2025;i<=2036;i++){const o=document.createElement('option');o.value=i;o.textContent=`${i}년`;y.appendChild(o);}y.value='2025';y.addEventListener('change',renderDashboard);}
+function monthCounts(rows,year){const arr=Array(12).fill(0);rows.forEach(r=>{if(!r.date) return; const [yy,mm]=String(r.date).slice(0,10).split('-'); if(Number(yy)===Number(year)) arr[Number(mm)-1]++;}); return arr;}
+function renderDashboard(){$('kpiIqc').textContent=state.db.iqc.length;$('kpiIpqc').textContent=state.db.ipqc.length;$('kpiOqc').textContent=state.db.oqc.length;$('kpiNcr').textContent=state.db.ncrs.length;$('kpiPending').textContent=state.db.users.filter(x=>x.status==='PENDING').length;const year=$('yearSelect').value; const labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']; const iqc=monthCounts(state.db.iqc,year), ipqc=monthCounts(state.db.ipqc,year), oqc=monthCounts(state.db.oqc,year); if(state.chart) state.chart.destroy(); state.chart=new Chart($('monthlyChart'),{type:'bar',data:{labels,datasets:[{label:'입고검사',data:iqc,backgroundColor:'#5b9cf0'},{label:'공정검사',data:ipqc,backgroundColor:'#72c997'},{label:'출하검사',data:oqc,backgroundColor:'#f3a64b'}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});}
+async function loadIqc(){state.db.iqc=await apiGet('/api/iqc');} async function loadIpqc(){state.db.ipqc=await apiGet('/api/ipqc');} async function loadOqc(){state.db.oqc=await apiGet('/api/oqc');} async function loadNcrs(){state.db.ncrs=await apiGet('/api/ncrs');}
+async function loadUsers(){try{state.db.users=await apiGet('/api/admin/users');$('userBody').innerHTML=state.db.users.map(u=>`<tr><td>${u.name||''}</td><td>${u.email||''}</td><td>${u.department||''}</td><td>${u.status||''}</td><td><button class="btn btn-light" onclick="approveUser('${u.id}')">승인</button> <button class="btn btn-light" onclick="rejectUser('${u.id}')">반려</button></td></tr>`).join('');}catch(_){$('userBody').innerHTML='<tr><td colspan="5">관리자만 조회 가능</td></tr>';}}
+async function approveUser(id){await apiPost(`/api/admin/users/${id}/approve`,{});await loadUsers();renderDashboard();} async function rejectUser(id){await apiPost(`/api/admin/users/${id}/reject`,{});await loadUsers();renderDashboard();}
+async function saveIqc(){const p={date:$('iqcDate').value,receiptDate:$('iqcReceiptDate').value,supplier:$('iqcSupplier').value.trim(),item:$('iqcItem').value.trim(),lot:$('iqcLot').value.trim(),coaNo:$('iqcCoaNo').value.trim(),inQty:Number($('iqcInQty').value||0),qty:Number($('iqcQty').value||0),fail:Number($('iqcFail').value||0),inspector:$('iqcInspector').value.trim(),remark:$('iqcRemark').value.trim()};await apiPost('/api/iqc',p);alert('입고검사 저장 완료');await bootstrap();}
+async function saveIpqc(){const p={date:$('ipqcDate').value,processName:$('ipqcProcessName').value.trim(),product:$('ipqcProduct').value.trim(),lot:$('ipqcLot').value.trim(),equipment:$('ipqcEquipment').value.trim(),worker:$('ipqcWorker').value.trim(),productionQty:Number($('ipqcProductionQty').value||0),qty:Number($('ipqcQty').value||0),fail:Number($('ipqcFail').value||0),inspector:$('ipqcInspector').value.trim(),remark:$('ipqcRemark').value.trim()};await apiPost('/api/ipqc',p);alert('공정검사 저장 완료');await bootstrap();}
+async function saveOqc(){const p={date:$('oqcDate').value,customer:$('oqcCustomer').value.trim(),product:$('oqcProduct').value.trim(),lot:$('oqcLot').value.trim(),coaNo:$('oqcCoaNo').value.trim(),shipQty:Number($('oqcShipQty').value||0),qty:Number($('oqcQty').value||0),fail:Number($('oqcFail').value||0),inspector:$('oqcInspector').value.trim(),remark:$('oqcRemark').value.trim()};await apiPost('/api/oqc',p);alert('출하검사 저장 완료');await bootstrap();}
+async function saveNcr(){const p={date:$('ncrDate').value,sourceType:$('ncrSourceType').value,sourceNo:$('ncrSourceNo').value.trim(),itemName:$('ncrItemName').value.trim(),lotNo:$('ncrLotNo').value.trim(),defectType:$('ncrDefectType').value.trim(),severity:$('ncrSeverity').value,disposition:$('ncrDisposition').value.trim(),ownerName:$('ncrOwnerName').value.trim(),description:$('ncrDescription').value.trim()};await apiPost('/api/ncrs',p);alert('NCR 저장 완료');await bootstrap();}
+async function bootstrap(){await loadIqc();await loadIpqc();await loadOqc();await loadNcrs();await loadUsers();renderDashboard();}
+$('loginTabBtn').addEventListener('click',()=>setAuthMode('login')); $('signupTabBtn').addEventListener('click',()=>setAuthMode('signup')); $('authSubmitBtn').addEventListener('click',doAuth); $('logoutBtn').addEventListener('click',logout);
+const today=new Date().toISOString().slice(0,10); ['iqcDate','iqcReceiptDate','ipqcDate','oqcDate','ncrDate'].forEach(id=>$(id).value=today); initYears(); setAuthMode('login');
+</script>
+</body></html>
