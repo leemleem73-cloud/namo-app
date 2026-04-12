@@ -11,7 +11,29 @@ const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || 'fallback-secret';
 
+const ADMIN_EMAIL =
+  process.env.ADMIN_EMAIL || 'admin@namochemical.com';
+
+const ADMIN_PASSWORD =
+  process.env.ADMIN_PASSWORD || 'Admin1234!';
+
+const SMTP_HOST =
+  process.env.SMTP_HOST || 'smtp.naver.com';
+
+const SMTP_PORT =
+  Number(process.env.SMTP_PORT || 465);
+
+const SMTP_SECURE =
+  String(process.env.SMTP_SECURE) === 'true';
+
+const EMAIL_USER =
+  process.env.EMAIL_USER || '';
+
+const EMAIL_PASS =
+  process.env.EMAIL_PASS || '';
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
