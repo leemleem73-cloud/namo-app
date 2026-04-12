@@ -1,108 +1,961 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>나모케미칼 QMS</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-:root{--line:#e4ebf3;--text:#1f2937;--muted:#6b7280;--navy:#12395f;--blue:#1f6fd1}
-*{box-sizing:border-box} html,body{margin:0;padding:0} body{font-family:"Malgun Gothic",Arial,sans-serif;background:#f5f8fc;color:var(--text)}
-.hidden{display:none!important} button,input,select{font:inherit}.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eef4fb 0%,#f8fbff 55%,#edf2f8 100%)}
-.auth-box{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.auth-left,.auth-right{background:#fff;border:1px solid var(--line);border-radius:28px;padding:28px}
-.auth-left{background:linear-gradient(135deg,#12395f 0%,#1f6fd1 100%);color:#fff}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:16px;background:#f4f7fa;border:1px solid var(--line);margin-bottom:18px}
-.tab-btn{height:42px;border:none;border-radius:12px;background:transparent;font-weight:800;color:#526173;cursor:pointer}.tab-btn.active{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1 / -1} label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
-input,select{width:100%;height:44px;padding:0 14px;border:1px solid #d6e1ed;border-radius:14px;background:#fff}.btn{height:44px;padding:0 16px;border:none;border-radius:14px;cursor:pointer;font-weight:800}.btn-primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}.btn-light{background:#fff;border:1px solid #d6e1ed;color:var(--text)}
-.top{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#fff;border-bottom:1px solid var(--line)}.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 73px)}.sidebar{padding:16px;border-right:1px solid var(--line);background:#f8fbff}.menu{display:grid;gap:10px}.menu button{height:50px;border:none;border-radius:16px;background:#fff;border:1px solid var(--line);text-align:left;padding:0 16px;font-weight:800}
-.main{padding:18px}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.kpi{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px}.kpi .num{font-size:42px;font-weight:900}.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px}.title{font-size:18px;font-weight:900;margin-bottom:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid #edf2f7;font-size:12px;text-align:center}.table th{background:#f8fbff}.chart-box{height:320px}.error{margin-bottom:12px;padding:10px 12px;border-radius:12px;background:#ffeff0;color:#c62828}
-@media(max-width:1100px){.auth-box,.layout,.cards,.grid{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>나모케미칼 QMS</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --line:#e4ebf3;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --navy:#12395f;
+      --blue:#1f6fd1;
+      --bg:#f5f8fc;
+      --card:#ffffff;
+      --danger:#c62828;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:"Malgun Gothic", Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .hidden{display:none!important}
+    button,input,select,textarea{font:inherit}
+    input,select,textarea{
+      width:100%;
+      min-height:44px;
+      padding:10px 14px;
+      border:1px solid #d6e1ed;
+      border-radius:14px;
+      background:#fff;
+      outline:none;
+    }
+    textarea{min-height:88px;resize:vertical}
+    button{
+      cursor:pointer;
+      border:none;
+    }
+    .btn{
+      min-height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      font-weight:800;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;
+    }
+    .btn-light{
+      background:#fff;
+      color:var(--text);
+      border:1px solid #d6e1ed;
+    }
+    .btn-danger{
+      background:#fff0f0;
+      color:var(--danger);
+      border:1px solid #ffd0d0;
+    }
+    .auth-wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:linear-gradient(135deg,#eef4fb 0%,#f8fbff 55%,#edf2f8 100%);
+    }
+    .auth-box{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+    .auth-left,.auth-right{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:28px;
+    }
+    .auth-left{
+      background:linear-gradient(135deg,#12395f 0%,#1f6fd1 100%);
+      color:#fff;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .auth-left h1{
+      margin:0 0 12px;
+      font-size:34px;
+    }
+    .auth-left p{
+      margin:0;
+      line-height:1.7;
+      opacity:.95;
+    }
+    .tabs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px;
+      padding:4px;
+      border-radius:16px;
+      background:#f4f7fa;
+      border:1px solid var(--line);
+      margin-bottom:18px;
+    }
+    .tab-btn{
+      height:42px;
+      border-radius:12px;
+      background:transparent;
+      font-weight:800;
+      color:#526173;
+    }
+    .tab-btn.active{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .full{grid-column:1 / -1}
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:#44556a;
+      margin-bottom:6px;
+    }
+    .error{
+      margin-bottom:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#ffeff0;
+      color:#c62828;
+      font-size:14px;
+    }
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:14px 24px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:220px 1fr;
+      min-height:calc(100vh - 73px);
+    }
+    .sidebar{
+      padding:16px;
+      border-right:1px solid var(--line);
+      background:#f8fbff;
+    }
+    .menu{
+      display:grid;
+      gap:10px;
+    }
+    .menu button{
+      height:50px;
+      border-radius:16px;
+      background:#fff;
+      border:1px solid var(--line);
+      text-align:left;
+      padding:0 16px;
+      font-weight:800;
+      color:#28425f;
+    }
+    .menu button.active{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;
+      border:none;
+    }
+    .main{
+      padding:18px;
+    }
+    .section{display:none}
+    .section.active{display:block}
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:14px;
+    }
+    .kpi{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+    }
+    .kpi .label{
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .kpi .num{
+      font-size:42px;
+      font-weight:900;
+      line-height:1;
+    }
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      margin-top:16px;
+    }
+    .title{
+      font-size:18px;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:12px;
+    }
+    .chart-box{
+      height:320px;
+    }
+    .table-wrap{
+      overflow:auto;
+    }
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:820px;
+    }
+    .table th,.table td{
+      padding:10px 8px;
+      border-bottom:1px solid #edf2f7;
+      font-size:12px;
+      text-align:center;
+      white-space:nowrap;
+    }
+    .table th{
+      background:#f8fbff;
+      font-weight:800;
+    }
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef5ff;
+      color:#255fa8;
+      font-size:12px;
+      font-weight:800;
+    }
+    .empty{
+      text-align:center;
+      padding:24px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+    }
+    @media(max-width:1100px){
+      .auth-box,.layout,.cards,.grid{
+        grid-template-columns:1fr;
+      }
+      .table{
+        min-width:680px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div id="authWrap" class="auth-wrap">
-  <div class="auth-box">
-    <section class="auth-left"><h1>나모케미칼 QMS</h1><p>입고검사 / 공정검사 / 출하검사 / NCR / 회원승인관리</p></section>
-    <section class="auth-right">
-      <div class="tabs"><button class="tab-btn active" id="loginTabBtn">로그인</button><button class="tab-btn" id="signupTabBtn">회원가입</button></div>
-      <div id="authError" class="error hidden"></div>
-      <div class="grid">
-        <div class="full hidden" id="nameWrap"><label>성명</label><input id="nameInput" /></div>
-        <div class="full"><label>이메일</label><input id="emailInput" type="email" /></div>
-        <div class="full"><label>비밀번호</label><input id="passwordInput" type="password" /></div>
-        <div class="full hidden" id="deptWrap"><label>부서</label><input id="deptInput" /></div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn btn-primary" id="authSubmitBtn">로그인</button></div>
-    </section>
-  </div>
-</div>
-<div id="appWrap" class="hidden">
-  <div class="top"><div><b style="color:#2f70c8">NAMO</b> 케미칼 QMS</div><div style="display:flex;gap:8px"><select id="yearSelect"></select><button class="btn btn-light" id="logoutBtn">로그아웃</button></div></div>
-  <div class="layout">
-    <aside class="sidebar"><div class="menu"><button>대시보드</button><button>입고검사</button><button>공정검사</button><button>출하검사</button><button>NCR</button><button>회원관리</button></div></aside>
-    <main class="main">
-      <section class="cards">
-        <div class="kpi"><div>입고검사</div><div class="num" id="kpiIqc">0</div></div>
-        <div class="kpi"><div>공정검사</div><div class="num" id="kpiIpqc">0</div></div>
-        <div class="kpi"><div>출하검사</div><div class="num" id="kpiOqc">0</div></div>
-        <div class="kpi"><div>NCR</div><div class="num" id="kpiNcr">0</div></div>
-        <div class="kpi"><div>승인대기</div><div class="num" id="kpiPending">0</div></div>
+  <div id="authWrap" class="auth-wrap">
+    <div class="auth-box">
+      <section class="auth-left">
+        <h1>나모케미칼 QMS</h1>
+        <p>
+          입고검사 / 공정검사 / 출하검사 / NCR / 회원승인관리<br />
+          사내 품질 데이터를 간단히 등록하고 조회할 수 있는 웹 시스템
+        </p>
       </section>
-      <section class="card"><div class="title">월별 검사 추이 (1~12월)</div><div class="chart-box"><canvas id="monthlyChart"></canvas></div></section>
-      <section class="card"><div class="title">입고검사 등록</div><div class="grid">
-        <div><label>검사일자</label><input type="date" id="iqcDate"></div><div><label>입고일자</label><input type="date" id="iqcReceiptDate"></div>
-        <div><label>공급업체명</label><input id="iqcSupplier"></div><div><label>품목명</label><input id="iqcItem"></div>
-        <div><label>LOT No</label><input id="iqcLot"></div><div><label>CoA 번호</label><input id="iqcCoaNo"></div>
-        <div><label>입고수량</label><input type="number" id="iqcInQty"></div><div><label>검사수량</label><input type="number" id="iqcQty"></div>
-        <div><label>불량수량</label><input type="number" id="iqcFail"></div><div><label>검사자</label><input id="iqcInspector"></div>
-        <div class="full"><label>비고</label><input id="iqcRemark"></div>
-      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveIqc()">저장</button></div></section>
-      <section class="card"><div class="title">공정검사 등록</div><div class="grid">
-        <div><label>검사일자</label><input type="date" id="ipqcDate"></div><div><label>공정명</label><input id="ipqcProcessName"></div>
-        <div><label>제품명</label><input id="ipqcProduct"></div><div><label>LOT No</label><input id="ipqcLot"></div>
-        <div><label>설비명</label><input id="ipqcEquipment"></div><div><label>작업자</label><input id="ipqcWorker"></div>
-        <div><label>생산수량</label><input type="number" id="ipqcProductionQty"></div><div><label>검사수량</label><input type="number" id="ipqcQty"></div>
-        <div><label>불량수량</label><input type="number" id="ipqcFail"></div><div><label>검사자</label><input id="ipqcInspector"></div>
-        <div class="full"><label>비고</label><input id="ipqcRemark"></div>
-      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveIpqc()">저장</button></div></section>
-      <section class="card"><div class="title">출하검사 등록</div><div class="grid">
-        <div><label>검사일자</label><input type="date" id="oqcDate"></div><div><label>고객사명</label><input id="oqcCustomer"></div>
-        <div><label>제품명</label><input id="oqcProduct"></div><div><label>LOT No</label><input id="oqcLot"></div>
-        <div><label>CoA 번호</label><input id="oqcCoaNo"></div><div><label>출하수량</label><input type="number" id="oqcShipQty"></div>
-        <div><label>검사수량</label><input type="number" id="oqcQty"></div><div><label>불량수량</label><input type="number" id="oqcFail"></div>
-        <div><label>검사자</label><input id="oqcInspector"></div><div><label>비고</label><input id="oqcRemark"></div>
-      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveOqc()">저장</button></div></section>
-      <section class="card"><div class="title">NCR 등록</div><div class="grid">
-        <div><label>발생일자</label><input type="date" id="ncrDate"></div><div><label>발생구분</label><select id="ncrSourceType"><option value="IQC">입고검사</option><option value="IPQC">공정검사</option><option value="OQC">출하검사</option></select></div>
-        <div><label>원본번호</label><input id="ncrSourceNo"></div><div><label>품목명</label><input id="ncrItemName"></div>
-        <div><label>LOT No</label><input id="ncrLotNo"></div><div><label>부적합유형</label><input id="ncrDefectType"></div>
-        <div><label>중대도</label><select id="ncrSeverity"><option>Minor</option><option>Major</option><option>Critical</option></select></div><div><label>즉시조치</label><input id="ncrDisposition"></div>
-        <div><label>담당자</label><input id="ncrOwnerName"></div><div class="full"><label>상세내용</label><input id="ncrDescription"></div>
-      </div><div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="saveNcr()">저장</button></div></section>
-      <section class="card"><div class="title">회원 승인관리</div><table class="table"><thead><tr><th>이름</th><th>이메일</th><th>부서</th><th>상태</th><th>관리</th></tr></thead><tbody id="userBody"><tr><td colspan="5">로그인 후 조회</td></tr></tbody></table></section>
-    </main>
+
+      <section class="auth-right">
+        <div class="tabs">
+          <button class="tab-btn active" id="loginTabBtn" type="button">로그인</button>
+          <button class="tab-btn" id="signupTabBtn" type="button">회원가입</button>
+        </div>
+
+        <div id="authError" class="error hidden"></div>
+
+        <div class="grid">
+          <div class="full hidden" id="nameWrap">
+            <label for="nameInput">성명</label>
+            <input id="nameInput" />
+          </div>
+
+          <div class="full">
+            <label for="emailInput">이메일</label>
+            <input id="emailInput" type="email" />
+          </div>
+
+          <div class="full">
+            <label for="passwordInput">비밀번호</label>
+            <input id="passwordInput" type="password" />
+          </div>
+
+          <div class="full hidden" id="deptWrap">
+            <label for="deptInput">부서</label>
+            <input id="deptInput" />
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+          <button class="btn btn-primary" id="authSubmitBtn" type="button">로그인</button>
+        </div>
+      </section>
+    </div>
   </div>
-</div>
+
+  <div id="appWrap" class="hidden">
+    <div class="top">
+      <div>
+        <b style="color:#2f70c8">NAMO</b> 케미칼 QMS
+        <span class="muted" id="meLabel" style="margin-left:10px"></span>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="yearSelect"></select>
+        <button class="btn btn-light" id="logoutBtn" type="button">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="menu">
+          <button type="button" class="menu-btn active" data-section="dashboardSection">대시보드</button>
+          <button type="button" class="menu-btn" data-section="iqcSection">입고검사</button>
+          <button type="button" class="menu-btn" data-section="ipqcSection">공정검사</button>
+          <button type="button" class="menu-btn" data-section="oqcSection">출하검사</button>
+          <button type="button" class="menu-btn" data-section="ncrSection">NCR</button>
+          <button type="button" class="menu-btn" data-section="userSection">회원관리</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="dashboardSection" class="section active">
+          <section class="cards">
+            <div class="kpi">
+              <div class="label">입고검사</div>
+              <div class="num" id="kpiIqc">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">공정검사</div>
+              <div class="num" id="kpiIpqc">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">출하검사</div>
+              <div class="num" id="kpiOqc">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">NCR</div>
+              <div class="num" id="kpiNcr">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">승인대기</div>
+              <div class="num" id="kpiPending">0</div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="title">월별 입고검사 추이</div>
+            <div class="chart-box">
+              <canvas id="monthlyChart"></canvas>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="title">최근 입고검사</div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>검사일자</th>
+                    <th>LOT No</th>
+                    <th>공급업체</th>
+                    <th>품목명</th>
+                    <th>검사자</th>
+                    <th>검사수량</th>
+                    <th>불량수량</th>
+                  </tr>
+                </thead>
+                <tbody id="recentIqcBody">
+                  <tr><td colspan="7" class="empty">데이터 없음</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="iqcSection" class="section">
+          <section class="card">
+            <div class="title">입고검사 등록</div>
+
+            <div class="grid">
+              <div>
+                <label for="iqcDate">검사일자</label>
+                <input type="date" id="iqcDate" />
+              </div>
+              <div>
+                <label for="iqcSupplier">공급업체명</label>
+                <input id="iqcSupplier" />
+              </div>
+
+              <div>
+                <label for="iqcItem">품목명</label>
+                <input id="iqcItem" />
+              </div>
+              <div>
+                <label for="iqcLot">LOT No</label>
+                <input id="iqcLot" />
+              </div>
+
+              <div>
+                <label for="iqcQty">검사수량</label>
+                <input type="number" id="iqcQty" />
+              </div>
+              <div>
+                <label for="iqcFail">불량수량</label>
+                <input type="number" id="iqcFail" />
+              </div>
+
+              <div class="full">
+                <label for="iqcInspector">검사자</label>
+                <input id="iqcInspector" />
+              </div>
+            </div>
+
+            <div style="margin-top:12px;text-align:right">
+              <button class="btn btn-primary" type="button" onclick="saveIqc()">저장</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="toolbar">
+              <div>
+                <div class="title" style="margin-bottom:4px">입고검사 목록</div>
+                <div class="sub">서버에 저장된 데이터를 조회합니다.</div>
+              </div>
+              <button class="btn btn-light" type="button" onclick="loadIqc()">새로고침</button>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>검사일자</th>
+                    <th>LOT No</th>
+                    <th>공급업체</th>
+                    <th>품목명</th>
+                    <th>검사자</th>
+                    <th>검사수량</th>
+                    <th>불량수량</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="iqcTableBody">
+                  <tr><td colspan="8" class="empty">데이터 없음</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="ipqcSection" class="section">
+          <section class="card">
+            <div class="title">공정검사</div>
+            <div class="sub">현재 화면만 준비되어 있습니다. 필요하면 서버 API까지 이어서 추가해드릴 수 있습니다.</div>
+            <div class="badge">준비중</div>
+          </section>
+        </section>
+
+        <section id="oqcSection" class="section">
+          <section class="card">
+            <div class="title">출하검사</div>
+            <div class="sub">현재 화면만 준비되어 있습니다. 필요하면 서버 API까지 이어서 추가해드릴 수 있습니다.</div>
+            <div class="badge">준비중</div>
+          </section>
+        </section>
+
+        <section id="ncrSection" class="section">
+          <section class="card">
+            <div class="title">NCR</div>
+            <div class="sub">현재 화면만 준비되어 있습니다. 필요하면 서버 API까지 이어서 추가해드릴 수 있습니다.</div>
+            <div class="badge">준비중</div>
+          </section>
+        </section>
+
+        <section id="userSection" class="section">
+          <section class="card">
+            <div class="toolbar">
+              <div>
+                <div class="title" style="margin-bottom:4px">회원 목록</div>
+                <div class="sub">관리자 계정에서만 조회됩니다.</div>
+              </div>
+              <button class="btn btn-light" type="button" onclick="loadUsers()">새로고침</button>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>성명</th>
+                    <th>이메일</th>
+                    <th>부서</th>
+                    <th>권한</th>
+                    <th>상태</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr><td colspan="6" class="empty">데이터 없음</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
 <script>
-const state={authMode:'login',db:{iqc:[],ipqc:[],oqc:[],ncrs:[],users:[]},chart:null}; const $=id=>document.getElementById(id);
-async function apiGet(url){const r=await fetch(url,{credentials:'include'});const d=await r.json().catch(()=>({}));if(!r.ok) throw new Error(d.error||'요청 실패');return d;}
-async function apiPost(url,body){const r=await fetch(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});const d=await r.json().catch(()=>({}));if(!r.ok) throw new Error(d.error||'요청 실패');return d;}
-function setAuthMode(mode){state.authMode=mode;$('loginTabBtn').classList.toggle('active',mode==='login');$('signupTabBtn').classList.toggle('active',mode==='signup');$('nameWrap').classList.toggle('hidden',mode!=='signup');$('deptWrap').classList.toggle('hidden',mode!=='signup');$('authSubmitBtn').textContent=mode==='signup'?'회원가입 신청':'로그인';$('authError').classList.add('hidden');}
-function showErr(msg){$('authError').textContent=msg;$('authError').classList.remove('hidden');}
-async function doAuth(){try{const email=$('emailInput').value.trim();const password=$('passwordInput').value.trim();if(!email||!password) return showErr('이메일과 비밀번호를 입력하세요.');if(state.authMode==='signup'){const name=$('nameInput').value.trim();if(!name) return showErr('성명을 입력하세요.');await apiPost('/api/auth/signup',{name,email,password,department:$('deptInput').value.trim()});alert('회원가입 신청 완료');setAuthMode('login');return;}await apiPost('/api/auth/login',{email,password});$('authWrap').classList.add('hidden');$('appWrap').classList.remove('hidden');await bootstrap();}catch(e){showErr(e.message);}}
-async function logout(){await apiPost('/api/auth/logout',{});location.reload();}
-function initYears(){const y=$('yearSelect');for(let i=2025;i<=2036;i++){const o=document.createElement('option');o.value=i;o.textContent=`${i}년`;y.appendChild(o);}y.value='2025';y.addEventListener('change',renderDashboard);}
-function monthCounts(rows,year){const arr=Array(12).fill(0);rows.forEach(r=>{if(!r.date) return; const [yy,mm]=String(r.date).slice(0,10).split('-'); if(Number(yy)===Number(year)) arr[Number(mm)-1]++;}); return arr;}
-function renderDashboard(){$('kpiIqc').textContent=state.db.iqc.length;$('kpiIpqc').textContent=state.db.ipqc.length;$('kpiOqc').textContent=state.db.oqc.length;$('kpiNcr').textContent=state.db.ncrs.length;$('kpiPending').textContent=state.db.users.filter(x=>x.status==='PENDING').length;const year=$('yearSelect').value; const labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']; const iqc=monthCounts(state.db.iqc,year), ipqc=monthCounts(state.db.ipqc,year), oqc=monthCounts(state.db.oqc,year); if(state.chart) state.chart.destroy(); state.chart=new Chart($('monthlyChart'),{type:'bar',data:{labels,datasets:[{label:'입고검사',data:iqc,backgroundColor:'#5b9cf0'},{label:'공정검사',data:ipqc,backgroundColor:'#72c997'},{label:'출하검사',data:oqc,backgroundColor:'#f3a64b'}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});}
-async function loadIqc(){state.db.iqc=await apiGet('/api/iqc');} async function loadIpqc(){state.db.ipqc=await apiGet('/api/ipqc');} async function loadOqc(){state.db.oqc=await apiGet('/api/oqc');} async function loadNcrs(){state.db.ncrs=await apiGet('/api/ncrs');}
-async function loadUsers(){try{state.db.users=await apiGet('/api/admin/users');$('userBody').innerHTML=state.db.users.map(u=>`<tr><td>${u.name||''}</td><td>${u.email||''}</td><td>${u.department||''}</td><td>${u.status||''}</td><td><button class="btn btn-light" onclick="approveUser('${u.id}')">승인</button> <button class="btn btn-light" onclick="rejectUser('${u.id}')">반려</button></td></tr>`).join('');}catch(_){$('userBody').innerHTML='<tr><td colspan="5">관리자만 조회 가능</td></tr>';}}
-async function approveUser(id){await apiPost(`/api/admin/users/${id}/approve`,{});await loadUsers();renderDashboard();} async function rejectUser(id){await apiPost(`/api/admin/users/${id}/reject`,{});await loadUsers();renderDashboard();}
-async function saveIqc(){const p={date:$('iqcDate').value,receiptDate:$('iqcReceiptDate').value,supplier:$('iqcSupplier').value.trim(),item:$('iqcItem').value.trim(),lot:$('iqcLot').value.trim(),coaNo:$('iqcCoaNo').value.trim(),inQty:Number($('iqcInQty').value||0),qty:Number($('iqcQty').value||0),fail:Number($('iqcFail').value||0),inspector:$('iqcInspector').value.trim(),remark:$('iqcRemark').value.trim()};await apiPost('/api/iqc',p);alert('입고검사 저장 완료');await bootstrap();}
-async function saveIpqc(){const p={date:$('ipqcDate').value,processName:$('ipqcProcessName').value.trim(),product:$('ipqcProduct').value.trim(),lot:$('ipqcLot').value.trim(),equipment:$('ipqcEquipment').value.trim(),worker:$('ipqcWorker').value.trim(),productionQty:Number($('ipqcProductionQty').value||0),qty:Number($('ipqcQty').value||0),fail:Number($('ipqcFail').value||0),inspector:$('ipqcInspector').value.trim(),remark:$('ipqcRemark').value.trim()};await apiPost('/api/ipqc',p);alert('공정검사 저장 완료');await bootstrap();}
-async function saveOqc(){const p={date:$('oqcDate').value,customer:$('oqcCustomer').value.trim(),product:$('oqcProduct').value.trim(),lot:$('oqcLot').value.trim(),coaNo:$('oqcCoaNo').value.trim(),shipQty:Number($('oqcShipQty').value||0),qty:Number($('oqcQty').value||0),fail:Number($('oqcFail').value||0),inspector:$('oqcInspector').value.trim(),remark:$('oqcRemark').value.trim()};await apiPost('/api/oqc',p);alert('출하검사 저장 완료');await bootstrap();}
-async function saveNcr(){const p={date:$('ncrDate').value,sourceType:$('ncrSourceType').value,sourceNo:$('ncrSourceNo').value.trim(),itemName:$('ncrItemName').value.trim(),lotNo:$('ncrLotNo').value.trim(),defectType:$('ncrDefectType').value.trim(),severity:$('ncrSeverity').value,disposition:$('ncrDisposition').value.trim(),ownerName:$('ncrOwnerName').value.trim(),description:$('ncrDescription').value.trim()};await apiPost('/api/ncrs',p);alert('NCR 저장 완료');await bootstrap();}
-async function bootstrap(){await loadIqc();await loadIpqc();await loadOqc();await loadNcrs();await loadUsers();renderDashboard();}
-$('loginTabBtn').addEventListener('click',()=>setAuthMode('login')); $('signupTabBtn').addEventListener('click',()=>setAuthMode('signup')); $('authSubmitBtn').addEventListener('click',doAuth); $('logoutBtn').addEventListener('click',logout);
-const today=new Date().toISOString().slice(0,10); ['iqcDate','iqcReceiptDate','ipqcDate','oqcDate','ncrDate'].forEach(id=>$(id).value=today); initYears(); setAuthMode('login');
+  let authMode = 'login';
+  let currentUser = null;
+  let iqcRows = [];
+  let monthlyChart = null;
+
+  const authWrap = document.getElementById('authWrap');
+  const appWrap = document.getElementById('appWrap');
+  const authError = document.getElementById('authError');
+
+  const loginTabBtn = document.getElementById('loginTabBtn');
+  const signupTabBtn = document.getElementById('signupTabBtn');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+
+  const nameWrap = document.getElementById('nameWrap');
+  const deptWrap = document.getElementById('deptWrap');
+
+  const nameInput = document.getElementById('nameInput');
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const deptInput = document.getElementById('deptInput');
+
+  const yearSelect = document.getElementById('yearSelect');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const meLabel = document.getElementById('meLabel');
+
+  function showAuthError(msg) {
+    authError.textContent = msg || '오류';
+    authError.classList.remove('hidden');
+  }
+
+  function hideAuthError() {
+    authError.textContent = '';
+    authError.classList.add('hidden');
+  }
+
+  function switchAuthMode(mode) {
+    authMode = mode;
+    hideAuthError();
+
+    const signup = mode === 'signup';
+
+    loginTabBtn.classList.toggle('active', !signup);
+    signupTabBtn.classList.toggle('active', signup);
+
+    nameWrap.classList.toggle('hidden', !signup);
+    deptWrap.classList.toggle('hidden', !signup);
+
+    authSubmitBtn.textContent = signup ? '회원가입' : '로그인';
+  }
+
+  loginTabBtn.addEventListener('click', () => switchAuthMode('login'));
+  signupTabBtn.addEventListener('click', () => switchAuthMode('signup'));
+
+  authSubmitBtn.addEventListener('click', async () => {
+    hideAuthError();
+
+    const payload = {
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      password: passwordInput.value,
+      department: deptInput.value.trim()
+    };
+
+    if (!payload.email || !payload.password) {
+      showAuthError('이메일과 비밀번호를 입력하세요.');
+      return;
+    }
+
+    try {
+      if (authMode === 'signup') {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          showAuthError(data.error || '회원가입 실패');
+          return;
+        }
+
+        alert('회원가입 완료. 이제 로그인하세요.');
+        switchAuthMode('login');
+        passwordInput.value = '';
+        return;
+      }
+
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: payload.email,
+          password: payload.password
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        showAuthError(data.error || '로그인 실패');
+        return;
+      }
+
+      await bootstrapApp();
+    } catch (err) {
+      showAuthError(err.message || '요청 실패');
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
+    currentUser = null;
+    authWrap.classList.remove('hidden');
+    appWrap.classList.add('hidden');
+  });
+
+  function fillYearOptions() {
+    const now = new Date().getFullYear();
+    yearSelect.innerHTML = '';
+    for (let y = now - 3; y <= now + 1; y += 1) {
+      const opt = document.createElement('option');
+      opt.value = String(y);
+      opt.textContent = `${y}년`;
+      if (y === now) opt.selected = true;
+      yearSelect.appendChild(opt);
+    }
+  }
+
+  yearSelect.addEventListener('change', () => {
+    renderDashboard();
+  });
+
+  document.querySelectorAll('.menu-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.menu-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const target = btn.dataset.section;
+      document.querySelectorAll('.section').forEach((sec) => {
+        sec.classList.toggle('active', sec.id === target);
+      });
+
+      if (target === 'userSection') {
+        loadUsers();
+      }
+    });
+  });
+
+  function todayString() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function escapeHtml(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function setDefaultFormValues() {
+    document.getElementById('iqcDate').value = todayString();
+    if (currentUser?.name) {
+      document.getElementById('iqcInspector').value = currentUser.name;
+    }
+  }
+
+  async function api(url, options = {}) {
+    const res = await fetch(url, options);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const msg = data && data.error ? data.error : '요청 실패';
+      throw new Error(msg);
+    }
+
+    return data;
+  }
+
+  async function bootstrapApp() {
+    const me = await api('/api/auth/me');
+    currentUser = me.user;
+
+    if (!currentUser) {
+      authWrap.classList.remove('hidden');
+      appWrap.classList.add('hidden');
+      return;
+    }
+
+    meLabel.textContent = `${currentUser.name || ''} / ${currentUser.department || '-'} / ${currentUser.role || 'user'}`;
+
+    authWrap.classList.add('hidden');
+    appWrap.classList.remove('hidden');
+
+    fillYearOptions();
+    setDefaultFormValues();
+    await loadIqc();
+    await loadUsers();
+  }
+
+    async function loadIqc() {
+    try {
+      const rows = await api('/api/iqc');
+      iqcRows = Array.isArray(rows) ? rows : [];
+      renderIqcTable();
+      renderDashboard();
+    } catch (err) {
+      iqcRows = [];
+      renderIqcTable();
+      renderDashboard();
+      console.error(err);
+    }
+  }
+
+  async function saveIqc() {
+    try {
+      const body = {
+        date: document.getElementById('iqcDate').value,
+        lot: document.getElementById('iqcLot').value.trim(),
+        supplier: document.getElementById('iqcSupplier').value.trim(),
+        item: document.getElementById('iqcItem').value.trim(),
+        inspector: document.getElementById('iqcInspector').value.trim(),
+        qty: Number(document.getElementById('iqcQty').value || 0),
+        fail: Number(document.getElementById('iqcFail').value || 0)
+      };
+
+      if (!body.date || !body.item) {
+        alert('검사일자와 품목명을 입력하세요.');
+        return;
+      }
+
+      await api('/api/iqc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      alert('저장 완료');
+
+      document.getElementById('iqcLot').value = '';
+      document.getElementById('iqcSupplier').value = '';
+      document.getElementById('iqcItem').value = '';
+      document.getElementById('iqcQty').value = '';
+      document.getElementById('iqcFail').value = '';
+      document.getElementById('iqcDate').value = todayString();
+      document.getElementById('iqcInspector').value = currentUser?.name || '';
+
+      await loadIqc();
+    } catch (err) {
+      alert(err.message || '저장 실패');
+    }
+  }
+
+  async function deleteIqc(id) {
+    if (!confirm('삭제하시겠습니까?')) return;
+
+    try {
+      await api(`/api/iqc/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      alert('삭제 완료');
+      await loadIqc();
+    } catch (err) {
+      alert(err.message || '삭제 실패');
+    }
+  }
+
+  function renderIqcTable() {
+    const tbody = document.getElementById('iqcTableBody');
+
+    if (!iqcRows.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">데이터 없음</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = iqcRows.map((row) => {
+      const canDelete = currentUser?.role === 'admin';
+      return `
+        <tr>
+          <td>${escapeHtml(row.date)}</td>
+          <td>${escapeHtml(row.lot)}</td>
+          <td>${escapeHtml(row.supplier)}</td>
+          <td>${escapeHtml(row.item)}</td>
+          <td>${escapeHtml(row.inspector)}</td>
+          <td>${Number(row.qty || 0)}</td>
+          <td>${Number(row.fail || 0)}</td>
+          <td>
+            ${
+              canDelete
+                ? `<button type="button" class="btn btn-danger" onclick="deleteIqc('${String(row.id).replaceAll("'", "\\'")}')">삭제</button>`
+                : '<span class="muted">-</span>'
+            }
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderDashboard() {
+    const selectedYear = Number(yearSelect.value || new Date().getFullYear());
+
+    const yearRows = iqcRows.filter((row) => {
+      const y = Number(String(row.date || '').slice(0, 4));
+      return y === selectedYear;
+    });
+
+    document.getElementById('kpiIqc').textContent = yearRows.length;
+    document.getElementById('kpiIpqc').textContent = 0;
+    document.getElementById('kpiOqc').textContent = 0;
+    document.getElementById('kpiNcr').textContent = 0;
+    document.getElementById('kpiPending').textContent = currentUser?.role === 'admin' ? 0 : 0;
+
+    renderRecentIqc(yearRows);
+    renderMonthlyChart(yearRows);
+  }
+
+  function renderRecentIqc(rows) {
+    const tbody = document.getElementById('recentIqcBody');
+    const items = [...rows].slice(0, 5);
+
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">데이터 없음</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = items.map((row) => `
+      <tr>
+        <td>${escapeHtml(row.date)}</td>
+        <td>${escapeHtml(row.lot)}</td>
+        <td>${escapeHtml(row.supplier)}</td>
+        <td>${escapeHtml(row.item)}</td>
+        <td>${escapeHtml(row.inspector)}</td>
+        <td>${Number(row.qty || 0)}</td>
+        <td>${Number(row.fail || 0)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderMonthlyChart(rows) {
+    const data = Array.from({ length: 12 }, () => 0);
+
+    rows.forEach((row) => {
+      const month = Number(String(row.date || '').slice(5, 7));
+      if (month >= 1 && month <= 12) {
+        data[month - 1] += 1;
+      }
+    });
+
+    const ctx = document.getElementById('monthlyChart');
+
+    if (monthlyChart) {
+      monthlyChart.destroy();
+    }
+
+    monthlyChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        datasets: [
+          {
+            label: '입고검사 건수',
+            data
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+  }
+
+  async function loadUsers() {
+    const tbody = document.getElementById('usersTableBody');
+
+    if (currentUser?.role !== 'admin') {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">관리자만 조회할 수 있습니다.</td></tr>';
+      return;
+    }
+
+    try {
+      const rows = await api('/api/admin/users');
+
+      if (!Array.isArray(rows) || !rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">데이터 없음</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map((row) => `
+        <tr>
+          <td>${Number(row.id || 0)}</td>
+          <td>${escapeHtml(row.name)}</td>
+          <td>${escapeHtml(row.email)}</td>
+          <td>${escapeHtml(row.department)}</td>
+          <td>${escapeHtml(row.role)}</td>
+          <td>${escapeHtml(row.status)}</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">${escapeHtml(err.message || '조회 실패')}</td></tr>`;
+    }
+  }
+
+  window.saveIqc = saveIqc;
+  window.deleteIqc = deleteIqc;
+
+  bootstrapApp().catch((err) => {
+    console.error(err);
+  });
 </script>
-</body></html>
+</body>
+</html>
