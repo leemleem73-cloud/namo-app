@@ -54,7 +54,7 @@ app.use(session({
     db: 'sessions.sqlite',
     dir: DATA_DIR
   }),
-  secret: process.env.SESSION_SECRET || 'namochemical-secret-key-change-me',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
