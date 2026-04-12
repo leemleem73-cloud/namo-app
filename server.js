@@ -92,7 +92,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 // 공통 함수
 // =============================
 const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
-const safeText = (v, m = 100) => String(v || '').slice(0, m);
+const safeText = (v, m = 100) => String(v || '').trim().slice(0, m);
 const safeNumber = (v) => Number(v) || 0;
 const makeId = (p) => `${p}_${crypto.randomUUID()}`;
 
@@ -154,8 +154,8 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     db.run(
-      `INSERT INTO users (name,email,password,department,role,status)
-       VALUES (?,?,?,?,?,?)`,
+      `INSERT INTO users (name, email, password, department, role, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         safeText(name),
         normalizeEmail(email),
@@ -184,7 +184,7 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
   const { email, password } = req.body;
 
   db.get(
-    `SELECT * FROM users WHERE email=?`,
+    `SELECT * FROM users WHERE email = ?`,
     [normalizeEmail(email)],
     async (err, user) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -202,7 +202,7 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
         status: user.status
       };
 
-      res.json({ ok: true });
+      res.json({ ok: true, user: req.session.user });
     }
   );
 });
@@ -225,7 +225,9 @@ app.post('/api/auth/reset-password', (req, res) => {
 // =============================
 app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   db.all(
-    `SELECT id, name, email, department, role, status FROM users ORDER BY id DESC`,
+    `SELECT id, name, email, department, role, status
+     FROM users
+     ORDER BY id DESC`,
     [],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -249,7 +251,7 @@ app.post('/api/iqc', requireLogin, (req, res) => {
 
   db.run(
     `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
-     VALUES (?,?,?,?,?,?,?,?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('iqc'),
       safeText(d.date),
@@ -268,7 +270,7 @@ app.post('/api/iqc', requireLogin, (req, res) => {
 });
 
 app.delete('/api/iqc/:id', requireAdmin, (req, res) => {
-  db.run(`DELETE FROM iqc WHERE id=?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM iqc WHERE id = ?`, [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ ok: true });
   });
@@ -279,6 +281,13 @@ app.delete('/api/iqc/:id', requireAdmin, (req, res) => {
 // =============================
 app.get('/health', (req, res) => {
   res.json({ ok: true });
+});
+
+// =============================
+// SPA fallback
+// =============================
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // =============================
