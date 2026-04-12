@@ -1144,7 +1144,7 @@ initDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`서버 실행: http://localhost:${PORT}`);
-      console.log('기본 관리자: admin@namochemical.com / Admin1234!');
+      console.log(`기본 관리자 이메일: ${ADMIN_EMAIL}`);
     });
   })
   .catch(err => {
