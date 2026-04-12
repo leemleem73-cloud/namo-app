@@ -13,13 +13,6 @@ const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const SESSION_SECRET =
   process.env.SESSION_SECRET || 'fallback-secret';
-
-const ADMIN_EMAIL =
-const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
-
-const ADMIN_PASSWORD =
- const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-
 const SMTP_HOST =
   process.env.SMTP_HOST || 'smtp.naver.com';
 
