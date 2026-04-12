@@ -15,10 +15,10 @@ const SESSION_SECRET =
   process.env.SESSION_SECRET || 'fallback-secret';
 
 const ADMIN_EMAIL =
-  process.env.ADMIN_EMAIL || 'admin@namochemical.com';
+const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
 
 const ADMIN_PASSWORD =
-  process.env.ADMIN_PASSWORD || 'Admin1234!';
+ const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
 
 const SMTP_HOST =
   process.env.SMTP_HOST || 'smtp.naver.com';
