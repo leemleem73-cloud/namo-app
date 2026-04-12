@@ -1335,8 +1335,12 @@ app.use((err, req, res, next) => {
 
 (async () => {
   try {
+    await pool.query('SELECT 1');
+    console.log('DB 연결 성공');
+
     await initDb();
-    app.listen(PORT, () => {
+
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`나모케미칼 QMS 서버 실행: http://0.0.0.0:${PORT}`);
     });
   } catch (err) {
