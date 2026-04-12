@@ -27,25 +27,39 @@ const NCR_PDF_DIR = path.join(PDF_DIR, 'ncr');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-const pool = process.env.DATABASE_URL
-  ? new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000
-    })
-  : new Pool({
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT || 5432),
-      database: process.env.DB_NAME,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000
-    });
+let pool;
+
+console.log('NODE_ENV:', NODE_ENV);
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('DB_HOST exists:', !!process.env.DB_HOST);
+
+if (process.env.DATABASE_URL) {
+  console.log('DB connection mode: DATABASE_URL');
+
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: IS_PROD ? { rejectUnauthorized: false } : false,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000
+  });
+} else if (process.env.DB_HOST) {
+  console.log('DB connection mode: DB_HOST');
+
+  pool = new Pool({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT || 5432),
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000
+  });
+} else {
+  throw new Error('DB 환경변수가 없습니다. DATABASE_URL 또는 DB_HOST를 설정하세요.');
+}
 
 const uid = (prefix) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
