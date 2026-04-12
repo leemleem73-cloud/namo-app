@@ -1,403 +1,0 @@
-SQLite format 3   @    ?                                                              ? .묂         
-????? ?????>6                                                                                                                                                                               굏 55?tableproduction_materialsproduction_materialsCREATE TABLE production_materials (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      production_id INTEGER NOT NULL,
-      seq INTEGER NOT NULL,
-      material TEXT DEFAULT '',
-      raw_lot TEXT DEFAULT '',
-      qty TEXT DEFAULT '',
-      FOREIGN KEY (production_id) REFERENCES production(id) ON DELETE CASCADE
-    )? !!뇎tableproductionproductionCREATE TABLE production (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT NOT NULL,
-      product TEXT NOT NULL,
-      finished_lot TEXT NOT NULL,
-      worker TEXT NOT NULL,
-      machine TEXT DEFAULT '',
-      speed TEXT DEFAULT '',
-      temp TEXT DEFAULT '',
-      work_time TEXT DEFAULT '',
-      qty_ea REAL DEFAULT 0,
-      qty_kg REAL DEFAULT 0,
-      abnormal TEXT DEFAULT '?놁쓬',
-      note TEXT DEFAULT '',
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )-
-A indexsqlite_autoindex_members_1members긖 ?tablemembersmembersCREATE TABLE members (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT '?묒뾽??,
-      title TEXT DEFAULT '',
-      dept TEXT DEFAULT '',
-      phone TEXT DEFAULT '',
-      note TEXT DEFAULT '',
-      status TEXT NOT NULL DEFAULT '?뱀씤?湲?,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )? !!?tablenonconformnonconformCREATE TABLE nonconform (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT,
-      type TEXT,
-      lot TEXT,
-      item TEXT,
-      issue TEXT,
-      cause TEXT,
-      action TEXT,
-      owner TEXT,
-      status TEXT
-    )?
- 33긻tableemail_verificationsemail_verificationsCREATE TABLE email_verifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT,
-      codeHash TEXT,
-      purpose TEXT,
-      expiresAt TEXT,
-      verified INTEGER DEFAULT 0,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-    )갧	 ##굂tablechange_logschange_logs
-CREATE TABLE change_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  logDate TEXT,
-  category TEXT,
-  action TEXT,
-  message TEXT,
-  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-)? 긫tableworklogworklog	CREATE TABLE worklog (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  workDate TEXT,
-  finishedLot TEXT,
-  seq TEXT,
-  material TEXT,
-  supName TEXT,
-  inputQty TEXT,
-  inputRatio TEXT,
-  lotNo TEXT,
-  inputTime TEXT,
-  worker TEXT,
-  note TEXT
-)?  ?tablesupplierssuppliersCREATE TABLE suppliers (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  manager TEXT,
-  phone TEXT,
-  category TEXT,
-  status TEXT
-)? ?tableoqcoqc CREATE TABLE oqc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT,
-  customer TEXT,
-  product TEXT,
-  lot TEXT,
-  visual TEXT,
-  viscosity TEXT,
-  solid TEXT,
-  particle TEXT,
-  adhesion TEXT,
-  resistance TEXT,
-  swelling TEXT,
-  moisture TEXT,
-  qty INTEGER,
-  fail INTEGER,
-  judge TEXT
-)갾 ?tableipqcipqcCREATE TABLE ipqc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT,
-  product TEXT,
-  lot TEXT,
-  visual TEXT,
-  viscosity TEXT,
-  solid TEXT,
-  particle TEXT,
-  qty INTEGER,
-  fail INTEGER,
-  judge TEXT
-)? 괪tableiqciqcCREATE TABLE iqc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT,
-  lot TEXT,
-  supplier TEXT,
-  item TEXT,
-  inspector TEXT,
-  qty INTEGER,
-  fail INTEGER
-)P++Ytablesqlite_sequencesqlite_sequenceCREATE TABLE sqlite_sequence(name,seq))= indexsqlite_autoindex_users_1users? 긝tableusersusersCREATE TABLE users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  email TEXT UNIQUE,
-  password TEXT,
-  department TEXT,
-  role TEXT DEFAULT 'user',
-  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-, status TEXT DEFAULT "PENDING")
-$  [????                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ?
- 9?3諛뺣룄?늕hbak@namochemical.com$2b$10$46.0cn/eiuC5vAFl.CmAKucCTk/q3p4CaDJgS2VQ5jpMdiUJmjg1O?앹궛遺user2026-04-01 01:00:35APPROVED?
- ;?3諛뺥쁽?꼑apark@namochemical.com$2b$10$Qw.j1MIi8IPZkH4nuT2xOevVeDi/790xKkr.UH7RVxbwPwDi4Okke?덉쭏遺user2026-03-31 01:08:36APPROVED
-? ? /?3?꾪씎諛컇eem730@naver.com$2b$10$ei3YDnFv08BKuMitB1uyn..66OIJb/9ySP8I3fiuS/SiHXsO7ggza?덉쭏遺user2026-03-30 07:39:41APPROVED?
- 9?3源?명씗shkim@namochemical.com$2b$10$RzD1BAsJNTf9.hXHxEOGVuf3DVQ2wHdfIdJ9Z0FWP1ypiWiZWHBV2?곌뎄?똵ser2026-03-30 07:46:12APPROVED?
- =?3?⑸룞以djhwang@namochemical.com$2b$10$wwEAw7J7Pxcvvq5MP.qSlO4wCPo4Kd8yDBiOd/G03xlMGEkf6G31y?덉쭏遺user2026-03-30 07:44:20APPROVED ? /?3?꾪씎諛컇eem730@naver.com$2b$10$ei3YDnFv08BKuMitB1uyn..66OIJb/9ySP8I3fiuS/SiHXsO7ggza?덉쭏遺user2026-03-30 07:39:41PENDING?
- -?3?꾪씎諛컇eem73@naver.com$2b$10$iPGXuJ./erCe6hLTK.jqae6OQyHWgwwtUOgWT542.Pcrwu5lJpUs2?덉쭏遺user2026-03-29 11:35:14APPROVED?
- 39?3?쒖뒪??愿由ъ옄admin@namochemical.com$2b$10$CgE98atPqn2qRDlGrgKXZ.4GY7JGF7dLNmmWXMXSNZa7MJwZ4EoQa愿由ы?admin2026-03-29 23:42:46APPROVED   -?3?꾪씎諛컇eem73@naver.com$2b$10$iPGXuJ./erCe6hLTK.jqae6OQyHWgwwtUOgWT542.Pcrwu5lJpUs2?덉쭏遺user2026-03-29 11:35:14
-? L ?L?g???                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      9dhbak@namochemical.com;hapark@namochemical.com9shkim@namochemical.com=djhwang@namochemical.com   leem730@naver.com9admin@namochemical.com-	leem73@naver.com
-? 
-j?????w??j                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-members  oqc#change_logs ?worklogipqc iqc
-
-suppliers3email_verifications	users
-	!	nonconforms   	oqcrs
-T ? ???^                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  B	 !!=2026-01-232026011101紐⑤━濡쒖퓼耳誘몄뭡利뉿MP諛뺥쁽??:		 !#+2026-01-1320251031063?쒖?誘몄썚?짴MP諛뺥쁽??   
-!!=
-/
-	 !	2026-04-03DBA1501肄붿삤濡켗AI諛뺥쁽?? 	 !%2026-02-02006-8-25媛뺤떊?곗뾽Boehmite諛뺥쁽??4	 !#2026-01-12PAI#27-2(2)肄붿삤濡켗AI諛뺥쁽??
-   G?G                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              X !!X !W !!)
-?2026-01-14NBC20-HM04DBA1501OK1400/1420/14403.470/3.473/3.458(D50關m)?⑷꺽X !!)
-A2026-01-14NBC20-HM04DBA1501OK1340/1400/14303.398/3.400 /3.398(D50關m)?⑷꺽㈁ł꺽
-   ? ?%?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ` !+!
-)/
-
-
-
-
-	2026-04-E !+!#
-
-
-
-
-
-
-
-2026-04-03?꾨??먮룞李쭼BC20-HM04PAI#27-2(2)?⑷꺽k !+!)
-?
-
-
-
-2026-01-14?꾨??먮룞李쭼BC20-HM04DBA1501OK1400/1420/14403.470/3.473/3.458(D50關m)?⑷꺽l !+!)
-A
-
-
-
-2026-01-14?꾨??먮룞李쭼BC20-HM04DBA1501OK1340/1400/14303.398/3.400/3.398(D50 關m)?⑷꺽
-    ???e>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-
-肄붿삤濡깆썝?먯옱?ъ슜%  +
-
-?쒖?誘몄썚?ㅼ썝?먯옱?ъ슜"  %
-
-?좎떆?뚯옱?먯옄?ъ궗??  #
-
-LG Chemical?먯옄?ъ궗??  =
-
-紐⑤━濡쒖퓼耳誘몄뭡利덉썝?먯옱?ъ슜"  %
-
-媛뺤떊?곗뾽?먯옄?ъ궗??o , ??n?,7                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        A
- !#
-
-#
-
-2026-01-14DBA15015SBRLG Chemical3025F26A(1)諛뺣룄??? 8!
-
-#
-
-
-2026-01-14DBA15014PAI肄붿삤濡켗AI#27-2(2)D
- !%
-
-!
-
-2026-01-14DBA15012BYK180?좊땲?뚯옱0002708935諛뺣룄??7 	!
-?
- !
-
-#
-
-2026-01-14DBA15014PAI肄붿삤濡켗AI#27-2(2)諛뺣룄??   7!
-
-
-!
-
-2026-01-14DBA15011NMP2025102001諛뺣룄?뉯
-
- !%
-
-
-
-2026-01-14DBA15013AOH30媛뺤떊?곗뾽004-8-25諛뺣룄?뉾
-
- !=
-
-!
-
-2026-01-14DBA15011NMP紐⑤━濡쒖퓼耳誘몄뭡利?026011101諛뺣룄??   ?    ??K
-??;??9??@
-??K	??D??N ??G??B??>??0?|"?o?h ? f 푋갟  !W32026/04/02iqc?섏젙?섏엯寃???섏젙: NMP / 20260111012026-04-02 04:37:30U갞  !]32026/04/02iqc?섏젙?섏엯寃???섏젙: Boehmite / 006-8-252026-04-02 04:37:05R갘  !W32026/04/02iqc?깅줉?섏엯寃???깅줉: NMP / 20260111012026-04-02 04:34:06U갏  !]32026/04/02iqc?깅줉?섏엯寃???깅줉: Boehmite / 006-8-252026-04-02 04:33:31S갎  !Y32026/04/02iqc?깅줉?섏엯寃???깅줉: PAI / PAI#27-2(2)2026-04-02 04:32:52V갍  !_32026/04/02oqc?깅줉異쒗븯寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:31:37V갌  !_32026/04/02oqc?깅줉異쒗븯寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:30:45W갋  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:29:01W갆  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:56W갅  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:48W갃  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:34W갂  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:22W?  !_32026/04/02ipqc?깅줉怨듭젙寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:28:14W?  !_32026/04/02ipqc?깅줉怨듭젙寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:27:37U?  !U32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: AOH30 / DBA15012026-04-02 04:24:26S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: SBR / DBA15012026-04-02 04:23:49S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-02 04:23:25V?  !W32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: BYK180 / DBA15012026-04-02 04:22:59S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: NMP / DBA15012026-04-02 04:22:08S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: SBR / DBA15012026-04-02 04:21:00S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-02 04:20:52U?  !U32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: AOH30 / DBA15012026-04-02 04:20:39V?  !W32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: BYK180 / DBA15012026-04-02 04:20:28M?  !E32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: SBR / -2026-04-02 04:20:16S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-02 04:19:53M?  !E32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: PAI / -2026-04-02 04:19:47S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: PAI / DBA15012026-04-02 04:19:33U?  !U32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: AOH30 / DBA15012026-04-02 04:19:17V?  !W32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: BYK180 / DBA15012026-04-02 04:18:56M?  !E32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: SBR / -2026-04-02 04:16:51L?  !C32026/04/02auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-02 03:53:31S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:53:07J?  !%532026/04/02import?묒?諛섏쁺?묒? 諛섏쁺 ?꾨즺2026-04-02 02:52:38S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: SBR / DBA15012026-04-02 02:52:03S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: SBR / DBA15012026-04-02 02:51:37S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:50:28S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: NMP / DBA15012026-04-02 02:50:05S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:49:42S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:49:13T?  !O32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: 媛뺤떊?곗뾽2026-04-02 02:43:32`?  !g32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: 紐⑤━濡쒖퓼耳誘몄뭡利?026-04-02 02:43:28S?  !M32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: LG Chemical2026-04-02 02:43:23T?  !O32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?좎떆?뚯옱2026-04-02 02:43:18W?  !U32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?쒖?誘몄썚??026-04-02 02:43:12W?  !U32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?쒖?誘몄썚??026-04-02 02:43:08Q?  !I32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: 肄붿삤濡?026-04-02 02   
-갟
-   ? o?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ?	 /?=3leem730@naver.comb3c976e29994fa2e7ed556c50c26c344ed0d6ebc198c439fde99280d00a84205signup2026-03-30T04:43:52.735Z2026-03-30 04:38:52?		 5?=3leemleem73@gmail.comfdff03b1868dcfea88c5fede9dd526091e7147a113f55936aa121de0ca76400esignup2026-03-30T02:38:06.616Z2026-03-30 02:33:06
-   ? ??      
-?w
-)??3??C
-??M	??\	?` ?p ?n ?x$?v#?t?g?h ? j  R0  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 07:30:39S/  !Y32026/03/30iqc?깅줉?섏엯寃???깅줉: NMP / 202510310632026-03-30 05:11:28S.  !Y32026/03/30iqc?깅줉?섏엯寃???깅줉: NMP / 202510310632026-03-30 05:09:31S-  !Y32026/03/30iqc?깅줉?섏엯寃???깅줉: PAI / PAI#27-2(2)2026-03-30 05:07:57S,  !Y32026/03/30iqc?섏젙?섏엯寃???섏젙: PAI / PAI#27-2(2)2026-03-30 05:07:28S+  !Y32026/03/30iqc?깅줉?섏엯寃???깅줉: PAI / PAI#27-2(2)2026-03-30 05:07:06T*  !O32026/03/30suppliers?깅줉怨듦툒?낆껜 ?깅줉: 媛뺤떊?곗뾽2026-03-30 05:05:51`)  !g32026/03/30suppliers?깅줉怨듦툒?낆껜 ?깅줉: 紐⑤━濡쒖퓼耳誘몄뭡利?026-03-30 05:05:46S(  !M32026/03/30suppliers?깅줉怨듦툒?낆껜 ?깅줉: LG Chemical2026-03-30 05:05:41T'  !O32026/03/30suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?좎떆?뚯옱2026-03-30 05:05:37W&  !U32026/03/30suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?쒖?誘몄썚??026-03-30 05:05:33Q%  !I32026/03/30suppliers?깅줉怨듦툒?낆껜 ?깅줉: 肄붿삤濡?026-03-30 05:05:29R$  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 05:05:24X#  !%U32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: admin@namochemical.com2026-03-30 04:38:31R"  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 04:38:00R!  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 04:36:23R   !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-30 02:15:45L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-30 02:15:39X  !%U32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: admin@namochemical.com2026-03-30 01:50:22R  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 01:50:04R  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-30 01:17:41L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-30 01:17:33L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-30 01:15:34R  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-30 01:12:43L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-30 01:11:18R  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 01:01:59X  !%U32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: admin@namochemical.com2026-03-30 01:00:27R  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-30 01:00:20G  !%332026/03/30auth?뚯썝?뱀씤?뚯썝 ?뱀씤: id=12026-03-29 23:45:56R  !O32026/03/30auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-03-29 23:43:32R  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 23:36:33L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 23:29:36R  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 23:19:25L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 23:19:22R  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 23:19:19L
-  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 23:16:50R  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 23:16:48L  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 23:14:46R
-  !%I32026/03/30auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 23:04:53L	  !C32026/03/30auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 22:52:16R  !%I32026/03/29auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 12:57:33L   !C32026/03/29auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 12:56:51L  !C32026/03/29auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 12:42:08L  !C32026/03/29auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 12:12:26L  !C32026/03/29auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 11:48:05L  !C32026/03/29auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-03-29 11:36:00R  !%I32026/03/29auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-03-29 11:35:32Y  !%W32026/03/29auth?뚯썝媛?낇쉶?먭?-leem73@naver.com9	admin@namochemical.com
-   . f ?R??K
-??;??9??@
-??K	??D??N ??G??B??>??0?|"?o?h ? f  R갟  !W32026/04/02iqc?섏젙?섏엯寃???섏젙: NMP / 20260111012026-04-02 04:37:30U갞  !]32026/04/02iqc?섏젙?섏엯寃???섏젙: Boehmite / 006-8-252026-04-02 04:37:05R갘  !W32026/04/02iqc?깅줉?섏엯寃???깅줉: NMP / 20260111012026-04-02 04:34:06U갏  !]32026/04/02iqc?깅줉?섏엯寃???깅줉: Boehmite / 006-8-252026-04-02 04:33:31S갎  !Y32026/04/02iqc?깅줉?섏엯寃???깅줉: PAI / PAI#27-2(2)2026-04-02 04:32:52V갍  !_32026/04/02oqc?깅줉異쒗븯寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:31:37V갌  !_32026/04/02oqc?깅줉異쒗븯寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:30:45W갋  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:29:01W갆  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:56W갅  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:48W갃  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:34W갂  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 04:28:22W?  !_32026/04/02ipqc?깅줉怨듭젙寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:28:14W?  !_32026/04/02ipqc?깅줉怨듭젙寃???깅줉: NBC20-HM04 / DBA15012026-04-02 04:27:37U?  !U32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: AOH30 / DBA15012026-04-02 04:24:26S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: SBR / DBA15012026-04-02 04:23:49S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-02 04:23:25V?  !W32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: BYK180 / DBA15012026-04-02 04:22:59S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: NMP / DBA15012026-04-02 04:22:08S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: SBR / DBA15012026-04-02 04:21:00S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-02 04:20:52U?  !U32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: AOH30 / DBA15012026-04-02 04:20:39V?  !W32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: BYK180 / DBA15012026-04-02 04:20:28M?  !E32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: SBR / -2026-04-02 04:20:16S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-02 04:19:53M?  !E32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: PAI / -2026-04-02 04:19:47S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: PAI / DBA15012026-04-02 04:19:33U?  !U32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: AOH30 / DBA15012026-04-02 04:19:17V?  !W32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: BYK180 / DBA15012026-04-02 04:18:56M?  !E32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: SBR / -2026-04-02 04:16:51L?  !C32026/04/02auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-02 03:53:31S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:53:07J?  !%532026/04/02import?묒?諛섏쁺?묒? 諛섏쁺 ?꾨즺2026-04-02 02:52:38S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: SBR / DBA15012026-04-02 02:52:03S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: SBR / DBA15012026-04-02 02:51:37S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:50:28S?  !Q32026/04/02worklog?섏젙?묒뾽?쇱? ?섏젙: NMP / DBA15012026-04-02 02:50:05S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:49:42S?  !Q32026/04/02worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-02 02:49:13T?  !O32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: 媛뺤떊?곗뾽2026-04-02 02:43:32`?  !g32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: 紐⑤━濡쒖퓼耳誘몄뭡利?026-04-02 02:43:28S?  !M32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: LG Chemical2026-04-02 02:43:23T?  !O32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?좎떆?뚯옱2026-04-02 02:43:18W?  !U32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?쒖?誘몄썚??026-04-02 02:43:12W?  !U32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: ?쒖?誘몄썚??026-04-02 02:43:08Q?  !I32026/04/02suppliers?깅줉怨듦툒?낆껜 ?깅줉: 肄붿삤濡?026-04-02 02:43:04
-   x ,x                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? ? -?
-
-==?꾪씎諛컇eem73@naver.com$2b$10$Y8yjcDQpxtsEUfnavnyhiOfvrBiPo0I3xwqoMN5/UMyLQSLPT6BJK?묒뾽?먮??ν뭹吏덈??ъ쭅2026-04-04T14:42:12.530Z2026-04-04T14:44:02.184Z갦 9?
-;==愿由ъ옄admin@namochemical.com$2b$10$x2rDlCktsuSLHt56GwObh..uRoUSffj1I8aTytlBtSdZTZzUrm5tq愿由ъ옄愿由ъ옄愿由щ?珥덇린 愿由ъ옄 怨꾩젙?ъ쭅2026-04-04T14:38:33.830Z2026-04-04T14:38:33.830Z
-   %? ?[?b
-
-?o
-?f
-?_
-
-?`
-
-	?_	
-?[ ?^ 	?U ?P?V??                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  R걉  !O32026/04/04auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-04 14:48:56Z걈  !g32026/04/03oqc?깅줉異쒗븯寃???깅줉: NBC20-HM04 / PAI#27-2(2)2026-04-03 14:00:55O걇  !Q32026/04/03iqc?깅줉?섏엯寃???깅줉: PAI / DBA15012026-04-03 14:00:08V걆  !_32026/04/03oqc?깅줉異쒗븯寃???깅줉: NBC20-HM04 / DBA15012026-04-03 13:52:17L걅  !C32026/04/03auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-03 13:49:36X걄  !%U32026/04/03auth濡쒓렇?꾩썐濡쒓렇?꾩썐: admin@namochemical.com2026-04-03 13:49:19R걃  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 13:47:59R걂  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 13:45:42W걁  !_32026/04/03ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-03 11:51:21W갿  !_32026/04/03ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-03 11:50:54R갾  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 11:50:40R갽  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 11:32:01L갻  !C32026/04/03auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-03 08:01:04V갺  !_32026/04/03oqc?섏젙異쒗븯寃???섏젙: NBC20-HM04 / DBA15012026-04-03 07:58:52W갷  !_32026/04/03ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-03 07:58:42R갶  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 07:58:28R갵  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: dhbak@namochemical.com2026-04-03 07:57:47S?  !Q32026/04/03worklog?섏젙?묒뾽?쇱? ?섏젙: PAI / DBA15012026-04-03 07:22:12R?  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 07:22:00S?  !Q32026/04/03worklog?깅줉?묒뾽?쇱? ?깅줉: NMP / DBA15012026-04-03 07:19:09R?  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 07:17:47R?  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 07:09:45R?  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 06:13:08R갴  !O32026/04/03auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-03 00:21:18V갳  !_32026/04/02oqc?섏젙異쒗븯寃???섏젙: NBC20-HM04 / DBA15012026-04-02 06:50:19V갲  !_32026/04/02oqc?섏젙異쒗븯寃???섏젙: NBC20-HM04 / DBA15012026-04-02 06:50:06W갮  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 06:49:53W갫  !_32026/04/02ipqc?섏젙怨듭젙寃???섏젙: NBC20-HM04 / DBA15012026-04-02 06:49:46R갪  !O32026/04/02auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-02 06:41:15L갩  !C32026/04/02auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-02 06:26:55L갨  !C32026/04/02auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-02 06:09:46R갧  !O32026/04/02auth濡쒓렇?몃줈洹몄씤: admin@namochemical.com2026-04-02 05:23:29R갦  !%I32026/04/02auth濡쒓렇?꾩썐濡쒓렇?꾩썐: leem73@naver.com2026-04-02 05:23:14R갥  !W32026/04/02iqc?섏젙?섏엯寃???섏젙: NMP / 20260111012026-04-02 04:53:11L갣  !C32026/04/02auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-02 04:52:52L갢  !C32026/04/02auth濡쒓렇?몃줈洹몄씤: leem73@naver.com2026-04-02 04:46:33S갡  !Y32026/04/02iqc?깅줉?섏엯寃???깅줉: NMP / 202510310632026-04-02 04:38:48
-      ?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              & !
-2026-04-02?낃퀬11111?湲?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-    v ??
-????? ?????> v                                                                              갋 굌tablepqcpqcCREATE TABLE pqc (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT NOT NULL,
-      lot TEXT NOT NULL,
-      judge TEXT DEFAULT '',
-      product TEXT DEFAULT ''
-    )굏 55?tableproduction_materialsproduction_materialsCREATE TABLE production_materials (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      production_id INTEGER NOT NULL,
-      seq INTEGER NOT NULL,
-      material TEXT DEFAULT '',
-      raw_lot TEXT DEFAULT '',
-      qty TEXT DEFAULT '',
-      FOREIGN KEY (production_id) REFERENCES production(id) ON DELETE CASCADE
-    )? !!뇎tableproductionproductionCREATE TABLE production (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT NOT NULL,
-      product TEXT NOT NULL,
-      finished_lot TEXT NOT NULL,
-      worker TEXT NOT NULL,
-      machine TEXT DEFAULT '',
-      speed TEXT DEFAULT '',
-      temp TEXT DEFAULT '',
-      work_time TEXT DEFAULT '',
-      qty_ea REAL DEFAULT 0,
-      qty_kg REAL DEFAULT 0,
-      abnormal TEXT DEFAULT '?놁쓬',
-      note TEXT DEFAULT '',
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )-
-A indexsqlite_autoindex_members_1members긖 ?tablemembersmembersCREATE TABLE members (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT '?묒뾽??,
-      title TEXT DEFAULT '',
-      dept TEXT DEFAULT '',
-      phone TEXT DEFAULT '',
-      note TEXT DEFAULT '',
-      status TEXT NOT NULL DEFAULT '?뱀씤?湲?,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )? !!?tablenonconformnonconformCREATE TABLE nonconform (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT,
-      type TEXT,
-      lot TEXT,
-      item TEXT,
-      issue TEXT,
-      cause TEXT,
-      action TEXT,
-      owner TEXT,
-      status TEXT
-    )?
- 33긻tableemail_verificationsemail_verificationsCREATE TABLE email_verifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT,
-      codeHash TEXT,
-      purpose TEXT,
-      expiresAt TEXT,
-      verified INTEGER DEFAULT 0,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-    )갧	 ##굂tablechange_logschange_logs
-CREATE TABLE change_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  logDate TEXT,
-  category TEXT,
-  action TEXT,
-  message TEXT,
-  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-)? 긫tableworklogworklog	CREATE TABLE worklog (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  workDate TEXT,
-  finishedLot TEXT,
-  seq TEXT,
-  material TEXT,
-  supName TEXT,
-  inputQty TEXT,
-  inputRatio TEXT,
-  lotNo TEXT,
-  inputTime TEXT,
-  worker TEXT,
-  note TEXT
-)?  ?tablesupplierssuppliersCREATE TABLE suppliers (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  manager TEXT,
-  phone TEXT,
-  category TEXT,
-  status TEXT
-)? ?tableoqcoqc CREATE TABLE oqc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT,
-  customer TEXT,
-  product TEXT,
-  lot TEXT,
-  visual TEXT,
-  viscosity TEXT,
-  solid TEXT,
-  particle TEXT,
-  adhesion TEXT,
-  resistance TEXT,
-  swelling TEXT,
-  moisture TEXT,
-  qty INTEGER,
-  fail INTEGER,
-  judge TEXT
-)갾 ?tableipqcipqcCREATE TABLE ipqc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT,
-  product TEXT,
-  lot TEXT,
-  visual TEXT,
-  viscosity TEXT,
-  solid TEXT,
-  particle TEXT,
-  qty INTEGER,
-  fail INTEGER,
-  judge TEXT
-)? 괪tableiqciqcCREATE TABLE iqc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT,
-  lot TEXT,
-  supplier TEXT,
-  item TEXT,
-  inspector TEXT,
-  qty INTEGER,
-  fail INTEGER
-)P++Ytablesqlite_sequencesqlite_sequenceCREATE TABLE sqlite_sequence(name,seq))= indexsqlite_autoindex_users_1users? 긝tableusersusersCREATE TABLE users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  email TEXT UNIQUE,
-  password TEXT,
-  department TEXT,
-  role TEXT DEFAULT 'user',
-  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-, status TEXT DEFAULT "PENDING")
