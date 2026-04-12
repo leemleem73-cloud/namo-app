@@ -1,4 +1,5 @@
 console.log("NEW CODE DEPLOYED");
+
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -50,7 +51,6 @@ const adminLimiter = rateLimit({
 // =============================
 // DB 경로
 // =============================
-// 절대 /var/data 사용 안 함
 const dbPath = path.join(__dirname, 'quality.db');
 
 try {
@@ -126,6 +126,35 @@ db.serialize(() => {
       fail INTEGER
     )
   `);
+
+  db.get(`SELECT COUNT(*) AS count FROM users`, [], async (err, row) => {
+    if (err) {
+      console.error('관리자 계정 확인 실패:', err.message);
+      return;
+    }
+
+    if ((row?.count || 0) === 0) {
+      try {
+        const hashed = await bcrypt.hash('admin1234', 10);
+        db.run(
+          `
+          INSERT INTO users (name, email, password, department, role, status)
+          VALUES (?, ?, ?, ?, ?, ?)
+          `,
+          ['관리자', 'admin@namo.com', hashed, '관리부', 'admin', 'APPROVED'],
+          (insertErr) => {
+            if (insertErr) {
+              console.error('기본 관리자 생성 실패:', insertErr.message);
+            } else {
+              console.log('기본 관리자 계정 생성 완료: admin@namo.com / admin1234');
+            }
+          }
+        );
+      } catch (hashErr) {
+        console.error('기본 관리자 비밀번호 해시 실패:', hashErr.message);
+      }
+    }
+  });
 });
 
 // =============================
@@ -139,11 +168,17 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
       return res.status(400).json({ error: '이메일과 비밀번호 필요' });
     }
 
+    if (String(password).length < 8) {
+      return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
 
     db.run(
-      `INSERT INTO users (name, email, password, department, role, status)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `
+      INSERT INTO users (name, email, password, department, role, status)
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
       [
         safeText(name),
         normalizeEmail(email),
@@ -176,10 +211,10 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
     [normalizeEmail(email)],
     async (err, user) => {
       if (err) return res.status(500).json({ error: err.message });
-      if (!user) return res.status(401).json({ error: '없음' });
+      if (!user) return res.status(401).json({ error: '존재하지 않는 계정입니다.' });
 
       const ok = await bcrypt.compare(password || '', user.password || '');
-      if (!ok) return res.status(401).json({ error: '틀림' });
+      if (!ok) return res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
 
       req.session.user = {
         id: user.id,
@@ -212,9 +247,11 @@ app.post('/api/auth/reset-password', (req, res) => {
 // =============================
 app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   db.all(
-    `SELECT id, name, email, department, role, status
-     FROM users
-     ORDER BY id DESC`,
+    `
+    SELECT id, name, email, department, role, status
+    FROM users
+    ORDER BY id DESC
+    `,
     [],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -237,8 +274,10 @@ app.post('/api/iqc', requireLogin, (req, res) => {
   const d = req.body;
 
   db.run(
-    `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `
+    INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `,
     [
       makeId('iqc'),
       safeText(d.date),
