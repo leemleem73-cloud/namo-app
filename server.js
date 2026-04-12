@@ -272,9 +272,9 @@ async function initDb() {
     )
   `);
 
-  const admin = await get(`SELECT * FROM users WHERE email = ?`, ['admin@namochemical.com']);
-  if (!admin) {
-    const passwordHash = await bcrypt.hash('Admin1234!', 10);
+  const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
+if (!admin) {
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
     await run(
       `INSERT INTO users (id, name, email, passwordHash, department, role, status, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
