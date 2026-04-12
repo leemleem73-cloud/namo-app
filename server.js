@@ -40,7 +40,7 @@ app.use(
   })
 );
 
-// 정적 파일 public만 공개
+// 정적 파일
 app.use(express.static(path.join(__dirname, 'public')));
 
 // =============================
@@ -57,24 +57,29 @@ const adminLimiter = rateLimit({
 });
 
 // =============================
-// DB 경로
+// DB 경로 (🔥 수정된 핵심 부분)
 // =============================
 function resolveDbPath() {
+  // 외부에서 지정한 경우
   if (process.env.DB_PATH) return process.env.DB_PATH;
 
-  // Render에서는 쓰기 가능한 경로를 사용해야 함
-  // Persistent Disk를 연결했다면 /var/data 사용 권장
-  if (process.env.RENDER) {
-    return '/var/data/quality.db';
+  // Render + 디스크 연결된 경우만 사용
+  if (process.env.RENDER && process.env.RENDER_DISK_PATH) {
+    return path.join(process.env.RENDER_DISK_PATH, 'quality.db');
   }
 
+  // 기본: 프로젝트 내부 (권한 문제 없음)
   return path.join(__dirname, 'quality.db');
 }
 
 const dbPath = resolveDbPath();
 
+// 폴더 생성 (안전 처리)
 try {
-  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  const dir = path.dirname(dbPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 } catch (err) {
   console.error('DB 디렉토리 생성 실패:', err);
   process.exit(1);
@@ -166,12 +171,11 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
       ],
       function (err) {
         if (err) {
-          if (err.message && err.message.includes('UNIQUE')) {
+          if (err.message.includes('UNIQUE')) {
             return res.status(409).json({ error: '이미 존재하는 이메일' });
           }
           return res.status(500).json({ error: err.message });
         }
-
         res.json({ ok: true, id: this.lastID });
       }
     );
@@ -202,7 +206,7 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
         status: user.status
       };
 
-      res.json({ ok: true, user: req.session.user });
+      res.json({ ok: true });
     }
   );
 });
@@ -215,19 +219,12 @@ app.post('/api/auth/logout', requireLogin, (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-// 비밀번호 재설정 비활성화
-app.post('/api/auth/reset-password', (req, res) => {
-  res.status(403).json({ error: '비활성화됨' });
-});
-
 // =============================
 // 관리자
 // =============================
 app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   db.all(
-    `SELECT id, name, email, department, role, status
-     FROM users
-     ORDER BY id DESC`,
+    `SELECT id, name, email, department, role, status FROM users ORDER BY id DESC`,
     [],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -270,7 +267,7 @@ app.post('/api/iqc', requireLogin, (req, res) => {
 });
 
 app.delete('/api/iqc/:id', requireAdmin, (req, res) => {
-  db.run(`DELETE FROM iqc WHERE id = ?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM iqc WHERE id=?`, [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ ok: true });
   });
