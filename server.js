@@ -281,7 +281,7 @@ if (!admin) {
       [
         `user_${Date.now()}`,
         '관리자',
-        'admin@namochemical.com',
+        ADMIN_EMAIL,
         passwordHash,
         '관리팀',
         'admin',
@@ -439,7 +439,7 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
     if (!target) return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
 
-    if (target.role === 'admin' && target.email === 'admin@namochemical.com') {
+    if (target.role === 'admin' && target.email === ADMIN_EMAIL) {
       return res.status(400).json({ error: '기본 관리자 계정은 삭제할 수 없습니다.' });
     }
 
