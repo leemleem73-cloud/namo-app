@@ -1439,6 +1439,51 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+app.post('/api/admin/reset', async (req, res) => {
+  try {
+    const secret = String(req.body.secret || '').trim();
+
+    if (secret !== process.env.BOOTSTRAP_SECRET) {
+      return res.status(403).json({ error: '접근 불가' });
+    }
+
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await get(`SELECT * FROM users WHERE email = ?`, [email]);
+
+    if (!user) {
+      await run(
+        `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          `user_${Date.now()}`,
+          '관리자',
+          email,
+          passwordHash,
+          '관리팀',
+          'admin',
+          'admin',
+          'APPROVED',
+          nowDateTime()
+        ]
+      );
+    } else {
+      await run(
+        `UPDATE users
+         SET passwordHash = ?, role = 'admin', status = 'APPROVED'
+         WHERE email = ?`,
+        [passwordHash, email]
+      );
+    }
+
+    res.json({ message: '관리자 초기화 완료' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '초기화 실패' });
+  }
+});
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
