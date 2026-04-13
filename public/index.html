@@ -133,18 +133,35 @@
     .ng{background:var(--soft-red);border:1px solid #ffd0d0;color:#d13d3d}
     .hold{background:#f3f4f6;border:1px solid #d8dee6;color:#6b7280}
     .empty-row{text-align:center;color:#7a8796;padding:26px}
-    .modal-bg{display:none;position:fixed;inset:0;background:rgba(17,24,39,.35);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:20px}
+
+    .modal-bg{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(17,24,39,.35);
+      backdrop-filter:blur(6px);
+      z-index:9999;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
     .modal-bg.show{display:flex!important}
-    .modal{width:980px;max-width:96%;max-height:90vh;overflow:auto;padding:22px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 16px 44px rgba(15,23,42,.18)}
+
+    .modal{
+      width:980px;max-width:96%;max-height:90vh;overflow:auto;padding:22px;background:#fff;border:1px solid var(--line);
+      border-radius:24px;box-shadow:0 16px 44px rgba(15,23,42,.18)
+    }
     .modal h3{margin:0 0 16px;font-size:22px;color:var(--title);letter-spacing:-.02em}
     .field label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
     .field input,.field select{width:100%;height:42px;padding:0 14px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px}
     .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+
     .barcode-preview-wrap{margin-top:14px;padding:16px;border-radius:18px;border:1px solid var(--line);background:#f8fbff}
     .barcode-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
     .barcode-preview-box{display:flex;align-items:center;justify-content:center;min-height:180px;border-radius:16px;background:#fff;padding:12px;border:1px solid var(--line)}
     .barcode-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+
     .trace-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .trace-card{overflow:hidden}
     .trace-head{padding:18px;color:var(--title);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbfdff 0%, #f4f8fc 100%)}
@@ -161,15 +178,22 @@
     .trace-count{padding:7px 10px;border-radius:999px;background:#eef3f8;border:1px solid var(--line);font-size:11px;font-weight:800;color:#44556a}
     .trace-table-wrap{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
     .trace-empty{padding:38px 20px;text-align:center;color:#7a8796;font-size:13px}
+
     .upgrade-list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto}
     .upgrade-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,#ffffff 0%,#f9fbfe 100%)}
     .upgrade-date{font-size:11px;font-weight:800;color:var(--blue);margin-bottom:8px}
     .upgrade-text{font-size:12px;color:var(--text);line-height:1.7}
     .upgrade-empty{color:#7a8796;font-size:12px;padding:14px 4px}
-    .toast{position:fixed;right:16px;bottom:16px;z-index:10000;padding:12px 14px;border-radius:16px;background:#111827;box-shadow:0 12px 34px rgba(15,23,42,.24);color:#fff;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s ease;max-width:360px;line-height:1.6;font-size:12px}
+
+    .toast{
+      position:fixed;right:16px;bottom:16px;z-index:10000;padding:12px 14px;border-radius:16px;background:#111827;
+      box-shadow:0 12px 34px rgba(15,23,42,.24);color:#fff;opacity:0;transform:translateY(10px);pointer-events:none;
+      transition:.2s ease;max-width:360px;line-height:1.6;font-size:12px
+    }
     .toast.show{opacity:1;transform:translateY(0)}
     .save-status-ok{color:#2e7d32}
     .save-status-fail{color:#c62828}
+
     .auth-gate{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eef4fb 0%, #f7fbff 55%, #edf2f8 100%)}
     .auth-layout{width:100%;max-width:1180px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
     .auth-showcase{overflow:hidden;border-radius:28px;padding:30px;background:linear-gradient(135deg,var(--navy) 0%, var(--navy-2) 100%);border:1px solid rgba(18,57,95,.84);box-shadow:var(--shadow);color:#fff;position:relative}
@@ -203,6 +227,7 @@
     .auth-footer small{color:#7a8796;line-height:1.7}
     .auth-social-proof{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
     .auth-pill{height:28px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:11px;color:#e7f2ff;font-weight:800}
+
     .overview-board-wrap{display:grid;gap:16px}
     .overview-hero{display:grid;grid-template-columns:1.15fr 1.85fr;gap:16px}
     .overview-brief{background:linear-gradient(135deg,#184a7b 0%, #1f6fd1 62%, #63b3ff 100%);color:#fff;border-radius:24px;padding:22px;position:relative;overflow:hidden;box-shadow:0 18px 36px rgba(31,111,209,.18);min-height:250px}
@@ -247,6 +272,7 @@
     .overview-progress-fill.amber{background:linear-gradient(90deg,#d8991b,#f2bf58)}
     .overview-progress-value{text-align:right;font-size:13px;font-weight:800;color:var(--title)}
     .trace-table,.table table{min-width:100%}
+
     @media(max-width:1320px){.trace-wrap,.form-grid,.auth-layout,.overview-bottom-grid,.overview-hero,.overview-kpi-grid{grid-template-columns:1fr}}
     @media(max-width:860px){.top{padding:12px 14px}.shell{padding:12px}.trace-search{grid-template-columns:1fr}.trace-tools{width:100%}.trace-tools .btn{flex:1}.auth-metrics,.auth-grid{grid-template-columns:1fr}.auth-footer{flex-direction:column;align-items:stretch}}
     @media(max-width:640px){.brand h1{font-size:20px}.auth-showcase h2{font-size:24px}.trace-head{flex-direction:column}.tabs{gap:6px}.tab{padding:10px 12px;font-size:13px}.bar{padding:12px}.auth-card,.auth-showcase,.card,.ov-card{padding:16px}.ov-title{font-size:18px;min-height:46px}}
@@ -314,7 +340,6 @@
         <div class="auth-footer">
           <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-         
             <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
           </div>
         </div>
@@ -330,7 +355,7 @@
         </a>
       </div>
       <div class="top-right">
-       <button type="button" class="status-pill" id="userBadge" onclick="openMyProfileModal()">사용자 확인 중…</button>
+        <button type="button" class="status-pill" id="userBadge" onclick="openMyProfileModal()">사용자 확인 중…</button>
         <button class="btn b2" onclick="logoutUser()">로그아웃</button>
         <div class="live">운영 중</div>
         <div class="top-chip" id="clock"></div>
@@ -400,6 +425,7 @@
                     <div class="overview-kpi-mini"><em>검사건수</em><b id="ovIqcTotal">0</b></div>
                   </div>
                 </section>
+
                 <section class="overview-kpi-card">
                   <div class="overview-kpi-head"><h3>공정검사</h3><div class="overview-kpi-badge">PQC</div></div>
                   <div class="overview-kpi-number"><strong id="ovIpqcTotalHero">0</strong><span>건</span></div>
@@ -410,6 +436,7 @@
                     <div class="overview-kpi-mini"><em>검사건수</em><b id="ovIpqcTotal">0</b></div>
                   </div>
                 </section>
+
                 <section class="overview-kpi-card">
                   <div class="overview-kpi-head"><h3>출하검사</h3><div class="overview-kpi-badge">OQC</div></div>
                   <div class="overview-kpi-number"><strong id="ovOqcTotalHero">0</strong><span>건</span></div>
@@ -456,9 +483,26 @@
           </div>
         </div>
 
-        <div id="panel-iqc" class="panel"><div class="card"><div class="head"><div class="title">입고검사 IQC</div><button class="btn b1" onclick="openRegisterModal('iqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일</th><th>LOT No</th><th>업체명</th><th>원료명</th><th>검사자</th><th>검사수량</th><th>불합격</th><th>불량률</th><th>판정</th><th>관리</th></tr></thead><tbody id="iqcBody"></tbody></table></div></div></div>
-        <div id="panel-ipqc" class="panel"><div class="card"><div class="head"><div class="title">공정검사 PQC</div><button class="btn b1" onclick="openRegisterModal('ipqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일자</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도</th><th>고형분</th><th>입도</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="ipqcBody"></tbody></table></div></div></div>
-        <div id="panel-oqc" class="panel"><div class="card"><div class="head"><div class="title">출하검사 OQC</div><button class="btn b1" onclick="openRegisterModal('oqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일자</th><th>고객사명</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도(cP)</th><th>고형분(wt.%)</th><th>입도(㎛)</th><th>접착력(mm)</th><th>절연저항(MΩ)</th><th>전해액 팽윤성(%)</th><th>수분(ppm)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="oqcBody"></tbody></table></div></div></div>
+        <div id="panel-iqc" class="panel">
+          <div class="card">
+            <div class="head"><div class="title">입고검사 IQC</div><button class="btn b1" onclick="openRegisterModal('iqc')">등록</button></div>
+            <div class="table-box table"><table><thead><tr><th>검사일</th><th>LOT No</th><th>업체명</th><th>원료명</th><th>검사자</th><th>검사수량</th><th>불합격</th><th>불량률</th><th>판정</th><th>관리</th></tr></thead><tbody id="iqcBody"></tbody></table></div>
+          </div>
+        </div>
+
+        <div id="panel-ipqc" class="panel">
+          <div class="card">
+            <div class="head"><div class="title">공정검사 PQC</div><button class="btn b1" onclick="openRegisterModal('ipqc')">등록</button></div>
+            <div class="table-box table"><table><thead><tr><th>검사일자</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도</th><th>고형분</th><th>입도</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="ipqcBody"></tbody></table></div>
+          </div>
+        </div>
+
+        <div id="panel-oqc" class="panel">
+          <div class="card">
+            <div class="head"><div class="title">출하검사 OQC</div><button class="btn b1" onclick="openRegisterModal('oqc')">등록</button></div>
+            <div class="table-box table"><table><thead><tr><th>검사일자</th><th>고객사명</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도(cP)</th><th>고형분(wt.%)</th><th>입도(㎛)</th><th>접착력(mm)</th><th>절연저항(MΩ)</th><th>전해액 팽윤성(%)</th><th>수분(ppm)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="oqcBody"></tbody></table></div>
+          </div>
+        </div>
 
         <div id="panel-supplier" class="panel">
           <div class="card">
@@ -481,6 +525,7 @@
                 <div class="trace-table-wrap"><table class="trace-table"><thead><tr><th style="width:28%">완제품 LOT No</th><th style="width:18%">제품명</th><th style="width:18%">출하검사일자</th><th style="width:16%">검사결과</th><th style="width:20%">출하처</th></tr></thead><tbody id="traceRawBody"></tbody></table></div>
               </div>
             </div>
+
             <div class="trace-card">
               <div class="trace-head"><div class="trace-title"><h3>완제품 → 원자재</h3><p>완제품 Lot 기준으로 투입 원자재, 협력사, 검사 이력을 역추적합니다.</p></div></div>
               <div class="trace-body">
@@ -499,7 +544,10 @@
               <span class="muted"><strong>조회</strong></span>
               <input id="ncKeyword" class="auth-input" style="width:260px;height:40px" placeholder="LOT No / 품목명 / 원인 / 조치내용 검색" oninput="renderNonconformTable()" />
               <select id="ncStatusFilter" style="height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:12px" onchange="renderNonconformTable()">
-                <option value="">전체 상태</option><option value="대기">대기</option><option value="진행중">진행중</option><option value="완료">완료</option>
+                <option value="">전체 상태</option>
+                <option value="대기">대기</option>
+                <option value="진행중">진행중</option>
+                <option value="완료">완료</option>
               </select>
             </div>
             <div class="table-box table"><table><thead><tr><th>발생일자</th><th>구분</th><th>LOT No</th><th>품목명</th><th>부적합 내용</th><th>원인</th><th>조치내용</th><th>담당자</th><th>상태</th><th>관리</th></tr></thead><tbody id="nonconformBody"></tbody></table></div>
@@ -518,140 +566,196 @@
     </div>
   </div>
 
-  <div id="registerModal" class="modal-bg"><div class="modal"><h3 id="registerTitle">등록</h3><input type="hidden" id="registerType"><div id="registerFields"></div><div class="actions"><button class="btn b2" onclick="closeRegisterModal()">취소</button><button class="btn b1" onclick="saveRegisterData()">저장</button></div></div></div>
-  <div id="supplierModal" class="modal-bg"><div class="modal"><h3 id="supplierModalTitle">공급업체 등록</h3><div class="form-grid"><div class="field"><label>공급업체명</label><input id="supModalName"></div><div class="field"><label>담당자</label><input id="supModalManager"></div><div class="field"><label>연락처</label><input id="supModalPhone"></div><div class="field"><label>카테고리</label><select id="supModalCategory"><option>원자재</option><option>부자재</option><option>외주</option><option>기타</option></select></div><div class="field"><label>상태</label><select id="supModalStatus"><option>사용</option><option>중지</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeSupplierModal()">취소</button><button class="btn b1" onclick="saveSupplierModal()">저장</button></div></div></div>
-  <div id="worklogModal" class="modal-bg"><div class="modal"><h3 id="worklogModalTitle">생산 작업일지 작성</h3><div class="form-grid"><div class="field"><label>생산일자</label><input id="wlDate" type="date"></div><div class="field"><label>완제품 LOT No.</label><input id="wlFinishedLot"></div><div class="field"><label>투입순서</label><input id="wlSeq"></div><div class="field"><label>원자재명</label><input id="wlMaterial"></div><div class="field"><label>공급업체명</label><input id="wlSupName"></div><div class="field"><label>투입량(kg)</label><input id="wlInputQty"></div><div class="field"><label>투입비율(%)</label><input id="wlInputRatio"></div><div class="field"><label>LOT No.</label><input id="wlLotNo"></div><div class="field"><label>투입시간</label><input id="wlInputTime" type="time"></div><div class="field"><label>작업자</label><input id="wlWorker"></div><div class="field"><label>비고</label><input id="wlNote"></div></div><div class="actions"><button class="btn b2" onclick="closeWorklogModal()">취소</button><button class="btn b1" onclick="saveWorklogModal()">저장</button></div></div></div>
-  <div id="nonconformModal" class="modal-bg"><div class="modal"><h3 id="nonconformModalTitle">부적합 등록</h3><div class="form-grid"><div class="field"><label>발생일자</label><input id="ncDate" type="date"></div><div class="field"><label>구분</label><select id="ncType"><option>입고</option><option>공정</option><option>출하</option><option>기타</option></select></div><div class="field"><label>LOT No</label><input id="ncLot"></div><div class="field"><label>품목명</label><input id="ncItem"></div><div class="field"><label>부적합 내용</label><input id="ncIssue"></div><div class="field"><label>원인</label><input id="ncCause"></div><div class="field"><label>조치내용</label><input id="ncAction"></div><div class="field"><label>담당자</label><input id="ncOwner"></div><div class="field"><label>상태</label><select id="ncStatus"><option>대기</option><option>진행중</option><option>완료</option></select></div></div><div class="actions"><button class="btn b2" onclick="closeNonconformModal()">취소</button><button class="btn b1" onclick="saveNonconformModal()">저장</button></div></div></div>
-  <div id="barcodeModal" class="modal-bg"><div class="modal"><h3 style="margin-top:0">바코드 생성</h3><div class="form-grid"><div class="field"><label>바코드 값</label><input id="barcodeValue" placeholder="예: DBA1501 또는 8801234567890"></div><div class="field"><label>형식</label><select id="barcodeFormat"><option value="CODE128">CODE128</option><option value="CODE39">CODE39</option><option value="EAN13">EAN13</option><option value="EAN8">EAN8</option></select></div><div class="field"><label>표시 텍스트</label><input id="barcodeLabel" placeholder="비워두면 바코드 값 표시"></div><div class="field"><label>높이</label><select id="barcodeHeight"><option value="60">60</option><option value="80" selected>80</option><option value="100">100</option><option value="120">120</option></select></div></div><div class="actions" style="justify-content:flex-start;margin-top:4px"><button class="btn b1" onclick="generateBarcodePreview()">생성</button><button class="btn b3" onclick="downloadBarcodePng()">PNG 저장</button><button class="btn b2" onclick="printBarcodeLabel()">인쇄</button></div><div class="barcode-preview-wrap"><div class="barcode-meta"><strong>미리보기</strong><span class="badge" id="barcodeStatus">생성 대기</span></div><div class="barcode-preview-box"><svg id="barcodeSvg"></svg></div><div class="barcode-note">LOT No, 완제품 LOT, 원자재 LOT를 입력해 라벨용 바코드를 바로 생성할 수 있습니다.</div></div><div class="actions"><button class="btn b2" onclick="closeBarcodeModal()">닫기</button></div></div></div>
- 
+  <div id="registerModal" class="modal-bg">
+    <div class="modal">
+      <h3 id="registerTitle">등록</h3>
+      <input type="hidden" id="registerType">
+      <div id="registerFields"></div>
+      <div class="actions">
+        <button class="btn b2" onclick="closeRegisterModal()">취소</button>
+        <button class="btn b1" onclick="saveRegisterData()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="supplierModal" class="modal-bg">
+    <div class="modal">
+      <h3 id="supplierModalTitle">공급업체 등록</h3>
+      <div class="form-grid">
+        <div class="field"><label>공급업체명</label><input id="supModalName"></div>
+        <div class="field"><label>담당자</label><input id="supModalManager"></div>
+        <div class="field"><label>연락처</label><input id="supModalPhone"></div>
+        <div class="field"><label>카테고리</label><select id="supModalCategory"><option>원자재</option><option>부자재</option><option>외주</option><option>기타</option></select></div>
+        <div class="field"><label>상태</label><select id="supModalStatus"><option>사용</option><option>중지</option></select></div>
+      </div>
+      <div class="actions">
+        <button class="btn b2" onclick="closeSupplierModal()">취소</button>
+        <button class="btn b1" onclick="saveSupplierModal()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="worklogModal" class="modal-bg">
+    <div class="modal">
+      <h3 id="worklogModalTitle">생산 작업일지 작성</h3>
+      <div class="form-grid">
+        <div class="field"><label>생산일자</label><input id="wlDate" type="date"></div>
+        <div class="field"><label>완제품 LOT No.</label><input id="wlFinishedLot"></div>
+        <div class="field"><label>투입순서</label><input id="wlSeq"></div>
+        <div class="field"><label>원자재명</label><input id="wlMaterial"></div>
+        <div class="field"><label>공급업체명</label><input id="wlSupName"></div>
+        <div class="field"><label>투입량(kg)</label><input id="wlInputQty"></div>
+        <div class="field"><label>투입비율(%)</label><input id="wlInputRatio"></div>
+        <div class="field"><label>LOT No.</label><input id="wlLotNo"></div>
+        <div class="field"><label>투입시간</label><input id="wlInputTime" type="time"></div>
+        <div class="field"><label>작업자</label><input id="wlWorker"></div>
+        <div class="field"><label>비고</label><input id="wlNote"></div>
+      </div>
+      <div class="actions">
+        <button class="btn b2" onclick="closeWorklogModal()">취소</button>
+        <button class="btn b1" onclick="saveWorklogModal()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="nonconformModal" class="modal-bg">
+    <div class="modal">
+      <h3 id="nonconformModalTitle">부적합 등록</h3>
+      <div class="form-grid">
+        <div class="field"><label>발생일자</label><input id="ncDate" type="date"></div>
+        <div class="field"><label>구분</label><select id="ncType"><option>입고</option><option>공정</option><option>출하</option><option>기타</option></select></div>
+        <div class="field"><label>LOT No</label><input id="ncLot"></div>
+        <div class="field"><label>품목명</label><input id="ncItem"></div>
+        <div class="field"><label>부적합 내용</label><input id="ncIssue"></div>
+        <div class="field"><label>원인</label><input id="ncCause"></div>
+        <div class="field"><label>조치내용</label><input id="ncAction"></div>
+        <div class="field"><label>담당자</label><input id="ncOwner"></div>
+        <div class="field"><label>상태</label><select id="ncStatus"><option>대기</option><option>진행중</option><option>완료</option></select></div>
+      </div>
+      <div class="actions">
+        <button class="btn b2" onclick="closeNonconformModal()">취소</button>
+        <button class="btn b1" onclick="saveNonconformModal()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="barcodeModal" class="modal-bg">
+    <div class="modal">
+      <h3 style="margin-top:0">바코드 생성</h3>
+      <div class="form-grid">
+        <div class="field"><label>바코드 값</label><input id="barcodeValue" placeholder="예: DBA1501 또는 8801234567890"></div>
+        <div class="field"><label>형식</label><select id="barcodeFormat"><option value="CODE128">CODE128</option><option value="CODE39">CODE39</option><option value="EAN13">EAN13</option><option value="EAN8">EAN8</option></select></div>
+        <div class="field"><label>표시 텍스트</label><input id="barcodeLabel" placeholder="비워두면 바코드 값 표시"></div>
+        <div class="field"><label>높이</label><select id="barcodeHeight"><option value="60">60</option><option value="80" selected>80</option><option value="100">100</option><option value="120">120</option></select></div>
+      </div>
+      <div class="actions" style="justify-content:flex-start;margin-top:4px">
+        <button class="btn b1" onclick="generateBarcodePreview()">생성</button>
+        <button class="btn b3" onclick="downloadBarcodePng()">PNG 저장</button>
+        <button class="btn b2" onclick="printBarcodeLabel()">인쇄</button>
+      </div>
+      <div class="barcode-preview-wrap">
+        <div class="barcode-meta"><strong>미리보기</strong><span class="badge" id="barcodeStatus">생성 대기</span></div>
+        <div class="barcode-preview-box"><svg id="barcodeSvg"></svg></div>
+        <div class="barcode-note">LOT No, 완제품 LOT, 원자재 LOT를 입력해 라벨용 바코드를 바로 생성할 수 있습니다.</div>
+      </div>
+      <div class="actions"><button class="btn b2" onclick="closeBarcodeModal()">닫기</button></div>
+    </div>
+  </div>
+
   <div id="userModal" class="modal-bg">
-  <div class="modal">
-    <h3 id="userModalTitle">회원 수정</h3>
-    <div class="form-grid">
-      <div class="field"><label>이름</label><input id="userEditName"></div>
-      <div class="field"><label>이메일</label><input id="userEditEmail" type="email"></div>
-      <div class="field"><label>부서</label><input id="userEditDepartment"></div>
-      <div class="field">
-        <label>직책</label>
-        <select id="userEditTitle">
-          <option value="staff">사원</option>
-          <option value="assistant_manager">대리</option>
-          <option value="manager">과장</option>
-          <option value="deputy_general_manager">차장</option>
-          <option value="general_manager">부장</option>
-          <option value="executive">임원</option>
-          <option value="admin">관리자</option>
-        </select>
+    <div class="modal">
+      <h3 id="userModalTitle">회원 수정</h3>
+      <div class="form-grid">
+        <div class="field"><label>이름</label><input id="userEditName"></div>
+        <div class="field"><label>이메일</label><input id="userEditEmail" type="email"></div>
+        <div class="field"><label>부서</label><input id="userEditDepartment"></div>
+        <div class="field">
+          <label>직책</label>
+          <select id="userEditTitle">
+            <option value="staff">사원</option>
+            <option value="assistant_manager">대리</option>
+            <option value="manager">과장</option>
+            <option value="deputy_general_manager">차장</option>
+            <option value="general_manager">부장</option>
+            <option value="executive">임원</option>
+            <option value="admin">관리자</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>권한</label>
+          <select id="userEditRole">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>상태</label>
+          <select id="userEditStatus">
+            <option value="PENDING">승인대기</option>
+            <option value="APPROVED">승인완료</option>
+            <option value="REJECTED">반려</option>
+          </select>
+        </div>
       </div>
-      <div class="field">
-        <label>권한</label>
-        <select id="userEditRole">
-          <option value="user">user</option>
-          <option value="admin">admin</option>
-        </select>
+      <div class="actions">
+        <button class="btn b2" onclick="closeUserModal()">취소</button>
+        <button class="btn b1" onclick="saveUserModal()">저장</button>
       </div>
-      <div class="field">
-        <label>상태</label>
-        <select id="userEditStatus">
-          <option value="PENDING">승인대기</option>
-          <option value="APPROVED">승인완료</option>
-          <option value="REJECTED">반려</option>
-        </select>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn b2" onclick="closeUserModal()">취소</button>
-      <button class="btn b1" onclick="saveUserModal()">저장</button>
     </div>
   </div>
-</div
- <button class="btn b2" onclick="closeMyProfileModal()">취소</button>
-  <div class="modal">
-    <h3>내 정보 수정</h3>
+    <div id="myProfileModal" class="modal-bg">
+    <div class="modal">
+      <h3>내 정보 수정</h3>
 
-    <div class="form-grid">
-      <div class="field">
-        <label>이름</label>
-        <input id="myName">
+      <div class="form-grid">
+        <div class="field">
+          <label>이름</label>
+          <input id="myName">
+        </div>
+
+        <div class="field">
+          <label>이메일</label>
+          <input id="myEmail" type="email">
+        </div>
+
+        <div class="field">
+          <label>부서 / 팀</label>
+          <input id="myDepartment">
+        </div>
+
+        <div class="field">
+          <label>직책</label>
+          <select id="myTitle">
+            <option value="staff">사원</option>
+            <option value="manager">관리자</option>
+            <option value="admin">관리자(시스템)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>새 비밀번호</label>
+          <input id="myPassword" type="password">
+        </div>
+
+        <div class="field">
+          <label>비밀번호 확인</label>
+          <input id="myPasswordConfirm" type="password">
+        </div>
       </div>
 
-      <div class="field">
-        <label>이메일</label>
-        <input id="myEmail" type="email">
+      <div class="actions">
+        <button class="btn b2" onclick="closeMyProfileModal()">취소</button>
+        <button class="btn b1" onclick="saveMyProfile()">저장</button>
       </div>
-
-      <div class="field">
-        <label>부서 / 팀</label>
-        <input id="myDepartment">
-      </div>
-
-      <div class="field">
-        <label>직책</label>
-        <select id="myTitle">
-          <option value="staff">사원</option>
-          <option value="manager">관리자</option>
-          <option value="admin">관리자(시스템)</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>새 비밀번호</label>
-        <input id="myPassword" type="password">
-      </div>
-
-      <div class="field">
-        <label>비밀번호 확인</label>
-        <input id="myPasswordConfirm" type="password">
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="btn b2">취소</button>
-      <button class="btn b1" onclick="saveMyProfile()">저장</button>
     </div>
   </div>
-</div>
+
   <script>
-    async function saveMyProfile() {
-  try {
-    const name = $('myName').value.trim();
-    const email = $('myEmail').value.trim();
-    const department = $('myDepartment').value.trim();
-    const title = $('myTitle').value;
-    const password = $('myPassword').value;
-    const passwordConfirm = $('myPasswordConfirm').value;
-
-    if (!name) return alert('이름을 입력하세요.');
-    if (!email) return alert('이메일을 입력하세요.');
-
-    if (password) {
-      if (password.length < 8) {
-        return alert('비밀번호는 8자 이상이어야 합니다.');
-      }
-      if (password !== passwordConfirm) {
-        return alert('비밀번호 확인이 일치하지 않습니다.');
-      }
-    }
-
-    const res = await api.put('/api/auth/me', {
-      name,
-      email,
-      department,
-      title,
-      password
-    });
-
-    showToast(res.message || '저장되었습니다.');
-
-  } catch (err) {
-    console.error(err);
-    alert(err.message || '저장 실패');
-  }
-}
     const MAX_UPLOAD_ROWS = 2000;
     const UI_PAGE_SIZE = 200;
+
     const state = {
-      user: { id:'', name:'', role:'guest', authenticated:false },
+      user: { id:'', name:'', email:'', department:'', title:'staff', role:'guest', authenticated:false },
       db: { suppliers:[], iqc:[], ipqc:[], oqc:[], worklog:[], traceability:[], changeLogs:[], nonconform:[] },
       admin: { pendingUsers: [], users: [] },
       iqcMonthlyChart: null,
@@ -678,10 +782,12 @@
       const n = Number(String(v).replace(/,/g,'').trim());
       return Number.isFinite(n) ? n : 0;
     };
+
     const todayStr = () => {
       const d = new Date();
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
     };
+
     const escapeHtml = str =>
       String(str ?? '')
         .replace(/&/g,'&amp;')
@@ -689,54 +795,8 @@
         .replace(/>/g,'&gt;')
         .replace(/"/g,'&quot;')
         .replace(/'/g,'&#39;');
+
     const normalizeKeyword = v => toText(v).replace(/\s+/g,'').toUpperCase();
-
-    function closeUserModal() {
-      $('userModal').style.display = 'none';
-      state.userEditId = null;
-    }
-
-    async function saveUserModal() {
-      const id = state.userEditId;
-      if (!id) return;
-
-      const payload = {
-        name: toText($('userEditName').value),
-        email: toText($('userEditEmail').value),
-        department: toText($('userEditDepartment').value),
-        title: toText($('userEditTitle').value),
-        role: toText($('userEditRole').value),
-        status: toText($('userEditStatus').value)
-      };
-
-      if (!payload.name) return showToast('이름을 입력하세요.');
-      if (!payload.email) return showToast('이메일을 입력하세요.');
-
-      try {
-        const result = await api.put(`/api/admin/users/${id}`, payload);
-        showToast(result?.message || '회원 정보가 저장되었습니다.');
-        closeUserModal();
-        await loadAllUsers();
-      } catch (err) {
-        console.error(err);
-        showToast(`회원 수정 실패: ${err.message}`);
-      }
-    }
-
-    function openUserModal(id) {
-      const user = (state.admin.users || []).find(u => String(u.id) === String(id));
-      if (!user) return;
-
-      state.userEditId = id;
-      $('userModalTitle').textContent = `${user.name || '회원'} 정보 수정`;
-      $('userEditName').value = user.name || '';
-      $('userEditEmail').value = user.email || '';
-      $('userEditDepartment').value = user.department || '';
-      $('userEditTitle').value = user.title || 'staff';
-      $('userEditRole').value = user.role || 'user';
-      $('userEditStatus').value = user.status || 'PENDING';
-      $('userModal').style.display = 'flex';
-    }
 
     function setSaveStatus(message, tone='ok') {
       const el = $('saveStatus');
@@ -908,7 +968,7 @@
         const me = await res.json();
 
         if (!me?.authenticated || !me?.user) {
-          state.user = { id:'', name:'', role:'guest', authenticated:false };
+          state.user = { id:'', name:'', email:'', department:'', title:'staff', role:'guest', authenticated:false };
           closeDashboard();
           return false;
         }
@@ -919,6 +979,9 @@
         state.user = {
           id: user.id || '',
           name: toText(user.name || '사용자'),
+          email: toText(user.email || ''),
+          department: toText(user.department || ''),
+          title: toText(user.title || 'staff'),
           role,
           authenticated: true
         };
@@ -927,7 +990,7 @@
         return true;
       } catch (err) {
         console.error(err);
-        state.user = { id:'', name:'', role:'guest', authenticated:false };
+        state.user = { id:'', name:'', email:'', department:'', title:'staff', role:'guest', authenticated:false };
         closeDashboard();
         return false;
       }
@@ -974,11 +1037,11 @@
       }
     }
 
-        async function logoutUser() {
+    async function logoutUser() {
       try {
         await api.post('/api/auth/logout', {});
       } catch (_) {}
-      state.user = { id:'', name:'', role:'guest', authenticated:false };
+      state.user = { id:'', name:'', email:'', department:'', title:'staff', role:'guest', authenticated:false };
       state.admin.pendingUsers = [];
       closeDashboard();
       switchAuthMode('login');
@@ -1009,10 +1072,6 @@
       y.value = n.getFullYear();
       m.value = n.getMonth() + 1;
       d.value = 'all';
-    }
-
-    function getDateValue(row) {
-      return toText(row?.date || row?.workDate || '');
     }
 
     function refreshWeek() {
@@ -1424,73 +1483,6 @@
       `).join('');
     }
 
-    function openNonconformModal(id = null) {
-      state.nonconformEditIndex = id;
-      const row = (state.db.nonconform || []).find(x => String(x.id) === String(id));
-
-      $('nonconformModalTitle').textContent = row ? '부적합 수정' : '부적합 등록';
-      $('ncDate').value = row?.date || todayStr();
-      $('ncType').value = row?.type || '입고';
-      $('ncLot').value = row?.lot || '';
-      $('ncItem').value = row?.item || '';
-      $('ncIssue').value = row?.issue || '';
-      $('ncCause').value = row?.cause || '';
-      $('ncAction').value = row?.action || '';
-      $('ncOwner').value = row?.owner || '';
-      $('ncStatus').value = row?.status || '대기';
-      $('nonconformModal').style.display = 'flex';
-    }
-
-    function closeNonconformModal() {
-      $('nonconformModal').style.display = 'none';
-      state.nonconformEditIndex = null;
-    }
-
-    async function saveNonconformModal() {
-      const payload = {
-        id: state.nonconformEditIndex || `nc_${Date.now()}`,
-        date: toText($('ncDate').value) || todayStr(),
-        type: toText($('ncType').value),
-        lot: toText($('ncLot').value),
-        item: toText($('ncItem').value),
-        issue: toText($('ncIssue').value),
-        cause: toText($('ncCause').value),
-        action: toText($('ncAction').value),
-        owner: toText($('ncOwner').value),
-        status: toText($('ncStatus').value) || '대기'
-      };
-
-      if (!payload.lot && !payload.item) {
-        return showToast('LOT No 또는 품목명을 입력하세요.');
-      }
-
-      try {
-        if (state.nonconformEditIndex) {
-          await api.put(`/api/nonconform/${payload.id}`, payload);
-        } else {
-          await api.post('/api/nonconform', payload);
-        }
-        closeNonconformModal();
-        await loadFromServer();
-        showToast('부적합 데이터 저장 완료');
-      } catch (err) {
-        console.error(err);
-        showToast(`부적합 저장 실패: ${err.message}`);
-      }
-    }
-
-    async function deleteNonconform(id) {
-      if (!confirm('이 부적합 데이터를 삭제할까요?')) return;
-      try {
-        await api.delete(`/api/nonconform/${id}`);
-        await loadFromServer();
-        showToast('부적합 데이터 삭제 완료');
-      } catch (err) {
-        console.error(err);
-        showToast(`부적합 삭제 실패: ${err.message}`);
-      }
-    }
-
     function renderTraceEmptyRows() {
       $('traceRawBody').innerHTML = `<tr><td colspan="5" class="trace-empty">부품 Lot 번호를 입력하면 결과가 표시됩니다.</td></tr>`;
       $('traceFinishedBody').innerHTML = `<tr><td colspan="6" class="trace-empty">완제품 Lot 번호를 입력하면 결과가 표시됩니다.</td></tr>`;
@@ -1776,7 +1768,7 @@
     function openRegisterModal(type, index = null) {
       state.registerEditIndex = index;
       $('registerType').value = type;
-      $('registerModal').style.display = 'flex';
+      $('registerModal').classList.add('show');
 
       const title = $('registerTitle');
       const fields = $('registerFields');
@@ -1863,7 +1855,7 @@
     }
 
     function closeRegisterModal() {
-      $('registerModal').style.display = 'none';
+      $('registerModal').classList.remove('show');
       state.registerEditIndex = null;
     }
 
@@ -1968,11 +1960,11 @@
       $('supModalPhone').value = row?.phone || '';
       $('supModalCategory').value = row?.category || '원자재';
       $('supModalStatus').value = row?.status || '사용';
-      $('supplierModal').style.display = 'flex';
+      $('supplierModal').classList.add('show');
     }
 
     function closeSupplierModal() {
-      $('supplierModal').style.display = 'none';
+      $('supplierModal').classList.remove('show');
       state.supplierEditIndex = null;
     }
 
@@ -2035,11 +2027,11 @@
       $('wlInputTime').value = row?.inputTime || '';
       $('wlWorker').value = row?.worker || '';
       $('wlNote').value = row?.note || '';
-      $('worklogModal').style.display = 'flex';
+      $('worklogModal').classList.add('show');
     }
 
     function closeWorklogModal() {
-      $('worklogModal').style.display = 'none';
+      $('worklogModal').classList.remove('show');
       state.worklogEditIndex = null;
     }
 
@@ -2094,100 +2086,128 @@
       }
     }
 
-    function downloadExcel() {
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.ipqc), 'PQC');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog');
+    function openNonconformModal(id = null) {
+      state.nonconformEditIndex = id;
+      const row = (state.db.nonconform || []).find(x => String(x.id) === String(id));
 
-      const t = new Date();
-      XLSX.writeFile(
-        wb,
-        `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`
-      );
+      $('nonconformModalTitle').textContent = row ? '부적합 수정' : '부적합 등록';
+      $('ncDate').value = row?.date || todayStr();
+      $('ncType').value = row?.type || '입고';
+      $('ncLot').value = row?.lot || '';
+      $('ncItem').value = row?.item || '';
+      $('ncIssue').value = row?.issue || '';
+      $('ncCause').value = row?.cause || '';
+      $('ncAction').value = row?.action || '';
+      $('ncOwner').value = row?.owner || '';
+      $('ncStatus').value = row?.status || '대기';
+      $('nonconformModal').classList.add('show');
     }
 
-    async function uploadExcel(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
+    function closeNonconformModal() {
+      $('nonconformModal').classList.remove('show');
+      state.nonconformEditIndex = null;
+    }
+
+    async function saveNonconformModal() {
+      const payload = {
+        id: state.nonconformEditIndex || `nc_${Date.now()}`,
+        date: toText($('ncDate').value) || todayStr(),
+        type: toText($('ncType').value),
+        lot: toText($('ncLot').value),
+        item: toText($('ncItem').value),
+        issue: toText($('ncIssue').value),
+        cause: toText($('ncCause').value),
+        action: toText($('ncAction').value),
+        owner: toText($('ncOwner').value),
+        status: toText($('ncStatus').value) || '대기'
+      };
+
+      if (!payload.lot && !payload.item) {
+        return showToast('LOT No 또는 품목명을 입력하세요.');
+      }
 
       try {
-        const ok = confirm('엑셀 데이터 업로드를 진행합니다. 계속하시겠습니까?');
-        if (!ok) {
-          event.target.value = '';
-          return;
+        if (state.nonconformEditIndex) {
+          await api.put(`/api/nonconform/${payload.id}`, payload);
+        } else {
+          await api.post('/api/nonconform', payload);
         }
-
-        const rows = await readWorkbook(file);
-        const totalRows =
-          rows.iqcRows.length +
-          rows.ipqcRows.length +
-          rows.oqcRows.length +
-          rows.supplierRows.length +
-          rows.worklogRows.length;
-
-        if (totalRows > MAX_UPLOAD_ROWS) {
-          throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`);
-        }
-
-        await api.post('/api/import/preview', { ...rows, fileName:file.name });
-
-        const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`);
-        if (!second) {
-          event.target.value = '';
-          return;
-        }
-
-        await api.post('/api/import/commit', { ...rows, fileName:file.name });
+        closeNonconformModal();
         await loadFromServer();
-        showToast('엑셀 반영 완료');
+        showToast('부적합 데이터 저장 완료');
       } catch (err) {
         console.error(err);
-        showToast(`엑셀 업로드 실패: ${err.message}`);
-      } finally {
-        event.target.value = '';
+        showToast(`부적합 저장 실패: ${err.message}`);
       }
     }
 
-    function readWorkbook(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+    async function deleteNonconform(id) {
+      if (!confirm('이 부적합 데이터를 삭제할까요?')) return;
+      try {
+        await api.delete(`/api/nonconform/${id}`);
+        await loadFromServer();
+        showToast('부적합 데이터 삭제 완료');
+      } catch (err) {
+        console.error(err);
+        showToast(`부적합 삭제 실패: ${err.message}`);
+      }
+    }
 
-        reader.onload = e => {
-          try {
-            const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
-            const readSheet = name =>
-              wb.SheetNames.includes(name)
-                ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:'' })
-                : [];
+    function closeUserModal() {
+      $('userModal').classList.remove('show');
+      state.userEditId = null;
+    }
 
-            resolve({
-              iqcRows: readSheet('IQC'),
-              ipqcRows: readSheet('PQC'),
-              oqcRows: readSheet('OQC'),
-              supplierRows: readSheet('Suppliers'),
-              worklogRows: readSheet('Worklog')
-            });
-          } catch (err) {
-            reject(err);
-          }
-        };
+    async function saveUserModal() {
+      const id = state.userEditId;
+      if (!id) return;
 
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(file);
-      });
+      const payload = {
+        name: toText($('userEditName').value),
+        email: toText($('userEditEmail').value),
+        department: toText($('userEditDepartment').value),
+        title: toText($('userEditTitle').value),
+        role: toText($('userEditRole').value),
+        status: toText($('userEditStatus').value)
+      };
+
+      if (!payload.name) return showToast('이름을 입력하세요.');
+      if (!payload.email) return showToast('이메일을 입력하세요.');
+
+      try {
+        const result = await api.put(`/api/admin/users/${id}`, payload);
+        showToast(result?.message || '회원 정보가 저장되었습니다.');
+        closeUserModal();
+        await loadAllUsers();
+      } catch (err) {
+        console.error(err);
+        showToast(`회원 수정 실패: ${err.message}`);
+      }
+    }
+
+    function openUserModal(id) {
+      const user = (state.admin.users || []).find(u => String(u.id) === String(id));
+      if (!user) return;
+
+      state.userEditId = id;
+      $('userModalTitle').textContent = `${user.name || '회원'} 정보 수정`;
+      $('userEditName').value = user.name || '';
+      $('userEditEmail').value = user.email || '';
+      $('userEditDepartment').value = user.department || '';
+      $('userEditTitle').value = user.title || 'staff';
+      $('userEditRole').value = user.role || 'user';
+      $('userEditStatus').value = user.status || 'PENDING';
+      $('userModal').classList.add('show');
     }
 
     function openBarcodeModal() {
-      $('barcodeModal').style.display = 'flex';
+      $('barcodeModal').classList.add('show');
       $('barcodeStatus').textContent = '생성 대기';
       setTimeout(() => $('barcodeValue').focus(), 0);
     }
 
     function closeBarcodeModal() {
-      $('barcodeModal').style.display = 'none';
+      $('barcodeModal').classList.remove('show');
     }
 
     function generateBarcodePreview() {
@@ -2282,6 +2302,92 @@
       }, 200);
     }
 
+    function downloadExcel() {
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.ipqc), 'PQC');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog');
+
+      const t = new Date();
+      XLSX.writeFile(
+        wb,
+        `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`
+      );
+    }
+
+    async function uploadExcel(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const ok = confirm('엑셀 데이터 업로드를 진행합니다. 계속하시겠습니까?');
+        if (!ok) {
+          event.target.value = '';
+          return;
+        }
+
+        const rows = await readWorkbook(file);
+        const totalRows =
+          rows.iqcRows.length +
+          rows.ipqcRows.length +
+          rows.oqcRows.length +
+          rows.supplierRows.length +
+          rows.worklogRows.length;
+
+        if (totalRows > MAX_UPLOAD_ROWS) {
+          throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`);
+        }
+
+        await api.post('/api/import/preview', { ...rows, fileName:file.name });
+
+        const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`);
+        if (!second) {
+          event.target.value = '';
+          return;
+        }
+
+        await api.post('/api/import/commit', { ...rows, fileName:file.name });
+        await loadFromServer();
+        showToast('엑셀 반영 완료');
+      } catch (err) {
+        console.error(err);
+        showToast(`엑셀 업로드 실패: ${err.message}`);
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    function readWorkbook(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = e => {
+          try {
+            const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+            const readSheet = name =>
+              wb.SheetNames.includes(name)
+                ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:'' })
+                : [];
+
+            resolve({
+              iqcRows: readSheet('IQC'),
+              ipqcRows: readSheet('PQC'),
+              oqcRows: readSheet('OQC'),
+              supplierRows: readSheet('Suppliers'),
+              worklogRows: readSheet('Worklog')
+            });
+          } catch (err) {
+            reject(err);
+          }
+        };
+
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
     async function confirmDeleteAll() {
       if (String(state.user.role).toLowerCase() !== 'admin') {
         return showToast('관리자만 전체 데이터 삭제가 가능합니다.');
@@ -2319,6 +2425,60 @@
       closeMyProfileModal();
     }
 
+    function openMyProfileModal() {
+      if (!state.user.authenticated) return;
+
+      $('myName').value = state.user.name || '';
+      $('myEmail').value = state.user.email || '';
+      $('myDepartment').value = state.user.department || '';
+      $('myTitle').value = state.user.title || 'staff';
+      $('myPassword').value = '';
+      $('myPasswordConfirm').value = '';
+
+      $('myProfileModal').classList.add('show');
+    }
+
+    function closeMyProfileModal() {
+      $('myProfileModal').classList.remove('show');
+    }
+
+    async function saveMyProfile() {
+      const payload = {
+        name: toText($('myName').value),
+        email: toText($('myEmail').value),
+        department: toText($('myDepartment').value),
+        title: toText($('myTitle').value),
+        password: toText($('myPassword').value)
+      };
+
+      const passwordConfirm = toText($('myPasswordConfirm').value);
+
+      try {
+        if (!payload.name) throw new Error('이름을 입력하세요.');
+        if (!payload.email) throw new Error('이메일을 입력하세요.');
+
+        if (payload.password) {
+          if (payload.password.length < 8) {
+            throw new Error('비밀번호는 8자 이상이어야 합니다.');
+          }
+          if (payload.password !== passwordConfirm) {
+            throw new Error('비밀번호 확인이 일치하지 않습니다.');
+          }
+        }
+
+        const result = await api.put('/api/auth/me', payload);
+
+        closeMyProfileModal();
+        showToast(result?.message || '내 정보가 수정되었습니다.');
+
+        await bootstrapUser();
+        await loadFromServer();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || '내 정보 수정 실패');
+      }
+    }
+
     async function initApp() {
       initFilters();
       tickClock();
@@ -2326,6 +2486,7 @@
       renderTraceEmptyRows();
       switchAuthMode('login');
       closeMyProfileModal();
+
       $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`;
 
       document.addEventListener('input', e => {
@@ -2342,60 +2503,7 @@
       const authed = await bootstrapUser();
       if (authed) await loadFromServer();
     }
-   function openMyProfileModal() {
-  if (!state.user.authenticated) return;
 
-  $('myName').value = state.user.name || '';
-  $('myEmail').value = state.user.email || '';
-  $('myDepartment').value = state.user.department || '';
-  $('myTitle').value = state.user.title || 'staff';
-  $('myPassword').value = '';
-  $('myPasswordConfirm').value = '';
-
-  $('myProfileModal').classList.add('show');
-}
-
-function closeMyProfileModal() {
-  $('myProfileModal').classList.remove('show');
-}
-
-async function saveMyProfile() {
-  const payload = {
-    name: toText($('myName').value),
-    email: toText($('myEmail').value),
-    department: toText($('myDepartment').value),
-    title: toText($('myTitle').value),
-    password: toText($('myPassword').value)
-  };
-
-  const passwordConfirm = toText($('myPasswordConfirm').value);
-
-  try {
-    if (!payload.name) throw new Error('이름을 입력하세요.');
-    if (!payload.email) throw new Error('이메일을 입력하세요.');
-
-    if (payload.password) {
-      if (payload.password.length < 8) {
-        throw new Error('비밀번호는 8자 이상이어야 합니다.');
-      }
-      if (payload.password !== passwordConfirm) {
-        throw new Error('비밀번호 확인이 일치하지 않습니다.');
-      }
-    }
-
-    const result = await api.put('/api/auth/me', payload);
-
-    closeMyProfileModal();
-    showToast(result?.message || '내 정보가 수정되었습니다.');
-
-    await bootstrapUser();
-    await loadFromServer();
-
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || '내 정보 수정 실패');
-  }
-}
     initApp();
   </script>
 
