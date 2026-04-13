@@ -2351,11 +2351,11 @@
   $('myPassword').value = '';
   $('myPasswordConfirm').value = '';
 
-  $('myProfileModal').style.display = 'flex';
+  $('myProfileModal').classList.add('show');
 }
 
 function closeMyProfileModal() {
-  $('myProfileModal').style.display = 'none';
+  $('myProfileModal').classList.remove('show');
 }
 
 async function saveMyProfile() {
