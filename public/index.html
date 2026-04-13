@@ -891,26 +891,7 @@
       }
     }
 
-    function openResetPasswordModal() {
-      $('resetName').value = '';
-      $('resetEmail').value = '';
-      $('resetDepartment').value = '';
-      $('resetNewPassword').value = '';
-      $('resetNewPasswordConfirm').value = '';
-      $('resetPasswordModal').style.display = 'flex';
-    }
-
-    function closeResetPasswordModal() {
-      $('resetPasswordModal').style.display = 'none';
-    }
-
-    async function submitResetPassword() {
-      const name = toText($('resetName').value);
-      const email = toText($('resetEmail').value);
-      const department = toText($('resetDepartment').value);
-      const newPassword = toText($('resetNewPassword').value);
-      const newPasswordConfirm = toText($('resetNewPasswordConfirm').value);
-
+    
       try {
         if (!name) throw new Error('이름을 입력하세요.');
         if (!email) throw new Error('이메일을 입력하세요.');
