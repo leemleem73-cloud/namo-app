@@ -564,7 +564,7 @@
     </div>
   </div>
 </div
-  <div id="myProfileModal" class="modal-bg">
+ <button class="btn b2" onclick="closeMyProfileModal()">취소</button>
   <div class="modal">
     <h3>내 정보 수정</h3>
 
@@ -2315,6 +2315,7 @@
       el.classList.add('active');
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       $(`panel-${name}`).classList.add('active');
+      closeMyProfileModal();
     }
 
     async function initApp() {
@@ -2323,7 +2324,7 @@
       setInterval(tickClock, 1000);
       renderTraceEmptyRows();
       switchAuthMode('login');
-
+      closeMyProfileModal();
       $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`;
 
       document.addEventListener('input', e => {
