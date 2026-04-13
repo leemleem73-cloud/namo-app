@@ -605,12 +605,48 @@
     </div>
 
     <div class="actions">
-      <button class="btn b2" onclick="closeMyProfileModal()">취소</button>
+      <button class="btn b2">취소</button>
       <button class="btn b1" onclick="saveMyProfile()">저장</button>
     </div>
   </div>
 </div>
   <script>
+    async function saveMyProfile() {
+  try {
+    const name = $('myName').value.trim();
+    const email = $('myEmail').value.trim();
+    const department = $('myDepartment').value.trim();
+    const title = $('myTitle').value;
+    const password = $('myPassword').value;
+    const passwordConfirm = $('myPasswordConfirm').value;
+
+    if (!name) return alert('이름을 입력하세요.');
+    if (!email) return alert('이메일을 입력하세요.');
+
+    if (password) {
+      if (password.length < 8) {
+        return alert('비밀번호는 8자 이상이어야 합니다.');
+      }
+      if (password !== passwordConfirm) {
+        return alert('비밀번호 확인이 일치하지 않습니다.');
+      }
+    }
+
+    const res = await api.put('/api/auth/me', {
+      name,
+      email,
+      department,
+      title,
+      password
+    });
+
+    showToast(res.message || '저장되었습니다.');
+
+  } catch (err) {
+    console.error(err);
+    alert(err.message || '저장 실패');
+  }
+}
     const MAX_UPLOAD_ROWS = 2000;
     const UI_PAGE_SIZE = 200;
     const state = {
