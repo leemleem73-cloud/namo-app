@@ -12,29 +12,15 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 
-const SESSION_SECRET =
-  process.env.SESSION_SECRET || 'fallback-secret';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'fallback-secret';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@namochemical.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin1234!';
 
-const ADMIN_EMAIL =
-  process.env.ADMIN_EMAIL || 'admin@namochemical.com';
-
-const ADMIN_PASSWORD =
-  process.env.ADMIN_PASSWORD || 'Admin1234!';
-
-const SMTP_HOST =
-  process.env.SMTP_HOST || 'smtp.naver.com';
-
-const SMTP_PORT =
-  Number(process.env.SMTP_PORT || 465);
-
-const SMTP_SECURE =
-  String(process.env.SMTP_SECURE) === 'true';
-
-const EMAIL_USER =
-  process.env.EMAIL_USER || '';
-
-const EMAIL_PASS =
-  process.env.EMAIL_PASS || '';
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.naver.com';
+const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+const SMTP_SECURE = String(process.env.SMTP_SECURE) === 'true';
+const EMAIL_USER = process.env.EMAIL_USER || '';
+const EMAIL_PASS = process.env.EMAIL_PASS || '';
 
 const DATA_DIR = process.env.DATA_DIR || '/tmp/namo-data';
 if (!fs.existsSync(DATA_DIR)) {
@@ -474,7 +460,6 @@ app.get('/api/auth/me', async (req, res) => {
     res.status(500).json({ error: '사용자 조회 중 오류가 발생했습니다.' });
   }
 });
-});
 
 app.put('/api/auth/me', requireLogin, async (req, res) => {
   try {
@@ -492,7 +477,7 @@ app.put('/api/auth/me', requireLogin, async (req, res) => {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const department = String(req.body.department || '').trim();
-    const title = String(req.body.title || 'staff').trim();
+    const title = normalizeTitle(req.body.title);
     const password = String(req.body.password || '');
 
     if (!name) {
@@ -546,6 +531,8 @@ app.put('/api/auth/me', requireLogin, async (req, res) => {
   }
 });
 
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const department = String(req.body.department || '').trim();
