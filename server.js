@@ -385,14 +385,39 @@ app.post('/api/auth/logout', requireLogin, async (req, res) => {
 app.get('/api/auth/me', async (req, res) => {
   try {
     if (!req.session.user) {
-      return res.status(401).json({ error: '비로그인 상태입니다.' });
+      return res.json({
+        authenticated: false,
+        user: null
+      });
     }
+
     const user = await get(
-      `SELECT id, name, email, department, role, status, createdAt FROM users WHERE id = ?`,
+      `SELECT id, name, email, department, role, status, createdAt
+       FROM users
+       WHERE id = ?`,
       [req.session.user.id]
     );
-    if (!user) return res.status(401).json({ error: '사용자를 찾을 수 없습니다.' });
-    res.json(user);
+
+    if (!user) {
+      req.session.destroy(() => {});
+      return res.json({
+        authenticated: false,
+        user: null
+      });
+    }
+
+    return res.json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        department: user.department,
+        role: normalizeRole(user.role),
+        status: user.status,
+        createdAt: user.createdAt
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '사용자 조회 중 오류가 발생했습니다.' });
