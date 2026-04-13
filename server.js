@@ -121,11 +121,12 @@ function normalizeTitle(title) {
     'staff',
     'assistant_manager',
     'manager',
-    'deputy_general_manager',
     'general_manager',
-    'executive',
-    'admin'
+    'executive'
   ];
+  const value = String(title || 'staff').toLowerCase();
+  return allowed.includes(value) ? value : 'staff';
+}
   const value = String(title || 'staff').toLowerCase();
   return allowed.includes(value) ? value : 'staff';
 }
