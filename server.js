@@ -302,7 +302,6 @@ if (!admin) {
   );
   await logChange('기본 관리자 계정 재설정');
 }
-  
 }
 /* auth */
 app.post('/api/auth/signup', async (req, res) => {
