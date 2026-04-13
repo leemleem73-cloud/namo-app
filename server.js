@@ -37,7 +37,9 @@ const EMAIL_PASS =
   process.env.EMAIL_PASS || '';
 
 const DATA_DIR = process.env.DATA_DIR || '/tmp/namo-data';
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 
 const DB_PATH = path.join(DATA_DIR, 'namochemical.db');
 const db = new sqlite3.Database(DB_PATH);
@@ -120,6 +122,28 @@ function normalizeRole(role) {
   return String(role || 'user').toLowerCase() === 'admin' ? 'admin' : 'user';
 }
 
+function normalizeStatus(status) {
+  const value = String(status || 'PENDING').toUpperCase();
+  if (['PENDING', 'APPROVED', 'REJECTED'].includes(value)) {
+    return value;
+  }
+  return 'PENDING';
+}
+
+function normalizeTitle(title) {
+  const allowed = [
+    'staff',
+    'assistant_manager',
+    'manager',
+    'deputy_general_manager',
+    'general_manager',
+    'executive',
+    'admin'
+  ];
+  const value = String(title || 'staff').toLowerCase();
+  return allowed.includes(value) ? value : 'staff';
+}
+
 async function logChange(message, userId = null) {
   await run(
     `INSERT INTO change_logs (logDate, message, userId, createdAt)
@@ -153,6 +177,7 @@ async function initDb() {
       email TEXT NOT NULL UNIQUE,
       passwordHash TEXT NOT NULL,
       department TEXT,
+      title TEXT NOT NULL DEFAULT 'staff',
       role TEXT NOT NULL DEFAULT 'user',
       status TEXT NOT NULL DEFAULT 'PENDING',
       createdAt TEXT NOT NULL
@@ -274,35 +299,39 @@ async function initDb() {
     )
   `);
 
-const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
-const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  await run(`ALTER TABLE users ADD COLUMN title TEXT NOT NULL DEFAULT 'staff'`).catch(() => {});
 
-if (!admin) {
-  await run(
-    `INSERT INTO users (id, name, email, passwordHash, department, role, status, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      `user_${Date.now()}`,
-      '관리자',
-      ADMIN_EMAIL,
-      passwordHash,
-      '관리팀',
-      'admin',
-      'APPROVED',
-      nowDateTime()
-    ]
-  );
-  await logChange('기본 관리자 계정 생성');
-} else {
-  await run(
-    `UPDATE users
-     SET passwordHash = ?, role = 'admin', status = 'APPROVED'
-     WHERE email = ?`,
-    [passwordHash, ADMIN_EMAIL]
-  );
-  await logChange('기본 관리자 계정 재설정');
+  const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+
+  if (!admin) {
+    await run(
+      `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        `user_${Date.now()}`,
+        '관리자',
+        ADMIN_EMAIL,
+        passwordHash,
+        '관리팀',
+        'admin',
+        'admin',
+        'APPROVED',
+        nowDateTime()
+      ]
+    );
+    await logChange('기본 관리자 계정 생성');
+  } else {
+    await run(
+      `UPDATE users
+       SET passwordHash = ?, title = 'admin', role = 'admin', status = 'APPROVED'
+       WHERE email = ?`,
+      [passwordHash, ADMIN_EMAIL]
+    );
+    await logChange('기본 관리자 계정 재설정');
+  }
 }
-}
+
 /* auth */
 app.post('/api/auth/signup', async (req, res) => {
   try {
@@ -311,24 +340,32 @@ app.post('/api/auth/signup', async (req, res) => {
     const password = String(req.body.password || '');
     const department = String(req.body.department || '').trim();
 
-    if (!name) return res.status(400).json({ error: '이름을 입력하세요.' });
-    if (!email) return res.status(400).json({ error: '이메일을 입력하세요.' });
-    if (password.length < 8) return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
+    if (!name) {
+      return res.status(400).json({ error: '이름을 입력하세요.' });
+    }
+    if (!email) {
+      return res.status(400).json({ error: '이메일을 입력하세요.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
+    }
 
     const exists = await get(`SELECT id FROM users WHERE email = ?`, [email]);
-    if (exists) return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
+    if (exists) {
+      return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
+    }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const id = `user_${Date.now()}`;
 
     await run(
-      `INSERT INTO users (id, name, email, passwordHash, department, role, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, email, passwordHash, department, 'user', 'APPROVED', nowDateTime()]
+      `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, email, passwordHash, department, 'staff', 'user', 'PENDING', nowDateTime()]
     );
 
     await logChange(`회원가입 신청: ${name} (${email})`, id);
-    res.json({ message: '회원가입이 완료되었습니다. 바로 로그인할 수 있습니다.' });
+    res.json({ message: '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '회원가입 처리 중 오류가 발생했습니다.' });
@@ -345,10 +382,14 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const user = await get(`SELECT * FROM users WHERE email = ?`, [email]);
-    if (!user) return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+    if (!user) {
+      return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+    }
 
     const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+    if (!ok) {
+      return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+    }
 
     if (user.status !== 'APPROVED') {
       return res.status(403).json({ error: '관리자 승인 후 로그인 가능합니다.' });
@@ -362,15 +403,16 @@ app.post('/api/auth/login', async (req, res) => {
     };
 
     await logChange(`로그인: ${user.name} (${user.email})`, user.id);
-   res.json({
-  message: '로그인 완료',
-  user: {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: normalizeRole(user.role)
-  }
-});
+
+    res.json({
+      message: '로그인 완료',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: normalizeRole(user.role)
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '로그인 처리 중 오류가 발생했습니다.' });
@@ -400,7 +442,7 @@ app.get('/api/auth/me', async (req, res) => {
     }
 
     const user = await get(
-      `SELECT id, name, email, department, role, status, createdAt
+      `SELECT id, name, email, department, title, role, status, createdAt
        FROM users
        WHERE id = ?`,
       [req.session.user.id]
@@ -421,6 +463,7 @@ app.get('/api/auth/me', async (req, res) => {
         name: user.name,
         email: user.email,
         department: user.department,
+        title: user.title,
         role: normalizeRole(user.role),
         status: user.status,
         createdAt: user.createdAt
@@ -432,11 +475,57 @@ app.get('/api/auth/me', async (req, res) => {
   }
 });
 
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const department = String(req.body.department || '').trim();
+    const newPassword = String(req.body.newPassword || '');
+
+    if (!name) {
+      return res.status(400).json({ error: '이름을 입력하세요.' });
+    }
+    if (!email) {
+      return res.status(400).json({ error: '이메일을 입력하세요.' });
+    }
+    if (!department) {
+      return res.status(400).json({ error: '부서 / 팀을 입력하세요.' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
+    }
+
+    const user = await get(
+      `SELECT * FROM users
+       WHERE email = ? AND name = ? AND department = ?`,
+      [email, name, department]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: '일치하는 사용자를 찾을 수 없습니다.' });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await run(
+      `UPDATE users SET passwordHash = ? WHERE id = ?`,
+      [passwordHash, user.id]
+    );
+
+    await logChange(`비밀번호 재설정: ${user.name} (${user.email})`, user.id);
+
+    res.json({ message: '비밀번호가 재설정되었습니다.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '비밀번호 재설정 중 오류가 발생했습니다.' });
+  }
+});
+
 /* admin */
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const rows = await all(
-      `SELECT id, name, email, department, role, status, createdAt
+      `SELECT id, name, email, department, title, role, status, createdAt
        FROM users
        ORDER BY datetime(createdAt) DESC`
     );
@@ -447,10 +536,60 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
   }
 });
 
+app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
+    if (!target) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
+
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const department = String(req.body.department || '').trim();
+    const title = normalizeTitle(req.body.title);
+    const role = normalizeRole(req.body.role);
+    const status = normalizeStatus(req.body.status);
+
+    if (!name) {
+      return res.status(400).json({ error: '이름을 입력하세요.' });
+    }
+    if (!email) {
+      return res.status(400).json({ error: '이메일을 입력하세요.' });
+    }
+
+    const duplicate = await get(
+      `SELECT id FROM users WHERE email = ? AND id != ?`,
+      [email, req.params.id]
+    );
+    if (duplicate) {
+      return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
+    }
+
+    if (target.email === ADMIN_EMAIL && role !== 'admin') {
+      return res.status(400).json({ error: '기본 관리자 계정의 권한은 admin이어야 합니다.' });
+    }
+
+    await run(
+      `UPDATE users
+       SET name = ?, email = ?, department = ?, title = ?, role = ?, status = ?
+       WHERE id = ?`,
+      [name, email, department, title, role, status, req.params.id]
+    );
+
+    await logChange(`회원 정보 수정: ${name} (${email})`, req.session.user.id);
+    res.json({ message: '회원 정보가 저장되었습니다.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '회원 수정 실패' });
+  }
+});
+
 app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
-    if (!target) return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    if (!target) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
 
     await run(`UPDATE users SET status = 'APPROVED' WHERE id = ?`, [req.params.id]);
     await logChange(`회원 승인: ${target.name} (${target.email})`, req.session.user.id);
@@ -465,7 +604,9 @@ app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
 app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
-    if (!target) return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    if (!target) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
 
     await run(`UPDATE users SET status = 'REJECTED' WHERE id = ?`, [req.params.id]);
     await logChange(`회원 반려: ${target.name} (${target.email})`, req.session.user.id);
@@ -480,7 +621,9 @@ app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
 app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
-    if (!target) return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    if (!target) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
 
     if (target.role === 'admin' && target.email === ADMIN_EMAIL) {
       return res.status(400).json({ error: '기본 관리자 계정은 삭제할 수 없습니다.' });
@@ -541,7 +684,9 @@ app.post('/api/suppliers', requireLogin, async (req, res) => {
       status: String(req.body.status || '사용').trim()
     };
 
-    if (!payload.name) return res.status(400).json({ error: '공급업체명을 입력하세요.' });
+    if (!payload.name) {
+      return res.status(400).json({ error: '공급업체명을 입력하세요.' });
+    }
 
     await run(
       `INSERT INTO suppliers (id, name, manager, phone, category, status, createdAt, updatedAt)
@@ -992,7 +1137,11 @@ app.delete('/api/nonconform/:id', requireLogin, async (req, res) => {
 /* change logs */
 app.get('/api/change-logs', requireLogin, async (req, res) => {
   try {
-    const rows = await all(`SELECT id, logDate, message, userId, createdAt FROM change_logs ORDER BY id DESC`);
+    const rows = await all(
+      `SELECT id, logDate, message, userId, createdAt
+       FROM change_logs
+       ORDER BY id DESC`
+    );
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -1163,13 +1312,23 @@ app.post('/api/import/commit', requireLogin, async (req, res) => {
     res.json({ message: '엑셀 반영 완료' });
   } catch (err) {
     console.error(err);
-    try { await run('ROLLBACK'); } catch {}
+    try {
+      await run('ROLLBACK');
+    } catch (_) {}
     res.status(500).json({ error: '엑셀 반영 실패' });
   }
 });
 
 app.get('/health', (req, res) => {
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    smtp: {
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_SECURE,
+      configured: !!(EMAIL_USER && EMAIL_PASS)
+    }
+  });
 });
 
 app.get('/', (req, res) => {
