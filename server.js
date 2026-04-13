@@ -122,12 +122,13 @@ function normalizeTitle(title) {
     'assistant_manager',
     'manager',
     'general_manager',
-    'executive'
+    'executive',
+    'admin'
   ];
   const value = String(title || 'staff').toLowerCase();
   return allowed.includes(value) ? value : 'staff';
 }
- 
+
 async function logChange(message, userId = null) {
   await run(
     `INSERT INTO change_logs (logDate, message, userId, createdAt)
@@ -345,10 +346,10 @@ app.post('/api/auth/signup', async (req, res) => {
     await run(
       `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-     [id, name, email, passwordHash, department, 'staff', 'user', 'APPROVED', nowDateTime()]
+      [id, name, email, passwordHash, department, 'staff', 'user', 'APPROVED', nowDateTime()]
     );
 
-    await logChange(`회원가입 신청: ${name} (${email})`, id);
+    await logChange(`회원가입 완료: ${name} (${email})`, id);
     res.json({ message: '회원가입이 완료되었습니다. 바로 로그인할 수 있습니다.' });
   } catch (err) {
     console.error(err);
@@ -459,10 +460,7 @@ app.put('/api/auth/me', requireLogin, async (req, res) => {
   try {
     const userId = req.session.user.id;
 
-    const currentUser = await get(
-      `SELECT * FROM users WHERE id = ?`,
-      [userId]
-    );
+    const currentUser = await get(`SELECT * FROM users WHERE id = ?`, [userId]);
 
     if (!currentUser) {
       return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
@@ -568,6 +566,63 @@ app.post('/api/auth/reset-password', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '비밀번호 재설정 중 오류가 발생했습니다.' });
+  }
+});
+
+/* 관리자 복구용 임시 API */
+app.post('/api/admin/bootstrap-reset', async (req, res) => {
+  try {
+    const secret = String(req.body.secret || '').trim();
+
+    if (!process.env.BOOTSTRAP_SECRET) {
+      return res.status(500).json({ error: 'BOOTSTRAP_SECRET 환경변수가 설정되지 않았습니다.' });
+    }
+
+    if (secret !== process.env.BOOTSTRAP_SECRET) {
+      return res.status(403).json({ error: '복구 인증값이 올바르지 않습니다.' });
+    }
+
+    const email = ADMIN_EMAIL.trim().toLowerCase();
+    const password = ADMIN_PASSWORD;
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const existing = await get(`SELECT * FROM users WHERE email = ?`, [email]);
+
+    if (!existing) {
+      await run(
+        `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          `user_${Date.now()}`,
+          '관리자',
+          email,
+          passwordHash,
+          '관리팀',
+          'admin',
+          'admin',
+          'APPROVED',
+          nowDateTime()
+        ]
+      );
+    } else {
+      await run(
+        `UPDATE users
+         SET passwordHash = ?, name = '관리자', department = '관리팀', title = 'admin', role = 'admin', status = 'APPROVED'
+         WHERE email = ?`,
+        [passwordHash, email]
+      );
+    }
+
+    await logChange(`관리자 부트스트랩 복구: ${email}`);
+
+    res.json({
+      message: '관리자 계정이 복구되었습니다.',
+      email,
+      password
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '관리자 복구 중 오류가 발생했습니다.' });
   }
 });
 
