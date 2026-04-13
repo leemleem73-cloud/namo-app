@@ -166,7 +166,7 @@ async function initDb() {
       department TEXT,
       title TEXT NOT NULL DEFAULT 'staff',
       role TEXT NOT NULL DEFAULT 'user',
-      status TEXT NOT NULL DEFAULT 'PENDING',
+      status TEXT NOT NULL DEFAULT 'APPROVED',
       createdAt TEXT NOT NULL
     )
   `);
