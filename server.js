@@ -378,10 +378,6 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
     }
 
-    if (user.status !== 'APPROVED') {
-      return res.status(403).json({ error: '관리자 승인 후 로그인 가능합니다.' });
-    }
-
     req.session.user = {
       id: user.id,
       name: user.name,
