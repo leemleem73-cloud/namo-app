@@ -563,6 +563,52 @@
       <button class="btn b1" onclick="saveUserModal()">저장</button>
     </div>
   </div>
+</div
+  <div id="myProfileModal" class="modal-bg">
+  <div class="modal">
+    <h3>내 정보 수정</h3>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>이름</label>
+        <input id="myName">
+      </div>
+
+      <div class="field">
+        <label>이메일</label>
+        <input id="myEmail" type="email">
+      </div>
+
+      <div class="field">
+        <label>부서 / 팀</label>
+        <input id="myDepartment">
+      </div>
+
+      <div class="field">
+        <label>직책</label>
+        <select id="myTitle">
+          <option value="staff">사원</option>
+          <option value="manager">관리자</option>
+          <option value="admin">관리자(시스템)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>새 비밀번호</label>
+        <input id="myPassword" type="password">
+      </div>
+
+      <div class="field">
+        <label>비밀번호 확인</label>
+        <input id="myPasswordConfirm" type="password">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn b2" onclick="closeMyProfileModal()">취소</button>
+      <button class="btn b1" onclick="saveMyProfile()">저장</button>
+    </div>
+  </div>
 </div>
   <script>
     const MAX_UPLOAD_ROWS = 2000;
@@ -2258,7 +2304,60 @@
       const authed = await bootstrapUser();
       if (authed) await loadFromServer();
     }
+   function openMyProfileModal() {
+  if (!state.user.authenticated) return;
 
+  $('myName').value = state.user.name || '';
+  $('myEmail').value = state.user.email || '';
+  $('myDepartment').value = state.user.department || '';
+  $('myTitle').value = state.user.title || 'staff';
+  $('myPassword').value = '';
+  $('myPasswordConfirm').value = '';
+
+  $('myProfileModal').style.display = 'flex';
+}
+
+function closeMyProfileModal() {
+  $('myProfileModal').style.display = 'none';
+}
+
+async function saveMyProfile() {
+  const payload = {
+    name: toText($('myName').value),
+    email: toText($('myEmail').value),
+    department: toText($('myDepartment').value),
+    title: toText($('myTitle').value),
+    password: toText($('myPassword').value)
+  };
+
+  const passwordConfirm = toText($('myPasswordConfirm').value);
+
+  try {
+    if (!payload.name) throw new Error('이름을 입력하세요.');
+    if (!payload.email) throw new Error('이메일을 입력하세요.');
+
+    if (payload.password) {
+      if (payload.password.length < 8) {
+        throw new Error('비밀번호는 8자 이상이어야 합니다.');
+      }
+      if (payload.password !== passwordConfirm) {
+        throw new Error('비밀번호 확인이 일치하지 않습니다.');
+      }
+    }
+
+    const result = await api.put('/api/auth/me', payload);
+
+    closeMyProfileModal();
+    showToast(result?.message || '내 정보가 수정되었습니다.');
+
+    await bootstrapUser();
+    await loadFromServer();
+
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || '내 정보 수정 실패');
+  }
+}
     initApp();
   </script>
 
