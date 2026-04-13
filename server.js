@@ -127,10 +127,7 @@ function normalizeTitle(title) {
   const value = String(title || 'staff').toLowerCase();
   return allowed.includes(value) ? value : 'staff';
 }
-  const value = String(title || 'staff').toLowerCase();
-  return allowed.includes(value) ? value : 'staff';
-}
-
+ 
 async function logChange(message, userId = null) {
   await run(
     `INSERT INTO change_logs (logDate, message, userId, createdAt)
