@@ -1284,9 +1284,13 @@
         const isLoginLog =
           msg.includes('login') ||
           msg.includes('log in') ||
+          msg.includes('signin') ||
+          msg.includes('sign in') ||
+          msg.includes('logout') ||
+          msg.includes('log out') ||
           msg.includes('로그인') ||
           msg.includes('로그아웃') ||
-          msg.includes('logout');
+          msg.includes('접속');
         return isAdmin ? true : !isLoginLog;
       });
 
