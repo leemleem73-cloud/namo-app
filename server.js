@@ -324,7 +324,7 @@ app.post('/api/auth/signup', async (req, res) => {
     await run(
       `INSERT INTO users (id, name, email, passwordHash, department, role, status, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, email, passwordHash, department, 'user', 'PENDING', nowDateTime()]
+      [id, name, email, passwordHash, department, 'user', 'APPROVED', nowDateTime()]
     );
 
     await logChange(`회원가입 신청: ${name} (${email})`, id);
