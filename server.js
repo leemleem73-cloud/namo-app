@@ -274,25 +274,33 @@ async function initDb() {
     )
   `);
 
-  const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
+const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
+const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+
 if (!admin) {
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-    await run(
-      `INSERT INTO users (id, name, email, passwordHash, department, role, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `user_${Date.now()}`,
-        '관리자',
-        ADMIN_EMAIL,
-        passwordHash,
-        '관리팀',
-        'admin',
-        'APPROVED',
-        nowDateTime()
-      ]
-    );
-    await logChange('기본 관리자 계정 생성');
-  }
+  await run(
+    `INSERT INTO users (id, name, email, passwordHash, department, role, status, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      `user_${Date.now()}`,
+      '관리자',
+      ADMIN_EMAIL,
+      passwordHash,
+      '관리팀',
+      'admin',
+      'APPROVED',
+      nowDateTime()
+    ]
+  );
+  await logChange('기본 관리자 계정 생성');
+} else {
+  await run(
+    `UPDATE users
+     SET passwordHash = ?, role = 'admin', status = 'APPROVED'
+     WHERE email = ?`,
+    [passwordHash, ADMIN_EMAIL]
+  );
+  await logChange('기본 관리자 계정 재설정');
 }
 
 /* auth */
