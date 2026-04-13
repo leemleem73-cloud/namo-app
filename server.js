@@ -474,9 +474,78 @@ app.get('/api/auth/me', async (req, res) => {
     res.status(500).json({ error: '사용자 조회 중 오류가 발생했습니다.' });
   }
 });
+});
 
-app.post('/api/auth/reset-password', async (req, res) => {
+app.put('/api/auth/me', requireLogin, async (req, res) => {
   try {
+    const userId = req.session.user.id;
+
+    const currentUser = await get(
+      `SELECT * FROM users WHERE id = ?`,
+      [userId]
+    );
+
+    if (!currentUser) {
+      return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const department = String(req.body.department || '').trim();
+    const title = String(req.body.title || 'staff').trim();
+    const password = String(req.body.password || '');
+
+    if (!name) {
+      return res.status(400).json({ error: '이름을 입력하세요.' });
+    }
+
+    if (!email) {
+      return res.status(400).json({ error: '이메일을 입력하세요.' });
+    }
+
+    const exists = await get(
+      `SELECT id FROM users WHERE email = ? AND id != ?`,
+      [email, userId]
+    );
+
+    if (exists) {
+      return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
+    }
+
+    if (password) {
+      if (password.length < 8) {
+        return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      await run(
+        `UPDATE users
+         SET name = ?, email = ?, department = ?, title = ?, passwordHash = ?
+         WHERE id = ?`,
+        [name, email, department, title, passwordHash, userId]
+      );
+    } else {
+      await run(
+        `UPDATE users
+         SET name = ?, email = ?, department = ?, title = ?
+         WHERE id = ?`,
+        [name, email, department, title, userId]
+      );
+    }
+
+    req.session.user.name = name;
+    req.session.user.email = email;
+
+    await logChange(`내 정보 수정: ${name} (${email})`, userId);
+
+    res.json({ message: '내 정보가 저장되었습니다.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '내 정보 수정 중 오류가 발생했습니다.' });
+  }
+});
+
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const department = String(req.body.department || '').trim();
