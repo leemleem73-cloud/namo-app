@@ -36,7 +36,7 @@ const EMAIL_USER =
 const EMAIL_PASS =
   process.env.EMAIL_PASS || '';
 
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR || '/tmp/namo-data';
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const DB_PATH = path.join(DATA_DIR, 'namochemical.db');
