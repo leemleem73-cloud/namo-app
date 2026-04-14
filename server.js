@@ -469,7 +469,10 @@ app.put('/api/auth/me', requireLogin, async (req, res) => {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const department = String(req.body.department || '').trim();
-    const title = normalizeTitle(req.body.title);
+   const title =
+  req.body.title !== undefined
+    ? normalizeTitle(req.body.title)
+    : normalizeTitle(currentUser.title);
     const password = String(req.body.password || '');
 
     if (!name) {
