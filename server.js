@@ -22,14 +22,33 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE) === 'true';
 const EMAIL_USER = process.env.EMAIL_USER || '';
 const EMAIL_PASS = process.env.EMAIL_PASS || '';
 
-const DATA_DIR = process.env.DATA_DIR || '/tmp/namo-data';
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 const DB_PATH = path.join(DATA_DIR, 'namochemical.db');
-const db = new sqlite3.Database(DB_PATH);
+
+console.log('----------------------------------');
+console.log('DATA_DIR:', DATA_DIR);
+console.log('DB_PATH:', DB_PATH);
+console.log('DB file exists(before open):', fs.existsSync(DB_PATH));
+console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('----------------------------------');
+
+const db = new sqlite3.Database(DB_PATH, err => {
+  if (err) {
+    console.error('SQLite open failed:', err);
+  } else {
+    console.log('SQLite connected:', DB_PATH);
+  }
+});
+
 const SQLiteStore = SQLiteStoreFactory(session);
+
+/* 서버 로딩(대량 반영/초기 반영) 중 수정/삭제 차단 */
+let isServerLoading = false;
 
 app.use(cors({
   origin: true,
@@ -109,11 +128,11 @@ function normalizeRole(role) {
 }
 
 function normalizeStatus(status) {
-  const value = String(status || 'PENDING').toUpperCase();
-  if (['PENDING', 'APPROVED', 'REJECTED'].includes(value)) {
+  const value = String(status || 'APPROVED').toUpperCase();
+  if (['APPROVED', 'REJECTED'].includes(value)) {
     return value;
   }
-  return 'PENDING';
+  return 'APPROVED';
 }
 
 function normalizeTitle(title) {
@@ -121,6 +140,7 @@ function normalizeTitle(title) {
     'staff',
     'assistant_manager',
     'manager',
+    'deputy_general_manager',
     'general_manager',
     'executive',
     'admin'
@@ -150,6 +170,13 @@ function requireAdmin(req, res, next) {
   }
   if (req.session.user.role !== 'admin') {
     return res.status(403).json({ error: '관리자 권한이 필요합니다.' });
+  }
+  next();
+}
+
+function blockWhenServerLoading(req, res, next) {
+  if (isServerLoading) {
+    return res.status(423).json({ error: '서버 데이터 로딩 중에는 수정 또는 삭제할 수 없습니다.' });
   }
   next();
 }
@@ -315,6 +342,26 @@ async function initDb() {
     );
     await logChange('기본 관리자 계정 재설정');
   }
+
+  const userCount = await get(`SELECT COUNT(*) AS count FROM users`);
+  const supplierCount = await get(`SELECT COUNT(*) AS count FROM suppliers`);
+  const iqcCount = await get(`SELECT COUNT(*) AS count FROM iqc`);
+  const ipqcCount = await get(`SELECT COUNT(*) AS count FROM ipqc`);
+  const oqcCount = await get(`SELECT COUNT(*) AS count FROM oqc`);
+  const worklogCount = await get(`SELECT COUNT(*) AS count FROM worklog`);
+  const nonconformCount = await get(`SELECT COUNT(*) AS count FROM nonconform`);
+  const changeLogCount = await get(`SELECT COUNT(*) AS count FROM change_logs`);
+
+  console.log('----- DB COUNTS AFTER INIT -----');
+  console.log('users =', userCount?.count || 0);
+  console.log('suppliers =', supplierCount?.count || 0);
+  console.log('iqc =', iqcCount?.count || 0);
+  console.log('ipqc =', ipqcCount?.count || 0);
+  console.log('oqc =', oqcCount?.count || 0);
+  console.log('worklog =', worklogCount?.count || 0);
+  console.log('nonconform =', nonconformCount?.count || 0);
+  console.log('change_logs =', changeLogCount?.count || 0);
+  console.log('--------------------------------');
 }
 
 /* auth */
@@ -375,9 +422,11 @@ app.post('/api/auth/login', async (req, res) => {
     if (!ok) {
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
     }
+
     if (user.status !== 'APPROVED') {
-  return res.status(403).json({ error: '승인된 계정만 로그인할 수 있습니다.' });
-}
+      return res.status(403).json({ error: '사용이 제한된 계정입니다.' });
+    }
+
     req.session.user = {
       id: user.id,
       name: user.name,
@@ -458,7 +507,7 @@ app.get('/api/auth/me', async (req, res) => {
   }
 });
 
-app.put('/api/auth/me', requireLogin, async (req, res) => {
+app.put('/api/auth/me', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     const userId = req.session.user.id;
 
@@ -471,10 +520,10 @@ app.put('/api/auth/me', requireLogin, async (req, res) => {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const department = String(req.body.department || '').trim();
-   const title =
-  req.body.title !== undefined
-    ? normalizeTitle(req.body.title)
-    : normalizeTitle(currentUser.title);
+    const title =
+      req.body.title !== undefined
+        ? normalizeTitle(req.body.title)
+        : normalizeTitle(currentUser.title);
     const password = String(req.body.password || '');
 
     if (!name) {
@@ -646,7 +695,7 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+app.put('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
     if (!target) {
@@ -719,7 +768,7 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
+app.post('/api/admin/users/:id/approve', requireAdmin, blockWhenServerLoading, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
     if (!target) {
@@ -736,7 +785,7 @@ app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
+app.post('/api/admin/users/:id/reject', requireAdmin, blockWhenServerLoading, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
     if (!target) {
@@ -753,7 +802,7 @@ app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
   }
 });
 
-app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+app.delete('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
     if (!target) {
@@ -764,6 +813,7 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: '기본 관리자 계정은 삭제할 수 없습니다.' });
     }
 
+    console.log('[DELETE users]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM users WHERE id = ?`, [req.params.id]);
     await logChange(`회원 삭제: ${target.name} (${target.email})`, req.session.user.id);
 
@@ -774,26 +824,9 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   }
 });
 
+/* 전체삭제는 비활성화 */
 app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
-  try {
-    if (req.body.confirm !== 'DELETE') {
-      return res.status(400).json({ error: '확인 값이 올바르지 않습니다.' });
-    }
-
-    await run(`DELETE FROM suppliers`);
-    await run(`DELETE FROM iqc`);
-    await run(`DELETE FROM ipqc`);
-    await run(`DELETE FROM oqc`);
-    await run(`DELETE FROM worklog`);
-    await run(`DELETE FROM nonconform`);
-    await run(`DELETE FROM change_logs`);
-
-    await logChange('전체 데이터 삭제 실행', req.session.user.id);
-    res.json({ message: '전체 데이터 삭제 완료' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '전체 데이터 삭제 실패' });
-  }
+  return res.status(403).json({ error: '전체삭제 기능은 비활성화되어 있습니다.' });
 });
 
 /* suppliers */
@@ -837,7 +870,7 @@ app.post('/api/suppliers', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/suppliers/:id', requireLogin, async (req, res) => {
+app.put('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     await run(
       `UPDATE suppliers
@@ -853,6 +886,7 @@ app.put('/api/suppliers/:id', requireLogin, async (req, res) => {
         req.params.id
       ]
     );
+    await logChange(`공급업체 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
     console.error(err);
@@ -860,9 +894,11 @@ app.put('/api/suppliers/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/suppliers/:id', requireLogin, async (req, res) => {
+app.delete('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    console.log('[DELETE suppliers]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM suppliers WHERE id = ?`, [req.params.id]);
+    await logChange(`공급업체 삭제: ${req.params.id}`, req.session.user?.id || null);
     res.json({ message: '삭제 완료' });
   } catch (err) {
     console.error(err);
@@ -901,6 +937,7 @@ app.post('/api/iqc', requireLogin, async (req, res) => {
         now
       ]
     );
+    await logChange(`IQC 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
     console.error(err);
@@ -908,7 +945,7 @@ app.post('/api/iqc', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/iqc/:id', requireLogin, async (req, res) => {
+app.put('/api/iqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     await run(
       `UPDATE iqc
@@ -926,6 +963,7 @@ app.put('/api/iqc/:id', requireLogin, async (req, res) => {
         req.params.id
       ]
     );
+    await logChange(`IQC 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
     console.error(err);
@@ -933,9 +971,11 @@ app.put('/api/iqc/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/iqc/:id', requireLogin, async (req, res) => {
+app.delete('/api/iqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    console.log('[DELETE iqc]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM iqc WHERE id = ?`, [req.params.id]);
+    await logChange(`IQC 삭제: ${req.params.id}`, req.session.user.id);
     res.json({ message: '삭제 완료' });
   } catch (err) {
     console.error(err);
@@ -977,6 +1017,7 @@ app.post('/api/ipqc', requireLogin, async (req, res) => {
         now
       ]
     );
+    await logChange(`IPQC 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
     console.error(err);
@@ -984,7 +1025,7 @@ app.post('/api/ipqc', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/ipqc/:id', requireLogin, async (req, res) => {
+app.put('/api/ipqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     await run(
       `UPDATE ipqc
@@ -1005,6 +1046,7 @@ app.put('/api/ipqc/:id', requireLogin, async (req, res) => {
         req.params.id
       ]
     );
+    await logChange(`IPQC 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
     console.error(err);
@@ -1012,9 +1054,11 @@ app.put('/api/ipqc/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/ipqc/:id', requireLogin, async (req, res) => {
+app.delete('/api/ipqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    console.log('[DELETE ipqc]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM ipqc WHERE id = ?`, [req.params.id]);
+    await logChange(`IPQC 삭제: ${req.params.id}`, req.session.user.id);
     res.json({ message: '삭제 완료' });
   } catch (err) {
     console.error(err);
@@ -1061,6 +1105,7 @@ app.post('/api/oqc', requireLogin, async (req, res) => {
         now
       ]
     );
+    await logChange(`OQC 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
     console.error(err);
@@ -1068,7 +1113,7 @@ app.post('/api/oqc', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/oqc/:id', requireLogin, async (req, res) => {
+app.put('/api/oqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     await run(
       `UPDATE oqc
@@ -1094,6 +1139,7 @@ app.put('/api/oqc/:id', requireLogin, async (req, res) => {
         req.params.id
       ]
     );
+    await logChange(`OQC 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
     console.error(err);
@@ -1101,9 +1147,11 @@ app.put('/api/oqc/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/oqc/:id', requireLogin, async (req, res) => {
+app.delete('/api/oqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    console.log('[DELETE oqc]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM oqc WHERE id = ?`, [req.params.id]);
+    await logChange(`OQC 삭제: ${req.params.id}`, req.session.user.id);
     res.json({ message: '삭제 완료' });
   } catch (err) {
     console.error(err);
@@ -1146,6 +1194,7 @@ app.post('/api/worklog', requireLogin, async (req, res) => {
         now
       ]
     );
+    await logChange(`작업일지 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
     console.error(err);
@@ -1153,7 +1202,7 @@ app.post('/api/worklog', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/worklog/:id', requireLogin, async (req, res) => {
+app.put('/api/worklog/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     await run(
       `UPDATE worklog
@@ -1175,6 +1224,7 @@ app.put('/api/worklog/:id', requireLogin, async (req, res) => {
         req.params.id
       ]
     );
+    await logChange(`작업일지 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
     console.error(err);
@@ -1182,9 +1232,11 @@ app.put('/api/worklog/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/worklog/:id', requireLogin, async (req, res) => {
+app.delete('/api/worklog/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    console.log('[DELETE worklog]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM worklog WHERE id = ?`, [req.params.id]);
+    await logChange(`작업일지 삭제: ${req.params.id}`, req.session.user.id);
     res.json({ message: '삭제 완료' });
   } catch (err) {
     console.error(err);
@@ -1225,6 +1277,7 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
         now
       ]
     );
+    await logChange(`부적합 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
     console.error(err);
@@ -1232,7 +1285,7 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
   }
 });
 
-app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
+app.put('/api/nonconform/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     await run(
       `UPDATE nonconform
@@ -1252,6 +1305,7 @@ app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
         req.params.id
       ]
     );
+    await logChange(`부적합 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
     console.error(err);
@@ -1259,9 +1313,11 @@ app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.delete('/api/nonconform/:id', requireLogin, async (req, res) => {
+app.delete('/api/nonconform/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    console.log('[DELETE nonconform]', req.params.id, 'by', req.session.user?.email);
     await run(`DELETE FROM nonconform WHERE id = ?`, [req.params.id]);
+    await logChange(`부적합 삭제: ${req.params.id}`, req.session.user.id);
     res.json({ message: '삭제 완료' });
   } catch (err) {
     console.error(err);
@@ -1320,6 +1376,16 @@ app.post('/api/import/commit', requireLogin, async (req, res) => {
     const supplierRows = Array.isArray(req.body.supplierRows) ? req.body.supplierRows : [];
     const worklogRows = Array.isArray(req.body.worklogRows) ? req.body.worklogRows : [];
     const now = nowDateTime();
+
+    isServerLoading = true;
+    console.log('[IMPORT START]', {
+      iqc: iqcRows.length,
+      ipqc: ipqcRows.length,
+      oqc: oqcRows.length,
+      suppliers: supplierRows.length,
+      worklog: worklogRows.length,
+      by: req.session.user?.email
+    });
 
     await run('BEGIN TRANSACTION');
 
@@ -1444,12 +1510,17 @@ app.post('/api/import/commit', requireLogin, async (req, res) => {
     await run('COMMIT');
     await logChange(`엑셀 반영: ${req.body.fileName || '업로드 파일'}`, req.session.user.id);
 
+    isServerLoading = false;
+    console.log('[IMPORT END] success');
+
     res.json({ message: '엑셀 반영 완료' });
   } catch (err) {
     console.error(err);
     try {
       await run('ROLLBACK');
     } catch (_) {}
+    isServerLoading = false;
+    console.log('[IMPORT END] failed');
     res.status(500).json({ error: '엑셀 반영 실패' });
   }
 });
@@ -1457,6 +1528,7 @@ app.post('/api/import/commit', requireLogin, async (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     ok: true,
+    loading: isServerLoading,
     smtp: {
       host: SMTP_HOST,
       port: SMTP_PORT,
@@ -1469,6 +1541,7 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 app.post('/api/admin/reset', async (req, res) => {
   try {
     const secret = String(req.body.secret || '').trim();
