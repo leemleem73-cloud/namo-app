@@ -1502,7 +1502,7 @@ app.post('/api/admin/reset', async (req, res) => {
     } else {
       await run(
         `UPDATE users
-         SET passwordHash = ?, role = 'admin', status = 'APPROVED'
+         SET passwordHash = ?, name = '관리자', department = '관리팀', title = 'admin', role = 'admin', status = 'APPROVED'
          WHERE email = ?`,
         [passwordHash, email]
       );
