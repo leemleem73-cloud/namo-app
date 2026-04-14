@@ -648,16 +648,40 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
     }
 
-    const name = String(req.body.name || '').trim();
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const department = String(req.body.department || '').trim();
-    const title = normalizeTitle(req.body.title);
-    const role = normalizeRole(req.body.role);
-    const status = normalizeStatus(req.body.status);
+    const name =
+      req.body.name !== undefined
+        ? String(req.body.name).trim()
+        : String(target.name || '').trim();
+
+    const email =
+      req.body.email !== undefined
+        ? String(req.body.email).trim().toLowerCase()
+        : String(target.email || '').trim().toLowerCase();
+
+    const department =
+      req.body.department !== undefined
+        ? String(req.body.department).trim()
+        : String(target.department || '').trim();
+
+    const title =
+      req.body.title !== undefined
+        ? normalizeTitle(req.body.title)
+        : normalizeTitle(target.title);
+
+    const role =
+      req.body.role !== undefined
+        ? normalizeRole(req.body.role)
+        : normalizeRole(target.role);
+
+    const status =
+      req.body.status !== undefined
+        ? normalizeStatus(req.body.status)
+        : normalizeStatus(target.status);
 
     if (!name) {
       return res.status(400).json({ error: '이름을 입력하세요.' });
     }
+
     if (!email) {
       return res.status(400).json({ error: '이메일을 입력하세요.' });
     }
@@ -666,6 +690,7 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
       `SELECT id FROM users WHERE email = ? AND id != ?`,
       [email, req.params.id]
     );
+
     if (duplicate) {
       return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
     }
