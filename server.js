@@ -123,6 +123,10 @@ function todayDate() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function makeId(prefix) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function normalizeRole(role) {
   return String(role || 'user').toLowerCase() === 'admin' ? 'admin' : 'user';
 }
