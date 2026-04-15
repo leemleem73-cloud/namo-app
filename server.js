@@ -116,24 +116,30 @@ db.serialize(() => {
   `);
 
   db.get(`SELECT COUNT(*) AS count FROM users`, [], async (err, row) => {
-    if (err) {
-      console.error('관리자 계정 확인 실패:', err.message);
-      return;
-    }
+  if (err) {
+    console.error('관리자 계정 확인 실패:', err.message);
+    return;
+  }
 
-    if ((row?.count || 0) === 0) {
-      try {
-        const hashed = await bcrypt.hash('admin1234', 10);
-        db.run(
-          `INSERT INTO users (name, email, password, department, role, status)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'APPROVED']
-        );
-      } catch (hashErr) {
-        console.error('기본 관리자 생성 실패:', hashErr.message);
-      }
+  if ((row?.count || 0) === 0) {
+    try {
+      const hashed = await bcrypt.hash('admin1234', 10);
+      db.run(
+        `INSERT INTO users (name, email, password, department, role, status)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'APPROVED'],
+        (insertErr) => {
+          if (insertErr) {
+            console.error('기본 관리자 생성 실패:', insertErr.message);
+          } else {
+            console.log('기본 관리자 계정 생성 완료: admin@namochemical.com / admin1234');
+          }
+        }
+      );
+    } catch (hashErr) {
+      console.error('기본 관리자 비밀번호 해시 실패:', hashErr.message);
     }
-  });
+  }
 });
 
 // --------------------
