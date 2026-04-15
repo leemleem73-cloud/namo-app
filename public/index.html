@@ -36,13 +36,15 @@
       --radius-md:14px;
       --radius-sm:10px;
     }
-    .upgrade-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 360px;
-      overflow-y: auto;
-  }  
+
+    .upgrade-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:360px;
+      overflow-y:auto;
+    }
+
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
     body{
@@ -54,6 +56,7 @@
         linear-gradient(180deg, #f8fbff 0%, var(--bg) 42%, var(--bg-2) 100%);
       min-height:100vh;
     }
+
     button,input,select,textarea{font:inherit}
     .hidden{display:none!important}
     table{font-size:13px}
@@ -61,21 +64,51 @@
     td{font-size:13px}
 
     .top{
-      position:sticky; top:0; z-index:100; min-height:78px; padding:14px 24px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap;
-      background:rgba(255,255,255,.82); backdrop-filter:blur(14px);
-      border-bottom:1px solid rgba(214,225,237,.9); box-shadow:0 6px 22px rgba(15,23,42,.05);
+      position:sticky;
+      top:0;
+      z-index:100;
+      min-height:78px;
+      padding:14px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:nowrap;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(214,225,237,.9);
+      box-shadow:0 6px 22px rgba(15,23,42,.05);
     }
+
     .brand{display:flex;align-items:center;gap:12px;flex:0 0 auto}
     .brand-home{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
     .brand h1{margin:0;font-size:28px;font-weight:800;color:var(--title);letter-spacing:-.03em}
-    .top-right{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;margin-left:auto}
+
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+      margin-left:auto;
+    }
+
     .top-right > *{white-space:nowrap}
+
     .status-pill,.live,.top-chip{
-      min-height:38px; padding:0 14px; border-radius:999px; display:flex; align-items:center; gap:6px;
-      border:1px solid var(--line); background:#fff; color:var(--text); font-size:12px; font-weight:800;
+      min-height:38px;
+      padding:0 14px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      font-size:12px;
+      font-weight:800;
       box-shadow:var(--shadow-sm);
     }
+
     .live{background:var(--soft-green);color:var(--green);border-color:#ccebd8}
     .top-chip{background:var(--soft-blue);color:var(--navy);border-color:#dbe8f6}
 
@@ -84,57 +117,201 @@
     .glass{background:rgba(255,255,255,.9);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
 
     .bar{
-      display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-radius:20px;margin-bottom:14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:14px 16px;
+      border-radius:20px;
+      margin-bottom:14px;
       backdrop-filter:blur(10px);
     }
+
     .bar label{font-size:12px;color:var(--muted);font-weight:800}
+
     .bar select,.field input,.field select,.trace-input,.auth-input{
-      color:var(--text);background:#fff;border:1px solid var(--line-2);border-radius:12px;transition:.16s ease;
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--line-2);
+      border-radius:12px;
+      transition:.16s ease;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
     }
+
     .bar select{height:42px;padding:0 14px;min-width:100px}
+
     .bar select:focus,.field input:focus,.field select:focus,.trace-input:focus,.auth-input:focus{
-      outline:none;border-color:#97c0eb;box-shadow:0 0 0 4px rgba(31,111,209,.08)
+      outline:none;
+      border-color:#97c0eb;
+      box-shadow:0 0 0 4px rgba(31,111,209,.08);
     }
 
     .btn{
-      font-size:14px;height:42px;padding:0 14px;border:none;border-radius:12px;cursor:pointer;
-      display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:800;letter-spacing:-.01em;
+      font-size:14px;
+      height:42px;
+      padding:0 14px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      font-weight:800;
+      letter-spacing:-.01em;
       transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
     }
+
     .btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.08)}
     .btn[disabled]{opacity:.45;cursor:not-allowed;filter:none;transform:none;box-shadow:none}
+
     .b1{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
     .b2{background:#fff;border:1px solid var(--line-2);color:var(--text)}
     .b3{background:linear-gradient(135deg,#16986c,#1db87d);color:#fff}
     .b4{background:linear-gradient(135deg,#d44343,#ea6767);color:#fff}
 
-    .chip{min-height:42px;padding:0 14px;border-radius:12px;display:flex;align-items:center;background:var(--soft-blue);border:1px solid #d9e7f6;color:var(--navy);font-weight:800;font-size:12px}
+    .chip{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      background:var(--soft-blue);
+      border:1px solid #d9e7f6;
+      color:var(--navy);
+      font-weight:800;
+      font-size:12px;
+    }
+
     .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-    .tab{font-size:14px;padding:11px 16px;border-radius:12px;cursor:pointer;font-weight:800;color:#46556a;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);transition:.18s ease}
+
+    .tab{
+      font-size:14px;
+      padding:11px 16px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+      color:#46556a;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+      transition:.18s ease;
+    }
+
     .tab:hover{background:#eef6ff;color:var(--navy)}
     .tab.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--navy),var(--blue))}
     .main{padding-bottom:24px}
     .panel{display:none}
     .panel.active{display:block}
-    .week{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-radius:18px;padding:14px 16px;margin-bottom:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+
+    .week{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      border-radius:18px;
+      padding:14px 16px;
+      margin-bottom:14px;
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+    }
+
     .week strong,.week span{font-size:12px}
     .week .muted{color:var(--muted)}
-    .pill{padding:7px 12px;border-radius:999px;background:#f8fbff;border:1px solid var(--line);font-size:12px;font-weight:800;color:#44556a}
-    .pill.on{background:linear-gradient(135deg,var(--navy),var(--blue));border-color:transparent;color:#fff}
-    .card,.trace-card,.auth-card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm)}
-    .head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+
+    .pill{
+      padding:7px 12px;
+      border-radius:999px;
+      background:#f8fbff;
+      border:1px solid var(--line);
+      font-size:12px;
+      font-weight:800;
+      color:#44556a;
+    }
+
+    .pill.on{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .card,.trace-card,.auth-card{
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding-bottom:12px;
+      margin-bottom:12px;
+      border-bottom:1px solid var(--line);
+    }
+
     .title{font-size:18px;font-weight:800;color:var(--title);letter-spacing:-.02em}
-    .badge{min-height:30px;padding:0 12px;border-radius:999px;display:flex;align-items:center;font-size:11px;font-weight:800;background:var(--soft-blue);border:1px solid #d9e7f6;color:#44556a}
+
+    .badge{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      font-size:11px;
+      font-weight:800;
+      background:var(--soft-blue);
+      border:1px solid #d9e7f6;
+      color:#44556a;
+    }
+
     .card{padding:18px;min-height:180px}
     .table-box{min-height:60px}
-    .table{overflow:auto;border-radius:16px;border:1px solid var(--line);background:#fff}
+
+    .table{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+
     table{width:100%;border-collapse:collapse;font-size:13px}
-    th{padding:12px 10px;white-space:nowrap;font-weight:800;background:linear-gradient(180deg,#f8fbff 0%, #eef4fa 100%);color:#243447;border-bottom:1px solid var(--line)}
-    td{padding:11px 10px;border-bottom:1px solid #edf2f7;text-align:center;color:var(--text)}
+
+    th{
+      padding:12px 10px;
+      white-space:nowrap;
+      font-weight:800;
+      background:linear-gradient(180deg,#f8fbff 0%, #eef4fa 100%);
+      color:#243447;
+      border-bottom:1px solid var(--line);
+    }
+
+    td{
+      padding:11px 10px;
+      border-bottom:1px solid #edf2f7;
+      text-align:center;
+      color:var(--text);
+    }
+
     tbody tr:nth-child(even){background:#fbfdff}
     tbody tr:hover{background:#f3f8fe}
-    .state{display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:28px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800}
+
+    .state{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:64px;
+      height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+    }
+
     .ok{background:var(--soft-green);border:1px solid #c8e6d0;color:#148154}
     .ng{background:var(--soft-red);border:1px solid #ffd0d0;color:#d13d3d}
     .hold{background:#f3f4f6;border:1px solid #d8dee6;color:#6b7280}
@@ -151,74 +328,263 @@
       justify-content:center;
       padding:20px;
     }
+
     .modal-bg.show{display:flex!important}
 
     .modal{
-      width:980px;max-width:96%;max-height:90vh;overflow:auto;padding:22px;background:#fff;border:1px solid var(--line);
-      border-radius:24px;box-shadow:0 16px 44px rgba(15,23,42,.18)
+      width:980px;
+      max-width:96%;
+      max-height:90vh;
+      overflow:auto;
+      padding:22px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:0 16px 44px rgba(15,23,42,.18);
     }
+
     .modal h3{margin:0 0 16px;font-size:22px;color:var(--title);letter-spacing:-.02em}
     .field label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
     .field input,.field select{width:100%;height:42px;padding:0 14px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px}
     .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
 
-    .barcode-preview-wrap{margin-top:14px;padding:16px;border-radius:18px;border:1px solid var(--line);background:#f8fbff}
-    .barcode-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-    .barcode-preview-box{display:flex;align-items:center;justify-content:center;min-height:180px;border-radius:16px;background:#fff;padding:12px;border:1px solid var(--line)}
+    .barcode-preview-wrap{
+      margin-top:14px;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:#f8fbff;
+    }
+
+    .barcode-meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .barcode-preview-box{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:180px;
+      border-radius:16px;
+      background:#fff;
+      padding:12px;
+      border:1px solid var(--line);
+    }
+
     .barcode-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
 
     .trace-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .trace-card{overflow:hidden}
-    .trace-head{padding:18px;color:var(--title);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbfdff 0%, #f4f8fc 100%)}
+
+    .trace-head{
+      padding:18px;
+      color:var(--title);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#fbfdff 0%, #f4f8fc 100%);
+    }
+
     .trace-title h3{margin:0;font-size:22px;letter-spacing:-.02em}
     .trace-title p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.7}
     .trace-body{padding:16px}
-    .trace-search{display:grid;grid-template-columns:160px minmax(0,1fr) auto;gap:10px;align-items:center;background:#f8fbff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
+
+    .trace-search{
+      display:grid;
+      grid-template-columns:160px minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+      background:#f8fbff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+
     .trace-label{font-size:13px;font-weight:800;color:#44556a}
     .trace-input{width:100%;height:44px;padding:0 14px;font-size:15px;font-weight:800;text-align:left}
     .trace-tools{display:flex;gap:8px;flex-wrap:wrap}
     .trace-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px}
     .trace-meta strong{font-size:14px;color:var(--title)}
     .trace-meta span{font-size:12px;color:var(--muted)}
-    .trace-count{padding:7px 10px;border-radius:999px;background:#eef3f8;border:1px solid var(--line);font-size:11px;font-weight:800;color:#44556a}
-    .trace-table-wrap{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+
+    .trace-count{
+      padding:7px 10px;
+      border-radius:999px;
+      background:#eef3f8;
+      border:1px solid var(--line);
+      font-size:11px;
+      font-weight:800;
+      color:#44556a;
+    }
+
+    .trace-table-wrap{
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      background:#fff;
+    }
+
     .trace-empty{padding:38px 20px;text-align:center;color:#7a8796;font-size:13px}
 
-    .upgrade-list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto}
-    .upgrade-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,#ffffff 0%,#f9fbfe 100%)}
+    .upgrade-item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:linear-gradient(180deg,#ffffff 0%,#f9fbfe 100%);
+    }
+
     .upgrade-date{font-size:11px;font-weight:800;color:var(--blue);margin-bottom:8px}
     .upgrade-text{font-size:12px;color:var(--text);line-height:1.7}
     .upgrade-empty{color:#7a8796;font-size:12px;padding:14px 4px}
 
     .toast{
-      position:fixed;right:16px;bottom:16px;z-index:10000;padding:12px 14px;border-radius:16px;background:#111827;
-      box-shadow:0 12px 34px rgba(15,23,42,.24);color:#fff;opacity:0;transform:translateY(10px);pointer-events:none;
-      transition:.2s ease;max-width:360px;line-height:1.6;font-size:12px
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:10000;
+      padding:12px 14px;
+      border-radius:16px;
+      background:#111827;
+      box-shadow:0 12px 34px rgba(15,23,42,.24);
+      color:#fff;
+      opacity:0;
+      transform:translateY(10px);
+      pointer-events:none;
+      transition:.2s ease;
+      max-width:360px;
+      line-height:1.6;
+      font-size:12px;
     }
+
     .toast.show{opacity:1;transform:translateY(0)}
     .save-status-ok{color:#2e7d32}
     .save-status-fail{color:#c62828}
 
-    .auth-gate{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eef4fb 0%, #f7fbff 55%, #edf2f8 100%)}
-    .auth-layout{width:100%;max-width:1180px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .auth-showcase{overflow:hidden;border-radius:28px;padding:30px;background:linear-gradient(135deg,var(--navy) 0%, var(--navy-2) 100%);border:1px solid rgba(18,57,95,.84);box-shadow:var(--shadow);color:#fff;position:relative}
-    .auth-showcase::after{content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle, rgba(72,167,255,.26) 0%, rgba(72,167,255,0) 70%)}
-    .auth-eyebrow{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);font-size:11px;font-weight:800;color:#eef6ff}
+    .auth-gate{
+      position:fixed;
+      inset:0;
+      z-index:12000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:linear-gradient(135deg,#eef4fb 0%, #f7fbff 55%, #edf2f8 100%);
+    }
+
+    .auth-layout{
+      width:100%;
+      max-width:1180px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .auth-showcase{
+      overflow:hidden;
+      border-radius:28px;
+      padding:30px;
+      background:linear-gradient(135deg,var(--navy) 0%, var(--navy-2) 100%);
+      border:1px solid rgba(18,57,95,.84);
+      box-shadow:var(--shadow);
+      color:#fff;
+      position:relative;
+    }
+
+    .auth-showcase::after{
+      content:"";
+      position:absolute;
+      right:-70px;
+      top:-70px;
+      width:240px;
+      height:240px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(72,167,255,.26) 0%, rgba(72,167,255,0) 70%);
+    }
+
+    .auth-eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:11px;
+      font-weight:800;
+      color:#eef6ff;
+    }
+
     .auth-showcase h2{margin:16px 0 10px;font-size:34px;line-height:1.2;letter-spacing:-.04em}
     .auth-showcase p{margin:0;color:#dbe7f3;line-height:1.8;font-size:14px}
     .auth-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-    .auth-metric{padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+
+    .auth-metric{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+    }
+
     .auth-metric div{font-size:11px;color:#dbe8ff;font-weight:800}
     .auth-metric strong{display:block;margin-top:8px;font-size:18px}
     .auth-list{display:grid;gap:10px;margin-top:18px}
-    .auth-item{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
-    .auth-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);font-size:16px}
+
+    .auth-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .auth-icon{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.12);
+      font-size:16px;
+    }
+
     .auth-item strong{display:block;font-size:13px}
     .auth-item span{display:block;margin-top:4px;font-size:12px;color:#dbe7f3;line-height:1.6}
     .auth-card{padding:22px 22px 18px}
-    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;padding:4px;border-radius:16px;background:#f4f7fa;border:1px solid var(--line)}
-    .auth-tab{height:42px;border-radius:12px;border:none;background:transparent;color:#44556a;font-weight:800;cursor:pointer}
+
+    .auth-tabs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px;
+      margin-bottom:14px;
+      padding:4px;
+      border-radius:16px;
+      background:#f4f7fa;
+      border:1px solid var(--line);
+    }
+
+    .auth-tab{
+      height:42px;
+      border-radius:12px;
+      border:none;
+      background:transparent;
+      color:#44556a;
+      font-weight:800;
+      cursor:pointer;
+    }
+
     .auth-tab.active{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}
     .auth-title{font-size:28px;font-weight:800;margin:8px 0;color:var(--title);letter-spacing:-.03em}
     .auth-subtitle{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px}
@@ -227,61 +593,261 @@
     .auth-field label{display:block;font-size:12px;font-weight:800;color:#44556a;margin-bottom:6px}
     .auth-input{width:100%;height:44px;padding:0 14px}
     .auth-hint{font-size:11px;color:#7a8796;margin-top:5px}
-    .auth-error{display:none;margin:0 0 12px;padding:12px 14px;border-radius:14px;background:#ffeff0;border:1px solid #ffcdd2;font-size:12px;color:#c62828;line-height:1.6}
+
+    .auth-error{
+      display:none;
+      margin:0 0 12px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:#ffeff0;
+      border:1px solid #ffcdd2;
+      font-size:12px;
+      color:#c62828;
+      line-height:1.6;
+    }
+
     .auth-error.show{display:block}
     .auth-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}
     .auth-footer small{color:#7a8796;line-height:1.7}
     .auth-social-proof{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
-    .auth-pill{height:28px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:11px;color:#e7f2ff;font-weight:800}
+
+    .auth-pill{
+      height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      font-size:11px;
+      color:#e7f2ff;
+      font-weight:800;
+    }
 
     .overview-board-wrap{display:grid;gap:16px}
     .overview-hero{display:grid;grid-template-columns:1.15fr 1.85fr;gap:16px}
-    .overview-brief{background:linear-gradient(135deg,#184a7b 0%, #1f6fd1 62%, #63b3ff 100%);color:#fff;border-radius:24px;padding:22px;position:relative;overflow:hidden;box-shadow:0 18px 36px rgba(31,111,209,.18);min-height:250px}
-    .overview-brief::before{content:"";position:absolute;right:-30px;top:-20px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 68%)}
-    .overview-brief::after{content:"";position:absolute;left:-20px;bottom:-40px;width:220px;height:120px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%)}
-    .overview-brief-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;z-index:1}
+
+    .overview-brief{
+      background:linear-gradient(135deg,#184a7b 0%, #1f6fd1 62%, #63b3ff 100%);
+      color:#fff;
+      border-radius:24px;
+      padding:22px;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 18px 36px rgba(31,111,209,.18);
+      min-height:250px;
+    }
+
+    .overview-brief::before{
+      content:"";
+      position:absolute;
+      right:-30px;
+      top:-20px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 68%);
+    }
+
+    .overview-brief::after{
+      content:"";
+      position:absolute;
+      left:-20px;
+      bottom:-40px;
+      width:220px;
+      height:120px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%);
+    }
+
+    .overview-brief-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+      z-index:1;
+    }
+
     .overview-brief-title{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.2;margin:0}
     .overview-brief-sub{margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.9)}
-    .overview-brief-badge{min-height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;font-size:12px;font-weight:800;white-space:nowrap}
-    .overview-alert-list{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px;position:relative;z-index:1}
-    .overview-alert-item{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16)}
-    .overview-alert-icon{width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:none}
+
+    .overview-brief-badge{
+      min-height:34px;
+      padding:0 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);
+      display:inline-flex;
+      align-items:center;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .overview-alert-list{
+      margin:18px 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .overview-alert-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.16);
+    }
+
+    .overview-alert-icon{
+      width:30px;
+      height:30px;
+      border-radius:10px;
+      background:rgba(255,255,255,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+      font-weight:800;
+      flex:none;
+    }
+
     .overview-alert-item strong{display:block;font-size:13px}
     .overview-alert-item span{display:block;margin-top:4px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.88)}
     .overview-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    .overview-kpi-card{background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow-sm);min-height:250px}
+
+    .overview-kpi-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow-sm);
+      min-height:250px;
+    }
+
     .overview-kpi-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
     .overview-kpi-head h3{margin:0;font-size:22px;font-weight:800;color:var(--title);letter-spacing:-.03em}
-    .overview-kpi-badge{min-height:28px;padding:0 10px;border-radius:999px;background:var(--soft-blue);border:1px solid #dbe8f6;color:var(--navy);font-size:11px;font-weight:800;display:inline-flex;align-items:center}
+
+    .overview-kpi-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:var(--soft-blue);
+      border:1px solid #dbe8f6;
+      color:var(--navy);
+      font-size:11px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+    }
+
     .overview-kpi-number{display:flex;align-items:flex-end;gap:8px;margin:4px 0 14px}
     .overview-kpi-number strong{font-size:46px;line-height:1;color:var(--title);letter-spacing:-.04em}
     .overview-kpi-number span{font-size:14px;color:var(--muted);font-weight:800;padding-bottom:6px}
     .overview-kpi-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-    .overview-kpi-mini{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
+
+    .overview-kpi-mini{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 8px;
+      text-align:center;
+    }
+
     .overview-kpi-mini em{display:block;font-style:normal;font-size:11px;font-weight:800;color:#667085}
     .overview-kpi-mini b{display:block;margin-top:6px;font-size:20px;color:var(--title);letter-spacing:-.02em}
     .overview-bottom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    .ov-card{background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);border:1px solid var(--line);padding:18px 16px 14px;min-height:320px;position:relative;border-radius:22px;box-shadow:var(--shadow-sm)}
-    .ov-title{position:relative;z-index:1;width:100%;margin:0 0 16px;min-height:54px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-size:22px;font-weight:800;border-radius:16px;letter-spacing:-.03em;box-shadow:0 10px 24px rgba(18,57,95,.16)}
+
+    .ov-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid var(--line);
+      padding:18px 16px 14px;
+      min-height:320px;
+      position:relative;
+      border-radius:22px;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .ov-title{
+      position:relative;
+      z-index:1;
+      width:100%;
+      margin:0 0 16px;
+      min-height:54px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;
+      font-size:22px;
+      font-weight:800;
+      border-radius:16px;
+      letter-spacing:-.03em;
+      box-shadow:0 10px 24px rgba(18,57,95,.16);
+    }
+
     .ov-chart-box{background:#fff;padding:10px;border-radius:16px;border:1px solid var(--line)}
     .ov-chart{height:180px}
     .ov-donut{height:210px}
-    .overview-progress-card{background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow-sm)}
+
+    .overview-progress-card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow-sm);
+    }
+
     .overview-progress-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
     .overview-progress-head h3{margin:0;font-size:22px;font-weight:800;color:var(--title);letter-spacing:-.03em}
     .overview-progress-bar-wrap{display:grid;gap:14px}
     .overview-progress-row{display:grid;grid-template-columns:140px 1fr 64px;gap:12px;align-items:center}
     .overview-progress-label{font-size:13px;font-weight:800;color:#44556a}
-    .overview-progress-track{height:16px;border-radius:999px;background:#edf3fa;overflow:hidden;border:1px solid #e1e9f2}
+
+    .overview-progress-track{
+      height:16px;
+      border-radius:999px;
+      background:#edf3fa;
+      overflow:hidden;
+      border:1px solid #e1e9f2;
+    }
+
     .overview-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--navy),var(--blue-2))}
     .overview-progress-fill.green{background:linear-gradient(90deg,#159768,#59c98f)}
     .overview-progress-fill.amber{background:linear-gradient(90deg,#d8991b,#f2bf58)}
     .overview-progress-value{text-align:right;font-size:13px;font-weight:800;color:var(--title)}
     .trace-table,.table table{min-width:100%}
 
-    @media(max-width:1320px){.trace-wrap,.form-grid,.auth-layout,.overview-bottom-grid,.overview-hero,.overview-kpi-grid{grid-template-columns:1fr}}
-    @media(max-width:860px){.top{padding:12px 14px}.shell{padding:12px}.trace-search{grid-template-columns:1fr}.trace-tools{width:100%}.trace-tools .btn{flex:1}.auth-metrics,.auth-grid{grid-template-columns:1fr}.auth-footer{flex-direction:column;align-items:stretch}}
-    @media(max-width:640px){.brand h1{font-size:20px}.auth-showcase h2{font-size:24px}.trace-head{flex-direction:column}.tabs{gap:6px}.tab{padding:10px 12px;font-size:13px}.bar{padding:12px}.auth-card,.auth-showcase,.card,.ov-card{padding:16px}.ov-title{font-size:18px;min-height:46px}}
+    @media(max-width:1320px){
+      .trace-wrap,.form-grid,.auth-layout,.overview-bottom-grid,.overview-hero,.overview-kpi-grid{grid-template-columns:1fr}
+    }
+
+    @media(max-width:860px){
+      .top{padding:12px 14px}
+      .shell{padding:12px}
+      .trace-search{grid-template-columns:1fr}
+      .trace-tools{width:100%}
+      .trace-tools .btn{flex:1}
+      .auth-metrics,.auth-grid{grid-template-columns:1fr}
+      .auth-footer{flex-direction:column;align-items:stretch}
+    }
+
+    @media(max-width:640px){
+      .brand h1{font-size:20px}
+      .auth-showcase h2{font-size:24px}
+      .trace-head{flex-direction:column}
+      .tabs{gap:6px}
+      .tab{padding:10px 12px;font-size:13px}
+      .bar{padding:12px}
+      .auth-card,.auth-showcase,.card,.ov-card{padding:16px}
+      .ov-title{font-size:18px;min-height:46px}
+    }
   </style>
 </head>
 <body>
@@ -291,36 +857,39 @@
         <div class="auth-eyebrow">품질관리 시스템</div>
         <h2>회원가입 · 로그인 후<br>대시보드 접근</h2>
         <p>인증된 사용자만 품질관리 대시보드에 접근할 수 있도록 구성했습니다. 회원가입 완료 후 바로 로그인할 수 있습니다.</p>
-        
+
         <div class="auth-metrics">
           <div class="auth-metric"><div>접근 방식</div><strong>회원 전용</strong></div>
           <div class="auth-metric"><div>인증 구조</div><strong>세션 기반</strong></div>
           <div class="auth-metric"><div>진입 흐름</div><strong>회원가입 → 로그인</strong></div>
         </div>
-        
+
         <div class="auth-list">
           <div class="auth-item">
-          <div class="auth-icon">📊</div>
-       <div>     
-          <strong>대시보드 보호</strong>
-          <span>비로그인 상태에서는 인증 화면만 노출됩니다.</span>
-      </div>
-     </div>    
-          <div class="auth-item">
-          <div class="auth-icon">🛡️</div>
-          <div>
-          <strong>권한 분리</strong>
-          <span>관리자만 전체삭제 및 회원 관리 기능을 사용할 수 있습니다.</span>
-       </div>
-      </div>      
-          <div class="auth-item">
-          <div class="auth-icon">⚡</div>  
-          <div> 
-            <strong>즉시 사용 가능</strong>
-            <span>회원가입 완료 후 별도 승인 없이 바로 로그인할 수 있습니다.</span>
+            <div class="auth-icon">📊</div>
+            <div>
+              <strong>대시보드 보호</strong>
+              <span>비로그인 상태에서는 인증 화면만 노출됩니다.</span>
             </div>
-           </div> 
-         </div>
+          </div>
+
+          <div class="auth-item">
+            <div class="auth-icon">🛡️</div>
+            <div>
+              <strong>권한 분리</strong>
+              <span>관리자만 전체삭제 및 회원 관리 기능을 사용할 수 있습니다.</span>
+            </div>
+          </div>
+
+          <div class="auth-item">
+            <div class="auth-icon">⚡</div>
+            <div>
+              <strong>즉시 사용 가능</strong>
+              <span>회원가입 완료 후 별도 승인 없이 바로 로그인할 수 있습니다.</span>
+            </div>
+          </div>
+        </div>
+
         <div class="auth-social-proof">
           <span class="auth-pill">MES Style</span>
           <span class="auth-pill">Role-based Access</span>
@@ -333,38 +902,46 @@
           <div class="title">사용자 인증</div>
           <div class="badge" id="authModeBadge">로그인</div>
         </div>
+
         <div class="auth-tabs">
           <button class="auth-tab active" id="showLoginBtn" onclick="switchAuthMode('login')">로그인</button>
           <button class="auth-tab" id="showSignupBtn" onclick="switchAuthMode('signup')">회원가입</button>
         </div>
+
         <div class="auth-title" id="authTitle">다시 오신 것을 환영합니다</div>
-        <div class="auth-subtitle" id="authSubtitle">승인된 계정으로 로그인하면 품질 대시보드가 열립니다.</div>
+        <div class="auth-subtitle" id="authSubtitle">회원 계정으로 로그인하면 품질 대시보드가 열립니다.</div>
         <div id="authError" class="auth-error"></div>
+
         <div class="auth-grid">
           <div class="auth-field full hidden" id="authNameWrap">
             <label>이름</label>
             <input id="authName" class="auth-input" placeholder="홍길동" />
             <div class="auth-hint">회원가입 시 표시 이름으로 사용됩니다.</div>
           </div>
+
           <div class="auth-field full">
             <label>이메일</label>
             <input id="authEmail" type="email" class="auth-input" placeholder="example@namochemical.com" />
           </div>
+
           <div class="auth-field full">
             <label>비밀번호</label>
             <input id="authPassword" type="password" class="auth-input" placeholder="비밀번호 입력" />
           </div>
+
           <div class="auth-field full hidden" id="authPasswordConfirmWrap">
             <label>비밀번호 확인</label>
             <input id="authPasswordConfirm" type="password" class="auth-input" placeholder="비밀번호 다시 입력" />
           </div>
+
           <div class="auth-field full hidden" id="authCompanyWrap">
             <label>부서 / 팀</label>
             <input id="authCompany" class="auth-input" placeholder="예: 품질부" />
           </div>
         </div>
+
         <div class="auth-footer">
-          <small id="authFooterText">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.</small>
+          <small id="authFooterText">회원이 아니라면 회원가입 탭에서 계정을 생성하세요.</small>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <button class="btn b1" id="authSubmitBtn" onclick="submitAuth()">로그인</button>
           </div>
@@ -380,6 +957,7 @@
           <img src="logo.png" alt="Namochemical" style="height:36px;display:block">
         </a>
       </div>
+
       <div class="top-right">
         <button type="button" class="status-pill" id="userBadge" onclick="openMyProfileModal()">사용자 확인 중…</button>
         <button class="btn b2" onclick="logoutUser()">로그아웃</button>
@@ -433,6 +1011,7 @@
                   </div>
                   <div class="overview-brief-badge">LIVE BOARD</div>
                 </div>
+
                 <ul class="overview-alert-list">
                   <li class="overview-alert-item"><div class="overview-alert-icon">!</div><div><strong>수입검사 모니터링</strong><span>월간 검사량과 합격/불합격 추이를 즉시 확인합니다.</span></div></li>
                   <li class="overview-alert-item"><div class="overview-alert-icon">✓</div><div><strong>공정 안정성 확인</strong><span>공정검사 판정 비율과 월별 변동을 직관적으로 보여줍니다.</span></div></li>
@@ -498,33 +1077,32 @@
               </div>
 
               <section class="overview-progress-card">
-               <div class="overview-progress-head">
-                 <h3>공지사항</h3>
-                    <div class="badge">NOTICE</div>
+                <div class="overview-progress-head">
+                  <h3>공지사항</h3>
+                  <div class="badge">NOTICE</div>
                 </div>
 
-                 <div class="upgrade-list">
+                <div class="upgrade-list">
                   <div class="upgrade-item">
                     <div class="upgrade-date">2026-04-13</div>
-                      <div class="upgrade-text">회원가입 후 일반회원은 자동 승인되어 바로 로그인할 수 있습니다.</div>
-                 </div>
+                    <div class="upgrade-text">회원가입 후 일반회원은 자동 승인되어 바로 로그인할 수 있습니다.</div>
+                  </div>
 
-                 <div class="upgrade-item">
-                  <div class="upgrade-date">2026-04-13</div>
+                  <div class="upgrade-item">
+                    <div class="upgrade-date">2026-04-13</div>
                     <div class="upgrade-text">일반회원 화면에서는 로그인 관련 이력이 표시되지 않도록 변경되었습니다.</div>
-                 </div>
+                  </div>
 
-           <div class="upgrade-item">
-            <div class="upgrade-date">2026-04-13</div>
-            <div class="upgrade-text">문의사항은 관리자에게 전달해 주세요.</div>
-          </div>
-         </div>
-     </section>
+                  <div class="upgrade-item">
+                    <div class="upgrade-date">2026-04-13</div>
+                    <div class="upgrade-text">문의사항은 관리자에게 전달해 주세요.</div>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </div>
-
-        <div id="panel-iqc" class="panel">
+                <div id="panel-iqc" class="panel">
           <div class="card">
             <div class="head"><div class="title">입고검사 IQC</div><button class="btn b1" onclick="openRegisterModal('iqc')">등록</button></div>
             <div class="table-box table"><table><thead><tr><th>검사일</th><th>LOT No</th><th>업체명</th><th>원료명</th><th>검사자</th><th>검사수량</th><th>불합격</th><th>불량률</th><th>판정</th><th>관리</th></tr></thead><tbody id="iqcBody"></tbody></table></div>
@@ -550,6 +1128,7 @@
             <div class="head"><div style="display:flex;align-items:center;gap:10px"><div class="title">공급업체 목록 관리</div><div class="badge" id="supplierCount">0개</div></div><button class="btn b1" onclick="openSupplierModal()">작성</button></div>
             <div class="table"><table><thead><tr><th>#</th><th>공급업체명</th><th>담당자</th><th>연락처</th><th>카테고리</th><th>상태</th><th>관리</th></tr></thead><tbody id="supplierMasterBody"></tbody></table></div>
           </div>
+
           <div class="card" style="margin-top:14px">
             <div class="head"><div class="title">생산 작업일지</div><button class="btn b1" onclick="openWorklogModal()">작성</button></div>
             <div class="table"><table><thead><tr><th>생산일자</th><th>완제품 LOT No.</th><th>투입순서</th><th>원자재명</th><th>공급업체</th><th>투입량 (kg)</th><th>투입비율 (%)</th><th>LOT No.</th><th>투입시간</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead><tbody id="worklogBody"></tbody></table></div>
@@ -732,7 +1311,6 @@
         <div class="field">
           <label>상태</label>
           <select id="userEditStatus">
-            <option value="PENDING">승인대기</option>
             <option value="APPROVED">승인완료</option>
             <option value="REJECTED">반려</option>
           </select>
@@ -744,10 +1322,10 @@
       </div>
     </div>
   </div>
-    <div id="myProfileModal" class="modal-bg">
+
+  <div id="myProfileModal" class="modal-bg">
     <div class="modal">
       <h3>내 정보 수정</h3>
-
       <div class="form-grid">
         <div class="field">
           <label>이름</label>
@@ -770,8 +1348,9 @@
             <option value="staff">사원</option>
             <option value="assistant_manager">대리</option>
             <option value="manager">과장</option>
+            <option value="deputy_general_manager">차장</option>
             <option value="general_manager">부장</option>
-            <option value="executive">임원</option> 
+            <option value="executive">임원</option>
           </select>
         </div>
 
@@ -800,7 +1379,7 @@
     const state = {
       user: { id:'', name:'', email:'', department:'', title:'staff', role:'guest', authenticated:false },
       db: { suppliers:[], iqc:[], ipqc:[], oqc:[], worklog:[], traceability:[], changeLogs:[], nonconform:[] },
-      admin: { pendingUsers: [], users: [] },
+      admin: { users: [] },
       iqcMonthlyChart: null,
       ipqcMonthlyChart: null,
       oqcMonthlyChart: null,
@@ -862,10 +1441,9 @@
     }
 
     function badgeState(t) {
-      return t === '불합격'
-        if (t === '불합격') return '<span class="state ng">불합격</span>';
-        if (t === '합격') return '<span class="state ok">합격</span>';  
-        return '<span class="state hold">미확인</span>';
+      if (t === '불합격') return '<span class="state ng">불합격</span>';
+      if (t === '합격') return '<span class="state ok">합격</span>';
+      return '<span class="state hold">미확인</span>';
     }
 
     function calcRate(fail, qty) {
@@ -966,12 +1544,12 @@
       $('authModeBadge').textContent = isSignup ? '회원가입' : '로그인';
       $('authTitle').textContent = isSignup ? '품질 대시보드 계정 신청' : '다시 오신 것을 환영합니다';
       $('authSubtitle').textContent = isSignup
-        ? '회원가입 신청 후 관리자 승인 완료 시 대시보드에 접근할 수 있습니다.'
-        : '승인된 계정으로 로그인하면 품질 대시보드가 열립니다.';
-      $('authSubmitBtn').textContent = isSignup ? '회원가입 신청' : '로그인';
+        ? '회원가입 후 바로 로그인할 수 있습니다.'
+        : '회원 계정으로 로그인하면 품질 대시보드가 열립니다.';
+      $('authSubmitBtn').textContent = isSignup ? '회원가입' : '로그인';
       $('authFooterText').textContent = isSignup
-        ? '회원가입 후 자동 로그인되지 않으며, 관리자 승인 후 로그인 가능합니다.'
-        : '회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려주세요.';
+        ? '회원가입 완료 후 바로 로그인 가능합니다.'
+        : '회원이 아니라면 회원가입 탭에서 계정을 생성하세요.';
       $('authNameWrap').classList.toggle('hidden', !isSignup);
       $('authPasswordConfirmWrap').classList.toggle('hidden', !isSignup);
       $('authCompanyWrap').classList.toggle('hidden', !isSignup);
@@ -1062,6 +1640,8 @@
           await api.post('/api/auth/signup', { name, email, password, department });
           showToast('회원가입이 완료되었습니다. 바로 로그인 가능합니다.');
           switchAuthMode('login');
+          $('authPassword').value = '';
+          $('authPasswordConfirm').value = '';
           return;
         }
 
@@ -1085,8 +1665,9 @@
       try {
         await api.post('/api/auth/logout', {});
       } catch (_) {}
+
       state.user = { id:'', name:'', email:'', department:'', title:'staff', role:'guest', authenticated:false };
-      state.admin.pendingUsers = [];
+      state.admin.users = [];
       closeDashboard();
       switchAuthMode('login');
       showToast('로그아웃되었습니다.');
@@ -1104,9 +1685,11 @@
       for (let i = 2025; i <= 2035; i++) {
         y.innerHTML += `<option value="${i}">${i}년</option>`;
       }
+
       for (let i = 1; i <= 12; i++) {
         m.innerHTML += `<option value="${i}">${i}월</option>`;
       }
+
       d.innerHTML = '<option value="all">전체</option>';
       for (let i = 1; i <= 31; i++) {
         d.innerHTML += `<option value="${i}">${i}일</option>`;
@@ -1200,8 +1783,7 @@
       const fail = total - pass;
       return { total, pass, fail };
     }
-
-    function renderSimpleBarChart(canvasId, chartRefName, labels, data, color) {
+        function renderSimpleBarChart(canvasId, chartRefName, labels, data, color) {
       destroyChartSafe(chartRefName);
       state[chartRefName] = new Chart($(canvasId), {
         type:'bar',
@@ -1490,16 +2072,18 @@
       const keyword = normalizeKeyword($('ncKeyword')?.value || '');
       const status = toText($('ncStatusFilter')?.value || '');
 
-      const rows = sliceForUI((state.db.nonconform || []).filter(r => {
+      const filteredRows = (state.db.nonconform || []).filter(r => {
         const okStatus = !status || toText(r.status) === status;
         const bag = [r.date, r.type, r.lot, r.item, r.issue, r.cause, r.action, r.owner, r.status]
           .map(normalizeKeyword)
           .join(' ');
         const okKeyword = !keyword || bag.includes(keyword);
         return okStatus && okKeyword;
-      }));
+      });
 
-      $('ncCount').textContent = `${(rows || []).length}건`;
+      const rows = sliceForUI(filteredRows);
+
+      $('ncCount').textContent = `${filteredRows.length}건`;
 
       if (!rows.length) {
         renderEmptyRow('nonconformBody', 10, '등록된 부적합 데이터가 없습니다.');
@@ -1627,7 +2211,6 @@
       const s = String(status || '').toUpperCase();
       if (s === 'APPROVED') return '<span class="state ok">승인완료</span>';
       if (s === 'REJECTED') return '<span class="state ng">반려</span>';
-      if (s === 'PENDING') return '<span class="state hold">승인대기</span>';
       return `<span class="state hold">${escapeHtml(status || '-')}</span>`;
     }
 
@@ -1651,10 +2234,8 @@
           <td>${renderUserStatus(user.status)}</td>
           <td>${escapeHtml(user.createdAt || '-')}</td>
           <td>
-            <button class="btn b3" style="height:32px;padding:0 10px" onclick="approveUser('${user.id}')">승인</button>
-            <button class="btn b4" style="height:32px;padding:0 10px" onclick="rejectUser('${user.id}')">반려</button>
             <button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('users', '${user.id}')">수정</button>
-            <button class="btn b2" style="height:32px;padding:0 10px" onclick="deleteUser('${user.id}', '${user.name || ''}')">삭제</button>
+            <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteUser('${user.id}', '${user.name || ''}')">삭제</button>
           </td>
         </tr>
       `).join('');
@@ -1671,30 +2252,6 @@
       } catch (err) {
         console.error(err);
         showToast(`전체 회원 조회 실패: ${err.message}`);
-      }
-    }
-
-    async function approveUser(id) {
-      if (!confirm('이 회원을 승인하시겠습니까?')) return;
-      try {
-        const result = await api.post(`/api/admin/users/${id}/approve`, {});
-        showToast(result.message || '회원 승인이 완료되었습니다.');
-        await loadAllUsers();
-      } catch (err) {
-        console.error(err);
-        showToast(`회원 승인 실패: ${err.message}`);
-      }
-    }
-
-    async function rejectUser(id) {
-      if (!confirm('이 회원을 반려하시겠습니까?')) return;
-      try {
-        const result = await api.post(`/api/admin/users/${id}/reject`, {});
-        showToast(result.message || '회원 반려가 완료되었습니다.');
-        await loadAllUsers();
-      } catch (err) {
-        console.error(err);
-        showToast(`회원 반려 실패: ${err.message}`);
       }
     }
 
@@ -2244,7 +2801,7 @@
       $('userEditDepartment').value = user.department || '';
       $('userEditTitle').value = user.title || 'staff';
       $('userEditRole').value = user.role || 'user';
-      $('userEditStatus').value = user.status || 'PENDING';
+      $('userEditStatus').value = user.status || 'APPROVED';
       $('userModal').classList.add('show');
     }
 
@@ -2535,7 +3092,7 @@
       switchAuthMode('login');
       closeMyProfileModal();
 
-      $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`;
+      $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">관리자 로그인 후 회원 목록이 표시됩니다.</td></tr>`;
 
       document.addEventListener('input', e => {
         if (['reg_qty','reg_fail'].includes(e.target.id)) updateRegisterRate();
