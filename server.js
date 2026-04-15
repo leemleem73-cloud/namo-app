@@ -913,12 +913,22 @@ app.post('/api/suppliers', requireLogin, async (req, res) => {
 
 app.put('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
+    const target = await get(`SELECT * FROM suppliers WHERE id = ?`, [req.params.id]);
+    if (!target) {
+      return res.status(404).json({ error: '공급업체를 찾을 수 없습니다.' });
+    }
+
+    const name = String(req.body.name || '').trim();
+    if (!name) {
+      return res.status(400).json({ error: '공급업체명을 입력하세요.' });
+    }
+
     await run(
       `UPDATE suppliers
        SET name = ?, manager = ?, phone = ?, category = ?, status = ?, updatedAt = ?
        WHERE id = ?`,
       [
-        String(req.body.name || '').trim(),
+        name,
         String(req.body.manager || '').trim(),
         String(req.body.phone || '').trim(),
         String(req.body.category || '').trim(),
@@ -927,6 +937,7 @@ app.put('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (req, 
         req.params.id
       ]
     );
+
     await logChange(`공급업체 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
