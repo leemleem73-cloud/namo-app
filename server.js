@@ -127,7 +127,7 @@ db.serialize(() => {
         db.run(
           `INSERT INTO users (name, email, password, department, role, status)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          ['관리자', 'admin@namo.com', hashed, '관리부', 'admin', 'APPROVED']
+          ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'APPROVED']
         );
       } catch (hashErr) {
         console.error('기본 관리자 생성 실패:', hashErr.message);
