@@ -9,6 +9,9 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 
+console.log("이 파일 실행중:", __filename);
+console.log("현재 DB 경로 확인:", path.join(__dirname, 'data', 'namochemical.db'));
+
 try {
   require('dotenv').config();
 } catch (e) {
@@ -50,8 +53,7 @@ const adminLimiter = rateLimit({
   max: 30
 });
 
-const dbPath = path.join(__dirname, 'quality.db');
-
+const dbPath = path.join(__dirname, 'data', 'namochemical.db');
 try {
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
