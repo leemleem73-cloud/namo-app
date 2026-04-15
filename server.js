@@ -325,34 +325,34 @@ async function initDb() {
   await run(`ALTER TABLE users ADD COLUMN title TEXT NOT NULL DEFAULT 'staff'`).catch(() => {});
 
   const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
+
+if (!admin) {
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
 
-  if (!admin) {
-    await run(
-      `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        `user_${Date.now()}`,
-        '관리자',
-        ADMIN_EMAIL,
-        passwordHash,
-        '관리팀',
-        'admin',
-        'admin',
-        'APPROVED',
-        nowDateTime()
-      ]
-    );
-    await logChange('기본 관리자 계정 생성');
-  } else {
-    await run(
-      `UPDATE users
-       SET passwordHash = ?, title = 'admin', role = 'admin', status = 'APPROVED'
-       WHERE email = ?`,
-      [passwordHash, ADMIN_EMAIL]
-    );
-    await logChange('기본 관리자 계정 재설정');
-  }
+  await run(
+    `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      makeId('user'),
+      '관리자',
+      ADMIN_EMAIL,
+      passwordHash,
+      '관리팀',
+      'admin',
+      'admin',
+      'APPROVED',
+      nowDateTime()
+    ]
+  );
+  await logChange('기본 관리자 계정 생성');
+} else {
+  await run(
+    `UPDATE users
+     SET title = 'admin', role = 'admin', status = 'APPROVED'
+     WHERE email = ?`,
+    [ADMIN_EMAIL]
+  );
+}
 
   const noticeCount = await get(`SELECT COUNT(*) AS count FROM notices`);
 
