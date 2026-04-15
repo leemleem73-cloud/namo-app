@@ -863,8 +863,9 @@
 
     function badgeState(t) {
       return t === '불합격'
-        ? '<span class="state ng">불합격</span>'
-        : '<span class="state ok">합격</span>';
+        if (t === '불합격') return '<span class="state ng">불합격</span>';
+        if (t === '합격') return '<span class="state ok">합격</span>';  
+        return '<span class="state hold">미확인</span>';
     }
 
     function calcRate(fail, qty) {
