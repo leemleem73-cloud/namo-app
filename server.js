@@ -883,7 +883,7 @@ app.get('/api/suppliers', requireLogin, async (req, res) => {
 app.post('/api/suppliers', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = `sup_${Date.now()}`;
+    const id = makeId('sup');
     const payload = {
       name: String(req.body.name || '').trim(),
       manager: String(req.body.manager || '').trim(),
