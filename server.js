@@ -816,21 +816,16 @@ app.put('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req
   }
 });
 
-app.post('/api/admin/users/:id/approve', requireAdmin, blockWhenServerLoading, async (req, res) => {
-  try {
-    const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
-    }
+app.post('/api/admin/users/:id/approve', requireAdmin, (req, res) => {
+  return res.status(403).json({
+    error: '자동 승인 구조에서는 수동 승인 기능을 사용하지 않습니다.'
+  });
+});
 
-    await run(`UPDATE users SET status = 'APPROVED' WHERE id = ?`, [req.params.id]);
-    await logChange(`회원 승인: ${target.name} (${target.email})`, req.session.user.id);
-
-    res.json({ message: '회원 승인이 완료되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '회원 승인 실패' });
-  }
+app.post('/api/admin/users/:id/reject', requireAdmin, (req, res) => {
+  return res.status(403).json({
+    error: '자동 승인 구조에서는 반려 기능을 사용하지 않습니다.'
+  });
 });
 
 app.post('/api/admin/users/:id/reject', requireAdmin, blockWhenServerLoading, async (req, res) => {
