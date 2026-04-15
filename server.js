@@ -28,7 +28,7 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-const DB_PATH = path.join(__dirname, 'quality.db');
+const DB_PATH = path.join(DATA_DIR, 'namochemical.db');
 
 console.log('----------------------------------');
 console.log('DATA_DIR:', DATA_DIR);
