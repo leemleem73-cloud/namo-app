@@ -29,6 +29,7 @@ app.use(
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
       httpOnly: true,
       sameSite: process.env.RENDER ? 'none' : 'lax',
@@ -241,7 +242,6 @@ app.post('/api/auth/logout', requireLogin, (req, res) => {
 app.post('/api/auth/reset-password', (req, res) => {
   res.status(403).json({ error: '비활성화됨' });
 });
-
 // =============================
 // 관리자
 // =============================
