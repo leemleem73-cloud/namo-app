@@ -435,7 +435,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 
     const passwordHash2 = await bcrypt.hash(password, 10);
-    const id = `user_${Date.now()}`;
+    const id = makeId('user');
 
     await run(
       `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
