@@ -226,7 +226,12 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
         status: user.status
       };
 
-      res.json({ ok: true, user: req.session.user });
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          return res.status(500).json({ error: '세션 저장 실패' });
+        }
+        res.json({ ok: true, user: req.session.user });
+      });
     }
   );
 });
