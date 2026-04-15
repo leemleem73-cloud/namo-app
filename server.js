@@ -16,6 +16,7 @@ try {
 }
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'namo-secret';
 
 app.set('trust proxy', 1);
@@ -49,9 +50,6 @@ const adminLimiter = rateLimit({
   max: 30
 });
 
-// =============================
-// DB 경로
-// =============================
 const dbPath = path.join(__dirname, 'quality.db');
 
 try {
@@ -72,14 +70,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
   console.log('DB 연결 성공:', dbPath);
 });
 
-// =============================
-// 정적 파일
-// =============================
-app.use(express.static(path.join(__dirname, 'public')));
-
-// =============================
-// 공통 함수
-// =============================
 const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
 const safeText = (v, m = 100) => String(v || '').trim().slice(0, m);
 const safeNumber = (v) => Number(v) || 0;
@@ -99,9 +89,6 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// =============================
-// DB 초기화
-// =============================
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -138,29 +125,21 @@ db.serialize(() => {
       try {
         const hashed = await bcrypt.hash('admin1234', 10);
         db.run(
-          `
-          INSERT INTO users (name, email, password, department, role, status)
-          VALUES (?, ?, ?, ?, ?, ?)
-          `,
-          ['관리자', 'admin@namo.com', hashed, '관리부', 'admin', 'APPROVED'],
-          (insertErr) => {
-            if (insertErr) {
-              console.error('기본 관리자 생성 실패:', insertErr.message);
-            } else {
-              console.log('기본 관리자 계정 생성 완료: admin@namo.com / admin1234');
-            }
-          }
+          `INSERT INTO users (name, email, password, department, role, status)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          ['관리자', 'admin@namo.com', hashed, '관리부', 'admin', 'APPROVED']
         );
       } catch (hashErr) {
-        console.error('기본 관리자 비밀번호 해시 실패:', hashErr.message);
+        console.error('기본 관리자 생성 실패:', hashErr.message);
       }
     }
   });
 });
 
-// =============================
-// 인증
-// =============================
+// --------------------
+// API 먼저
+// --------------------
+
 app.post('/api/auth/signup', authLimiter, async (req, res) => {
   try {
     const { name, email, password, department } = req.body;
@@ -176,18 +155,9 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     db.run(
-      `
-      INSERT INTO users (name, email, password, department, role, status)
-      VALUES (?, ?, ?, ?, ?, ?)
-      `,
-      [
-        safeText(name),
-        normalizeEmail(email),
-        hashed,
-        safeText(department),
-        'user',
-        'APPROVED'
-      ],
+      `INSERT INTO users (name, email, password, department, role, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [safeText(name), normalizeEmail(email), hashed, safeText(department), 'user', 'APPROVED'],
       function (err) {
         if (err) {
           if (err.message && err.message.includes('UNIQUE')) {
@@ -195,7 +165,6 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
           }
           return res.status(500).json({ error: err.message });
         }
-
         res.json({ ok: true, id: this.lastID });
       }
     );
@@ -227,9 +196,7 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
       };
 
       req.session.save((saveErr) => {
-        if (saveErr) {
-          return res.status(500).json({ error: '세션 저장 실패' });
-        }
+        if (saveErr) return res.status(500).json({ error: '세션 저장 실패' });
         res.json({ ok: true, user: req.session.user });
       });
     }
@@ -237,26 +204,26 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
 });
 
 app.get('/api/auth/me', (req, res) => {
-  res.json({ user: req.session.user || null });
+  if (!req.session.user) {
+    return res.status(401).json({ error: '로그인 필요' });
+  }
+  res.json(req.session.user);
 });
 
-app.post('/api/auth/logout', requireLogin, (req, res) => {
+app.post('/api/auth/logout', (req, res) => {
+  if (!req.session) return res.json({ ok: true });
   req.session.destroy(() => res.json({ ok: true }));
 });
 
 app.post('/api/auth/reset-password', (req, res) => {
   res.status(403).json({ error: '비활성화됨' });
 });
-// =============================
-// 관리자
-// =============================
+
 app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   db.all(
-    `
-    SELECT id, name, email, department, role, status
-    FROM users
-    ORDER BY id DESC
-    `,
+    `SELECT id, name, email, department, role, status
+     FROM users
+     ORDER BY id DESC`,
     [],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -265,9 +232,10 @@ app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   );
 });
 
-// =============================
-// IQC
-// =============================
+app.post('/api/admin/delete-all', requireAdmin, (req, res) => {
+  res.json({ ok: true });
+});
+
 app.get('/api/iqc', requireLogin, (req, res) => {
   db.all(`SELECT * FROM iqc ORDER BY date DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -279,10 +247,8 @@ app.post('/api/iqc', requireLogin, (req, res) => {
   const d = req.body;
 
   db.run(
-    `
-    INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `,
+    `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('iqc'),
       safeText(d.date),
@@ -307,26 +273,29 @@ app.delete('/api/iqc/:id', requireAdmin, (req, res) => {
   });
 });
 
-// =============================
-// 헬스체크
-// =============================
+// 프론트가 호출하는 나머지 API 임시 대응
+app.get('/api/suppliers', requireLogin, (req, res) => res.json([]));
+app.get('/api/ipqc', requireLogin, (req, res) => res.json([]));
+app.get('/api/oqc', requireLogin, (req, res) => res.json([]));
+app.get('/api/worklog', requireLogin, (req, res) => res.json([]));
+app.get('/api/change-logs', requireLogin, (req, res) => res.json([]));
+app.get('/api/nonconform', requireLogin, (req, res) => res.json([]));
+
 app.get('/health', (req, res) => {
   res.json({ ok: true });
 });
 
-// =============================
-// SPA fallback
-// =============================
-app.use(express.static(__dirname));
+// --------------------
+// 정적 파일
+// --------------------
+app.use(express.static(path.join(__dirname, 'public')));
 
+// --------------------
+// fallback
+// --------------------
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// =============================
-// 서버 실행
-// =============================
-const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`서버 실행: ${PORT}`);
