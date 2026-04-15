@@ -719,10 +719,9 @@ app.post('/api/admin/bootstrap-reset', async (req, res) => {
     await logChange(`관리자 부트스트랩 복구: ${email}`);
 
     res.json({
-      message: '관리자 계정이 복구되었습니다.',
-      email,
-      password
-    });
+  message: '관리자 계정이 복구되었습니다.',
+  email
+});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '관리자 복구 중 오류가 발생했습니다.' });
