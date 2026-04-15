@@ -1626,7 +1626,7 @@
       const s = String(status || '').toUpperCase();
       if (s === 'APPROVED') return '<span class="state ok">승인완료</span>';
       if (s === 'REJECTED') return '<span class="state ng">반려</span>';
-      if (s === 'APPROVED') return '<span class="state hold">승인대기</span>';
+      if (s === 'PENDING') return '<span class="state hold">승인대기</span>';
       return `<span class="state hold">${escapeHtml(status || '-')}</span>`;
     }
 
