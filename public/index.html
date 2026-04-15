@@ -329,8 +329,13 @@
         </a>
       </div>
       <div class="top-right">
-        <div class="status-pill" id="userBadge">사용자 확인 중…</div>
-        <button class="btn b2" onclick="logoutUser()">로그아웃</button>
+        <div class="status-pill" id="userBadge" onclick="toggleUserMenu(event)" style="cursor:pointer; position:relative;">
+  사용자 확인 중…
+</div>
+      <div id="userDropdown" style="display:none; position:fixed; z-index:20000; background:#fff; border:1px solid #d6e1ed; border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.12); padding:8px; min-width:160px;">
+      <button class="btn b2" style="width:100%; justify-content:flex-start;" onclick="openChangePasswordModal()">비밀번호 변경</button>
+      <button class="btn b2" style="width:100%; justify-content:flex-start;" onclick="logoutUser()">로그아웃</button>
+      </div>
         <div class="live">운영 중</div>
         <div class="top-chip" id="clock"></div>
       </div>
