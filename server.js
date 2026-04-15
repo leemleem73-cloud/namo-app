@@ -487,14 +487,17 @@ app.post('/api/auth/login', async (req, res) => {
     await logChange(`로그인: ${user.name} (${user.email})`, user.id);
 
     res.json({
-      message: '로그인 완료',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: normalizeRole(user.role)
-      }
-    });
+  message: '로그인 완료',
+  user: {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    department: user.department,
+    title: user.title,
+    role: normalizeRole(user.role),
+    status: user.status
+  }
+});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '로그인 처리 중 오류가 발생했습니다.' });
