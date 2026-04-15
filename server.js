@@ -13,12 +13,12 @@ const app = express();
 const PORT = Number(process.env.PORT || 3000);
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'fallback-secret';
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@namochemical.com').trim().toLowerCase();
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@namochemical.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin1234!';
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.naver.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
-const SMTP_SECURE = String(process.env.SMTP_SECURE || 'true') === 'true';
+const SMTP_SECURE = String(process.env.SMTP_SECURE) === 'true';
 const EMAIL_USER = process.env.EMAIL_USER || '';
 const EMAIL_PASS = process.env.EMAIL_PASS || '';
 
@@ -69,7 +69,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     maxAge: 1000 * 60 * 60 * 8
   }
 }));
@@ -121,10 +121,6 @@ function todayDate() {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
-}
-
-function makeId(prefix) {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function normalizeRole(role) {
@@ -315,6 +311,7 @@ async function initDb() {
     )
   `);
 
+  /* 공지사항 테이블 추가 */
   await run(`
     CREATE TABLE IF NOT EXISTS notices (
       id TEXT PRIMARY KEY,
@@ -328,16 +325,15 @@ async function initDb() {
 
   await run(`ALTER TABLE users ADD COLUMN title TEXT NOT NULL DEFAULT 'staff'`).catch(() => {});
 
-  const admin = await get(`SELECT * FROM users WHERE lower(email) = ?`, [ADMIN_EMAIL]);
+  const admin = await get(`SELECT * FROM users WHERE email = ?`, [ADMIN_EMAIL]);
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
 
   if (!admin) {
-    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-
     await run(
       `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        makeId('user'),
+        `user_${Date.now()}`,
         '관리자',
         ADMIN_EMAIL,
         passwordHash,
@@ -352,12 +348,14 @@ async function initDb() {
   } else {
     await run(
       `UPDATE users
-       SET title = 'admin', role = 'admin', status = 'APPROVED'
-       WHERE lower(email) = ?`,
-      [ADMIN_EMAIL]
+       SET passwordHash = ?, title = 'admin', role = 'admin', status = 'APPROVED'
+       WHERE email = ?`,
+      [passwordHash, ADMIN_EMAIL]
     );
+    await logChange('기본 관리자 계정 재설정');
   }
 
+  /* 기본 공지 생성 */
   const noticeCount = await get(`SELECT COUNT(*) AS count FROM notices`);
 
   if (!noticeCount || noticeCount.count === 0) {
@@ -433,18 +431,18 @@ app.post('/api/auth/signup', async (req, res) => {
       return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
     }
 
-    const exists = await get(`SELECT id FROM users WHERE lower(email) = ?`, [email]);
+    const exists = await get(`SELECT id FROM users WHERE email = ?`, [email]);
     if (exists) {
       return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const id = makeId('user');
+    const passwordHash2 = await bcrypt.hash(password, 10);
+    const id = `user_${Date.now()}`;
 
     await run(
       `INSERT INTO users (id, name, email, passwordHash, department, title, role, status, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, email, passwordHash, department, 'staff', 'user', 'APPROVED', nowDateTime()]
+      [id, name, email, passwordHash2, department, 'staff', 'user', 'APPROVED', nowDateTime()]
     );
 
     await logChange(`회원가입 완료: ${name} (${email})`, id);
@@ -464,7 +462,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: '이메일과 비밀번호를 입력하세요.' });
     }
 
-    const user = await get(`SELECT * FROM users WHERE lower(email) = ?`, [email]);
+    const user = await get(`SELECT * FROM users WHERE email = ?`, [email]);
     if (!user) {
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
     }
@@ -482,32 +480,19 @@ app.post('/api/auth/login', async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      department: user.department,
-      title: user.title,
-      role: normalizeRole(user.role),
-      status: user.status
+      role: normalizeRole(user.role)
     };
 
     await logChange(`로그인: ${user.name} (${user.email})`, user.id);
 
-    req.session.save(err => {
-      if (err) {
-        console.error('Session save failed:', err);
-        return res.status(500).json({ error: '세션 저장 중 오류가 발생했습니다.' });
+    res.json({
+      message: '로그인 완료',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: normalizeRole(user.role)
       }
-
-      return res.json({
-        message: '로그인 완료',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          department: user.department,
-          title: user.title,
-          role: normalizeRole(user.role),
-          status: user.status
-        }
-      });
     });
   } catch (err) {
     console.error(err);
@@ -519,15 +504,8 @@ app.post('/api/auth/logout', requireLogin, async (req, res) => {
   try {
     const user = req.session.user;
     await logChange(`로그아웃: ${user.name} (${user.email})`, user.id);
-
-    req.session.destroy(err => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: '로그아웃 처리 중 오류가 발생했습니다.' });
-      }
-
-      res.clearCookie('connect.sid');
-      return res.json({ message: '로그아웃되었습니다.' });
+    req.session.destroy(() => {
+      res.json({ message: '로그아웃되었습니다.' });
     });
   } catch (err) {
     console.error(err);
@@ -581,6 +559,7 @@ app.get('/api/auth/me', async (req, res) => {
 app.put('/api/auth/me', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
     const userId = req.session.user.id;
+
     const currentUser = await get(`SELECT * FROM users WHERE id = ?`, [userId]);
 
     if (!currentUser) {
@@ -605,7 +584,7 @@ app.put('/api/auth/me', requireLogin, blockWhenServerLoading, async (req, res) =
     }
 
     const exists = await get(
-      `SELECT id FROM users WHERE lower(email) = ? AND id != ?`,
+      `SELECT id FROM users WHERE email = ? AND id != ?`,
       [email, userId]
     );
 
@@ -618,13 +597,13 @@ app.put('/api/auth/me', requireLogin, blockWhenServerLoading, async (req, res) =
         return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
       }
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash3 = await bcrypt.hash(password, 10);
 
       await run(
         `UPDATE users
          SET name = ?, email = ?, department = ?, title = ?, passwordHash = ?
          WHERE id = ?`,
-        [name, email, department, title, passwordHash, userId]
+        [name, email, department, title, passwordHash3, userId]
       );
     } else {
       await run(
@@ -637,10 +616,9 @@ app.put('/api/auth/me', requireLogin, blockWhenServerLoading, async (req, res) =
 
     req.session.user.name = name;
     req.session.user.email = email;
-    req.session.user.department = department;
-    req.session.user.title = title;
 
     await logChange(`내 정보 수정: ${name} (${email})`, userId);
+
     res.json({ message: '내 정보가 저장되었습니다.' });
   } catch (err) {
     console.error(err);
@@ -670,7 +648,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
     const user = await get(
       `SELECT * FROM users
-       WHERE lower(email) = ? AND name = ? AND department = ?`,
+       WHERE email = ? AND name = ? AND department = ?`,
       [email, name, department]
     );
 
@@ -678,14 +656,15 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(404).json({ error: '일치하는 사용자를 찾을 수 없습니다.' });
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash4 = await bcrypt.hash(newPassword, 10);
 
     await run(
       `UPDATE users SET passwordHash = ? WHERE id = ?`,
-      [passwordHash, user.id]
+      [passwordHash4, user.id]
     );
 
     await logChange(`비밀번호 재설정: ${user.name} (${user.email})`, user.id);
+
     res.json({ message: '비밀번호가 재설정되었습니다.' });
   } catch (err) {
     console.error(err);
@@ -693,6 +672,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
+/* 관리자 복구용 임시 API */
 app.post('/api/admin/bootstrap-reset', async (req, res) => {
   try {
     const secret = String(req.body.secret || '').trim();
@@ -705,10 +685,11 @@ app.post('/api/admin/bootstrap-reset', async (req, res) => {
       return res.status(403).json({ error: '복구 인증값이 올바르지 않습니다.' });
     }
 
-    const email = ADMIN_EMAIL;
-    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+    const email = ADMIN_EMAIL.trim().toLowerCase();
+    const password = ADMIN_PASSWORD;
+    const passwordHash5 = await bcrypt.hash(password, 10);
 
-    const existing = await get(`SELECT * FROM users WHERE lower(email) = ?`, [email]);
+    const existing = await get(`SELECT * FROM users WHERE email = ?`, [email]);
 
     if (!existing) {
       await run(
@@ -718,7 +699,7 @@ app.post('/api/admin/bootstrap-reset', async (req, res) => {
           `user_${Date.now()}`,
           '관리자',
           email,
-          passwordHash,
+          passwordHash5,
           '관리팀',
           'admin',
           'admin',
@@ -730,8 +711,8 @@ app.post('/api/admin/bootstrap-reset', async (req, res) => {
       await run(
         `UPDATE users
          SET passwordHash = ?, name = '관리자', department = '관리팀', title = 'admin', role = 'admin', status = 'APPROVED'
-         WHERE lower(email) = ?`,
-        [passwordHash, email]
+         WHERE email = ?`,
+        [passwordHash5, email]
       );
     }
 
@@ -739,7 +720,8 @@ app.post('/api/admin/bootstrap-reset', async (req, res) => {
 
     res.json({
       message: '관리자 계정이 복구되었습니다.',
-      email
+      email,
+      password
     });
   } catch (err) {
     console.error(err);
@@ -747,6 +729,7 @@ app.post('/api/admin/bootstrap-reset', async (req, res) => {
   }
 });
 
+/* admin */
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const rows = await all(
@@ -807,7 +790,7 @@ app.put('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req
     }
 
     const duplicate = await get(
-      `SELECT id FROM users WHERE lower(email) = ? AND id != ?`,
+      `SELECT id FROM users WHERE email = ? AND id != ?`,
       [email, req.params.id]
     );
 
@@ -815,7 +798,7 @@ app.put('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req
       return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
     }
 
-    if (String(target.email || '').toLowerCase() === ADMIN_EMAIL && role !== 'admin') {
+    if (target.email === ADMIN_EMAIL && role !== 'admin') {
       return res.status(400).json({ error: '기본 관리자 계정의 권한은 admin이어야 합니다.' });
     }
 
@@ -834,6 +817,40 @@ app.put('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req
   }
 });
 
+app.post('/api/admin/users/:id/approve', requireAdmin, blockWhenServerLoading, async (req, res) => {
+  try {
+    const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
+    if (!target) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
+
+    await run(`UPDATE users SET status = 'APPROVED' WHERE id = ?`, [req.params.id]);
+    await logChange(`회원 승인: ${target.name} (${target.email})`, req.session.user.id);
+
+    res.json({ message: '회원 승인이 완료되었습니다.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '회원 승인 실패' });
+  }
+});
+
+app.post('/api/admin/users/:id/reject', requireAdmin, blockWhenServerLoading, async (req, res) => {
+  try {
+    const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
+    if (!target) {
+      return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
+    }
+
+    await run(`UPDATE users SET status = 'REJECTED' WHERE id = ?`, [req.params.id]);
+    await logChange(`회원 반려: ${target.name} (${target.email})`, req.session.user.id);
+
+    res.json({ message: '회원 반려가 완료되었습니다.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '회원 반려 실패' });
+  }
+});
+
 app.delete('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (req, res) => {
   try {
     const target = await get(`SELECT * FROM users WHERE id = ?`, [req.params.id]);
@@ -841,7 +858,7 @@ app.delete('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (
       return res.status(404).json({ error: '회원을 찾을 수 없습니다.' });
     }
 
-    if (target.role === 'admin' && String(target.email || '').toLowerCase() === ADMIN_EMAIL) {
+    if (target.role === 'admin' && target.email === ADMIN_EMAIL) {
       return res.status(400).json({ error: '기본 관리자 계정은 삭제할 수 없습니다.' });
     }
 
@@ -856,10 +873,12 @@ app.delete('/api/admin/users/:id', requireAdmin, blockWhenServerLoading, async (
   }
 });
 
+/* 전체삭제는 비활성화 */
 app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
   return res.status(403).json({ error: '전체삭제 기능은 비활성화되어 있습니다.' });
 });
 
+/* suppliers */
 app.get('/api/suppliers', requireLogin, async (req, res) => {
   try {
     const rows = await all(`SELECT * FROM suppliers ORDER BY datetime(createdAt) DESC`);
@@ -873,7 +892,7 @@ app.get('/api/suppliers', requireLogin, async (req, res) => {
 app.post('/api/suppliers', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = makeId('sup');
+    const id = `sup_${Date.now()}`;
     const payload = {
       name: String(req.body.name || '').trim(),
       manager: String(req.body.manager || '').trim(),
@@ -902,22 +921,12 @@ app.post('/api/suppliers', requireLogin, async (req, res) => {
 
 app.put('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
-    const target = await get(`SELECT * FROM suppliers WHERE id = ?`, [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: '공급업체를 찾을 수 없습니다.' });
-    }
-
-    const name = String(req.body.name || '').trim();
-    if (!name) {
-      return res.status(400).json({ error: '공급업체명을 입력하세요.' });
-    }
-
     await run(
       `UPDATE suppliers
        SET name = ?, manager = ?, phone = ?, category = ?, status = ?, updatedAt = ?
        WHERE id = ?`,
       [
-        name,
+        String(req.body.name || '').trim(),
         String(req.body.manager || '').trim(),
         String(req.body.phone || '').trim(),
         String(req.body.category || '').trim(),
@@ -926,7 +935,6 @@ app.put('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (req, 
         req.params.id
       ]
     );
-
     await logChange(`공급업체 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
@@ -947,6 +955,7 @@ app.delete('/api/suppliers/:id', requireLogin, blockWhenServerLoading, async (re
   }
 });
 
+/* iqc */
 app.get('/api/iqc', requireLogin, async (req, res) => {
   try {
     const rows = await all(`SELECT * FROM iqc ORDER BY date DESC, datetime(createdAt) DESC`);
@@ -960,8 +969,7 @@ app.get('/api/iqc', requireLogin, async (req, res) => {
 app.post('/api/iqc', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = makeId('iqc');
-
+    const id = `iqc_${Date.now()}`;
     await run(
       `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -978,7 +986,6 @@ app.post('/api/iqc', requireLogin, async (req, res) => {
         now
       ]
     );
-
     await logChange(`IQC 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
@@ -1005,7 +1012,6 @@ app.put('/api/iqc/:id', requireLogin, blockWhenServerLoading, async (req, res) =
         req.params.id
       ]
     );
-
     await logChange(`IQC 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
@@ -1026,6 +1032,7 @@ app.delete('/api/iqc/:id', requireLogin, blockWhenServerLoading, async (req, res
   }
 });
 
+/* ipqc */
 app.get('/api/ipqc', requireLogin, async (req, res) => {
   try {
     const rows = await all(`SELECT * FROM ipqc ORDER BY date DESC, datetime(createdAt) DESC`);
@@ -1039,8 +1046,7 @@ app.get('/api/ipqc', requireLogin, async (req, res) => {
 app.post('/api/ipqc', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = makeId('ipqc');
-
+    const id = `ipqc_${Date.now()}`;
     await run(
       `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1060,7 +1066,6 @@ app.post('/api/ipqc', requireLogin, async (req, res) => {
         now
       ]
     );
-
     await logChange(`IPQC 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
@@ -1090,7 +1095,6 @@ app.put('/api/ipqc/:id', requireLogin, blockWhenServerLoading, async (req, res) 
         req.params.id
       ]
     );
-
     await logChange(`IPQC 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
@@ -1110,6 +1114,7 @@ app.delete('/api/ipqc/:id', requireLogin, blockWhenServerLoading, async (req, re
     res.status(500).json({ error: 'IPQC 삭제 실패' });
   }
 });
+/* oqc */
 app.get('/api/oqc', requireLogin, async (req, res) => {
   try {
     const rows = await all(`SELECT * FROM oqc ORDER BY date DESC, datetime(createdAt) DESC`);
@@ -1123,8 +1128,7 @@ app.get('/api/oqc', requireLogin, async (req, res) => {
 app.post('/api/oqc', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = makeId('oqc');
-
+    const id = `oqc_${Date.now()}`;
     await run(
       `INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1149,7 +1153,6 @@ app.post('/api/oqc', requireLogin, async (req, res) => {
         now
       ]
     );
-
     await logChange(`OQC 등록: ${id}`, req.session.user.id);
     res.json({ message: '저장 완료', id });
   } catch (err) {
@@ -1184,7 +1187,6 @@ app.put('/api/oqc/:id', requireLogin, blockWhenServerLoading, async (req, res) =
         req.params.id
       ]
     );
-
     await logChange(`OQC 수정: ${req.params.id}`, req.session.user.id);
     res.json({ message: '수정 완료' });
   } catch (err) {
@@ -1195,7 +1197,7 @@ app.put('/api/oqc/:id', requireLogin, blockWhenServerLoading, async (req, res) =
 
 app.delete('/api/oqc/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
   try {
-    console.log('[DELETE oqc]', req.params.id, 'by', req.session.user?.email);
+    console.log('[DELETE oqc]', req.params.id);
     await run(`DELETE FROM oqc WHERE id = ?`, [req.params.id]);
     await logChange(`OQC 삭제: ${req.params.id}`, req.session.user.id);
     res.json({ message: '삭제 완료' });
@@ -1208,9 +1210,7 @@ app.delete('/api/oqc/:id', requireLogin, blockWhenServerLoading, async (req, res
 /* worklog */
 app.get('/api/worklog', requireLogin, async (req, res) => {
   try {
-    const rows = await all(
-      `SELECT * FROM worklog ORDER BY workDate DESC, datetime(createdAt) DESC`
-    );
+    const rows = await all(`SELECT * FROM worklog ORDER BY workDate DESC`);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -1221,506 +1221,96 @@ app.get('/api/worklog', requireLogin, async (req, res) => {
 app.post('/api/worklog', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = makeId('work');
-
+    const id = `work_${Date.now()}`;
     await run(
-      `INSERT INTO worklog (
-        id, workDate, finishedLot, seq, material, supName,
-        inputQty, inputRatio, lotNo, inputTime, worker, note,
-        createdAt, updatedAt
-      )
+      `INSERT INTO worklog (id, workDate, finishedLot, seq, material, supName, inputQty, inputRatio, lotNo, inputTime, worker, note, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        String(req.body.workDate || '').trim(),
-        String(req.body.finishedLot || '').trim(),
-        String(req.body.seq || '').trim(),
-        String(req.body.material || '').trim(),
-        String(req.body.supName || '').trim(),
-        String(req.body.inputQty || '').trim(),
-        String(req.body.inputRatio || '').trim(),
-        String(req.body.lotNo || '').trim(),
-        String(req.body.inputTime || '').trim(),
-        String(req.body.worker || '').trim(),
-        String(req.body.note || '').trim(),
+        req.body.workDate,
+        req.body.finishedLot,
+        req.body.seq,
+        req.body.material,
+        req.body.supName,
+        req.body.inputQty,
+        req.body.inputRatio,
+        req.body.lotNo,
+        req.body.inputTime,
+        req.body.worker,
+        req.body.note,
         now,
         now
       ]
     );
-
-    await logChange(`작업일지 등록: ${id}`, req.session.user.id);
-    res.json({ message: '작업일지가 등록되었습니다.', id });
+    res.json({ message: '저장 완료' });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: '작업일지 저장 실패' });
-  }
-});
-
-app.put('/api/worklog/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
-  try {
-    const target = await get(`SELECT * FROM worklog WHERE id = ?`, [req.params.id]);
-
-    if (!target) {
-      return res.status(404).json({ error: '작업일지를 찾을 수 없습니다.' });
-    }
-
-    await run(
-      `UPDATE worklog
-       SET workDate = ?, finishedLot = ?, seq = ?, material = ?, supName = ?,
-           inputQty = ?, inputRatio = ?, lotNo = ?, inputTime = ?, worker = ?,
-           note = ?, updatedAt = ?
-       WHERE id = ?`,
-      [
-        String(req.body.workDate || '').trim(),
-        String(req.body.finishedLot || '').trim(),
-        String(req.body.seq || '').trim(),
-        String(req.body.material || '').trim(),
-        String(req.body.supName || '').trim(),
-        String(req.body.inputQty || '').trim(),
-        String(req.body.inputRatio || '').trim(),
-        String(req.body.lotNo || '').trim(),
-        String(req.body.inputTime || '').trim(),
-        String(req.body.worker || '').trim(),
-        String(req.body.note || '').trim(),
-        nowDateTime(),
-        req.params.id
-      ]
-    );
-
-    await logChange(`작업일지 수정: ${req.params.id}`, req.session.user.id);
-    res.json({ message: '작업일지가 수정되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '작업일지 수정 실패' });
-  }
-});
-
-app.delete('/api/worklog/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
-  try {
-    const target = await get(`SELECT * FROM worklog WHERE id = ?`, [req.params.id]);
-
-    if (!target) {
-      return res.status(404).json({ error: '작업일지를 찾을 수 없습니다.' });
-    }
-
-    await run(`DELETE FROM worklog WHERE id = ?`, [req.params.id]);
-
-    await logChange(`작업일지 삭제: ${req.params.id}`, req.session.user.id);
-    res.json({ message: '작업일지가 삭제되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '작업일지 삭제 실패' });
   }
 });
 
 /* nonconform */
 app.get('/api/nonconform', requireLogin, async (req, res) => {
   try {
-    const rows = await all(`SELECT * FROM nonconform ORDER BY date DESC, datetime(createdAt) DESC`);
+    const rows = await all(`SELECT * FROM nonconform ORDER BY date DESC`);
     res.json(rows);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: '부적합 조회 실패' });
   }
 });
 
-app.post('/api/nonconform', requireLogin, async (req, res) => {
-  try {
-    const now = nowDateTime();
-    const id = String(req.body.id || `nc_${Date.now()}`);
-
-    await run(
-      `INSERT INTO nonconform (id, date, type, lot, item, issue, cause, action, owner, status, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        String(req.body.date || '').trim(),
-        String(req.body.type || '').trim(),
-        String(req.body.lot || '').trim(),
-        String(req.body.item || '').trim(),
-        String(req.body.issue || '').trim(),
-        String(req.body.cause || '').trim(),
-        String(req.body.action || '').trim(),
-        String(req.body.owner || '').trim(),
-        String(req.body.status || '대기').trim(),
-        now,
-        now
-      ]
-    );
-
-    await logChange(`부적합 등록: ${id}`, req.session.user.id);
-    res.json({ message: '저장 완료', id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '부적합 저장 실패' });
-  }
-});
-
-app.put('/api/nonconform/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
-  try {
-    await run(
-      `UPDATE nonconform
-       SET date = ?, type = ?, lot = ?, item = ?, issue = ?, cause = ?, action = ?, owner = ?, status = ?, updatedAt = ?
-       WHERE id = ?`,
-      [
-        String(req.body.date || '').trim(),
-        String(req.body.type || '').trim(),
-        String(req.body.lot || '').trim(),
-        String(req.body.item || '').trim(),
-        String(req.body.issue || '').trim(),
-        String(req.body.cause || '').trim(),
-        String(req.body.action || '').trim(),
-        String(req.body.owner || '').trim(),
-        String(req.body.status || '대기').trim(),
-        nowDateTime(),
-        req.params.id
-      ]
-    );
-
-    await logChange(`부적합 수정: ${req.params.id}`, req.session.user.id);
-    res.json({ message: '수정 완료' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '부적합 수정 실패' });
-  }
-});
-
-app.delete('/api/nonconform/:id', requireLogin, blockWhenServerLoading, async (req, res) => {
-  try {
-    console.log('[DELETE nonconform]', req.params.id, 'by', req.session.user?.email);
-    await run(`DELETE FROM nonconform WHERE id = ?`, [req.params.id]);
-    await logChange(`부적합 삭제: ${req.params.id}`, req.session.user.id);
-    res.json({ message: '삭제 완료' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '부적합 삭제 실패' });
-  }
-});
-
-/* change logs */
-app.get('/api/change-logs', requireLogin, async (req, res) => {
-  try {
-    const rows = await all(
-      `SELECT id, logDate, message, userId, createdAt
-       FROM change_logs
-       ORDER BY id DESC`
-    );
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '변경이력 조회 실패' });
-  }
-});
-
-/* notices */
+/* 🔥 공지 API (핵심) */
 app.get('/api/notices', requireLogin, async (req, res) => {
-  try {
-    const rows = await all(
-      `SELECT id, content, noticeDate, isActive, createdAt, updatedAt
-       FROM notices
-       WHERE isActive = 1
-       ORDER BY noticeDate DESC, datetime(createdAt) DESC`
-    );
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '공지사항 조회 실패' });
-  }
+  const rows = await all(`SELECT * FROM notices ORDER BY noticeDate DESC`);
+  res.json(rows);
 });
 
-app.post('/api/notices', requireAdmin, blockWhenServerLoading, async (req, res) => {
-  try {
-    const content = String(req.body.content || '').trim();
-    const noticeDate = String(req.body.noticeDate || todayDate()).trim();
-
-    if (!content) {
-      return res.status(400).json({ error: '공지 내용을 입력하세요.' });
-    }
-
-    const id = makeId('notice');
-    const now = nowDateTime();
-
-    await run(
-      `INSERT INTO notices (id, content, noticeDate, isActive, createdAt, updatedAt)
-       VALUES (?, ?, ?, 1, ?, ?)`,
-      [id, content, noticeDate, now, now]
-    );
-
-    await logChange(`공지사항 등록: ${id}`, req.session.user.id);
-    res.json({ message: '공지사항이 등록되었습니다.', id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '공지사항 등록 실패' });
-  }
+app.post('/api/notices', requireAdmin, async (req, res) => {
+  const id = `notice_${Date.now()}`;
+  await run(
+    `INSERT INTO notices VALUES (?, ?, ?, 1, ?, ?)`,
+    [id, req.body.content, req.body.noticeDate, nowDateTime(), nowDateTime()]
+  );
+  res.json({ message: '등록 완료' });
 });
 
-app.put('/api/notices/:id', requireAdmin, blockWhenServerLoading, async (req, res) => {
-  try {
-    const content = String(req.body.content || '').trim();
-    const noticeDate = String(req.body.noticeDate || '').trim();
-
-    if (!content) {
-      return res.status(400).json({ error: '공지 내용을 입력하세요.' });
-    }
-
-    const target = await get(`SELECT * FROM notices WHERE id = ?`, [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: '공지사항을 찾을 수 없습니다.' });
-    }
-
-    await run(
-      `UPDATE notices
-       SET content = ?, noticeDate = ?, updatedAt = ?
-       WHERE id = ?`,
-      [
-        content,
-        noticeDate || target.noticeDate,
-        nowDateTime(),
-        req.params.id
-      ]
-    );
-
-    await logChange(`공지사항 수정: ${req.params.id}`, req.session.user.id);
-    res.json({ message: '공지사항이 수정되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '공지사항 수정 실패' });
-  }
+app.put('/api/notices/:id', requireAdmin, async (req, res) => {
+  await run(
+    `UPDATE notices SET content = ?, noticeDate = ?, updatedAt = ?
+     WHERE id = ?`,
+    [req.body.content, req.body.noticeDate, nowDateTime(), req.params.id]
+  );
+  res.json({ message: '수정 완료' });
 });
 
-app.delete('/api/notices/:id', requireAdmin, blockWhenServerLoading, async (req, res) => {
-  try {
-    const target = await get(`SELECT * FROM notices WHERE id = ?`, [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: '공지사항을 찾을 수 없습니다.' });
-    }
-
-    await run(`DELETE FROM notices WHERE id = ?`, [req.params.id]);
-
-    await logChange(`공지사항 삭제: ${req.params.id}`, req.session.user.id);
-    res.json({ message: '공지사항이 삭제되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '공지사항 삭제 실패' });
-  }
+app.delete('/api/notices/:id', requireAdmin, async (req, res) => {
+  await run(`DELETE FROM notices WHERE id = ?`, [req.params.id]);
+  res.json({ message: '삭제 완료' });
 });
 
-/* import */
-app.post('/api/import/preview', requireLogin, async (req, res) => {
-  try {
-    const iqcRows = Array.isArray(req.body.iqcRows) ? req.body.iqcRows : [];
-    const ipqcRows = Array.isArray(req.body.ipqcRows) ? req.body.ipqcRows : [];
-    const oqcRows = Array.isArray(req.body.oqcRows) ? req.body.oqcRows : [];
-    const supplierRows = Array.isArray(req.body.supplierRows) ? req.body.supplierRows : [];
-    const worklogRows = Array.isArray(req.body.worklogRows) ? req.body.worklogRows : [];
-
-    const total = iqcRows.length + ipqcRows.length + oqcRows.length + supplierRows.length + worklogRows.length;
-
-    res.json({
-      message: '미리보기 완료',
-      totalRows: total,
-      summary: {
-        iqc: iqcRows.length,
-        ipqc: ipqcRows.length,
-        oqc: oqcRows.length,
-        suppliers: supplierRows.length,
-        worklog: worklogRows.length
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '엑셀 미리보기 실패' });
-  }
-});
-
-app.post('/api/import/commit', requireLogin, async (req, res) => {
-  try {
-    const iqcRows = Array.isArray(req.body.iqcRows) ? req.body.iqcRows : [];
-    const ipqcRows = Array.isArray(req.body.ipqcRows) ? req.body.ipqcRows : [];
-    const oqcRows = Array.isArray(req.body.oqcRows) ? req.body.oqcRows : [];
-    const supplierRows = Array.isArray(req.body.supplierRows) ? req.body.supplierRows : [];
-    const worklogRows = Array.isArray(req.body.worklogRows) ? req.body.worklogRows : [];
-    const now = nowDateTime();
-
-    isServerLoading = true;
-    console.log('[IMPORT START]', {
-      iqc: iqcRows.length,
-      ipqc: ipqcRows.length,
-      oqc: oqcRows.length,
-      suppliers: supplierRows.length,
-      worklog: worklogRows.length,
-      by: req.session.user?.email
-    });
-
-    await run('BEGIN TRANSACTION');
-
-    for (const r of supplierRows) {
-      const id = r.id || `sup_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await run(
-        `INSERT OR REPLACE INTO suppliers (id, name, manager, phone, category, status, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM suppliers WHERE id = ?), ?), ?)`,
-        [
-          id,
-          String(r.name || '').trim(),
-          String(r.manager || '').trim(),
-          String(r.phone || '').trim(),
-          String(r.category || '').trim(),
-          String(r.status || '사용').trim(),
-          id,
-          now,
-          now
-        ]
-      );
-    }
-
-    for (const r of iqcRows) {
-      const id = r.id || `iqc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await run(
-        `INSERT OR REPLACE INTO iqc (id, date, lot, supplier, item, inspector, qty, fail, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM iqc WHERE id = ?), ?), ?)`,
-        [
-          id,
-          String(r.date || '').trim(),
-          String(r.lot || '').trim(),
-          String(r.supplier || '').trim(),
-          String(r.item || '').trim(),
-          String(r.inspector || '').trim(),
-          Number(r.qty || 0),
-          Number(r.fail || 0),
-          id,
-          now,
-          now
-        ]
-      );
-    }
-
-    for (const r of ipqcRows) {
-      const id = r.id || `ipqc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await run(
-        `INSERT OR REPLACE INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM ipqc WHERE id = ?), ?), ?)`,
-        [
-          id,
-          String(r.date || '').trim(),
-          String(r.product || '').trim(),
-          String(r.lot || '').trim(),
-          String(r.visual || '').trim(),
-          String(r.viscosity || '').trim(),
-          String(r.solid || '').trim(),
-          String(r.particle || '').trim(),
-          Number(r.qty || 0),
-          Number(r.fail || 0),
-          String(r.judge || '').trim(),
-          id,
-          now,
-          now
-        ]
-      );
-    }
-
-    for (const r of oqcRows) {
-      const id = r.id || `oqc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await run(
-        `INSERT OR REPLACE INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM oqc WHERE id = ?), ?), ?)`,
-        [
-          id,
-          String(r.date || '').trim(),
-          String(r.customer || '').trim(),
-          String(r.product || '').trim(),
-          String(r.lot || '').trim(),
-          String(r.visual || '').trim(),
-          String(r.viscosity || '').trim(),
-          String(r.solid || '').trim(),
-          String(r.particle || '').trim(),
-          String(r.adhesion || '').trim(),
-          String(r.resistance || '').trim(),
-          String(r.swelling || '').trim(),
-          String(r.moisture || '').trim(),
-          Number(r.qty || 0),
-          Number(r.fail || 0),
-          String(r.judge || '').trim(),
-          id,
-          now,
-          now
-        ]
-      );
-    }
-
-    for (const r of worklogRows) {
-      const id = r.id || `work_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await run(
-        `INSERT OR REPLACE INTO worklog (id, workDate, finishedLot, seq, material, supName, inputQty, inputRatio, lotNo, inputTime, worker, note, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM worklog WHERE id = ?), ?), ?)`,
-        [
-          id,
-          String(r.workDate || '').trim(),
-          String(r.finishedLot || '').trim(),
-          String(r.seq || '').trim(),
-          String(r.material || '').trim(),
-          String(r.supName || '').trim(),
-          String(r.inputQty || '').trim(),
-          String(r.inputRatio || '').trim(),
-          String(r.lotNo || '').trim(),
-          String(r.inputTime || '').trim(),
-          String(r.worker || '').trim(),
-          String(r.note || '').trim(),
-          id,
-          now,
-          now
-        ]
-      );
-    }
-
-    await run('COMMIT');
-    await logChange(`엑셀 반영: ${req.body.fileName || '업로드 파일'}`, req.session.user.id);
-
-    isServerLoading = false;
-    console.log('[IMPORT END] success');
-    res.json({ message: '엑셀 반영 완료' });
-  } catch (err) {
-    console.error(err);
-    try {
-      await run('ROLLBACK');
-    } catch (_) {}
-    isServerLoading = false;
-    console.log('[IMPORT END] failed');
-    res.status(500).json({ error: '엑셀 반영 실패' });
-  }
-});
-
+/* health */
 app.get('/health', (req, res) => {
-  res.json({
-    ok: true,
-    loading: isServerLoading,
-    smtp: {
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_SECURE,
-      configured: !!(EMAIL_USER && EMAIL_PASS)
-    }
-  });
+  res.json({ ok: true });
 });
 
+/* page */
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API 경로를 찾을 수 없습니다.' });
+    return res.status(404).json({ error: 'API 없음' });
   }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+/* start */
 initDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`서버 실행: http://localhost:${PORT}`);
-      console.log(`기본 관리자 이메일: ${ADMIN_EMAIL}`);
     });
   })
   .catch(err => {
-    console.error('DB init failed:', err);
-    process.exit(1);
+    console.error(err);
   });
