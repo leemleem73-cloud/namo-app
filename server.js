@@ -475,11 +475,14 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: normalizeRole(user.role)
-    };
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  department: user.department,
+  title: user.title,
+  role: normalizeRole(user.role),
+  status: user.status
+};
 
     await logChange(`로그인: ${user.name} (${user.email})`, user.id);
 
