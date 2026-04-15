@@ -129,7 +129,7 @@ function normalizeRole(role) {
 
 function normalizeStatus(status) {
   const value = String(status || 'APPROVED').toUpperCase();
-  if (['APPROVED', 'REJECTED', 'PENDING'].includes(value)) {
+  if (['APPROVED', 'REJECTED'].includes(value)) {
     return value;
   }
   return 'APPROVED';
