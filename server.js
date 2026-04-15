@@ -970,7 +970,7 @@ app.get('/api/iqc', requireLogin, async (req, res) => {
 app.post('/api/iqc', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = `iqc_${Date.now()}`;
+    const id = makeId('iqc')
     await run(
       `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1046,7 +1046,7 @@ app.get('/api/ipqc', requireLogin, async (req, res) => {
 app.post('/api/ipqc', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = `ipqc_${Date.now()}`;
+    const id = makeId('ipqc')
     await run(
       `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1128,7 +1128,7 @@ app.get('/api/oqc', requireLogin, async (req, res) => {
 app.post('/api/oqc', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = `oqc_${Date.now()}`;
+   const id = makeId('oqc')
     await run(
       `INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1223,7 +1223,7 @@ app.get('/api/worklog', requireLogin, async (req, res) => {
 app.post('/api/worklog', requireLogin, async (req, res) => {
   try {
     const now = nowDateTime();
-    const id = `work_${Date.now()}`;
+    const id = makeId('work')
 
     await run(
       `INSERT INTO worklog (
@@ -1439,7 +1439,7 @@ app.post('/api/notices', requireAdmin, blockWhenServerLoading, async (req, res) 
       return res.status(400).json({ error: '공지 내용을 입력하세요.' });
     }
 
-    const id = `notice_${Date.now()}`;
+    const id = makeId('notice')
     const now = nowDateTime();
 
     await run(
