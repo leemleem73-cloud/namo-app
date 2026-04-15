@@ -411,7 +411,7 @@
         <div class="tab" onclick="switchTab('supplier',this)">기준정보</div>
         <div class="tab" onclick="switchTab('trace',this)">추적성조회</div>
         <div class="tab" onclick="switchTab('nonconform',this)">부적합관리</div>
-        <div class="tab hidden" id="adminApprovalTab" onclick="switchTab('approval',this)">전체회원관리</div>
+        <div class="tab hidden" id="adminApprovalTab" onclick="switchTab('approval',this)">회원관리</div>
       </div>
 
       <div class="main">
@@ -597,7 +597,7 @@
 
         <div id="panel-approval" class="panel">
           <div class="card">
-            <div class="head"><div style="display:flex;align-items:center;gap:10px"><div class="title">전체 승인 관리</div><div class="badge" id="pendingUserCount">0명</div></div><button class="btn b2" onclick="loadAllUsers()">회원목록 새로고침</button></div>
+            <div class="head"><div style="display:flex;align-items:center;gap:10px"><div class="title">회원 관리</div><div class="badge" id="pendingUserCount">0명</div></div><button class="btn b2" onclick="loadAllUsers()">회원목록 새로고침</button></div>
             <div class="table-box table"><table><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>부서 / 팀</th><th>직책</th><th>권한</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead><tbody id="pendingUserBody"></tbody></table></div>
           </div>
         </div>
@@ -1060,7 +1060,7 @@
           if (password !== passwordConfirm) throw new Error('비밀번호 확인이 일치하지 않습니다.');
 
           await api.post('/api/auth/signup', { name, email, password, department });
-          showToast('회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.');
+          showToast('회원가입이 완료되었습니다. 바로 로그인 가능합니다.');
           switchAuthMode('login');
           return;
         }
