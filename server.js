@@ -71,9 +71,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
-const safeText = (v, m = 200) => String(v || '').trim().slice(0, m);
+const safeText = (v, m = 300) => String(v || '').trim().slice(0, m);
 const safeNumber = (v) => Number(v) || 0;
 const makeId = (p) => `${p}_${crypto.randomUUID()}`;
+const todayText = () => new Date().toISOString().slice(0, 10);
 
 const requireLogin = (req, res, next) => {
   if (!req.session.user) {
@@ -89,6 +90,16 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+function addChangeLog(message) {
+  return new Promise((resolve) => {
+    db.run(
+      `INSERT INTO change_logs (id, logDate, message) VALUES (?, ?, ?)`,
+      [makeId('log'), new Date().toLocaleString('ko-KR'), safeText(message, 1000)],
+      () => resolve()
+    );
+  });
+}
+
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -97,8 +108,10 @@ db.serialize(() => {
       email TEXT UNIQUE,
       password TEXT,
       department TEXT,
+      title TEXT DEFAULT 'staff',
       role TEXT DEFAULT 'user',
-      status TEXT DEFAULT 'APPROVED'
+      status TEXT DEFAULT 'APPROVED',
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -219,10 +232,10 @@ db.serialize(() => {
           db.run(
             `
             UPDATE users
-            SET name = ?, password = ?, department = ?, role = ?, status = ?
+            SET name = ?, password = ?, department = ?, title = ?, role = ?, status = ?
             WHERE email = ?
             `,
-            ['관리자', hashed, '관리부', 'admin', 'APPROVED', 'admin@namochemical.com'],
+            ['관리자', hashed, '관리부', 'admin', 'admin', 'APPROVED', 'admin@namochemical.com'],
             (updateErr) => {
               if (updateErr) {
                 console.error('기본 관리자 계정 갱신 실패:', updateErr.message);
@@ -234,10 +247,10 @@ db.serialize(() => {
         } else {
           db.run(
             `
-            INSERT INTO users (name, email, password, department, role, status)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (name, email, password, department, title, role, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             `,
-            ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'APPROVED'],
+            ['관리자', 'admin@namochemical.com', hashed, '관리부', 'admin', 'admin', 'APPROVED'],
             (insertErr) => {
               if (insertErr) {
                 console.error('기본 관리자 생성 실패:', insertErr.message);
@@ -262,8 +275,8 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
   try {
     const { name, email, password, department } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: '이메일과 비밀번호 필요' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: '이름, 이메일, 비밀번호를 입력하세요.' });
     }
 
     if (String(password).length < 8) {
@@ -273,16 +286,25 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     db.run(
-      `INSERT INTO users (name, email, password, department, role, status)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [safeText(name), normalizeEmail(email), hashed, safeText(department), 'user', 'APPROVED'],
-      function (err) {
+      `INSERT INTO users (name, email, password, department, title, role, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        safeText(name),
+        normalizeEmail(email),
+        hashed,
+        safeText(department),
+        'staff',
+        'user',
+        'APPROVED'
+      ],
+      async function (err) {
         if (err) {
           if (err.message && err.message.includes('UNIQUE')) {
-            return res.status(409).json({ error: '이미 존재하는 이메일' });
+            return res.status(409).json({ error: '이미 존재하는 이메일입니다.' });
           }
           return res.status(500).json({ error: err.message });
         }
+        await addChangeLog(`회원가입: ${normalizeEmail(email)}`);
         res.json({ ok: true, id: this.lastID });
       }
     );
@@ -309,12 +331,14 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
         name: user.name,
         email: user.email,
         department: user.department,
+        title: user.title,
         role: user.role,
         status: user.status
       };
 
-      req.session.save((saveErr) => {
+      req.session.save(async (saveErr) => {
         if (saveErr) return res.status(500).json({ error: '세션 저장 실패' });
+        await addChangeLog(`로그인: ${user.email}`);
         res.json({ ok: true, user: req.session.user });
       });
     }
@@ -329,8 +353,12 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
+  const email = req.session?.user?.email || '';
   if (!req.session) return res.json({ ok: true });
-  req.session.destroy(() => res.json({ ok: true }));
+  req.session.destroy(async () => {
+    if (email) await addChangeLog(`로그아웃: ${email}`);
+    res.json({ ok: true });
+  });
 });
 
 app.post('/api/auth/reset-password', (req, res) => {
@@ -366,8 +394,9 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
         db.run(
           `UPDATE users SET password = ? WHERE id = ?`,
           [hashed, req.session.user.id],
-          (updateErr) => {
+          async (updateErr) => {
             if (updateErr) return res.status(500).json({ error: updateErr.message });
+            await addChangeLog(`비밀번호 변경: ${user.email}`);
             res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
           }
         );
@@ -378,9 +407,13 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
   }
 });
 
+// --------------------
+// 관리자 / 회원관리
+// --------------------
+
 app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   db.all(
-    `SELECT id, name, email, department, role, status
+    `SELECT id, name, email, department, title, role, status, createdAt
      FROM users
      ORDER BY id DESC`,
     [],
@@ -391,6 +424,61 @@ app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   );
 });
 
+app.post('/api/admin/users/:id/approve', requireAdmin, (req, res) => {
+  db.run(
+    `UPDATE users SET status = 'APPROVED' WHERE id = ?`,
+    [req.params.id],
+    async (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`회원 승인: ${req.params.id}`);
+      res.json({ ok: true, message: '회원 승인이 완료되었습니다.' });
+    }
+  );
+});
+
+app.post('/api/admin/users/:id/reject', requireAdmin, (req, res) => {
+  db.run(
+    `UPDATE users SET status = 'REJECTED' WHERE id = ?`,
+    [req.params.id],
+    async (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`회원 반려: ${req.params.id}`);
+      res.json({ ok: true, message: '회원 반려가 완료되었습니다.' });
+    }
+  );
+});
+
+app.put('/api/admin/users/:id', requireAdmin, (req, res) => {
+  const d = req.body;
+  db.run(
+    `UPDATE users
+     SET name=?, email=?, department=?, title=?, role=?, status=?
+     WHERE id=?`,
+    [
+      safeText(d.name),
+      normalizeEmail(d.email),
+      safeText(d.department),
+      safeText(d.title || 'staff'),
+      safeText(d.role || 'user'),
+      safeText(d.status || 'APPROVED'),
+      req.params.id
+    ],
+    async (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`회원 수정: ${req.params.id}`);
+      res.json({ ok: true, message: '회원 정보가 저장되었습니다.' });
+    }
+  );
+});
+
+app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+  db.run(`DELETE FROM users WHERE id = ?`, [req.params.id], async (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`회원 삭제: ${req.params.id}`);
+    res.json({ ok: true, message: '회원 삭제가 완료되었습니다.' });
+  });
+});
+
 app.post('/api/admin/delete-all', requireAdmin, (req, res) => {
   db.serialize(() => {
     db.run(`DELETE FROM iqc`);
@@ -399,8 +487,9 @@ app.post('/api/admin/delete-all', requireAdmin, (req, res) => {
     db.run(`DELETE FROM oqc`);
     db.run(`DELETE FROM worklog`);
     db.run(`DELETE FROM nonconform`);
-    db.run(`DELETE FROM change_logs`, (err) => {
+    db.run(`DELETE FROM change_logs`, async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog('전체 데이터 삭제 실행');
       res.json({ ok: true, message: '전체 데이터 삭제 완료' });
     });
   });
@@ -429,7 +518,7 @@ app.post('/api/iqc', requireLogin, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('iqc'),
-      safeText(d.date),
+      safeText(d.date || todayText()),
       safeText(d.lot),
       safeText(d.supplier),
       safeText(d.item),
@@ -437,8 +526,9 @@ app.post('/api/iqc', requireLogin, (req, res) => {
       safeNumber(d.qty),
       safeNumber(d.fail)
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`IQC 등록: ${safeText(d.lot)}`);
       res.json({ ok: true });
     }
   );
@@ -461,22 +551,24 @@ app.put('/api/iqc/:id', requireLogin, (req, res) => {
       safeNumber(d.fail),
       req.params.id
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`IQC 수정: ${req.params.id}`);
       res.json({ ok: true });
     }
   );
 });
 
 app.delete('/api/iqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM iqc WHERE id = ?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM iqc WHERE id = ?`, [req.params.id], async (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`IQC 삭제: ${req.params.id}`);
     res.json({ ok: true });
   });
 });
 
 // --------------------
-// suppliers
+// Suppliers
 // --------------------
 
 app.get('/api/suppliers', requireLogin, (req, res) => {
@@ -504,8 +596,9 @@ app.post('/api/suppliers', requireLogin, (req, res) => {
       safeText(d.category),
       safeText(d.status || '사용')
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`공급업체 등록: ${safeText(d.name)}`);
       res.json({ ok: true });
     }
   );
@@ -526,16 +619,18 @@ app.put('/api/suppliers/:id', requireLogin, (req, res) => {
       safeText(d.status),
       req.params.id
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`공급업체 수정: ${req.params.id}`);
       res.json({ ok: true });
     }
   );
 });
 
 app.delete('/api/suppliers/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM suppliers WHERE id=?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM suppliers WHERE id=?`, [req.params.id], async (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`공급업체 삭제: ${req.params.id}`);
     res.json({ ok: true });
   });
 });
@@ -562,7 +657,7 @@ app.post('/api/ipqc', requireLogin, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('ipqc'),
-      safeText(d.date),
+      safeText(d.date || todayText()),
       safeText(d.product),
       safeText(d.lot),
       safeText(d.visual),
@@ -573,8 +668,9 @@ app.post('/api/ipqc', requireLogin, (req, res) => {
       safeNumber(d.fail),
       safeText(d.judge)
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`IPQC 등록: ${safeText(d.lot)}`);
       res.json({ ok: true });
     }
   );
@@ -600,16 +696,18 @@ app.put('/api/ipqc/:id', requireLogin, (req, res) => {
       safeText(d.judge),
       req.params.id
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`IPQC 수정: ${req.params.id}`);
       res.json({ ok: true });
     }
   );
 });
 
 app.delete('/api/ipqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM ipqc WHERE id=?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM ipqc WHERE id=?`, [req.params.id], async (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`IPQC 삭제: ${req.params.id}`);
     res.json({ ok: true });
   });
 });
@@ -637,7 +735,7 @@ app.post('/api/oqc', requireLogin, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('oqc'),
-      safeText(d.date),
+      safeText(d.date || todayText()),
       safeText(d.customer),
       safeText(d.product),
       safeText(d.lot),
@@ -653,8 +751,9 @@ app.post('/api/oqc', requireLogin, (req, res) => {
       safeNumber(d.fail),
       safeText(d.judge)
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`OQC 등록: ${safeText(d.lot)}`);
       res.json({ ok: true });
     }
   );
@@ -685,22 +784,24 @@ app.put('/api/oqc/:id', requireLogin, (req, res) => {
       safeText(d.judge),
       req.params.id
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`OQC 수정: ${req.params.id}`);
       res.json({ ok: true });
     }
   );
 });
 
 app.delete('/api/oqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM oqc WHERE id=?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM oqc WHERE id=?`, [req.params.id], async (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`OQC 삭제: ${req.params.id}`);
     res.json({ ok: true });
   });
 });
 
 // --------------------
-// WORKLOG
+// Worklog
 // --------------------
 
 app.get('/api/worklog', requireLogin, (req, res) => {
@@ -722,7 +823,7 @@ app.post('/api/worklog', requireLogin, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('work'),
-      safeText(d.workDate),
+      safeText(d.workDate || todayText()),
       safeText(d.finishedLot),
       safeText(d.seq),
       safeText(d.material),
@@ -734,8 +835,9 @@ app.post('/api/worklog', requireLogin, (req, res) => {
       safeText(d.worker),
       safeText(d.note)
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`작업일지 등록: ${safeText(d.finishedLot) || safeText(d.material)}`);
       res.json({ ok: true });
     }
   );
@@ -762,22 +864,24 @@ app.put('/api/worklog/:id', requireLogin, (req, res) => {
       safeText(d.note),
       req.params.id
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`작업일지 수정: ${req.params.id}`);
       res.json({ ok: true });
     }
   );
 });
 
 app.delete('/api/worklog/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM worklog WHERE id=?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM worklog WHERE id=?`, [req.params.id], async (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`작업일지 삭제: ${req.params.id}`);
     res.json({ ok: true });
   });
 });
 
 // --------------------
-// NONCONFORM
+// Nonconform
 // --------------------
 
 app.get('/api/nonconform', requireLogin, (req, res) => {
@@ -795,7 +899,7 @@ app.post('/api/nonconform', requireLogin, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       makeId('nc'),
-      safeText(d.date),
+      safeText(d.date || todayText()),
       safeText(d.type),
       safeText(d.lot),
       safeText(d.item),
@@ -805,8 +909,9 @@ app.post('/api/nonconform', requireLogin, (req, res) => {
       safeText(d.owner),
       safeText(d.status || '대기')
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`부적합 등록: ${safeText(d.lot) || safeText(d.item)}`);
       res.json({ ok: true });
     }
   );
@@ -831,22 +936,24 @@ app.put('/api/nonconform/:id', requireLogin, (req, res) => {
       safeText(d.status),
       req.params.id
     ],
-    (err) => {
+    async (err) => {
       if (err) return res.status(500).json({ error: err.message });
+      await addChangeLog(`부적합 수정: ${req.params.id}`);
       res.json({ ok: true });
     }
   );
 });
 
 app.delete('/api/nonconform/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM nonconform WHERE id=?`, [req.params.id], (err) => {
+  db.run(`DELETE FROM nonconform WHERE id=?`, [req.params.id], async (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    await addChangeLog(`부적합 삭제: ${req.params.id}`);
     res.json({ ok: true });
   });
 });
 
 // --------------------
-// CHANGE LOGS
+// Change Logs
 // --------------------
 
 app.get('/api/change-logs', requireLogin, (req, res) => {
@@ -864,8 +971,8 @@ app.post('/api/change-logs', requireLogin, (req, res) => {
      VALUES (?, ?, ?)`,
     [
       makeId('log'),
-      safeText(d.logDate),
-      safeText(d.message, 500)
+      safeText(d.logDate || new Date().toLocaleString('ko-KR')),
+      safeText(d.message, 1000)
     ],
     (err) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -875,7 +982,7 @@ app.post('/api/change-logs', requireLogin, (req, res) => {
 });
 
 // --------------------
-// health
+// Health
 // --------------------
 
 app.get('/health', (req, res) => {
@@ -883,13 +990,13 @@ app.get('/health', (req, res) => {
 });
 
 // --------------------
-// 정적 파일
+// Static
 // --------------------
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --------------------
-// fallback
+// Fallback
 // --------------------
 
 app.get('*', (req, res) => {
@@ -897,7 +1004,7 @@ app.get('*', (req, res) => {
 });
 
 // --------------------
-// server
+// Server
 // --------------------
 
 app.listen(PORT, () => {
