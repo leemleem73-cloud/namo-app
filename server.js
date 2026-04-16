@@ -131,7 +131,7 @@ db.serialize(() => {
   `);
 
   db.run(`
-    CREATE TABLE IF NOT EXISTS ipqc (
+    CREATE TABLE IF NOT EXISTS pqc (
       id TEXT PRIMARY KEY,
       date TEXT,
       product TEXT,
@@ -298,7 +298,7 @@ function classifySheetType(raw) {
   const s = String(raw || '').trim().toUpperCase();
 
   if (['IQC', '입고', '입고검사'].includes(s)) return 'IQC';
-  if (['PQC', 'IPQC', '공정', '공정검사'].includes(s)) return 'IPQC';
+  if (['PQC', 'PQC', '공정', '공정검사'].includes(s)) return 'PQC';
   if (['OQC', '출하', '출하검사'].includes(s)) return 'OQC';
   if (['SUPPLIERS', 'SUPPLIER', '거래처', '공급업체', '업체'].includes(s)) return 'SUPPLIERS';
   if (['WORKLOG', '작업일지', '원료투입', '투입일지'].includes(s)) return 'WORKLOG';
@@ -331,9 +331,9 @@ function previewMappedRows(sheetType, rows) {
     }));
   }
 
-  if (type === 'IPQC') {
+  if (type === 'PQC') {
     mapped = rows.map((r) => ({
-      id: makeId('ipqc'),
+      id: makeId('pqc'),
       date: normalizeDate(rowPick(r, ['date', '일자', '날짜', '검사일', '검사일자'])),
       product: safeText(rowPick(r, ['product', '제품', '제품명'])),
       lot: safeText(rowPick(r, ['lot', 'lotno', 'lot no', '로트'])),
@@ -398,7 +398,7 @@ function previewMappedRows(sheetType, rows) {
 
   const validRows = mapped.filter((r) => {
     if (type === 'IQC') return r.date || r.lot || r.item || r.supplier;
-    if (type === 'IPQC') return r.date || r.product || r.lot;
+    if (type === 'PQC') return r.date || r.product || r.lot;
     if (type === 'OQC') return r.date || r.customer || r.product || r.lot;
     if (type === 'SUPPLIERS') return r.name;
     if (type === 'WORKLOG') return r.workDate || r.finishedLot || r.material;
@@ -437,9 +437,9 @@ function insertImportedRows(type, mappedRows, callback) {
       });
     }
 
-    if (type === 'IPQC') {
+    if (type === 'PQC') {
       stmt = db.prepare(`
-        INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
+        INSERT INTO pqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
@@ -764,7 +764,7 @@ app.post('/api/admin/delete-all', requireAdmin, (req, res) => {
   db.serialize(() => {
     db.run(`DELETE FROM suppliers`);
     db.run(`DELETE FROM iqc`);
-    db.run(`DELETE FROM ipqc`);
+    db.run(`DELETE FROM pqc`);
     db.run(`DELETE FROM oqc`);
     db.run(`DELETE FROM worklog`);
     db.run(`DELETE FROM nonconform`);
@@ -900,23 +900,23 @@ app.delete('/api/iqc/:id', requireLogin, (req, res) => {
 });
 
 /* =========================
-   IPQC
+   PQC
 ========================= */
 
-app.get('/api/ipqc', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM ipqc ORDER BY date DESC`, [], (err, rows) => {
+app.get('/api/pqc', requireLogin, (req, res) => {
+  db.all(`SELECT * FROM pqc ORDER BY date DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.post('/api/ipqc', requireLogin, (req, res) => {
+app.post('/api/pqc', requireLogin, (req, res) => {
   const d = req.body;
   db.run(
-    `INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
+    `INSERT INTO pqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      makeId('ipqc'),
+      makeId('pqc'),
       safeText(d.date),
       safeText(d.product),
       safeText(d.lot),
@@ -935,10 +935,10 @@ app.post('/api/ipqc', requireLogin, (req, res) => {
   );
 });
 
-app.put('/api/ipqc/:id', requireLogin, (req, res) => {
+app.put('/api/pqc/:id', requireLogin, (req, res) => {
   const d = req.body;
   db.run(
-    `UPDATE ipqc
+    `UPDATE pqc
      SET date = ?, product = ?, lot = ?, visual = ?, viscosity = ?, solid = ?, particle = ?, qty = ?, fail = ?, judge = ?
      WHERE id = ?`,
     [
@@ -961,8 +961,8 @@ app.put('/api/ipqc/:id', requireLogin, (req, res) => {
   );
 });
 
-app.delete('/api/ipqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM ipqc WHERE id = ?`, [req.params.id], (err) => {
+app.delete('/api/pqc/:id', requireLogin, (req, res) => {
+  db.run(`DELETE FROM pqc WHERE id = ?`, [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ ok: true });
   });
