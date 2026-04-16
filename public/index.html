@@ -1188,7 +1188,14 @@ function refreshWeek(){
     function printBarcodeLabel(){ const svg = $('barcodeSvg'); if(!svg || !svg.innerHTML.trim() || !state.lastBarcodeReady) return showToast('먼저 바코드를 생성하세요.'); const win = window.open('', '_blank', 'width=520,height=420'); if(!win) return; const html = '<!DOCTYPE html><html><head><title>Barcode Print</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fff}.wrap{text-align:center;font-family:Arial,sans-serif}svg{max-width:100%;height:auto}</style></head><body><div class="wrap">' + svg.outerHTML + '</div></body></html>'; win.document.write(html); win.document.close(); setTimeout(() => { win.print(); setTimeout(() => win.close(), 300); }, 200); }
     async function confirmDeleteAll(){ if (String(state.user.role).toLowerCase() !== 'admin') return showToast('관리자만 전체 데이터 삭제가 가능합니다.'); const first = confirm('⚠️ 전체 데이터를 삭제합니다. 진행하시겠습니까?'); if(!first) return; const second = prompt("삭제를 진행하려면 'DELETE'를 입력하세요"); if(second !== 'DELETE') return showToast('삭제가 취소되었습니다.'); try { await api.post('/api/admin/delete-all', { confirm:'DELETE' }); await loadFromServer(); showToast('전체 데이터 삭제 완료'); } catch (err) { console.error(err); showToast(`데이터 삭제 실패: ${err.message}`); } }
     function refreshDashboard(){ refreshWeek(); renderOverviewBoard(); renderUpgradeHistory(); renderTables(); renderNonconformTable(); }
-    function switchTab(name, el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); $(`panel-${name}`).classList.add('active'); }
+    function switchTab(name, el){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+  document.getElementById('panel-' + name).classList.add('active');
+}
     async function initApp(){ initFilters(); tickClock(); setInterval(tickClock, 1000); renderTraceEmptyRows(); switchAuthMode('login'); $('pendingUserBody').innerHTML = `<tr><td colspan="9" class="empty-row">관리자 로그인 후 승인 대기 회원이 표시됩니다.</td></tr>`; document.addEventListener('input', e => { if(['reg_qty','reg_fail'].includes(e.target.id)) updateRegisterRate(); if(e.target.id === 'traceRawInput') runRawToFinishedTrace(); if(e.target.id === 'traceFinishedInput') runFinishedToRawTrace(); }); document.addEventListener('change', e => { if(['yearSel','monthSel','daySel'].includes(e.target.id)) refreshDashboard(); if(['reg_qty','reg_fail'].includes(e.target.id)) updateRegisterRate(); }); const authed = await bootstrapUser(); if (authed) await loadFromServer(); }
     initApp();
   </script>
