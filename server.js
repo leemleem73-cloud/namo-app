@@ -590,7 +590,10 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
     }
   );
 });
-
+app.get('/api/backup', (req, res) => {
+  const file = path.join(__dirname, 'data', 'namochemical.db');
+  res.download(file);
+});
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ error: '로그인 필요' });
