@@ -332,7 +332,7 @@
         <div class="status-pill" id="userBadge" onclick="toggleUserMenu(event)" style="cursor:pointer; position:relative;">
   사용자 확인 중…
 </div>
-      <div id="userDropdown" style="display:none; position:fixed; z-index:20000; background:#fff; border:1px solid #d6e1ed; border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.12); padding:8px; min-width:160px;">
+      <div id="userDropdown" onclick="event.stopPropagation()" style="display:none; position:fixed; z-index:20000; background:#fff; border:1px solid #d6e1ed; border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.12); padding:8px; min-width:160px;">
       <button class="btn b2" style="width:100%; justify-content:flex-start;" onclick="openChangePasswordModal()">비밀번호 변경</button>
       <button class="btn b2" style="width:100%; justify-content:flex-start;" onclick="logoutUser()">로그아웃</button>
       </div>
@@ -552,6 +552,34 @@
     };
 
     const $ = id => document.getElementById(id);
+    function toggleUserMenu(event) {
+  event.stopPropagation();
+
+  const badge = $('userBadge');
+  const dropdown = $('userDropdown');
+  if (!badge || !dropdown) return;
+
+  const rect = badge.getBoundingClientRect();
+
+  if (dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  dropdown.style.display = 'block';
+  dropdown.style.top = `${rect.bottom + 8}px`;
+  dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+}
+
+function closeUserMenu() {
+  const dropdown = $('userDropdown');
+  if (dropdown) dropdown.style.display = 'none';
+}
+
+function openChangePasswordModal() {
+  closeUserMenu();
+  openResetPasswordModal();
+}
     const pad = n => String(n).padStart(2,'0');
     const fmt = n => Number(n || 0).toLocaleString();
     const toText = v => v == null ? '' : String(v).trim();
