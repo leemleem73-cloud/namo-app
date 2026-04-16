@@ -591,7 +591,7 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
   );
 });
 app.get('/api/backup', (req, res) => {
-  const file = path.join(__dirname, 'data', 'namochemical.db');
+ const file = process.env.DB_PATH || path.join(__dirname, 'data', 'namochemical.db');
   res.download(file);
 });
 app.get('/api/auth/me', (req, res) => {
