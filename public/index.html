@@ -7,6 +7,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script>
+  let currentSheetType = 'IQC';
+
+  function setSheetType(type) {
+    currentSheetType = String(type || '').trim().toUpperCase();
+    console.log('현재 탭 =', currentSheetType);
+  }
+</script>
   <style>
     :root{
       --bg:#f4f7fb;
@@ -968,7 +976,7 @@ function openChangePasswordModal() {
     const rows = await readWorkbook(file);
 
 // 1️⃣ sheetType 먼저
-let sheetType = String(state.currentSheetType || '').trim().toUpperCase();
+let sheetType = String(currentSheetType || '').trim().toUpperCase();
 if (sheetType === 'IPQC') sheetType = 'PQC';
 if (sheetType === 'SUPPLIER') sheetType = 'SUPPLIERS';
 
