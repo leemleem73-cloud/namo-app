@@ -8,12 +8,19 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script>
-  let currentSheetType = 'IQC';
-
   function setSheetType(type) {
-    currentSheetType = String(type || '').trim().toUpperCase();
-    console.log('현재 탭 =', currentSheetType);
-  }
+  const map = {
+    iqc: 'IQC',
+    pqc: 'PQC',
+    oqc: 'OQC',
+    supplier: 'SUPPLIERS'
+  };
+
+  const key = String(type || '').trim().toLowerCase();
+  currentSheetType = map[key] || String(type || '').trim().toUpperCase();
+
+  console.log('현재 탭 =', currentSheetType);
+}
 </script>
   <style>
     :root{
