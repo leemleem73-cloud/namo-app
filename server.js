@@ -53,7 +53,7 @@ const adminLimiter = rateLimit({
   max: 30
 });
 
-const dbPath = path.join(__dirname, 'data', 'namochemical.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'data', 'namochemical.db');
 try {
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
