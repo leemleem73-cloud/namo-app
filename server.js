@@ -237,9 +237,13 @@ db.serialize(() => {
 
 function addChangeLog(message) {
   db.run(
-    `INSERT INTO change_logs (id, logDate, message) VALUES (?, ?, ?)`,
-    [makeId('log'), new Date().toLocaleString('ko-KR'), safeText(message, 500)]
-  );
+  `INSERT INTO change_logs (id, logDate, message) VALUES (?, ?, ?)`,
+  [
+    makeId('log'),
+    new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+    safeText(message, 500)
+  ]
+);
 }
 
 app.post('/api/auth/signup', authLimiter, async (req, res) => {
