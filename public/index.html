@@ -970,9 +970,27 @@ function openChangePasswordModal() {
     async function deleteWorklog(index){ const row=state.db.worklog[index]; if(!row) return; if(!confirm('이 작업일지를 삭제할까요?')) return; try{ await api.delete(`/api/worklog/${row.id}`); await loadFromServer(); showToast('작업일지 삭제 완료'); } catch(err){ console.error(err); showToast(`작업일지 삭제 실패: ${err.message}`); } }
     function downloadExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.pqc), 'PQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog'); const t=new Date(); XLSX.writeFile(wb, `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`); }
     async function uploadExcel(event) {
+    function downloadExcel(){ ... }
+
+let currentSheetType = 'IQC';
+
+function setSheetType(type) {
+  const map = {
+    iqc: 'IQC',
+    pqc: 'PQC',
+    oqc: 'OQC',
+    supplier: 'SUPPLIERS'
+  };
+
+  const key = String(type || '').trim().toLowerCase();
+  currentSheetType = map[key] || String(type || '').trim().toUpperCase();
+  console.log('현재 탭 =', currentSheetType);
+}
+
+async function uploadExcel(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-
+     
   try {
     const ok = confirm('엑셀 데이터 업로드를 진행합니다. 계속하시겠습니까?');
     if (!ok) {
