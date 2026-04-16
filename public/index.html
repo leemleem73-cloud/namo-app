@@ -892,9 +892,29 @@ async function apiRequest(url, options = {}) {
       const n=new Date(); y.value=n.getFullYear(); m.value=n.getMonth()+1; d.value='all';
     }
     function getDateValue(row){ return toText(row?.date || row?.workDate || ''); }
-    function matchSelectedDate(row){ ... }
-    function getFilteredRows(rows){ ... }
-    function refreshWeek(){
+
+function matchSelectedDate(row){
+  const y = String($('yearSel').value || '');
+  const m = pad(Number($('monthSel').value || 0));
+  const d = $('daySel').value;
+
+  const date = getDateValue(row);
+  if (!date) return false;
+
+  const [yy = '', mm = '', dd = ''] = String(date).split('-');
+
+  if (yy !== y) return false;
+  if (mm !== m) return false;
+  if (d !== 'all' && dd !== pad(Number(d))) return false;
+
+  return true;
+}
+
+function getFilteredRows(rows){
+  return sliceForUI((rows || []).filter(matchSelectedDate));
+}
+
+function refreshWeek(){
       const y=$('yearSel').value, m=$('monthSel').value, d=$('daySel').value;
       $('weekChip').textContent = d==='all' ? `${y}년 ${m}월 전체` : `${y}년 ${m}월 ${d}일`;
       $('weekRangeText').textContent = d==='all' ? `${y}년 ${m}월 전체 조회` : `${y}년 ${m}월 ${d}일 조회`;
