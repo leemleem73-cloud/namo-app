@@ -144,12 +144,14 @@
     .barcode-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
     .barcode-preview-box{display:flex;align-items:center;justify-content:center;min-height:180px;border-radius:16px;background:#fff;padding:12px;border:1px solid var(--line)}
     .barcode-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
-    .trace-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .trace-card{overflow:hidden}
+    .trace-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+    .trace-card{overflow:hidden;display:flex;flex-direction:column;min-height:420px}
+    .trace-body{padding:16px;display:flex;flex-direction:column;flex:1}
+    .trace-table-wrap{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;flex:1}
+    .section-unified{min-height:420px}
     .trace-head{padding:18px;color:var(--title);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbfdff 0%, #f4f8fc 100%)}
     .trace-title h3{margin:0;font-size:22px;letter-spacing:-.02em}
     .trace-title p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.7}
-    .trace-body{padding:16px}
     .trace-search{display:grid;grid-template-columns:160px minmax(0,1fr) auto;gap:10px;align-items:center;background:#f8fbff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
     .trace-label{font-size:13px;font-weight:800;color:#44556a}
     .trace-input{width:100%;height:44px;padding:0 14px;font-size:15px;font-weight:800;text-align:left}
@@ -158,7 +160,6 @@
     .trace-meta strong{font-size:14px;color:var(--title)}
     .trace-meta span{font-size:12px;color:var(--muted)}
     .trace-count{padding:7px 10px;border-radius:999px;background:#eef3f8;border:1px solid var(--line);font-size:11px;font-weight:800;color:#44556a}
-    .trace-table-wrap{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
     .trace-empty{padding:38px 20px;text-align:center;color:#7a8796;font-size:13px}
     .upgrade-list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto}
     .upgrade-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,#ffffff 0%,#f9fbfe 100%)}
@@ -468,9 +469,37 @@
             <div class="table"><table><thead><tr><th>#</th><th>공급업체명</th><th>담당자</th><th>연락처</th><th>카테고리</th><th>상태</th><th>관리</th></tr></thead><tbody id="supplierMasterBody"></tbody></table></div>
           </div>
           </div>
-        <div id="panel-worklog" class="panel active">
-  
-          <div id="panel-trace" class="panel">
+        <div id="panel-worklog" class="panel">
+          <div class="card">
+            <div class="head">
+              <div class="title">생산 작업일지</div>
+              <button class="btn b1" onclick="openWorklogModal()">작성</button>
+            </div>
+            <div class="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>생산일자</th>
+                    <th>완제품 LOT No.</th>
+                    <th>투입순서</th>
+                    <th>원자재명</th>
+                    <th>협력업체</th>
+                    <th>투입량 (kg)</th>
+                    <th>투입비율 (%)</th>
+                    <th>LOT No.</th>
+                    <th>투입시간</th>
+                    <th>작업자</th>
+                    <th>비고</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="worklogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-trace" class="panel">
           <div class="trace-wrap">
             <div class="trace-card">
               <div class="trace-head"><div class="trace-title"><h3>원자재 → 완제품</h3><p>부품 Lot 기준으로 연결된 완제품과 출하 품질 이력을 조회합니다.</p></div></div>
@@ -492,7 +521,7 @@
         </div>
 
         <div id="panel-nonconform" class="panel">
-          <div class="card">
+          <div class="card section-unified">
             <div class="head"><div style="display:flex;align-items:center;gap:10px"><div class="title">부적합 관리</div><div class="badge" id="ncCount">0건</div></div><button class="btn b1" onclick="openNonconformModal()">등록</button></div>
             <div class="week" style="margin-bottom:12px;padding:12px 14px">
               <span class="muted"><strong>조회</strong></span>
@@ -506,8 +535,8 @@
         </div>
 
         <div id="panel-approval" class="panel">
-          <div class="card">
-            <div class="head"><div style="display:flex;align-items:center;gap:10px"><div class="title">전체 승인 관리</div><div class="badge" id="pendingUserCount">0명</div></div><button class="btn b2" onclick="loadAllUsers()">회원목록 새로고침</button></div>
+          <div class="card section-unified">
+            <div class="head"><div style="display:flex;align-items:center;gap:10px"><div class="title">전체 회원등록</div><div class="badge" id="pendingUserCount">0명</div></div><button class="btn b2" onclick="loadAllUsers()">회원목록 새로고침</button></div>
             <div class="table-box table"><table><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>부서 / 팀</th><th>직책</th><th>권한</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead><tbody id="pendingUserBody"></tbody></table></div>
           </div>
         </div>
