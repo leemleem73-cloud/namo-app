@@ -968,7 +968,7 @@ function openChangePasswordModal() {
     const rows = await readWorkbook(file);
 
 // 1️⃣ sheetType 먼저
-let sheetType = String(currentSheetType || '').trim().toUpperCase();
+let sheetType = String(state.currentSheetType || '').trim().toUpperCase();
 if (sheetType === 'IPQC') sheetType = 'PQC';
 if (sheetType === 'SUPPLIER') sheetType = 'SUPPLIERS';
 
