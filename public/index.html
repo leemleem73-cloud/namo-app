@@ -974,27 +974,36 @@ function openChangePasswordModal() {
     }
 
     const rows = await readWorkbook(file);
+    const sheetType = currentSheetType;
 
-    let sheetType = String(currentSheetType || '').trim().toUpperCase();
-    if (sheetType === 'IPQC') sheetType = 'PQC';
-    if (sheetType === 'SUPPLIER') sheetType = 'SUPPLIERS';
-
-    console.log('현재 탭 =', currentSheetType);
-    console.log('sheetType =', sheetType);
+    console.log('currentSheetType =', currentSheetType);
+    console.log('rows =', rows);
 
     let uploadRows = [];
-    if (sheetType === 'IQC') uploadRows = rows.iqcRows;
-    if (sheetType === 'PQC') uploadRows = rows.pqcRows;
-    if (sheetType === 'OQC') uploadRows = rows.oqcRows;
-    if (sheetType === 'SUPPLIERS') uploadRows = rows.supplierRows;
-    if (sheetType === 'WORKLOG') uploadRows = rows.worklogRows;
 
-    if (!uploadRows || uploadRows.length === 0) {
-      throw new Error('선택한 탭에 업로드할 데이터가 없습니다.');
+    switch (sheetType) {
+      case 'IQC':
+        uploadRows = rows.iqcRows;
+        break;
+      case 'PQC':
+        uploadRows = rows.pqcRows;
+        break;
+      case 'OQC':
+        uploadRows = rows.oqcRows;
+        break;
+      case 'SUPPLIERS':
+        uploadRows = rows.supplierRows;
+        break;
+      case 'WORKLOG':
+        uploadRows = rows.worklogRows;
+        break;
+      default:
+        throw new Error(`지원하지 않는 업로드 대상입니다: ${sheetType}`);
     }
 
-    console.log('uploadRows length =', uploadRows.length);
-    console.log('uploadRows sample =', uploadRows[0]);
+    if (!uploadRows || uploadRows.length === 0) {
+      throw new Error(`${sheetType} 업로드 대상 데이터가 없습니다.`);
+    }
 
     const totalRows =
       rows.iqcRows.length +
@@ -1013,7 +1022,7 @@ function openChangePasswordModal() {
       fileName: file.name
     });
 
-    const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`);
+    const second = confirm(`${sheetType} ${uploadRows.length}건을 서버 반영합니다. 계속하시겠습니까?`);
     if (!second) {
       event.target.value = '';
       return;
