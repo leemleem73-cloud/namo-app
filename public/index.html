@@ -967,35 +967,43 @@ function openChangePasswordModal() {
 
     const rows = await readWorkbook(file);
 
-    // ✅ 여기 추가 (핵심)
-    let sheetType = String(currentSheetType || '').trim().toUpperCase();
-    if (sheetType === 'IPQC') sheetType = 'PQC';
-    if (sheetType === 'SUPPLIER') sheetType = 'SUPPLIERS';
+// 1️⃣ sheetType 먼저
+let sheetType = String(currentSheetType || '').trim().toUpperCase();
+if (sheetType === 'IPQC') sheetType = 'PQC';
+if (sheetType === 'SUPPLIER') sheetType = 'SUPPLIERS';
 
-    console.log('sheetType =', sheetType);
+console.log('sheetType =', sheetType);
 
-    const totalRows =
-      rows.iqcRows.length +
-      rows.pqcRows.length +
-      rows.oqcRows.length +
-      rows.supplierRows.length +
-      rows.worklogRows.length;
+// 2️⃣ 선택된 탭 데이터만 추출
+let uploadRows = [];
+if (sheetType === 'IQC') uploadRows = rows.iqcRows;
+if (sheetType === 'PQC') uploadRows = rows.pqcRows;
+if (sheetType === 'OQC') uploadRows = rows.oqcRows;
+if (sheetType === 'SUPPLIERS') uploadRows = rows.supplierRows;
+if (sheetType === 'WORKLOG') uploadRows = rows.worklogRows;
 
-    if (totalRows > MAX_UPLOAD_ROWS)
-      throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`);
+// 3️⃣ 데이터 없으면 막기
+if (!uploadRows || uploadRows.length === 0) {
+  throw new Error('선택한 탭에 업로드할 데이터가 없습니다.');
+}
+
+// 4️⃣ 전체 건수 계산 (기존 유지)
+const totalRows =
+  rows.iqcRows.length +
+  rows.pqcRows.length +
+  rows.oqcRows.length +
+  rows.supplierRows.length +
+  rows.worklogRows.length;
+
+if (totalRows > MAX_UPLOAD_ROWS)
+  throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`);
 
     // ✅ preview 수정
     await api.post('/api/import/preview', {
-      sheetType,   // 🔥 이거 반드시 추가
-      rows: [
-        ...rows.iqcRows,
-        ...rows.pqcRows,
-        ...rows.oqcRows,
-        ...rows.supplierRows,
-        ...rows.worklogRows
-      ],
-      fileName: file.name
-    });
+  sheetType,
+  rows: uploadRows,
+  fileName: file.name
+});
 
     const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`);
     if(!second){
@@ -1005,16 +1013,10 @@ function openChangePasswordModal() {
 
     // ✅ commit도 동일하게 수정
     await api.post('/api/import/commit', {
-      sheetType,   // 🔥 이것도 추가
-      rows: [
-        ...rows.iqcRows,
-        ...rows.pqcRows,
-        ...rows.oqcRows,
-        ...rows.supplierRows,
-        ...rows.worklogRows
-      ],
-      fileName: file.name
-    });
+  sheetType,
+  rows: uploadRows,
+  fileName: file.name
+});
 
     await loadFromServer();
     showToast('엑셀 반영 완료');
