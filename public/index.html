@@ -638,21 +638,77 @@ function openChangePasswordModal() {
     function calcRate(fail, qty){ const q=Number(qty||0), f=Number(fail||0); return q>0 ? Number(((f/q)*100).toFixed(2)) : 0; }
     function calcJudgeFromFail(fail){ return Number(fail||0) > 0 ? '불합격' : '합격'; }
     function goHome(e){ if(e) e.preventDefault(); const overviewTab = document.querySelector('.tab'); if(overviewTab) switchTab('overview', overviewTab); window.scrollTo({ top:0, behavior:'smooth' }); }
-    async function apiRequest(url, options = {}) {
-      const config = { method:'GET', credentials:'include', headers:{ ...(options.headers || {}) }, ...options };
-      if (config.body && !(config.body instanceof FormData) && !config.headers['Content-Type']) config.headers['Content-Type'] = 'application/json';
-      let res;
-      try { res = await fetch(url, config); } catch (err) { throw new Error(`네트워크 오류: ${url}`); }
-      const contentType = res.headers.get('content-type') || '';
-      let data = null;
-      if (contentType.includes('application/json')) data = await res.json().catch(() => null);
-      else data = await res.text().catch(() => null);
-      if (!res.ok) {
-        const msg = data?.error || data?.message || (typeof data === 'string' ? data : '') || `요청 실패 (${res.status})`;
-        throw new Error(msg);
-      }
-      return data;
-    }
+    const API_BASE =
+  window.location.protocol === 'file:'
+    ? 'http://localhost:3000'
+    : window.location.origin;
+
+function resolveApiUrl(url) {
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/api/')) return `${API_BASE}${url}`;
+  if (url.startsWith('/')) return `${API_BASE}/api${url}`;
+  return `${API_BASE}/api/${url}`;
+}
+
+async function apiRequest(url, options = {}) {
+  const finalUrl = resolveApiUrl(url);
+
+  const config = {
+    method: 'GET',
+    credentials: 'include',
+    headers: { ...(options.headers || {}) },
+    ...options
+  };
+
+  if (
+    config.body &&
+    !(config.body instanceof FormData) &&
+    !config.headers['Content-Type']
+  ) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+
+  let res;
+
+  try {
+    res = await fetch(finalUrl, config);
+  } catch (err) {
+    console.error('FETCH 실패', {
+      url: finalUrl,
+      method: config.method,
+      originalError: err
+    });
+    throw new Error(`네트워크 오류: ${finalUrl} / ${err.message}`);
+  }
+
+  const contentType = res.headers.get('content-type') || '';
+  let data = null;
+
+  if (contentType.includes('application/json')) {
+    data = await res.json().catch(() => null);
+  } else {
+    data = await res.text().catch(() => null);
+  }
+
+  if (!res.ok) {
+    const msg =
+      data?.error ||
+      data?.message ||
+      (typeof data === 'string' ? data : '') ||
+      `요청 실패 (${res.status})`;
+
+    console.error('API 응답 실패', {
+      url: finalUrl,
+      method: config.method,
+      status: res.status,
+      data
+    });
+
+    throw new Error(`${msg}`);
+  }
+
+  return data;
+}
     const api = {
       get: url => apiRequest(url),
       post: (url, body) => apiRequest(url, { method:'POST', body: body instanceof FormData ? body : JSON.stringify(body) }),
