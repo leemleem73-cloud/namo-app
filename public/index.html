@@ -496,7 +496,36 @@
     </div>
   </div>
 </div>
-        <div id="panel-trace" class="panel">
+       <div id="panel-worklog" class="panel">
+  <div class="card">
+    <div class="head">
+      <div class="title">생산 작업일지</div>
+      <button class="btn b1" onclick="openWorklogModal()">작성</button>
+    </div>
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>생산일자</th>
+            <th>완제품 LOT No.</th>
+            <th>투입순서</th>
+            <th>원자재명</th>
+            <th>협력업체</th>
+            <th>투입량 (kg)</th>
+            <th>투입비율 (%)</th>
+            <th>LOT No.</th>
+            <th>투입시간</th>
+            <th>작업자</th>
+            <th>비고</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="worklogBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div> 
+          <div id="panel-trace" class="panel">
           <div class="trace-wrap">
             <div class="trace-card">
               <div class="trace-head"><div class="trace-title"><h3>원자재 → 완제품</h3><p>부품 Lot 기준으로 연결된 완제품과 출하 품질 이력을 조회합니다.</p></div></div>
