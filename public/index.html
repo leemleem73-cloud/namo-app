@@ -892,6 +892,8 @@ async function apiRequest(url, options = {}) {
       const n=new Date(); y.value=n.getFullYear(); m.value=n.getMonth()+1; d.value='all';
     }
     function getDateValue(row){ return toText(row?.date || row?.workDate || ''); }
+    function matchSelectedDate(row){ ... }
+    function getFilteredRows(rows){ ... }
     function refreshWeek(){
       const y=$('yearSel').value, m=$('monthSel').value, d=$('daySel').value;
       $('weekChip').textContent = d==='all' ? `${y}년 ${m}월 전체` : `${y}년 ${m}월 ${d}일`;
