@@ -357,7 +357,7 @@
       <div class="tabs">
         <div class="tab active" onclick="switchTab('overview',this)">종합현황</div>
         <div class="tab" onclick="switchTab('iqc',this)">입고검사</div>
-        <div class="tab" onclick="switchTab('ipqc',this)">공정검사</div>
+        <div class="tab" onclick="switchTab('pqc',this)">공정검사</div>
         <div class="tab" onclick="switchTab('oqc',this)">출하검사</div>
         <div class="tab" onclick="switchTab('supplier',this)">협력업체</div>
         <div class="tab" onclick="switchTab('worklog',this)">생산작업일지</div>
@@ -405,12 +405,12 @@
                 </section>
                 <section class="overview-kpi-card">
                   <div class="overview-kpi-head"><h3>공정검사</h3><div class="overview-kpi-badge">PQC</div></div>
-                  <div class="overview-kpi-number"><strong id="ovIpqcTotalHero">0</strong><span>건</span></div>
-                  <div class="ov-chart-box"><div class="ov-chart"><canvas id="ipqcMonthlyChart"></canvas></div></div>
+                  <div class="overview-kpi-number"><strong id="ovpqcTotalHero">0</strong><span>건</span></div>
+                  <div class="ov-chart-box"><div class="ov-chart"><canvas id="pqcMonthlyChart"></canvas></div></div>
                   <div class="overview-kpi-stats">
-                    <div class="overview-kpi-mini"><em>합격</em><b id="ovIpqcPass">0</b></div>
-                    <div class="overview-kpi-mini"><em>불합격</em><b id="ovIpqcFail">0</b></div>
-                    <div class="overview-kpi-mini"><em>검사건수</em><b id="ovIpqcTotal">0</b></div>
+                    <div class="overview-kpi-mini"><em>합격</em><b id="ovpqcPass">0</b></div>
+                    <div class="overview-kpi-mini"><em>불합격</em><b id="ovpqcFail">0</b></div>
+                    <div class="overview-kpi-mini"><em>검사건수</em><b id="ovpqcTotal">0</b></div>
                   </div>
                 </section>
                 <section class="overview-kpi-card">
@@ -428,7 +428,7 @@
 
             <div class="overview-bottom-grid">
               <div class="ov-card"><div class="ov-title">수입검사 판정현황</div><div class="ov-chart-box"><div class="ov-donut"><canvas id="iqcDonutChart"></canvas></div></div></div>
-              <div class="ov-card"><div class="ov-title">공정검사 판정현황</div><div class="ov-chart-box"><div class="ov-donut"><canvas id="ipqcDonutChart"></canvas></div></div></div>
+              <div class="ov-card"><div class="ov-title">공정검사 판정현황</div><div class="ov-chart-box"><div class="ov-donut"><canvas id="pqcDonutChart"></canvas></div></div></div>
               <div class="ov-card"><div class="ov-title">출하검사 판정현황</div><div class="ov-chart-box"><div class="ov-donut"><canvas id="oqcDonutChart"></canvas></div></div></div>
             </div>
 
@@ -437,7 +437,7 @@
                 <div class="overview-progress-head"><h3>품질 운영 지표</h3><div class="badge">월간 기준</div></div>
                 <div class="overview-progress-bar-wrap">
                   <div class="overview-progress-row"><div class="overview-progress-label">수입검사 합격률</div><div class="overview-progress-track"><div id="iqcPassRateBar" class="overview-progress-fill" style="width:0%"></div></div><div id="iqcPassRateText" class="overview-progress-value">0%</div></div>
-                  <div class="overview-progress-row"><div class="overview-progress-label">공정검사 합격률</div><div class="overview-progress-track"><div id="ipqcPassRateBar" class="overview-progress-fill green" style="width:0%"></div></div><div id="ipqcPassRateText" class="overview-progress-value">0%</div></div>
+                  <div class="overview-progress-row"><div class="overview-progress-label">공정검사 합격률</div><div class="overview-progress-track"><div id="pqcPassRateBar" class="overview-progress-fill green" style="width:0%"></div></div><div id="pqcPassRateText" class="overview-progress-value">0%</div></div>
                   <div class="overview-progress-row"><div class="overview-progress-label">출하검사 합격률</div><div class="overview-progress-track"><div id="oqcPassRateBar" class="overview-progress-fill amber" style="width:0%"></div></div><div id="oqcPassRateText" class="overview-progress-value">0%</div></div>
                 </div>
               </section>
@@ -460,7 +460,7 @@
         </div>
 
         <div id="panel-iqc" class="panel"><div class="card"><div class="head"><div class="title">입고검사 IQC</div><button class="btn b1" onclick="openRegisterModal('iqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일</th><th>LOT No</th><th>업체명</th><th>원료명</th><th>검사자</th><th>검사수량</th><th>불합격</th><th>불량률</th><th>판정</th><th>관리</th></tr></thead><tbody id="iqcBody"></tbody></table></div></div></div>
-        <div id="panel-ipqc" class="panel"><div class="card"><div class="head"><div class="title">공정검사 PQC</div><button class="btn b1" onclick="openRegisterModal('ipqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일자</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도</th><th>고형분</th><th>입도</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="ipqcBody"></tbody></table></div></div></div>
+        <div id="panel-pqc" class="panel"><div class="card"><div class="head"><div class="title">공정검사 PQC</div><button class="btn b1" onclick="openRegisterModal('pqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일자</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도</th><th>고형분</th><th>입도</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="pqcBody"></tbody></table></div></div></div>
         <div id="panel-oqc" class="panel"><div class="card"><div class="head"><div class="title">출하검사 OQC</div><button class="btn b1" onclick="openRegisterModal('oqc')">등록</button></div><div class="table-box table"><table><thead><tr><th>검사일자</th><th>고객사명</th><th>제품명</th><th>LOT No</th><th>육안검사</th><th>점도(cP)</th><th>고형분(wt.%)</th><th>입도(㎛)</th><th>접착력(mm)</th><th>절연저항(MΩ)</th><th>전해액 팽윤성(%)</th><th>수분(ppm)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>관리</th></tr></thead><tbody id="oqcBody"></tbody></table></div></div></div>
 
         <div id="panel-supplier" class="panel">
@@ -558,13 +558,13 @@
     const UI_PAGE_SIZE = 200;
     const state = {
       user: { id:'', name:'', role:'guest', authenticated:false },
-      db: { suppliers:[], iqc:[], ipqc:[], oqc:[], worklog:[], traceability:[], changeLogs:[], nonconform:[] },
+      db: { suppliers:[], iqc:[], pqc:[], oqc:[], worklog:[], traceability:[], changeLogs:[], nonconform:[] },
       admin: { pendingUsers: [], users: [] },
       iqcMonthlyChart: null,
-      ipqcMonthlyChart: null,
+      pqcMonthlyChart: null,
       oqcMonthlyChart: null,
       iqcDonutChart: null,
-      ipqcDonutChart: null,
+      pqcDonutChart: null,
       oqcDonutChart: null,
       registerEditIndex: null,
       supplierEditIndex: null,
@@ -948,7 +948,7 @@ function refreshWeek(){
       const traces = state.db.worklog.map(w => {
         let iqc = state.db.iqc.find(x => toText(x.lot) === toText(w.lotNo)) || null;
         if(!iqc) iqc = state.db.iqc.find(x => toText(x.item) === toText(w.material)) || null;
-        const pqc = state.db.ipqc.find(x => toText(x.lot) === toText(w.finishedLot)) || null;
+        const pqc = state.db.pqc.find(x => toText(x.lot) === toText(w.finishedLot)) || null;
         const oqc = state.db.oqc.find(x => toText(x.lot) === toText(w.finishedLot)) || null;
         const supplierName = toText(w.supName || (iqc?.supplier || ''));
         const iqcJudge = iqc ? calcJudgeFromFail(iqc.fail) : '';
@@ -968,19 +968,19 @@ function refreshWeek(){
     function renderOverviewBoard(){
       const selectedYear = String($('yearSel').value);
       const iqcYearRows = (state.db.iqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
-      const ipqcYearRows = (state.db.ipqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
+      const pqcYearRows = (state.db.pqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
       const oqcYearRows = (state.db.oqc || []).filter(r => String(toText(r.date).split('-')[0] || '') === selectedYear);
       const iqcStats = calcPassFail(iqcYearRows, r => calcJudgeFromFail(r.fail) === '합격');
-      const ipqcStats = calcPassFail(ipqcYearRows, r => (r.judge || calcJudgeFromFail(r.fail)) === '합격');
+      const pqcStats = calcPassFail(pqcYearRows, r => (r.judge || calcJudgeFromFail(r.fail)) === '합격');
       const oqcStats = calcPassFail(oqcYearRows, r => (r.judge || calcJudgeFromFail(r.fail)) === '합격');
-      $('ovIqcTotal').textContent = fmt(iqcStats.total); $('ovIqcPass').textContent = fmt(iqcStats.pass); $('ovIqcFail').textContent = fmt(iqcStats.fail); $('ovIpqcTotal').textContent = fmt(ipqcStats.total); $('ovIpqcPass').textContent = fmt(ipqcStats.pass); $('ovIpqcFail').textContent = fmt(ipqcStats.fail); $('ovOqcTotal').textContent = fmt(oqcStats.total); $('ovOqcPass').textContent = fmt(oqcStats.pass); $('ovOqcFail').textContent = fmt(oqcStats.fail); $('ovIqcTotalHero').textContent = fmt(iqcStats.total); $('ovIpqcTotalHero').textContent = fmt(ipqcStats.total); $('ovOqcTotalHero').textContent = fmt(oqcStats.total);
-      const iqcRate = iqcStats.total ? ((iqcStats.pass / iqcStats.total) * 100) : 0; const ipqcRate = ipqcStats.total ? ((ipqcStats.pass / ipqcStats.total) * 100) : 0; const oqcRate = oqcStats.total ? ((oqcStats.pass / oqcStats.total) * 100) : 0;
-      $('iqcPassRateBar').style.width = `${iqcRate.toFixed(1)}%`; $('ipqcPassRateBar').style.width = `${ipqcRate.toFixed(1)}%`; $('oqcPassRateBar').style.width = `${oqcRate.toFixed(1)}%`; $('iqcPassRateText').textContent = `${iqcRate.toFixed(1)}%`; $('ipqcPassRateText').textContent = `${ipqcRate.toFixed(1)}%`; $('oqcPassRateText').textContent = `${oqcRate.toFixed(1)}%`;
+      $('ovIqcTotal').textContent = fmt(iqcStats.total); $('ovIqcPass').textContent = fmt(iqcStats.pass); $('ovIqcFail').textContent = fmt(iqcStats.fail); $('ovpqcTotal').textContent = fmt(pqcStats.total); $('ovpqcPass').textContent = fmt(pqcStats.pass); $('ovpqcFail').textContent = fmt(pqcStats.fail); $('ovOqcTotal').textContent = fmt(oqcStats.total); $('ovOqcPass').textContent = fmt(oqcStats.pass); $('ovOqcFail').textContent = fmt(oqcStats.fail); $('ovIqcTotalHero').textContent = fmt(iqcStats.total); $('ovpqcTotalHero').textContent = fmt(pqcStats.total); $('ovOqcTotalHero').textContent = fmt(oqcStats.total);
+      const iqcRate = iqcStats.total ? ((iqcStats.pass / iqcStats.total) * 100) : 0; const pqcRate = pqcStats.total ? ((pqcStats.pass / pqcStats.total) * 100) : 0; const oqcRate = oqcStats.total ? ((oqcStats.pass / oqcStats.total) * 100) : 0;
+      $('iqcPassRateBar').style.width = `${iqcRate.toFixed(1)}%`; $('pqcPassRateBar').style.width = `${pqcRate.toFixed(1)}%`; $('oqcPassRateBar').style.width = `${oqcRate.toFixed(1)}%`; $('iqcPassRateText').textContent = `${iqcRate.toFixed(1)}%`; $('pqcPassRateText').textContent = `${pqcRate.toFixed(1)}%`; $('oqcPassRateText').textContent = `${oqcRate.toFixed(1)}%`;
       renderSimpleBarChart('iqcMonthlyChart', 'iqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.iqc), '#1654b9');
-      renderSimpleBarChart('ipqcMonthlyChart', 'ipqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.ipqc), '#48a7ff');
+      renderSimpleBarChart('pqcMonthlyChart', 'pqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.pqc), '#48a7ff');
       renderSimpleBarChart('oqcMonthlyChart', 'oqcMonthlyChart', monthLabels(), getMonthlyCounts(state.db.oqc), '#164d8f');
       renderSimpleDonutChart('iqcDonutChart', 'iqcDonutChart', [iqcStats.pass, iqcStats.fail, 0]);
-      renderSimpleDonutChart('ipqcDonutChart', 'ipqcDonutChart', [ipqcStats.pass, ipqcStats.fail, 0]);
+      renderSimpleDonutChart('pqcDonutChart', 'pqcDonutChart', [pqcStats.pass, pqcStats.fail, 0]);
       renderSimpleDonutChart('oqcDonutChart', 'oqcDonutChart', [oqcStats.pass, oqcStats.fail, 0]);
     }
     function renderUpgradeHistory(){
@@ -995,10 +995,10 @@ function refreshWeek(){
     function sliceForUI(rows){ return rows.slice(0, UI_PAGE_SIZE); }
     function renderTables(){
       const iqcRows = getFilteredRows(state.db.iqc);
-      const ipqcRows = getFilteredRows(state.db.ipqc);
+      const pqcRows = getFilteredRows(state.db.pqc);
       const oqcRows = getFilteredRows(state.db.oqc);
       if(!iqcRows.length) renderEmptyRow('iqcBody',10); else $('iqcBody').innerHTML = iqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.lot)}</td><td>${escapeHtml(r.supplier || '-')}</td><td>${escapeHtml(r.item || '-')}</td><td>${escapeHtml(r.inspector || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${calcRate(r.fail, r.qty).toFixed(2)}%</td><td>${badgeState(calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('iqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('iqc','${r.id}')">삭제</button></td></tr>`).join('');
-      if(!ipqcRows.length) renderEmptyRow('ipqcBody',11); else $('ipqcBody').innerHTML = ipqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('ipqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('ipqc','${r.id}')">삭제</button></td></tr>`).join('');
+      if(!pqcRows.length) renderEmptyRow('pqcBody',11); else $('pqcBody').innerHTML = pqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('pqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('pqc','${r.id}')">삭제</button></td></tr>`).join('');
       if(!oqcRows.length) renderEmptyRow('oqcBody',16); else $('oqcBody').innerHTML = oqcRows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.customer || '-')}</td><td>${escapeHtml(r.product || '-')}</td><td>${escapeHtml(r.lot || '-')}</td><td>${escapeHtml(r.visual || '-')}</td><td>${escapeHtml(r.viscosity || '-')}</td><td>${escapeHtml(r.solid || '-')}</td><td>${escapeHtml(r.particle || '-')}</td><td>${escapeHtml(r.adhesion || '-')}</td><td>${escapeHtml(r.resistance || '-')}</td><td>${escapeHtml(r.swelling || '-')}</td><td>${escapeHtml(r.moisture || '-')}</td><td>${fmt(r.qty)}</td><td>${fmt(r.fail)}</td><td>${badgeState(r.judge || calcJudgeFromFail(r.fail))}</td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('oqc','${r.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('oqc','${r.id}')">삭제</button></td></tr>`).join('');
       $('supplierCount').textContent = `${state.db.suppliers.length}개`;
       if(!state.db.suppliers.length) renderEmptyRow('supplierMasterBody',7); else $('supplierMasterBody').innerHTML = sliceForUI(state.db.suppliers).map((s, idx)=>`<tr><td>${idx+1}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.manager || '-')}</td><td>${escapeHtml(s.phone || '-')}</td><td>${escapeHtml(s.category || '-')}</td><td><span class="state ${(s.status||'사용')==='사용'?'ok':'ng'}">${escapeHtml(s.status||'사용')}</span></td><td><button class="btn b2" style="height:32px;padding:0 10px" onclick="editRowById('suppliers','${s.id}')">수정</button> <button class="btn b4" style="height:32px;padding:0 10px" onclick="deleteRowById('suppliers','${s.id}')">삭제</button></td></tr>`).join('');
@@ -1039,9 +1039,9 @@ function refreshWeek(){
     async function deleteUser(id, name) { const ok = confirm(`${name || '해당 회원'} 계정을 삭제하시겠습니까?`); if (!ok) return; try { const result = await api.delete(`/api/admin/users/${id}`); showToast(result?.message || '회원 삭제가 완료되었습니다.'); await loadAllUsers(); } catch (err) { console.error(err); showToast(`회원 삭제 실패: ${err.message}`); } }
     async function loadFromServer(){
       try {
-        const results = await Promise.allSettled([api.get('/api/suppliers'), api.get('/api/iqc'), api.get('/api/ipqc'), api.get('/api/oqc'), api.get('/api/worklog'), api.get('/api/change-logs'), api.get('/api/nonconform')]);
+        const results = await Promise.allSettled([api.get('/api/suppliers'), api.get('/api/iqc'), api.get('/api/pqc'), api.get('/api/oqc'), api.get('/api/worklog'), api.get('/api/change-logs'), api.get('/api/nonconform')]);
         const pick = i => results[i].status === 'fulfilled' && Array.isArray(results[i].value) ? results[i].value : [];
-        state.db.suppliers = pick(0); state.db.iqc = pick(1); state.db.ipqc = pick(2); state.db.oqc = pick(3); state.db.worklog = pick(4); state.db.changeLogs = pick(5); state.db.nonconform = pick(6);
+        state.db.suppliers = pick(0); state.db.iqc = pick(1); state.db.pqc = pick(2); state.db.oqc = pick(3); state.db.worklog = pick(4); state.db.changeLogs = pick(5); state.db.nonconform = pick(6);
         refreshDashboard();
         if (String(state.user.role).toLowerCase() === 'admin') await loadAllUsers();
         const hasFail = results.some(r => r.status === 'rejected');
@@ -1061,12 +1061,12 @@ function refreshWeek(){
     function openRegisterModal(type, index=null){
       state.registerEditIndex = index; $('registerType').value = type; $('registerModal').style.display = 'flex'; const title = $('registerTitle'); const fields = $('registerFields');
       if(type === 'iqc'){ title.textContent = index===null ? '입고검사 IQC 등록' : '입고검사 IQC 수정'; fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일</label><input id="reg_date" type="date"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>업체명</label><input id="reg_supplier"></div><div class="field"><label>원료명</label><input id="reg_item"></div><div class="field"><label>검사자</label><input id="reg_inspector"></div>`); const row = index!==null ? state.db.iqc[index] : null; $('reg_date').value = row?.date || todayStr(); $('reg_lot').value=row?.lot||''; $('reg_supplier').value=row?.supplier||''; $('reg_item').value=row?.item||''; $('reg_inspector').value=row?.inspector||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=calcJudgeFromFail(row?.fail ?? 0); }
-      if(type === 'ipqc'){ title.textContent = index===null ? '공정검사 PQC 등록' : '공정검사 PQC 수정'; fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일자</label><input id="reg_date" type="date"></div><div class="field"><label>제품명</label><input id="reg_product"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>육안검사</label><input id="reg_visual"></div><div class="field"><label>점도</label><input id="reg_viscosity"></div><div class="field"><label>고형분</label><input id="reg_solid"></div><div class="field"><label>입도</label><input id="reg_particle"></div>`); const row = index!==null ? state.db.ipqc[index] : null; $('reg_date').value=row?.date || todayStr(); $('reg_product').value=row?.product||''; $('reg_lot').value=row?.lot||''; $('reg_visual').value=row?.visual||''; $('reg_viscosity').value=row?.viscosity||''; $('reg_solid').value=row?.solid||''; $('reg_particle').value=row?.particle||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=row?.judge||calcJudgeFromFail(row?.fail ?? 0); }
+      if(type === 'pqc'){ title.textContent = index===null ? '공정검사 PQC 등록' : '공정검사 PQC 수정'; fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일자</label><input id="reg_date" type="date"></div><div class="field"><label>제품명</label><input id="reg_product"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>육안검사</label><input id="reg_visual"></div><div class="field"><label>점도</label><input id="reg_viscosity"></div><div class="field"><label>고형분</label><input id="reg_solid"></div><div class="field"><label>입도</label><input id="reg_particle"></div>`); const row = index!==null ? state.db.pqc[index] : null; $('reg_date').value=row?.date || todayStr(); $('reg_product').value=row?.product||''; $('reg_lot').value=row?.lot||''; $('reg_visual').value=row?.visual||''; $('reg_viscosity').value=row?.viscosity||''; $('reg_solid').value=row?.solid||''; $('reg_particle').value=row?.particle||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=row?.judge||calcJudgeFromFail(row?.fail ?? 0); }
       if(type === 'oqc'){ title.textContent = index===null ? '출하검사 OQC 등록' : '출하검사 OQC 수정'; fields.innerHTML = registerCommonFieldset(`<div class="field"><label>검사일자</label><input id="reg_date" type="date"></div><div class="field"><label>고객사명</label><input id="reg_customer"></div><div class="field"><label>제품명</label><input id="reg_product"></div><div class="field"><label>LOT No</label><input id="reg_lot"></div><div class="field"><label>육안검사</label><input id="reg_visual"></div><div class="field"><label>점도(cP)</label><input id="reg_viscosity"></div><div class="field"><label>고형분(wt.%)</label><input id="reg_solid"></div><div class="field"><label>입도(㎛)</label><input id="reg_particle"></div><div class="field"><label>접착력(mm)</label><input id="reg_adhesion"></div><div class="field"><label>절연저항(MΩ)</label><input id="reg_resistance"></div><div class="field"><label>전해액 팽윤성(%)</label><input id="reg_swelling"></div><div class="field"><label>수분(ppm)</label><input id="reg_moisture"></div>`); const row = index!==null ? state.db.oqc[index] : null; $('reg_date').value=row?.date || todayStr(); $('reg_customer').value=row?.customer||''; $('reg_product').value=row?.product||''; $('reg_lot').value=row?.lot||''; $('reg_visual').value=row?.visual||''; $('reg_viscosity').value=row?.viscosity||''; $('reg_solid').value=row?.solid||''; $('reg_particle').value=row?.particle||''; $('reg_adhesion').value=row?.adhesion||''; $('reg_resistance').value=row?.resistance||''; $('reg_swelling').value=row?.swelling||''; $('reg_moisture').value=row?.moisture||''; $('reg_qty').value=row?.qty ?? 0; $('reg_fail').value=row?.fail ?? 0; $('reg_judge').value=row?.judge||calcJudgeFromFail(row?.fail ?? 0); }
       updateRegisterRate();
     }
     function closeRegisterModal(){ $('registerModal').style.display='none'; state.registerEditIndex=null; }
-    function buildRegisterPayload(type){ if(type==='iqc') return { date:toText($('reg_date').value), lot:toText($('reg_lot').value), supplier:toText($('reg_supplier').value), item:toText($('reg_item').value), inspector:toText($('reg_inspector').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value) }; if(type==='ipqc') return { date:toText($('reg_date').value), product:toText($('reg_product').value), lot:toText($('reg_lot').value), visual:toText($('reg_visual').value), viscosity:toText($('reg_viscosity').value), solid:toText($('reg_solid').value), particle:toText($('reg_particle').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value), judge:toText($('reg_judge').value) }; if(type==='oqc') return { date:toText($('reg_date').value), customer:toText($('reg_customer').value), product:toText($('reg_product').value), lot:toText($('reg_lot').value), visual:toText($('reg_visual').value), viscosity:toText($('reg_viscosity').value), solid:toText($('reg_solid').value), particle:toText($('reg_particle').value), adhesion:toText($('reg_adhesion').value), resistance:toText($('reg_resistance').value), swelling:toText($('reg_swelling').value), moisture:toText($('reg_moisture').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value), judge:toText($('reg_judge').value) }; return {}; }
+    function buildRegisterPayload(type){ if(type==='iqc') return { date:toText($('reg_date').value), lot:toText($('reg_lot').value), supplier:toText($('reg_supplier').value), item:toText($('reg_item').value), inspector:toText($('reg_inspector').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value) }; if(type==='pqc') return { date:toText($('reg_date').value), product:toText($('reg_product').value), lot:toText($('reg_lot').value), visual:toText($('reg_visual').value), viscosity:toText($('reg_viscosity').value), solid:toText($('reg_solid').value), particle:toText($('reg_particle').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value), judge:toText($('reg_judge').value) }; if(type==='oqc') return { date:toText($('reg_date').value), customer:toText($('reg_customer').value), product:toText($('reg_product').value), lot:toText($('reg_lot').value), visual:toText($('reg_visual').value), viscosity:toText($('reg_viscosity').value), solid:toText($('reg_solid').value), particle:toText($('reg_particle').value), adhesion:toText($('reg_adhesion').value), resistance:toText($('reg_resistance').value), swelling:toText($('reg_swelling').value), moisture:toText($('reg_moisture').value), qty:toNumber($('reg_qty').value), fail:toNumber($('reg_fail').value), judge:toText($('reg_judge').value) }; return {}; }
     async function saveRegisterData(){ const type=$('registerType').value; try{ const payload=buildRegisterPayload(type); if (!payload.date) throw new Error('검사일자를 입력하세요.'); if (!payload.lot) throw new Error('LOT No를 입력하세요.'); if(state.registerEditIndex!==null){ const row=state.db[type][state.registerEditIndex]; await api.put(`/api/${type}/${row.id}`, payload); } else { await api.post(`/api/${type}`, payload); } closeRegisterModal(); await loadFromServer(); showToast('검사 데이터 저장 완료'); } catch(err){ console.error(err); showToast(`저장 실패: ${err.message}`); } }
     async function deleteInspection(type, index){ const row=state.db[type]?.[index]; if(!row) return; if(!confirm('이 데이터를 삭제할까요?')) return; try{ await api.delete(`/api/${type}/${row.id}`); await loadFromServer(); showToast('데이터 삭제 완료'); } catch(err){ console.error(err); showToast(`삭제 실패: ${err.message}`); } }
     function openSupplierModal(index=null){ state.supplierEditIndex=index; const row=index!==null ? state.db.suppliers[index] : null; $('supplierModalTitle').textContent = index===null ? '공급업체 등록' : '공급업체 수정'; $('supModalName').value=row?.name||''; $('supModalManager').value=row?.manager||''; $('supModalPhone').value=row?.phone||''; $('supModalCategory').value=row?.category||'원자재'; $('supModalStatus').value=row?.status||'사용'; $('supplierModal').style.display='flex'; }
@@ -1077,7 +1077,7 @@ function refreshWeek(){
     function closeWorklogModal(){ $('worklogModal').style.display='none'; state.worklogEditIndex=null; }
     async function saveWorklogModal(){ const payload={ workDate:toText($('wlDate').value)||todayStr(), finishedLot:toText($('wlFinishedLot').value), seq:toText($('wlSeq').value), material:toText($('wlMaterial').value), supName:toText($('wlSupName').value), inputQty:toText($('wlInputQty').value), inputRatio:toText($('wlInputRatio').value), lotNo:toText($('wlLotNo').value), inputTime:toText($('wlInputTime').value), worker:toText($('wlWorker').value), note:toText($('wlNote').value) }; if(!payload.workDate || !payload.material) return showToast('생산일자와 원자재명을 입력하세요.'); try{ if(state.worklogEditIndex!==null){ const row=state.db.worklog[state.worklogEditIndex]; await api.put(`/api/worklog/${row.id}`, payload); } else { await api.post('/api/worklog', payload); } closeWorklogModal(); await loadFromServer(); showToast('작업일지 저장 완료'); } catch(err){ console.error(err); showToast(`작업일지 저장 실패: ${err.message}`); } }
     async function deleteWorklog(index){ const row=state.db.worklog[index]; if(!row) return; if(!confirm('이 작업일지를 삭제할까요?')) return; try{ await api.delete(`/api/worklog/${row.id}`); await loadFromServer(); showToast('작업일지 삭제 완료'); } catch(err){ console.error(err); showToast(`작업일지 삭제 실패: ${err.message}`); } }
-    function downloadExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.ipqc), 'PQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog'); const t=new Date(); XLSX.writeFile(wb, `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`); }
+    function downloadExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.pqc), 'PQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog'); const t=new Date(); XLSX.writeFile(wb, `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`); }
     async function uploadExcel(event) {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -1099,14 +1099,14 @@ function refreshWeek(){
 
     const totalRows =
       rows.iqcRows.length +
-      rows.ipqcRows.length +
+      rows.pqcRows.length +
       rows.oqcRows.length +
       rows.supplierRows.length +
       rows.worklogRows.length;
 
     console.log('[uploadExcel] 엑셀 파싱 완료', {
       iqc: rows.iqcRows.length,
-      ipqc: rows.ipqcRows.length,
+      pqc: rows.pqcRows.length,
       oqc: rows.oqcRows.length,
       suppliers: rows.supplierRows.length,
       worklog: rows.worklogRows.length,
@@ -1153,7 +1153,7 @@ function refreshWeek(){
     event.target.value = '';
   }
 }
-    function readWorkbook(file){ return new Promise((resolve, reject) => { const reader=new FileReader(); reader.onload = e => { try { const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' }); const readSheet = name => wb.SheetNames.includes(name) ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:'' }) : []; resolve({ iqcRows:readSheet('IQC'), ipqcRows:readSheet('PQC'), oqcRows:readSheet('OQC'), supplierRows:readSheet('Suppliers'), worklogRows:readSheet('Worklog') }); } catch (err) { reject(err); } }; reader.onerror = reject; reader.readAsArrayBuffer(file); }); }
+    function readWorkbook(file){ return new Promise((resolve, reject) => { const reader=new FileReader(); reader.onload = e => { try { const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' }); const readSheet = name => wb.SheetNames.includes(name) ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:'' }) : []; resolve({ iqcRows:readSheet('IQC'), pqcRows:readSheet('PQC'), oqcRows:readSheet('OQC'), supplierRows:readSheet('Suppliers'), worklogRows:readSheet('Worklog') }); } catch (err) { reject(err); } }; reader.onerror = reject; reader.readAsArrayBuffer(file); }); }
     function openBarcodeModal(){ $('barcodeModal').style.display='flex'; $('barcodeStatus').textContent='생성 대기'; setTimeout(() => $('barcodeValue').focus(), 0); }
     function closeBarcodeModal(){ $('barcodeModal').style.display='none'; }
     function generateBarcodePreview(){ const value = toText($('barcodeValue').value); const format = $('barcodeFormat').value || 'CODE128'; const label = toText($('barcodeLabel').value) || value; const height = Number($('barcodeHeight').value || 80); try{ if(!value) throw new Error('바코드 값을 입력하세요.'); if(format === 'EAN13' && !/^\d{13}$/.test(value)) throw new Error('EAN13은 숫자 13자리여야 합니다.'); if(format === 'EAN8' && !/^\d{8}$/.test(value)) throw new Error('EAN8은 숫자 8자리여야 합니다.'); JsBarcode('#barcodeSvg', value, { format, lineColor:'#111827', width:2, height, displayValue:true, text:label, fontOptions:'bold', margin:12, background:'#ffffff' }); state.lastBarcodeReady = true; $('barcodeStatus').textContent = format + ' 생성 완료'; showToast('바코드 생성 완료'); } catch(err){ state.lastBarcodeReady = false; $('barcodeStatus').textContent = '생성 실패'; showToast(err.message || '바코드 생성 실패'); } }
