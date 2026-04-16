@@ -237,14 +237,285 @@ db.serialize(() => {
 
 function addChangeLog(message) {
   db.run(
-  `INSERT INTO change_logs (id, logDate, message) VALUES (?, ?, ?)`,
-  [
-    makeId('log'),
-    new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
-    safeText(message, 500)
-  ]
-);
+    `INSERT INTO change_logs (id, logDate, message) VALUES (?, ?, ?)`,
+    [
+      makeId('log'),
+      new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+      safeText(message, 500)
+    ]
+  );
 }
+
+/* =========================
+   엑셀 업로드용 추가 유틸
+========================= */
+
+function normalizeDate(v) {
+  const s = String(v || '').trim();
+  if (!s) return '';
+
+  // 2026.04.01 / 2026-04-01 / 2026/04/01
+  let m = s.match(/^(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})$/);
+  if (m) {
+    return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  }
+
+  // 20260401
+  m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) {
+    return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+
+  return s;
+}
+
+function normalizeKey(key) {
+  return String(key || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[()]/g, '');
+}
+
+function rowPick(row, keys, defaultValue = '') {
+  if (!row || typeof row !== 'object') return defaultValue;
+
+  const map = {};
+  Object.keys(row).forEach((k) => {
+    map[normalizeKey(k)] = row[k];
+  });
+
+  for (const key of keys) {
+    const v = map[normalizeKey(key)];
+    if (v !== undefined && v !== null && String(v).trim() !== '') {
+      return v;
+    }
+  }
+  return defaultValue;
+}
+
+function classifySheetType(raw) {
+  const s = String(raw || '').trim().toUpperCase();
+
+  if (['IQC', '입고', '입고검사'].includes(s)) return 'IQC';
+  if (['PQC', 'IPQC', '공정', '공정검사'].includes(s)) return 'IPQC';
+  if (['OQC', '출하', '출하검사'].includes(s)) return 'OQC';
+  if (['SUPPLIERS', 'SUPPLIER', '거래처', '공급업체', '업체'].includes(s)) return 'SUPPLIERS';
+  if (['WORKLOG', '작업일지', '원료투입', '투입일지'].includes(s)) return 'WORKLOG';
+
+  return '';
+}
+
+function previewMappedRows(sheetType, rows) {
+  const type = classifySheetType(sheetType);
+  if (!type) {
+    return { ok: false, error: '지원하지 않는 sheetType 입니다.' };
+  }
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { ok: false, error: '업로드할 rows 가 없습니다.' };
+  }
+
+  let mapped = [];
+
+  if (type === 'IQC') {
+    mapped = rows.map((r) => ({
+      id: makeId('iqc'),
+      date: normalizeDate(rowPick(r, ['date', '일자', '날짜', '검사일', '검사일자'])),
+      lot: safeText(rowPick(r, ['lot', 'lotno', 'lot no', '로트', 'lot번호'])),
+      supplier: safeText(rowPick(r, ['supplier', '업체', '거래처', '공급업체'])),
+      item: safeText(rowPick(r, ['item', '품목', '원자재', '자재명'])),
+      inspector: safeText(rowPick(r, ['inspector', '검사자', '담당자'])),
+      qty: safeNumber(rowPick(r, ['qty', '수량', '검사수량', 'lot수량'])),
+      fail: safeNumber(rowPick(r, ['fail', '불량', '불량수량', 'ng'])),
+    }));
+  }
+
+  if (type === 'IPQC') {
+    mapped = rows.map((r) => ({
+      id: makeId('ipqc'),
+      date: normalizeDate(rowPick(r, ['date', '일자', '날짜', '검사일', '검사일자'])),
+      product: safeText(rowPick(r, ['product', '제품', '제품명'])),
+      lot: safeText(rowPick(r, ['lot', 'lotno', 'lot no', '로트'])),
+      visual: safeText(rowPick(r, ['visual', '외관'])),
+      viscosity: safeText(rowPick(r, ['viscosity', '점도'])),
+      solid: safeText(rowPick(r, ['solid', '고형분'])),
+      particle: safeText(rowPick(r, ['particle', '입자'])),
+      qty: safeNumber(rowPick(r, ['qty', '수량', '검사수량'])),
+      fail: safeNumber(rowPick(r, ['fail', '불량', '불량수량', 'ng'])),
+      judge: safeText(rowPick(r, ['judge', '판정', '결과'])),
+    }));
+  }
+
+  if (type === 'OQC') {
+    mapped = rows.map((r) => ({
+      id: makeId('oqc'),
+      date: normalizeDate(rowPick(r, ['date', '일자', '날짜', '검사일', '검사일자'])),
+      customer: safeText(rowPick(r, ['customer', '고객사', '거래처', '납품처'])),
+      product: safeText(rowPick(r, ['product', '제품', '제품명'])),
+      lot: safeText(rowPick(r, ['lot', 'lotno', 'lot no', '로트'])),
+      visual: safeText(rowPick(r, ['visual', '외관'])),
+      viscosity: safeText(rowPick(r, ['viscosity', '점도'])),
+      solid: safeText(rowPick(r, ['solid', '고형분'])),
+      particle: safeText(rowPick(r, ['particle', '입자'])),
+      adhesion: safeText(rowPick(r, ['adhesion', '접착력'])),
+      resistance: safeText(rowPick(r, ['resistance', '저항', '내성'])),
+      swelling: safeText(rowPick(r, ['swelling', '팽윤'])),
+      moisture: safeText(rowPick(r, ['moisture', '수분'])),
+      qty: safeNumber(rowPick(r, ['qty', '수량', '검사수량'])),
+      fail: safeNumber(rowPick(r, ['fail', '불량', '불량수량', 'ng'])),
+      judge: safeText(rowPick(r, ['judge', '판정', '결과'])),
+    }));
+  }
+
+  if (type === 'SUPPLIERS') {
+    mapped = rows.map((r) => ({
+      id: makeId('sup'),
+      name: safeText(rowPick(r, ['name', '업체명', '거래처명', '공급업체명'])),
+      manager: safeText(rowPick(r, ['manager', '담당자', '대표', '연락담당'])),
+      phone: safeText(rowPick(r, ['phone', '전화', '연락처', '전화번호'])),
+      category: safeText(rowPick(r, ['category', '분류', '구분', '품목군'])),
+      status: safeText(rowPick(r, ['status', '상태', '사용여부'])),
+    }));
+  }
+
+  if (type === 'WORKLOG') {
+    mapped = rows.map((r) => ({
+      id: makeId('work'),
+      workDate: normalizeDate(rowPick(r, ['workdate', '작업일자', '작업일', '날짜'])),
+      finishedLot: safeText(rowPick(r, ['finishedlot', '완제품lot', '완제품 lot', 'finished lot'])),
+      seq: safeText(rowPick(r, ['seq', '순번', '차수'])),
+      material: safeText(rowPick(r, ['material', '원료', '자재명'])),
+      supName: safeText(rowPick(r, ['supname', 'supplier', '업체명', '공급업체'])),
+      inputQty: safeText(rowPick(r, ['inputqty', '투입량', '수량'])),
+      inputRatio: safeText(rowPick(r, ['inputratio', '투입비율', '비율'])),
+      lotNo: safeText(rowPick(r, ['lotno', 'lot no', '원료lot', '원료 lot', '로트'])),
+      inputTime: safeText(rowPick(r, ['inputtime', '투입시간', '시간'])),
+      worker: safeText(rowPick(r, ['worker', '작업자', '담당자'])),
+      note: safeText(rowPick(r, ['note', '비고', '메모'])),
+    }));
+  }
+
+  const validRows = mapped.filter((r) => {
+    if (type === 'IQC') return r.date || r.lot || r.item || r.supplier;
+    if (type === 'IPQC') return r.date || r.product || r.lot;
+    if (type === 'OQC') return r.date || r.customer || r.product || r.lot;
+    if (type === 'SUPPLIERS') return r.name;
+    if (type === 'WORKLOG') return r.workDate || r.finishedLot || r.material;
+    return false;
+  });
+
+  return {
+    ok: true,
+    type,
+    totalRows: rows.length,
+    validCount: validRows.length,
+    skippedCount: rows.length - validRows.length,
+    preview: validRows.slice(0, 5),
+    mappedRows: validRows
+  };
+}
+
+function insertImportedRows(type, mappedRows, callback) {
+  if (!Array.isArray(mappedRows) || mappedRows.length === 0) {
+    return callback(null, 0);
+  }
+
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION');
+
+    let stmt;
+
+    if (type === 'IQC') {
+      stmt = db.prepare(`
+        INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      mappedRows.forEach((r) => {
+        stmt.run(r.id, r.date, r.lot, r.supplier, r.item, r.inspector, r.qty, r.fail);
+      });
+    }
+
+    if (type === 'IPQC') {
+      stmt = db.prepare(`
+        INSERT INTO ipqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      mappedRows.forEach((r) => {
+        stmt.run(
+          r.id, r.date, r.product, r.lot, r.visual, r.viscosity,
+          r.solid, r.particle, r.qty, r.fail, r.judge
+        );
+      });
+    }
+
+    if (type === 'OQC') {
+      stmt = db.prepare(`
+        INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      mappedRows.forEach((r) => {
+        stmt.run(
+          r.id, r.date, r.customer, r.product, r.lot, r.visual, r.viscosity,
+          r.solid, r.particle, r.adhesion, r.resistance, r.swelling,
+          r.moisture, r.qty, r.fail, r.judge
+        );
+      });
+    }
+
+    if (type === 'SUPPLIERS') {
+      stmt = db.prepare(`
+        INSERT INTO suppliers (id, name, manager, phone, category, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+
+      mappedRows.forEach((r) => {
+        stmt.run(r.id, r.name, r.manager, r.phone, r.category, r.status);
+      });
+    }
+
+    if (type === 'WORKLOG') {
+      stmt = db.prepare(`
+        INSERT INTO worklog (id, workDate, finishedLot, seq, material, supName, inputQty, inputRatio, lotNo, inputTime, worker, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      mappedRows.forEach((r) => {
+        stmt.run(
+          r.id, r.workDate, r.finishedLot, r.seq, r.material, r.supName,
+          r.inputQty, r.inputRatio, r.lotNo, r.inputTime, r.worker, r.note
+        );
+      });
+    }
+
+    if (!stmt) {
+      db.run('ROLLBACK');
+      return callback(new Error('지원하지 않는 업로드 타입입니다.'));
+    }
+
+    stmt.finalize((stmtErr) => {
+      if (stmtErr) {
+        db.run('ROLLBACK');
+        return callback(stmtErr);
+      }
+
+      db.run('COMMIT', (commitErr) => {
+        if (commitErr) {
+          db.run('ROLLBACK');
+          return callback(commitErr);
+        }
+        callback(null, mappedRows.length);
+      });
+    });
+  });
+}
+
+/* =========================
+   인증 / 사용자
+========================= */
 
 app.post('/api/auth/signup', authLimiter, async (req, res) => {
   try {
@@ -414,6 +685,10 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
   }
 });
 
+/* =========================
+   관리자
+========================= */
+
 app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
   db.all(
     `SELECT id, name, email, department, title, role, status, createdAt
@@ -500,6 +775,10 @@ app.post('/api/admin/delete-all', requireAdmin, (req, res) => {
   });
 });
 
+/* =========================
+   공급업체
+========================= */
+
 app.get('/api/suppliers', requireLogin, (req, res) => {
   db.all(`SELECT * FROM suppliers ORDER BY rowid DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -555,6 +834,10 @@ app.delete('/api/suppliers/:id', requireLogin, (req, res) => {
     res.json({ ok: true });
   });
 });
+
+/* =========================
+   IQC
+========================= */
 
 app.get('/api/iqc', requireLogin, (req, res) => {
   db.all(`SELECT * FROM iqc ORDER BY date DESC`, [], (err, rows) => {
@@ -615,6 +898,10 @@ app.delete('/api/iqc/:id', requireLogin, (req, res) => {
     res.json({ ok: true });
   });
 });
+
+/* =========================
+   IPQC
+========================= */
 
 app.get('/api/ipqc', requireLogin, (req, res) => {
   db.all(`SELECT * FROM ipqc ORDER BY date DESC`, [], (err, rows) => {
@@ -680,6 +967,10 @@ app.delete('/api/ipqc/:id', requireLogin, (req, res) => {
     res.json({ ok: true });
   });
 });
+
+/* =========================
+   OQC
+========================= */
 
 app.get('/api/oqc', requireLogin, (req, res) => {
   db.all(`SELECT * FROM oqc ORDER BY date DESC`, [], (err, rows) => {
@@ -756,6 +1047,10 @@ app.delete('/api/oqc/:id', requireLogin, (req, res) => {
   });
 });
 
+/* =========================
+   Worklog
+========================= */
+
 app.get('/api/worklog', requireLogin, (req, res) => {
   db.all(`SELECT * FROM worklog ORDER BY workDate DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -823,6 +1118,10 @@ app.delete('/api/worklog/:id', requireLogin, (req, res) => {
   });
 });
 
+/* =========================
+   부적합
+========================= */
+
 app.get('/api/nonconform', requireLogin, (req, res) => {
   db.all(`SELECT * FROM nonconform ORDER BY date DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -886,6 +1185,10 @@ app.delete('/api/nonconform/:id', requireLogin, (req, res) => {
   });
 });
 
+/* =========================
+   변경 로그
+========================= */
+
 app.get('/api/change-logs', requireLogin, (req, res) => {
   db.all(`SELECT * FROM change_logs ORDER BY rowid DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -893,13 +1196,64 @@ app.get('/api/change-logs', requireLogin, (req, res) => {
   });
 });
 
+/* =========================
+   엑셀 업로드 미리보기 / 반영
+========================= */
+
 app.post('/api/import/preview', requireLogin, (req, res) => {
-  res.json({ ok: true, message: '미리보기 완료' });
+  try {
+    const { sheetType, rows } = req.body;
+    const result = previewMappedRows(sheetType, rows);
+
+    if (!result.ok) {
+      return res.status(400).json({ ok: false, error: result.error });
+    }
+
+    res.json({
+      ok: true,
+      sheetType: result.type,
+      totalRows: result.totalRows,
+      validCount: result.validCount,
+      skippedCount: result.skippedCount,
+      preview: result.preview
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 app.post('/api/import/commit', requireLogin, (req, res) => {
-  res.json({ ok: true, message: '반영 완료' });
+  try {
+    const { sheetType, rows } = req.body;
+    const result = previewMappedRows(sheetType, rows);
+
+    if (!result.ok) {
+      return res.status(400).json({ ok: false, error: result.error });
+    }
+
+    insertImportedRows(result.type, result.mappedRows, (err, insertedCount) => {
+      if (err) {
+        return res.status(500).json({ ok: false, error: err.message });
+      }
+
+      addChangeLog(`엑셀 업로드 반영: ${result.type} / ${insertedCount}건 / 사용자 ${req.session.user?.email || ''}`);
+
+      res.json({
+        ok: true,
+        message: `${result.type} ${insertedCount}건 반영 완료`,
+        sheetType: result.type,
+        insertedCount,
+        skippedCount: result.skippedCount
+      });
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
+
+/* =========================
+   상태 / 정적 파일
+========================= */
 
 app.get('/health', (req, res) => {
   res.json({ ok: true });
