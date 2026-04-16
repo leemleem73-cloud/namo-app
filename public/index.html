@@ -954,7 +954,78 @@ function openChangePasswordModal() {
     async function saveWorklogModal(){ const payload={ workDate:toText($('wlDate').value)||todayStr(), finishedLot:toText($('wlFinishedLot').value), seq:toText($('wlSeq').value), material:toText($('wlMaterial').value), supName:toText($('wlSupName').value), inputQty:toText($('wlInputQty').value), inputRatio:toText($('wlInputRatio').value), lotNo:toText($('wlLotNo').value), inputTime:toText($('wlInputTime').value), worker:toText($('wlWorker').value), note:toText($('wlNote').value) }; if(!payload.workDate || !payload.material) return showToast('생산일자와 원자재명을 입력하세요.'); try{ if(state.worklogEditIndex!==null){ const row=state.db.worklog[state.worklogEditIndex]; await api.put(`/api/worklog/${row.id}`, payload); } else { await api.post('/api/worklog', payload); } closeWorklogModal(); await loadFromServer(); showToast('작업일지 저장 완료'); } catch(err){ console.error(err); showToast(`작업일지 저장 실패: ${err.message}`); } }
     async function deleteWorklog(index){ const row=state.db.worklog[index]; if(!row) return; if(!confirm('이 작업일지를 삭제할까요?')) return; try{ await api.delete(`/api/worklog/${row.id}`); await loadFromServer(); showToast('작업일지 삭제 완료'); } catch(err){ console.error(err); showToast(`작업일지 삭제 실패: ${err.message}`); } }
     function downloadExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.iqc), 'IQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.pqc), 'PQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.oqc), 'OQC'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.suppliers), 'Suppliers'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.db.worklog), 'Worklog'); const t=new Date(); XLSX.writeFile(wb, `나모케미칼_품질대시보드_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}.xlsx`); }
-    async function uploadExcel(event){ const file = event.target.files?.[0]; if(!file) return; try{ const ok = confirm('엑셀 데이터 업로드를 진행합니다. 계속하시겠습니까?'); if(!ok){ event.target.value=''; return; } const rows = await readWorkbook(file); const totalRows = rows.iqcRows.length + rows.pqcRows.length + rows.oqcRows.length + rows.supplierRows.length + rows.worklogRows.length; if (totalRows > MAX_UPLOAD_ROWS) throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`); await api.post('/api/import/preview', { ...rows, fileName:file.name }); const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`); if(!second){ event.target.value=''; return; } await api.post('/api/import/commit', { ...rows, fileName:file.name }); await loadFromServer(); showToast('엑셀 반영 완료'); } catch (err) { console.error(err); showToast(`엑셀 업로드 실패: ${err.message}`); } finally { event.target.value=''; } }
+    async function uploadExcel(event){
+  const file = event.target.files?.[0];
+  if(!file) return;
+
+  try{
+    const ok = confirm('엑셀 데이터 업로드를 진행합니다. 계속하시겠습니까?');
+    if(!ok){
+      event.target.value='';
+      return;
+    }
+
+    const rows = await readWorkbook(file);
+
+    // ✅ 여기 추가 (핵심)
+    let sheetType = String(currentSheetType || '').trim().toUpperCase();
+    if (sheetType === 'IPQC') sheetType = 'PQC';
+    if (sheetType === 'SUPPLIER') sheetType = 'SUPPLIERS';
+
+    console.log('sheetType =', sheetType);
+
+    const totalRows =
+      rows.iqcRows.length +
+      rows.pqcRows.length +
+      rows.oqcRows.length +
+      rows.supplierRows.length +
+      rows.worklogRows.length;
+
+    if (totalRows > MAX_UPLOAD_ROWS)
+      throw new Error(`업로드 허용 건수(${MAX_UPLOAD_ROWS})를 초과했습니다.`);
+
+    // ✅ preview 수정
+    await api.post('/api/import/preview', {
+      sheetType,   // 🔥 이거 반드시 추가
+      rows: [
+        ...rows.iqcRows,
+        ...rows.pqcRows,
+        ...rows.oqcRows,
+        ...rows.supplierRows,
+        ...rows.worklogRows
+      ],
+      fileName: file.name
+    });
+
+    const second = confirm(`총 ${totalRows}건을 서버 반영합니다. 계속하시겠습니까?`);
+    if(!second){
+      event.target.value='';
+      return;
+    }
+
+    // ✅ commit도 동일하게 수정
+    await api.post('/api/import/commit', {
+      sheetType,   // 🔥 이것도 추가
+      rows: [
+        ...rows.iqcRows,
+        ...rows.pqcRows,
+        ...rows.oqcRows,
+        ...rows.supplierRows,
+        ...rows.worklogRows
+      ],
+      fileName: file.name
+    });
+
+    await loadFromServer();
+    showToast('엑셀 반영 완료');
+
+  } catch (err) {
+    console.error(err);
+    showToast(`엑셀 업로드 실패: ${err.message}`);
+  } finally {
+    event.target.value='';
+  }
+}
     function readWorkbook(file){ return new Promise((resolve, reject) => { const reader=new FileReader(); reader.onload = e => { try { const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' }); const readSheet = name => wb.SheetNames.includes(name) ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:'' }) : []; resolve({ iqcRows:readSheet('IQC'), pqcRows:readSheet('PQC'), oqcRows:readSheet('OQC'), supplierRows:readSheet('Suppliers'), worklogRows:readSheet('Worklog') }); } catch (err) { reject(err); } }; reader.onerror = reject; reader.readAsArrayBuffer(file); }); }
     function openBarcodeModal(){ $('barcodeModal').style.display='flex'; $('barcodeStatus').textContent='생성 대기'; setTimeout(() => $('barcodeValue').focus(), 0); }
     function closeBarcodeModal(){ $('barcodeModal').style.display='none'; }
