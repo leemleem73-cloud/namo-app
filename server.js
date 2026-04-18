@@ -592,11 +592,13 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
     }
   );
 });
+// 백업 다운로드
 app.get('/api/backup', (req, res) => {
- const file = process.env.DB_PATH || path.join(__dirname, 'data', 'namochemical.db');
+  const file = process.env.DB_PATH || path.join(__dirname, 'data', 'namochemical.db');
   res.download(file);
 });
 
+// DB 테스트 (Supabase)
 app.get('/api/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -606,6 +608,7 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+// 로그인 사용자 확인
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ error: '로그인 필요' });
