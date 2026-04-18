@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
 console.log("NEW CODE DEPLOYED");
 const fs = require('fs');
 const path = require('path');
