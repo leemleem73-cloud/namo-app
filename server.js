@@ -4,8 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
