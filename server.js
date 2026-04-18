@@ -596,6 +596,16 @@ app.get('/api/backup', (req, res) => {
  const file = process.env.DB_PATH || path.join(__dirname, 'data', 'namochemical.db');
   res.download(file);
 });
+
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({ ok: true, time: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ error: '로그인 필요' });
