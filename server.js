@@ -18,7 +18,10 @@ try {
 } catch (e) {
   console.log('dotenv 없음, 계속 진행');
 }
-
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'namo-secret';
