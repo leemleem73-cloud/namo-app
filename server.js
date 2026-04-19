@@ -330,7 +330,12 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       return res.status(403).json({ error: '관리자 승인 후 로그인 가능합니다.' });
     }
 
-    const ok = await bcrypt.compare(password || '', user.password || '');
+    const result = await pool.query(
+  'SELECT crypt($1, $2) = $2 AS match',
+  [password || '', user.password]
+);
+
+const ok = result.rows[0].match;
     if (!ok) {
       return res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
     }
