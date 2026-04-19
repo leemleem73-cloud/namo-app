@@ -1,14 +1,14 @@
 const { Pool } = require('pg');
-const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
+const pgSession = require('connect-pg-simple')(session);
 
-console.log("NEW CODE DEPLOYED");
-console.log("이 파일 실행중:", __filename);
+console.log('NEW CODE DEPLOYED');
+console.log('이 파일 실행중:', __filename);
 
 try {
   require('dotenv').config();
@@ -16,14 +16,18 @@ try {
   console.log('dotenv 없음, 계속 진행');
 }
 
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL 이 없습니다. Render/Supabase 환경변수를 확인하세요.');
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SESSION_SECRET = process.env.SESSION_SECRET || 'namo-secret';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'change-this-session-secret';
 
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
@@ -33,6 +37,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
+    store: new pgSession({
+      pool,
+      tableName: 'user_sessions',
+      createTableIfMissing: true,
+    }),
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -41,19 +50,19 @@ app.use(
       httpOnly: true,
       sameSite: process.env.RENDER ? 'none' : 'lax',
       secure: !!process.env.RENDER,
-      maxAge: 1000 * 60 * 60 * 8
-    }
+      maxAge: 1000 * 60 * 60 * 8,
+    },
   })
 );
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10
+  max: 10,
 });
 
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30
+  max: 30,
 });
 
 const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
@@ -75,21 +84,15 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-/* =========================
-   엑셀 업로드용 추가 유틸
-========================= */
-
 function normalizeDate(v) {
   const s = String(v || '').trim();
   if (!s) return '';
 
-  // 2026.04.01 / 2026-04-01 / 2026/04/01
   let m = s.match(/^(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})$/);
   if (m) {
     return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
   }
 
-  // 20260401
   m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
   if (m) {
     return `${m[1]}-${m[2]}-${m[3]}`;
@@ -120,6 +123,7 @@ function rowPick(row, keys, defaultValue = '') {
       return v;
     }
   }
+
   return defaultValue;
 }
 
@@ -127,7 +131,7 @@ function classifySheetType(raw) {
   const s = String(raw || '').trim().toUpperCase();
 
   if (['IQC', '입고', '입고검사'].includes(s)) return 'IQC';
-  if (['PQC', 'PQC', '공정', '공정검사'].includes(s)) return 'PQC';
+  if (['PQC', '공정', '공정검사'].includes(s)) return 'PQC';
   if (['OQC', '출하', '출하검사'].includes(s)) return 'OQC';
   if (['SUPPLIERS', 'SUPPLIER', '거래처', '공급업체', '업체'].includes(s)) return 'SUPPLIERS';
   if (['WORKLOG', '작업일지', '원료투입', '투입일지'].includes(s)) return 'WORKLOG';
@@ -211,15 +215,15 @@ function previewMappedRows(sheetType, rows) {
   if (type === 'WORKLOG') {
     mapped = rows.map((r) => ({
       id: makeId('work'),
-      workDate: normalizeDate(rowPick(r, ['workdate', '작업일자', '작업일', '날짜'])),
-      finishedLot: safeText(rowPick(r, ['finishedlot', '완제품lot', '완제품 lot', 'finished lot'])),
+      workdate: normalizeDate(rowPick(r, ['workdate', '작업일자', '작업일', '날짜'])),
+      finishedlot: safeText(rowPick(r, ['finishedlot', '완제품lot', '완제품 lot', 'finished lot'])),
       seq: safeText(rowPick(r, ['seq', '순번', '차수'])),
       material: safeText(rowPick(r, ['material', '원료', '자재명'])),
-      supName: safeText(rowPick(r, ['supname', 'supplier', '업체명', '공급업체'])),
-      inputQty: safeText(rowPick(r, ['inputqty', '투입량', '수량'])),
-      inputRatio: safeText(rowPick(r, ['inputratio', '투입비율', '비율'])),
-      lotNo: safeText(rowPick(r, ['lotno', 'lot no', '원료lot', '원료 lot', '로트'])),
-      inputTime: safeText(rowPick(r, ['inputtime', '투입시간', '시간'])),
+      supname: safeText(rowPick(r, ['supname', 'supplier', '업체명', '공급업체'])),
+      inputqty: safeText(rowPick(r, ['inputqty', '투입량', '수량'])),
+      inputratio: safeText(rowPick(r, ['inputratio', '투입비율', '비율'])),
+      lotno: safeText(rowPick(r, ['lotno', 'lot no', '원료lot', '원료 lot', '로트'])),
+      inputtime: safeText(rowPick(r, ['inputtime', '투입시간', '시간'])),
       worker: safeText(rowPick(r, ['worker', '작업자', '담당자'])),
       note: safeText(rowPick(r, ['note', '비고', '메모'])),
     }));
@@ -230,7 +234,7 @@ function previewMappedRows(sheetType, rows) {
     if (type === 'PQC') return r.date || r.product || r.lot;
     if (type === 'OQC') return r.date || r.customer || r.product || r.lot;
     if (type === 'SUPPLIERS') return r.name;
-    if (type === 'WORKLOG') return r.workDate || r.finishedLot || r.material;
+    if (type === 'WORKLOG') return r.workdate || r.finishedlot || r.material;
     return false;
   });
 
@@ -241,105 +245,24 @@ function previewMappedRows(sheetType, rows) {
     validCount: validRows.length,
     skippedCount: rows.length - validRows.length,
     preview: validRows.slice(0, 5),
-    mappedRows: validRows
+    mappedRows: validRows,
   };
 }
 
-function insertImportedRows(type, mappedRows, callback) {
-  if (!Array.isArray(mappedRows) || mappedRows.length === 0) {
-    return callback(null, 0);
+async function addChangeLog(message) {
+  try {
+    await pool.query(
+      'INSERT INTO change_logs (id, message, created_at) VALUES ($1, $2, NOW())',
+      [makeId('log'), safeText(message, 500)]
+    );
+  } catch (e) {
+    console.error('change log error:', e.message);
   }
+}
 
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
-
-    let stmt;
-
-    if (type === 'IQC') {
-      stmt = db.prepare(`
-        INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      mappedRows.forEach((r) => {
-        stmt.run(r.id, r.date, r.lot, r.supplier, r.item, r.inspector, r.qty, r.fail);
-      });
-    }
-
-    if (type === 'PQC') {
-      stmt = db.prepare(`
-        INSERT INTO pqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      mappedRows.forEach((r) => {
-        stmt.run(
-          r.id, r.date, r.product, r.lot, r.visual, r.viscosity,
-          r.solid, r.particle, r.qty, r.fail, r.judge
-        );
-      });
-    }
-
-    if (type === 'OQC') {
-      stmt = db.prepare(`
-        INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      mappedRows.forEach((r) => {
-        stmt.run(
-          r.id, r.date, r.customer, r.product, r.lot, r.visual, r.viscosity,
-          r.solid, r.particle, r.adhesion, r.resistance, r.swelling,
-          r.moisture, r.qty, r.fail, r.judge
-        );
-      });
-    }
-
-    if (type === 'SUPPLIERS') {
-      stmt = db.prepare(`
-        INSERT INTO suppliers (id, name, manager, phone, category, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-
-      mappedRows.forEach((r) => {
-        stmt.run(r.id, r.name, r.manager, r.phone, r.category, r.status);
-      });
-    }
-
-    if (type === 'WORKLOG') {
-      stmt = db.prepare(`
-        INSERT INTO worklog (id, workDate, finishedLot, seq, material, supName, inputQty, inputRatio, lotNo, inputTime, worker, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      mappedRows.forEach((r) => {
-        stmt.run(
-          r.id, r.workDate, r.finishedLot, r.seq, r.material, r.supName,
-          r.inputQty, r.inputRatio, r.lotNo, r.inputTime, r.worker, r.note
-        );
-      });
-    }
-
-    if (!stmt) {
-      db.run('ROLLBACK');
-      return callback(new Error('지원하지 않는 업로드 타입입니다.'));
-    }
-
-    stmt.finalize((stmtErr) => {
-      if (stmtErr) {
-        db.run('ROLLBACK');
-        return callback(stmtErr);
-      }
-
-      db.run('COMMIT', (commitErr) => {
-        if (commitErr) {
-          db.run('ROLLBACK');
-          return callback(commitErr);
-        }
-        callback(null, mappedRows.length);
-      });
-    });
-  });
+async function queryOne(sql, params = []) {
+  const result = await pool.query(sql, params);
+  return result.rows[0] || null;
 }
 
 /* =========================
@@ -360,9 +283,10 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    db.run(
-      `INSERT INTO users (name, email, password, department, title, role, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    const result = await pool.query(
+      `INSERT INTO users (name, email, password, department, title, role, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+       RETURNING id`,
       [
         safeText(name),
         normalizeEmail(email),
@@ -370,72 +294,55 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
         safeText(department),
         'staff',
         'user',
-        'APPROVED'
-      ],
-      function (err) {
-        if (err) {
-          if (err.message && err.message.includes('UNIQUE')) {
-            return res.status(409).json({ error: '이미 존재하는 이메일' });
-          }
-          return res.status(500).json({ error: err.message });
-        }
-        addChangeLog(`회원가입: ${safeText(name)} / ${normalizeEmail(email)}`);
-        res.json({ ok: true, id: this.lastID });
-      }
+        'APPROVED',
+      ]
     );
+
+    await addChangeLog(`회원가입: ${safeText(name)} / ${normalizeEmail(email)}`);
+    res.json({ ok: true, id: result.rows[0].id });
+  } catch (e) {
+    if (e.code === '23505') {
+      return res.status(409).json({ error: '이미 존재하는 이메일' });
+    }
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/auth/login', authLimiter, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await queryOne('SELECT * FROM users WHERE email = $1 LIMIT 1', [normalizeEmail(email)]);
+
+    if (!user) {
+      return res.status(401).json({ error: '존재하지 않는 계정입니다.' });
+    }
+
+    const ok = await bcrypt.compare(password || '', user.password || '');
+    if (!ok) {
+      return res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
+    }
+
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      department: user.department,
+      title: user.title,
+      role: user.role,
+      status: user.status,
+    };
+
+    req.session.save(async (saveErr) => {
+      if (saveErr) return res.status(500).json({ error: '세션 저장 실패' });
+      await addChangeLog(`로그인: ${user.name} / ${user.email}`);
+      res.json({ ok: true, user: req.session.user });
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-app.post('/api/auth/login', authLimiter, (req, res) => {
-  const { email, password } = req.body;
-
-  db.get(
-    `SELECT * FROM users WHERE email = ?`,
-    [normalizeEmail(email)],
-    async (err, user) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!user) return res.status(401).json({ error: '존재하지 않는 계정입니다.' });
-
-      const ok = await bcrypt.compare(password || '', user.password || '');
-      if (!ok) return res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
-
-      req.session.user = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        department: user.department,
-        title: user.title,
-        role: user.role,
-        status: user.status
-      };
-
-      req.session.save((saveErr) => {
-        if (saveErr) return res.status(500).json({ error: '세션 저장 실패' });
-        addChangeLog(`로그인: ${user.name} / ${user.email}`);
-        res.json({ ok: true, user: req.session.user });
-      });
-    }
-  );
-});
-// 백업 다운로드
-app.get('/api/backup', (req, res) => {
-  const file = process.env.DB_PATH || path.join(__dirname, 'data', 'namochemical.db');
-  res.download(file);
-});
-
-// DB 테스트 (Supabase)
-app.get('/api/test-db', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ ok: true, time: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 로그인 사용자 확인
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ error: '로그인 필요' });
@@ -447,13 +354,15 @@ app.post('/api/auth/logout', (req, res) => {
   const user = req.session?.user;
   if (!req.session) return res.json({ ok: true });
 
-  req.session.destroy(() => {
-    if (user?.email) addChangeLog(`로그아웃: ${user.name} / ${user.email}`);
+  req.session.destroy(async () => {
+    if (user?.email) {
+      await addChangeLog(`로그아웃: ${user.name} / ${user.email}`);
+    }
     res.json({ ok: true });
   });
 });
 
-app.post('/api/auth/reset-password', async (req, res) => {
+app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
   try {
     const { name, email, department, newPassword } = req.body;
 
@@ -464,26 +373,21 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' });
     }
 
-    db.get(
-      `SELECT * FROM users WHERE email = ? AND name = ? AND department = ?`,
-      [normalizeEmail(email), safeText(name), safeText(department)],
-      async (err, user) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!user) return res.status(404).json({ error: '일치하는 사용자를 찾을 수 없습니다.' });
-
-        const hashed = await bcrypt.hash(newPassword, 10);
-
-        db.run(
-          `UPDATE users SET password = ? WHERE id = ?`,
-          [hashed, user.id],
-          function (updateErr) {
-            if (updateErr) return res.status(500).json({ error: updateErr.message });
-            addChangeLog(`비밀번호 초기화: ${user.name} / ${user.email}`);
-            res.json({ ok: true, message: '비밀번호가 재설정되었습니다.' });
-          }
-        );
-      }
+    const user = await queryOne(
+      `SELECT * FROM users WHERE email = $1 AND name = $2 AND department = $3 LIMIT 1`,
+      [normalizeEmail(email), safeText(name), safeText(department)]
     );
+
+    if (!user) {
+      return res.status(404).json({ error: '일치하는 사용자를 찾을 수 없습니다.' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, user.id]);
+    await addChangeLog(`비밀번호 초기화: ${user.name} / ${user.email}`);
+
+    res.json({ ok: true, message: '비밀번호가 재설정되었습니다.' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -500,31 +404,21 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
       return res.status(400).json({ error: '새 비밀번호는 8자 이상이어야 합니다.' });
     }
 
-    db.get(
-      `SELECT * FROM users WHERE id = ?`,
-      [req.session.user.id],
-      async (err, user) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!user) return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+    const user = await queryOne('SELECT * FROM users WHERE id = $1 LIMIT 1', [req.session.user.id]);
+    if (!user) {
+      return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+    }
 
-        const ok = await bcrypt.compare(currentPassword, user.password || '');
-        if (!ok) {
-          return res.status(401).json({ error: '현재 비밀번호가 올바르지 않습니다.' });
-        }
+    const ok = await bcrypt.compare(currentPassword, user.password || '');
+    if (!ok) {
+      return res.status(401).json({ error: '현재 비밀번호가 올바르지 않습니다.' });
+    }
 
-        const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, user.id]);
+    await addChangeLog(`비밀번호 변경: ${user.name} / ${user.email}`);
 
-        db.run(
-          `UPDATE users SET password = ? WHERE id = ?`,
-          [hashed, user.id],
-          function (updateErr) {
-            if (updateErr) return res.status(500).json({ error: updateErr.message });
-            addChangeLog(`비밀번호 변경: ${user.name} / ${user.email}`);
-            res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
-          }
-        );
-      }
-    );
+    res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -534,511 +428,556 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
    관리자
 ========================= */
 
-app.get('/api/admin/users', requireAdmin, adminLimiter, (req, res) => {
-  db.all(
-    `SELECT id, name, email, department, title, role, status, createdAt
-     FROM users
-     ORDER BY id DESC`,
-    [],
-    (err, rows) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json(rows);
-    }
-  );
+app.get('/api/admin/users', requireAdmin, adminLimiter, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, department, title, role, status, created_at
+       FROM users
+       ORDER BY id DESC`
+    );
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.put('/api/admin/users/:id', requireAdmin, (req, res) => {
-  const { name, email, department, title, role, status } = req.body;
+app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const { name, email, department, title, role, status } = req.body;
 
-  db.run(
-    `UPDATE users
-     SET name = ?, email = ?, department = ?, title = ?, role = ?, status = ?
-     WHERE id = ?`,
-    [
-      safeText(name),
-      normalizeEmail(email),
-      safeText(department),
-      safeText(title),
-      safeText(role),
-      safeText(status),
-      req.params.id
-    ],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      addChangeLog(`회원 수정: ${safeText(name)} / ${normalizeEmail(email)}`);
-      res.json({ ok: true, message: '회원 정보가 저장되었습니다.' });
-    }
-  );
+    await pool.query(
+      `UPDATE users
+       SET name = $1, email = $2, department = $3, title = $4, role = $5, status = $6
+       WHERE id = $7`,
+      [
+        safeText(name),
+        normalizeEmail(email),
+        safeText(department),
+        safeText(title),
+        safeText(role),
+        safeText(status),
+        req.params.id,
+      ]
+    );
+
+    await addChangeLog(`회원 수정: ${safeText(name)} / ${normalizeEmail(email)}`);
+    res.json({ ok: true, message: '회원 정보가 저장되었습니다.' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/admin/users/:id/approve', requireAdmin, (req, res) => {
-  db.run(
-    `UPDATE users SET status = 'APPROVED' WHERE id = ?`,
-    [req.params.id],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true, message: '회원 승인이 완료되었습니다.' });
-    }
-  );
+app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    await pool.query(`UPDATE users SET status = 'APPROVED' WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true, message: '회원 승인이 완료되었습니다.' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/admin/users/:id/reject', requireAdmin, (req, res) => {
-  db.run(
-    `UPDATE users SET status = 'REJECTED' WHERE id = ?`,
-    [req.params.id],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true, message: '회원 반려가 완료되었습니다.' });
-    }
-  );
+app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    await pool.query(`UPDATE users SET status = 'REJECTED' WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true, message: '회원 반려가 완료되었습니다.' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
-  db.run(`DELETE FROM users WHERE id = ?`, [req.params.id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
+app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM users WHERE id = $1`, [req.params.id]);
     res.json({ ok: true, message: '회원 삭제가 완료되었습니다.' });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/admin/delete-all', requireAdmin, (req, res) => {
+app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
   const { confirm } = req.body;
   if (confirm !== 'DELETE') {
     return res.status(400).json({ error: '삭제 확인값이 올바르지 않습니다.' });
   }
 
-  db.serialize(() => {
-    db.run(`DELETE FROM suppliers`);
-    db.run(`DELETE FROM iqc`);
-    db.run(`DELETE FROM pqc`);
-    db.run(`DELETE FROM oqc`);
-    db.run(`DELETE FROM worklog`);
-    db.run(`DELETE FROM nonconform`);
-    db.run(`DELETE FROM change_logs`, [], (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true, message: '전체 데이터 삭제 완료' });
-    });
-  });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM suppliers');
+    await client.query('DELETE FROM iqc');
+    await client.query('DELETE FROM pqc');
+    await client.query('DELETE FROM oqc');
+    await client.query('DELETE FROM worklog');
+    await client.query('DELETE FROM nonconform');
+    await client.query('DELETE FROM change_logs');
+    await client.query('COMMIT');
+    res.json({ ok: true, message: '전체 데이터 삭제 완료' });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
+  }
 });
 
 /* =========================
    공급업체
 ========================= */
 
-app.get('/api/suppliers', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM suppliers ORDER BY rowid DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/suppliers', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM suppliers ORDER BY created_at DESC NULLS LAST, id DESC`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/suppliers', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `INSERT INTO suppliers (id, name, manager, phone, category, status)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
-      makeId('sup'),
-      safeText(d.name),
-      safeText(d.manager),
-      safeText(d.phone),
-      safeText(d.category),
-      safeText(d.status)
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      addChangeLog(`공급업체 등록: ${safeText(d.name)}`);
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.put('/api/suppliers/:id', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `UPDATE suppliers
-     SET name = ?, manager = ?, phone = ?, category = ?, status = ?
-     WHERE id = ?`,
-    [
-      safeText(d.name),
-      safeText(d.manager),
-      safeText(d.phone),
-      safeText(d.category),
-      safeText(d.status),
-      req.params.id
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.delete('/api/suppliers/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM suppliers WHERE id = ?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.post('/api/suppliers', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `INSERT INTO suppliers (id, name, manager, phone, category, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      [
+        makeId('sup'),
+        safeText(d.name),
+        safeText(d.manager),
+        safeText(d.phone),
+        safeText(d.category),
+        safeText(d.status),
+      ]
+    );
+    await addChangeLog(`공급업체 등록: ${safeText(d.name)}`);
     res.json({ ok: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/suppliers/:id', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `UPDATE suppliers
+       SET name = $1, manager = $2, phone = $3, category = $4, status = $5
+       WHERE id = $6`,
+      [
+        safeText(d.name),
+        safeText(d.manager),
+        safeText(d.phone),
+        safeText(d.category),
+        safeText(d.status),
+        req.params.id,
+      ]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/suppliers/:id', requireLogin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM suppliers WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
    IQC
 ========================= */
 
-app.get('/api/iqc', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM iqc ORDER BY date DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/iqc', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM iqc ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/iqc', requireLogin, (req, res) => {
-  const d = req.body;
+app.post('/api/iqc', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
 
-  db.run(
-    `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      makeId('iqc'),
-      safeText(d.date),
-      safeText(d.lot),
-      safeText(d.supplier),
-      safeText(d.item),
-      safeText(d.inspector),
-      safeNumber(d.qty),
-      safeNumber(d.fail)
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
+    await pool.query(
+      `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+      [
+        makeId('iqc'),
+        safeText(d.date) || null,
+        safeText(d.lot),
+        safeText(d.supplier),
+        safeText(d.item),
+        safeText(d.inspector),
+        safeNumber(d.qty),
+        safeNumber(d.fail),
+      ]
+    );
 
-app.put('/api/iqc/:id', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `UPDATE iqc
-     SET date = ?, lot = ?, supplier = ?, item = ?, inspector = ?, qty = ?, fail = ?
-     WHERE id = ?`,
-    [
-      safeText(d.date),
-      safeText(d.lot),
-      safeText(d.supplier),
-      safeText(d.item),
-      safeText(d.inspector),
-      safeNumber(d.qty),
-      safeNumber(d.fail),
-      req.params.id
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.delete('/api/iqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM iqc WHERE id = ?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
     res.json({ ok: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/iqc/:id', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `UPDATE iqc
+       SET date = $1, lot = $2, supplier = $3, item = $4, inspector = $5, qty = $6, fail = $7
+       WHERE id = $8`,
+      [
+        safeText(d.date) || null,
+        safeText(d.lot),
+        safeText(d.supplier),
+        safeText(d.item),
+        safeText(d.inspector),
+        safeNumber(d.qty),
+        safeNumber(d.fail),
+        req.params.id,
+      ]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/iqc/:id', requireLogin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM iqc WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
    PQC
 ========================= */
 
-app.get('/api/pqc', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM pqc ORDER BY date DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/pqc', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM pqc ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/pqc', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `INSERT INTO pqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      makeId('pqc'),
-      safeText(d.date),
-      safeText(d.product),
-      safeText(d.lot),
-      safeText(d.visual),
-      safeText(d.viscosity),
-      safeText(d.solid),
-      safeText(d.particle),
-      safeNumber(d.qty),
-      safeNumber(d.fail),
-      safeText(d.judge)
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.put('/api/pqc/:id', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `UPDATE pqc
-     SET date = ?, product = ?, lot = ?, visual = ?, viscosity = ?, solid = ?, particle = ?, qty = ?, fail = ?, judge = ?
-     WHERE id = ?`,
-    [
-      safeText(d.date),
-      safeText(d.product),
-      safeText(d.lot),
-      safeText(d.visual),
-      safeText(d.viscosity),
-      safeText(d.solid),
-      safeText(d.particle),
-      safeNumber(d.qty),
-      safeNumber(d.fail),
-      safeText(d.judge),
-      req.params.id
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.delete('/api/pqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM pqc WHERE id = ?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.post('/api/pqc', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `INSERT INTO pqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())`,
+      [
+        makeId('pqc'),
+        safeText(d.date) || null,
+        safeText(d.product),
+        safeText(d.lot),
+        safeText(d.visual),
+        safeText(d.viscosity),
+        safeText(d.solid),
+        safeText(d.particle),
+        safeNumber(d.qty),
+        safeNumber(d.fail),
+        safeText(d.judge),
+      ]
+    );
     res.json({ ok: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/pqc/:id', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `UPDATE pqc
+       SET date = $1, product = $2, lot = $3, visual = $4, viscosity = $5, solid = $6, particle = $7, qty = $8, fail = $9, judge = $10
+       WHERE id = $11`,
+      [
+        safeText(d.date) || null,
+        safeText(d.product),
+        safeText(d.lot),
+        safeText(d.visual),
+        safeText(d.viscosity),
+        safeText(d.solid),
+        safeText(d.particle),
+        safeNumber(d.qty),
+        safeNumber(d.fail),
+        safeText(d.judge),
+        req.params.id,
+      ]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/pqc/:id', requireLogin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM pqc WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
    OQC
 ========================= */
 
-app.get('/api/oqc', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM oqc ORDER BY date DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/oqc', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM oqc ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/oqc', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      makeId('oqc'),
-      safeText(d.date),
-      safeText(d.customer),
-      safeText(d.product),
-      safeText(d.lot),
-      safeText(d.visual),
-      safeText(d.viscosity),
-      safeText(d.solid),
-      safeText(d.particle),
-      safeText(d.adhesion),
-      safeText(d.resistance),
-      safeText(d.swelling),
-      safeText(d.moisture),
-      safeNumber(d.qty),
-      safeNumber(d.fail),
-      safeText(d.judge)
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.put('/api/oqc/:id', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `UPDATE oqc
-     SET date = ?, customer = ?, product = ?, lot = ?, visual = ?, viscosity = ?, solid = ?, particle = ?, adhesion = ?, resistance = ?, swelling = ?, moisture = ?, qty = ?, fail = ?, judge = ?
-     WHERE id = ?`,
-    [
-      safeText(d.date),
-      safeText(d.customer),
-      safeText(d.product),
-      safeText(d.lot),
-      safeText(d.visual),
-      safeText(d.viscosity),
-      safeText(d.solid),
-      safeText(d.particle),
-      safeText(d.adhesion),
-      safeText(d.resistance),
-      safeText(d.swelling),
-      safeText(d.moisture),
-      safeNumber(d.qty),
-      safeNumber(d.fail),
-      safeText(d.judge),
-      req.params.id
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.delete('/api/oqc/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM oqc WHERE id = ?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.post('/api/oqc', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())`,
+      [
+        makeId('oqc'),
+        safeText(d.date) || null,
+        safeText(d.customer),
+        safeText(d.product),
+        safeText(d.lot),
+        safeText(d.visual),
+        safeText(d.viscosity),
+        safeText(d.solid),
+        safeText(d.particle),
+        safeText(d.adhesion),
+        safeText(d.resistance),
+        safeText(d.swelling),
+        safeText(d.moisture),
+        safeNumber(d.qty),
+        safeNumber(d.fail),
+        safeText(d.judge),
+      ]
+    );
     res.json({ ok: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/oqc/:id', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `UPDATE oqc
+       SET date = $1, customer = $2, product = $3, lot = $4, visual = $5, viscosity = $6, solid = $7, particle = $8, adhesion = $9, resistance = $10, swelling = $11, moisture = $12, qty = $13, fail = $14, judge = $15
+       WHERE id = $16`,
+      [
+        safeText(d.date) || null,
+        safeText(d.customer),
+        safeText(d.product),
+        safeText(d.lot),
+        safeText(d.visual),
+        safeText(d.viscosity),
+        safeText(d.solid),
+        safeText(d.particle),
+        safeText(d.adhesion),
+        safeText(d.resistance),
+        safeText(d.swelling),
+        safeText(d.moisture),
+        safeNumber(d.qty),
+        safeNumber(d.fail),
+        safeText(d.judge),
+        req.params.id,
+      ]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/oqc/:id', requireLogin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM oqc WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
    Worklog
 ========================= */
 
-app.get('/api/worklog', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM worklog ORDER BY workDate DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/worklog', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM worklog ORDER BY workdate DESC NULLS LAST, created_at DESC NULLS LAST`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/worklog', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `INSERT INTO worklog (id, workDate, finishedLot, seq, material, supName, inputQty, inputRatio, lotNo, inputTime, worker, note)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      makeId('work'),
-      safeText(d.workDate),
-      safeText(d.finishedLot),
-      safeText(d.seq),
-      safeText(d.material),
-      safeText(d.supName),
-      safeText(d.inputQty),
-      safeText(d.inputRatio),
-      safeText(d.lotNo),
-      safeText(d.inputTime),
-      safeText(d.worker),
-      safeText(d.note)
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.put('/api/worklog/:id', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `UPDATE worklog
-     SET workDate = ?, finishedLot = ?, seq = ?, material = ?, supName = ?, inputQty = ?, inputRatio = ?, lotNo = ?, inputTime = ?, worker = ?, note = ?
-     WHERE id = ?`,
-    [
-      safeText(d.workDate),
-      safeText(d.finishedLot),
-      safeText(d.seq),
-      safeText(d.material),
-      safeText(d.supName),
-      safeText(d.inputQty),
-      safeText(d.inputRatio),
-      safeText(d.lotNo),
-      safeText(d.inputTime),
-      safeText(d.worker),
-      safeText(d.note),
-      req.params.id
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.delete('/api/worklog/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM worklog WHERE id = ?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.post('/api/worklog', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `INSERT INTO worklog (id, workdate, finishedlot, seq, material, supname, inputqty, inputratio, lotno, inputtime, worker, note, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
+      [
+        makeId('work'),
+        safeText(d.workdate || d.workDate) || null,
+        safeText(d.finishedlot || d.finishedLot),
+        safeText(d.seq),
+        safeText(d.material),
+        safeText(d.supname || d.supName),
+        safeText(d.inputqty || d.inputQty),
+        safeText(d.inputratio || d.inputRatio),
+        safeText(d.lotno || d.lotNo),
+        safeText(d.inputtime || d.inputTime),
+        safeText(d.worker),
+        safeText(d.note),
+      ]
+    );
     res.json({ ok: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/worklog/:id', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `UPDATE worklog
+       SET workdate = $1, finishedlot = $2, seq = $3, material = $4, supname = $5, inputqty = $6, inputratio = $7, lotno = $8, inputtime = $9, worker = $10, note = $11
+       WHERE id = $12`,
+      [
+        safeText(d.workdate || d.workDate) || null,
+        safeText(d.finishedlot || d.finishedLot),
+        safeText(d.seq),
+        safeText(d.material),
+        safeText(d.supname || d.supName),
+        safeText(d.inputqty || d.inputQty),
+        safeText(d.inputratio || d.inputRatio),
+        safeText(d.lotno || d.lotNo),
+        safeText(d.inputtime || d.inputTime),
+        safeText(d.worker),
+        safeText(d.note),
+        req.params.id,
+      ]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/worklog/:id', requireLogin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM worklog WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
    부적합
 ========================= */
 
-app.get('/api/nonconform', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM nonconform ORDER BY date DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/nonconform', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM nonconform ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/api/nonconform', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `INSERT INTO nonconform (id, date, type, lot, item, issue, cause, action, owner, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      safeText(d.id || makeId('nc')),
-      safeText(d.date),
-      safeText(d.type),
-      safeText(d.lot),
-      safeText(d.item),
-      safeText(d.issue),
-      safeText(d.cause),
-      safeText(d.action),
-      safeText(d.owner),
-      safeText(d.status)
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.put('/api/nonconform/:id', requireLogin, (req, res) => {
-  const d = req.body;
-  db.run(
-    `UPDATE nonconform
-     SET date = ?, type = ?, lot = ?, item = ?, issue = ?, cause = ?, action = ?, owner = ?, status = ?
-     WHERE id = ?`,
-    [
-      safeText(d.date),
-      safeText(d.type),
-      safeText(d.lot),
-      safeText(d.item),
-      safeText(d.issue),
-      safeText(d.cause),
-      safeText(d.action),
-      safeText(d.owner),
-      safeText(d.status),
-      req.params.id
-    ],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ ok: true });
-    }
-  );
-});
-
-app.delete('/api/nonconform/:id', requireLogin, (req, res) => {
-  db.run(`DELETE FROM nonconform WHERE id = ?`, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.post('/api/nonconform', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `INSERT INTO nonconform (id, date, type, lot, item, issue, cause, action, owner, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())`,
+      [
+        safeText(d.id || makeId('nc')),
+        safeText(d.date) || null,
+        safeText(d.type),
+        safeText(d.lot),
+        safeText(d.item),
+        safeText(d.issue),
+        safeText(d.cause),
+        safeText(d.action),
+        safeText(d.owner),
+        safeText(d.status),
+      ]
+    );
     res.json({ ok: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
+  try {
+    const d = req.body;
+    await pool.query(
+      `UPDATE nonconform
+       SET date = $1, type = $2, lot = $3, item = $4, issue = $5, cause = $6, action = $7, owner = $8, status = $9
+       WHERE id = $10`,
+      [
+        safeText(d.date) || null,
+        safeText(d.type),
+        safeText(d.lot),
+        safeText(d.item),
+        safeText(d.issue),
+        safeText(d.cause),
+        safeText(d.action),
+        safeText(d.owner),
+        safeText(d.status),
+        req.params.id,
+      ]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/nonconform/:id', requireLogin, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM nonconform WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
    변경 로그
 ========================= */
 
-app.get('/api/change-logs', requireLogin, (req, res) => {
-  db.all(`SELECT * FROM change_logs ORDER BY rowid DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/change-logs', requireLogin, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM change_logs ORDER BY created_at DESC NULLS LAST, id DESC`);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* =========================
@@ -1060,14 +999,16 @@ app.post('/api/import/preview', requireLogin, (req, res) => {
       totalRows: result.totalRows,
       validCount: result.validCount,
       skippedCount: result.skippedCount,
-      preview: result.preview
+      preview: result.preview,
     });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
 });
 
-app.post('/api/import/commit', requireLogin, (req, res) => {
+app.post('/api/import/commit', requireLogin, async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { sheetType, rows } = req.body;
     const result = previewMappedRows(sheetType, rows);
@@ -1076,29 +1017,119 @@ app.post('/api/import/commit', requireLogin, (req, res) => {
       return res.status(400).json({ ok: false, error: result.error });
     }
 
-    insertImportedRows(result.type, result.mappedRows, (err, insertedCount) => {
-      if (err) {
-        return res.status(500).json({ ok: false, error: err.message });
+    await client.query('BEGIN');
+
+    if (result.type === 'IQC') {
+      for (const r of result.mappedRows) {
+        await client.query(
+          `INSERT INTO iqc (id, date, lot, supplier, item, inspector, qty, fail, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+          [r.id, r.date || null, r.lot, r.supplier, r.item, r.inspector, r.qty, r.fail]
+        );
       }
+    }
 
-      addChangeLog(`엑셀 업로드 반영: ${result.type} / ${insertedCount}건 / 사용자 ${req.session.user?.email || ''}`);
+    if (result.type === 'PQC') {
+      for (const r of result.mappedRows) {
+        await client.query(
+          `INSERT INTO pqc (id, date, product, lot, visual, viscosity, solid, particle, qty, fail, judge, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())`,
+          [r.id, r.date || null, r.product, r.lot, r.visual, r.viscosity, r.solid, r.particle, r.qty, r.fail, r.judge]
+        );
+      }
+    }
 
-      res.json({
-        ok: true,
-        message: `${result.type} ${insertedCount}건 반영 완료`,
-        sheetType: result.type,
-        insertedCount,
-        skippedCount: result.skippedCount
-      });
+    if (result.type === 'OQC') {
+      for (const r of result.mappedRows) {
+        await client.query(
+          `INSERT INTO oqc (id, date, customer, product, lot, visual, viscosity, solid, particle, adhesion, resistance, swelling, moisture, qty, fail, judge, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())`,
+          [
+            r.id,
+            r.date || null,
+            r.customer,
+            r.product,
+            r.lot,
+            r.visual,
+            r.viscosity,
+            r.solid,
+            r.particle,
+            r.adhesion,
+            r.resistance,
+            r.swelling,
+            r.moisture,
+            r.qty,
+            r.fail,
+            r.judge,
+          ]
+        );
+      }
+    }
+
+    if (result.type === 'SUPPLIERS') {
+      for (const r of result.mappedRows) {
+        await client.query(
+          `INSERT INTO suppliers (id, name, manager, phone, category, status, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+          [r.id, r.name, r.manager, r.phone, r.category, r.status]
+        );
+      }
+    }
+
+    if (result.type === 'WORKLOG') {
+      for (const r of result.mappedRows) {
+        await client.query(
+          `INSERT INTO worklog (id, workdate, finishedlot, seq, material, supname, inputqty, inputratio, lotno, inputtime, worker, note, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
+          [
+            r.id,
+            r.workdate || null,
+            r.finishedlot,
+            r.seq,
+            r.material,
+            r.supname,
+            r.inputqty,
+            r.inputratio,
+            r.lotno,
+            r.inputtime,
+            r.worker,
+            r.note,
+          ]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+
+    await addChangeLog(`엑셀 업로드 반영: ${result.type} / ${result.mappedRows.length}건 / 사용자 ${req.session.user?.email || ''}`);
+
+    res.json({
+      ok: true,
+      message: `${result.type} ${result.mappedRows.length}건 반영 완료`,
+      sheetType: result.type,
+      insertedCount: result.mappedRows.length,
+      skippedCount: result.skippedCount,
     });
   } catch (e) {
+    await client.query('ROLLBACK');
     res.status(500).json({ ok: false, error: e.message });
+  } finally {
+    client.release();
   }
 });
 
 /* =========================
    상태 / 정적 파일
 ========================= */
+
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({ ok: true, time: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get('/health', (req, res) => {
   res.json({ ok: true });
@@ -1107,7 +1138,6 @@ app.get('/health', (req, res) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('*', (req, res) => {
-  // API는 제외
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'API not found' });
   }
