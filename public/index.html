@@ -1031,7 +1031,35 @@
           <div class="field"><label>선택 ID</label><input id="pqcEditId" readonly /></div>
         </div>
       </div>
-          <section id="tab-oqc" class="tab-panel hidden">
+
+      <div class="section-card">
+        <div class="section-title">
+          <h3>공정검사 목록</h3>
+          <div class="section-actions">
+            <button class="btn btn-light btn-sm" type="button" id="pqcRefreshBtn">새로고침</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>일자</th>
+                <th>제품</th>
+                <th>LOT</th>
+                <th>외관</th>
+                <th>판정</th>
+                <th>수량</th>
+                <th>불량</th>
+                <th>작업</th>
+              </tr>
+            </thead>
+            <tbody id="pqcTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-oqc" class="tab-panel hidden">
       <div class="section-card">
         <div class="section-title">
           <h3>출하검사 등록</h3>
@@ -1472,7 +1500,8 @@
     function switchMainTab(tab) {
       $$('.main-tab').forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
       $$('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
-      $(`tab-${tab}`).classList.remove('hidden');
+      const target = $(`tab-${tab}`);
+      if (target) target.classList.remove('hidden');
     }
 
     function renderUserChip() {
@@ -1528,19 +1557,28 @@
     function getKeyword() {
       return ($('keywordInput').value || '').trim().toLowerCase();
     }
-
-    function applyFilters(rows, dateKeyCandidates = ['date']) {
+        function applyFilters(rows, dateKeyCandidates = ['date']) {
       const y = $('filterYear').value;
       const m = $('filterMonth').value;
       const d = $('filterDay').value;
       const keyword = getKeyword();
 
       return rows.filter((row) => {
-        const dateValue = dateKeyCandidates.map((k) => row[k]).find(Boolean) || '';
+        const fallbackDate =
+          row.workDate ||
+          row.workdate ||
+          row.date ||
+          '';
+
+        const dateValue =
+          dateKeyCandidates.map((k) => row[k]).find(Boolean) ||
+          fallbackDate;
+
         const s = String(dateValue || '');
         if (y && !s.startsWith(y)) return false;
         if (m && s.slice(5, 7) !== m) return false;
         if (d && s.slice(8, 10) !== d) return false;
+
         if (keyword) {
           const joined = Object.values(row).join(' ').toLowerCase();
           if (!joined.includes(keyword)) return false;
@@ -1551,12 +1589,15 @@
 
     function drawBarChart(canvasId, rows, dateKey, failKey = 'fail') {
       const canvas = $(canvasId);
-      if (!canvas) return;
+      if (!canvas || typeof Chart === 'undefined') return;
+
       const ctx = canvas.getContext('2d');
       const list = applyFilters(rows, [dateKey]);
       const byMonth = {};
+
       list.forEach((r) => {
-        const d = String(r[dateKey] || '');
+        const rawDate = r[dateKey] || r.workDate || r.workdate || r.date || '';
+        const d = String(rawDate || '');
         const key = d ? d.slice(0, 7) : '미분류';
         if (!byMonth[key]) byMonth[key] = { total: 0, fail: 0 };
         byMonth[key].total += 1;
@@ -1590,7 +1631,7 @@
       const pqcRows = applyFilters(state.pqc, ['date']);
       const oqcRows = applyFilters(state.oqc, ['date']);
       const ncRows = applyFilters(state.nonconform, ['date']);
-      const workRows = applyFilters(state.worklog, ['workDate']);
+      const workRows = applyFilters(state.worklog, ['workDate', 'workdate']);
 
       $('iqcCount').textContent = iqcRows.length;
       $('pqcCount').textContent = pqcRows.length;
@@ -1617,6 +1658,7 @@
     function renderTable(targetId, rows, columns, type) {
       const body = $(targetId);
       if (!body) return;
+
       if (!rows.length) {
         body.innerHTML = `<tr><td colspan="${columns.length + 1}" class="empty">데이터가 없습니다.</td></tr>`;
         return;
@@ -1631,6 +1673,9 @@
     }
 
     function renderUsersTable() {
+      const body = $('usersTable');
+      if (!body) return;
+
       const rows = state.users.map((u) => ({
         ...u,
         statusBadge: `<span class="status-badge ${
@@ -1639,7 +1684,7 @@
         }">${u.status || ''}</span>`
       }));
 
-      $('usersTable').innerHTML = rows.map((u) => `
+      body.innerHTML = rows.map((u) => `
         <tr>
           <td>${u.name || ''}</td>
           <td>${u.email || ''}</td>
@@ -1673,7 +1718,16 @@
       state.pqc = pqc;
       state.oqc = oqc;
       state.suppliers = suppliers;
-      state.worklog = worklog;
+      state.worklog = worklog.map((row) => ({
+        ...row,
+        workDate: row.workDate || row.workdate || '',
+        finishedLot: row.finishedLot || row.finishedlot || '',
+        supName: row.supName || row.supname || '',
+        inputQty: row.inputQty || row.inputqty || '',
+        inputRatio: row.inputRatio || row.inputratio || '',
+        lotNo: row.lotNo || row.lotno || '',
+        inputTime: row.inputTime || row.inputtime || ''
+      }));
       state.nonconform = nonconform;
 
       renderAll();
@@ -1700,7 +1754,7 @@
       renderTable('supplierTable', applyFilters(state.suppliers, ['date']),
         ['name', 'manager', 'phone', 'category', 'status'], 'suppliers');
 
-      renderTable('worklogTable', applyFilters(state.worklog, ['workDate']),
+      renderTable('worklogTable', applyFilters(state.worklog, ['workDate', 'workdate']),
         ['workDate', 'finishedLot', 'material', 'supName', 'inputQty', 'worker'], 'worklog');
 
       renderTable('ncTable', applyFilters(state.nonconform, ['date']),
@@ -1718,7 +1772,7 @@
           })
         });
         state.user = data.user;
-        onLoggedIn();
+        await onLoggedIn();
       } catch (err) {
         setMessage($('loginMsg'), err.message, 'error');
       }
@@ -1728,6 +1782,7 @@
       clearMessage($('signupMsg'));
       const pw1 = $('signupPassword').value;
       const pw2 = $('signupPassword2').value;
+
       if (pw1 !== pw2) {
         setMessage($('signupMsg'), '비밀번호 확인이 일치하지 않습니다.', 'error');
         return;
@@ -1758,7 +1813,7 @@
     async function checkMe() {
       try {
         state.user = await api('/api/auth/me');
-        onLoggedIn();
+        await onLoggedIn();
       } catch (_) {
         onLoggedOut();
       }
@@ -1780,7 +1835,8 @@
 
     function fillForm(prefix, row, fields) {
       fields.forEach(([id, key]) => {
-        $(id).value = row[key] ?? '';
+        const v = row[key] ?? row[key.toLowerCase()] ?? '';
+        $(id).value = v;
       });
       $(prefix + 'EditId').value = row.id || '';
     }
@@ -1795,7 +1851,9 @@
         nonconform: [state.nonconform, [['ncDate','date'],['ncType','type'],['ncLot','lot'],['ncItem','item'],['ncIssue','issue'],['ncCause','cause'],['ncAction','action'],['ncOwner','owner'],['ncStatus','status']]]
       };
 
-      const [rows, fields] = map[type];
+      const conf = map[type];
+      if (!conf) return;
+      const [rows, fields] = conf;
       const row = rows.find((r) => r.id === id);
       if (!row) return;
 
@@ -1990,6 +2048,8 @@
       });
 
       const body = $('traceTable');
+      if (!body) return;
+
       if (!rows.length) {
         body.innerHTML = '<tr><td colspan="9" class="empty">조회 결과가 없습니다.</td></tr>';
         return;
@@ -2161,13 +2221,13 @@
       $('worklogSaveBtn').onclick = saveWorklog;
       $('ncSaveBtn').onclick = saveNc;
 
-      $('iqcRefreshBtn').onclick = loadAll;
-      $('pqcRefreshBtn').onclick = loadAll;
-      $('oqcRefreshBtn').onclick = loadAll;
-      $('supplierRefreshBtn').onclick = loadAll;
-      $('worklogRefreshBtn').onclick = loadAll;
-      $('ncRefreshBtn').onclick = loadAll;
-      $('usersRefreshBtn').onclick = loadAdminData;
+      if ($('iqcRefreshBtn')) $('iqcRefreshBtn').onclick = loadAll;
+      if ($('pqcRefreshBtn')) $('pqcRefreshBtn').onclick = loadAll;
+      if ($('oqcRefreshBtn')) $('oqcRefreshBtn').onclick = loadAll;
+      if ($('supplierRefreshBtn')) $('supplierRefreshBtn').onclick = loadAll;
+      if ($('worklogRefreshBtn')) $('worklogRefreshBtn').onclick = loadAll;
+      if ($('ncRefreshBtn')) $('ncRefreshBtn').onclick = loadAll;
+      if ($('usersRefreshBtn')) $('usersRefreshBtn').onclick = loadAdminData;
 
       $('iqcSampleBtn').onclick = () => {
         $('iqcDate').value = todayStr();
