@@ -351,15 +351,21 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       res.json({ ok: true, user: req.session.user });
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  console.error('LOGIN ERROR:', e);
+  res.status(500).json({ error: e.message });
+}
 });
 
 app.get('/api/auth/me', (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ error: '로그인 필요' });
+  try {
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ error: '로그인 필요' });
+    }
+    res.json(req.session.user);
+  } catch (e) {
+    console.error('AUTH ME ERROR:', e);
+    res.status(500).json({ error: e.message });
   }
-  res.json(req.session.user);
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -431,9 +437,10 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
     await addChangeLog(`비밀번호 변경: ${user.name} / ${user.email}`);
 
     res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+ } catch (e) {
+  console.error('CHANGE PASSWORD ERROR:', e);
+  res.status(500).json({ error: e.message });
+}
 });
 
 /* =========================
@@ -449,8 +456,9 @@ app.get('/api/admin/users', requireAdmin, adminLimiter, async (req, res) => {
     );
     res.json(result.rows);
   } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  console.error('ADMIN USERS ERROR:', e);
+  res.status(500).json({ error: e.message });
+}
 });
 
 app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
