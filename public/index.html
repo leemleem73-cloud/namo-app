@@ -682,7 +682,7 @@
         <h1>회원가입 · 로그인 후<br />대시보드 접근</h1>
         <p>
           인증된 사용자만 품질관리 대시보드에 접근할 수 있도록 구성했습니다.
-          회원가입 신청 후 관리자 승인 완료 시 로그인할 수 있습니다.
+          회원가입 후 바로 로그인하여 품질 대시보드에 접근할 수 있습니다.
         </p>
 
         <div class="hero-grid">
@@ -696,7 +696,7 @@
           </div>
           <div class="mini-card">
             <div class="mini-title">진입 흐름</div>
-            <div class="mini-value">가입 신청 → 승인 → 로그인</div>
+            <div class="mini-value">회원가입 → 로그인</div>
           </div>
         </div>
 
@@ -720,7 +720,7 @@
           <div class="icon">⚡</div>
           <div>
             <div class="title">승인 기반 진입</div>
-            <div class="desc">회원가입 완료 후 자동 로그인되지 않으며, 관리자 승인 후 접근 가능합니다.</div>
+            <div class="desc">회원가입 후 바로 로그인하여 시스템을 사용할 수 있습니다.</div>
           </div>
         </div>
 
@@ -739,7 +739,7 @@
 
         <div id="loginPanel">
           <div class="auth-title">다시 오신 것을 환영합니다</div>
-          <div class="auth-sub">승인된 계정으로 로그인하면 품질 대시보드가 열립니다.</div>
+          <div class="auth-sub">로그인하면 품질 대시보드가 열립니다.</div>
 
           <div class="field">
             <label for="loginEmail">이메일</label>
@@ -757,14 +757,14 @@
           </div>
 
           <div class="hint">
-            회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려 주세요.
+            회원이 아니라면 회원가입 후 바로 로그인하세요.
           </div>
           <div id="loginMsg" class="message"></div>
         </div>
 
         <div id="signupPanel" class="hidden">
           <div class="auth-title">회원가입 신청</div>
-          <div class="auth-sub">이메일과 비밀번호를 등록하면 관리자가 승인 후 사용할 수 있습니다.</div>
+          <div class="auth-sub">이메일과 비밀번호를 등록하면 바로 로그인하여 사용할 수 있습니다.</div>
 
           <div class="row">
             <div class="field">
@@ -1743,7 +1743,7 @@
             department: $('signupDepartment').value
           })
         });
-        setMessage($('signupMsg'), '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.', 'success');
+        setMessage($('signupMsg'), '회원가입이 완료되었습니다. 바로 로그인하세요.', 'success');
         switchAuthTab('login');
       } catch (err) {
         setMessage($('signupMsg'), err.message, 'error');
