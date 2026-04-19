@@ -1,5 +1,79 @@
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const express = require('express');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 
+console.log("NEW CODE DEPLOYED");
+console.log("이 파일 실행중:", __filename);
+
+try {
+  require('dotenv').config();
+} catch (e) {
+  console.log('dotenv 없음, 계속 진행');
+}
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const SESSION_SECRET = process.env.SESSION_SECRET || 'namo-secret';
+
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    proxy: true,
+    cookie: {
+      httpOnly: true,
+      sameSite: process.env.RENDER ? 'none' : 'lax',
+      secure: !!process.env.RENDER,
+      maxAge: 1000 * 60 * 60 * 8
+    }
+  })
+);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30
+});
+
+const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
+const safeText = (v, m = 200) => String(v || '').trim().slice(0, m);
+const safeNumber = (v) => Number(v) || 0;
+const makeId = (p) => `${p}_${crypto.randomUUID()}`;
+
+const requireLogin = (req, res, next) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: '로그인 필요' });
+  }
+  next();
+};
+
+const requireAdmin = (req, res, next) => {
+  if (req.session.user?.role !== 'admin') {
+    return res.status(403).json({ error: '관리자만' });
+  }
+  next();
+};
 
 /* =========================
    엑셀 업로드용 추가 유틸
