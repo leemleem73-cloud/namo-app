@@ -7,9 +7,6 @@ const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const pgSession = require('connect-pg-simple')(session);
 
-console.log('NEW CODE DEPLOYED');
-console.log('이 파일 실행중:', __filename);
-
 try {
   require('dotenv').config();
 } catch (e) {
@@ -137,6 +134,19 @@ function classifySheetType(raw) {
   if (['WORKLOG', '작업일지', '원료투입', '투입일지'].includes(s)) return 'WORKLOG';
 
   return '';
+}
+
+function mapWorklogRow(row) {
+  return {
+    ...row,
+    workDate: row.workdate || row.workDate || '',
+    finishedLot: row.finishedlot || row.finishedLot || '',
+    supName: row.supname || row.supName || '',
+    inputQty: row.inputqty || row.inputQty || '',
+    inputRatio: row.inputratio || row.inputRatio || '',
+    lotNo: row.lotno || row.lotNo || '',
+    inputTime: row.inputtime || row.inputTime || '',
+  };
 }
 
 function previewMappedRows(sheetType, rows) {
@@ -294,7 +304,7 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
         safeText(department),
         'staff',
         'user',
-        'APPROVED',
+        'APPROVED'
       ]
     );
 
@@ -316,6 +326,10 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ error: '존재하지 않는 계정입니다.' });
+    }
+
+    if (user.status === 'REJECTED') {
+      return res.status(403).json({ error: '반려된 계정입니다. 관리자에게 문의하세요.' });
     }
 
     const ok = await bcrypt.compare(password || '', user.password || '');
@@ -433,7 +447,7 @@ app.get('/api/admin/users', requireAdmin, adminLimiter, async (req, res) => {
     const result = await pool.query(
       `SELECT id, name, email, department, title, role, status, created_at
        FROM users
-       ORDER BY id DESC`
+       ORDER BY created_at DESC NULLS LAST, id DESC`
     );
     res.json(result.rows);
   } catch (e) {
@@ -824,7 +838,7 @@ app.delete('/api/oqc/:id', requireLogin, async (req, res) => {
 app.get('/api/worklog', requireLogin, async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM worklog ORDER BY workdate DESC NULLS LAST, created_at DESC NULLS LAST`);
-    res.json(result.rows);
+    res.json(result.rows.map(mapWorklogRow));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -1115,6 +1129,46 @@ app.post('/api/import/commit', requireLogin, async (req, res) => {
     res.status(500).json({ ok: false, error: e.message });
   } finally {
     client.release();
+  }
+});
+
+/* =========================
+   백업
+========================= */
+
+app.get('/api/backup', requireAdmin, async (req, res) => {
+  try {
+    const [users, suppliers, iqc, pqc, oqc, worklog, nonconform, changeLogs] = await Promise.all([
+      pool.query(`SELECT id, name, email, department, title, role, status, created_at FROM users ORDER BY created_at DESC NULLS LAST, id DESC`),
+      pool.query(`SELECT * FROM suppliers ORDER BY created_at DESC NULLS LAST, id DESC`),
+      pool.query(`SELECT * FROM iqc ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`),
+      pool.query(`SELECT * FROM pqc ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`),
+      pool.query(`SELECT * FROM oqc ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`),
+      pool.query(`SELECT * FROM worklog ORDER BY workdate DESC NULLS LAST, created_at DESC NULLS LAST`),
+      pool.query(`SELECT * FROM nonconform ORDER BY date DESC NULLS LAST, created_at DESC NULLS LAST`),
+      pool.query(`SELECT * FROM change_logs ORDER BY created_at DESC NULLS LAST, id DESC`)
+    ]);
+
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      exportedBy: req.session.user?.email || '',
+      data: {
+        users: users.rows,
+        suppliers: suppliers.rows,
+        iqc: iqc.rows,
+        pqc: pqc.rows,
+        oqc: oqc.rows,
+        worklog: worklog.rows,
+        nonconform: nonconform.rows,
+        changeLogs: changeLogs.rows,
+      },
+    };
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="namo-qms-backup-${new Date().toISOString().slice(0, 10)}.json"`);
+    res.send(JSON.stringify(payload, null, 2));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
