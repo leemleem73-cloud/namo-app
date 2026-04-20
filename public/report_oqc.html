@@ -1,1 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>출하검사 성적서</title>
+<style>
+body{font-family:"Malgun Gothic",Arial;margin:40px;color:#000}
+.header{text-align:center;margin-bottom:24px}
+.header h1{font-size:28px;margin:0 0 6px}
+.header span{font-size:14px}
+.info{margin-bottom:18px}
+.info div{margin-bottom:6px}
+table{width:100%;border-collapse:collapse;margin-top:16px}
+th,td{border:1px solid #000;padding:8px;text-align:center}
+th{background:#f2f2f2}
+.footer{margin-top:40px;display:flex;justify-content:space-between}
+.sign{text-align:center;width:30%}
+.print-btn{position:fixed;top:20px;right:20px}
+@media print {.print-btn{display:none}}
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">🖨 출력</button>
 
+<div class="header">
+  <h1>출하검사 성적서</h1>
+  <span>나모케미칼(주)</span>
+</div>
+
+<div class="info">
+  <div>검사일자: <span id="date"></span></div>
+  <div>고객사: <span id="customer"></span></div>
+  <div>제품명: <span id="product"></span></div>
+  <div>LOT: <span id="lot"></span></div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>검사항목</th>
+      <th>검사 기준</th>
+      <th>측정값</th>
+      <th>판정</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>외관</td><td>이상 없을 것</td><td id="visual"></td><td id="judge1"></td></tr>
+    <tr><td>2</td><td>포장 상태</td><td>파손 없을 것</td><td id="packState">파손 없음</td><td id="judge2"></td></tr>
+    <tr><td>3</td><td>점도</td><td>첨부파일 기준치와 동일</td><td id="viscosity"></td><td id="judge3"></td></tr>
+    <tr><td>4</td><td>고형분</td><td>첨부파일 기준치와 동일</td><td id="solid"></td><td id="judge4"></td></tr>
+    <tr><td>5</td><td>입자</td><td>첨부파일 기준치와 동일</td><td id="particle"></td><td id="judge5"></td></tr>
+    <tr><td>6</td><td>접착력</td><td>첨부파일 기준치와 동일</td><td id="adhesion"></td><td id="judge6"></td></tr>
+    <tr><td>7</td><td>절연저항</td><td>첨부파일 기준치와 동일</td><td id="resistance"></td><td id="judge7"></td></tr>
+    <tr><td>8</td><td>전해액 팽윤성</td><td>첨부파일 기준치와 동일</td><td id="swelling"></td><td id="judge8"></td></tr>
+    <tr><td>9</td><td>수분</td><td>첨부파일 기준치와 동일</td><td id="moisture"></td><td id="judge9"></td></tr>
+  </tbody>
+</table>
+
+<table style="margin-top:18px">
+  <tr>
+    <th>수량</th>
+    <td id="qty"></td>
+    <th>불량수량</th>
+    <td id="fail"></td>
+  </tr>
+  <tr>
+    <th>최종판정</th>
+    <td colspan="3" id="finalJudge"></td>
+  </tr>
+</table>
+
+<div class="footer">
+  <div class="sign">작성자<br><br><br>_________________</div>
+  <div class="sign">검토자<br><br><br>_________________</div>
+  <div class="sign">승인자<br><br><br>_________________</div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+
+async function load() {
+  const res = await fetch('/api/oqc', { credentials: 'include' });
+  const rows = await res.json();
+  const row = rows.find(r => String(r.id) === String(id)) || rows[0];
+
+  if (!row) {
+    alert('데이터 없음');
+    return;
+  }
+
+  document.getElementById('date').innerText = row.date || '';
+  document.getElementById('customer').innerText = row.customer || '';
+  document.getElementById('product').innerText = row.product || '';
+  document.getElementById('lot').innerText = row.lot || '';
+  document.getElementById('visual').innerText = row.visual || '이상 없음';
+  document.getElementById('viscosity').innerText = row.viscosity || '';
+  document.getElementById('solid').innerText = row.solid || '';
+  document.getElementById('particle').innerText = row.particle || '';
+  document.getElementById('adhesion').innerText = row.adhesion || '';
+  document.getElementById('resistance').innerText = row.resistance || '';
+  document.getElementById('swelling').innerText = row.swelling || '';
+  document.getElementById('moisture').innerText = row.moisture || '';
+  document.getElementById('qty').innerText = row.qty || 0;
+  document.getElementById('fail').innerText = row.fail || 0;
+
+  const finalJudge = row.judge || (Number(row.fail || 0) > 0 ? '불합격' : '합격');
+  document.getElementById('finalJudge').innerText = finalJudge;
+  for (let i = 1; i <= 9; i++) {
+    document.getElementById(`judge${i}`).innerText = finalJudge;
+  }
+}
+load();
+</script>
+</body>
+</html>
