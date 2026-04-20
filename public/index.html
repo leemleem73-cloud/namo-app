@@ -4,674 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Namo Chemical QMS</title>
-  <style>
-    :root{
-      --bg:#f4f7fb;
-      --card:#ffffff;
-      --line:#d9e2ef;
-      --text:#16324f;
-      --muted:#6b7c93;
-      --primary:#1f5fae;
-      --primary-2:#2d74c8;
-      --danger:#e25555;
-      --success:#29a36a;
-      --shadow:0 10px 25px rgba(22,50,79,.08);
-      --radius:22px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      background:linear-gradient(180deg,#eef3f9 0%,#f7f9fc 100%);
-      color:var(--text);
-    }
-    button,input,select,textarea{
-      font:inherit;
-    }
-    .hidden{display:none!important}
-    .page{
-      width:min(1500px,96%);
-      margin:18px auto 32px;
-    }
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:16px 8px 10px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      font-weight:700;
-      font-size:28px;
-      color:#113e67;
-    }
-    .brand img{
-      width:44px;height:44px;object-fit:contain;
-      border-radius:10px;
-      background:#fff;
-    }
-    .user-chip{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:12px 18px;
-      color:#314b68;
-      font-weight:700;
-      box-shadow:var(--shadow);
-    }
-
-    .login-wrap{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:22px;
-      min-height:calc(100vh - 80px);
-      align-items:center;
-    }
-    .hero{
-      background:linear-gradient(135deg,#163f6c 0%, #1d5eaa 60%, #3a86da 100%);
-      color:#fff;
-      border-radius:34px;
-      padding:42px 34px;
-      box-shadow:var(--shadow);
-      min-height:720px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      position:relative;
-      overflow:hidden;
-    }
-    .hero:before{
-      content:"";
-      position:absolute;
-      width:360px;height:360px;
-      right:-80px;top:-90px;
-      border-radius:50%;
-      background:radial-gradient(circle at center, rgba(255,255,255,.22), rgba(255,255,255,0));
-    }
-    .hero .badge{
-      display:inline-flex;
-      align-items:center;
-      width:max-content;
-      padding:10px 18px;
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:999px;
-      font-size:20px;
-      font-weight:700;
-      margin-bottom:28px;
-      backdrop-filter:blur(4px);
-    }
-    .hero h1{
-      font-size:72px;
-      line-height:1.08;
-      margin:0 0 22px;
-      letter-spacing:-1px;
-    }
-    .hero p{
-      font-size:30px;
-      line-height:1.55;
-      margin:0 0 28px;
-      color:rgba(255,255,255,.95);
-    }
-    .hero-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-      margin:18px 0 22px;
-    }
-    .mini-card{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:24px;
-      padding:24px;
-      min-height:128px;
-    }
-    .mini-card .mini-title{
-      font-size:19px;
-      opacity:.9;
-      margin-bottom:8px;
-    }
-    .mini-card .mini-value{
-      font-size:28px;
-      font-weight:800;
-      line-height:1.25;
-    }
-    .hero-feature{
-      display:flex;
-      gap:16px;
-      align-items:flex-start;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:28px;
-      padding:22px 22px;
-      margin-top:14px;
-    }
-    .hero-feature .icon{
-      width:58px;height:58px;
-      border-radius:18px;
-      background:rgba(255,255,255,.14);
-      display:flex;align-items:center;justify-content:center;
-      font-size:28px;
-      flex:0 0 auto;
-    }
-    .hero-feature .title{
-      font-size:28px;
-      font-weight:800;
-      margin-bottom:6px;
-    }
-    .hero-feature .desc{
-      font-size:21px;
-      line-height:1.5;
-      color:rgba(255,255,255,.92);
-    }
-    .hero-tags{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:24px;
-    }
-    .hero-tags span{
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(255,255,255,.08);
-      padding:10px 16px;
-      font-size:18px;
-      font-weight:700;
-    }
-
-    .auth-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:32px;
-      box-shadow:var(--shadow);
-      padding:28px;
-      min-height:720px;
-    }
-    .auth-title{
-      font-size:52px;
-      font-weight:800;
-      margin:10px 0 10px;
-      letter-spacing:-.5px;
-    }
-    .auth-sub{
-      color:var(--muted);
-      font-size:24px;
-      line-height:1.5;
-      margin-bottom:24px;
-    }
-    .tab-switch{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      background:#edf2f8;
-      border-radius:24px;
-      padding:8px;
-      gap:8px;
-      margin:10px 0 26px;
-    }
-    .tab-switch button{
-      border:none;
-      background:transparent;
-      border-radius:18px;
-      padding:18px 10px;
-      font-size:26px;
-      font-weight:800;
-      color:#49627d;
-      cursor:pointer;
-    }
-    .tab-switch button.active{
-      background:linear-gradient(135deg,#124f93,#2870c7);
-      color:#fff;
-      box-shadow:0 8px 18px rgba(31,95,174,.22);
-    }
-    .field{
-      margin-bottom:18px;
-    }
-    .field label{
-      display:block;
-      font-size:20px;
-      font-weight:800;
-      margin-bottom:10px;
-      color:#36506a;
-    }
-    .field input,.field select,.field textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:18px 18px;
-      font-size:22px;
-      background:#f8fbff;
-      outline:none;
-    }
-    .field input:focus,.field select:focus,.field textarea:focus{
-      border-color:#7aa8df;
-      box-shadow:0 0 0 4px rgba(76,132,210,.12);
-      background:#fff;
-    }
-    .row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:16px;
-    }
-    .btn{
-      border:none;
-      border-radius:18px;
-      padding:16px 22px;
-      font-size:22px;
-      font-weight:800;
-      cursor:pointer;
-      transition:.18s ease;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn-primary{
-      background:linear-gradient(135deg,#14539a,#2a73cb);
-      color:#fff;
-      box-shadow:0 10px 18px rgba(24,94,176,.2);
-    }
-    .btn-light{
-      background:#fff;
-      color:#36506a;
-      border:1px solid var(--line);
-    }
-    .btn-danger{
-      background:linear-gradient(135deg,#db5151,#ec6666);
-      color:#fff;
-    }
-    .btn-success{
-      background:linear-gradient(135deg,#1d8a59,#2fb171);
-      color:#fff;
-    }
-    .btn-sm{
-      padding:10px 14px;
-      font-size:16px;
-      border-radius:14px;
-    }
-    .actions{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .hint{
-      color:var(--muted);
-      font-size:17px;
-      margin-top:10px;
-      line-height:1.5;
-    }
-    .message{
-      margin:12px 0 0;
-      padding:14px 16px;
-      border-radius:16px;
-      font-size:18px;
-      font-weight:700;
-      display:none;
-    }
-    .message.show{display:block}
-    .message.error{background:#fff1f1;color:#b53a3a;border:1px solid #f1c1c1}
-    .message.success{background:#eefaf4;color:#1d7d52;border:1px solid #bde2ce}
-
-    .toolbar-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:22px;
-      box-shadow:var(--shadow);
-      margin-bottom:16px;
-    }
-    .toolbar-top{
-      display:grid;
-      grid-template-columns:repeat(7, minmax(0,1fr));
-      gap:12px;
-      align-items:end;
-    }
-    .toolbar-label{
-      font-size:16px;
-      font-weight:800;
-      color:#5a718b;
-      margin-bottom:8px;
-    }
-    .toolbar-field select,
-    .toolbar-field input{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px 14px;
-      font-size:18px;
-      background:#fff;
-    }
-    .toolbar-buttons{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:16px;
-    }
-    .main-tabs{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin:16px 0;
-    }
-    .main-tab{
-      background:#fff;
-      border:1px solid var(--line);
-      color:#35506c;
-      border-radius:20px;
-      padding:18px 26px;
-      font-size:20px;
-      font-weight:800;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-    }
-    .main-tab.active{
-      background:linear-gradient(135deg,#14539a,#2a73cb);
-      color:#fff;
-      border-color:transparent;
-    }
-    .range-bar{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:18px 22px;
-      display:flex;
-      gap:14px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-bottom:18px;
-      box-shadow:var(--shadow);
-    }
-    .range-bar .label{
-      font-size:20px;
-      font-weight:800;
-      color:#566f89;
-    }
-    .range-bar .value{
-      font-size:22px;
-      font-weight:900;
-      color:#1d4671;
-    }
-
-    .dashboard-grid{
-      display:grid;
-      grid-template-columns:1.15fr 1fr 1fr;
-      gap:18px;
-      align-items:stretch;
-    }
-    .dashboard-hero{
-      background:linear-gradient(135deg,#164b8b 0%, #2e76cb 55%, #57a1ee 100%);
-      color:#fff;
-      border-radius:32px;
-      padding:30px;
-      box-shadow:var(--shadow);
-      min-height:500px;
-    }
-    .board-chip{
-      display:inline-flex;
-      align-items:center;
-      padding:12px 20px;
-      border-radius:999px;
-      font-weight:800;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.08);
-      margin-bottom:16px;
-    }
-    .dashboard-hero h2{
-      font-size:46px;
-      line-height:1.15;
-      margin:0 0 16px;
-    }
-    .dashboard-hero p{
-      font-size:24px;
-      line-height:1.55;
-      margin:0 0 18px;
-      color:rgba(255,255,255,.95);
-    }
-    .board-feature{
-      background:rgba(255,255,255,.1);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:24px;
-      padding:20px;
-      margin-top:14px;
-      display:flex;
-      gap:16px;
-    }
-    .board-feature .dot{
-      width:48px;height:48px;border-radius:16px;
-      background:rgba(255,255,255,.14);
-      display:flex;align-items:center;justify-content:center;
-      font-size:24px;
-      flex:0 0 auto;
-    }
-    .board-feature .t1{
-      font-size:19px;
-      font-weight:900;
-      margin-bottom:6px;
-    }
-    .board-feature .t2{
-      font-size:17px;
-      line-height:1.5;
-      color:rgba(255,255,255,.92);
-    }
-
-    .stat-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:30px;
-      padding:24px;
-      box-shadow:var(--shadow);
-      min-height:500px;
-    }
-    .stat-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:12px;
-    }
-    .stat-head h3{
-      margin:0;
-      font-size:28px;
-      line-height:1.2;
-    }
-    .chip{
-      background:#edf3fb;
-      color:#356089;
-      border-radius:999px;
-      padding:10px 14px;
-      font-weight:800;
-      font-size:15px;
-    }
-    .big-number{
-      font-size:70px;
-      font-weight:900;
-      color:#133f69;
-      line-height:1;
-      margin:8px 0 16px;
-    }
-    .chart-box{
-      border:1px solid var(--line);
-      border-radius:24px;
-      height:290px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(180deg,#fbfdff,#f4f8fd);
-      color:#69819a;
-      font-size:18px;
-      position:relative;
-      overflow:hidden;
-    }
-    canvas{
-      width:100%!important;
-      height:100%!important;
-    }
-
-    .section-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:20px;
-      box-shadow:var(--shadow);
-      margin-bottom:18px;
-    }
-    .section-title{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:14px;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .section-title h3{
-      margin:0;
-      font-size:28px;
-    }
-    .section-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      overflow:hidden;
-      border-radius:18px;
-      font-size:16px;
-    }
-    thead th{
-      text-align:left;
-      background:#edf3fb;
-      color:#37506a;
-      padding:14px 12px;
-      border-bottom:1px solid var(--line);
-      font-weight:900;
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
-    tbody td{
-      padding:12px;
-      border-bottom:1px solid #edf2f7;
-      color:#26445f;
-      vertical-align:middle;
-      background:#fff;
-    }
-    tbody tr:hover td{
-      background:#f8fbff;
-    }
-    .table-wrap{
-      overflow:auto;
-      border:1px solid var(--line);
-      border-radius:20px;
-      max-height:520px;
-    }
-    .inline-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .status-badge{
-      display:inline-flex;
-      padding:8px 12px;
-      border-radius:999px;
-      font-weight:800;
-      font-size:13px;
-    }
-    .status-approved{background:#e9f7ef;color:#1a8050}
-    .status-rejected{background:#fff1f1;color:#bf4040}
-    .status-pending{background:#fff8e8;color:#9e6a00}
-
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
-      gap:12px;
-    }
-    .form-grid .full{
-      grid-column:1 / -1;
-    }
-
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(13,31,52,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:1000;
-    }
-    .modal.show{display:flex}
-    .modal-panel{
-      width:min(900px,100%);
-      background:#fff;
-      border-radius:28px;
-      box-shadow:0 30px 60px rgba(0,0,0,.22);
-      border:1px solid var(--line);
-      overflow:hidden;
-    }
-    .modal-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:18px 22px;
-      border-bottom:1px solid var(--line);
-      background:#f7fbff;
-    }
-    .modal-head h3{
-      margin:0;
-      font-size:24px;
-    }
-    .modal-body{
-      padding:20px;
-      max-height:75vh;
-      overflow:auto;
-    }
-    .close-btn{
-      border:none;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      width:40px;height:40px;
-      font-size:20px;
-      cursor:pointer;
-    }
-
-    .empty{
-      padding:22px;
-      text-align:center;
-      color:#7389a0;
-      font-weight:700;
-    }
-
-    @media (max-width:1200px){
-      .login-wrap{grid-template-columns:1fr}
-      .hero{min-height:auto}
-      .auth-card{min-height:auto}
-      .toolbar-top{grid-template-columns:repeat(3,minmax(0,1fr))}
-      .dashboard-grid{grid-template-columns:1fr}
-      .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    }
-    @media (max-width:720px){
-      .page{width:95%}
-      .brand{font-size:22px}
-      .hero h1{font-size:42px}
-      .hero p{font-size:20px}
-      .auth-title{font-size:34px}
-      .auth-sub{font-size:18px}
-      .tab-switch button{font-size:20px;padding:14px 8px}
-      .field input,.field select,.field textarea{font-size:18px}
-      .toolbar-top{grid-template-columns:1fr 1fr}
-      .form-grid{grid-template-columns:1fr}
-      .big-number{font-size:52px}
-      .dashboard-hero h2{font-size:34px}
-      .dashboard-hero p{font-size:18px}
-    }
-  </style>
+  <link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
   <div class="page" id="authPage">
     <div class="topbar">
       <div class="brand">
-        <img src="logo.png" alt="Namochemical" />
+        <div class="brand-box">N</div>
         <span>Namochemical</span>
       </div>
     </div>
@@ -756,9 +95,7 @@
             <button class="btn btn-primary" type="button" id="loginBtn">로그인</button>
           </div>
 
-          <div class="hint">
-            회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려 주세요.
-          </div>
+          <div class="hint">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려 주세요.</div>
           <div id="loginMsg" class="message"></div>
         </div>
 
@@ -796,6 +133,7 @@
           <div class="actions">
             <button class="btn btn-primary" type="button" id="signupBtn">가입 신청</button>
           </div>
+
           <div id="signupMsg" class="message"></div>
         </div>
       </section>
@@ -805,10 +143,11 @@
   <div class="page hidden" id="dashboardPage">
     <div class="topbar">
       <div class="brand">
-        <img src="logo.png" alt="Namochemical" />
+        <img src="/logo.png" alt="Namochemical" />
         <span>Namochemical</span>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+
+      <div class="top-actions">
         <button class="btn btn-light btn-sm" id="openPasswordBtn" type="button">비밀번호 변경</button>
         <button class="btn btn-light btn-sm" id="logoutBtn" type="button">로그아웃</button>
         <div class="user-chip" id="currentUserChip">관리자 · admin</div>
@@ -821,30 +160,36 @@
           <div class="toolbar-label">연도</div>
           <select id="filterYear"></select>
         </div>
+
         <div class="toolbar-field">
           <div class="toolbar-label">월</div>
           <select id="filterMonth">
             <option value="">전체</option>
           </select>
         </div>
+
         <div class="toolbar-field">
           <div class="toolbar-label">일</div>
           <select id="filterDay">
             <option value="">전체</option>
           </select>
         </div>
+
         <div class="toolbar-field">
           <div class="toolbar-label">검색 키워드</div>
           <input id="keywordInput" placeholder="lot, 제품, 거래처 등" />
         </div>
+
         <div class="toolbar-field">
           <div class="toolbar-label">조회</div>
           <button class="btn btn-primary" id="searchBtn" type="button">조회</button>
         </div>
+
         <div class="toolbar-field">
           <div class="toolbar-label">전체삭제</div>
           <button class="btn btn-danger" id="deleteAllBtn" type="button">전체삭제</button>
         </div>
+
         <div class="toolbar-field">
           <div class="toolbar-label">도구</div>
           <button class="btn btn-light" id="backupBtn" type="button">백업 다운로드</button>
@@ -857,6 +202,7 @@
         <button class="btn btn-light" type="button" id="monthQuickBtn">이번 달 전체 보기</button>
         <button class="btn btn-light" type="button" id="testDbBtn">DB 연결 테스트</button>
       </div>
+
       <div class="hint" id="toolbarHint">조회 조건을 바꾼 뒤 조회 버튼을 눌러 주세요.</div>
     </section>
 
@@ -968,18 +314,46 @@
           <div class="section-actions">
             <button class="btn btn-light btn-sm" type="button" id="iqcSampleBtn">샘플값</button>
             <button class="btn btn-success btn-sm" type="button" id="iqcSaveBtn">저장</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=certificate&type=iqc'">성적서</button>
           </div>
         </div>
+
         <div class="form-grid">
-          <div class="field"><label>일자</label><input type="date" id="iqcDate" /></div>
-          <div class="field"><label>LOT</label><input id="iqcLot" /></div>
-          <div class="field"><label>협력업체</label><input id="iqcSupplier" /></div>
-          <div class="field"><label>품목</label><input id="iqcItem" /></div>
-          <div class="field"><label>검사자</label><input id="iqcInspector" /></div>
-          <div class="field"><label>수량</label><input id="iqcQty" type="number" /></div>
-          <div class="field"><label>불량수량</label><input id="iqcFail" type="number" /></div>
-          <div class="field"><label>선택 ID</label><input id="iqcEditId" placeholder="수정 시 자동입력" readonly /></div>
+          <div class="field">
+            <label>일자</label>
+            <input type="date" id="iqcDate" />
+          </div>
+          <div class="field">
+            <label>LOT</label>
+            <input id="iqcLot" />
+          </div>
+          <div class="field">
+            <label>협력업체</label>
+            <input id="iqcSupplier" />
+          </div>
+          <div class="field">
+            <label>품목</label>
+            <input id="iqcItem" />
+          </div>
+          <div class="field">
+            <label>검사자</label>
+            <input id="iqcInspector" />
+          </div>
+          <div class="field">
+            <label>입고수량</label>
+            <input id="iqcIncomingQty" type="number" />
+          </div>
+          <div class="field">
+            <label>검사수량</label>
+            <input id="iqcQty" type="number" />
+          </div>
+          <div class="field">
+            <label>불량수량</label>
+            <input id="iqcFail" type="number" />
+          </div>
         </div>
+
+        <input type="hidden" id="iqcEditId" />
       </div>
 
       <div class="section-card">
@@ -989,6 +363,7 @@
             <button class="btn btn-light btn-sm" type="button" id="iqcRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -998,7 +373,8 @@
                 <th>협력업체</th>
                 <th>품목</th>
                 <th>검사자</th>
-                <th>수량</th>
+                <th>입고수량</th>
+                <th>검사수량</th>
                 <th>불량</th>
                 <th>작업</th>
               </tr>
@@ -1015,21 +391,58 @@
           <h3>공정검사 등록</h3>
           <div class="section-actions">
             <button class="btn btn-success btn-sm" type="button" id="pqcSaveBtn">저장</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=certificate&type=pqc'">성적서</button>
           </div>
         </div>
+
         <div class="form-grid">
-          <div class="field"><label>일자</label><input type="date" id="pqcDate" /></div>
-          <div class="field"><label>제품명</label><input id="pqcProduct" /></div>
-          <div class="field"><label>LOT</label><input id="pqcLot" /></div>
-          <div class="field"><label>외관</label><input id="pqcVisual" /></div>
-          <div class="field"><label>점도</label><input id="pqcViscosity" /></div>
-          <div class="field"><label>고형분</label><input id="pqcSolid" /></div>
-          <div class="field"><label>입자</label><input id="pqcParticle" /></div>
-          <div class="field"><label>판정</label><input id="pqcJudge" /></div>
-          <div class="field"><label>수량</label><input type="number" id="pqcQty" /></div>
-          <div class="field"><label>불량수량</label><input type="number" id="pqcFail" /></div>
-          <div class="field"><label>선택 ID</label><input id="pqcEditId" readonly /></div>
+          <div class="field">
+            <label>일자</label>
+            <input type="date" id="pqcDate" />
+          </div>
+          <div class="field">
+            <label>제품명</label>
+            <input id="pqcProduct" />
+          </div>
+          <div class="field">
+            <label>LOT</label>
+            <input id="pqcLot" />
+          </div>
+          <div class="field">
+            <label>외관</label>
+            <input id="pqcVisual" />
+          </div>
+          <div class="field">
+            <label>점도</label>
+            <input id="pqcViscosity" />
+          </div>
+          <div class="field">
+            <label>고형분</label>
+            <input id="pqcSolid" />
+          </div>
+          <div class="field">
+            <label>입자</label>
+            <input id="pqcParticle" />
+          </div>
+          <div class="field">
+            <label>판정</label>
+            <input id="pqcJudge" />
+          </div>
+          <div class="field">
+            <label>입고수량</label>
+            <input type="number" id="pqcIncomingQty" />
+          </div>
+          <div class="field">
+            <label>검사수량</label>
+            <input type="number" id="pqcQty" />
+          </div>
+          <div class="field">
+            <label>불량수량</label>
+            <input type="number" id="pqcFail" />
+          </div>
         </div>
+
+        <input type="hidden" id="pqcEditId" />
       </div>
 
       <div class="section-card">
@@ -1039,6 +452,7 @@
             <button class="btn btn-light btn-sm" type="button" id="pqcRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -1048,7 +462,8 @@
                 <th>LOT</th>
                 <th>외관</th>
                 <th>판정</th>
-                <th>수량</th>
+                <th>입고수량</th>
+                <th>검사수량</th>
                 <th>불량</th>
                 <th>작업</th>
               </tr>
@@ -1065,26 +480,74 @@
           <h3>출하검사 등록</h3>
           <div class="section-actions">
             <button class="btn btn-success btn-sm" type="button" id="oqcSaveBtn">저장</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=certificate&type=oqc'">성적서</button>
           </div>
         </div>
+
         <div class="form-grid">
-          <div class="field"><label>일자</label><input type="date" id="oqcDate" /></div>
-          <div class="field"><label>고객사</label><input id="oqcCustomer" /></div>
-          <div class="field"><label>제품명</label><input id="oqcProduct" /></div>
-          <div class="field"><label>LOT</label><input id="oqcLot" /></div>
-          <div class="field"><label>외관</label><input id="oqcVisual" /></div>
-          <div class="field"><label>점도</label><input id="oqcViscosity" /></div>
-          <div class="field"><label>고형분</label><input id="oqcSolid" /></div>
-          <div class="field"><label>입자</label><input id="oqcParticle" /></div>
-          <div class="field"><label>접착력</label><input id="oqcAdhesion" /></div>
-          <div class="field"><label>저항</label><input id="oqcResistance" /></div>
-          <div class="field"><label>팽윤</label><input id="oqcSwelling" /></div>
-          <div class="field"><label>수분</label><input id="oqcMoisture" /></div>
-          <div class="field"><label>수량</label><input type="number" id="oqcQty" /></div>
-          <div class="field"><label>불량수량</label><input type="number" id="oqcFail" /></div>
-          <div class="field"><label>판정</label><input id="oqcJudge" /></div>
-          <div class="field"><label>선택 ID</label><input id="oqcEditId" readonly /></div>
+          <div class="field">
+            <label>일자</label>
+            <input type="date" id="oqcDate" />
+          </div>
+          <div class="field">
+            <label>고객사</label>
+            <input id="oqcCustomer" />
+          </div>
+          <div class="field">
+            <label>제품명</label>
+            <input id="oqcProduct" />
+          </div>
+          <div class="field">
+            <label>LOT</label>
+            <input id="oqcLot" />
+          </div>
+          <div class="field">
+            <label>외관</label>
+            <input id="oqcVisual" />
+          </div>
+          <div class="field">
+            <label>점도</label>
+            <input id="oqcViscosity" />
+          </div>
+          <div class="field">
+            <label>고형분</label>
+            <input id="oqcSolid" />
+          </div>
+          <div class="field">
+            <label>입자</label>
+            <input id="oqcParticle" />
+          </div>
+          <div class="field">
+            <label>접착력</label>
+            <input id="oqcAdhesion" />
+          </div>
+          <div class="field">
+            <label>절연저항</label>
+            <input id="oqcResistance" />
+          </div>
+          <div class="field">
+            <label>전해액 팽윤성</label>
+            <input id="oqcSwelling" />
+          </div>
+          <div class="field">
+            <label>수분</label>
+            <input id="oqcMoisture" />
+          </div>
+          <div class="field">
+            <label>출하수량(EA/kg)</label>
+            <input id="oqcQty" />
+          </div>
+          <div class="field">
+            <label>불량수량</label>
+            <input type="number" id="oqcFail" />
+          </div>
+          <div class="field">
+            <label>판정</label>
+            <input id="oqcJudge" />
+          </div>
         </div>
+
+        <input type="hidden" id="oqcEditId" />
       </div>
 
       <div class="section-card">
@@ -1094,6 +557,7 @@
             <button class="btn btn-light btn-sm" type="button" id="oqcRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -1103,7 +567,7 @@
                 <th>제품</th>
                 <th>LOT</th>
                 <th>판정</th>
-                <th>수량</th>
+                <th>출하수량</th>
                 <th>불량</th>
                 <th>작업</th>
               </tr>
@@ -1122,14 +586,31 @@
             <button class="btn btn-success btn-sm" type="button" id="supplierSaveBtn">저장</button>
           </div>
         </div>
+
         <div class="form-grid">
-          <div class="field"><label>업체명</label><input id="supName" /></div>
-          <div class="field"><label>담당자</label><input id="supManager" /></div>
-          <div class="field"><label>전화번호</label><input id="supPhone" /></div>
-          <div class="field"><label>분류</label><input id="supCategory" /></div>
-          <div class="field"><label>상태</label><input id="supStatus" /></div>
-          <div class="field"><label>선택 ID</label><input id="supEditId" readonly /></div>
+          <div class="field">
+            <label>업체명</label>
+            <input id="supName" />
+          </div>
+          <div class="field">
+            <label>담당자</label>
+            <input id="supManager" />
+          </div>
+          <div class="field">
+            <label>전화번호</label>
+            <input id="supPhone" />
+          </div>
+          <div class="field">
+            <label>분류</label>
+            <input id="supCategory" />
+          </div>
+          <div class="field">
+            <label>상태</label>
+            <input id="supStatus" />
+          </div>
         </div>
+
+        <input type="hidden" id="supEditId" />
       </div>
 
       <div class="section-card">
@@ -1139,6 +620,7 @@
             <button class="btn btn-light btn-sm" type="button" id="supplierRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -1163,22 +645,90 @@
           <h3>생산작업일지 등록</h3>
           <div class="section-actions">
             <button class="btn btn-success btn-sm" type="button" id="worklogSaveBtn">저장</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=worklog'">작업일지 전용화면</button>
           </div>
         </div>
+
         <div class="form-grid">
-          <div class="field"><label>작업일자</label><input type="date" id="workDate" /></div>
-          <div class="field"><label>완제품 LOT</label><input id="finishedLot" /></div>
-          <div class="field"><label>순번</label><input id="workSeq" /></div>
-          <div class="field"><label>원료</label><input id="workMaterial" /></div>
-          <div class="field"><label>업체명</label><input id="workSupName" /></div>
-          <div class="field"><label>투입량</label><input id="workInputQty" /></div>
-          <div class="field"><label>투입비율</label><input id="workInputRatio" /></div>
-          <div class="field"><label>원료 LOT</label><input id="workLotNo" /></div>
-          <div class="field"><label>투입시간</label><input id="workInputTime" /></div>
-          <div class="field"><label>작업자</label><input id="workWorker" /></div>
-          <div class="field full"><label>비고</label><textarea id="workNote" rows="3"></textarea></div>
-          <div class="field"><label>선택 ID</label><input id="workEditId" readonly /></div>
+          <div class="field">
+            <label>생산일자</label>
+            <input type="date" id="workDate" />
+          </div>
+          <div class="field">
+            <label>완제품 LOT</label>
+            <input id="finishedLot" />
+          </div>
+          <div class="field">
+            <label>순번</label>
+            <input id="workSeq" />
+          </div>
+          <div class="field">
+            <label>원재료명</label>
+            <input id="workMaterial" />
+          </div>
+          <div class="field">
+            <label>원자재 LOT</label>
+            <input id="workLotNo" />
+          </div>
+          <div class="field">
+            <label>투입시간</label>
+            <input id="workInputTime" />
+          </div>
+          <div class="field">
+            <label>작업자</label>
+            <input id="workWorker" />
+          </div>
+          <div class="field">
+            <label>계획수량</label>
+            <input id="workPlanQty" />
+          </div>
+          <div class="field">
+            <label>생산수량</label>
+            <input id="workProdQty" />
+          </div>
+          <div class="field">
+            <label>불량수량</label>
+            <input id="workFailQty" />
+          </div>
+          <div class="field">
+            <label>업체명</label>
+            <input id="workSupName" />
+          </div>
+          <div class="field">
+            <label>투입량</label>
+            <input id="workInputQty" />
+          </div>
+          <div class="field full">
+            <label>특이사항</label>
+            <textarea id="workNote" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>유량 설정값</label>
+            <input id="flowSet" />
+          </div>
+          <div class="field">
+            <label>유량 실제값</label>
+            <input id="flowReal" />
+          </div>
+          <div class="field">
+            <label>온도 설정값</label>
+            <input id="tempSet" />
+          </div>
+          <div class="field">
+            <label>온도 실제값</label>
+            <input id="tempReal" />
+          </div>
+          <div class="field">
+            <label>여과 압력차 설정값</label>
+            <input id="pressSet" />
+          </div>
+          <div class="field">
+            <label>여과 압력차 실제값</label>
+            <input id="pressReal" />
+          </div>
         </div>
+
+        <input type="hidden" id="workEditId" />
       </div>
 
       <div class="section-card">
@@ -1188,16 +738,18 @@
             <button class="btn btn-light btn-sm" type="button" id="worklogRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>작업일자</th>
                 <th>완제품 LOT</th>
-                <th>원료</th>
-                <th>업체명</th>
-                <th>투입량</th>
+                <th>순번</th>
+                <th>원재료</th>
+                <th>원자재 LOT</th>
                 <th>작업자</th>
+                <th>생산수량</th>
                 <th>작업</th>
               </tr>
             </thead>
@@ -1212,12 +764,14 @@
         <div class="section-title">
           <h3>추적성 조회</h3>
         </div>
+
         <div class="form-grid">
           <div class="field full">
             <label>완제품 LOT 또는 원료 LOT</label>
             <input id="traceKeyword" placeholder="LOT 번호를 입력하세요" />
           </div>
         </div>
+
         <div class="section-actions" style="margin-top:8px;">
           <button class="btn btn-primary btn-sm" type="button" id="traceSearchBtn">조회</button>
         </div>
@@ -1227,6 +781,7 @@
         <div class="section-title">
           <h3>조회 결과</h3>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -1256,18 +811,47 @@
             <button class="btn btn-success btn-sm" type="button" id="ncSaveBtn">저장</button>
           </div>
         </div>
+
         <div class="form-grid">
-          <div class="field"><label>일자</label><input type="date" id="ncDate" /></div>
-          <div class="field"><label>구분</label><input id="ncType" /></div>
-          <div class="field"><label>LOT</label><input id="ncLot" /></div>
-          <div class="field"><label>품목</label><input id="ncItem" /></div>
-          <div class="field full"><label>문제내용</label><textarea id="ncIssue" rows="3"></textarea></div>
-          <div class="field full"><label>원인</label><textarea id="ncCause" rows="3"></textarea></div>
-          <div class="field full"><label>조치내용</label><textarea id="ncAction" rows="3"></textarea></div>
-          <div class="field"><label>담당자</label><input id="ncOwner" /></div>
-          <div class="field"><label>상태</label><input id="ncStatus" /></div>
-          <div class="field"><label>선택 ID</label><input id="ncEditId" readonly /></div>
+          <div class="field">
+            <label>일자</label>
+            <input type="date" id="ncDate" />
+          </div>
+          <div class="field">
+            <label>구분</label>
+            <input id="ncType" />
+          </div>
+          <div class="field">
+            <label>LOT</label>
+            <input id="ncLot" />
+          </div>
+          <div class="field">
+            <label>품목</label>
+            <input id="ncItem" />
+          </div>
+          <div class="field full">
+            <label>문제내용</label>
+            <textarea id="ncIssue" rows="3"></textarea>
+          </div>
+          <div class="field full">
+            <label>원인</label>
+            <textarea id="ncCause" rows="3"></textarea>
+          </div>
+          <div class="field full">
+            <label>조치내용</label>
+            <textarea id="ncAction" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>담당자</label>
+            <input id="ncOwner" />
+          </div>
+          <div class="field">
+            <label>상태</label>
+            <input id="ncStatus" />
+          </div>
         </div>
+
+        <input type="hidden" id="ncEditId" />
       </div>
 
       <div class="section-card">
@@ -1277,6 +861,7 @@
             <button class="btn btn-light btn-sm" type="button" id="ncRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -1305,6 +890,7 @@
             <button class="btn btn-light btn-sm" type="button" id="usersRefreshBtn">새로고침</button>
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -1343,17 +929,21 @@
             <input id="resetDepartment" />
           </div>
         </div>
+
         <div class="field">
           <label>이메일</label>
           <input id="resetEmail" type="email" />
         </div>
+
         <div class="field">
           <label>새 비밀번호</label>
           <input id="resetNewPassword" type="password" />
         </div>
+
         <div class="actions">
           <button class="btn btn-primary" type="button" id="resetPasswordBtn">초기화 실행</button>
         </div>
+
         <div id="resetMsg" class="message"></div>
       </div>
     </div>
@@ -1370,888 +960,31 @@
           <label>현재 비밀번호</label>
           <input id="pwCurrent" type="password" />
         </div>
+
         <div class="field">
           <label>새 비밀번호</label>
           <input id="pwNew" type="password" />
         </div>
+
         <div class="actions">
           <button class="btn btn-primary" type="button" id="changePasswordBtn">변경</button>
         </div>
+
         <div id="pwMsg" class="message"></div>
       </div>
     </div>
   </div>
 
-  <div class="modal" id="importModal">
-    <div class="modal-panel">
-      <div class="modal-head">
-        <h3>엑셀 업로드</h3>
-        <button class="close-btn" data-close="importModal" type="button">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="field">
-            <label>업로드 유형</label>
-            <select id="importSheetType">
-              <option value="IQC">IQC</option>
-              <option value="PQC">PQC</option>
-              <option value="OQC">OQC</option>
-              <option value="SUPPLIERS">SUPPLIERS</option>
-              <option value="WORKLOG">WORKLOG</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>JSON Rows 입력</label>
-            <input id="importHint" value="엑셀 JSON 배열을 붙여넣으세요" readonly />
-          </div>
-        </div>
-        <div class="field">
-          <label>Rows JSON</label>
-          <textarea id="importRows" rows="12" placeholder='[{"date":"2026-04-19","lot":"A001"}]'></textarea>
-        </div>
-        <div class="actions">
-          <button class="btn btn-light" type="button" id="importPreviewBtn">미리보기</button>
-          <button class="btn btn-success" type="button" id="importCommitBtn">반영</button>
-        </div>
-        <div id="importMsg" class="message"></div>
-        <div class="table-wrap" style="margin-top:16px;">
-          <table>
-            <thead>
-              <tr>
-                <th>미리보기</th>
-              </tr>
-            </thead>
-            <tbody id="importPreviewTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const state = {
-      user: null,
-      iqc: [],
-      pqc: [],
-      oqc: [],
-      suppliers: [],
-      worklog: [],
-      nonconform: [],
-      users: [],
-      changeLogs: [],
-      charts: {}
-    };
-
-    const $ = (id) => document.getElementById(id);
-    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-
-    function setMessage(el, text, type = 'error') {
-      if (!el) return;
-      el.className = `message show ${type}`;
-      el.textContent = text;
-    }
-
-    function clearMessage(el) {
-      if (!el) return;
-      el.className = 'message';
-      el.textContent = '';
-    }
-
-    async function api(url, options = {}) {
-      const res = await fetch(url, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-        ...options
-      });
-
-      const contentType = res.headers.get('content-type') || '';
-      const data = contentType.includes('application/json') ? await res.json() : await res.text();
-
-      if (!res.ok) {
-        const msg = typeof data === 'string' ? data : (data.error || '요청 실패');
-        throw new Error(msg);
-      }
-      return data;
-    }
-
-    function todayStr() {
-      const d = new Date();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${d.getFullYear()}-${m}-${day}`;
-    }
-
-    function setDefaultDates() {
-      ['iqcDate','pqcDate','oqcDate','workDate','ncDate'].forEach((id) => {
-        if ($(id)) $(id).value = todayStr();
-      });
-    }
-
-    function openModal(id) { $(id).classList.add('show'); }
-    function closeModal(id) { $(id).classList.remove('show'); }
-
-    function switchAuthTab(tab) {
-      $('loginPanel').classList.toggle('hidden', tab !== 'login');
-      $('signupPanel').classList.toggle('hidden', tab !== 'signup');
-      $('loginTabBtn').classList.toggle('active', tab === 'login');
-      $('signupTabBtn').classList.toggle('active', tab === 'signup');
-    }
-
-    function switchMainTab(tab) {
-      $$('.main-tab').forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
-      $$('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
-      const target = $(`tab-${tab}`);
-      if (target) target.classList.remove('hidden');
-    }
-
-    function renderUserChip() {
-      if (!state.user) return;
-      $('currentUserChip').textContent = `${state.user.name || ''} · ${state.user.role || ''}`;
-      $$('.admin-only').forEach((el) => {
-        el.classList.toggle('hidden', state.user.role !== 'admin');
-      });
-    }
-
-    function updateRangeLabel() {
-      const y = $('filterYear').value;
-      const m = $('filterMonth').value;
-      const d = $('filterDay').value;
-      let txt = '전체 조회';
-      if (y) txt = `${y}년`;
-      if (m) txt += ` ${m}월`;
-      if (d) txt += ` ${d}일`;
-      $('rangeLabel').textContent = txt;
-    }
-
-    function initFilters() {
-      const yearSel = $('filterYear');
-      yearSel.innerHTML = '<option value="">전체</option>';
-      const currentYear = new Date().getFullYear();
-      for (let y = currentYear - 2; y <= currentYear + 2; y++) {
-        const opt = document.createElement('option');
-        opt.value = String(y);
-        opt.textContent = `${y}`;
-        if (y === currentYear) opt.selected = true;
-        yearSel.appendChild(opt);
-      }
-
-      const monthSel = $('filterMonth');
-      for (let i = 1; i <= 12; i++) {
-        const opt = document.createElement('option');
-        opt.value = String(i).padStart(2, '0');
-        opt.textContent = `${i}`;
-        monthSel.appendChild(opt);
-      }
-
-      const daySel = $('filterDay');
-      for (let i = 1; i <= 31; i++) {
-        const opt = document.createElement('option');
-        opt.value = String(i).padStart(2, '0');
-        opt.textContent = `${i}`;
-        daySel.appendChild(opt);
-      }
-
-      updateRangeLabel();
-    }
-
-    function getKeyword() {
-      return ($('keywordInput').value || '').trim().toLowerCase();
-    }
-        function applyFilters(rows, dateKeyCandidates = ['date']) {
-      const y = $('filterYear').value;
-      const m = $('filterMonth').value;
-      const d = $('filterDay').value;
-      const keyword = getKeyword();
-
-      return rows.filter((row) => {
-        const fallbackDate =
-          row.workDate ||
-          row.workdate ||
-          row.date ||
-          '';
-
-        const dateValue =
-          dateKeyCandidates.map((k) => row[k]).find(Boolean) ||
-          fallbackDate;
-
-        const s = String(dateValue || '');
-        if (y && !s.startsWith(y)) return false;
-        if (m && s.slice(5, 7) !== m) return false;
-        if (d && s.slice(8, 10) !== d) return false;
-
-        if (keyword) {
-          const joined = Object.values(row).join(' ').toLowerCase();
-          if (!joined.includes(keyword)) return false;
-        }
-        return true;
-      });
-    }
-
-    function drawBarChart(canvasId, rows, dateKey, failKey = 'fail') {
-      const canvas = $(canvasId);
-      if (!canvas || typeof Chart === 'undefined') return;
-
-      const ctx = canvas.getContext('2d');
-      const list = applyFilters(rows, [dateKey]);
-      const byMonth = {};
-
-      list.forEach((r) => {
-        const rawDate = r[dateKey] || r.workDate || r.workdate || r.date || '';
-        const d = String(rawDate || '');
-        const key = d ? d.slice(0, 7) : '미분류';
-        if (!byMonth[key]) byMonth[key] = { total: 0, fail: 0 };
-        byMonth[key].total += 1;
-        byMonth[key].fail += Number(r[failKey] || 0);
-      });
-
-      const labels = Object.keys(byMonth).sort();
-      const totals = labels.map((k) => byMonth[k].total);
-      const fails = labels.map((k) => byMonth[k].fail);
-
-      if (state.charts[canvasId]) state.charts[canvasId].destroy();
-
-      state.charts[canvasId] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            { label: '건수', data: totals, borderWidth: 1 },
-            { label: '불량', data: fails, borderWidth: 1 }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-    }
-
-    function renderDashboard() {
-      const iqcRows = applyFilters(state.iqc, ['date']);
-      const pqcRows = applyFilters(state.pqc, ['date']);
-      const oqcRows = applyFilters(state.oqc, ['date']);
-      const ncRows = applyFilters(state.nonconform, ['date']);
-      const workRows = applyFilters(state.worklog, ['workDate', 'workdate']);
-
-      $('iqcCount').textContent = iqcRows.length;
-      $('pqcCount').textContent = pqcRows.length;
-      $('oqcCount').textContent = oqcRows.length;
-      $('ncCount').textContent = ncRows.length;
-      $('worklogCount').textContent = workRows.length;
-
-      drawBarChart('iqcChart', state.iqc, 'date', 'fail');
-      drawBarChart('pqcChart', state.pqc, 'date', 'fail');
-      drawBarChart('oqcChart', state.oqc, 'date', 'fail');
-      drawBarChart('ncChart', state.nonconform, 'date', 'fail');
-      drawBarChart('worklogChart', state.worklog, 'workDate', 'fail');
-    }
-
-    function rowActionButtons(type, row) {
-      return `
-        <div class="inline-actions">
-          <button class="btn btn-light btn-sm" type="button" onclick="editRow('${type}','${row.id}')">수정</button>
-          <button class="btn btn-danger btn-sm" type="button" onclick="deleteRow('${type}','${row.id}')">삭제</button>
-        </div>
-      `;
-    }
-
-    function renderTable(targetId, rows, columns, type) {
-      const body = $(targetId);
-      if (!body) return;
-
-      if (!rows.length) {
-        body.innerHTML = `<tr><td colspan="${columns.length + 1}" class="empty">데이터가 없습니다.</td></tr>`;
-        return;
-      }
-
-      body.innerHTML = rows.map((row) => `
-        <tr>
-          ${columns.map((c) => `<td>${row[c] ?? ''}</td>`).join('')}
-          <td>${rowActionButtons(type, row)}</td>
-        </tr>
-      `).join('');
-    }
-
-    function renderUsersTable() {
-      const body = $('usersTable');
-      if (!body) return;
-
-      const rows = state.users.map((u) => ({
-        ...u,
-        statusBadge: `<span class="status-badge ${
-          u.status === 'APPROVED' ? 'status-approved' :
-          u.status === 'REJECTED' ? 'status-rejected' : 'status-pending'
-        }">${u.status || ''}</span>`
-      }));
-
-      body.innerHTML = rows.map((u) => `
-        <tr>
-          <td>${u.name || ''}</td>
-          <td>${u.email || ''}</td>
-          <td>${u.department || ''}</td>
-          <td>${u.title || ''}</td>
-          <td>${u.role || ''}</td>
-          <td>${u.statusBadge}</td>
-          <td>${u.created_at || u.createdAt || ''}</td>
-          <td>
-            <div class="inline-actions">
-              <button class="btn btn-light btn-sm" type="button" onclick="approveUser('${u.id}')">승인</button>
-              <button class="btn btn-light btn-sm" type="button" onclick="rejectUser('${u.id}')">반려</button>
-              <button class="btn btn-danger btn-sm" type="button" onclick="deleteUser('${u.id}')">삭제</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function loadAll() {
-      const [iqc, pqc, oqc, suppliers, worklog, nonconform] = await Promise.all([
-        api('/api/iqc'),
-        api('/api/pqc'),
-        api('/api/oqc'),
-        api('/api/suppliers'),
-        api('/api/worklog'),
-        api('/api/nonconform')
-      ]);
-
-      state.iqc = iqc;
-      state.pqc = pqc;
-      state.oqc = oqc;
-      state.suppliers = suppliers;
-      state.worklog = worklog.map((row) => ({
-        ...row,
-        workDate: row.workDate || row.workdate || '',
-        finishedLot: row.finishedLot || row.finishedlot || '',
-        supName: row.supName || row.supname || '',
-        inputQty: row.inputQty || row.inputqty || '',
-        inputRatio: row.inputRatio || row.inputratio || '',
-        lotNo: row.lotNo || row.lotno || '',
-        inputTime: row.inputTime || row.inputtime || ''
-      }));
-      state.nonconform = nonconform;
-
-      renderAll();
-    }
-
-    async function loadAdminData() {
-      if (state.user?.role !== 'admin') return;
-      state.users = await api('/api/admin/users');
-      renderUsersTable();
-    }
-
-    function renderAll() {
-      renderDashboard();
-
-      renderTable('iqcTable', applyFilters(state.iqc, ['date']),
-        ['date', 'lot', 'supplier', 'item', 'inspector', 'qty', 'fail'], 'iqc');
-
-      renderTable('pqcTable', applyFilters(state.pqc, ['date']),
-        ['date', 'product', 'lot', 'visual', 'judge', 'qty', 'fail'], 'pqc');
-
-      renderTable('oqcTable', applyFilters(state.oqc, ['date']),
-        ['date', 'customer', 'product', 'lot', 'judge', 'qty', 'fail'], 'oqc');
-
-      renderTable('supplierTable', applyFilters(state.suppliers, ['date']),
-        ['name', 'manager', 'phone', 'category', 'status'], 'suppliers');
-
-      renderTable('worklogTable', applyFilters(state.worklog, ['workDate', 'workdate']),
-        ['workDate', 'finishedLot', 'material', 'supName', 'inputQty', 'worker'], 'worklog');
-
-      renderTable('ncTable', applyFilters(state.nonconform, ['date']),
-        ['date', 'type', 'lot', 'item', 'issue', 'owner', 'status'], 'nonconform');
-    }
-
-    async function login() {
-      clearMessage($('loginMsg'));
-      try {
-        const data = await api('/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({
-            email: $('loginEmail').value,
-            password: $('loginPassword').value
-          })
-        });
-        state.user = data.user;
-        await onLoggedIn();
-      } catch (err) {
-        setMessage($('loginMsg'), err.message, 'error');
-      }
-    }
-
-    async function signup() {
-      clearMessage($('signupMsg'));
-      const pw1 = $('signupPassword').value;
-      const pw2 = $('signupPassword2').value;
-
-      if (pw1 !== pw2) {
-        setMessage($('signupMsg'), '비밀번호 확인이 일치하지 않습니다.', 'error');
-        return;
-      }
-
-      try {
-        await api('/api/auth/signup', {
-          method: 'POST',
-          body: JSON.stringify({
-            name: $('signupName').value,
-            email: $('signupEmail').value,
-            password: pw1,
-            department: $('signupDepartment').value
-          })
-        });
-        setMessage($('signupMsg'), '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.', 'success');
-        switchAuthTab('login');
-      } catch (err) {
-        setMessage($('signupMsg'), err.message, 'error');
-      }
-    }
-
-    async function logout() {
-      await api('/api/auth/logout', { method: 'POST' });
-      location.reload();
-    }
-
-    async function checkMe() {
-      try {
-        state.user = await api('/api/auth/me');
-        await onLoggedIn();
-      } catch (_) {
-        onLoggedOut();
-      }
-    }
-
-    async function onLoggedIn() {
-      $('authPage').classList.add('hidden');
-      $('dashboardPage').classList.remove('hidden');
-      renderUserChip();
-      await loadAll();
-      await loadAdminData();
-      switchMainTab('dashboard');
-    }
-
-    function onLoggedOut() {
-      $('authPage').classList.remove('hidden');
-      $('dashboardPage').classList.add('hidden');
-    }
-
-    function fillForm(prefix, row, fields) {
-      fields.forEach(([id, key]) => {
-        const v = row[key] ?? row[key.toLowerCase()] ?? '';
-        $(id).value = v;
-      });
-      $(prefix + 'EditId').value = row.id || '';
-    }
-
-    window.editRow = function(type, id) {
-      const map = {
-        iqc: [state.iqc, [['iqcDate','date'],['iqcLot','lot'],['iqcSupplier','supplier'],['iqcItem','item'],['iqcInspector','inspector'],['iqcQty','qty'],['iqcFail','fail']]],
-        pqc: [state.pqc, [['pqcDate','date'],['pqcProduct','product'],['pqcLot','lot'],['pqcVisual','visual'],['pqcViscosity','viscosity'],['pqcSolid','solid'],['pqcParticle','particle'],['pqcJudge','judge'],['pqcQty','qty'],['pqcFail','fail']]],
-        oqc: [state.oqc, [['oqcDate','date'],['oqcCustomer','customer'],['oqcProduct','product'],['oqcLot','lot'],['oqcVisual','visual'],['oqcViscosity','viscosity'],['oqcSolid','solid'],['oqcParticle','particle'],['oqcAdhesion','adhesion'],['oqcResistance','resistance'],['oqcSwelling','swelling'],['oqcMoisture','moisture'],['oqcQty','qty'],['oqcFail','fail'],['oqcJudge','judge']]],
-        suppliers: [state.suppliers, [['supName','name'],['supManager','manager'],['supPhone','phone'],['supCategory','category'],['supStatus','status']]],
-        worklog: [state.worklog, [['workDate','workDate'],['finishedLot','finishedLot'],['workSeq','seq'],['workMaterial','material'],['workSupName','supName'],['workInputQty','inputQty'],['workInputRatio','inputRatio'],['workLotNo','lotNo'],['workInputTime','inputTime'],['workWorker','worker'],['workNote','note']]],
-        nonconform: [state.nonconform, [['ncDate','date'],['ncType','type'],['ncLot','lot'],['ncItem','item'],['ncIssue','issue'],['ncCause','cause'],['ncAction','action'],['ncOwner','owner'],['ncStatus','status']]]
-      };
-
-      const conf = map[type];
-      if (!conf) return;
-      const [rows, fields] = conf;
-      const row = rows.find((r) => r.id === id);
-      if (!row) return;
-
-      if (type === 'iqc') fillForm('iqc', row, fields);
-      if (type === 'pqc') fillForm('pqc', row, fields);
-      if (type === 'oqc') fillForm('oqc', row, fields);
-      if (type === 'suppliers') {
-        fillForm('sup', row, fields);
-        $('supEditId').value = row.id || '';
-      }
-      if (type === 'worklog') {
-        fillForm('work', row, fields);
-        $('workEditId').value = row.id || '';
-      }
-      if (type === 'nonconform') {
-        fillForm('nc', row, fields);
-        $('ncEditId').value = row.id || '';
-      }
-    };
-
-    window.deleteRow = async function(type, id) {
-      if (!confirm('삭제하시겠습니까?')) return;
-      const urlMap = {
-        iqc: '/api/iqc/',
-        pqc: '/api/pqc/',
-        oqc: '/api/oqc/',
-        suppliers: '/api/suppliers/',
-        worklog: '/api/worklog/',
-        nonconform: '/api/nonconform/'
-      };
-      await api(urlMap[type] + id, { method: 'DELETE' });
-      await loadAll();
-    };
-
-    window.approveUser = async function(id) {
-      await api(`/api/admin/users/${id}/approve`, { method: 'POST' });
-      await loadAdminData();
-    };
-
-    window.rejectUser = async function(id) {
-      await api(`/api/admin/users/${id}/reject`, { method: 'POST' });
-      await loadAdminData();
-    };
-
-    window.deleteUser = async function(id) {
-      if (!confirm('회원 삭제하시겠습니까?')) return;
-      await api(`/api/admin/users/${id}`, { method: 'DELETE' });
-      await loadAdminData();
-    };
-
-    async function saveIqc() {
-      const id = $('iqcEditId').value;
-      const body = {
-        date: $('iqcDate').value,
-        lot: $('iqcLot').value,
-        supplier: $('iqcSupplier').value,
-        item: $('iqcItem').value,
-        inspector: $('iqcInspector').value,
-        qty: $('iqcQty').value,
-        fail: $('iqcFail').value
-      };
-      if (id) {
-        await api(`/api/iqc/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-      } else {
-        await api('/api/iqc', { method: 'POST', body: JSON.stringify(body) });
-      }
-      $('iqcEditId').value = '';
-      await loadAll();
-    }
-
-    async function savePqc() {
-      const id = $('pqcEditId').value;
-      const body = {
-        date: $('pqcDate').value,
-        product: $('pqcProduct').value,
-        lot: $('pqcLot').value,
-        visual: $('pqcVisual').value,
-        viscosity: $('pqcViscosity').value,
-        solid: $('pqcSolid').value,
-        particle: $('pqcParticle').value,
-        qty: $('pqcQty').value,
-        fail: $('pqcFail').value,
-        judge: $('pqcJudge').value
-      };
-      if (id) {
-        await api(`/api/pqc/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-      } else {
-        await api('/api/pqc', { method: 'POST', body: JSON.stringify(body) });
-      }
-      $('pqcEditId').value = '';
-      await loadAll();
-    }
-
-    async function saveOqc() {
-      const id = $('oqcEditId').value;
-      const body = {
-        date: $('oqcDate').value,
-        customer: $('oqcCustomer').value,
-        product: $('oqcProduct').value,
-        lot: $('oqcLot').value,
-        visual: $('oqcVisual').value,
-        viscosity: $('oqcViscosity').value,
-        solid: $('oqcSolid').value,
-        particle: $('oqcParticle').value,
-        adhesion: $('oqcAdhesion').value,
-        resistance: $('oqcResistance').value,
-        swelling: $('oqcSwelling').value,
-        moisture: $('oqcMoisture').value,
-        qty: $('oqcQty').value,
-        fail: $('oqcFail').value,
-        judge: $('oqcJudge').value
-      };
-      if (id) {
-        await api(`/api/oqc/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-      } else {
-        await api('/api/oqc', { method: 'POST', body: JSON.stringify(body) });
-      }
-      $('oqcEditId').value = '';
-      await loadAll();
-    }
-
-    async function saveSupplier() {
-      const id = $('supEditId').value;
-      const body = {
-        name: $('supName').value,
-        manager: $('supManager').value,
-        phone: $('supPhone').value,
-        category: $('supCategory').value,
-        status: $('supStatus').value
-      };
-      if (id) {
-        await api(`/api/suppliers/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-      } else {
-        await api('/api/suppliers', { method: 'POST', body: JSON.stringify(body) });
-      }
-      $('supEditId').value = '';
-      await loadAll();
-    }
-
-    async function saveWorklog() {
-      const id = $('workEditId').value;
-      const body = {
-        workDate: $('workDate').value,
-        finishedLot: $('finishedLot').value,
-        seq: $('workSeq').value,
-        material: $('workMaterial').value,
-        supName: $('workSupName').value,
-        inputQty: $('workInputQty').value,
-        inputRatio: $('workInputRatio').value,
-        lotNo: $('workLotNo').value,
-        inputTime: $('workInputTime').value,
-        worker: $('workWorker').value,
-        note: $('workNote').value
-      };
-      if (id) {
-        await api(`/api/worklog/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-      } else {
-        await api('/api/worklog', { method: 'POST', body: JSON.stringify(body) });
-      }
-      $('workEditId').value = '';
-      await loadAll();
-    }
-
-    async function saveNc() {
-      const id = $('ncEditId').value;
-      const body = {
-        date: $('ncDate').value,
-        type: $('ncType').value,
-        lot: $('ncLot').value,
-        item: $('ncItem').value,
-        issue: $('ncIssue').value,
-        cause: $('ncCause').value,
-        action: $('ncAction').value,
-        owner: $('ncOwner').value,
-        status: $('ncStatus').value
-      };
-      if (id) {
-        await api(`/api/nonconform/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-      } else {
-        await api('/api/nonconform', { method: 'POST', body: JSON.stringify(body) });
-      }
-      $('ncEditId').value = '';
-      await loadAll();
-    }
-
-    async function doTraceSearch() {
-      const keyword = $('traceKeyword').value.trim().toLowerCase();
-      const rows = state.worklog.filter((r) => {
-        const a = String(r.finishedLot || '').toLowerCase();
-        const b = String(r.lotNo || '').toLowerCase();
-        return a.includes(keyword) || b.includes(keyword);
-      });
-
-      const body = $('traceTable');
-      if (!body) return;
-
-      if (!rows.length) {
-        body.innerHTML = '<tr><td colspan="9" class="empty">조회 결과가 없습니다.</td></tr>';
-        return;
-      }
-
-      body.innerHTML = rows.map((r) => `
-        <tr>
-          <td>${r.workDate || ''}</td>
-          <td>${r.finishedLot || ''}</td>
-          <td>${r.seq || ''}</td>
-          <td>${r.material || ''}</td>
-          <td>${r.supName || ''}</td>
-          <td>${r.lotNo || ''}</td>
-          <td>${r.inputQty || ''}</td>
-          <td>${r.inputTime || ''}</td>
-          <td>${r.worker || ''}</td>
-        </tr>
-      `).join('');
-    }
-
-    async function doImportPreview() {
-      clearMessage($('importMsg'));
-      try {
-        const rows = JSON.parse($('importRows').value || '[]');
-        const data = await api('/api/import/preview', {
-          method: 'POST',
-          body: JSON.stringify({
-            sheetType: $('importSheetType').value,
-            rows
-          })
-        });
-        $('importPreviewTable').innerHTML = data.preview.map((r) =>
-          `<tr><td><pre style="margin:0;white-space:pre-wrap">${JSON.stringify(r, null, 2)}</pre></td></tr>`
-        ).join('');
-        setMessage($('importMsg'), `미리보기 완료: 유효 ${data.validCount}건 / 제외 ${data.skippedCount}건`, 'success');
-      } catch (err) {
-        setMessage($('importMsg'), err.message, 'error');
-      }
-    }
-
-    async function doImportCommit() {
-      clearMessage($('importMsg'));
-      try {
-        const rows = JSON.parse($('importRows').value || '[]');
-        const data = await api('/api/import/commit', {
-          method: 'POST',
-          body: JSON.stringify({
-            sheetType: $('importSheetType').value,
-            rows
-          })
-        });
-        setMessage($('importMsg'), data.message || '반영 완료', 'success');
-        await loadAll();
-      } catch (err) {
-        setMessage($('importMsg'), err.message, 'error');
-      }
-    }
-
-    async function testDb() {
-      try {
-        const data = await api('/api/test-db');
-        alert('DB 연결 성공: ' + JSON.stringify(data));
-      } catch (err) {
-        alert('DB 연결 실패: ' + err.message);
-      }
-    }
-
-    async function resetPassword() {
-      clearMessage($('resetMsg'));
-      try {
-        const data = await api('/api/auth/reset-password', {
-          method: 'POST',
-          body: JSON.stringify({
-            name: $('resetName').value,
-            email: $('resetEmail').value,
-            department: $('resetDepartment').value,
-            newPassword: $('resetNewPassword').value
-          })
-        });
-        setMessage($('resetMsg'), data.message || '초기화 완료', 'success');
-      } catch (err) {
-        setMessage($('resetMsg'), err.message, 'error');
-      }
-    }
-
-    async function changePassword() {
-      clearMessage($('pwMsg'));
-      try {
-        const data = await api('/api/auth/change-password', {
-          method: 'POST',
-          body: JSON.stringify({
-            currentPassword: $('pwCurrent').value,
-            newPassword: $('pwNew').value
-          })
-        });
-        setMessage($('pwMsg'), data.message || '변경 완료', 'success');
-      } catch (err) {
-        setMessage($('pwMsg'), err.message, 'error');
-      }
-    }
-
-    async function deleteAllData() {
-      if (state.user?.role !== 'admin') {
-        alert('관리자만 가능합니다.');
-        return;
-      }
-      const confirmText = prompt('전체 삭제를 실행하려면 DELETE 를 입력하세요.');
-      if (confirmText !== 'DELETE') return;
-      await api('/api/admin/delete-all', {
-        method: 'POST',
-        body: JSON.stringify({ confirm: 'DELETE' })
-      });
-      await loadAll();
-      alert('전체 데이터 삭제 완료');
-    }
-
-    function bindEvents() {
-      $('loginTabBtn').onclick = () => switchAuthTab('login');
-      $('signupTabBtn').onclick = () => switchAuthTab('signup');
-
-      $('loginBtn').onclick = login;
-      $('signupBtn').onclick = signup;
-      $('logoutBtn').onclick = logout;
-
-      $('openResetBtn').onclick = () => openModal('resetModal');
-      $('openPasswordBtn').onclick = () => openModal('passwordModal');
-      $('resetPasswordBtn').onclick = resetPassword;
-      $('changePasswordBtn').onclick = changePassword;
-
-      $$('[data-close]').forEach((btn) => {
-        btn.onclick = () => closeModal(btn.dataset.close);
-      });
-
-      $$('.main-tab').forEach((btn) => {
-        btn.onclick = () => switchMainTab(btn.dataset.tab);
-      });
-
-      $('searchBtn').onclick = () => {
-        updateRangeLabel();
-        renderAll();
-      };
-      $('rangeRefreshBtn').onclick = () => {
-        updateRangeLabel();
-        renderAll();
-      };
-      $('monthQuickBtn').onclick = () => {
-        const now = new Date();
-        $('filterYear').value = String(now.getFullYear());
-        $('filterMonth').value = String(now.getMonth() + 1).padStart(2, '0');
-        $('filterDay').value = '';
-        updateRangeLabel();
-        renderAll();
-      };
-
-      $('backupBtn').onclick = () => {
-        window.location.href = '/api/backup';
-      };
-
-      $('testDbBtn').onclick = testDb;
-      $('deleteAllBtn').onclick = deleteAllData;
-      $('syncBtn').onclick = loadAll;
-      $('barcodeBtn').onclick = () => alert('바코드 기능은 별도 구현 필요');
-      $('traceSearchBtn').onclick = doTraceSearch;
-
-      $('iqcSaveBtn').onclick = saveIqc;
-      $('pqcSaveBtn').onclick = savePqc;
-      $('oqcSaveBtn').onclick = saveOqc;
-      $('supplierSaveBtn').onclick = saveSupplier;
-      $('worklogSaveBtn').onclick = saveWorklog;
-      $('ncSaveBtn').onclick = saveNc;
-
-      if ($('iqcRefreshBtn')) $('iqcRefreshBtn').onclick = loadAll;
-      if ($('pqcRefreshBtn')) $('pqcRefreshBtn').onclick = loadAll;
-      if ($('oqcRefreshBtn')) $('oqcRefreshBtn').onclick = loadAll;
-      if ($('supplierRefreshBtn')) $('supplierRefreshBtn').onclick = loadAll;
-      if ($('worklogRefreshBtn')) $('worklogRefreshBtn').onclick = loadAll;
-      if ($('ncRefreshBtn')) $('ncRefreshBtn').onclick = loadAll;
-      if ($('usersRefreshBtn')) $('usersRefreshBtn').onclick = loadAdminData;
-
-      $('iqcSampleBtn').onclick = () => {
-        $('iqcDate').value = todayStr();
-        $('iqcLot').value = 'IQC-LOT-001';
-        $('iqcSupplier').value = '협력업체A';
-        $('iqcItem').value = '원료A';
-        $('iqcInspector').value = '홍길동';
-        $('iqcQty').value = '100';
-        $('iqcFail').value = '0';
-      };
-
-      $('importPreviewBtn').onclick = doImportPreview;
-      $('importCommitBtn').onclick = doImportCommit;
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      initFilters();
-      setDefaultDates();
-      bindEvents();
-      switchAuthTab('login');
-      await checkMe();
-    });
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/iqc.js"></script>
+  <script src="/js/pqc.js"></script>
+  <script src="/js/oqc.js"></script>
+  <script src="/js/suppliers.js"></script>
+  <script src="/js/nonconform.js"></script>
+  <script src="/js/worklog.js"></script>
+  <script src="/js/trace.js"></script>
+  <script src="/js/report.js"></script>
 </body>
 </html>
