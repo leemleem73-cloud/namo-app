@@ -1,1 +1,667 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namo Chemical QMS - Certificate & Worklog</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="topbar no-print">
+      <div class="brand">
+        <img src="/logo.png" alt="Namochemical" />
+        <span>Namochemical</span>
+      </div>
 
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-light btn-sm" type="button" onclick="location.href='index.html'">메인으로</button>
+        <button class="btn btn-primary btn-sm" type="button" onclick="window.print()">인쇄</button>
+      </div>
+    </div>
+
+    <div class="toolbar no-print">
+      <div class="left">
+        <span class="chip" id="modeChip">CERTIFICATE</span>
+        <span class="chip" id="typeChip">IQC</span>
+      </div>
+
+      <div class="right">
+        <button class="btn btn-light btn-sm" type="button" id="btnModeCertificate">성적서 모드</button>
+        <button class="btn btn-light btn-sm" type="button" id="btnModeWorklog">작업일지 모드</button>
+        <button class="btn btn-success btn-sm" type="button" id="btnSaveMain">저장</button>
+      </div>
+    </div>
+
+    <section class="sheet" id="certificateSection">
+      <div class="sheet-head">
+        <div class="sheet-title">
+          <h1 id="certificateTitle">입고검사 성적서</h1>
+          <p>수입검사 · 공정검사 · 출하검사 공통 성적서 양식</p>
+        </div>
+
+        <div class="section-actions no-print">
+          <button class="btn btn-light btn-sm" type="button" id="btnCertSample">샘플값</button>
+          <button class="btn btn-light btn-sm" type="button" id="btnAddSpecRow">항목 추가</button>
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="field">
+          <label>구분</label>
+          <select id="certType">
+            <option value="iqc">입고검사</option>
+            <option value="pqc">공정검사</option>
+            <option value="oqc">출하검사</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>일자</label>
+          <input type="date" id="certDate" />
+        </div>
+
+        <div class="field">
+          <label>LOT</label>
+          <input id="certLot" />
+        </div>
+
+        <div class="field">
+          <label>검사자</label>
+          <input id="certInspector" />
+        </div>
+
+        <div class="field">
+          <label>품목 / 제품명</label>
+          <input id="certItem" />
+        </div>
+
+        <div class="field">
+          <label>거래처 / 고객사</label>
+          <input id="certCompany" />
+        </div>
+
+        <div class="field">
+          <label>입고수량</label>
+          <input id="certIncomingQty" />
+        </div>
+
+        <div class="field">
+          <label>검사수량 / 출하수량(EA/kg)</label>
+          <input id="certCheckQty" />
+        </div>
+
+        <div class="field">
+          <label>불량수량</label>
+          <input id="certFailQty" />
+        </div>
+
+        <div class="field">
+          <label>최종판정</label>
+          <select id="certJudge">
+            <option value="합격">합격</option>
+            <option value="불합격">불합격</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label>비고</label>
+          <textarea id="certRemark"></textarea>
+        </div>
+      </div>
+
+      <div class="section-card" style="margin-top:18px;">
+        <div class="section-title">
+          <h3>검사항목</h3>
+          <div class="section-actions no-print">
+            <button class="btn btn-light btn-sm" type="button" id="btnResetSpecRows">기본 항목 복원</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px">순번</th>
+                <th style="width:220px">항목</th>
+                <th>기준 (SPEC)</th>
+                <th>결과</th>
+                <th style="width:140px">판정</th>
+                <th class="no-print" style="width:100px">삭제</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="sheet-note">
+          공정검사와 출하검사도 동일한 항목 구조를 사용하며, 기준(SPEC)은 수기 작성할 수 있습니다.
+        </div>
+      </div>
+
+      <div class="message" id="certMsg"></div>
+    </section>
+
+    <section class="sheet hidden" id="worklogSection">
+      <div class="sheet-head">
+        <div class="sheet-title">
+          <h1>생산작업일지</h1>
+          <p>원재료 투입 · 공정조건 관리 · 생산수량 기록</p>
+        </div>
+
+        <div class="section-actions no-print">
+          <button class="btn btn-light btn-sm" type="button" id="btnWorklogSample">샘플값</button>
+          <button class="btn btn-light btn-sm" type="button" id="btnAddMaterialRow">원재료 행 추가</button>
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="field">
+          <label>생산일자</label>
+          <input type="date" id="workDate" />
+        </div>
+
+        <div class="field">
+          <label>완제품 LOT</label>
+          <input id="workFinishedLot" />
+        </div>
+
+        <div class="field">
+          <label>작업자</label>
+          <input id="workWorker" />
+        </div>
+
+        <div class="field">
+          <label>계획수량</label>
+          <input id="workPlanQty" />
+        </div>
+
+        <div class="field">
+          <label>생산수량</label>
+          <input id="workProdQty" />
+        </div>
+
+        <div class="field">
+          <label>불량수량</label>
+          <input id="workFailQty" />
+        </div>
+
+        <div class="field full">
+          <label>특이사항</label>
+          <textarea id="workRemark"></textarea>
+        </div>
+      </div>
+
+      <div class="worklog-grid" style="margin-top:18px;">
+        <div class="subcard">
+          <div class="section-title">
+            <h3>원재료 투입</h3>
+            <div class="section-actions no-print">
+              <button class="btn btn-light btn-sm" type="button" id="btnAddMaterialRow2">행 추가</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:90px">순번</th>
+                  <th>원재료명</th>
+                  <th>업체명</th>
+                  <th>원자재 LOT</th>
+                  <th>투입량</th>
+                  <th>투입시간</th>
+                  <th class="no-print" style="width:100px">삭제</th>
+                </tr>
+              </thead>
+              <tbody id="materialTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="subcard">
+          <h4>공정조건 관리</h4>
+
+          <div class="meta-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="field">
+              <label>유량 설정값 (L/min.)</label>
+              <input id="flowSet" />
+            </div>
+
+            <div class="field">
+              <label>유량 실제값 (L/min.)</label>
+              <input id="flowActual" />
+            </div>
+
+            <div class="field">
+              <label>온도 설정값 (℃)</label>
+              <input id="tempSet" />
+            </div>
+
+            <div class="field">
+              <label>온도 실제값 (℃)</label>
+              <input id="tempActual" />
+            </div>
+
+            <div class="field">
+              <label>여과 압력차 설정값 (bar)</label>
+              <input id="pressSet" />
+            </div>
+
+            <div class="field">
+              <label>여과 압력차 실제값 (bar)</label>
+              <input id="pressActual" />
+            </div>
+          </div>
+
+          <div class="sheet-note">설정값과 실제값을 각각 별도 입력합니다.</div>
+        </div>
+      </div>
+
+      <div class="section-card" style="margin-top:18px;">
+        <div class="section-title">
+          <h3>작업일지 미리보기</h3>
+          <span class="chip">WORK PREVIEW</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>생산일자</th>
+                <th>완제품 LOT</th>
+                <th>작업자</th>
+                <th>계획수량</th>
+                <th>생산수량</th>
+                <th>불량수량</th>
+                <th>특이사항</th>
+              </tr>
+            </thead>
+            <tbody id="workPreviewBody">
+              <tr>
+                <td colspan="7" class="empty">입력값이 여기에 정리됩니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="message" id="workMsg"></div>
+    </section>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/report.js"></script>
+  <script src="/js/worklog.js"></script>
+
+  <script>
+    const qs = new URLSearchParams(location.search);
+
+    function todayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function setMessage(el, text, type = 'error') {
+      if (!el) return;
+      el.className = `message show ${type}`;
+      el.textContent = text;
+    }
+
+    function clearMessage(el) {
+      if (!el) return;
+      el.className = 'message';
+      el.textContent = '';
+    }
+
+    function showMode(mode) {
+      const isWork = mode === 'worklog';
+      document.getElementById('certificateSection').classList.toggle('hidden', isWork);
+      document.getElementById('worklogSection').classList.toggle('hidden', !isWork);
+      document.getElementById('modeChip').textContent = isWork ? 'WORKLOG' : 'CERTIFICATE';
+      document.getElementById('typeChip').textContent = isWork
+        ? 'WORK'
+        : (document.getElementById('certType').value || 'IQC').toUpperCase();
+    }
+
+    function certificateTitleByType(type) {
+      if (type === 'pqc') return '공정검사 성적서';
+      if (type === 'oqc') return '출하검사 성적서';
+      return '입고검사 성적서';
+    }
+
+    function getDefaultSpecRows(type) {
+      const common = [
+        { item: '점도', spec: '1,500±300 cp', result: '', judge: '합격' },
+        { item: '고형분', spec: '20.0±1.0 wt.%', result: '', judge: '합격' },
+        { item: 'Dmax', spec: '≤ 10.0 μm', result: '', judge: '합격' },
+        { item: '접착력', spec: '≥400 gf/12.7 mm(0.5 in)', result: '', judge: '합격' },
+        { item: '절연저항', spec: '≥200 MΩ (overflow)', result: '', judge: '합격' },
+        { item: '전해액 팽윤성', spec: '<120%', result: '', judge: '합격' },
+        { item: '수분', spec: '<2,000 ppm', result: '', judge: '합격' }
+      ];
+
+      if (type === 'iqc') {
+        return [
+          { item: '외관', spec: '이물질, 파손 없을 것', result: '', judge: '합격' },
+          { item: 'CoA', spec: '누락 없을 것', result: '', judge: '합격' },
+          { item: '점도', spec: '1,500±300 cp', result: '', judge: '합격' },
+          { item: '고형분', spec: '20.0±1.0 wt.%', result: '', judge: '합격' }
+        ];
+      }
+
+      return common;
+    }
+
+    function renderSpecRows(rows) {
+      const body = document.getElementById('specTableBody');
+      body.innerHTML = rows.map((row, idx) => `
+        <tr>
+          <td><input value="${idx + 1}" readonly></td>
+          <td contenteditable="true">${row.item || ''}</td>
+          <td contenteditable="true">${row.spec || ''}</td>
+          <td contenteditable="true">${row.result || ''}</td>
+          <td contenteditable="true">${row.judge || ''}</td>
+          <td class="no-print"><button class="btn btn-danger btn-sm" type="button" onclick="removeSpecRow(this)">삭제</button></td>
+        </tr>
+      `).join('');
+
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="6" class="empty">검사항목이 없습니다.</td></tr>';
+      }
+    }
+
+    function getSpecRows() {
+      return Array.from(document.querySelectorAll('#specTableBody tr'))
+        .map((tr, idx) => {
+          const tds = tr.querySelectorAll('td');
+          if (tds.length < 5) return null;
+          return {
+            seq: idx + 1,
+            item: tds[1].innerText.trim(),
+            spec: tds[2].innerText.trim(),
+            result: tds[3].innerText.trim(),
+            judge: tds[4].innerText.trim()
+          };
+        })
+        .filter(Boolean);
+    }
+
+    window.removeSpecRow = function removeSpecRow(btn) {
+      const tr = btn.closest('tr');
+      if (tr) tr.remove();
+      normalizeSpecRowNo();
+    };
+
+    function normalizeSpecRowNo() {
+      Array.from(document.querySelectorAll('#specTableBody tr')).forEach((tr, idx) => {
+        const input = tr.querySelector('td input');
+        if (input) input.value = idx + 1;
+      });
+    }
+
+    function addSpecRow() {
+      const body = document.getElementById('specTableBody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input readonly></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td class="no-print"><button class="btn btn-danger btn-sm" type="button" onclick="removeSpecRow(this)">삭제</button></td>
+      `;
+      if (body.querySelector('.empty')) body.innerHTML = '';
+      body.appendChild(tr);
+      normalizeSpecRowNo();
+    }
+
+    function renderMaterialRows(rows) {
+      const body = document.getElementById('materialTableBody');
+      body.innerHTML = rows.map((row, idx) => `
+        <tr>
+          <td><input value="${idx + 1}" readonly></td>
+          <td contenteditable="true">${row.material || ''}</td>
+          <td contenteditable="true">${row.supName || ''}</td>
+          <td contenteditable="true">${row.lotNo || ''}</td>
+          <td contenteditable="true">${row.inputQty || ''}</td>
+          <td contenteditable="true">${row.inputTime || ''}</td>
+          <td class="no-print"><button class="btn btn-danger btn-sm" type="button" onclick="removeMaterialRow(this)">삭제</button></td>
+        </tr>
+      `).join('');
+
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="7" class="empty">원재료 행이 없습니다.</td></tr>';
+      }
+
+      updateWorkPreview();
+    }
+
+    function getMaterialRows() {
+      return Array.from(document.querySelectorAll('#materialTableBody tr'))
+        .map((tr, idx) => {
+          const tds = tr.querySelectorAll('td');
+          if (tds.length < 6) return null;
+          return {
+            seq: idx + 1,
+            material: tds[1].innerText.trim(),
+            supName: tds[2].innerText.trim(),
+            lotNo: tds[3].innerText.trim(),
+            inputQty: tds[4].innerText.trim(),
+            inputTime: tds[5].innerText.trim()
+          };
+        })
+        .filter(Boolean);
+    }
+
+    window.removeMaterialRow = function removeMaterialRow(btn) {
+      const tr = btn.closest('tr');
+      if (tr) tr.remove();
+      normalizeMaterialNo();
+      updateWorkPreview();
+    };
+
+    function normalizeMaterialNo() {
+      Array.from(document.querySelectorAll('#materialTableBody tr')).forEach((tr, idx) => {
+        const input = tr.querySelector('td input');
+        if (input) input.value = idx + 1;
+      });
+    }
+
+    function addMaterialRow() {
+      const body = document.getElementById('materialTableBody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input readonly></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td class="no-print"><button class="btn btn-danger btn-sm" type="button" onclick="removeMaterialRow(this)">삭제</button></td>
+      `;
+      if (body.querySelector('.empty')) body.innerHTML = '';
+      body.appendChild(tr);
+      normalizeMaterialNo();
+      updateWorkPreview();
+    }
+
+    function updateWorkPreview() {
+      const body = document.getElementById('workPreviewBody');
+      const values = {
+        workDate: document.getElementById('workDate').value,
+        finishedLot: document.getElementById('workFinishedLot').value,
+        worker: document.getElementById('workWorker').value,
+        planQty: document.getElementById('workPlanQty').value,
+        prodQty: document.getElementById('workProdQty').value,
+        failQty: document.getElementById('workFailQty').value,
+        remark: document.getElementById('workRemark').value
+      };
+
+      body.innerHTML = `
+        <tr>
+          <td>${values.workDate || ''}</td>
+          <td>${values.finishedLot || ''}</td>
+          <td>${values.worker || ''}</td>
+          <td>${values.planQty || ''}</td>
+          <td>${values.prodQty || ''}</td>
+          <td>${values.failQty || ''}</td>
+          <td>${values.remark || ''}</td>
+        </tr>
+      `;
+    }
+
+    function certPayload() {
+      return {
+        type: document.getElementById('certType').value,
+        date: document.getElementById('certDate').value,
+        lot: document.getElementById('certLot').value,
+        inspector: document.getElementById('certInspector').value,
+        item: document.getElementById('certItem').value,
+        company: document.getElementById('certCompany').value,
+        incomingQty: document.getElementById('certIncomingQty').value,
+        checkQty: document.getElementById('certCheckQty').value,
+        failQty: document.getElementById('certFailQty').value,
+        judge: document.getElementById('certJudge').value,
+        remark: document.getElementById('certRemark').value,
+        items: getSpecRows()
+      };
+    }
+
+    function worklogPayload() {
+      return {
+        workDate: document.getElementById('workDate').value,
+        finishedLot: document.getElementById('workFinishedLot').value,
+        worker: document.getElementById('workWorker').value,
+        planQty: document.getElementById('workPlanQty').value,
+        prodQty: document.getElementById('workProdQty').value,
+        failQty: document.getElementById('workFailQty').value,
+        remark: document.getElementById('workRemark').value,
+        flowSet: document.getElementById('flowSet').value,
+        flowActual: document.getElementById('flowActual').value,
+        tempSet: document.getElementById('tempSet').value,
+        tempActual: document.getElementById('tempActual').value,
+        pressSet: document.getElementById('pressSet').value,
+        pressActual: document.getElementById('pressActual').value,
+        materials: getMaterialRows()
+      };
+    }
+
+    async function saveCertificate() {
+      clearMessage(document.getElementById('certMsg'));
+      try {
+        await QMS.report.save(certPayload());
+        setMessage(document.getElementById('certMsg'), '성적서 저장 완료', 'success');
+      } catch (err) {
+        setMessage(document.getElementById('certMsg'), err.message, 'error');
+      }
+    }
+
+    async function saveWorklog() {
+      clearMessage(document.getElementById('workMsg'));
+      try {
+        await api('/api/worklog', {
+          method: 'POST',
+          body: JSON.stringify(worklogPayload())
+        });
+        setMessage(document.getElementById('workMsg'), '작업일지 저장 완료', 'success');
+      } catch (err) {
+        setMessage(document.getElementById('workMsg'), err.message, 'error');
+      }
+    }
+
+    function fillCertificateSample(type) {
+      document.getElementById('certDate').value = todayStr();
+      document.getElementById('certType').value = type;
+      document.getElementById('certLot').value = `${type.toUpperCase()}-LOT-001`;
+      document.getElementById('certInspector').value = '홍길동';
+      document.getElementById('certItem').value = type === 'iqc' ? '원료A' : '제품A';
+      document.getElementById('certCompany').value = type === 'oqc' ? '고객사A' : '협력업체A';
+      document.getElementById('certIncomingQty').value = '1000';
+      document.getElementById('certCheckQty').value = type === 'oqc' ? '900 EA' : '100';
+      document.getElementById('certFailQty').value = '0';
+      document.getElementById('certJudge').value = '합격';
+      document.getElementById('certRemark').value = '샘플 데이터';
+      renderSpecRows(getDefaultSpecRows(type));
+      document.getElementById('certificateTitle').textContent = certificateTitleByType(type);
+      document.getElementById('typeChip').textContent = type.toUpperCase();
+    }
+
+    function fillWorklogSample() {
+      document.getElementById('workDate').value = todayStr();
+      document.getElementById('workFinishedLot').value = 'FIN-LOT-001';
+      document.getElementById('workWorker').value = '김생산';
+      document.getElementById('workPlanQty').value = '1000';
+      document.getElementById('workProdQty').value = '980';
+      document.getElementById('workFailQty').value = '20';
+      document.getElementById('workRemark').value = '특이사항 없음';
+      document.getElementById('flowSet').value = '25';
+      document.getElementById('flowActual').value = '24.8';
+      document.getElementById('tempSet').value = '60';
+      document.getElementById('tempActual').value = '59.5';
+      document.getElementById('pressSet').value = '1.5';
+      document.getElementById('pressActual').value = '1.4';
+
+      renderMaterialRows([
+        { material: '원료A', supName: '협력업체A', lotNo: 'MAT-001', inputQty: '300 kg', inputTime: '09:00' },
+        { material: '원료B', supName: '협력업체B', lotNo: 'MAT-002', inputQty: '700 kg', inputTime: '09:40' }
+      ]);
+
+      updateWorkPreview();
+    }
+
+    function bindEvents() {
+      document.getElementById('btnModeCertificate').onclick = () => showMode('certificate');
+      document.getElementById('btnModeWorklog').onclick = () => showMode('worklog');
+
+      document.getElementById('btnSaveMain').onclick = () => {
+        const isWork = !document.getElementById('worklogSection').classList.contains('hidden');
+        if (isWork) saveWorklog();
+        else saveCertificate();
+      };
+
+      document.getElementById('certType').onchange = () => {
+        const type = document.getElementById('certType').value;
+        document.getElementById('certificateTitle').textContent = certificateTitleByType(type);
+        document.getElementById('typeChip').textContent = type.toUpperCase();
+      };
+
+      document.getElementById('btnAddSpecRow').onclick = addSpecRow;
+      document.getElementById('btnResetSpecRows').onclick = () => {
+        renderSpecRows(getDefaultSpecRows(document.getElementById('certType').value));
+      };
+      document.getElementById('btnCertSample').onclick = () => {
+        fillCertificateSample(document.getElementById('certType').value);
+      };
+
+      document.getElementById('btnWorklogSample').onclick = fillWorklogSample;
+      document.getElementById('btnAddMaterialRow').onclick = addMaterialRow;
+      document.getElementById('btnAddMaterialRow2').onclick = addMaterialRow;
+
+      ['workDate', 'workFinishedLot', 'workWorker', 'workPlanQty', 'workProdQty', 'workFailQty', 'workRemark'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateWorkPreview);
+      });
+    }
+
+    function bootstrap() {
+      const mode = qs.get('mode') || 'certificate';
+      const type = qs.get('type') || 'iqc';
+
+      document.getElementById('certDate').value = todayStr();
+      document.getElementById('workDate').value = todayStr();
+      document.getElementById('certType').value = type;
+      document.getElementById('certificateTitle').textContent = certificateTitleByType(type);
+      document.getElementById('typeChip').textContent = type.toUpperCase();
+
+      renderSpecRows(getDefaultSpecRows(type));
+      renderMaterialRows([]);
+      showMode(mode);
+      bindEvents();
+      updateWorkPreview();
+    }
+
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  </script>
+</body>
+</html>
