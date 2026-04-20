@@ -1,184 +1,156 @@
-// ===============================
-// iqc.js
-// 수입검사 CRUD
-// ===============================
+window.QMS = window.QMS || {};
 
-document.addEventListener("DOMContentLoaded", () => {
-  bindIqcEvents();
-  loadIqc();
-});
+window.QMS.iqc = {
+  async list() {
+    QMS.state.iqc = await api('/api/iqc');
+    this.render();
+  },
 
-// ===============================
-// 이벤트 연결
-// ===============================
-function bindIqcEvents() {
-  const saveBtn = document.getElementById("iqcSaveBtn");
-  const refreshBtn = document.getElementById("iqcRefreshBtn");
-  const sampleBtn = document.getElementById("iqcSampleBtn");
+  render() {
+    const tbody = document.getElementById('iqcTable');
+    if (!tbody) return;
 
-  if (saveBtn) {
-    saveBtn.addEventListener("click", saveIqc);
-  }
+    const rows = QMS.utils.applyFilters(QMS.state.iqc || [], ['date']);
 
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", loadIqc);
-  }
-
-  if (sampleBtn) {
-    sampleBtn.addEventListener("click", fillIqcSample);
-  }
-}
-
-// ===============================
-// 목록 조회
-// ===============================
-async function loadIqc() {
-  const tbody = document.getElementById("iqcTable");
-  if (!tbody) return;
-
-  try {
-    const rows = await api("/api/iqc");
-    tbody.innerHTML = "";
-
-    if (!rows || rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="empty">데이터가 없습니다.</td></tr>`;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="empty">데이터가 없습니다.</td></tr>';
       return;
     }
 
-    rows.forEach((row) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${row.date || ""}</td>
-        <td>${row.lot || ""}</td>
-        <td>${row.supplier || ""}</td>
-        <td>${row.item || ""}</td>
-        <td>${row.inspector || ""}</td>
-        <td>${row.incoming_qty ?? ""}</td>
-        <td>${row.qty ?? ""}</td>
-        <td>${row.fail ?? ""}</td>
+    tbody.innerHTML = rows.map((row) => `
+      <tr>
+        <td>${row.date || ''}</td>
+        <td>${row.lot || ''}</td>
+        <td>${row.supplier || ''}</td>
+        <td>${row.item || ''}</td>
+        <td>${row.inspector || ''}</td>
+        <td>${row.incoming_qty ?? ''}</td>
+        <td>${row.qty ?? ''}</td>
+        <td>${row.fail ?? ''}</td>
         <td>
-          <button class="btn btn-sm btn-light" onclick="editIqc('${row.id}')">수정</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteIqc('${row.id}')">삭제</button>
+          <div class="inline-actions">
+            <button class="btn btn-light btn-sm" onclick="QMS.iqc.edit('${row.id}')">수정</button>
+            <button class="btn btn-danger btn-sm" onclick="QMS.iqc.remove('${row.id}')">삭제</button>
+          </div>
         </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error("loadIqc error:", err);
-    tbody.innerHTML = `<tr><td colspan="9" class="empty">조회 실패</td></tr>`;
-  }
-}
+      </tr>
+    `).join('');
+  },
 
-// ===============================
-// 저장 / 수정
-// ===============================
-async function saveIqc() {
-  const payload = {
-    date: document.getElementById("iqcDate")?.value || "",
-    lot: document.getElementById("iqcLot")?.value || "",
-    supplier: document.getElementById("iqcSupplier")?.value || "",
-    item: document.getElementById("iqcItem")?.value || "",
-    inspector: document.getElementById("iqcInspector")?.value || "",
-    incomingQty: document.getElementById("iqcIncomingQty")?.value || "",
-    qty: document.getElementById("iqcQty")?.value || "",
-    fail: document.getElementById("iqcFail")?.value || "",
-  };
+  getFormData() {
+    return {
+      date: document.getElementById('iqcDate')?.value || '',
+      lot: document.getElementById('iqcLot')?.value || '',
+      supplier: document.getElementById('iqcSupplier')?.value || '',
+      item: document.getElementById('iqcItem')?.value || '',
+      inspector: document.getElementById('iqcInspector')?.value || '',
+      incomingQty: document.getElementById('iqcIncomingQty')?.value || '',
+      qty: document.getElementById('iqcQty')?.value || '',
+      fail: document.getElementById('iqcFail')?.value || '',
+    };
+  },
 
-  const editId = document.getElementById("iqcEditId")?.value || "";
+  fillForm(row) {
+    if (document.getElementById('iqcDate')) document.getElementById('iqcDate').value = row.date || '';
+    if (document.getElementById('iqcLot')) document.getElementById('iqcLot').value = row.lot || '';
+    if (document.getElementById('iqcSupplier')) document.getElementById('iqcSupplier').value = row.supplier || '';
+    if (document.getElementById('iqcItem')) document.getElementById('iqcItem').value = row.item || '';
+    if (document.getElementById('iqcInspector')) document.getElementById('iqcInspector').value = row.inspector || '';
+    if (document.getElementById('iqcIncomingQty')) document.getElementById('iqcIncomingQty').value = row.incoming_qty ?? '';
+    if (document.getElementById('iqcQty')) document.getElementById('iqcQty').value = row.qty ?? '';
+    if (document.getElementById('iqcFail')) document.getElementById('iqcFail').value = row.fail ?? '';
+    if (document.getElementById('iqcEditId')) document.getElementById('iqcEditId').value = row.id || '';
+  },
 
-  try {
-    if (editId) {
-      await api(`/api/iqc/${editId}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      alert("수정되었습니다.");
-    } else {
-      await api("/api/iqc", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      alert("저장되었습니다.");
+  clearForm() {
+    if (document.getElementById('iqcDate')) document.getElementById('iqcDate').value = QMS.utils.today();
+    if (document.getElementById('iqcLot')) document.getElementById('iqcLot').value = '';
+    if (document.getElementById('iqcSupplier')) document.getElementById('iqcSupplier').value = '';
+    if (document.getElementById('iqcItem')) document.getElementById('iqcItem').value = '';
+    if (document.getElementById('iqcInspector')) document.getElementById('iqcInspector').value = '';
+    if (document.getElementById('iqcIncomingQty')) document.getElementById('iqcIncomingQty').value = '';
+    if (document.getElementById('iqcQty')) document.getElementById('iqcQty').value = '';
+    if (document.getElementById('iqcFail')) document.getElementById('iqcFail').value = '';
+    if (document.getElementById('iqcEditId')) document.getElementById('iqcEditId').value = '';
+  },
+
+  fillSample() {
+    if (document.getElementById('iqcDate')) document.getElementById('iqcDate').value = QMS.utils.today();
+    if (document.getElementById('iqcLot')) document.getElementById('iqcLot').value = 'IQC-LOT-001';
+    if (document.getElementById('iqcSupplier')) document.getElementById('iqcSupplier').value = '협력업체A';
+    if (document.getElementById('iqcItem')) document.getElementById('iqcItem').value = '원료A';
+    if (document.getElementById('iqcInspector')) document.getElementById('iqcInspector').value = '홍길동';
+    if (document.getElementById('iqcIncomingQty')) document.getElementById('iqcIncomingQty').value = '1000';
+    if (document.getElementById('iqcQty')) document.getElementById('iqcQty').value = '100';
+    if (document.getElementById('iqcFail')) document.getElementById('iqcFail').value = '0';
+  },
+
+  async save() {
+    const editId = document.getElementById('iqcEditId')?.value || '';
+    const payload = this.getFormData();
+
+    if (!payload.date || !payload.lot || !payload.supplier || !payload.item || !payload.inspector) {
+      alert('일자, LOT, 협력업체, 품목, 검사자는 필수입니다.');
+      return;
     }
 
-    clearIqcForm();
-    loadIqc();
-    if (typeof loadDashboardSummary === "function") loadDashboardSummary();
-  } catch (err) {
-    console.error("saveIqc error:", err);
-    alert(err.message || "저장 실패");
-  }
-}
+    try {
+      if (editId) {
+        await api(`/api/iqc/${editId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        alert('수입검사가 수정되었습니다.');
+      } else {
+        await api('/api/iqc', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        alert('수입검사가 저장되었습니다.');
+      }
 
-// ===============================
-// 수정 폼 채우기
-// ===============================
-async function editIqc(id) {
-  try {
-    const rows = await api("/api/iqc");
-    const row = rows.find((r) => r.id === id);
+      this.clearForm();
+      await this.list();
+      QMS.app.renderAll();
+    } catch (err) {
+      alert(err.message || '저장 중 오류가 발생했습니다.');
+    }
+  },
+
+  edit(id) {
+    const row = (QMS.state.iqc || []).find((item) => item.id === id);
     if (!row) return;
+    this.fillForm(row);
+    QMS.utils.switchMainTab('iqc');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
 
-    document.getElementById("iqcDate").value = row.date || "";
-    document.getElementById("iqcLot").value = row.lot || "";
-    document.getElementById("iqcSupplier").value = row.supplier || "";
-    document.getElementById("iqcItem").value = row.item || "";
-    document.getElementById("iqcInspector").value = row.inspector || "";
-    document.getElementById("iqcIncomingQty").value = row.incoming_qty ?? "";
-    document.getElementById("iqcQty").value = row.qty ?? "";
-    document.getElementById("iqcFail").value = row.fail ?? "";
-    document.getElementById("iqcEditId").value = row.id || "";
-  } catch (err) {
-    console.error("editIqc error:", err);
-    alert("수정 데이터 불러오기 실패");
+  async remove(id) {
+    if (!confirm('삭제하시겠습니까?')) return;
+
+    try {
+      await api(`/api/iqc/${id}`, { method: 'DELETE' });
+      alert('삭제되었습니다.');
+      await this.list();
+      QMS.app.renderAll();
+    } catch (err) {
+      alert(err.message || '삭제 중 오류가 발생했습니다.');
+    }
+  },
+
+  bind() {
+    const saveBtn = document.getElementById('iqcSaveBtn');
+    const refreshBtn = document.getElementById('iqcRefreshBtn');
+    const sampleBtn = document.getElementById('iqcSampleBtn');
+
+    if (saveBtn) saveBtn.onclick = () => this.save();
+    if (refreshBtn) refreshBtn.onclick = () => this.list();
+    if (sampleBtn) sampleBtn.onclick = () => this.fillSample();
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.QMS?.iqc) {
+    window.QMS.iqc.bind();
   }
-}
-
-// ===============================
-// 삭제
-// ===============================
-async function deleteIqc(id) {
-  if (!confirm("삭제하시겠습니까?")) return;
-
-  try {
-    await api(`/api/iqc/${id}`, {
-      method: "DELETE",
-    });
-
-    alert("삭제되었습니다.");
-    loadIqc();
-    if (typeof loadDashboardSummary === "function") loadDashboardSummary();
-  } catch (err) {
-    console.error("deleteIqc error:", err);
-    alert("삭제 실패");
-  }
-}
-
-// ===============================
-// 샘플값
-// ===============================
-function fillIqcSample() {
-  document.getElementById("iqcDate").value = new Date().toISOString().slice(0, 10);
-  document.getElementById("iqcLot").value = "IQC-LOT-001";
-  document.getElementById("iqcSupplier").value = "협력업체A";
-  document.getElementById("iqcItem").value = "원료A";
-  document.getElementById("iqcInspector").value = "홍길동";
-  document.getElementById("iqcIncomingQty").value = "1000";
-  document.getElementById("iqcQty").value = "100";
-  document.getElementById("iqcFail").value = "0";
-}
-
-// ===============================
-// 폼 초기화
-// ===============================
-function clearIqcForm() {
-  document.getElementById("iqcDate").value = "";
-  document.getElementById("iqcLot").value = "";
-  document.getElementById("iqcSupplier").value = "";
-  document.getElementById("iqcItem").value = "";
-  document.getElementById("iqcInspector").value = "";
-  document.getElementById("iqcIncomingQty").value = "";
-  document.getElementById("iqcQty").value = "";
-  document.getElementById("iqcFail").value = "";
-  document.getElementById("iqcEditId").value = "";
-}
+});
