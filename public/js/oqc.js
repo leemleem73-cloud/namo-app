@@ -1,185 +1,183 @@
-// ===============================
-// oqc.js
-// 출하검사 CRUD
-// ===============================
+window.QMS = window.QMS || {};
 
-document.addEventListener("DOMContentLoaded", () => {
-  bindOqcEvents();
-  loadOqc();
-});
+window.QMS.oqc = {
+  async list() {
+    QMS.state.oqc = await api('/api/oqc');
+    this.render();
+  },
 
-// ===============================
-// 이벤트 연결
-// ===============================
-function bindOqcEvents() {
-  const saveBtn = document.getElementById("oqcSaveBtn");
-  const refreshBtn = document.getElementById("oqcRefreshBtn");
+  render() {
+    const tbody = document.getElementById('oqcTable');
+    if (!tbody) return;
 
-  if (saveBtn) {
-    saveBtn.addEventListener("click", saveOqc);
-  }
+    const rows = QMS.utils.applyFilters(QMS.state.oqc || [], ['date']);
 
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", loadOqc);
-  }
-}
-
-// ===============================
-// 목록 조회
-// ===============================
-async function loadOqc() {
-  const tbody = document.getElementById("oqcTable");
-  if (!tbody) return;
-
-  try {
-    const rows = await api("/api/oqc");
-    tbody.innerHTML = "";
-
-    if (!rows || rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="empty">데이터가 없습니다.</td></tr>`;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">데이터가 없습니다.</td></tr>';
       return;
     }
 
-    rows.forEach((row) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${row.date || ""}</td>
-        <td>${row.customer || ""}</td>
-        <td>${row.product || ""}</td>
-        <td>${row.lot || ""}</td>
-        <td>${row.judge || ""}</td>
-        <td>${row.qty ?? ""}</td>
-        <td>${row.fail ?? ""}</td>
+    tbody.innerHTML = rows.map((row) => `
+      <tr>
+        <td>${row.date || ''}</td>
+        <td>${row.customer || ''}</td>
+        <td>${row.product || ''}</td>
+        <td>${row.lot || ''}</td>
+        <td>${row.judge || ''}</td>
+        <td>${row.qty || ''}</td>
+        <td>${row.fail ?? ''}</td>
         <td>
-          <button class="btn btn-sm btn-light" onclick="editOqc('${row.id}')">수정</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteOqc('${row.id}')">삭제</button>
+          <div class="inline-actions">
+            <button class="btn btn-light btn-sm" onclick="QMS.oqc.edit('${row.id}')">수정</button>
+            <button class="btn btn-danger btn-sm" onclick="QMS.oqc.remove('${row.id}')">삭제</button>
+          </div>
         </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error("loadOqc error:", err);
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">조회 실패</td></tr>`;
-  }
-}
+      </tr>
+    `).join('');
+  },
 
-// ===============================
-// 저장 / 수정
-// ===============================
-async function saveOqc() {
-  const payload = {
-    date: document.getElementById("oqcDate")?.value || "",
-    customer: document.getElementById("oqcCustomer")?.value || "",
-    product: document.getElementById("oqcProduct")?.value || "",
-    lot: document.getElementById("oqcLot")?.value || "",
-    visual: document.getElementById("oqcVisual")?.value || "",
-    viscosity: document.getElementById("oqcViscosity")?.value || "",
-    solid: document.getElementById("oqcSolid")?.value || "",
-    particle: document.getElementById("oqcParticle")?.value || "",
-    adhesion: document.getElementById("oqcAdhesion")?.value || "",
-    resistance: document.getElementById("oqcResistance")?.value || "",
-    swelling: document.getElementById("oqcSwelling")?.value || "",
-    moisture: document.getElementById("oqcMoisture")?.value || "",
-    qty: document.getElementById("oqcQty")?.value || "",
-    fail: document.getElementById("oqcFail")?.value || "",
-    judge: document.getElementById("oqcJudge")?.value || "",
-  };
+  getFormData() {
+    return {
+      date: document.getElementById('oqcDate')?.value || '',
+      customer: document.getElementById('oqcCustomer')?.value || '',
+      product: document.getElementById('oqcProduct')?.value || '',
+      lot: document.getElementById('oqcLot')?.value || '',
+      visual: document.getElementById('oqcVisual')?.value || '',
+      viscosity: document.getElementById('oqcViscosity')?.value || '',
+      solid: document.getElementById('oqcSolid')?.value || '',
+      particle: document.getElementById('oqcParticle')?.value || '',
+      adhesion: document.getElementById('oqcAdhesion')?.value || '',
+      resistance: document.getElementById('oqcResistance')?.value || '',
+      swelling: document.getElementById('oqcSwelling')?.value || '',
+      moisture: document.getElementById('oqcMoisture')?.value || '',
+      qty: document.getElementById('oqcQty')?.value || '',
+      fail: document.getElementById('oqcFail')?.value || '',
+      judge: document.getElementById('oqcJudge')?.value || '',
+    };
+  },
 
-  const editId = document.getElementById("oqcEditId")?.value || "";
+  fillForm(row) {
+    if (document.getElementById('oqcDate')) document.getElementById('oqcDate').value = row.date || '';
+    if (document.getElementById('oqcCustomer')) document.getElementById('oqcCustomer').value = row.customer || '';
+    if (document.getElementById('oqcProduct')) document.getElementById('oqcProduct').value = row.product || '';
+    if (document.getElementById('oqcLot')) document.getElementById('oqcLot').value = row.lot || '';
+    if (document.getElementById('oqcVisual')) document.getElementById('oqcVisual').value = row.visual || '';
+    if (document.getElementById('oqcViscosity')) document.getElementById('oqcViscosity').value = row.viscosity || '';
+    if (document.getElementById('oqcSolid')) document.getElementById('oqcSolid').value = row.solid || '';
+    if (document.getElementById('oqcParticle')) document.getElementById('oqcParticle').value = row.particle || '';
+    if (document.getElementById('oqcAdhesion')) document.getElementById('oqcAdhesion').value = row.adhesion || '';
+    if (document.getElementById('oqcResistance')) document.getElementById('oqcResistance').value = row.resistance || '';
+    if (document.getElementById('oqcSwelling')) document.getElementById('oqcSwelling').value = row.swelling || '';
+    if (document.getElementById('oqcMoisture')) document.getElementById('oqcMoisture').value = row.moisture || '';
+    if (document.getElementById('oqcQty')) document.getElementById('oqcQty').value = row.qty || '';
+    if (document.getElementById('oqcFail')) document.getElementById('oqcFail').value = row.fail ?? '';
+    if (document.getElementById('oqcJudge')) document.getElementById('oqcJudge').value = row.judge || '';
+    if (document.getElementById('oqcEditId')) document.getElementById('oqcEditId').value = row.id || '';
+  },
 
-  try {
-    if (editId) {
-      await api(`/api/oqc/${editId}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      alert("수정되었습니다.");
-    } else {
-      await api("/api/oqc", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      alert("저장되었습니다.");
+  clearForm() {
+    if (document.getElementById('oqcDate')) document.getElementById('oqcDate').value = QMS.utils.today();
+    if (document.getElementById('oqcCustomer')) document.getElementById('oqcCustomer').value = '';
+    if (document.getElementById('oqcProduct')) document.getElementById('oqcProduct').value = '';
+    if (document.getElementById('oqcLot')) document.getElementById('oqcLot').value = '';
+    if (document.getElementById('oqcVisual')) document.getElementById('oqcVisual').value = '';
+    if (document.getElementById('oqcViscosity')) document.getElementById('oqcViscosity').value = '';
+    if (document.getElementById('oqcSolid')) document.getElementById('oqcSolid').value = '';
+    if (document.getElementById('oqcParticle')) document.getElementById('oqcParticle').value = '';
+    if (document.getElementById('oqcAdhesion')) document.getElementById('oqcAdhesion').value = '';
+    if (document.getElementById('oqcResistance')) document.getElementById('oqcResistance').value = '';
+    if (document.getElementById('oqcSwelling')) document.getElementById('oqcSwelling').value = '';
+    if (document.getElementById('oqcMoisture')) document.getElementById('oqcMoisture').value = '';
+    if (document.getElementById('oqcQty')) document.getElementById('oqcQty').value = '';
+    if (document.getElementById('oqcFail')) document.getElementById('oqcFail').value = '';
+    if (document.getElementById('oqcJudge')) document.getElementById('oqcJudge').value = '';
+    if (document.getElementById('oqcEditId')) document.getElementById('oqcEditId').value = '';
+  },
+
+  fillSample() {
+    if (document.getElementById('oqcDate')) document.getElementById('oqcDate').value = QMS.utils.today();
+    if (document.getElementById('oqcCustomer')) document.getElementById('oqcCustomer').value = '고객사A';
+    if (document.getElementById('oqcProduct')) document.getElementById('oqcProduct').value = '제품A';
+    if (document.getElementById('oqcLot')) document.getElementById('oqcLot').value = 'OQC-LOT-001';
+    if (document.getElementById('oqcVisual')) document.getElementById('oqcVisual').value = '이상 없음';
+    if (document.getElementById('oqcViscosity')) document.getElementById('oqcViscosity').value = '1,520 cp';
+    if (document.getElementById('oqcSolid')) document.getElementById('oqcSolid').value = '20.2 wt.%';
+    if (document.getElementById('oqcParticle')) document.getElementById('oqcParticle').value = '적합';
+    if (document.getElementById('oqcAdhesion')) document.getElementById('oqcAdhesion').value = '합격';
+    if (document.getElementById('oqcResistance')) document.getElementById('oqcResistance').value = '합격';
+    if (document.getElementById('oqcSwelling')) document.getElementById('oqcSwelling').value = '합격';
+    if (document.getElementById('oqcMoisture')) document.getElementById('oqcMoisture').value = '합격';
+    if (document.getElementById('oqcQty')) document.getElementById('oqcQty').value = '900 EA';
+    if (document.getElementById('oqcFail')) document.getElementById('oqcFail').value = '0';
+    if (document.getElementById('oqcJudge')) document.getElementById('oqcJudge').value = '합격';
+  },
+
+  async save() {
+    const editId = document.getElementById('oqcEditId')?.value || '';
+    const payload = this.getFormData();
+
+    if (!payload.date || !payload.customer || !payload.product || !payload.lot) {
+      alert('일자, 고객사, 제품명, LOT는 필수입니다.');
+      return;
     }
 
-    clearOqcForm();
-    loadOqc();
-    if (typeof loadDashboardSummary === "function") loadDashboardSummary();
-  } catch (err) {
-    console.error("saveOqc error:", err);
-    alert(err.message || "저장 실패");
-  }
-}
+    try {
+      if (editId) {
+        await api(`/api/oqc/${editId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        alert('출하검사가 수정되었습니다.');
+      } else {
+        await api('/api/oqc', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        alert('출하검사가 저장되었습니다.');
+      }
 
-// ===============================
-// 수정 폼 채우기
-// ===============================
-async function editOqc(id) {
-  try {
-    const rows = await api("/api/oqc");
-    const row = rows.find((r) => r.id === id);
+      this.clearForm();
+      await this.list();
+      QMS.app.renderAll();
+    } catch (err) {
+      alert(err.message || '저장 중 오류가 발생했습니다.');
+    }
+  },
+
+  edit(id) {
+    const row = (QMS.state.oqc || []).find((item) => item.id === id);
     if (!row) return;
+    this.fillForm(row);
+    QMS.utils.switchMainTab('oqc');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
 
-    document.getElementById("oqcDate").value = row.date || "";
-    document.getElementById("oqcCustomer").value = row.customer || "";
-    document.getElementById("oqcProduct").value = row.product || "";
-    document.getElementById("oqcLot").value = row.lot || "";
-    document.getElementById("oqcVisual").value = row.visual || "";
-    document.getElementById("oqcViscosity").value = row.viscosity || "";
-    document.getElementById("oqcSolid").value = row.solid || "";
-    document.getElementById("oqcParticle").value = row.particle || "";
-    document.getElementById("oqcAdhesion").value = row.adhesion || "";
-    document.getElementById("oqcResistance").value = row.resistance || "";
-    document.getElementById("oqcSwelling").value = row.swelling || "";
-    document.getElementById("oqcMoisture").value = row.moisture || "";
-    document.getElementById("oqcQty").value = row.qty ?? "";
-    document.getElementById("oqcFail").value = row.fail ?? "";
-    document.getElementById("oqcJudge").value = row.judge || "";
-    document.getElementById("oqcEditId").value = row.id || "";
-  } catch (err) {
-    console.error("editOqc error:", err);
-    alert("수정 데이터 불러오기 실패");
+  async remove(id) {
+    if (!confirm('삭제하시겠습니까?')) return;
+
+    try {
+      await api(`/api/oqc/${id}`, { method: 'DELETE' });
+      alert('삭제되었습니다.');
+      await this.list();
+      QMS.app.renderAll();
+    } catch (err) {
+      alert(err.message || '삭제 중 오류가 발생했습니다.');
+    }
+  },
+
+  bind() {
+    const saveBtn = document.getElementById('oqcSaveBtn');
+    const refreshBtn = document.getElementById('oqcRefreshBtn');
+    const sampleBtn = document.getElementById('oqcSampleBtn');
+
+    if (saveBtn) saveBtn.onclick = () => this.save();
+    if (refreshBtn) refreshBtn.onclick = () => this.list();
+    if (sampleBtn) sampleBtn.onclick = () => this.fillSample();
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.QMS?.oqc) {
+    window.QMS.oqc.bind();
   }
-}
-
-// ===============================
-// 삭제
-// ===============================
-async function deleteOqc(id) {
-  if (!confirm("삭제하시겠습니까?")) return;
-
-  try {
-    await api(`/api/oqc/${id}`, {
-      method: "DELETE",
-    });
-
-    alert("삭제되었습니다.");
-    loadOqc();
-    if (typeof loadDashboardSummary === "function") loadDashboardSummary();
-  } catch (err) {
-    console.error("deleteOqc error:", err);
-    alert("삭제 실패");
-  }
-}
-
-// ===============================
-// 폼 초기화
-// ===============================
-function clearOqcForm() {
-  document.getElementById("oqcDate").value = "";
-  document.getElementById("oqcCustomer").value = "";
-  document.getElementById("oqcProduct").value = "";
-  document.getElementById("oqcLot").value = "";
-  document.getElementById("oqcVisual").value = "";
-  document.getElementById("oqcViscosity").value = "";
-  document.getElementById("oqcSolid").value = "";
-  document.getElementById("oqcParticle").value = "";
-  document.getElementById("oqcAdhesion").value = "";
-  document.getElementById("oqcResistance").value = "";
-  document.getElementById("oqcSwelling").value = "";
-  document.getElementById("oqcMoisture").value = "";
-  document.getElementById("oqcQty").value = "";
-  document.getElementById("oqcFail").value = "";
-  document.getElementById("oqcJudge").value = "";
-  document.getElementById("oqcEditId").value = "";
-}
+});
