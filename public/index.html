@@ -1,1 +1,812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namochemical QMS</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <!-- =========================
+       AUTH PAGE
+  ========================== -->
+  <div id="authPage" class="auth-shell">
+    <div class="auth-panel">
+      <div class="auth-brand">
+        <img src="/logo.png" alt="Namochemical" />
+        <div>
+          <h1>Namochemical</h1>
+          <p>QMS 품질관리시스템</p>
+        </div>
+      </div>
 
+      <div class="auth-layout">
+        <section class="auth-hero">
+          <div class="hero-badge">품질관리 시스템</div>
+          <h2>회원가입 · 로그인 후<br>대시보드 접근</h2>
+          <p>
+            인증된 사용자만 품질관리 대시보드에 접근할 수 있도록 구성했습니다.
+            회원가입 신청 후 관리자 승인 완료 시 로그인할 수 있습니다.
+          </p>
+
+          <div class="hero-cards">
+            <div class="hero-mini-card">
+              <span>접근 방식</span>
+              <strong>회원 전용</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>인증 구조</span>
+              <strong>세션 기반</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>진입 흐름</span>
+              <strong>가입 신청 → 승인 → 로그인</strong>
+            </div>
+          </div>
+
+          <div class="hero-info-list">
+            <div class="hero-info-item">
+              <div class="hero-icon">📊</div>
+              <div>
+                <h3>대시보드 보호</h3>
+                <p>비로그인 상태에서는 인증 화면만 노출됩니다.</p>
+              </div>
+            </div>
+            <div class="hero-info-item">
+              <div class="hero-icon">🛡️</div>
+              <div>
+                <h3>권한 분리</h3>
+                <p>관리자만 전체삭제와 회원 승인 기능을 사용할 수 있습니다.</p>
+              </div>
+            </div>
+            <div class="hero-info-item">
+              <div class="hero-icon">⚡</div>
+              <div>
+                <h3>승인 기반 진입</h3>
+                <p>회원가입 완료 후 자동 로그인되지 않으며, 관리자 승인 후 접근 가능합니다.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="auth-card">
+          <div class="auth-tab-switch">
+            <button id="loginTabBtn" class="active" type="button">로그인</button>
+            <button id="signupTabBtn" type="button">회원가입</button>
+          </div>
+
+          <div id="loginPanel">
+            <h3>다시 오신 것을 환영합니다</h3>
+            <p class="auth-desc">승인된 계정으로 로그인하면 품질 대시보드가 열립니다.</p>
+
+            <div class="field">
+              <label for="loginEmail">이메일</label>
+              <input id="loginEmail" type="email" placeholder="admin@namochemical.com" />
+            </div>
+
+            <div class="field">
+              <label for="loginPassword">비밀번호</label>
+              <input id="loginPassword" type="password" placeholder="비밀번호 입력" />
+            </div>
+
+            <div class="auth-actions">
+              <button class="btn btn-light" type="button" id="openResetBtn">비밀번호 초기화</button>
+              <button class="btn btn-primary" type="button" id="loginBtn">로그인</button>
+            </div>
+
+            <div class="auth-help">회원이 아니라면 회원가입 탭에서 신청 후 관리자 승인을 기다려 주세요.</div>
+            <div id="loginMsg" class="message"></div>
+          </div>
+
+          <div id="signupPanel" class="hidden">
+            <h3>회원가입 신청</h3>
+            <p class="auth-desc">승인 완료 후 시스템 사용이 가능합니다.</p>
+
+            <div class="form-grid two">
+              <div class="field">
+                <label for="signupName">이름</label>
+                <input id="signupName" type="text" />
+              </div>
+              <div class="field">
+                <label for="signupDepartment">부서 / 팀</label>
+                <input id="signupDepartment" type="text" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="signupEmail">이메일</label>
+              <input id="signupEmail" type="email" />
+            </div>
+
+            <div class="form-grid two">
+              <div class="field">
+                <label for="signupPassword">비밀번호</label>
+                <input id="signupPassword" type="password" />
+              </div>
+              <div class="field">
+                <label for="signupPassword2">비밀번호 확인</label>
+                <input id="signupPassword2" type="password" />
+              </div>
+            </div>
+
+            <div class="auth-actions">
+              <button class="btn btn-primary" type="button" id="signupBtn">가입 신청</button>
+            </div>
+
+            <div id="signupMsg" class="message"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       DASHBOARD PAGE
+  ========================== -->
+  <div id="dashboardPage" class="dashboard-shell hidden">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/logo.png" alt="Namochemical" />
+        <div>
+          <strong>Namochemical</strong>
+          <span>QMS 품질관리시스템</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <button class="main-tab active" data-tab="dashboard" type="button">대시보드</button>
+        <button class="main-tab" data-tab="iqc" type="button">수입검사 (IQC)</button>
+        <button class="main-tab" data-tab="pqc" type="button">공정검사 (PQC)</button>
+        <button class="main-tab" data-tab="oqc" type="button">출하검사 (OQC)</button>
+        <button class="main-tab" data-tab="nonconform" type="button">부적합관리 (NCR)</button>
+        <button class="main-tab" data-tab="suppliers" type="button">협력업체 관리</button>
+        <button class="main-tab" data-tab="worklog" type="button">생산작업일지</button>
+        <button class="main-tab" data-tab="trace" type="button">추적성 조회</button>
+        <button class="main-tab admin-only" data-tab="users" type="button">전체회원관리</button>
+      </nav>
+    </aside>
+
+    <main class="main-area">
+      <header class="main-header">
+        <div class="header-search">
+          <input id="keywordInput" type="text" placeholder="검색어를 입력하세요..." />
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn" id="testDbBtn" type="button" title="DB 테스트">⟳</button>
+          <button class="icon-btn" id="backupBtn" type="button" title="백업">⤓</button>
+          <button class="icon-btn" id="syncBtn" type="button" title="새로고침">↻</button>
+          <button class="btn btn-light btn-sm" id="openPasswordBtn" type="button">비밀번호 변경</button>
+          <button class="btn btn-light btn-sm" id="logoutBtn" type="button">로그아웃</button>
+          <div class="user-chip" id="currentUserChip">관리자 · admin</div>
+        </div>
+      </header>
+
+      <section class="top-filter-bar">
+        <div class="filter-left">
+          <span class="filter-label">조회 범위</span>
+          <select id="filterYear"></select>
+          <select id="filterMonth"><option value="">전체 월</option></select>
+          <select id="filterDay"><option value="">전체 일</option></select>
+          <button class="btn btn-primary btn-sm" id="searchBtn" type="button">조회</button>
+        </div>
+
+        <div class="filter-right">
+          <button class="btn btn-danger btn-sm admin-only" id="deleteAllBtn" type="button">전체삭제</button>
+          <button class="btn btn-light btn-sm" id="monthQuickBtn" type="button">이번 달 보기</button>
+          <button class="btn btn-light btn-sm" id="rangeRefreshBtn" type="button">새로고침</button>
+        </div>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section id="tab-dashboard" class="tab-panel">
+        <div class="dashboard-top">
+          <div class="dashboard-title-box">
+            <h2>대시보드</h2>
+            <p>실시간 품질 현황을 한눈에 확인하세요.</p>
+          </div>
+
+          <div class="dashboard-filter-chip">
+            <span>조회 범위</span>
+            <strong id="rangeLabel">전체 조회</strong>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card iqc">
+            <div class="kpi-label">수입검사(IQC)</div>
+            <div class="kpi-value" id="iqcCount">0</div>
+            <div class="kpi-sub">이번 달 기준</div>
+          </div>
+
+          <div class="kpi-card pqc">
+            <div class="kpi-label">공정검사(PQC)</div>
+            <div class="kpi-value" id="pqcCount">0</div>
+            <div class="kpi-sub">이번 달 기준</div>
+          </div>
+
+          <div class="kpi-card oqc">
+            <div class="kpi-label">출하검사(OQC)</div>
+            <div class="kpi-value" id="oqcCount">0</div>
+            <div class="kpi-sub">이번 달 기준</div>
+          </div>
+        </div>
+
+        <div class="dashboard-content-grid">
+          <div class="dashboard-chart-box">
+            <div class="box-head">
+              <h3>검사 현황 추이</h3>
+            </div>
+            <div class="chart-area">
+              <canvas id="iqcChart"></canvas>
+            </div>
+          </div>
+
+          <div class="dashboard-side-column">
+            <div class="info-box">
+              <div class="box-head">
+                <h3>공지사항</h3>
+                <span class="tag">NOTICE</span>
+              </div>
+              <ul class="notice-list">
+                <li><span>QMS 시스템 정기 점검 안내</span><em>2026-04-18</em></li>
+                <li><span>검사 기준서 업데이트 (v2.3)</span><em>2026-04-15</em></li>
+                <li><span>신규 품질양식 등록 절차 안내</span><em>2026-04-10</em></li>
+                <li><span>6월 품질 교육 일정 안내</span><em>2026-04-08</em></li>
+                <li><span>데이터 백업 정책 변경 안내</span><em>2026-04-05</em></li>
+              </ul>
+            </div>
+
+            <div class="info-box">
+              <div class="box-head">
+                <h3>업그레이드 내용</h3>
+                <span class="tag">UPDATE</span>
+              </div>
+              <ul class="upgrade-list">
+                <li>대시보드 UI 전면 개편</li>
+                <li>입고검사 성적서 자동 생성</li>
+                <li>부적합 현황 실시간 그래프</li>
+                <li>검색/필터 성능 개선</li>
+                <li>보고서 PDF 다운로드 지원</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-bottom-grid">
+          <div class="mini-kpi-card">
+            <div class="mini-kpi-title">부적합 현황</div>
+            <div class="mini-kpi-value" id="ncCount">0</div>
+          </div>
+          <div class="mini-kpi-card">
+            <div class="mini-kpi-title">생산작업일지</div>
+            <div class="mini-kpi-value" id="worklogCount">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- IQC -->
+      <section id="tab-iqc" class="tab-panel hidden">
+        <div class="content-grid two-pane">
+          <div class="content-card">
+            <div class="box-head">
+              <h3>입고검사 등록</h3>
+              <div class="section-actions">
+                <button class="btn btn-light btn-sm" id="iqcSampleBtn" type="button">샘플값</button>
+                <button class="btn btn-success btn-sm" id="iqcSaveBtn" type="button">저장</button>
+                <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=certificate&type=iqc'">성적서</button>
+              </div>
+            </div>
+
+            <div class="form-grid four">
+              <div class="field"><label>일자</label><input type="date" id="iqcDate" /></div>
+              <div class="field"><label>LOT</label><input id="iqcLot" /></div>
+              <div class="field"><label>협력업체</label><input id="iqcSupplier" /></div>
+              <div class="field"><label>품목</label><input id="iqcItem" /></div>
+
+              <div class="field"><label>검사자</label><input id="iqcInspector" /></div>
+              <div class="field"><label>입고수량</label><input id="iqcIncomingQty" type="number" /></div>
+              <div class="field"><label>검사수량</label><input id="iqcQty" type="number" /></div>
+              <div class="field"><label>불량수량</label><input id="iqcFail" type="number" /></div>
+            </div>
+
+            <input type="hidden" id="iqcEditId" />
+          </div>
+
+          <div class="content-card preview-card">
+            <div class="box-head">
+              <h3>입고검사 성적서 미리보기</h3>
+            </div>
+            <div class="preview-box">
+              <h4>입고검사 성적서 (IQC Report)</h4>
+              <p>좌측 입력 후 성적서 버튼에서 전용 화면으로 이동합니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>입고검사 목록</h3>
+            <button class="btn btn-light btn-sm" id="iqcRefreshBtn" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>일자</th>
+                  <th>LOT</th>
+                  <th>협력업체</th>
+                  <th>품목</th>
+                  <th>검사자</th>
+                  <th>입고수량</th>
+                  <th>검사수량</th>
+                  <th>불량</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="iqcTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PQC -->
+      <section id="tab-pqc" class="tab-panel hidden">
+        <div class="content-grid two-pane">
+          <div class="content-card">
+            <div class="box-head">
+              <h3>공정검사 등록</h3>
+              <div class="section-actions">
+                <button class="btn btn-light btn-sm" id="pqcSampleBtn" type="button">샘플값</button>
+                <button class="btn btn-success btn-sm" id="pqcSaveBtn" type="button">저장</button>
+                <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=certificate&type=pqc'">성적서</button>
+              </div>
+            </div>
+
+            <div class="form-grid four">
+              <div class="field"><label>일자</label><input type="date" id="pqcDate" /></div>
+              <div class="field"><label>제품명</label><input id="pqcProduct" /></div>
+              <div class="field"><label>LOT</label><input id="pqcLot" /></div>
+              <div class="field"><label>외관</label><input id="pqcVisual" /></div>
+
+              <div class="field"><label>점도</label><input id="pqcViscosity" /></div>
+              <div class="field"><label>고형분</label><input id="pqcSolid" /></div>
+              <div class="field"><label>입자</label><input id="pqcParticle" /></div>
+              <div class="field"><label>판정</label><input id="pqcJudge" /></div>
+
+              <div class="field"><label>입고수량</label><input id="pqcIncomingQty" type="number" /></div>
+              <div class="field"><label>검사수량</label><input id="pqcQty" type="number" /></div>
+              <div class="field"><label>불량수량</label><input id="pqcFail" type="number" /></div>
+            </div>
+
+            <input type="hidden" id="pqcEditId" />
+          </div>
+
+          <div class="content-card preview-card">
+            <div class="box-head">
+              <h3>공정검사 성적서 미리보기</h3>
+            </div>
+            <div class="preview-box">
+              <h4>공정검사 성적서 (PQC Report)</h4>
+              <p>좌측 입력 후 성적서 버튼에서 전용 화면으로 이동합니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>공정검사 목록</h3>
+            <button class="btn btn-light btn-sm" id="pqcRefreshBtn" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>일자</th>
+                  <th>제품명</th>
+                  <th>LOT</th>
+                  <th>외관</th>
+                  <th>판정</th>
+                  <th>입고수량</th>
+                  <th>검사수량</th>
+                  <th>불량</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="pqcTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- OQC -->
+      <section id="tab-oqc" class="tab-panel hidden">
+        <div class="content-grid two-pane">
+          <div class="content-card">
+            <div class="box-head">
+              <h3>출하검사 등록</h3>
+              <div class="section-actions">
+                <button class="btn btn-light btn-sm" id="oqcSampleBtn" type="button">샘플값</button>
+                <button class="btn btn-success btn-sm" id="oqcSaveBtn" type="button">저장</button>
+                <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=certificate&type=oqc'">성적서</button>
+              </div>
+            </div>
+
+            <div class="form-grid four">
+              <div class="field"><label>일자</label><input type="date" id="oqcDate" /></div>
+              <div class="field"><label>고객사</label><input id="oqcCustomer" /></div>
+              <div class="field"><label>제품명</label><input id="oqcProduct" /></div>
+              <div class="field"><label>LOT</label><input id="oqcLot" /></div>
+
+              <div class="field"><label>외관</label><input id="oqcVisual" /></div>
+              <div class="field"><label>점도</label><input id="oqcViscosity" /></div>
+              <div class="field"><label>고형분</label><input id="oqcSolid" /></div>
+              <div class="field"><label>입자</label><input id="oqcParticle" /></div>
+
+              <div class="field"><label>접착력</label><input id="oqcAdhesion" /></div>
+              <div class="field"><label>절연저항</label><input id="oqcResistance" /></div>
+              <div class="field"><label>전해액 팽윤성</label><input id="oqcSwelling" /></div>
+              <div class="field"><label>수분</label><input id="oqcMoisture" /></div>
+
+              <div class="field"><label>출하수량(EA/kg)</label><input id="oqcQty" /></div>
+              <div class="field"><label>불량수량</label><input id="oqcFail" type="number" /></div>
+              <div class="field"><label>판정</label><input id="oqcJudge" /></div>
+            </div>
+
+            <input type="hidden" id="oqcEditId" />
+          </div>
+
+          <div class="content-card preview-card">
+            <div class="box-head">
+              <h3>출하검사 성적서 미리보기</h3>
+            </div>
+            <div class="preview-box">
+              <h4>출하검사 성적서 (OQC Report)</h4>
+              <p>좌측 입력 후 성적서 버튼에서 전용 화면으로 이동합니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>출하검사 목록</h3>
+            <button class="btn btn-light btn-sm" id="oqcRefreshBtn" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>일자</th>
+                  <th>고객사</th>
+                  <th>제품명</th>
+                  <th>LOT</th>
+                  <th>판정</th>
+                  <th>출하수량</th>
+                  <th>불량</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="oqcTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- NCR -->
+      <section id="tab-nonconform" class="tab-panel hidden">
+        <div class="content-card">
+          <div class="box-head">
+            <h3>부적합관리 등록</h3>
+            <div class="section-actions">
+              <button class="btn btn-light btn-sm" id="ncSampleBtn" type="button">샘플값</button>
+              <button class="btn btn-success btn-sm" id="ncSaveBtn" type="button">저장</button>
+            </div>
+          </div>
+
+          <div class="form-grid four">
+            <div class="field"><label>일자</label><input type="date" id="ncDate" /></div>
+            <div class="field"><label>구분</label><input id="ncType" /></div>
+            <div class="field"><label>LOT</label><input id="ncLot" /></div>
+            <div class="field"><label>품목</label><input id="ncItem" /></div>
+
+            <div class="field full"><label>문제내용</label><textarea id="ncIssue"></textarea></div>
+            <div class="field full"><label>원인</label><textarea id="ncCause"></textarea></div>
+            <div class="field full"><label>조치내용</label><textarea id="ncAction"></textarea></div>
+
+            <div class="field"><label>담당자</label><input id="ncOwner" /></div>
+            <div class="field"><label>상태</label><input id="ncStatus" /></div>
+          </div>
+
+          <input type="hidden" id="ncEditId" />
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>부적합 목록</h3>
+            <button class="btn btn-light btn-sm" id="ncRefreshBtn" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>일자</th>
+                  <th>구분</th>
+                  <th>LOT</th>
+                  <th>품목</th>
+                  <th>문제내용</th>
+                  <th>담당자</th>
+                  <th>상태</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="ncTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUPPLIERS -->
+      <section id="tab-suppliers" class="tab-panel hidden">
+        <div class="content-card">
+          <div class="box-head">
+            <h3>협력업체 등록</h3>
+            <div class="section-actions">
+              <button class="btn btn-light btn-sm" id="supplierSampleBtn" type="button">샘플값</button>
+              <button class="btn btn-success btn-sm" id="supplierSaveBtn" type="button">저장</button>
+            </div>
+          </div>
+
+          <div class="form-grid four">
+            <div class="field"><label>업체명</label><input id="supName" /></div>
+            <div class="field"><label>담당자</label><input id="supManager" /></div>
+            <div class="field"><label>전화번호</label><input id="supPhone" /></div>
+            <div class="field"><label>분류</label><input id="supCategory" /></div>
+            <div class="field"><label>상태</label><input id="supStatus" /></div>
+          </div>
+
+          <input type="hidden" id="supEditId" />
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>협력업체 목록</h3>
+            <button class="btn btn-light btn-sm" id="supplierRefreshBtn" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>업체명</th>
+                  <th>담당자</th>
+                  <th>전화번호</th>
+                  <th>분류</th>
+                  <th>상태</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="supplierTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- WORKLOG -->
+      <section id="tab-worklog" class="tab-panel hidden">
+        <div class="content-card">
+          <div class="box-head">
+            <h3>생산작업일지 등록</h3>
+            <div class="section-actions">
+              <button class="btn btn-light btn-sm" id="worklogSampleBtn" type="button">샘플값</button>
+              <button class="btn btn-success btn-sm" id="worklogSaveBtn" type="button">저장</button>
+              <button class="btn btn-primary btn-sm" type="button" onclick="location.href='report_worklog.html?mode=worklog'">작업일지 전용화면</button>
+            </div>
+          </div>
+
+          <div class="form-grid four">
+            <div class="field"><label>생산일자</label><input type="date" id="workDate" /></div>
+            <div class="field"><label>완제품 LOT</label><input id="finishedLot" /></div>
+            <div class="field"><label>순번</label><input id="workSeq" /></div>
+            <div class="field"><label>원재료명</label><input id="workMaterial" /></div>
+
+            <div class="field"><label>원자재 LOT</label><input id="workLotNo" /></div>
+            <div class="field"><label>투입시간</label><input id="workInputTime" /></div>
+            <div class="field"><label>작업자</label><input id="workWorker" /></div>
+            <div class="field"><label>계획수량</label><input id="workPlanQty" /></div>
+
+            <div class="field"><label>생산수량</label><input id="workProdQty" /></div>
+            <div class="field"><label>불량수량</label><input id="workFailQty" /></div>
+            <div class="field"><label>업체명</label><input id="workSupName" /></div>
+            <div class="field"><label>투입량</label><input id="workInputQty" /></div>
+
+            <div class="field full"><label>특이사항</label><textarea id="workNote"></textarea></div>
+
+            <div class="field"><label>유량 설정값</label><input id="flowSet" /></div>
+            <div class="field"><label>유량 실제값</label><input id="flowReal" /></div>
+            <div class="field"><label>온도 설정값</label><input id="tempSet" /></div>
+            <div class="field"><label>온도 실제값</label><input id="tempReal" /></div>
+            <div class="field"><label>여과 압력차 설정값</label><input id="pressSet" /></div>
+            <div class="field"><label>여과 압력차 실제값</label><input id="pressReal" /></div>
+          </div>
+
+          <input type="hidden" id="workEditId" />
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>생산작업일지 목록</h3>
+            <button class="btn btn-light btn-sm" id="worklogRefreshBtn" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>작업일자</th>
+                  <th>완제품 LOT</th>
+                  <th>순번</th>
+                  <th>원재료</th>
+                  <th>원자재 LOT</th>
+                  <th>작업자</th>
+                  <th>생산수량</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="worklogTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRACE -->
+      <section id="tab-trace" class="tab-panel hidden">
+        <div class="content-card">
+          <div class="box-head">
+            <h3>추적성 조회</h3>
+          </div>
+
+          <div class="form-grid two">
+            <div class="field full">
+              <label>완제품 LOT 또는 원료 LOT</label>
+              <input id="traceKeyword" placeholder="LOT 번호를 입력하세요" />
+            </div>
+          </div>
+
+          <div class="section-actions" style="margin-top:12px;">
+            <button class="btn btn-primary btn-sm" type="button" id="traceSearchBtn">조회</button>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="box-head">
+            <h3>조회 결과</h3>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>작업일자</th>
+                  <th>완제품 LOT</th>
+                  <th>순번</th>
+                  <th>원료</th>
+                  <th>업체명</th>
+                  <th>원료 LOT</th>
+                  <th>투입량</th>
+                  <th>투입시간</th>
+                  <th>작업자</th>
+                </tr>
+              </thead>
+              <tbody id="traceTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section id="tab-users" class="tab-panel hidden admin-only">
+        <div class="content-card">
+          <div class="box-head">
+            <h3>전체 회원관리</h3>
+            <button class="btn btn-light btn-sm" id="usersRefreshBtn" type="button">새로고침</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>이름</th>
+                  <th>이메일</th>
+                  <th>부서</th>
+                  <th>직책</th>
+                  <th>권한</th>
+                  <th>상태</th>
+                  <th>등록일</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- RESET PASSWORD MODAL -->
+  <div class="modal" id="resetModal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3>비밀번호 초기화</h3>
+        <button class="close-btn" data-close="resetModal" type="button">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid two">
+          <div class="field">
+            <label>이름</label>
+            <input id="resetName" />
+          </div>
+          <div class="field">
+            <label>부서 / 팀</label>
+            <input id="resetDepartment" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>이메일</label>
+          <input id="resetEmail" type="email" />
+        </div>
+
+        <div class="field">
+          <label>새 비밀번호</label>
+          <input id="resetNewPassword" type="password" />
+        </div>
+
+        <div class="auth-actions">
+          <button class="btn btn-primary" type="button" id="resetPasswordBtn">초기화 실행</button>
+        </div>
+
+        <div id="resetMsg" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div class="modal" id="passwordModal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3>비밀번호 변경</h3>
+        <button class="close-btn" data-close="passwordModal" type="button">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>현재 비밀번호</label>
+          <input id="pwCurrent" type="password" />
+        </div>
+
+        <div class="field">
+          <label>새 비밀번호</label>
+          <input id="pwNew" type="password" />
+        </div>
+
+        <div class="auth-actions">
+          <button class="btn btn-primary" type="button" id="changePasswordBtn">변경</button>
+        </div>
+
+        <div id="pwMsg" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/iqc.js"></script>
+  <script src="/js/pqc.js"></script>
+  <script src="/js/oqc.js"></script>
+  <script src="/js/nonconform.js"></script>
+  <script src="/js/suppliers.js"></script>
+  <script src="/js/worklog.js"></script>
+  <script src="/js/trace.js"></script>
+  <script src="/js/report.js"></script>
+</body>
+</html>
