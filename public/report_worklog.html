@@ -1,1 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>작업일지 성적서</title>
+<style>
+body{font-family:"Malgun Gothic",Arial;margin:40px;color:#000}
+.header{text-align:center;margin-bottom:30px}
+.header h1{font-size:28px;margin-bottom:5px}
+.header span{font-size:14px}
+.info{margin-bottom:20px}
+.info div{margin-bottom:5px}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{border:1px solid #000;padding:8px;text-align:center}
+th{background:#f2f2f2}
+.footer{margin-top:40px;display:flex;justify-content:space-between}
+.sign{text-align:center;width:30%}
+.print-btn{position:fixed;top:20px;right:20px}
+@media print {.print-btn{display:none}}
+</style>
+</head>
+<body>
 
+<button class="print-btn" onclick="window.print()">🖨 출력</button>
+
+<div class="header">
+  <h1>생산 작업일지 성적서</h1>
+  <span>나모케미칼(주)</span>
+</div>
+
+<div class="info">
+  <div>작업일자: <span id="workDate"></span></div>
+  <div>완제품 LOT: <span id="finishedLot"></span></div>
+  <div>작성자: <span id="worker"></span></div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>순번</th>
+      <th>원료명</th>
+      <th>업체</th>
+      <th>투입량</th>
+      <th>투입비율</th>
+      <th>LOT</th>
+      <th>투입시간</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<div class="footer">
+  <div class="sign">작성자<br><br><br>_________________</div>
+  <div class="sign">검토자<br><br><br>_________________</div>
+  <div class="sign">승인자<br><br><br>_________________</div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const lot = params.get('lot');
+
+async function load() {
+  const res = await fetch('/api/worklog', { credentials: 'include' });
+  const data = await res.json();
+
+  const rows = data.filter(r => (r.finishedlot || r.finishedLot) === lot);
+  if (!rows.length) {
+    alert('데이터 없음');
+    return;
+  }
+
+  const first = rows[0];
+  document.getElementById('workDate').innerText = first.workdate || first.workDate || '';
+  document.getElementById('finishedLot').innerText = first.finishedlot || first.finishedLot || '';
+  document.getElementById('worker').innerText = first.worker || '';
+
+  const tbody = document.getElementById('tableBody');
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.seq || ''}</td>
+      <td>${r.material || ''}</td>
+      <td>${r.supname || r.supName || ''}</td>
+      <td>${r.inputqty || r.inputQty || ''}</td>
+      <td>${r.inputratio || r.inputRatio || ''}</td>
+      <td>${r.lotno || r.lotNo || ''}</td>
+      <td>${r.inputtime || r.inputTime || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+load();
+</script>
+
+</body>
+</html>
