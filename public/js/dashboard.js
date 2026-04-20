@@ -1,147 +1,160 @@
-// ===============================
-// dashboard.js
-// 메인 대시보드 집계 / 표시
-// ===============================
+window.QMS = window.QMS || {};
 
-document.addEventListener("DOMContentLoaded", () => {
-  initDashboard();
-});
+window.QMS.dashboard = {
+  chart: null,
 
-async function initDashboard() {
-  try {
-    await Promise.all([
-      loadDashboardSummary(),
-      loadRecentIqc(),
-      loadRecentPqc(),
-      loadRecentOqc(),
-      loadRecentNonconform(),
-      loadRecentWorklog(),
-    ]);
-  } catch (err) {
-    console.error("Dashboard init error:", err);
-  }
-}
+  renderCounts(state) {
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
 
-// ===============================
-// 상단 요약 집계
-// ===============================
-async function loadDashboardSummary() {
-  try {
-    const [iqc, pqc, oqc, nc, worklog] = await Promise.all([
-      api("/api/iqc"),
-      api("/api/pqc"),
-      api("/api/oqc"),
-      api("/api/nonconform"),
-      api("/api/worklog"),
-    ]);
+    const iqcRows = QMS.utils.applyFilters(state.iqc || [], ['date']);
+    const pqcRows = QMS.utils.applyFilters(state.pqc || [], ['date']);
+    const oqcRows = QMS.utils.applyFilters(state.oqc || [], ['date']);
+    const ncRows = QMS.utils.applyFilters(state.nonconform || [], ['date']);
+    const workRows = QMS.utils.applyFilters(state.worklog || [], ['workDate']);
 
-    setText("iqcCount", iqc.length || 0);
-    setText("pqcCount", pqc.length || 0);
-    setText("oqcCount", oqc.length || 0);
-    setText("ncCount", nc.length || 0);
-    setText("worklogCount", worklog.length || 0);
+    setText('iqcCount', iqcRows.length);
+    setText('pqcCount', pqcRows.length);
+    setText('oqcCount', oqcRows.length);
+    setText('ncCount', ncRows.length);
+    setText('worklogCount', workRows.length);
 
-    renderSimpleChart("iqcChart", iqc.length || 0, "#2563eb");
-    renderSimpleChart("pqcChart", pqc.length || 0, "#16a34a");
-    renderSimpleChart("oqcChart", oqc.length || 0, "#dc2626");
-    renderSimpleChart("ncChart", nc.length || 0, "#f59e0b");
-    renderSimpleChart("worklogChart", worklog.length || 0, "#7c3aed");
-  } catch (err) {
-    console.error("loadDashboardSummary error:", err);
-  }
-}
+    this.renderIqcChart(iqcRows, pqcRows, oqcRows);
+  },
 
-// ===============================
-// 최근 데이터 불러오기
-// ===============================
-async function loadRecentIqc() {
-  try {
-    const rows = await api("/api/iqc");
-    window.dashboardIqcRows = rows || [];
-  } catch (err) {
-    console.error("loadRecentIqc error:", err);
-  }
-}
+  buildMonthlySeries(rows, dateKey) {
+    const bucket = {};
 
-async function loadRecentPqc() {
-  try {
-    const rows = await api("/api/pqc");
-    window.dashboardPqcRows = rows || [];
-  } catch (err) {
-    console.error("loadRecentPqc error:", err);
-  }
-}
+    (rows || []).forEach((row) => {
+      const raw = row?.[dateKey];
+      if (!raw) return;
+      const month = String(raw).slice(0, 7);
+      if (!bucket[month]) bucket[month] = 0;
+      bucket[month] += 1;
+    });
 
-async function loadRecentOqc() {
-  try {
-    const rows = await api("/api/oqc");
-    window.dashboardOqcRows = rows || [];
-  } catch (err) {
-    console.error("loadRecentOqc error:", err);
-  }
-}
+    const labels = Object.keys(bucket).sort();
+    return {
+      labels,
+      values: labels.map((label) => bucket[label]),
+    };
+  },
 
-async function loadRecentNonconform() {
-  try {
-    const rows = await api("/api/nonconform");
-    window.dashboardNcRows = rows || [];
-  } catch (err) {
-    console.error("loadRecentNonconform error:", err);
-  }
-}
+  mergeLabels(...seriesList) {
+    const set = new Set();
+    seriesList.forEach((series) => {
+      (series.labels || []).forEach((label) => set.add(label));
+    });
+    return Array.from(set).sort();
+  },
 
-async function loadRecentWorklog() {
-  try {
-    const rows = await api("/api/worklog");
-    window.dashboardWorklogRows = rows || [];
-  } catch (err) {
-    console.error("loadRecentWorklog error:", err);
-  }
-}
+  mapValues(labels, series) {
+    const map = {};
+    (series.labels || []).forEach((label, index) => {
+      map[label] = series.values[index];
+    });
+    return labels.map((label) => map[label] || 0);
+  },
 
-// ===============================
-// 텍스트 출력
-// ===============================
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = value;
-}
+  renderIqcChart(iqcRows, pqcRows, oqcRows) {
+    const canvas = document.getElementById('iqcChart');
+    if (!canvas) return;
 
-// ===============================
-// 간단 막대 그래프
-// ===============================
-function renderSimpleChart(canvasId, value, color) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
+    const iqcSeries = this.buildMonthlySeries(iqcRows, 'date');
+    const pqcSeries = this.buildMonthlySeries(pqcRows, 'date');
+    const oqcSeries = this.buildMonthlySeries(oqcRows, 'date');
 
-  const ctx = canvas.getContext("2d");
-  const width = canvas.width = canvas.offsetWidth || 300;
-  const height = canvas.height = canvas.offsetHeight || 180;
+    const labels = this.mergeLabels(iqcSeries, pqcSeries, oqcSeries);
 
-  ctx.clearRect(0, 0, width, height);
+    if (!labels.length) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width = canvas.offsetWidth || 800;
+      const height = canvas.height = 260;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '16px Segoe UI';
+      ctx.textAlign = 'center';
+      ctx.fillText('표시할 데이터가 없습니다.', width / 2, height / 2);
+      return;
+    }
 
-  // 배경
-  ctx.fillStyle = "#f3f4f6";
-  ctx.fillRect(0, 0, width, height);
+    if (typeof Chart === 'undefined') {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width = canvas.offsetWidth || 800;
+      const height = canvas.height = 260;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '16px Segoe UI';
+      ctx.textAlign = 'center';
+      ctx.fillText('Chart.js가 로드되지 않았습니다.', width / 2, height / 2);
+      return;
+    }
 
-  const maxValue = Math.max(value, 10);
-  const barHeight = (value / maxValue) * (height - 40);
+    if (this.chart) {
+      this.chart.destroy();
+    }
 
-  // 막대
-  ctx.fillStyle = color;
-  ctx.fillRect(width / 2 - 30, height - barHeight - 20, 60, barHeight);
-
-  // 값 텍스트
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 16px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(String(value), width / 2, height - barHeight - 28);
-
-  // 기준선
-  ctx.strokeStyle = "#d1d5db";
-  ctx.beginPath();
-  ctx.moveTo(20, height - 20);
-  ctx.lineTo(width - 20, height - 20);
-  ctx.stroke();
-}
+    this.chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '수입검사',
+            data: this.mapValues(labels, iqcSeries),
+            backgroundColor: '#2563eb',
+            borderRadius: 6,
+          },
+          {
+            label: '공정검사',
+            data: this.mapValues(labels, pqcSeries),
+            backgroundColor: '#8b5cf6',
+            borderRadius: 6,
+          },
+          {
+            label: '출하검사',
+            data: this.mapValues(labels, oqcSeries),
+            backgroundColor: '#f59e0b',
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            backgroundColor: '#1f2937',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              color: '#475569',
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#e5edf8',
+            },
+            ticks: {
+              stepSize: 1,
+              color: '#475569',
+            },
+          },
+        },
+      },
+    });
+  },
+};
