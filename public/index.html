@@ -598,7 +598,13 @@ checkQty:Number($('incomingCheckQty').value||0),
     window.editIncoming = function(id){
       const row = state.incoming.find(r=>r.id===id); if(!row) return;
       $('incomingEditId').value=row.id; $('incomingDate').value=row.date; $('incomingLot').value=row.lot; $('incomingSupplier').value=row.supplier;
-      $('incomingItem').value=row.item; $('incomingInspector').value=row.inspector; $('incomingQty').value=row.qty; $('incomingCheckQty').value=row.checkQty;
+      
+      $('incomingItem').value=row.item;
+$('incomingInspector').value=row.inspector;
+$('incomingReviewer').value=row.reviewer || '';
+$('incomingApprover').value=row.approver || '';
+$('incomingQty').value=row.qty;
+$('incomingCheckQty').value=row.checkQty;
       $('incomingFailQty').value=row.failQty; $('incomingVisual').value=row.visual; $('incomingVisualJudge').value=row.visualJudge; $('incomingCoa').value=row.coa; $('incomingCoaJudge').value=row.coaJudge;
       syncIncomingPreview();
     }
@@ -631,6 +637,8 @@ checkQty:Number($('incomingCheckQty').value||0),
         <tr><td>CoA</td><td>첨부 확인</td><td>${row.coa || '-'}</td><td>${judgeBadge(row.coaJudge)}</td></tr>`;
       $('reportFinalText').textContent = row.finalJudge || '합격';
       $('reportInspectorText').textContent = row.inspector || '-';
+      $('reportReviewerText').textContent = row.reviewer || '-';
+      $('reportApproverText').textContent = row.approver || '-';
     }
 
     function renderAll(){ renderIncoming(); renderProcess(); renderShipment(); renderWorklog(); renderSummary(); loadStandaloneReport(); }
