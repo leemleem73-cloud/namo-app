@@ -537,13 +537,19 @@
       const finalJudge = $('incomingVisualJudge').value === '합격' && $('incomingCoaJudge').value === '합격' ? '합격' : '불합격';
       $('repFinal').textContent = finalJudge;
       $('repSignInspector').textContent = $('incomingInspector').value || '-';
+      $('repSignReviewer').textContent = $('incomingReviewer')?.value || '-';
+$('repSignApprover').textContent = $('incomingApprover')?.value || '-';
     }
 
     function saveIncoming(){
       const row = {
         id: $('incomingEditId').value || uid('iqc'),
         date:$('incomingDate').value, lot:$('incomingLot').value, supplier:$('incomingSupplier').value, item:$('incomingItem').value,
-        inspector:$('incomingInspector').value, qty:Number($('incomingQty').value||0), checkQty:Number($('incomingCheckQty').value||0),
+      inspector:$('incomingInspector').value,
+reviewer:$('incomingReviewer')?.value || '',
+approver:$('incomingApprover')?.value || '',
+qty:Number($('incomingQty').value||0),
+checkQty:Number($('incomingCheckQty').value||0),
         failQty:Number($('incomingFailQty').value||0), visual:$('incomingVisual').value, visualJudge:$('incomingVisualJudge').value,
         coa:$('incomingCoa').value, coaJudge:$('incomingCoaJudge').value
       };
