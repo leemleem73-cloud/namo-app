@@ -957,14 +957,27 @@ ensureSchema()
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin1234!';
 
     const existing = await db('SELECT id FROM users WHERE email = $1', [adminEmail]);
-    if (!existing.rowCount) {
-      const hash = await bcrypt.hash(adminPassword, 10);
-      await db(
-        `INSERT INTO users (name, email, password_hash, department, title, role, status)
-         VALUES ($1,$2,$3,$4,$5,'admin','APPROVED')`,
-        ['관리자', adminEmail, hash, '관리부', '관리자']
-      );
-    }
+const hash = await bcrypt.hash(adminPassword, 10);
+
+if (!existing.rowCount) {
+  await db(
+    `INSERT INTO users (name, email, password_hash, department, title, role, status)
+     VALUES ($1,$2,$3,$4,$5,'admin','APPROVED')`,
+    ['관리자', adminEmail, hash, '관리부', '관리자']
+  );
+} else {
+  await db(
+    `UPDATE users
+     SET password_hash = $1,
+         name = $2,
+         department = $3,
+         title = $4,
+         role = 'admin',
+         status = 'APPROVED'
+     WHERE email = $5`,
+    [hash, '관리자', '관리부', '관리자', adminEmail]
+  );
+}
 
     app.listen(port, () => {
       console.log(`QMS server listening on ${port} (Asia/Seoul)`);
