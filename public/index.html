@@ -637,7 +637,13 @@ $('incomingCheckQty').value=row.checkQty;
       syncIncomingPreview();
     }
     window.deleteIncoming = (id)=>{ if(confirm('삭제하시겠습니까?')) remove('incoming', id); };
-    window.editProcess = function(id){ const r=state.process.find(x=>x.id===id); if(!r) return; $('processEditId').value=r.id; $('processDate').value=r.date; $('processLot').value=r.lot; $('processLine').value=r.line; $('processShift').value=r.shift; $('processProduct').value=r.product; $('processInspector').value=r.inspector; $('processJudge').value=r.judge; $('processFailQty').value=r.failQty; $('processR1').value=r.r1; $('processR2').value=r.r2; $('processVis1').value=r.vis1; $('processVis2').value=r.vis2; $('processRJudge1').value=r.rJudge1; $('processRJudge2').value=r.rJudge2; };
+    window.editProcess = function(id){ const r=state.process.find(x=>x.id===id); if(!r) return; $('processEditId').value=r.id; $('processDate').value=r.date; $('processLot').value=r.lot; $('processLine').value=r.line; $('processShift').value=r.shift; $('processProduct').value=r.product; $('processInspector').value=r.inspector; $('processJudge').value=r.judge; $('processFailQty').value=r.failQty; 
+                                      $('processVisual1').value = r.visual1 || '';
+$('processVisual2').value = r.visual2 || '';
+$('processFile1').value = r.file1 || '';
+$('processFile2').value = r.file2 || '';
+$('processJudge1').value = r.judge1 || '합격';
+$('processJudge2').value = r.judge2 || '합격';
     window.deleteProcess = (id)=>{ if(confirm('삭제하시겠습니까?')) remove('process', id); };
     window.editShipment = function(id){ const r=state.shipment.find(x=>x.id===id); if(!r) return; $('shipmentEditId').value=r.id; $('shipmentDate').value=r.date; $('shipmentCustomer').value=r.customer; $('shipmentProduct').value=r.product; $('shipmentLot').value=r.lot; $('shipmentInspector').value=r.inspector; $('shipmentJudge').value=r.judge; $('shipmentQty').value=r.qty; $('shipmentFailQty').value=r.failQty; $('shipmentVisual').value=r.visual; $('shipmentViscosity').value=r.viscosity; $('shipmentSolid').value=r.solid; $('shipmentParticle').value=r.particle; $('shipmentAdhesion').value=r.adhesion; $('shipmentMoisture').value=r.moisture; };
     window.deleteShipment = (id)=>{ if(confirm('삭제하시겠습니까?')) remove('shipment', id); };
