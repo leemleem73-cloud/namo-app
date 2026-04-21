@@ -584,8 +584,13 @@ checkQty:Number($('incomingCheckQty').value||0),
       const row = {
         id:$('processEditId').value || uid('pqc'), date:$('processDate').value, lot:$('processLot').value, line:$('processLine').value,
         shift:$('processShift').value, product:$('processProduct').value, inspector:$('processInspector').value,
-        judge:$('processJudge').value, failQty:Number($('processFailQty').value||0), r1:$('processR1').value, r2:$('processR2').value,
-        vis1:$('processVis1').value, vis2:$('processVis2').value, rJudge1:$('processRJudge1').value, rJudge2:$('processRJudge2').value
+        judge:$('processJudge').value, failQty:Number($('processFailQty').value||0), 
+        visual1:$('processVisual1').value,
+visual2:$('processVisual2').value,
+file1:$('processFile1').value,
+file2:$('processFile2').value,
+judge1:$('processJudge1').value,
+judge2:$('processJudge2').value
       };
       upsert('process', row); clearProcess();
     }
