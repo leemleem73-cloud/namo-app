@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Seoul';
+
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -49,6 +51,10 @@ function num(v) {
   return Number.isFinite(n) ? n : null;
 }
 
+function arr(v) {
+  return Array.isArray(v) ? v : [];
+}
+
 async function db(sql, params = []) {
   return pool.query(sql, params);
 }
@@ -65,6 +71,26 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function buildSessionUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    department: user.department,
+    title: user.title || '',
+    status: user.status,
+  };
+}
+
+function calcJudgeFromItems(items = []) {
+  const rows = arr(items);
+  if (!rows.length) return '합격';
+  if (rows.some((x) => txt(x.judge) === '불합격')) return '불합격';
+  if (rows.some((x) => txt(x.judge) === '보류')) return '보류';
+  return '합격';
+}
+
 async function ensureSchema() {
   await db(`
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -77,8 +103,8 @@ async function ensureSchema() {
       department TEXT DEFAULT '',
       title TEXT DEFAULT '',
       role TEXT NOT NULL DEFAULT 'user',
-      status TEXT NOT NULL DEFAULT 'PENDING',
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      status TEXT NOT NULL DEFAULT 'APPROVED',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS iqc (
@@ -91,7 +117,8 @@ async function ensureSchema() {
       incoming_qty NUMERIC,
       qty NUMERIC,
       fail NUMERIC DEFAULT 0,
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS pqc (
@@ -107,7 +134,8 @@ async function ensureSchema() {
       incoming_qty NUMERIC,
       qty NUMERIC,
       fail NUMERIC DEFAULT 0,
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS oqc (
@@ -117,6 +145,7 @@ async function ensureSchema() {
       product TEXT NOT NULL,
       lot TEXT NOT NULL,
       visual TEXT DEFAULT '',
+      package TEXT DEFAULT '',
       viscosity TEXT DEFAULT '',
       solid TEXT DEFAULT '',
       particle TEXT DEFAULT '',
@@ -127,7 +156,8 @@ async function ensureSchema() {
       qty TEXT DEFAULT '',
       fail NUMERIC DEFAULT 0,
       judge TEXT DEFAULT '',
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS suppliers (
@@ -137,7 +167,7 @@ async function ensureSchema() {
       phone TEXT DEFAULT '',
       category TEXT DEFAULT '',
       status TEXT DEFAULT '',
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS nonconform (
@@ -151,7 +181,7 @@ async function ensureSchema() {
       action TEXT DEFAULT '',
       owner TEXT DEFAULT '',
       status TEXT DEFAULT '',
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS worklog (
@@ -169,7 +199,7 @@ async function ensureSchema() {
       temp_actual TEXT DEFAULT '',
       press_set TEXT DEFAULT '',
       press_actual TEXT DEFAULT '',
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS worklog_materials (
@@ -197,14 +227,27 @@ async function ensureSchema() {
       judge TEXT DEFAULT '',
       remark TEXT DEFAULT '',
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
-      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
+
+  await db(`
+    ALTER TABLE users ALTER COLUMN status SET DEFAULT 'APPROVED';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT DEFAULT '';
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS package TEXT DEFAULT '';
   `);
 }
 
 app.get('/api/test-db', async (_req, res) => {
   try {
-    const r = await db('SELECT NOW() AS now');
+    const r = await db(`
+      SELECT
+        NOW() AS db_now,
+        NOW() AT TIME ZONE 'Asia/Seoul' AS korea_now
+    `);
     ok(res, r.rows[0], 'DB 연결 성공');
   } catch (err) {
     fail(res, 500, err.message);
@@ -217,9 +260,10 @@ app.post('/api/auth/signup', async (req, res) => {
     const email = txt(req.body.email).toLowerCase();
     const password = txt(req.body.password);
     const department = txt(req.body.department);
+    const title = txt(req.body.title);
 
     if (!name || !email || !password) {
-      return fail(res, 400, '이름, 이메일, 비밀번호는 필수입니다.');
+      return fail(res, 400, '성명, 이메일, 비밀번호는 필수입니다.');
     }
 
     const exists = await db('SELECT id FROM users WHERE email = $1', [email]);
@@ -228,12 +272,12 @@ app.post('/api/auth/signup', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
 
     await db(
-      `INSERT INTO users (name, email, password_hash, department, role, status)
-       VALUES ($1, $2, $3, $4, 'user', 'PENDING')`,
-      [name, email, hash, department]
+      `INSERT INTO users (name, email, password_hash, department, title, role, status)
+       VALUES ($1, $2, $3, $4, $5, 'user', 'APPROVED')`,
+      [name, email, hash, department, title]
     );
 
-    ok(res, null, '회원가입 신청이 완료되었습니다.');
+    ok(res, null, '회원가입이 완료되었습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
@@ -252,13 +296,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!matched) return fail(res, 401, '이메일 또는 비밀번호가 올바르지 않습니다.');
     if (user.status !== 'APPROVED') return fail(res, 403, '승인된 계정만 로그인할 수 있습니다.');
 
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      department: user.department,
-    };
+    req.session.user = buildSessionUser(user);
 
     ok(res, { user: req.session.user }, '로그인 성공');
   } catch (err) {
@@ -279,6 +317,10 @@ app.post('/api/auth/change-password', requireLogin, async (req, res) => {
   try {
     const currentPassword = txt(req.body.currentPassword);
     const newPassword = txt(req.body.newPassword);
+
+    if (!currentPassword || !newPassword) {
+      return fail(res, 400, '현재 비밀번호와 새 비밀번호를 입력하세요.');
+    }
 
     const r = await db('SELECT * FROM users WHERE id = $1', [req.session.user.id]);
     if (!r.rowCount) return fail(res, 404, '사용자를 찾을 수 없습니다.');
@@ -302,6 +344,10 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const email = txt(req.body.email).toLowerCase();
     const department = txt(req.body.department);
     const newPassword = txt(req.body.newPassword);
+
+    if (!name || !email || !department || !newPassword) {
+      return fail(res, 400, '성명, 이메일, 부서명, 새 비밀번호를 입력하세요.');
+    }
 
     const r = await db(
       'SELECT * FROM users WHERE name = $1 AND email = $2 AND department = $3',
@@ -386,41 +432,51 @@ bindCrud('iqc', (b) => ({
   item: txt(b.item),
   inspector: txt(b.inspector),
   incoming_qty: num(b.incomingQty),
-  qty: num(b.qty),
-  fail: num(b.fail) ?? 0,
+  qty: num(b.qty ?? b.checkQty),
+  fail: num(b.fail ?? b.failQty) ?? 0,
+  items_json: JSON.stringify(arr(b.items)),
 }));
 
-bindCrud('pqc', (b) => ({
-  date: txt(b.date),
-  product: txt(b.product),
-  lot: txt(b.lot),
-  visual: txt(b.visual),
-  viscosity: txt(b.viscosity),
-  solid: txt(b.solid),
-  particle: txt(b.particle),
-  judge: txt(b.judge),
-  incoming_qty: num(b.incomingQty),
-  qty: num(b.qty),
-  fail: num(b.fail) ?? 0,
-}));
+bindCrud('pqc', (b) => {
+  const items = arr(b.items);
+  return {
+    date: txt(b.date),
+    product: txt(b.product),
+    lot: txt(b.lot),
+    visual: txt(b.visual),
+    viscosity: txt(b.viscosity),
+    solid: txt(b.solid),
+    particle: txt(b.particle),
+    judge: txt(b.judge) || calcJudgeFromItems(items),
+    incoming_qty: num(b.incomingQty),
+    qty: num(b.qty ?? b.checkQty),
+    fail: num(b.fail ?? b.failQty) ?? 0,
+    items_json: JSON.stringify(items),
+  };
+});
 
-bindCrud('oqc', (b) => ({
-  date: txt(b.date),
-  customer: txt(b.customer),
-  product: txt(b.product),
-  lot: txt(b.lot),
-  visual: txt(b.visual),
-  viscosity: txt(b.viscosity),
-  solid: txt(b.solid),
-  particle: txt(b.particle),
-  adhesion: txt(b.adhesion),
-  resistance: txt(b.resistance),
-  swelling: txt(b.swelling),
-  moisture: txt(b.moisture),
-  qty: txt(b.qty),
-  fail: num(b.fail) ?? 0,
-  judge: txt(b.judge),
-}));
+bindCrud('oqc', (b) => {
+  const items = arr(b.items);
+  return {
+    date: txt(b.date),
+    customer: txt(b.customer),
+    product: txt(b.product),
+    lot: txt(b.lot),
+    visual: txt(b.visual),
+    package: txt(b.package),
+    viscosity: txt(b.viscosity),
+    solid: txt(b.solid),
+    particle: txt(b.particle),
+    adhesion: txt(b.adhesion),
+    resistance: txt(b.resistance),
+    swelling: txt(b.swelling),
+    moisture: txt(b.moisture),
+    qty: txt(b.qty ?? b.checkQty),
+    fail: num(b.fail ?? b.failQty) ?? 0,
+    judge: txt(b.judge) || calcJudgeFromItems(items),
+    items_json: JSON.stringify(items),
+  };
+});
 
 bindCrud('suppliers', (b) => ({
   name: txt(b.name),
@@ -518,7 +574,7 @@ app.post('/api/worklog', requireLogin, async (req, res) => {
     );
 
     const worklogId = inserted.rows[0].id;
-    const materials = Array.isArray(b.materials) ? b.materials : [];
+    const materials = arr(b.materials);
 
     for (let i = 0; i < materials.length; i += 1) {
       const m = materials[i];
@@ -585,7 +641,7 @@ app.put('/api/worklog/:id', requireLogin, async (req, res) => {
 
     await client.query('DELETE FROM worklog_materials WHERE worklog_id = $1', [req.params.id]);
 
-    const materials = Array.isArray(b.materials) ? b.materials : [];
+    const materials = arr(b.materials);
     for (let i = 0; i < materials.length; i += 1) {
       const m = materials[i];
       await client.query(
@@ -627,7 +683,8 @@ app.delete('/api/worklog/:id', requireLogin, async (req, res) => {
 app.post('/api/certificate', requireLogin, async (req, res) => {
   try {
     const b = req.body || {};
-    const items = Array.isArray(b.items) ? b.items : [];
+    const items = arr(b.items);
+    const judge = txt(b.judge) || calcJudgeFromItems(items);
 
     const r = await db(
       `INSERT INTO certificates
@@ -644,7 +701,7 @@ app.post('/api/certificate', requireLogin, async (req, res) => {
         txt(b.incomingQty),
         txt(b.checkQty),
         txt(b.failQty),
-        txt(b.judge),
+        judge,
         txt(b.remark),
         JSON.stringify(items),
       ]
@@ -714,8 +771,96 @@ app.get('/api/trace', requireLogin, async (req, res) => {
 
 app.get('/api/admin/users', requireAdmin, async (_req, res) => {
   try {
-    const r = await db('SELECT * FROM users ORDER BY created_at DESC');
+    const r = await db(`
+      SELECT id, name, email, department, title, role, status, created_at
+      FROM users
+      ORDER BY created_at DESC
+    `);
     ok(res, r.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const name = txt(req.body.name);
+    const email = txt(req.body.email).toLowerCase();
+    const department = txt(req.body.department);
+    const title = txt(req.body.title);
+    const role = txt(req.body.role) || 'user';
+    const status = txt(req.body.status) || 'APPROVED';
+    const password = txt(req.body.password) || '1234';
+
+    if (!name || !email) {
+      return fail(res, 400, '성명과 이메일은 필수입니다.');
+    }
+
+    const exists = await db('SELECT id FROM users WHERE email = $1', [email]);
+    if (exists.rowCount) return fail(res, 409, '이미 사용 중인 이메일입니다.');
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const r = await db(
+      `INSERT INTO users (name, email, password_hash, department, title, role, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING id, name, email, department, title, role, status, created_at`,
+      [name, email, hash, department, title, role, status]
+    );
+
+    ok(res, r.rows[0], '회원이 추가되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const name = txt(req.body.name);
+    const email = txt(req.body.email).toLowerCase();
+    const department = txt(req.body.department);
+    const title = txt(req.body.title);
+    const role = txt(req.body.role) || 'user';
+    const status = txt(req.body.status) || 'APPROVED';
+
+    if (!name || !email) {
+      return fail(res, 400, '성명과 이메일은 필수입니다.');
+    }
+
+    const dup = await db(
+      'SELECT id FROM users WHERE email = $1 AND id <> $2',
+      [email, req.params.id]
+    );
+    if (dup.rowCount) return fail(res, 409, '이미 사용 중인 이메일입니다.');
+
+    const r = await db(
+      `UPDATE users
+       SET name = $1,
+           email = $2,
+           department = $3,
+           title = $4,
+           role = $5,
+           status = $6
+       WHERE id = $7
+       RETURNING id, name, email, department, title, role, status, created_at`,
+      [name, email, department, title, role, status, req.params.id]
+    );
+
+    if (!r.rowCount) return fail(res, 404, '회원을 찾을 수 없습니다.');
+
+    if (req.session.user && req.session.user.id === req.params.id) {
+      req.session.user = {
+        ...req.session.user,
+        name,
+        email,
+        department,
+        title,
+        role,
+        status,
+      };
+    }
+
+    ok(res, r.rows[0], '회원정보가 수정되었습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
@@ -815,14 +960,14 @@ ensureSchema()
     if (!existing.rowCount) {
       const hash = await bcrypt.hash(adminPassword, 10);
       await db(
-        `INSERT INTO users (name, email, password_hash, department, role, status)
-         VALUES ($1,$2,$3,$4,'admin','APPROVED')`,
-        ['관리자', adminEmail, hash, '관리부']
+        `INSERT INTO users (name, email, password_hash, department, title, role, status)
+         VALUES ($1,$2,$3,$4,$5,'admin','APPROVED')`,
+        ['관리자', adminEmail, hash, '관리부', '관리자']
       );
     }
 
     app.listen(port, () => {
-      console.log(`QMS server listening on ${port}`);
+      console.log(`QMS server listening on ${port} (Asia/Seoul)`);
     });
   })
   .catch((err) => {
