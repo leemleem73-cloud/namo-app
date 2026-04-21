@@ -318,8 +318,31 @@
                 <table>
                   <thead><tr><th>항목</th><th>검사 기준</th><th>측정결과 1</th><th>측정결과 2</th><th>판정</th></tr></thead>
                   <tbody>
-                    <tr><td>CoA</td><td>기준범위 만족</td><td><input id="processR1"></td><td><input id="processR2"></td><td><select id="processRJudge1"><option>합격</option><option>불합격</option></select></td></tr>
-                    <tr><td>점성</td><td>기준범위 만족</td><td><input id="processVis1"></td><td><input id="processVis2"></td><td><select id="processRJudge2"><option>합격</option><option>불합격</option></select></td></tr>
+                    
+                    <tr>
+  <td>외관</td>
+  <td>이상 없을 것</td>
+  <td><input id="processVisual1"></td>
+  <td><input id="processVisual2"></td>
+  <td>
+    <select id="processJudge1">
+      <option>합격</option>
+      <option>불합격</option>
+    </select>
+  </td>
+</tr>
+<tr>
+  <td>첨부파일</td>
+  <td>동일할 것</td>
+  <td><input id="processFile1"></td>
+  <td><input id="processFile2"></td>
+  <td>
+    <select id="processJudge2">
+      <option>합격</option>
+      <option>불합격</option>
+    </select>
+  </td>
+</tr>
                   </tbody>
                 </table>
               </div>
