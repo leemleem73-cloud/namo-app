@@ -1881,7 +1881,18 @@
           {label:'공정검사',data:processData},
           {label:'출하검사',data:shipmentData}
         ]},
-        options:{responsive:true,maintainAspectRatio:false}
+        options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1
+        }
+      }
+    }
+  }
       });
     }
 
