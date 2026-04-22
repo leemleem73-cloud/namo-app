@@ -1882,17 +1882,18 @@
           {label:'출하검사',data:shipmentData}
         ]},
         options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1
-        }
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      suggestedMax: 5,
+      ticks: {
+        stepSize: 1
       }
     }
   }
+}
       });
     }
 
