@@ -164,6 +164,7 @@
     .btn.light{background:#fff;border:1px solid var(--line);color:#35506d}
     .btn.success{background:var(--success);color:#fff}
     .btn.danger{background:var(--danger);color:#fff}
+    .btn:disabled{opacity:0.5;cursor:not-allowed}
 
     .card{
       background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)
@@ -233,6 +234,7 @@
     .small-btn.del{background:#fff1f1;color:#bd4040}
     .small-btn.line{background:#fff;border:1px solid var(--line);color:#35506d}
 
+    /* ── 성적서 인쇄 영역 ── */
     .report-sheet{
       border:2px solid #7c8798;border-radius:18px;padding:18px;background:#fff
     }
@@ -248,6 +250,7 @@
     .result-box .big{font-size:24px;font-weight:900;color:var(--success)}
     .muted{color:var(--muted)}
 
+    /* ── 로그인 ── */
     #loginPage{
       min-height:100vh;
       display:flex;
@@ -279,6 +282,7 @@
     .login-panel{display:none}
     .login-panel.active{display:block}
 
+    /* ── 모달 ── */
     .modal-backdrop{
       position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;z-index:2000
     }
@@ -297,6 +301,19 @@
 
     .footer-note{
       padding:12px 18px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:#7d8fa6;background:#fbfcfe
+    }
+
+    /* ── 인쇄 ── */
+    @media print {
+      body * { visibility: hidden; }
+      #printTarget, #printTarget * { visibility: visible; }
+      #printTarget {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        padding: 20px;
+        background: #fff;
+      }
     }
 
     @media (max-width:1450px){
@@ -365,7 +382,7 @@
         </div>
 
         <div class="topbar-center">
-          <div class="datetime-text" id="currentDateTime">2026년 04월 21일 (월) 14:35:27</div>
+          <div class="datetime-text" id="currentDateTime">2026년 04월 24일 (금) 00:00:00</div>
         </div>
 
         <div class="searchbar">
@@ -429,7 +446,7 @@
                   <div class="summary-title"><div class="summary-badge blue">📥</div>수입검사(IQC)</div>
                 </div>
                 <div class="summary-value" id="sumIncoming">0</div>
-                <div class="summary-meta">이번 년 · <span id="sumIncomingRate">+0%</span></div>
+                <div class="summary-meta">이번 년 · <span id="sumIncomingRate">-</span></div>
               </div>
 
               <div class="card summary-card">
@@ -437,7 +454,7 @@
                   <div class="summary-title"><div class="summary-badge purple">⚙</div>공정검사(PQC)</div>
                 </div>
                 <div class="summary-value" id="sumProcess">0</div>
-                <div class="summary-meta">이번 년 · <span id="sumProcessRate">+0%</span></div>
+                <div class="summary-meta">이번 년 · <span id="sumProcessRate">-</span></div>
               </div>
 
               <div class="card summary-card">
@@ -445,7 +462,7 @@
                   <div class="summary-title"><div class="summary-badge orange">🚚</div>출하검사(OQC)</div>
                 </div>
                 <div class="summary-value" id="sumShipment">0</div>
-                <div class="summary-meta">이번 년 · <span id="sumShipmentRate">+0%</span></div>
+                <div class="summary-meta">이번 년 · <span id="sumShipmentRate">-</span></div>
               </div>
 
               <div class="card summary-card">
@@ -453,7 +470,7 @@
                   <div class="summary-title"><div class="summary-badge green">🗒</div>작업일지</div>
                 </div>
                 <div class="summary-value" id="sumWorklog">0</div>
-                <div class="summary-meta">이번 년 · <span id="sumWorklogRate">+0%</span></div>
+                <div class="summary-meta">이번 년 · <span id="sumWorklogRate">-</span></div>
               </div>
             </div>
 
@@ -473,10 +490,10 @@
                 </div>
                 <div class="side-list">
                   <div class="notice-item"><span>QMES 시스템 업데이트 진행 중</span><span class="date">2026-04-22</span></div>
-                  <div class="notice-item"><span>생산담당자 작업일지 기록해 주세세요</span><span class="date">2026-04-22</span></div>
+                  <div class="notice-item"><span>생산담당자 작업일지 기록해 주세요</span><span class="date">2026-04-22</span></div>
                   <div class="notice-item"><span>품질담당자 검사성적서 기록 해주세요</span><span class="date">2026-04-22</span></div>
                   <div class="notice-item"><span>연구원1명 품질1명 안전교육 확인 안내</span><span class="date">2026-04-22</span></div>
-                  <div class="notice-item"><span>로그인ID(회사개인 이메일)비번(초기비번1234)상단 이름클릭 후 변경 </span><span class="date">2026-04-22</span></div>
+                  <div class="notice-item"><span>로그인ID(회사개인 이메일) 비번(초기비번1234) 상단 이름클릭 후 변경</span><span class="date">2026-04-22</span></div>
                 </div>
               </div>
             </div>
@@ -535,6 +552,7 @@
                 <input type="hidden" id="incomingEditId">
               </div>
 
+              <!-- IQC 미리보기 - id="printTarget" 로 인쇄 대상 지정 -->
               <div class="card form-card">
                 <div class="form-title">
                   <h2>입고검사 성적서 (미리보기)</h2>
@@ -728,8 +746,7 @@
             </div>
           </section>
 
-          <!-- PART 1 END -->
-                    <!-- OQC -->
+          <!-- OQC -->
           <section class="page-panel" id="page-shipment">
             <div class="crumb">대시보드 &gt; 출하검사(OQC) &gt; 출하검사 등록</div>
 
@@ -850,7 +867,7 @@
             </div>
           </section>
 
-          <!-- Certificate page -->
+          <!-- 성적서 -->
           <section class="page-panel" id="page-report">
             <div class="page-header">
               <div class="page-title">
@@ -863,12 +880,17 @@
                   <option value="pqc">공정검사</option>
                   <option value="oqc">출하검사</option>
                 </select>
+                <!-- 성적서 목록 선택 추가 -->
+                <select id="reportSelect" style="min-width:200px">
+                  <option value="">-- 성적서 선택 --</option>
+                </select>
                 <button class="btn primary" id="reportReload">불러오기</button>
+                <button class="btn light" id="printReportPage" type="button">인쇄</button>
               </div>
             </div>
 
             <div class="card form-card">
-              <div class="report-sheet">
+              <div class="report-sheet" id="reportPrintTarget">
                 <div class="report-header">
                   <h2 id="reportPageTitle">성적서</h2>
                   <div class="brand">Namochemical</div>
@@ -904,7 +926,7 @@
             </div>
           </section>
 
-          <!-- Worklog -->
+          <!-- 생산작업일지 -->
           <section class="page-panel" id="page-worklog">
             <div class="page-header">
               <div class="page-title">
@@ -984,7 +1006,7 @@
             </div>
           </section>
 
-          <!-- Suppliers -->
+          <!-- 협력사 -->
           <section class="page-panel" id="page-suppliers">
             <div class="page-header">
               <div class="page-title"><h1>협력사 현황</h1><p>협력업체 등록 및 상태를 관리합니다.</p></div>
@@ -1025,7 +1047,7 @@
             </div>
           </section>
 
-          <!-- Trace -->
+          <!-- LOT 추적 -->
           <section class="page-panel" id="page-trace">
             <div class="page-header">
               <div class="page-title"><h1>LOT 추적</h1><p>완제품/원료 LOT를 검색합니다.</p></div>
@@ -1058,7 +1080,7 @@
             </div>
           </section>
 
-          <!-- Users -->
+          <!-- 회원관리 (관리자) -->
           <section class="page-panel" id="page-users">
             <div class="page-header">
               <div class="page-title"><h1>회원등록현황</h1><p>관리자 전용 회원 관리</p></div>
@@ -1124,13 +1146,13 @@
     </div>
   </div>
 
+  <!-- 비밀번호 변경 모달 -->
   <div class="modal-backdrop" id="passwordModal">
     <div class="modal-card">
       <div class="modal-header">
         <h3>비밀번호 변경</h3>
         <button type="button" class="icon-btn" id="closePasswordModal">✕</button>
       </div>
-
       <div class="modal-body">
         <div class="field">
           <label>현재 비밀번호</label>
@@ -1145,7 +1167,6 @@
           <input type="password" id="confirmPassword" placeholder="새 비밀번호 확인">
         </div>
       </div>
-
       <div class="modal-footer">
         <button type="button" class="btn light" id="cancelPasswordModal">취소</button>
         <button type="button" class="btn primary" id="submitChangePassword">변경</button>
@@ -1155,1080 +1176,1106 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const state = {
-      currentUser: null,
-      incoming: [],
-      process: [],
-      shipment: [],
-      suppliers: [],
-      worklog: [],
-      users: [],
-      charts: {},
-      incomingItemDrafts: [],
-      processItemDrafts: [],
-      shipmentItemDrafts: [],
-      worklogMaterialDrafts: []
-    };
+  // ──────────────────────────────────────────
+  // 전역 상태
+  // ──────────────────────────────────────────
+  const state = {
+    currentUser: null,
+    incoming: [],
+    process: [],
+    shipment: [],
+    suppliers: [],
+    worklog: [],
+    users: [],
+    charts: {},
+    incomingItemDrafts: [],
+    processItemDrafts: [],
+    shipmentItemDrafts: [],
+    worklogMaterialDrafts: [],
+    // 저장 중복 클릭 방지 플래그
+    saving: {}
+  };
 
-    const $ = (id) => document.getElementById(id);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const $ = (id) => document.getElementById(id);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-    async function api(url, options = {}) {
+  // ──────────────────────────────────────────
+  // API 유틸
+  // ──────────────────────────────────────────
+  async function api(url, options = {}) {
+    try {
       const res = await fetch(url, {
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(options.headers || {})
-        },
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
         ...options
       });
       const data = await res.json().catch(() => null);
       return { res, data };
-    }
-
-    function todayKST() {
-      const now = new Date();
-      const seoul = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-      const yyyy = seoul.getFullYear();
-      const mm = String(seoul.getMonth() + 1).padStart(2, '0');
-      const dd = String(seoul.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function uid(prefix) {
-      return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    }
-
-    function formatKorDateTime() {
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        weekday: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
-      const parts = formatter.formatToParts(now);
-      const map = {};
-      parts.forEach(p => { map[p.type] = p.value; });
-      return `${map.year}년 ${map.month}월 ${map.day}일 (${String(map.weekday || '').replace('.', '')}) ${map.hour}:${map.minute}:${map.second}`;
-    }
-
-    function startDateTimeClock() {
-      const target = $('currentDateTime');
-      if (!target) return;
-      const render = () => { target.textContent = formatKorDateTime(); };
-      render();
-      setInterval(render, 1000);
-    }
-
-    function judgeBadge(j) {
-      if (j === '합격') return '<span class="status pass">합격</span>';
-      if (j === '불합격') return '<span class="status fail">불합격</span>';
-      return '<span class="status hold">보류</span>';
-    }
-
-    function calcJudge(items = []) {
-      if (!items.length) return '합격';
-      if (items.some(x => String(x.judge || '') === '불합격')) return '불합격';
-      if (items.some(x => String(x.judge || '') === '보류')) return '보류';
-      return '합격';
-    }
-
-    function openLoginTab(type) {
-      $('tabLoginBtn').classList.toggle('active', type === 'login');
-      $('tabSignupBtn').classList.toggle('active', type === 'signup');
-      $('panelLogin').classList.toggle('active', type === 'login');
-      $('panelSignup').classList.toggle('active', type === 'signup');
-    }
-
-    async function login() {
-      $('loginError').textContent = '';
-      const email = $('loginEmail').value.trim();
-      const password = $('loginPassword').value.trim();
-      if (!email || !password) {
-        $('loginError').textContent = '이메일과 비밀번호를 입력하세요.';
-        return;
-      }
-      const { data } = await api('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password })
-      });
-      if (!data?.success) {
-        $('loginError').textContent = data?.message || '로그인에 실패했습니다.';
-        return;
-      }
-      await checkLogin();
-      await loadAllData();
-    }
-
-    async function signup() {
-      $('signupError').textContent = '';
-      const payload = {
-        name: $('signupName').value.trim(),
-        email: $('signupEmail').value.trim(),
-        department: $('signupDepartment').value.trim(),
-        title: $('signupTitle').value.trim(),
-        password: $('signupPassword').value.trim()
-      };
-      if (!payload.name || !payload.email || !payload.password) {
-        $('signupError').textContent = '성명, 이메일, 비밀번호는 필수입니다.';
-        return;
-      }
-      const { data } = await api('/api/auth/signup', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      if (!data?.success) {
-        $('signupError').textContent = data?.message || '회원가입에 실패했습니다.';
-        return;
-      }
-      alert(data.message || '회원가입이 완료되었습니다.');
-      openLoginTab('login');
-    }
-
-    async function checkLogin() {
-      const { res, data } = await api('/api/auth/me');
-      if (!res.ok || !data?.success) {
-        $('loginPage').style.display = 'flex';
-        document.querySelector('.shell').style.display = 'none';
-        state.currentUser = null;
-        return false;
-      }
-
-      state.currentUser = data.data;
-      $('loginPage').style.display = 'none';
-      document.querySelector('.shell').style.display = 'block';
-      updateProfileUI(data.data);
-      return true;
-    }
-
-    function updateProfileUI(user) {
-      const name = user?.name || '사용자';
-      const email = user?.email || '';
-      $('profileLabel').textContent = `${name} · ${email}`;
-      $('profileAvatar').textContent = name.charAt(0) || '사';
-
-      const isAdmin = user?.role === 'admin';
-      $('openUserManage').style.display = isAdmin ? 'block' : 'none';
-      $('usersNavBtn').style.display = isAdmin ? 'flex' : 'none';
-      $('adminNavTitle').style.display = isAdmin ? 'block' : 'none';
-    }
-
-    async function logout() {
-      await api('/api/auth/logout', { method: 'POST' });
-      closeProfileMenu();
-      await checkLogin();
-    }
-
-    function openPasswordModal() {
-      $('passwordModal').classList.add('show');
-      $('currentPassword').value = '';
-      $('newPassword').value = '';
-      $('confirmPassword').value = '';
-    }
-
-    function closePasswordModal() {
-      $('passwordModal').classList.remove('show');
-    }
-
-    async function changePassword() {
-      const currentPassword = $('currentPassword').value.trim();
-      const newPassword = $('newPassword').value.trim();
-      const confirmPassword = $('confirmPassword').value.trim();
-
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        alert('모든 항목을 입력하세요.');
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        alert('새 비밀번호 확인이 일치하지 않습니다.');
-        return;
-      }
-
-      const { data } = await api('/api/auth/change-password', {
-        method: 'POST',
-        body: JSON.stringify({ currentPassword, newPassword })
-      });
-
-      alert(data?.message || '처리되었습니다.');
-      if (data?.success) closePasswordModal();
-    }
-
-    function closeProfileMenu() {
-      $('profileDropdown').classList.remove('show');
-    }
-
-    function bindNav() {
-      $$('.nav-item[data-page]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const page = btn.dataset.page;
-          $$('.nav-item[data-page]').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          $$('.page-panel').forEach(p => p.classList.remove('active'));
-          $(`page-${page}`).classList.add('active');
-
-          if (page === 'users') await loadUsers();
-          if (page === 'report') loadStandaloneReport();
-        });
-      });
-    }
-
-    function initYears() {
-      const current = new Date().getFullYear();
-      $('dashYear').innerHTML = '';
-      for (let y = current - 2; y <= current + 2; y++) {
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = `${y}년`;
-        if (y === current) opt.selected = true;
-        $('dashYear').appendChild(opt);
-      }
-    }
-
-    function setDefaultDates() {
-      ['incomingDate','processDate','shipmentDate','worklogDate'].forEach(id => {
-        if ($(id)) $(id).value = todayKST();
-      });
-    }
-
-    function createIncomingDefaultItems() {
-      return [
-        { item: '외관', spec: '이물질, 파손 없을 것', value: '', judge: '합격' },
-        { item: 'CoA', spec: '누락 없을 것', value: '', judge: '합격' }
-      ];
-    }
-
-    function createProcessDefaultItems() {
-      return [
-        { item: '외관', spec: '이상 없을 것', value: '', judge: '합격' },
-        { item: '점도', spec: '1,500±300cp', value: '', judge: '합격' },
-        { item: '고형분', spec: '20.0±1.0wt.%', value: '', judge: '합격' },
-        { item: 'Dmax', spec: '≤ 10.0 μm', value: '', judge: '합격' },
-        { item: '접착력', spec: '≥ 400 gf/12.7 mm (0.5 in)', value: '', judge: '합격' },
-        { item: '절연저항', spec: '≥ 200 MΩ (overflow)', value: '', judge: '합격' },
-        { item: '전해액 팽윤성', spec: '< 120%', value: '', judge: '합격' },
-        { item: '수분', spec: '< 2,000ppm', value: '', judge: '합격' }
-      ];
-    }
-
-    function createShipmentDefaultItems() {
-      return [
-        { item: '외관', spec: '이상 없을 것', value: '', judge: '합격' },
-        { item: '포장', spec: '파손 없을 것', value: '', judge: '합격' },
-        { item: '점도', spec: '1,500±300cp', value: '', judge: '합격' },
-        { item: '고형분', spec: '20.0±1.0wt.%', value: '', judge: '합격' },
-        { item: 'Dmax', spec: '≤ 10.0 μm', value: '', judge: '합격' },
-        { item: '접착력', spec: '≥ 400 gf/12.7 mm (0.5 in)', value: '', judge: '합격' },
-        { item: '절연저항', spec: '≥ 200 MΩ (overflow)', value: '', judge: '합격' },
-        { item: '전해액 팽윤성', spec: '< 120%', value: '', judge: '합격' },
-        { item: '수분', spec: '< 2,000ppm', value: '', judge: '합격' }
-      ];
-    }
-
-    function renderItemEditorRows(targetId, rows, type) {
-      const target = $(targetId);
-      target.innerHTML = rows.map((row, index) => `
-        <tr>
-          <td>${index + 1}</td>
-          <td><input value="${escapeHtml(row.item || '')}" onchange="updateItemDraft('${type}', ${index}, 'item', this.value)"></td>
-          <td><input value="${escapeHtml(row.spec || '')}" onchange="updateItemDraft('${type}', ${index}, 'spec', this.value)"></td>
-          <td><input value="${escapeHtml(row.value || '')}" onchange="updateItemDraft('${type}', ${index}, 'value', this.value)"></td>
-          <td>
-            <select onchange="updateItemDraft('${type}', ${index}, 'judge', this.value)">
-              <option value="합격" ${row.judge === '합격' ? 'selected' : ''}>합격</option>
-              <option value="불합격" ${row.judge === '불합격' ? 'selected' : ''}>불합격</option>
-              <option value="보류" ${row.judge === '보류' ? 'selected' : ''}>보류</option>
-            </select>
-          </td>
-          <td><button type="button" class="small-btn del" onclick="removeItemDraft('${type}', ${index})">삭제</button></td>
-        </tr>
-      `).join('');
-    }
-
-    function renderIncomingItemsTable() { renderItemEditorRows('incomingItemsTable', state.incomingItemDrafts, 'incoming'); syncIncomingPreview(); }
-    function renderProcessItemsTable() { renderItemEditorRows('processItemsTable', state.processItemDrafts, 'process'); syncProcessPreview(); }
-    function renderShipmentItemsTable() { renderItemEditorRows('shipmentItemsTable', state.shipmentItemDrafts, 'shipment'); syncShipmentPreview(); }
-
-    window.updateItemDraft = function(type, index, key, value) {
-      if (type === 'incoming') state.incomingItemDrafts[index][key] = value;
-      if (type === 'process') state.processItemDrafts[index][key] = value;
-      if (type === 'shipment') state.shipmentItemDrafts[index][key] = value;
-      if (type === 'incoming') syncIncomingPreview();
-      if (type === 'process') syncProcessPreview();
-      if (type === 'shipment') syncShipmentPreview();
-    };
-
-    window.removeItemDraft = function(type, index) {
-      if (type === 'incoming') state.incomingItemDrafts.splice(index, 1);
-      if (type === 'process') state.processItemDrafts.splice(index, 1);
-      if (type === 'shipment') state.shipmentItemDrafts.splice(index, 1);
-      if (type === 'incoming') renderIncomingItemsTable();
-      if (type === 'process') renderProcessItemsTable();
-      if (type === 'shipment') renderShipmentItemsTable();
-    };
-
-    function addIncomingItemRow() {
-      state.incomingItemDrafts.push({ item: '', spec: '', value: '', judge: '합격' });
-      renderIncomingItemsTable();
-    }
-    function addProcessItemRow() {
-      state.processItemDrafts.push({ item: '', spec: '', value: '', judge: '합격' });
-      renderProcessItemsTable();
-    }
-    function addShipmentItemRow() {
-      state.shipmentItemDrafts.push({ item: '', spec: '', value: '', judge: '합격' });
-      renderShipmentItemsTable();
-    }
-
-    function renderIncomingPreviewRows(items) {
-      $('incomingPreviewBody').innerHTML = items.length
-        ? items.map((row, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${escapeHtml(row.item || '')}</td>
-            <td>${escapeHtml(row.spec || '')}</td>
-            <td>${escapeHtml(row.value || '-')}</td>
-            <td>${judgeBadge(row.judge || '합격')}</td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="5">항목 없음</td></tr>';
-    }
-
-    function renderProcessPreviewRows(items) {
-      $('processPreviewBody').innerHTML = items.length
-        ? items.map((row, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${escapeHtml(row.item || '')}</td>
-            <td>${escapeHtml(row.spec || '')}</td>
-            <td>${escapeHtml(row.value || '-')}</td>
-            <td>${judgeBadge(row.judge || '합격')}</td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="5">항목 없음</td></tr>';
-    }
-
-    function renderShipmentPreviewRows(items) {
-      $('shipmentPreviewBody').innerHTML = items.length
-        ? items.map((row, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${escapeHtml(row.item || '')}</td>
-            <td>${escapeHtml(row.spec || '')}</td>
-            <td>${escapeHtml(row.value || '-')}</td>
-            <td>${judgeBadge(row.judge || '합격')}</td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="5">항목 없음</td></tr>';
-    }
-
-    function syncIncomingPreview() {
-      const items = state.incomingItemDrafts;
-      $('incomingMetaTable').innerHTML = `
-        <tr><th>문서번호</th><td>IQC-${($('incomingDate').value || todayKST()).replaceAll('-','')}-0001</td><th>일자</th><td>${$('incomingDate').value || '-'}</td></tr>
-        <tr><th>LOT</th><td>${escapeHtml($('incomingLot').value || '-')}</td><th>협력업체</th><td>${escapeHtml($('incomingSupplier').value || '-')}</td></tr>
-        <tr><th>품목</th><td>${escapeHtml($('incomingItem').value || '-')}</td><th>검사자</th><td>${escapeHtml($('incomingInspector').value || '-')}</td></tr>
-        <tr><th>입고수량</th><td>${escapeHtml($('incomingQty').value || '0')}</td><th>검사수량</th><td>${escapeHtml($('incomingCheckQty').value || '0')}</td></tr>
-      `;
-      renderIncomingPreviewRows(items);
-      $('incomingFinalJudgeText').textContent = calcJudge(items);
-      $('incomingSignInspector').textContent = $('incomingInspector').value || '-';
-    }
-
-    function syncProcessPreview() {
-      const items = state.processItemDrafts;
-      $('processMetaTable').innerHTML = `
-        <tr><th>문서번호</th><td>PQC-${($('processDate').value || todayKST()).replaceAll('-','')}-0001</td><th>일자</th><td>${$('processDate').value || '-'}</td></tr>
-        <tr><th>LOT</th><td>${escapeHtml($('processLot').value || '-')}</td><th>설비명</th><td>${escapeHtml($('processLine').value || '-')}</td></tr>
-        <tr><th>제품명</th><td>${escapeHtml($('processProduct').value || '-')}</td><th>검사자</th><td>${escapeHtml($('processInspector').value || '-')}</td></tr>
-        <tr><th>작업조</th><td>${escapeHtml($('processShift').value || '-')}</td><th>검사수량</th><td>${escapeHtml($('processQty').value || '0')}</td></tr>
-      `;
-      renderProcessPreviewRows(items);
-      $('processFinalJudgeText').textContent = calcJudge(items);
-      $('processSignInspector').textContent = $('processInspector').value || '-';
-    }
-
-    function syncShipmentPreview() {
-      const items = state.shipmentItemDrafts;
-      $('shipmentMetaTable').innerHTML = `
-        <tr><th>문서번호</th><td>OQC-${($('shipmentDate').value || todayKST()).replaceAll('-','')}-0001</td><th>일자</th><td>${$('shipmentDate').value || '-'}</td></tr>
-        <tr><th>LOT</th><td>${escapeHtml($('shipmentLot').value || '-')}</td><th>고객사</th><td>${escapeHtml($('shipmentCustomer').value || '-')}</td></tr>
-        <tr><th>제품명</th><td>${escapeHtml($('shipmentProduct').value || '-')}</td><th>검사자</th><td>${escapeHtml($('shipmentInspector').value || '-')}</td></tr>
-        <tr><th>검사수량</th><td>${escapeHtml($('shipmentQty').value || '0')}</td><th>불량수량</th><td>${escapeHtml($('shipmentFailQty').value || '0')}</td></tr>
-      `;
-      renderShipmentPreviewRows(items);
-      $('shipmentFinalJudgeText').textContent = calcJudge(items);
-      $('shipmentSignInspector').textContent = $('shipmentInspector').value || '-';
-    }
-
-    function loadStandaloneReport() {
-      const type = $('reportType').value;
-      let row = null;
-      if (type === 'iqc') row = state.incoming[0];
-      if (type === 'pqc') row = state.process[0];
-      if (type === 'oqc') row = state.shipment[0];
-
-      if (!row) {
-        $('reportMetaTable').innerHTML = '<tr><td>데이터가 없습니다.</td></tr>';
-        $('reportBodyTable').innerHTML = '';
-        $('reportFinalText').textContent = '-';
-        $('reportInspectorText').textContent = '-';
-        return;
-      }
-
-      let title = '성적서';
-      let companyLabel = '';
-      if (type === 'iqc') title = '입고검사 성적서 (IQC Report)';
-      if (type === 'pqc') title = '공정검사 성적서 (PQC Report)';
-      if (type === 'oqc') title = '출하검사 성적서 (OQC Report)';
-      $('reportPageTitle').textContent = title;
-
-      const metaRows = [];
-      if (type === 'iqc') {
-        metaRows.push(
-          `<tr><th>문서번호</th><td>IQC-${String(row.date || '').replaceAll('-','')}-0001</td><th>일자</th><td>${row.date || '-'}</td></tr>`,
-          `<tr><th>LOT</th><td>${escapeHtml(row.lot || '-')}</td><th>협력업체</th><td>${escapeHtml(row.supplier || '-')}</td></tr>`,
-          `<tr><th>품목</th><td>${escapeHtml(row.item || '-')}</td><th>검사자</th><td>${escapeHtml(row.inspector || '-')}</td></tr>`
-        );
-      }
-      if (type === 'pqc') {
-        metaRows.push(
-          `<tr><th>문서번호</th><td>PQC-${String(row.date || '').replaceAll('-','')}-0001</td><th>일자</th><td>${row.date || '-'}</td></tr>`,
-          `<tr><th>LOT</th><td>${escapeHtml(row.lot || '-')}</td><th>설비명</th><td>${escapeHtml(row.line || '-')}</td></tr>`,
-          `<tr><th>제품명</th><td>${escapeHtml(row.product || '-')}</td><th>검사자</th><td>${escapeHtml(row.inspector || '-')}</td></tr>`
-        );
-      }
-      if (type === 'oqc') {
-        metaRows.push(
-          `<tr><th>문서번호</th><td>OQC-${String(row.date || '').replaceAll('-','')}-0001</td><th>일자</th><td>${row.date || '-'}</td></tr>`,
-          `<tr><th>LOT</th><td>${escapeHtml(row.lot || '-')}</td><th>고객사</th><td>${escapeHtml(row.customer || '-')}</td></tr>`,
-          `<tr><th>제품명</th><td>${escapeHtml(row.product || '-')}</td><th>검사자</th><td>${escapeHtml(row.inspector || '-')}</td></tr>`
-        );
-      }
-
-      $('reportMetaTable').innerHTML = metaRows.join('');
-
-      const items = Array.isArray(row.items) ? row.items : [];
-      $('reportBodyTable').innerHTML = items.length
-        ? items.map((x, i) => `
-            <tr>
-              <td>${i + 1}</td>
-              <td>${escapeHtml(x.item || '')}</td>
-              <td>${escapeHtml(x.spec || '')}</td>
-              <td>${escapeHtml(x.value || '-')}</td>
-              <td>${judgeBadge(x.judge || '합격')}</td>
-            </tr>
-          `).join('')
-        : '<tr><td colspan="5">항목 없음</td></tr>';
-
-      $('reportFinalText').textContent = calcJudge(items);
-      $('reportInspectorText').textContent = row.inspector || '-';
-    }
-
-    function escapeHtml(v) {
-      return String(v ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
-    async function loadIncoming() {
-      const { data } = await api('/api/iqc');
-      state.incoming = (data?.data || []).map(row => ({
-        id: row.id,
-        date: row.date,
-        lot: row.lot,
-        supplier: row.supplier,
-        item: row.item,
-        inspector: row.inspector,
-        incomingQty: row.incoming_qty,
-        checkQty: row.qty,
-        failQty: row.fail,
-        items: Array.isArray(row.items_json) ? row.items_json : []
-      }));
-      renderIncoming();
-    }
-
-    async function loadProcess() {
-      const { data } = await api('/api/pqc');
-      state.process = (data?.data || []).map(row => ({
-        id: row.id,
-        date: row.date,
-        lot: row.lot,
-        product: row.product,
-        line: row.visual || row.line || '',
-        shift: row.particle || row.shift || '',
-        inspector: row.solid || row.inspector || '',
-        qty: row.qty,
-        failQty: row.fail,
-        judge: row.judge,
-        items: Array.isArray(row.items_json) ? row.items_json : []
-      }));
-      renderProcess();
-    }
-
-    async function loadShipment() {
-      const { data } = await api('/api/oqc');
-      state.shipment = (data?.data || []).map(row => ({
-        id: row.id,
-        date: row.date,
-        customer: row.customer,
-        product: row.product,
-        lot: row.lot,
-        inspector: row.visual || row.inspector || '',
-        qty: row.qty,
-        failQty: row.fail,
-        judge: row.judge,
-        items: Array.isArray(row.items_json) ? row.items_json : []
-      }));
-      renderShipment();
-    }
-
-    async function loadSuppliers() {
-      const { data } = await api('/api/suppliers');
-      state.suppliers = data?.data || [];
-      renderSuppliers();
-    }
-
-    async function loadWorklog() {
-      const { data } = await api('/api/worklog');
-      state.worklog = data?.data || [];
-      renderWorklog();
-    }
-
-    async function loadUsers() {
-      if (state.currentUser?.role !== 'admin') return;
-      const { data } = await api('/api/admin/users');
-      state.users = data?.data || [];
-      renderUsers();
-    }
-
-    async function loadAllData() {
-      await Promise.all([
-        loadIncoming(),
-        loadProcess(),
-        loadShipment(),
-        loadSuppliers(),
-        loadWorklog(),
-        state.currentUser?.role === 'admin' ? loadUsers() : Promise.resolve()
-      ]);
-      renderSummary();
-      loadStandaloneReport();
-    }
-
-    function renderIncoming() {
-      $('incomingTable').innerHTML = state.incoming.length
-        ? state.incoming.map(row => `
-          <tr>
-            <td>${row.date || ''}</td>
-            <td>${escapeHtml(row.lot || '')}</td>
-            <td>${escapeHtml(row.supplier || '')}</td>
-            <td>${escapeHtml(row.item || '')}</td>
-            <td>${row.incomingQty ?? ''}</td>
-            <td>${row.checkQty ?? ''}</td>
-            <td>${row.failQty ?? ''}</td>
-            <td>${judgeBadge(calcJudge(row.items || []))}</td>
-            <td>
-              <div class="action-inline">
-                <button class="small-btn edit" onclick="editIncoming('${row.id}')">수정</button>
-                <button class="small-btn del" onclick="deleteIncoming('${row.id}')">삭제</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="9">데이터 없음</td></tr>';
-    }
-
-    function renderProcess() {
-      $('processTable').innerHTML = state.process.length
-        ? state.process.map(row => `
-          <tr>
-            <td>${row.date || ''}</td>
-            <td>${escapeHtml(row.lot || '')}</td>
-            <td>${escapeHtml(row.product || '')}</td>
-            <td>${escapeHtml(row.line || '')}</td>
-            <td>${row.qty ?? ''}</td>
-            <td>${row.failQty ?? ''}</td>
-            <td>${judgeBadge(calcJudge(row.items || []))}</td>
-            <td>
-              <div class="action-inline">
-                <button class="small-btn edit" onclick="editProcess('${row.id}')">수정</button>
-                <button class="small-btn del" onclick="deleteProcess('${row.id}')">삭제</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="8">데이터 없음</td></tr>';
-    }
-
-    function renderShipment() {
-      $('shipmentTable').innerHTML = state.shipment.length
-        ? state.shipment.map(row => `
-          <tr>
-            <td>${row.date || ''}</td>
-            <td>${escapeHtml(row.customer || '')}</td>
-            <td>${escapeHtml(row.product || '')}</td>
-            <td>${escapeHtml(row.lot || '')}</td>
-            <td>${row.qty ?? ''}</td>
-            <td>${row.failQty ?? ''}</td>
-            <td>${judgeBadge(calcJudge(row.items || []))}</td>
-            <td>
-              <div class="action-inline">
-                <button class="small-btn edit" onclick="editShipment('${row.id}')">수정</button>
-                <button class="small-btn del" onclick="deleteShipment('${row.id}')">삭제</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="8">데이터 없음</td></tr>';
-    }
-
-    function renderSuppliers() {
-      $('supplierTable').innerHTML = state.suppliers.length
-        ? state.suppliers.map(row => `
-          <tr>
-            <td>${escapeHtml(row.name || '')}</td>
-            <td>${escapeHtml(row.manager || '')}</td>
-            <td>${escapeHtml(row.phone || '')}</td>
-            <td>${escapeHtml(row.category || '')}</td>
-            <td>${escapeHtml(row.status || '')}</td>
-            <td>
-              <div class="action-inline">
-                <button class="small-btn edit" onclick="editSupplier('${row.id}')">수정</button>
-                <button class="small-btn del" onclick="deleteSupplier('${row.id}')">삭제</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="6">데이터 없음</td></tr>';
-    }
-
-    function renderWorklog() {
-      $('worklogTable').innerHTML = state.worklog.length
-        ? state.worklog.map(row => `
-          <tr>
-            <td>${row.workDate || ''}</td>
-            <td>${escapeHtml(row.finishedLot || '')}</td>
-            <td>${escapeHtml(row.worker || '')}</td>
-            <td>${escapeHtml(row.planQty || '')}</td>
-            <td>${escapeHtml(row.prodQty || '')}</td>
-            <td>${escapeHtml(row.failQty || '')}</td>
-            <td>
-              <div class="action-inline">
-                <button class="small-btn edit" onclick="editWorklog('${row.id}')">수정</button>
-                <button class="small-btn del" onclick="deleteWorklog('${row.id}')">삭제</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="7">데이터 없음</td></tr>';
-    }
-
-    function renderUsers() {
-      $('userTable').innerHTML = state.users.length
-        ? state.users.map(row => `
-          <tr>
-            <td>${escapeHtml(row.name || '')}</td>
-            <td>${escapeHtml(row.email || '')}</td>
-            <td>${escapeHtml(row.department || '')}</td>
-            <td>${escapeHtml(row.title || '')}</td>
-            <td>${row.role === 'admin' ? '관리자' : '일반회원'}</td>
-            <td>${row.status || ''}</td>
-            <td>${String(row.created_at || '').slice(0, 10)}</td>
-            <td>
-              <div class="action-inline">
-                <button class="small-btn edit" onclick="editUser('${row.id}')">수정</button>
-                <button class="small-btn del" onclick="deleteUser('${row.id}')">삭제</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')
-        : '<tr><td colspan="8">데이터 없음</td></tr>';
-    }
-
-    function renderSummary() {
-      $('sumIncoming').textContent = state.incoming.length;
-      $('sumProcess').textContent = state.process.length;
-      $('sumShipment').textContent = state.shipment.length;
-      $('sumWorklog').textContent = state.worklog.length;
-      $('sumIncomingRate').textContent = state.incoming.length ? '+12.5%' : '+0%';
-      $('sumProcessRate').textContent = state.process.length ? '+8.3%' : '+0%';
-      $('sumShipmentRate').textContent = state.shipment.length ? '+5.1%' : '+0%';
-      $('sumWorklogRate').textContent = state.worklog.length ? '+6.8%' : '+0%';
-      renderCharts();
-    }
-
-    function renderCharts() {
-      const year = Number($('dashYear').value || new Date().getFullYear());
-      const monthLabels = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-      const makeMonthly = arr => monthLabels.map((_,i)=>arr.filter(r=>String(r.date||'').startsWith(`${year}-${String(i+1).padStart(2,'0')}`)).length);
-      const incomingData = makeMonthly(state.incoming);
-      const processData = makeMonthly(state.process);
-      const shipmentData = makeMonthly(state.shipment);
-
-      if (state.charts.trend) state.charts.trend.destroy();
-      state.charts.trend = new Chart($('trendChart'), {
-        type:'bar',
-        data:{labels:monthLabels,datasets:[
-          {label:'수입검사',data:incomingData},
-          {label:'공정검사',data:processData},
-          {label:'출하검사',data:shipmentData}
-        ]},
-        options: {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      suggestedMax: 5,
-      ticks: {
-        stepSize: 1
-      }
+    } catch (err) {
+      console.error('API 오류:', url, err);
+      return { res: { ok: false }, data: null };
     }
   }
-}
+
+  // 저장 버튼 중복 클릭 방지
+  function withSaving(key, btn, fn) {
+    return async function() {
+      if (state.saving[key]) return;
+      state.saving[key] = true;
+      if (btn) btn.disabled = true;
+      try { await fn(); }
+      finally {
+        state.saving[key] = false;
+        if (btn) btn.disabled = false;
+      }
+    };
+  }
+
+  // ──────────────────────────────────────────
+  // 날짜 / 유틸
+  // ──────────────────────────────────────────
+  function todayKST() {
+    const now = new Date();
+    const seoul = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    const yyyy = seoul.getFullYear();
+    const mm = String(seoul.getMonth() + 1).padStart(2, '0');
+    const dd = String(seoul.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function formatKorDateTime() {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
+    const parts = formatter.formatToParts(now);
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    return `${map.year}년 ${map.month}월 ${map.day}일 (${String(map.weekday || '').replace('.', '')}) ${map.hour}:${map.minute}:${map.second}`;
+  }
+
+  function startDateTimeClock() {
+    const target = $('currentDateTime');
+    if (!target) return;
+    const render = () => { target.textContent = formatKorDateTime(); };
+    render();
+    setInterval(render, 1000);
+  }
+
+  function escapeHtml(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function judgeBadge(j) {
+    if (j === '합격') return '<span class="status pass">합격</span>';
+    if (j === '불합격') return '<span class="status fail">불합격</span>';
+    return '<span class="status hold">보류</span>';
+  }
+
+  function calcJudge(items = []) {
+    if (!items.length) return '합격';
+    if (items.some(x => String(x.judge || '') === '불합격')) return '불합격';
+    if (items.some(x => String(x.judge || '') === '보류')) return '보류';
+    return '합격';
+  }
+
+  // ──────────────────────────────────────────
+  // 인증
+  // ──────────────────────────────────────────
+  function openLoginTab(type) {
+    $('tabLoginBtn').classList.toggle('active', type === 'login');
+    $('tabSignupBtn').classList.toggle('active', type === 'signup');
+    $('panelLogin').classList.toggle('active', type === 'login');
+    $('panelSignup').classList.toggle('active', type === 'signup');
+  }
+
+  async function login() {
+    $('loginError').textContent = '';
+    const email = $('loginEmail').value.trim();
+    const password = $('loginPassword').value.trim();
+    if (!email || !password) { $('loginError').textContent = '이메일과 비밀번호를 입력하세요.'; return; }
+    const { data } = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    if (!data?.success) { $('loginError').textContent = data?.message || '로그인에 실패했습니다.'; return; }
+    await checkLogin();
+    await loadAllData();
+  }
+
+  async function signup() {
+    $('signupError').textContent = '';
+    const payload = {
+      name: $('signupName').value.trim(),
+      email: $('signupEmail').value.trim(),
+      department: $('signupDepartment').value.trim(),
+      title: $('signupTitle').value.trim(),
+      password: $('signupPassword').value.trim()
+    };
+    if (!payload.name || !payload.email || !payload.password) {
+      $('signupError').textContent = '성명, 이메일, 비밀번호는 필수입니다.'; return;
+    }
+    const { data } = await api('/api/auth/signup', { method: 'POST', body: JSON.stringify(payload) });
+    if (!data?.success) { $('signupError').textContent = data?.message || '회원가입에 실패했습니다.'; return; }
+    alert(data.message || '회원가입이 완료되었습니다.');
+    openLoginTab('login');
+  }
+
+  async function checkLogin() {
+    const { res, data } = await api('/api/auth/me');
+    if (!res.ok || !data?.success) {
+      $('loginPage').style.display = 'flex';
+      document.querySelector('.shell').style.display = 'none';
+      state.currentUser = null;
+      return false;
+    }
+    state.currentUser = data.data;
+    $('loginPage').style.display = 'none';
+    document.querySelector('.shell').style.display = 'block';
+    updateProfileUI(data.data);
+    return true;
+  }
+
+  function updateProfileUI(user) {
+    const name = user?.name || '사용자';
+    const email = user?.email || '';
+    $('profileLabel').textContent = `${name} · ${email}`;
+    $('profileAvatar').textContent = name.charAt(0) || '사';
+    const isAdmin = user?.role === 'admin';
+    $('openUserManage').style.display = isAdmin ? 'block' : 'none';
+    $('usersNavBtn').style.display = isAdmin ? 'flex' : 'none';
+    $('adminNavTitle').style.display = isAdmin ? 'block' : 'none';
+  }
+
+  async function logout() {
+    await api('/api/auth/logout', { method: 'POST' });
+    closeProfileMenu();
+    await checkLogin();
+  }
+
+  function openPasswordModal() {
+    $('passwordModal').classList.add('show');
+    $('currentPassword').value = '';
+    $('newPassword').value = '';
+    $('confirmPassword').value = '';
+  }
+  function closePasswordModal() { $('passwordModal').classList.remove('show'); }
+
+  async function changePassword() {
+    const currentPassword = $('currentPassword').value.trim();
+    const newPassword = $('newPassword').value.trim();
+    const confirmPassword = $('confirmPassword').value.trim();
+    if (!currentPassword || !newPassword || !confirmPassword) { alert('모든 항목을 입력하세요.'); return; }
+    if (newPassword !== confirmPassword) { alert('새 비밀번호 확인이 일치하지 않습니다.'); return; }
+    const { data } = await api('/api/auth/change-password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) });
+    alert(data?.message || '처리되었습니다.');
+    if (data?.success) closePasswordModal();
+  }
+
+  function closeProfileMenu() { $('profileDropdown').classList.remove('show'); }
+
+  // ──────────────────────────────────────────
+  // 네비게이션
+  // ──────────────────────────────────────────
+  function bindNav() {
+    $$('.nav-item[data-page]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const page = btn.dataset.page;
+        $$('.nav-item[data-page]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        $$('.page-panel').forEach(p => p.classList.remove('active'));
+        $(`page-${page}`).classList.add('active');
+        if (page === 'users') await loadUsers();
+        if (page === 'report') { populateReportSelect(); loadStandaloneReport(); }
       });
+    });
+  }
+
+  // ──────────────────────────────────────────
+  // 대시보드 초기화
+  // ──────────────────────────────────────────
+  function initYears() {
+    const current = new Date().getFullYear();
+    $('dashYear').innerHTML = '';
+    for (let y = current - 2; y <= current + 2; y++) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = `${y}년`;
+      if (y === current) opt.selected = true;
+      $('dashYear').appendChild(opt);
     }
+  }
 
-    async function saveIncoming() {
-      const payload = {
-        date: $('incomingDate').value,
-        lot: $('incomingLot').value.trim(),
-        supplier: $('incomingSupplier').value.trim(),
-        item: $('incomingItem').value.trim(),
-        inspector: $('incomingInspector').value.trim(),
-        incomingQty: $('incomingQty').value,
-        checkQty: $('incomingCheckQty').value,
-        failQty: $('incomingFailQty').value,
-        items: JSON.parse(JSON.stringify(state.incomingItemDrafts))
-      };
-      const id = $('incomingEditId').value;
-      const url = id ? `/api/iqc/${id}` : '/api/iqc';
-      const method = id ? 'PUT' : 'POST';
-      const { data } = await api(url, { method, body: JSON.stringify(payload) });
-      alert(data?.message || '저장되었습니다.');
-      if (data?.success) {
-        clearIncoming();
-        await loadIncoming();
-        renderSummary();
-      }
-    }
+  function setDefaultDates() {
+    ['incomingDate','processDate','shipmentDate','worklogDate'].forEach(id => {
+      if ($(id)) $(id).value = todayKST();
+    });
+  }
 
-    async function saveProcess() {
-      const payload = {
-        date: $('processDate').value,
-        lot: $('processLot').value.trim(),
-        product: $('processProduct').value.trim(),
-        visual: $('processLine').value.trim(),
-        solid: $('processInspector').value.trim(),
-        particle: $('processShift').value.trim(),
-        qty: $('processQty').value,
-        failQty: $('processFailQty').value,
-        items: JSON.parse(JSON.stringify(state.processItemDrafts))
-      };
-      const id = $('processEditId').value;
-      const url = id ? `/api/pqc/${id}` : '/api/pqc';
-      const method = id ? 'PUT' : 'POST';
-      const { data } = await api(url, { method, body: JSON.stringify(payload) });
-      alert(data?.message || '저장되었습니다.');
-      if (data?.success) {
-        clearProcess();
-        await loadProcess();
-        renderSummary();
-      }
-    }
+  // ──────────────────────────────────────────
+  // 기본 검사항목
+  // ──────────────────────────────────────────
+  function createIncomingDefaultItems() {
+    return [
+      { item: '외관', spec: '이물질, 파손 없을 것', value: '', judge: '합격' },
+      { item: 'CoA', spec: '누락 없을 것', value: '', judge: '합격' }
+    ];
+  }
+  function createProcessDefaultItems() {
+    return [
+      { item: '외관', spec: '이상 없을 것', value: '', judge: '합격' },
+      { item: '점도', spec: '1,500±300cp', value: '', judge: '합격' },
+      { item: '고형분', spec: '20.0±1.0wt.%', value: '', judge: '합격' },
+      { item: 'Dmax', spec: '≤ 10.0 μm', value: '', judge: '합격' },
+      { item: '접착력', spec: '≥ 400 gf/12.7 mm (0.5 in)', value: '', judge: '합격' },
+      { item: '절연저항', spec: '≥ 200 MΩ (overflow)', value: '', judge: '합격' },
+      { item: '전해액 팽윤성', spec: '< 120%', value: '', judge: '합격' },
+      { item: '수분', spec: '< 2,000ppm', value: '', judge: '합격' }
+    ];
+  }
+  function createShipmentDefaultItems() {
+    return [
+      { item: '외관', spec: '이상 없을 것', value: '', judge: '합격' },
+      { item: '포장', spec: '파손 없을 것', value: '', judge: '합격' },
+      { item: '점도', spec: '1,500±300cp', value: '', judge: '합격' },
+      { item: '고형분', spec: '20.0±1.0wt.%', value: '', judge: '합격' },
+      { item: 'Dmax', spec: '≤ 10.0 μm', value: '', judge: '합격' },
+      { item: '접착력', spec: '≥ 400 gf/12.7 mm (0.5 in)', value: '', judge: '합격' },
+      { item: '절연저항', spec: '≥ 200 MΩ (overflow)', value: '', judge: '합격' },
+      { item: '전해액 팽윤성', spec: '< 120%', value: '', judge: '합격' },
+      { item: '수분', spec: '< 2,000ppm', value: '', judge: '합격' }
+    ];
+  }
 
-    async function saveShipment() {
-      const payload = {
-        date: $('shipmentDate').value,
-        customer: $('shipmentCustomer').value.trim(),
-        product: $('shipmentProduct').value.trim(),
-        lot: $('shipmentLot').value.trim(),
-        visual: $('shipmentInspector').value.trim(),
-        qty: $('shipmentQty').value,
-        failQty: $('shipmentFailQty').value,
-        package: $('shipmentRemark').value.trim(),
-        items: JSON.parse(JSON.stringify(state.shipmentItemDrafts))
-      };
-      const id = $('shipmentEditId').value;
-      const url = id ? `/api/oqc/${id}` : '/api/oqc';
-      const method = id ? 'PUT' : 'POST';
-      const { data } = await api(url, { method, body: JSON.stringify(payload) });
-      alert(data?.message || '저장되었습니다.');
-      if (data?.success) {
-        clearShipment();
-        await loadShipment();
-        renderSummary();
-      }
-    }
+  // ──────────────────────────────────────────
+  // 검사항목 편집 테이블 (공통)
+  // ──────────────────────────────────────────
+  function renderItemEditorRows(targetId, rows, type) {
+    const target = $(targetId);
+    target.innerHTML = rows.map((row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td><input value="${escapeHtml(row.item || '')}" data-type="${type}" data-idx="${index}" data-key="item"></td>
+        <td><input value="${escapeHtml(row.spec || '')}" data-type="${type}" data-idx="${index}" data-key="spec"></td>
+        <td><input value="${escapeHtml(row.value || '')}" data-type="${type}" data-idx="${index}" data-key="value"></td>
+        <td>
+          <select data-type="${type}" data-idx="${index}" data-key="judge">
+            <option value="합격" ${row.judge === '합격' ? 'selected' : ''}>합격</option>
+            <option value="불합격" ${row.judge === '불합격' ? 'selected' : ''}>불합격</option>
+            <option value="보류" ${row.judge === '보류' ? 'selected' : ''}>보류</option>
+          </select>
+        </td>
+        <td><button type="button" class="small-btn del" data-type="${type}" data-idx="${index}" data-action="removeItem">삭제</button></td>
+      </tr>
+    `).join('');
+  }
 
-    async function saveSupplier() {
-      const payload = {
-        name: $('supplierName').value.trim(),
-        manager: $('supplierManager').value.trim(),
-        phone: $('supplierPhone').value.trim(),
-        category: $('supplierCategory').value.trim(),
-        status: $('supplierStatus').value.trim()
-      };
-      const id = $('supplierEditId').value;
-      const url = id ? `/api/suppliers/${id}` : '/api/suppliers';
-      const method = id ? 'PUT' : 'POST';
-      const { data } = await api(url, { method, body: JSON.stringify(payload) });
-      alert(data?.message || '저장되었습니다.');
-      if (data?.success) {
-        clearSupplier();
-        await loadSuppliers();
-      }
-    }
+  // data-* 속성 기반 이벤트 위임 (XSS-safe: onclick 인라인 제거)
+  function bindItemTableDelegation(tbodyId) {
+    $(tbodyId).addEventListener('input', (e) => {
+      const el = e.target;
+      const type = el.dataset.type;
+      const idx = Number(el.dataset.idx);
+      const key = el.dataset.key;
+      if (!type || isNaN(idx) || !key) return;
+      getDraftArray(type)[idx][key] = el.value;
+      syncPreview(type);
+    });
+    $(tbodyId).addEventListener('change', (e) => {
+      const el = e.target;
+      const type = el.dataset.type;
+      const idx = Number(el.dataset.idx);
+      const key = el.dataset.key;
+      if (!type || isNaN(idx) || !key) return;
+      getDraftArray(type)[idx][key] = el.value;
+      syncPreview(type);
+    });
+    $(tbodyId).addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="removeItem"]');
+      if (!btn) return;
+      const type = btn.dataset.type;
+      const idx = Number(btn.dataset.idx);
+      getDraftArray(type).splice(idx, 1);
+      renderAllItemTables(type);
+    });
+  }
 
-    async function saveWorklog() {
-      const payload = {
-        workDate: $('worklogDate').value,
-        finishedLot: $('worklogFinishedLot').value.trim(),
-        worker: $('worklogWorker').value.trim(),
-        planQty: $('worklogPlanQty').value.trim(),
-        prodQty: $('worklogProdQty').value.trim(),
-        failQty: $('worklogFailQty').value.trim(),
-        remark: $('worklogRemark').value.trim(),
-        flowSet: $('worklogFlowSet').value.trim(),
-        flowActual: $('worklogFlowActual').value.trim(),
-        tempSet: $('worklogTempSet').value.trim(),
-        tempActual: $('worklogTempActual').value.trim(),
-        pressSet: $('worklogPressSet').value.trim(),
-        pressActual: $('worklogPressActual').value.trim(),
-        materials: JSON.parse(JSON.stringify(state.worklogMaterialDrafts))
-      };
-      const id = $('worklogEditId').value;
-      const url = id ? `/api/worklog/${id}` : '/api/worklog';
-      const method = id ? 'PUT' : 'POST';
-      const { data } = await api(url, { method, body: JSON.stringify(payload) });
-      alert(data?.message || '저장되었습니다.');
-      if (data?.success) {
-        clearWorklog();
-        await loadWorklog();
-        renderSummary();
-      }
-    }
+  function getDraftArray(type) {
+    if (type === 'incoming') return state.incomingItemDrafts;
+    if (type === 'process') return state.processItemDrafts;
+    if (type === 'shipment') return state.shipmentItemDrafts;
+    return [];
+  }
 
-    async function saveUser() {
-      const id = $('userEditId').value;
-      const payload = {
-        name: $('userName').value.trim(),
-        email: $('userEmail').value.trim(),
-        department: $('userDepartment').value.trim(),
-        title: $('userTitle').value.trim(),
-        role: $('userRole').value,
-        status: $('userStatus').value,
-        password: $('userPassword').value.trim()
-      };
-      const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
-      const method = id ? 'PUT' : 'POST';
-      const { data } = await api(url, { method, body: JSON.stringify(payload) });
-      alert(data?.message || '저장되었습니다.');
-      if (data?.success) {
-        clearUser();
-        await loadUsers();
-      }
-    }
+  function renderAllItemTables(type) {
+    if (type === 'incoming') renderIncomingItemsTable();
+    if (type === 'process') renderProcessItemsTable();
+    if (type === 'shipment') renderShipmentItemsTable();
+  }
 
-    function clearIncoming() {
-      ['incomingEditId','incomingLot','incomingSupplier','incomingItem','incomingInspector','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id => $(id).value = '');
-      $('incomingDate').value = todayKST();
-      state.incomingItemDrafts = createIncomingDefaultItems();
-      renderIncomingItemsTable();
-    }
+  function syncPreview(type) {
+    if (type === 'incoming') syncIncomingPreview();
+    if (type === 'process') syncProcessPreview();
+    if (type === 'shipment') syncShipmentPreview();
+  }
 
-    function clearProcess() {
-      ['processEditId','processLot','processLine','processShift','processProduct','processInspector','processQty','processFailQty'].forEach(id => $(id).value = '');
-      $('processDate').value = todayKST();
-      state.processItemDrafts = createProcessDefaultItems();
-      renderProcessItemsTable();
-    }
+  function renderIncomingItemsTable() { renderItemEditorRows('incomingItemsTable', state.incomingItemDrafts, 'incoming'); syncIncomingPreview(); }
+  function renderProcessItemsTable() { renderItemEditorRows('processItemsTable', state.processItemDrafts, 'process'); syncProcessPreview(); }
+  function renderShipmentItemsTable() { renderItemEditorRows('shipmentItemsTable', state.shipmentItemDrafts, 'shipment'); syncShipmentPreview(); }
 
-    function clearShipment() {
-      ['shipmentEditId','shipmentCustomer','shipmentProduct','shipmentLot','shipmentInspector','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id => $(id).value = '');
-      $('shipmentDate').value = todayKST();
-      state.shipmentItemDrafts = createShipmentDefaultItems();
-      renderShipmentItemsTable();
-    }
-
-    function clearSupplier() {
-      ['supplierEditId','supplierName','supplierManager','supplierPhone','supplierCategory','supplierStatus'].forEach(id => $(id).value = '');
-    }
-
-    function clearWorklog() {
-      ['worklogEditId','worklogFinishedLot','worklogWorker','worklogPlanQty','worklogProdQty','worklogFailQty','worklogRemark','worklogFlowSet','worklogFlowActual','worklogTempSet','worklogTempActual','worklogPressSet','worklogPressActual'].forEach(id => $(id).value = '');
-      $('worklogDate').value = todayKST();
-      state.worklogMaterialDrafts = [];
-      renderWorklogMaterials();
-    }
-
-    function clearUser() {
-      ['userEditId','userName','userEmail','userDepartment','userTitle','userPassword'].forEach(id => $(id).value = '');
-      $('userRole').value = 'user';
-      $('userStatus').value = 'APPROVED';
-    }
-
-    window.editIncoming = function(id) {
-      const row = state.incoming.find(x => x.id === id);
-      if (!row) return;
-      $('incomingEditId').value = row.id;
-      $('incomingDate').value = row.date || '';
-      $('incomingLot').value = row.lot || '';
-      $('incomingSupplier').value = row.supplier || '';
-      $('incomingItem').value = row.item || '';
-      $('incomingInspector').value = row.inspector || '';
-      $('incomingQty').value = row.incomingQty || '';
-      $('incomingCheckQty').value = row.checkQty || '';
-      $('incomingFailQty').value = row.failQty || '';
-      state.incomingItemDrafts = row.items?.length ? JSON.parse(JSON.stringify(row.items)) : createIncomingDefaultItems();
-      renderIncomingItemsTable();
-    };
-
-    window.editProcess = function(id) {
-      const row = state.process.find(x => x.id === id);
-      if (!row) return;
-      $('processEditId').value = row.id;
-      $('processDate').value = row.date || '';
-      $('processLot').value = row.lot || '';
-      $('processLine').value = row.line || '';
-      $('processShift').value = row.shift || '';
-      $('processProduct').value = row.product || '';
-      $('processInspector').value = row.inspector || '';
-      $('processQty').value = row.qty || '';
-      $('processFailQty').value = row.failQty || '';
-      state.processItemDrafts = row.items?.length ? JSON.parse(JSON.stringify(row.items)) : createProcessDefaultItems();
-      renderProcessItemsTable();
-    };
-
-    window.editShipment = function(id) {
-      const row = state.shipment.find(x => x.id === id);
-      if (!row) return;
-      $('shipmentEditId').value = row.id;
-      $('shipmentDate').value = row.date || '';
-      $('shipmentCustomer').value = row.customer || '';
-      $('shipmentProduct').value = row.product || '';
-      $('shipmentLot').value = row.lot || '';
-      $('shipmentInspector').value = row.inspector || '';
-      $('shipmentQty').value = row.qty || '';
-      $('shipmentFailQty').value = row.failQty || '';
-      $('shipmentRemark').value = row.package || '';
-      state.shipmentItemDrafts = row.items?.length ? JSON.parse(JSON.stringify(row.items)) : createShipmentDefaultItems();
-      renderShipmentItemsTable();
-    };
-
-    window.editSupplier = function(id) {
-      const row = state.suppliers.find(x => x.id === id);
-      if (!row) return;
-      $('supplierEditId').value = row.id;
-      $('supplierName').value = row.name || '';
-      $('supplierManager').value = row.manager || '';
-      $('supplierPhone').value = row.phone || '';
-      $('supplierCategory').value = row.category || '';
-      $('supplierStatus').value = row.status || '';
-    };
-
-    window.editWorklog = function(id) {
-      const row = state.worklog.find(x => x.id === id);
-      if (!row) return;
-      $('worklogEditId').value = row.id;
-      $('worklogDate').value = row.workDate || '';
-      $('worklogFinishedLot').value = row.finishedLot || '';
-      $('worklogWorker').value = row.worker || '';
-      $('worklogPlanQty').value = row.planQty || '';
-      $('worklogProdQty').value = row.prodQty || '';
-      $('worklogFailQty').value = row.failQty || '';
-      $('worklogRemark').value = row.remark || '';
-      $('worklogFlowSet').value = row.flowSet || '';
-      $('worklogFlowActual').value = row.flowActual || '';
-      $('worklogTempSet').value = row.tempSet || '';
-      $('worklogTempActual').value = row.tempActual || '';
-      $('worklogPressSet').value = row.pressSet || '';
-      $('worklogPressActual').value = row.pressActual || '';
-      state.worklogMaterialDrafts = Array.isArray(row.materials) ? JSON.parse(JSON.stringify(row.materials)) : [];
-      renderWorklogMaterials();
-    };
-
-    window.editUser = function(id) {
-      const row = state.users.find(x => x.id === id);
-      if (!row) return;
-      $('userEditId').value = row.id;
-      $('userName').value = row.name || '';
-      $('userEmail').value = row.email || '';
-      $('userDepartment').value = row.department || '';
-      $('userTitle').value = row.title || '';
-      $('userRole').value = row.role || 'user';
-      $('userStatus').value = row.status || 'APPROVED';
-      $('userPassword').value = '';
-    };
-
-    async function deleteByApi(url, message, reloadFn) {
-      if (!confirm(message)) return;
-      const { data } = await api(url, { method: 'DELETE' });
-      alert(data?.message || '삭제되었습니다.');
-      if (data?.success) await reloadFn();
-    }
-
-    window.deleteIncoming = (id) => deleteByApi(`/api/iqc/${id}`, '삭제하시겠습니까?', async () => { await loadIncoming(); renderSummary(); });
-    window.deleteProcess = (id) => deleteByApi(`/api/pqc/${id}`, '삭제하시겠습니까?', async () => { await loadProcess(); renderSummary(); });
-    window.deleteShipment = (id) => deleteByApi(`/api/oqc/${id}`, '삭제하시겠습니까?', async () => { await loadShipment(); renderSummary(); });
-    window.deleteSupplier = (id) => deleteByApi(`/api/suppliers/${id}`, '삭제하시겠습니까?', loadSuppliers);
-    window.deleteWorklog = (id) => deleteByApi(`/api/worklog/${id}`, '삭제하시겠습니까?', async () => { await loadWorklog(); renderSummary(); });
-    window.deleteUser = (id) => deleteByApi(`/api/admin/users/${id}`, '삭제하시겠습니까?', loadUsers);
-
-    function renderWorklogMaterials() {
-      $('worklogMaterialsTable').innerHTML = state.worklogMaterialDrafts.length
-        ? state.worklogMaterialDrafts.map((row, i) => `
+  // ──────────────────────────────────────────
+  // 성적서 미리보기 동기화
+  // ──────────────────────────────────────────
+  function renderPreviewRows(tbodyId, items) {
+    $(tbodyId).innerHTML = items.length
+      ? items.map((row, i) => `
           <tr>
             <td>${i + 1}</td>
-            <td><input value="${escapeHtml(row.material || '')}" onchange="updateWorklogMaterial(${i}, 'material', this.value)"></td>
-            <td><input value="${escapeHtml(row.supName || '')}" onchange="updateWorklogMaterial(${i}, 'supName', this.value)"></td>
-            <td><input value="${escapeHtml(row.lotNo || '')}" onchange="updateWorklogMaterial(${i}, 'lotNo', this.value)"></td>
-            <td><input value="${escapeHtml(row.inputQty || '')}" onchange="updateWorklogMaterial(${i}, 'inputQty', this.value)"></td>
-            <td><input value="${escapeHtml(row.inputTime || '')}" onchange="updateWorklogMaterial(${i}, 'inputTime', this.value)"></td>
-            <td><button class="small-btn del" type="button" onclick="removeWorklogMaterial(${i})">삭제</button></td>
+            <td>${escapeHtml(row.item || '')}</td>
+            <td>${escapeHtml(row.spec || '')}</td>
+            <td>${escapeHtml(row.value || '-')}</td>
+            <td>${judgeBadge(row.judge || '합격')}</td>
           </tr>
         `).join('')
-        : '<tr><td colspan="7">원료 행이 없습니다.</td></tr>';
+      : '<tr><td colspan="5">항목 없음</td></tr>';
+  }
+
+  function syncIncomingPreview() {
+    const items = state.incomingItemDrafts;
+    $('incomingMetaTable').innerHTML = `
+      <tr><th>문서번호</th><td>IQC-${($('incomingDate').value || todayKST()).replaceAll('-','')}-0001</td><th>일자</th><td>${$('incomingDate').value || '-'}</td></tr>
+      <tr><th>LOT</th><td>${escapeHtml($('incomingLot').value || '-')}</td><th>협력업체</th><td>${escapeHtml($('incomingSupplier').value || '-')}</td></tr>
+      <tr><th>품목</th><td>${escapeHtml($('incomingItem').value || '-')}</td><th>검사자</th><td>${escapeHtml($('incomingInspector').value || '-')}</td></tr>
+      <tr><th>입고수량</th><td>${escapeHtml($('incomingQty').value || '0')}</td><th>검사수량</th><td>${escapeHtml($('incomingCheckQty').value || '0')}</td></tr>
+    `;
+    renderPreviewRows('incomingPreviewBody', items);
+    $('incomingFinalJudgeText').textContent = calcJudge(items);
+    $('incomingSignInspector').textContent = $('incomingInspector').value || '-';
+  }
+
+  function syncProcessPreview() {
+    const items = state.processItemDrafts;
+    $('processMetaTable').innerHTML = `
+      <tr><th>문서번호</th><td>PQC-${($('processDate').value || todayKST()).replaceAll('-','')}-0001</td><th>일자</th><td>${$('processDate').value || '-'}</td></tr>
+      <tr><th>LOT</th><td>${escapeHtml($('processLot').value || '-')}</td><th>설비명</th><td>${escapeHtml($('processLine').value || '-')}</td></tr>
+      <tr><th>제품명</th><td>${escapeHtml($('processProduct').value || '-')}</td><th>검사자</th><td>${escapeHtml($('processInspector').value || '-')}</td></tr>
+      <tr><th>작업조</th><td>${escapeHtml($('processShift').value || '-')}</td><th>검사수량</th><td>${escapeHtml($('processQty').value || '0')}</td></tr>
+    `;
+    renderPreviewRows('processPreviewBody', items);
+    $('processFinalJudgeText').textContent = calcJudge(items);
+    $('processSignInspector').textContent = $('processInspector').value || '-';
+  }
+
+  function syncShipmentPreview() {
+    const items = state.shipmentItemDrafts;
+    $('shipmentMetaTable').innerHTML = `
+      <tr><th>문서번호</th><td>OQC-${($('shipmentDate').value || todayKST()).replaceAll('-','')}-0001</td><th>일자</th><td>${$('shipmentDate').value || '-'}</td></tr>
+      <tr><th>LOT</th><td>${escapeHtml($('shipmentLot').value || '-')}</td><th>고객사</th><td>${escapeHtml($('shipmentCustomer').value || '-')}</td></tr>
+      <tr><th>제품명</th><td>${escapeHtml($('shipmentProduct').value || '-')}</td><th>검사자</th><td>${escapeHtml($('shipmentInspector').value || '-')}</td></tr>
+      <tr><th>검사수량</th><td>${escapeHtml($('shipmentQty').value || '0')}</td><th>불량수량</th><td>${escapeHtml($('shipmentFailQty').value || '0')}</td></tr>
+    `;
+    renderPreviewRows('shipmentPreviewBody', items);
+    $('shipmentFinalJudgeText').textContent = calcJudge(items);
+    $('shipmentSignInspector').textContent = $('shipmentInspector').value || '-';
+  }
+
+  // ──────────────────────────────────────────
+  // 성적서 페이지 (선택 목록 + 상세 표시)
+  // ──────────────────────────────────────────
+  function populateReportSelect() {
+    const type = $('reportType').value;
+    const sel = $('reportSelect');
+    sel.innerHTML = '<option value="">-- 성적서 선택 --</option>';
+
+    let arr = [];
+    if (type === 'iqc') arr = state.incoming;
+    if (type === 'pqc') arr = state.process;
+    if (type === 'oqc') arr = state.shipment;
+
+    // 날짜 내림차순 정렬
+    arr = [...arr].sort((a, b) => (b.date || '') > (a.date || '') ? 1 : -1);
+
+    arr.forEach(row => {
+      const opt = document.createElement('option');
+      opt.value = row.id;
+      const label = type === 'iqc'
+        ? `${row.date} | ${row.lot} | ${row.supplier}`
+        : type === 'pqc'
+          ? `${row.date} | ${row.lot} | ${row.product}`
+          : `${row.date} | ${row.lot} | ${row.customer}`;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+
+    // 첫 번째 항목 자동 선택
+    if (arr.length) sel.value = arr[0].id;
+  }
+
+  function loadStandaloneReport() {
+    const type = $('reportType').value;
+    const selectedId = $('reportSelect').value;
+
+    let arr = [];
+    if (type === 'iqc') arr = state.incoming;
+    if (type === 'pqc') arr = state.process;
+    if (type === 'oqc') arr = state.shipment;
+
+    const row = selectedId ? arr.find(r => String(r.id) === String(selectedId)) : arr[0];
+
+    if (!row) {
+      $('reportMetaTable').innerHTML = '<tr><td>데이터가 없습니다.</td></tr>';
+      $('reportBodyTable').innerHTML = '';
+      $('reportFinalText').textContent = '-';
+      $('reportInspectorText').textContent = '-';
+      return;
     }
 
-    window.updateWorklogMaterial = function(index, key, value) {
-      state.worklogMaterialDrafts[index][key] = value;
-    };
+    let title = '성적서';
+    if (type === 'iqc') title = '입고검사 성적서 (IQC Report)';
+    if (type === 'pqc') title = '공정검사 성적서 (PQC Report)';
+    if (type === 'oqc') title = '출하검사 성적서 (OQC Report)';
+    $('reportPageTitle').textContent = title;
 
-    window.removeWorklogMaterial = function(index) {
-      state.worklogMaterialDrafts.splice(index, 1);
-      renderWorklogMaterials();
-    };
-
-    function addWorklogMaterialRow() {
-      state.worklogMaterialDrafts.push({
-        material: '',
-        supName: '',
-        lotNo: '',
-        inputQty: '',
-        inputTime: ''
-      });
-      renderWorklogMaterials();
+    const metaRows = [];
+    if (type === 'iqc') {
+      metaRows.push(
+        `<tr><th>문서번호</th><td>IQC-${String(row.date || '').replaceAll('-','')}-0001</td><th>일자</th><td>${row.date || '-'}</td></tr>`,
+        `<tr><th>LOT</th><td>${escapeHtml(row.lot || '-')}</td><th>협력업체</th><td>${escapeHtml(row.supplier || '-')}</td></tr>`,
+        `<tr><th>품목</th><td>${escapeHtml(row.item || '-')}</td><th>검사자</th><td>${escapeHtml(row.inspector || '-')}</td></tr>`
+      );
+    } else if (type === 'pqc') {
+      metaRows.push(
+        `<tr><th>문서번호</th><td>PQC-${String(row.date || '').replaceAll('-','')}-0001</td><th>일자</th><td>${row.date || '-'}</td></tr>`,
+        `<tr><th>LOT</th><td>${escapeHtml(row.lot || '-')}</td><th>설비명</th><td>${escapeHtml(row.line || '-')}</td></tr>`,
+        `<tr><th>제품명</th><td>${escapeHtml(row.product || '-')}</td><th>검사자</th><td>${escapeHtml(row.inspector || '-')}</td></tr>`
+      );
+    } else {
+      metaRows.push(
+        `<tr><th>문서번호</th><td>OQC-${String(row.date || '').replaceAll('-','')}-0001</td><th>일자</th><td>${row.date || '-'}</td></tr>`,
+        `<tr><th>LOT</th><td>${escapeHtml(row.lot || '-')}</td><th>고객사</th><td>${escapeHtml(row.customer || '-')}</td></tr>`,
+        `<tr><th>제품명</th><td>${escapeHtml(row.product || '-')}</td><th>검사자</th><td>${escapeHtml(row.inspector || '-')}</td></tr>`
+      );
     }
 
-    async function searchTrace() {
-      const keyword = $('traceKeyword').value.trim();
-      if (!keyword) {
-        $('traceTable').innerHTML = '<tr><td colspan="9">검색어를 입력하세요.</td></tr>';
-        return;
+    $('reportMetaTable').innerHTML = metaRows.join('');
+    const items = Array.isArray(row.items) ? row.items : [];
+    $('reportBodyTable').innerHTML = items.length
+      ? items.map((x, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${escapeHtml(x.item || '')}</td>
+            <td>${escapeHtml(x.spec || '')}</td>
+            <td>${escapeHtml(x.value || '-')}</td>
+            <td>${judgeBadge(x.judge || '합격')}</td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="5">항목 없음</td></tr>';
+
+    $('reportFinalText').textContent = calcJudge(items);
+    $('reportInspectorText').textContent = row.inspector || '-';
+  }
+
+  // ──────────────────────────────────────────
+  // 인쇄 (해당 영역만)
+  // ──────────────────────────────────────────
+  function printElement(el) {
+    if (!el) return;
+    const prev = document.getElementById('printTarget');
+    if (prev) prev.removeAttribute('id');
+    el.id = 'printTarget';
+    window.print();
+  }
+
+  // ──────────────────────────────────────────
+  // 데이터 로드
+  // ──────────────────────────────────────────
+
+  // ★ 수정: loadProcess / loadShipment 필드 매핑 수정
+  async function loadIncoming() {
+    const { data } = await api('/api/iqc');
+    state.incoming = (data?.data || []).map(row => ({
+      id: row.id,
+      date: row.date,
+      lot: row.lot,
+      supplier: row.supplier,
+      item: row.item,
+      inspector: row.inspector,
+      incomingQty: row.incoming_qty,
+      checkQty: row.qty,
+      failQty: row.fail,
+      items: Array.isArray(row.items_json) ? row.items_json : []
+    }));
+    renderIncoming();
+  }
+
+  async function loadProcess() {
+    const { data } = await api('/api/pqc');
+    state.process = (data?.data || []).map(row => ({
+      id: row.id,
+      date: row.date,           // ★ 추가: date 필드 매핑
+      lot: row.lot,
+      product: row.product,
+      // ★ 수정: 서버 컬럼명(visual, particle, solid)을 실제 의미에 맞게 매핑
+      line: row.visual,         // 저장 시 processLine → visual 로 전송했으므로 역매핑
+      shift: row.particle,      // 저장 시 processShift → particle 로 전송했으므로 역매핑
+      inspector: row.solid,     // 저장 시 processInspector → solid 로 전송했으므로 역매핑
+      qty: row.qty,
+      failQty: row.fail,
+      judge: row.judge,
+      items: Array.isArray(row.items_json) ? row.items_json : []
+    }));
+    renderProcess();
+  }
+
+  async function loadShipment() {
+    const { data } = await api('/api/oqc');
+    state.shipment = (data?.data || []).map(row => ({
+      id: row.id,
+      date: row.date,           // ★ 추가: date 필드 매핑
+      customer: row.customer,
+      product: row.product,
+      lot: row.lot,
+      // ★ 수정: visual → inspector 로 명확히 매핑
+      inspector: row.visual,
+      qty: row.qty,
+      failQty: row.fail,
+      judge: row.judge,
+      // ★ 수정: package 필드 명시 매핑 (editShipment에서 사용)
+      package: row.package,
+      items: Array.isArray(row.items_json) ? row.items_json : []
+    }));
+    renderShipment();
+  }
+
+  async function loadSuppliers() {
+    const { data } = await api('/api/suppliers');
+    state.suppliers = data?.data || [];
+    renderSuppliers();
+  }
+
+  async function loadWorklog() {
+    const { data } = await api('/api/worklog');
+    state.worklog = data?.data || [];
+    renderWorklog();
+  }
+
+  async function loadUsers() {
+    if (state.currentUser?.role !== 'admin') return;
+    const { data } = await api('/api/admin/users');
+    state.users = data?.data || [];
+    renderUsers();
+  }
+
+  async function loadAllData() {
+    await Promise.all([
+      loadIncoming(), loadProcess(), loadShipment(),
+      loadSuppliers(), loadWorklog(),
+      state.currentUser?.role === 'admin' ? loadUsers() : Promise.resolve()
+    ]);
+    renderSummary();
+    populateReportSelect();
+    loadStandaloneReport();
+  }
+
+  // ──────────────────────────────────────────
+  // 렌더링
+  // ──────────────────────────────────────────
+  function renderIncoming() {
+    const tbody = $('incomingTable');
+    if (!state.incoming.length) { tbody.innerHTML = '<tr><td colspan="9">데이터 없음</td></tr>'; return; }
+    tbody.innerHTML = state.incoming.map(row => {
+      const id = escapeHtml(row.id);
+      return `
+        <tr>
+          <td>${row.date || ''}</td>
+          <td>${escapeHtml(row.lot || '')}</td>
+          <td>${escapeHtml(row.supplier || '')}</td>
+          <td>${escapeHtml(row.item || '')}</td>
+          <td>${row.incomingQty ?? ''}</td>
+          <td>${row.checkQty ?? ''}</td>
+          <td>${row.failQty ?? ''}</td>
+          <td>${judgeBadge(calcJudge(row.items || []))}</td>
+          <td>
+            <div class="action-inline">
+              <button class="small-btn edit" data-action="editIncoming" data-id="${id}">수정</button>
+              <button class="small-btn del" data-action="deleteIncoming" data-id="${id}">삭제</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderProcess() {
+    const tbody = $('processTable');
+    if (!state.process.length) { tbody.innerHTML = '<tr><td colspan="8">데이터 없음</td></tr>'; return; }
+    tbody.innerHTML = state.process.map(row => {
+      const id = escapeHtml(row.id);
+      return `
+        <tr>
+          <td>${row.date || ''}</td>
+          <td>${escapeHtml(row.lot || '')}</td>
+          <td>${escapeHtml(row.product || '')}</td>
+          <td>${escapeHtml(row.line || '')}</td>
+          <td>${row.qty ?? ''}</td>
+          <td>${row.failQty ?? ''}</td>
+          <td>${judgeBadge(calcJudge(row.items || []))}</td>
+          <td>
+            <div class="action-inline">
+              <button class="small-btn edit" data-action="editProcess" data-id="${id}">수정</button>
+              <button class="small-btn del" data-action="deleteProcess" data-id="${id}">삭제</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderShipment() {
+    const tbody = $('shipmentTable');
+    if (!state.shipment.length) { tbody.innerHTML = '<tr><td colspan="8">데이터 없음</td></tr>'; return; }
+    tbody.innerHTML = state.shipment.map(row => {
+      const id = escapeHtml(row.id);
+      return `
+        <tr>
+          <td>${row.date || ''}</td>
+          <td>${escapeHtml(row.customer || '')}</td>
+          <td>${escapeHtml(row.product || '')}</td>
+          <td>${escapeHtml(row.lot || '')}</td>
+          <td>${row.qty ?? ''}</td>
+          <td>${row.failQty ?? ''}</td>
+          <td>${judgeBadge(calcJudge(row.items || []))}</td>
+          <td>
+            <div class="action-inline">
+              <button class="small-btn edit" data-action="editShipment" data-id="${id}">수정</button>
+              <button class="small-btn del" data-action="deleteShipment" data-id="${id}">삭제</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderSuppliers() {
+    const tbody = $('supplierTable');
+    if (!state.suppliers.length) { tbody.innerHTML = '<tr><td colspan="6">데이터 없음</td></tr>'; return; }
+    tbody.innerHTML = state.suppliers.map(row => {
+      const id = escapeHtml(row.id);
+      return `
+        <tr>
+          <td>${escapeHtml(row.name || '')}</td>
+          <td>${escapeHtml(row.manager || '')}</td>
+          <td>${escapeHtml(row.phone || '')}</td>
+          <td>${escapeHtml(row.category || '')}</td>
+          <td>${escapeHtml(row.status || '')}</td>
+          <td>
+            <div class="action-inline">
+              <button class="small-btn edit" data-action="editSupplier" data-id="${id}">수정</button>
+              <button class="small-btn del" data-action="deleteSupplier" data-id="${id}">삭제</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderWorklog() {
+    const tbody = $('worklogTable');
+    if (!state.worklog.length) { tbody.innerHTML = '<tr><td colspan="7">데이터 없음</td></tr>'; return; }
+    tbody.innerHTML = state.worklog.map(row => {
+      const id = escapeHtml(row.id);
+      return `
+        <tr>
+          <td>${row.workDate || ''}</td>
+          <td>${escapeHtml(row.finishedLot || '')}</td>
+          <td>${escapeHtml(row.worker || '')}</td>
+          <td>${escapeHtml(row.planQty || '')}</td>
+          <td>${escapeHtml(row.prodQty || '')}</td>
+          <td>${escapeHtml(row.failQty || '')}</td>
+          <td>
+            <div class="action-inline">
+              <button class="small-btn edit" data-action="editWorklog" data-id="${id}">수정</button>
+              <button class="small-btn del" data-action="deleteWorklog" data-id="${id}">삭제</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderUsers() {
+    const tbody = $('userTable');
+    if (!state.users.length) { tbody.innerHTML = '<tr><td colspan="8">데이터 없음</td></tr>'; return; }
+    tbody.innerHTML = state.users.map(row => {
+      const id = escapeHtml(row.id);
+      return `
+        <tr>
+          <td>${escapeHtml(row.name || '')}</td>
+          <td>${escapeHtml(row.email || '')}</td>
+          <td>${escapeHtml(row.department || '')}</td>
+          <td>${escapeHtml(row.title || '')}</td>
+          <td>${row.role === 'admin' ? '관리자' : '일반회원'}</td>
+          <td>${row.status || ''}</td>
+          <td>${String(row.created_at || '').slice(0, 10)}</td>
+          <td>
+            <div class="action-inline">
+              <button class="small-btn edit" data-action="editUser" data-id="${id}">수정</button>
+              <button class="small-btn del" data-action="deleteUser" data-id="${id}">삭제</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ──────────────────────────────────────────
+  // 대시보드 요약 & 차트
+  // ──────────────────────────────────────────
+  function renderSummary() {
+    const year = Number($('dashYear').value || new Date().getFullYear());
+    const prevYear = year - 1;
+
+    function countYear(arr, y) {
+      return arr.filter(r => String(r.date || r.workDate || '').startsWith(String(y))).length;
+    }
+    function rateStr(curr, prev) {
+      if (!prev) return curr ? '신규' : '-';
+      const pct = Math.round((curr - prev) / prev * 100);
+      return (pct >= 0 ? '+' : '') + pct + '%';
+    }
+
+    const iCurr = countYear(state.incoming, year);
+    const pCurr = countYear(state.process, year);
+    const sCurr = countYear(state.shipment, year);
+    const wCurr = countYear(state.worklog, year);
+    const iPrev = countYear(state.incoming, prevYear);
+    const pPrev = countYear(state.process, prevYear);
+    const sPrev = countYear(state.shipment, prevYear);
+    const wPrev = countYear(state.worklog, prevYear);
+
+    $('sumIncoming').textContent = iCurr;
+    $('sumProcess').textContent = pCurr;
+    $('sumShipment').textContent = sCurr;
+    $('sumWorklog').textContent = wCurr;
+    $('sumIncomingRate').textContent = rateStr(iCurr, iPrev);
+    $('sumProcessRate').textContent = rateStr(pCurr, pPrev);
+    $('sumShipmentRate').textContent = rateStr(sCurr, sPrev);
+    $('sumWorklogRate').textContent = rateStr(wCurr, wPrev);
+
+    renderCharts();
+  }
+
+  function renderCharts() {
+    const year = Number($('dashYear').value || new Date().getFullYear());
+    const monthLabels = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+    const makeMonthly = arr => monthLabels.map((_, i) =>
+      arr.filter(r => String(r.date || r.workDate || '').startsWith(`${year}-${String(i+1).padStart(2,'0')}`)).length
+    );
+    if (state.charts.trend) state.charts.trend.destroy();
+    state.charts.trend = new Chart($('trendChart'), {
+      type: 'bar',
+      data: {
+        labels: monthLabels,
+        datasets: [
+          { label: '수입검사', data: makeMonthly(state.incoming), backgroundColor: 'rgba(86,162,255,0.7)' },
+          { label: '공정검사', data: makeMonthly(state.process), backgroundColor: 'rgba(155,116,244,0.7)' },
+          { label: '출하검사', data: makeMonthly(state.shipment), backgroundColor: 'rgba(243,165,86,0.7)' }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
       }
-      const { data } = await api(`/api/trace?keyword=${encodeURIComponent(keyword)}`);
-      const rows = data?.data || [];
-      $('traceTable').innerHTML = rows.length
-        ? rows.map(x => `
+    });
+  }
+
+  // ──────────────────────────────────────────
+  // 저장
+  // ──────────────────────────────────────────
+  async function saveIncoming() {
+    const payload = {
+      date: $('incomingDate').value,
+      lot: $('incomingLot').value.trim(),
+      supplier: $('incomingSupplier').value.trim(),
+      item: $('incomingItem').value.trim(),
+      inspector: $('incomingInspector').value.trim(),
+      incomingQty: $('incomingQty').value,
+      checkQty: $('incomingCheckQty').value,
+      failQty: $('incomingFailQty').value,
+      items: JSON.parse(JSON.stringify(state.incomingItemDrafts))
+    };
+    const id = $('incomingEditId').value;
+    const { data } = await api(id ? `/api/iqc/${id}` : '/api/iqc', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    alert(data?.message || '저장되었습니다.');
+    if (data?.success) { clearIncoming(); await loadIncoming(); renderSummary(); }
+  }
+
+  async function saveProcess() {
+    const payload = {
+      date: $('processDate').value,
+      lot: $('processLot').value.trim(),
+      product: $('processProduct').value.trim(),
+      visual: $('processLine').value.trim(),       // 서버 컬럼명 유지
+      solid: $('processInspector').value.trim(),   // 서버 컬럼명 유지
+      particle: $('processShift').value.trim(),    // 서버 컬럼명 유지
+      qty: $('processQty').value,
+      failQty: $('processFailQty').value,
+      items: JSON.parse(JSON.stringify(state.processItemDrafts))
+    };
+    const id = $('processEditId').value;
+    const { data } = await api(id ? `/api/pqc/${id}` : '/api/pqc', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    alert(data?.message || '저장되었습니다.');
+    if (data?.success) { clearProcess(); await loadProcess(); renderSummary(); }
+  }
+
+  async function saveShipment() {
+    const payload = {
+      date: $('shipmentDate').value,
+      customer: $('shipmentCustomer').value.trim(),
+      product: $('shipmentProduct').value.trim(),
+      lot: $('shipmentLot').value.trim(),
+      visual: $('shipmentInspector').value.trim(),  // 서버 컬럼명 유지
+      qty: $('shipmentQty').value,
+      failQty: $('shipmentFailQty').value,
+      package: $('shipmentRemark').value.trim(),    // ★ 수정: package 키로 전송
+      items: JSON.parse(JSON.stringify(state.shipmentItemDrafts))
+    };
+    const id = $('shipmentEditId').value;
+    const { data } = await api(id ? `/api/oqc/${id}` : '/api/oqc', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    alert(data?.message || '저장되었습니다.');
+    if (data?.success) { clearShipment(); await loadShipment(); renderSummary(); }
+  }
+
+  async function saveSupplier() {
+    const payload = {
+      name: $('supplierName').value.trim(),
+      manager: $('supplierManager').value.trim(),
+      phone: $('supplierPhone').value.trim(),
+      category: $('supplierCategory').value.trim(),
+      status: $('supplierStatus').value.trim()
+    };
+    const id = $('supplierEditId').value;
+    const { data } = await api(id ? `/api/suppliers/${id}` : '/api/suppliers', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    alert(data?.message || '저장되었습니다.');
+    if (data?.success) { clearSupplier(); await loadSuppliers(); }
+  }
+
+  async function saveWorklog() {
+    const payload = {
+      workDate: $('worklogDate').value,
+      finishedLot: $('worklogFinishedLot').value.trim(),
+      worker: $('worklogWorker').value.trim(),
+      planQty: $('worklogPlanQty').value.trim(),
+      prodQty: $('worklogProdQty').value.trim(),
+      failQty: $('worklogFailQty').value.trim(),
+      remark: $('worklogRemark').value.trim(),
+      flowSet: $('worklogFlowSet').value.trim(),
+      flowActual: $('worklogFlowActual').value.trim(),
+      tempSet: $('worklogTempSet').value.trim(),
+      tempActual: $('worklogTempActual').value.trim(),
+      pressSet: $('worklogPressSet').value.trim(),
+      pressActual: $('worklogPressActual').value.trim(),
+      materials: JSON.parse(JSON.stringify(state.worklogMaterialDrafts))
+    };
+    const id = $('worklogEditId').value;
+    const { data } = await api(id ? `/api/worklog/${id}` : '/api/worklog', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    alert(data?.message || '저장되었습니다.');
+    if (data?.success) { clearWorklog(); await loadWorklog(); renderSummary(); }
+  }
+
+  async function saveUser() {
+    const id = $('userEditId').value;
+    const payload = {
+      name: $('userName').value.trim(),
+      email: $('userEmail').value.trim(),
+      department: $('userDepartment').value.trim(),
+      title: $('userTitle').value.trim(),
+      role: $('userRole').value,
+      status: $('userStatus').value,
+      password: $('userPassword').value.trim()
+    };
+    const { data } = await api(id ? `/api/admin/users/${id}` : '/api/admin/users', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    alert(data?.message || '저장되었습니다.');
+    if (data?.success) { clearUser(); await loadUsers(); }
+  }
+
+  // ──────────────────────────────────────────
+  // 초기화
+  // ──────────────────────────────────────────
+  function clearIncoming() {
+    ['incomingEditId','incomingLot','incomingSupplier','incomingItem','incomingInspector','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id => $(id).value = '');
+    $('incomingDate').value = todayKST();
+    state.incomingItemDrafts = createIncomingDefaultItems();
+    renderIncomingItemsTable();
+  }
+  function clearProcess() {
+    ['processEditId','processLot','processLine','processShift','processProduct','processInspector','processQty','processFailQty'].forEach(id => $(id).value = '');
+    $('processDate').value = todayKST();
+    state.processItemDrafts = createProcessDefaultItems();
+    renderProcessItemsTable();
+  }
+  function clearShipment() {
+    ['shipmentEditId','shipmentCustomer','shipmentProduct','shipmentLot','shipmentInspector','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id => $(id).value = '');
+    $('shipmentDate').value = todayKST();
+    state.shipmentItemDrafts = createShipmentDefaultItems();
+    renderShipmentItemsTable();
+  }
+  function clearSupplier() {
+    ['supplierEditId','supplierName','supplierManager','supplierPhone','supplierCategory','supplierStatus'].forEach(id => $(id).value = '');
+  }
+  function clearWorklog() {
+    ['worklogEditId','worklogFinishedLot','worklogWorker','worklogPlanQty','worklogProdQty','worklogFailQty',
+     'worklogRemark','worklogFlowSet','worklogFlowActual','worklogTempSet','worklogTempActual','worklogPressSet','worklogPressActual'].forEach(id => $(id).value = '');
+    $('worklogDate').value = todayKST();
+    state.worklogMaterialDrafts = [];
+    renderWorklogMaterials();
+  }
+  function clearUser() {
+    ['userEditId','userName','userEmail','userDepartment','userTitle','userPassword'].forEach(id => $(id).value = '');
+    $('userRole').value = 'user';
+    $('userStatus').value = 'APPROVED';
+  }
+
+  // ──────────────────────────────────────────
+  // 수정 (data-* 기반, XSS-safe)
+  // ──────────────────────────────────────────
+  function editIncoming(id) {
+    const row = state.incoming.find(x => String(x.id) === String(id));
+    if (!row) return;
+    $('incomingEditId').value = row.id;
+    $('incomingDate').value = row.date || '';
+    $('incomingLot').value = row.lot || '';
+    $('incomingSupplier').value = row.supplier || '';
+    $('incomingItem').value = row.item || '';
+    $('incomingInspector').value = row.inspector || '';
+    $('incomingQty').value = row.incomingQty || '';
+    $('incomingCheckQty').value = row.checkQty || '';
+    $('incomingFailQty').value = row.failQty || '';
+    state.incomingItemDrafts = row.items?.length ? JSON.parse(JSON.stringify(row.items)) : createIncomingDefaultItems();
+    renderIncomingItemsTable();
+  }
+
+  function editProcess(id) {
+    const row = state.process.find(x => String(x.id) === String(id));
+    if (!row) return;
+    $('processEditId').value = row.id;
+    $('processDate').value = row.date || '';
+    $('processLot').value = row.lot || '';
+    $('processLine').value = row.line || '';      // ★ 수정된 매핑 사용
+    $('processShift').value = row.shift || '';
+    $('processProduct').value = row.product || '';
+    $('processInspector').value = row.inspector || '';
+    $('processQty').value = row.qty || '';
+    $('processFailQty').value = row.failQty || '';
+    state.processItemDrafts = row.items?.length ? JSON.parse(JSON.stringify(row.items)) : createProcessDefaultItems();
+    renderProcessItemsTable();
+  }
+
+  function editShipment(id) {
+    const row = state.shipment.find(x => String(x.id) === String(id));
+    if (!row) return;
+    $('shipmentEditId').value = row.id;
+    $('shipmentDate').value = row.date || '';
+    $('shipmentCustomer').value = row.customer || '';
+    $('shipmentProduct').value = row.product || '';
+    $('shipmentLot').value = row.lot || '';
+    $('shipmentInspector').value = row.inspector || '';  // ★ 수정된 매핑 사용
+    $('shipmentQty').value = row.qty || '';
+    $('shipmentFailQty').value = row.failQty || '';
+    $('shipmentRemark').value = row.package || '';       // ★ 수정: package 필드 사용
+    state.shipmentItemDrafts = row.items?.length ? JSON.parse(JSON.stringify(row.items)) : createShipmentDefaultItems();
+    renderShipmentItemsTable();
+  }
+
+  function editSupplier(id) {
+    const row = state.suppliers.find(x => String(x.id) === String(id));
+    if (!row) return;
+    $('supplierEditId').value = row.id;
+    $('supplierName').value = row.name || '';
+    $('supplierManager').value = row.manager || '';
+    $('supplierPhone').value = row.phone || '';
+    $('supplierCategory').value = row.category || '';
+    $('supplierStatus').value = row.status || '';
+  }
+
+  function editWorklog(id) {
+    const row = state.worklog.find(x => String(x.id) === String(id));
+    if (!row) return;
+    $('worklogEditId').value = row.id;
+    $('worklogDate').value = row.workDate || '';
+    $('worklogFinishedLot').value = row.finishedLot || '';
+    $('worklogWorker').value = row.worker || '';
+    $('worklogPlanQty').value = row.planQty || '';
+    $('worklogProdQty').value = row.prodQty || '';
+    $('worklogFailQty').value = row.failQty || '';
+    $('worklogRemark').value = row.remark || '';
+    $('worklogFlowSet').value = row.flowSet || '';
+    $('worklogFlowActual').value = row.flowActual || '';
+    $('worklogTempSet').value = row.tempSet || '';
+    $('worklogTempActual').value = row.tempActual || '';
+    $('worklogPressSet').value = row.pressSet || '';
+    $('worklogPressActual').value = row.pressActual || '';
+    state.worklogMaterialDrafts = Array.isArray(row.materials) ? JSON.parse(JSON.stringify(row.materials)) : [];
+    renderWorklogMaterials();
+  }
+
+  function editUser(id) {
+    const row = state.users.find(x => String(x.id) === String(id));
+    if (!row) return;
+    $('userEditId').value = row.id;
+    $('userName').value = row.name || '';
+    $('userEmail').value = row.email || '';
+    $('userDepartment').value = row.department || '';
+    $('userTitle').value = row.title || '';
+    $('userRole').value = row.role || 'user';
+    $('userStatus').value = row.status || 'APPROVED';
+    $('userPassword').value = '';
+  }
+
+  // ──────────────────────────────────────────
+  // 삭제
+  // ──────────────────────────────────────────
+  async function deleteByApi(url, message, reloadFn) {
+    if (!confirm(message)) return;
+    const { data } = await api(url, { method: 'DELETE' });
+    alert(data?.message || '삭제되었습니다.');
+    if (data?.success) await reloadFn();
+  }
+
+  // ──────────────────────────────────────────
+  // 투입 원료 (Worklog)
+  // ──────────────────────────────────────────
+  function renderWorklogMaterials() {
+    const tbody = $('worklogMaterialsTable');
+    if (!state.worklogMaterialDrafts.length) {
+      tbody.innerHTML = '<tr><td colspan="7">원료 행이 없습니다.</td></tr>'; return;
+    }
+    tbody.innerHTML = state.worklogMaterialDrafts.map((row, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><input value="${escapeHtml(row.material || '')}" data-widx="${i}" data-wkey="material"></td>
+        <td><input value="${escapeHtml(row.supName || '')}" data-widx="${i}" data-wkey="supName"></td>
+        <td><input value="${escapeHtml(row.lotNo || '')}" data-widx="${i}" data-wkey="lotNo"></td>
+        <td><input value="${escapeHtml(row.inputQty || '')}" data-widx="${i}" data-wkey="inputQty"></td>
+        <td><input value="${escapeHtml(row.inputTime || '')}" data-widx="${i}" data-wkey="inputTime"></td>
+        <td><button class="small-btn del" type="button" data-waction="remove" data-widx="${i}">삭제</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function addWorklogMaterialRow() {
+    state.worklogMaterialDrafts.push({ material: '', supName: '', lotNo: '', inputQty: '', inputTime: '' });
+    renderWorklogMaterials();
+  }
+
+  // ──────────────────────────────────────────
+  // LOT 추적
+  // ──────────────────────────────────────────
+  async function searchTrace() {
+    const keyword = $('traceKeyword').value.trim();
+    if (!keyword) { $('traceTable').innerHTML = '<tr><td colspan="9">검색어를 입력하세요.</td></tr>'; return; }
+    const { data } = await api(`/api/trace?keyword=${encodeURIComponent(keyword)}`);
+    const rows = data?.data || [];
+    $('traceTable').innerHTML = rows.length
+      ? rows.map(x => `
           <tr>
             <td>${x.workDate || ''}</td>
             <td>${escapeHtml(x.finishedLot || '')}</td>
@@ -2241,99 +2288,175 @@
             <td>${escapeHtml(x.inputTime || '')}</td>
           </tr>
         `).join('')
-        : '<tr><td colspan="9">조회 결과 없음</td></tr>';
-    }
+      : '<tr><td colspan="9">조회 결과 없음</td></tr>';
+  }
 
-    function bindEvents() {
-      $('tabLoginBtn').onclick = () => openLoginTab('login');
-      $('tabSignupBtn').onclick = () => openLoginTab('signup');
-      $('loginBtn').onclick = login;
-      $('signupBtn').onclick = signup;
-      $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+  // ──────────────────────────────────────────
+  // 글로벌 검색
+  // ──────────────────────────────────────────
+  function handleGlobalSearch(keyword) {
+    if (!keyword) return;
+    // LOT 추적 페이지로 이동하여 검색
+    $$('.nav-item[data-page]').forEach(b => b.classList.remove('active'));
+    const traceBtn = document.querySelector('.nav-item[data-page="trace"]');
+    if (traceBtn) traceBtn.classList.add('active');
+    $$('.page-panel').forEach(p => p.classList.remove('active'));
+    $('page-trace').classList.add('active');
+    $('traceKeyword').value = keyword;
+    searchTrace();
+  }
 
-      $('profileBtn').onclick = (e) => {
-        e.stopPropagation();
-        $('profileDropdown').classList.toggle('show');
-      };
-      $('logoutBtn').onclick = logout;
-      $('openChangePassword').onclick = () => { closeProfileMenu(); openPasswordModal(); };
-      $('closePasswordModal').onclick = closePasswordModal;
-      $('cancelPasswordModal').onclick = closePasswordModal;
-      $('submitChangePassword').onclick = changePassword;
-      $('openUserManage').onclick = () => {
-        closeProfileMenu();
-        $$('.nav-item[data-page]').forEach(b => b.classList.remove('active'));
-        $('usersNavBtn').classList.add('active');
-        $$('.page-panel').forEach(p => p.classList.remove('active'));
-        $('page-users').classList.add('active');
-        loadUsers();
-      };
+  // ──────────────────────────────────────────
+  // 이벤트 바인딩 (이벤트 위임 방식으로 통합)
+  // ──────────────────────────────────────────
+  function bindEvents() {
+    // 로그인
+    $('tabLoginBtn').onclick = () => openLoginTab('login');
+    $('tabSignupBtn').onclick = () => openLoginTab('signup');
+    $('loginBtn').onclick = login;
+    $('signupBtn').onclick = signup;
+    $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
-      document.addEventListener('click', (e) => {
-        const menu = $('profileDropdown');
-        const btn = $('profileBtn');
-        if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) closeProfileMenu();
-      });
-
-      $('incomingSave').onclick = saveIncoming;
-      $('incomingReset').onclick = clearIncoming;
-      $('addIncomingRow').onclick = addIncomingItemRow;
-      ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingInspector','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id => {
-        $(id).addEventListener('input', syncIncomingPreview);
-      });
-
-      $('processSave').onclick = saveProcess;
-      $('processReset').onclick = clearProcess;
-      $('addProcessRow').onclick = addProcessItemRow;
-      ['processDate','processLot','processLine','processShift','processProduct','processInspector','processQty','processFailQty'].forEach(id => {
-        $(id).addEventListener('input', syncProcessPreview);
-      });
-
-      $('shipmentSave').onclick = saveShipment;
-      $('shipmentReset').onclick = clearShipment;
-      $('addShipmentRow').onclick = addShipmentItemRow;
-      ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentInspector','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id => {
-        $(id).addEventListener('input', syncShipmentPreview);
-      });
-
-      $('supplierSave').onclick = saveSupplier;
-      $('supplierReset').onclick = clearSupplier;
-
-      $('worklogSave').onclick = saveWorklog;
-      $('worklogReset').onclick = clearWorklog;
-      $('addWorklogMaterial').onclick = addWorklogMaterialRow;
-
-      $('userSave').onclick = saveUser;
-      $('userReset').onclick = clearUser;
-
-      $('reportReload').onclick = loadStandaloneReport;
-      $('reportType').onchange = loadStandaloneReport;
-
-      $('traceSearch').onclick = searchTrace;
-      $('dashRefresh').onclick = renderSummary;
-      $('printIncomingReport').onclick = () => window.print();
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      initYears();
-      setDefaultDates();
-      bindNav();
-      bindEvents();
-      startDateTimeClock();
-
-      state.incomingItemDrafts = createIncomingDefaultItems();
-      state.processItemDrafts = createProcessDefaultItems();
-      state.shipmentItemDrafts = createShipmentDefaultItems();
-      renderIncomingItemsTable();
-      renderProcessItemsTable();
-      renderShipmentItemsTable();
-      renderWorklogMaterials();
-
-      const loggedIn = await checkLogin();
-      if (loggedIn) {
-        await loadAllData();
-      }
+    // 프로필
+    $('profileBtn').onclick = (e) => { e.stopPropagation(); $('profileDropdown').classList.toggle('show'); };
+    $('logoutBtn').onclick = logout;
+    $('openChangePassword').onclick = () => { closeProfileMenu(); openPasswordModal(); };
+    $('closePasswordModal').onclick = closePasswordModal;
+    $('cancelPasswordModal').onclick = closePasswordModal;
+    $('submitChangePassword').onclick = changePassword;
+    $('openUserManage').onclick = () => {
+      closeProfileMenu();
+      $$('.nav-item[data-page]').forEach(b => b.classList.remove('active'));
+      $('usersNavBtn').classList.add('active');
+      $$('.page-panel').forEach(p => p.classList.remove('active'));
+      $('page-users').classList.add('active');
+      loadUsers();
+    };
+    document.addEventListener('click', (e) => {
+      const menu = $('profileDropdown');
+      const btn = $('profileBtn');
+      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) closeProfileMenu();
     });
+
+    // IQC
+    $('incomingSave').onclick = withSaving('incoming', $('incomingSave'), saveIncoming);
+    $('incomingReset').onclick = clearIncoming;
+    $('addIncomingRow').onclick = () => { state.incomingItemDrafts.push({ item: '', spec: '', value: '', judge: '합격' }); renderIncomingItemsTable(); };
+    ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingInspector','incomingQty','incomingCheckQty','incomingFailQty']
+      .forEach(id => $(id).addEventListener('input', syncIncomingPreview));
+
+    // PQC
+    $('processSave').onclick = withSaving('process', $('processSave'), saveProcess);
+    $('processReset').onclick = clearProcess;
+    $('addProcessRow').onclick = () => { state.processItemDrafts.push({ item: '', spec: '', value: '', judge: '합격' }); renderProcessItemsTable(); };
+    ['processDate','processLot','processLine','processShift','processProduct','processInspector','processQty','processFailQty']
+      .forEach(id => $(id).addEventListener('input', syncProcessPreview));
+
+    // OQC
+    $('shipmentSave').onclick = withSaving('shipment', $('shipmentSave'), saveShipment);
+    $('shipmentReset').onclick = clearShipment;
+    $('addShipmentRow').onclick = () => { state.shipmentItemDrafts.push({ item: '', spec: '', value: '', judge: '합격' }); renderShipmentItemsTable(); };
+    ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentInspector','shipmentQty','shipmentFailQty','shipmentRemark']
+      .forEach(id => $(id).addEventListener('input', syncShipmentPreview));
+
+    // 협력사
+    $('supplierSave').onclick = withSaving('supplier', $('supplierSave'), saveSupplier);
+    $('supplierReset').onclick = clearSupplier;
+
+    // 작업일지
+    $('worklogSave').onclick = withSaving('worklog', $('worklogSave'), saveWorklog);
+    $('worklogReset').onclick = clearWorklog;
+    $('addWorklogMaterial').onclick = addWorklogMaterialRow;
+
+    // 회원
+    $('userSave').onclick = withSaving('user', $('userSave'), saveUser);
+    $('userReset').onclick = clearUser;
+
+    // 성적서
+    $('reportType').onchange = () => { populateReportSelect(); loadStandaloneReport(); };
+    $('reportSelect').onchange = loadStandaloneReport;
+    $('reportReload').onclick = loadStandaloneReport;
+    $('printReportPage').onclick = () => printElement($('reportPrintTarget'));
+
+    // IQC 인쇄 (해당 영역만)
+    $('printIncomingReport').onclick = () => printElement($('incomingReportPreview'));
+
+    // 추적
+    $('traceSearch').onclick = searchTrace;
+    $('traceKeyword').addEventListener('keydown', e => { if (e.key === 'Enter') searchTrace(); });
+
+    // 대시보드
+    $('dashRefresh').onclick = renderSummary;
+
+    // 글로벌 검색
+    $('globalSearch').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleGlobalSearch($('globalSearch').value.trim());
+    });
+
+    // ── 테이블 이벤트 위임 (data-action 기반) ──
+    // 각 목록 tbody에 위임
+    const tableActions = {
+      editIncoming, editProcess, editShipment, editSupplier, editWorklog, editUser,
+      deleteIncoming: (id) => deleteByApi(`/api/iqc/${id}`, '삭제하시겠습니까?', async () => { await loadIncoming(); renderSummary(); }),
+      deleteProcess:  (id) => deleteByApi(`/api/pqc/${id}`, '삭제하시겠습니까?', async () => { await loadProcess(); renderSummary(); }),
+      deleteShipment: (id) => deleteByApi(`/api/oqc/${id}`, '삭제하시겠습니까?', async () => { await loadShipment(); renderSummary(); }),
+      deleteSupplier: (id) => deleteByApi(`/api/suppliers/${id}`, '삭제하시겠습니까?', loadSuppliers),
+      deleteWorklog:  (id) => deleteByApi(`/api/worklog/${id}`, '삭제하시겠습니까?', async () => { await loadWorklog(); renderSummary(); }),
+      deleteUser:     (id) => deleteByApi(`/api/admin/users/${id}`, '삭제하시겠습니까?', loadUsers)
+    };
+
+    ['incomingTable','processTable','shipmentTable','supplierTable','worklogTable','userTable'].forEach(tbodyId => {
+      $(tbodyId).addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        if (tableActions[action]) tableActions[action](id);
+      });
+    });
+
+    // 검사항목 테이블 위임 (XSS-safe 방식)
+    bindItemTableDelegation('incomingItemsTable');
+    bindItemTableDelegation('processItemsTable');
+    bindItemTableDelegation('shipmentItemsTable');
+
+    // 투입 원료 테이블 위임
+    $('worklogMaterialsTable').addEventListener('input', (e) => {
+      const el = e.target;
+      const idx = el.dataset.widx;
+      const key = el.dataset.wkey;
+      if (idx === undefined || !key) return;
+      state.worklogMaterialDrafts[Number(idx)][key] = el.value;
+    });
+    $('worklogMaterialsTable').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-waction="remove"]');
+      if (!btn) return;
+      state.worklogMaterialDrafts.splice(Number(btn.dataset.widx), 1);
+      renderWorklogMaterials();
+    });
+  }
+
+  // ──────────────────────────────────────────
+  // 초기화 진입점
+  // ──────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    initYears();
+    setDefaultDates();
+    bindNav();
+    bindEvents();
+    startDateTimeClock();
+
+    state.incomingItemDrafts = createIncomingDefaultItems();
+    state.processItemDrafts = createProcessDefaultItems();
+    state.shipmentItemDrafts = createShipmentDefaultItems();
+    renderIncomingItemsTable();
+    renderProcessItemsTable();
+    renderShipmentItemsTable();
+    renderWorklogMaterials();
+
+    const loggedIn = await checkLogin();
+    if (loggedIn) await loadAllData();
+  });
   </script>
 </body>
 </html>
