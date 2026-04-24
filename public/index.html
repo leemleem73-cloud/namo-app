@@ -1933,7 +1933,7 @@
     const prevYear = year - 1;
 
     function countYear(arr, y) {
-      return arr.filter(r => String(r.date || r.workDate || '').startsWith(String(y))).length;
+      return arr.filter(r => getDateYear(r.date || r.workDate) === y).length;
     }
     function rateStr(curr, prev) {
       if (!prev) return curr ? '신규' : '-';
@@ -1966,8 +1966,11 @@
     const year = Number($('dashYear').value || new Date().getFullYear());
     const monthLabels = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
     const makeMonthly = arr => monthLabels.map((_, i) =>
-      arr.filter(r => String(r.date || r.workDate || '').startsWith(`${year}-${String(i+1).padStart(2,'0')}`)).length
-    );
+     arr.filter(r => {
+    const dateValue = r.date || r.workDate;
+    return getDateYear(dateValue) === year && getDateMonth(dateValue) === i;
+  }).length
+);
     if (state.charts.trend) state.charts.trend.destroy();
     state.charts.trend = new Chart($('trendChart'), {
       type: 'bar',
