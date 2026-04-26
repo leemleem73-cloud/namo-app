@@ -16,7 +16,7 @@
   --ok:#0a7c4e;--oks:#e3f5ec;--er:#c52b2b;--ers:#fde9e9;
   --wa:#a05c00;--was:#fff3e0;--inf:#0369a1;--infs:#e0f2fe;
   --sh1:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
-  --sh2:0 4px 6px rgba(0,0,0,.06);--sh3:0 10px 24px rgba(0,0,0,.08),0 4px 8px rgba(0,0,0,.04);
+  --sh3:0 10px 24px rgba(0,0,0,.08),0 4px 8px rgba(0,0,0,.04);
   --sh4:0 20px 40px rgba(0,0,0,.10),0 8px 16px rgba(0,0,0,.05);
   --r1:6px;--r2:10px;--r3:14px;--r4:18px;--r5:24px;
   --sw:240px;--th:64px;--tr:150ms cubic-bezier(.4,0,.2,1);
@@ -28,7 +28,7 @@ body{font-family:var(--font);font-size:14px;line-height:1.5;color:var(--t1);back
 button,input,select,textarea{font:inherit}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
 
-/* ── LOGIN ── */
+/* LOGIN */
 #loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);position:relative;overflow:hidden}
 #loginPage::before{content:'';position:absolute;inset:0;
@@ -49,7 +49,7 @@ button,input,select,textarea{font:inherit}
 .lform input::placeholder{color:var(--t3)}
 .lerr{color:var(--er);font-size:12px;font-weight:500;min-height:16px}
 
-/* ── SHELL ── */
+/* SHELL */
 .app{height:100vh;display:flex;flex-direction:column}
 .shell{display:none;height:100vh;flex-direction:column}
 .topbar{height:var(--th);flex-shrink:0;display:flex;align-items:center;background:var(--sf);border-bottom:1px solid var(--bd);box-shadow:var(--sh1);z-index:100}
@@ -77,7 +77,7 @@ button,input,select,textarea{font:inherit}
 .ditem:hover{background:var(--s2);color:var(--t1)}
 .ditem.danger{color:var(--er)}.ditem.danger:hover{background:var(--ers)}
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 .layout{flex:1;display:flex;overflow:hidden;min-height:0}
 .sidebar{width:var(--sw);flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);overflow-y:auto;padding:16px 12px}
 .nav-sec{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;padding:12px 8px 6px}
@@ -87,10 +87,10 @@ button,input,select,textarea{font:inherit}
 .nav-icon{width:18px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .content{flex:1;overflow-y:auto;padding:24px;min-width:0}
 
-/* ── PAGES ── */
+/* PAGES */
 .page{display:none}.page.active{display:block}
 
-/* ── PAGE HEADER ── */
+/* PAGE HEADER */
 .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
 .ph-bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3);font-weight:500;margin-bottom:4px}
 .ph-bc .sep{color:var(--bd2)}
@@ -98,7 +98,7 @@ button,input,select,textarea{font:inherit}
 .ph-sub{font-size:13px;color:var(--t3);margin-top:2px}
 .ph-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:var(--r2);font-size:13px;font-weight:600;cursor:pointer;transition:var(--tr);white-space:nowrap;outline:none}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.pri{background:var(--pri);color:#fff;box-shadow:0 1px 3px rgba(26,86,219,.3)}
@@ -109,14 +109,14 @@ button,input,select,textarea{font:inherit}
 .btn.ghost:hover:not(:disabled){background:var(--pris)}
 .btn.sm{height:30px;padding:0 12px;font-size:12px}
 
-/* ── CARDS ── */
+/* CARDS */
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r4);box-shadow:var(--sh1)}
 .ch{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bd)}
 .ch h2{font-size:16px;font-weight:700;color:var(--t1)}
 .ch h3{font-size:15px;font-weight:700;color:var(--t1)}
 .cb{padding:20px}.ca{display:flex;gap:8px;align-items:center}
 
-/* ── STAT CARDS ── */
+/* STAT CARDS */
 .sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
 .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r4);padding:20px;box-shadow:var(--sh1);position:relative;overflow:hidden}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
@@ -132,7 +132,7 @@ button,input,select,textarea{font:inherit}
 .sc-meta{font-size:12px;color:var(--t3);margin-top:8px}
 .trend.up{color:var(--ok);font-weight:600}.trend.down{color:var(--er);font-weight:600}.trend.neutral{color:var(--t3);font-weight:600}
 
-/* ── DASHBOARD LOWER ── */
+/* DASHBOARD */
 .dlower{display:grid;grid-template-columns:1fr 360px;gap:16px}
 .cwrap{height:280px;position:relative}
 .nlist{display:flex;flex-direction:column}
@@ -142,13 +142,12 @@ button,input,select,textarea{font:inherit}
 .ntxt{flex:1;color:var(--t2);line-height:1.5}
 .ndate{font-size:11px;color:var(--t3);white-space:nowrap;margin-top:2px}
 
-/* ── WORK GRID ── */
+/* WORK GRID */
 .wgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px}
 
-/* ── FORM ── */
+/* FORM */
 .fg4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .fg3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.fg2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .cfall{grid-column:1/-1}
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
@@ -157,7 +156,7 @@ button,input,select,textarea{font:inherit}
 .field input::placeholder{color:var(--t3)}
 .field textarea{height:auto;min-height:80px;padding:10px 12px;resize:vertical;line-height:1.5}
 
-/* ── TABLE ── */
+/* TABLE */
 .tw{border:1px solid var(--bd);border-radius:var(--r3);overflow:auto;background:var(--sf)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{background:var(--s2);color:var(--t3);font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:11px 14px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}
@@ -167,31 +166,31 @@ tbody tr:hover{background:var(--s2)}
 tbody td input,tbody td select{width:100%;height:32px;border:1.5px solid var(--bd);border-radius:var(--r1);padding:0 8px;font-size:12px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr)}
 tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 0 0 2px var(--prit)}
 
-/* ── BADGES ── */
+/* BADGES */
 .status{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
 .status.pass{background:var(--oks);color:var(--ok)}.status.fail{background:var(--ers);color:var(--er)}.status.hold{background:var(--was);color:var(--wa)}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
 .badge.pass{background:var(--oks);color:var(--ok)}.badge.fail{background:var(--ers);color:var(--er)}.badge.hold{background:var(--was);color:var(--wa)}.badge.info{background:var(--infs);color:var(--inf)}
 .tag{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--s2);color:var(--t3);border:1px solid var(--bd)}
 
-/* ── ACTION BUTTONS ── */
+/* ACTION BUTTONS */
 .ai{display:flex;gap:4px;flex-wrap:wrap}
 .sb{height:28px;padding:0 10px;border:none;border-radius:var(--r1);font-size:11px;font-weight:600;cursor:pointer;transition:var(--tr)}
 .sb.edit{background:var(--pris);color:var(--pri)}.sb.edit:hover{background:var(--pri);color:#fff}
 .sb.del{background:var(--ers);color:var(--er)}.sb.del:hover{background:var(--er);color:#fff}
 .sb.lbl{background:#f3f4f6;color:#374151}.sb.lbl:hover{background:#e5e7eb}
 
-/* ── TOOLBAR ── */
+/* TOOLBAR */
 .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .toolbar select,.toolbar input{height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr)}
 .toolbar-label{font-size:12px;font-weight:600;color:var(--t3)}
 
-/* ── SECTION PANEL ── */
+/* SECTION PANEL */
 .sp{margin-top:16px;border:1px solid var(--bd);border-radius:var(--r3);overflow:hidden}
 .sph{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--s2);border-bottom:1px solid var(--bd)}
 .sph h3{font-size:13px;font-weight:700;color:var(--t1)}
 
-/* ── REPORT ── */
+/* REPORT */
 .rsheet{border:1.5px solid var(--bd2);border-radius:var(--r4);padding:24px;background:var(--sf)}
 .rhdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--bd)}
 .rhdr h2{font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
@@ -201,21 +200,21 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .rlbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
 .big{font-size:26px;font-weight:900;color:var(--ok)}
 
-/* ── SIGN GRID (성명 서명란) ── */
-.sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+/* SIGN GRID (입력폼용) */
+.sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .sign-box{border:1.5px solid var(--bd2);border-radius:var(--r2);overflow:hidden}
-.sign-box-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--s2);border-bottom:1px solid var(--bd)}
+.sign-box-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--s2);border-bottom:1px solid var(--bd)}
 .sign-box-role{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
 .sign-box-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
 .sign-box-badge.any{background:var(--pris);color:var(--pri)}
 .sign-box-badge.mgr{background:var(--oks);color:var(--ok)}
 .sign-box-body{padding:12px}
-.sign-box-select{width:100%;height:34px;border:1.5px solid var(--bd);border-radius:var(--r1);padding:0 10px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr)}
-.sign-box-select:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit)}
-.sign-name-display{font-size:15px;font-weight:700;color:var(--t1);min-height:28px;display:flex;align-items:center}
-.sign-title-display{font-size:11px;color:var(--t3);margin-top:2px}
-/* 인쇄용 성적서 서명란 */
-.rprint-sign{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:20px;border:1.5px solid #888;border-radius:0}
+.sign-sel{width:100%;height:34px;border:1.5px solid var(--bd);border-radius:var(--r1);padding:0 10px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr)}
+.sign-sel:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit)}
+.sign-sub{font-size:11px;color:var(--t3);margin-top:4px;min-height:16px}
+
+/* 인쇄용 서명란 */
+.rprint-sign{display:grid;grid-template-columns:repeat(3,1fr);margin-top:20px;border:1.5px solid #888;border-radius:0}
 .rpsign-col{text-align:center;padding:10px 8px;border-right:1px solid #aaa}
 .rpsign-col:last-child{border-right:none}
 .rpsign-role{font-size:10px;font-weight:800;color:#444;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px}
@@ -223,14 +222,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .rpsign-title{font-size:11px;color:#666;margin-top:2px}
 .rpsign-line{width:80%;height:1px;background:#999;margin:10px auto 4px}
 
-/* ── BARCODE ── */
+/* BARCODE */
 .bcsec{margin-top:20px;padding-top:16px;border-top:1.5px dashed var(--bd)}
 .bcsec h4{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px}
 .bcrow{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap}
 .bcitem{display:flex;flex-direction:column;align-items:center;gap:4px}
 .bcitem span{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
 
-/* ── LABEL ── */
+/* LABEL */
 .lgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .plabel{border:2px solid #000;border-radius:4px;padding:12px;background:#fff;font-family:'Inter',sans-serif;page-break-inside:avoid}
 .pltitle{font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #000;padding-bottom:6px;margin-bottom:8px}
@@ -242,7 +241,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .jstamp{display:inline-block;border:2px solid;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;margin-top:6px}
 .jstamp.pass{border-color:var(--ok);color:var(--ok)}.jstamp.fail{border-color:var(--er);color:var(--er)}
 
-/* ── LINKAGE ── */
+/* LINKAGE */
 .lkbox{background:var(--pris);border:1px solid rgba(26,86,219,.2);border-radius:var(--r3);padding:14px 16px;margin-top:16px}
 .lkbox-title{font-size:12px;font-weight:700;color:var(--pri);margin-bottom:10px}
 .lkrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(26,86,219,.1);font-size:12px}
@@ -250,7 +249,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .lktype{font-weight:700;color:var(--t2);width:80px;flex-shrink:0}
 .lklot{font-weight:600;color:var(--pri);flex:1}
 
-/* ── MODAL ── */
+/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(10,15,30,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000}
 .modal.show{display:flex}
 .mcard{width:min(460px,calc(100vw - 32px));background:var(--sf);border-radius:var(--r5);border:1px solid var(--bd);box-shadow:var(--sh4);overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
@@ -262,23 +261,23 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .mbody{padding:22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
 .mfoot{padding:16px 22px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
 
-/* ── FOOTER ── */
+/* FOOTER */
 .footer{padding:12px 24px;border-top:1px solid var(--bd);background:var(--sf);text-align:center;font-size:12px;color:var(--t3);flex-shrink:0}
 
-/* ── PRINT ── */
+/* PRINT */
 @media print{body *{visibility:hidden}#printTarget,#printTarget *{visibility:visible}#printTarget{position:fixed;top:0;left:0;width:100%;padding:24px;background:#fff}}
 
-/* ── UTILS ── */
+/* UTILS */
 .mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
 
-/* ── RESPONSIVE ── */
+/* RESPONSIVE */
 @media(max-width:1400px){.sgrid{grid-template-columns:repeat(2,1fr)}.wgrid{grid-template-columns:1fr}.fg4{grid-template-columns:repeat(2,1fr)}.dlower{grid-template-columns:1fr}}
-@media(max-width:900px){:root{--sw:0px}.sidebar{display:none}.content{padding:16px}.sgrid{grid-template-columns:repeat(2,1fr)}.fg4,.fg3,.fg2{grid-template-columns:1fr}.sign-grid,.rprint-sign{grid-template-columns:1fr}.lgrid{grid-template-columns:1fr}}
+@media(max-width:900px){:root{--sw:0px}.sidebar{display:none}.content{padding:16px}.sgrid{grid-template-columns:repeat(2,1fr)}.fg4,.fg3{grid-template-columns:1fr}.sign-grid,.rprint-sign,.lgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
+<!-- LOGIN -->
 <div id="loginPage">
   <div class="lcard">
     <div class="lbrand"><img src="/logo.png" alt="Logo"/></div>
@@ -310,7 +309,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   </div>
 </div>
 
-<!-- ══ SHELL ══ -->
+<!-- SHELL -->
 <div class="app"><div class="shell">
 
   <header class="topbar">
@@ -401,44 +400,23 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="field"><label>검사수량 *</label><input type="number" id="incomingCheckQty" placeholder="0"></div>
                 <div class="field"><label>불량수량</label><input type="number" id="incomingFailQty" placeholder="0"></div>
               </div>
-
-              <!-- 서명란 (입력 폼) -->
+              <!-- 서명란 -->
               <div class="sp mt16">
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
                 <div class="cb" style="padding:14px 16px;">
                   <div class="sign-grid">
-                    <div class="sign-box">
-                      <div class="sign-box-header"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체</span></div>
-                      <div class="sign-box-body">
-                        <select class="sign-box-select" id="iqcSignWriter"></select>
-                        <div class="sign-title-display" id="iqcSignWriterTitle"></div>
-                      </div>
-                    </div>
-                    <div class="sign-box">
-                      <div class="sign-box-header"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상</span></div>
-                      <div class="sign-box-body">
-                        <select class="sign-box-select" id="iqcSignReviewer"></select>
-                        <div class="sign-title-display" id="iqcSignReviewerTitle"></div>
-                      </div>
-                    </div>
-                    <div class="sign-box">
-                      <div class="sign-box-header"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상</span></div>
-                      <div class="sign-box-body">
-                        <select class="sign-box-select" id="iqcSignApprover"></select>
-                        <div class="sign-title-display" id="iqcSignApproverTitle"></div>
-                      </div>
-                    </div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체 회원</span></div><div class="sign-box-body"><select class="sign-sel" id="iqcWriter"></select><div class="sign-sub" id="iqcWriterSub"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-sel" id="iqcReviewer"></select><div class="sign-sub" id="iqcReviewerSub"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-sel" id="iqcApprover"></select><div class="sign-sub" id="iqcApproverSub"></div></div></div>
                   </div>
                 </div>
               </div>
-
               <div class="sp"><div class="sph"><h3>검사항목 및 판정</h3><button class="btn light sm" id="addIncomingRow" type="button">+ 항목 추가</button></div>
                 <div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th style="width:46px">No.</th><th>항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th style="width:95px">판정</th><th style="width:55px">삭제</th></tr></thead><tbody id="incomingItemsTable"></tbody></table></div>
               </div>
               <input type="hidden" id="incomingEditId">
             </div>
           </div>
-
           <!-- 미리보기 -->
           <div class="card">
             <div class="ch"><h2>성적서 미리보기</h2><div class="ca"><button class="btn light sm" id="printIncomingReport" type="button">🖨 인쇄</button><button class="btn ghost sm" id="openIncomingLabel" type="button">🏷 라벨</button></div></div>
@@ -448,23 +426,17 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="tw"><table><tbody id="incomingMetaTable"></tbody></table></div>
                 <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="incomingPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="incomingFinalJudgeText">합격</div></div>
-                <!-- 인쇄용 서명란 -->
-                <div class="rprint-sign" id="incomingPrintSign">
-                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="riqcWriter">-</div><div class="rpsign-title" id="riqcWriterTitle"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="riqcReviewer">-</div><div class="rpsign-title" id="riqcReviewerTitle"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="riqcApprover">-</div><div class="rpsign-title" id="riqcApproverTitle"></div><div class="rpsign-line"></div></div>
+                <div class="rprint-sign">
+                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rIqcWriter">-</div><div class="rpsign-title" id="rIqcWriterT"></div><div class="rpsign-line"></div></div>
+                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rIqcReviewer">-</div><div class="rpsign-title" id="rIqcReviewerT"></div><div class="rpsign-line"></div></div>
+                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rIqcApprover">-</div><div class="rpsign-title" id="rIqcApproverT"></div><div class="rpsign-line"></div></div>
                 </div>
-                <div class="bcsec"><h4>바코드</h4><div class="bcrow">
-                  <div class="bcitem"><span>LOT</span><svg id="bcIqcLot"></svg></div>
-                  <div class="bcitem"><span>문서번호</span><svg id="bcIqcDoc"></svg></div>
-                </div></div>
+                <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcIqcLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcIqcDoc"></svg></div></div></div>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="card mt16">
-          <div class="ch"><h3>입고검사 목록</h3></div>
+        <div class="card mt16"><div class="ch"><h3>입고검사 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>일자</th><th>LOT</th><th>협력업체</th><th>품목</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="incomingTable"></tbody></table>
           </div>
@@ -491,9 +463,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
                 <div class="cb" style="padding:14px 16px;">
                   <div class="sign-grid">
-                    <div class="sign-box"><div class="sign-box-header"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체</span></div><div class="sign-box-body"><select class="sign-box-select" id="pqcSignWriter"></select><div class="sign-title-display" id="pqcSignWriterTitle"></div></div></div>
-                    <div class="sign-box"><div class="sign-box-header"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-box-select" id="pqcSignReviewer"></select><div class="sign-title-display" id="pqcSignReviewerTitle"></div></div></div>
-                    <div class="sign-box"><div class="sign-box-header"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-box-select" id="pqcSignApprover"></select><div class="sign-title-display" id="pqcSignApproverTitle"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체 회원</span></div><div class="sign-box-body"><select class="sign-sel" id="pqcWriter"></select><div class="sign-sub" id="pqcWriterSub"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-sel" id="pqcReviewer"></select><div class="sign-sub" id="pqcReviewerSub"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-sel" id="pqcApprover"></select><div class="sign-sub" id="pqcApproverSub"></div></div></div>
                   </div>
                 </div>
               </div>
@@ -511,21 +483,17 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="tw"><table><tbody id="processMetaTable"></tbody></table></div>
                 <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="processPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="processFinalJudgeText">합격</div></div>
-                <div class="rprint-sign" id="processPrintSign">
-                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rpqcWriter">-</div><div class="rpsign-title" id="rpqcWriterTitle"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rpqcReviewer">-</div><div class="rpsign-title" id="rpqcReviewerTitle"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rpqcApprover">-</div><div class="rpsign-title" id="rpqcApproverTitle"></div><div class="rpsign-line"></div></div>
+                <div class="rprint-sign">
+                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rPqcWriter">-</div><div class="rpsign-title" id="rPqcWriterT"></div><div class="rpsign-line"></div></div>
+                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rPqcReviewer">-</div><div class="rpsign-title" id="rPqcReviewerT"></div><div class="rpsign-line"></div></div>
+                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rPqcApprover">-</div><div class="rpsign-title" id="rPqcApproverT"></div><div class="rpsign-line"></div></div>
                 </div>
-                <div class="bcsec"><h4>바코드</h4><div class="bcrow">
-                  <div class="bcitem"><span>LOT</span><svg id="bcPqcLot"></svg></div>
-                  <div class="bcitem"><span>문서번호</span><svg id="bcPqcDoc"></svg></div>
-                </div></div>
+                <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcPqcLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcPqcDoc"></svg></div></div></div>
               </div>
             </div>
           </div>
         </div>
-        <div class="card mt16">
-          <div class="ch"><h3>공정검사 목록</h3></div>
+        <div class="card mt16"><div class="ch"><h3>공정검사 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>일자</th><th>LOT</th><th>제품명</th><th>설비명</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="processTable"></tbody></table>
           </div>
@@ -552,9 +520,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
                 <div class="cb" style="padding:14px 16px;">
                   <div class="sign-grid">
-                    <div class="sign-box"><div class="sign-box-header"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체</span></div><div class="sign-box-body"><select class="sign-box-select" id="oqcSignWriter"></select><div class="sign-title-display" id="oqcSignWriterTitle"></div></div></div>
-                    <div class="sign-box"><div class="sign-box-header"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-box-select" id="oqcSignReviewer"></select><div class="sign-title-display" id="oqcSignReviewerTitle"></div></div></div>
-                    <div class="sign-box"><div class="sign-box-header"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-box-select" id="oqcSignApprover"></select><div class="sign-title-display" id="oqcSignApproverTitle"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체 회원</span></div><div class="sign-box-body"><select class="sign-sel" id="oqcWriter"></select><div class="sign-sub" id="oqcWriterSub"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-sel" id="oqcReviewer"></select><div class="sign-sub" id="oqcReviewerSub"></div></div></div>
+                    <div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상</span></div><div class="sign-box-body"><select class="sign-sel" id="oqcApprover"></select><div class="sign-sub" id="oqcApproverSub"></div></div></div>
                   </div>
                 </div>
               </div>
@@ -572,21 +540,17 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="tw"><table><tbody id="shipmentMetaTable"></tbody></table></div>
                 <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="shipmentPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="shipmentFinalJudgeText">합격</div></div>
-                <div class="rprint-sign" id="shipmentPrintSign">
-                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="roqcWriter">-</div><div class="rpsign-title" id="roqcWriterTitle"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="roqcReviewer">-</div><div class="rpsign-title" id="roqcReviewerTitle"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="roqcApprover">-</div><div class="rpsign-title" id="roqcApproverTitle"></div><div class="rpsign-line"></div></div>
+                <div class="rprint-sign">
+                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rOqcWriter">-</div><div class="rpsign-title" id="rOqcWriterT"></div><div class="rpsign-line"></div></div>
+                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rOqcReviewer">-</div><div class="rpsign-title" id="rOqcReviewerT"></div><div class="rpsign-line"></div></div>
+                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rOqcApprover">-</div><div class="rpsign-title" id="rOqcApproverT"></div><div class="rpsign-line"></div></div>
                 </div>
-                <div class="bcsec"><h4>바코드</h4><div class="bcrow">
-                  <div class="bcitem"><span>LOT</span><svg id="bcOqcLot"></svg></div>
-                  <div class="bcitem"><span>문서번호</span><svg id="bcOqcDoc"></svg></div>
-                </div></div>
+                <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcOqcLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcOqcDoc"></svg></div></div></div>
               </div>
             </div>
           </div>
         </div>
-        <div class="card mt16">
-          <div class="ch"><h3>출하검사 목록</h3></div>
+        <div class="card mt16"><div class="ch"><h3>출하검사 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>일자</th><th>고객사</th><th>제품명</th><th>LOT</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="shipmentTable"></tbody></table>
           </div>
@@ -599,7 +563,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           <div><div class="ph-title">성적서</div><div class="ph-sub">저장된 성적서를 조회하고 인쇄합니다.</div></div>
           <div class="ph-actions">
             <select id="reportType" style="height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;">
-              <option value="iqc">수입검사 (IQC)</option><option value="pqc">공정검사 (PQC)</option><option value="oqc">출하검사 (OQC)</option>
+              <option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option>
             </select>
             <select id="reportSelect" style="height:36px;min-width:220px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"><option value="">-- 성적서 선택 --</option></select>
             <button class="btn pri" id="reportReload">불러오기</button>
@@ -614,14 +578,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="reportBodyTable"></tbody></table></div>
             <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="reportFinalText">합격</div></div>
             <div class="rprint-sign">
-              <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rRptWriter">-</div><div class="rpsign-title" id="rRptWriterTitle"></div><div class="rpsign-line"></div></div>
-              <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rRptReviewer">-</div><div class="rpsign-title" id="rRptReviewerTitle"></div><div class="rpsign-line"></div></div>
-              <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rRptApprover">-</div><div class="rpsign-title" id="rRptApproverTitle"></div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rRptWriter">-</div><div class="rpsign-title" id="rRptWriterT"></div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rRptReviewer">-</div><div class="rpsign-title" id="rRptReviewerT"></div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rRptApprover">-</div><div class="rpsign-title" id="rRptApproverT"></div><div class="rpsign-line"></div></div>
             </div>
-            <div class="bcsec"><h4>바코드</h4><div class="bcrow">
-              <div class="bcitem"><span>LOT</span><svg id="bcRptLot"></svg></div>
-              <div class="bcitem"><span>문서번호</span><svg id="bcRptDoc"></svg></div>
-            </div></div>
+            <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcRptLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcRptDoc"></svg></div></div></div>
           </div>
         </div></div>
       </section>
@@ -699,9 +660,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
       </section>
 
-      <!-- ■ 회원 -->
+      <!-- ■ 회원 (관리자 전용) -->
       <section class="page" id="page-users">
-        <div class="ph"><div><div class="ph-title">회원등록현황</div><div class="ph-sub">관리자 전용 회원 관리 · 직책 등록 시 부장 이상은 검토자/승인자로 선택 가능</div></div>
+        <div class="ph"><div><div class="ph-title">회원등록현황</div><div class="ph-sub">관리자 전용 · 직책에 부장/이사 등 등록 시 검토자/승인자로 선택 가능</div></div>
           <div class="ph-actions"><button class="btn light" id="userReset">초기화</button><button class="btn pri" id="userSave">저장</button></div></div>
         <div class="card"><div class="ch"><h2>회원 등록 / 수정</h2></div><div class="cb">
           <div class="fg4">
@@ -727,7 +688,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   <div class="footer">© 2026 Namochemical Inc. All rights reserved. · Quality Management System</div>
 </div></div>
 
-<!-- 비밀번호 변경 -->
+<!-- 비밀번호 변경 모달 -->
 <div class="modal" id="passwordModal">
   <div class="mcard">
     <div class="mhdr"><h3>비밀번호 변경</h3><button type="button" class="mclose" id="closePasswordModal">✕</button></div>
@@ -750,12 +711,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 </div>
 
 <script>
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    STATE
-══════════════════════════════════════ */
+════════════════════════════════════ */
 const state={
   currentUser:null,
-  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],users:[],
+  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],
+  adminUsers:[],      // 관리자 전용 회원목록 (/api/admin/users)
+  signableUsers:[],   // 서명용 회원목록 (/api/users/signable) - 모든 로그인 사용자 접근 가능
   charts:{},
   incomingItemDrafts:[],processItemDrafts:[],shipmentItemDrafts:[],worklogMaterialDrafts:[],
   saving:{}
@@ -763,127 +726,154 @@ const state={
 const $=id=>document.getElementById(id);
 const $$=s=>Array.from(document.querySelectorAll(s));
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    API
-══════════════════════════════════════ */
+════════════════════════════════════ */
 async function api(url,o={}){
-  try{const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(o.headers||{})},...o});const d=await r.json().catch(()=>null);return{res:r,data:d};}
-  catch(e){console.error(url,e);return{res:{ok:false},data:null};}
+  try{
+    const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(o.headers||{})},...o});
+    const d=await r.json().catch(()=>null);return{res:r,data:d};
+  }catch(e){console.error(url,e);return{res:{ok:false},data:null};}
 }
 function withSaving(k,btn,fn){
   return async()=>{if(state.saving[k])return;state.saving[k]=true;if(btn)btn.disabled=true;
     try{await fn();}finally{state.saving[k]=false;if(btn)btn.disabled=false;}};
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    UTILS
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function todayKST(){const s=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;}
-function formatDT(){const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;}
+function formatDT(){
+  const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});
+  return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;
+}
 function startClock(){const e=$('currentDateTime');if(!e)return;const r=()=>{e.textContent=formatDT();};r();setInterval(r,1000);}
 function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
 function jBadge(j){if(j==='합격')return'<span class="status pass">합격</span>';if(j==='불합격')return'<span class="status fail">불합격</span>';return'<span class="status hold">보류</span>';}
 function calcJ(items=[]){if(!items.length)return'합격';if(items.some(x=>String(x.judge||'')==='불합격'))return'불합격';if(items.some(x=>String(x.judge||'')==='보류'))return'보류';return'합격';}
 function eRow(cols,msg='데이터 없음'){return`<tr><td colspan="${cols}" style="text-align:center;padding:24px;color:var(--t3);">${msg}</td></tr>`;}
 function safeBC(v){return String(v||'').replace(/[^\x20-\x7E]/g,'').trim()||'N-A';}
+function tryJSON(v){if(!v)return null;if(typeof v==='object')return v;try{return JSON.parse(v);}catch(e){return null;}}
 
-/* ══════════════════════════════════════
-   SIGN / 서명 — 직책 기반 필터
-   부장 이상 = 부장, 이사, 상무, 전무, 사장, 대표, 본부장, 실장, 센터장, CEO, CTO, COO, admin
-══════════════════════════════════════ */
-const SENIOR_TITLES=['부장','이사','상무','전무','사장','대표','본부장','실장','센터장','ceo','cto','coo','cfo','회장'];
-function isSenior(user){
-  if(!user)return false;
-  if(user.role==='admin')return true;
-  const t=(user.title||'').toLowerCase();
-  return SENIOR_TITLES.some(s=>t.includes(s));
+/* ════════════════════════════════════
+   직책 → 부장 이상 판별
+   부장/이사/상무/전무/사장/대표/본부장/실장/센터장/CEO/CTO/COO/admin
+════════════════════════════════════ */
+const SENIOR=['부장','이사','상무','전무','사장','대표','본부장','실장','센터장','ceo','cto','coo','cfo','회장'];
+function isSenior(u){
+  if(!u)return false;
+  if(u.role==='admin')return true;
+  const t=(u.title||'').toLowerCase();
+  return SENIOR.some(s=>t.includes(s));
 }
 
-function populateSignSelects(type){
-  const allUsers=state.users.filter(u=>u.status==='APPROVED');
-  const seniorUsers=allUsers.filter(u=>isSenior(u));
+/* ════════════════════════════════════
+   서명 셀렉트 관련
+   - signableUsers: 서명란에만 사용 (로그인 필요, 관리자 권한 불필요)
+   - adminUsers: 회원목록 탭에만 사용 (관리자 전용)
+════════════════════════════════════ */
+function buildSignSelects(type){
+  const all=state.signableUsers;
+  const mgr=all.filter(u=>isSenior(u));
 
-  const writerSel=$(`${type}SignWriter`);
-  const reviewerSel=$(`${type}SignReviewer`);
-  const approverSel=$(`${type}SignApprover`);
+  const writerSel=$(`${type}Writer`);
+  const reviewerSel=$(`${type}Reviewer`);
+  const approverSel=$(`${type}Approver`);
   if(!writerSel)return;
 
-  const prevWriter=writerSel.value;
-  const prevReviewer=reviewerSel.value;
-  const prevApprover=approverSel.value;
+  const savedW=writerSel.value;
+  const savedR=reviewerSel.value;
+  const savedA=approverSel.value;
 
-  writerSel.innerHTML='<option value="">-- 선택 --</option>'+allUsers.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
-  reviewerSel.innerHTML='<option value="">-- 선택 (부장 이상) --</option>'+seniorUsers.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
-  approverSel.innerHTML='<option value="">-- 선택 (부장 이상) --</option>'+seniorUsers.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
+  writerSel.innerHTML='<option value="">-- 작성자 선택 --</option>'+
+    all.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
+  reviewerSel.innerHTML='<option value="">-- 검토자 선택 (부장 이상) --</option>'+
+    mgr.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
+  approverSel.innerHTML='<option value="">-- 승인자 선택 (부장 이상) --</option>'+
+    mgr.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
 
-  if(prevWriter)writerSel.value=prevWriter;
-  if(prevReviewer)reviewerSel.value=prevReviewer;
-  if(prevApprover)approverSel.value=prevApprover;
+  if(savedW)writerSel.value=savedW;
+  if(savedR)reviewerSel.value=savedR;
+  if(savedA)approverSel.value=savedA;
 
-  updateSignDisplay(type);
+  syncSignDisplay(type);
 }
 
-function updateSignDisplay(type){
-  const get=(role,titleId)=>{
-    const sel=$(`${type}Sign${role}`);if(!sel)return;
-    const uid=sel.value;const u=state.users.find(x=>x.id===uid);
-    const tEl=$(`${type}Sign${role}Title`);
-    if(tEl)tEl.textContent=u?(u.department?`${u.department}`:'')+' '+(u.title||''):'';
-    // 미리보기 반영
-    const rn=$(`r${type==='iqc'?'iqc':type==='pqc'?'pqc':'oqc'}${role}`);
-    const rt=$(`r${type==='iqc'?'iqc':type==='pqc'?'pqc':'oqc'}${role}Title`);
-    if(rn)rn.textContent=u?u.name:'-';
-    if(rt)rt.textContent=u?(u.title||''):'';
+function syncSignDisplay(type){
+  const getUser=(selId)=>{
+    const sel=$(selId);if(!sel||!sel.value)return null;
+    return state.signableUsers.find(u=>u.id===sel.value)||null;
   };
-  get('Writer','Title');get('Reviewer','Title');get('Approver','Title');
-}
-
-function getSignData(type){
-  const find=(role)=>{
-    const sel=$(`${type}Sign${role}`);if(!sel||!sel.value)return{name:'-',title:'',dept:''};
-    const u=state.users.find(x=>x.id===sel.value);
-    return u?{name:u.name,title:u.title||'',dept:u.department||''}:{name:'-',title:'',dept:''};
+  const setPreview=(nameId,titleId,subId,u)=>{
+    if($(nameId))$(nameId).textContent=u?u.name:'-';
+    if($(titleId))$(titleId).textContent=u?(u.title||''):'';
+    if($(subId))$(subId).textContent=u?`${u.department||''} ${u.title||''}`.trim():'';
   };
-  return{writer:find('Writer'),reviewer:find('Reviewer'),approver:find('Approver')};
+
+  const pfx=type==='iqc'?'Iqc':type==='pqc'?'Pqc':'Oqc';
+  const uw=getUser(`${type}Writer`);
+  const ur=getUser(`${type}Reviewer`);
+  const ua=getUser(`${type}Approver`);
+  setPreview(`r${pfx}Writer`,`r${pfx}WriterT`,`${type}WriterSub`,uw);
+  setPreview(`r${pfx}Reviewer`,`r${pfx}ReviewerT`,`${type}ReviewerSub`,ur);
+  setPreview(`r${pfx}Approver`,`r${pfx}ApproverT`,`${type}ApproverSub`,ua);
 }
 
-function setSignFromRecord(type,record){
-  const set=(role,data)=>{
-    const sel=$(`${type}Sign${role}`);if(!sel)return;
-    if(data?.id){sel.value=data.id;}
-    else if(data?.name){
-      const u=state.users.find(x=>x.name===data.name);if(u)sel.value=u.id;
+function getSignPayload(type){
+  const find=(selId)=>{
+    const sel=$(selId);if(!sel||!sel.value)return{name:'-',title:'',department:''};
+    const u=state.signableUsers.find(x=>x.id===sel.value);
+    return u?{id:u.id,name:u.name,title:u.title||'',department:u.department||''}:{name:'-',title:'',department:''};
+  };
+  return{writer:find(`${type}Writer`),reviewer:find(`${type}Reviewer`),approver:find(`${type}Approver`)};
+}
+
+function restoreSignFromRecord(type,rec){
+  const restore=(selId,data)=>{
+    const sel=$(selId);if(!sel||!data)return;
+    if(data.id){
+      sel.value=data.id;
+      if(!sel.value){
+        // id로 못 찾으면 name으로 시도
+        const u=state.signableUsers.find(x=>x.name===data.name);
+        if(u)sel.value=u.id;
+      }
+    } else if(data.name){
+      const u=state.signableUsers.find(x=>x.name===data.name);
+      if(u)sel.value=u.id;
     }
   };
-  if(record?.signWriter)set('Writer',record.signWriter);
-  if(record?.signReviewer)set('Reviewer',record.signReviewer);
-  if(record?.signApprover)set('Approver',record.signApprover);
-  updateSignDisplay(type);
+  restore(`${type}Writer`,rec?.signWriter);
+  restore(`${type}Reviewer`,rec?.signReviewer);
+  restore(`${type}Approver`,rec?.signApprover);
+  syncSignDisplay(type);
 }
 
-function allPopulateSignSelects(){['iqc','pqc','oqc'].forEach(t=>populateSignSelects(t));}
+function rebuildAllSignSelects(){['iqc','pqc','oqc'].forEach(t=>buildSignSelects(t));}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    BARCODE
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function renderBC(svgId,value){
   const el=$(svgId);if(!el||!value)return;
   try{JsBarcode(el,safeBC(value),{format:'CODE128',width:1.6,height:40,displayValue:true,fontSize:11,margin:4,background:'#fff',lineColor:'#000'});}
   catch(e){console.warn('BC',svgId,e);}
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    LABEL
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function buildLabel(type,d){
   const judge=calcJ(d.items||[]);
   const jc=judge==='합격'?'pass':'fail';
   const docNo=`${type.toUpperCase()}-${String(d.date||'').replaceAll('-','')}-0001`;
   const uid='l'+Math.random().toString(36).slice(2,9);
   let rows='';
-  if(type==='iqc')rows=`<div class="plrow"><span class="plkey">품목</span><span class="plval">${esc(d.item||'-')}</span></div><div class="plrow"><span class="plkey">협력업체</span><span class="plval">${esc(d.supplier||'-')}</span></div><div class="plrow"><span class="plkey">입고수량</span><span class="plval">${esc(d.incomingQty??'-')}</span></div>`;
-  else if(type==='pqc')rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">설비명</span><span class="plval">${esc(d.line||'-')}</span></div><div class="plrow"><span class="plkey">검사수량</span><span class="plval">${esc(d.qty??'-')}</span></div>`;
-  else rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">고객사</span><span class="plval">${esc(d.customer||'-')}</span></div><div class="plrow"><span class="plkey">검사수량</span><span class="plval">${esc(d.qty??'-')}</span></div>`;
+  if(type==='iqc')rows=`<div class="plrow"><span class="plkey">품목</span><span class="plval">${esc(d.item||'-')}</span></div><div class="plrow"><span class="plkey">협력업체</span><span class="plval">${esc(d.supplier||'-')}</span></div><div class="plrow"><span class="plkey">입고수량</span><span class="plval">${esc(String(d.incomingQty??'-'))}</span></div>`;
+  else if(type==='pqc')rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">설비명</span><span class="plval">${esc(d.line||'-')}</span></div><div class="plrow"><span class="plkey">검사수량</span><span class="plval">${esc(String(d.qty??'-'))}</span></div>`;
+  else rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">고객사</span><span class="plval">${esc(d.customer||'-')}</span></div><div class="plrow"><span class="plkey">검사수량</span><span class="plval">${esc(String(d.qty??'-'))}</span></div>`;
   const writer=d.signWriter?.name||'-';
   return`<div class="plabel" id="${uid}">
     <div class="pltitle">Namochemical · ${type.toUpperCase()} 검사 라벨</div>
@@ -908,10 +898,9 @@ function openLabelModal(type,arr){
   setTimeout(()=>{
     body.querySelectorAll('.plabel').forEach(el=>{
       const uid=el.id;
-      const lotSvg=el.querySelector(`.${uid}-lot`);
-      const docSvg=el.querySelector(`.${uid}-doc`);
-      if(lotSvg)try{JsBarcode(lotSvg,safeBC(d.lot||'LOT'),{format:'CODE128',width:1.4,height:36,displayValue:false,margin:2,background:'#fff',lineColor:'#000'});}catch(e){}
-      if(docSvg)try{JsBarcode(docSvg,safeBC(docNo),{format:'CODE128',width:1.2,height:30,displayValue:false,margin:2,background:'#fff',lineColor:'#000'});}catch(e){}
+      const ls=el.querySelector(`.${uid}-lot`),ds=el.querySelector(`.${uid}-doc`);
+      if(ls)try{JsBarcode(ls,safeBC(d.lot||'LOT'),{format:'CODE128',width:1.4,height:36,displayValue:false,margin:2,background:'#fff',lineColor:'#000'});}catch(e){}
+      if(ds)try{JsBarcode(ds,safeBC(docNo),{format:'CODE128',width:1.2,height:30,displayValue:false,margin:2,background:'#fff',lineColor:'#000'});}catch(e){}
     });
   },60);
   $('labelModal').classList.add('show');
@@ -936,9 +925,9 @@ function printLabel(){
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    AUTH
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function openLoginTab(t){$('tabLoginBtn').classList.toggle('active',t==='login');$('tabSignupBtn').classList.toggle('active',t==='signup');$('panelLogin').classList.toggle('active',t==='login');$('panelSignup').classList.toggle('active',t==='signup');}
 async function login(){
   $('loginError').textContent='';
@@ -983,37 +972,37 @@ async function changePwd(){
 }
 function closeProfileMenu(){$('profileDropdown').classList.remove('show');}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    NAV
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function bindNav(){
   $$('.nav-item[data-page]').forEach(btn=>{
     btn.addEventListener('click',async()=>{
       const pg=btn.dataset.page;
       $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
       $$('.page').forEach(p=>p.classList.remove('active'));$(`page-${pg}`).classList.add('active');
-      if(pg==='users'){await loadUsers();allPopulateSignSelects();}
+      if(pg==='users')await loadAdminUsers();          // 관리자 전용 회원목록
       if(pg==='report'){populateReportSelect();loadStandaloneReport();}
     });
   });
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    INIT
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function initYears(){const c=new Date().getFullYear();$('dashYear').innerHTML='';for(let y=c-2;y<=c+2;y++){const o=document.createElement('option');o.value=y;o.textContent=`${y}년`;if(y===c)o.selected=true;$('dashYear').appendChild(o);}}
 function setDefaultDates(){['incomingDate','processDate','shipmentDate','worklogDate'].forEach(id=>{if($(id))$(id).value=todayKST();});}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    DEFAULT ITEMS
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function defIqc(){return[{item:'외관',spec:'이물질, 파손 없을 것',value:'',judge:'합격'},{item:'CoA',spec:'누락 없을 것',value:'',judge:'합격'}];}
 function defPqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
 function defOqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'포장',spec:'파손 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    ITEM EDITOR
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function renderItems(tbId,rows,type){
   $(tbId).innerHTML=rows.map((r,i)=>`<tr>
     <td>${i+1}</td>
@@ -1040,9 +1029,9 @@ function renderIqcItems(){renderItems('incomingItemsTable',state.incomingItemDra
 function renderPqcItems(){renderItems('processItemsTable',state.processItemDrafts,'process');syncPqcPreview();}
 function renderOqcItems(){renderItems('shipmentItemsTable',state.shipmentItemDrafts,'shipment');syncOqcPreview();}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    PREVIEW SYNC
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function renderPrevRows(tbId,items){$(tbId).innerHTML=items.length?items.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item||'')}</td><td>${esc(r.spec||'')}</td><td>${esc(r.value||'-')}</td><td>${jBadge(r.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);">항목 없음</td></tr>';}
 
 function syncIqcPreview(){
@@ -1056,7 +1045,7 @@ function syncIqcPreview(){
     <tr><th>검사수량</th><td>${esc($('incomingCheckQty').value||'0')}</td><th>불량수량</th><td>${esc($('incomingFailQty').value||'0')}</td></tr>`;
   renderPrevRows('incomingPreviewBody',items);
   $('incomingFinalJudgeText').textContent=calcJ(items);
-  updateSignDisplay('iqc');
+  syncSignDisplay('iqc');
   renderBC('bcIqcLot',$('incomingLot').value||'LOT');renderBC('bcIqcDoc',doc);
 }
 function syncPqcPreview(){
@@ -1070,7 +1059,7 @@ function syncPqcPreview(){
     <tr><th>검사수량</th><td>${esc($('processQty').value||'0')}</td><th>불량수량</th><td>${esc($('processFailQty').value||'0')}</td></tr>`;
   renderPrevRows('processPreviewBody',items);
   $('processFinalJudgeText').textContent=calcJ(items);
-  updateSignDisplay('pqc');
+  syncSignDisplay('pqc');
   renderBC('bcPqcLot',$('processLot').value||'LOT');renderBC('bcPqcDoc',doc);
 }
 function syncOqcPreview(){
@@ -1084,13 +1073,13 @@ function syncOqcPreview(){
     <tr><th>불량수량</th><td>${esc($('shipmentFailQty').value||'0')}</td><th>비고</th><td>${esc($('shipmentRemark').value||'-')}</td></tr>`;
   renderPrevRows('shipmentPreviewBody',items);
   $('shipmentFinalJudgeText').textContent=calcJ(items);
-  updateSignDisplay('oqc');
+  syncSignDisplay('oqc');
   renderBC('bcOqcLot',$('shipmentLot').value||'LOT');renderBC('bcOqcDoc',doc);
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    WORKLOG LINKAGE
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function updateWorklogLinkage(){
   const lot=($('worklogFinishedLot').value||'').trim().toLowerCase();
   const box=$('worklogLinkBox');
@@ -1104,9 +1093,9 @@ function updateWorklogLinkage(){
   $('worklogLinkRows').innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    성적서 페이지
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function populateReportSelect(){
   const type=$('reportType').value;
   const sel=$('reportSelect');sel.innerHTML='<option value="">-- 성적서 선택 --</option>';
@@ -1115,7 +1104,6 @@ function populateReportSelect(){
   arr.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=type==='iqc'?`${r.date} | ${r.lot} | ${r.supplier}`:type==='pqc'?`${r.date} | ${r.lot} | ${r.product}`:`${r.date} | ${r.lot} | ${r.customer}`;sel.appendChild(o);});
   if(arr.length)sel.value=arr[0].id;
 }
-
 function loadStandaloneReport(){
   const type=$('reportType').value,selId=$('reportSelect').value;
   const arr=type==='iqc'?state.incoming:type==='pqc'?state.process:state.shipment;
@@ -1124,37 +1112,53 @@ function loadStandaloneReport(){
   $('reportPageTitle').textContent=type==='iqc'?'입고검사 성적서 (IQC Report)':type==='pqc'?'공정검사 성적서 (PQC Report)':'출하검사 성적서 (OQC Report)';
   const docNo=`${type.toUpperCase()}-${String(row.date||'').replaceAll('-','')}-0001`;
   const meta=type==='iqc'
-    ?`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>협력업체</th><td>${esc(row.supplier||'-')}</td></tr><tr><th>품목</th><td>${esc(row.item||'-')}</td><th>입고수량</th><td>${row.incomingQty??'-'}</td></tr>`
+    ?`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>협력업체</th><td>${esc(row.supplier||'-')}</td></tr><tr><th>품목</th><td>${esc(row.item||'-')}</td><th>입고수량</th><td>${String(row.incomingQty??'-')}</td></tr>`
     :type==='pqc'
-    ?`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>설비명</th><td>${esc(row.line||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`
-    :`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>고객사</th><td>${esc(row.customer||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`;
+    ?`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>설비명</th><td>${esc(row.line||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${String(row.qty??'-')}</td></tr>`
+    :`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>고객사</th><td>${esc(row.customer||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${String(row.qty??'-')}</td></tr>`;
   $('reportMetaTable').innerHTML=meta;
   const items=Array.isArray(row.items)?row.items:[];
   $('reportBodyTable').innerHTML=items.length?items.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.item||'')}</td><td>${esc(x.spec||'')}</td><td>${esc(x.value||'-')}</td><td>${jBadge(x.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5">항목 없음</td></tr>';
   $('reportFinalText').textContent=calcJ(items);
-  // 서명 표시
+  // 서명
   const sw=row.signWriter,sr=row.signReviewer,sa=row.signApprover;
-  $('rRptWriter').textContent=sw?.name||'-';$('rRptWriterTitle').textContent=sw?.title||'';
-  $('rRptReviewer').textContent=sr?.name||'-';$('rRptReviewerTitle').textContent=sr?.title||'';
-  $('rRptApprover').textContent=sa?.name||'-';$('rRptApproverTitle').textContent=sa?.title||'';
+  $('rRptWriter').textContent=sw?.name||'-';$('rRptWriterT').textContent=sw?.title||'';
+  $('rRptReviewer').textContent=sr?.name||'-';$('rRptReviewerT').textContent=sr?.title||'';
+  $('rRptApprover').textContent=sa?.name||'-';$('rRptApproverT').textContent=sa?.title||'';
   setTimeout(()=>{renderBC('bcRptLot',row.lot||'LOT');renderBC('bcRptDoc',docNo);},50);
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    PRINT
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function printEl(el){if(!el)return;const p=document.getElementById('printTarget');if(p)p.removeAttribute('id');el.id='printTarget';window.print();}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    LOAD DATA
-══════════════════════════════════════ */
+   ★ 핵심: signableUsers와 adminUsers 완전 분리
+════════════════════════════════════ */
+async function loadSignableUsers(){
+  // 모든 로그인 사용자가 접근 가능한 서명용 목록
+  const{data}=await api('/api/users/signable');
+  state.signableUsers=data?.data||[];
+  rebuildAllSignSelects(); // 서명 셀렉트 재구성
+}
+
+async function loadAdminUsers(){
+  // 관리자 전용 회원목록 탭
+  if(state.currentUser?.role!=='admin')return;
+  const{data}=await api('/api/admin/users');
+  state.adminUsers=data?.data||[];
+  renderUserTable(); // 회원목록 테이블만 갱신
+}
+
 async function loadIncoming(){
   const{data}=await api('/api/iqc');
   state.incoming=(data?.data||[]).map(r=>({
-    id:r.id,date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,
-    inspector:r.inspector,incomingQty:r.incoming_qty,checkQty:r.qty,failQty:r.fail,
+    id:r.id,date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:r.inspector,
+    incomingQty:r.incoming_qty,checkQty:r.qty,failQty:r.fail,
     items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:tryParseJSON(r.sign_writer),signReviewer:tryParseJSON(r.sign_reviewer),signApprover:tryParseJSON(r.sign_approver)
+    signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)
   }));
   renderIncomingTable();
 }
@@ -1163,49 +1167,42 @@ async function loadProcess(){
   state.process=(data?.data||[]).map(r=>({
     id:r.id,date:r.date,lot:r.lot,product:r.product,line:r.visual,shift:r.particle,inspector:r.solid,
     qty:r.qty,failQty:r.fail,judge:r.judge,items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:tryParseJSON(r.sign_writer),signReviewer:tryParseJSON(r.sign_reviewer),signApprover:tryParseJSON(r.sign_approver)
+    signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)
   }));
   renderProcessTable();
 }
 async function loadShipment(){
   const{data}=await api('/api/oqc');
   state.shipment=(data?.data||[]).map(r=>({
-    id:r.id,date:r.date,customer:r.customer,product:r.product,lot:r.lot,
-    inspector:r.visual,qty:r.qty,failQty:r.fail,judge:r.judge,package:r.package,
-    items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:tryParseJSON(r.sign_writer),signReviewer:tryParseJSON(r.sign_reviewer),signApprover:tryParseJSON(r.sign_approver)
+    id:r.id,date:r.date,customer:r.customer,product:r.product,lot:r.lot,inspector:r.visual,
+    qty:r.qty,failQty:r.fail,judge:r.judge,package:r.package,items:Array.isArray(r.items_json)?r.items_json:[],
+    signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)
   }));
   renderShipmentTable();
 }
 async function loadSuppliers(){const{data}=await api('/api/suppliers');state.suppliers=data?.data||[];renderSupplierTable();}
 async function loadWorklog(){const{data}=await api('/api/worklog');state.worklog=data?.data||[];renderWorklogTable();}
-async function loadUsers(){
-  if(state.currentUser?.role!=='admin'){
-    // 비관리자도 서명 목록을 위해 users 로드 시도
-    const{data}=await api('/api/admin/users');
-    if(data?.success){state.users=data.data||[];}
-    renderUserTable();allPopulateSignSelects();return;
-  }
-  const{data}=await api('/api/admin/users');state.users=data?.data||[];renderUserTable();allPopulateSignSelects();
-}
-function tryParseJSON(v){if(!v)return null;if(typeof v==='object')return v;try{return JSON.parse(v);}catch(e){return null;}}
+
 async function loadAllData(){
-  await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadUsers()]);
+  await Promise.all([
+    loadSignableUsers(),    // 서명용 (모든 사용자)
+    loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog()
+  ]);
+  // 관리자인 경우 회원목록도 로드
+  if(state.currentUser?.role==='admin') await loadAdminUsers();
   renderSummary();populateReportSelect();loadStandaloneReport();
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    RENDER TABLES
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function renderIncomingTable(){
   const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
   tb.innerHTML=state.incoming.map(r=>`<tr>
     <td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td>
     <td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td>
     <td>${jBadge(calcJ(r.items||[]))}</td>
-    <td>${esc(r.signWriter?.name||'-')}</td>
-    <td>${esc(r.signReviewer?.name||'-')}</td>
-    <td>${esc(r.signApprover?.name||'-')}</td>
+    <td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td>
     <td><div class="ai">
       <button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button>
       <button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button>
@@ -1217,9 +1214,7 @@ function renderProcessTable(){
   tb.innerHTML=state.process.map(r=>`<tr>
     <td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td>
     <td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td>
-    <td>${esc(r.signWriter?.name||'-')}</td>
-    <td>${esc(r.signReviewer?.name||'-')}</td>
-    <td>${esc(r.signApprover?.name||'-')}</td>
+    <td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td>
     <td><div class="ai">
       <button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button>
       <button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button>
@@ -1231,9 +1226,7 @@ function renderShipmentTable(){
   tb.innerHTML=state.shipment.map(r=>`<tr>
     <td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td>
     <td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td>
-    <td>${esc(r.signWriter?.name||'-')}</td>
-    <td>${esc(r.signReviewer?.name||'-')}</td>
-    <td>${esc(r.signApprover?.name||'-')}</td>
+    <td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td>
     <td><div class="ai">
       <button class="sb edit" data-action="editShipment" data-id="${esc(r.id)}">수정</button>
       <button class="sb del" data-action="deleteShipment" data-id="${esc(r.id)}">삭제</button>
@@ -1242,7 +1235,8 @@ function renderShipmentTable(){
 }
 function renderSupplierTable(){
   const tb=$('supplierTable');if(!state.suppliers.length){tb.innerHTML=eRow(6);return;}
-  tb.innerHTML=state.suppliers.map(r=>`<tr><td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.manager||'')}</td><td>${esc(r.phone||'')}</td><td>${esc(r.category||'')}</td><td>${esc(r.status||'')}</td>
+  tb.innerHTML=state.suppliers.map(r=>`<tr>
+    <td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.manager||'')}</td><td>${esc(r.phone||'')}</td><td>${esc(r.category||'')}</td><td>${esc(r.status||'')}</td>
     <td><div class="ai"><button class="sb edit" data-action="editSupplier" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteSupplier" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 function renderWorklogTable(){
@@ -1259,9 +1253,12 @@ function renderWorklogTable(){
       <td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
   }).join('');
 }
+
+// ★ adminUsers를 사용 (signableUsers 아님)
 function renderUserTable(){
-  const tb=$('userTable');if(!state.users.length){tb.innerHTML=eRow(8);return;}
-  tb.innerHTML=state.users.map(r=>`<tr>
+  const tb=$('userTable');
+  if(!state.adminUsers.length){tb.innerHTML=eRow(8);return;}
+  tb.innerHTML=state.adminUsers.map(r=>`<tr>
     <td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.email||'')}</td><td>${esc(r.department||'')}</td>
     <td><span style="font-weight:600;">${esc(r.title||'-')}</span>${isSenior(r)?'<span class="badge info" style="margin-left:6px;">부장이상</span>':''}</td>
     <td><span class="badge ${r.role==='admin'?'info':''}">${r.role==='admin'?'관리자':'일반회원'}</span></td>
@@ -1270,9 +1267,9 @@ function renderUserTable(){
     <td><div class="ai"><button class="sb edit" data-action="editUser" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteUser" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    DASHBOARD
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function renderSummary(){
   const y=Number($('dashYear').value||new Date().getFullYear()),p=y-1;
   const cnt=(arr,yr)=>arr.filter(r=>String(r.date||r.workDate||'').startsWith(String(yr))).length;
@@ -1296,44 +1293,34 @@ function renderCharts(){
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    SAVE
-══════════════════════════════════════ */
+════════════════════════════════════ */
 async function saveIqc(){
-  const sd=getSignData('iqc');
-  const p={
-    date:$('incomingDate').value,lot:$('incomingLot').value.trim(),supplier:$('incomingSupplier').value.trim(),
-    item:$('incomingItem').value.trim(),inspector:sd.writer.name,
-    incomingQty:$('incomingQty').value,checkQty:$('incomingCheckQty').value,failQty:$('incomingFailQty').value,
-    items:JSON.parse(JSON.stringify(state.incomingItemDrafts)),
-    signWriter:sd.writer,signReviewer:sd.reviewer,signApprover:sd.approver
-  };
+  const sp=getSignPayload('iqc');
+  const p={date:$('incomingDate').value,lot:$('incomingLot').value.trim(),supplier:$('incomingSupplier').value.trim(),item:$('incomingItem').value.trim(),
+    inspector:sp.writer.name,incomingQty:$('incomingQty').value,checkQty:$('incomingCheckQty').value,failQty:$('incomingFailQty').value,
+    items:JSON.parse(JSON.stringify(state.incomingItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('incomingEditId').value;
   const{data}=await api(id?`/api/iqc/${id}`:'/api/iqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');if(data?.success){clearIqc();await loadIncoming();renderSummary();}
 }
 async function savePqc(){
-  const sd=getSignData('pqc');
-  const p={
-    date:$('processDate').value,lot:$('processLot').value.trim(),product:$('processProduct').value.trim(),
-    visual:$('processLine').value.trim(),solid:sd.writer.name,particle:$('processShift').value.trim(),
+  const sp=getSignPayload('pqc');
+  const p={date:$('processDate').value,lot:$('processLot').value.trim(),product:$('processProduct').value.trim(),
+    visual:$('processLine').value.trim(),solid:sp.writer.name,particle:$('processShift').value.trim(),
     qty:$('processQty').value,failQty:$('processFailQty').value,
-    items:JSON.parse(JSON.stringify(state.processItemDrafts)),
-    signWriter:sd.writer,signReviewer:sd.reviewer,signApprover:sd.approver
-  };
+    items:JSON.parse(JSON.stringify(state.processItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('processEditId').value;
   const{data}=await api(id?`/api/pqc/${id}`:'/api/pqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');if(data?.success){clearPqc();await loadProcess();renderSummary();}
 }
 async function saveOqc(){
-  const sd=getSignData('oqc');
-  const p={
-    date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),
-    lot:$('shipmentLot').value.trim(),visual:sd.writer.name,
-    qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),
-    items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),
-    signWriter:sd.writer,signReviewer:sd.reviewer,signApprover:sd.approver
-  };
+  const sp=getSignPayload('oqc');
+  const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),
+    lot:$('shipmentLot').value.trim(),visual:sp.writer.name,qty:$('shipmentQty').value,
+    failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),
+    items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();}
@@ -1354,31 +1341,36 @@ async function saveUser(){
   const id=$('userEditId').value;
   const p={name:$('userName').value.trim(),email:$('userEmail').value.trim(),department:$('userDepartment').value.trim(),title:$('userTitle').value.trim(),role:$('userRole').value,status:$('userStatus').value,password:$('userPassword').value.trim()};
   const{data}=await api(id?`/api/admin/users/${id}`:'/api/admin/users',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearUser();await loadUsers();}
+  alert(data?.message||'저장되었습니다.');
+  if(data?.success){
+    clearUser();
+    await loadAdminUsers();   // 회원목록만 갱신
+    await loadSignableUsers(); // 서명 셀렉트도 갱신
+  }
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    CLEAR
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function clearIqc(){
   ['incomingEditId','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>$(id).value='');
   $('incomingDate').value=todayKST();
-  ['iqcSignWriter','iqcSignReviewer','iqcSignApprover'].forEach(id=>{if($(id))$(id).value='';});
-  updateSignDisplay('iqc');
+  ['iqcWriter','iqcReviewer','iqcApprover'].forEach(id=>{if($(id))$(id).value='';});
+  syncSignDisplay('iqc');
   state.incomingItemDrafts=defIqc();renderIqcItems();
 }
 function clearPqc(){
   ['processEditId','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>$(id).value='');
   $('processDate').value=todayKST();
-  ['pqcSignWriter','pqcSignReviewer','pqcSignApprover'].forEach(id=>{if($(id))$(id).value='';});
-  updateSignDisplay('pqc');
+  ['pqcWriter','pqcReviewer','pqcApprover'].forEach(id=>{if($(id))$(id).value='';});
+  syncSignDisplay('pqc');
   state.processItemDrafts=defPqc();renderPqcItems();
 }
 function clearOqc(){
   ['shipmentEditId','shipmentCustomer','shipmentProduct','shipmentLot','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>$(id).value='');
   $('shipmentDate').value=todayKST();
-  ['oqcSignWriter','oqcSignReviewer','oqcSignApprover'].forEach(id=>{if($(id))$(id).value='';});
-  updateSignDisplay('oqc');
+  ['oqcWriter','oqcReviewer','oqcApprover'].forEach(id=>{if($(id))$(id).value='';});
+  syncSignDisplay('oqc');
   state.shipmentItemDrafts=defOqc();renderOqcItems();
 }
 function clearSupplier(){['supplierEditId','supplierName','supplierManager','supplierPhone','supplierCategory','supplierStatus'].forEach(id=>$(id).value='');}
@@ -1388,53 +1380,44 @@ function clearWorklog(){
 }
 function clearUser(){['userEditId','userName','userEmail','userDepartment','userTitle','userPassword'].forEach(id=>$(id).value='');$('userRole').value='user';$('userStatus').value='APPROVED';}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    EDIT
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function editIncoming(id){
   const r=state.incoming.find(x=>String(x.id)===String(id));if(!r)return;
-  $('incomingEditId').value=r.id;$('incomingDate').value=r.date||'';$('incomingLot').value=r.lot||'';
-  $('incomingSupplier').value=r.supplier||'';$('incomingItem').value=r.item||'';
-  $('incomingQty').value=r.incomingQty||'';$('incomingCheckQty').value=r.checkQty||'';$('incomingFailQty').value=r.failQty||'';
+  $('incomingEditId').value=r.id;$('incomingDate').value=r.date||'';$('incomingLot').value=r.lot||'';$('incomingSupplier').value=r.supplier||'';$('incomingItem').value=r.item||'';$('incomingQty').value=r.incomingQty||'';$('incomingCheckQty').value=r.checkQty||'';$('incomingFailQty').value=r.failQty||'';
   state.incomingItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defIqc();renderIqcItems();
-  setSignFromRecord('iqc',r);
+  restoreSignFromRecord('iqc',r);
 }
 function editProcess(id){
   const r=state.process.find(x=>String(x.id)===String(id));if(!r)return;
-  $('processEditId').value=r.id;$('processDate').value=r.date||'';$('processLot').value=r.lot||'';
-  $('processLine').value=r.line||'';$('processShift').value=r.shift||'';$('processProduct').value=r.product||'';
-  $('processQty').value=r.qty||'';$('processFailQty').value=r.failQty||'';
+  $('processEditId').value=r.id;$('processDate').value=r.date||'';$('processLot').value=r.lot||'';$('processLine').value=r.line||'';$('processShift').value=r.shift||'';$('processProduct').value=r.product||'';$('processQty').value=r.qty||'';$('processFailQty').value=r.failQty||'';
   state.processItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defPqc();renderPqcItems();
-  setSignFromRecord('pqc',r);
+  restoreSignFromRecord('pqc',r);
 }
 function editShipment(id){
   const r=state.shipment.find(x=>String(x.id)===String(id));if(!r)return;
-  $('shipmentEditId').value=r.id;$('shipmentDate').value=r.date||'';$('shipmentCustomer').value=r.customer||'';
-  $('shipmentProduct').value=r.product||'';$('shipmentLot').value=r.lot||'';
-  $('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';$('shipmentRemark').value=r.package||'';
+  $('shipmentEditId').value=r.id;$('shipmentDate').value=r.date||'';$('shipmentCustomer').value=r.customer||'';$('shipmentProduct').value=r.product||'';$('shipmentLot').value=r.lot||'';$('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';$('shipmentRemark').value=r.package||'';
   state.shipmentItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defOqc();renderOqcItems();
-  setSignFromRecord('oqc',r);
+  restoreSignFromRecord('oqc',r);
 }
 function editSupplier(id){const r=state.suppliers.find(x=>String(x.id)===String(id));if(!r)return;$('supplierEditId').value=r.id;$('supplierName').value=r.name||'';$('supplierManager').value=r.manager||'';$('supplierPhone').value=r.phone||'';$('supplierCategory').value=r.category||'';$('supplierStatus').value=r.status||'';}
 function editWorklog(id){
   const r=state.worklog.find(x=>String(x.id)===String(id));if(!r)return;
-  $('worklogEditId').value=r.id;$('worklogDate').value=r.workDate||'';$('worklogFinishedLot').value=r.finishedLot||'';
-  $('worklogWorker').value=r.worker||'';$('worklogPlanQty').value=r.planQty||'';$('worklogProdQty').value=r.prodQty||'';
-  $('worklogFailQty').value=r.failQty||'';$('worklogRemark').value=r.remark||'';$('worklogFlowSet').value=r.flowSet||'';
-  $('worklogFlowActual').value=r.flowActual||'';$('worklogTempSet').value=r.tempSet||'';$('worklogTempActual').value=r.tempActual||'';
-  $('worklogPressSet').value=r.pressSet||'';$('worklogPressActual').value=r.pressActual||'';
+  $('worklogEditId').value=r.id;$('worklogDate').value=r.workDate||'';$('worklogFinishedLot').value=r.finishedLot||'';$('worklogWorker').value=r.worker||'';$('worklogPlanQty').value=r.planQty||'';$('worklogProdQty').value=r.prodQty||'';$('worklogFailQty').value=r.failQty||'';$('worklogRemark').value=r.remark||'';$('worklogFlowSet').value=r.flowSet||'';$('worklogFlowActual').value=r.flowActual||'';$('worklogTempSet').value=r.tempSet||'';$('worklogTempActual').value=r.tempActual||'';$('worklogPressSet').value=r.pressSet||'';$('worklogPressActual').value=r.pressActual||'';
   state.worklogMaterialDrafts=Array.isArray(r.materials)?JSON.parse(JSON.stringify(r.materials)):[];renderWorklogMats();updateWorklogLinkage();
 }
-function editUser(id){const r=state.users.find(x=>String(x.id)===String(id));if(!r)return;$('userEditId').value=r.id;$('userName').value=r.name||'';$('userEmail').value=r.email||'';$('userDepartment').value=r.department||'';$('userTitle').value=r.title||'';$('userRole').value=r.role||'user';$('userStatus').value=r.status||'APPROVED';$('userPassword').value='';}
+// ★ adminUsers 사용
+function editUser(id){const r=state.adminUsers.find(x=>String(x.id)===String(id));if(!r)return;$('userEditId').value=r.id;$('userName').value=r.name||'';$('userEmail').value=r.email||'';$('userDepartment').value=r.department||'';$('userTitle').value=r.title||'';$('userRole').value=r.role||'user';$('userStatus').value=r.status||'APPROVED';$('userPassword').value='';}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    DELETE
-══════════════════════════════════════ */
+════════════════════════════════════ */
 async function delApi(url,msg,reload){if(!confirm(msg))return;const{data}=await api(url,{method:'DELETE'});alert(data?.message||'삭제되었습니다.');if(data?.success)await reload();}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    WORKLOG MATERIALS
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function renderWorklogMats(){
   const tb=$('worklogMaterialsTable');
   if(!state.worklogMaterialDrafts.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3);">원료 행이 없습니다.</td></tr>`;return;}
@@ -1448,9 +1431,9 @@ function renderWorklogMats(){
 }
 function addWorklogMat(){state.worklogMaterialDrafts.push({material:'',supName:'',lotNo:'',inputQty:'',inputTime:''});renderWorklogMats();}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    TRACE
-══════════════════════════════════════ */
+════════════════════════════════════ */
 async function searchTrace(){
   const kw=$('traceKeyword').value.trim();
   if(!kw){$('traceTable').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--t3);">검색어를 입력하세요.</td></tr>`;return;}
@@ -1460,9 +1443,9 @@ async function searchTrace(){
 }
 function gotoTrace(kw){if(!kw)return;$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));document.querySelector('.nav-item[data-page="trace"]')?.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-trace').classList.add('active');$('traceKeyword').value=kw;searchTrace();}
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    EVENTS
-══════════════════════════════════════ */
+════════════════════════════════════ */
 function bindEvents(){
   $('tabLoginBtn').onclick=()=>openLoginTab('login');$('tabSignupBtn').onclick=()=>openLoginTab('signup');
   $('loginBtn').onclick=login;$('signupBtn').onclick=signup;
@@ -1472,7 +1455,12 @@ function bindEvents(){
   $('logoutBtn').onclick=logout;
   $('openChangePassword').onclick=()=>{closeProfileMenu();openPwdModal();};
   $('closePasswordModal').onclick=closePwdModal;$('cancelPasswordModal').onclick=closePwdModal;$('submitChangePassword').onclick=changePwd;
-  $('openUserManage').onclick=()=>{closeProfileMenu();$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));$('usersNavBtn').classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-users').classList.add('active');loadUsers();};
+  $('openUserManage').onclick=()=>{
+    closeProfileMenu();
+    $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));$('usersNavBtn').classList.add('active');
+    $$('.page').forEach(p=>p.classList.remove('active'));$('page-users').classList.add('active');
+    loadAdminUsers();
+  };
   document.addEventListener('click',e=>{const m=$('profileDropdown'),b=$('profileBtn');if(m&&b&&!m.contains(e.target)&&!b.contains(e.target))closeProfileMenu();});
 
   // 라벨
@@ -1484,10 +1472,10 @@ function bindEvents(){
   $('openShipmentLabel').onclick=()=>openLabelModal('oqc',state.shipment);
   $('openReportLabel').onclick=()=>{const t=$('reportType').value;openLabelModal(t,t==='iqc'?state.incoming:t==='pqc'?state.process:state.shipment);};
 
-  // 서명 셀렉트 change → 미리보기 동기화
-  ['iqcSignWriter','iqcSignReviewer','iqcSignApprover'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',()=>updateSignDisplay('iqc'));});
-  ['pqcSignWriter','pqcSignReviewer','pqcSignApprover'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',()=>updateSignDisplay('pqc'));});
-  ['oqcSignWriter','oqcSignReviewer','oqcSignApprover'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',()=>updateSignDisplay('oqc'));});
+  // 서명 change
+  ['iqcWriter','iqcReviewer','iqcApprover'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',()=>syncSignDisplay('iqc'));});
+  ['pqcWriter','pqcReviewer','pqcApprover'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',()=>syncSignDisplay('pqc'));});
+  ['oqcWriter','oqcReviewer','oqcApprover'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',()=>syncSignDisplay('oqc'));});
 
   // IQC
   $('incomingSave').onclick=withSaving('iqc',$('incomingSave'),saveIqc);
@@ -1531,7 +1519,7 @@ function bindEvents(){
     deleteShipment:id=>delApi(`/api/oqc/${id}`,'삭제하시겠습니까?',async()=>{await loadShipment();renderSummary();}),
     deleteSupplier:id=>delApi(`/api/suppliers/${id}`,'삭제하시겠습니까?',loadSuppliers),
     deleteWorklog:id=>delApi(`/api/worklog/${id}`,'삭제하시겠습니까?',async()=>{await loadWorklog();renderSummary();}),
-    deleteUser:id=>delApi(`/api/admin/users/${id}`,'삭제하시겠습니까?',loadUsers)
+    deleteUser:id=>delApi(`/api/admin/users/${id}`,'삭제하시겠습니까?',async()=>{await loadAdminUsers();await loadSignableUsers();})
   };
   ['incomingTable','processTable','shipmentTable','supplierTable','worklogTable','userTable'].forEach(tbId=>{
     $(tbId).addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const{action,id}=btn.dataset;if(tA[action])tA[action](id);});
@@ -1541,9 +1529,9 @@ function bindEvents(){
   $('worklogMaterialsTable').addEventListener('click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
 }
 
-/* ══════════════════════════════════════
+/* ════════════════════════════════════
    ENTRY
-══════════════════════════════════════ */
+════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded',async()=>{
   initYears();setDefaultDates();bindNav();bindEvents();startClock();
   state.incomingItemDrafts=defIqc();state.processItemDrafts=defPqc();state.shipmentItemDrafts=defOqc();
