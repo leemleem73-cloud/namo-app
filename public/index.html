@@ -2,11 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Namochemical QMS</title>
+<title>나모케미칼(주) QMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f0f2f5;--sf:#fff;--s2:#f8f9fb;--bd:#e4e7ed;--bd2:#d0d5de;
@@ -14,6 +15,8 @@
   --pri:#1a56db;--prih:#1648c4;--pris:#e8effd;--prit:rgba(26,86,219,.12);
   --ok:#0a7c4e;--oks:#e3f5ec;--er:#c52b2b;--ers:#fde9e9;
   --wa:#a05c00;--was:#fff3e0;--inf:#0369a1;--infs:#e0f2fe;
+  /* 나모 브랜드 색 */
+  --namo-green:#2e7d32;--namo-navy:#1a3a5c;--namo-light:#4caf50;
   --sh1:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
   --sh3:0 10px 24px rgba(0,0,0,.08),0 4px 8px rgba(0,0,0,.04);
   --sh4:0 20px 40px rgba(0,0,0,.12),0 8px 16px rgba(0,0,0,.06);
@@ -25,148 +28,100 @@
 html,body{height:100%}
 body{font-family:var(--font);font-size:14px;line-height:1.5;color:var(--t1);background:var(--bg);-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
 
-/* ══════════════════════════════════
-   LOGIN PAGE  — EV / 배터리 테마
-══════════════════════════════════ */
+/* ══ LOGIN ══ */
 #loginPage{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  overflow:hidden;
-  background:#050d1f;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg, #0d1f0d 0%, var(--namo-navy) 45%, #0a1628 100%);
 }
-
-/* 배경 그라데이션 레이어 */
 #loginPage::before{
-  content:'';
-  position:absolute;inset:0;
+  content:'';position:absolute;inset:0;
   background:
-    radial-gradient(ellipse 80% 60% at 15% 50%, rgba(0,120,255,.28) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 85% 20%, rgba(0,210,160,.18) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(100,60,220,.20) 0%, transparent 55%),
-    linear-gradient(135deg, #050d1f 0%, #0a1a3a 40%, #051830 100%);
+    radial-gradient(ellipse 70% 60% at 10% 50%, rgba(46,125,50,.35) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 85% 15%, rgba(26,58,92,.5) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 50% at 60% 85%, rgba(76,175,80,.15) 0%, transparent 50%);
   z-index:0;
 }
-
-/* 전류 흐름 애니메이션 라인들 */
 #loginPage::after{
-  content:'';
-  position:absolute;inset:0;
+  content:'';position:absolute;inset:0;
   background-image:
-    repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(0,140,255,.04) 121px),
-    repeating-linear-gradient(0deg,  transparent, transparent 120px, rgba(0,140,255,.04) 121px);
+    repeating-linear-gradient(90deg,transparent,transparent 100px,rgba(76,175,80,.03) 101px),
+    repeating-linear-gradient(0deg,transparent,transparent 100px,rgba(76,175,80,.03) 101px);
   z-index:0;
 }
-
-/* SVG EV 배경 일러스트 */
-.ev-bg-svg{
-  position:absolute;
-  inset:0;
-  width:100%;height:100%;
-  z-index:1;
-  pointer-events:none;
+.login-bg-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+.login-left{
+  position:absolute;left:0;top:0;bottom:0;width:52%;
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  padding:60px;z-index:2;
 }
-
-/* 좌측 EV 배터리 셀 장식 */
-.ev-left-panel{
-  position:absolute;
-  left:0;top:0;bottom:0;
-  width:55%;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  justify-content:center;
-  padding:60px;
-  z-index:2;
+.login-logo-area{
+  display:flex;align-items:center;gap:16px;margin-bottom:44px;
+  padding:16px 20px;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r3);
 }
-.ev-brand-badge{
-  display:flex;align-items:center;gap:12px;
-  margin-bottom:40px;
+.login-logo-area img{
+  height:52px;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,.3));
 }
-.ev-brand-badge img{height:46px;filter:drop-shadow(0 0 12px rgba(0,160,255,.5));}
-.ev-brand-text{
-  font-size:24px;font-weight:900;color:#fff;letter-spacing:-.5px;
-  text-shadow:0 0 20px rgba(0,160,255,.4);
-}
-.ev-brand-sub{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
-.ev-headline{
-  font-size:42px;font-weight:800;color:#fff;line-height:1.15;
-  letter-spacing:-1px;margin-bottom:20px;
-}
-.ev-headline .accent{
-  color:transparent;
-  background:linear-gradient(90deg,#00c8ff,#00ffa3);
-  -webkit-background-clip:text;background-clip:text;
-}
-.ev-desc{
-  font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;
-  max-width:400px;margin-bottom:40px;
-}
-.ev-stats{
-  display:flex;gap:32px;
-}
-.ev-stat{border-left:2px solid rgba(0,200,255,.4);padding-left:16px;}
-.ev-stat-val{font-size:26px;font-weight:800;color:#00c8ff;letter-spacing:-1px;}
-.ev-stat-lbl{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
-
-/* 로그인 카드 */
+.login-logo-txt{display:flex;flex-direction:column;}
+.login-logo-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.login-logo-sub{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.8px;text-transform:uppercase;margin-top:2px;}
+.login-headline{font-size:40px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-1px;margin-bottom:18px;}
+.login-headline .green{color:var(--namo-light);}
+.login-desc{font-size:14px;color:rgba(255,255,255,.65);line-height:1.8;max-width:380px;margin-bottom:36px;}
+.login-stats{display:flex;gap:28px;}
+.login-stat{border-left:3px solid var(--namo-light);padding-left:14px;}
+.login-stat-val{font-size:22px;font-weight:800;color:var(--namo-light);letter-spacing:-1px;}
+.login-stat-lbl{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
 .lcard{
-  position:relative;z-index:10;
-  width:420px;
-  background:rgba(255,255,255,.95);
-  backdrop-filter:blur(20px);
+  position:relative;z-index:10;width:420px;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(20px);
   border-radius:var(--r5);
-  box-shadow:var(--sh4), 0 0 0 1px rgba(255,255,255,.2), 0 0 60px rgba(0,120,255,.15);
-  padding:40px 36px;
-  margin-left:auto;
-  margin-right:60px;
+  box-shadow:var(--sh4),0 0 0 1px rgba(255,255,255,.15),0 0 50px rgba(46,125,50,.2);
+  padding:40px 36px;margin-left:auto;margin-right:60px;
 }
-.lbrand{display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
-.lbrand img{height:44px;}
-.lcard h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px;color:var(--t1);}
-.lcard>p{text-align:center;color:var(--t3);font-size:13px;margin-bottom:24px;}
-.ltabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:4px;margin-bottom:20px;}
+.lbrand{display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.lbrand img{height:48px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1));}
+.lcard h2{text-align:center;font-size:21px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px;color:var(--t1);}
+.lcard>p{text-align:center;color:var(--t3);font-size:13px;margin-bottom:22px;}
+.ltabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:4px;margin-bottom:18px;}
 .ltab{flex:1;height:34px;border:none;border-radius:var(--r1);background:transparent;cursor:pointer;font-weight:600;font-size:13px;color:var(--t3);transition:var(--tr);}
-.ltab.active{background:var(--sf);color:var(--pri);box-shadow:var(--sh1);}
+.ltab.active{background:var(--sf);color:var(--namo-green);box-shadow:var(--sh1);}
 .lpanel{display:none;}.lpanel.active{display:block;}
 .lform{display:flex;flex-direction:column;gap:12px;}
 .lform input{width:100%;height:44px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:14px;outline:none;transition:var(--tr);}
-.lform input:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
+.lform input:focus{border-color:var(--namo-green);box-shadow:0 0 0 3px rgba(46,125,50,.12);}
 .lform input::placeholder{color:var(--t3);}
+.lbtn-login{background:linear-gradient(135deg,var(--namo-green),#388e3c);color:#fff;border:none;border-radius:var(--r2);height:46px;font-size:15px;font-weight:700;cursor:pointer;transition:var(--tr);width:100%;letter-spacing:.2px;}
+.lbtn-login:hover{background:linear-gradient(135deg,#256427,#2e7d32);box-shadow:0 4px 12px rgba(46,125,50,.35);}
 .lerr{color:var(--er);font-size:12px;font-weight:500;min-height:16px;}
+@media(max-width:900px){.login-left{display:none;}.lcard{margin:auto;}}
 
-/* 반응형: 작은 화면에서 레이아웃 단순화 */
-@media(max-width:900px){
-  .ev-left-panel{display:none;}
-  .lcard{margin:auto;}
-}
-
-/* ══════════════════════════════════
-   SHELL
-══════════════════════════════════ */
+/* ══ SHELL ══ */
 .app{height:100vh;display:flex;flex-direction:column;}
 .shell{display:none;height:100vh;flex-direction:column;}
 .topbar{height:var(--th);flex-shrink:0;display:flex;align-items:center;background:var(--sf);border-bottom:1px solid var(--bd);box-shadow:var(--sh1);z-index:100;}
-.tlogo{width:var(--sw);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 20px;border-right:1px solid var(--bd);height:100%;}
-.tlogo img{height:32px;}
-.tlogo-n{font-size:15px;font-weight:800;color:var(--t1);letter-spacing:-.3px;}
-.tlogo-s{font-size:10px;font-weight:600;color:var(--pri);letter-spacing:.5px;text-transform:uppercase;}
+.tlogo{width:var(--sw);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 16px;border-right:1px solid var(--bd);height:100%;}
+.tlogo img{height:36px;}
+.tlogo-n{font-size:14px;font-weight:800;color:var(--namo-navy);letter-spacing:-.3px;}
+.tlogo-s{font-size:10px;font-weight:600;color:var(--namo-green);letter-spacing:.5px;text-transform:uppercase;}
 .tcenter{flex:1;display:flex;align-items:center;justify-content:center;padding:0 20px;}
 .dtxt{font-size:13px;font-weight:600;color:var(--t2);}
 .tright{display:flex;align-items:center;gap:8px;padding:0 20px;}
-.sbox{display:flex;align-items:center;gap:8px;background:var(--s2);border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;height:36px;width:230px;transition:var(--tr);}
+.sbox{display:flex;align-items:center;gap:8px;background:var(--s2);border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;height:36px;width:220px;transition:var(--tr);}
 .sbox:focus-within{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);background:var(--sf);}
 .sbox input{border:none;outline:none;background:transparent;width:100%;font-size:13px;color:var(--t1);}
 .sbox input::placeholder{color:var(--t3);}
 .pmenu{position:relative;}
 .pbtn{display:flex;align-items:center;gap:10px;padding:6px 12px;border:1.5px solid var(--bd);border-radius:var(--r2);background:var(--sf);cursor:pointer;transition:var(--tr);color:var(--t1);}
 .pbtn:hover{background:var(--s2);border-color:var(--bd2);}
-.pavatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pri),#6d28d9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.pavatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--namo-green),var(--namo-navy));color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
 .pname{font-size:13px;font-weight:600;line-height:1.2;}
 .pemail{font-size:11px;color:var(--t3);line-height:1.2;}
 .pdrop{position:absolute;top:calc(100% + 8px);right:0;min-width:200px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r3);box-shadow:var(--sh3);padding:6px;display:none;z-index:1000;}
@@ -180,10 +135,12 @@ button,input,select,textarea{font:inherit}
 .nav-sec{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;padding:10px 8px 5px;}
 .nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border:none;border-radius:var(--r2);background:transparent;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);text-align:left;transition:var(--tr);}
 .nav-item:hover{background:var(--s2);color:var(--t1);}
-.nav-item.active{background:var(--pris);color:var(--pri);font-weight:600;}
+.nav-item.active{background:#e8f5e9;color:var(--namo-green);font-weight:600;}
 .nav-icon{width:18px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .content{flex:1;overflow-y:auto;padding:22px;min-width:0;}
 .page{display:none;}.page.active{display:block;}
+
+/* ══ PAGE ELEMENTS ══ */
 .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
 .ph-bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3);font-weight:500;margin-bottom:4px;}
 .ph-bc .sep{color:var(--bd2);}
@@ -194,6 +151,8 @@ button,input,select,textarea{font:inherit}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 .btn.pri{background:var(--pri);color:#fff;box-shadow:0 1px 3px rgba(26,86,219,.3);}
 .btn.pri:hover:not(:disabled){background:var(--prih);}
+.btn.green{background:var(--namo-green);color:#fff;}
+.btn.green:hover:not(:disabled){background:#256427;}
 .btn.light{background:var(--sf);color:var(--t2);border:1.5px solid var(--bd);}
 .btn.light:hover:not(:disabled){background:var(--s2);}
 .btn.ghost{background:transparent;color:var(--pri);border:1.5px solid var(--pri);}
@@ -226,10 +185,10 @@ button,input,select,textarea{font:inherit}
 .nlist{display:flex;flex-direction:column;}
 .nitem{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:13px;}
 .nitem:last-child{border-bottom:none;}
-.ndot{width:6px;height:6px;border-radius:50%;background:var(--pri);flex-shrink:0;margin-top:5px;}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--namo-green);flex-shrink:0;margin-top:5px;}
 .ntxt{flex:1;color:var(--t2);line-height:1.5;}
 .ndate{font-size:11px;color:var(--t3);white-space:nowrap;margin-top:2px;}
-.wgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:14px;}
+.wgrid{display:grid;grid-template-columns:1.55fr 1fr;gap:14px;margin-bottom:14px;}
 .fg5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
 .fg4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .fg3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
@@ -259,6 +218,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .sb.edit{background:var(--pris);color:var(--pri);}.sb.edit:hover{background:var(--pri);color:#fff;}
 .sb.del{background:var(--ers);color:var(--er);}.sb.del:hover{background:var(--er);color:#fff;}
 .sb.lbl{background:#f3f4f6;color:#374151;}.sb.lbl:hover{background:#e5e7eb;}
+.sb.prt{background:#e8f5e9;color:var(--namo-green);}.sb.prt:hover{background:var(--namo-green);color:#fff;}
 .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .toolbar select,.toolbar input{height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;}
 .toolbar-label{font-size:12px;font-weight:600;color:var(--t3);}
@@ -273,18 +233,18 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .sign-box-role{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;}
 .sign-box-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;}
 .sign-box-badge.any{background:var(--pris);color:var(--pri);}
-.sign-box-badge.mgr{background:var(--oks);color:var(--ok);}
+.sign-box-badge.mgr{background:#e8f5e9;color:var(--namo-green);}
 .sign-box-body{padding:10px 11px;}
 .sign-sel{width:100%;height:34px;border:1.5px solid var(--bd);border-radius:var(--r1);padding:0 9px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr);}
-.sign-sel:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
+.sign-sel:focus{border-color:var(--namo-green);box-shadow:0 0 0 3px rgba(46,125,50,.12);}
 .sign-sub{font-size:11px;color:var(--t3);margin-top:4px;min-height:15px;}
-/* 서명란 없는 사용자 경고 */
 .sign-warning{font-size:12px;color:var(--wa);background:var(--was);border:1px solid rgba(160,92,0,.2);border-radius:var(--r2);padding:10px 12px;margin-bottom:10px;display:none;}
 
+/* ══ 성적서 ══ */
 .rsheet{border:1.5px solid var(--bd2);border-radius:var(--r4);padding:22px;background:var(--sf);}
 .rhdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--bd);}
 .rhdr h2{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px;}
-.rbname{font-size:14px;font-weight:800;color:var(--pri);letter-spacing:-.3px;}
+.rbname{font-size:14px;font-weight:800;color:var(--namo-green);letter-spacing:-.3px;}
 .rbsub{font-size:10px;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;}
 .rbox{border:1.5px solid var(--bd);border-radius:var(--r3);padding:14px;background:var(--s2);text-align:center;margin-top:14px;}
 .rlbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px;}
@@ -300,9 +260,22 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .bcsec h4{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
 .bcrow{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;}
 .bcitem{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.bcitem span{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;}
+.bcitem span{font-size:10px;font-weight:600;color:var(--t3);}
+
+/* ══ 작업일지 인쇄용 ══ */
+.wlog-print-sheet{border:1.5px solid var(--bd2);border-radius:var(--r4);padding:24px;background:var(--sf);}
+.wlog-print-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:14px;border-bottom:2.5px solid var(--namo-navy);}
+.wlog-print-title{font-size:18px;font-weight:900;color:var(--namo-navy);letter-spacing:-.3px;}
+.wlog-meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #aaa;margin-bottom:14px;}
+.wlog-meta-cell{padding:7px 10px;border-right:1px solid #aaa;border-bottom:1px solid #aaa;}
+.wlog-meta-cell:nth-child(4n){border-right:none;}
+.wlog-meta-cell:nth-last-child(-n+4){border-bottom:none;}
+.wlog-meta-label{font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;}
+.wlog-meta-value{font-size:13px;font-weight:600;color:#111;}
+
+/* ══ LABEL ══ */
 .lgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.plabel{border:2px solid #000;border-radius:4px;padding:11px;background:#fff;font-family:'Inter',sans-serif;page-break-inside:avoid;}
+.plabel{border:2px solid #000;border-radius:4px;padding:11px;background:#fff;page-break-inside:avoid;}
 .pltitle{font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #000;padding-bottom:5px;margin-bottom:7px;}
 .plrow{display:flex;justify-content:space-between;align-items:center;font-size:10px;margin-bottom:3px;}
 .plkey{font-weight:700;color:#555;width:55px;flex-shrink:0;}
@@ -321,10 +294,22 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .nc-status.open{background:var(--ers);color:var(--er);}
 .nc-status.closed{background:var(--oks);color:var(--ok);}
 .nc-status.progress{background:var(--was);color:var(--wa);}
+
+/* ══ 엑셀 업로드 영역 ══ */
+.excel-upload-area{border:2px dashed var(--bd2);border-radius:var(--r3);padding:20px 16px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--s2);}
+.excel-upload-area:hover{border-color:var(--namo-green);background:#f1f8f1;}
+.excel-upload-area.drag{border-color:var(--namo-green);background:#e8f5e9;}
+.excel-upload-icon{font-size:28px;margin-bottom:8px;}
+.excel-upload-txt{font-size:13px;font-weight:600;color:var(--t2);}
+.excel-upload-sub{font-size:11px;color:var(--t3);margin-top:4px;}
+.excel-preview-table{max-height:260px;overflow:auto;margin-top:12px;border:1px solid var(--bd);border-radius:var(--r2);}
+
+/* ══ MODAL ══ */
 .modal{position:fixed;inset:0;background:rgba(10,15,30,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000;}
 .modal.show{display:flex;}
 .mcard{width:min(480px,calc(100vw - 32px));background:var(--sf);border-radius:var(--r5);border:1px solid var(--bd);box-shadow:var(--sh4);overflow:hidden;max-height:92vh;display:flex;flex-direction:column;}
-.mcard.wide{width:min(880px,calc(100vw - 32px));}
+.mcard.wide{width:min(900px,calc(100vw - 32px));}
+.mcard.xl{width:min(1100px,calc(100vw - 32px));}
 .mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bd);flex-shrink:0;}
 .mhdr h3{font-size:16px;font-weight:700;color:var(--t1);}
 .mclose{width:30px;height:30px;border:none;border-radius:var(--r1);background:transparent;cursor:pointer;font-size:16px;color:var(--t3);display:flex;align-items:center;justify-content:center;transition:var(--tr);}
@@ -332,157 +317,126 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .mbody{padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
 .mfoot{padding:14px 20px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
 .footer{padding:11px 22px;border-top:1px solid var(--bd);background:var(--sf);text-align:center;font-size:12px;color:var(--t3);flex-shrink:0;}
-@media print{body *{visibility:hidden;}#printTarget,#printTarget *{visibility:visible;}#printTarget{position:fixed;top:0;left:0;width:100%;padding:22px;background:#fff;}}
+
+/* ══ PRINT ══ */
+@media print{
+  body *{visibility:hidden;}
+  #printTarget,#printTarget *{visibility:visible;}
+  #printTarget{position:fixed;top:0;left:0;width:100%;padding:22px;background:#fff;}
+}
 .mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt14{margin-top:14px;}.mt16{margin-top:16px;}
-@media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.wgrid{grid-column-template:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
+@media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.dlower{grid-template-columns:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:1000px){.wgrid{grid-template-columns:1fr;}}
-@media(max-width:900px){:root{--sw:0px;}.sidebar{display:none;}.content{padding:14px;}.sgrid{grid-template-columns:repeat(2,1fr);}.fg4,.fg3,.fg5{grid-template-columns:1fr;}.sign-grid,.rprint-sign,.lgrid{grid-template-columns:1fr;}}
+@media(max-width:900px){:root{--sw:0px;}.sidebar{display:none;}.content{padding:14px;}.sgrid{grid-template-columns:repeat(2,1fr);}.fg4,.fg3,.fg5{grid-template-columns:1fr;}.sign-grid,.rprint-sign,.lgrid,.wlog-meta-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════
-     LOGIN PAGE
-══════════════════════════════════ -->
+<!-- ══ LOGIN ══ -->
 <div id="loginPage">
-
-  <!-- 배경 SVG EV / 배터리 일러스트 -->
-  <svg class="ev-bg-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 SVG: 나모케미칼 브랜드(녹색+네이비) EV 배터리 테마 -->
+  <svg class="login-bg-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#00c8ff" stop-opacity=".3"/>
-        <stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/>
+      <radialGradient id="lg1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#4caf50" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="#4caf50" stop-opacity="0"/>
       </radialGradient>
-      <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#00ffa3" stop-opacity=".25"/>
-        <stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/>
+      <radialGradient id="lg2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#1a3a5c" stop-opacity=".4"/>
+        <stop offset="100%" stop-color="#1a3a5c" stop-opacity="0"/>
       </radialGradient>
-      <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
-      <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
-      <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#00c8ff" stop-opacity="0"/>
-        <stop offset="30%" stop-color="#00c8ff" stop-opacity=".8"/>
-        <stop offset="70%" stop-color="#00ffa3" stop-opacity=".8"/>
-        <stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/>
+      <filter id="lb8"><feGaussianBlur stdDeviation="8"/></filter>
+      <linearGradient id="lline" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4caf50" stop-opacity="0"/>
+        <stop offset="40%" stop-color="#4caf50" stop-opacity=".7"/>
+        <stop offset="60%" stop-color="#81c784" stop-opacity=".7"/>
+        <stop offset="100%" stop-color="#81c784" stop-opacity="0"/>
       </linearGradient>
-      <linearGradient id="cellGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#1a56db" stop-opacity=".6"/>
-        <stop offset="100%" stop-color="#0d2d6e" stop-opacity=".8"/>
+      <linearGradient id="lcell" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1a3a5c" stop-opacity=".7"/>
+        <stop offset="100%" stop-color="#0d1f0d" stop-opacity=".8"/>
       </linearGradient>
     </defs>
-
-    <!-- EV 자동차 실루엣 (간소화된 벡터) -->
-    <g transform="translate(60,350)" opacity=".18">
-      <!-- 차체 -->
-      <path d="M0,120 L30,60 Q60,20 120,15 L380,10 Q440,12 490,50 L560,120 Z"
-            fill="#00c8ff" stroke="#00c8ff" stroke-width="1"/>
-      <!-- 루프 -->
-      <path d="M80,60 Q130,-10 250,-15 Q370,-15 420,60"
-            fill="none" stroke="#00c8ff" stroke-width="2"/>
-      <!-- 바퀴 -->
-      <circle cx="120" cy="120" r="38" fill="#050d1f" stroke="#00c8ff" stroke-width="2"/>
-      <circle cx="120" cy="120" r="22" fill="none" stroke="#00c8ff" stroke-width="1.5" stroke-dasharray="4,4"/>
-      <circle cx="440" cy="120" r="38" fill="#050d1f" stroke="#00c8ff" stroke-width="2"/>
-      <circle cx="440" cy="120" r="22" fill="none" stroke="#00c8ff" stroke-width="1.5" stroke-dasharray="4,4"/>
-      <!-- 창문 -->
-      <path d="M100,55 Q130,25 200,20 Q270,18 310,50 L310,55 Z" fill="#00c8ff" opacity=".3"/>
-      <path d="M315,50 Q360,15 420,55 L315,55 Z" fill="#00c8ff" opacity=".3"/>
-      <!-- 충전 포트 빛 -->
-      <rect x="540" y="50" width="20" height="30" rx="3" fill="#00ffa3" opacity=".7"/>
-    </g>
-
-    <!-- 배터리 셀 그리드 -->
-    <g transform="translate(50, 80)" opacity=".22">
-      <!-- 배터리 팩 외곽 -->
-      <rect x="0" y="0" width="340" height="180" rx="12" fill="none" stroke="#1a56db" stroke-width="1.5"/>
-      <!-- 셀들 -->
-      <g fill="url(#cellGrad)" stroke="#00c8ff" stroke-width=".8">
-        <rect x="10" y="10" width="38" height="160" rx="5"/>
-        <rect x="55" y="10" width="38" height="160" rx="5"/>
-        <rect x="100" y="10" width="38" height="160" rx="5"/>
-        <rect x="145" y="10" width="38" height="160" rx="5"/>
-        <rect x="190" y="10" width="38" height="160" rx="5"/>
-        <rect x="235" y="10" width="38" height="160" rx="5"/>
-        <rect x="280" y="10" width="38" height="160" rx="5"/>
+    <!-- 배터리 팩 -->
+    <g transform="translate(50,60)" opacity=".2">
+      <rect x="0" y="0" width="380" height="200" rx="14" fill="none" stroke="#4caf50" stroke-width="1.5"/>
+      <g fill="url(#lcell)" stroke="#4caf50" stroke-width=".8">
+        <rect x="12" y="12" width="44" height="176" rx="6"/>
+        <rect x="64" y="12" width="44" height="176" rx="6"/>
+        <rect x="116" y="12" width="44" height="176" rx="6"/>
+        <rect x="168" y="12" width="44" height="176" rx="6"/>
+        <rect x="220" y="12" width="44" height="176" rx="6"/>
+        <rect x="272" y="12" width="44" height="176" rx="6"/>
+        <rect x="324" y="12" width="44" height="176" rx="6"/>
       </g>
-      <!-- 충전 레벨 표시 -->
-      <rect x="10" y="80" width="38" height="90" rx="5" fill="#00c8ff" opacity=".4"/>
-      <rect x="55" y="60" width="38" height="110" rx="5" fill="#00c8ff" opacity=".4"/>
-      <rect x="100" y="100" width="38" height="70" rx="5" fill="#00c8ff" opacity=".4"/>
-      <rect x="145" y="40" width="38" height="130" rx="5" fill="#00ffa3" opacity=".4"/>
-      <rect x="190" y="70" width="38" height="100" rx="5" fill="#00c8ff" opacity=".4"/>
-      <rect x="235" y="90" width="38" height="80" rx="5" fill="#00c8ff" opacity=".4"/>
-      <rect x="280" y="50" width="38" height="120" rx="5" fill="#00ffa3" opacity=".4"/>
-      <!-- + 단자 -->
-      <rect x="128" y="0" width="14" height="8" rx="2" fill="#00ffa3" opacity=".6"/>
-      <rect x="263" y="0" width="14" height="8" rx="2" fill="#00ffa3" opacity=".6"/>
+      <rect x="12" y="90" width="44" height="98" rx="6" fill="#4caf50" opacity=".35"/>
+      <rect x="64" y="60" width="44" height="128" rx="6" fill="#4caf50" opacity=".35"/>
+      <rect x="116" y="110" width="44" height="78" rx="6" fill="#4caf50" opacity=".35"/>
+      <rect x="168" y="30" width="44" height="158" rx="6" fill="#81c784" opacity=".35"/>
+      <rect x="220" y="75" width="44" height="113" rx="6" fill="#4caf50" opacity=".35"/>
+      <rect x="272" y="95" width="44" height="93" rx="6" fill="#4caf50" opacity=".35"/>
+      <rect x="324" y="45" width="44" height="143" rx="6" fill="#81c784" opacity=".35"/>
+      <rect x="140" y="0" width="16" height="10" rx="2" fill="#81c784" opacity=".7"/>
+      <rect x="294" y="0" width="16" height="10" rx="2" fill="#81c784" opacity=".7"/>
     </g>
-
-    <!-- 에너지 흐름 라인 -->
-    <g opacity=".35">
-      <path d="M400,200 Q550,150 700,200 Q850,250 1000,180" fill="none" stroke="url(#wireGrad)" stroke-width="1.5" stroke-dasharray="8,4"/>
-      <path d="M350,350 Q500,300 650,350 Q800,400 950,330" fill="none" stroke="url(#wireGrad)" stroke-width="1.5" stroke-dasharray="8,4"/>
-      <path d="M300,500 Q450,450 600,500 Q750,550 900,480" fill="none" stroke="url(#wireGrad)" stroke-width="1.2" stroke-dasharray="6,4"/>
+    <!-- EV 자동차 실루엣 -->
+    <g transform="translate(50,360)" opacity=".15">
+      <path d="M0,120 L25,58 Q55,15 115,12 L390,8 Q450,10 500,48 L570,120 Z" fill="#4caf50" stroke="#4caf50" stroke-width="1"/>
+      <path d="M75,58 Q125,-8 250,-13 Q375,-13 425,58" fill="none" stroke="#4caf50" stroke-width="1.5"/>
+      <circle cx="118" cy="120" r="36" fill="#0d1f0d" stroke="#4caf50" stroke-width="1.5"/>
+      <circle cx="118" cy="120" r="20" fill="none" stroke="#4caf50" stroke-width="1.2" stroke-dasharray="4,4"/>
+      <circle cx="450" cy="120" r="36" fill="#0d1f0d" stroke="#4caf50" stroke-width="1.5"/>
+      <circle cx="450" cy="120" r="20" fill="none" stroke="#4caf50" stroke-width="1.2" stroke-dasharray="4,4"/>
+      <path d="M95,54 Q125,22 200,18 Q275,16 315,48 L315,54 Z" fill="#4caf50" opacity=".3"/>
+      <path d="M320,48 Q365,12 425,54 L320,54 Z" fill="#4caf50" opacity=".3"/>
+      <rect x="548" y="48" width="22" height="32" rx="3" fill="#81c784" opacity=".6"/>
     </g>
-
-    <!-- 글로우 원 -->
-    <circle cx="250" cy="400" r="200" fill="url(#glow1)" filter="url(#blur8)"/>
-    <circle cx="900" cy="200" r="150" fill="url(#glow2)" filter="url(#blur8)"/>
-
-    <!-- 전자(e⁻) 파티클 -->
-    <g fill="#00c8ff" opacity=".5">
-      <circle cx="480" cy="195" r="3"><animateMotion dur="4s" repeatCount="indefinite" path="M0,0 Q100,-30 200,0 Q300,30 400,0"/></circle>
-      <circle cx="550" cy="345" r="2.5"><animateMotion dur="5s" repeatCount="indefinite" path="M0,0 Q80,-20 160,0 Q240,20 320,0"/></circle>
-      <circle cx="420" cy="495" r="2"><animateMotion dur="3.5s" repeatCount="indefinite" path="M0,0 Q60,-15 120,0 Q180,15 240,0"/></circle>
+    <!-- 에너지 흐름 -->
+    <g opacity=".3">
+      <path d="M400,180 Q560,130 720,180 Q880,230 1040,160" fill="none" stroke="url(#lline)" stroke-width="1.5" stroke-dasharray="8,4"/>
+      <path d="M350,330 Q510,280 670,330 Q830,380 990,310" fill="none" stroke="url(#lline)" stroke-width="1.5" stroke-dasharray="8,4"/>
+      <path d="M300,480 Q460,430 620,480 Q780,530 940,460" fill="none" stroke="url(#lline)" stroke-width="1.2" stroke-dasharray="6,4"/>
     </g>
-
-    <!-- 화학 분자 구조 (우측 하단 장식) -->
-    <g transform="translate(900, 550)" opacity=".2" stroke="#00ffa3" stroke-width="1.2" fill="none">
-      <circle cx="0" cy="0" r="18"/><circle cx="60" cy="0" r="15"/><circle cx="30" cy="-50" r="12"/>
-      <circle cx="-50" cy="-30" r="10"/><circle cx="110" cy="-30" r="10"/>
-      <line x1="18" y1="0" x2="45" y2="0"/><line x1="30" y1="-18" x2="30" y2="-38"/>
-      <line x1="-32" y1="-12" x2="0" y2="0"/><line x1="78" y1="-12" x2="60" y2="0"/>
+    <!-- 글로우 -->
+    <circle cx="220" cy="380" r="180" fill="url(#lg1)" filter="url(#lb8)"/>
+    <circle cx="950" cy="180" r="140" fill="url(#lg2)" filter="url(#lb8)"/>
+    <!-- 파티클 -->
+    <g fill="#4caf50" opacity=".4">
+      <circle cx="460" cy="176" r="3"><animateMotion dur="4s" repeatCount="indefinite" path="M0,0 Q100,-25 200,0 Q300,25 400,0"/></circle>
+      <circle cx="530" cy="326" r="2.5"><animateMotion dur="5s" repeatCount="indefinite" path="M0,0 Q80,-18 160,0 Q240,18 320,0"/></circle>
     </g>
-
-    <!-- 우측 상단 - 퍼센트 게이지 -->
-    <g transform="translate(980, 120)" opacity=".25">
-      <circle cx="0" cy="0" r="50" fill="none" stroke="#1a56db" stroke-width="3"/>
-      <circle cx="0" cy="0" r="50" fill="none" stroke="#00c8ff" stroke-width="3"
+    <!-- 분자구조 -->
+    <g transform="translate(920,560)" opacity=".18" stroke="#81c784" stroke-width="1.2" fill="none">
+      <circle cx="0" cy="0" r="18"/><circle cx="60" cy="0" r="15"/><circle cx="30" cy="-48" r="12"/>
+      <circle cx="-48" cy="-28" r="10"/><circle cx="108" cy="-28" r="10"/>
+      <line x1="18" y1="0" x2="45" y2="0"/><line x1="30" y1="-18" x2="30" y2="-36"/>
+      <line x1="-30" y1="-10" x2="0" y2="0"/><line x1="75" y1="-10" x2="60" y2="0"/>
+    </g>
+    <!-- 충전 게이지 -->
+    <g transform="translate(1000,120)" opacity=".22">
+      <circle cx="0" cy="0" r="50" fill="none" stroke="#1a3a5c" stroke-width="3"/>
+      <circle cx="0" cy="0" r="50" fill="none" stroke="#4caf50" stroke-width="3"
               stroke-dasharray="220 314" stroke-dashoffset="-47" stroke-linecap="round"/>
-      <text x="0" y="8" text-anchor="middle" fill="#00c8ff" font-size="18" font-weight="bold" font-family="Inter,sans-serif">87%</text>
-      <text x="0" y="24" text-anchor="middle" fill="#fff" font-size="8" font-family="Inter,sans-serif">BATTERY</text>
+      <text x="0" y="7" text-anchor="middle" fill="#4caf50" font-size="17" font-weight="bold" font-family="Inter,sans-serif">87%</text>
+      <text x="0" y="22" text-anchor="middle" fill="#fff" font-size="8" font-family="Inter,sans-serif">CHARGED</text>
     </g>
   </svg>
 
-  <!-- 좌측 텍스트 패널 -->
-  <div class="ev-left-panel">
-    <div class="ev-brand-badge">
-      <img src="/logo.png" alt="Namochemical Logo" onerror="this.style.display='none'"/>
-      <div>
-        <div class="ev-brand-text">Namochemical</div>
-        <div class="ev-brand-sub">Quality Management System</div>
+  <!-- 좌측 패널 -->
+  <div class="login-left">
+    <div class="login-logo-area">
+      <img src="/logo.png" alt="나모케미칼 로고" onerror="this.style.display='none'"/>
+      <div class="login-logo-txt">
+        <div class="login-logo-name">나모케미칼(주)</div>
+        <div class="login-logo-sub">Quality Management System</div>
       </div>
     </div>
-    <div class="ev-headline">
-      EV 배터리 소재의<br>
-      <span class="accent">품질을 혁신</span>합니다
-    </div>
-    <div class="ev-desc">
-      나모케미칼의 QMS는 수입검사(IQC), 공정검사(PQC), 출하검사(OQC)를 통합 관리하여 고품질 배터리 소재의 안정적인 생산을 지원합니다.
-    </div>
-    <div class="ev-stats">
-      <div class="ev-stat">
-        <div class="ev-stat-val">IQC</div>
-        <div class="ev-stat-lbl">수입 품질 검사</div>
-      </div>
-      <div class="ev-stat">
-        <div class="ev-stat-val">PQC</div>
-        <div class="ev-stat-lbl">공정 품질 검사</div>
-      </div>
-      <div class="ev-stat">
-        <div class="ev-stat-val">OQC</div>
-        <div class="ev-stat-lbl">출하 품질 검사</div>
-      </div>
+    <div class="login-headline">EV 배터리 소재의<br><span class="green">품질을 혁신</span>합니다</div>
+    <div class="login-desc">나모케미칼의 QMS는 수입검사(IQC), 공정검사(PQC), 출하검사(OQC)를 통합 관리하여 고품질 배터리 소재의 안정적인 생산을 지원합니다.</div>
+    <div class="login-stats">
+      <div class="login-stat"><div class="login-stat-val">IQC</div><div class="login-stat-lbl">수입 품질 검사</div></div>
+      <div class="login-stat"><div class="login-stat-val">PQC</div><div class="login-stat-lbl">공정 품질 검사</div></div>
+      <div class="login-stat"><div class="login-stat-val">OQC</div><div class="login-stat-lbl">출하 품질 검사</div></div>
     </div>
   </div>
 
@@ -500,7 +454,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <input type="email" id="loginEmail" placeholder="이메일 주소"/>
         <input type="password" id="loginPassword" placeholder="비밀번호"/>
         <div class="lerr" id="loginError"></div>
-        <button type="button" class="btn pri" id="loginBtn" style="height:44px;font-size:14px;">로그인</button>
+        <button type="button" class="lbtn-login" id="loginBtn">로그인</button>
       </div>
     </div>
     <div class="lpanel" id="panelSignup">
@@ -511,7 +465,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <input type="text" id="signupTitle" placeholder="직책 (부장·이사·사원 등)"/>
         <input type="password" id="signupPassword" placeholder="비밀번호"/>
         <div class="lerr" id="signupError"></div>
-        <button type="button" class="btn pri" id="signupBtn" style="height:44px;font-size:14px;">회원가입</button>
+        <button type="button" class="lbtn-login" id="signupBtn">회원가입</button>
       </div>
     </div>
   </div>
@@ -519,13 +473,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 <!-- ══ SHELL ══ -->
 <div class="app"><div class="shell">
-
   <header class="topbar">
-    <div class="tlogo"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/>
-      <div>
-      
-    </div>
-    </div>
+    <div class="tlogo"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/><div><div class="tlogo-n">나모케미칼(주)</div><div class="tlogo-s">QMS Platform</div></div></div>
     <div class="tcenter"><div class="dtxt" id="currentDateTime"></div></div>
     <div class="tright">
       <div class="sbox"><span style="color:var(--t3);font-size:13px;">🔍</span><input id="globalSearch" placeholder="LOT 검색…"/></div>
@@ -572,7 +521,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           <div class="ph-actions">
             <span class="toolbar-label">조회 연도</span>
             <select id="dashYear" style="height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"></select>
-            <button class="btn pri" id="dashRefresh">조회</button>
+            <button class="btn green" id="dashRefresh">조회</button>
           </div>
         </div>
         <div class="sgrid">
@@ -603,7 +552,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>수입검사(IQC)</span></div><div class="ph-title">입고검사 등록</div></div></div>
         <div class="wgrid">
           <div class="card">
-            <div class="ch"><h2>입고검사 등록</h2><div class="ca"><button class="btn light sm" id="incomingReset">초기화</button><button class="btn pri sm" id="incomingSave">저장</button></div></div>
+            <div class="ch"><h2>입고검사 등록</h2><div class="ca"><button class="btn light sm" id="incomingReset">초기화</button><button class="btn green sm" id="incomingSave">저장</button></div></div>
             <div class="cb">
               <div class="fg4">
                 <div class="field"><label>일자 *</label><input type="date" id="incomingDate"></div>
@@ -617,7 +566,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="sp mt14">
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
                 <div class="cb" style="padding:12px 14px;">
-                  <div class="sign-warning" id="signWarn_iqc">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록하면 작성자/검토자/승인자를 선택할 수 있습니다.</div>
+                  <div class="sign-warning" id="signWarn_iqc">⚠️ 등록된 회원이 없습니다.</div>
                   <div class="sign-grid" id="signGrid_iqc"></div>
                 </div>
               </div>
@@ -631,7 +580,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="ch"><h2>성적서 미리보기</h2><div class="ca"><button class="btn light sm" id="printIncomingReport" type="button">🖨 인쇄</button><button class="btn ghost sm" id="openIncomingLabel" type="button">🏷 라벨</button></div></div>
             <div class="cb">
               <div class="rsheet" id="incomingReportPreview">
-                <div class="rhdr"><h2>입고검사 성적서 (IQC Report)</h2><div><div class="rbname">Namochemical</div><div class="rbsub">Quality Management</div></div></div>
+                <div class="rhdr"><h2>입고검사 성적서 (IQC Report)</h2><div><div class="rbname">나모케미칼(주)</div><div class="rbsub">Quality Management</div></div></div>
                 <div class="tw"><table><tbody id="incomingMetaTable"></tbody></table></div>
                 <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="incomingPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="incomingFinalJudgeText">합격</div></div>
@@ -657,7 +606,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>공정검사(PQC)</span></div><div class="ph-title">공정검사 등록</div></div></div>
         <div class="wgrid">
           <div class="card">
-            <div class="ch"><h2>공정검사 등록</h2><div class="ca"><button class="btn light sm" id="processReset">초기화</button><button class="btn pri sm" id="processSave">저장</button></div></div>
+            <div class="ch"><h2>공정검사 등록</h2><div class="ca"><button class="btn light sm" id="processReset">초기화</button><button class="btn green sm" id="processSave">저장</button></div></div>
             <div class="cb">
               <div class="fg4">
                 <div class="field"><label>생산일자</label><input type="date" id="processDate"></div>
@@ -671,7 +620,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="sp mt14">
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
                 <div class="cb" style="padding:12px 14px;">
-                  <div class="sign-warning" id="signWarn_pqc">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
+                  <div class="sign-warning" id="signWarn_pqc">⚠️ 등록된 회원이 없습니다.</div>
                   <div class="sign-grid" id="signGrid_pqc"></div>
                 </div>
               </div>
@@ -685,7 +634,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="ch"><h2>성적서 미리보기</h2><div class="ca"><button class="btn light sm" id="printProcessReport" type="button">🖨 인쇄</button><button class="btn ghost sm" id="openProcessLabel" type="button">🏷 라벨</button></div></div>
             <div class="cb">
               <div class="rsheet" id="processReportPreview">
-                <div class="rhdr"><h2>공정검사 성적서 (PQC Report)</h2><div><div class="rbname">Namochemical</div><div class="rbsub">Quality Management</div></div></div>
+                <div class="rhdr"><h2>공정검사 성적서 (PQC Report)</h2><div><div class="rbname">나모케미칼(주)</div><div class="rbsub">Quality Management</div></div></div>
                 <div class="tw"><table><tbody id="processMetaTable"></tbody></table></div>
                 <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="processPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="processFinalJudgeText">합격</div></div>
@@ -711,7 +660,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>출하검사(OQC)</span></div><div class="ph-title">출하검사 등록</div></div></div>
         <div class="wgrid">
           <div class="card">
-            <div class="ch"><h2>출하검사 등록</h2><div class="ca"><button class="btn light sm" id="shipmentReset">초기화</button><button class="btn pri sm" id="shipmentSave">저장</button></div></div>
+            <div class="ch"><h2>출하검사 등록</h2><div class="ca"><button class="btn light sm" id="shipmentReset">초기화</button><button class="btn green sm" id="shipmentSave">저장</button></div></div>
             <div class="cb">
               <div class="fg4">
                 <div class="field"><label>검사일자</label><input type="date" id="shipmentDate"></div>
@@ -725,7 +674,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="sp mt14">
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
                 <div class="cb" style="padding:12px 14px;">
-                  <div class="sign-warning" id="signWarn_oqc">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
+                  <div class="sign-warning" id="signWarn_oqc">⚠️ 등록된 회원이 없습니다.</div>
                   <div class="sign-grid" id="signGrid_oqc"></div>
                 </div>
               </div>
@@ -739,7 +688,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="ch"><h2>성적서 미리보기</h2><div class="ca"><button class="btn light sm" id="printShipmentReport" type="button">🖨 인쇄</button><button class="btn ghost sm" id="openShipmentLabel" type="button">🏷 라벨</button></div></div>
             <div class="cb">
               <div class="rsheet" id="shipmentReportPreview">
-                <div class="rhdr"><h2>출하검사 성적서 (OQC Report)</h2><div><div class="rbname">Namochemical</div><div class="rbsub">Quality Management</div></div></div>
+                <div class="rhdr"><h2>출하검사 성적서 (OQC Report)</h2><div><div class="rbname">나모케미칼(주)</div><div class="rbsub">Quality Management</div></div></div>
                 <div class="tw"><table><tbody id="shipmentMetaTable"></tbody></table></div>
                 <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="shipmentPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="shipmentFinalJudgeText">합격</div></div>
@@ -769,14 +718,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option>
             </select>
             <select id="reportSelect" style="height:36px;min-width:220px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"><option value="">-- 성적서 선택 --</option></select>
-            <button class="btn pri" id="reportReload">불러오기</button>
+            <button class="btn green" id="reportReload">불러오기</button>
             <button class="btn light" id="printReportPage" type="button">🖨 인쇄</button>
             <button class="btn ghost" id="openReportLabel" type="button">🏷 라벨</button>
           </div>
         </div>
         <div class="card"><div class="cb">
           <div class="rsheet" id="reportPrintTarget">
-            <div class="rhdr"><h2 id="reportPageTitle">성적서</h2><div><div class="rbname">Namochemical</div><div class="rbsub">Quality Management</div></div></div>
+            <div class="rhdr"><h2 id="reportPageTitle">성적서</h2><div><div class="rbname">나모케미칼(주)</div><div class="rbsub">Quality Management</div></div></div>
             <div class="tw"><table><tbody id="reportMetaTable"></tbody></table></div>
             <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="reportBodyTable"></tbody></table></div>
             <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="reportFinalText">합격</div></div>
@@ -794,7 +743,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <section class="page" id="page-nonconform">
         <div class="ph">
           <div><div class="ph-title">부적합 보고서 (NCR)</div><div class="ph-sub">부적합 사항을 등록·관리하고 시정조치를 추적합니다.</div></div>
-          <div class="ph-actions"><button class="btn light" id="ncReset">초기화</button><button class="btn pri" id="ncSave">저장</button></div>
+          <div class="ph-actions"><button class="btn light" id="ncReset">초기화</button><button class="btn green" id="ncSave">저장</button></div>
         </div>
         <div class="card">
           <div class="ch"><h2>부적합 보고서 등록</h2><div class="ca"><button class="btn light sm" id="printNcReport" type="button">🖨 인쇄</button></div></div>
@@ -821,7 +770,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="sp mt14">
               <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
               <div class="cb" style="padding:12px 14px;">
-                <div class="sign-warning" id="signWarn_nc">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
+                <div class="sign-warning" id="signWarn_nc">⚠️ 등록된 회원이 없습니다.</div>
                 <div class="sign-grid" id="signGrid_nc"></div>
               </div>
             </div>
@@ -841,34 +790,81 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
       </section>
 
-      <!-- ■ 생산작업일지 -->
+      <!-- ■ 생산작업일지 ★ 인쇄+엑셀 추가 -->
       <section class="page" id="page-worklog">
         <div class="ph">
           <div><div class="ph-title">생산작업일지</div><div class="ph-sub">원료 투입과 작업자 기록 / IQC·PQC·OQC 연동</div></div>
-          <div class="ph-actions"><button class="btn light" id="worklogReset">초기화</button><button class="btn pri" id="worklogSave">저장</button></div>
+          <div class="ph-actions">
+            <button class="btn light" id="worklogExcelUploadBtn">📤 엑셀 업로드</button>
+            <button class="btn light" id="worklogExcelDownBtn">📥 서식 다운로드</button>
+            <button class="btn light" id="worklogReset">초기화</button>
+            <button class="btn green" id="worklogSave">저장</button>
+          </div>
         </div>
-        <div class="card"><div class="ch"><h2>작업일지 등록</h2></div><div class="cb">
-          <div class="fg4">
-            <div class="field"><label>작업일자</label><input type="date" id="worklogDate"></div>
-            <div class="field"><label>완제품 LOT</label><input id="worklogFinishedLot" placeholder="LOT 번호"></div>
-            <div class="field"><label>작업자</label><input id="worklogWorker" placeholder="작업자명"></div>
-            <div class="field"><label>계획수량</label><input id="worklogPlanQty" placeholder="0"></div>
-            <div class="field"><label>생산수량</label><input id="worklogProdQty" placeholder="0"></div>
-            <div class="field"><label>불량수량</label><input id="worklogFailQty" placeholder="0"></div>
-            <div class="field"><label>유량 설정</label><input id="worklogFlowSet" placeholder="설정값"></div>
-            <div class="field"><label>유량 실적</label><input id="worklogFlowActual" placeholder="실적값"></div>
-            <div class="field"><label>온도 설정</label><input id="worklogTempSet" placeholder="설정값"></div>
-            <div class="field"><label>온도 실적</label><input id="worklogTempActual" placeholder="실적값"></div>
-            <div class="field"><label>압력 설정</label><input id="worklogPressSet" placeholder="설정값"></div>
-            <div class="field"><label>압력 실적</label><input id="worklogPressActual" placeholder="실적값"></div>
-            <div class="field cfall"><label>비고</label><textarea id="worklogRemark" placeholder="비고 사항"></textarea></div>
+        <div class="card"><div class="ch"><h2>작업일지 등록</h2><div class="ca"><button class="btn light sm" id="printWorklogBtn" type="button">🖨 인쇄</button></div></div>
+          <!-- 인쇄 대상 -->
+          <div class="cb" id="worklogPrintTarget">
+            <!-- 인쇄용 헤더 (화면에서는 숨김) -->
+            <div class="wlog-print-sheet" id="worklogPrintSheet" style="display:none;">
+              <div class="wlog-print-hdr">
+                <div><div class="wlog-print-title">생산작업일지</div><div style="font-size:11px;color:#555;margin-top:4px;">나모케미칼(주) · NAMO Chemical Co., Ltd.</div></div>
+                <div style="text-align:right;font-size:11px;color:#555;"><div id="wlogPrintDate"></div><div id="wlogPrintDocNo"></div></div>
+              </div>
+              <div class="wlog-meta-grid">
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">작업일자</div><div class="wlog-meta-value" id="wpDate"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">완제품 LOT</div><div class="wlog-meta-value" id="wpLot"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">작업자</div><div class="wlog-meta-value" id="wpWorker"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">계획수량</div><div class="wlog-meta-value" id="wpPlanQty"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">생산수량</div><div class="wlog-meta-value" id="wpProdQty"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">불량수량</div><div class="wlog-meta-value" id="wpFailQty"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">유량 설정/실적</div><div class="wlog-meta-value" id="wpFlow"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">온도 설정/실적</div><div class="wlog-meta-value" id="wpTemp"></div></div>
+                <div class="wlog-meta-cell"><div class="wlog-meta-label">압력 설정/실적</div><div class="wlog-meta-value" id="wpPress"></div></div>
+                <div class="wlog-meta-cell" style="grid-column:span 3"><div class="wlog-meta-label">비고</div><div class="wlog-meta-value" id="wpRemark"></div></div>
+              </div>
+              <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">투입 원료</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #aaa;">
+                <thead><tr style="background:#f5f5f5;">
+                  <th style="border:1px solid #aaa;padding:6px 8px;text-align:left;">No.</th>
+                  <th style="border:1px solid #aaa;padding:6px 8px;text-align:left;">원료명</th>
+                  <th style="border:1px solid #aaa;padding:6px 8px;text-align:left;">업체명</th>
+                  <th style="border:1px solid #aaa;padding:6px 8px;text-align:left;">원료 LOT</th>
+                  <th style="border:1px solid #aaa;padding:6px 8px;text-align:left;">투입량</th>
+                  <th style="border:1px solid #aaa;padding:6px 8px;text-align:left;">투입시간</th>
+                </tr></thead>
+                <tbody id="wpMaterialsBody"></tbody>
+              </table>
+              <div class="rprint-sign" style="margin-top:20px;">
+                <div class="rpsign-col"><div class="rpsign-role">작성자</div><div style="min-height:36px;"></div><div class="rpsign-line"></div></div>
+                <div class="rpsign-col"><div class="rpsign-role">검토자</div><div style="min-height:36px;"></div><div class="rpsign-line"></div></div>
+                <div class="rpsign-col"><div class="rpsign-role">승인자</div><div style="min-height:36px;"></div><div class="rpsign-line"></div></div>
+              </div>
+            </div>
+            <!-- 입력 폼 -->
+            <div id="worklogFormArea">
+              <div class="fg4">
+                <div class="field"><label>작업일자</label><input type="date" id="worklogDate"></div>
+                <div class="field"><label>완제품 LOT</label><input id="worklogFinishedLot" placeholder="LOT 번호"></div>
+                <div class="field"><label>작업자</label><input id="worklogWorker" placeholder="작업자명"></div>
+                <div class="field"><label>계획수량</label><input id="worklogPlanQty" placeholder="0"></div>
+                <div class="field"><label>생산수량</label><input id="worklogProdQty" placeholder="0"></div>
+                <div class="field"><label>불량수량</label><input id="worklogFailQty" placeholder="0"></div>
+                <div class="field"><label>유량 설정</label><input id="worklogFlowSet" placeholder="설정값"></div>
+                <div class="field"><label>유량 실적</label><input id="worklogFlowActual" placeholder="실적값"></div>
+                <div class="field"><label>온도 설정</label><input id="worklogTempSet" placeholder="설정값"></div>
+                <div class="field"><label>온도 실적</label><input id="worklogTempActual" placeholder="실적값"></div>
+                <div class="field"><label>압력 설정</label><input id="worklogPressSet" placeholder="설정값"></div>
+                <div class="field"><label>압력 실적</label><input id="worklogPressActual" placeholder="실적값"></div>
+                <div class="field cfall"><label>비고</label><textarea id="worklogRemark" placeholder="비고 사항"></textarea></div>
+              </div>
+              <div class="sp"><div class="sph"><h3>투입 원료</h3><button class="btn light sm" id="addWorklogMaterial" type="button">+ 행 추가</button></div>
+                <div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th>No.</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th><th>삭제</th></tr></thead><tbody id="worklogMaterialsTable"></tbody></table></div>
+              </div>
+              <div id="worklogLinkBox" style="display:none;"><div class="lkbox"><div class="lkbox-title">🔗 연동된 검사 기록 (완제품 LOT 기준)</div><div id="worklogLinkRows"></div></div></div>
+              <input type="hidden" id="worklogEditId">
+            </div>
           </div>
-          <div class="sp"><div class="sph"><h3>투입 원료</h3><button class="btn light sm" id="addWorklogMaterial" type="button">+ 행 추가</button></div>
-            <div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th>No.</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th><th>삭제</th></tr></thead><tbody id="worklogMaterialsTable"></tbody></table></div>
-          </div>
-          <div id="worklogLinkBox" style="display:none;"><div class="lkbox"><div class="lkbox-title">🔗 연동된 검사 기록 (완제품 LOT 기준)</div><div id="worklogLinkRows"></div></div></div>
-          <input type="hidden" id="worklogEditId">
-        </div></div>
+        </div>
         <div class="card mt14"><div class="ch"><h3>생산작업일지 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>계획수량</th><th>생산수량</th><th>불량수량</th><th>연동 검사</th><th>작업</th></tr></thead><tbody id="worklogTable"></tbody></table>
@@ -879,7 +875,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <!-- ■ 협력사 -->
       <section class="page" id="page-suppliers">
         <div class="ph"><div><div class="ph-title">협력사 현황</div><div class="ph-sub">협력업체 등록 및 상태를 관리합니다.</div></div>
-          <div class="ph-actions"><button class="btn light" id="supplierReset">초기화</button><button class="btn pri" id="supplierSave">저장</button></div></div>
+          <div class="ph-actions"><button class="btn light" id="supplierReset">초기화</button><button class="btn green" id="supplierSave">저장</button></div></div>
         <div class="card"><div class="ch"><h2>협력사 등록</h2></div><div class="cb">
           <div class="fg5">
             <div class="field"><label>업체명</label><input id="supplierName" placeholder="업체명"></div>
@@ -901,7 +897,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <div class="ph"><div><div class="ph-title">LOT 추적</div><div class="ph-sub">완제품 / 원료 LOT를 검색합니다.</div></div>
           <div class="ph-actions">
             <input id="traceKeyword" placeholder="LOT 번호 또는 원료명 입력" style="height:36px;min-width:270px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:13px;background:var(--sf);outline:none;"/>
-            <button class="btn pri" id="traceSearch">조회</button>
+            <button class="btn green" id="traceSearch">조회</button>
           </div>
         </div>
         <div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
@@ -914,7 +910,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <!-- ■ 회원 -->
       <section class="page" id="page-users">
         <div class="ph"><div><div class="ph-title">회원등록현황</div><div class="ph-sub">관리자 전용 · 직책 등록으로 검토자/승인자 자격 부여 (부장·이사·임원 이상)</div></div>
-          <div class="ph-actions"><button class="btn light" id="userReset">초기화</button><button class="btn pri" id="userSave">저장</button></div></div>
+          <div class="ph-actions"><button class="btn light" id="userReset">초기화</button><button class="btn green" id="userSave">저장</button></div></div>
         <div class="card"><div class="ch"><h2>회원 등록 / 수정</h2></div><div class="cb">
           <div class="fg4">
             <div class="field"><label>성명</label><input id="userName" placeholder="성명"></div>
@@ -925,7 +921,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="field"><label>상태</label><select id="userStatus"><option value="APPROVED">승인</option><option value="REJECTED">반려</option></select></div>
             <div class="field"><label>초기 비밀번호</label><input id="userPassword" placeholder="미입력 시 1234"></div>
           </div>
-          <div style="margin-top:12px;padding:10px 14px;background:var(--pris);border-radius:var(--r2);font-size:12px;color:var(--pri);">
+          <div style="margin-top:12px;padding:10px 14px;background:#e8f5e9;border-radius:var(--r2);font-size:12px;color:var(--namo-green);">
             ℹ️ <strong>검토자·승인자 자격 직책:</strong> 부장, 이사, 상무, 전무, 임원, 대표이사, 대표, 사장, 회장, 본부장, 실장, 센터장, CEO, CTO, COO, CFO + 관리자(admin) 권한
           </div>
           <input type="hidden" id="userEditId">
@@ -939,7 +935,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
     </main>
   </div>
-  <div class="footer">© 2026 Namochemical Inc. All rights reserved. · Quality Management System</div>
+  <div class="footer">© 2026 나모케미칼(주) NAMO Chemical Co., Ltd. All rights reserved. · QMS Platform</div>
 </div></div>
 
 <!-- 비밀번호 변경 모달 -->
@@ -951,7 +947,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <div class="field"><label>새 비밀번호</label><input type="password" id="newPassword" placeholder="새 비밀번호"></div>
       <div class="field"><label>새 비밀번호 확인</label><input type="password" id="confirmPassword" placeholder="새 비밀번호 확인"></div>
     </div>
-    <div class="mfoot"><button type="button" class="btn light" id="cancelPasswordModal">취소</button><button type="button" class="btn pri" id="submitChangePassword">변경</button></div>
+    <div class="mfoot"><button type="button" class="btn light" id="cancelPasswordModal">취소</button><button type="button" class="btn green" id="submitChangePassword">변경</button></div>
   </div>
 </div>
 
@@ -960,27 +956,62 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   <div class="mcard wide">
     <div class="mhdr"><h3 id="labelModalTitle">🏷 제품 부착용 라벨</h3><button type="button" class="mclose" id="closeLabelModal">✕</button></div>
     <div class="mbody" id="labelModalBody"></div>
-    <div class="mfoot"><button type="button" class="btn light" id="cancelLabelModal">닫기</button><button type="button" class="btn pri" id="printLabelBtn">🖨 라벨 인쇄</button></div>
+    <div class="mfoot"><button type="button" class="btn light" id="cancelLabelModal">닫기</button><button type="button" class="btn green" id="printLabelBtn">🖨 라벨 인쇄</button></div>
   </div>
 </div>
 
+<!-- 엑셀 업로드 모달 -->
+<div class="modal" id="excelModal">
+  <div class="mcard xl">
+    <div class="mhdr"><h3>📤 생산작업일지 엑셀 업로드</h3><button type="button" class="mclose" id="closeExcelModal">✕</button></div>
+    <div class="mbody">
+      <div style="padding:10px 14px;background:#e8f5e9;border-radius:var(--r2);font-size:12px;color:var(--namo-green);margin-bottom:4px;">
+        ℹ️ 엑셀 컬럼 순서: <strong>작업일자 | 완제품LOT | 작업자 | 계획수량 | 생산수량 | 불량수량 | 유량설정 | 유량실적 | 온도설정 | 온도실적 | 압력설정 | 압력실적 | 비고</strong><br>
+        원료 시트(Sheet2): <strong>작업일자 | 완제품LOT | 원료명 | 업체명 | 원료LOT | 투입량 | 투입시간</strong>
+      </div>
+      <div class="excel-upload-area" id="excelDropArea">
+        <div class="excel-upload-icon">📊</div>
+        <div class="excel-upload-txt">엑셀 파일을 끌어다 놓거나 클릭하여 선택하세요</div>
+        <div class="excel-upload-sub">.xlsx, .xls 파일 지원</div>
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
+      </div>
+      <div id="excelPreviewArea" style="display:none;">
+        <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:8px;">미리보기 — <span id="excelPreviewCount">0</span>건</div>
+        <div class="excel-preview-table">
+          <table><thead><tr><th>작업일자</th><th>완제품LOT</th><th>작업자</th><th>계획수량</th><th>생산수량</th><th>불량수량</th><th>유량S/A</th><th>온도S/A</th><th>압력S/A</th><th>비고</th></tr></thead>
+          <tbody id="excelPreviewBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button type="button" class="btn light" id="cancelExcelModal">취소</button>
+      <button type="button" class="btn green" id="applyExcelBtn" disabled>✔ 첫번째 행 양식에 적용</button>
+      <button type="button" class="btn pri" id="importAllExcelBtn" disabled>📥 전체 DB 저장</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="excelFileHidden" accept=".xlsx,.xls" style="display:none;">
+
 <script>
-/* ═══════════════════════════════════════
+/* ══════════════════════════════════════════
    STATE
-═══════════════════════════════════════ */
+══════════════════════════════════════════ */
 const state={
   currentUser:null,
   incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],
-  adminUsers:[],
-  signableUsers:[],   // /api/users/signable 결과
+  adminUsers:[], signableUsers:[],
   charts:{},
-  incomingItemDrafts:[],processItemDrafts:[],shipmentItemDrafts:[],worklogMaterialDrafts:[],
+  incomingItemDrafts:[],processItemDrafts:[],shipmentItemDrafts:[],
+  worklogMaterialDrafts:[],
+  excelRows:[],     // 업로드된 엑셀 작업일지 데이터
+  excelMats:[],     // 업로드된 엑셀 원료 데이터
   saving:{}
 };
 const $=id=>document.getElementById(id);
 const $$=s=>Array.from(document.querySelectorAll(s));
 
-/* ═══ API ═══ */
+/* API */
 async function api(url,o={}){
   try{
     const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(o.headers||{})},...o});
@@ -992,7 +1023,7 @@ function withSaving(k,btn,fn){
     try{await fn();}finally{state.saving[k]=false;if(btn)btn.disabled=false;}};
 }
 
-/* ═══ UTILS ═══ */
+/* UTILS */
 function todayKST(){const s=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;}
 function formatDT(){const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;}
 function startClock(){const e=$('currentDateTime');if(!e)return;const r=()=>{e.textContent=formatDT();};r();setInterval(r,1000);}
@@ -1003,9 +1034,7 @@ function eRow(cols,msg='데이터 없음'){return`<tr><td colspan="${cols}" styl
 function safeBC(v){return String(v||'').replace(/[^\x20-\x7E]/g,'').trim()||'N-A';}
 function tryJSON(v){if(!v)return null;if(typeof v==='object')return v;try{return JSON.parse(v);}catch(e){return null;}}
 
-/* ═══════════════════════════════════════
-   ★ 직책 → 부장/임원 이상 판별
-═══════════════════════════════════════ */
+/* ══ 직책 → 부장/임원 이상 ══ */
 const SENIOR=['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo','chief'];
 function isSenior(u){
   if(!u)return false;
@@ -1014,10 +1043,11 @@ function isSenior(u){
   return SENIOR.some(s=>t.includes(s));
 }
 
-/* ═══════════════════════════════════════
-   ★★★ 서명 그리드 — 완전 재작성
-   핵심: signableUsers 로드 후 DOM에 직접 select 생성 + 즉시 이벤트 바인딩
-═══════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   ★★★ 서명 그리드 (완전 재작성)
+   - signableUsers를 직접 사용
+   - DOM 생성 후 즉시 이벤트 바인딩
+══════════════════════════════════════════ */
 const SIGN_TYPES=['iqc','pqc','oqc','nc'];
 
 function buildSignGrid(type){
@@ -1028,70 +1058,55 @@ function buildSignGrid(type){
   const all=state.signableUsers;
   const mgr=all.filter(u=>isSenior(u));
 
-  // 경고 표시
-  if(warnEl){warnEl.style.display=all.length===0?'block':'none';}
+  if(warnEl) warnEl.style.display=all.length===0?'block':'none';
 
-  // 셀렉트 HTML 생성
-  const mkOpts=(list,ph)=>`<option value="">${ph}</option>`+
+  const mkOpts=(list,ph)=>
+    `<option value="">${ph}</option>`+
     list.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
 
   container.innerHTML=`
     <div class="sign-box">
-      <div class="sign-box-hdr">
-        <span class="sign-box-role">작성자 (검사자)</span>
-        <span class="sign-box-badge any">전체 회원 ${all.length}명</span>
-      </div>
+      <div class="sign-box-hdr"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체 ${all.length}명</span></div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_writer">${mkOpts(all,'-- 작성자 선택 --')}</select>
-        <div class="sign-sub" id="sg_${type}_writer_sub" style="color:var(--t3);"></div>
+        <div class="sign-sub" id="sg_${type}_writer_sub"></div>
       </div>
     </div>
     <div class="sign-box">
-      <div class="sign-box-hdr">
-        <span class="sign-box-role">검토자</span>
-        <span class="sign-box-badge mgr">부장·임원 이상 ${mgr.length}명</span>
-      </div>
+      <div class="sign-box-hdr"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장 이상 ${mgr.length}명</span></div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(mgr,'-- 검토자 선택 (부장 이상) --')}</select>
-        <div class="sign-sub" id="sg_${type}_reviewer_sub" style="color:var(--t3);"></div>
+        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(mgr,'-- 검토자 선택 --')}</select>
+        <div class="sign-sub" id="sg_${type}_reviewer_sub"></div>
       </div>
     </div>
     <div class="sign-box">
-      <div class="sign-box-hdr">
-        <span class="sign-box-role">승인자</span>
-        <span class="sign-box-badge mgr">부장·임원 이상 ${mgr.length}명</span>
-      </div>
+      <div class="sign-box-hdr"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장 이상 ${mgr.length}명</span></div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(mgr,'-- 승인자 선택 (부장 이상) --')}</select>
-        <div class="sign-sub" id="sg_${type}_approver_sub" style="color:var(--t3);"></div>
+        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(mgr,'-- 승인자 선택 --')}</select>
+        <div class="sign-sub" id="sg_${type}_approver_sub"></div>
       </div>
     </div>`;
 
-  // 이벤트 즉시 바인딩 (DOM이 이미 있으므로 바로 가능)
   ['writer','reviewer','approver'].forEach(role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
-    if(sel){
-      sel.addEventListener('change',()=>onSignChange(type,role));
-    }
+    if(sel) sel.addEventListener('change',()=>onSignChange(type));
   });
 }
 
-function onSignChange(type,changedRole){
+function onSignChange(type){
+  const PFX={iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc'};
   ['writer','reviewer','approver'].forEach(role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
     const sub=document.getElementById(`sg_${type}_${role}_sub`);
     if(!sel||!sub)return;
     const u=state.signableUsers.find(x=>x.id===sel.value)||null;
     sub.textContent=u?`${u.department||''} ${u.title||''}`.trim():'';
-    // 인쇄용 서명란 반영
-    const pfx=type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':'Nc';
     const cap=role.charAt(0).toUpperCase()+role.slice(1);
-    const rn=document.getElementById(`r${pfx}${cap}`);
-    const rt=document.getElementById(`r${pfx}${cap}T`);
+    const rn=document.getElementById(`r${PFX[type]}${cap}`);
+    const rt=document.getElementById(`r${PFX[type]}${cap}T`);
     if(rn)rn.textContent=u?u.name:'-';
     if(rt)rt.textContent=u?(u.title||''):'';
   });
-  // 미리보기 갱신
   if(type==='iqc')syncIqcPreview();
   if(type==='pqc')syncPqcPreview();
   if(type==='oqc')syncOqcPreview();
@@ -1101,7 +1116,6 @@ function rebuildAllSignGrids(){
   SIGN_TYPES.forEach(t=>buildSignGrid(t));
 }
 
-/* 서명 페이로드 수집 */
 function getSignPayload(type){
   const find=role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
@@ -1112,60 +1126,49 @@ function getSignPayload(type){
   return{writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
 }
 
-/* 수정 시 서명 복원 */
 function restoreSign(type,record){
   if(!record)return;
   const restore=(role,data)=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
     if(!sel||!data)return;
-    // id로 먼저, 없으면 name으로
-    if(data.id&&state.signableUsers.find(x=>x.id===data.id)){
-      sel.value=data.id;
-    }else if(data.name){
-      const u=state.signableUsers.find(x=>x.name===data.name);
-      if(u)sel.value=u.id;
-    }
-    onSignChange(type,role);
+    if(data.id&&state.signableUsers.find(x=>x.id===data.id)){sel.value=data.id;}
+    else if(data.name){const u=state.signableUsers.find(x=>x.name===data.name);if(u)sel.value=u.id;}
   };
   restore('writer',record.signWriter);
   restore('reviewer',record.signReviewer);
   restore('approver',record.signApprover);
+  onSignChange(type);
 }
 
-/* 서명 초기화 */
 function clearSign(type){
   ['writer','reviewer','approver'].forEach(role=>{
-    const sel=document.getElementById(`sg_${type}_${role}`);
-    if(sel)sel.value='';
-    const sub=document.getElementById(`sg_${type}_${role}_sub`);
-    if(sub)sub.textContent='';
-    const pfx=type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':'Nc';
+    const sel=document.getElementById(`sg_${type}_${role}`);if(sel)sel.value='';
+    const sub=document.getElementById(`sg_${type}_${role}_sub`);if(sub)sub.textContent='';
+    const PFX={iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc'};
     const cap=role.charAt(0).toUpperCase()+role.slice(1);
-    const rn=document.getElementById(`r${pfx}${cap}`);
-    const rt=document.getElementById(`r${pfx}${cap}T`);
+    const rn=document.getElementById(`r${PFX[type]}${cap}`);
+    const rt=document.getElementById(`r${PFX[type]}${cap}T`);
     if(rn)rn.textContent='-';if(rt)rt.textContent='';
   });
 }
 
-/* ═══ BARCODE ═══ */
+/* BARCODE */
 function renderBC(svgId,value){
   const el=$(svgId);if(!el||!value)return;
   try{JsBarcode(el,safeBC(value),{format:'CODE128',width:1.6,height:38,displayValue:true,fontSize:11,margin:4,background:'#fff',lineColor:'#000'});}
   catch(e){console.warn('BC',svgId,e);}
 }
 
-/* ═══ LABEL ═══ */
+/* LABEL */
 function buildLabel(type,d){
-  const judge=calcJ(d.items||[]);
-  const jc=judge==='합격'?'pass':'fail';
+  const judge=calcJ(d.items||[]);const jc=judge==='합격'?'pass':'fail';
   const docNo=`${type.toUpperCase()}-${String(d.date||'').replaceAll('-','')}-0001`;
   const uid='l'+Math.random().toString(36).slice(2,9);
   let rows='';
   if(type==='iqc')rows=`<div class="plrow"><span class="plkey">품목</span><span class="plval">${esc(d.item||'-')}</span></div><div class="plrow"><span class="plkey">협력업체</span><span class="plval">${esc(d.supplier||'-')}</span></div>`;
   else if(type==='pqc')rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">설비명</span><span class="plval">${esc(d.line||'-')}</span></div>`;
   else rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">고객사</span><span class="plval">${esc(d.customer||'-')}</span></div>`;
-  return`<div class="plabel" id="${uid}">
-    <div class="pltitle">Namochemical · ${type.toUpperCase()} 검사 라벨</div>
+  return`<div class="plabel" id="${uid}"><div class="pltitle">나모케미칼(주) · ${type.toUpperCase()} 검사 라벨</div>
     <div class="plrow"><span class="plkey">LOT</span><span class="plval" style="font-weight:900;">${esc(d.lot||'-')}</span></div>
     <div class="plrow"><span class="plkey">일자</span><span class="plval">${esc(d.date||'-')}</span></div>
     <div class="plrow"><span class="plkey">검사자</span><span class="plval">${esc(d.signWriter?.name||'-')}</span></div>
@@ -1209,7 +1212,205 @@ function printLabel(){
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
 
-/* ═══ AUTH ═══ */
+/* ══ 생산작업일지 인쇄 ══ */
+function buildWorklogPrintSheet(){
+  const d=$('worklogDate').value||'-';
+  const lot=$('worklogFinishedLot').value||'-';
+  const docNo=`WL-${String(d).replaceAll('-','')}-001`;
+  $('wlogPrintDate').textContent=`작성일: ${todayKST()}`;
+  $('wlogPrintDocNo').textContent=`문서번호: ${docNo}`;
+  $('wpDate').textContent=d;$('wpLot').textContent=lot;
+  $('wpWorker').textContent=$('worklogWorker').value||'-';
+  $('wpPlanQty').textContent=$('worklogPlanQty').value||'-';
+  $('wpProdQty').textContent=$('worklogProdQty').value||'-';
+  $('wpFailQty').textContent=$('worklogFailQty').value||'-';
+  $('wpFlow').textContent=`${$('worklogFlowSet').value||'-'} / ${$('worklogFlowActual').value||'-'}`;
+  $('wpTemp').textContent=`${$('worklogTempSet').value||'-'} / ${$('worklogTempActual').value||'-'}`;
+  $('wpPress').textContent=`${$('worklogPressSet').value||'-'} / ${$('worklogPressActual').value||'-'}`;
+  $('wpRemark').textContent=$('worklogRemark').value||'-';
+  const mb=$('wpMaterialsBody');
+  if(!state.worklogMaterialDrafts.length){
+    mb.innerHTML=`<tr><td colspan="6" style="border:1px solid #aaa;padding:6px;text-align:center;color:#aaa;">원료 없음</td></tr>`;
+  } else {
+    mb.innerHTML=state.worklogMaterialDrafts.map((r,i)=>
+      `<tr><td style="border:1px solid #aaa;padding:5px 8px;">${i+1}</td>
+      <td style="border:1px solid #aaa;padding:5px 8px;">${esc(r.material||'')}</td>
+      <td style="border:1px solid #aaa;padding:5px 8px;">${esc(r.supName||'')}</td>
+      <td style="border:1px solid #aaa;padding:5px 8px;">${esc(r.lotNo||'')}</td>
+      <td style="border:1px solid #aaa;padding:5px 8px;">${esc(r.inputQty||'')}</td>
+      <td style="border:1px solid #aaa;padding:5px 8px;">${esc(r.inputTime||'')}</td></tr>`
+    ).join('');
+  }
+}
+
+function printWorklog(){
+  buildWorklogPrintSheet();
+  $('worklogFormArea').style.display='none';
+  $('worklogPrintSheet').style.display='block';
+  $('worklogPrintSheet').id='printTarget';
+  window.print();
+  setTimeout(()=>{
+    $('worklogPrintSheet').style.display='none';
+    $('worklogPrintSheet').id='worklogPrintSheet';
+    $('worklogFormArea').style.display='block';
+  },500);
+}
+
+/* ══════════════════════════════════════════
+   ★ 엑셀 업로드
+══════════════════════════════════════════ */
+function xlDateToStr(v){
+  if(!v)return'';
+  if(typeof v==='string')return v.slice(0,10);
+  // Excel serial date
+  if(typeof v==='number'){
+    const d=new Date(Math.round((v-25569)*86400*1000));
+    const y=d.getUTCFullYear(),m=String(d.getUTCMonth()+1).padStart(2,'0'),dd=String(d.getUTCDate()).padStart(2,'0');
+    return`${y}-${m}-${dd}`;
+  }
+  return String(v);
+}
+
+function parseExcelFile(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        // Sheet1: 작업일지
+        const ws1=wb.Sheets[wb.SheetNames[0]];
+        const raw1=XLSX.utils.sheet_to_json(ws1,{header:1,defval:''});
+        const rows=[];
+        const startRow=raw1[0]&&String(raw1[0][0]).includes('작업')?1:0;
+        for(let i=startRow;i<raw1.length;i++){
+          const r=raw1[i];
+          if(!r[0]&&!r[1])continue;
+          rows.push({
+            workDate:xlDateToStr(r[0]),
+            finishedLot:String(r[1]||'').trim(),
+            worker:String(r[2]||'').trim(),
+            planQty:String(r[3]||'').trim(),
+            prodQty:String(r[4]||'').trim(),
+            failQty:String(r[5]||'').trim(),
+            flowSet:String(r[6]||'').trim(),
+            flowActual:String(r[7]||'').trim(),
+            tempSet:String(r[8]||'').trim(),
+            tempActual:String(r[9]||'').trim(),
+            pressSet:String(r[10]||'').trim(),
+            pressActual:String(r[11]||'').trim(),
+            remark:String(r[12]||'').trim(),
+          });
+        }
+        // Sheet2: 원료 (있으면)
+        const mats=[];
+        if(wb.SheetNames.length>1){
+          const ws2=wb.Sheets[wb.SheetNames[1]];
+          const raw2=XLSX.utils.sheet_to_json(ws2,{header:1,defval:''});
+          const sr=raw2[0]&&String(raw2[0][0]).includes('작업')?1:0;
+          for(let i=sr;i<raw2.length;i++){
+            const r=raw2[i];
+            if(!r[0]&&!r[1])continue;
+            mats.push({
+              workDate:xlDateToStr(r[0]),
+              finishedLot:String(r[1]||'').trim(),
+              material:String(r[2]||'').trim(),
+              supName:String(r[3]||'').trim(),
+              lotNo:String(r[4]||'').trim(),
+              inputQty:String(r[5]||'').trim(),
+              inputTime:String(r[6]||'').trim(),
+            });
+          }
+        }
+        resolve({rows,mats});
+      }catch(err){reject(err);}
+    };
+    reader.onerror=reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function showExcelPreview(rows){
+  state.excelRows=rows;
+  $('excelPreviewCount').textContent=rows.length;
+  $('excelPreviewBody').innerHTML=rows.slice(0,50).map(r=>
+    `<tr><td>${esc(r.workDate)}</td><td>${esc(r.finishedLot)}</td><td>${esc(r.worker)}</td>
+    <td>${esc(r.planQty)}</td><td>${esc(r.prodQty)}</td><td>${esc(r.failQty)}</td>
+    <td>${esc(r.flowSet)}/${esc(r.flowActual)}</td><td>${esc(r.tempSet)}/${esc(r.tempActual)}</td>
+    <td>${esc(r.pressSet)}/${esc(r.pressActual)}</td><td>${esc(r.remark)}</td></tr>`
+  ).join('');
+  $('excelPreviewArea').style.display='block';
+  $('applyExcelBtn').disabled=rows.length===0;
+  $('importAllExcelBtn').disabled=rows.length===0;
+}
+
+async function handleExcelFile(file){
+  if(!file)return;
+  try{
+    const{rows,mats}=await parseExcelFile(file);
+    state.excelRows=rows;state.excelMats=mats;
+    showExcelPreview(rows);
+  }catch(e){alert('파일 파싱 오류: '+e.message);}
+}
+
+function applyFirstRowToForm(){
+  if(!state.excelRows.length){alert('업로드된 데이터가 없습니다.');return;}
+  const r=state.excelRows[0];
+  $('worklogDate').value=r.workDate||todayKST();
+  $('worklogFinishedLot').value=r.finishedLot||'';
+  $('worklogWorker').value=r.worker||'';
+  $('worklogPlanQty').value=r.planQty||'';
+  $('worklogProdQty').value=r.prodQty||'';
+  $('worklogFailQty').value=r.failQty||'';
+  $('worklogFlowSet').value=r.flowSet||'';
+  $('worklogFlowActual').value=r.flowActual||'';
+  $('worklogTempSet').value=r.tempSet||'';
+  $('worklogTempActual').value=r.tempActual||'';
+  $('worklogPressSet').value=r.pressSet||'';
+  $('worklogPressActual').value=r.pressActual||'';
+  $('worklogRemark').value=r.remark||'';
+  // 해당 행 원료
+  const key=`${r.workDate}__${r.finishedLot}`;
+  const rowMats=state.excelMats.filter(m=>`${m.workDate}__${m.finishedLot}`===key);
+  state.worklogMaterialDrafts=rowMats.length?rowMats.map(m=>({material:m.material,supName:m.supName,lotNo:m.lotNo,inputQty:m.inputQty,inputTime:m.inputTime})):[];
+  renderWorklogMats();
+  updateWorklogLinkage();
+  $('excelModal').classList.remove('show');
+  alert(`첫 번째 행 데이터를 작업일지 양식에 적용했습니다.`);
+}
+
+async function importAllExcelToDB(){
+  if(!state.excelRows.length){alert('업로드된 데이터가 없습니다.');return;}
+  if(!confirm(`${state.excelRows.length}건을 DB에 저장합니다. 계속하시겠습니까?`))return;
+  let ok=0,fail=0;
+  for(const r of state.excelRows){
+    const key=`${r.workDate}__${r.finishedLot}`;
+    const mats=state.excelMats.filter(m=>`${m.workDate}__${m.finishedLot}`===key)
+      .map(m=>({material:m.material,supName:m.supName,lotNo:m.lotNo,inputQty:m.inputQty,inputTime:m.inputTime}));
+    const{data}=await api('/api/worklog',{method:'POST',body:JSON.stringify({...r,materials:mats})});
+    if(data?.success)ok++;else fail++;
+  }
+  alert(`저장 완료 — 성공: ${ok}건 / 실패: ${fail}건`);
+  $('excelModal').classList.remove('show');
+  await loadWorklog();renderSummary();
+}
+
+function downloadExcelTemplate(){
+  const wb=XLSX.utils.book_new();
+  const ws1=XLSX.utils.aoa_to_sheet([
+    ['작업일자','완제품LOT','작업자','계획수량','생산수량','불량수량','유량설정','유량실적','온도설정','온도실적','압력설정','압력실적','비고'],
+    ['2026-05-01','LOT-001','홍길동','1000','980','5','1.5','1.4','25','24.8','3.2','3.1','정상'],
+  ]);
+  XLSX.utils.book_append_sheet(wb,ws1,'작업일지');
+  const ws2=XLSX.utils.aoa_to_sheet([
+    ['작업일자','완제품LOT','원료명','업체명','원료LOT','투입량','투입시간'],
+    ['2026-05-01','LOT-001','바인더A','나노소재(주)','RM-2026-001','50kg','08:30'],
+    ['2026-05-01','LOT-001','용매B','케미칼공업','RM-2026-002','30L','09:00'],
+  ]);
+  XLSX.utils.book_append_sheet(wb,ws2,'원료');
+  XLSX.writeFile(wb,'생산작업일지_서식.xlsx');
+}
+
+/* AUTH */
 function openLoginTab(t){$('tabLoginBtn').classList.toggle('active',t==='login');$('tabSignupBtn').classList.toggle('active',t==='signup');$('panelLogin').classList.toggle('active',t==='login');$('panelSignup').classList.toggle('active',t==='signup');}
 async function login(){
   $('loginError').textContent='';
@@ -1254,7 +1455,7 @@ async function changePwd(){
 }
 function closeProfileMenu(){$('profileDropdown').classList.remove('show');}
 
-/* ═══ NAV ═══ */
+/* NAV */
 function bindNav(){
   $$('.nav-item[data-page]').forEach(btn=>{
     btn.addEventListener('click',async()=>{
@@ -1267,16 +1468,16 @@ function bindNav(){
   });
 }
 
-/* ═══ INIT ═══ */
+/* INIT */
 function initYears(){const c=new Date().getFullYear();$('dashYear').innerHTML='';for(let y=c-2;y<=c+2;y++){const o=document.createElement('option');o.value=y;o.textContent=`${y}년`;if(y===c)o.selected=true;$('dashYear').appendChild(o);}}
 function setDefaultDates(){['incomingDate','processDate','shipmentDate','worklogDate','ncDate'].forEach(id=>{if($(id))$(id).value=todayKST();});}
 
-/* ═══ DEFAULT ITEMS ═══ */
+/* DEFAULT ITEMS */
 function defIqc(){return[{item:'외관',spec:'이물질, 파손 없을 것',value:'',judge:'합격'},{item:'CoA',spec:'누락 없을 것',value:'',judge:'합격'}];}
 function defPqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
 function defOqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'포장',spec:'파손 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
 
-/* ═══ ITEM EDITOR ═══ */
+/* ITEM EDITOR */
 function renderItems(tbId,rows,type){$(tbId).innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td><input value="${esc(r.item||'')}" data-type="${type}" data-idx="${i}" data-key="item"></td><td><input value="${esc(r.spec||'')}" data-type="${type}" data-idx="${i}" data-key="spec"></td><td><input value="${esc(r.value||'')}" data-type="${type}" data-idx="${i}" data-key="value"></td><td><select data-type="${type}" data-idx="${i}" data-key="judge"><option value="합격" ${r.judge==='합격'?'selected':''}>합격</option><option value="불합격" ${r.judge==='불합격'?'selected':''}>불합격</option><option value="보류" ${r.judge==='보류'?'selected':''}>보류</option></select></td><td><button type="button" class="sb del" data-type="${type}" data-idx="${i}" data-action="removeItem">삭제</button></td></tr>`).join('');}
 function getDraft(t){return t==='incoming'?state.incomingItemDrafts:t==='process'?state.processItemDrafts:state.shipmentItemDrafts;}
 function reRender(t){t==='incoming'?renderIqcItems():t==='process'?renderPqcItems():renderOqcItems();}
@@ -1290,7 +1491,7 @@ function renderIqcItems(){renderItems('incomingItemsTable',state.incomingItemDra
 function renderPqcItems(){renderItems('processItemsTable',state.processItemDrafts,'process');syncPqcPreview();}
 function renderOqcItems(){renderItems('shipmentItemsTable',state.shipmentItemDrafts,'shipment');syncOqcPreview();}
 
-/* ═══ PREVIEW ═══ */
+/* PREVIEW */
 function renderPrevRows(tbId,items){$(tbId).innerHTML=items.length?items.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item||'')}</td><td>${esc(r.spec||'')}</td><td>${esc(r.value||'-')}</td><td>${jBadge(r.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);">항목 없음</td></tr>';}
 function syncIqcPreview(){
   const items=state.incomingItemDrafts;const date=$('incomingDate').value||todayKST();const doc=`IQC-${date.replaceAll('-','')}-0001`;
@@ -1311,7 +1512,7 @@ function syncOqcPreview(){
   renderBC('bcOqcLot',$('shipmentLot').value||'LOT');renderBC('bcOqcDoc',doc);
 }
 
-/* ═══ WORKLOG LINKAGE ═══ */
+/* WORKLOG LINKAGE */
 function updateWorklogLinkage(){
   const lot=($('worklogFinishedLot').value||'').trim().toLowerCase();const box=$('worklogLinkBox');
   if(!lot){box.style.display='none';return;}
@@ -1324,7 +1525,7 @@ function updateWorklogLinkage(){
   $('worklogLinkRows').innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
 }
 
-/* ═══ 성적서 페이지 ═══ */
+/* 성적서 페이지 */
 function populateReportSelect(){
   const type=$('reportType').value;const sel=$('reportSelect');sel.innerHTML='<option value="">-- 성적서 선택 --</option>';
   let arr=type==='iqc'?state.incoming:type==='pqc'?state.process:state.shipment;
@@ -1351,15 +1552,15 @@ function loadStandaloneReport(){
   setTimeout(()=>{renderBC('bcRptLot',row.lot||'LOT');renderBC('bcRptDoc',docNo);},50);
 }
 
-/* ═══ PRINT ═══ */
+/* PRINT */
 function printEl(el){if(!el)return;const p=document.getElementById('printTarget');if(p)p.removeAttribute('id');el.id='printTarget';window.print();}
 
-/* ═══ LOAD DATA ═══ */
+/* ══ LOAD DATA ══ */
 async function loadSignableUsers(){
   const{data}=await api('/api/users/signable');
   state.signableUsers=data?.data||[];
-  console.log(`[sign] signableUsers 로드: ${state.signableUsers.length}명`);
-  rebuildAllSignGrids(); // ★ 로드 후 즉시 그리드 재구성
+  console.log(`[sign] ${state.signableUsers.length}명 로드`);
+  rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
   if(state.currentUser?.role!=='admin')return;
@@ -1390,14 +1591,13 @@ async function loadSuppliers(){const{data}=await api('/api/suppliers');state.sup
 async function loadWorklog(){const{data}=await api('/api/worklog');state.worklog=data?.data||[];renderWorklogTable();}
 
 async function loadAllData(){
-  // signableUsers 먼저, 나머지 병렬
-  await loadSignableUsers();
+  await loadSignableUsers(); // ★ 먼저 로드
   await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform()]);
   if(state.currentUser?.role==='admin')await loadAdminUsers();
   renderSummary();populateReportSelect();loadStandaloneReport();
 }
 
-/* ═══ RENDER TABLES ═══ */
+/* RENDER TABLES */
 function renderIncomingTable(){
   const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
   tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
@@ -1427,7 +1627,8 @@ function renderWorklogTable(){
     const pq=state.process.filter(x=>(x.lot||'').toLowerCase()===lot).length;
     const oq=state.shipment.filter(x=>(x.lot||'').toLowerCase()===lot).length;
     const lk=[iq?`<span class="badge info">IQC ${iq}</span>`:'',pq?`<span class="badge info">PQC ${pq}</span>`:'',oq?`<span class="badge info">OQC ${oq}</span>`:''].filter(Boolean).join(' ')||`<span style="color:var(--t3);font-size:11px;">없음</span>`;
-    return`<tr><td>${r.workDate||''}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td style="min-width:120px;">${lk}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
+    return`<tr><td>${r.workDate||''}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td>${lk}</td>
+    <td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button><button class="sb prt" data-action="printWorklog" data-id="${esc(r.id)}">🖨</button></div></td></tr>`;
   }).join('');
 }
 function renderUserTable(){
@@ -1435,7 +1636,7 @@ function renderUserTable(){
   tb.innerHTML=state.adminUsers.map(r=>`<tr><td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.email||'')}</td><td>${esc(r.department||'')}</td><td><span style="font-weight:600;">${esc(r.title||'-')}</span>${isSenior(r)?'<span class="badge info" style="margin-left:6px;font-size:10px;">검토/승인 가능</span>':''}</td><td><span class="badge ${r.role==='admin'?'info':''}">${r.role==='admin'?'관리자':'일반회원'}</span></td><td><span class="badge ${r.status==='APPROVED'?'pass':'fail'}">${r.status||''}</span></td><td>${String(r.created_at||'').slice(0,10)}</td><td><div class="ai"><button class="sb edit" data-action="editUser" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteUser" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 
-/* ═══ DASHBOARD ═══ */
+/* DASHBOARD */
 function renderSummary(){
   const y=Number($('dashYear').value||new Date().getFullYear()),p=y-1;
   const cnt=(arr,yr)=>arr.filter(r=>String(r.date||r.workDate||r.ncDate||'').startsWith(String(yr))).length;
@@ -1453,10 +1654,14 @@ function renderCharts(){
   const lbl=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   const mo=arr=>lbl.map((_,i)=>arr.filter(r=>String(r.date||r.workDate||'').startsWith(`${y}-${String(i+1).padStart(2,'0')}`)).length);
   if(state.charts.trend)state.charts.trend.destroy();
-  state.charts.trend=new Chart($('trendChart'),{type:'bar',data:{labels:lbl,datasets:[{label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},{label:'공정검사',data:mo(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:4},{label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  state.charts.trend=new Chart($('trendChart'),{type:'bar',data:{labels:lbl,datasets:[
+    {label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},
+    {label:'공정검사',data:mo(state.process),backgroundColor:'rgba(46,125,50,.75)',borderRadius:4},
+    {label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
-/* ═══ SAVE ═══ */
+/* SAVE */
 async function saveIqc(){
   const sp=getSignPayload('iqc');
   const p={date:$('incomingDate').value,lot:$('incomingLot').value.trim(),supplier:$('incomingSupplier').value.trim(),item:$('incomingItem').value.trim(),inspector:sp.writer.name,incomingQty:$('incomingQty').value,checkQty:$('incomingCheckQty').value,failQty:$('incomingFailQty').value,items:JSON.parse(JSON.stringify(state.incomingItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
@@ -1502,10 +1707,10 @@ async function saveUser(){
   const p={name:$('userName').value.trim(),email:$('userEmail').value.trim(),department:$('userDepartment').value.trim(),title:$('userTitle').value.trim(),role:$('userRole').value,status:$('userStatus').value,password:$('userPassword').value.trim()};
   const{data}=await api(id?`/api/admin/users/${id}`:'/api/admin/users',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');
-  if(data?.success){clearUser();await loadAdminUsers();await loadSignableUsers();} // ★ 회원 저장 후 서명 목록 갱신
+  if(data?.success){clearUser();await loadAdminUsers();await loadSignableUsers();}
 }
 
-/* ═══ CLEAR ═══ */
+/* CLEAR */
 function clearIqc(){['incomingEditId','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>$(id).value='');$('incomingDate').value=todayKST();clearSign('iqc');state.incomingItemDrafts=defIqc();renderIqcItems();}
 function clearPqc(){['processEditId','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>$(id).value='');$('processDate').value=todayKST();clearSign('pqc');state.processItemDrafts=defPqc();renderPqcItems();}
 function clearOqc(){['shipmentEditId','shipmentCustomer','shipmentProduct','shipmentLot','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>$(id).value='');$('shipmentDate').value=todayKST();clearSign('oqc');state.shipmentItemDrafts=defOqc();renderOqcItems();}
@@ -1514,7 +1719,7 @@ function clearSupplier(){['supplierEditId','supplierName','supplierManager','sup
 function clearWorklog(){['worklogEditId','worklogFinishedLot','worklogWorker','worklogPlanQty','worklogProdQty','worklogFailQty','worklogRemark','worklogFlowSet','worklogFlowActual','worklogTempSet','worklogTempActual','worklogPressSet','worklogPressActual'].forEach(id=>$(id).value='');$('worklogDate').value=todayKST();state.worklogMaterialDrafts=[];renderWorklogMats();$('worklogLinkBox').style.display='none';}
 function clearUser(){['userEditId','userName','userEmail','userDepartment','userTitle','userPassword'].forEach(id=>$(id).value='');$('userRole').value='user';$('userStatus').value='APPROVED';}
 
-/* ═══ EDIT ═══ */
+/* EDIT */
 function editIncoming(id){const r=state.incoming.find(x=>String(x.id)===String(id));if(!r)return;$('incomingEditId').value=r.id;$('incomingDate').value=r.date||'';$('incomingLot').value=r.lot||'';$('incomingSupplier').value=r.supplier||'';$('incomingItem').value=r.item||'';$('incomingQty').value=r.incomingQty||'';$('incomingCheckQty').value=r.checkQty||'';$('incomingFailQty').value=r.failQty||'';state.incomingItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defIqc();renderIqcItems();restoreSign('iqc',r);}
 function editProcess(id){const r=state.process.find(x=>String(x.id)===String(id));if(!r)return;$('processEditId').value=r.id;$('processDate').value=r.date||'';$('processLot').value=r.lot||'';$('processLine').value=r.line||'';$('processShift').value=r.shift||'';$('processProduct').value=r.product||'';$('processQty').value=r.qty||'';$('processFailQty').value=r.failQty||'';state.processItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defPqc();renderPqcItems();restoreSign('pqc',r);}
 function editShipment(id){const r=state.shipment.find(x=>String(x.id)===String(id));if(!r)return;$('shipmentEditId').value=r.id;$('shipmentDate').value=r.date||'';$('shipmentCustomer').value=r.customer||'';$('shipmentProduct').value=r.product||'';$('shipmentLot').value=r.lot||'';$('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';$('shipmentRemark').value=r.package||'';state.shipmentItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defOqc();renderOqcItems();restoreSign('oqc',r);}
@@ -1527,12 +1732,17 @@ function editNc(id){
 }
 function editSupplier(id){const r=state.suppliers.find(x=>String(x.id)===String(id));if(!r)return;$('supplierEditId').value=r.id;$('supplierName').value=r.name||'';$('supplierManager').value=r.manager||'';$('supplierPhone').value=r.phone||'';$('supplierCategory').value=r.category||'';$('supplierStatus').value=r.status||'';}
 function editWorklog(id){const r=state.worklog.find(x=>String(x.id)===String(id));if(!r)return;$('worklogEditId').value=r.id;$('worklogDate').value=r.workDate||'';$('worklogFinishedLot').value=r.finishedLot||'';$('worklogWorker').value=r.worker||'';$('worklogPlanQty').value=r.planQty||'';$('worklogProdQty').value=r.prodQty||'';$('worklogFailQty').value=r.failQty||'';$('worklogRemark').value=r.remark||'';$('worklogFlowSet').value=r.flowSet||'';$('worklogFlowActual').value=r.flowActual||'';$('worklogTempSet').value=r.tempSet||'';$('worklogTempActual').value=r.tempActual||'';$('worklogPressSet').value=r.pressSet||'';$('worklogPressActual').value=r.pressActual||'';state.worklogMaterialDrafts=Array.isArray(r.materials)?JSON.parse(JSON.stringify(r.materials)):[];renderWorklogMats();updateWorklogLinkage();}
+function printWorklogById(id){
+  const r=state.worklog.find(x=>String(x.id)===String(id));if(!r)return;
+  editWorklog(id);
+  setTimeout(printWorklog,100);
+}
 function editUser(id){const r=state.adminUsers.find(x=>String(x.id)===String(id));if(!r)return;$('userEditId').value=r.id;$('userName').value=r.name||'';$('userEmail').value=r.email||'';$('userDepartment').value=r.department||'';$('userTitle').value=r.title||'';$('userRole').value=r.role||'user';$('userStatus').value=r.status||'APPROVED';$('userPassword').value='';}
 
-/* ═══ DELETE ═══ */
+/* DELETE */
 async function delApi(url,msg,reload){if(!confirm(msg))return;const{data}=await api(url,{method:'DELETE'});alert(data?.message||'삭제되었습니다.');if(data?.success)await reload();}
 
-/* ═══ WORKLOG MATERIALS ═══ */
+/* WORKLOG MATERIALS */
 function renderWorklogMats(){
   const tb=$('worklogMaterialsTable');
   if(!state.worklogMaterialDrafts.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--t3);">원료 행이 없습니다.</td></tr>`;return;}
@@ -1540,7 +1750,7 @@ function renderWorklogMats(){
 }
 function addWorklogMat(){state.worklogMaterialDrafts.push({material:'',supName:'',lotNo:'',inputQty:'',inputTime:''});renderWorklogMats();}
 
-/* ═══ TRACE ═══ */
+/* TRACE */
 async function searchTrace(){
   const kw=$('traceKeyword').value.trim();
   if(!kw){$('traceTable').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--t3);">검색어를 입력하세요.</td></tr>`;return;}
@@ -1549,7 +1759,7 @@ async function searchTrace(){
 }
 function gotoTrace(kw){if(!kw)return;$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));document.querySelector('.nav-item[data-page="trace"]')?.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-trace').classList.add('active');$('traceKeyword').value=kw;searchTrace();}
 
-/* ═══ EVENTS ═══ */
+/* EVENTS */
 function bindEvents(){
   $('tabLoginBtn').onclick=()=>openLoginTab('login');$('tabSignupBtn').onclick=()=>openLoginTab('signup');
   $('loginBtn').onclick=login;$('signupBtn').onclick=signup;
@@ -1560,9 +1770,11 @@ function bindEvents(){
   $('closePasswordModal').onclick=closePwdModal;$('cancelPasswordModal').onclick=closePwdModal;$('submitChangePassword').onclick=changePwd;
   $('openUserManage').onclick=()=>{closeProfileMenu();$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));$('usersNavBtn').classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-users').classList.add('active');loadAdminUsers();};
   document.addEventListener('click',e=>{const m=$('profileDropdown'),b=$('profileBtn');if(m&&b&&!m.contains(e.target)&&!b.contains(e.target))closeProfileMenu();});
+
   $('closeLabelModal').onclick=()=>$('labelModal').classList.remove('show');$('cancelLabelModal').onclick=()=>$('labelModal').classList.remove('show');$('printLabelBtn').onclick=printLabel;
   $('openIncomingLabel').onclick=()=>openLabelModal('iqc',state.incoming);$('openProcessLabel').onclick=()=>openLabelModal('pqc',state.process);$('openShipmentLabel').onclick=()=>openLabelModal('oqc',state.shipment);
   $('openReportLabel').onclick=()=>{const t=$('reportType').value;openLabelModal(t,t==='iqc'?state.incoming:t==='pqc'?state.process:state.shipment);};
+
   // IQC
   $('incomingSave').onclick=withSaving('iqc',$('incomingSave'),saveIqc);$('incomingReset').onclick=clearIqc;
   $('addIncomingRow').onclick=()=>{state.incomingItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderIqcItems();};
@@ -1580,18 +1792,41 @@ function bindEvents(){
   $('printShipmentReport').onclick=()=>printEl($('shipmentReportPreview'));
   // NC
   $('ncSave').onclick=withSaving('nc',$('ncSave'),saveNc);$('ncReset').onclick=clearNc;$('printNcReport').onclick=()=>printEl($('ncFormPrintTarget'));
-  // 기타
-  $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
+  // 작업일지
   $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
   $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
+  $('printWorklogBtn').onclick=printWorklog;
+  // 엑셀 업로드
+  $('worklogExcelUploadBtn').onclick=()=>{
+    state.excelRows=[];state.excelMats=[];
+    $('excelPreviewArea').style.display='none';
+    $('applyExcelBtn').disabled=true;$('importAllExcelBtn').disabled=true;
+    $('excelModal').classList.add('show');
+  };
+  $('worklogExcelDownBtn').onclick=downloadExcelTemplate;
+  $('closeExcelModal').onclick=()=>$('excelModal').classList.remove('show');
+  $('cancelExcelModal').onclick=()=>$('excelModal').classList.remove('show');
+  $('applyExcelBtn').onclick=applyFirstRowToForm;
+  $('importAllExcelBtn').onclick=importAllExcelToDB;
+  // 드래그앤드롭
+  const dropArea=$('excelDropArea');
+  dropArea.addEventListener('click',()=>$('excelFileInput').click());
+  $('excelFileInput').addEventListener('change',e=>handleExcelFile(e.target.files[0]));
+  dropArea.addEventListener('dragover',e=>{e.preventDefault();dropArea.classList.add('drag');});
+  dropArea.addEventListener('dragleave',()=>dropArea.classList.remove('drag'));
+  dropArea.addEventListener('drop',e=>{e.preventDefault();dropArea.classList.remove('drag');handleExcelFile(e.dataTransfer.files[0]);});
+
+  $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
   $('userSave').onclick=withSaving('user',$('userSave'),saveUser);$('userReset').onclick=clearUser;
   $('reportType').onchange=()=>{populateReportSelect();loadStandaloneReport();};$('reportSelect').onchange=loadStandaloneReport;$('reportReload').onclick=loadStandaloneReport;$('printReportPage').onclick=()=>printEl($('reportPrintTarget'));
   $('traceSearch').onclick=searchTrace;$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
   $('dashRefresh').onclick=renderSummary;
   $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
+
   // 테이블 위임
   const tA={
     editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,
+    printWorklog:id=>printWorklogById(id),
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
@@ -1611,7 +1846,7 @@ function bindEvents(){
   $('worklogMaterialsTable').addEventListener('click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
 }
 
-/* ═══ ENTRY ═══ */
+/* ENTRY */
 document.addEventListener('DOMContentLoaded',async()=>{
   initYears();setDefaultDates();bindNav();bindEvents();startClock();
   state.incomingItemDrafts=defIqc();state.processItemDrafts=defPqc();state.shipmentItemDrafts=defOqc();
