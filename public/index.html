@@ -128,6 +128,14 @@ button,input,select,textarea{font:inherit}
 }
 .lbrand{display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
 .lbrand img{height:44px;}
+/* 로그인 화면 신규 워드마크: NM NAMO Chemical */
+.namo-wordmark{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:900;letter-spacing:-1px;line-height:1;white-space:nowrap;text-shadow:0 0 20px rgba(0,160,255,.35);}
+.namo-wordmark .nm{font-size:33px;font-weight:900;letter-spacing:-2px;}
+.namo-wordmark .namo{font-size:32px;font-weight:900;letter-spacing:-1.4px;}
+.namo-wordmark .chem{font-size:32px;font-weight:500;letter-spacing:-1.2px;}
+.lbrand .namo-wordmark{color:#111827;text-shadow:none;justify-content:center;}
+.lbrand .namo-wordmark .nm{font-size:28px}.lbrand .namo-wordmark .namo{font-size:27px}.lbrand .namo-wordmark .chem{font-size:27px;font-weight:500}
+.ev-brand-badge{gap:0;}
 .lcard h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px;color:var(--t1);}
 .lcard>p{text-align:center;color:var(--t3);font-size:13px;margin-bottom:24px;}
 .ltabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:4px;margin-bottom:20px;}
@@ -457,10 +465,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   <!-- 좌측 텍스트 패널 -->
   <div class="ev-left-panel">
     <div class="ev-brand-badge">
-      <img src="/logo.png" alt="Namochemical Logo" onerror="this.style.display='none'"/>
-      <div>
-        <div class="ev-brand-text">Namochemical</div>
-        <div class="ev-brand-sub">Quality Management System</div>
+      <div class="namo-wordmark" aria-label="NM NAMO Chemical">
+        <span class="nm">NM</span><span class="namo">NAMO</span><span class="chem">Chemical</span>
       </div>
     </div>
     <div class="ev-headline">
@@ -488,7 +494,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
   <!-- 로그인 카드 -->
   <div class="lcard">
-    <div class="lbrand"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/></div>
+    <div class="lbrand">
+      <div class="namo-wordmark" aria-label="NM NAMO Chemical">
+        <span class="nm">NM</span><span class="namo">NAMO</span><span class="chem">Chemical</span>
+      </div>
+    </div>
     <h2>QMS 로그인</h2>
     <p>로그인 후 품질관리시스템을 사용합니다.</p>
     <div class="ltabs">
