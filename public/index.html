@@ -1355,11 +1355,43 @@ function loadStandaloneReport(){
 function printEl(el){if(!el)return;const p=document.getElementById('printTarget');if(p)p.removeAttribute('id');el.id='printTarget';window.print();}
 
 /* ═══ LOAD DATA ═══ */
+function normalizeSignUser(u){
+  if(!u)return null;
+  const id=String(u.id ?? u.user_id ?? u.email ?? "").trim();
+  const name=String(u.name ?? u.username ?? "").trim();
+  if(!id || !name)return null;
+  return{
+    id,
+    name,
+    email:u.email||"",
+    department:u.department||u.dept||"",
+    title:u.title||u.position||"",
+    role:u.role||"user",
+    status:u.status||"APPROVED"
+  };
+}
+function uniqSignUsers(list){
+  const m=new Map();
+  (list||[]).map(normalizeSignUser).filter(Boolean).forEach(u=>{
+    if(String(u.status||"").toUpperCase()!=="REJECTED")m.set(u.id,u);
+  });
+  return Array.from(m.values());
+}
 async function loadSignableUsers(){
-  const{data}=await api('/api/users/signable');
-  state.signableUsers=data?.data||[];
+  const signRes=await api("/api/users/signable");
+  let users=uniqSignUsers(signRes.data?.data || signRes.data?.users || []);
+  if(users.length===0 && state.currentUser?.role==="admin"){
+    const adminRes=await api("/api/admin/users");
+    users=uniqSignUsers(adminRes.data?.data || adminRes.data?.users || []);
+    state.adminUsers=adminRes.data?.data || state.adminUsers;
+    if(state.adminUsers.length)renderUserTable();
+  }
+  if(users.length===0 && state.currentUser){
+    users=uniqSignUsers([state.currentUser]);
+  }
+  state.signableUsers=users;
   console.log(`[sign] signableUsers 로드: ${state.signableUsers.length}명`);
-  rebuildAllSignGrids(); // ★ 로드 후 즉시 그리드 재구성
+  rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
   if(state.currentUser?.role!=='admin')return;
