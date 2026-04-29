@@ -943,6 +943,25 @@ function getSignPayload(type){
   return{writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
 }
 
+
+/* 저장/조회 양쪽 필드명 호환: signWriter(camelCase), sign_writer(DB raw), 문자열 JSON 모두 처리 */
+function normalizeSign(v){
+  const x=tryJSON(v)||v;
+  if(!x)return null;
+  if(typeof x==='string')return x.trim()?{id:'',name:x.trim(),title:'',department:''}:null;
+  return {
+    id:x.id||'',
+    name:x.name||x.userName||x.username||'',
+    title:x.title||x.position||'',
+    department:x.department||x.dept||''
+  };
+}
+function pickSign(r,camel,raw,fallbackName=''){
+  const s=normalizeSign(r?.[camel])||normalizeSign(r?.[raw]);
+  if(s&&s.name)return s;
+  return fallbackName?{id:'',name:fallbackName,title:'',department:''}:null;
+}
+
 /* 수정 시 서명 복원 */
 function restoreSign(type,record){
   if(!record)return;
@@ -1298,7 +1317,7 @@ async function loadIncoming(){
     lot:r.lot,supplier:r.supplier,item:r.item,
     incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:pickSign(r,'signWriter','sign_writer',r.inspector),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
   }));
   renderIncomingTable();
 }
@@ -1311,7 +1330,7 @@ async function loadProcess(){
     lot:r.lot,product:r.product,line:r.line,shift:r.shift,
     qty:r.qty,failQty:r.failQty,judge:r.judge,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:pickSign(r,'signWriter','sign_writer',r.solid),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
   }));
   renderProcessTable();
 }
@@ -1324,7 +1343,7 @@ async function loadShipment(){
     customer:r.customer,product:r.product,lot:r.lot,
     qty:r.qty,failQty:r.failQty,judge:r.judge,package:r.package,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:pickSign(r,'signWriter','sign_writer',r.visual),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
   }));
   renderShipmentTable();
 }
@@ -1338,7 +1357,7 @@ async function loadNonconform(){
     issue:r.issue,cause:r.cause,action:r.action,
     actionDate:fmtDate(r.actionDate),verify:r.verify,verifyDate:fmtDate(r.verifyDate),
     owner:r.owner,status:r.status,
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:pickSign(r,'signWriter','sign_writer'),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
   }));
   renderNcTable();
 }
@@ -1522,7 +1541,7 @@ async function saveIqc(){
   };
   const id=$('incomingEditId').value;
   const{data}=await api(id?`/api/iqc/${id}`:'/api/iqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearIqc();await loadIncoming();renderSummary();populateReportSelect();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearIqc();await loadIncoming();renderSummary();populateReportSelect();loadStandaloneReport();}
 }
 
 async function savePqc(){
@@ -1537,7 +1556,7 @@ async function savePqc(){
   };
   const id=$('processEditId').value;
   const{data}=await api(id?`/api/pqc/${id}`:'/api/pqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearPqc();await loadProcess();renderSummary();populateReportSelect();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearPqc();await loadProcess();renderSummary();populateReportSelect();loadStandaloneReport();}
 }
 
 async function saveOqc(){
@@ -1552,7 +1571,7 @@ async function saveOqc(){
   };
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();populateReportSelect();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();populateReportSelect();loadStandaloneReport();}
 }
 
 async function saveNc(){
