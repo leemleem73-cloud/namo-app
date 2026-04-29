@@ -962,6 +962,58 @@ function pickSign(r,camel,raw,fallbackName=''){
   return fallbackName?{id:'',name:fallbackName,title:'',department:''}:null;
 }
 
+/* 서버가 signWriter/signReviewer/signApprover를 저장하지 않는 환경 대응
+   - 화면 저장 시 선택한 서명값을 브라우저 localStorage에도 보관
+   - 목록/성적서 조회 시 서버값이 없으면 localStorage 값으로 보정 */
+const SIGN_STORE_KEY='namo_qms_sign_store_v2';
+function readSignStore(){
+  try{return JSON.parse(localStorage.getItem(SIGN_STORE_KEY)||'{}')||{};}catch(e){return {};}
+}
+function writeSignStore(store){
+  try{localStorage.setItem(SIGN_STORE_KEY,JSON.stringify(store||{}));}catch(e){console.warn('sign store write failed',e);}
+}
+function signRecordKeys(type,r){
+  const date=fmtDate(r?.date||r?.ncDate||'');
+  const lot=String(r?.lot||r?.ncNo||'').trim();
+  const id=r?.id?String(r.id):'';
+  return [
+    id?`${type}:id:${id}`:'',
+    date&&lot?`${type}:date_lot:${date}|${lot}`:'',
+    lot?`${type}:lot:${lot}`:''
+  ].filter(Boolean);
+}
+function validSignSet(signs){
+  if(!signs)return null;
+  const out={
+    signWriter:normalizeSign(signs.signWriter||signs.writer),
+    signReviewer:normalizeSign(signs.signReviewer||signs.reviewer),
+    signApprover:normalizeSign(signs.signApprover||signs.approver)
+  };
+  return (out.signWriter||out.signReviewer||out.signApprover)?out:null;
+}
+function saveStoredSigns(type,r,signs){
+  const v=validSignSet(signs);if(!v)return;
+  const store=readSignStore();
+  signRecordKeys(type,r).forEach(k=>{store[k]=v;});
+  writeSignStore(store);
+}
+function getStoredSigns(type,r){
+  const store=readSignStore();
+  for(const k of signRecordKeys(type,r)){
+    const v=validSignSet(store[k]);
+    if(v)return v;
+  }
+  return null;
+}
+function mergeSigns(type,r){
+  const stored=getStoredSigns(type,r)||{};
+  return {
+    signWriter:pickSign(r,'signWriter','sign_writer',r.inspector||r.solid||r.visual)||stored.signWriter||null,
+    signReviewer:pickSign(r,'signReviewer','sign_reviewer')||stored.signReviewer||null,
+    signApprover:pickSign(r,'signApprover','sign_approver')||stored.signApprover||null
+  };
+}
+
 /* 수정 시 서명 복원 */
 function restoreSign(type,record){
   if(!record)return;
@@ -1317,7 +1369,7 @@ async function loadIncoming(){
     lot:r.lot,supplier:r.supplier,item:r.item,
     incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:pickSign(r,'signWriter','sign_writer',r.inspector),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
+    ...mergeSigns('iqc',r),
   }));
   renderIncomingTable();
 }
@@ -1330,7 +1382,7 @@ async function loadProcess(){
     lot:r.lot,product:r.product,line:r.line,shift:r.shift,
     qty:r.qty,failQty:r.failQty,judge:r.judge,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:pickSign(r,'signWriter','sign_writer',r.solid),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
+    ...mergeSigns('pqc',r),
   }));
   renderProcessTable();
 }
@@ -1343,7 +1395,7 @@ async function loadShipment(){
     customer:r.customer,product:r.product,lot:r.lot,
     qty:r.qty,failQty:r.failQty,judge:r.judge,package:r.package,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:pickSign(r,'signWriter','sign_writer',r.visual),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
+    ...mergeSigns('oqc',r),
   }));
   renderShipmentTable();
 }
@@ -1357,7 +1409,7 @@ async function loadNonconform(){
     issue:r.issue,cause:r.cause,action:r.action,
     actionDate:fmtDate(r.actionDate),verify:r.verify,verifyDate:fmtDate(r.verifyDate),
     owner:r.owner,status:r.status,
-    signWriter:pickSign(r,'signWriter','sign_writer'),signReviewer:pickSign(r,'signReviewer','sign_reviewer'),signApprover:pickSign(r,'signApprover','sign_approver'),
+    ...mergeSigns('nc',r),
   }));
   renderNcTable();
 }
@@ -1541,7 +1593,10 @@ async function saveIqc(){
   };
   const id=$('incomingEditId').value;
   const{data}=await api(id?`/api/iqc/${id}`:'/api/iqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearIqc();await loadIncoming();renderSummary();populateReportSelect();loadStandaloneReport();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){
+    saveStoredSigns('iqc',{id:id||data?.data?.id,date:p.date,lot:p.lot},{signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver});
+    clearIqc();await loadIncoming();renderSummary();populateReportSelect();loadStandaloneReport();
+  }
 }
 
 async function savePqc(){
@@ -1556,7 +1611,10 @@ async function savePqc(){
   };
   const id=$('processEditId').value;
   const{data}=await api(id?`/api/pqc/${id}`:'/api/pqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearPqc();await loadProcess();renderSummary();populateReportSelect();loadStandaloneReport();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){
+    saveStoredSigns('pqc',{id:id||data?.data?.id,date:p.date,lot:p.lot},{signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver});
+    clearPqc();await loadProcess();renderSummary();populateReportSelect();loadStandaloneReport();
+  }
 }
 
 async function saveOqc(){
@@ -1571,7 +1629,10 @@ async function saveOqc(){
   };
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();populateReportSelect();loadStandaloneReport();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){
+    saveStoredSigns('oqc',{id:id||data?.data?.id,date:p.date,lot:p.lot},{signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver});
+    clearOqc();await loadShipment();renderSummary();populateReportSelect();loadStandaloneReport();
+  }
 }
 
 async function saveNc(){
@@ -1587,7 +1648,10 @@ async function saveNc(){
   };
   const id=$('ncEditId').value;
   const{data}=await api(id?`/api/nonconform/${id}`:'/api/nonconform',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearNc();await loadNonconform();renderSummary();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){
+    saveStoredSigns('nc',{id:id||data?.data?.id,date:p.ncDate,lot:p.ncNo||p.lot},{signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver});
+    clearNc();await loadNonconform();renderSummary();
+  }
 }
 
 async function saveSupplier(){
