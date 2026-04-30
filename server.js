@@ -10,8 +10,8 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
 const port = process.env.PORT || 3000;
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
