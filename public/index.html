@@ -1298,7 +1298,7 @@ async function loadIncoming(){
     lot:r.lot,supplier:r.supplier,item:r.item,
     incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:tryJSON(r.signWriter),signReviewer:tryJSON(r.signReviewer),signApprover:tryJSON(r.signApprover),
   }));
   renderIncomingTable();
 }
@@ -1311,7 +1311,7 @@ async function loadProcess(){
     lot:r.lot,product:r.product,line:r.line,shift:r.shift,
     qty:r.qty,failQty:r.failQty,judge:r.judge,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:tryJSON(r.signWriter),signReviewer:tryJSON(r.signReviewer),signApprover:tryJSON(r.signApprover),
   }));
   renderProcessTable();
 }
@@ -1324,7 +1324,7 @@ async function loadShipment(){
     customer:r.customer,product:r.product,lot:r.lot,
     qty:r.qty,failQty:r.failQty,judge:r.judge,package:r.package,
     items:Array.isArray(r.items)?r.items:[],
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+    signWriter:tryJSON(r.signWriter),signReviewer:tryJSON(r.signReviewer),signApprover:tryJSON(r.signApprover),
   }));
   renderShipmentTable();
 }
@@ -1338,7 +1338,7 @@ async function loadNonconform(){
     issue:r.issue,cause:r.cause,action:r.action,
     actionDate:fmtDate(r.actionDate),verify:r.verify,verifyDate:fmtDate(r.verifyDate),
     owner:r.owner,status:r.status,
-    signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,
+   signWriter:tryJSON(r.signWriter),signReviewer:tryJSON(r.signReviewer),signApprover:tryJSON(r.signApprover),
   }));
   renderNcTable();
 }
@@ -1373,7 +1373,7 @@ function renderIncomingTable(){
     <td>${r.checkQty??''}</td>
     <td>${r.failQty??''}</td>
     <td>${jBadge(calcJ(r.items||[]))}</td>
-    <td><strong style="color:var(--pri);">${esc(r.signWriter?.name||'-')}</strong></td>
+    <td><strong style="color:var(--pri);">${esc(?.name||'-')}</strong></td>
     <td><strong style="color:var(--ok);">${esc(r.signReviewer?.name||'-')}</strong></td>
     <td><strong style="color:var(--wa);">${esc(r.signApprover?.name||'-')}</strong></td>
     <td><div class="ai">
@@ -1394,7 +1394,7 @@ function renderProcessTable(){
     <td>${r.qty??''}</td>
     <td>${r.failQty??''}</td>
     <td>${jBadge(calcJ(r.items||[]))}</td>
-    <td><strong style="color:var(--pri);">${esc(r.signWriter?.name||'-')}</strong></td>
+    <td><strong style="color:var(--pri);">${esc(?.name||'-')}</strong></td>
     <td><strong style="color:var(--ok);">${esc(r.signReviewer?.name||'-')}</strong></td>
     <td><strong style="color:var(--wa);">${esc(r.signApprover?.name||'-')}</strong></td>
     <td><div class="ai">
@@ -1415,7 +1415,7 @@ function renderShipmentTable(){
     <td>${r.qty??''}</td>
     <td>${r.failQty??''}</td>
     <td>${jBadge(calcJ(r.items||[]))}</td>
-    <td><strong style="color:var(--pri);">${esc(r.signWriter?.name||'-')}</strong></td>
+    <td><strong style="color:var(--pri);">${esc(?.name||'-')}</strong></td>
     <td><strong style="color:var(--ok);">${esc(r.signReviewer?.name||'-')}</strong></td>
     <td><strong style="color:var(--wa);">${esc(r.signApprover?.name||'-')}</strong></td>
     <td><div class="ai">
