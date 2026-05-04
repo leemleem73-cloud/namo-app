@@ -17,7 +17,6 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
-// 업로드 디렉토리 설정
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -40,7 +39,8 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false,
+      // BUG #11 수정: 환경변수로 분기
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 8,
     },
   })
@@ -88,7 +88,6 @@ function calcJudgeFromItems(items = []) {
   return '합격';
 }
 
-// 부장/임원 이상 판별
 const SENIOR_TITLES = ['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo','chief'];
 function isSenior(user) {
   if (!user) return false;
@@ -165,7 +164,7 @@ async function ensureSchema() {
       resistance TEXT DEFAULT '',
       swelling TEXT DEFAULT '',
       moisture TEXT DEFAULT '',
-      qty TEXT DEFAULT '',
+      qty NUMERIC DEFAULT 0,
       fail NUMERIC DEFAULT 0,
       judge TEXT DEFAULT '',
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -187,7 +186,7 @@ async function ensureSchema() {
 
     CREATE TABLE IF NOT EXISTS nonconform (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      date DATE NOT NULL,
+      nc_date DATE NOT NULL,
       nc_no TEXT DEFAULT '',
       nc_type TEXT DEFAULT '',
       dept TEXT DEFAULT '',
@@ -264,7 +263,7 @@ async function ensureSchema() {
     );
   `);
 
-  // 컬럼 추가 (기존 테이블 마이그레이션)
+  // 마이그레이션: 기존 테이블에 컬럼 추가
   const alters = [
     `ALTER TABLE users ALTER COLUMN status SET DEFAULT 'APPROVED'`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT DEFAULT ''`,
@@ -281,7 +280,10 @@ async function ensureSchema() {
     `ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_writer JSONB`,
     `ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB`,
     `ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_approver JSONB`,
-    // nonconform 컬럼 마이그레이션
+    // BUG #04 수정: oqc qty TEXT → NUMERIC
+    `ALTER TABLE oqc ALTER COLUMN qty TYPE NUMERIC USING qty::NUMERIC`,
+    // BUG #02 수정: nonconform 컬럼 마이그레이션 (date → nc_date 컬럼명 통일)
+    `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS nc_date DATE`,
     `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS nc_no TEXT DEFAULT ''`,
     `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS nc_type TEXT DEFAULT ''`,
     `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS dept TEXT DEFAULT ''`,
@@ -292,7 +294,12 @@ async function ensureSchema() {
     `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_writer JSONB`,
     `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_reviewer JSONB`,
     `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_approver JSONB`,
-    // worklog attachments
+    `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS issue TEXT DEFAULT ''`,
+    `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS cause TEXT DEFAULT ''`,
+    `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS action TEXT DEFAULT ''`,
+    `ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS owner TEXT DEFAULT ''`,
+    // nc_date가 null인 기존 행: date 컬럼에서 복사 (date 컬럼이 있던 구버전 마이그레이션)
+    `UPDATE nonconform SET nc_date = created_at::date WHERE nc_date IS NULL`,
     `CREATE TABLE IF NOT EXISTS worklog_attachments (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       worklog_id UUID NOT NULL REFERENCES worklog(id) ON DELETE CASCADE,
@@ -306,14 +313,6 @@ async function ensureSchema() {
   for (const sql of alters) {
     try { await db(sql); } catch (e) { /* 무시 */ }
   }
-
-  // nonconform 기존 컬럼 이름 처리 (type→nc_type 등)
-  try {
-    await db(`ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS issue TEXT DEFAULT ''`);
-    await db(`ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS cause TEXT DEFAULT ''`);
-    await db(`ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS action TEXT DEFAULT ''`);
-    await db(`ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS owner TEXT DEFAULT ''`);
-  } catch(e) {}
 }
 
 /* ═══ 서명 가능 사용자 API ═══ */
@@ -400,46 +399,69 @@ app.post('/api/auth/reset-password', async (req, res) => {
 });
 
 /* ═══ IQC CRUD ═══ */
+// BUG #01 수정: items_json 필드명 통일 및 날짜 정확한 반환
 app.get('/api/iqc', requireLogin, async (_req, res) => {
   try {
     const r = await db('SELECT * FROM iqc ORDER BY created_at DESC');
     ok(res, r.rows.map(row => ({
-      id: row.id, date: row.date, lot: row.lot, supplier: row.supplier,
-      item: row.item, inspector: row.inspector, incomingQty: row.incoming_qty,
-      checkQty: row.qty, failQty: row.fail,
-      items: Array.isArray(row.items_json) ? row.items_json : (row.items_json || []),
-      signWriter: row.sign_writer, signReviewer: row.sign_reviewer, signApprover: row.sign_approver,
+      id: row.id,
+      // BUG #날짜 수정: DATE 컬럼을 ISO 문자열로 정확히 반환
+      date: row.date ? row.date.toISOString().slice(0,10) : '',
+      lot: row.lot,
+      supplier: row.supplier,
+      item: row.item,
+      inspector: row.inspector,
+      incoming_qty: row.incoming_qty,
+      qty: row.qty,
+      fail: row.fail,
+      // BUG #01 수정: items_json → items로 일관되게 반환
+      items_json: Array.isArray(row.items_json) ? row.items_json : (row.items_json || []),
+      sign_writer: row.sign_writer,
+      sign_reviewer: row.sign_reviewer,
+      sign_approver: row.sign_approver,
     })));
   } catch (err) { fail(res, 500, err.message); }
 });
 app.post('/api/iqc', requireLogin, async (req, res) => {
   try {
     const b = req.body;
+    const items = arr(b.items);
     const r = await db(
       `INSERT INTO iqc (date,lot,supplier,item,inspector,incoming_qty,qty,fail,items_json,sign_writer,sign_reviewer,sign_approver)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [txt(b.date),txt(b.lot),txt(b.supplier),txt(b.item),txt(b.inspector),
+      [txt(b.date),txt(b.lot),txt(b.supplier),txt(b.item),txt(b.inspector||b.signWriter?.name||''),
        num(b.incomingQty),num(b.checkQty||b.qty),num(b.failQty||b.fail)??0,
-       JSON.stringify(arr(b.items)),
+       JSON.stringify(items),
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null)]
     );
-    ok(res, r.rows[0], '저장되었습니다.');
+    const row = r.rows[0];
+    ok(res, {
+      ...row,
+      date: row.date ? row.date.toISOString().slice(0,10) : '',
+      items_json: row.items_json || []
+    }, '저장되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.put('/api/iqc/:id', requireLogin, async (req, res) => {
   try {
     const b = req.body;
+    const items = arr(b.items);
     const r = await db(
       `UPDATE iqc SET date=$1,lot=$2,supplier=$3,item=$4,inspector=$5,incoming_qty=$6,qty=$7,fail=$8,
        items_json=$9,sign_writer=$10,sign_reviewer=$11,sign_approver=$12 WHERE id=$13 RETURNING *`,
-      [txt(b.date),txt(b.lot),txt(b.supplier),txt(b.item),txt(b.inspector),
+      [txt(b.date),txt(b.lot),txt(b.supplier),txt(b.item),txt(b.inspector||b.signWriter?.name||''),
        num(b.incomingQty),num(b.checkQty||b.qty),num(b.failQty||b.fail)??0,
-       JSON.stringify(arr(b.items)),
+       JSON.stringify(items),
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null),
        req.params.id]
     );
     if (!r.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
-    ok(res, r.rows[0], '수정되었습니다.');
+    const row = r.rows[0];
+    ok(res, {
+      ...row,
+      date: row.date ? row.date.toISOString().slice(0,10) : '',
+      items_json: row.items_json || []
+    }, '수정되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.delete('/api/iqc/:id', requireLogin, async (req, res) => {
@@ -451,46 +473,69 @@ app.delete('/api/iqc/:id', requireLogin, async (req, res) => {
 });
 
 /* ═══ PQC CRUD ═══ */
+// BUG #06 수정: shift(작업조) = particle 컬럼, line(설비명) = visual 컬럼 매핑 명확화
 app.get('/api/pqc', requireLogin, async (_req, res) => {
   try {
     const r = await db('SELECT * FROM pqc ORDER BY created_at DESC');
     ok(res, r.rows.map(row => ({
-      id: row.id, date: row.date, lot: row.lot, product: row.product,
-      line: row.visual, shift: row.particle, inspector: row.solid,
-      qty: row.qty, failQty: row.fail, judge: row.judge,
-      items: Array.isArray(row.items_json) ? row.items_json : (row.items_json || []),
-      signWriter: row.sign_writer, signReviewer: row.sign_reviewer, signApprover: row.sign_approver,
+      id: row.id,
+      date: row.date ? row.date.toISOString().slice(0,10) : '',
+      lot: row.lot,
+      product: row.product,
+      line: row.visual,      // 설비명 → visual 컬럼
+      shift: row.particle,   // 작업조 → particle 컬럼
+      inspector: row.solid,  // 작업자 → solid 컬럼
+      qty: row.qty,
+      failQty: row.fail,
+      judge: row.judge,
+      items_json: Array.isArray(row.items_json) ? row.items_json : (row.items_json || []),
+      sign_writer: row.sign_writer,
+      sign_reviewer: row.sign_reviewer,
+      sign_approver: row.sign_approver,
     })));
   } catch (err) { fail(res, 500, err.message); }
 });
 app.post('/api/pqc', requireLogin, async (req, res) => {
   try {
-    const b = req.body; const items = arr(b.items);
+    const b = req.body;
+    const items = arr(b.items);
+    // BUG #06 수정: 프론트의 particle 필드(= 작업조 shift)를 particle 컬럼에 저장
     const r = await db(
       `INSERT INTO pqc (date,product,lot,visual,solid,particle,judge,qty,fail,items_json,sign_writer,sign_reviewer,sign_approver)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
-      [txt(b.date),txt(b.product),txt(b.lot),txt(b.visual),txt(b.solid),txt(b.particle),
-       txt(b.judge)||calcJudgeFromItems(items),num(b.qty||b.checkQty),num(b.failQty||b.fail)??0,
+      [txt(b.date),txt(b.product),txt(b.lot),
+       txt(b.visual||b.line||''),           // 설비명
+       txt(b.solid||b.inspector||b.signWriter?.name||''), // 작업자
+       txt(b.particle||b.shift||''),        // 작업조
+       txt(b.judge)||calcJudgeFromItems(items),
+       num(b.qty||b.checkQty),num(b.failQty||b.fail)??0,
        JSON.stringify(items),
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null)]
     );
-    ok(res, r.rows[0], '저장되었습니다.');
+    const row = r.rows[0];
+    ok(res, { ...row, date: row.date ? row.date.toISOString().slice(0,10) : '' }, '저장되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.put('/api/pqc/:id', requireLogin, async (req, res) => {
   try {
-    const b = req.body; const items = arr(b.items);
+    const b = req.body;
+    const items = arr(b.items);
     const r = await db(
       `UPDATE pqc SET date=$1,product=$2,lot=$3,visual=$4,solid=$5,particle=$6,judge=$7,qty=$8,fail=$9,
        items_json=$10,sign_writer=$11,sign_reviewer=$12,sign_approver=$13 WHERE id=$14 RETURNING *`,
-      [txt(b.date),txt(b.product),txt(b.lot),txt(b.visual),txt(b.solid),txt(b.particle),
-       txt(b.judge)||calcJudgeFromItems(items),num(b.qty||b.checkQty),num(b.failQty||b.fail)??0,
+      [txt(b.date),txt(b.product),txt(b.lot),
+       txt(b.visual||b.line||''),
+       txt(b.solid||b.inspector||b.signWriter?.name||''),
+       txt(b.particle||b.shift||''),
+       txt(b.judge)||calcJudgeFromItems(items),
+       num(b.qty||b.checkQty),num(b.failQty||b.fail)??0,
        JSON.stringify(items),
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null),
        req.params.id]
     );
     if (!r.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
-    ok(res, r.rows[0], '수정되었습니다.');
+    const row = r.rows[0];
+    ok(res, { ...row, date: row.date ? row.date.toISOString().slice(0,10) : '' }, '수정되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.delete('/api/pqc/:id', requireLogin, async (req, res) => {
@@ -506,41 +551,64 @@ app.get('/api/oqc', requireLogin, async (_req, res) => {
   try {
     const r = await db('SELECT * FROM oqc ORDER BY created_at DESC');
     ok(res, r.rows.map(row => ({
-      id: row.id, date: row.date, customer: row.customer, product: row.product, lot: row.lot,
-      inspector: row.visual, qty: row.qty, failQty: row.fail, judge: row.judge, package: row.package,
-      items: Array.isArray(row.items_json) ? row.items_json : (row.items_json || []),
-      signWriter: row.sign_writer, signReviewer: row.sign_reviewer, signApprover: row.sign_approver,
+      id: row.id,
+      date: row.date ? row.date.toISOString().slice(0,10) : '',
+      customer: row.customer,
+      product: row.product,
+      lot: row.lot,
+      inspector: row.visual,
+      qty: row.qty,
+      failQty: row.fail,
+      judge: row.judge,
+      package: row.package,
+      items_json: Array.isArray(row.items_json) ? row.items_json : (row.items_json || []),
+      sign_writer: row.sign_writer,
+      sign_reviewer: row.sign_reviewer,
+      sign_approver: row.sign_approver,
     })));
   } catch (err) { fail(res, 500, err.message); }
 });
 app.post('/api/oqc', requireLogin, async (req, res) => {
   try {
-    const b = req.body; const items = arr(b.items);
+    const b = req.body;
+    const items = arr(b.items);
     const r = await db(
       `INSERT INTO oqc (date,customer,product,lot,visual,package,qty,fail,judge,items_json,sign_writer,sign_reviewer,sign_approver)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
-      [txt(b.date),txt(b.customer),txt(b.product),txt(b.lot),txt(b.visual),txt(b.package),
-       txt(b.qty||b.checkQty),num(b.failQty||b.fail)??0,
-       txt(b.judge)||calcJudgeFromItems(items),JSON.stringify(items),
+      [txt(b.date),txt(b.customer),txt(b.product),txt(b.lot),
+       txt(b.visual||b.inspector||b.signWriter?.name||''),
+       txt(b.package||b.remark||''),
+       // BUG #04 수정: qty NUMERIC으로 저장
+       num(b.qty||b.checkQty)??0,
+       num(b.failQty||b.fail)??0,
+       txt(b.judge)||calcJudgeFromItems(items),
+       JSON.stringify(items),
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null)]
     );
-    ok(res, r.rows[0], '저장되었습니다.');
+    const row = r.rows[0];
+    ok(res, { ...row, date: row.date ? row.date.toISOString().slice(0,10) : '' }, '저장되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.put('/api/oqc/:id', requireLogin, async (req, res) => {
   try {
-    const b = req.body; const items = arr(b.items);
+    const b = req.body;
+    const items = arr(b.items);
     const r = await db(
       `UPDATE oqc SET date=$1,customer=$2,product=$3,lot=$4,visual=$5,package=$6,qty=$7,fail=$8,judge=$9,
        items_json=$10,sign_writer=$11,sign_reviewer=$12,sign_approver=$13 WHERE id=$14 RETURNING *`,
-      [txt(b.date),txt(b.customer),txt(b.product),txt(b.lot),txt(b.visual),txt(b.package),
-       txt(b.qty||b.checkQty),num(b.failQty||b.fail)??0,
-       txt(b.judge)||calcJudgeFromItems(items),JSON.stringify(items),
+      [txt(b.date),txt(b.customer),txt(b.product),txt(b.lot),
+       txt(b.visual||b.inspector||b.signWriter?.name||''),
+       txt(b.package||b.remark||''),
+       num(b.qty||b.checkQty)??0,
+       num(b.failQty||b.fail)??0,
+       txt(b.judge)||calcJudgeFromItems(items),
+       JSON.stringify(items),
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null),
        req.params.id]
     );
     if (!r.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
-    ok(res, r.rows[0], '수정되었습니다.');
+    const row = r.rows[0];
+    ok(res, { ...row, date: row.date ? row.date.toISOString().slice(0,10) : '' }, '수정되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.delete('/api/oqc/:id', requireLogin, async (req, res) => {
@@ -582,16 +650,30 @@ app.delete('/api/suppliers/:id', requireLogin, async (req, res) => {
 });
 
 /* ═══ NONCONFORM CRUD ═══ */
+// BUG #02 수정: nc_date 컬럼명 통일
 app.get('/api/nonconform', requireLogin, async (_req, res) => {
   try {
     const r = await db('SELECT * FROM nonconform ORDER BY created_at DESC');
     ok(res, r.rows.map(row => ({
-      id: row.id, ncDate: row.date, ncNo: row.nc_no, ncType: row.nc_type,
-      dept: row.dept, lot: row.lot, item: row.item, qty: row.qty,
-      issue: row.issue, cause: row.cause, action: row.action,
-      actionDate: row.action_date, verify: row.verify, verifyDate: row.verify_date,
-      owner: row.owner, status: row.status,
-      signWriter: row.sign_writer, signReviewer: row.sign_reviewer, signApprover: row.sign_approver,
+      id: row.id,
+      ncDate: row.nc_date ? row.nc_date.toISOString().slice(0,10) : '',
+      ncNo: row.nc_no,
+      ncType: row.nc_type,
+      dept: row.dept,
+      lot: row.lot,
+      item: row.item,
+      qty: row.qty,
+      issue: row.issue,
+      cause: row.cause,
+      action: row.action,
+      actionDate: row.action_date ? row.action_date.toISOString().slice(0,10) : '',
+      verify: row.verify,
+      verifyDate: row.verify_date ? row.verify_date.toISOString().slice(0,10) : '',
+      owner: row.owner,
+      status: row.status,
+      sign_writer: row.sign_writer,
+      sign_reviewer: row.sign_reviewer,
+      sign_approver: row.sign_approver,
     })));
   } catch (err) { fail(res, 500, err.message); }
 });
@@ -599,7 +681,7 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
   try {
     const b = req.body;
     const r = await db(
-      `INSERT INTO nonconform (date,nc_no,nc_type,dept,lot,item,qty,issue,cause,action,action_date,verify,verify_date,owner,status,sign_writer,sign_reviewer,sign_approver)
+      `INSERT INTO nonconform (nc_date,nc_no,nc_type,dept,lot,item,qty,issue,cause,action,action_date,verify,verify_date,owner,status,sign_writer,sign_reviewer,sign_approver)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
       [txt(b.ncDate||b.date),txt(b.ncNo),txt(b.ncType),txt(b.dept),txt(b.lot),txt(b.item),
        num(b.qty)??0,txt(b.issue),txt(b.cause),txt(b.action),
@@ -607,14 +689,18 @@ app.post('/api/nonconform', requireLogin, async (req, res) => {
        txt(b.owner),txt(b.status)||'미결',
        JSON.stringify(b.signWriter||null),JSON.stringify(b.signReviewer||null),JSON.stringify(b.signApprover||null)]
     );
-    ok(res, r.rows[0], '저장되었습니다.');
+    const row = r.rows[0];
+    ok(res, {
+      ...row,
+      ncDate: row.nc_date ? row.nc_date.toISOString().slice(0,10) : '',
+    }, '저장되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
   try {
     const b = req.body;
     const r = await db(
-      `UPDATE nonconform SET date=$1,nc_no=$2,nc_type=$3,dept=$4,lot=$5,item=$6,qty=$7,issue=$8,cause=$9,action=$10,
+      `UPDATE nonconform SET nc_date=$1,nc_no=$2,nc_type=$3,dept=$4,lot=$5,item=$6,qty=$7,issue=$8,cause=$9,action=$10,
        action_date=$11,verify=$12,verify_date=$13,owner=$14,status=$15,sign_writer=$16,sign_reviewer=$17,sign_approver=$18
        WHERE id=$19 RETURNING *`,
       [txt(b.ncDate||b.date),txt(b.ncNo),txt(b.ncType),txt(b.dept),txt(b.lot),txt(b.item),
@@ -625,7 +711,11 @@ app.put('/api/nonconform/:id', requireLogin, async (req, res) => {
        req.params.id]
     );
     if (!r.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
-    ok(res, r.rows[0], '수정되었습니다.');
+    const row = r.rows[0];
+    ok(res, {
+      ...row,
+      ncDate: row.nc_date ? row.nc_date.toISOString().slice(0,10) : '',
+    }, '수정되었습니다.');
   } catch (err) { fail(res, 500, err.message); }
 });
 app.delete('/api/nonconform/:id', requireLogin, async (req, res) => {
@@ -651,9 +741,14 @@ app.get('/api/worklog', requireLogin, async (_req, res) => {
       } catch(e) {}
     }
     ok(res, r.rows.map(row => ({
-      id: row.id, workDate: row.work_date, finishedLot: row.finished_lot,
-      worker: row.worker, planQty: row.plan_qty, prodQty: row.prod_qty,
-      failQty: row.fail_qty, remark: row.remark,
+      id: row.id,
+      workDate: row.work_date ? row.work_date.toISOString().slice(0,10) : '',
+      finishedLot: row.finished_lot,
+      worker: row.worker,
+      planQty: row.plan_qty,
+      prodQty: row.prod_qty,
+      failQty: row.fail_qty,
+      remark: row.remark,
       flowSet: row.flow_set, flowActual: row.flow_actual,
       tempSet: row.temp_set, tempActual: row.temp_actual,
       pressSet: row.press_set, pressActual: row.press_actual,
@@ -763,7 +858,8 @@ app.delete('/api/worklog/attachment/:id', requireLogin, async (req, res) => {
 /* ═══ 성적서 ═══ */
 app.post('/api/certificate', requireLogin, async (req, res) => {
   try {
-    const b = req.body || {}; const items = arr(b.items);
+    const b = req.body || {};
+    const items = arr(b.items);
     const r = await db(
       `INSERT INTO certificates (cert_type,date,lot,inspector,item,company,incoming_qty,check_qty,fail_qty,judge,remark,items_json)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
@@ -793,7 +889,8 @@ app.get('/api/trace', requireLogin, async (req, res) => {
        ORDER BY w.work_date DESC, m.seq ASC`, [keyword]
     );
     ok(res, r.rows.map(x => ({
-      workDate: x.work_date, finishedLot: x.finished_lot, worker: x.worker,
+      workDate: x.work_date ? x.work_date.toISOString().slice(0,10) : '',
+      finishedLot: x.finished_lot, worker: x.worker,
       seq: x.seq, material: x.material, supName: x.sup_name,
       lotNo: x.lot_no, inputQty: x.input_qty, inputTime: x.input_time,
     })));
@@ -830,11 +927,17 @@ app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
     if (!name||!email) return fail(res, 400, '성명과 이메일은 필수입니다.');
     const dup = await db('SELECT id FROM users WHERE email=$1 AND id<>$2',[email,req.params.id]);
     if (dup.rowCount) return fail(res, 409, '이미 사용 중인 이메일입니다.');
-    const r = await db(
-      `UPDATE users SET name=$1,email=$2,department=$3,title=$4,role=$5,status=$6 WHERE id=$7
-       RETURNING id,name,email,department,title,role,status,created_at`,
-      [name,email,txt(b.department),txt(b.title),txt(b.role)||'user',txt(b.status)||'APPROVED',req.params.id]
-    );
+    let updateSql = `UPDATE users SET name=$1,email=$2,department=$3,title=$4,role=$5,status=$6 WHERE id=$7
+       RETURNING id,name,email,department,title,role,status,created_at`;
+    let params = [name,email,txt(b.department),txt(b.title),txt(b.role)||'user',txt(b.status)||'APPROVED',req.params.id];
+    // 비밀번호 변경 요청 시
+    if (txt(b.password)) {
+      const hash = await bcrypt.hash(txt(b.password), 10);
+      updateSql = `UPDATE users SET name=$1,email=$2,department=$3,title=$4,role=$5,status=$6,password_hash=$7 WHERE id=$8
+         RETURNING id,name,email,department,title,role,status,created_at`;
+      params = [name,email,txt(b.department),txt(b.title),txt(b.role)||'user',txt(b.status)||'APPROVED',hash,req.params.id];
+    }
+    const r = await db(updateSql, params);
     if (!r.rowCount) return fail(res, 404, '회원을 찾을 수 없습니다.');
     if (req.session.user?.id === req.params.id) {
       req.session.user = { ...req.session.user, name, email, department: txt(b.department), title: txt(b.title), role: txt(b.role), status: txt(b.status) };
