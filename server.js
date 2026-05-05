@@ -55,6 +55,10 @@ function arr(v) {
   return Array.isArray(v) ? v : [];
 }
 
+function sign(v) {
+  return JSON.stringify(v || {});
+}
+
 async function db(sql, params = []) {
   return pool.query(sql, params);
 }
@@ -118,6 +122,9 @@ async function ensureSchema() {
       qty NUMERIC,
       fail NUMERIC DEFAULT 0,
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -135,6 +142,9 @@ async function ensureSchema() {
       qty NUMERIC,
       fail NUMERIC DEFAULT 0,
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -157,6 +167,9 @@ async function ensureSchema() {
       fail NUMERIC DEFAULT 0,
       judge TEXT DEFAULT '',
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -181,6 +194,9 @@ async function ensureSchema() {
       action TEXT DEFAULT '',
       owner TEXT DEFAULT '',
       status TEXT DEFAULT '',
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -227,6 +243,9 @@ async function ensureSchema() {
       judge TEXT DEFAULT '',
       remark TEXT DEFAULT '',
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -234,10 +253,30 @@ async function ensureSchema() {
   await db(`
     ALTER TABLE users ALTER COLUMN status SET DEFAULT 'APPROVED';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT DEFAULT '';
+
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
     ALTER TABLE pqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
     ALTER TABLE oqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE oqc ADD COLUMN IF NOT EXISTS package TEXT DEFAULT '';
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
   `);
 }
 
@@ -311,6 +350,20 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
   ok(res, req.session.user);
+});
+
+app.get('/api/users/signable', requireLogin, async (_req, res) => {
+  try {
+    const r = await db(`
+      SELECT id, name, email, department, title, role, status
+      FROM users
+      WHERE status = 'APPROVED'
+      ORDER BY name ASC, created_at DESC
+    `);
+    ok(res, r.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
 });
 
 app.post('/api/auth/change-password', requireLogin, async (req, res) => {
@@ -435,6 +488,9 @@ bindCrud('iqc', (b) => ({
   qty: num(b.qty ?? b.checkQty),
   fail: num(b.fail ?? b.failQty) ?? 0,
   items_json: JSON.stringify(arr(b.items)),
+  sign_writer: sign(b.signWriter),
+  sign_reviewer: sign(b.signReviewer),
+  sign_approver: sign(b.signApprover),
 }));
 
 bindCrud('pqc', (b) => {
@@ -452,6 +508,9 @@ bindCrud('pqc', (b) => {
     qty: num(b.qty ?? b.checkQty),
     fail: num(b.fail ?? b.failQty) ?? 0,
     items_json: JSON.stringify(items),
+    sign_writer: sign(b.signWriter),
+    sign_reviewer: sign(b.signReviewer),
+    sign_approver: sign(b.signApprover),
   };
 });
 
@@ -475,6 +534,9 @@ bindCrud('oqc', (b) => {
     fail: num(b.fail ?? b.failQty) ?? 0,
     judge: txt(b.judge) || calcJudgeFromItems(items),
     items_json: JSON.stringify(items),
+    sign_writer: sign(b.signWriter),
+    sign_reviewer: sign(b.signReviewer),
+    sign_approver: sign(b.signApprover),
   };
 });
 
@@ -487,8 +549,8 @@ bindCrud('suppliers', (b) => ({
 }));
 
 bindCrud('nonconform', (b) => ({
-  date: txt(b.date),
-  type: txt(b.type),
+  date: txt(b.date ?? b.ncDate),
+  type: txt(b.type ?? b.ncType),
   lot: txt(b.lot),
   item: txt(b.item),
   issue: txt(b.issue),
@@ -496,6 +558,9 @@ bindCrud('nonconform', (b) => ({
   action: txt(b.action),
   owner: txt(b.owner),
   status: txt(b.status),
+  sign_writer: sign(b.signWriter),
+  sign_reviewer: sign(b.signReviewer),
+  sign_approver: sign(b.signApprover),
 }));
 
 app.get('/api/worklog', requireLogin, async (_req, res) => {
@@ -688,8 +753,9 @@ app.post('/api/certificate', requireLogin, async (req, res) => {
 
     const r = await db(
       `INSERT INTO certificates
-      (cert_type, date, lot, inspector, item, company, incoming_qty, check_qty, fail_qty, judge, remark, items_json)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      (cert_type, date, lot, inspector, item, company, incoming_qty, check_qty, fail_qty, judge, remark, items_json,
+       sign_writer, sign_reviewer, sign_approver)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING *`,
       [
         txt(b.type),
@@ -704,6 +770,9 @@ app.post('/api/certificate', requireLogin, async (req, res) => {
         judge,
         txt(b.remark),
         JSON.stringify(items),
+        sign(b.signWriter),
+        sign(b.signReviewer),
+        sign(b.signApprover),
       ]
     );
 
@@ -957,27 +1026,27 @@ ensureSchema()
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin1234!';
 
     const existing = await db('SELECT id FROM users WHERE email = $1', [adminEmail]);
-const hash = await bcrypt.hash(adminPassword, 10);
+    const hash = await bcrypt.hash(adminPassword, 10);
 
-if (!existing.rowCount) {
-  await db(
-    `INSERT INTO users (name, email, password_hash, department, title, role, status)
-     VALUES ($1,$2,$3,$4,$5,'admin','APPROVED')`,
-    ['관리자', adminEmail, hash, '관리부', '관리자']
-  );
-} else {
-  await db(
-    `UPDATE users
-     SET password_hash = $1,
-         name = $2,
-         department = $3,
-         title = $4,
-         role = 'admin',
-         status = 'APPROVED'
-     WHERE email = $5`,
-    [hash, '관리자', '관리부', '관리자', adminEmail]
-  );
-}
+    if (!existing.rowCount) {
+      await db(
+        `INSERT INTO users (name, email, password_hash, department, title, role, status)
+         VALUES ($1,$2,$3,$4,$5,'admin','APPROVED')`,
+        ['관리자', adminEmail, hash, '관리부', '관리자']
+      );
+    } else {
+      await db(
+        `UPDATE users
+         SET password_hash = $1,
+             name = $2,
+             department = $3,
+             title = $4,
+             role = 'admin',
+             status = 'APPROVED'
+         WHERE email = $5`,
+        [hash, '관리자', '관리부', '관리자', adminEmail]
+      );
+    }
 
     app.listen(port, () => {
       console.log(`QMS server listening on ${port} (Asia/Seoul)`);
