@@ -27,21 +27,108 @@ body{font-family:var(--font);font-size:14px;line-height:1.5;color:var(--t1);back
 button,input,select,textarea{font:inherit}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px}
-#loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#050d1f;}
-#loginPage::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 15% 50%,rgba(0,120,255,.28) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 85% 20%,rgba(0,210,160,.18) 0%,transparent 55%),radial-gradient(ellipse 50% 60% at 70% 80%,rgba(100,60,220,.20) 0%,transparent 55%),linear-gradient(135deg,#050d1f 0%,#0a1a3a 40%,#051830 100%);z-index:0;}
-#loginPage::after{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,transparent,transparent 120px,rgba(0,140,255,.04) 121px),repeating-linear-gradient(0deg,transparent,transparent 120px,rgba(0,140,255,.04) 121px);z-index:0;}
-.ev-bg-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
-.ev-left-panel{position:absolute;left:0;top:0;bottom:0;width:55%;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:60px;z-index:2;}
-.ev-brand-badge{display:flex;align-items:center;gap:12px;margin-bottom:40px;}
-.ev-headline{font-size:42px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-1px;margin-bottom:20px;}
-.ev-headline .accent{color:transparent;background:linear-gradient(90deg,#00c8ff,#00ffa3);-webkit-background-clip:text;background-clip:text;}
-.ev-desc{font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;max-width:400px;margin-bottom:40px;}
-.ev-stats{display:flex;gap:32px;}
+
+/* ══════════════════════════════════
+   LOGIN PAGE  — EV / 배터리 테마
+══════════════════════════════════ */
+#loginPage{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  background:#050d1f;
+}
+
+/* 배경 그라데이션 레이어 */
+#loginPage::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 50%, rgba(0,120,255,.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 85% 20%, rgba(0,210,160,.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(100,60,220,.20) 0%, transparent 55%),
+    linear-gradient(135deg, #050d1f 0%, #0a1a3a 40%, #051830 100%);
+  z-index:0;
+}
+
+/* 전류 흐름 애니메이션 라인들 */
+#loginPage::after{
+  content:'';
+  position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(0,140,255,.04) 121px),
+    repeating-linear-gradient(0deg,  transparent, transparent 120px, rgba(0,140,255,.04) 121px);
+  z-index:0;
+}
+
+/* SVG EV 배경 일러스트 */
+.ev-bg-svg{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  z-index:1;
+  pointer-events:none;
+}
+
+/* 좌측 EV 배터리 셀 장식 */
+.ev-left-panel{
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:55%;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  padding:60px;
+  z-index:2;
+}
+.ev-brand-badge{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:40px;
+}
+.ev-brand-badge img{height:46px;filter:drop-shadow(0 0 12px rgba(0,160,255,.5));}
+.ev-brand-text{
+  font-size:24px;font-weight:900;color:#fff;letter-spacing:-.5px;
+  text-shadow:0 0 20px rgba(0,160,255,.4);
+}
+.ev-brand-sub{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.ev-headline{
+  font-size:42px;font-weight:800;color:#fff;line-height:1.15;
+  letter-spacing:-1px;margin-bottom:20px;
+}
+.ev-headline .accent{
+  color:transparent;
+  background:linear-gradient(90deg,#00c8ff,#00ffa3);
+  -webkit-background-clip:text;background-clip:text;
+}
+.ev-desc{
+  font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;
+  max-width:400px;margin-bottom:40px;
+}
+.ev-stats{
+  display:flex;gap:32px;
+}
 .ev-stat{border-left:2px solid rgba(0,200,255,.4);padding-left:16px;}
 .ev-stat-val{font-size:26px;font-weight:800;color:#00c8ff;letter-spacing:-1px;}
 .ev-stat-lbl{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
-.lcard{position:relative;z-index:10;width:420px;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-radius:var(--r5);box-shadow:var(--sh4),0 0 0 1px rgba(255,255,255,.2),0 0 60px rgba(0,120,255,.15);padding:40px 36px;margin-left:auto;margin-right:60px;}
+
+/* 로그인 카드 */
+.lcard{
+  position:relative;z-index:10;
+  width:420px;
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(20px);
+  border-radius:var(--r5);
+  box-shadow:var(--sh4), 0 0 0 1px rgba(255,255,255,.2), 0 0 60px rgba(0,120,255,.15);
+  padding:40px 36px;
+  margin-left:auto;
+  margin-right:60px;
+}
 .lbrand{display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.lbrand img{height:44px;}
+/* 로그인 화면 신규 워드마크: NM NAMO Chemical */
 .namo-wordmark{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:900;letter-spacing:-1px;line-height:1;white-space:nowrap;text-shadow:0 0 20px rgba(0,160,255,.35);}
 .namo-wordmark .nm{font-size:33px;font-weight:900;letter-spacing:-2px;}
 .namo-wordmark .namo{font-size:32px;font-weight:900;letter-spacing:-1.4px;}
@@ -60,7 +147,16 @@ button,input,select,textarea{font:inherit}
 .lform input:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
 .lform input::placeholder{color:var(--t3);}
 .lerr{color:var(--er);font-size:12px;font-weight:500;min-height:16px;}
-@media(max-width:900px){.ev-left-panel{display:none;}.lcard{margin:auto;}}
+
+/* 반응형: 작은 화면에서 레이아웃 단순화 */
+@media(max-width:900px){
+  .ev-left-panel{display:none;}
+  .lcard{margin:auto;}
+}
+
+/* ══════════════════════════════════
+   SHELL
+══════════════════════════════════ */
 .app{height:100vh;display:flex;flex-direction:column;}
 .shell{display:none;height:100vh;flex-direction:column;}
 .topbar{height:var(--th);flex-shrink:0;display:flex;align-items:center;background:var(--sf);border-bottom:1px solid var(--bd);box-shadow:var(--sh1);z-index:100;}
@@ -177,6 +273,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .sp{margin-top:14px;border:1px solid var(--bd);border-radius:var(--r3);overflow:hidden;}
 .sph{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--bd);}
 .sph h3{font-size:13px;font-weight:700;color:var(--t1);}
+
+/* ══ 서명란 ══ */
 .sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .sign-box{border:1.5px solid var(--bd2);border-radius:var(--r2);overflow:hidden;}
 .sign-box-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;background:var(--s2);border-bottom:1px solid var(--bd);}
@@ -188,7 +286,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .sign-sel{width:100%;height:34px;border:1.5px solid var(--bd);border-radius:var(--r1);padding:0 9px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr);}
 .sign-sel:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
 .sign-sub{font-size:11px;color:var(--t3);margin-top:4px;min-height:15px;}
+/* 서명란 없는 사용자 경고 */
 .sign-warning{font-size:12px;color:var(--wa);background:var(--was);border:1px solid rgba(160,92,0,.2);border-radius:var(--r2);padding:10px 12px;margin-bottom:10px;display:none;}
+
 .rsheet{border:1.5px solid var(--bd2);border-radius:var(--r4);padding:22px;background:var(--sf);}
 .rhdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--bd);}
 .rhdr h2{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px;}
@@ -197,7 +297,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .rbox{border:1.5px solid var(--bd);border-radius:var(--r3);padding:14px;background:var(--s2);text-align:center;margin-top:14px;}
 .rlbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px;}
 .big{font-size:24px;font-weight:900;color:var(--ok);}
-/* ★ 수정: 서명란 미리보기 (선택시 즉시 반영) */
 .rprint-sign{display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;border:1.5px solid #888;}
 .rpsign-col{text-align:center;padding:9px 7px;border-right:1px solid #aaa;}
 .rpsign-col:last-child{border-right:none;}
@@ -243,41 +342,78 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .footer{padding:11px 22px;border-top:1px solid var(--bd);background:var(--sf);text-align:center;font-size:12px;color:var(--t3);flex-shrink:0;}
 @media print{body *{visibility:hidden;}#printTarget,#printTarget *{visibility:visible;}#printTarget{position:fixed;top:0;left:0;width:100%;padding:22px;background:#fff;}}
 .mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt14{margin-top:14px;}.mt16{margin-top:16px;}
-@media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
+@media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.wgrid{grid-column-template:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
 @media(max-width:1000px){.wgrid{grid-template-columns:1fr;}}
 @media(max-width:900px){:root{--sw:0px;}.sidebar{display:none;}.content{padding:14px;}.sgrid{grid-template-columns:repeat(2,1fr);}.fg4,.fg3,.fg5{grid-template-columns:1fr;}.sign-grid,.rprint-sign,.lgrid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
+<!-- ══════════════════════════════════
+     LOGIN PAGE
+══════════════════════════════════ -->
 <div id="loginPage">
+
+  <!-- 배경 SVG EV / 배터리 일러스트 -->
   <svg class="ev-bg-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="glow1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00c8ff" stop-opacity=".3"/><stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/></radialGradient>
-      <radialGradient id="glow2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00ffa3" stop-opacity=".25"/><stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/></radialGradient>
+      <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00c8ff" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00ffa3" stop-opacity=".25"/>
+        <stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
       <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
-      <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#00c8ff" stop-opacity="0"/><stop offset="30%" stop-color="#00c8ff" stop-opacity=".8"/><stop offset="70%" stop-color="#00ffa3" stop-opacity=".8"/><stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/></linearGradient>
-      <linearGradient id="cellGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#1a56db" stop-opacity=".6"/><stop offset="100%" stop-color="#0d2d6e" stop-opacity=".8"/></linearGradient>
+      <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00c8ff" stop-opacity="0"/>
+        <stop offset="30%" stop-color="#00c8ff" stop-opacity=".8"/>
+        <stop offset="70%" stop-color="#00ffa3" stop-opacity=".8"/>
+        <stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="cellGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1a56db" stop-opacity=".6"/>
+        <stop offset="100%" stop-color="#0d2d6e" stop-opacity=".8"/>
+      </linearGradient>
     </defs>
+
+    <!-- EV 자동차 실루엣 (간소화된 벡터) -->
     <g transform="translate(60,350)" opacity=".18">
-      <path d="M0,120 L30,60 Q60,20 120,15 L380,10 Q440,12 490,50 L560,120 Z" fill="#00c8ff" stroke="#00c8ff" stroke-width="1"/>
-      <path d="M80,60 Q130,-10 250,-15 Q370,-15 420,60" fill="none" stroke="#00c8ff" stroke-width="2"/>
+      <!-- 차체 -->
+      <path d="M0,120 L30,60 Q60,20 120,15 L380,10 Q440,12 490,50 L560,120 Z"
+            fill="#00c8ff" stroke="#00c8ff" stroke-width="1"/>
+      <!-- 루프 -->
+      <path d="M80,60 Q130,-10 250,-15 Q370,-15 420,60"
+            fill="none" stroke="#00c8ff" stroke-width="2"/>
+      <!-- 바퀴 -->
       <circle cx="120" cy="120" r="38" fill="#050d1f" stroke="#00c8ff" stroke-width="2"/>
       <circle cx="120" cy="120" r="22" fill="none" stroke="#00c8ff" stroke-width="1.5" stroke-dasharray="4,4"/>
       <circle cx="440" cy="120" r="38" fill="#050d1f" stroke="#00c8ff" stroke-width="2"/>
       <circle cx="440" cy="120" r="22" fill="none" stroke="#00c8ff" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <!-- 창문 -->
       <path d="M100,55 Q130,25 200,20 Q270,18 310,50 L310,55 Z" fill="#00c8ff" opacity=".3"/>
       <path d="M315,50 Q360,15 420,55 L315,55 Z" fill="#00c8ff" opacity=".3"/>
+      <!-- 충전 포트 빛 -->
       <rect x="540" y="50" width="20" height="30" rx="3" fill="#00ffa3" opacity=".7"/>
     </g>
-    <g transform="translate(50,80)" opacity=".22">
+
+    <!-- 배터리 셀 그리드 -->
+    <g transform="translate(50, 80)" opacity=".22">
+      <!-- 배터리 팩 외곽 -->
       <rect x="0" y="0" width="340" height="180" rx="12" fill="none" stroke="#1a56db" stroke-width="1.5"/>
+      <!-- 셀들 -->
       <g fill="url(#cellGrad)" stroke="#00c8ff" stroke-width=".8">
-        <rect x="10" y="10" width="38" height="160" rx="5"/><rect x="55" y="10" width="38" height="160" rx="5"/>
-        <rect x="100" y="10" width="38" height="160" rx="5"/><rect x="145" y="10" width="38" height="160" rx="5"/>
-        <rect x="190" y="10" width="38" height="160" rx="5"/><rect x="235" y="10" width="38" height="160" rx="5"/>
+        <rect x="10" y="10" width="38" height="160" rx="5"/>
+        <rect x="55" y="10" width="38" height="160" rx="5"/>
+        <rect x="100" y="10" width="38" height="160" rx="5"/>
+        <rect x="145" y="10" width="38" height="160" rx="5"/>
+        <rect x="190" y="10" width="38" height="160" rx="5"/>
+        <rect x="235" y="10" width="38" height="160" rx="5"/>
         <rect x="280" y="10" width="38" height="160" rx="5"/>
       </g>
+      <!-- 충전 레벨 표시 -->
       <rect x="10" y="80" width="38" height="90" rx="5" fill="#00c8ff" opacity=".4"/>
       <rect x="55" y="60" width="38" height="110" rx="5" fill="#00c8ff" opacity=".4"/>
       <rect x="100" y="100" width="38" height="70" rx="5" fill="#00c8ff" opacity=".4"/>
@@ -285,48 +421,84 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <rect x="190" y="70" width="38" height="100" rx="5" fill="#00c8ff" opacity=".4"/>
       <rect x="235" y="90" width="38" height="80" rx="5" fill="#00c8ff" opacity=".4"/>
       <rect x="280" y="50" width="38" height="120" rx="5" fill="#00ffa3" opacity=".4"/>
+      <!-- + 단자 -->
       <rect x="128" y="0" width="14" height="8" rx="2" fill="#00ffa3" opacity=".6"/>
       <rect x="263" y="0" width="14" height="8" rx="2" fill="#00ffa3" opacity=".6"/>
     </g>
+
+    <!-- 에너지 흐름 라인 -->
     <g opacity=".35">
       <path d="M400,200 Q550,150 700,200 Q850,250 1000,180" fill="none" stroke="url(#wireGrad)" stroke-width="1.5" stroke-dasharray="8,4"/>
       <path d="M350,350 Q500,300 650,350 Q800,400 950,330" fill="none" stroke="url(#wireGrad)" stroke-width="1.5" stroke-dasharray="8,4"/>
       <path d="M300,500 Q450,450 600,500 Q750,550 900,480" fill="none" stroke="url(#wireGrad)" stroke-width="1.2" stroke-dasharray="6,4"/>
     </g>
+
+    <!-- 글로우 원 -->
     <circle cx="250" cy="400" r="200" fill="url(#glow1)" filter="url(#blur8)"/>
     <circle cx="900" cy="200" r="150" fill="url(#glow2)" filter="url(#blur8)"/>
+
+    <!-- 전자(e⁻) 파티클 -->
     <g fill="#00c8ff" opacity=".5">
       <circle cx="480" cy="195" r="3"><animateMotion dur="4s" repeatCount="indefinite" path="M0,0 Q100,-30 200,0 Q300,30 400,0"/></circle>
       <circle cx="550" cy="345" r="2.5"><animateMotion dur="5s" repeatCount="indefinite" path="M0,0 Q80,-20 160,0 Q240,20 320,0"/></circle>
       <circle cx="420" cy="495" r="2"><animateMotion dur="3.5s" repeatCount="indefinite" path="M0,0 Q60,-15 120,0 Q180,15 240,0"/></circle>
     </g>
-    <g transform="translate(900,550)" opacity=".2" stroke="#00ffa3" stroke-width="1.2" fill="none">
+
+    <!-- 화학 분자 구조 (우측 하단 장식) -->
+    <g transform="translate(900, 550)" opacity=".2" stroke="#00ffa3" stroke-width="1.2" fill="none">
       <circle cx="0" cy="0" r="18"/><circle cx="60" cy="0" r="15"/><circle cx="30" cy="-50" r="12"/>
       <circle cx="-50" cy="-30" r="10"/><circle cx="110" cy="-30" r="10"/>
       <line x1="18" y1="0" x2="45" y2="0"/><line x1="30" y1="-18" x2="30" y2="-38"/>
       <line x1="-32" y1="-12" x2="0" y2="0"/><line x1="78" y1="-12" x2="60" y2="0"/>
     </g>
-    <g transform="translate(980,120)" opacity=".25">
+
+    <!-- 우측 상단 - 퍼센트 게이지 -->
+    <g transform="translate(980, 120)" opacity=".25">
       <circle cx="0" cy="0" r="50" fill="none" stroke="#1a56db" stroke-width="3"/>
-      <circle cx="0" cy="0" r="50" fill="none" stroke="#00c8ff" stroke-width="3" stroke-dasharray="220 314" stroke-dashoffset="-47" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="50" fill="none" stroke="#00c8ff" stroke-width="3"
+              stroke-dasharray="220 314" stroke-dashoffset="-47" stroke-linecap="round"/>
       <text x="0" y="8" text-anchor="middle" fill="#00c8ff" font-size="18" font-weight="bold" font-family="Inter,sans-serif">87%</text>
       <text x="0" y="24" text-anchor="middle" fill="#fff" font-size="8" font-family="Inter,sans-serif">BATTERY</text>
     </g>
   </svg>
+
+  <!-- 좌측 텍스트 패널 -->
   <div class="ev-left-panel">
     <div class="ev-brand-badge">
-      <div class="namo-wordmark"><span class="nm">NM</span><span class="namo">NAMO</span><span class="chem">Chemical</span></div>
+      <div class="namo-wordmark" aria-label="NM NAMO Chemical">
+        <span class="nm">NM</span><span class="namo">NAMO</span><span class="chem">Chemical</span>
+      </div>
     </div>
-    <div class="ev-headline">EV 배터리 소재의<br><span class="accent">품질 혁신</span></div>
-    <div class="ev-desc">나모케미칼의 QMS는 수입검사(IQC), 공정검사(PQC), 출하검사(OQC)를 통합 관리하여 고품질 배터리 소재의 안정적인 생산을 지원합니다.</div>
+    <div class="ev-headline">
+      EV 배터리 소재의<br>
+      <span class="accent">품질 혁신</span>
+    </div>
+    <div class="ev-desc">
+      나모케미칼의 QMS는 수입검사(IQC), 공정검사(PQC), 출하검사(OQC)를 통합 관리하여 고품질 배터리 소재의 안정적인 생산을 지원합니다.
+    </div>
     <div class="ev-stats">
-      <div class="ev-stat"><div class="ev-stat-val">IQC</div><div class="ev-stat-lbl">수입 품질 검사</div></div>
-      <div class="ev-stat"><div class="ev-stat-val">PQC</div><div class="ev-stat-lbl">공정 품질 검사</div></div>
-      <div class="ev-stat"><div class="ev-stat-val">OQC</div><div class="ev-stat-lbl">출하 품질 검사</div></div>
+      <div class="ev-stat">
+        <div class="ev-stat-val">IQC</div>
+        <div class="ev-stat-lbl">수입 품질 검사</div>
+      </div>
+      <div class="ev-stat">
+        <div class="ev-stat-val">PQC</div>
+        <div class="ev-stat-lbl">공정 품질 검사</div>
+      </div>
+      <div class="ev-stat">
+        <div class="ev-stat-val">OQC</div>
+        <div class="ev-stat-lbl">출하 품질 검사</div>
+      </div>
     </div>
   </div>
+
+  <!-- 로그인 카드 -->
   <div class="lcard">
-    <div class="lbrand"><div class="namo-wordmark"><span class="nm">NM</span><span class="namo">NAMO</span><span class="chem">Chemical</span></div></div>
+    <div class="lbrand">
+      <div class="namo-wordmark" aria-label="NM NAMO Chemical">
+        <span class="nm">NM</span><span class="namo">NAMO</span><span class="chem">Chemical</span>
+      </div>
+    </div>
     <h2>QMS 로그인</h2>
     <p>로그인 후 품질관리시스템을 사용합니다.</p>
     <div class="ltabs">
@@ -355,11 +527,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   </div>
 </div>
 
+<!-- ══ SHELL ══ -->
 <div class="app"><div class="shell">
+
   <header class="topbar">
-    <div class="tlogo">
-      <img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/>
-      <div><div class="tlogo-n">NM QMS</div><div class="tlogo-s">Quality Management</div></div>
+    <div class="tlogo"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/>
+      <div>
+      
+    </div>
     </div>
     <div class="tcenter"><div class="dtxt" id="currentDateTime"></div></div>
     <div class="tright">
@@ -379,6 +554,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       </div>
     </div>
   </header>
+
   <div class="layout">
     <aside class="sidebar">
       <div class="nav-sec">메인</div>
@@ -396,6 +572,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <div class="nav-sec" id="adminNavTitle" style="display:none;">관리자</div>
       <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon">👥</span><span>회원등록현황</span></button>
     </aside>
+
     <main class="content">
 
       <!-- ■ DASHBOARD -->
@@ -775,6 +952,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   <div class="footer">© 2026 Namochemical Inc. All rights reserved. · Quality Management System</div>
 </div></div>
 
+<!-- 비밀번호 변경 모달 -->
 <div class="modal" id="passwordModal">
   <div class="mcard">
     <div class="mhdr"><h3>비밀번호 변경</h3><button type="button" class="mclose" id="closePasswordModal">✕</button></div>
@@ -787,6 +965,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   </div>
 </div>
 
+<!-- 라벨 모달 -->
 <div class="modal" id="labelModal">
   <div class="mcard wide">
     <div class="mhdr"><h3 id="labelModalTitle">🏷 제품 부착용 라벨</h3><button type="button" class="mclose" id="closeLabelModal">✕</button></div>
@@ -796,11 +975,15 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 </div>
 
 <script>
-/* ═══ STATE ═══ */
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
 const state={
   currentUser:null,
   incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],
-  adminUsers:[],signableUsers:[],charts:{},
+  adminUsers:[],
+  signableUsers:[],   // /api/users/signable 결과
+  charts:{},
   incomingItemDrafts:[],processItemDrafts:[],shipmentItemDrafts:[],worklogMaterialDrafts:[],
   saving:{}
 };
@@ -814,26 +997,14 @@ async function api(url,o={}){
     const d=await r.json().catch(()=>null);return{res:r,data:d};
   }catch(e){console.error(url,e);return{res:{ok:false},data:null};}
 }
-/* ★ FIX #05: withSaving - 즉시 disabled 처리 */
 function withSaving(k,btn,fn){
-  return async()=>{
-    if(state.saving[k])return;
-    state.saving[k]=true;
-    if(btn)btn.disabled=true;
-    try{await fn();}finally{state.saving[k]=false;if(btn)btn.disabled=false;}
-  };
+  return async()=>{if(state.saving[k])return;state.saving[k]=true;if(btn)btn.disabled=true;
+    try{await fn();}finally{state.saving[k]=false;if(btn)btn.disabled=false;}};
 }
 
 /* ═══ UTILS ═══ */
-function todayKST(){
-  const s=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));
-  return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;
-}
-function formatDT(){
-  const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-  const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});
-  return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;
-}
+function todayKST(){const s=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;}
+function formatDT(){const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;}
 function startClock(){const e=$('currentDateTime');if(!e)return;const r=()=>{e.textContent=formatDT();};r();setInterval(r,1000);}
 function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
 function jBadge(j){if(j==='합격')return'<span class="status pass">합격</span>';if(j==='불합격')return'<span class="status fail">불합격</span>';return'<span class="status hold">보류</span>';}
@@ -841,15 +1012,10 @@ function calcJ(items=[]){if(!items.length)return'합격';if(items.some(x=>String
 function eRow(cols,msg='데이터 없음'){return`<tr><td colspan="${cols}" style="text-align:center;padding:22px;color:var(--t3);">${msg}</td></tr>`;}
 function safeBC(v){return String(v||'').replace(/[^\x20-\x7E]/g,'').trim()||'N-A';}
 function tryJSON(v){if(!v)return null;if(typeof v==='object')return v;try{return JSON.parse(v);}catch(e){return null;}}
-/* 날짜 문자열 정규화 - DATE 컬럼이 객체로 올 때도 처리 */
-function normalizeDate(v){
-  if(!v)return'';
-  if(typeof v==='string')return v.slice(0,10);
-  if(v instanceof Date)return v.toISOString().slice(0,10);
-  return String(v).slice(0,10);
-}
 
-/* ═══ 직책 → 부장/임원 이상 ═══ */
+/* ═══════════════════════════════════════
+   ★ 직책 → 부장/임원 이상 판별
+═══════════════════════════════════════ */
 const SENIOR=['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo','chief'];
 function isSenior(u){
   if(!u)return false;
@@ -858,69 +1024,94 @@ function isSenior(u){
   return SENIOR.some(s=>t.includes(s));
 }
 
-/* ═══ 서명 그리드 ═══
-   ★ FIX #3: select 변경 시 성적서 미리보기 서명란 즉시 반영
-*/
+/* ═══════════════════════════════════════
+   ★★★ 서명 그리드 — 완전 재작성
+   핵심: signableUsers 로드 후 DOM에 직접 select 생성 + 즉시 이벤트 바인딩
+═══════════════════════════════════════ */
 const SIGN_TYPES=['iqc','pqc','oqc','nc'];
-/* 타입→미리보기 엘리먼트 ID 맵 */
-const SIGN_PREV={
-  iqc:{writer:'rIqcWriter',writerT:'rIqcWriterT',reviewer:'rIqcReviewer',reviewerT:'rIqcReviewerT',approver:'rIqcApprover',approverT:'rIqcApproverT'},
-  pqc:{writer:'rPqcWriter',writerT:'rPqcWriterT',reviewer:'rPqcReviewer',reviewerT:'rPqcReviewerT',approver:'rPqcApprover',approverT:'rPqcApproverT'},
-  oqc:{writer:'rOqcWriter',writerT:'rOqcWriterT',reviewer:'rOqcReviewer',reviewerT:'rOqcReviewerT',approver:'rOqcApprover',approverT:'rOqcApproverT'},
-  nc:{writer:'rNcWriter',writerT:'rNcWriterT',reviewer:'rNcReviewer',reviewerT:'rNcReviewerT',approver:'rNcApprover',approverT:'rNcApproverT'},
-};
 
 function buildSignGrid(type){
   const container=document.getElementById(`signGrid_${type}`);
   const warnEl=document.getElementById(`signWarn_${type}`);
   if(!container)return;
+
   const all=state.signableUsers;
   const mgr=all.filter(u=>isSenior(u));
-  if(warnEl)warnEl.style.display=all.length===0?'block':'none';
+
+  // 경고 표시
+  if(warnEl){warnEl.style.display=all.length===0?'block':'none';}
+
+  // 셀렉트 HTML 생성
   const mkOpts=(list,ph)=>`<option value="">${ph}</option>`+
     list.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
+
   container.innerHTML=`
     <div class="sign-box">
-      <div class="sign-box-hdr"><span class="sign-box-role">작성자 (검사자)</span><span class="sign-box-badge any">전체 ${all.length}명</span></div>
-      <div class="sign-box-body"><select class="sign-sel" id="sg_${type}_writer">${mkOpts(all,'-- 작성자 선택 --')}</select><div class="sign-sub" id="sg_${type}_writer_sub"></div></div>
+      <div class="sign-box-hdr">
+        <span class="sign-box-role">작성자 (검사자)</span>
+        <span class="sign-box-badge any">전체 회원 ${all.length}명</span>
+      </div>
+      <div class="sign-box-body">
+        <select class="sign-sel" id="sg_${type}_writer">${mkOpts(all,'-- 작성자 선택 --')}</select>
+        <div class="sign-sub" id="sg_${type}_writer_sub" style="color:var(--t3);"></div>
+      </div>
     </div>
     <div class="sign-box">
-      <div class="sign-box-hdr"><span class="sign-box-role">검토자</span><span class="sign-box-badge mgr">부장·임원 ${mgr.length}명</span></div>
-      <div class="sign-box-body"><select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(mgr,'-- 검토자 선택 (부장 이상) --')}</select><div class="sign-sub" id="sg_${type}_reviewer_sub"></div></div>
+      <div class="sign-box-hdr">
+        <span class="sign-box-role">검토자</span>
+        <span class="sign-box-badge mgr">부장·임원 이상 ${mgr.length}명</span>
+      </div>
+      <div class="sign-box-body">
+        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(mgr,'-- 검토자 선택 (부장 이상) --')}</select>
+        <div class="sign-sub" id="sg_${type}_reviewer_sub" style="color:var(--t3);"></div>
+      </div>
     </div>
     <div class="sign-box">
-      <div class="sign-box-hdr"><span class="sign-box-role">승인자</span><span class="sign-box-badge mgr">부장·임원 ${mgr.length}명</span></div>
-      <div class="sign-box-body"><select class="sign-sel" id="sg_${type}_approver">${mkOpts(mgr,'-- 승인자 선택 (부장 이상) --')}</select><div class="sign-sub" id="sg_${type}_approver_sub"></div></div>
+      <div class="sign-box-hdr">
+        <span class="sign-box-role">승인자</span>
+        <span class="sign-box-badge mgr">부장·임원 이상 ${mgr.length}명</span>
+      </div>
+      <div class="sign-box-body">
+        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(mgr,'-- 승인자 선택 (부장 이상) --')}</select>
+        <div class="sign-sub" id="sg_${type}_approver_sub" style="color:var(--t3);"></div>
+      </div>
     </div>`;
+
+  // 이벤트 즉시 바인딩 (DOM이 이미 있으므로 바로 가능)
   ['writer','reviewer','approver'].forEach(role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
-    if(sel)sel.addEventListener('change',()=>onSignChange(type,role));
+    if(sel){
+      sel.addEventListener('change',()=>onSignChange(type,role));
+    }
   });
 }
 
-function onSignChange(type){
-  const ids=SIGN_PREV[type];
+function onSignChange(type,changedRole){
   ['writer','reviewer','approver'].forEach(role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
     const sub=document.getElementById(`sg_${type}_${role}_sub`);
-    if(!sel)return;
+    if(!sel||!sub)return;
     const u=state.signableUsers.find(x=>x.id===sel.value)||null;
-    if(sub)sub.textContent=u?`${u.department||''} ${u.title||''}`.trim():'';
-    /* ★ FIX #3 핵심: 미리보기 박스에 즉시 반영 */
-    if(ids){
-      const nameEl=$(ids[role]);
-      const titleEl=$(ids[role+'T']);
-      if(nameEl)nameEl.textContent=u?u.name:'-';
-      if(titleEl)titleEl.textContent=u?`${u.title||''}`.trim():'';
-    }
+    sub.textContent=u?`${u.department||''} ${u.title||''}`.trim():'';
+    // 인쇄용 서명란 반영
+    const pfx=type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':'Nc';
+    const cap=role.charAt(0).toUpperCase()+role.slice(1);
+    const rn=document.getElementById(`r${pfx}${cap}`);
+    const rt=document.getElementById(`r${pfx}${cap}T`);
+    if(rn)rn.textContent=u?u.name:'-';
+    if(rt)rt.textContent=u?(u.title||''):'';
   });
+  // 미리보기 갱신
   if(type==='iqc')syncIqcPreview();
   if(type==='pqc')syncPqcPreview();
   if(type==='oqc')syncOqcPreview();
 }
 
-function rebuildAllSignGrids(){SIGN_TYPES.forEach(t=>buildSignGrid(t));}
+function rebuildAllSignGrids(){
+  SIGN_TYPES.forEach(t=>buildSignGrid(t));
+}
 
+/* 서명 페이로드 수집 */
 function getSignPayload(type){
   const find=role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
@@ -931,55 +1122,63 @@ function getSignPayload(type){
   return{writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
 }
 
+/* 수정 시 서명 복원 */
 function restoreSign(type,record){
   if(!record)return;
   const restore=(role,data)=>{
-    const d=tryJSON(data);
     const sel=document.getElementById(`sg_${type}_${role}`);
-    if(!sel||!d)return;
-    if(d.id&&state.signableUsers.find(x=>x.id===d.id)){sel.value=d.id;}
-    else if(d.name&&d.name!=='-'){const u=state.signableUsers.find(x=>x.name===d.name);if(u)sel.value=u.id;}
+    if(!sel||!data)return;
+    // id로 먼저, 없으면 name으로
+    if(data.id&&state.signableUsers.find(x=>x.id===data.id)){
+      sel.value=data.id;
+    }else if(data.name){
+      const u=state.signableUsers.find(x=>x.name===data.name);
+      if(u)sel.value=u.id;
+    }
     onSignChange(type,role);
   };
-  restore('writer',record.signWriter||record.sign_writer);
-  restore('reviewer',record.signReviewer||record.sign_reviewer);
-  restore('approver',record.signApprover||record.sign_approver);
+  restore('writer',record.signWriter);
+  restore('reviewer',record.signReviewer);
+  restore('approver',record.signApprover);
 }
 
+/* 서명 초기화 */
 function clearSign(type){
   ['writer','reviewer','approver'].forEach(role=>{
     const sel=document.getElementById(`sg_${type}_${role}`);
     if(sel)sel.value='';
     const sub=document.getElementById(`sg_${type}_${role}_sub`);
     if(sub)sub.textContent='';
+    const pfx=type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':'Nc';
+    const cap=role.charAt(0).toUpperCase()+role.slice(1);
+    const rn=document.getElementById(`r${pfx}${cap}`);
+    const rt=document.getElementById(`r${pfx}${cap}T`);
+    if(rn)rn.textContent='-';if(rt)rt.textContent='';
   });
-  onSignChange(type);
 }
 
 /* ═══ BARCODE ═══ */
 function renderBC(svgId,value){
-  const el=$(svgId);if(!el)return;
-  try{JsBarcode(el,safeBC(value||'N-A'),{format:'CODE128',width:1.6,height:38,displayValue:true,fontSize:11,margin:4,background:'#fff',lineColor:'#000'});}
+  const el=$(svgId);if(!el||!value)return;
+  try{JsBarcode(el,safeBC(value),{format:'CODE128',width:1.6,height:38,displayValue:true,fontSize:11,margin:4,background:'#fff',lineColor:'#000'});}
   catch(e){console.warn('BC',svgId,e);}
 }
 
 /* ═══ LABEL ═══ */
 function buildLabel(type,d){
-  const items=Array.isArray(d.items)?d.items:(Array.isArray(d.items_json)?d.items_json:[]);
-  const judge=calcJ(items);
+  const judge=calcJ(d.items||[]);
   const jc=judge==='합격'?'pass':'fail';
   const docNo=`${type.toUpperCase()}-${String(d.date||'').replaceAll('-','')}-0001`;
   const uid='l'+Math.random().toString(36).slice(2,9);
-  const sw=tryJSON(d.signWriter||d.sign_writer);
   let rows='';
   if(type==='iqc')rows=`<div class="plrow"><span class="plkey">품목</span><span class="plval">${esc(d.item||'-')}</span></div><div class="plrow"><span class="plkey">협력업체</span><span class="plval">${esc(d.supplier||'-')}</span></div>`;
-  else if(type==='pqc')rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">설비명</span><span class="plval">${esc(d.line||d.visual||'-')}</span></div>`;
+  else if(type==='pqc')rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">설비명</span><span class="plval">${esc(d.line||'-')}</span></div>`;
   else rows=`<div class="plrow"><span class="plkey">제품명</span><span class="plval">${esc(d.product||'-')}</span></div><div class="plrow"><span class="plkey">고객사</span><span class="plval">${esc(d.customer||'-')}</span></div>`;
   return`<div class="plabel" id="${uid}">
     <div class="pltitle">Namochemical · ${type.toUpperCase()} 검사 라벨</div>
     <div class="plrow"><span class="plkey">LOT</span><span class="plval" style="font-weight:900;">${esc(d.lot||'-')}</span></div>
     <div class="plrow"><span class="plkey">일자</span><span class="plval">${esc(d.date||'-')}</span></div>
-    <div class="plrow"><span class="plkey">검사자</span><span class="plval">${esc(sw?.name||d.inspector||'-')}</span></div>
+    <div class="plrow"><span class="plkey">검사자</span><span class="plval">${esc(d.signWriter?.name||'-')}</span></div>
     ${rows}<div style="text-align:center;margin-top:5px;"><span class="jstamp ${jc}">${judge}</span></div>
     <div class="plbc"><svg class="${uid}-lot"></svg><span>LOT: ${esc(d.lot||'-')}</span><svg class="${uid}-doc" style="margin-top:5px;"></svg><span>Doc: ${docNo}</span></div>
   </div>`;
@@ -1021,10 +1220,7 @@ function printLabel(){
 }
 
 /* ═══ AUTH ═══ */
-function openLoginTab(t){
-  $('tabLoginBtn').classList.toggle('active',t==='login');$('tabSignupBtn').classList.toggle('active',t==='signup');
-  $('panelLogin').classList.toggle('active',t==='login');$('panelSignup').classList.toggle('active',t==='signup');
-}
+function openLoginTab(t){$('tabLoginBtn').classList.toggle('active',t==='login');$('tabSignupBtn').classList.toggle('active',t==='signup');$('panelLogin').classList.toggle('active',t==='login');$('panelSignup').classList.toggle('active',t==='signup');}
 async function login(){
   $('loginError').textContent='';
   const email=$('loginEmail').value.trim(),pwd=$('loginPassword').value.trim();
@@ -1043,15 +1239,8 @@ async function signup(){
 }
 async function checkLogin(){
   const{res,data}=await api('/api/auth/me');
-  if(!res.ok||!data?.success){
-    $('loginPage').style.display='flex';
-    document.querySelector('.shell').style.display='none';
-    state.currentUser=null;return false;
-  }
-  state.currentUser=data.data;
-  $('loginPage').style.display='none';
-  document.querySelector('.shell').style.display='flex';
-  updateProfileUI(data.data);return true;
+  if(!res.ok||!data?.success){$('loginPage').style.display='flex';document.querySelector('.shell').style.display='none';state.currentUser=null;return false;}
+  state.currentUser=data.data;$('loginPage').style.display='none';document.querySelector('.shell').style.display='flex';updateProfileUI(data.data);return true;
 }
 function updateProfileUI(u){
   const n=u?.name||'사용자';
@@ -1063,7 +1252,7 @@ function updateProfileUI(u){
   $('usersNavBtn').style.display=isAdmin?'flex':'none';
   $('adminNavTitle').style.display=isAdmin?'block':'none';
 }
-async function logout(){await api('/api/auth/logout',{method:'POST'});closeProfileMenu();state.currentUser=null;await checkLogin();}
+async function logout(){await api('/api/auth/logout',{method:'POST'});closeProfileMenu();await checkLogin();}
 function openPwdModal(){$('passwordModal').classList.add('show');['currentPassword','newPassword','confirmPassword'].forEach(id=>$(id).value='');}
 function closePwdModal(){$('passwordModal').classList.remove('show');}
 async function changePwd(){
@@ -1089,10 +1278,7 @@ function bindNav(){
 }
 
 /* ═══ INIT ═══ */
-function initYears(){
-  const c=new Date().getFullYear();$('dashYear').innerHTML='';
-  for(let y=c-2;y<=c+2;y++){const o=document.createElement('option');o.value=y;o.textContent=`${y}년`;if(y===c)o.selected=true;$('dashYear').appendChild(o);}
-}
+function initYears(){const c=new Date().getFullYear();$('dashYear').innerHTML='';for(let y=c-2;y<=c+2;y++){const o=document.createElement('option');o.value=y;o.textContent=`${y}년`;if(y===c)o.selected=true;$('dashYear').appendChild(o);}}
 function setDefaultDates(){['incomingDate','processDate','shipmentDate','worklogDate','ncDate'].forEach(id=>{if($(id))$(id).value=todayKST();});}
 
 /* ═══ DEFAULT ITEMS ═══ */
@@ -1101,18 +1287,7 @@ function defPqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:
 function defOqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'포장',spec:'파손 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
 
 /* ═══ ITEM EDITOR ═══ */
-function renderItems(tbId,rows,type){
-  $(tbId).innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td>
-    <td><input value="${esc(r.item||'')}" data-type="${type}" data-idx="${i}" data-key="item"></td>
-    <td><input value="${esc(r.spec||'')}" data-type="${type}" data-idx="${i}" data-key="spec"></td>
-    <td><input value="${esc(r.value||'')}" data-type="${type}" data-idx="${i}" data-key="value"></td>
-    <td><select data-type="${type}" data-idx="${i}" data-key="judge">
-      <option value="합격" ${r.judge==='합격'?'selected':''}>합격</option>
-      <option value="불합격" ${r.judge==='불합격'?'selected':''}>불합격</option>
-      <option value="보류" ${r.judge==='보류'?'selected':''}>보류</option>
-    </select></td>
-    <td><button type="button" class="sb del" data-type="${type}" data-idx="${i}" data-action="removeItem">삭제</button></td></tr>`).join('');
-}
+function renderItems(tbId,rows,type){$(tbId).innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td><input value="${esc(r.item||'')}" data-type="${type}" data-idx="${i}" data-key="item"></td><td><input value="${esc(r.spec||'')}" data-type="${type}" data-idx="${i}" data-key="spec"></td><td><input value="${esc(r.value||'')}" data-type="${type}" data-idx="${i}" data-key="value"></td><td><select data-type="${type}" data-idx="${i}" data-key="judge"><option value="합격" ${r.judge==='합격'?'selected':''}>합격</option><option value="불합격" ${r.judge==='불합격'?'selected':''}>불합격</option><option value="보류" ${r.judge==='보류'?'selected':''}>보류</option></select></td><td><button type="button" class="sb del" data-type="${type}" data-idx="${i}" data-action="removeItem">삭제</button></td></tr>`).join('');}
 function getDraft(t){return t==='incoming'?state.incomingItemDrafts:t==='process'?state.processItemDrafts:state.shipmentItemDrafts;}
 function reRender(t){t==='incoming'?renderIqcItems():t==='process'?renderPqcItems():renderOqcItems();}
 function syncP(t){t==='incoming'?syncIqcPreview():t==='process'?syncPqcPreview():syncOqcPreview();}
@@ -1126,34 +1301,23 @@ function renderPqcItems(){renderItems('processItemsTable',state.processItemDraft
 function renderOqcItems(){renderItems('shipmentItemsTable',state.shipmentItemDrafts,'shipment');syncOqcPreview();}
 
 /* ═══ PREVIEW ═══ */
-function renderPrevRows(tbId,items){
-  $(tbId).innerHTML=items.length?items.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item||'')}</td><td>${esc(r.spec||'')}</td><td>${esc(r.value||'-')}</td><td>${jBadge(r.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);">항목 없음</td></tr>';
-}
+function renderPrevRows(tbId,items){$(tbId).innerHTML=items.length?items.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item||'')}</td><td>${esc(r.spec||'')}</td><td>${esc(r.value||'-')}</td><td>${jBadge(r.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);">항목 없음</td></tr>';}
 function syncIqcPreview(){
-  const items=state.incomingItemDrafts;
-  const date=$('incomingDate').value||todayKST();
-  const doc=`IQC-${date.replaceAll('-','')}-0001`;
+  const items=state.incomingItemDrafts;const date=$('incomingDate').value||todayKST();const doc=`IQC-${date.replaceAll('-','')}-0001`;
   $('incomingMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>LOT</th><td>${esc($('incomingLot').value||'-')}</td><th>협력업체</th><td>${esc($('incomingSupplier').value||'-')}</td></tr><tr><th>품목</th><td>${esc($('incomingItem').value||'-')}</td><th>입고수량</th><td>${esc($('incomingQty').value||'0')}</td></tr><tr><th>검사수량</th><td>${esc($('incomingCheckQty').value||'0')}</td><th>불량수량</th><td>${esc($('incomingFailQty').value||'0')}</td></tr>`;
-  renderPrevRows('incomingPreviewBody',items);
-  $('incomingFinalJudgeText').textContent=calcJ(items);
+  renderPrevRows('incomingPreviewBody',items);$('incomingFinalJudgeText').textContent=calcJ(items);
   renderBC('bcIqcLot',$('incomingLot').value||'LOT');renderBC('bcIqcDoc',doc);
 }
 function syncPqcPreview(){
-  const items=state.processItemDrafts;
-  const date=$('processDate').value||todayKST();
-  const doc=`PQC-${date.replaceAll('-','')}-0001`;
+  const items=state.processItemDrafts;const date=$('processDate').value||todayKST();const doc=`PQC-${date.replaceAll('-','')}-0001`;
   $('processMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>LOT</th><td>${esc($('processLot').value||'-')}</td><th>설비명</th><td>${esc($('processLine').value||'-')}</td></tr><tr><th>제품명</th><td>${esc($('processProduct').value||'-')}</td><th>작업조</th><td>${esc($('processShift').value||'-')}</td></tr><tr><th>검사수량</th><td>${esc($('processQty').value||'0')}</td><th>불량수량</th><td>${esc($('processFailQty').value||'0')}</td></tr>`;
-  renderPrevRows('processPreviewBody',items);
-  $('processFinalJudgeText').textContent=calcJ(items);
+  renderPrevRows('processPreviewBody',items);$('processFinalJudgeText').textContent=calcJ(items);
   renderBC('bcPqcLot',$('processLot').value||'LOT');renderBC('bcPqcDoc',doc);
 }
 function syncOqcPreview(){
-  const items=state.shipmentItemDrafts;
-  const date=$('shipmentDate').value||todayKST();
-  const doc=`OQC-${date.replaceAll('-','')}-0001`;
+  const items=state.shipmentItemDrafts;const date=$('shipmentDate').value||todayKST();const doc=`OQC-${date.replaceAll('-','')}-0001`;
   $('shipmentMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>LOT</th><td>${esc($('shipmentLot').value||'-')}</td><th>고객사</th><td>${esc($('shipmentCustomer').value||'-')}</td></tr><tr><th>제품명</th><td>${esc($('shipmentProduct').value||'-')}</td><th>검사수량</th><td>${esc($('shipmentQty').value||'0')}</td></tr><tr><th>불량수량</th><td>${esc($('shipmentFailQty').value||'0')}</td><th>비고</th><td>${esc($('shipmentRemark').value||'-')}</td></tr>`;
-  renderPrevRows('shipmentPreviewBody',items);
-  $('shipmentFinalJudgeText').textContent=calcJ(items);
+  renderPrevRows('shipmentPreviewBody',items);$('shipmentFinalJudgeText').textContent=calcJ(items);
   renderBC('bcOqcLot',$('shipmentLot').value||'LOT');renderBC('bcOqcDoc',doc);
 }
 
@@ -1164,8 +1328,7 @@ function updateWorklogLinkage(){
   const iq=state.incoming.filter(r=>(r.lot||'').toLowerCase()===lot);
   const pq=state.process.filter(r=>(r.lot||'').toLowerCase()===lot);
   const oq=state.shipment.filter(r=>(r.lot||'').toLowerCase()===lot);
-  const getItems=r=>Array.isArray(r.items)?r.items:(Array.isArray(r.items_json)?r.items_json:[]);
-  const all=[...iq.map(r=>({type:'IQC',lot:r.lot,date:r.date,judge:calcJ(getItems(r))})),...pq.map(r=>({type:'PQC',lot:r.lot,date:r.date,judge:calcJ(getItems(r))})),...oq.map(r=>({type:'OQC',lot:r.lot,date:r.date,judge:calcJ(getItems(r))}))];
+  const all=[...iq.map(r=>({type:'IQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])})),...pq.map(r=>({type:'PQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])})),...oq.map(r=>({type:'OQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])}))];
   if(!all.length){box.style.display='none';return;}
   box.style.display='block';
   $('worklogLinkRows').innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
@@ -1176,35 +1339,22 @@ function populateReportSelect(){
   const type=$('reportType').value;const sel=$('reportSelect');sel.innerHTML='<option value="">-- 성적서 선택 --</option>';
   let arr=type==='iqc'?state.incoming:type==='pqc'?state.process:state.shipment;
   arr=[...arr].sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
-  arr.forEach(r=>{
-    const o=document.createElement('option');o.value=r.id;
-    o.textContent=type==='iqc'?`${r.date} | ${r.lot} | ${r.supplier}`:type==='pqc'?`${r.date} | ${r.lot} | ${r.product}`:`${r.date} | ${r.lot} | ${r.customer}`;
-    sel.appendChild(o);
-  });
+  arr.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=type==='iqc'?`${r.date} | ${r.lot} | ${r.supplier}`:type==='pqc'?`${r.date} | ${r.lot} | ${r.product}`:`${r.date} | ${r.lot} | ${r.customer}`;sel.appendChild(o);});
   if(arr.length)sel.value=arr[0].id;
 }
-
-/* ★ FIX #8 + #2: 성적서 로드 — 날짜·서명 정확 반영, items_json 키 통일 */
 function loadStandaloneReport(){
   const type=$('reportType').value,selId=$('reportSelect').value;
   const arr=type==='iqc'?state.incoming:type==='pqc'?state.process:state.shipment;
-  const row=selId?arr.find(r=>String(r.id)===String(selId)):(arr[0]||null);
+  const row=selId?arr.find(r=>String(r.id)===String(selId)):arr[0];
   if(!row){$('reportMetaTable').innerHTML='<tr><td>데이터가 없습니다.</td></tr>';$('reportBodyTable').innerHTML='';$('reportFinalText').textContent='-';return;}
   $('reportPageTitle').textContent=type==='iqc'?'입고검사 성적서 (IQC Report)':type==='pqc'?'공정검사 성적서 (PQC Report)':'출하검사 성적서 (OQC Report)';
   const docNo=`${type.toUpperCase()}-${String(row.date||'').replaceAll('-','')}-0001`;
-  let meta='';
-  if(type==='iqc')meta=`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>협력업체</th><td>${esc(row.supplier||'-')}</td></tr><tr><th>품목</th><td>${esc(row.item||'-')}</td><th>입고수량</th><td>${row.incomingQty??row.incoming_qty??'-'}</td></tr>`;
-  else if(type==='pqc')meta=`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>설비명</th><td>${esc(row.line||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`;
-  else meta=`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>고객사</th><td>${esc(row.customer||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`;
+  const meta=type==='iqc'?`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>협력업체</th><td>${esc(row.supplier||'-')}</td></tr><tr><th>품목</th><td>${esc(row.item||'-')}</td><th>입고수량</th><td>${row.incomingQty??'-'}</td></tr>`:type==='pqc'?`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>설비명</th><td>${esc(row.line||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`:`<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>고객사</th><td>${esc(row.customer||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`;
   $('reportMetaTable').innerHTML=meta;
-  /* ★ FIX #1: items_json 과 items 둘 다 처리 */
-  const items=Array.isArray(row.items)?row.items:(Array.isArray(row.items_json)?row.items_json:[]);
+  const items=Array.isArray(row.items)?row.items:[];
   $('reportBodyTable').innerHTML=items.length?items.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.item||'')}</td><td>${esc(x.spec||'')}</td><td>${esc(x.value||'-')}</td><td>${jBadge(x.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5">항목 없음</td></tr>';
   $('reportFinalText').textContent=calcJ(items);
-  /* ★ FIX #3: 성적서 서명 반영 */
-  const sw=tryJSON(row.signWriter||row.sign_writer);
-  const sr=tryJSON(row.signReviewer||row.sign_reviewer);
-  const sa=tryJSON(row.signApprover||row.sign_approver);
+  const sw=row.signWriter,sr=row.signReviewer,sa=row.signApprover;
   $('rRptWriter').textContent=sw?.name||'-';$('rRptWriterT').textContent=sw?.title||'';
   $('rRptReviewer').textContent=sr?.name||'-';$('rRptReviewerT').textContent=sr?.title||'';
   $('rRptApprover').textContent=sa?.name||'-';$('rRptApproverT').textContent=sa?.title||'';
@@ -1217,10 +1367,18 @@ function printEl(el){if(!el)return;const p=document.getElementById('printTarget'
 /* ═══ LOAD DATA ═══ */
 function normalizeSignUser(u){
   if(!u)return null;
-  const id=String(u.id??u.user_id??u.email??"").trim();
-  const name=String(u.name??u.username??"").trim();
-  if(!id||!name)return null;
-  return{id,name,email:u.email||"",department:u.department||u.dept||"",title:u.title||u.position||"",role:u.role||"user",status:u.status||"APPROVED"};
+  const id=String(u.id ?? u.user_id ?? u.email ?? "").trim();
+  const name=String(u.name ?? u.username ?? "").trim();
+  if(!id || !name)return null;
+  return{
+    id,
+    name,
+    email:u.email||"",
+    department:u.department||u.dept||"",
+    title:u.title||u.position||"",
+    role:u.role||"user",
+    status:u.status||"APPROVED"
+  };
 }
 function uniqSignUsers(list){
   const m=new Map();
@@ -1229,160 +1387,75 @@ function uniqSignUsers(list){
   });
   return Array.from(m.values());
 }
-
-/* ★ FIX 핵심: loadSignableUsers는 반드시 로그인 후에만 호출됨 (loadAllData에서 호출) */
 async function loadSignableUsers(){
-  try{
-    const signRes=await api("/api/users/signable");
-    /* 서버 응답 구조: {success, data: [...]} */
-    let users=uniqSignUsers(
-      Array.isArray(signRes.data?.data)?signRes.data.data:
-      Array.isArray(signRes.data)?signRes.data:[]
-    );
-    if(users.length===0&&state.currentUser?.role==="admin"){
-      const adminRes=await api("/api/admin/users");
-      const adminList=Array.isArray(adminRes.data?.data)?adminRes.data.data:(Array.isArray(adminRes.data)?adminRes.data:[]);
-      users=uniqSignUsers(adminList);
-      state.adminUsers=adminList;
-      if(state.adminUsers.length)renderUserTable();
-    }
-    if(users.length===0&&state.currentUser){users=uniqSignUsers([state.currentUser]);}
-    state.signableUsers=users;
-    console.log(`[sign] signableUsers: ${state.signableUsers.length}명`);
-  }catch(e){
-    console.error('[sign]',e);
-    if(state.currentUser)state.signableUsers=uniqSignUsers([state.currentUser]);
+  const signRes=await api("/api/users/signable");
+  let users=uniqSignUsers(signRes.data?.data || signRes.data?.users || []);
+  if(users.length===0 && state.currentUser?.role==="admin"){
+    const adminRes=await api("/api/admin/users");
+    users=uniqSignUsers(adminRes.data?.data || adminRes.data?.users || []);
+    state.adminUsers=adminRes.data?.data || state.adminUsers;
+    if(state.adminUsers.length)renderUserTable();
   }
+  if(users.length===0 && state.currentUser){
+    users=uniqSignUsers([state.currentUser]);
+  }
+  state.signableUsers=users;
+  console.log(`[sign] signableUsers 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
 }
-
 async function loadAdminUsers(){
   if(state.currentUser?.role!=='admin')return;
   const{data}=await api('/api/admin/users');
-  state.adminUsers=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  renderUserTable();
+  state.adminUsers=data?.data||[];renderUserTable();
 }
-
-/* ★ FIX #1+#날짜: IQC/PQC/OQC 로드 — items_json, 날짜, 서명 정확 매핑 */
 async function loadIncoming(){
   const{data}=await api('/api/iqc');
-  const rows=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  state.incoming=rows.map(r=>({
-    id:r.id,
-    date:normalizeDate(r.date),
-    lot:r.lot,supplier:r.supplier,item:r.item,inspector:r.inspector,
-    incomingQty:r.incoming_qty,checkQty:r.qty,failQty:r.fail,
-    items_json:Array.isArray(r.items_json)?r.items_json:[],
-    /* 하위호환: items 키도 유지 */
-    items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver),
-  }));
+  state.incoming=(data?.data||[]).map(r=>({id:r.id,date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:r.inspector,incomingQty:r.incoming_qty,checkQty:r.qty,failQty:r.fail,items:Array.isArray(r.items_json)?r.items_json:[],signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)}));
   renderIncomingTable();
 }
-/* ★ FIX #6: PQC line=visual, shift=particle 정확 매핑 */
 async function loadProcess(){
   const{data}=await api('/api/pqc');
-  const rows=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  state.process=rows.map(r=>({
-    id:r.id,
-    date:normalizeDate(r.date),
-    lot:r.lot,product:r.product,
-    line:r.line||r.visual||'',    /* 설비명 */
-    shift:r.shift||r.particle||'', /* 작업조 */
-    inspector:r.inspector||r.solid||'',
-    qty:r.qty,failQty:r.fail||r.failQty,judge:r.judge,
-    items_json:Array.isArray(r.items_json)?r.items_json:[],
-    items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver),
-  }));
+  state.process=(data?.data||[]).map(r=>({id:r.id,date:r.date,lot:r.lot,product:r.product,line:r.visual,shift:r.particle,inspector:r.solid,qty:r.qty,failQty:r.fail,judge:r.judge,items:Array.isArray(r.items_json)?r.items_json:[],signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)}));
   renderProcessTable();
 }
 async function loadShipment(){
   const{data}=await api('/api/oqc');
-  const rows=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  state.shipment=rows.map(r=>({
-    id:r.id,
-    date:normalizeDate(r.date),
-    customer:r.customer,product:r.product,lot:r.lot,
-    inspector:r.visual||r.inspector||'',
-    qty:r.qty,failQty:r.fail||r.failQty,judge:r.judge,package:r.package,
-    items_json:Array.isArray(r.items_json)?r.items_json:[],
-    items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver),
-  }));
+  state.shipment=(data?.data||[]).map(r=>({id:r.id,date:r.date,customer:r.customer,product:r.product,lot:r.lot,inspector:r.visual,qty:r.qty,failQty:r.fail,judge:r.judge,package:r.package,items:Array.isArray(r.items_json)?r.items_json:[],signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)}));
   renderShipmentTable();
 }
-/* ★ FIX #2: nonconform — ncDate = row.ncDate (서버에서 이미 변환된 값) */
 async function loadNonconform(){
   const{data}=await api('/api/nonconform');
-  const rows=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  state.nonconform=rows.map(r=>({
-    id:r.id,
-    ncDate:r.ncDate||normalizeDate(r.nc_date)||normalizeDate(r.date)||'',
-    ncNo:r.ncNo||r.nc_no||'',ncType:r.ncType||r.nc_type||'',
-    dept:r.dept||'',lot:r.lot||'',item:r.item||'',qty:r.qty||0,
-    issue:r.issue||'',cause:r.cause||'',action:r.action||'',
-    actionDate:r.actionDate||normalizeDate(r.action_date)||'',
-    verify:r.verify||'',verifyDate:r.verifyDate||normalizeDate(r.verify_date)||'',
-    owner:r.owner||'',status:r.status||'미결',
-    signWriter:tryJSON(r.sign_writer||r.signWriter),
-    signReviewer:tryJSON(r.sign_reviewer||r.signReviewer),
-    signApprover:tryJSON(r.sign_approver||r.signApprover),
-  }));
+  state.nonconform=(data?.data||[]).map(r=>({id:r.id,ncDate:r.nc_date,ncNo:r.nc_no,ncType:r.nc_type,dept:r.dept,lot:r.lot,item:r.item,qty:r.qty,issue:r.issue,cause:r.cause,action:r.action,actionDate:r.action_date,verify:r.verify,verifyDate:r.verify_date,owner:r.owner,status:r.status,signWriter:tryJSON(r.sign_writer),signReviewer:tryJSON(r.sign_reviewer),signApprover:tryJSON(r.sign_approver)}));
   renderNcTable();
 }
-async function loadSuppliers(){
-  const{data}=await api('/api/suppliers');
-  state.suppliers=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  renderSupplierTable();
-}
-async function loadWorklog(){
-  const{data}=await api('/api/worklog');
-  state.worklog=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  renderWorklogTable();
-}
+async function loadSuppliers(){const{data}=await api('/api/suppliers');state.suppliers=data?.data||[];renderSupplierTable();}
+async function loadWorklog(){const{data}=await api('/api/worklog');state.worklog=data?.data||[];renderWorklogTable();}
 
-/* ★ FIX 핵심: loadAllData는 로그인 성공 후에만 호출됨 */
 async function loadAllData(){
+  // signableUsers 먼저, 나머지 병렬
   await loadSignableUsers();
   await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform()]);
   if(state.currentUser?.role==='admin')await loadAdminUsers();
-  renderSummary();
-  populateReportSelect();loadStandaloneReport();
+  renderSummary();populateReportSelect();loadStandaloneReport();
 }
 
 /* ═══ RENDER TABLES ═══ */
-function getItems(r){return Array.isArray(r.items)?r.items:(Array.isArray(r.items_json)?r.items_json:[]);}
-function getSign(r,k){return tryJSON(r['sign_'+k]||r['sign'+k.charAt(0).toUpperCase()+k.slice(1)]);}
-
 function renderIncomingTable(){
   const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
-  tb.innerHTML=state.incoming.map(r=>{
-    const sw=getSign(r,'writer');const sr=getSign(r,'reviewer');const sa=getSign(r,'approver');
-    return`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(getItems(r)))}</td><td>${esc(sw?.name||'-')}</td><td>${esc(sr?.name||'-')}</td><td>${esc(sa?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`;
-  }).join('');
+  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderProcessTable(){
   const tb=$('processTable');if(!state.process.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.process.map(r=>{
-    const sw=getSign(r,'writer');const sr=getSign(r,'reviewer');const sa=getSign(r,'approver');
-    return`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(getItems(r)))}</td><td>${esc(sw?.name||'-')}</td><td>${esc(sr?.name||'-')}</td><td>${esc(sa?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`;
-  }).join('');
+  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderShipmentTable(){
   const tb=$('shipmentTable');if(!state.shipment.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.shipment.map(r=>{
-    const sw=getSign(r,'writer');const sr=getSign(r,'reviewer');const sa=getSign(r,'approver');
-    return`<tr><td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(getItems(r)))}</td><td>${esc(sw?.name||'-')}</td><td>${esc(sr?.name||'-')}</td><td>${esc(sa?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`;
-  }).join('');
+  tb.innerHTML=state.shipment.map(r=>`<tr><td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function ncStatusBadge(s){const cls=s==='완결'?'closed':s==='처리중'?'progress':'open';return`<span class="nc-status ${cls}">${esc(s||'미결')}</span>`;}
 function renderNcTable(){
   const tb=$('nonconformTable');if(!state.nonconform.length){tb.innerHTML=eRow(13);return;}
-  tb.innerHTML=state.nonconform.map(r=>{
-    const sw=getSign(r,'writer');const sr=getSign(r,'reviewer');const sa=getSign(r,'approver');
-    return`<tr><td>${r.ncDate||''}</td><td><strong>${esc(r.ncNo||'-')}</strong></td><td>${esc(r.ncType||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(r.lot||'-')}</td><td>${esc(r.item||'-')}</td><td>${r.qty??0}</td><td>${esc(r.owner||'-')}</td><td>${ncStatusBadge(r.status)}</td><td>${esc(sw?.name||'-')}</td><td>${esc(sr?.name||'-')}</td><td>${esc(sa?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
-  }).join('');
+  tb.innerHTML=state.nonconform.map(r=>`<tr><td>${r.ncDate||''}</td><td><strong>${esc(r.ncNo||'-')}</strong></td><td>${esc(r.ncType||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(r.lot||'-')}</td><td>${esc(r.item||'-')}</td><td>${r.qty??0}</td><td>${esc(r.owner||'-')}</td><td>${ncStatusBadge(r.status)}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 function renderSupplierTable(){
   const tb=$('supplierTable');if(!state.suppliers.length){tb.innerHTML=eRow(6);return;}
@@ -1396,7 +1469,7 @@ function renderWorklogTable(){
     const pq=state.process.filter(x=>(x.lot||'').toLowerCase()===lot).length;
     const oq=state.shipment.filter(x=>(x.lot||'').toLowerCase()===lot).length;
     const lk=[iq?`<span class="badge info">IQC ${iq}</span>`:'',pq?`<span class="badge info">PQC ${pq}</span>`:'',oq?`<span class="badge info">OQC ${oq}</span>`:''].filter(Boolean).join(' ')||`<span style="color:var(--t3);font-size:11px;">없음</span>`;
-    return`<tr><td>${normalizeDate(r.workDate)||''}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td style="min-width:120px;">${lk}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
+    return`<tr><td>${r.workDate||''}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td style="min-width:120px;">${lk}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
   }).join('');
 }
 function renderUserTable(){
@@ -1417,14 +1490,12 @@ function renderSummary(){
   setT('sumIncomingRate',iC,iP);setT('sumProcessRate',pC,pP);setT('sumShipmentRate',sC,sP);setT('sumWorklogRate',wC,wP);
   renderCharts();
 }
-/* ★ FIX #10: Chart.js destroy 안전 처리 */
 function renderCharts(){
   const y=Number($('dashYear').value||new Date().getFullYear());
   const lbl=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   const mo=arr=>lbl.map((_,i)=>arr.filter(r=>String(r.date||r.workDate||'').startsWith(`${y}-${String(i+1).padStart(2,'0')}`)).length);
-  if(state.charts.trend){try{state.charts.trend.destroy();}catch(e){}state.charts.trend=null;}
-  const canvas=$('trendChart');if(!canvas)return;
-  state.charts.trend=new Chart(canvas.getContext('2d'),{type:'bar',data:{labels:lbl,datasets:[{label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},{label:'공정검사',data:mo(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:4},{label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  if(state.charts.trend)state.charts.trend.destroy();
+  state.charts.trend=new Chart($('trendChart'),{type:'bar',data:{labels:lbl,datasets:[{label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},{label:'공정검사',data:mo(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:4},{label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
 /* ═══ SAVE ═══ */
@@ -1433,24 +1504,22 @@ async function saveIqc(){
   const p={date:$('incomingDate').value,lot:$('incomingLot').value.trim(),supplier:$('incomingSupplier').value.trim(),item:$('incomingItem').value.trim(),inspector:sp.writer.name,incomingQty:$('incomingQty').value,checkQty:$('incomingCheckQty').value,failQty:$('incomingFailQty').value,items:JSON.parse(JSON.stringify(state.incomingItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('incomingEditId').value;
   const{data}=await api(id?`/api/iqc/${id}`:'/api/iqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearIqc();await loadIncoming();renderSummary();populateReportSelect();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearIqc();await loadIncoming();renderSummary();}
 }
-/* ★ FIX #6: PQC 저장 — visual=설비명, particle=작업조 */
 async function savePqc(){
   const sp=getSignPayload('pqc');
   const p={date:$('processDate').value,lot:$('processLot').value.trim(),product:$('processProduct').value.trim(),visual:$('processLine').value.trim(),solid:sp.writer.name,particle:$('processShift').value.trim(),qty:$('processQty').value,failQty:$('processFailQty').value,items:JSON.parse(JSON.stringify(state.processItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('processEditId').value;
   const{data}=await api(id?`/api/pqc/${id}`:'/api/pqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearPqc();await loadProcess();renderSummary();populateReportSelect();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearPqc();await loadProcess();renderSummary();}
 }
 async function saveOqc(){
   const sp=getSignPayload('oqc');
   const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),lot:$('shipmentLot').value.trim(),visual:sp.writer.name,qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();populateReportSelect();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();}
 }
-/* ★ FIX #2: NC 저장 — ncDate 키 사용 */
 async function saveNc(){
   const sp=getSignPayload('nc');
   const p={ncDate:$('ncDate').value,ncNo:$('ncNo').value.trim(),ncType:$('ncType').value,dept:$('ncDept').value.trim(),lot:$('ncLot').value.trim(),item:$('ncItem').value.trim(),qty:$('ncQty').value,issue:$('ncIssue').value.trim(),cause:$('ncCause').value.trim(),action:$('ncAction').value.trim(),actionDate:$('ncActionDate').value||null,verify:$('ncVerify').value.trim(),verifyDate:$('ncVerifyDate').value||null,owner:$('ncOwner').value.trim(),status:$('ncStatus').value,signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
@@ -1475,7 +1544,7 @@ async function saveUser(){
   const p={name:$('userName').value.trim(),email:$('userEmail').value.trim(),department:$('userDepartment').value.trim(),title:$('userTitle').value.trim(),role:$('userRole').value,status:$('userStatus').value,password:$('userPassword').value.trim()};
   const{data}=await api(id?`/api/admin/users/${id}`:'/api/admin/users',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');
-  if(data?.success){clearUser();await loadAdminUsers();await loadSignableUsers();}
+  if(data?.success){clearUser();await loadAdminUsers();await loadSignableUsers();} // ★ 회원 저장 후 서명 목록 갱신
 }
 
 /* ═══ CLEAR ═══ */
@@ -1488,54 +1557,18 @@ function clearWorklog(){['worklogEditId','worklogFinishedLot','worklogWorker','w
 function clearUser(){['userEditId','userName','userEmail','userDepartment','userTitle','userPassword'].forEach(id=>$(id).value='');$('userRole').value='user';$('userStatus').value='APPROVED';}
 
 /* ═══ EDIT ═══ */
-/* ★ FIX 날짜: 수정 시 날짜 정확 복원 + items_json 사용 */
-function editIncoming(id){
-  const r=state.incoming.find(x=>String(x.id)===String(id));if(!r)return;
-  $('incomingEditId').value=r.id;
-  $('incomingDate').value=r.date||'';
-  $('incomingLot').value=r.lot||'';$('incomingSupplier').value=r.supplier||'';$('incomingItem').value=r.item||'';
-  $('incomingQty').value=r.incomingQty||'';$('incomingCheckQty').value=r.checkQty||'';$('incomingFailQty').value=r.failQty||'';
-  state.incomingItemDrafts=getItems(r).length?JSON.parse(JSON.stringify(getItems(r))):defIqc();
-  renderIqcItems();restoreSign('iqc',r);
-}
-/* ★ FIX #6: PQC 수정 — line/shift 정확 복원 */
-function editProcess(id){
-  const r=state.process.find(x=>String(x.id)===String(id));if(!r)return;
-  $('processEditId').value=r.id;
-  $('processDate').value=r.date||'';
-  $('processLot').value=r.lot||'';
-  $('processLine').value=r.line||'';    /* 설비명 */
-  $('processShift').value=r.shift||''; /* 작업조 */
-  $('processProduct').value=r.product||'';$('processQty').value=r.qty||'';$('processFailQty').value=r.failQty||'';
-  state.processItemDrafts=getItems(r).length?JSON.parse(JSON.stringify(getItems(r))):defPqc();
-  renderPqcItems();restoreSign('pqc',r);
-}
-function editShipment(id){
-  const r=state.shipment.find(x=>String(x.id)===String(id));if(!r)return;
-  $('shipmentEditId').value=r.id;
-  $('shipmentDate').value=r.date||'';
-  $('shipmentCustomer').value=r.customer||'';$('shipmentProduct').value=r.product||'';
-  $('shipmentLot').value=r.lot||'';$('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';$('shipmentRemark').value=r.package||'';
-  state.shipmentItemDrafts=getItems(r).length?JSON.parse(JSON.stringify(getItems(r))):defOqc();
-  renderOqcItems();restoreSign('oqc',r);
-}
-/* ★ FIX #2: NC 수정 — ncDate 정확 복원 */
+function editIncoming(id){const r=state.incoming.find(x=>String(x.id)===String(id));if(!r)return;$('incomingEditId').value=r.id;$('incomingDate').value=r.date||'';$('incomingLot').value=r.lot||'';$('incomingSupplier').value=r.supplier||'';$('incomingItem').value=r.item||'';$('incomingQty').value=r.incomingQty||'';$('incomingCheckQty').value=r.checkQty||'';$('incomingFailQty').value=r.failQty||'';state.incomingItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defIqc();renderIqcItems();restoreSign('iqc',r);}
+function editProcess(id){const r=state.process.find(x=>String(x.id)===String(id));if(!r)return;$('processEditId').value=r.id;$('processDate').value=r.date||'';$('processLot').value=r.lot||'';$('processLine').value=r.line||'';$('processShift').value=r.shift||'';$('processProduct').value=r.product||'';$('processQty').value=r.qty||'';$('processFailQty').value=r.failQty||'';state.processItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defPqc();renderPqcItems();restoreSign('pqc',r);}
+function editShipment(id){const r=state.shipment.find(x=>String(x.id)===String(id));if(!r)return;$('shipmentEditId').value=r.id;$('shipmentDate').value=r.date||'';$('shipmentCustomer').value=r.customer||'';$('shipmentProduct').value=r.product||'';$('shipmentLot').value=r.lot||'';$('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';$('shipmentRemark').value=r.package||'';state.shipmentItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defOqc();renderOqcItems();restoreSign('oqc',r);}
 function editNc(id){
   const r=state.nonconform.find(x=>String(x.id)===String(id));if(!r)return;
-  $('ncEditId').value=r.id;
-  $('ncDate').value=r.ncDate||'';
-  $('ncNo').value=r.ncNo||'';$('ncType').value=r.ncType||'';$('ncDept').value=r.dept||'';
-  $('ncLot').value=r.lot||'';$('ncItem').value=r.item||'';$('ncQty').value=r.qty||0;
-  $('ncIssue').value=r.issue||'';$('ncCause').value=r.cause||'';$('ncAction').value=r.action||'';
-  $('ncActionDate').value=r.actionDate||'';$('ncVerify').value=r.verify||'';$('ncVerifyDate').value=r.verifyDate||'';
-  $('ncOwner').value=r.owner||'';$('ncStatus').value=r.status||'미결';
+  $('ncEditId').value=r.id;$('ncDate').value=r.ncDate||'';$('ncNo').value=r.ncNo||'';$('ncType').value=r.ncType||'';$('ncDept').value=r.dept||'';$('ncLot').value=r.lot||'';$('ncItem').value=r.item||'';$('ncQty').value=r.qty||0;$('ncIssue').value=r.issue||'';$('ncCause').value=r.cause||'';$('ncAction').value=r.action||'';$('ncActionDate').value=r.actionDate||'';$('ncVerify').value=r.verify||'';$('ncVerifyDate').value=r.verifyDate||'';$('ncOwner').value=r.owner||'';$('ncStatus').value=r.status||'미결';
   restoreSign('nc',r);
-  $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.nav-item[data-page="nonconform"]')?.classList.add('active');
+  $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));document.querySelector('.nav-item[data-page="nonconform"]')?.classList.add('active');
   $$('.page').forEach(p=>p.classList.remove('active'));$('page-nonconform').classList.add('active');
 }
 function editSupplier(id){const r=state.suppliers.find(x=>String(x.id)===String(id));if(!r)return;$('supplierEditId').value=r.id;$('supplierName').value=r.name||'';$('supplierManager').value=r.manager||'';$('supplierPhone').value=r.phone||'';$('supplierCategory').value=r.category||'';$('supplierStatus').value=r.status||'';}
-function editWorklog(id){const r=state.worklog.find(x=>String(x.id)===String(id));if(!r)return;$('worklogEditId').value=r.id;$('worklogDate').value=normalizeDate(r.workDate)||'';$('worklogFinishedLot').value=r.finishedLot||'';$('worklogWorker').value=r.worker||'';$('worklogPlanQty').value=r.planQty||'';$('worklogProdQty').value=r.prodQty||'';$('worklogFailQty').value=r.failQty||'';$('worklogRemark').value=r.remark||'';$('worklogFlowSet').value=r.flowSet||'';$('worklogFlowActual').value=r.flowActual||'';$('worklogTempSet').value=r.tempSet||'';$('worklogTempActual').value=r.tempActual||'';$('worklogPressSet').value=r.pressSet||'';$('worklogPressActual').value=r.pressActual||'';state.worklogMaterialDrafts=Array.isArray(r.materials)?JSON.parse(JSON.stringify(r.materials)):[];renderWorklogMats();updateWorklogLinkage();}
+function editWorklog(id){const r=state.worklog.find(x=>String(x.id)===String(id));if(!r)return;$('worklogEditId').value=r.id;$('worklogDate').value=r.workDate||'';$('worklogFinishedLot').value=r.finishedLot||'';$('worklogWorker').value=r.worker||'';$('worklogPlanQty').value=r.planQty||'';$('worklogProdQty').value=r.prodQty||'';$('worklogFailQty').value=r.failQty||'';$('worklogRemark').value=r.remark||'';$('worklogFlowSet').value=r.flowSet||'';$('worklogFlowActual').value=r.flowActual||'';$('worklogTempSet').value=r.tempSet||'';$('worklogTempActual').value=r.tempActual||'';$('worklogPressSet').value=r.pressSet||'';$('worklogPressActual').value=r.pressActual||'';state.worklogMaterialDrafts=Array.isArray(r.materials)?JSON.parse(JSON.stringify(r.materials)):[];renderWorklogMats();updateWorklogLinkage();}
 function editUser(id){const r=state.adminUsers.find(x=>String(x.id)===String(id));if(!r)return;$('userEditId').value=r.id;$('userName').value=r.name||'';$('userEmail').value=r.email||'';$('userDepartment').value=r.department||'';$('userTitle').value=r.title||'';$('userRole').value=r.role||'user';$('userStatus').value=r.status||'APPROVED';$('userPassword').value='';}
 
 /* ═══ DELETE ═══ */
@@ -1553,9 +1586,8 @@ function addWorklogMat(){state.worklogMaterialDrafts.push({material:'',supName:'
 async function searchTrace(){
   const kw=$('traceKeyword').value.trim();
   if(!kw){$('traceTable').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--t3);">검색어를 입력하세요.</td></tr>`;return;}
-  const{data}=await api(`/api/trace?keyword=${encodeURIComponent(kw)}`);
-  const rows=Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-  $('traceTable').innerHTML=rows.length?rows.map(x=>`<tr><td>${normalizeDate(x.workDate)||''}</td><td><strong>${esc(x.finishedLot||'')}</strong></td><td>${esc(x.worker||'')}</td><td>${esc(x.seq||'')}</td><td>${esc(x.material||'')}</td><td>${esc(x.supName||'')}</td><td><strong>${esc(x.lotNo||'')}</strong></td><td>${esc(x.inputQty||'')}</td><td>${esc(x.inputTime||'')}</td></tr>`).join(''):`<tr><td colspan="9" style="text-align:center;padding:22px;color:var(--t3);">조회 결과가 없습니다.</td></tr>`;
+  const{data}=await api(`/api/trace?keyword=${encodeURIComponent(kw)}`);const rows=data?.data||[];
+  $('traceTable').innerHTML=rows.length?rows.map(x=>`<tr><td>${x.workDate||''}</td><td><strong>${esc(x.finishedLot||'')}</strong></td><td>${esc(x.worker||'')}</td><td>${esc(x.seq||'')}</td><td>${esc(x.material||'')}</td><td>${esc(x.supName||'')}</td><td><strong>${esc(x.lotNo||'')}</strong></td><td>${esc(x.inputQty||'')}</td><td>${esc(x.inputTime||'')}</td></tr>`).join(''):`<tr><td colspan="9" style="text-align:center;padding:22px;color:var(--t3);">조회 결과가 없습니다.</td></tr>`;
 }
 function gotoTrace(kw){if(!kw)return;$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));document.querySelector('.nav-item[data-page="trace"]')?.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-trace').classList.add('active');$('traceKeyword').value=kw;searchTrace();}
 
@@ -1563,9 +1595,7 @@ function gotoTrace(kw){if(!kw)return;$$('.nav-item[data-page]').forEach(b=>b.cla
 function bindEvents(){
   $('tabLoginBtn').onclick=()=>openLoginTab('login');$('tabSignupBtn').onclick=()=>openLoginTab('signup');
   $('loginBtn').onclick=login;$('signupBtn').onclick=signup;
-  /* ★ FIX #9: 로그인/회원가입 Enter 키 모두 지원 */
   $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
-  $('signupPassword').addEventListener('keydown',e=>{if(e.key==='Enter')signup();});
   $('profileBtn').onclick=e=>{e.stopPropagation();$('profileDropdown').classList.toggle('show');};
   $('logoutBtn').onclick=logout;
   $('openChangePassword').onclick=()=>{closeProfileMenu();openPwdModal();};
@@ -1575,19 +1605,24 @@ function bindEvents(){
   $('closeLabelModal').onclick=()=>$('labelModal').classList.remove('show');$('cancelLabelModal').onclick=()=>$('labelModal').classList.remove('show');$('printLabelBtn').onclick=printLabel;
   $('openIncomingLabel').onclick=()=>openLabelModal('iqc',state.incoming);$('openProcessLabel').onclick=()=>openLabelModal('pqc',state.process);$('openShipmentLabel').onclick=()=>openLabelModal('oqc',state.shipment);
   $('openReportLabel').onclick=()=>{const t=$('reportType').value;openLabelModal(t,t==='iqc'?state.incoming:t==='pqc'?state.process:state.shipment);};
+  // IQC
   $('incomingSave').onclick=withSaving('iqc',$('incomingSave'),saveIqc);$('incomingReset').onclick=clearIqc;
   $('addIncomingRow').onclick=()=>{state.incomingItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderIqcItems();};
   ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>$(id).addEventListener('input',syncIqcPreview));
   $('printIncomingReport').onclick=()=>printEl($('incomingReportPreview'));
+  // PQC
   $('processSave').onclick=withSaving('pqc',$('processSave'),savePqc);$('processReset').onclick=clearPqc;
   $('addProcessRow').onclick=()=>{state.processItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderPqcItems();};
   ['processDate','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>$(id).addEventListener('input',syncPqcPreview));
   $('printProcessReport').onclick=()=>printEl($('processReportPreview'));
+  // OQC
   $('shipmentSave').onclick=withSaving('oqc',$('shipmentSave'),saveOqc);$('shipmentReset').onclick=clearOqc;
   $('addShipmentRow').onclick=()=>{state.shipmentItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderOqcItems();};
   ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>$(id).addEventListener('input',syncOqcPreview));
   $('printShipmentReport').onclick=()=>printEl($('shipmentReportPreview'));
+  // NC
   $('ncSave').onclick=withSaving('nc',$('ncSave'),saveNc);$('ncReset').onclick=clearNc;$('printNcReport').onclick=()=>printEl($('ncFormPrintTarget'));
+  // 기타
   $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
   $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
   $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
@@ -1596,6 +1631,7 @@ function bindEvents(){
   $('traceSearch').onclick=searchTrace;$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
   $('dashRefresh').onclick=renderSummary;
   $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
+  // 테이블 위임
   const tA={
     editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
@@ -1617,17 +1653,12 @@ function bindEvents(){
   $('worklogMaterialsTable').addEventListener('click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
 }
 
-/* ═══ ENTRY ═══
-   ★ FIX 핵심: DOMContentLoaded 시 API 호출 없음
-   → checkLogin() 성공 시에만 loadAllData() 호출
-*/
+/* ═══ ENTRY ═══ */
 document.addEventListener('DOMContentLoaded',async()=>{
   initYears();setDefaultDates();bindNav();bindEvents();startClock();
   state.incomingItemDrafts=defIqc();state.processItemDrafts=defPqc();state.shipmentItemDrafts=defOqc();
   renderIqcItems();renderPqcItems();renderOqcItems();renderWorklogMats();
-  /* ★ 로그인 확인 후에만 데이터 로드 — 401 에러 원천 차단 */
-  const loggedIn=await checkLogin();
-  if(loggedIn)await loadAllData();
+  const ok=await checkLogin();if(ok)await loadAllData();
 });
 </script>
 </body>
