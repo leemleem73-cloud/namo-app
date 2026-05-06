@@ -1340,6 +1340,27 @@ function printEl(el){
   if(!el) return;
 
   document.querySelectorAll('#printTarget').forEach(x=>{
+    x.remove();
+  });
+
+  const clone = el.cloneNode(true);
+  clone.id = 'printTarget';
+  document.body.appendChild(clone);
+
+  setTimeout(()=>{
+    window.print();
+  },300);
+
+  window.onafterprint = ()=>{
+    document.querySelectorAll('#printTarget').forEach(x=>{
+      x.remove();
+    });
+    window.onafterprint = null;
+  };
+}
+  if(!el) return;
+
+  document.querySelectorAll('#printTarget').forEach(x=>{
     x.removeAttribute('id');
   });
 
