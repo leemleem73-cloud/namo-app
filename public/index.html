@@ -1685,7 +1685,13 @@ function bindEvents(){
   $('processSave').onclick=withSaving('pqc',$('processSave'),savePqc);$('processReset').onclick=clearPqc;
   $('addProcessRow').onclick=()=>{state.processItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderPqcItems();};
   ['processDate','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>$(id).addEventListener('input',syncPqcPreview));
-  $('printProcessReport').onclick=()=>printEl($('processReportPreview'));
+  $('printProcessReport').onclick=()=>{
+  syncPqcPreview();
+
+  setTimeout(()=>{
+    printEl($('processReportPreview'));
+  },300);
+};
   // OQC
   $('shipmentSave').onclick=withSaving('oqc',$('shipmentSave'),saveOqc);$('shipmentReset').onclick=clearOqc;
   $('addShipmentRow').onclick=()=>{state.shipmentItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderOqcItems();};
