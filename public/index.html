@@ -1336,8 +1336,23 @@ function loadStandaloneReport(){
 }
 
 /* ═══ PRINT ═══ */
-function printEl(el){if(!el)return;const p=document.getElementById('printTarget');if(p)p.removeAttribute('id');el.id='printTarget';window.print();}
+function printEl(el){
+  if(!el) return;
 
+  document.querySelectorAll('#printTarget').forEach(x=>{
+    x.removeAttribute('id');
+  });
+
+  el.setAttribute('id','printTarget');
+
+  setTimeout(()=>{
+    window.print();
+
+    setTimeout(()=>{
+      el.removeAttribute('id');
+    },500);
+  },150);
+}
 /* ═══ LOAD DATA ═══ */
 function normalizeSignUser(u){
   if(!u)return null;
