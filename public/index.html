@@ -1358,22 +1358,7 @@ function printEl(el){
     window.onafterprint = null;
   };
 }
-  if(!el) return;
 
-  document.querySelectorAll('#printTarget').forEach(x=>{
-    x.removeAttribute('id');
-  });
-
-  el.setAttribute('id','printTarget');
-
-  setTimeout(()=>{
-    window.print();
-
-    setTimeout(()=>{
-      el.removeAttribute('id');
-    },500);
-  },150);
-}
 /* ═══ LOAD DATA ═══ */
 function normalizeSignUser(u){
   if(!u)return null;
