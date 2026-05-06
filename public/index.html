@@ -1698,7 +1698,20 @@ function bindEvents(){
   $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
   $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
   $('userSave').onclick=withSaving('user',$('userSave'),saveUser);$('userReset').onclick=clearUser;
-  $('reportType').onchange=()=>{populateReportSelect();loadStandaloneReport();};$('reportSelect').onchange=loadStandaloneReport;$('reportReload').onclick=loadStandaloneReport;$('printReportPage').onclick=()=>printEl($('reportPrintTarget'));
+  $('reportType').onchange=()=>{
+  populateReportSelect();
+  loadStandaloneReport();
+};
+
+$('reportSelect').onchange=loadStandaloneReport;
+$('reportReload').onclick=loadStandaloneReport;
+
+$('printReportPage').onclick=()=>{
+  loadStandaloneReport();
+  setTimeout(()=>{
+    printEl($('reportPrintTarget'));
+  },300);
+};
   $('traceSearch').onclick=searchTrace;$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
   $('dashRefresh').onclick=renderSummary;
   $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
