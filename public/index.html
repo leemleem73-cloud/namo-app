@@ -1030,10 +1030,14 @@ function buildSignGrid(type){
   const warnEl=document.getElementById(`signWarn_${type}`);
   if(!container)return;
 
-  const all=state.signableUsers;
-  const mgr=all.filter(u=>isSenior(u));
+  /* 로그인 사용자 본인만 후보로 노출
+     - 작성자: 로그인 사용자 본인만
+     - 검토자/승인자: 로그인 사용자가 부장급 이상 또는 관리자일 때만 본인 표시 */
+  const me=state.signableUsers[0]||null;
+  const writerUsers=me?[me]:[];
+  const managerUsers=(me&&isSenior(me))?[me]:[];
 
-  if(warnEl){warnEl.style.display=all.length===0?'block':'none';}
+  if(warnEl){warnEl.style.display=writerUsers.length===0?'block':'none';}
 
   const mkOpts=(list,ph)=>`<option value="">${ph}</option>`+
     list.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
@@ -1042,30 +1046,30 @@ function buildSignGrid(type){
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">작성자 (검사자)</span>
-        <span class="sign-box-badge any">전체 회원 ${all.length}명</span>
+        <span class="sign-box-badge any">본인 ${writerUsers.length}명</span>
       </div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_writer">${mkOpts(all,'-- 작성자 선택 --')}</select>
+        <select class="sign-sel" id="sg_${type}_writer">${mkOpts(writerUsers,'-- 작성자 선택 --')}</select>
         <div class="sign-sub" id="sg_${type}_writer_sub" style="color:var(--t3);"></div>
       </div>
     </div>
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">검토자</span>
-        <span class="sign-box-badge mgr">부장·임원 이상 ${mgr.length}명</span>
+        <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
       </div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(mgr,'-- 검토자 선택 (부장 이상) --')}</select>
+        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(managerUsers,'-- 검토자 선택 (본인이 부장급 이상/관리자일 때) --')}</select>
         <div class="sign-sub" id="sg_${type}_reviewer_sub" style="color:var(--t3);"></div>
       </div>
     </div>
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">승인자</span>
-        <span class="sign-box-badge mgr">부장·임원 이상 ${mgr.length}명</span>
+        <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
       </div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(mgr,'-- 승인자 선택 (부장 이상) --')}</select>
+        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(managerUsers,'-- 승인자 선택 (본인이 부장급 이상/관리자일 때) --')}</select>
         <div class="sign-sub" id="sg_${type}_approver_sub" style="color:var(--t3);"></div>
       </div>
     </div>`;
@@ -1395,19 +1399,12 @@ function uniqSignUsers(list){
   return Array.from(m.values());
 }
 async function loadSignableUsers(){
-  const signRes=await api("/api/users/signable");
-  let users=uniqSignUsers(signRes.data?.data || signRes.data?.users || []);
-  if(users.length===0 && state.currentUser?.role==="admin"){
-    const adminRes=await api("/api/admin/users");
-    users=uniqSignUsers(adminRes.data?.data || adminRes.data?.users || []);
-    state.adminUsers=adminRes.data?.data || state.adminUsers;
-    if(state.adminUsers.length)renderUserTable();
-  }
-  if(users.length===0 && state.currentUser){
-    users=uniqSignUsers([state.currentUser]);
-  }
+  /* 작성/검토/승인 후보는 서버의 전체 회원 목록을 사용하지 않고,
+     로그인한 본인 1명만 사용한다. 검토/승인 노출 여부는 buildSignGrid()에서
+     부장급 이상 또는 관리자 여부(isSenior)로 다시 제한한다. */
+  const users=uniqSignUsers(state.currentUser?[state.currentUser]:[]);
   state.signableUsers=users;
-  console.log(`[sign] signableUsers 로드: ${state.signableUsers.length}명`);
+  console.log(`[sign] 본인 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
