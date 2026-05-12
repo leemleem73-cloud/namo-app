@@ -289,6 +289,25 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .sign-sub{font-size:11px;color:var(--t3);margin-top:4px;min-height:15px;}
 .sign-warning{font-size:12px;color:var(--wa);background:var(--was);border:1px solid rgba(160,92,0,.2);border-radius:var(--r2);padding:10px 12px;margin-bottom:10px;display:none;}
 
+/* ══ 측정기 첨부파일 ══ */
+.inst-file-box{
+  margin-top:12px;
+  padding:12px;
+  border:1.5px dashed var(--bd2);
+  border-radius:var(--r3);
+  background:var(--s2);
+}
+.inst-file-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.inst-file-title{font-size:12px;font-weight:800;color:var(--t2);}
+.inst-file-input{font-size:12px;max-width:360px;}
+.inst-file-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.inst-file-chip{display:inline-flex;align-items:center;gap:6px;max-width:260px;padding:5px 8px;border:1px solid var(--bd);border-radius:999px;background:#fff;font-size:11px;color:var(--t2);}
+.inst-file-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.inst-file-chip button{border:none;background:transparent;color:var(--er);font-weight:800;cursor:pointer;padding:0 2px;}
+.inst-file-empty{font-size:12px;color:var(--t3);}
+.file-link{display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 7px;border-radius:999px;background:var(--pris);color:var(--pri);font-size:11px;font-weight:700;border:none;cursor:pointer;}
+.file-link:hover{background:var(--pri);color:#fff;}
+
 /* ══ Canvas 전자서명 ══ */
 .sign-pad-wrap{
   margin-top:8px;
@@ -995,13 +1014,13 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <!-- ■ 측정기 관리 -->
       <section class="page" id="page-instruments">
         <div class="ph">
-          <div><div class="ph-title">측정기 관리</div><div class="ph-sub">측정기 등록, 교정주기, 차기 교정일 및 상태를 관리합니다.</div></div>
+          <div><div class="ph-title">측정기 관리</div><div class="ph-sub">측정기 등록, 교정주기, 차기 교정일, 상태 및 첨부파일을 관리합니다.</div></div>
           <div class="ph-actions"><button class="btn light" id="instrumentReset">초기화</button><button class="btn pri" id="instrumentSave">저장</button></div>
         </div>
         <div class="card"><div class="ch"><h2>측정기 등록 / 수정</h2></div><div class="cb">
           <div class="fg4">
-            <div class="field"><label>관리번호 *</label><input id="instrumentNo" placeholder="예: EQ-2026-001"></div>
             <div class="field"><label>측정기명 *</label><input id="instrumentName" placeholder="예: 점도계, pH Meter"></div>
+            <div class="field"><label>관리번호 *</label><input id="instrumentNo" placeholder="예: EQ-2026-001"></div>
             <div class="field"><label>모델명</label><input id="instrumentModel" placeholder="모델명"></div>
             <div class="field"><label>제조사</label><input id="instrumentMaker" placeholder="제조사"></div>
             <div class="field"><label>위치</label><input id="instrumentLocation" placeholder="사용 위치"></div>
@@ -1013,6 +1032,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
             <div class="field cfall"><label>비고</label><textarea id="instrumentRemark" placeholder="비고 사항"></textarea></div>
           </div>
+          <div class="inst-file-box">
+            <div class="inst-file-head">
+              <div class="inst-file-title">📎 첨부파일</div>
+              <input class="inst-file-input" type="file" id="instrumentFiles" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.xlsx,.xls,.doc,.docx,.hwp,.hwpx,.txt"/>
+            </div>
+            <div class="inst-file-empty">교정성적서 PDF, 장비 사진, 메뉴얼, 점검표 등을 장비별로 첨부할 수 있습니다.</div>
+            <div class="inst-file-list" id="instrumentFileList"></div>
+          </div>
           <div style="margin-top:12px;padding:10px 14px;background:var(--infs);border-radius:var(--r2);font-size:12px;color:var(--inf);">
             ℹ️ 최근 교정일과 교정주기 입력 시 다음 교정일이 자동 계산됩니다. 다음 교정일 기준 30일 이내는 교정예정, 지난 경우 교정초과로 표시됩니다.
           </div>
@@ -1020,7 +1047,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div></div>
         <div class="card mt14"><div class="ch"><h3>측정기 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>관리번호</th><th>측정기명</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>비고</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
+            <table><thead><tr><th>측정기명</th><th>관리번호</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>첨부파일</th><th>비고</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -1104,6 +1131,7 @@ const state={
   signableUsers:[],
   charts:{},
   incomingItemDrafts:[],processItemDrafts:[],shipmentItemDrafts:[],worklogMaterialDrafts:[],
+  instrumentFileDrafts:[],
   saving:{}
 };
 const $=id=>document.getElementById(id);
@@ -2046,10 +2074,15 @@ function instrumentBadge(s){
   const cls=s==='정상'?'pass':s==='교정예정'?'hold':s==='교정초과'?'fail':'info';
   return `<span class="badge ${cls}">${esc(s||'정상')}</span>`;
 }
+function renderInstrumentFilesCell(r){
+  const files=Array.isArray(r.files)?r.files:[];
+  if(!files.length)return '<span style="color:var(--t3);font-size:11px;">없음</span>';
+  return files.map(f=>`<button type="button" class="file-link" data-action="downloadInstrumentFile" data-id="${esc(r.id)}" data-fileid="${esc(f.id)}" title="${esc(f.name||'첨부파일')}">📎 ${esc(f.name||'파일')}</button>`).join('');
+}
 function renderInstrumentTable(){
   const tb=$('instrumentTable');if(!tb)return;
-  if(!state.instruments.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.instruments.map(r=>`<tr><td><strong>${esc(r.no||'')}</strong></td><td>${esc(r.name||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${esc(r.remark||'')}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+  if(!state.instruments.length){tb.innerHTML=eRow(12);return;}
+  tb.innerHTML=state.instruments.map(r=>`<tr><td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.no||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${renderInstrumentFilesCell(r)}</td><td>${esc(r.remark||'')}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 function renderWorklogTable(){
   const tb=$('worklogTable');if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
@@ -2088,6 +2121,54 @@ function renderCharts(){
   state.charts.trend=new Chart($('trendChart'),{type:'bar',data:{labels:lbl,datasets:[{label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},{label:'공정검사',data:mo(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:4},{label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
+function formatFileSize(n){
+  n=Number(n||0);
+  if(n<1024)return n+' B';
+  if(n<1024*1024)return (n/1024).toFixed(1)+' KB';
+  return (n/1024/1024).toFixed(1)+' MB';
+}
+function renderInstrumentFileDrafts(){
+  const wrap=$('instrumentFileList');
+  if(!wrap)return;
+  const files=state.instrumentFileDrafts||[];
+  if(!files.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=files.map(f=>`<div class="inst-file-chip"><span title="${esc(f.name)}">📎 ${esc(f.name)} · ${formatFileSize(f.size)}</span><button type="button" data-remove-inst-file="${esc(f.id)}">×</button></div>`).join('');
+}
+function readFileAsDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function handleInstrumentFiles(e){
+  const files=Array.from(e.target.files||[]);
+  if(!files.length)return;
+  state.instrumentFileDrafts=state.instrumentFileDrafts||[];
+  for(const file of files){
+    if(file.size>5*1024*1024){alert(`${file.name} 파일이 5MB를 초과하여 제외했습니다.`);continue;}
+    const dataUrl=await readFileAsDataURL(file);
+    state.instrumentFileDrafts.push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2),name:file.name,type:file.type||'application/octet-stream',size:file.size,dataUrl,addedAt:new Date().toISOString()});
+  }
+  e.target.value='';
+  renderInstrumentFileDrafts();
+}
+function removeInstrumentDraftFile(fileId){
+  state.instrumentFileDrafts=(state.instrumentFileDrafts||[]).filter(f=>String(f.id)!==String(fileId));
+  renderInstrumentFileDrafts();
+}
+function downloadInstrumentFile(instrumentId,fileId){
+  const r=state.instruments.find(x=>String(x.id)===String(instrumentId));
+  const f=(r?.files||[]).find(x=>String(x.id)===String(fileId));
+  if(!f||!f.dataUrl){alert('첨부파일을 찾을 수 없습니다.');return;}
+  const a=document.createElement('a');
+  a.href=f.dataUrl;
+  a.download=f.name||'attachment';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 function calcInstrumentNext(){
   const last=$('instrumentLastCal')?.value||'';
   const cycle=$('instrumentCycle')?.value||'';
@@ -2115,6 +2196,7 @@ function saveInstrument(){
     lastCal:$('instrumentLastCal').value,
     nextCal:$('instrumentNextCal').value,
     status:instrumentAutoStatus($('instrumentNextCal').value,$('instrumentStatus').value),
+    files:JSON.parse(JSON.stringify(state.instrumentFileDrafts||[])),
     remark:$('instrumentRemark').value.trim()
   };
   if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
@@ -2126,10 +2208,15 @@ function clearInstrument(){
   ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentLocation','instrumentLastCal','instrumentNextCal','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
   if($('instrumentCycle'))$('instrumentCycle').value='12';
   if($('instrumentStatus'))$('instrumentStatus').value='정상';
+  state.instrumentFileDrafts=[];
+  if($('instrumentFiles'))$('instrumentFiles').value='';
+  renderInstrumentFileDrafts();
 }
 function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
   $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);$('instrumentRemark').value=r.remark||'';
+  state.instrumentFileDrafts=Array.isArray(r.files)?JSON.parse(JSON.stringify(r.files)):[];
+  renderInstrumentFileDrafts();
 }
 function deleteInstrument(id){
   if(!confirm('삭제하시겠습니까?'))return;
@@ -2280,6 +2367,8 @@ function bindEvents(){
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
+  if($('instrumentFiles'))$('instrumentFiles').addEventListener('change',handleInstrumentFiles);
+  if($('instrumentFileList'))$('instrumentFileList').addEventListener('click',e=>{const btn=e.target.closest('[data-remove-inst-file]');if(!btn)return;removeInstrumentDraftFile(btn.dataset.removeInstFile);});
   $('userSave').onclick=withSaving('user',$('userSave'),saveUser);$('userReset').onclick=clearUser;
   $('reportType').onchange=()=>{
   populateReportSelect();
@@ -2300,7 +2389,7 @@ $('printReportPage').onclick=()=>{
   $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
   // 테이블 위임
   const tA={
-    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,
+    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,downloadInstrumentFile,
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
@@ -2324,7 +2413,7 @@ $('printReportPage').onclick=()=>{
 document.addEventListener('DOMContentLoaded',async()=>{
   initYears();setDefaultDates();bindNav();bindEvents();startClock();
   state.incomingItemDrafts=defIqc();state.processItemDrafts=defPqc();state.shipmentItemDrafts=defOqc();
-  renderIqcItems();renderPqcItems();renderOqcItems();renderWorklogMats();
+  renderIqcItems();renderPqcItems();renderOqcItems();renderWorklogMats();renderInstrumentFileDrafts();
   const ok=await checkLogin();if(ok)await loadAllData();
 });
 </script>
