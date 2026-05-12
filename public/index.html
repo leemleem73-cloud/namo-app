@@ -2001,10 +2001,24 @@ async function loadWorklog(){
   renderWorklogTable();
 }
 
+function defaultInstruments(){
+  return [
+    {id:'default-01',no:'NM측정-01',name:'Drying Oven',model:'ThermoStableTM',maker:'DAIHANScientific',location:'연구소',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',remark:''},
+    {id:'default-02',no:'NM측정-02',name:'Vacuum Oven',model:'ThermoStableTM OF-155',maker:'DAIHANScientific',location:'연구소',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',remark:''},
+    {id:'default-03',no:'NM측정-03',name:'인장시험기',model:'UNITEST-M1',maker:'TEST ONE',location:'연구소',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',remark:''},
+    {id:'default-04',no:'NM측정-04',name:'입도분석기',model:'Mastersizer 3000',maker:'Malvern Panalytical',location:'연구소',cycle:'12',lastCal:'',nextCal:'',status:'정상',remark:''}
+  ];
+}
 function loadInstruments(){
   const raw=localStorage.getItem('namo_qms_instruments');
-  state.instruments=raw?JSON.parse(raw):[];
-  state.instruments=state.instruments.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+  let list=[];
+  try{list=raw?JSON.parse(raw):[];}catch(e){list=[];}
+  // 다른 PC/브라우저에는 localStorage가 비어 있으므로 기본 측정기 목록을 자동 생성
+  if(!Array.isArray(list)||list.length===0){
+    list=defaultInstruments();
+    localStorage.setItem('namo_qms_instruments',JSON.stringify(list));
+  }
+  state.instruments=list.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
   saveInstrumentsLocal();
   renderInstrumentTable();
 }
