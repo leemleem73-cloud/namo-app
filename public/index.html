@@ -161,7 +161,7 @@ button,input,select,textarea{font:inherit}
 .app{height:100vh;display:flex;flex-direction:column;}
 .shell{display:none;height:100vh;flex-direction:column;}
 .topbar{height:var(--th);flex-shrink:0;display:flex;align-items:center;background:var(--sf);border-bottom:1px solid var(--bd);box-shadow:var(--sh1);z-index:100;}
-.tlogo{width:var(--sw);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 20px;border-right:1px solid var(--bd);height:100%;}
+.tlogo{width:var(--sw);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 20px;border-right:1px solid var(--bd);height:100%;cursor:pointer;transition:var(--tr);} .tlogo:hover{background:var(--s2);}
 .tlogo img{height:32px;}
 .tlogo-n{font-size:15px;font-weight:800;color:var(--t1);letter-spacing:-.3px;}
 .tlogo-s{font-size:10px;font-weight:600;color:var(--pri);letter-spacing:.5px;text-transform:uppercase;}
@@ -501,7 +501,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 <div class="app"><div class="shell">
 
   <header class="topbar">
-    <div class="tlogo"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/>
+    <div class="tlogo" id="homeLogo" role="button" tabindex="0" title="대시보드로 이동"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"/>
       <div></div>
     </div>
     <div class="tcenter"><div class="dtxt" id="currentDateTime"></div></div>
@@ -1250,6 +1250,18 @@ async function changePwd(){
 }
 function closeProfileMenu(){$('profileDropdown').classList.remove('show');}
 
+function goHome(){
+  $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));
+  const dashBtn=document.querySelector('.nav-item[data-page="dashboard"]');
+  if(dashBtn)dashBtn.classList.add('active');
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  const dashPage=$('page-dashboard');
+  if(dashPage)dashPage.classList.add('active');
+  const content=document.querySelector('.content');
+  if(content)content.scrollTo({top:0,behavior:'smooth'});
+  closeProfileMenu();
+}
+
 /* ═══ NAV ═══ */
 function bindNav(){
   $$('.nav-item[data-page]').forEach(btn=>{
@@ -1683,6 +1695,11 @@ function bindEvents(){
   $('loginBtn').onclick=login;$('signupBtn').onclick=signup;
   $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
   $('profileBtn').onclick=e=>{e.stopPropagation();$('profileDropdown').classList.toggle('show');};
+  const homeLogo=$('homeLogo');
+  if(homeLogo){
+    homeLogo.onclick=goHome;
+    homeLogo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
+  }
   $('logoutBtn').onclick=logout;
   $('openChangePassword').onclick=()=>{closeProfileMenu();openPwdModal();};
   $('closePasswordModal').onclick=closePwdModal;$('cancelPasswordModal').onclick=closePwdModal;$('submitChangePassword').onclick=changePwd;
