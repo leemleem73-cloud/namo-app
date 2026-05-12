@@ -1019,8 +1019,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
         <div class="card"><div class="ch"><h2>측정기 등록 / 수정</h2></div><div class="cb">
           <div class="fg4">
-            <div class="field"><label>측정기명 *</label><input id="instrumentName" placeholder="예: 점도계, pH Meter"></div>
             <div class="field"><label>관리번호 *</label><input id="instrumentNo" placeholder="예: EQ-2026-001"></div>
+            <div class="field"><label>측정기명 *</label><input id="instrumentName" placeholder="예: 점도계, pH Meter"></div>
             <div class="field"><label>모델명</label><input id="instrumentModel" placeholder="모델명"></div>
             <div class="field"><label>제조사</label><input id="instrumentMaker" placeholder="제조사"></div>
             <div class="field"><label>위치</label><input id="instrumentLocation" placeholder="사용 위치"></div>
@@ -1045,9 +1045,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           </div>
           <input type="hidden" id="instrumentEditId">
         </div></div>
-        <div class="card mt14"><div class="ch"><h3>측정기 목록</h3></div>
+        <div class="card mt14"><div class="ch"><h3>측정기 목록</h3><div class="ca"><button class="btn pri sm" id="openInstrumentAdd" type="button">+ 측정기 추가</button></div></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>측정기명</th><th>관리번호</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>첨부파일</th><th>비고</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
+            <table><thead><tr><th>관리번호</th><th>측정기명</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>첨부파일</th><th>비고</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -2120,7 +2120,7 @@ function renderInstrumentFilesCell(r){
 function renderInstrumentTable(){
   const tb=$('instrumentTable');if(!tb)return;
   if(!state.instruments.length){tb.innerHTML=eRow(12);return;}
-  tb.innerHTML=state.instruments.map(r=>`<tr><td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.no||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${renderInstrumentFilesCell(r)}</td><td>${esc(r.remark||'')}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+  tb.innerHTML=state.instruments.map(r=>`<tr><td><strong>${esc(r.no||'')}</strong></td><td>${esc(r.name||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${renderInstrumentFilesCell(r)}</td><td>${esc(r.remark||'')}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 function renderWorklogTable(){
   const tb=$('worklogTable');if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
@@ -2284,8 +2284,18 @@ function updateInstrumentStatusByDate(){
   const auto=instrumentAutoStatus(next,cur);
   if($('instrumentStatus'))$('instrumentStatus').value=auto;
 }
-function saveInstrument(){
+async function saveInstrument(){
   const id=$('instrumentEditId').value||String(Date.now());
+  const prev=state.instruments.find(x=>String(x.id)===String(id));
+  const savedFiles=[];
+  for(const f of (state.instrumentFileDrafts||[])){
+    const meta=instrumentFileMeta(f);
+    savedFiles.push(meta);
+    if(f.blob){
+      try{await idbPutInstrumentFile(meta,f.blob);}
+      catch(err){console.error(err);alert(`${f.name} 파일 저장 중 오류가 발생했습니다.`);return;}
+    }
+  }
   const p={
     id,
     name:$('instrumentName').value.trim(),
@@ -2297,10 +2307,16 @@ function saveInstrument(){
     lastCal:$('instrumentLastCal').value,
     nextCal:$('instrumentNextCal').value,
     status:instrumentAutoStatus($('instrumentNextCal').value,$('instrumentStatus').value),
-    files:JSON.parse(JSON.stringify(state.instrumentFileDrafts||[])),
+    files:savedFiles,
     remark:$('instrumentRemark').value.trim()
   };
   if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
+  if(prev&&Array.isArray(prev.files)){
+    const keep=new Set(savedFiles.map(f=>String(f.id)));
+    for(const old of prev.files){
+      if(!keep.has(String(old.id)))await idbDeleteInstrumentFile(old.id);
+    }
+  }
   const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
   if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
   saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
@@ -2312,6 +2328,12 @@ function clearInstrument(){
   state.instrumentFileDrafts=[];
   if($('instrumentFiles'))$('instrumentFiles').value='';
   renderInstrumentFileDrafts();
+}
+function openInstrumentAdd(){
+  clearInstrument();
+  const form=$('instrumentEditId')?.closest('.card') || document.querySelector('#page-instruments .card');
+  form?.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>$('instrumentNo')?.focus(),250);
 }
 function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
@@ -2468,8 +2490,9 @@ function bindEvents(){
   $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
   $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
   $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
-  if($('instrumentSave'))$('instrumentSave').onclick=saveInstrument;
+  if($('instrumentSave'))$('instrumentSave').onclick=withSaving('inst',$('instrumentSave'),saveInstrument);
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
+  if($('openInstrumentAdd'))$('openInstrumentAdd').onclick=openInstrumentAdd;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
   if($('instrumentFiles'))$('instrumentFiles').addEventListener('change',handleInstrumentFiles);
