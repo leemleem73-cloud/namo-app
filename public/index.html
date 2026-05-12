@@ -340,7 +340,56 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .mbody{padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
 .mfoot{padding:14px 20px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
 .footer{padding:11px 22px;border-top:1px solid var(--bd);background:var(--sf);text-align:center;font-size:12px;color:var(--t3);flex-shrink:0;}
-@media print{body *{visibility:hidden;}#printTarget,#printTarget *{visibility:visible;}#printTarget{position:fixed;top:0;left:0;width:100%;padding:22px;background:#fff;}}
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:10mm;
+  }
+
+  html,body{
+    height:auto!important;
+    overflow:visible!important;
+    background:#fff!important;
+  }
+
+  body *{
+    visibility:hidden;
+  }
+
+  #printTarget,
+  #printTarget *{
+    visibility:visible;
+  }
+
+  #printTarget{
+    position:absolute!important;
+    top:0!important;
+    left:0!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    overflow:visible!important;
+    padding:0!important;
+    margin:0!important;
+    background:#fff!important;
+  }
+
+  #printTarget .rsheet{
+    border:none!important;
+    padding:0!important;
+    page-break-inside:auto;
+  }
+
+  #printTarget table{
+    page-break-inside:auto;
+  }
+
+  #printTarget tr,
+  #printTarget .rprint-sign,
+  #printTarget .bcsec{
+    page-break-inside:avoid;
+  }
+}
 .mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt14{margin-top:14px;}.mt16{margin-top:16px;}
 @media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.wgrid{grid-column-template:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
 @media(max-width:1000px){.wgrid{grid-template-columns:1fr;}}
