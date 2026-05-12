@@ -2029,21 +2029,59 @@ async function loadWorklog(){
   renderWorklogTable();
 }
 
-function loadInstruments(){
+async function loadInstruments(){
   const raw=localStorage.getItem('namo_qms_instruments');
   state.instruments=raw?JSON.parse(raw):[];
-  state.instruments=state.instruments.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+  state.instruments=state.instruments.map(x=>({
+    ...x,
+    files:Array.isArray(x.files)?x.files.map(instrumentFileMeta):[],
+    status:instrumentAutoStatus(x.nextCal,x.status)
+  }));
   saveInstrumentsLocal();
   renderInstrumentTable();
 }
-function saveInstrumentsLocal(){
-  localStorage.setItem('namo_qms_instruments',JSON.stringify(state.instruments));
+async function saveInstrument(){
+  const id=$('instrumentEditId').value||String(Date.now());
+  const prev=state.instruments.find(x=>String(x.id)===String(id));
+  const savedFiles=[];
+  for(const f of (state.instrumentFileDrafts||[])){
+    const meta=instrumentFileMeta(f);
+    savedFiles.push(meta);
+    if(f.blob){
+      try{await idbPutInstrumentFile(meta,f.blob);}
+      catch(err){console.error(err);alert(`${f.name} 파일 저장 중 오류가 발생했습니다.`);return;}
+    }
+  }
+  const p={
+    id,
+    name:$('instrumentName').value.trim(),
+    no:$('instrumentNo').value.trim(),
+    model:$('instrumentModel').value.trim(),
+    maker:$('instrumentMaker').value.trim(),
+    location:$('instrumentLocation').value.trim(),
+    cycle:$('instrumentCycle').value.trim()||'12',
+    lastCal:$('instrumentLastCal').value,
+    nextCal:$('instrumentNextCal').value,
+    status:instrumentAutoStatus($('instrumentNextCal').value,$('instrumentStatus').value),
+    files:savedFiles,
+    remark:$('instrumentRemark').value.trim()
+  };
+  if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
+  if(prev&&Array.isArray(prev.files)){
+    const keep=new Set(savedFiles.map(f=>String(f.id)));
+    for(const old of prev.files){
+      if(!keep.has(String(old.id)))await idbDeleteInstrumentFile(old.id);
+    }
+  }
+  const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
+  if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
+  saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
 }
 
 async function loadAllData(){
   await loadSignableUsers();
   await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform()]);
-  loadInstruments();
+  await loadInstruments();
   if(state.currentUser?.role==='admin')await loadAdminUsers();
   renderSummary();populateReportSelect();loadStandaloneReport();
 }
@@ -2134,40 +2172,103 @@ function renderInstrumentFileDrafts(){
   if(!files.length){wrap.innerHTML='';return;}
   wrap.innerHTML=files.map(f=>`<div class="inst-file-chip"><span title="${esc(f.name)}">📎 ${esc(f.name)} · ${formatFileSize(f.size)}</span><button type="button" data-remove-inst-file="${esc(f.id)}">×</button></div>`).join('');
 }
-function readFileAsDataURL(file){
+const INST_DB_NAME='namo_qms_instrument_files_db';
+const INST_DB_VERSION=1;
+const INST_FILE_STORE='instrument_files';
+const INST_MAX_FILE_SIZE=50*1024*1024; // 50MB
+
+function openInstrumentFileDB(){
   return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>resolve(reader.result);
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
+    if(!('indexedDB' in window)){reject(new Error('이 브라우저는 IndexedDB를 지원하지 않습니다.'));return;}
+    const req=indexedDB.open(INST_DB_NAME,INST_DB_VERSION);
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains(INST_FILE_STORE)){
+        db.createObjectStore(INST_FILE_STORE,{keyPath:'id'});
+      }
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
   });
 }
+function idbPutInstrumentFile(meta,blob){
+  return openInstrumentFileDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(INST_FILE_STORE,'readwrite');
+    tx.objectStore(INST_FILE_STORE).put({...meta,blob});
+    tx.oncomplete=()=>{db.close();resolve(true);};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+  }));
+}
+function idbGetInstrumentFile(fileId){
+  return openInstrumentFileDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(INST_FILE_STORE,'readonly');
+    const req=tx.objectStore(INST_FILE_STORE).get(fileId);
+    req.onsuccess=()=>{db.close();resolve(req.result||null);};
+    req.onerror=()=>{db.close();reject(req.error);};
+  }));
+}
+function idbDeleteInstrumentFile(fileId){
+  return openInstrumentFileDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(INST_FILE_STORE,'readwrite');
+    tx.objectStore(INST_FILE_STORE).delete(fileId);
+    tx.oncomplete=()=>{db.close();resolve(true);};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+  })).catch(()=>false);
+}
+function instrumentFileMeta(f){
+  return {id:f.id,name:f.name,type:f.type,size:f.size,addedAt:f.addedAt};
+}
+
 async function handleInstrumentFiles(e){
   const files=Array.from(e.target.files||[]);
   if(!files.length)return;
   state.instrumentFileDrafts=state.instrumentFileDrafts||[];
+  const rejected=[];
   for(const file of files){
-    if(file.size>5*1024*1024){alert(`${file.name} 파일이 5MB를 초과하여 제외했습니다.`);continue;}
-    const dataUrl=await readFileAsDataURL(file);
-    state.instrumentFileDrafts.push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2),name:file.name,type:file.type||'application/octet-stream',size:file.size,dataUrl,addedAt:new Date().toISOString()});
+    if(file.size>INST_MAX_FILE_SIZE){
+      rejected.push(`${file.name} (${formatFileSize(file.size)})`);
+      continue;
+    }
+    const id=String(Date.now())+'_'+Math.random().toString(36).slice(2);
+    state.instrumentFileDrafts.push({
+      id,
+      name:file.name,
+      type:file.type||'application/octet-stream',
+      size:file.size,
+      addedAt:new Date().toISOString(),
+      blob:file
+    });
   }
   e.target.value='';
   renderInstrumentFileDrafts();
+  if(rejected.length){alert(`50MB를 초과하여 제외된 파일:\n${rejected.join('\n')}`);}
 }
-function removeInstrumentDraftFile(fileId){
+async function removeInstrumentDraftFile(fileId){
+  const target=(state.instrumentFileDrafts||[]).find(f=>String(f.id)===String(fileId));
   state.instrumentFileDrafts=(state.instrumentFileDrafts||[]).filter(f=>String(f.id)!==String(fileId));
+  if(target&&!target.blob){await idbDeleteInstrumentFile(target.id);}
   renderInstrumentFileDrafts();
 }
-function downloadInstrumentFile(instrumentId,fileId){
+async function downloadInstrumentFile(instrumentId,fileId){
   const r=state.instruments.find(x=>String(x.id)===String(instrumentId));
   const f=(r?.files||[]).find(x=>String(x.id)===String(fileId));
-  if(!f||!f.dataUrl){alert('첨부파일을 찾을 수 없습니다.');return;}
-  const a=document.createElement('a');
-  a.href=f.dataUrl;
-  a.download=f.name||'attachment';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  if(!f){alert('첨부파일 정보를 찾을 수 없습니다.');return;}
+  try{
+    const saved=await idbGetInstrumentFile(f.id);
+    const blob=saved?.blob;
+    if(!blob){alert('첨부파일 본문을 찾을 수 없습니다. 다시 첨부해 주세요.');return;}
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=f.name||'attachment';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(err){
+    console.error(err);
+    alert('첨부파일 다운로드 중 오류가 발생했습니다.');
+  }
 }
 function calcInstrumentNext(){
   const last=$('instrumentLastCal')?.value||'';
@@ -2215,11 +2316,15 @@ function clearInstrument(){
 function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
   $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);$('instrumentRemark').value=r.remark||'';
-  state.instrumentFileDrafts=Array.isArray(r.files)?JSON.parse(JSON.stringify(r.files)):[];
+  state.instrumentFileDrafts=Array.isArray(r.files)?r.files.map(instrumentFileMeta):[];
   renderInstrumentFileDrafts();
 }
-function deleteInstrument(id){
+async function deleteInstrument(id){
   if(!confirm('삭제하시겠습니까?'))return;
+  const target=state.instruments.find(x=>String(x.id)===String(id));
+  if(target&&Array.isArray(target.files)){
+    for(const f of target.files){await idbDeleteInstrumentFile(f.id);}
+  }
   state.instruments=state.instruments.filter(x=>String(x.id)!==String(id));
   saveInstrumentsLocal();renderInstrumentTable();
 }
