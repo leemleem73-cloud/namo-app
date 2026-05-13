@@ -1222,7 +1222,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
               <div class="card mt14">
                 <div class="ch"><h3>첨부파일형 Gage R&R 분석 보고서 미리보기</h3><span class="tag">첨부 양식 스타일</span></div>
-                <div class="cb"><div id="msaTemplatePreview" class="msa-template-report"></div></div>
+                <div class="cb"></div>
               </div>
 
               <div class="spc-chart-grid mt14">
@@ -2803,7 +2803,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
   
-function avgArr(a){const v=a.filter(Number.isFinite);return v.length?v.reduce((s,x)=>s+x,0)/v.length:NaN;}
+function avgArr(a){const v=a.filter(Number.isFinite);return v.length?sum(v)/v.length:NaN;}
 function rangeArr(a){const v=a.filter(Number.isFinite);return v.length?Math.max(...v)-Math.min(...v):NaN;}
 function msaFmt(v,d=3){return Number.isFinite(v)?Number(v).toFixed(d):'';}
 function msaInputValue(o,r,p){return msa.data?.[o]?.[r]?.[p];}
@@ -2813,70 +2813,26 @@ function msaOperatorName(i){
   return val || msa.operators?.[i] || String.fromCharCode(65+i);
 }
 function msaMetaValue(id, fallback=''){return $m(id)?.value || fallback;}
-function renderMsaTemplatePreview(result){
-  try{
-  const box=$m('msaTemplatePreview');
-  if(!box)return;
-  const operators=msa.operators||['A','B'];
-  const opN=operators.length, repN=msa.repeats||3, partN=msa.parts||10;
-  const maxParts=Math.min(partN,10);
-  const opNames=operators.map((_,i)=>msaOperatorName(i));
-  const partAves=[];
-  for(let p=0;p<maxParts;p++){
-    const vals=[];
-    for(let o=0;o<opN;o++)for(let r=0;r<repN;r++){
-      const v=Number(msaInputValue(o,r,p));
-      if(Number.isFinite(v))vals.push(v);
-    }
-    partAves.push(avgArr(vals));
-  }
-  const xbar=avgArr(partAves);
-  const rp=(partAves.filter(Number.isFinite).length)?Math.max(...partAves)-Math.min(...partAves):NaN;
-  const tol=Number(msaMetaValue('msaTolerance',''));
-  const rows=[];
-  rows.push(`<tr><td colspan="12" class="msa-title">Gage R&R 분석 보고서</td><td colspan="3" class="msa-gray">작성</td><td colspan="3" class="msa-gray">검토</td><td colspan="3" class="msa-gray">승인</td><td colspan="8" class="msa-title">Gage Repeatability & Reproducibility Data Sheet</td></tr>`);
-  rows.push(`<tr><td colspan="21"></td><td colspan="8">Variable Data Results</td></tr>`);
-  rows.push(`<tr><td colspan="4" class="msa-gray msa-left">분석항목</td><td colspan="4" class="msa-gray msa-left">측정장비</td><td colspan="4" class="msa-gray msa-left">측정자 A</td><td colspan="4" class="msa-left">Project</td><td colspan="4" class="msa-left">Gage Name</td><td colspan="4" class="msa-left">Appraiser A</td></tr>`);
-  rows.push(`<tr><td colspan="4" class="msa-blue">${esc(msaMetaValue('msaItem',''))}</td><td colspan="4" class="msa-blue">${esc(msaMetaValue('msaGauge',''))}</td><td colspan="4" class="msa-blue">${esc(opNames[0]||'')}</td><td colspan="4">${esc(msaMetaValue('msaItem',''))}</td><td colspan="4">${esc(msaMetaValue('msaGauge',''))}</td><td colspan="4">${esc(opNames[0]||'')}</td></tr>`);
-  rows.push(`<tr><td colspan="4" class="msa-gray msa-left">측정장소</td><td colspan="4" class="msa-gray msa-left">측정장비 번호</td><td colspan="4" class="msa-gray msa-left">측정자 B</td><td colspan="4" class="msa-left">Part Name</td><td colspan="4" class="msa-left">Gage Number</td><td colspan="4" class="msa-left">Appraiser B</td></tr>`);
-  rows.push(`<tr><td colspan="4" class="msa-blue">연구소</td><td colspan="4">-</td><td colspan="4" class="msa-blue">${esc(opNames[1]||'')}</td><td colspan="4">연구소</td><td colspan="4">-</td><td colspan="4">${esc(opNames[1]||'')}</td></tr>`);
-  rows.push(`<tr><td colspan="2" class="msa-gray">단위</td><td colspan="2">Nominal</td><td colspan="2">규격하한</td><td colspan="2">규격상한</td><td colspan="2" class="msa-gray">측정항목</td><td colspan="2"></td><td colspan="2">Upper limit</td><td colspan="2">${Number.isFinite(tol)?msaFmt(tol,2):esc(msaMetaValue('msaTolerance',''))}</td><td colspan="4">Item</td><td colspan="4">${esc(msaMetaValue('msaItem',''))}</td></tr>`);
-  rows.push(`<tr><td colspan="2" class="msa-blue">${esc(msaMetaValue('msaUnit',''))}</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">${Number.isFinite(tol)?msaFmt(tol,2):esc(msaMetaValue('msaTolerance',''))}</td><td colspan="4" class="msa-blue">${esc(msaMetaValue('msaItem',''))}</td><td colspan="2">Lower limit</td><td colspan="2">-</td><td colspan="4">Trials</td><td colspan="2">${repN}</td><td colspan="2">Parts</td><td colspan="2">${partN}</td><td colspan="2">Appraisers</td><td colspan="2">${opN}</td></tr>`);
-  rows.push(`<tr><td colspan="4" class="msa-gray">평가자</td><td colspan="2" class="msa-peach">반복횟수</td><td colspan="2" class="msa-peach">시료수</td><td colspan="2" class="msa-peach">측정자수</td><td colspan="2" class="msa-gray">평가일자</td><td colspan="16" class="msa-subtitle">Measurement Unit Analysis 측정시스템분석</td></tr>`);
-  rows.push(`<tr><td colspan="4" class="msa-blue">${operators.join(',')}</td><td colspan="2">${repN}</td><td colspan="2">${partN}</td><td colspan="2">${opN}</td><td colspan="2" class="msa-blue">${esc(msaMetaValue('msaDate',''))}</td><td colspan="8" class="msa-subtitle">반복성 · 장비변동(EV)</td><td colspan="8" class="msa-subtitle">% Process Variation 공정변동</td></tr>`);
-  rows.push(`<tr><td colspan="2" rowspan="2" class="msa-subtitle">측정자 /<br>반복</td><td colspan="${maxParts}" class="msa-subtitle">Sample 시료</td><td colspan="2" rowspan="2" class="msa-subtitle">Ave. 평균값</td><td colspan="8" class="msa-left">EV = R × K1</td><td colspan="8" class="msa-left">% EV = 100(EV/TV)</td></tr>`);
-  rows.push(`${Array.from({length:maxParts},(_,i)=>`<td class="msa-subtitle">${i+1}</td>`).join('')}<td colspan="8" class="msa-left">AV = √((XDIFF×K2)² - (EV²/(n×r)))</td><td colspan="8" class="msa-left">% AV = 100(AV/TV)</td></tr>`);
-  for(let o=0;o<opN;o++){
-    for(let r=0;r<repN;r++){
-      const vals=Array.from({length:maxParts},(_,p)=>Number(msaInputValue(o,r,p)));
-      rows.push(`<tr><td>${o*repN+r+1}.</td><td class="msa-blue">${operators[o]}</td><td>${r+1}회</td>${vals.map(v=>`<td>${msaFmt(v,3)}</td>`).join('')}<td colspan="2">${msaFmt(avgArr(vals),3)}</td><td colspan="8" class="msa-left">${r===0&&o===0?`EV = ${msaFmt(result?.ev,6)}`:''}</td><td colspan="8" class="msa-blue">${r===0&&o===0?`${(result&&Number.isFinite(result.ev)&&Number.isFinite(result.tv)&&result.tv!==0)?msaFmt(result.ev/result.tv*100,2):''}%`:''}</td></tr>`);
-    }
-    const ave=Array.from({length:maxParts},(_,p)=>avgArr(Array.from({length:repN},(_,r)=>Number(msaInputValue(o,r,p)))));
-    const ranges=Array.from({length:maxParts},(_,p)=>rangeArr(Array.from({length:repN},(_,r)=>Number(msaInputValue(o,r,p)))));
-    rows.push(`<tr><td colspan="3">${o+1+repN*o}. AVE. 평균</td>${ave.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">x${operators[o].toLowerCase()}= ${msaFmt(avgArr(ave),3)}</td><td colspan="8" class="msa-left">R&R = √(EV² + AV²)</td><td colspan="8" class="msa-red">${msaFmt(result?.study,2)}%</td></tr>`);
-    rows.push(`<tr><td colspan="3">${o+2+repN*o}. Rang 범위</td>${ranges.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">r${operators[o].toLowerCase()}= ${msaFmt(avgArr(ranges),3)}</td><td colspan="8" class="msa-left">PV = RP × K3</td><td colspan="8" class="msa-blue">% PV = ${msaFmt(result?.pv/result?.tv*100,2)}%</td></tr>`);
-  }
-  rows.push(`<tr><td colspan="3">Part AVE<br>시료평균(Xp)</td>${partAves.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">X= ${msaFmt(xbar,3)}<br>Rp= ${msaFmt(rp,3)}</td><td colspan="8" class="msa-left">TV = SQRT(R&R²+PV²)</td><td colspan="8" class="msa-green">ndc = ${msaFmt(result?.ndc,1)} / ${esc(result?.judge||'')}</td></tr>`);
-  rows.push(`<tr><td colspan="15" class="msa-left msa-small">1) Gage R&R의 구성요소: 반복성(Repeatability) + 재현성(Reproducibility)<br>2) %R&R 10% 이하: 적합, 10~30%: 조건부 사용, 30% 이상: 개선 필요<br>3) 본 보고서는 나모케미칼 내부 품질관리용 측정시스템 분석 결과입니다.</td><td colspan="13" class="msa-left msa-small"><b>%R&R 판정</b><br>10% 이하: 측정 SYSTEM 적합<br>10%~30%: 조건부 사용 가능<br>30% 이상: 측정시스템 개선 필요<br><b>NDC</b>: 5 이상 권장</td></tr>`);
-  box.innerHTML=`<table>${rows.join('')}</table>`;
-  }catch(e){console.error('MSA preview error',e);const box=$m('msaTemplatePreview');if(box)box.innerHTML='<div style="padding:12px;color:#c52b2b;">보고서 미리보기 생성 중 오류가 발생했습니다.</div>';}
-}
+
 
 function renderMatrix(){
     readConfig();
     const head=$m('msaHead'), body=$m('msaBody'); if(!head||!body)return;
-    head.innerHTML='<tr><th>측정자</th><th>반복</th>'+Array.from({length:msa.parts},(_,i)=>`<th>시료 ${i+1}</th>`).join('')+'<th>평균</th><th>범위</th></tr>';
+    head.innerHTML='<tr><th>측정자</th><th>반복</th>'+Array.from({length:msa.parts},(_,i)=>`<th>시료 ${i+1}</th>`).join('')+'<th>평균</th><th>범위</th><th style="width:100px">작업</th></tr>';
     const rows=[];
     msa.operators.forEach((op,oi)=>{
       for(let r=0;r<msa.repeats;r++){
         const vals=(msa.data[oi]&&msa.data[oi][r])?msa.data[oi][r]:Array(msa.parts).fill('');
         const nums=vals.map(Number).filter(Number.isFinite);
-        rows.push(`<tr><td><strong>${op}</strong></td><td>${r+1}회</td>`+vals.map((v,pi)=>`<td><input class="spc-raw-input" data-msa-op="${oi}" data-msa-rep="${r}" data-msa-part="${pi}" value="${v??''}"></td>`).join('')+`<td>${fmt(avg(nums),3)}</td><td>${nums.length?fmt(Math.max(...nums)-Math.min(...nums),3):'-'}</td></tr>`);
+        rows.push(`<tr><td><strong>${op}</strong></td><td>${r+1}회</td>`+
+          vals.map((v,pi)=>`<td><input class="spc-raw-input" data-msa-op="${oi}" data-msa-rep="${r}" data-msa-part="${pi}" value="${v??''}"></td>`).join('')+
+          `<td>${fmt(avg(nums),3)}</td><td>${nums.length?fmt(Math.max(...nums)-Math.min(...nums),3):'-'}</td>`+
+          `<td><div class="ai"><button class="sb edit" type="button" data-msa-action="edit" data-msa-op="${oi}" data-msa-rep="${r}">수정</button><button class="sb del" type="button" data-msa-action="delete" data-msa-op="${oi}" data-msa-rep="${r}">삭제</button></div></td></tr>`);
       }
       const all=Array.from({length:msa.parts},(_,pi)=>{
         const arr=[]; for(let r=0;r<msa.repeats;r++){const v=Number(msa.data[oi]?.[r]?.[pi]); if(Number.isFinite(v))arr.push(v);} return avg(arr);
       });
-      rows.push(`<tr style="background:#f8fbff"><td><strong>${op}</strong></td><td><strong>평균</strong></td>`+all.map(v=>`<td><strong>${fmt(v,3)}</strong></td>`).join('')+`<td colspan="2"></td></tr>`);
+      rows.push(`<tr style="background:#f8fbff"><td><strong>${op}</strong></td><td><strong>평균</strong></td>`+all.map(v=>`<td><strong>${fmt(v,3)}</strong></td>`).join('')+`<td colspan="3"></td></tr>`);
     });
     body.innerHTML=rows.join('');
   }
@@ -2925,7 +2881,7 @@ function renderMatrix(){
     chart('part','msaPartChart','line',Array.from({length:msa.parts},(_,i)=>String(i+1)),[{label:'시료 평균',data:r.partMeans,tension:.25}]);
     chart('var','msaVariationChart','bar',['EV','AV','GRR','PV','TV'],[{label:'변동',data:[r.ev,r.av,r.grr,r.pv,r.tv]}]);
     chart('range','msaRangeChart','line',r.cellRanges.map((_,i)=>String(i+1)),[{label:'반복 범위',data:r.cellRanges,tension:.25}]);
-    try{renderMsaTemplatePreview(r);}catch(e){console.error('MSA preview render failed',e);}
+    
   }
   function selectWorksheet(wb){
     function sheetScore(ws){
@@ -3002,8 +2958,10 @@ function renderMatrix(){
     return m?m[1]:null;
   }
   function extractRepeat(v){
-    const s=String(v??'').replace(/\s+/g,'');
-    const m=s.match(/^(\d+)회?$/);
+    const s=String(v??'').replace(/\s+/g,'').trim();
+    // 반복은 반드시 "1회", "2회", "3회"처럼 회차 표시가 있는 셀만 인식한다.
+    // 첨부 양식 좌측의 행 번호 4,5,6...을 반복수로 오인하지 않기 위함.
+    const m=s.match(/^(\d+)회$/);
     if(m)return Number(m[1])-1;
     return null;
   }
@@ -3064,7 +3022,7 @@ function renderMatrix(){
   function findMatrixFromRows(rows){
     applyMetaFromRows(rows);
 
-    let header=-1, partCols=[], labelCol=-1, repeatCol=-1;
+    let header=-1, partCols=[], repeatCol=-1;
 
     function consecutivePartCols(row, start, stop){
       const cols=[];
@@ -3081,15 +3039,11 @@ function renderMatrix(){
       return cols;
     }
 
-    // 첨부 양식 우선 인식:
-    // 상단 행: "측정자 /", "Sample 시료"
-    // 하단 행: "반복", 시료번호 1~N
-    // 오른쪽 계산 보조표의 1~10은 제외하기 위해 Sample 시료 라벨 주변만 탐색.
+    // 첨부 양식의 "Sample 시료" 바로 아래 1~10만 측정치 열로 인식한다.
     for(let r=0;r<rows.length-1;r++){
       const row=rows[r]||[];
       const next=rows[r+1]||[];
       const sampleIdx=row.findIndex(v=>/Sample\s*시\s*료|Sample|시\s*료/.test(String(v??'')) && !/시료수|PV|K3|기준/.test(String(v??'')));
-      const labelIdx=row.findIndex(v=>/측정자\s*\/|측정자/.test(String(v??'')));
       const repIdx=next.findIndex(v=>/반복/.test(String(v??'')));
       if(sampleIdx<0||repIdx<0)continue;
 
@@ -3099,67 +3053,41 @@ function renderMatrix(){
       if(cols.length>=5){
         header=r+1;
         partCols=cols;
-        labelCol=labelIdx>=0?labelIdx:Math.max(0,repIdx-1);
         repeatCol=repIdx;
         break;
       }
     }
-
-    if(header<0){
-      for(let r=0;r<rows.length;r++){
-        const row=rows[r]||[];
-        for(let c=0;c<row.length;c++){
-          const cols=consecutivePartCols(row,c,Math.min(row.length-1,c+30));
-          if(cols.length>=5){
-            const prev=(rows[r-1]||[]).map(v=>String(v??'')).join(' ');
-            const cur=row.map(v=>String(v??'')).join(' ');
-            if(/측정자|반복|Sample|시료/.test(prev+' '+cur)){
-              header=r; partCols=cols;
-              repeatCol=Math.max(0,c-1);
-              labelCol=Math.max(0,c-2);
-              break;
-            }
-          }
-        }
-        if(header>=0)break;
-      }
-    }
-
     if(header<0||partCols.length<5)return false;
 
     const opIndex={A:0,B:1,C:2,D:3,E:4};
     const records=[];
     let currentOp=null;
-    let blankCount=0;
 
     for(let r=header+1;r<rows.length;r++){
       const row=rows[r]||[];
-      const leftText=row.slice(0,Math.max(5,partCols[0])).map(v=>String(v??'')).join(' ');
       const fullText=row.map(v=>String(v??'')).join(' ');
+      const leftCells=row.slice(0,partCols[0]);
 
       if(/Part\s*AVE|시료평균|시료변동|Gage\s*R&R|연구변동|총변동|UCLR|LCLR|요약|판정기준/i.test(fullText))break;
+      if(/AVE|평균|Range|범위|ra=|rb=|rc=|xa=|xb=|xc=/i.test(leftCells.map(v=>String(v??'')).join(' ')))continue;
 
-      if(row.every(v=>String(v??'').trim()==='')){
-        blankCount++;
-        if(records.length&&blankCount>=2)break;
-        continue;
-      }
-      blankCount=0;
-
-      // AVE/평균/Range/범위는 계산행이므로 측정값으로 읽지 않음.
-      if(/AVE|평균|Range|범위|ra=|rb=|xa=|xb=/i.test(leftText))continue;
-
+      // Operator label: "A", "B", "C" or "1. A" in left cells.
       for(let c=0;c<Math.min(partCols[0], row.length);c++){
         const op=extractOperatorLabel(row[c]);
         if(op&&opIndex[op]!==undefined){currentOp=op;break;}
       }
+      if(!currentOp)continue;
 
+      // Repeat must come from the designated repeat column or one/two nearby cells only,
+      // and must include "회" (1회, 2회, 3회).
       let rep=null;
-      for(let c=0;c<Math.min(partCols[0], row.length);c++){
-        const rr=extractRepeat(row[c]);
-        if(rr!==null){rep=rr;break;}
+      for(const c of [repeatCol, repeatCol-1, repeatCol+1]){
+        if(c>=0&&c<row.length){
+          const rr=extractRepeat(row[c]);
+          if(rr!==null){rep=rr;break;}
+        }
       }
-      if(!currentOp||rep===null)continue;
+      if(rep===null)continue;
 
       const vals=partCols.map(c=>toNumber(row[c]));
       const valid=vals.filter(Number.isFinite);
@@ -3177,7 +3105,22 @@ function renderMatrix(){
     const opLabels=[...new Set(records.map(x=>x.op))].sort((a,b)=>opIndex[a]-opIndex[b]);
     const reps=Math.max(...records.map(x=>x.rep))+1;
     const parts=partCols.length;
+
     if(opLabels.length<2||reps<2||parts<5)return false;
+
+    // Keep only exactly one row per operator x repeat; ignore accidental duplicate rows.
+    const seen=new Set();
+    const clean=[];
+    records.forEach(rec=>{
+      const key=rec.op+'|'+rec.rep;
+      if(!seen.has(key)){
+        seen.add(key);
+        clean.push(rec);
+      }
+    });
+
+    const expected=opLabels.length*reps;
+    if(clean.length<expected)return false;
 
     setIf('msaOperators',opLabels.length);
     setIf('msaRepeats',reps);
@@ -3189,29 +3132,17 @@ function renderMatrix(){
 
     const data=Array.from({length:opLabels.length},()=>Array.from({length:reps},()=>Array(parts).fill('')));
     const labelToIndex=Object.fromEntries(opLabels.map((op,i)=>[op,i]));
-    let found=0;
-    records.forEach(rec=>{
+    clean.forEach(rec=>{
       const oi=labelToIndex[rec.op];
       if(oi===undefined||rec.rep>=reps)return;
       data[oi][rec.rep]=rec.vals.slice(0,parts);
-      found++;
     });
-
-    if(found < opLabels.length*reps)return false;
 
     msa.data=data;
     renderMatrix();
     recalc();
 
-    console.log('MSA matrix loaded', {
-      operators:opLabels,
-      repeats:reps,
-      parts,
-      firstVal:data[0]?.[0]?.[0],
-      partCols,
-      header
-    });
-
+    console.log('MSA matrix loaded', {operators:opLabels,repeats:reps,parts,firstVal:data[0]?.[0]?.[0],partCols,header,repeatCol});
     alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${opLabels.length}명 × 반복 ${reps}회 × 시료 ${parts}개)`);
     return true;
   }
@@ -3242,28 +3173,155 @@ function renderMatrix(){
     if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file,'utf-8'); else reader.readAsArrayBuffer(file);
   }
   function downloadReport(){
-    try{
-      const r=calc();
-      if(!r){alert('측정시스템 분석 데이터가 없습니다.');return;}
-      renderMsaTemplatePreview(r);
-      const tableHtml=$m('msaTemplatePreview')?.innerHTML||'';
-      if(!tableHtml){alert('보고서 양식을 생성하지 못했습니다.');return;}
-      const html = `<!doctype html><html><head><meta charset="UTF-8"></head><body>${tableHtml}</body></html>`;
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(new DOMParser().parseFromString(html,'text/html').querySelector('table'), {raw:false});
-      ws['!cols'] = Array.from({length:30},()=>({wch:10}));
-      XLSX.utils.book_append_sheet(wb, ws, 'Gage R&R 보고서');
-      wb.Workbook = {CalcPr:{fullCalcOnLoad:true}};
-      XLSX.writeFile(wb, `${($m('msaReportNo')?.value||'MSA-GRR')}_보고서.xlsx`);
-    }catch(e){
-      console.error('MSA report download error', e);
-      alert('보고서 엑셀 다운로드 중 오류가 발생했습니다. 콘솔 오류를 확인해주세요.');
+    const r=calc(); if(!r){alert('분석 데이터가 없습니다.'); return;}
+    if(!window.XLSX){alert('엑셀 생성 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인해주세요.');return;}
+
+    const reportNo=$m('msaReportNo')?.value||'MSA-GRR-2026-001';
+    const item=$m('msaItem')?.value||'';
+    const gauge=$m('msaGauge')?.value||'';
+    const unit=$m('msaUnit')?.value||'';
+    const tol=Number($m('msaTolerance')?.value||0);
+    const date=$m('msaDate')?.value||'';
+    const opNames=msa.operators.map((op,i)=>($m('msaOp'+op)?.value||('측정자 '+op)));
+    const name=safeFileName(reportNo+'_측정시스템분석보고서.xlsx');
+
+    const aoa=Array.from({length:52},()=>Array(22).fill(''));
+    const put=(r,c,v)=>{aoa[r][c]=v;};
+    const caddr=(r,c)=>XLSX.utils.encode_cell({r,c});
+    const setFormula=(ws,r,c,f,v)=>{ws[caddr(r,c)]={t:(typeof v==='number'?'n':'s'),f:f,v:(v??'')};};
+
+    put(0,1,'측정시스템 분석 보고서');
+    put(0,12,'작성'); put(0,13,'검토'); put(0,14,'승인');
+    put(0,16,'Gage Repeatability & Reproducibility Data Sheet');
+    put(2,16,'Variable Data Results');
+
+    put(4,1,'분석항목'); put(4,6,'측정장비'); put(4,10,'측정자 A'); put(4,16,'Project'); put(4,18,'Gage Name'); put(4,20,'Appraiser A');
+    put(5,1,item); put(5,6,gauge); put(5,10,opNames[0]||''); put(5,16,item); put(5,18,gauge); put(5,20,opNames[0]||'');
+    put(6,1,'측정장소'); put(6,6,'측정장비 번호'); put(6,10,'측정자 B'); put(6,16,'Part Name'); put(6,18,'Gage Number'); put(6,20,'Appraiser B');
+    put(7,1,'연구소'); put(7,10,opNames[1]||''); put(7,16,'연구소'); put(7,18,'-'); put(7,20,opNames[1]||'');
+    put(8,1,'Nominal'); put(8,3,'단위'); put(8,4,'규격하한'); put(8,5,'규격상한'); put(8,6,'측정항목'); put(8,16,'Upper limit'); put(8,18,tol); put(8,20,'Appraiser C');
+    put(9,1,tol/2||''); put(9,3,unit); put(9,4,''); put(9,5,tol); put(9,6,item); put(9,16,'Lower limit'); put(9,18,''); put(9,20,opNames[2]||'');
+    put(10,1,'평가자'); put(10,6,'반복횟수'); put(10,8,'시료수'); put(10,10,'측정자수'); put(10,12,'평가일자'); put(10,16,'Evaluator'); put(10,18,'Trials'); put(10,20,'Parts');
+    put(11,1,opNames.filter(Boolean).join(', ')); put(11,6,msa.repeats); put(11,8,msa.parts); put(11,10,msa.operators.length); put(11,12,date); put(11,16,opNames.join(',')); put(11,18,msa.repeats); put(11,20,msa.parts);
+
+    const headerRow=14, dataStart=15;
+    put(13,1,'측정자 / 반복'); put(13,3,'Sample 시료'); put(13,15,'측정시스템분석');
+    put(headerRow,1,'측정자'); put(headerRow,2,'반복');
+    for(let p=0;p<msa.parts;p++)put(headerRow,3+p,p+1);
+    const avgCol=3+msa.parts, rangeCol=avgCol+1;
+    put(headerRow,avgCol,'Ave. 평균값'); put(headerRow,rangeCol,'Range 범위');
+
+    const opAvgRows=[], opRangeRows=[], dataRowsByOp=[];
+    let rr=dataStart;
+    msa.operators.forEach((op,oi)=>{
+      const opRows=[];
+      for(let rep=0;rep<msa.repeats;rep++){
+        put(rr,1,rep===0?`${1+oi*msa.repeats}.   ${op}`:rr-dataStart+1);
+        put(rr,2,(rep+1)+'회');
+        for(let p=0;p<msa.parts;p++)put(rr,3+p,Number(msa.data[oi]?.[rep]?.[p]||0));
+        opRows.push(rr);
+        rr++;
+      }
+      put(rr,1,(rr-dataStart+1)+'. AVE.'); put(rr,2,'평균');
+      for(let p=0;p<msa.parts;p++)put(rr,3+p,'');
+      opAvgRows.push(rr); rr++;
+      put(rr,1,(rr-dataStart+1)+'. Range'); put(rr,2,'범위');
+      for(let p=0;p<msa.parts;p++)put(rr,3+p,'');
+      opRangeRows.push(rr); dataRowsByOp.push(opRows); rr++;
+    });
+    const partAvgRow=rr+1; put(partAvgRow,1,'Part AVE'); put(partAvgRow,2,'시료평균(Xp)');
+    for(let p=0;p<msa.parts;p++)put(partAvgRow,3+p,'');
+
+    const calcRow=13;
+    put(calcRow,15,'반복성 EV'); put(calcRow,16,'= Rbar × K1'); put(calcRow,20,'K1'); put(calcRow,21,k1Const(msa.repeats));
+    put(calcRow+2,15,'재현성 AV'); put(calcRow+2,16,'= √((Xdiff×K2)^2 - EV^2/(n×r))'); put(calcRow+2,20,'K2'); put(calcRow+2,21,k2Const(msa.operators.length));
+    put(calcRow+4,15,'반복성 및 재현성 GRR'); put(calcRow+4,16,'= √(EV^2 + AV^2)');
+    put(calcRow+6,15,'시료변동 PV'); put(calcRow+6,16,'= Rp × K3'); put(calcRow+6,20,'K3'); put(calcRow+6,21,k3Const(msa.parts));
+    put(calcRow+8,15,'총변동 TV'); put(calcRow+8,16,'= √(GRR^2 + PV^2)');
+    put(calcRow+10,15,'판정'); put(calcRow+10,16,'= %GRR 기준');
+
+    put(35,1,'요약 결과'); put(36,1,'구분'); put(36,2,'결과'); put(36,3,'산식');
+    put(37,1,'EV 반복성'); put(38,1,'AV 재현성'); put(39,1,'GRR'); put(40,1,'PV 제품변동'); put(41,1,'TV 총변동'); put(42,1,'%연구변동'); put(43,1,'%공차'); put(44,1,'ndc'); put(45,1,'최종 판정');
+    put(47,1,'판정 기준'); put(47,2,'%GRR < 10% 우수 / 10~30% 조건부 사용 / 30% 초과 부적합, ndc 5 이상 권장');
+    put(48,1,'비고'); put(48,2,'본 보고서는 나모케미칼 내부 품질관리용 시스템(Q Insight)에서 생성되었습니다.');
+
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols']=[{wch:4},{wch:18},{wch:12},...Array.from({length:msa.parts},()=>({wch:11})),{wch:14},{wch:14},{wch:18},{wch:18},{wch:14},{wch:12},{wch:12},{wch:14},{wch:14}];
+    ws['!merges']=[
+      {s:{r:0,c:1},e:{r:1,c:10}},
+      {s:{r:0,c:16},e:{r:0,c:21}},
+      {s:{r:13,c:3},e:{r:13,c:2+msa.parts}},
+      {s:{r:35,c:1},e:{r:35,c:3}}
+    ];
+
+    // Matrix formulas: row averages/ranges, operator averages/ranges, part averages.
+    dataRowsByOp.forEach((opRows,oi)=>{
+      opRows.forEach(row=>{
+        const a=caddr(row,3), b=caddr(row,2+msa.parts);
+        setFormula(ws,row,avgCol,`AVERAGE(${a}:${b})`,Number(avg((msa.data[oi][opRows.indexOf(row)]||[]).map(Number).filter(Number.isFinite))||0));
+        setFormula(ws,row,rangeCol,`MAX(${a}:${b})-MIN(${a}:${b})`,0);
+      });
+      const avgRow=opAvgRows[oi], rangeRow=opRangeRows[oi];
+      for(let p=0;p<msa.parts;p++){
+        const refs=opRows.map(row=>caddr(row,3+p)).join(',');
+        setFormula(ws,avgRow,3+p,`AVERAGE(${refs})`,0);
+        setFormula(ws,rangeRow,3+p,`MAX(${refs})-MIN(${refs})`,0);
+      }
+      setFormula(ws,avgRow,avgCol,`AVERAGE(${caddr(avgRow,3)}:${caddr(avgRow,2+msa.parts)})`,0);
+      setFormula(ws,rangeRow,rangeCol,`AVERAGE(${caddr(rangeRow,3)}:${caddr(rangeRow,2+msa.parts)})`,0);
+    });
+    for(let p=0;p<msa.parts;p++){
+      const refs=opAvgRows.map(row=>caddr(row,3+p)).join(',');
+      setFormula(ws,partAvgRow,3+p,`AVERAGE(${refs})`,0);
     }
+    const allRangeRefs=opRangeRows.map(row=>`${caddr(row,3)}:${caddr(row,2+msa.parts)}`).join(',');
+    const rbarCell=caddr(37,5), xdiffCell=caddr(38,5), rpCell=caddr(40,5);
+    ws[rbarCell]={t:'n',f:`AVERAGE(${allRangeRefs})`,v:0};
+    ws[xdiffCell]={t:'n',f:`MAX(${opAvgRows.map(row=>caddr(row,avgCol)).join(',')})-MIN(${opAvgRows.map(row=>caddr(row,avgCol)).join(',')})`,v:0};
+    ws[rpCell]={t:'n',f:`MAX(${caddr(partAvgRow,3)}:${caddr(partAvgRow,2+msa.parts)})-MIN(${caddr(partAvgRow,3)}:${caddr(partAvgRow,2+msa.parts)})`,v:0};
+
+    // Result formulas. Excel will recalculate when opened; cached values are also provided.
+    setFormula(ws,37,2,`${rbarCell}*${caddr(calcRow,21)}`,r.ev);
+    put(37,3,'Rbar × K1');
+    setFormula(ws,38,2,`SQRT(MAX(0,(${xdiffCell}*${caddr(calcRow+2,21)})^2-(${caddr(37,2)}^2/(${msa.parts}*${msa.repeats}))))`,r.av);
+    put(38,3,'√MAX(0,(Xdiff×K2)^2 - EV^2/(n×r))');
+    setFormula(ws,39,2,`SQRT(${caddr(37,2)}^2+${caddr(38,2)}^2)`,r.grr);
+    put(39,3,'√(EV²+AV²)');
+    setFormula(ws,40,2,`${rpCell}*${caddr(calcRow+6,21)}`,r.pv);
+    put(40,3,'Rp × K3');
+    setFormula(ws,41,2,`SQRT(${caddr(39,2)}^2+${caddr(40,2)}^2)`,r.tv);
+    put(41,3,'√(GRR²+PV²)');
+    setFormula(ws,42,2,`IF(${caddr(41,2)}=0,"",${caddr(39,2)}/${caddr(41,2)}*100)`,r.study);
+    put(42,3,'GRR / TV × 100');
+    setFormula(ws,43,2,`IF(${tol}=0,"",6*${caddr(39,2)}/${tol}*100)`,r.tolPct);
+    put(43,3,'6 × GRR / 공차 × 100');
+    setFormula(ws,44,2,`IF(${caddr(39,2)}=0,"",INT(1.41*${caddr(40,2)}/${caddr(39,2)}))`,r.ndc);
+    put(44,3,'INT(1.41 × PV / GRR)');
+    setFormula(ws,45,2,`IF(${caddr(42,2)}<10,"우수",IF(${caddr(42,2)}<=30,"조건부 사용","부적합"))`,r.judge);
+    put(45,3,'%연구변동 기준');
+
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Gage_RR_보고서');
+    wb.Workbook={CalcPr:{fullCalcOnLoad:true,forceFullCalc:true}};
+    XLSX.writeFile(wb,name);
   }
   function safeFileName(s){return String(s||'report.xlsx').replace(/[\\/:*?"<>|]/g,'_');}
   function k1Const(r){return {2:0.8862,3:0.5908,4:0.4857,5:0.4299}[Number(r)]||0.5908;}
   function k2Const(a){return {2:0.7071,3:0.5231,4:0.4467,5:0.4030}[Number(a)]||0.5231;}
   function k3Const(n){return {2:0.7071,3:0.5231,4:0.4467,5:0.4030,6:0.3742,7:0.3534,8:0.3375,9:0.3249,10:0.3146}[Number(n)]||0.3146;}
+
+  function editMsaRow(oi,rep){
+    const first=$m('msaBody')?.querySelector(`input[data-msa-op="${oi}"][data-msa-rep="${rep}"][data-msa-part="0"]`);
+    if(first){first.focus();first.select();}
+  }
+  function deleteMsaRow(oi,rep){
+    if(!confirm('해당 측정 행의 시료값을 삭제하시겠습니까?'))return;
+    if(!msa.data[oi])msa.data[oi]=[];
+    msa.data[oi][rep]=Array(msa.parts).fill('');
+    renderMatrix();
+    recalc();
+  }
+
   function bind(){
     if(msa.bound)return; msa.bound=true;
     setToday(); sampleData();
@@ -3276,7 +3334,8 @@ function renderMatrix(){
     $m('msaFileUpload')?.addEventListener('change',e=>parseUploaded(e.target.files&&e.target.files[0]));
     ['msaOperators','msaParts','msaRepeats'].forEach(id=>$m(id)?.addEventListener('change',()=>{blankData();}));
     ['msaTolerance','msaUnit'].forEach(id=>$m(id)?.addEventListener('input',recalc));
-    $m('msaBody')?.addEventListener('change',e=>{const t=e.target;if(t.dataset.msaOp===undefined)return;const oi=Number(t.dataset.msaOp),rep=Number(t.dataset.msaRep),part=Number(t.dataset.msaPart); if(!msa.data[oi])msa.data[oi]=[]; if(!msa.data[oi][rep])msa.data[oi][rep]=[]; msa.data[oi][rep][part]=Number(t.value); renderMatrix(); recalc();});
+    $m('msaBody')?.addEventListener('change',e=>{const t=e.target;if(t.dataset.msaOp===undefined)return;const oi=Number(t.dataset.msaOp),rep=Number(t.dataset.msaRep),part=Number(t.dataset.msaPart); if(!msa.data[oi])msa.data[oi]=[]; if(!msa.data[oi][rep])msa.data[oi][rep]=[]; msa.data[oi][rep][part]=t.value===''?'':Number(t.value); renderMatrix(); recalc();});
+    $m('msaBody')?.addEventListener('click',e=>{const btn=e.target.closest('[data-msa-action]');if(!btn)return;const oi=Number(btn.dataset.msaOp),rep=Number(btn.dataset.msaRep);if(btn.dataset.msaAction==='edit')editMsaRow(oi,rep);if(btn.dataset.msaAction==='delete')deleteMsaRow(oi,rep);});
   }
   window.__namoMsaBind=bind;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,100));else setTimeout(bind,100);
