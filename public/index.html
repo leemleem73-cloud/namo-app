@@ -2800,10 +2800,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(m)return Number(m[1])-1;
     return null;
   }
-  function detectPartColumns(rows, headerRowIdx){
+  function detectPartColumns(rows, headerRowIdx, preferredStart=null, preferredEnd=null){
     const row=rows[headerRowIdx]||[];
     let best=[];
-    for(let start=0; start<row.length; start++){
+    const startMin = Number.isInteger(preferredStart) ? Math.max(0, preferredStart) : 0;
+    const startMax = Number.isInteger(preferredEnd) ? Math.min(row.length-1, preferredEnd) : row.length-1;
+    for(let start=startMin; start<=startMax; start++){
+      const first=toNumber(row[start]);
+      if(first!==1)continue;
       const cols=[];
       let expected=1;
       for(let c=start; c<row.length && expected<=80; c++){
@@ -2813,8 +2817,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           cols.push(c);
           expected++;
         }else if(cols.length>0){
-          // allow merged/blank helper columns only before data starts, but stop on real non-matching value
-          if(String(raw??'').trim()==='') continue;
+          // stop at first non-sequential value. Do not jump across far-right helper tables.
           break;
         }
       }
@@ -2855,16 +2858,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
     applyMetaFromRows(rows);
     let header=-1, partCols=[];
 
-    // 1) Prefer the exact template layout: row containing "Sample 시료" and the next row containing 1..N sample numbers.
+    // 1) Prefer the exact template layout: a cell labeled "Sample 시료" and the next row containing 1..N sample numbers immediately under/near that label.
+    //    The template also has a far-right helper table with 1..10. Restrict detection to the sample-label area to avoid reading helper-table values.
     for(let ri=0;ri<rows.length;ri++){
-      const t=(rows[ri]||[]).map(v=>String(v??'')).join(' ');
-      if(/Sample|시\s*료|시료/i.test(t)){
-        for(let off=0; off<=3; off++){
-          const cols=detectPartColumns(rows,ri+off);
-          if(cols.length>=3){header=ri+off; partCols=cols; break;}
+      const row=rows[ri]||[];
+      for(let sc=0; sc<row.length; sc++){
+        const cellText=String(row[sc]??'');
+        if(/Sample\s*시\s*료|Sample|시\s*료/.test(cellText) && !/기준/.test(cellText)){
+          for(let off=1; off<=3; off++){
+            const cols=detectPartColumns(rows,ri+off,sc,sc+20);
+            if(cols.length>=3){header=ri+off; partCols=cols; break;}
+          }
+          if(header>=0)break;
         }
-        if(header>=0)break;
       }
+      if(header>=0)break;
     }
     // 2) Fallback: any row with a consecutive 1..N sample header.
     if(header<0){
