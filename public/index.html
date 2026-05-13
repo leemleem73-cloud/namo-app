@@ -2803,7 +2803,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
   
-function avgArr(a){const v=a.filter(Number.isFinite);return v.length?sum(v)/v.length:NaN;}
+function avgArr(a){const v=a.filter(Number.isFinite);return v.length?v.reduce((s,x)=>s+x,0)/v.length:NaN;}
 function rangeArr(a){const v=a.filter(Number.isFinite);return v.length?Math.max(...v)-Math.min(...v):NaN;}
 function msaFmt(v,d=3){return Number.isFinite(v)?Number(v).toFixed(d):'';}
 function msaInputValue(o,r,p){return msa.data?.[o]?.[r]?.[p];}
@@ -2814,6 +2814,7 @@ function msaOperatorName(i){
 }
 function msaMetaValue(id, fallback=''){return $m(id)?.value || fallback;}
 function renderMsaTemplatePreview(result){
+  try{
   const box=$m('msaTemplatePreview');
   if(!box)return;
   const operators=msa.operators||['A','B'];
@@ -2848,7 +2849,7 @@ function renderMsaTemplatePreview(result){
   for(let o=0;o<opN;o++){
     for(let r=0;r<repN;r++){
       const vals=Array.from({length:maxParts},(_,p)=>Number(msaInputValue(o,r,p)));
-      rows.push(`<tr><td>${o*repN+r+1}.</td><td class="msa-blue">${operators[o]}</td><td>${r+1}회</td>${vals.map(v=>`<td>${msaFmt(v,3)}</td>`).join('')}<td colspan="2">${msaFmt(avgArr(vals),3)}</td><td colspan="8" class="msa-left">${r===0&&o===0?`EV = ${msaFmt(result?.ev,6)}`:''}</td><td colspan="8" class="msa-blue">${r===0&&o===0?`${msaFmt(result?.ev/result?.tv*100,2)}%`:''}</td></tr>`);
+      rows.push(`<tr><td>${o*repN+r+1}.</td><td class="msa-blue">${operators[o]}</td><td>${r+1}회</td>${vals.map(v=>`<td>${msaFmt(v,3)}</td>`).join('')}<td colspan="2">${msaFmt(avgArr(vals),3)}</td><td colspan="8" class="msa-left">${r===0&&o===0?`EV = ${msaFmt(result?.ev,6)}`:''}</td><td colspan="8" class="msa-blue">${r===0&&o===0?`${(result&&Number.isFinite(result.ev)&&Number.isFinite(result.tv)&&result.tv!==0)?msaFmt(result.ev/result.tv*100,2):''}%`:''}</td></tr>`);
     }
     const ave=Array.from({length:maxParts},(_,p)=>avgArr(Array.from({length:repN},(_,r)=>Number(msaInputValue(o,r,p)))));
     const ranges=Array.from({length:maxParts},(_,p)=>rangeArr(Array.from({length:repN},(_,r)=>Number(msaInputValue(o,r,p)))));
@@ -2858,6 +2859,7 @@ function renderMsaTemplatePreview(result){
   rows.push(`<tr><td colspan="3">Part AVE<br>시료평균(Xp)</td>${partAves.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">X= ${msaFmt(xbar,3)}<br>Rp= ${msaFmt(rp,3)}</td><td colspan="8" class="msa-left">TV = SQRT(R&R²+PV²)</td><td colspan="8" class="msa-green">ndc = ${msaFmt(result?.ndc,1)} / ${esc(result?.judge||'')}</td></tr>`);
   rows.push(`<tr><td colspan="15" class="msa-left msa-small">1) Gage R&R의 구성요소: 반복성(Repeatability) + 재현성(Reproducibility)<br>2) %R&R 10% 이하: 적합, 10~30%: 조건부 사용, 30% 이상: 개선 필요<br>3) 본 보고서는 나모케미칼 내부 품질관리용 측정시스템 분석 결과입니다.</td><td colspan="13" class="msa-left msa-small"><b>%R&R 판정</b><br>10% 이하: 측정 SYSTEM 적합<br>10%~30%: 조건부 사용 가능<br>30% 이상: 측정시스템 개선 필요<br><b>NDC</b>: 5 이상 권장</td></tr>`);
   box.innerHTML=`<table>${rows.join('')}</table>`;
+  }catch(e){console.error('MSA preview error',e);const box=$m('msaTemplatePreview');if(box)box.innerHTML='<div style="padding:12px;color:#c52b2b;">보고서 미리보기 생성 중 오류가 발생했습니다.</div>';}
 }
 
 function renderMatrix(){
@@ -2923,7 +2925,7 @@ function renderMatrix(){
     chart('part','msaPartChart','line',Array.from({length:msa.parts},(_,i)=>String(i+1)),[{label:'시료 평균',data:r.partMeans,tension:.25}]);
     chart('var','msaVariationChart','bar',['EV','AV','GRR','PV','TV'],[{label:'변동',data:[r.ev,r.av,r.grr,r.pv,r.tv]}]);
     chart('range','msaRangeChart','line',r.cellRanges.map((_,i)=>String(i+1)),[{label:'반복 범위',data:r.cellRanges,tension:.25}]);
-    renderMsaTemplatePreview(r);
+    try{renderMsaTemplatePreview(r);}catch(e){console.error('MSA preview render failed',e);}
   }
   function selectWorksheet(wb){
     function sheetScore(ws){
@@ -3240,137 +3242,23 @@ function renderMatrix(){
     if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file,'utf-8'); else reader.readAsArrayBuffer(file);
   }
   function downloadReport(){
-    const r=calc(); if(!r){alert('분석 데이터가 없습니다.'); return;}
-    if(!window.XLSX){alert('엑셀 생성 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인해주세요.');return;}
-
-    const reportNo=$m('msaReportNo')?.value||'MSA-GRR-2026-001';
-    const item=$m('msaItem')?.value||'';
-    const gauge=$m('msaGauge')?.value||'';
-    const unit=$m('msaUnit')?.value||'';
-    const tol=Number($m('msaTolerance')?.value||0);
-    const date=$m('msaDate')?.value||'';
-    const opNames=msa.operators.map((op,i)=>($m('msaOp'+op)?.value||('측정자 '+op)));
-    const name=safeFileName(reportNo+'_측정시스템분석보고서.xlsx');
-
-    const aoa=Array.from({length:52},()=>Array(22).fill(''));
-    const put=(r,c,v)=>{aoa[r][c]=v;};
-    const caddr=(r,c)=>XLSX.utils.encode_cell({r,c});
-    const setFormula=(ws,r,c,f,v)=>{ws[caddr(r,c)]={t:(typeof v==='number'?'n':'s'),f:f,v:(v??'')};};
-
-    put(0,1,'측정시스템 분석 보고서');
-    put(0,12,'작성'); put(0,13,'검토'); put(0,14,'승인');
-    put(0,16,'Gage Repeatability & Reproducibility Data Sheet');
-    put(2,16,'Variable Data Results');
-
-    put(4,1,'분석항목'); put(4,6,'측정장비'); put(4,10,'측정자 A'); put(4,16,'Project'); put(4,18,'Gage Name'); put(4,20,'Appraiser A');
-    put(5,1,item); put(5,6,gauge); put(5,10,opNames[0]||''); put(5,16,item); put(5,18,gauge); put(5,20,opNames[0]||'');
-    put(6,1,'측정장소'); put(6,6,'측정장비 번호'); put(6,10,'측정자 B'); put(6,16,'Part Name'); put(6,18,'Gage Number'); put(6,20,'Appraiser B');
-    put(7,1,'연구소'); put(7,10,opNames[1]||''); put(7,16,'연구소'); put(7,18,'-'); put(7,20,opNames[1]||'');
-    put(8,1,'Nominal'); put(8,3,'단위'); put(8,4,'규격하한'); put(8,5,'규격상한'); put(8,6,'측정항목'); put(8,16,'Upper limit'); put(8,18,tol); put(8,20,'Appraiser C');
-    put(9,1,tol/2||''); put(9,3,unit); put(9,4,''); put(9,5,tol); put(9,6,item); put(9,16,'Lower limit'); put(9,18,''); put(9,20,opNames[2]||'');
-    put(10,1,'평가자'); put(10,6,'반복횟수'); put(10,8,'시료수'); put(10,10,'측정자수'); put(10,12,'평가일자'); put(10,16,'Evaluator'); put(10,18,'Trials'); put(10,20,'Parts');
-    put(11,1,opNames.filter(Boolean).join(', ')); put(11,6,msa.repeats); put(11,8,msa.parts); put(11,10,msa.operators.length); put(11,12,date); put(11,16,opNames.join(',')); put(11,18,msa.repeats); put(11,20,msa.parts);
-
-    const headerRow=14, dataStart=15;
-    put(13,1,'측정자 / 반복'); put(13,3,'Sample 시료'); put(13,15,'측정시스템분석');
-    put(headerRow,1,'측정자'); put(headerRow,2,'반복');
-    for(let p=0;p<msa.parts;p++)put(headerRow,3+p,p+1);
-    const avgCol=3+msa.parts, rangeCol=avgCol+1;
-    put(headerRow,avgCol,'Ave. 평균값'); put(headerRow,rangeCol,'Range 범위');
-
-    const opAvgRows=[], opRangeRows=[], dataRowsByOp=[];
-    let rr=dataStart;
-    msa.operators.forEach((op,oi)=>{
-      const opRows=[];
-      for(let rep=0;rep<msa.repeats;rep++){
-        put(rr,1,rep===0?`${1+oi*msa.repeats}.   ${op}`:rr-dataStart+1);
-        put(rr,2,(rep+1)+'회');
-        for(let p=0;p<msa.parts;p++)put(rr,3+p,Number(msa.data[oi]?.[rep]?.[p]||0));
-        opRows.push(rr);
-        rr++;
-      }
-      put(rr,1,(rr-dataStart+1)+'. AVE.'); put(rr,2,'평균');
-      for(let p=0;p<msa.parts;p++)put(rr,3+p,'');
-      opAvgRows.push(rr); rr++;
-      put(rr,1,(rr-dataStart+1)+'. Range'); put(rr,2,'범위');
-      for(let p=0;p<msa.parts;p++)put(rr,3+p,'');
-      opRangeRows.push(rr); dataRowsByOp.push(opRows); rr++;
-    });
-    const partAvgRow=rr+1; put(partAvgRow,1,'Part AVE'); put(partAvgRow,2,'시료평균(Xp)');
-    for(let p=0;p<msa.parts;p++)put(partAvgRow,3+p,'');
-
-    const calcRow=13;
-    put(calcRow,15,'반복성 EV'); put(calcRow,16,'= Rbar × K1'); put(calcRow,20,'K1'); put(calcRow,21,k1Const(msa.repeats));
-    put(calcRow+2,15,'재현성 AV'); put(calcRow+2,16,'= √((Xdiff×K2)^2 - EV^2/(n×r))'); put(calcRow+2,20,'K2'); put(calcRow+2,21,k2Const(msa.operators.length));
-    put(calcRow+4,15,'반복성 및 재현성 GRR'); put(calcRow+4,16,'= √(EV^2 + AV^2)');
-    put(calcRow+6,15,'시료변동 PV'); put(calcRow+6,16,'= Rp × K3'); put(calcRow+6,20,'K3'); put(calcRow+6,21,k3Const(msa.parts));
-    put(calcRow+8,15,'총변동 TV'); put(calcRow+8,16,'= √(GRR^2 + PV^2)');
-    put(calcRow+10,15,'판정'); put(calcRow+10,16,'= %GRR 기준');
-
-    put(35,1,'요약 결과'); put(36,1,'구분'); put(36,2,'결과'); put(36,3,'산식');
-    put(37,1,'EV 반복성'); put(38,1,'AV 재현성'); put(39,1,'GRR'); put(40,1,'PV 제품변동'); put(41,1,'TV 총변동'); put(42,1,'%연구변동'); put(43,1,'%공차'); put(44,1,'ndc'); put(45,1,'최종 판정');
-    put(47,1,'판정 기준'); put(47,2,'%GRR < 10% 우수 / 10~30% 조건부 사용 / 30% 초과 부적합, ndc 5 이상 권장');
-    put(48,1,'비고'); put(48,2,'본 보고서는 나모케미칼 내부 품질관리용 시스템(Q Insight)에서 생성되었습니다.');
-
-    const ws=XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols']=[{wch:4},{wch:18},{wch:12},...Array.from({length:msa.parts},()=>({wch:11})),{wch:14},{wch:14},{wch:18},{wch:18},{wch:14},{wch:12},{wch:12},{wch:14},{wch:14}];
-    ws['!merges']=[
-      {s:{r:0,c:1},e:{r:1,c:10}},
-      {s:{r:0,c:16},e:{r:0,c:21}},
-      {s:{r:13,c:3},e:{r:13,c:2+msa.parts}},
-      {s:{r:35,c:1},e:{r:35,c:3}}
-    ];
-
-    // Matrix formulas: row averages/ranges, operator averages/ranges, part averages.
-    dataRowsByOp.forEach((opRows,oi)=>{
-      opRows.forEach(row=>{
-        const a=caddr(row,3), b=caddr(row,2+msa.parts);
-        setFormula(ws,row,avgCol,`AVERAGE(${a}:${b})`,Number(avg((msa.data[oi][opRows.indexOf(row)]||[]).map(Number).filter(Number.isFinite))||0));
-        setFormula(ws,row,rangeCol,`MAX(${a}:${b})-MIN(${a}:${b})`,0);
-      });
-      const avgRow=opAvgRows[oi], rangeRow=opRangeRows[oi];
-      for(let p=0;p<msa.parts;p++){
-        const refs=opRows.map(row=>caddr(row,3+p)).join(',');
-        setFormula(ws,avgRow,3+p,`AVERAGE(${refs})`,0);
-        setFormula(ws,rangeRow,3+p,`MAX(${refs})-MIN(${refs})`,0);
-      }
-      setFormula(ws,avgRow,avgCol,`AVERAGE(${caddr(avgRow,3)}:${caddr(avgRow,2+msa.parts)})`,0);
-      setFormula(ws,rangeRow,rangeCol,`AVERAGE(${caddr(rangeRow,3)}:${caddr(rangeRow,2+msa.parts)})`,0);
-    });
-    for(let p=0;p<msa.parts;p++){
-      const refs=opAvgRows.map(row=>caddr(row,3+p)).join(',');
-      setFormula(ws,partAvgRow,3+p,`AVERAGE(${refs})`,0);
+    try{
+      const r=calc();
+      if(!r){alert('측정시스템 분석 데이터가 없습니다.');return;}
+      renderMsaTemplatePreview(r);
+      const tableHtml=$m('msaTemplatePreview')?.innerHTML||'';
+      if(!tableHtml){alert('보고서 양식을 생성하지 못했습니다.');return;}
+      const html = `<!doctype html><html><head><meta charset="UTF-8"></head><body>${tableHtml}</body></html>`;
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(new DOMParser().parseFromString(html,'text/html').querySelector('table'), {raw:false});
+      ws['!cols'] = Array.from({length:30},()=>({wch:10}));
+      XLSX.utils.book_append_sheet(wb, ws, 'Gage R&R 보고서');
+      wb.Workbook = {CalcPr:{fullCalcOnLoad:true}};
+      XLSX.writeFile(wb, `${($m('msaReportNo')?.value||'MSA-GRR')}_보고서.xlsx`);
+    }catch(e){
+      console.error('MSA report download error', e);
+      alert('보고서 엑셀 다운로드 중 오류가 발생했습니다. 콘솔 오류를 확인해주세요.');
     }
-    const allRangeRefs=opRangeRows.map(row=>`${caddr(row,3)}:${caddr(row,2+msa.parts)}`).join(',');
-    const rbarCell=caddr(37,5), xdiffCell=caddr(38,5), rpCell=caddr(40,5);
-    ws[rbarCell]={t:'n',f:`AVERAGE(${allRangeRefs})`,v:0};
-    ws[xdiffCell]={t:'n',f:`MAX(${opAvgRows.map(row=>caddr(row,avgCol)).join(',')})-MIN(${opAvgRows.map(row=>caddr(row,avgCol)).join(',')})`,v:0};
-    ws[rpCell]={t:'n',f:`MAX(${caddr(partAvgRow,3)}:${caddr(partAvgRow,2+msa.parts)})-MIN(${caddr(partAvgRow,3)}:${caddr(partAvgRow,2+msa.parts)})`,v:0};
-
-    // Result formulas. Excel will recalculate when opened; cached values are also provided.
-    setFormula(ws,37,2,`${rbarCell}*${caddr(calcRow,21)}`,r.ev);
-    put(37,3,'Rbar × K1');
-    setFormula(ws,38,2,`SQRT(MAX(0,(${xdiffCell}*${caddr(calcRow+2,21)})^2-(${caddr(37,2)}^2/(${msa.parts}*${msa.repeats}))))`,r.av);
-    put(38,3,'√MAX(0,(Xdiff×K2)^2 - EV^2/(n×r))');
-    setFormula(ws,39,2,`SQRT(${caddr(37,2)}^2+${caddr(38,2)}^2)`,r.grr);
-    put(39,3,'√(EV²+AV²)');
-    setFormula(ws,40,2,`${rpCell}*${caddr(calcRow+6,21)}`,r.pv);
-    put(40,3,'Rp × K3');
-    setFormula(ws,41,2,`SQRT(${caddr(39,2)}^2+${caddr(40,2)}^2)`,r.tv);
-    put(41,3,'√(GRR²+PV²)');
-    setFormula(ws,42,2,`IF(${caddr(41,2)}=0,"",${caddr(39,2)}/${caddr(41,2)}*100)`,r.study);
-    put(42,3,'GRR / TV × 100');
-    setFormula(ws,43,2,`IF(${tol}=0,"",6*${caddr(39,2)}/${tol}*100)`,r.tolPct);
-    put(43,3,'6 × GRR / 공차 × 100');
-    setFormula(ws,44,2,`IF(${caddr(39,2)}=0,"",INT(1.41*${caddr(40,2)}/${caddr(39,2)}))`,r.ndc);
-    put(44,3,'INT(1.41 × PV / GRR)');
-    setFormula(ws,45,2,`IF(${caddr(42,2)}<10,"우수",IF(${caddr(42,2)}<=30,"조건부 사용","부적합"))`,r.judge);
-    put(45,3,'%연구변동 기준');
-
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Gage_RR_보고서');
-    wb.Workbook={CalcPr:{fullCalcOnLoad:true,forceFullCalc:true}};
-    XLSX.writeFile(wb,name);
   }
   function safeFileName(s){return String(s||'report.xlsx').replace(/[\\/:*?"<>|]/g,'_');}
   function k1Const(r){return {2:0.8862,3:0.5908,4:0.4857,5:0.4299}[Number(r)]||0.5908;}
