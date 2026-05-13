@@ -1331,6 +1331,79 @@ function isSenior(u){
   return SENIOR.some(s=>t.includes(s));
 }
 
+
+/* ═══ 단계별 결재 Workflow ═══
+   - 작성자는 로그인 사용자 본인으로 고정
+   - 작성 시 검토자/승인자 지정
+   - 검토자 로그인: 본인 검토 대기 건만 처리 버튼 표시
+   - 승인자 로그인: 검토완료 후 본인 승인 대기 건만 처리 버튼 표시 */
+function userKey(u){return String(u?.id||u?.email||u?.name||'').trim().toLowerCase();}
+function sameUser(a,b){return !!userKey(a)&&!!userKey(b)&&userKey(a)===userKey(b);}
+function me(){return state.currentUser?normalizeSignUser(state.currentUser):null;}
+function approvalStatus(r){
+  const rv=r?.signReviewer||{};
+  const ap=r?.signApprover||{};
+  if(ap.approvedAt||ap.status==='승인완료')return '승인완료';
+  if(rv.reviewedAt||rv.status==='검토완료')return '승인대기';
+  return '검토대기';
+}
+function statusBadge(r){
+  const s=approvalStatus(r);
+  if(s==='승인완료')return '<span class="badge pass">승인완료</span>';
+  if(s==='승인대기')return '<span class="badge info">승인대기</span>';
+  return '<span class="badge hold">검토대기</span>';
+}
+function currentUserInRecord(r){
+  const u=me();
+  return sameUser(u,r?.signWriter)||sameUser(u,r?.signReviewer)||sameUser(u,r?.signApprover)||state.currentUser?.role==='admin';
+}
+function visibleApprovalRows(arr){
+  return (arr||[]).filter(currentUserInRecord);
+}
+function canReview(r){
+  return sameUser(me(),r?.signReviewer)&&approvalStatus(r)==='검토대기';
+}
+function canApprove(r){
+  return sameUser(me(),r?.signApprover)&&approvalStatus(r)==='승인대기';
+}
+function enrichSignedUser(u,role){
+  const base={...(u||{})};
+  if(role==='reviewer')return {...base,status:'검토완료',reviewedAt:new Date().toISOString()};
+  if(role==='approver')return {...base,status:'승인완료',approvedAt:new Date().toISOString()};
+  return {...base,status:'작성완료',writtenAt:new Date().toISOString()};
+}
+function actionBtns(type,r,editAction,delAction,labelAction){
+  const id=esc(r.id);
+  const btn=[];
+  if(canReview(r))btn.push(`<button class="sb edit" data-action="review_${type}" data-id="${id}">검토승인</button>`);
+  if(canApprove(r))btn.push(`<button class="sb edit" data-action="approve_${type}" data-id="${id}">최종승인</button>`);
+  if(state.currentUser?.role==='admin'||sameUser(me(),r.signWriter))btn.push(`<button class="sb edit" data-action="${editAction}" data-id="${id}">수정</button>`);
+  if(labelAction)btn.push(`<button class="sb lbl" data-action="${labelAction}" data-id="${id}">🏷라벨</button>`);
+  if(state.currentUser?.role==='admin')btn.push(`<button class="sb del" data-action="${delAction}" data-id="${id}">삭제</button>`);
+  return `<div class="ai">${btn.join('')}</div>`;
+}
+function payloadForType(type,r){
+  if(type==='iqc')return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:r.signWriter?.name||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
+  if(type==='pqc')return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:r.signWriter?.name||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
+  if(type==='oqc')return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:r.signWriter?.name||'',qty:r.qty,failQty:r.failQty,package:r.package||'',items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
+  return null;
+}
+async function updateApproval(type,id,role){
+  const map={iqc:{arr:state.incoming,url:'/api/iqc',reload:loadIncoming},pqc:{arr:state.process,url:'/api/pqc',reload:loadProcess},oqc:{arr:state.shipment,url:'/api/oqc',reload:loadShipment}};
+  const cfg=map[type]; if(!cfg)return;
+  const r=cfg.arr.find(x=>String(x.id)===String(id)); if(!r)return alert('대상 문서를 찾을 수 없습니다.');
+  if(role==='reviewer'&&!canReview(r))return alert('현재 로그인 사용자의 검토 대상이 아닙니다.');
+  if(role==='approver'&&!canApprove(r))return alert('현재 로그인 사용자의 승인 대상이 아닙니다.');
+  if(!confirm(role==='reviewer'?'검토 승인 처리하시겠습니까?':'최종 승인 처리하시겠습니까?'))return;
+  const signer=enrichSignedUser(me(),role);
+  if(role==='reviewer')r.signReviewer={...(r.signReviewer||{}),...signer};
+  if(role==='approver')r.signApprover={...(r.signApprover||{}),...signer};
+  const payload=payloadForType(type,r);
+  const {data}=await api(`${cfg.url}/${id}`,{method:'PUT',body:JSON.stringify(payload)});
+  alert(data?.message||'처리되었습니다.');
+  if(data?.success!==false){await cfg.reload(); renderSummary();}
+}
+
 /* ═══ 서명 그리드 ═══ */
 const SIGN_TYPES=['iqc','pqc','oqc','nc'];
 
@@ -1564,22 +1637,20 @@ function buildSignGrid(type){
   const warnEl=document.getElementById(`signWarn_${type}`);
   if(!container)return;
 
-  /* 전체 승인된 회원을 후보로 노출
-     - 작성자: 승인된 전체 회원
-     - 검토자/승인자: 부장급 이상 또는 관리자 권한 회원 */
-  const writerUsers=state.signableUsers||[];
-  const managerUsers=writerUsers.filter(isSenior);
+  const current=me();
+  const writerUsers=current?[current]:[];
+  const managerUsers=(state.signableUsers||[]).filter(isSenior);
 
   if(warnEl){
-    warnEl.style.display=writerUsers.length===0?'block':'none';
-    warnEl.textContent='⚠️ 등록된 승인 회원이 없습니다. 관리자 메뉴에서 회원을 등록/승인하면 작성자/검토자/승인자를 선택할 수 있습니다.';
+    warnEl.style.display=!current?'block':'none';
+    warnEl.textContent='⚠️ 로그인 사용자 정보를 확인할 수 없습니다. 다시 로그인 후 사용해주세요.';
   }
 
   const mkOpts=(list,ph)=>`<option value="">${ph}</option>`+
     list.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
 
   const signPad=(role,label)=>`
-    <div class="sign-pad-wrap">
+    <div class="sign-pad-wrap" data-pad-role="${role}">
       <canvas class="sign-pad" id="sg_${type}_${role}_pad" data-sign-type="${type}" data-sign-role="${role}" aria-label="${label} 전자서명"></canvas>
       <div class="sign-tools">
         <span class="sign-date" id="sg_${type}_${role}_date"></span>
@@ -1589,21 +1660,15 @@ function buildSignGrid(type){
 
   container.innerHTML=`
     <div class="sign-box">
-      <div class="sign-box-hdr">
-        <span class="sign-box-role">작성자 (검사자)</span>
-        <span class="sign-box-badge any">회원 ${writerUsers.length}명</span>
-      </div>
+      <div class="sign-box-hdr"><span class="sign-box-role">작성자</span><span class="sign-box-badge any">본인</span></div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_writer">${mkOpts(writerUsers,'-- 작성자 선택 --')}</select>
+        <select class="sign-sel" id="sg_${type}_writer" disabled>${mkOpts(writerUsers,'-- 로그인 필요 --')}</select>
         <div class="sign-sub" id="sg_${type}_writer_sub" style="color:var(--t3);"></div>
         ${signPad('writer','작성자')}
       </div>
     </div>
     <div class="sign-box">
-      <div class="sign-box-hdr">
-        <span class="sign-box-role">검토자</span>
-        <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
-      </div>
+      <div class="sign-box-hdr"><span class="sign-box-role">검토자 지정</span><span class="sign-box-badge mgr">부장급 이상/관리자</span></div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(managerUsers,'-- 검토자 선택 --')}</select>
         <div class="sign-sub" id="sg_${type}_reviewer_sub" style="color:var(--t3);"></div>
@@ -1611,10 +1676,7 @@ function buildSignGrid(type){
       </div>
     </div>
     <div class="sign-box">
-      <div class="sign-box-hdr">
-        <span class="sign-box-role">승인자</span>
-        <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
-      </div>
+      <div class="sign-box-hdr"><span class="sign-box-role">승인자 지정</span><span class="sign-box-badge mgr">부장급 이상/관리자</span></div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_approver">${mkOpts(managerUsers,'-- 승인자 선택 --')}</select>
         <div class="sign-sub" id="sg_${type}_approver_sub" style="color:var(--t3);"></div>
@@ -1626,9 +1688,7 @@ function buildSignGrid(type){
     const sel=document.getElementById(`sg_${type}_${role}`);
     if(sel){
       sel.addEventListener('change',()=>onSignChange(type,role));
-      if(sel.options.length===2 && !sel.value){
-        sel.selectedIndex=1;
-      }
+      if(role==='writer' && writerUsers[0]) sel.value=writerUsers[0].id;
     }
     initSignaturePad(type,role);
     onSignChange(type,role);
@@ -1672,7 +1732,8 @@ function getSignPayload(type){
     const u=state.signableUsers.find(x=>x.id===sel.value);
     return u?{id:u.id,name:u.name,title:u.title||'',department:u.department||'',...sig}:{name:'-',title:'',department:'',...sig};
   };
-  return{writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
+  const writer=enrichSignedUser(find('writer'),'writer');
+  return{writer,reviewer:find('reviewer'),approver:find('approver')};
 }
 
 function restoreSign(type,record){
@@ -1708,6 +1769,9 @@ function clearSign(type){
     if(rn)rn.textContent='-';if(rt)rt.textContent='';
     updateSignaturePreview(type,role);
   });
+  const current=me();
+  const w=document.getElementById(`sg_${type}_writer`);
+  if(w&&current){w.value=current.id;onSignChange(type,'writer');}
 }
 
 /* ═══ BARCODE ═══ */
@@ -2218,17 +2282,24 @@ async function loadAll데이터(){
 
 /* ═══ RENDER TABLES ═══ */
 function renderIncomingTable(){
-  const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
-  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  const tb=$('incomingTable');
+  const rows=visibleApprovalRows(state.incoming);
+  if(!rows.length){tb.innerHTML=eRow(12,'현재 로그인 사용자의 작성/검토/승인 대상이 없습니다.');return;}
+  tb.innerHTML=rows.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}<br>${statusBadge(r)}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td>${actionBtns('iqc',r,'editIncoming','deleteIncoming','labelIncoming')}</td></tr>`).join('');
 }
 function renderProcessTable(){
-  const tb=$('processTable');if(!state.process.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  const tb=$('processTable');
+  const rows=visibleApprovalRows(state.process);
+  if(!rows.length){tb.innerHTML=eRow(11,'현재 로그인 사용자의 작성/검토/승인 대상이 없습니다.');return;}
+  tb.innerHTML=rows.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}<br>${statusBadge(r)}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td>${actionBtns('pqc',r,'editProcess','deleteProcess','labelProcess')}</td></tr>`).join('');
 }
 function renderShipmentTable(){
-  const tb=$('shipmentTable');if(!state.shipment.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.shipment.map(r=>`<tr><td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  const tb=$('shipmentTable');
+  const rows=visibleApprovalRows(state.shipment);
+  if(!rows.length){tb.innerHTML=eRow(11,'현재 로그인 사용자의 작성/검토/승인 대상이 없습니다.');return;}
+  tb.innerHTML=rows.map(r=>`<tr><td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}<br>${statusBadge(r)}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td>${actionBtns('oqc',r,'editShipment','deleteShipment','labelShipment')}</td></tr>`).join('');
 }
+
 function ncStatusBadge(s){const cls=s==='완결'?'closed':s==='처리중'?'progress':'open';return`<span class="nc-status ${cls}">${esc(s||'미결')}</span>`;}
 function renderNcTable(){
   const tb=$('nonconformTable');if(!state.nonconform.length){tb.innerHTML=eRow(13);return;}
@@ -2314,7 +2385,7 @@ function saveInstrument(){
     remark:$('instrumentRemark').value.trim()
   };
   if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
-  const idx=state.instruments.find지표(x=>String(x.id)===String(id));
+  const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
   if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
   saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
 }
@@ -2336,6 +2407,7 @@ function deleteInstrument(id){
 /* ═══ SAVE ═══ */
 async function saveIqc(){
   const sp=getSignPayload('iqc');
+  if(!sp.writer.id||!sp.reviewer.id||!sp.approver.id){alert('작성자/검토자/승인자를 모두 지정하세요.');return;}
   const p={date:$('incomingDate').value,lot:$('incomingLot').value.trim(),supplier:$('incomingSupplier').value.trim(),item:$('incomingItem').value.trim(),inspector:sp.writer.name,incomingQty:$('incomingQty').value,checkQty:$('incomingCheckQty').value,failQty:$('incomingFailQty').value,items:JSON.parse(JSON.stringify(state.incomingItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('incomingEditId').value;
   const{data}=await api(id?`/api/iqc/${id}`:'/api/iqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
@@ -2343,6 +2415,7 @@ async function saveIqc(){
 }
 async function savePqc(){
   const sp=getSignPayload('pqc');
+  if(!sp.writer.id||!sp.reviewer.id||!sp.approver.id){alert('작성자/검토자/승인자를 모두 지정하세요.');return;}
   const p={date:$('processDate').value,lot:$('processLot').value.trim(),product:$('processProduct').value.trim(),visual:$('processLine').value.trim(),solid:sp.writer.name,particle:$('processShift').value.trim(),qty:$('processQty').value,failQty:$('processFailQty').value,items:JSON.parse(JSON.stringify(state.processItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('processEditId').value;
   const{data}=await api(id?`/api/pqc/${id}`:'/api/pqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
@@ -2350,6 +2423,7 @@ async function savePqc(){
 }
 async function saveOqc(){
   const sp=getSignPayload('oqc');
+  if(!sp.writer.id||!sp.reviewer.id||!sp.approver.id){alert('작성자/검토자/승인자를 모두 지정하세요.');return;}
   const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),lot:$('shipmentLot').value.trim(),visual:sp.writer.name,qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
@@ -2681,6 +2755,9 @@ $('printReportPage').onclick=()=>{
   // 테이블 위임
   const tA={
     editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,editSpc,deleteSpc,
+    review_iqc:id=>updateApproval('iqc',id,'reviewer'), approve_iqc:id=>updateApproval('iqc',id,'approver'),
+    review_pqc:id=>updateApproval('pqc',id,'reviewer'), approve_pqc:id=>updateApproval('pqc',id,'approver'),
+    review_oqc:id=>updateApproval('oqc',id,'reviewer'), approve_oqc:id=>updateApproval('oqc',id,'approver'),
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
