@@ -1211,7 +1211,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
               <div class="card mt14">
                 <div class="ch"><h3>1. 측정 관측 매트릭스</h3><span class="tag">측정자 × 반복 × 시료</span></div>
-                <div class="cb"><div class="tw"><table><thead id="msaHead"></thead><tbody id="msaBody"></tbody></table></div><div class="spc-note">첨부한 측정시스템 분석 양식(.xlsx/.csv)을 업로드하면 측정자·반복·시료 매트릭스를 자동 인식합니다. 셀 값 수정 시 반복성(EV), 재현성(AV), GRR, 제품변동(PV), ndc가 자동 재계산됩니다.</div></div>
+                <div class="cb"><div class="tw"><table><thead id="msaHead"></thead><tbody id="msaBody"></tbody></table></div><div class="spc-note">첨부한 측정시스템 분석 양식(.xlsx/.csv)을 업로드하면 측정자 A/B/C 포함 여부, 반복수, 시료수를 자동 인식합니다. 셀 값 수정 시 반복성(EV), 재현성(AV), GRR, 제품변동(PV), ndc가 자동 재계산됩니다.</div></div>
               </div>
 
               <div class="spc-three mt14">
@@ -3032,8 +3032,39 @@ function renderMatrix(){
       }
     }
   }
-  function findMatrixFromRows(rows){
+  
+  function detectMsaOperatorsFromRows(rows){
+    const found=new Set();
+    const names={};
+    rows.forEach(row=>{
+      for(let c=0;c<row.length;c++){
+        const s=String(row[c]??'').replace(/\s+/g,' ').trim();
+        const m=s.match(/^(?:측정자|Appraiser)\s*([A-E])$/i);
+        if(m){
+          const op=m[1].toUpperCase();
+          found.add(op);
+          for(let j=c+1;j<Math.min(row.length,c+8);j++){
+            const v=String(row[j]??'').trim();
+            if(v && !/^(측정자|Appraiser|Gage|Part|Project|Item|Trials|Parts|Date|Upper|Lower|[-])$/i.test(v)){
+              names[op]=v;
+              break;
+            }
+          }
+        }
+      }
+    });
+    return {ops:[...found].sort(), names};
+  }
+  function applyMsaOperatorNames(meta){
+    const ids={A:'msaOpA',B:'msaOpB',C:'msaOpC',D:'msaOpD',E:'msaOpE'};
+    Object.keys(meta.names||{}).forEach(op=>{
+      const el=$m(ids[op]);
+      if(el)el.value=meta.names[op];
+    });
+  }
+function findMatrixFromRows(rows){
     applyMetaFromRows(rows);
+    const metaOps=detectMsaOperatorsFromRows(rows);
 
     let header=-1, partCols=[], repeatCol=-1;
 
@@ -3048,7 +3079,7 @@ function renderMatrix(){
       return cols;
     }
 
-    // 첨부 양식의 "Sample 시료" 바로 아래 1~10만 시료 측정값 열로 인식
+    // 첨부 양식: "Sample 시료" 바로 아래 1~10 시료열만 인식
     for(let r=0;r<rows.length-1;r++){
       const row=rows[r]||[], next=rows[r+1]||[];
       const sampleIdx=row.findIndex(v=>/Sample\s*시\s*료|Sample|시\s*료/.test(String(v??'')) && !/시료수|PV|K3|기준/.test(String(v??'')));
@@ -3069,15 +3100,23 @@ function renderMatrix(){
       const row=rows[r]||[];
       const fullText=row.map(v=>String(v??'')).join(' ');
       const leftText=row.slice(0,partCols[0]).map(v=>String(v??'')).join(' ');
+
+      // Part AVE 이후는 계산 영역
       if(/Part\s*AVE|시료평균|시료변동|Gage\s*R&R|연구변동|총변동|UCLR|LCLR|요약|판정기준/i.test(fullText))break;
+      // AVE/Range 행 제외
       if(/AVE|평균|Range|범위|ra=|rb=|rc=|xa=|xb=|xc=/i.test(leftText))continue;
 
+      // 왼쪽 영역에서 A/B/C 라벨 인식: "A", "B", "C", "1. A", "11. C" 모두 허용
       for(let c=0;c<Math.min(partCols[0], row.length);c++){
         const op=extractOperatorLabel(row[c]);
         if(op&&opIndex[op]!==undefined){currentOp=op;break;}
+        const s=String(row[c]??'').replace(/\s+/g,' ').trim().toUpperCase();
+        const m=s.match(/(?:^|\s)([A-E])(?:\s|$)/);
+        if(m&&opIndex[m[1]]!==undefined){currentOp=m[1];break;}
       }
       if(!currentOp)continue;
 
+      // 반복은 반드시 1회/2회/3회 등 "회"가 붙은 셀만 인정
       let rep=null;
       for(const c of [repeatCol, repeatCol-1, repeatCol+1]){
         if(c>=0&&c<row.length){
@@ -3095,14 +3134,23 @@ function renderMatrix(){
     }
 
     if(!records.length)return false;
-    const opLabels=[...new Set(records.map(x=>x.op))].sort((a,b)=>opIndex[a]-opIndex[b]);
+
+    const dataOps=[...new Set(records.map(x=>x.op))].sort((a,b)=>opIndex[a]-opIndex[b]);
+    const configuredOps = Math.max(2, Math.min(5, Number($m('msaOperators')?.value||3)));
+    const configuredList = Array.from({length:configuredOps},(_,i)=>String.fromCharCode(65+i));
+
+    // 실제 데이터 행, 헤더(Appraiser C/측정자 C), 현재 설정값을 함께 고려
+    let opLabels=[...new Set([...dataOps, ...(metaOps.ops||[]), ...configuredList])].filter(op=>opIndex[op]!==undefined).sort((a,b)=>opIndex[a]-opIndex[b]);
+
+    // 단, 데이터와 헤더 모두 A/B만 있으면 2명으로 축소
+    if(dataOps.length===2 && (metaOps.ops||[]).length<=2 && configuredOps<=2) opLabels=dataOps;
+
     const reps=Math.max(...records.map(x=>x.rep))+1;
     const parts=partCols.length;
     if(opLabels.length<2||reps<2||parts<5)return false;
 
     const seen=new Set(), clean=[];
     records.forEach(rec=>{const key=rec.op+'|'+rec.rep;if(!seen.has(key)){seen.add(key);clean.push(rec);}});
-    if(clean.length<opLabels.length*reps)return false;
 
     setIf('msaOperators',opLabels.length);
     setIf('msaRepeats',reps);
@@ -3111,6 +3159,8 @@ function renderMatrix(){
     msa.operators=opLabels;
     msa.repeats=reps;
     msa.parts=parts;
+
+    applyMsaOperatorNames(metaOps);
 
     const data=Array.from({length:opLabels.length},()=>Array.from({length:reps},()=>Array(parts).fill('')));
     const labelToIndex=Object.fromEntries(opLabels.map((op,i)=>[op,i]));
@@ -3123,8 +3173,11 @@ function renderMatrix(){
     msa.data=data;
     renderMatrix();
     recalc();
-    console.log('MSA matrix loaded', {operators:opLabels,repeats:reps,parts,firstVal:data[0]?.[0]?.[0],partCols,header,repeatCol});
-    alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${opLabels.length}명 × 반복 ${reps}회 × 시료 ${parts}개)`);
+
+    const emptyOps=opLabels.filter(op=>!dataOps.includes(op));
+    const extra=emptyOps.length?` / ${emptyOps.join(',')}는 첨부파일에 측정값이 없어 공란으로 표시됩니다.`:'';
+    console.log('MSA matrix loaded', {operators:opLabels,dataOps,metaOps:metaOps.ops,repeats:reps,parts,firstVal:data[0]?.[0]?.[0],partCols,header,repeatCol});
+    alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${opLabels.length}명 × 반복 ${reps}회 × 시료 ${parts}개)${extra}`);
     return true;
   }
   function parseUploaded(file){
