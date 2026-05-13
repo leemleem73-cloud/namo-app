@@ -2637,10 +2637,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
 });
 </script>
 <script>
-/* ═══ 측정시스템 분석(MSA / Gauge R&R) 추가 모듈 ═══ */
+/* ═══ 측정시스템 분석(MSA / Gauge R&R) 안정화 모듈 ═══ */
 (function(){
   const $m=id=>document.getElementById(id);
-  const msa={operators:['A','B','C'],parts:10,repeats:3,data:[],charts:{}};
+  const msa={operators:['A','B','C'],parts:10,repeats:3,data:[],charts:{},bound:false};
   const fmt=(v,d=3)=>Number.isFinite(v)?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:d}).replace(/\.000$/,''):'-';
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
   const sd=a=>{if(a.length<2)return NaN;const m=avg(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/(a.length-1));};
@@ -2651,6 +2651,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const ops=Number($m('msaOperators')?.value||3), parts=Number($m('msaParts')?.value||10), reps=Number($m('msaRepeats')?.value||3);
     msa.operators=Array.from({length:Math.max(2,Math.min(5,ops))},(_,i)=>String.fromCharCode(65+i));
     msa.parts=Math.max(5,Math.min(30,parts)); msa.repeats=Math.max(2,Math.min(5,reps));
+  }
+  function blankData(){
+    readConfig();
+    msa.data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
+    renderMatrix(); recalc();
   }
   function sampleData(){
     readConfig(); msa.data=[];
@@ -2671,7 +2676,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     renderMatrix(); recalc();
   }
-  function ensureData(){readConfig(); if(msa.data.length===msa.operators.length)return; sampleData();}
+  function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
   function renderMatrix(){
     readConfig();
     const head=$m('msaHead'), body=$m('msaBody'); if(!head||!body)return;
@@ -2704,7 +2709,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const partMeans=Array.from({length:msa.parts},(_,p)=>avg(values.filter(x=>x.p===p).map(x=>x.v)));
     const cellRanges=[];
     for(let oi=0;oi<msa.operators.length;oi++){for(let p=0;p<msa.parts;p++){const a=[];for(let r=0;r<msa.repeats;r++){const v=Number(msa.data[oi]?.[r]?.[p]);if(Number.isFinite(v))a.push(v);} if(a.length>1)cellRanges.push(Math.max(...a)-Math.min(...a));}}
-    const ev=(avg(cellRanges)||0)/1.693; // 근사: 반복 3회 기준 d2, 내부 참고용
+    const d2ByRep={2:1.128,3:1.693,4:2.059,5:2.326};
+    const ev=(avg(cellRanges)||0)/(d2ByRep[msa.repeats]||1.693);
     const av=sd(opMeans)||0;
     const pv=sd(partMeans)||0;
     const grr=Math.sqrt(ev*ev+av*av);
@@ -2719,9 +2725,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function pill(v){const cls=v==='우수'?'good':(v==='조건부 사용'?'warn':'bad');return `<span class="spc-status-pill ${cls}">${v}</span>`;}
   function row(a,b){return `<tr><td>${a}</td><td>${b}</td></tr>`;}
   function recalc(){
-    const r=calc(); if(!r){return;}
-    const unit=$m('msaUnit')?.value||'';
+    const r=calc();
     const set=(id,v)=>{const e=$m(id); if(e)e.textContent=v;};
+    if(!r){['msaStudyVar','msaTolerancePct','msaNdc','msaEV','msaAV','msaJudge'].forEach(id=>set(id,'-'));return;}
+    const unit=$m('msaUnit')?.value||'';
     set('msaStudyVar',Number.isFinite(r.study)?fmt(r.study,1)+'%':'-');
     set('msaTolerancePct',Number.isFinite(r.tolPct)?fmt(r.tolPct,1)+'%':'-');
     set('msaNdc',Number.isFinite(r.ndc)?String(r.ndc):'-');
@@ -2734,44 +2741,86 @@ document.addEventListener('DOMContentLoaded',async()=>{
     chart('var','msaVariationChart','bar',['EV','AV','GRR','PV','TV'],[{label:'변동',data:[r.ev,r.av,r.grr,r.pv,r.tv]}]);
     chart('range','msaRangeChart','line',r.cellRanges.map((_,i)=>String(i+1)),[{label:'반복 범위',data:r.cellRanges,tension:.25}]);
   }
+  function selectWorksheet(wb){
+    const preferred=['RawData_입력','RawData','MSA','GRR','DATA','Data'];
+    for(const name of preferred){const hit=wb.SheetNames.find(s=>s.trim().toLowerCase()===name.toLowerCase()); if(hit)return wb.Sheets[hit];}
+    return wb.Sheets[wb.SheetNames[0]];
+  }
+  function fillFromNumbers(nums){
+    readConfig(); let idx=0; msa.data=[];
+    for(let oi=0;oi<msa.operators.length;oi++){
+      const op=[];
+      for(let r=0;r<msa.repeats;r++){
+        const row=[];
+        for(let p=0;p<msa.parts;p++) row.push(Number.isFinite(nums[idx])?nums[idx++]:0);
+        op.push(row);
+      }
+      msa.data.push(op);
+    }
+    renderMatrix(); recalc();
+    alert(`측정값 ${Math.min(nums.length, msa.operators.length*msa.repeats*msa.parts)}개를 불러왔습니다.`);
+  }
   function parseUploaded(file){
     if(!file)return;
     const reader=new FileReader();
     reader.onload=e=>{
       try{
         let rows=[];
-        if(file.name.toLowerCase().endsWith('.csv')){
-          rows=String(e.target.result).split(/\r?\n/).map(line=>line.split(/,|\t/));
+        const lower=file.name.toLowerCase();
+        if(lower.endsWith('.csv')){
+          rows=String(e.target.result).replace(/^\ufeff/,'').split(/\r?\n/).map(line=>line.split(/,|\t/));
         }else{
-          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+          if(!window.XLSX){alert('엑셀 읽기 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인해주세요.');return;}
+          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+          const ws=selectWorksheet(wb);
+          rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
         }
-        const nums=[]; rows.flat().forEach(x=>{const n=Number(String(x).replace(/,/g,'').trim()); if(Number.isFinite(n))nums.push(n);});
-        readConfig(); let idx=0; msa.data=[];
-        for(let oi=0;oi<msa.operators.length;oi++){const op=[];for(let r=0;r<msa.repeats;r++){const row=[];for(let p=0;p<msa.parts;p++){row.push(Number.isFinite(nums[idx])?nums[idx++]:0);}op.push(row);}msa.data.push(op);}
-        renderMatrix(); recalc(); alert(`측정값 ${Math.min(nums.length, msa.operators.length*msa.repeats*msa.parts)}개를 불러왔습니다.`);
-      }catch(err){alert('업로드 파일을 읽지 못했습니다. CSV 또는 XLSX 형식을 확인해주세요.');}
+        const nums=[];
+        rows.flat().forEach(x=>{
+          const s=String(x).replace(/,/g,'').replace(/[<>≤≥=]/g,'').trim();
+          if(!s)return;
+          const n=Number(s);
+          if(Number.isFinite(n)) nums.push(n);
+        });
+        if(!nums.length){alert('업로드 파일에서 숫자 측정값을 찾지 못했습니다.');return;}
+        fillFromNumbers(nums);
+      }catch(err){console.error(err);alert('업로드 파일을 읽지 못했습니다. CSV 또는 XLSX 형식을 확인해주세요.');}
     };
-    if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file); else reader.readAsArrayBuffer(file);
+    if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file,'utf-8'); else reader.readAsArrayBuffer(file);
   }
   function downloadReport(){
     const r=calc(); if(!r){alert('분석 데이터가 없습니다.'); return;}
-    const lines=[]; lines.push(['보고서번호',$m('msaReportNo')?.value||''].join(',')); lines.push(['항목',$m('msaItem')?.value||''].join(',')); lines.push(['판정',r.judge].join(',')); lines.push(['%연구변동',fmt(r.study,2)].join(',')); lines.push(['%공차',fmt(r.tolPct,2)].join(',')); lines.push(['ndc',fmt(r.ndc,0)].join(',')); lines.push('');
-    lines.push(['측정자','반복',...Array.from({length:msa.parts},(_,i)=>'시료'+(i+1))].join(','));
-    msa.operators.forEach((op,oi)=>{for(let rep=0;rep<msa.repeats;rep++){lines.push([op,rep+1,...(msa.data[oi]?.[rep]||[])].join(','));}});
-    const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=($m('msaReportNo')?.value||'MSA-GRR')+'.csv'; a.click(); URL.revokeObjectURL(a.href);
+    const meta=[['보고서번호',$m('msaReportNo')?.value||''],['측정항목',$m('msaItem')?.value||''],['측정장비',$m('msaGauge')?.value||''],['측정일자',$m('msaDate')?.value||''],['판정',r.judge],['%연구변동',fmt(r.study,2)],['%공차',fmt(r.tolPct,2)],['ndc',fmt(r.ndc,0)],['반복성 EV',fmt(r.ev,4)],['재현성 AV',fmt(r.av,4)],['GRR',fmt(r.grr,4)],['제품변동 PV',fmt(r.pv,4)],['총변동 TV',fmt(r.tv,4)]];
+    const raw=[['측정자','반복',...Array.from({length:msa.parts},(_,i)=>'시료'+(i+1))]];
+    msa.operators.forEach((op,oi)=>{for(let rep=0;rep<msa.repeats;rep++){raw.push([op,rep+1,...(msa.data[oi]?.[rep]||[])]);}});
+    const name=($m('msaReportNo')?.value||'MSA-GRR')+'_보고서';
+    if(window.XLSX){
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(meta),'분석결과');
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(raw),'측정데이터');
+      XLSX.writeFile(wb,name+'.xlsx');
+      return;
+    }
+    const csv=[...meta.map(r=>r.join(',')),'',...raw.map(r=>r.join(','))].join('\r\n');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'.csv'; a.click(); URL.revokeObjectURL(a.href);
   }
   function bind(){
+    if(msa.bound)return; msa.bound=true;
     setToday(); sampleData();
-    $m('msaLoadSample')?.addEventListener('click',sampleData);
-    $m('msaReset')?.addEventListener('click',()=>{msa.data=[];sampleData();});
-    $m('msaUploadBtn')?.addEventListener('click',()=>$m('msaFileUpload')?.click());
+    document.addEventListener('click',e=>{
+      if(e.target.closest('#msaLoadSample')){e.preventDefault();sampleData();}
+      if(e.target.closest('#msaReset')){e.preventDefault();blankData();}
+      if(e.target.closest('#msaUploadBtn')){e.preventDefault();$m('msaFileUpload')?.click();}
+      if(e.target.closest('#msaDownloadReport')){e.preventDefault();downloadReport();}
+    });
     $m('msaFileUpload')?.addEventListener('change',e=>parseUploaded(e.target.files&&e.target.files[0]));
-    $m('msaDownloadReport')?.addEventListener('click',downloadReport);
-    ['msaOperators','msaParts','msaRepeats'].forEach(id=>$m(id)?.addEventListener('change',sampleData));
+    ['msaOperators','msaParts','msaRepeats'].forEach(id=>$m(id)?.addEventListener('change',()=>{blankData();}));
     ['msaTolerance','msaUnit'].forEach(id=>$m(id)?.addEventListener('input',recalc));
-    $m('msaBody')?.addEventListener('input',e=>{const t=e.target;if(t.dataset.msaOp===undefined)return;const oi=Number(t.dataset.msaOp),rep=Number(t.dataset.msaRep),part=Number(t.dataset.msaPart); if(!msa.data[oi])msa.data[oi]=[]; if(!msa.data[oi][rep])msa.data[oi][rep]=[]; msa.data[oi][rep][part]=Number(t.value); renderMatrix(); recalc();});
+    $m('msaBody')?.addEventListener('change',e=>{const t=e.target;if(t.dataset.msaOp===undefined)return;const oi=Number(t.dataset.msaOp),rep=Number(t.dataset.msaRep),part=Number(t.dataset.msaPart); if(!msa.data[oi])msa.data[oi]=[]; if(!msa.data[oi][rep])msa.data[oi][rep]=[]; msa.data[oi][rep][part]=Number(t.value); renderMatrix(); recalc();});
   }
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,150));
+  window.__namoMsaBind=bind;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,100));else setTimeout(bind,100);
 })();
 </script>
 
