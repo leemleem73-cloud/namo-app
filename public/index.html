@@ -1096,7 +1096,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <button type="button" class="spc-pro-nav" data-spc-view="stability">📈 안정성 분석</button>
             <button type="button" class="spc-pro-nav" data-spc-view="variation">🔔 산포 분석</button>
             <button type="button" class="spc-pro-nav" data-spc-view="report">📄 분석 보고서</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="gauge">🧪 측정 시스템</button>
             <div class="spc-upload-box spc-pro-upload" id="spcUploadBox">
               <div class="spc-upload-title">엑셀 / CSV 업로드</div>
               <div class="spc-upload-icon">📁</div>
@@ -1171,73 +1170,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="card"><div class="ch"><h3 id="spcReportTitle">측정 보고서</h3><div class="ca"><button class="btn pri sm" type="button" id="spcDownloadJson">데이터 다운로드</button><button class="btn light sm" type="button" id="spcPrintReport">보고서 인쇄</button></div></div><div class="cb" id="spcReportArea"><div class="spc-three"><div class="card"><div class="ch"><h3>1. 요약 정보</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportExec"></tbody></table></div></div><div class="card"><div class="ch"><h3>2. 관리 기준</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportBoundary"></tbody></table></div></div><div class="card"><div class="ch"><h3>3. 공정 적합성</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportReadiness"></tbody></table></div></div></div><div class="spc-chart-grid mt14"><div class="card"><div class="ch"><h3>히스토그램</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReportHist"></canvas></div></div></div><div class="card"><div class="ch"><h3>평균 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReportXbar"></canvas></div></div></div></div><h3 class="mt14">4. 측정값 기록</h3><div class="tw"><table><thead id="spcReportHead"></thead><tbody id="spcReportTable"></tbody></table></div></div></div>
             </div>
 
-            <div class="spc-view" id="spcView-gauge">
-              <div class="card">
-                <div class="ch">
-                  <h3>측정시스템 분석 · 첨부양식 기반 반복성/재현성</h3>
-                  <div class="ca">
-                    <button class="btn pri sm" type="button" id="msaLoadSample">예시 불러오기</button>
-                    <button class="btn light sm" type="button" id="msaReset">초기화</button>
-                    <button class="btn ghost sm" type="button" id="msaUploadBtn">양식 업로드</button>
-                    <button class="btn pri sm" type="button" id="msaDownloadReport">보고서 엑셀 다운로드</button>
-                    <input type="file" id="msaFileUpload" accept=".xlsx,.xls,.csv,text/csv" style="display:none">
-                  </div>
-                </div>
-                <div class="cb">
-                  <div class="fg4">
-                    <div class="field"><label>보고서 번호</label><input id="msaReportNo" value="MSA-GRR-2026-001"></div>
-                    <div class="field"><label>측정항목</label><input id="msaItem" value="Dmax"></div>
-                    <div class="field"><label>측정장비</label><input id="msaGauge" value="측정기"></div>
-                    <div class="field"><label>측정자 수</label><input type="number" id="msaOperators" value="3" min="2" max="5"></div>
-                    <div class="field"><label>시료 수</label><input type="number" id="msaParts" value="10" min="5" max="30"></div>
-                    <div class="field"><label>반복 수</label><input type="number" id="msaRepeats" value="3" min="2" max="5"></div>
-                    <div class="field"><label>공차 기준</label><input type="number" step="any" id="msaTolerance" value="10"></div>
-                    <div class="field"><label>단위</label><input id="msaUnit" value="μm"></div>
-                    <div class="field"><label>측정일자</label><input type="date" id="msaDate"></div>
-                    <div class="field"><label>측정자 A</label><input id="msaOpA" placeholder="이름"></div>
-                    <div class="field"><label>측정자 B</label><input id="msaOpB" placeholder="이름"></div>
-                    <div class="field"><label>측정자 C</label><input id="msaOpC" placeholder="이름"></div>
-                  </div>
-                  <div class="spc-kpi spc-kpi-pro mt14">
-                    <div class="kpi"><div class="kpi-l">%연구변동</div><div class="kpi-v" id="msaStudyVar">-</div></div>
-                    <div class="kpi"><div class="kpi-l">%공차</div><div class="kpi-v" id="msaTolerancePct">-</div></div>
-                    <div class="kpi"><div class="kpi-l">ndc</div><div class="kpi-v" id="msaNdc">-</div></div>
-                    <div class="kpi"><div class="kpi-l">반복성 EV</div><div class="kpi-v" id="msaEV">-</div></div>
-                    <div class="kpi"><div class="kpi-l">재현성 AV</div><div class="kpi-v" id="msaAV">-</div></div>
-                    <div class="kpi"><div class="kpi-l">최종 판정</div><div class="kpi-v" id="msaJudge">-</div></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card mt14">
-                <div class="ch"><h3>1. 측정 관측 매트릭스</h3><span class="tag">측정자 × 반복 × 시료</span></div>
-                <div class="cb"><div class="tw"><table><thead id="msaHead"></thead><tbody id="msaBody"></tbody></table></div><div class="spc-note">첨부한 측정시스템 분석 양식(.xlsx/.csv)을 업로드하면 측정자·반복·시료 매트릭스를 자동 인식합니다. 셀 값 수정 시 반복성(EV), 재현성(AV), GRR, 제품변동(PV), ndc가 자동 재계산됩니다.</div></div>
-              </div>
-
-              <div class="spc-three mt14">
-                <div class="card"><div class="ch"><h3>2. GRR 결과</h3></div><div class="cb"><table class="spc-mini"><tbody id="msaResultBody"></tbody></table></div></div>
-                <div class="card"><div class="ch"><h3>3. 측정자별 평균</h3></div><div class="cb"><table class="spc-mini"><tbody id="msaOperatorBody"></tbody></table></div></div>
-                <div class="card"><div class="ch"><h3>4. 판정 기준</h3></div><div class="cb"><table class="spc-mini"><tbody id="msaJudgeBody"></tbody></table></div></div>
-              </div>
-
-              <div class="card mt14">
-                <div class="ch"><h3>첨부파일형 Gage R&R 분석 보고서 미리보기</h3><span class="tag">첨부 양식 스타일</span></div>
-                <div class="cb"></div>
-              </div>
-
-              <div class="spc-chart-grid mt14">
-                <div class="card"><div class="ch"><h3>측정자별 평균 차트</h3></div><div class="cb"><div class="cwrap"><canvas id="msaOperatorChart"></canvas></div></div></div>
-                <div class="card"><div class="ch"><h3>시료별 평균 차트</h3></div><div class="cb"><div class="cwrap"><canvas id="msaPartChart"></canvas></div></div></div>
-                <div class="card"><div class="ch"><h3>변동 구성비</h3></div><div class="cb"><div class="cwrap"><canvas id="msaVariationChart"></canvas></div></div></div>
-                <div class="card"><div class="ch"><h3>반복 측정 범위</h3></div><div class="cb"><div class="cwrap"><canvas id="msaRangeChart"></canvas></div></div></div>
-              </div>
-            </div>
-
-
-
-          </div>
-        </div>
-      </section>
+            </section>
 
       <!-- ■ LOT 추적 -->
       <section class="page" id="page-trace">
@@ -2943,27 +2876,12 @@ function renderMatrix(){
   }
   function setIf(id,v){const e=$m(id); if(e&&v!==undefined&&v!==null&&v!=='')e.value=v;}
   function dateToInput(v){
-    if(v===null||v===undefined||v==='')return '';
-
-    if(v instanceof Date&&!isNaN(v.getTime())){
-      return v.toISOString().slice(0,10);
-    }
-
-    const s=String(v).trim();
-
-    // YYYY-MM-DD / YYYY.MM.DD / YYYY/MM/DD / YYYY년 MM월 DD일 형식만 날짜로 인정
-    const m=s.match(/^(20\d{2})\s*(?:[-/.년])\s*(\d{1,2})\s*(?:[-/.월])\s*(\d{1,2})\s*(?:일)?$/);
+    if(!v)return '';
+    if(v instanceof Date&&!isNaN(v.getTime()))return v.toISOString().slice(0,10);
+    const s=String(v);
+    const m=s.match(/(20\d{2})[-/.년\s]*(\d{1,2})[-/.월\s]*(\d{1,2})/);
     if(!m)return '';
-
-    const y=Number(m[1]);
-    const mo=Number(m[2]);
-    const d=Number(m[3]);
-    const dt=new Date(y,mo-1,d);
-
-    // 2009-82-60 같은 비정상 날짜는 무시
-    if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return '';
-
-    return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
   }
   function extractOperatorLabel(v){
     const s=String(v??'').replace(/\s+/g,'').toUpperCase();
@@ -3008,60 +2926,25 @@ function renderMatrix(){
   function applyMetaFromRows(rows){
     const flat=rows.flat();
     const text=flat.map(v=>String(v??'')).join(' ');
-
     const itemHit=['Dmax','D50','점도','고형분','수분','접착력','절연저항','팽윤성','입도'].find(k=>new RegExp(k,'i').test(text));
     if(itemHit&&$m('msaItem'))$m('msaItem').value=itemHit;
-
     const equipIdx=flat.findIndex(v=>/측정장비/.test(String(v??'')));
-    if(equipIdx>=0){
-      for(let i=equipIdx+1;i<Math.min(flat.length,equipIdx+10);i++){
-        const v=String(flat[i]??'').trim();
-        if(v&&!/측정자|번호/.test(v)){setIf('msaGauge',v);break;}
-      }
-    }
-
+    if(equipIdx>=0){for(let i=equipIdx+1;i<Math.min(flat.length,equipIdx+10);i++){const v=String(flat[i]??'').trim();if(v&&!/측정자|번호/.test(v)){setIf('msaGauge',v);break;}}}
     const tolIdx=flat.findIndex(v=>/규격상한|공차|Tolerance/i.test(String(v??'')));
-    if(tolIdx>=0){
-      for(let i=tolIdx+1;i<Math.min(flat.length,tolIdx+10);i++){
-        const n=toNumber(flat[i]);
-        if(Number.isFinite(n)){setIf('msaTolerance',n);break;}
-      }
-    }
-
-    const unitIdx=flat.findIndex(v=>/단위|Unit/i.test(String(v??'')));
-    if(unitIdx>=0){
-      for(let i=unitIdx+1;i<Math.min(flat.length,unitIdx+5);i++){
-        const v=String(flat[i]??'').trim();
-        if(v){setIf('msaUnit',v);break;}
-      }
-    }
-
+    if(tolIdx>=0){for(let i=tolIdx+1;i<Math.min(flat.length,tolIdx+10);i++){const n=toNumber(flat[i]);if(Number.isFinite(n)){setIf('msaTolerance',n);break;}}}
+    const unitIdx=flat.findIndex(v=>/단위/.test(String(v??'')));
+    if(unitIdx>=0){for(let i=unitIdx+1;i<Math.min(flat.length,unitIdx+5);i++){const v=String(flat[i]??'').trim();if(v){setIf('msaUnit',v);break;}}}
     for(const row of rows){
-      let n=firstNumberAfter(row,/시료수|Parts/i);
-      if(Number.isFinite(n)&&n>=2)setIf('msaParts',Math.round(n));
-
-      n=firstNumberAfter(row,/반복횟수|반복수|Repeat|Trials/i);
-      if(Number.isFinite(n)&&n>=2)setIf('msaRepeats',Math.round(n));
-
-      n=firstNumberAfter(row,/측정자수|Appraisers/i);
-      if(Number.isFinite(n)&&n>=2)setIf('msaOperators',Math.round(n));
-
-      // 날짜는 날짜 관련 라벨이 있는 행에서만 추출한다.
-      // 첨부 양식의 측정값(예: 2009.82.60)을 날짜로 오인해 input[type=date] 오류가 나는 문제 방지.
-      const rowText=row.map(v=>String(v??'')).join(' ');
-      if(/측정일자|평가일자|작성일자|Date/i.test(rowText)){
-        for(const v of row){
-          const d=dateToInput(v);
-          if(d){setIf('msaDate',d);break;}
-        }
-      }
+      let n=firstNumberAfter(row,/시료수|Parts/i); if(Number.isFinite(n)&&n>=2)setIf('msaParts',Math.round(n));
+      n=firstNumberAfter(row,/반복횟수|반복수|Repeat/i); if(Number.isFinite(n)&&n>=2)setIf('msaRepeats',Math.round(n));
+      n=firstNumberAfter(row,/측정자수|Appraisers/i); if(Number.isFinite(n)&&n>=2)setIf('msaOperators',Math.round(n));
+      for(const v of row){const d=dateToInput(v); if(d){setIf('msaDate',d);}}
     }
-
     // names from Appraiser A/B/C blocks or Korean measuring person fields
     for(let r=0;r<rows.length;r++){
       for(let c=0;c<rows[r].length;c++){
         const v=String(rows[r][c]??'');
-        const m=v.match(/Appraiser\s*([A-E])/i)||v.match(/측정자\s*([A-E])/i);
+        let m=v.match(/Appraiser\s*([A-E])/i)||v.match(/측정자\s*([A-E])/i);
         if(m){
           const name=String((rows[r+1]&&rows[r+1][c])||'').trim();
           if(name&&name!=='0')setIf('msaOp'+m[1].toUpperCase(),name);
@@ -3376,12 +3259,7 @@ function renderMatrix(){
     if(msa.bound)return; msa.bound=true;
     setToday(); sampleData();
     document.addEventListener('click',e=>{
-      if(e.target.closest('#msaLoadSample')){e.preventDefault();sampleData();}
-      if(e.target.closest('#msaReset')){e.preventDefault();blankData();}
-      if(e.target.closest('#msaUploadBtn')){e.preventDefault();$m('msaFileUpload')?.click();}
-      if(e.target.closest('#msaDownloadReport')){e.preventDefault();downloadReport();}
     });
-    $m('msaFileUpload')?.addEventListener('change',e=>parseUploaded(e.target.files&&e.target.files[0]));
     ['msaOperators','msaParts','msaRepeats'].forEach(id=>$m(id)?.addEventListener('change',()=>{blankData();}));
     ['msaTolerance','msaUnit'].forEach(id=>$m(id)?.addEventListener('input',recalc));
     $m('msaBody')?.addEventListener('change',e=>{const t=e.target;if(t.dataset.msaOp===undefined)return;const oi=Number(t.dataset.msaOp),rep=Number(t.dataset.msaRep),part=Number(t.dataset.msaPart); if(!msa.data[oi])msa.data[oi]=[]; if(!msa.data[oi][rep])msa.data[oi][rep]=[]; msa.data[oi][rep][part]=t.value===''?'':Number(t.value); renderMatrix(); recalc();});
