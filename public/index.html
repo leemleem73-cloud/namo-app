@@ -1220,13 +1220,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="card"><div class="ch"><h3>4. 판정 기준</h3></div><div class="cb"><table class="spc-mini"><tbody id="msaJudgeBody"></tbody></table></div></div>
               </div>
 
-              <div class="card mt14">
-                <div class="ch"><h3>첨부파일형 Gage R&R 분석 보고서 미리보기</h3><span class="tag">첨부 양식 스타일</span></div>
-                <div class="cb"></div>
-              </div>
-
-              <div class="spc-chart-grid mt14">
-                <div class="card"><div class="ch"><h3>측정자별 평균 차트</h3></div><div class="cb"><div class="cwrap"><canvas id="msaOperatorChart"></canvas></div></div></div>
+              
                 <div class="card"><div class="ch"><h3>시료별 평균 차트</h3></div><div class="cb"><div class="cwrap"><canvas id="msaPartChart"></canvas></div></div></div>
                 <div class="card"><div class="ch"><h3>변동 구성비</h3></div><div class="cb"><div class="cwrap"><canvas id="msaVariationChart"></canvas></div></div></div>
                 <div class="card"><div class="ch"><h3>반복 측정 범위</h3></div><div class="cb"><div class="cwrap"><canvas id="msaRangeChart"></canvas></div></div></div>
@@ -2773,33 +2767,54 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const chart=(name,id,type,labels,datasets,opts={})=>{const el=$m(id);if(!el||!window.Chart)return;destroy(name);msa.charts[name]=new Chart(el,{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},...opts}});};
   function setToday(){const e=$m('msaDate');if(e&&!e.value){const d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));e.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}}
   function readConfig(){
-    const ops=Number($m('msaOperators')?.value||3), parts=Number($m('msaParts')?.value||10), reps=Number($m('msaRepeats')?.value||3);
-    msa.operators=Array.from({length:Math.max(2,Math.min(5,ops))},(_,i)=>String.fromCharCode(65+i));
-    msa.parts=Math.max(5,Math.min(30,parts)); msa.repeats=Math.max(2,Math.min(5,reps));
+    const opCount=Math.max(2,Math.min(5,Number($m('msaOperators')?.value||3)));
+    const parts=Math.max(5,Math.min(30,Number($m('msaParts')?.value||10)));
+    const reps=Math.max(2,Math.min(5,Number($m('msaRepeats')?.value||3)));
+    msa.operators=Array.from({length:opCount},(_,i)=>String.fromCharCode(65+i));
+    msa.parts=parts;
+    msa.repeats=reps;
+    if($m('msaOperators'))$m('msaOperators').value=opCount;
+    if($m('msaParts'))$m('msaParts').value=parts;
+    if($m('msaRepeats'))$m('msaRepeats').value=reps;
   }
   function blankData(){
     readConfig();
     msa.data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
-    renderMatrix(); recalc();
+    renderMatrix();
+    recalc();
   }
   function sampleData(){
-    readConfig(); msa.data=[];
-    for(let oi=0;oi<msa.operators.length;oi++){
-      const op=[];
-      for(let r=0;r<msa.repeats;r++){
-        const row=[];
-        for(let p=0;p<msa.parts;p++){
-          const base=7.00+p*0.055;
-          const opBias=oi*0.012;
-          const repNoise=(r-1)*0.004;
-          const noise=Math.sin((p+1)*(oi+2)*(r+1))*0.012;
-          row.push(Number((base+opBias+repNoise+noise).toFixed(3)));
-        }
-        op.push(row);
-      }
-      msa.data.push(op);
-    }
-    renderMatrix(); recalc();
+    if($m('msaOperators'))$m('msaOperators').value=3;
+    if($m('msaRepeats'))$m('msaRepeats').value=3;
+    if($m('msaParts'))$m('msaParts').value=10;
+    readConfig();
+    const base=[
+      [
+        [6.2481,7.3602,6.1352,6.6744,7.6844,6.2194,6.6134,6.9243,6.6816,6.5545],
+        [6.2315,7.3650,6.1169,6.6707,7.6666,6.2091,6.6005,6.9388,6.6955,6.5465],
+        [6.2459,7.3757,6.1237,6.6426,7.6633,6.2163,6.6181,6.9188,6.6912,6.5393]
+      ],
+      [
+        [6.2413,7.3836,6.1005,6.6533,7.6661,6.2331,6.6147,6.9554,6.6923,6.5754],
+        [6.2236,7.3528,6.1348,6.6578,7.6796,6.2237,6.6278,6.9192,6.6692,6.5372],
+        [6.2304,7.3543,6.1178,6.6774,7.6672,6.2447,6.6186,6.9404,6.6653,6.5608]
+      ],
+      [
+        [6.2376,7.3619,6.1326,6.6552,7.6712,6.2478,6.6213,6.9371,6.6984,6.5738],
+        [6.2440,7.3791,6.1174,6.6514,7.6765,6.2437,6.6240,6.9201,6.7030,6.5627],
+        [6.2137,7.3554,6.1047,6.6507,7.6944,6.2354,6.5949,6.9209,6.6983,6.5402]
+      ]
+    ];
+    msa.data=base;
+    if($m('msaItem'))$m('msaItem').value='입도 (D97, μm)';
+    if($m('msaGauge'))$m('msaGauge').value='입도분석기';
+    if($m('msaTolerance'))$m('msaTolerance').value='3.0';
+    if($m('msaUnit'))$m('msaUnit').value='μm';
+    if($m('msaOpA'))$m('msaOpA').value='정영기';
+    if($m('msaOpB'))$m('msaOpB').value='박진현';
+    if($m('msaOpC'))$m('msaOpC').value='박현아';
+    renderMatrix();
+    recalc();
   }
   function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
   
@@ -2959,8 +2974,6 @@ function renderMatrix(){
   }
   function extractRepeat(v){
     const s=String(v??'').replace(/\s+/g,'').trim();
-    // 반복은 반드시 "1회", "2회", "3회"처럼 회차 표시가 있는 셀만 인식한다.
-    // 첨부 양식 좌측의 행 번호 4,5,6...을 반복수로 오인하지 않기 위함.
     const m=s.match(/^(\d+)회$/);
     if(m)return Number(m[1])-1;
     return null;
@@ -3029,33 +3042,22 @@ function renderMatrix(){
       let expected=1;
       for(let c=start;c<=stop && c<row.length;c++){
         const n=toNumber(row[c]);
-        if(Number.isInteger(n)&&n===expected){
-          cols.push(c);
-          expected++;
-        }else if(cols.length>0){
-          break;
-        }
+        if(Number.isInteger(n)&&n===expected){cols.push(c);expected++;}
+        else if(cols.length>0){break;}
       }
       return cols;
     }
 
-    // 첨부 양식의 "Sample 시료" 바로 아래 1~10만 측정치 열로 인식한다.
+    // 첨부 양식의 "Sample 시료" 바로 아래 1~10만 시료 측정값 열로 인식
     for(let r=0;r<rows.length-1;r++){
-      const row=rows[r]||[];
-      const next=rows[r+1]||[];
+      const row=rows[r]||[], next=rows[r+1]||[];
       const sampleIdx=row.findIndex(v=>/Sample\s*시\s*료|Sample|시\s*료/.test(String(v??'')) && !/시료수|PV|K3|기준/.test(String(v??'')));
       const repIdx=next.findIndex(v=>/반복/.test(String(v??'')));
       if(sampleIdx<0||repIdx<0)continue;
-
       let end=next.findIndex((v,c)=>c>sampleIdx && /Ave|평균값|평균/.test(String(v??'')));
       if(end<0)end=Math.min(next.length-1,sampleIdx+30);
       const cols=consecutivePartCols(next,sampleIdx,end-1);
-      if(cols.length>=5){
-        header=r+1;
-        partCols=cols;
-        repeatCol=repIdx;
-        break;
-      }
+      if(cols.length>=5){header=r+1;partCols=cols;repeatCol=repIdx;break;}
     }
     if(header<0||partCols.length<5)return false;
 
@@ -3066,20 +3068,16 @@ function renderMatrix(){
     for(let r=header+1;r<rows.length;r++){
       const row=rows[r]||[];
       const fullText=row.map(v=>String(v??'')).join(' ');
-      const leftCells=row.slice(0,partCols[0]);
-
+      const leftText=row.slice(0,partCols[0]).map(v=>String(v??'')).join(' ');
       if(/Part\s*AVE|시료평균|시료변동|Gage\s*R&R|연구변동|총변동|UCLR|LCLR|요약|판정기준/i.test(fullText))break;
-      if(/AVE|평균|Range|범위|ra=|rb=|rc=|xa=|xb=|xc=/i.test(leftCells.map(v=>String(v??'')).join(' ')))continue;
+      if(/AVE|평균|Range|범위|ra=|rb=|rc=|xa=|xb=|xc=/i.test(leftText))continue;
 
-      // Operator label: "A", "B", "C" or "1. A" in left cells.
       for(let c=0;c<Math.min(partCols[0], row.length);c++){
         const op=extractOperatorLabel(row[c]);
         if(op&&opIndex[op]!==undefined){currentOp=op;break;}
       }
       if(!currentOp)continue;
 
-      // Repeat must come from the designated repeat column or one/two nearby cells only,
-      // and must include "회" (1회, 2회, 3회).
       let rep=null;
       for(const c of [repeatCol, repeatCol-1, repeatCol+1]){
         if(c>=0&&c<row.length){
@@ -3093,34 +3091,18 @@ function renderMatrix(){
       const valid=vals.filter(Number.isFinite);
       if(valid.length<Math.max(5,Math.ceil(partCols.length*0.8)))continue;
 
-      records.push({
-        op:currentOp,
-        rep,
-        vals:vals.map(v=>Number.isFinite(v)?Number(v.toFixed(6)):'')
-      });
+      records.push({op:currentOp,rep,vals:vals.map(v=>Number.isFinite(v)?Number(v.toFixed(6)):'')});
     }
 
     if(!records.length)return false;
-
     const opLabels=[...new Set(records.map(x=>x.op))].sort((a,b)=>opIndex[a]-opIndex[b]);
     const reps=Math.max(...records.map(x=>x.rep))+1;
     const parts=partCols.length;
-
     if(opLabels.length<2||reps<2||parts<5)return false;
 
-    // Keep only exactly one row per operator x repeat; ignore accidental duplicate rows.
-    const seen=new Set();
-    const clean=[];
-    records.forEach(rec=>{
-      const key=rec.op+'|'+rec.rep;
-      if(!seen.has(key)){
-        seen.add(key);
-        clean.push(rec);
-      }
-    });
-
-    const expected=opLabels.length*reps;
-    if(clean.length<expected)return false;
+    const seen=new Set(), clean=[];
+    records.forEach(rec=>{const key=rec.op+'|'+rec.rep;if(!seen.has(key)){seen.add(key);clean.push(rec);}});
+    if(clean.length<opLabels.length*reps)return false;
 
     setIf('msaOperators',opLabels.length);
     setIf('msaRepeats',reps);
@@ -3141,7 +3123,6 @@ function renderMatrix(){
     msa.data=data;
     renderMatrix();
     recalc();
-
     console.log('MSA matrix loaded', {operators:opLabels,repeats:reps,parts,firstVal:data[0]?.[0]?.[0],partCols,header,repeatCol});
     alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${opLabels.length}명 × 반복 ${reps}회 × 시료 ${parts}개)`);
     return true;
