@@ -1157,12 +1157,12 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="spc-view" id="spcView-gauge">
               <div class="card">
                 <div class="ch">
-                  <h3>측정시스템 분석 · 반복성/재현성</h3>
+                  <h3>측정시스템 분석 · 첨부양식 기반 반복성/재현성</h3>
                   <div class="ca">
                     <button class="btn pri sm" type="button" id="msaLoadSample">예시 불러오기</button>
                     <button class="btn light sm" type="button" id="msaReset">초기화</button>
-                    <button class="btn ghost sm" type="button" id="msaUploadBtn">데이터 업로드</button>
-                    <button class="btn pri sm" type="button" id="msaDownloadReport">보고서 다운로드</button>
+                    <button class="btn ghost sm" type="button" id="msaUploadBtn">양식 업로드</button>
+                    <button class="btn pri sm" type="button" id="msaDownloadReport">보고서 엑셀 다운로드</button>
                     <input type="file" id="msaFileUpload" accept=".xlsx,.xls,.csv,text/csv" style="display:none">
                   </div>
                 </div>
@@ -1194,7 +1194,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
               <div class="card mt14">
                 <div class="ch"><h3>1. 측정 관측 매트릭스</h3><span class="tag">측정자 × 반복 × 시료</span></div>
-                <div class="cb"><div class="tw"><table><thead id="msaHead"></thead><tbody id="msaBody"></tbody></table></div><div class="spc-note">셀 값을 수정하면 반복성(EV), 재현성(AV), GRR, 제품변동(PV), ndc가 자동 재계산됩니다. 일반 기준: %GRR 10% 미만 우수, 10~30% 조건부 사용, 30% 초과 부적합.</div></div>
+                <div class="cb"><div class="tw"><table><thead id="msaHead"></thead><tbody id="msaBody"></tbody></table></div><div class="spc-note">첨부한 측정시스템 분석 양식(.xlsx/.csv)을 업로드하면 측정자·반복·시료 매트릭스를 자동 인식합니다. 셀 값 수정 시 반복성(EV), 재현성(AV), GRR, 제품변동(PV), ndc가 자동 재계산됩니다.</div></div>
               </div>
 
               <div class="spc-three mt14">
@@ -2760,6 +2760,52 @@ document.addEventListener('DOMContentLoaded',async()=>{
     renderMatrix(); recalc();
     alert(`측정값 ${Math.min(nums.length, msa.operators.length*msa.repeats*msa.parts)}개를 불러왔습니다.`);
   }
+  function normText(v){return String(v??'').replace(/\s+/g,'').trim();}
+  function toNumber(v){
+    if(v===null||v===undefined)return NaN;
+    const s=String(v).replace(/,/g,'').replace(/[<>≤≥=]/g,'').trim();
+    if(!s)return NaN;
+    const n=Number(s);
+    return Number.isFinite(n)?n:NaN;
+  }
+  function findMatrixFromRows(rows){
+    readConfig();
+    const found=[];
+    const opMap={A:0,B:1,C:2,D:3,E:4};
+    const maxCols=Math.max(0,...rows.map(r=>r.length));
+    for(let ri=0;ri<rows.length;ri++){
+      const row=rows[ri]||[];
+      for(let ci=0;ci<Math.min(8,row.length);ci++){
+        const a=normText(row[ci]);
+        const b=normText(row[ci+1]);
+        const c=normText(row[ci+2]);
+        let op=null, rep=null, start=null;
+        if(opMap[a]!==undefined && /(1|2|3|4|5)회?/.test(b)){op=a; rep=parseInt(b,10)-1; start=ci+2;}
+        else if(opMap[a]!==undefined && /(1|2|3|4|5)회?/.test(c)){op=a; rep=parseInt(c,10)-1; start=ci+3;}
+        else if(opMap[b]!==undefined && /(1|2|3|4|5)회?/.test(c)){op=b; rep=parseInt(c,10)-1; start=ci+3;}
+        if(op===null || rep===null || rep<0 || rep>=msa.repeats)continue;
+        const vals=[];
+        for(let cj=start;cj<maxCols && vals.length<msa.parts;cj++){
+          const n=toNumber(row[cj]);
+          if(Number.isFinite(n))vals.push(n);
+        }
+        if(vals.length>=Math.min(3,msa.parts))found.push({oi:opMap[op],rep,vals});
+      }
+    }
+    if(found.length<msa.operators.length*msa.repeats)return false;
+    msa.data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
+    found.forEach(x=>{if(x.oi<msa.operators.length)msa.data[x.oi][x.rep]=x.vals.slice(0,msa.parts);});
+    renderMatrix(); recalc();
+    alert(`첨부 양식에서 측정 매트릭스 ${found.length}행을 불러왔습니다.`);
+    return true;
+  }
+  function applyMetaFromRows(rows){
+    const flat=rows.flat().map(v=>String(v??''));
+    const text=flat.join(' ');
+    if(/Dmax/i.test(text) && $m('msaItem'))$m('msaItem').value='Dmax';
+    const dateHit=text.match(/20\d{2}[-./]\d{1,2}[-./]\d{1,2}/);
+    if(dateHit && $m('msaDate'))$m('msaDate').value=dateHit[0].replace(/[./]/g,'-').replace(/-(\d)(?=-|$)/g,'-0$1');
+  }
   function parseUploaded(file){
     if(!file)return;
     const reader=new FileReader();
@@ -2775,29 +2821,36 @@ document.addEventListener('DOMContentLoaded',async()=>{
           const ws=selectWorksheet(wb);
           rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
         }
+        applyMetaFromRows(rows);
+        if(findMatrixFromRows(rows))return;
         const nums=[];
-        rows.flat().forEach(x=>{
-          const s=String(x).replace(/,/g,'').replace(/[<>≤≥=]/g,'').trim();
-          if(!s)return;
-          const n=Number(s);
-          if(Number.isFinite(n)) nums.push(n);
-        });
-        if(!nums.length){alert('업로드 파일에서 숫자 측정값을 찾지 못했습니다.');return;}
-        fillFromNumbers(nums);
+        rows.flat().forEach(x=>{const n=toNumber(x); if(Number.isFinite(n)) nums.push(n);});
+        const need=msa.operators.length*msa.repeats*msa.parts;
+        if(nums.length<need){alert(`업로드 파일에서 필요한 측정값을 찾지 못했습니다. 필요 ${need}개 / 인식 ${nums.length}개`);return;}
+        fillFromNumbers(nums.slice(-need));
       }catch(err){console.error(err);alert('업로드 파일을 읽지 못했습니다. CSV 또는 XLSX 형식을 확인해주세요.');}
     };
     if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file,'utf-8'); else reader.readAsArrayBuffer(file);
   }
   function downloadReport(){
     const r=calc(); if(!r){alert('분석 데이터가 없습니다.'); return;}
-    const meta=[['보고서번호',$m('msaReportNo')?.value||''],['측정항목',$m('msaItem')?.value||''],['측정장비',$m('msaGauge')?.value||''],['측정일자',$m('msaDate')?.value||''],['판정',r.judge],['%연구변동',fmt(r.study,2)],['%공차',fmt(r.tolPct,2)],['ndc',fmt(r.ndc,0)],['반복성 EV',fmt(r.ev,4)],['재현성 AV',fmt(r.av,4)],['GRR',fmt(r.grr,4)],['제품변동 PV',fmt(r.pv,4)],['총변동 TV',fmt(r.tv,4)]];
-    const raw=[['측정자','반복',...Array.from({length:msa.parts},(_,i)=>'시료'+(i+1))]];
-    msa.operators.forEach((op,oi)=>{for(let rep=0;rep<msa.repeats;rep++){raw.push([op,rep+1,...(msa.data[oi]?.[rep]||[])]);}});
-    const name=($m('msaReportNo')?.value||'MSA-GRR')+'_보고서';
+    const meta=[
+      ['측정시스템 분석 보고서'],[],['보고서번호',$m('msaReportNo')?.value||''],['측정항목',$m('msaItem')?.value||''],['측정장비',$m('msaGauge')?.value||''],['측정일자',$m('msaDate')?.value||''],['공차 기준',$m('msaTolerance')?.value||''],['단위',$m('msaUnit')?.value||''],[],
+      ['구분','결과'],['최종 판정',r.judge],['%연구변동',fmt(r.study,2)+'%'],['%공차',fmt(r.tolPct,2)+'%'],['ndc',fmt(r.ndc,0)],['반복성 EV',fmt(r.ev,4)],['재현성 AV',fmt(r.av,4)],['GRR',fmt(r.grr,4)],['제품변동 PV',fmt(r.pv,4)],['총변동 TV',fmt(r.tv,4)],[],
+      ['판정 기준','%GRR < 10% 우수 / 10~30% 조건부 사용 / 30% 초과 부적합, ndc 5 이상 권장'],['비고','본 보고서는 나모케미칼 내부 품질관리용 시스템(Q Insight)에서 생성되었습니다.']
+    ];
+    const raw=[['측정자','반복',...Array.from({length:msa.parts},(_,i)=>'시료 '+(i+1)),'평균','범위']];
+    msa.operators.forEach((op,oi)=>{for(let rep=0;rep<msa.repeats;rep++){const arr=(msa.data[oi]?.[rep]||[]);const nums=arr.map(Number).filter(Number.isFinite);raw.push([op,(rep+1)+'회',...arr,fmt(avg(nums),4),nums.length?fmt(Math.max(...nums)-Math.min(...nums),4):'']);}});
+    const opSummary=[['측정자','평균'],...msa.operators.map((op,i)=>['측정자 '+op,fmt(r.opMeans[i],4)])];
+    const name=($m('msaReportNo')?.value||'MSA-GRR')+'_측정시스템분석보고서';
     if(window.XLSX){
       const wb=XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(meta),'분석결과');
-      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(raw),'측정데이터');
+      const ws1=XLSX.utils.aoa_to_sheet(meta); ws1['!cols']=[{wch:20},{wch:55}];
+      const ws2=XLSX.utils.aoa_to_sheet(raw); ws2['!cols']=[{wch:10},{wch:10},...Array.from({length:msa.parts},()=>({wch:10})),{wch:12},{wch:12}];
+      const ws3=XLSX.utils.aoa_to_sheet(opSummary); ws3['!cols']=[{wch:18},{wch:14}];
+      XLSX.utils.book_append_sheet(wb,ws1,'분석결과');
+      XLSX.utils.book_append_sheet(wb,ws2,'측정데이터');
+      XLSX.utils.book_append_sheet(wb,ws3,'측정자요약');
       XLSX.writeFile(wb,name+'.xlsx');
       return;
     }
