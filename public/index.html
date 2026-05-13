@@ -481,6 +481,23 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.wgrid{grid-column-template:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
 @media(max-width:1000px){.wgrid{grid-template-columns:1fr;}}
 @media(max-width:900px){:root{--sw:0px;}.sidebar{display:none;}.content{padding:14px;}.sgrid{grid-template-columns:repeat(2,1fr);}.fg4,.fg3,.fg5{grid-template-columns:1fr;}.sign-grid,.rprint-sign,.lgrid{grid-template-columns:1fr;}}
+
+/* MSA 첨부파일형 보고서 화면 */
+.msa-template-report{background:#fff;border:2px solid #1d4ed8;border-radius:0;padding:0;margin-top:14px;overflow:auto;font-size:12px;}
+.msa-template-report table{border-collapse:collapse;width:100%;min-width:1180px;background:#fff;}
+.msa-template-report th,.msa-template-report td{border:1px solid #111;padding:4px 6px;text-align:center;vertical-align:middle;color:#111;}
+.msa-template-report .msa-title{font-weight:900;font-size:15px;background:#fff;}
+.msa-template-report .msa-subtitle{font-weight:800;background:#fff;}
+.msa-template-report .msa-gray{background:#d9d9d9;font-weight:700;}
+.msa-template-report .msa-blue{color:#0000ff;font-weight:800;}
+.msa-template-report .msa-red{color:#ff0000;font-weight:800;}
+.msa-template-report .msa-green{background:#00ff00;font-weight:900;}
+.msa-template-report .msa-peach{background:#f8cbad;font-weight:800;}
+.msa-template-report .msa-lightblue{background:#d9eaf7;font-weight:800;}
+.msa-template-report .msa-left{text-align:left;}
+.msa-template-report .msa-small{font-size:11px;line-height:1.25;}
+.msa-template-report .msa-bold{font-weight:900;}
+
 </style>
 </head>
 <body>
@@ -1203,6 +1220,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="card"><div class="ch"><h3>4. 판정 기준</h3></div><div class="cb"><table class="spc-mini"><tbody id="msaJudgeBody"></tbody></table></div></div>
               </div>
 
+              <div class="card mt14">
+                <div class="ch"><h3>첨부파일형 Gage R&R 분석 보고서 미리보기</h3><span class="tag">첨부 양식 스타일</span></div>
+                <div class="cb"><div id="msaTemplatePreview" class="msa-template-report"></div></div>
+              </div>
+
               <div class="spc-chart-grid mt14">
                 <div class="card"><div class="ch"><h3>측정자별 평균 차트</h3></div><div class="cb"><div class="cwrap"><canvas id="msaOperatorChart"></canvas></div></div></div>
                 <div class="card"><div class="ch"><h3>시료별 평균 차트</h3></div><div class="cb"><div class="cwrap"><canvas id="msaPartChart"></canvas></div></div></div>
@@ -1810,7 +1832,24 @@ function printLabel(){
   .plbc svg{max-width:170px}.plbc span{font-size:9px;color:#555;margin-top:2px}
   .jstamp{display:inline-block;border:2px solid;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;margin-top:5px}
   .jstamp.pass{border-color:#0a7c4e;color:#0a7c4e}.jstamp.fail{border-color:#c52b2b;color:#c52b2b}
-  @media print{@page{margin:8mm}}</style></head><body>${g.outerHTML}</body></html>`);
+  @media print{@page{margin:8mm}}
+/* MSA 첨부파일형 보고서 화면 */
+.msa-template-report{background:#fff;border:2px solid #1d4ed8;border-radius:0;padding:0;margin-top:14px;overflow:auto;font-size:12px;}
+.msa-template-report table{border-collapse:collapse;width:100%;min-width:1180px;background:#fff;}
+.msa-template-report th,.msa-template-report td{border:1px solid #111;padding:4px 6px;text-align:center;vertical-align:middle;color:#111;}
+.msa-template-report .msa-title{font-weight:900;font-size:15px;background:#fff;}
+.msa-template-report .msa-subtitle{font-weight:800;background:#fff;}
+.msa-template-report .msa-gray{background:#d9d9d9;font-weight:700;}
+.msa-template-report .msa-blue{color:#0000ff;font-weight:800;}
+.msa-template-report .msa-red{color:#ff0000;font-weight:800;}
+.msa-template-report .msa-green{background:#00ff00;font-weight:900;}
+.msa-template-report .msa-peach{background:#f8cbad;font-weight:800;}
+.msa-template-report .msa-lightblue{background:#d9eaf7;font-weight:800;}
+.msa-template-report .msa-left{text-align:left;}
+.msa-template-report .msa-small{font-size:11px;line-height:1.25;}
+.msa-template-report .msa-bold{font-weight:900;}
+
+</style></head><body>${g.outerHTML}</body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
 
@@ -2763,7 +2802,65 @@ document.addEventListener('DOMContentLoaded',async()=>{
     renderMatrix(); recalc();
   }
   function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
-  function renderMatrix(){
+  
+function avgArr(a){const v=a.filter(Number.isFinite);return v.length?sum(v)/v.length:NaN;}
+function rangeArr(a){const v=a.filter(Number.isFinite);return v.length?Math.max(...v)-Math.min(...v):NaN;}
+function msaFmt(v,d=3){return Number.isFinite(v)?Number(v).toFixed(d):'';}
+function msaInputValue(o,r,p){return msa.data?.[o]?.[r]?.[p];}
+function msaOperatorName(i){
+  const ids=['msaOpA','msaOpB','msaOpC','msaOpD','msaOpE'];
+  const val=$m(ids[i])?.value?.trim();
+  return val || msa.operators?.[i] || String.fromCharCode(65+i);
+}
+function msaMetaValue(id, fallback=''){return $m(id)?.value || fallback;}
+function renderMsaTemplatePreview(result){
+  const box=$m('msaTemplatePreview');
+  if(!box)return;
+  const operators=msa.operators||['A','B'];
+  const opN=operators.length, repN=msa.repeats||3, partN=msa.parts||10;
+  const maxParts=Math.min(partN,10);
+  const opNames=operators.map((_,i)=>msaOperatorName(i));
+  const partAves=[];
+  for(let p=0;p<maxParts;p++){
+    const vals=[];
+    for(let o=0;o<opN;o++)for(let r=0;r<repN;r++){
+      const v=Number(msaInputValue(o,r,p));
+      if(Number.isFinite(v))vals.push(v);
+    }
+    partAves.push(avgArr(vals));
+  }
+  const xbar=avgArr(partAves);
+  const rp=(partAves.filter(Number.isFinite).length)?Math.max(...partAves)-Math.min(...partAves):NaN;
+  const tol=Number(msaMetaValue('msaTolerance',''));
+  const rows=[];
+  rows.push(`<tr><td colspan="12" class="msa-title">Gage R&R 분석 보고서</td><td colspan="3" class="msa-gray">작성</td><td colspan="3" class="msa-gray">검토</td><td colspan="3" class="msa-gray">승인</td><td colspan="8" class="msa-title">Gage Repeatability & Reproducibility Data Sheet</td></tr>`);
+  rows.push(`<tr><td colspan="21"></td><td colspan="8">Variable Data Results</td></tr>`);
+  rows.push(`<tr><td colspan="4" class="msa-gray msa-left">분석항목</td><td colspan="4" class="msa-gray msa-left">측정장비</td><td colspan="4" class="msa-gray msa-left">측정자 A</td><td colspan="4" class="msa-left">Project</td><td colspan="4" class="msa-left">Gage Name</td><td colspan="4" class="msa-left">Appraiser A</td></tr>`);
+  rows.push(`<tr><td colspan="4" class="msa-blue">${esc(msaMetaValue('msaItem',''))}</td><td colspan="4" class="msa-blue">${esc(msaMetaValue('msaGauge',''))}</td><td colspan="4" class="msa-blue">${esc(opNames[0]||'')}</td><td colspan="4">${esc(msaMetaValue('msaItem',''))}</td><td colspan="4">${esc(msaMetaValue('msaGauge',''))}</td><td colspan="4">${esc(opNames[0]||'')}</td></tr>`);
+  rows.push(`<tr><td colspan="4" class="msa-gray msa-left">측정장소</td><td colspan="4" class="msa-gray msa-left">측정장비 번호</td><td colspan="4" class="msa-gray msa-left">측정자 B</td><td colspan="4" class="msa-left">Part Name</td><td colspan="4" class="msa-left">Gage Number</td><td colspan="4" class="msa-left">Appraiser B</td></tr>`);
+  rows.push(`<tr><td colspan="4" class="msa-blue">연구소</td><td colspan="4">-</td><td colspan="4" class="msa-blue">${esc(opNames[1]||'')}</td><td colspan="4">연구소</td><td colspan="4">-</td><td colspan="4">${esc(opNames[1]||'')}</td></tr>`);
+  rows.push(`<tr><td colspan="2" class="msa-gray">단위</td><td colspan="2">Nominal</td><td colspan="2">규격하한</td><td colspan="2">규격상한</td><td colspan="2" class="msa-gray">측정항목</td><td colspan="2"></td><td colspan="2">Upper limit</td><td colspan="2">${Number.isFinite(tol)?msaFmt(tol,2):esc(msaMetaValue('msaTolerance',''))}</td><td colspan="4">Item</td><td colspan="4">${esc(msaMetaValue('msaItem',''))}</td></tr>`);
+  rows.push(`<tr><td colspan="2" class="msa-blue">${esc(msaMetaValue('msaUnit',''))}</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">${Number.isFinite(tol)?msaFmt(tol,2):esc(msaMetaValue('msaTolerance',''))}</td><td colspan="4" class="msa-blue">${esc(msaMetaValue('msaItem',''))}</td><td colspan="2">Lower limit</td><td colspan="2">-</td><td colspan="4">Trials</td><td colspan="2">${repN}</td><td colspan="2">Parts</td><td colspan="2">${partN}</td><td colspan="2">Appraisers</td><td colspan="2">${opN}</td></tr>`);
+  rows.push(`<tr><td colspan="4" class="msa-gray">평가자</td><td colspan="2" class="msa-peach">반복횟수</td><td colspan="2" class="msa-peach">시료수</td><td colspan="2" class="msa-peach">측정자수</td><td colspan="2" class="msa-gray">평가일자</td><td colspan="16" class="msa-subtitle">Measurement Unit Analysis 측정시스템분석</td></tr>`);
+  rows.push(`<tr><td colspan="4" class="msa-blue">${operators.join(',')}</td><td colspan="2">${repN}</td><td colspan="2">${partN}</td><td colspan="2">${opN}</td><td colspan="2" class="msa-blue">${esc(msaMetaValue('msaDate',''))}</td><td colspan="8" class="msa-subtitle">반복성 · 장비변동(EV)</td><td colspan="8" class="msa-subtitle">% Process Variation 공정변동</td></tr>`);
+  rows.push(`<tr><td colspan="2" rowspan="2" class="msa-subtitle">측정자 /<br>반복</td><td colspan="${maxParts}" class="msa-subtitle">Sample 시료</td><td colspan="2" rowspan="2" class="msa-subtitle">Ave. 평균값</td><td colspan="8" class="msa-left">EV = R × K1</td><td colspan="8" class="msa-left">% EV = 100(EV/TV)</td></tr>`);
+  rows.push(`${Array.from({length:maxParts},(_,i)=>`<td class="msa-subtitle">${i+1}</td>`).join('')}<td colspan="8" class="msa-left">AV = √((XDIFF×K2)² - (EV²/(n×r)))</td><td colspan="8" class="msa-left">% AV = 100(AV/TV)</td></tr>`);
+  for(let o=0;o<opN;o++){
+    for(let r=0;r<repN;r++){
+      const vals=Array.from({length:maxParts},(_,p)=>Number(msaInputValue(o,r,p)));
+      rows.push(`<tr><td>${o*repN+r+1}.</td><td class="msa-blue">${operators[o]}</td><td>${r+1}회</td>${vals.map(v=>`<td>${msaFmt(v,3)}</td>`).join('')}<td colspan="2">${msaFmt(avgArr(vals),3)}</td><td colspan="8" class="msa-left">${r===0&&o===0?`EV = ${msaFmt(result?.ev,6)}`:''}</td><td colspan="8" class="msa-blue">${r===0&&o===0?`${msaFmt(result?.ev/result?.tv*100,2)}%`:''}</td></tr>`);
+    }
+    const ave=Array.from({length:maxParts},(_,p)=>avgArr(Array.from({length:repN},(_,r)=>Number(msaInputValue(o,r,p)))));
+    const ranges=Array.from({length:maxParts},(_,p)=>rangeArr(Array.from({length:repN},(_,r)=>Number(msaInputValue(o,r,p)))));
+    rows.push(`<tr><td colspan="3">${o+1+repN*o}. AVE. 평균</td>${ave.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">x${operators[o].toLowerCase()}= ${msaFmt(avgArr(ave),3)}</td><td colspan="8" class="msa-left">R&R = √(EV² + AV²)</td><td colspan="8" class="msa-red">${msaFmt(result?.study,2)}%</td></tr>`);
+    rows.push(`<tr><td colspan="3">${o+2+repN*o}. Rang 범위</td>${ranges.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">r${operators[o].toLowerCase()}= ${msaFmt(avgArr(ranges),3)}</td><td colspan="8" class="msa-left">PV = RP × K3</td><td colspan="8" class="msa-blue">% PV = ${msaFmt(result?.pv/result?.tv*100,2)}%</td></tr>`);
+  }
+  rows.push(`<tr><td colspan="3">Part AVE<br>시료평균(Xp)</td>${partAves.map(v=>`<td>${msaFmt(v,2)}</td>`).join('')}<td colspan="2">X= ${msaFmt(xbar,3)}<br>Rp= ${msaFmt(rp,3)}</td><td colspan="8" class="msa-left">TV = SQRT(R&R²+PV²)</td><td colspan="8" class="msa-green">ndc = ${msaFmt(result?.ndc,1)} / ${esc(result?.judge||'')}</td></tr>`);
+  rows.push(`<tr><td colspan="15" class="msa-left msa-small">1) Gage R&R의 구성요소: 반복성(Repeatability) + 재현성(Reproducibility)<br>2) %R&R 10% 이하: 적합, 10~30%: 조건부 사용, 30% 이상: 개선 필요<br>3) 본 보고서는 나모케미칼 내부 품질관리용 측정시스템 분석 결과입니다.</td><td colspan="13" class="msa-left msa-small"><b>%R&R 판정</b><br>10% 이하: 측정 SYSTEM 적합<br>10%~30%: 조건부 사용 가능<br>30% 이상: 측정시스템 개선 필요<br><b>NDC</b>: 5 이상 권장</td></tr>`);
+  box.innerHTML=`<table>${rows.join('')}</table>`;
+}
+
+function renderMatrix(){
     readConfig();
     const head=$m('msaHead'), body=$m('msaBody'); if(!head||!body)return;
     head.innerHTML='<tr><th>측정자</th><th>반복</th>'+Array.from({length:msa.parts},(_,i)=>`<th>시료 ${i+1}</th>`).join('')+'<th>평균</th><th>범위</th></tr>';
@@ -2813,7 +2910,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function recalc(){
     const r=calc();
     const set=(id,v)=>{const e=$m(id); if(e)e.textContent=v;};
-    if(!r){['msaStudyVar','msaTolerancePct','msaNdc','msaEV','msaAV','msaJudge'].forEach(id=>set(id,'-'));return;}
+    if(!r){['msaStudyVar','msaTolerancePct','msaNdc','msaEV','msaAV','msaJudge'].forEach(id=>set(id,'-'));if($m('msaTemplatePreview'))$m('msaTemplatePreview').innerHTML='';return;}
     const unit=$m('msaUnit')?.value||'';
     set('msaStudyVar',Number.isFinite(r.study)?fmt(r.study,1)+'%':'-');
     set('msaTolerancePct',Number.isFinite(r.tolPct)?fmt(r.tolPct,1)+'%':'-');
@@ -2826,6 +2923,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     chart('part','msaPartChart','line',Array.from({length:msa.parts},(_,i)=>String(i+1)),[{label:'시료 평균',data:r.partMeans,tension:.25}]);
     chart('var','msaVariationChart','bar',['EV','AV','GRR','PV','TV'],[{label:'변동',data:[r.ev,r.av,r.grr,r.pv,r.tv]}]);
     chart('range','msaRangeChart','line',r.cellRanges.map((_,i)=>String(i+1)),[{label:'반복 범위',data:r.cellRanges,tension:.25}]);
+    renderMsaTemplatePreview(r);
   }
   function selectWorksheet(wb){
     function sheetScore(ws){
