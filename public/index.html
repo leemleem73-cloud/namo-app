@@ -2763,48 +2763,129 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function normText(v){return String(v??'').replace(/\s+/g,'').trim();}
   function toNumber(v){
     if(v===null||v===undefined)return NaN;
+    if(typeof v==='number')return Number.isFinite(v)?v:NaN;
     const s=String(v).replace(/,/g,'').replace(/[<>≤≥=]/g,'').trim();
     if(!s)return NaN;
     const n=Number(s);
     return Number.isFinite(n)?n:NaN;
   }
-  function findMatrixFromRows(rows){
-    readConfig();
-    const found=[];
-    const opMap={A:0,B:1,C:2,D:3,E:4};
-    const maxCols=Math.max(0,...rows.map(r=>r.length));
-    for(let ri=0;ri<rows.length;ri++){
-      const row=rows[ri]||[];
-      for(let ci=0;ci<Math.min(8,row.length);ci++){
-        const a=normText(row[ci]);
-        const b=normText(row[ci+1]);
-        const c=normText(row[ci+2]);
-        let op=null, rep=null, start=null;
-        if(opMap[a]!==undefined && /(1|2|3|4|5)회?/.test(b)){op=a; rep=parseInt(b,10)-1; start=ci+2;}
-        else if(opMap[a]!==undefined && /(1|2|3|4|5)회?/.test(c)){op=a; rep=parseInt(c,10)-1; start=ci+3;}
-        else if(opMap[b]!==undefined && /(1|2|3|4|5)회?/.test(c)){op=b; rep=parseInt(c,10)-1; start=ci+3;}
-        if(op===null || rep===null || rep<0 || rep>=msa.repeats)continue;
-        const vals=[];
-        for(let cj=start;cj<maxCols && vals.length<msa.parts;cj++){
-          const n=toNumber(row[cj]);
-          if(Number.isFinite(n))vals.push(n);
+  function firstNumberAfter(row, labelPattern){
+    for(let i=0;i<row.length;i++){
+      if(labelPattern.test(String(row[i]??''))){
+        for(let j=i+1;j<Math.min(row.length,i+6);j++){
+          const n=toNumber(row[j]);
+          if(Number.isFinite(n))return n;
         }
-        if(vals.length>=Math.min(3,msa.parts))found.push({oi:opMap[op],rep,vals});
       }
     }
-    if(found.length<msa.operators.length*msa.repeats)return false;
-    msa.data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
-    found.forEach(x=>{if(x.oi<msa.operators.length)msa.data[x.oi][x.rep]=x.vals.slice(0,msa.parts);});
-    renderMatrix(); recalc();
-    alert(`첨부 양식에서 측정 매트릭스 ${found.length}행을 불러왔습니다.`);
-    return true;
+    return NaN;
+  }
+  function setIf(id,v){const e=$m(id); if(e&&v!==undefined&&v!==null&&v!=='')e.value=v;}
+  function dateToInput(v){
+    if(!v)return '';
+    if(v instanceof Date&&!isNaN(v.getTime()))return v.toISOString().slice(0,10);
+    const s=String(v);
+    const m=s.match(/(20\d{2})[-/.년\s]*(\d{1,2})[-/.월\s]*(\d{1,2})/);
+    if(!m)return '';
+    return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  }
+  function extractOperatorLabel(v){
+    const s=String(v??'').replace(/\s+/g,'').toUpperCase();
+    const m=s.match(/(?:^|[^A-Z])([A-E])(?:$|[^A-Z])/);
+    return m?m[1]:null;
+  }
+  function extractRepeat(v){
+    const s=String(v??'').replace(/\s+/g,'');
+    const m=s.match(/^(\d+)회?$/);
+    if(m)return Number(m[1])-1;
+    return null;
+  }
+  function detectPartColumns(rows, headerRowIdx){
+    const row=rows[headerRowIdx]||[];
+    const cols=[];
+    for(let c=0;c<row.length;c++){
+      const n=toNumber(row[c]);
+      if(Number.isInteger(n)&&n>=1&&n<=60)cols.push(c);
+    }
+    if(cols.length>=3)return cols;
+    return [];
   }
   function applyMetaFromRows(rows){
-    const flat=rows.flat().map(v=>String(v??''));
-    const text=flat.join(' ');
-    if(/Dmax/i.test(text) && $m('msaItem'))$m('msaItem').value='Dmax';
-    const dateHit=text.match(/20\d{2}[-./]\d{1,2}[-./]\d{1,2}/);
-    if(dateHit && $m('msaDate'))$m('msaDate').value=dateHit[0].replace(/[./]/g,'-').replace(/-(\d)(?=-|$)/g,'-0$1');
+    const flat=rows.flat();
+    const text=flat.map(v=>String(v??'')).join(' ');
+    const itemHit=['Dmax','D50','점도','고형분','수분','접착력','절연저항','팽윤성','입도'].find(k=>new RegExp(k,'i').test(text));
+    if(itemHit&&$m('msaItem'))$m('msaItem').value=itemHit;
+    const equipIdx=flat.findIndex(v=>/측정장비/.test(String(v??'')));
+    if(equipIdx>=0){for(let i=equipIdx+1;i<Math.min(flat.length,equipIdx+10);i++){const v=String(flat[i]??'').trim();if(v&&!/측정자|번호/.test(v)){setIf('msaGauge',v);break;}}}
+    const tolIdx=flat.findIndex(v=>/규격상한|공차|Tolerance/i.test(String(v??'')));
+    if(tolIdx>=0){for(let i=tolIdx+1;i<Math.min(flat.length,tolIdx+10);i++){const n=toNumber(flat[i]);if(Number.isFinite(n)){setIf('msaTolerance',n);break;}}}
+    const unitIdx=flat.findIndex(v=>/단위/.test(String(v??'')));
+    if(unitIdx>=0){for(let i=unitIdx+1;i<Math.min(flat.length,unitIdx+5);i++){const v=String(flat[i]??'').trim();if(v){setIf('msaUnit',v);break;}}}
+    for(const row of rows){
+      let n=firstNumberAfter(row,/시료수|Parts/i); if(Number.isFinite(n)&&n>=2)setIf('msaParts',Math.round(n));
+      n=firstNumberAfter(row,/반복횟수|반복수|Repeat/i); if(Number.isFinite(n)&&n>=2)setIf('msaRepeats',Math.round(n));
+      n=firstNumberAfter(row,/측정자수|Appraisers/i); if(Number.isFinite(n)&&n>=2)setIf('msaOperators',Math.round(n));
+      for(const v of row){const d=dateToInput(v); if(d){setIf('msaDate',d);}}
+    }
+    // names from Appraiser A/B/C blocks or Korean measuring person fields
+    for(let r=0;r<rows.length;r++){
+      for(let c=0;c<rows[r].length;c++){
+        const v=String(rows[r][c]??'');
+        let m=v.match(/Appraiser\s*([A-E])/i)||v.match(/측정자\s*([A-E])/i);
+        if(m){
+          const name=String((rows[r+1]&&rows[r+1][c])||'').trim();
+          if(name&&name!=='0')setIf('msaOp'+m[1].toUpperCase(),name);
+        }
+      }
+    }
+  }
+  function findMatrixFromRows(rows){
+    applyMetaFromRows(rows);
+    readConfig();
+    let header=-1, partCols=[];
+    for(let ri=0;ri<rows.length;ri++){
+      const t=(rows[ri]||[]).map(v=>String(v??'')).join(' ');
+      if(/Sample|시료/i.test(t)){
+        partCols=detectPartColumns(rows,ri+1);
+        if(partCols.length>=3){header=ri+1;break;}
+      }
+      const cols=detectPartColumns(rows,ri);
+      if(cols.length>=Math.min(5,msa.parts)){header=ri;partCols=cols;break;}
+    }
+    if(header<0||!partCols.length)return false;
+    msa.parts=Math.min(msa.parts,partCols.length);
+    setIf('msaParts',msa.parts);
+    readConfig();
+    const opMap={A:0,B:1,C:2,D:3,E:4};
+    const data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
+    let currentOp=null, found=0;
+    for(let ri=header+1;ri<rows.length;ri++){
+      const row=rows[ri]||[];
+      const rowText=row.map(v=>String(v??'')).join(' ');
+      if(/Part AVE|시료평균|시료변동|Gage R&R|연구변동/i.test(rowText))break;
+      // skip summary rows
+      if(/AVE|평균|Range|범위/i.test(String(row[1]??'')+' '+String(row[2]??'')))continue;
+      for(let c=0;c<Math.min(4,row.length);c++){
+        const op=extractOperatorLabel(row[c]);
+        if(op&&opMap[op]!==undefined)currentOp=opMap[op];
+      }
+      let rep=null;
+      for(let c=0;c<Math.min(4,row.length);c++){
+        const r=extractRepeat(row[c]);
+        if(r!==null){rep=r;break;}
+      }
+      if(currentOp===null||rep===null||currentOp>=msa.operators.length||rep>=msa.repeats)continue;
+      const vals=partCols.slice(0,msa.parts).map(c=>toNumber(row[c]));
+      if(vals.filter(Number.isFinite).length<Math.min(3,msa.parts))continue;
+      data[currentOp][rep]=vals.map(v=>Number.isFinite(v)?Number(v.toFixed(6)):'');
+      found++;
+    }
+    const need=msa.operators.length*msa.repeats;
+    if(found<need){return false;}
+    msa.data=data;
+    renderMatrix(); recalc();
+    alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${msa.operators.length}명 × 반복 ${msa.repeats}회 × 시료 ${msa.parts}개)`);
+    return true;
   }
   function parseUploaded(file){
     if(!file)return;
@@ -2817,16 +2898,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
           rows=String(e.target.result).replace(/^\ufeff/,'').split(/\r?\n/).map(line=>line.split(/,|\t/));
         }else{
           if(!window.XLSX){alert('엑셀 읽기 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인해주세요.');return;}
-          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
           const ws=selectWorksheet(wb);
-          rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+          rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:'',blankrows:false});
         }
-        applyMetaFromRows(rows);
         if(findMatrixFromRows(rows))return;
+        applyMetaFromRows(rows); readConfig();
         const nums=[];
         rows.flat().forEach(x=>{const n=toNumber(x); if(Number.isFinite(n)) nums.push(n);});
         const need=msa.operators.length*msa.repeats*msa.parts;
-        if(nums.length<need){alert(`업로드 파일에서 필요한 측정값을 찾지 못했습니다. 필요 ${need}개 / 인식 ${nums.length}개`);return;}
+        if(nums.length<need){alert(`업로드 파일에서 측정 매트릭스를 찾지 못했습니다. 양식의 Sample 시료 표(측정자/반복/시료값)를 확인해주세요. 필요 ${need}개 / 인식 ${nums.length}개`);return;}
         fillFromNumbers(nums.slice(-need));
       }catch(err){console.error(err);alert('업로드 파일을 읽지 못했습니다. CSV 또는 XLSX 형식을 확인해주세요.');}
     };
