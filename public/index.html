@@ -1359,7 +1359,7 @@ function signature데이터(type,role){
   const canvas=getSignatureCanvas(type,role);
   const dateEl=getSignatureDateEl(type,role);
   return {
-    signImage:canvas&&canvasHasSignature(canvas)?canvas.to데이터URL('image/png'):'',
+    signImage:canvas&&canvasHasSignature(canvas)?canvas.toDataURL('image/png'):'',
     signDate:dateEl?dateEl.textContent:''
   };
 }
@@ -1420,7 +1420,7 @@ function initSignaturePad(type,role){
     const needResize=canvas.width!==Math.round(cssW*ratio)||canvas.height!==Math.round(cssH*ratio);
     if(!needResize)return;
 
-    const old데이터=(keep&&canvasHasSignature(canvas))?canvas.to데이터URL('image/png'):'';
+    const old데이터=(keep&&canvasHasSignature(canvas))?canvas.toDataURL('image/png'):'';
     canvas.width=Math.round(cssW*ratio);
     canvas.height=Math.round(cssH*ratio);
     canvas.style.height=cssH+'px';
@@ -1507,7 +1507,7 @@ function refreshSignaturePads(scope){
     const type=cv.dataset.signType;
     const role=cv.dataset.signRole;
     const ctx=cv.getContext('2d');
-    const old데이터=canvasHasSignature(cv)?cv.to데이터URL('image/png'):'';
+    const old데이터=canvasHasSignature(cv)?cv.toDataURL('image/png'):'';
     const rect=cv.getBoundingClientRect();
     const ratio=window.devicePixelRatio||1;
     const w=Math.max(1,Math.round(rect.width));
@@ -1564,14 +1564,16 @@ function buildSignGrid(type){
   const warnEl=document.getElementById(`signWarn_${type}`);
   if(!container)return;
 
-  /* 로그인 사용자 본인만 후보로 노출
-     - 작성자: 로그인 사용자 본인만
-     - 검토자/승인자: 로그인 사용자가 부장급 이상 또는 관리자일 때만 본인 표시 */
-  const me=state.signableUsers[0]||null;
-  const writerUsers=me?[me]:[];
-  const managerUsers=(me&&isSenior(me))?[me]:[];
+  /* 전체 승인된 회원을 후보로 노출
+     - 작성자: 승인된 전체 회원
+     - 검토자/승인자: 부장급 이상 또는 관리자 권한 회원 */
+  const writerUsers=state.signableUsers||[];
+  const managerUsers=writerUsers.filter(isSenior);
 
-  if(warnEl){warnEl.style.display=writerUsers.length===0?'block':'none';}
+  if(warnEl){
+    warnEl.style.display=writerUsers.length===0?'block':'none';
+    warnEl.textContent='⚠️ 등록된 승인 회원이 없습니다. 관리자 메뉴에서 회원을 등록/승인하면 작성자/검토자/승인자를 선택할 수 있습니다.';
+  }
 
   const mkOpts=(list,ph)=>`<option value="">${ph}</option>`+
     list.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
@@ -1589,7 +1591,7 @@ function buildSignGrid(type){
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">작성자 (검사자)</span>
-        <span class="sign-box-badge any">본인 ${writerUsers.length}명</span>
+        <span class="sign-box-badge any">회원 ${writerUsers.length}명</span>
       </div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_writer">${mkOpts(writerUsers,'-- 작성자 선택 --')}</select>
@@ -1603,7 +1605,7 @@ function buildSignGrid(type){
         <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
       </div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(managerUsers,'-- 검토자 선택 (본인이 부장급 이상/관리자일 때) --')}</select>
+        <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(managerUsers,'-- 검토자 선택 --')}</select>
         <div class="sign-sub" id="sg_${type}_reviewer_sub" style="color:var(--t3);"></div>
         ${signPad('reviewer','검토자')}
       </div>
@@ -1614,7 +1616,7 @@ function buildSignGrid(type){
         <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
       </div>
       <div class="sign-box-body">
-        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(managerUsers,'-- 승인자 선택 (본인이 부장급 이상/관리자일 때) --')}</select>
+        <select class="sign-sel" id="sg_${type}_approver">${mkOpts(managerUsers,'-- 승인자 선택 --')}</select>
         <div class="sign-sub" id="sg_${type}_approver_sub" style="color:var(--t3);"></div>
         ${signPad('approver','승인자')}
       </div>
@@ -1625,7 +1627,7 @@ function buildSignGrid(type){
     if(sel){
       sel.addEventListener('change',()=>onSignChange(type,role));
       if(sel.options.length===2 && !sel.value){
-        sel.selected지표=1;
+        sel.selectedIndex=1;
       }
     }
     initSignaturePad(type,role);
@@ -2004,7 +2006,7 @@ function printEl(el){
     img.style.width=cv.style.width||'100%';
     img.style.height=cv.style.height||'76px';
     img.style.objectFit='contain';
-    img.src=cv.to데이터URL('image/png');
+    img.src=cv.toDataURL('image/png');
     ccv.replaceWith(img);
   });
 
@@ -2046,12 +2048,27 @@ function uniqSignUsers(list){
   return Array.from(m.values());
 }
 async function loadSignableUsers(){
-  /* 작성/검토/승인 후보는 서버의 전체 회원 목록을 사용하지 않고,
-     로그인한 본인 1명만 사용한다. 검토/승인 노출 여부는 buildSignGrid()에서
-     부장급 이상 또는 관리자 여부(isSenior)로 다시 제한한다. */
-  const users=uniqSignUsers(state.currentUser?[state.currentUser]:[]);
+  /* 작성/검토/승인 후보는 승인된 전체 회원 목록을 사용한다.
+     서버 환경에 따라 일반 사용자용 목록 API가 없을 수 있어 여러 경로를 순차 시도하고,
+     실패 시 최소한 현재 로그인 사용자는 작성자로 선택 가능하도록 한다. */
+  const endpoints=['/api/users/signable','/api/users','/api/admin/users'];
+  let users=[];
+
+  for(const url of endpoints){
+    const {res,data}=await api(url);
+    if(res?.ok && data){
+      const raw=Array.isArray(data)?data:(data.data||data.users||[]);
+      users=uniqSignUsers(raw);
+      if(users.length)break;
+    }
+  }
+
+  if(state.currentUser){
+    users=uniqSignUsers([...users,state.currentUser]);
+  }
+
   state.signableUsers=users;
-  console.log(`[sign] 본인 후보 로드: ${state.signableUsers.length}명`);
+  console.log(`[sign] 결재 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
