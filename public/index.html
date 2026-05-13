@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f0f2f5;--sf:#fff;--s2:#f8f9fb;--bd:#e4e7ed;--bd2:#d0d5de;
@@ -288,6 +289,29 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .sign-sel:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
 .sign-sub{font-size:11px;color:var(--t3);margin-top:4px;min-height:15px;}
 .sign-warning{font-size:12px;color:var(--wa);background:var(--was);border:1px solid rgba(160,92,0,.2);border-radius:var(--r2);padding:10px 12px;margin-bottom:10px;display:none;}
+
+
+.spc-kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:14px;}
+.spc-kpi .kpi{border:1px solid var(--bd);border-radius:var(--r3);background:var(--s2);padding:12px;}
+.spc-kpi .kpi-l{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;}
+.spc-kpi .kpi-v{font-size:20px;font-weight:900;color:var(--t1);margin-top:4px;letter-spacing:-.5px;}
+.spc-textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono',monospace;min-height:180px!important;}
+.spc-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+.spc-note{margin-top:12px;padding:10px 14px;background:var(--infs);border-radius:var(--r2);font-size:12px;color:var(--inf);line-height:1.6;}
+
+.spc-upload-box{border:1.5px dashed #7aa2ff;border-radius:var(--r3);background:#0f1b33;color:#fff;padding:22px;margin-bottom:14px;text-align:center;transition:var(--tr);} 
+.spc-upload-box.dragover{border-color:#00ffa3;box-shadow:0 0 0 3px rgba(0,255,163,.15);background:#13233f;}
+.spc-upload-icon{font-size:34px;margin-bottom:8px;}
+.spc-upload-title{font-size:14px;font-weight:800;margin-bottom:8px;letter-spacing:.2px;}
+.spc-upload-desc{font-size:13px;line-height:1.7;color:rgba(255,255,255,.85);margin-bottom:12px;}
+.spc-upload-actions{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;}
+.spc-upload-file{display:none;}
+.spc-upload-info{margin-top:10px;font-size:12px;color:#b9d4ff;min-height:18px;}
+.spc-upload-btn{height:34px;min-width:180px;border:none;border-radius:999px;background:#fff;color:#111827;font-weight:800;font-size:13px;cursor:pointer;padding:0 18px;}
+.spc-upload-btn:hover{background:#edf2ff;}
+
+@media(max-width:1200px){.spc-kpi{grid-template-columns:repeat(3,1fr)}.spc-chart-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.spc-kpi{grid-template-columns:1fr}}
 
 /* ══ Canvas 전자서명 ══ */
 .sign-pad-wrap{
@@ -641,6 +665,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <button class="nav-item" data-page="worklog"><span class="nav-icon">📋</span><span>생산작업일지</span></button>
       <button class="nav-item" data-page="suppliers"><span class="nav-icon">🏢</span><span>협력사 현황</span></button>
       <button class="nav-item" data-page="instruments"><span class="nav-icon">📏</span><span>측정기 관리</span></button>
+      <button class="nav-item" data-page="spc"><span class="nav-icon">📊</span><span>공정능력 분석</span></button>
       <button class="nav-item" data-page="trace"><span class="nav-icon">🔗</span><span>LOT 추적</span></button>
       <div class="nav-sec" id="adminNavTitle" style="display:none;">관리자</div>
       <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon">👥</span><span>회원등록현황</span></button>
@@ -1025,6 +1050,65 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
       </section>
 
+
+      <!-- ■ 공정능력 분석 (SPC) -->
+      <section class="page" id="page-spc">
+        <div class="ph">
+          <div><div class="ph-title">공정능력 분석 (SPC)</div><div class="ph-sub">첨부 평가보고서 양식 기준 · 측정값 100ea 이상 Cp/Cpk 분석</div></div>
+          <div class="ph-actions"><button class="btn light" id="spcReset">초기화</button><button class="btn pri" id="spcSave">저장</button></div>
+        </div>
+        <div class="card"><div class="ch"><h2>Raw Data 입력 / 분석</h2><div class="ca"><button class="btn ghost sm" id="spcAnalyze" type="button">📊 분석</button></div></div><div class="cb">
+          <div class="spc-upload-box" id="spcUploadBox">
+            <div class="spc-upload-title">엑셀 / CSV 업로드</div>
+            <div class="spc-upload-icon">📁</div>
+            <div class="spc-upload-desc">RawData_입력 시트 또는 CSV 파일을 드래그하거나 선택<br>측정값 100ea 이상 자동 추출 후 분석합니다.</div>
+            <div class="spc-upload-actions">
+              <input class="spc-upload-file" type="file" id="spcFileUpload" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+              <button class="spc-upload-btn" type="button" id="spcFileSelectBtn">파일 선택</button>
+            </div>
+            <div class="spc-upload-info" id="spcUploadInfo"></div>
+          </div>
+          <div class="fg4">
+            <div class="field"><label>분석일자</label><input type="date" id="spcDate"></div>
+            <div class="field"><label>제품명</label><input id="spcProduct" placeholder="제품명"></div>
+            <div class="field"><label>LOT</label><input id="spcLot" placeholder="LOT 번호"></div>
+            <div class="field"><label>공정명</label><input id="spcProcess" placeholder="공정명"></div>
+            <div class="field"><label>검사항목</label><select id="spcItem"><option value="점도">점도</option><option value="고형분">고형분</option><option value="수분">수분</option><option value="Dmax">Dmax</option><option value="접착력">접착력</option><option value="절연저항">절연저항</option><option value="팽윤성">팽윤성</option></select></div>
+            <div class="field"><label>LSL 하한규격</label><input type="number" step="any" id="spcLsl" placeholder="하한"></div>
+            <div class="field"><label>USL 상한규격</label><input type="number" step="any" id="spcUsl" placeholder="상한"></div>
+            <div class="field"><label>단위</label><input id="spcUnit" placeholder="단위"></div>
+            <div class="field"><label>Subgroup Size</label><input type="number" id="spcSubgroup" value="5" min="2"></div>
+            <div class="field cfall"><label>측정값 Raw Data *</label><textarea id="spcValues" class="spc-textarea" placeholder="Excel에서 100ea 이상 측정값을 복사 후 붙여넣기 하세요. 세로/가로/탭/쉼표 구분 모두 지원됩니다."></textarea></div>
+          </div>
+          <div class="spc-note">ℹ️ 첨부 평가보고서 구조(RawData_입력, 계산_SPC, Chart_Data, 기준_COA)를 반영했습니다. 측정값은 최소 100ea 이상이어야 저장/분석됩니다. 단측 규격(예: Dmax≤10, 수분&lt;2000, 접착력≥400)은 Cp/Pp 대신 Cpk/Ppk 중심으로 판정합니다.</div>
+          <div class="spc-kpi">
+            <div class="kpi"><div class="kpi-l">N</div><div class="kpi-v" id="spcN">-</div></div>
+            <div class="kpi"><div class="kpi-l">평균</div><div class="kpi-v" id="spcMean">-</div></div>
+            <div class="kpi"><div class="kpi-l">표준편차</div><div class="kpi-v" id="spcStd">-</div></div>
+            <div class="kpi"><div class="kpi-l">Cp</div><div class="kpi-v" id="spcCp">-</div></div>
+            <div class="kpi"><div class="kpi-l">Cpk</div><div class="kpi-v" id="spcCpk">-</div></div>
+            <div class="kpi"><div class="kpi-l">판정</div><div class="kpi-v" id="spcJudge">-</div></div>
+          </div>
+          <div class="spc-kpi" style="grid-template-columns:repeat(5,1fr);">
+            <div class="kpi"><div class="kpi-l">Min</div><div class="kpi-v" id="spcMin">-</div></div>
+            <div class="kpi"><div class="kpi-l">Max</div><div class="kpi-v" id="spcMax">-</div></div>
+            <div class="kpi"><div class="kpi-l">Pp</div><div class="kpi-v" id="spcPp">-</div></div>
+            <div class="kpi"><div class="kpi-l">Ppk</div><div class="kpi-v" id="spcPpk">-</div></div>
+            <div class="kpi"><div class="kpi-l">예상 NG</div><div class="kpi-v" id="spcNg">-</div></div>
+          </div>
+          <div class="spc-chart-grid">
+            <div class="card"><div class="ch"><h3>Histogram / 규격선</h3><span class="tag">Chart_Data</span></div><div class="cb"><div class="cwrap"><canvas id="spcHistChart"></canvas></div></div></div>
+            <div class="card"><div class="ch"><h3>X-bar 관리도</h3><span class="tag">Subgroup</span></div><div class="cb"><div class="cwrap"><canvas id="spcXbarChart"></canvas></div></div></div>
+          </div>
+          <input type="hidden" id="spcEditId">
+        </div></div>
+        <div class="card mt14"><div class="ch"><h3>공정능력 분석 이력</h3></div>
+          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
+            <table><thead><tr><th>일자</th><th>제품명</th><th>LOT</th><th>공정</th><th>항목</th><th>N</th><th>평균</th><th>Cp</th><th>Cpk</th><th>판정</th><th>작업</th></tr></thead><tbody id="spcTable"></tbody></table>
+          </div>
+        </div>
+      </section>
+
       <!-- ■ LOT 추적 -->
       <section class="page" id="page-trace">
         <div class="ph"><div><div class="ph-title">LOT 추적</div><div class="ph-sub">완제품 / 원료 LOT를 검색합니다.</div></div>
@@ -1099,7 +1183,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 ═══════════════════════════════════════ */
 const state={
   currentUser:null,
-  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],instruments:[],
+  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],instruments:[],spcReports:[],
   adminUsers:[],
   signableUsers:[],
   charts:{},
@@ -1695,7 +1779,7 @@ function bindNav(){
 
 /* ═══ INIT ═══ */
 function initYears(){const c=new Date().getFullYear();$('dashYear').innerHTML='';for(let y=c-2;y<=c+2;y++){const o=document.createElement('option');o.value=y;o.textContent=`${y}년`;if(y===c)o.selected=true;$('dashYear').appendChild(o);}}
-function setDefaultDates(){['incomingDate','processDate','shipmentDate','worklogDate','ncDate'].forEach(id=>{if($(id))$(id).value=todayKST();});}
+function setDefaultDates(){['incomingDate','processDate','shipmentDate','worklogDate','ncDate','spcDate'].forEach(id=>{if($(id))$(id).value=todayKST();});}
 
 /* ═══ DEFAULT ITEMS ═══ */
 function defIqc(){return[{item:'외관',spec:'이물질, 파손 없을 것',value:'',judge:'합격'},{item:'CoA',spec:'누락 없을 것',value:'',judge:'합격'}];}
@@ -2030,6 +2114,7 @@ async function loadAllData(){
   await loadSignableUsers();
   await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform()]);
   loadInstruments();
+  loadSpcReports();
   if(state.currentUser?.role==='admin')await loadAdminUsers();
   renderSummary();populateReportSelect();loadStandaloneReport();
 }
@@ -2235,6 +2320,225 @@ function renderWorklogMats(){
 }
 function addWorklogMat(){state.worklogMaterialDrafts.push({material:'',supName:'',lotNo:'',inputQty:'',inputTime:''});renderWorklogMats();}
 
+
+/* ═══ SPC / 공정능력 분석 ═══ */
+const SPC_SPECS={
+  '점도':{lsl:1200,usl:1800,unit:'cP',spec:'1,500±300 cP'},
+  '고형분':{lsl:19.0,usl:21.0,unit:'wt.%',spec:'20.0±1.0 wt.%'},
+  '수분':{lsl:'',usl:2000,unit:'ppm',spec:'< 2,000 ppm'},
+  'Dmax':{lsl:'',usl:10.0,unit:'μm',spec:'Dmax ≤ 10.0 μm'},
+  '접착력':{lsl:400,usl:'',unit:'gf/12.7mm',spec:'≥ 400 gf/12.7mm'},
+  '절연저항':{lsl:200,usl:'',unit:'MΩ',spec:'≥ 200 MΩ'},
+  '팽윤성':{lsl:'',usl:120,unit:'%',spec:'< 120 %'}
+};
+function fmtNum(v,d=3){return Number.isFinite(v)?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:d}).replace(/\.000$/,''):'-';}
+function normCdf(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function erf(x){
+  const sign=x>=0?1:-1; x=Math.abs(x);
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const t=1/(1+p*x); const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return sign*y;
+}
+function applySpcSpec(){
+  const spec=SPC_SPECS[$('spcItem')?.value]||SPC_SPECS['점도'];
+  if($('spcLsl'))$('spcLsl').value=spec.lsl;
+  if($('spcUsl'))$('spcUsl').value=spec.usl;
+  if($('spcUnit'))$('spcUnit').value=spec.unit;
+}
+function parseSpcValues(){
+  const txt=($('spcValues')?.value||'').replace(/,/g,' ');
+  return txt.split(/[\s\t\n\r]+/).map(x=>x.trim()).filter(Boolean).map(x=>Number(x)).filter(Number.isFinite);
+}
+function spcJudge(cpk){
+  if(!Number.isFinite(cpk))return '분석불가';
+  if(cpk>=1.67)return '우수';
+  if(cpk>=1.33)return '양호';
+  if(cpk>=1.00)return '주의';
+  return '부적합';
+}
+function spcBadge(j){
+  const cls=j==='우수'||j==='양호'?'pass':j==='주의'?'hold':j==='부적합'?'fail':'info';
+  return `<span class="badge ${cls}">${esc(j||'-')}</span>`;
+}
+function calcSpc(values,lsl,usl){
+  const n=values.length;
+  if(n<2)return null;
+  const mean=values.reduce((a,b)=>a+b,0)/n;
+  const variance=values.reduce((a,b)=>a+(b-mean)**2,0)/(n-1);
+  const std=Math.sqrt(variance);
+  const min=Math.min(...values),max=Math.max(...values);
+  const hasL=Number.isFinite(lsl),hasU=Number.isFinite(usl);
+  const cp=(hasL&&hasU&&std>0)?(usl-lsl)/(6*std):NaN;
+  const cpl=(hasL&&std>0)?(mean-lsl)/(3*std):NaN;
+  const cpu=(hasU&&std>0)?(usl-mean)/(3*std):NaN;
+  let cpk=NaN;
+  if(hasL&&hasU)cpk=Math.min(cpl,cpu); else if(hasL)cpk=cpl; else if(hasU)cpk=cpu;
+  const pp=cp, ppk=cpk;
+  let ng=NaN;
+  if(std>0){
+    let p=0;
+    if(hasL)p+=normCdf((lsl-mean)/std);
+    if(hasU)p+=1-normCdf((usl-mean)/std);
+    ng=p*1000000;
+  }
+  return {n,mean,std,min,max,cp,cpk,pp,ppk,ng,judge:spcJudge(cpk)};
+}
+function renderSpcResult(r){
+  const set=(id,v)=>{if($(id))$(id).textContent=v;};
+  if(!r){['spcN','spcMean','spcStd','spcCp','spcCpk','spcJudge','spcMin','spcMax','spcPp','spcPpk','spcNg'].forEach(id=>set(id,'-'));return;}
+  set('spcN',r.n);set('spcMean',fmtNum(r.mean));set('spcStd',fmtNum(r.std));set('spcCp',Number.isFinite(r.cp)?fmtNum(r.cp,3):'단측');set('spcCpk',fmtNum(r.cpk,3));set('spcJudge',r.judge);set('spcMin',fmtNum(r.min));set('spcMax',fmtNum(r.max));set('spcPp',Number.isFinite(r.pp)?fmtNum(r.pp,3):'단측');set('spcPpk',fmtNum(r.ppk,3));set('spcNg',Number.isFinite(r.ng)?fmtNum(r.ng,1)+' ppm':'-');
+}
+function getSpcInputResult(showAlert=true){
+  const values=parseSpcValues();
+  if(values.length<100){if(showAlert)alert(`측정값은 100ea 이상 필요합니다. 현재 ${values.length}ea 입니다.`);renderSpcResult(null);return null;}
+  const lsl=$('spcLsl').value===''?NaN:Number($('spcLsl').value);
+  const usl=$('spcUsl').value===''?NaN:Number($('spcUsl').value);
+  if(!Number.isFinite(lsl)&&!Number.isFinite(usl)){if(showAlert)alert('LSL 또는 USL 중 하나 이상 입력하세요.');return null;}
+  const r=calcSpc(values,lsl,usl);
+  renderSpcResult(r);renderSpcCharts(values,r,lsl,usl);return {values,result:r,lsl,usl};
+}
+function renderSpcCharts(values,r,lsl,usl){
+  if(!r||!window.Chart)return;
+  const min=Math.min(r.min,Number.isFinite(lsl)?lsl:r.min),max=Math.max(r.max,Number.isFinite(usl)?usl:r.max);
+  const bins=10,step=(max-min)/bins||1;
+  const labels=[],counts=Array(bins).fill(0);
+  for(let i=0;i<bins;i++){const a=min+i*step,b=a+step;labels.push(`${fmtNum(a,2)}~${fmtNum(b,2)}`);}
+  values.forEach(v=>{let idx=Math.floor((v-min)/step);if(idx<0)idx=0;if(idx>=bins)idx=bins-1;counts[idx]++;});
+  const histCtx=$('spcHistChart');
+  if(histCtx){if(state.charts.spcHist)state.charts.spcHist.destroy();state.charts.spcHist=new Chart(histCtx,{type:'bar',data:{labels,datasets:[{label:'빈도',data:counts}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}
+  const sg=Math.max(2,Number($('spcSubgroup')?.value||5));
+  const xLabels=[],xData=[];
+  for(let i=0;i<values.length;i+=sg){const g=values.slice(i,i+sg);if(g.length){xLabels.push(String(xLabels.length+1));xData.push(g.reduce((a,b)=>a+b,0)/g.length);}}
+  const xCtx=$('spcXbarChart');
+  if(xCtx){if(state.charts.spcXbar)state.charts.spcXbar.destroy();state.charts.spcXbar=new Chart(xCtx,{type:'line',data:{labels:xLabels,datasets:[{label:'Subgroup 평균',data:xData,tension:.25},{label:'평균',data:xData.map(()=>r.mean),borderDash:[5,5],pointRadius:0},{label:'LSL',data:xData.map(()=>Number.isFinite(lsl)?lsl:null),borderDash:[3,3],pointRadius:0},{label:'USL',data:xData.map(()=>Number.isFinite(usl)?usl:null),borderDash:[3,3],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:false}}}});}
+}
+
+function spcInferItemFromFileName(name){
+  const s=String(name||'').toLowerCase();
+  const pairs=[['점도','점도'],['고형분','고형분'],['수분','수분'],['dmax','Dmax'],['입도','Dmax'],['접착','접착력'],['절연저항','절연저항'],['팽윤','팽윤성'],['swelling','팽윤성']];
+  for(const [key,item] of pairs){if(s.includes(key.toLowerCase()))return item;}
+  return '';
+}
+function spcToNumber(v){
+  if(v===null||v===undefined)return NaN;
+  if(typeof v==='number')return Number.isFinite(v)?v:NaN;
+  let s=String(v).trim();
+  if(!s)return NaN;
+  s=s.replace(/,/g,'').replace(/[<>≤≥=]/g,' ').replace(/[a-zA-Z가-힣%Ωμµ\.\/]+/g,' ').trim();
+  const m=s.match(/[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?/);
+  if(!m)return NaN;
+  const n=Number(m[0]);
+  return Number.isFinite(n)?n:NaN;
+}
+function spcLikelyMeasurement(n,lsl,usl){
+  if(!Number.isFinite(n))return false;
+  if(Math.abs(n)>1000000)return false;
+  const hasL=Number.isFinite(lsl),hasU=Number.isFinite(usl);
+  if(hasL&&hasU){const span=Math.max(1,usl-lsl);return n>=lsl-20*span&&n<=usl+20*span;}
+  if(hasU){const hi=Math.max(usl*20,usl+1000,100);return n>=0&&n<=hi;}
+  if(hasL){const hi=Math.max(lsl*20,lsl+1000,100);return n>=Math.max(0,lsl/20)&&n<=hi;}
+  return true;
+}
+function extractSpcNumbersFromRows(rows){
+  const lsl=$('spcLsl').value===''?NaN:Number($('spcLsl').value);
+  const usl=$('spcUsl').value===''?NaN:Number($('spcUsl').value);
+  const nums=[];
+  (rows||[]).forEach(row=>{
+    (row||[]).forEach(cell=>{
+      const n=spcToNumber(cell);
+      if(spcLikelyMeasurement(n,lsl,usl))nums.push(n);
+    });
+  });
+  // 파일 내 문서번호, 날짜, 규격값 등이 섞이는 경우를 줄이기 위해 100개 이상일 때만 앞쪽 메타 숫자를 일부 제거하지 않고 전체 사용합니다.
+  return nums;
+}
+function setSpcValuesFromUpload(values,fileName,sheetName){
+  if(!values||!values.length){alert('업로드 파일에서 측정값을 찾지 못했습니다. RawData_입력 시트 또는 CSV 내용을 확인하세요.');return;}
+  const inferred=spcInferItemFromFileName(fileName);
+  if(inferred&&$('spcItem')){$('spcItem').value=inferred;applySpcSpec();}
+  $('spcValues').value=values.join('\n');
+  if(!$('spcLot').value.trim()){
+    const lot=String(fileName||'').replace(/\.(xlsx|xls|csv)$/i,'').replace(/[_ ]?평가\s*보고서.*$/i,'').trim();
+    if(lot&&lot.length<80)$('spcLot').value=lot;
+  }
+  const info=$('spcUploadInfo');
+  if(info)info.textContent=`${fileName} ${sheetName?`/ ${sheetName}`:''} · 측정값 ${values.length}ea 추출`;
+  getSpcInputResult(values.length>=100);
+}
+function parseSpcCsvText(text){
+  return String(text||'').split(/\r?\n/).map(line=>line.split(/,|\t|;/));
+}
+async function handleSpcFile(file){
+  if(!file)return;
+  const name=file.name||'';
+  try{
+    let rows=[],sheetName='';
+    if(/\.csv$/i.test(name)){
+      const text=await file.text();
+      rows=parseSpcCsvText(text);
+      sheetName='CSV';
+    }else{
+      if(typeof XLSX==='undefined'){alert('엑셀 파서가 로드되지 않았습니다. 인터넷 연결 또는 CDN 차단 여부를 확인하세요.');return;}
+      const buf=await file.arrayBuffer();
+      const wb=XLSX.read(buf,{type:'array',cellDates:false,raw:true});
+      sheetName=wb.SheetNames.find(n=>String(n).replace(/\s/g,'').toLowerCase().includes('rawdata_입력'))
+        || wb.SheetNames.find(n=>String(n).toLowerCase().includes('raw'))
+        || wb.SheetNames[0];
+      const ws=wb.Sheets[sheetName];
+      rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,blankrows:false});
+    }
+    const values=extractSpcNumbersFromRows(rows);
+    setSpcValuesFromUpload(values,name,sheetName);
+  }catch(e){
+    console.error(e);
+    alert('파일을 읽는 중 오류가 발생했습니다. 엑셀/CSV 형식을 확인하세요.');
+  }
+}
+function bindSpcUpload(){
+  const input=$('spcFileUpload'),box=$('spcUploadBox'),btn=$('spcFileSelectBtn');
+  if(!input||!box||!btn)return;
+  btn.onclick=()=>input.click();
+  input.onchange=e=>handleSpcFile(e.target.files&&e.target.files[0]);
+  ['dragenter','dragover'].forEach(ev=>box.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();box.classList.add('dragover');}));
+  ['dragleave','drop'].forEach(ev=>box.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();box.classList.remove('dragover');}));
+  box.addEventListener('drop',e=>{const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];handleSpcFile(f);});
+}
+
+function loadSpcReports(){
+  const raw=localStorage.getItem('namo_qms_spc_reports');
+  try{state.spcReports=raw?JSON.parse(raw):[];}catch(e){state.spcReports=[];}
+  renderSpcTable();
+}
+function saveSpcLocal(){localStorage.setItem('namo_qms_spc_reports',JSON.stringify(state.spcReports));}
+function renderSpcTable(){
+  const tb=$('spcTable');if(!tb)return;
+  if(!state.spcReports.length){tb.innerHTML=eRow(11);return;}
+  tb.innerHTML=state.spcReports.map(r=>`<tr><td>${esc(r.date||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.process||'')}</td><td>${esc(r.item||'')}</td><td>${r.n||0}</td><td>${fmtNum(r.mean)}</td><td>${Number.isFinite(r.cp)?fmtNum(r.cp,3):'단측'}</td><td>${fmtNum(r.cpk,3)}</td><td>${spcBadge(r.judge)}</td><td><div class="ai"><button class="sb edit" data-action="editSpc" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteSpc" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+}
+function saveSpc(){
+  const got=getSpcInputResult(true);if(!got)return;
+  const r=got.result;
+  const id=$('spcEditId').value||String(Date.now());
+  const p={id,date:$('spcDate').value||todayKST(),product:$('spcProduct').value.trim(),lot:$('spcLot').value.trim(),process:$('spcProcess').value.trim(),item:$('spcItem').value,lsl:got.lsl,usl:got.usl,unit:$('spcUnit').value.trim(),subgroup:Number($('spcSubgroup').value||5),values:got.values,...r};
+  const idx=state.spcReports.findIndex(x=>String(x.id)===String(id));
+  if(idx>=0)state.spcReports[idx]=p;else state.spcReports.unshift(p);
+  saveSpcLocal();renderSpcTable();$('spcEditId').value=id;alert('공정능력 분석 결과가 저장되었습니다.');
+}
+function clearSpc(){
+  ['spcEditId','spcProduct','spcLot','spcProcess','spcValues'].forEach(id=>{if($(id))$(id).value='';});
+  if($('spcDate'))$('spcDate').value=todayKST(); if($('spcSubgroup'))$('spcSubgroup').value='5'; if($('spcUploadInfo'))$('spcUploadInfo').textContent='';
+  applySpcSpec();renderSpcResult(null);
+  if(state.charts.spcHist){state.charts.spcHist.destroy();state.charts.spcHist=null;} if(state.charts.spcXbar){state.charts.spcXbar.destroy();state.charts.spcXbar=null;}
+}
+function editSpc(id){
+  const r=state.spcReports.find(x=>String(x.id)===String(id));if(!r)return;
+  ['spc'].forEach(pg=>{});
+  $('spcEditId').value=r.id;$('spcDate').value=r.date||todayKST();$('spcProduct').value=r.product||'';$('spcLot').value=r.lot||'';$('spcProcess').value=r.process||'';$('spcItem').value=r.item||'점도';$('spcLsl').value=Number.isFinite(r.lsl)?r.lsl:'';$('spcUsl').value=Number.isFinite(r.usl)?r.usl:'';$('spcUnit').value=r.unit||'';$('spcSubgroup').value=r.subgroup||5;$('spcValues').value=(r.values||[]).join('\n');
+  getSpcInputResult(false);
+  document.querySelector('.nav-item[data-page="spc"]')?.click();
+}
+function deleteSpc(id){if(!confirm('삭제하시겠습니까?'))return;state.spcReports=state.spcReports.filter(x=>String(x.id)!==String(id));saveSpcLocal();renderSpcTable();}
+
 /* ═══ TRACE ═══ */
 async function searchTrace(){
   const kw=$('traceKeyword').value.trim();
@@ -2294,6 +2598,11 @@ function bindEvents(){
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
+  if($('spcItem'))$('spcItem').addEventListener('change',applySpcSpec);
+  if($('spcAnalyze'))$('spcAnalyze').onclick=()=>getSpcInputResult(true);
+  if($('spcSave'))$('spcSave').onclick=saveSpc;
+  if($('spcReset'))$('spcReset').onclick=clearSpc;
+  bindSpcUpload();
   $('userSave').onclick=withSaving('user',$('userSave'),saveUser);$('userReset').onclick=clearUser;
   $('reportType').onchange=()=>{
   populateReportSelect();
@@ -2314,7 +2623,7 @@ $('printReportPage').onclick=()=>{
   if($('globalSearch')) $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
   // 테이블 위임
   const tA={
-    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,
+    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,editSpc,deleteSpc,
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
@@ -2326,7 +2635,7 @@ $('printReportPage').onclick=()=>{
     deleteWorklog:id=>delApi(`/api/worklog/${id}`,'삭제하시겠습니까?',async()=>{await loadWorklog();renderSummary();}),
     deleteUser:id=>delApi(`/api/admin/users/${id}`,'삭제하시겠습니까?',async()=>{await loadAdminUsers();await loadSignableUsers();})
   };
-  ['incomingTable','processTable','shipmentTable','supplierTable','worklogTable','instrumentTable','userTable','nonconformTable'].forEach(tbId=>{
+  ['incomingTable','processTable','shipmentTable','supplierTable','worklogTable','instrumentTable','spcTable','userTable','nonconformTable'].forEach(tbId=>{
     $(tbId).addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const{action,id}=btn.dataset;if(tA[action])tA[action](id);});
   });
   bindItemDelegate('incomingItemsTable');bindItemDelegate('processItemsTable');bindItemDelegate('shipmentItemsTable');
@@ -2338,7 +2647,7 @@ $('printReportPage').onclick=()=>{
 document.addEventListener('DOMContentLoaded',async()=>{
   initYears();setDefaultDates();bindNav();bindEvents();startClock();
   state.incomingItemDrafts=defIqc();state.processItemDrafts=defPqc();state.shipmentItemDrafts=defOqc();
-  renderIqcItems();renderPqcItems();renderOqcItems();renderWorklogMats();
+  renderIqcItems();renderPqcItems();renderOqcItems();renderWorklogMats();applySpcSpec();renderSpcResult(null);
   const ok=await checkLogin();if(ok)await loadAllData();
 });
 </script>
