@@ -1899,10 +1899,9 @@ function renderItems(tbId,rows,type){$(tbId).innerHTML=rows.map((r,i)=>`<tr><td>
 function getDraft(t){return t==='incoming'?state.incomingItemDrafts:t==='process'?state.processItemDrafts:state.shipmentItemDrafts;}
 function reRender(t){t==='incoming'?renderIqcItems():t==='process'?renderPqcItems():renderOqcItems();}
 function syncP(t){t==='incoming'?syncIqcPreview():t==='process'?syncPqcPreview():syncOqcPreview();}
-function bindItemDelegate(tbId){
-  $(tbId).addEventListener('input',e=>{const el=e.target,t=el.dataset.type,i=Number(el.dataset.idx),k=el.dataset.key;if(!t||isNaN(i)||!k)return;getDraft(t)[i][k]=el.value;syncP(t);});
-  $(tbId).addEventListener('change',e=>{const el=e.target,t=el.dataset.type,i=Number(el.dataset.idx),k=el.dataset.key;if(!t||isNaN(i)||!k)return;getDraft(t)[i][k]=el.value;syncP(t);});
-  $(tbId).addEventListener('click',e=>{const btn=e.target.closest('[data-action="removeItem"]');if(!btn)return;getDraft(btn.dataset.type).splice(Number(btn.dataset.idx),1);reRender(btn.dataset.type);});
+function bindItemDelegate(tbId){const tb=$(tbId);if(!tb)return;tb.addEventListener('input',e=>{const el=e.target,t=el.dataset.type,i=Number(el.dataset.idx),k=el.dataset.key;if(!t||isNaN(i)||!k)return;getDraft(t)[i][k]=el.value;syncP(t);});
+  tb.addEventListener('change',e=>{const el=e.target,t=el.dataset.type,i=Number(el.dataset.idx),k=el.dataset.key;if(!t||isNaN(i)||!k)return;getDraft(t)[i][k]=el.value;syncP(t);});
+  tb.addEventListener('click',e=>{const btn=e.target.closest('[data-action="removeItem"]');if(!btn)return;getDraft(btn.dataset.type).splice(Number(btn.dataset.idx),1);reRender(btn.dataset.type);});
 }
 function renderIqcItems(){renderItems('incomingItemsTable',state.incomingItemDrafts,'incoming');syncIqcPreview();}
 function renderPqcItems(){renderItems('processItemsTable',state.processItemDrafts,'process');syncPqcPreview();}
@@ -2588,7 +2587,7 @@ function bindEvents(){
   if($('spcDownloadJson'))$('spcDownloadJson').onclick=downloadSpcJson;
   if($('spcPrintReport'))$('spcPrintReport').onclick=printSpcReport;
   ['spcLsl','spcUsl','spcTarget','spcSubgroup','spcA2','spcD3','spcD4','spcD2','spcCpkStd'].forEach(id=>{if($(id))$(id).addEventListener('input',()=>spcRecalc(false));});
-  $('userSave').onclick=withSaving('user',$('userSave'),saveUser);$('userReset').onclick=clearUser;
+  if($('userSave'))$('userSave').onclick=withSaving('user',$('userSave'),saveUser);if($('userReset'))$('userReset').onclick=clearUser;
   $('reportType').onchange=()=>{
   populateReportSelect();
   loadStandaloneReport();
@@ -2603,8 +2602,8 @@ $('printReportPage').onclick=()=>{
     printEl($('reportPrintTarget'));
   },300);
 };
-  $('traceSearch').onclick=searchTrace;$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
-  $('dashRefresh').onclick=renderSummary;
+  if($('traceSearch'))$('traceSearch').onclick=searchTrace;if($('traceKeyword'))$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
+  if($('dashRefresh'))$('dashRefresh').onclick=renderSummary;
   if($('globalSearch')) $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
   // 테이블 위임
   const tA={
@@ -2621,11 +2620,15 @@ $('printReportPage').onclick=()=>{
     deleteUser:id=>delApi(`/api/admin/users/${id}`,'삭제하시겠습니까?',async()=>{await loadAdminUsers();await loadSignableUsers();})
   };
   ['incomingTable','processTable','shipmentTable','supplierTable','worklogTable','instrumentTable','spcTable','userTable','nonconformTable'].forEach(tbId=>{
-    $(tbId).addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const{action,id}=btn.dataset;if(tA[action])tA[action](id);});
+    const tb=$(tbId);
+    if(!tb)return;
+    tb.addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const{action,id}=btn.dataset;if(tA[action])tA[action](id);});
   });
-  bindItemDelegate('incomingItemsTable');bindItemDelegate('processItemsTable');bindItemDelegate('shipmentItemsTable');
-  $('worklogMaterialsTable').addEventListener('input',e=>{const el=e.target,i=el.dataset.widx,k=el.dataset.wkey;if(i===undefined||!k)return;state.worklogMaterialDrafts[Number(i)][k]=el.value;});
-  $('worklogMaterialsTable').addEventListener('click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
+  ['incomingItemsTable','processItemsTable','shipmentItemsTable'].forEach(id=>{if($(id))bindItemDelegate(id);});
+  if($('worklogMaterialsTable')){
+    $('worklogMaterialsTable').addEventListener('input',e=>{const el=e.target,i=el.dataset.widx,k=el.dataset.wkey;if(i===undefined||!k)return;state.worklogMaterialDrafts[Number(i)][k]=el.value;});
+    $('worklogMaterialsTable').addEventListener('click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
+  }
 }
 
 /* ═══ ENTRY ═══ */
