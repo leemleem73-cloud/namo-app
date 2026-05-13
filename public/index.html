@@ -2802,13 +2802,25 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function detectPartColumns(rows, headerRowIdx){
     const row=rows[headerRowIdx]||[];
-    const cols=[];
-    for(let c=0;c<row.length;c++){
-      const n=toNumber(row[c]);
-      if(Number.isInteger(n)&&n>=1&&n<=60)cols.push(c);
+    let best=[];
+    for(let start=0; start<row.length; start++){
+      const cols=[];
+      let expected=1;
+      for(let c=start; c<row.length && expected<=80; c++){
+        const raw=row[c];
+        const n=toNumber(raw);
+        if(Number.isInteger(n) && n===expected){
+          cols.push(c);
+          expected++;
+        }else if(cols.length>0){
+          // allow merged/blank helper columns only before data starts, but stop on real non-matching value
+          if(String(raw??'').trim()==='') continue;
+          break;
+        }
+      }
+      if(cols.length>best.length) best=cols;
     }
-    if(cols.length>=3)return cols;
-    return [];
+    return best.length>=3?best:[];
   }
   function applyMetaFromRows(rows){
     const flat=rows.flat();
@@ -2841,50 +2853,89 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function findMatrixFromRows(rows){
     applyMetaFromRows(rows);
-    readConfig();
     let header=-1, partCols=[];
+
+    // 1) Prefer the exact template layout: row containing "Sample 시료" and the next row containing 1..N sample numbers.
     for(let ri=0;ri<rows.length;ri++){
       const t=(rows[ri]||[]).map(v=>String(v??'')).join(' ');
-      if(/Sample|시료/i.test(t)){
-        partCols=detectPartColumns(rows,ri+1);
-        if(partCols.length>=3){header=ri+1;break;}
+      if(/Sample|시\s*료|시료/i.test(t)){
+        for(let off=0; off<=3; off++){
+          const cols=detectPartColumns(rows,ri+off);
+          if(cols.length>=3){header=ri+off; partCols=cols; break;}
+        }
+        if(header>=0)break;
       }
-      const cols=detectPartColumns(rows,ri);
-      if(cols.length>=Math.min(5,msa.parts)){header=ri;partCols=cols;break;}
+    }
+    // 2) Fallback: any row with a consecutive 1..N sample header.
+    if(header<0){
+      for(let ri=0;ri<rows.length;ri++){
+        const cols=detectPartColumns(rows,ri);
+        if(cols.length>=5){header=ri;partCols=cols;break;}
+      }
     }
     if(header<0||!partCols.length)return false;
-    msa.parts=Math.min(msa.parts,partCols.length);
-    setIf('msaParts',msa.parts);
-    readConfig();
-    const opMap={A:0,B:1,C:2,D:3,E:4};
-    const data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
-    let currentOp=null, found=0;
+
+    const opIndex={A:0,B:1,C:2,D:3,E:4};
+    const records=[];
+    let currentOp=null;
     for(let ri=header+1;ri<rows.length;ri++){
       const row=rows[ri]||[];
       const rowText=row.map(v=>String(v??'')).join(' ');
-      if(/Part AVE|시료평균|시료변동|Gage R&R|연구변동/i.test(rowText))break;
-      // skip summary rows
-      if(/AVE|평균|Range|범위/i.test(String(row[1]??'')+' '+String(row[2]??'')))continue;
-      for(let c=0;c<Math.min(4,row.length);c++){
+      if(/Part\s*AVE|시료평균|시료변동|Gage\s*R&R|연구변동|총변동|UCLR|LCLR/i.test(rowText))break;
+
+      // Detect operator labels such as "1. A", "A", "6. B" in the first few cells.
+      for(let c=0;c<Math.min(5,row.length);c++){
         const op=extractOperatorLabel(row[c]);
-        if(op&&opMap[op]!==undefined)currentOp=opMap[op];
+        if(op&&opIndex[op]!==undefined)currentOp=op;
       }
+
+      // Skip summary rows (AVE/평균/Range/범위). They are calculated lines, not observation rows.
+      const firstText=row.slice(0,4).map(v=>String(v??'')).join(' ');
+      if(/AVE|평균|Range|범위/i.test(firstText))continue;
+
       let rep=null;
-      for(let c=0;c<Math.min(4,row.length);c++){
-        const r=extractRepeat(row[c]);
-        if(r!==null){rep=r;break;}
+      for(let c=0;c<Math.min(5,row.length);c++){
+        const rr=extractRepeat(row[c]);
+        if(rr!==null){rep=rr;break;}
       }
-      if(currentOp===null||rep===null||currentOp>=msa.operators.length||rep>=msa.repeats)continue;
-      const vals=partCols.slice(0,msa.parts).map(c=>toNumber(row[c]));
-      if(vals.filter(Number.isFinite).length<Math.min(3,msa.parts))continue;
-      data[currentOp][rep]=vals.map(v=>Number.isFinite(v)?Number(v.toFixed(6)):'');
-      found++;
+      if(currentOp===null||rep===null)continue;
+
+      const vals=partCols.map(c=>toNumber(row[c]));
+      const validCount=vals.filter(Number.isFinite).length;
+      if(validCount<Math.max(3,Math.ceil(partCols.length*0.6)))continue;
+      records.push({op:currentOp,rep,vals:vals.map(v=>Number.isFinite(v)?Number(v.toFixed(6)):'')});
     }
-    const need=msa.operators.length*msa.repeats;
-    if(found<need){return false;}
+    if(!records.length)return false;
+
+    const opLabels=[...new Set(records.map(x=>x.op))].sort((a,b)=>opIndex[a]-opIndex[b]);
+    const reps=Math.max(...records.map(x=>x.rep))+1;
+    const parts=partCols.length;
+    if(opLabels.length<2||reps<2||parts<3)return false;
+
+    setIf('msaOperators',opLabels.length);
+    setIf('msaRepeats',reps);
+    setIf('msaParts',parts);
+    readConfig();
+    msa.operators=opLabels;
+    msa.repeats=reps;
+    msa.parts=parts;
+
+    const data=Array.from({length:opLabels.length},()=>Array.from({length:reps},()=>Array(parts).fill('')));
+    const labelToIndex=Object.fromEntries(opLabels.map((op,i)=>[op,i]));
+    let found=0;
+    records.forEach(rec=>{
+      const oi=labelToIndex[rec.op];
+      if(oi===undefined||rec.rep>=reps)return;
+      data[oi][rec.rep]=rec.vals.slice(0,parts);
+      found++;
+    });
+
+    const need=opLabels.length*reps;
+    if(found<need)return false;
     msa.data=data;
-    renderMatrix(); recalc();
-    alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${msa.operators.length}명 × 반복 ${msa.repeats}회 × 시료 ${msa.parts}개)`);
+    renderMatrix();
+    recalc();
+    alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${opLabels.length}명 × 반복 ${reps}회 × 시료 ${parts}개)`);
     return true;
   }
   function parseUploaded(file){
