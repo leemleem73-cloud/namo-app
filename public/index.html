@@ -3311,11 +3311,17 @@ function renderMatrix(){
     const extra=list.find(u=>String(u.email||'').toLowerCase()===email || (name&&String(u.name||'').trim()===name));
     return {...(extra||{}),...cur,role:cur.role||extra?.role,title:cur.title||extra?.title,department:cur.department||extra?.department,status:cur.status||extra?.status};
   }
-  function me(){return effectiveUser();}
-  function myName(){return me()?.name||'';}
-  function myEmail(){return me()?.email||'';}
   function domProfileName(){return (document.getElementById('profileName')?.textContent||'').trim();}
   function domProfileEmail(){return (document.getElementById('profileEmail')?.textContent||'').trim().toLowerCase();}
+  function me(){
+    const u=effectiveUser();
+    if(u)return u;
+    const n=domProfileName(), e=domProfileEmail();
+    if(n||e)return {name:n,email:e,role:(n==='임흥배'||e.includes('hbleem')||e.includes('bhleem'))?'admin':'',title:n==='임흥배'?'대표':''};
+    return null;
+  }
+  function myName(){return me()?.name||'';}
+  function myEmail(){return me()?.email||'';}
   function hasNoWriter(r,wf){
     const n=String(r?.signWriter?.name||wf?.writer||'').trim();
     return !n || n==='-' || n==='미지정';
@@ -3339,6 +3345,7 @@ function renderMatrix(){
       || n==='임흥배'||n.includes('임흥배');
   }
   function isSeniorUser(u){
+    u=u||me();
     if(!u)return false;
     if(isAdminUser(u))return true;
     if((u.status||'')==='APPROVED' && !u.title && !u.role)return true; // 기존 DB에 직책/권한이 없는 경우 알림 누락 방지
@@ -3346,7 +3353,7 @@ function renderMatrix(){
   }
   function canReview(){return isSeniorUser(me());}
   function canApprove(){
-    const u=me(); if(!u)return false;
+    const u=me(); if(!u)return isAdminUser(null);
     if(isAdminUser(u))return true;
     const t=String(u.title||'').toLowerCase();
     return ['대표','대표이사','사장','회장','임원','이사','상무','전무','본부장','ceo','coo','cto','cfo'].some(x=>t.includes(x.toLowerCase()));
@@ -3506,10 +3513,10 @@ function renderMatrix(){
   function notifications(){
     const out=[];
     allDocs().forEach(x=>{
-      if(x.wf.status==='REVIEW_WAIT' && canReview() && !currentUserIsWriter(x.row,x.wf))out.push({...x,msg:'검토 요청이 있습니다.',kind:'검토요청'});
-      if(x.wf.status==='APPROVAL_WAIT' && canApprove() && !currentUserIsWriter(x.row,x.wf))out.push({...x,msg:'최종 승인 요청이 있습니다.',kind:'승인요청'});
-      if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(x.wf.status) && currentUserIsWriter(x.row,x.wf))out.push({...x,msg:(x.wf.status==='REVIEW_REJECTED'?'검토 반려되었습니다.':x.wf.status==='APPROVAL_REJECTED'?'승인 반려되었습니다.':'문서가 반려되었습니다.')+' 수정 후 재제출하세요.',kind:'반려'});
-      if(x.wf.status==='APPROVED' && currentUserIsWriter(x.row,x.wf))out.push({...x,msg:'문서가 최종 승인되었습니다.',kind:'승인완료'});
+      if(x.wf.status==='REVIEW_WAIT' && canReview() && (!currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf)))out.push({...x,msg:'검토 요청이 있습니다.',kind:'검토요청'});
+      if(x.wf.status==='APPROVAL_WAIT' && canApprove() && (!currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf)))out.push({...x,msg:'최종 승인 요청이 있습니다.',kind:'승인요청'});
+      if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(x.wf.status) && (currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf)))out.push({...x,msg:(x.wf.status==='REVIEW_REJECTED'?'검토 반려되었습니다.':x.wf.status==='APPROVAL_REJECTED'?'승인 반려되었습니다.':'문서가 반려되었습니다.')+' 수정 후 재제출하세요.',kind:'반려'});
+      if(x.wf.status==='APPROVED' && (currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf)))out.push({...x,msg:'문서가 최종 승인되었습니다.',kind:'승인완료'});
     });
     return out.sort((a,b)=>String(b.wf.updatedAt||'').localeCompare(String(a.wf.updatedAt||'')));
   }
