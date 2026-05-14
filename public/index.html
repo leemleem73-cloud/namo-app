@@ -216,6 +216,8 @@ button,input,select,textarea{font:inherit}
 .cb{padding:18px;}.ca{display:flex;gap:8px;align-items:center;}
 .sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px;}
 .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r4);padding:18px;box-shadow:var(--sh1);position:relative;overflow:hidden;}
+.sc[data-go]{cursor:pointer;transition:transform var(--tr),box-shadow var(--tr),border-color var(--tr);}
+.sc[data-go]:hover{transform:translateY(-2px);box-shadow:var(--sh3);border-color:var(--bd2);}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .sc.blue::before{background:linear-gradient(90deg,#1a56db,#60a5fa);}
 .sc.purple::before{background:linear-gradient(90deg,#6d28d9,#a78bfa);}
@@ -498,22 +500,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .msa-template-report .msa-small{font-size:11px;line-height:1.25;}
 .msa-template-report .msa-bold{font-weight:900;}
 
-/* 품질정보 분석 */
-.qi-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.qi-tab{height:34px;padding:0 14px;border:1.5px solid var(--bd);border-radius:999px;background:#fff;color:var(--t2);font-size:12px;font-weight:800;cursor:pointer}
-.qi-tab:hover{background:var(--s2);border-color:var(--bd2)}
-.qi-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.qi-kpi-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r3);box-shadow:var(--sh1);padding:14px}
-.qi-kpi-l{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
-.qi-kpi-v{font-size:24px;font-weight:900;color:var(--t1);letter-spacing:-.6px;margin-top:4px}
-.qi-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.qi-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.qi-chart{height:300px;position:relative}
-.qi-chart.tall{height:390px}
-.qi-rank-no{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;background:var(--pris);color:var(--pri);font-size:11px;font-weight:900}
-@media(max-width:1200px){.qi-kpi{grid-template-columns:repeat(2,1fr)}.qi-grid2,.qi-grid3{grid-template-columns:1fr}}
-@media(max-width:700px){.qi-kpi{grid-template-columns:1fr}}
-
 </style>
 </head>
 <body>
@@ -710,10 +696,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <button class="nav-item" data-page="instruments"><span class="nav-icon"></span><span>측정기 관리</span></button>
       <div class="nav-sec">공정능력 관리</div>
       <button class="nav-item" data-page="spc"><span class="nav-icon"></span><span>공정능력 분석</span></button>
-      <div class="nav-sec">품질정보 분석</div>
-      <button class="nav-item" data-page="qualityTrend"><span class="nav-icon"></span><span>품질 Trend분석</span></button>
-      <button class="nav-item" data-page="causeTrace"><span class="nav-icon"></span><span>발생원인 분석(추적)</span></button>
-      <button class="nav-item" data-page="qualityWorst"><span class="nav-icon"></span><span>품질문제 Worst 분석</span></button>
       <div class="nav-sec" id="adminNavTitle" style="display:none;">관리자</div>
       <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon"></span><span>회원등록현황</span></button>
     </aside>
@@ -731,11 +713,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           </div>
         </div>
         <div class="sgrid">
-          <div class="sc blue"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
-          <div class="sc purple"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
-          <div class="sc orange"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
-          <div class="sc green"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
-          <div class="sc red"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
+          <div class="sc blue" data-go="incoming" role="button" tabindex="0" title="수입검사로 이동"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
+          <div class="sc purple" data-go="process" role="button" tabindex="0" title="공정검사로 이동"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
+          <div class="sc orange" data-go="shipment" role="button" tabindex="0" title="출하검사로 이동"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
+          <div class="sc green" data-go="worklog" role="button" tabindex="0" title="생산작업일지로 이동"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
+          <div class="sc red" data-go="nonconform" role="button" tabindex="0" title="부적합 보고서로 이동"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
         </div>
         <div class="dlower">
           <div class="card"><div class="ch"><h3>월별 검사 현황 추이</h3><span class="tag">YEARLY</span></div><div class="cb"><div class="cwrap"><canvas id="trendChart"></canvas></div></div></div>
@@ -1192,82 +1174,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
 
             </section>
-
-
-      <!-- ■ 품질 Trend분석 -->
-      <section class="page" id="page-qualityTrend">
-        <div class="ph">
-          <div><div class="ph-title">품질 Trend분석</div><div class="ph-sub">품질지표 관제 · 운영지표 관제 · 월별 부적합 추세</div></div>
-          <div class="ph-actions">
-            <span class="toolbar-label">조회 연도</span>
-            <select id="qiTrendYear" style="height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"></select>
-            <button class="btn pri" id="qiTrendRefresh" type="button">조회</button>
-          </div>
-        </div>
-        <div class="qi-tabs">
-          <button type="button" class="qi-tab" data-page="qualityTrend">품질 Trend분석</button>
-          <button type="button" class="qi-tab" data-page="causeTrace">발생원인 분석(추적)</button>
-          <button type="button" class="qi-tab" data-page="qualityWorst">품질문제 Worst 분석</button>
-        </div>
-        <div class="qi-kpi">
-          <div class="qi-kpi-card"><div class="qi-kpi-l">총 검사건수</div><div class="qi-kpi-v" id="qiTotalInspect">0</div></div>
-          <div class="qi-kpi-card"><div class="qi-kpi-l">불합격/보류 항목</div><div class="qi-kpi-v" id="qiBadItems">0</div></div>
-          <div class="qi-kpi-card"><div class="qi-kpi-l">부적합 보고서</div><div class="qi-kpi-v" id="qiNcTotal">0</div></div>
-          <div class="qi-kpi-card"><div class="qi-kpi-l">미결/처리중</div><div class="qi-kpi-v" id="qiNcOpen">0</div></div>
-        </div>
-        <div class="qi-grid2">
-          <div class="card"><div class="ch"><h3>품질지표 Trend</h3><span class="tag">Monthly</span></div><div class="cb"><div class="qi-chart"><canvas id="qiTrendChart"></canvas></div></div></div>
-          <div class="card"><div class="ch"><h3>운영지표 관제</h3><span class="tag">Process</span></div><div class="cb"><div class="qi-chart"><canvas id="qiOperationChart"></canvas></div></div></div>
-        </div>
-        <div class="card mt14"><div class="ch"><h3>월별 품질 상세 현황</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>월</th><th>수입검사</th><th>공정검사</th><th>출하검사</th><th>부적합</th><th>불합격/보류 항목</th><th>품질 이슈율</th></tr></thead><tbody id="qiTrendTable"></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ■ 발생원인 분석(추적) -->
-      <section class="page" id="page-causeTrace">
-        <div class="ph">
-          <div><div class="ph-title">발생원인 분석(추적)</div><div class="ph-sub">부적합 유형 · LOT · 발생부서 · 원인 키워드를 추적합니다.</div></div>
-        </div>
-        <div class="qi-tabs">
-          <button type="button" class="qi-tab" data-page="qualityTrend">품질 Trend분석</button>
-          <button type="button" class="qi-tab" data-page="causeTrace">발생원인 분석(추적)</button>
-          <button type="button" class="qi-tab" data-page="qualityWorst">품질문제 Worst 분석</button>
-        </div>
-        <div class="qi-grid3">
-          <div class="card"><div class="ch"><h3>발생유형 분포</h3></div><div class="cb"><div class="qi-chart"><canvas id="qiCauseTypeChart"></canvas></div></div></div>
-          <div class="card"><div class="ch"><h3>발생부서/공정 분포</h3></div><div class="cb"><div class="qi-chart"><canvas id="qiCauseDeptChart"></canvas></div></div></div>
-          <div class="card"><div class="ch"><h3>처리상태 현황</h3></div><div class="cb"><div class="qi-chart"><canvas id="qiCauseStatusChart"></canvas></div></div></div>
-        </div>
-        <div class="card mt14"><div class="ch"><h3>LOT 기반 추적 목록</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>발생일자</th><th>보고서번호</th><th>유형</th><th>부서</th><th>LOT</th><th>품목</th><th>원인</th><th>상태</th></tr></thead><tbody id="qiCauseTable"></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ■ 품질문제 Worst 분석 -->
-      <section class="page" id="page-qualityWorst">
-        <div class="ph">
-          <div><div class="ph-title">품질문제 Worst 분석</div><div class="ph-sub">검사항목/부적합 유형별 Worst 순위 및 상세분석</div></div>
-        </div>
-        <div class="qi-tabs">
-          <button type="button" class="qi-tab" data-page="qualityTrend">품질 Trend분석</button>
-          <button type="button" class="qi-tab" data-page="causeTrace">발생원인 분석(추적)</button>
-          <button type="button" class="qi-tab" data-page="qualityWorst">품질문제 Worst 분석</button>
-        </div>
-        <div class="qi-grid2">
-          <div class="card"><div class="ch"><h3>Worst 품질문제 TOP 10</h3></div><div class="cb"><div class="qi-chart tall"><canvas id="qiWorstChart"></canvas></div></div></div>
-          <div class="card"><div class="ch"><h3>검사 구분별 문제 비중</h3></div><div class="cb"><div class="qi-chart tall"><canvas id="qiWorstTypeChart"></canvas></div></div></div>
-        </div>
-        <div class="card mt14"><div class="ch"><h3>Worst 상세분석</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>순위</th><th>문제 항목</th><th>건수</th><th>관련 유형</th><th>대표 LOT</th><th>최근 발생일</th></tr></thead><tbody id="qiWorstTable"></tbody></table>
-          </div>
-        </div>
-      </section>
 
       <!-- ■ LOT 추적 -->
       <section class="page" id="page-trace">
@@ -1879,216 +1785,7 @@ function printLabel(){
 .msa-template-report .msa-small{font-size:11px;line-height:1.25;}
 .msa-template-report .msa-bold{font-weight:900;}
 
-</style></head><body>${g.outerHTML}
-<script id="namo-quality-info-analysis">
-/* ═══════════════════════════════════════
-   NAMO QMS 품질정보 분석 패치
-   - 품질 Trend분석
-   - 발생원인 분석(추적)
-   - 품질문제 Worst 분석
-═══════════════════════════════════════ */
-(function(){
-  const q=id=>document.getElementById(id);
-  const qa=s=>Array.from(document.querySelectorAll(s));
-  const charts={};
-  const monthLabels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  function escHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
-  function dateOf(r){return String(r?.date||r?.workDate||r?.ncDate||'');}
-  function yearVal(){return Number(q('qiTrendYear')?.value||q('dashYear')?.value||new Date().getFullYear());}
-  function destroy(name){try{charts[name]?.destroy();}catch(e){} charts[name]=null;}
-  function draw(name,id,type,labels,datasets,opts={}){
-    const el=q(id); if(!el||!window.Chart)return;
-    destroy(name);
-    charts[name]=new Chart(el,{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},...opts}});
-  }
-  function mapCount(rows,keyFn){
-    const m={};
-    rows.forEach(r=>{const k=keyFn(r)||'미분류'; m[k]=(m[k]||0)+1;});
-    return m;
-  }
-  function topEntries(obj,n=10){return Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,n);}
-  function allInspections(){
-    const pack=(arr,type,label)=>Array.isArray(arr)?arr.map(r=>({...r,_type:type,_label:label})):[];
-    const s=window.state||{};
-    return [
-      ...pack(s.incoming,'iqc','수입검사'),
-      ...pack(s.process,'pqc','공정검사'),
-      ...pack(s.shipment,'oqc','출하검사')
-    ];
-  }
-  function badItems(){
-    const rows=[];
-    allInspections().forEach(doc=>{
-      (doc.items||[]).forEach(it=>{
-        const judge=String(it.judge||'');
-        if(judge==='불합격'||judge==='보류'){
-          rows.push({
-            date:dateOf(doc),
-            type:doc._label,
-            lot:doc.lot||doc.processLot||doc.shipmentLot||'',
-            item:it.item||'미분류',
-            judge
-          });
-        }
-      });
-    });
-    return rows;
-  }
-  function ncRows(){return Array.isArray(window.state?.nonconform)?window.state.nonconform:[];}
-  function initTrendYear(){
-    const y=q('qiTrendYear'); if(!y||y.options.length)return;
-    const c=new Date().getFullYear();
-    for(let yr=c-2;yr<=c+2;yr++){
-      const o=document.createElement('option');
-      o.value=yr; o.textContent=yr+'년';
-      if(String(q('dashYear')?.value||c)===String(yr))o.selected=true;
-      y.appendChild(o);
-    }
-  }
-  function monthCount(rows,yr,dateFn=dateOf){
-    return monthLabels.map((_,i)=>rows.filter(r=>String(dateFn(r)||'').startsWith(`${yr}-${String(i+1).padStart(2,'0')}`)).length);
-  }
-  function renderTrend(){
-    initTrendYear();
-    const yr=yearVal();
-    const ins=allInspections();
-    const bad=badItems();
-    const nc=ncRows();
-    const ncOpen=nc.filter(r=>r.status!=='완결').length;
-    if(q('qiTotalInspect'))q('qiTotalInspect').textContent=ins.filter(r=>dateOf(r).startsWith(String(yr))).length;
-    if(q('qiBadItems'))q('qiBadItems').textContent=bad.filter(r=>r.date.startsWith(String(yr))).length;
-    if(q('qiNcTotal'))q('qiNcTotal').textContent=nc.filter(r=>dateOf(r).startsWith(String(yr))).length;
-    if(q('qiNcOpen'))q('qiNcOpen').textContent=ncOpen;
-
-    const iqc=monthCount(window.state?.incoming||[],yr);
-    const pqc=monthCount(window.state?.process||[],yr);
-    const oqc=monthCount(window.state?.shipment||[],yr);
-    const ncM=monthCount(nc,yr);
-    const badM=monthCount(bad,yr,r=>r.date);
-
-    draw('trend','qiTrendChart','line',monthLabels,[
-      {label:'검사건수',data:iqc.map((v,i)=>v+pqc[i]+oqc[i]),tension:.35,fill:false},
-      {label:'부적합',data:ncM,tension:.35,fill:false},
-      {label:'불합격/보류 항목',data:badM,tension:.35,fill:false}
-    ],{scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}});
-
-    draw('operation','qiOperationChart','bar',monthLabels,[
-      {label:'수입검사',data:iqc,borderRadius:4},
-      {label:'공정검사',data:pqc,borderRadius:4},
-      {label:'출하검사',data:oqc,borderRadius:4}
-    ],{scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}});
-
-    const tb=q('qiTrendTable');
-    if(tb){
-      tb.innerHTML=monthLabels.map((m,i)=>{
-        const total=iqc[i]+pqc[i]+oqc[i];
-        const issue=ncM[i]+badM[i];
-        const rate=total?Math.round(issue/total*100)+'%':(issue?'-':'0%');
-        return `<tr><td>${m}</td><td>${iqc[i]}</td><td>${pqc[i]}</td><td>${oqc[i]}</td><td>${ncM[i]}</td><td>${badM[i]}</td><td><strong>${rate}</strong></td></tr>`;
-      }).join('');
-    }
-  }
-  function renderCause(){
-    const rows=ncRows();
-    const type=mapCount(rows,r=>r.type||r.ncType||'기타');
-    const dept=mapCount(rows,r=>r.dept||r.department||r.ncDept||'미지정');
-    const status=mapCount(rows,r=>r.status||'미결');
-
-    draw('causeType','qiCauseTypeChart','doughnut',Object.keys(type),[{label:'건수',data:Object.values(type)}]);
-    draw('causeDept','qiCauseDeptChart','bar',Object.keys(dept),[{label:'건수',data:Object.values(dept),borderRadius:4}],{scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}});
-    draw('causeStatus','qiCauseStatusChart','doughnut',Object.keys(status),[{label:'건수',data:Object.values(status)}]);
-
-    const tb=q('qiCauseTable');
-    if(tb){
-      tb.innerHTML=rows.length?rows.map(r=>`<tr>
-        <td>${escHtml(dateOf(r)||'-')}</td>
-        <td>${escHtml(r.no||r.ncNo||'-')}</td>
-        <td>${escHtml(r.type||r.ncType||'-')}</td>
-        <td>${escHtml(r.dept||r.ncDept||'-')}</td>
-        <td><strong>${escHtml(r.lot||r.ncLot||'-')}</strong></td>
-        <td>${escHtml(r.item||r.ncItem||'-')}</td>
-        <td>${escHtml((r.cause||r.ncCause||r.issue||r.ncIssue||'-')).slice(0,80)}</td>
-        <td>${escHtml(r.status||'-')}</td>
-      </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;padding:22px;color:var(--t3);">부적합 데이터 없음</td></tr>';
-    }
-  }
-  function renderWorst(){
-    const bad=badItems();
-    const nc=ncRows();
-    const issueMap={};
-    const detail={};
-
-    function add(key,type,lot,date){
-      const k=key||'미분류';
-      issueMap[k]=(issueMap[k]||0)+1;
-      detail[k]=detail[k]||{types:new Set(),lots:new Set(),latest:''};
-      if(type)detail[k].types.add(type);
-      if(lot)detail[k].lots.add(lot);
-      if(date && String(date)>String(detail[k].latest||''))detail[k].latest=date;
-    }
-    bad.forEach(r=>add(r.item,r.type,r.lot,r.date));
-    nc.forEach(r=>add(r.type||r.ncType||'부적합 보고', '부적합보고서', r.lot||r.ncLot, dateOf(r)));
-
-    const top=topEntries(issueMap,10);
-    draw('worst','qiWorstChart','bar',top.map(x=>x[0]),[{label:'발생건수',data:top.map(x=>x[1]),borderRadius:4}],{
-      indexAxis:'y',
-      scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}
-    });
-
-    const typeMap=mapCount([...bad.map(r=>({t:r.type})),...nc.map(()=>({t:'부적합보고서'}))],r=>r.t);
-    draw('worstType','qiWorstTypeChart','doughnut',Object.keys(typeMap),[{label:'건수',data:Object.values(typeMap)}]);
-
-    const tb=q('qiWorstTable');
-    if(tb){
-      tb.innerHTML=top.length?top.map(([k,v],i)=>{
-        const d=detail[k]||{types:new Set(),lots:new Set(),latest:''};
-        return `<tr>
-          <td><span class="qi-rank-no">${i+1}</span></td>
-          <td><strong>${escHtml(k)}</strong></td>
-          <td>${v}</td>
-          <td>${escHtml(Array.from(d.types).join(', ')||'-')}</td>
-          <td>${escHtml(Array.from(d.lots).slice(0,3).join(', ')||'-')}</td>
-          <td>${escHtml(d.latest||'-')}</td>
-        </tr>`;
-      }).join(''):'<tr><td colspan="6" style="text-align:center;padding:22px;color:var(--t3);">Worst 분석 데이터 없음</td></tr>';
-    }
-  }
-  function renderAll(){
-    renderTrend();
-    renderCause();
-    renderWorst();
-  }
-  function goPage(page){
-    qa('.nav-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
-    qa('.page').forEach(p=>p.classList.remove('active'));
-    const target=q('page-'+page); if(target)target.classList.add('active');
-    const content=document.querySelector('.content'); if(content)content.scrollTo({top:0,behavior:'smooth'});
-    setTimeout(renderAll,80);
-  }
-  function bind(){
-    document.addEventListener('click',e=>{
-      const tab=e.target.closest('.qi-tab[data-page]');
-      if(tab){goPage(tab.dataset.page);return;}
-      const nav=e.target.closest('.nav-item[data-page="qualityTrend"],.nav-item[data-page="causeTrace"],.nav-item[data-page="qualityWorst"]');
-      if(nav)setTimeout(renderAll,80);
-    });
-    q('qiTrendRefresh')?.addEventListener('click',renderAll);
-    q('qiTrendYear')?.addEventListener('change',renderAll);
-  }
-  const oldLoad=window.loadAll데이터;
-  if(typeof oldLoad==='function'){
-    window.loadAll데이터=async function(){
-      const r=await oldLoad.apply(this,arguments);
-      setTimeout(renderAll,80);
-      return r;
-    };
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{initTrendYear();bind();setTimeout(renderAll,500);});
-  else {initTrendYear();bind();setTimeout(renderAll,500);}
-})();
-</script>
-
-<!-- v5: approval inbox, notifications, document lookup fixed -->
+</style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
@@ -2160,6 +1857,21 @@ function bindNav(){
       setTimeout(()=>refreshSignaturePads($(`page-${pg}`)),80);
       if(pg==='users')await loadAdminUsers();
       if(pg==='report'){populateReportSelect();loadStandaloneReport();}
+    });
+  });
+
+  $$('.sc[data-go]').forEach(card=>{
+    const move=()=>{
+      const pg=card.dataset.go;
+      const nav=document.querySelector(`.nav-item[data-page="${pg}"]`);
+      if(nav) nav.click();
+    };
+    card.addEventListener('click',move);
+    card.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        move();
+      }
     });
   });
 }
