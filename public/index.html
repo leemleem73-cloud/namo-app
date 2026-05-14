@@ -1783,7 +1783,7 @@ function printLabel(){
 .msa-template-report .msa-small{font-size:11px;line-height:1.25;}
 .msa-template-report .msa-bold{font-weight:900;}
 
-</style></head><body>${g.outerHTML}<!-- v3: review/approval reject workflow enabled -->
+</style></head><body>${g.outerHTML}<!-- v4: enterprise approval inbox fixed - my documents / review / approve / rejected -->
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
@@ -3282,7 +3282,7 @@ function renderMatrix(){
    - 상단 알림, 검토/승인 업무함, 검토반려/승인반려, 반려 사유, 감사로그
 ═══════════════════════════════════════ */
 (function(){
-  const WF_KEY='namo_qms_approval_workflow_v2';
+  const WF_KEY='namo_qms_approval_workflow_v2'; // v4 keeps existing workflow data key
   const READ_KEY='namo_qms_approval_read_v2';
   const TYPE_LABEL={iqc:'수입검사',pqc:'공정검사',oqc:'출하검사',nc:'부적합보고서'};
   const TYPE_ARR={iqc:'incoming',pqc:'process',oqc:'shipment',nc:'nonconform'};
@@ -3327,7 +3327,11 @@ function renderMatrix(){
     if(!u)return false;
     const r=normalizeRole(u.role);
     const e=String(u.email||'').toLowerCase();
-    return r==='admin'||r==='administrator'||r.includes('admin')||e==='hbleem@namochemical.com';
+    const n=String(u.name||'').trim();
+    // 대표/관리자 계정 오타 및 대소문자 보정
+    return r==='admin'||r==='administrator'||r.includes('admin')
+      || e==='hbleem@namochemical.com' || e==='bhleem@namochemical.com'
+      || n==='임흥배';
   }
   function isSeniorUser(u){
     if(!u)return false;
@@ -3433,7 +3437,12 @@ function renderMatrix(){
     const main=document.querySelector('main.content');
     if(main && !qs('page-approval')){
       const page=document.createElement('section'); page.className='page'; page.id='page-approval';
-      page.innerHTML=`<div class="ph"><div><div class="ph-title">검토/승인 업무함</div><div class="ph-sub">로그인 권한에 따라 처리할 문서만 표시합니다.</div></div><div class="ph-actions"><button class="btn light" id="wfRefresh">새로고침</button></div></div><div class="card"><div class="ch"><h3>내 업무</h3><span class="tag" id="wfRoleText"></span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfTaskTable"></tbody></table></div></div>`;
+      page.innerHTML=`<div class="ph"><div><div class="ph-title">검토/승인 업무함</div><div class="ph-sub">내 작성문서, 검토할 문서, 승인할 문서, 반려문서를 구분해서 표시합니다.</div></div><div class="ph-actions"><button class="btn light" id="wfRefresh">새로고침</button></div></div>
+      <div class="card"><div class="ch"><h3>업무 요약</h3><span class="tag" id="wfRoleText"></span></div><div class="cb" id="wfSummary" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+      <div class="card mt14"><div class="ch"><h3>내 작성문서</h3><span class="tag" id="wfMineCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfMineTable"></tbody></table></div></div>
+      <div class="card mt14"><div class="ch"><h3>검토할 문서</h3><span class="tag" id="wfReviewCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfReviewTable"></tbody></table></div></div>
+      <div class="card mt14"><div class="ch"><h3>승인할 문서</h3><span class="tag" id="wfApproveCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfApproveTable"></tbody></table></div></div>
+      <div class="card mt14"><div class="ch"><h3>반려문서</h3><span class="tag" id="wfRejectCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfRejectTable"></tbody></table></div></div>`;
       main.appendChild(page); qs('wfRefresh').onclick=renderTaskTable;
     }
   }
@@ -3450,19 +3459,39 @@ function renderMatrix(){
     return out;
   }
   function visibleTasks(){
-    return allDocs().filter(x=>{
-      if(x.wf.status==='REVIEW_WAIT')return canReview() && !currentUserIsWriter(x.row);
-      if(x.wf.status==='APPROVAL_WAIT')return canApprove() && !currentUserIsWriter(x.row);
-      if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(x.wf.status))return currentUserIsWriter(x.row);
-      return false;
-    });
+    return taskBuckets().all;
+  }
+  function taskBuckets(){
+    const docs=allDocs().filter(x=>x.wf.status && x.wf.status!=='DRAFT');
+    const rejected=['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'];
+    const mine=docs.filter(x=>currentUserIsWriter(x.row));
+    const review=docs.filter(x=>x.wf.status==='REVIEW_WAIT' && canReview() && !currentUserIsWriter(x.row));
+    const approve=docs.filter(x=>x.wf.status==='APPROVAL_WAIT' && canApprove() && !currentUserIsWriter(x.row));
+    const reject=docs.filter(x=>rejected.includes(x.wf.status) && currentUserIsWriter(x.row));
+    const byKey=new Map();
+    [...mine,...review,...approve,...reject].forEach(x=>byKey.set(`${x.type}:${x.row.id}`,x));
+    return {mine,review,approve,reject,all:[...byKey.values()]};
+  }
+  function taskRowHtml(x){
+    return `<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}${x.wf.rejectReason?`<div style="margin-top:4px;color:var(--er);font-size:12px">사유: ${clean(x.wf.rejectReason)}</div>`:''}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}</div></td></tr>`;
+  }
+  function fillTaskTable(tbodyId,countId,items,emptyMsg){
+    const tb=qs(tbodyId); if(!tb)return;
+    const c=qs(countId); if(c)c.textContent=String(items.length);
+    tb.innerHTML=items.length?items.map(taskRowHtml).join(''):`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t3)">${emptyMsg}</td></tr>`;
   }
   function renderTaskTable(){
-    const tb=qs('wfTaskTable'); if(!tb)return;
+    if(!qs('page-approval'))return;
     qs('wfRoleText').textContent=`검토권한:${canReview()?'Y':'N'} / 승인권한:${canApprove()?'Y':'N'}`;
-    const tasks=visibleTasks();
-    if(!tasks.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t3)">처리할 문서가 없습니다.</td></tr>';return;}
-    tb.innerHTML=tasks.map(x=>`<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}${x.wf.rejectReason?`<div style="margin-top:4px;color:var(--er);font-size:12px">사유: ${clean(x.wf.rejectReason)}</div>`:''}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}</div></td></tr>`).join('');
+    const b=taskBuckets();
+    const sum=qs('wfSummary');
+    if(sum){
+      sum.innerHTML=`<span class="badge info">내 작성문서 ${b.mine.length}</span><span class="badge hold">검토할 문서 ${b.review.length}</span><span class="badge hold">승인할 문서 ${b.approve.length}</span><span class="badge fail">반려문서 ${b.reject.length}</span>`;
+    }
+    fillTaskTable('wfMineTable','wfMineCount',b.mine,'내가 작성한 결재 문서가 없습니다.');
+    fillTaskTable('wfReviewTable','wfReviewCount',b.review,'검토할 문서가 없습니다.');
+    fillTaskTable('wfApproveTable','wfApproveCount',b.approve,'승인할 문서가 없습니다.');
+    fillTaskTable('wfRejectTable','wfRejectCount',b.reject,'반려된 문서가 없습니다.');
   }
   function notifications(){
     const out=[];
@@ -3604,6 +3633,6 @@ function renderMatrix(){
 })();
 </script>
 
-<!-- v3: review/approval reject workflow enabled -->
+<!-- v4: enterprise approval inbox fixed - my documents / review / approve / rejected -->
 </body>
 </html>
