@@ -498,6 +498,21 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .msa-template-report .msa-small{font-size:11px;line-height:1.25;}
 .msa-template-report .msa-bold{font-weight:900;}
 
+
+/* ══ 측정기 상세 / 이미지 / 교정이력 관리 ══ */
+.instrument-photo-box{border:1.5px dashed var(--bd2);border-radius:var(--r3);background:var(--s2);padding:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.instrument-photo-preview{width:170px;height:130px;border:1px solid var(--bd);border-radius:var(--r2);background:#fff;object-fit:contain;display:none}
+.instrument-photo-empty{width:170px;height:130px;border:1px solid var(--bd);border-radius:var(--r2);background:#fff;color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:12px}
+.instrument-detail-grid{display:grid;grid-template-columns:260px 1fr;gap:16px}
+.instrument-detail-photo{width:100%;max-height:260px;object-fit:contain;border:1px solid var(--bd);border-radius:var(--r3);background:#fff;padding:8px}
+.instrument-detail-empty{height:220px;border:1px dashed var(--bd2);border-radius:var(--r3);background:var(--s2);color:var(--t3);display:flex;align-items:center;justify-content:center}
+.instrument-info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.instrument-info-item{border:1px solid var(--bd);border-radius:var(--r2);padding:8px 10px;background:#fff}
+.instrument-info-item b{display:block;font-size:10px;color:var(--t3);letter-spacing:.3px;text-transform:uppercase;margin-bottom:3px}
+.instrument-thumb{width:44px;height:34px;object-fit:contain;border:1px solid var(--bd);border-radius:6px;background:#fff;cursor:pointer}
+.cert-link{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:var(--pris);color:var(--pri);font-size:11px;font-weight:700;text-decoration:none}
+@media(max-width:900px){.instrument-detail-grid{grid-template-columns:1fr}.instrument-info-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1047,32 +1062,48 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <!-- ■ 측정기 관리 -->
       <section class="page" id="page-instruments">
         <div class="ph">
-          <div><div class="ph-title">측정기 관리</div><div class="ph-sub"></div></div>
+          <div><div class="ph-title">측정기 관리</div><div class="ph-sub">계측기 마스터 · 사진 · 교정이력 · 성적서 관리</div></div>
           <div class="ph-actions"><button class="btn light" id="instrumentReset">초기화</button><button class="btn pri" id="instrumentSave">저장</button></div>
         </div>
-        <div class="card"><div class="ch"><h2>측정기 등록 / 수정</h2></div><div class="cb">
+        <div class="card"><div class="ch"><h2>계측기 마스터 등록 / 수정</h2></div><div class="cb">
           <div class="fg4">
             <div class="field"><label>관리번호 *</label><input id="instrumentNo" placeholder="예: EQ-2026-001"></div>
-            <div class="field"><label>측정기명 *</label><input id="instrumentName" placeholder="예: 점도계, pH Meter"></div>
+            <div class="field"><label>계측기명 *</label><input id="instrumentName" placeholder="예: 점도계, pH Meter"></div>
             <div class="field"><label>모델명</label><input id="instrumentModel" placeholder="모델명"></div>
             <div class="field"><label>제조사</label><input id="instrumentMaker" placeholder="제조사"></div>
-            <div class="field"><label>위치</label><input id="instrumentLocation" placeholder="사용 위치"></div>
+            <div class="field"><label>Serial No.</label><input id="instrumentSerial" placeholder="시리얼 번호"></div>
+            <div class="field"><label>규격/측정범위</label><input id="instrumentRange" placeholder="예: 0~200mm, 0~1000g"></div>
+            <div class="field"><label>사용부서</label><input id="instrumentDepartment" placeholder="사용부서"></div>
+            <div class="field"><label>보관위치</label><input id="instrumentLocation" placeholder="보관위치"></div>
+            <div class="field"><label>담당자</label><input id="instrumentOwner" placeholder="담당자명"></div>
+            <div class="field"><label>구입일</label><input type="date" id="instrumentPurchaseDate"></div>
             <div class="field"><label>교정주기(개월)</label><input type="number" id="instrumentCycle" placeholder="12" min="1"></div>
             <div class="field"><label>최근 교정일</label><input type="date" id="instrumentLastCal"></div>
             <div class="field"><label>다음 교정일</label><input type="date" id="instrumentNextCal"></div>
             <div class="field"><label>상태</label>
               <select id="instrumentStatus"><option value="정상">정상</option><option value="교정예정">교정예정</option><option value="교정초과">교정초과</option><option value="사용중지">사용중지</option></select>
             </div>
+            <div class="field cfall"><label>측정기 사진</label>
+              <div class="instrument-photo-box">
+                <img id="instrumentImagePreview" class="instrument-photo-preview" alt="측정기 사진 미리보기">
+                <div id="instrumentImageEmpty" class="instrument-photo-empty">사진 없음</div>
+                <div style="flex:1;min-width:220px;">
+                  <input type="file" id="instrumentImage" accept="image/*" style="height:auto;padding:8px;">
+                  <div style="font-size:12px;color:var(--t3);margin-top:6px;line-height:1.6;">이미지는 브라우저 저장공간(localStorage)에 보관됩니다. 너무 큰 이미지는 자동 축소 저장됩니다.</div>
+                  <button type="button" class="btn light sm mt8" id="instrumentImageClear">사진 삭제</button>
+                </div>
+              </div>
+            </div>
             <div class="field cfall"><label>비고</label><textarea id="instrumentRemark" placeholder="비고 사항"></textarea></div>
           </div>
           <div style="margin-top:12px;padding:10px 14px;background:var(--infs);border-radius:var(--r2);font-size:12px;color:var(--inf);">
             ℹ️ 최근 교정일과 교정주기 입력 시 다음 교정일이 자동 계산됩니다. 다음 교정일 기준 30일 이내는 교정예정, 지난 경우 교정초과로 표시됩니다.
           </div>
-          <input type="hidden" id="instrumentEditId">
+          <input type="hidden" id="instrumentEditId"><input type="hidden" id="instrumentImageData">
         </div></div>
-        <div class="card mt14"><div class="ch"><h3>측정기 목록</h3></div>
+        <div class="card mt14"><div class="ch"><h3>계측기 목록</h3><span class="tag">행 또는 상세 버튼 클릭 시 사진/이력 조회</span></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>관리번호</th><th>측정기명</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>비고</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
+            <table><thead><tr><th>사진</th><th>관리번호</th><th>계측기명</th><th>모델명</th><th>제조사</th><th>Serial No.</th><th>규격/측정범위</th><th>사용부서</th><th>보관위치</th><th>담당자</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -1238,6 +1269,33 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     <div class="mhdr"><h3 id="labelModalTitle">🏷 제품 부착용 라벨</h3><button type="button" class="mclose" id="closeLabelModal">✕</button></div>
     <div class="mbody" id="labelModalBody"></div>
     <div class="mfoot"><button type="button" class="btn light" id="cancelLabelModal">닫기</button><button type="button" class="btn pri" id="printLabelBtn">🖨 라벨 인쇄</button></div>
+  </div>
+</div>
+
+<!-- 측정기 상세 / 교정이력 모달 -->
+<div class="modal" id="instrumentDetailModal">
+  <div class="mcard wide">
+    <div class="mhdr"><h3 id="instrumentDetailTitle">계측기 상세</h3><button type="button" class="mclose" id="closeInstrumentDetailModal">✕</button></div>
+    <div class="mbody">
+      <div id="instrumentDetailBody"></div>
+      <div class="card mt14">
+        <div class="ch"><h3>교정이력 / 성적서 등록</h3></div>
+        <div class="cb">
+          <div class="fg4">
+            <div class="field"><label>교정일자</label><input type="date" id="calHistoryDate"></div>
+            <div class="field"><label>교정기관</label><input id="calHistoryAgency" placeholder="교정기관"></div>
+            <div class="field"><label>성적서번호</label><input id="calHistoryCertNo" placeholder="성적서번호"></div>
+            <div class="field"><label>판정</label><select id="calHistoryJudge"><option value="합격">합격</option><option value="불합격">불합격</option><option value="보류">보류</option></select></div>
+            <div class="field"><label>교정결과</label><input id="calHistoryResult" placeholder="예: 이상 없음"></div>
+            <div class="field"><label>다음 교정일</label><input type="date" id="calHistoryNextDate"></div>
+            <div class="field cfall"><label>성적서 첨부(PDF/이미지)</label><input type="file" id="calHistoryFile" accept="application/pdf,image/*" style="height:auto;padding:8px;"></div>
+            <div class="field cfall"><label>비고</label><textarea id="calHistoryRemark" placeholder="비고"></textarea></div>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" id="instrumentDetailId"><input type="hidden" id="calHistoryFileData"><input type="hidden" id="calHistoryFileName"><input type="hidden" id="calHistoryFileType">
+    </div>
+    <div class="mfoot"><button type="button" class="btn light" id="cancelInstrumentDetailModal">닫기</button><button type="button" class="btn pri" id="addCalHistoryBtn">이력 추가</button></div>
   </div>
 </div>
 
@@ -2201,10 +2259,10 @@ async function loadWorklog(){
 
 function defaultInstruments(){
   return [
-    {id:'default-01',no:'NM측정-01',name:'Drying Oven',model:'ThermoStableTM',maker:'DAIHANScientific',location:'연구소',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',remark:''},
-    {id:'default-02',no:'NM측정-02',name:'Vacuum Oven',model:'ThermoStableTM OF-155',maker:'DAIHANScientific',location:'연구소',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',remark:''},
-    {id:'default-03',no:'NM측정-03',name:'인장시험기',model:'UNITEST-M1',maker:'TEST ONE',location:'연구소',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',remark:''},
-    {id:'default-04',no:'NM측정-04',name:'입도분석기',model:'Mastersizer 3000',maker:'Malvern Panalytical',location:'연구소',cycle:'12',lastCal:'',nextCal:'',status:'정상',remark:''}
+    {id:'default-01',no:'NM측정-01',name:'Drying Oven',model:'ThermoStableTM',maker:'DAIHANScientific',serial:'',range:'',department:'연구소',location:'연구소',owner:'',purchaseDate:'',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',imageData:'',remark:'',calHistory:[]},
+    {id:'default-02',no:'NM측정-02',name:'Vacuum Oven',model:'ThermoStableTM OF-155',maker:'DAIHANScientific',serial:'',range:'',department:'연구소',location:'연구소',owner:'',purchaseDate:'',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',imageData:'',remark:'',calHistory:[]},
+    {id:'default-03',no:'NM측정-03',name:'인장시험기',model:'UNITEST-M1',maker:'TEST ONE',serial:'',range:'',department:'연구소',location:'연구소',owner:'',purchaseDate:'',cycle:'12',lastCal:'2025-11-10',nextCal:'2026-11-09',status:'정상',imageData:'',remark:'',calHistory:[]},
+    {id:'default-04',no:'NM측정-04',name:'입도분석기',model:'Mastersizer 3000',maker:'Malvern Panalytical',serial:'',range:'',department:'연구소',location:'연구소',owner:'',purchaseDate:'',cycle:'12',lastCal:'',nextCal:'',status:'정상',imageData:'',remark:'',calHistory:[]}
   ];
 }
 function loadInstruments(){
@@ -2259,61 +2317,42 @@ function instrumentBadge(s){
   const cls=s==='정상'?'pass':s==='교정예정'?'hold':s==='교정초과'?'fail':'info';
   return `<span class="badge ${cls}">${esc(s||'정상')}</span>`;
 }
+function instrumentPhotoCell(r){
+  return r.imageData ? `<img src="${r.imageData}" class="instrument-thumb" data-action="viewInstrument" data-id="${esc(r.id)}" alt="측정기 사진">` : `<span style="font-size:11px;color:var(--t3);">사진 없음</span>`;
+}
 function renderInstrumentTable(){
   const tb=$('instrumentTable');if(!tb)return;
-  if(!state.instruments.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.instruments.map(r=>`<tr><td><strong>${esc(r.no||'')}</strong></td><td>${esc(r.name||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${esc(r.remark||'')}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+  if(!state.instruments.length){tb.innerHTML=eRow(15);return;}
+  tb.innerHTML=state.instruments.map(r=>`<tr data-action="viewInstrument" data-id="${esc(r.id)}" style="cursor:pointer;"><td>${instrumentPhotoCell(r)}</td><td><strong>${esc(r.no||'')}</strong></td><td>${esc(r.name||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.serial||'')}</td><td>${esc(r.range||'')}</td><td>${esc(r.department||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.owner||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td><div class="ai"><button class="sb lbl" data-action="viewInstrument" data-id="${esc(r.id)}">상세</button><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
-function renderWorklogTable(){
-  const tb=$('worklogTable');if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
-  tb.innerHTML=state.worklog.map(r=>{
-    const lot=(r.finishedLot||'').toLowerCase();
-    const iq=state.incoming.filter(x=>(x.lot||'').toLowerCase()===lot).length;
-    const pq=state.process.filter(x=>(x.lot||'').toLowerCase()===lot).length;
-    const oq=state.shipment.filter(x=>(x.lot||'').toLowerCase()===lot).length;
-    const lk=[iq?`<span class="badge info">IQC ${iq}</span>`:'',pq?`<span class="badge info">PQC ${pq}</span>`:'',oq?`<span class="badge info">OQC ${oq}</span>`:''].filter(Boolean).join(' ')||`<span style="color:var(--t3);font-size:11px;">없음</span>`;
-    return`<tr><td>${r.workDate||''}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td style="min-width:120px;">${lk}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
-  }).join('');
+function setInstrumentImagePreview(data){
+  if($('instrumentImageData'))$('instrumentImageData').value=data||'';
+  const img=$('instrumentImagePreview'), emp=$('instrumentImageEmpty');
+  if(img){img.src=data||'';img.style.display=data?'block':'none';}
+  if(emp)emp.style.display=data?'none':'flex';
 }
-function renderUserTable(){
-  const tb=$('userTable');if(!state.adminUsers.length){tb.innerHTML=eRow(8);return;}
-  tb.innerHTML=state.adminUsers.map(r=>`<tr><td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.email||'')}</td><td>${esc(r.department||'')}</td><td><span style="font-weight:600;">${esc(r.title||'-')}</span>${isSenior(r)?'<span class="badge info" style="margin-left:6px;font-size:10px;">검토/승인 가능</span>':''}</td><td><span class="badge ${r.role==='admin'?'info':''}">${r.role==='admin'?'관리자':'일반회원'}</span></td><td><span class="badge ${r.status==='APPROVED'?'pass':'fail'}">${r.status||''}</span></td><td>${toKSTDate(String(r.created_at||'').slice(0,10)||r.created_at)}</td><td><div class="ai"><button class="sb edit" data-action="editUser" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteUser" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+function resizeImageFileToDataURL(file,maxW=1200,maxH=900,quality=.82){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(reader.error);
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>resolve(reader.result);
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        const ratio=Math.min(maxW/w,maxH/h,1);
+        w=Math.round(w*ratio);h=Math.round(h*ratio);
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',quality));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
-
-/* ═══ DASHBOARD ═══ */
-function renderSummary(){
-  const y=Number($('dashYear').value||new Date().getFullYear()),p=y-1;
-  const cnt=(arr,yr)=>arr.filter(r=>String(r.date||r.workDate||r.ncDate||'').startsWith(String(yr))).length;
-  const rate=(c,pp)=>{if(!pp)return c?'신규':'-';const pc=Math.round((c-pp)/pp*100);return(pc>=0?'+':'')+pc+'%';};
-  const iC=cnt(state.incoming,y),pC=cnt(state.process,y),sC=cnt(state.shipment,y),wC=cnt(state.worklog,y);
-  const iP=cnt(state.incoming,p),pP=cnt(state.process,p),sP=cnt(state.shipment,p),wP=cnt(state.worklog,p);
-  const ncOpen=state.nonconform.filter(r=>r.status!=='완결').length;
-  $('sumIncoming').textContent=iC;$('sumProcess').textContent=pC;$('sumShipment').textContent=sC;$('sumWorklog').textContent=wC;$('sumNc').textContent=ncOpen;
-  const setT=(id,c,pp)=>{const el=$(id),s=rate(c,pp);el.textContent=s;el.className='trend '+(s.startsWith('+')?'up':s.startsWith('-')?'down':'neutral');};
-  setT('sumIncomingRate',iC,iP);setT('sumProcessRate',pC,pP);setT('sumShipmentRate',sC,sP);setT('sumWorklogRate',wC,wP);
-  renderCharts();
-}
-function renderCharts(){
-  const y=Number($('dashYear').value||new Date().getFullYear());
-  const lbl=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  const mo=arr=>lbl.map((_,i)=>arr.filter(r=>String(r.date||r.workDate||'').startsWith(`${y}-${String(i+1).padStart(2,'0')}`)).length);
-  if(state.charts.trend)state.charts.trend.destroy();
-  state.charts.trend=new Chart($('trendChart'),{type:'bar',data:{labels:lbl,datasets:[{label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},{label:'공정검사',data:mo(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:4},{label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
-}
-
-function calcInstrumentNext(){
-  const last=$('instrumentLastCal')?.value||'';
-  const cycle=$('instrumentCycle')?.value||'';
-  if(last&&cycle&&$('instrumentNextCal')){
-    $('instrumentNextCal').value=addMonthsToDate(last,cycle);
-  }
-  updateInstrumentStatusByDate();
-}
-function updateInstrumentStatusByDate(){
-  const next=$('instrumentNextCal')?.value||'';
-  const cur=$('instrumentStatus')?.value||'정상';
-  const auto=instrumentAutoStatus(next,cur);
-  if($('instrumentStatus'))$('instrumentStatus').value=auto;
+function readFileDataURL(file){
+  return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(r.error);r.onload=()=>resolve(r.result);r.readAsDataURL(file);});
 }
 function saveInstrument(){
   const id=$('instrumentEditId').value||String(Date.now());
@@ -2323,32 +2362,85 @@ function saveInstrument(){
     no:$('instrumentNo').value.trim(),
     model:$('instrumentModel').value.trim(),
     maker:$('instrumentMaker').value.trim(),
+    serial:$('instrumentSerial').value.trim(),
+    range:$('instrumentRange').value.trim(),
+    department:$('instrumentDepartment').value.trim(),
     location:$('instrumentLocation').value.trim(),
+    owner:$('instrumentOwner').value.trim(),
+    purchaseDate:$('instrumentPurchaseDate').value,
     cycle:$('instrumentCycle').value.trim()||'12',
     lastCal:$('instrumentLastCal').value,
     nextCal:$('instrumentNextCal').value,
     status:instrumentAutoStatus($('instrumentNextCal').value,$('instrumentStatus').value),
+    imageData:$('instrumentImageData')?.value||'',
     remark:$('instrumentRemark').value.trim()
   };
-  if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
+  const old=state.instruments.find(x=>String(x.id)===String(id));
+  p.calHistory=Array.isArray(old?.calHistory)?old.calHistory:[];
+  if(!p.name||!p.no){alert('계측기명과 관리번호는 필수입니다.');return;}
   const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
   if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
   saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
 }
 function clearInstrument(){
-  ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentLocation','instrumentLastCal','instrumentNextCal','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
+  ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentSerial','instrumentRange','instrumentDepartment','instrumentLocation','instrumentOwner','instrumentPurchaseDate','instrumentLastCal','instrumentNextCal','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
   if($('instrumentCycle'))$('instrumentCycle').value='12';
   if($('instrumentStatus'))$('instrumentStatus').value='정상';
+  if($('instrumentImage'))$('instrumentImage').value='';
+  setInstrumentImagePreview('');
 }
 function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
-  $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);$('instrumentRemark').value=r.remark||'';
+  $('instrumentEditId').value=r.id;
+  $('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentSerial').value=r.serial||'';$('instrumentRange').value=r.range||'';$('instrumentDepartment').value=r.department||'';$('instrumentLocation').value=r.location||'';$('instrumentOwner').value=r.owner||'';$('instrumentPurchaseDate').value=r.purchaseDate||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);$('instrumentRemark').value=r.remark||'';
+  setInstrumentImagePreview(r.imageData||'');
+  document.querySelector('[data-page="instruments"]')?.click?.();
 }
 function deleteInstrument(id){
   if(!confirm('삭제하시겠습니까?'))return;
   state.instruments=state.instruments.filter(x=>String(x.id)!==String(id));
   saveInstrumentsLocal();renderInstrumentTable();
 }
+function openInstrumentDetail(id){
+  const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
+  $('instrumentDetailId').value=r.id;
+  $('instrumentDetailTitle').textContent=`계측기 상세 - ${r.no||''} ${r.name||''}`;
+  const imgHtml=r.imageData?`<img src="${r.imageData}" class="instrument-detail-photo" alt="측정기 사진">`:`<div class="instrument-detail-empty">사진 없음</div>`;
+  const info=[['관리번호',r.no],['계측기명',r.name],['모델명',r.model],['제조사',r.maker],['Serial No.',r.serial],['규격/측정범위',r.range],['사용부서',r.department],['보관위치',r.location],['담당자',r.owner],['구입일',r.purchaseDate],['교정주기',`${r.cycle||''}개월`],['최근 교정일',r.lastCal],['다음 교정일',r.nextCal],['상태',instrumentAutoStatus(r.nextCal,r.status)],['비고',r.remark]];
+  const infoHtml=info.map(([k,v])=>`<div class="instrument-info-item"><b>${esc(k)}</b><span>${esc(v||'-')}</span></div>`).join('');
+  const history=Array.isArray(r.calHistory)?r.calHistory:[];
+  const histHtml=history.length?history.map(h=>`<tr><td>${esc(h.date||'-')}</td><td>${esc(h.agency||'-')}</td><td>${esc(h.certNo||'-')}</td><td>${jBadge(h.judge||'합격')}</td><td>${esc(h.result||'-')}</td><td>${esc(h.nextDate||'-')}</td><td>${h.fileData?`<a class="cert-link" href="${h.fileData}" download="${esc(h.fileName||'certificate')}">📄 ${esc(h.fileName||'성적서')}</a>`:'-'}</td><td>${esc(h.remark||'')}</td><td><button class="sb del" data-action="deleteCalHistory" data-id="${esc(r.id)}" data-hid="${esc(h.id)}">삭제</button></td></tr>`).join(''):eRow(9,'등록된 교정이력이 없습니다.');
+  $('instrumentDetailBody').innerHTML=`<div class="instrument-detail-grid"><div>${imgHtml}</div><div class="instrument-info-grid">${infoHtml}</div></div><div class="card mt14"><div class="ch"><h3>교정이력 / 성적서</h3><span class="tag">${history.length}건</span></div><div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th>교정일자</th><th>교정기관</th><th>성적서번호</th><th>판정</th><th>교정결과</th><th>다음 교정일</th><th>첨부 성적서</th><th>비고</th><th>작업</th></tr></thead><tbody>${histHtml}</tbody></table></div></div>`;
+  clearCalHistoryForm(false);
+  $('instrumentDetailModal')?.classList.add('show');
+}
+function closeInstrumentDetail(){ $('instrumentDetailModal')?.classList.remove('show'); }
+function clearCalHistoryForm(clearFile=true){
+  ['calHistoryDate','calHistoryAgency','calHistoryCertNo','calHistoryResult','calHistoryNextDate','calHistoryRemark','calHistoryFileData','calHistoryFileName','calHistoryFileType'].forEach(id=>{if($(id))$(id).value='';});
+  if($('calHistoryJudge'))$('calHistoryJudge').value='합격';
+  if(clearFile&&$('calHistoryFile'))$('calHistoryFile').value='';
+}
+function addCalHistory(){
+  const id=$('instrumentDetailId')?.value||'';
+  const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
+  const h={id:String(Date.now()),date:$('calHistoryDate').value,agency:$('calHistoryAgency').value.trim(),certNo:$('calHistoryCertNo').value.trim(),judge:$('calHistoryJudge').value,result:$('calHistoryResult').value.trim(),nextDate:$('calHistoryNextDate').value,remark:$('calHistoryRemark').value.trim(),fileData:$('calHistoryFileData').value,fileName:$('calHistoryFileName').value,fileType:$('calHistoryFileType').value};
+  if(!h.date){alert('교정일자는 필수입니다.');return;}
+  if(!Array.isArray(r.calHistory))r.calHistory=[];
+  r.calHistory.push(h);
+  r.lastCal=h.date;
+  if(h.nextDate)r.nextCal=h.nextDate;
+  r.status=instrumentAutoStatus(r.nextCal,r.status);
+  saveInstrumentsLocal();renderInstrumentTable();openInstrumentDetail(id);
+}
+function deleteCalHistory(instId,hid){
+  const r=state.instruments.find(x=>String(x.id)===String(instId));if(!r)return;
+  if(!confirm('해당 교정이력을 삭제하시겠습니까?'))return;
+  r.calHistory=(r.calHistory||[]).filter(h=>String(h.id)!==String(hid));
+  const latest=[...(r.calHistory||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
+  if(latest){r.lastCal=latest.date||r.lastCal;r.nextCal=latest.nextDate||r.nextCal;}
+  saveInstrumentsLocal();renderInstrumentTable();openInstrumentDetail(instId);
+}
+
 
 /* ═══ SAVE ═══ */
 async function saveIqc(){
@@ -2667,6 +2759,13 @@ function bindEvents(){
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
+  if($('instrumentImage'))$('instrumentImage').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const data=await resizeImageFileToDataURL(file);setInstrumentImagePreview(data);}catch(err){alert('이미지 읽기 실패');}});
+  if($('instrumentImageClear'))$('instrumentImageClear').onclick=()=>{if($('instrumentImage'))$('instrumentImage').value='';setInstrumentImagePreview('');};
+  if($('closeInstrumentDetailModal'))$('closeInstrumentDetailModal').onclick=closeInstrumentDetail;
+  if($('cancelInstrumentDetailModal'))$('cancelInstrumentDetailModal').onclick=closeInstrumentDetail;
+  if($('addCalHistoryBtn'))$('addCalHistoryBtn').onclick=addCalHistory;
+  if($('calHistoryFile'))$('calHistoryFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const data=await readFileDataURL(file);$('calHistoryFileData').value=data;$('calHistoryFileName').value=file.name;$('calHistoryFileType').value=file.type||'';}catch(err){alert('파일 읽기 실패');}});
+  if($('instrumentDetailBody'))$('instrumentDetailBody').addEventListener('click',e=>{const btn=e.target.closest('[data-action="deleteCalHistory"]');if(!btn)return;deleteCalHistory(btn.dataset.id,btn.dataset.hid);});
   if($('spcItem'))$('spcItem').addEventListener('change',applySpcSpec);
   if($('spcAnalyze'))$('spcAnalyze').onclick=()=>getSpcInputResult(true);
   if($('spcSave'))$('spcSave').onclick=saveSpc;
@@ -2698,6 +2797,7 @@ $('printReportPage').onclick=()=>{
   // 테이블 위임
   const tA={
     editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,editSpc,deleteSpc,
+    viewInstrument:openInstrumentDetail,
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
