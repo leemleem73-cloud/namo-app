@@ -3565,8 +3565,18 @@ function renderMatrix(){
     [...mine,...review,...approve,...reject].forEach(x=>byKey.set(`${x.type}:${docId(x.type,x.row)}`,x));
     return {mine,review,approve,reject,all:[...byKey.values()]};
   }
+  function deleteActionName(type){
+    if(type==='iqc')return 'deleteIncoming';
+    if(type==='pqc')return 'deleteProcess';
+    if(type==='oqc')return 'deleteShipment';
+    if(type==='nc')return 'deleteNc';
+    return '';
+  }
   function taskRowHtml(x){
-    return `<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}${x.wf.rejectReason?`<div style="margin-top:4px;color:var(--er);font-size:12px">사유: ${clean(x.wf.rejectReason)}</div>`:''}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}</div></td></tr>`;
+    const id=clean(docId(x.type,x.row));
+    const delName=deleteActionName(x.type);
+    const delBtn=delName?`<button class="sb del" data-action="${delName}" data-id="${id}">삭제</button>`:'';
+    return `<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}${x.wf.rejectReason?`<div style="margin-top:4px;color:var(--er);font-size:12px">사유: ${clean(x.wf.rejectReason)}</div>`:''}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}${delBtn}</div></td></tr>`;
   }
   function fillTaskTable(tbodyId,countId,items,emptyMsg){
     const tb=qs(tbodyId); if(!tb)return;
