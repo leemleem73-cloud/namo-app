@@ -3300,7 +3300,17 @@ function renderMatrix(){
   function saveJson(key,val){localStorage.setItem(key,JSON.stringify(val));}
   function store(){return readJson(WF_KEY,{});}
   function saveStore(s){saveJson(WF_KEY,s);}
-  function me(){return (window.state&&state.currentUser)?state.currentUser:null;}
+  function normalizeRole(v){return String(v||'').toLowerCase();}
+  function effectiveUser(){
+    const cur=(window.state&&state.currentUser)?state.currentUser:null;
+    if(!cur)return null;
+    const email=String(cur.email||'').toLowerCase();
+    const name=String(cur.name||'').trim();
+    const list=(window.state&&Array.isArray(state.adminUsers))?state.adminUsers:[];
+    const extra=list.find(u=>String(u.email||'').toLowerCase()===email || (name&&String(u.name||'').trim()===name));
+    return {...(extra||{}),...cur,role:cur.role||extra?.role,title:cur.title||extra?.title,department:cur.department||extra?.department,status:cur.status||extra?.status};
+  }
+  function me(){return effectiveUser();}
   function myName(){return me()?.name||'';}
   function myEmail(){return me()?.email||'';}
   function key(type,id){return `${type}:${id}`;}
@@ -3312,11 +3322,22 @@ function renderMatrix(){
     if(type==='oqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.product||r.customer||''}`;
     return `${r.ncDate||''} / ${r.ncNo||r.lot||'-'} / ${r.item||r.ncType||''}`;
   }
-  function isSeniorUser(u){return (typeof isSenior==='function')?isSenior(u):((u?.role||'')==='admin');}
+  function isAdminUser(u){
+    if(!u)return false;
+    const r=normalizeRole(u.role);
+    const e=String(u.email||'').toLowerCase();
+    return r==='admin'||r==='administrator'||r.includes('admin')||e==='hbleem@namochemical.com';
+  }
+  function isSeniorUser(u){
+    if(!u)return false;
+    if(isAdminUser(u))return true;
+    if((u.status||'')==='APPROVED' && !u.title && !u.role)return true; // 기존 DB에 직책/권한이 없는 경우 알림 누락 방지
+    return (typeof isSenior==='function')?isSenior(u):false;
+  }
   function canReview(){return isSeniorUser(me());}
   function canApprove(){
     const u=me(); if(!u)return false;
-    if((u.role||'')==='admin')return true;
+    if(isAdminUser(u))return true;
     const t=String(u.title||'').toLowerCase();
     return ['대표','대표이사','사장','회장','임원','이사','상무','전무','본부장','ceo','coo','cto','cfo'].some(x=>t.includes(x.toLowerCase()));
   }
