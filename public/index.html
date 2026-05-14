@@ -681,21 +681,21 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <div class="nav-sec">메인</div>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span><span>대시보드</span></button>
       <div class="nav-sec">품질 검사</div>
-      <button class="nav-item" data-page="incoming"><span class="nav-icon">📥</span><span>수입검사 (IQC)</span></button>
-      <button class="nav-item" data-page="process"><span class="nav-icon">⚙</span><span>공정검사 (PQC)</span></button>
-      <button class="nav-item" data-page="shipment"><span class="nav-icon">🚚</span><span>출하검사 (OQC)</span></button>
+      <button class="nav-item" data-page="incoming"><span class="nav-icon"></span><span>수입검사 (IQC)</span></button>
+      <button class="nav-item" data-page="process"><span class="nav-icon"></span><span>공정검사 (PQC)</span></button>
+      <button class="nav-item" data-page="shipment"><span class="nav-icon"></span><span>출하검사 (OQC)</span></button>
       <button class="nav-item" data-page="report"><span class="nav-icon">📄</span><span>성적서</span></button>
-      <button class="nav-item" data-page="nonconform"><span class="nav-icon">⚠️</span><span>부적합 보고서</span></button>
+      <button class="nav-item" data-page="nonconform"><span class="nav-icon"></span><span>부적합 보고서</span></button>
       <div class="nav-sec">생산 관리</div>
-      <button class="nav-item" data-page="worklog"><span class="nav-icon">📋</span><span>생산작업일지</span></button>
-      <button class="nav-item" data-page="suppliers"><span class="nav-icon">🏢</span><span>협력사 현황</span></button>
-      <button class="nav-item" data-page="trace"><span class="nav-icon">🔗</span><span>LOT 추적</span></button>
+      <button class="nav-item" data-page="worklog"><span class="nav-icon"></span><span>생산작업일지</span></button>
+      <button class="nav-item" data-page="suppliers"><span class="nav-icon"></span><span>협력사 현황</span></button>
+      <button class="nav-item" data-page="trace"><span class="nav-icon"></span><span>LOT 추적</span></button>
       <div class="nav-sec">측정기 관리</div>
       <button class="nav-item" data-page="instruments"><span class="nav-icon">📏</span><span>측정기 관리</span></button>
       <div class="nav-sec">공정능력 관리</div>
-      <button class="nav-item" data-page="spc"><span class="nav-icon">📊</span><span>공정능력 분석</span></button>
+      <button class="nav-item" data-page="spc"><span class="nav-icon"></span><span>공정능력 분석</span></button>
       <div class="nav-sec" id="adminNavTitle" style="display:none;">관리자</div>
-      <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon">👥</span><span>회원등록현황</span></button>
+      <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon"></span><span>회원등록현황</span></button>
     </aside>
 
     <main class="content">
@@ -711,11 +711,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           </div>
         </div>
         <div class="sgrid">
-          <div class="sc blue"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon">📥</div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
-          <div class="sc purple"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon">⚙</div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
-          <div class="sc orange"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon">🚚</div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
-          <div class="sc green"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon">📋</div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
-          <div class="sc red"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon">⚠️</div></div><div class="sc-meta">전체 부적합 건수</div></div>
+          <div class="sc blue"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
+          <div class="sc purple"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
+          <div class="sc orange"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
+          <div class="sc green"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
+          <div class="sc red"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
         </div>
         <div class="dlower">
           <div class="card"><div class="ch"><h3>월별 검사 현황 추이</h3><span class="tag">YEARLY</span></div><div class="cb"><div class="cwrap"><canvas id="trendChart"></canvas></div></div></div>
@@ -1091,12 +1091,12 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <div class="spc-pro-wrap">
           <aside class="spc-pro-menu">
             <div class="spc-pro-sec">분석 메뉴</div>
-            <button type="button" class="spc-pro-nav active" data-spc-view="command">📌 종합 현황</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="data">▦ 데이터 입력</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="process">📊 공정 분석</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="stability">📈 안정성 분석</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="variation">🔔 산포 분석</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="report">📄 분석 보고서</button>
+            <button type="button" class="spc-pro-nav active" data-spc-view="command"> 종합 현황</button>
+            <button type="button" class="spc-pro-nav" data-spc-view="data"> 데이터 입력</button>
+            <button type="button" class="spc-pro-nav" data-spc-view="process"> 공정 분석</button>
+            <button type="button" class="spc-pro-nav" data-spc-view="stability"> 안정성 분석</button>
+            <button type="button" class="spc-pro-nav" data-spc-view="variation"> 산포 분석</button>
+            <button type="button" class="spc-pro-nav" data-spc-view="report"> 분석 보고서</button>
             <div class="spc-upload-box spc-pro-upload" id="spcUploadBox">
               <div class="spc-upload-title">엑셀 / CSV 업로드</div>
               <div class="spc-upload-icon">📁</div>
