@@ -216,6 +216,8 @@ button,input,select,textarea{font:inherit}
 .cb{padding:18px;}.ca{display:flex;gap:8px;align-items:center;}
 .sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px;}
 .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r4);padding:18px;box-shadow:var(--sh1);position:relative;overflow:hidden;}
+.sc[data-go]{cursor:pointer;transition:transform var(--tr),box-shadow var(--tr),border-color var(--tr);}
+.sc[data-go]:hover{transform:translateY(-2px);box-shadow:var(--sh3);border-color:var(--bd2);}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .sc.blue::before{background:linear-gradient(90deg,#1a56db,#60a5fa);}
 .sc.purple::before{background:linear-gradient(90deg,#6d28d9,#a78bfa);}
@@ -711,11 +713,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           </div>
         </div>
         <div class="sgrid">
-          <div class="sc blue"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
-          <div class="sc purple"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
-          <div class="sc orange"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
-          <div class="sc green"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
-          <div class="sc red"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
+          <div class="sc blue" data-go="incoming" role="button" tabindex="0" title="수입검사로 이동"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
+          <div class="sc purple" data-go="process" role="button" tabindex="0" title="공정검사로 이동"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
+          <div class="sc orange" data-go="shipment" role="button" tabindex="0" title="출하검사로 이동"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
+          <div class="sc green" data-go="worklog" role="button" tabindex="0" title="생산작업일지로 이동"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
+          <div class="sc red" data-go="nonconform" role="button" tabindex="0" title="부적합 보고서로 이동"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
         </div>
         <div class="dlower">
           <div class="card"><div class="ch"><h3>월별 검사 현황 추이</h3><span class="tag">YEARLY</span></div><div class="cb"><div class="cwrap"><canvas id="trendChart"></canvas></div></div></div>
@@ -1855,6 +1857,21 @@ function bindNav(){
       setTimeout(()=>refreshSignaturePads($(`page-${pg}`)),80);
       if(pg==='users')await loadAdminUsers();
       if(pg==='report'){populateReportSelect();loadStandaloneReport();}
+    });
+  });
+
+  $$('.sc[data-go]').forEach(card=>{
+    const move=()=>{
+      const pg=card.dataset.go;
+      const nav=document.querySelector(`.nav-item[data-page="${pg}"]`);
+      if(nav) nav.click();
+    };
+    card.addEventListener('click',move);
+    card.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        move();
+      }
     });
   });
 }
