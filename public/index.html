@@ -1783,7 +1783,8 @@ function printLabel(){
 .msa-template-report .msa-small{font-size:11px;line-height:1.25;}
 .msa-template-report .msa-bold{font-weight:900;}
 
-</style></head><body>${g.outerHTML}</body></html>`);
+</style></head><body>${g.outerHTML}<!-- v3: review/approval reject workflow enabled -->
+</body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
 
@@ -3273,12 +3274,12 @@ function renderMatrix(){
 
 
 
-<script id="namo-approval-workflow-v2">
+<script id="namo-approval-workflow-v3-reject">
 /* ═══════════════════════════════════════
-   NAMO QMS 전자결재 / 알림 워크플로우 패치 v2
+   NAMO QMS 전자결재 / 알림 워크플로우 패치 v3 - 반려 기능 강화
    - 기존 검사 데이터/API 구조 유지
    - 작성 → 검토대기 → 승인대기 → 승인완료
-   - 상단 알림, 검토/승인 업무함, 반려 사유, 감사로그
+   - 상단 알림, 검토/승인 업무함, 검토반려/승인반려, 반려 사유, 감사로그
 ═══════════════════════════════════════ */
 (function(){
   const WF_KEY='namo_qms_approval_workflow_v2';
@@ -3286,7 +3287,7 @@ function renderMatrix(){
   const TYPE_LABEL={iqc:'수입검사',pqc:'공정검사',oqc:'출하검사',nc:'부적합보고서'};
   const TYPE_ARR={iqc:'incoming',pqc:'process',oqc:'shipment',nc:'nonconform'};
   const TYPE_API={iqc:'/api/iqc',pqc:'/api/pqc',oqc:'/api/oqc',nc:'/api/nonconform'};
-  const STATUS_LABEL={DRAFT:'작성중',REVIEW_WAIT:'검토대기',APPROVAL_WAIT:'승인대기',APPROVED:'승인완료',REJECTED:'반려'};
+  const STATUS_LABEL={DRAFT:'작성중',REVIEW_WAIT:'검토대기',APPROVAL_WAIT:'승인대기',APPROVED:'승인완료',REJECTED:'반려',REVIEW_REJECTED:'검토반려',APPROVAL_REJECTED:'승인반려'};
 
   function qs(id){return document.getElementById(id);}
   function qsa(s){return Array.from(document.querySelectorAll(s));}
@@ -3369,7 +3370,7 @@ function renderMatrix(){
     s[k]=next; saveStore(s); return next;
   }
   function statusBadge(status){
-    const cls=status==='APPROVED'?'pass':status==='REJECTED'?'fail':status==='APPROVAL_WAIT'?'hold':'info';
+    const cls=status==='APPROVED'?'pass':(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(status)?'fail':status==='APPROVAL_WAIT'?'hold':'info');
     return `<span class="badge ${cls}">${STATUS_LABEL[status]||status}</span>`;
   }
   function rowStatus(type,r){return getWf(type,r.id,r).status;}
@@ -3383,7 +3384,7 @@ function renderMatrix(){
     if(st==='DRAFT') html+=`<button class="sb edit" data-wf="submit" data-type="${type}" data-id="${id}">제출</button>`;
     if(st==='REVIEW_WAIT' && canReview() && !currentUserIsWriter(r)) html+=`<button class="sb edit" data-wf="review" data-type="${type}" data-id="${id}">검토승인</button><button class="sb del" data-wf="reject" data-type="${type}" data-id="${id}">반려</button>`;
     if(st==='APPROVAL_WAIT' && canApprove() && !currentUserIsWriter(r)) html+=`<button class="sb edit" data-wf="approve" data-type="${type}" data-id="${id}">최종승인</button><button class="sb del" data-wf="reject" data-type="${type}" data-id="${id}">반려</button>`;
-    if(st==='REJECTED' && currentUserIsWriter(r)) html+=`<button class="sb edit" data-wf="resubmit" data-type="${type}" data-id="${id}">재제출</button>`;
+    if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(st) && currentUserIsWriter(r)) html+=`<button class="sb edit" data-wf="resubmit" data-type="${type}" data-id="${id}">재제출</button>`;
     html+=`<button class="sb lbl" data-wf="history" data-type="${type}" data-id="${id}">이력</button>`;
     return html;
   }
@@ -3452,7 +3453,7 @@ function renderMatrix(){
     return allDocs().filter(x=>{
       if(x.wf.status==='REVIEW_WAIT')return canReview() && !currentUserIsWriter(x.row);
       if(x.wf.status==='APPROVAL_WAIT')return canApprove() && !currentUserIsWriter(x.row);
-      if(x.wf.status==='REJECTED')return currentUserIsWriter(x.row);
+      if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(x.wf.status))return currentUserIsWriter(x.row);
       return false;
     });
   }
@@ -3461,14 +3462,14 @@ function renderMatrix(){
     qs('wfRoleText').textContent=`검토권한:${canReview()?'Y':'N'} / 승인권한:${canApprove()?'Y':'N'}`;
     const tasks=visibleTasks();
     if(!tasks.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t3)">처리할 문서가 없습니다.</td></tr>';return;}
-    tb.innerHTML=tasks.map(x=>`<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}</div></td></tr>`).join('');
+    tb.innerHTML=tasks.map(x=>`<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}${x.wf.rejectReason?`<div style="margin-top:4px;color:var(--er);font-size:12px">사유: ${clean(x.wf.rejectReason)}</div>`:''}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}</div></td></tr>`).join('');
   }
   function notifications(){
     const out=[];
     allDocs().forEach(x=>{
       if(x.wf.status==='REVIEW_WAIT' && canReview() && !currentUserIsWriter(x.row))out.push({...x,msg:'검토 요청이 있습니다.',kind:'검토요청'});
       if(x.wf.status==='APPROVAL_WAIT' && canApprove() && !currentUserIsWriter(x.row))out.push({...x,msg:'최종 승인 요청이 있습니다.',kind:'승인요청'});
-      if(x.wf.status==='REJECTED' && currentUserIsWriter(x.row))out.push({...x,msg:'문서가 반려되었습니다. 수정 후 재제출하세요.',kind:'반려'});
+      if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(x.wf.status) && currentUserIsWriter(x.row))out.push({...x,msg:(x.wf.status==='REVIEW_REJECTED'?'검토 반려되었습니다.':x.wf.status==='APPROVAL_REJECTED'?'승인 반려되었습니다.':'문서가 반려되었습니다.')+' 수정 후 재제출하세요.',kind:'반려'});
       if(x.wf.status==='APPROVED' && currentUserIsWriter(x.row))out.push({...x,msg:'문서가 최종 승인되었습니다.',kind:'승인완료'});
     });
     return out.sort((a,b)=>String(b.wf.updatedAt||'').localeCompare(String(a.wf.updatedAt||'')));
@@ -3512,7 +3513,7 @@ function renderMatrix(){
       if(!r.signWriter || !r.signWriter.name || r.signWriter.name==='-')r.signWriter=sign('writer');
       r.signReviewer={name:'-',title:'',department:'',signDate:'',signImage:''}; r.signApprover={name:'-',title:'',department:'',signDate:'',signImage:''};
       await updateServer(type,r);
-      setWf(type,id,{status:'REVIEW_WAIT',writer:r.signWriter.name,rejectReason:''},{action:act==='resubmit'?'재제출':'검토요청',memo:'검토권한자에게 알림 생성'});
+      setWf(type,id,{status:'REVIEW_WAIT',writer:r.signWriter.name,rejectReason:'',rejectedAt:'',rejectedBy:''},{action:act==='resubmit'?'재제출':'검토요청',memo:'검토권한자에게 알림 생성'});
       alert('검토 요청되었습니다.'); return refreshType(type);
     }
     if(act==='review'){
@@ -3530,9 +3531,30 @@ function renderMatrix(){
       alert('최종 승인되었습니다.'); return refreshType(type);
     }
     if(act==='reject'){
-      const reason=prompt('반려 사유를 입력하세요.'); if(!reason)return;
-      setWf(type,id,{status:'REJECTED',rejectReason:reason},{action:'반려',memo:reason});
-      alert('반려 처리되었습니다.'); return refreshType(type);
+      const wf=getWf(type,id,r);
+      const reason=prompt('반려 사유를 입력하세요.\n예: 검사값 누락, LOT 오기재, 첨부자료 부족');
+      if(!reason || !String(reason).trim())return alert('반려 사유는 필수입니다.');
+      if(wf.status==='REVIEW_WAIT'){
+        if(!canReview())return alert('검토 반려 권한이 없습니다.');
+        if(currentUserIsWriter(r))return alert('작성자는 본인 문서를 검토 반려할 수 없습니다.');
+        r.signReviewer=sign('reviewer');
+        r.signApprover={name:'-',title:'',department:'',signDate:'',signImage:''};
+        await updateServer(type,r);
+        setWf(type,id,{status:'REVIEW_REJECTED',reviewer:r.signReviewer.name,rejectReason:String(reason).trim(),rejectedAt:nowKst(),rejectedBy:r.signReviewer.name},{action:'검토반려',memo:String(reason).trim()});
+        alert('검토 반려 처리되었습니다. 작성자에게 반려 알림이 표시됩니다.');
+        return refreshType(type);
+      }
+      if(wf.status==='APPROVAL_WAIT'){
+        if(!canApprove())return alert('승인 반려 권한이 없습니다.');
+        if(currentUserIsWriter(r))return alert('작성자는 본인 문서를 승인 반려할 수 없습니다.');
+        r.signApprover=sign('approver');
+        await updateServer(type,r);
+        setWf(type,id,{status:'APPROVAL_REJECTED',approver:r.signApprover.name,rejectReason:String(reason).trim(),rejectedAt:nowKst(),rejectedBy:r.signApprover.name},{action:'승인반려',memo:String(reason).trim()});
+        alert('승인 반려 처리되었습니다. 작성자에게 반려 알림이 표시됩니다.');
+        return refreshType(type);
+      }
+      alert('현재 상태에서는 반려할 수 없습니다.');
+      return;
     }
   }
   function showHistory(type,r){
@@ -3582,5 +3604,6 @@ function renderMatrix(){
 })();
 </script>
 
+<!-- v3: review/approval reject workflow enabled -->
 </body>
 </html>
