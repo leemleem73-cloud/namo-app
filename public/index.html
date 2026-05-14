@@ -1589,7 +1589,7 @@ function buildSignGrid(type){
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">작성자 (검사자)</span>
-        <span class="sign-box-badge any">본인 ${writerUsers.length}명</span>
+        
       </div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_writer">${mkOpts(writerUsers,'-- 작성자 선택 --')}</select>
@@ -1600,7 +1600,7 @@ function buildSignGrid(type){
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">검토자</span>
-        <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
+        
       </div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_reviewer">${mkOpts(managerUsers,'-- 검토자 선택 --')}</select>
@@ -1611,7 +1611,7 @@ function buildSignGrid(type){
     <div class="sign-box">
       <div class="sign-box-hdr">
         <span class="sign-box-role">승인자</span>
-        <span class="sign-box-badge mgr">부장급 이상/관리자 ${managerUsers.length}명</span>
+        
       </div>
       <div class="sign-box-body">
         <select class="sign-sel" id="sg_${type}_approver">${mkOpts(managerUsers,'-- 승인자 선택 --')}</select>
