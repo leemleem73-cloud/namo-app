@@ -2052,36 +2052,24 @@ async function loadSignableUsers(){
   // 현재 로그인 사용자는 항상 작성자 후보에 포함
   if(state.currentUser) users.push(state.currentUser);
 
-  // 중요: /api/admin/users 는 관리자 전용이라 일반 회원에게 403이 발생한다.
-  // 일반 회원은 호출하지 않고 본인만 후보로 둔다.
-  // 검토/승인 업무함 노출은 taskBuckets()에서 권한자 기준으로 처리한다.
-  if(state.currentUser?.role === 'admin'){
-    try{
-      const {res,data} = await api('/api/admin/users');
-      if(res?.ok && data?.data) users = users.concat(data.data);
-    }catch(e){
-      console.warn('[sign] 관리자 회원 목록 로드 실패:', e);
-    }
+  // 검토자/승인자 후보를 위해 서버 회원 목록을 함께 불러온다.
+  // 권한 문제로 실패하더라도 작성자 본인은 유지한다.
+  try{
+    const {data} = await api('/api/admin/users');
+    if(data?.data) users = users.concat(data.data);
+  }catch(e){
+    console.warn('[sign] 전체 회원 목록 로드 실패:', e);
   }
 
   state.signableUsers = uniqSignUsers(users);
-  if(state.currentUser?.role === 'admin') state.adminUsers = state.signableUsers;
+  state.adminUsers = state.signableUsers;
 
   console.log(`[sign] 서명 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
-  // 일반 회원은 관리자 API를 호출하지 않는다. 콘솔 403 방지.
-  if(state.currentUser?.role !== 'admin'){
-    state.adminUsers = [];
-    return;
-  }
   try{
-    const {res,data} = await api('/api/admin/users');
-    if(!res?.ok){
-      console.warn('[admin] 회원 목록 로드 실패:', res?.status);
-      return;
-    }
+    const {data} = await api('/api/admin/users');
     state.adminUsers = data?.data || [];
     state.signableUsers = uniqSignUsers([
       ...(state.currentUser ? [state.currentUser] : []),
