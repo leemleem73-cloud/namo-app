@@ -1552,28 +1552,6 @@ function instrumentAutoStatus(nextCal,current='정상'){
   return'정상';
 }
 
-function calcInstrumentNext(){
-  const last=$('instrumentLastCal')?.value||'';
-  const cycle=$('instrumentCycle')?.value||'';
-  const next=addMonthsToDate(last, cycle);
-  if(next && $('instrumentNextCal')) $('instrumentNextCal').value=next;
-  updateInstrumentStatusByDate();
-}
-function updateInstrumentStatusByDate(){
-  const next=$('instrumentNextCal')?.value||'';
-  const cur=$('instrumentStatus')?.value||'정상';
-  if($('instrumentStatus')) $('instrumentStatus').value=instrumentAutoStatus(next, cur);
-}
-function renderWorklogTable(){
-  const tb=$('worklogTable');
-  if(!tb)return;
-  if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
-  tb.innerHTML=state.worklog.map(r=>{
-    const matCount=Array.isArray(r.materials)?r.materials.length:0;
-    return `<tr><td>${esc(r.workDate||'')}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td>${matCount?`원료 ${matCount}건`:'-'}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
-  }).join('');
-}
-
 /* ═══ 직책 판별 ═══ */
 const SENIOR=['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo','chief'];
 function isSenior(u){
@@ -2570,7 +2548,6 @@ function saveInstrument(){
     nextCal:$('instrumentNextCal').value,
     status:instrumentAutoStatus($('instrumentNextCal').value,$('instrumentStatus').value),
     imageData:$('instrumentImageData')?.value||'',
-    imageFileName:$('instrumentImageNameView')?.value||'',
     remark:$('instrumentRemark').value.trim()
   };
   const old=state.instruments.find(x=>String(x.id)===String(id));
@@ -2578,7 +2555,7 @@ function saveInstrument(){
   if(!p.name||!p.no){alert('계측기명과 관리번호는 필수입니다.');return;}
   const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
   if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
-  saveInstrumentsLocal();renderInstrumentTable();previewInstrumentOnRight(id);alert('저장되었습니다.');
+  saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
 }
 function clearInstrument(){
   ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentSerial','instrumentRange','instrumentDepartment','instrumentLocation','instrumentOwner','instrumentPurchaseDate','instrumentLastCal','instrumentNextCal','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
@@ -2596,7 +2573,7 @@ function editInstrument(id){
   $('instrumentEditId').value=r.id;
   $('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentSerial').value=r.serial||'';$('instrumentRange').value=r.range||'';$('instrumentDepartment').value=r.department||'';$('instrumentLocation').value=r.location||'';$('instrumentOwner').value=r.owner||'';$('instrumentPurchaseDate').value=r.purchaseDate||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);$('instrumentRemark').value=r.remark||'';
   setInstrumentImagePreview(r.imageData||'');
-  if($('instrumentImageNameView'))$('instrumentImageNameView').value=r.imageFileName|| (r.imageData?'저장된 사진':'선택된 사진 없음');
+  if($('instrumentImageNameView'))$('instrumentImageNameView').value=r.imageData?'저장된 사진':'선택된 사진 없음';
   if($('instrumentSelectedLabel'))$('instrumentSelectedLabel').textContent=(r.no||'')+' '+(r.name||'');
   renderInstrumentInlineHistory(r);
   document.querySelector('[data-page="instruments"]')?.click?.();
@@ -2653,7 +2630,7 @@ function previewInstrumentOnRight(id){
   if($('instrumentRemark'))$('instrumentRemark').value=r.remark||'';
 
   setInstrumentImagePreview(r.imageData||'');
-  if($('instrumentImageNameView'))$('instrumentImageNameView').value=r.imageFileName|| (r.imageData?'저장된 사진':'선택된 사진 없음');
+  if($('instrumentImageNameView'))$('instrumentImageNameView').value=r.imageData?'저장된 사진':'선택된 사진 없음';
   if($('instrumentSelectedLabel'))$('instrumentSelectedLabel').textContent=(r.no||'')+' '+(r.name||'');
   if($('instrumentImageHelp'))$('instrumentImageHelp').textContent=r.imageData?'선택한 계측기의 사진입니다.':'선택한 계측기에 등록된 사진이 없습니다.';
 
@@ -3022,26 +2999,7 @@ function bindEvents(){
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
-  if($('instrumentImage'))$('instrumentImage').addEventListener('change',async e=>{
-    const file=e.target.files&&e.target.files[0];
-    if(!file)return;
-    if(!/^image\/(jpeg|png)$/i.test(file.type) && !/\.(jpg|jpeg|png)$/i.test(file.name)){
-      alert('JPG 또는 PNG 파일만 등록할 수 있습니다.');
-      e.target.value='';
-      return;
-    }
-    if(file.size>5*1024*1024){
-      alert('이미지 파일은 최대 5MB까지 등록할 수 있습니다.');
-      e.target.value='';
-      return;
-    }
-    try{
-      const data=await resizeImageFileToDataURL(file);
-      setInstrumentImagePreview(data);
-      if($('instrumentImageNameView'))$('instrumentImageNameView').value=file.name;
-      if($('instrumentImageHelp'))$('instrumentImageHelp').textContent='선택된 파일: '+file.name+' · 저장 버튼을 눌러야 목록에 저장됩니다.';
-    }catch(err){console.error(err);alert('이미지 읽기 실패');}
-  });
+  if($('instrumentImage'))$('instrumentImage').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const data=await resizeImageFileToDataURL(file);setInstrumentImagePreview(data);if($('instrumentImageNameView'))$('instrumentImageNameView').value=file.name;if($('instrumentImageHelp'))$('instrumentImageHelp').textContent='선택된 파일: '+file.name;}catch(err){alert('이미지 읽기 실패');}});
   if($('instrumentImageClear'))$('instrumentImageClear').onclick=()=>{if($('instrumentImage'))$('instrumentImage').value='';if($('instrumentImageNameView'))$('instrumentImageNameView').value='';setInstrumentImagePreview('');};
   if($('closeInstrumentDetailModal'))$('closeInstrumentDetailModal').onclick=closeInstrumentDetail;
   if($('cancelInstrumentDetailModal'))$('cancelInstrumentDetailModal').onclick=closeInstrumentDetail;
