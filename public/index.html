@@ -500,6 +500,16 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .msa-template-report .msa-small{font-size:11px;line-height:1.25;}
 .msa-template-report .msa-bold{font-weight:900;}
 
+/* ══ 측정기 사진 보기 ══ */
+.instrument-photo-thumb{width:34px;height:28px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);background:#fff;}
+.instrument-photo-btn{height:28px;min-width:34px;padding:0 8px;border:1px solid var(--bd);border-radius:var(--r1);background:#fff;color:var(--pri);font-size:12px;font-weight:800;cursor:pointer;}
+.instrument-photo-btn:hover{background:var(--pris);border-color:var(--pri);}
+.instrument-photo-empty{font-size:11px;color:var(--t3);}
+.instrument-photo-preview{display:none;margin-top:8px;border:1px solid var(--bd);border-radius:var(--r2);padding:8px;background:var(--s2);}
+.instrument-photo-preview img{display:block;max-width:180px;max-height:120px;object-fit:contain;border-radius:var(--r1);background:#fff;}
+.instrument-photo-modal-img{display:block;width:100%;max-height:52vh;object-fit:contain;border:1px solid var(--bd);border-radius:var(--r3);background:#f8fafc;}
+.instrument-photo-meta{margin-top:12px;font-size:13px;color:var(--t2);line-height:1.7;}
+
 </style>
 </head>
 <body>
@@ -1065,6 +1075,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <div class="field"><label>상태</label>
               <select id="instrumentStatus"><option value="정상">정상</option><option value="교정예정">교정예정</option><option value="교정초과">교정초과</option><option value="사용중지">사용중지</option></select>
             </div>
+            <div class="field"><label>측정기 사진</label><input type="file" id="instrumentPhotoFile" accept="image/*"></div>
+            <div class="field"><label>사진 URL</label><input id="instrumentPhoto" placeholder="사진 URL 또는 파일 선택"></div>
+            <div class="field cfall"><label>사진 미리보기</label><div class="instrument-photo-preview" id="instrumentPhotoPreview"><img id="instrumentPhotoPreviewImg" alt="측정기 사진 미리보기"></div></div>
             <div class="field cfall"><label>비고</label><textarea id="instrumentRemark" placeholder="비고 사항"></textarea></div>
           </div>
           <div style="margin-top:12px;padding:10px 14px;background:var(--infs);border-radius:var(--r2);font-size:12px;color:var(--inf);">
@@ -1074,7 +1087,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div></div>
         <div class="card mt14"><div class="ch"><h3>측정기 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>관리번호</th><th>측정기명</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>비고</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
+            <table><thead><tr><th>관리번호</th><th>측정기명</th><th>모델명</th><th>제조사</th><th>위치</th><th>교정주기</th><th>최근 교정일</th><th>다음 교정일</th><th>상태</th><th>비고</th><th>사진</th><th>작업</th></tr></thead><tbody id="instrumentTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -1240,6 +1253,18 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     <div class="mhdr"><h3 id="labelModalTitle">🏷 제품 부착용 라벨</h3><button type="button" class="mclose" id="closeLabelModal">✕</button></div>
     <div class="mbody" id="labelModalBody"></div>
     <div class="mfoot"><button type="button" class="btn light" id="cancelLabelModal">닫기</button><button type="button" class="btn pri" id="printLabelBtn">🖨 라벨 인쇄</button></div>
+  </div>
+</div>
+
+<!-- 측정기 사진 모달 -->
+<div class="modal" id="instrumentPhotoModal">
+  <div class="mcard">
+    <div class="mhdr"><h3 id="instrumentPhotoModalTitle">측정기 사진</h3><button type="button" class="mclose" id="closeInstrumentPhotoModal">✕</button></div>
+    <div class="mbody">
+      <img class="instrument-photo-modal-img" id="instrumentPhotoModalImg" alt="측정기 사진">
+      <div class="instrument-photo-meta" id="instrumentPhotoModalMeta"></div>
+    </div>
+    <div class="mfoot"><button type="button" class="btn light" id="cancelInstrumentPhotoModal">닫기</button></div>
   </div>
 </div>
 
@@ -2264,10 +2289,46 @@ function instrumentBadge(s){
   const cls=s==='정상'?'pass':s==='교정예정'?'hold':s==='교정초과'?'fail':'info';
   return `<span class="badge ${cls}">${esc(s||'정상')}</span>`;
 }
+function instrumentPhotoSrc(r){
+  return r?.photo || r?.photoUrl || r?.image || r?.imageUrl || '';
+}
+function renderInstrumentPhotoPreview(){
+  const src=$('instrumentPhoto')?.value?.trim()||'';
+  const wrap=$('instrumentPhotoPreview'),img=$('instrumentPhotoPreviewImg');
+  if(!wrap||!img)return;
+  if(src){img.src=src;wrap.style.display='inline-block';}
+  else{img.removeAttribute('src');wrap.style.display='none';}
+}
+function handleInstrumentPhotoFile(e){
+  const file=e?.target?.files?.[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('이미지 파일만 선택할 수 있습니다.');e.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{if($('instrumentPhoto'))$('instrumentPhoto').value=reader.result;renderInstrumentPhotoPreview();};
+  reader.readAsDataURL(file);
+}
+function viewInstrumentPhoto(id){
+  const r=state.instruments.find(x=>String(x.id)===String(id));
+  if(!r)return;
+  const src=instrumentPhotoSrc(r);
+  if(!src){alert('등록된 측정기 사진이 없습니다.');return;}
+  if($('instrumentPhotoModalTitle'))$('instrumentPhotoModalTitle').textContent=`${r.name||'측정기'} 사진`;
+  if($('instrumentPhotoModalImg'))$('instrumentPhotoModalImg').src=src;
+  if($('instrumentPhotoModalMeta'))$('instrumentPhotoModalMeta').innerHTML=`<strong>${esc(r.name||'-')}</strong> (${esc(r.no||'-')})<br>모델명: ${esc(r.model||'-')}<br>제조사: ${esc(r.maker||'-')}<br>설치장소: ${esc(r.location||'-')}`;
+  if($('instrumentPhotoModal'))$('instrumentPhotoModal').classList.add('show');
+}
+function closeInstrumentPhotoModal(){
+  if($('instrumentPhotoModal'))$('instrumentPhotoModal').classList.remove('show');
+  if($('instrumentPhotoModalImg'))$('instrumentPhotoModalImg').removeAttribute('src');
+}
 function renderInstrumentTable(){
   const tb=$('instrumentTable');if(!tb)return;
-  if(!state.instruments.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.instruments.map(r=>`<tr><td><strong>${esc(r.no||'')}</strong></td><td>${esc(r.name||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${esc(r.remark||'')}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+  if(!state.instruments.length){tb.innerHTML=eRow(12);return;}
+  tb.innerHTML=state.instruments.map(r=>{
+    const photo=instrumentPhotoSrc(r);
+    const photoCell=photo?`<button class="instrument-photo-btn" data-action="viewInstrumentPhoto" data-id="${esc(r.id)}" title="사진 보기">🖼</button>`:`<span class="instrument-photo-empty">-</span>`;
+    return `<tr><td><strong>${esc(r.no||'')}</strong></td><td>${esc(r.name||'')}</td><td>${esc(r.model||'')}</td><td>${esc(r.maker||'')}</td><td>${esc(r.location||'')}</td><td>${esc(r.cycle||'')}개월</td><td>${esc(r.lastCal||'-')}</td><td>${esc(r.nextCal||'-')}</td><td>${instrumentBadge(instrumentAutoStatus(r.nextCal,r.status))}</td><td>${esc(r.remark||'')}</td><td style="text-align:center;">${photoCell}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
+  }).join('');
 }
 function renderWorklogTable(){
   const tb=$('worklogTable');if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
@@ -2333,7 +2394,8 @@ function saveInstrument(){
     lastCal:$('instrumentLastCal').value,
     nextCal:$('instrumentNextCal').value,
     status:instrumentAutoStatus($('instrumentNextCal').value,$('instrumentStatus').value),
-    remark:$('instrumentRemark').value.trim()
+    remark:$('instrumentRemark').value.trim(),
+    photo:$('instrumentPhoto')?.value.trim()||''
   };
   if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
   const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
@@ -2341,13 +2403,15 @@ function saveInstrument(){
   saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
 }
 function clearInstrument(){
-  ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentLocation','instrumentLastCal','instrumentNextCal','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
+  ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentLocation','instrumentLastCal','instrumentNextCal','instrumentPhoto','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
+  if($('instrumentPhotoFile'))$('instrumentPhotoFile').value='';
+  renderInstrumentPhotoPreview();
   if($('instrumentCycle'))$('instrumentCycle').value='12';
   if($('instrumentStatus'))$('instrumentStatus').value='정상';
 }
 function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
-  $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);$('instrumentRemark').value=r.remark||'';
+  $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);if($('instrumentPhoto'))$('instrumentPhoto').value=instrumentPhotoSrc(r);$('instrumentRemark').value=r.remark||'';renderInstrumentPhotoPreview();
 }
 function deleteInstrument(id){
   if(!confirm('삭제하시겠습니까?'))return;
@@ -2672,6 +2736,11 @@ function bindEvents(){
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
+  if($('instrumentPhoto'))$('instrumentPhoto').addEventListener('input',renderInstrumentPhotoPreview);
+  if($('instrumentPhotoFile'))$('instrumentPhotoFile').addEventListener('change',handleInstrumentPhotoFile);
+  if($('closeInstrumentPhotoModal'))$('closeInstrumentPhotoModal').onclick=closeInstrumentPhotoModal;
+  if($('cancelInstrumentPhotoModal'))$('cancelInstrumentPhotoModal').onclick=closeInstrumentPhotoModal;
+  if($('instrumentPhotoModal'))$('instrumentPhotoModal').addEventListener('click',e=>{if(e.target.id==='instrumentPhotoModal')closeInstrumentPhotoModal();});
   if($('spcItem'))$('spcItem').addEventListener('change',applySpcSpec);
   if($('spcAnalyze'))$('spcAnalyze').onclick=()=>getSpcInputResult(true);
   if($('spcSave'))$('spcSave').onclick=saveSpc;
@@ -2702,7 +2771,7 @@ $('printReportPage').onclick=()=>{
   if($('globalSearch')) $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
   // 테이블 위임
   const tA={
-    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,editSpc,deleteSpc,
+    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,viewInstrumentPhoto,editSpc,deleteSpc,
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
