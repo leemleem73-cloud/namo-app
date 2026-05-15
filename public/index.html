@@ -1158,7 +1158,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
 
             <div class="spc-view" id="spcView-process">
-              <div class="card"><div class="ch"><h3>공정 분석</h3></div><div class="cb"><div class="spc-chart-grid"><div class="card"><div class="ch"><h3>개별값 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcIChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>이동범위 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spc이동범위Chart"></canvas></div></div></div><div class="card"><div class="ch"><h3>분포 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcHist2Chart"></canvas></div></div></div><div class="card"><div class="ch"><h3>규격 정렬 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcScatterChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>최근 25개 측정값</h3></div><div class="cb"><div class="cwrap"><canvas id="spcLastChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>공정 통계</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReadinessBody"></tbody></table></div></div></div></div></div>
+              <div class="card"><div class="ch"><h3>공정 분석</h3></div><div class="cb"><div class="spc-chart-grid"><div class="card"><div class="ch"><h3>개별값 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcIChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>이동범위 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcMRChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>분포 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcHist2Chart"></canvas></div></div></div><div class="card"><div class="ch"><h3>규격 정렬 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcScatterChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>최근 25개 측정값</h3></div><div class="cb"><div class="cwrap"><canvas id="spcLastChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>공정 통계</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReadinessBody"></tbody></table></div></div></div></div></div>
             </div>
 
             <div class="spc-view" id="spcView-stability">
@@ -3785,7 +3785,18 @@ function renderMatrix(){
     renderIncomingTable(); renderProcessTable(); renderShipmentTable(); renderNcTable();
   }
   function overrideSaveFunctions(){
-    const oldI=window.saveIqc, oldP=window.savePqc, oldO=window.saveOqc, oldN=window.saveNc;
+    // 중복 초기화 방지: init/bind가 다시 호출되어도 저장 함수가 여러 번 래핑되지 않도록 보호
+    if(window.__namoWfSavePatched)return;
+    window.__namoWfSavePatched=true;
+
+    const oldI=window.__namoOrigSaveIqc || window.saveIqc;
+    const oldP=window.__namoOrigSavePqc || window.savePqc;
+    const oldO=window.__namoOrigSaveOqc || window.saveOqc;
+    const oldN=window.__namoOrigSaveNc  || window.saveNc;
+    window.__namoOrigSaveIqc=oldI;
+    window.__namoOrigSavePqc=oldP;
+    window.__namoOrigSaveOqc=oldO;
+    window.__namoOrigSaveNc=oldN;
 
     function applySubmitWf(type,row,memo){
       if(!row)return;
@@ -3802,28 +3813,28 @@ function renderMatrix(){
 
     window.saveIqc=async function(){
       const before=(state.incoming||[]).map(x=>String(x.id));
-      await oldI();
+      if(typeof oldI==='function')await oldI();
       const newest=(state.incoming||[]).find(x=>!before.includes(String(x.id))) || [...(state.incoming||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
       applySubmitWf('iqc',newest,'입고검사 작성 후 지정 검토자에게 검토 요청');
       await refreshType('iqc');
     };
     window.savePqc=async function(){
       const before=(state.process||[]).map(x=>String(x.id));
-      await oldP();
+      if(typeof oldP==='function')await oldP();
       const newest=(state.process||[]).find(x=>!before.includes(String(x.id))) || [...(state.process||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
       applySubmitWf('pqc',newest,'공정검사 작성 후 지정 검토자에게 검토 요청');
       await refreshType('pqc');
     };
     window.saveOqc=async function(){
       const before=(state.shipment||[]).map(x=>String(x.id));
-      await oldO();
+      if(typeof oldO==='function')await oldO();
       const newest=(state.shipment||[]).find(x=>!before.includes(String(x.id))) || [...(state.shipment||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
       applySubmitWf('oqc',newest,'출하검사 작성 후 지정 검토자에게 검토 요청');
       await refreshType('oqc');
     };
     window.saveNc=async function(){
       const before=(state.nonconform||[]).map(x=>String(x.id));
-      await oldN();
+      if(typeof oldN==='function')await oldN();
       const newest=(state.nonconform||[]).find(x=>!before.includes(String(x.id))) || [...(state.nonconform||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
       applySubmitWf('nc',newest,'부적합 보고 후 지정 검토자에게 검토 요청');
       await refreshType('nc');
