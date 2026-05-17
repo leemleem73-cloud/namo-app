@@ -532,6 +532,40 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:900px){.training-preview-photos{grid-template-columns:1fr 1fr;}}
 @media print{.training-photo-box,.training-photo-del{display:none!important}.training-preview-photos{grid-template-columns:repeat(2,1fr)}.training-preview-photo img{height:120px}}
 
+
+/* 교육보고서 사진 표시 보강 */
+#page-training .training-photo-preview{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+}
+#page-training .training-photo-card{
+  width:100%;
+}
+#page-training .training-photo-card img{
+  width:100%;
+  height:120px;
+  object-fit:cover;
+}
+#page-training .training-preview-photos{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:12px;
+}
+#page-training .training-preview-photo img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+}
+@media print{
+  #page-training .training-preview-photos{
+    grid-template-columns:repeat(2,1fr)!important;
+  }
+  #page-training .training-preview-photo img{
+    height:120px!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1008,7 +1042,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="sign-grid" id="signGrid_nc"></div>
               </div>
             </div>
-            <div class="card mt14" id="trainingPreviewCard"><div class="ch"><h2>보고서 사전보기</h2><span class="tag">PREVIEW</span></div><div class="cb"><div class="training-preview-sheet" id="trainingPreviewSheet"></div></div></div>
+            <div class="card mt14" id="ncPreviewCard"><div class="ch"><h2>보고서 사전보기</h2><span class="tag">PREVIEW</span></div><div class="cb"><div class="training-preview-sheet" id="trid="ncPreviewSheet"></div></div>
           <div class="rprint-sign mt14">
               <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rNcWriter">-</div><div class="rpsign-title" id="rNcWriterT"></div><div class="rpsign-line"></div></div>
               <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rNcReviewer">-</div><div class="rpsign-title" id="rNcReviewerT"></div><div class="rpsign-line"></div></div>
@@ -1888,6 +1922,133 @@ function printLabel(){
 .msa-template-report .msa-bold{font-weight:900;}
 
 </style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
+
+<script>
+/* 교육보고서 사진 표시 안정화 패치 */
+(function(){
+  function $(id){return document.getElementById(id);}
+  function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");}
+
+  let patchPhotos = [];
+
+  function readFiles(files){
+    const list = Array.from(files || []);
+    list.forEach(file=>{
+      if(!file.type || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e=>{
+        patchPhotos.push({src:e.target.result, caption:file.name.replace(/\.[^.]+$/,'')});
+        renderPhotoCards();
+        renderTrainingPreviewPhotos();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPhotoCards(){
+    const box = $('trainingPhotoPreview');
+    if(!box) return;
+    box.innerHTML = patchPhotos.map((p,i)=>`
+      <div class="training-photo-card">
+        <button type="button" class="training-photo-del" data-training-photo-del="${i}">×</button>
+        <img src="${esc(p.src)}" alt="교육사진${i+1}">
+        <input value="${esc(p.caption||'')}" data-training-photo-caption="${i}" placeholder="사진 설명">
+      </div>
+    `).join('');
+  }
+
+  function renderTrainingPreviewPhotos(){
+    const sheet = $('trainingPreviewSheet');
+    if(!sheet) return;
+
+    const title = $('trainingTitle')?.value || '-';
+    const date = $('trainingDate')?.value || '-';
+    const no = $('trainingNo')?.value || '-';
+    const type = $('trainingType')?.value || '-';
+    const place = $('trainingPlace')?.value || '-';
+    const instructor = $('trainingInstructor')?.value || '-';
+    const dept = $('trainingDept')?.value || '-';
+    const hours = $('trainingHours')?.value || '-';
+    const attendees = $('trainingAttendees')?.value || '-';
+    const absentees = $('trainingAbsentees')?.value || '-';
+    const content = $('trainingContent')?.value || '-';
+    const evalMethod = $('trainingEvalMethod')?.value || '-';
+    const result = $('trainingResult')?.value || '-';
+    const remark = $('trainingRemark')?.value || '-';
+
+    const photosHtml = patchPhotos.length
+      ? `<div class="training-preview-photos">
+          ${patchPhotos.map((p,i)=>`
+            <div class="training-preview-photo">
+              <img src="${esc(p.src)}" alt="교육사진${i+1}">
+              <div>${esc(p.caption || ('교육사진 ' + (i+1)))}</div>
+            </div>`).join('')}
+        </div>`
+      : `<div class="training-preview-box">등록된 교육 사진이 없습니다.</div>`;
+
+    sheet.innerHTML = `
+      <div class="training-preview-title">교육 보고서</div>
+      <table class="training-preview-meta">
+        <tr><th>보고서 번호</th><td>${esc(no)}</td><th>교육일자</th><td>${esc(date)}</td></tr>
+        <tr><th>교육 구분</th><td>${esc(type)}</td><th>교육명</th><td>${esc(title)}</td></tr>
+        <tr><th>교육장소</th><td>${esc(place)}</td><th>강사</th><td>${esc(instructor)}</td></tr>
+        <tr><th>대상부서</th><td>${esc(dept)}</td><th>교육시간</th><td>${esc(hours)}</td></tr>
+        <tr><th>평가방법</th><td>${esc(evalMethod)}</td><th>평가결과</th><td>${esc(result)}</td></tr>
+      </table>
+      <div class="training-preview-section"><h4>1. 참석자</h4><div class="training-preview-box">${esc(attendees)}</div></div>
+      <div class="training-preview-section"><h4>2. 불참자</h4><div class="training-preview-box">${esc(absentees)}</div></div>
+      <div class="training-preview-section"><h4>3. 교육 내용</h4><div class="training-preview-box">${esc(content)}</div></div>
+      <div class="training-preview-section"><h4>4. 비고 / 개선사항</h4><div class="training-preview-box">${esc(remark)}</div></div>
+      <div class="training-preview-section"><h4>5. 교육 사진</h4>${photosHtml}</div>
+    `;
+  }
+
+  function bindTrainingPhotoPatch(){
+    const input = $('trainingPhotoFiles');
+    if(input && !input.dataset.photoPatchBound){
+      input.dataset.photoPatchBound = '1';
+      input.addEventListener('change', e=>readFiles(e.target.files));
+    }
+
+    document.addEventListener('click', e=>{
+      const btn = e.target.closest('[data-training-photo-del]');
+      if(!btn) return;
+      const idx = Number(btn.dataset.trainingPhotoDel);
+      patchPhotos.splice(idx,1);
+      renderPhotoCards();
+      renderTrainingPreviewPhotos();
+    });
+
+    document.addEventListener('input', e=>{
+      const cap = e.target.closest('[data-training-photo-caption]');
+      if(cap){
+        const idx = Number(cap.dataset.trainingPhotoCaption);
+        if(patchPhotos[idx]) patchPhotos[idx].caption = cap.value;
+        renderTrainingPreviewPhotos();
+        return;
+      }
+      if(e.target && e.target.id && e.target.id.startsWith('training')){
+        renderTrainingPreviewPhotos();
+      }
+    });
+
+    const previewBtn = $('trainingPreviewBtn');
+    if(previewBtn && !previewBtn.dataset.photoPatchBound){
+      previewBtn.dataset.photoPatchBound = '1';
+      previewBtn.addEventListener('click', renderTrainingPreviewPhotos);
+    }
+
+    renderTrainingPreviewPhotos();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', ()=>setTimeout(bindTrainingPhotoPatch, 500));
+  }else{
+    setTimeout(bindTrainingPhotoPatch, 500);
+  }
+})();
+</script>
+
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
