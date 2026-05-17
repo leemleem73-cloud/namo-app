@@ -511,6 +511,19 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .instrument-photo-meta{margin-top:12px;font-size:13px;color:var(--t2);line-height:1.7;}
 
 </style>
+
+<style id="procap-spc-white-page-patch">
+#page-spc {
+  padding: 0 !important;
+  margin: -22px !important;
+  background: #f0f2f5 !important;
+  min-height: calc(100vh - 64px) !important;
+}
+#page-spc iframe {
+  width: 100% !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -1094,148 +1107,13 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 
       <!-- ■ 공정능력 분석 (SPC) - 평가보고서 통합형 -->
-      <section class="page" id="page-spc">
-        <div class="ph">
-          <div><div class="ph-title">공정능력 분석 (SPC)</div><div class="ph-sub"></div></div>
-          <div class="ph-actions">
-            <button class="btn light" id="spcReset">초기화</button>
-            <button class="btn pri" id="spcSave">저장</button>
-          </div>
-        </div>
-
-        <div class="spc-pro-wrap">
-          <aside class="spc-pro-menu">
-            <div class="spc-pro-sec">분석 메뉴</div>
-            <button type="button" class="spc-pro-nav active" data-spc-view="command"> 종합 현황</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="data"> 데이터 입력</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="process"> 공정 분석</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="stability"> 안정성 분석</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="variation"> 산포 분석</button>
-            <button type="button" class="spc-pro-nav" data-spc-view="report"> 분석 보고서</button>
-            <div class="spc-upload-box spc-pro-upload" id="spcUploadBox">
-              <div class="spc-upload-title">엑셀 / CSV 업로드</div>
-              <div class="spc-upload-icon">📁</div>
-              <div class="spc-upload-desc">Raw데이터_입력 시트 또는 CSV 파일을 드래그하거나 선택</div>
-              <input class="spc-upload-file" type="file" id="spcFileUpload" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
-              <button class="spc-upload-btn" type="button" id="spcFileSelectBtn">파일 선택</button>
-              <div class="spc-upload-info" id="spcUploadInfo"></div>
-            </div>
-          </aside>
-
-          <div class="spc-pro-main">
-            <div class="card spc-panel"><div class="ch"><h2>⚙ 분석 조건 · COA 기준</h2><span class="tag" id="spcSpecText">COA</span></div><div class="cb">
-              <div class="fg4">
-                <div class="field"><label>측정일자</label><input type="date" id="spcDate"></div>
-                <div class="field"><label>측정자</label><input id="spcProduct" placeholder="이름"></div>
-                <div class="field"><label>측정항목</label><select id="spcItem"><option value="Dmax">Dmax</option><option value="점도">점도</option><option value="고형분">고형분</option><option value="수분">수분</option><option value="접착력">접착력</option><option value="절연저항">절연저항</option><option value="절연액 팽윤성">절연액 팽윤성</option><option value="팽윤성">팽윤성</option></select></div>
-                <div class="field"><label>기준 표시</label><input id="spcProcess" placeholder="예: ≤ 10.0 μm"></div>
-                <div class="field"><label>LSL (하한)</label><input type="number" step="any" id="spcLsl" placeholder="-"></div>
-                <div class="field"><label>TARGET</label><input type="number" step="any" id="spcTarget" placeholder="-"></div>
-                <div class="field"><label>USL (상한)</label><input type="number" step="any" id="spcUsl" placeholder="-"></div>
-                <div class="field"><label>단위</label><input id="spcUnit" placeholder="단위"></div>
-                <div class="field"><label>부분군 크기 N</label><input type="number" id="spcSubgroup" value="5" min="2"></div>
-                <div class="field"><label>부분군 수 K</label><input type="number" id="spcK" value="20" min="1"></div>
-                <div class="field"><label>A2 계수</label><input type="number" step="any" id="spcA2" value="0.577"></div>
-                <div class="field"><label>D3 계수</label><input type="number" step="any" id="spcD3" value="0"></div>
-                <div class="field"><label>D4 계수</label><input type="number" step="any" id="spcD4" value="2.115"></div>
-                <div class="field"><label>d2 계수</label><input type="number" step="any" id="spcD2" value="2.326"></div>
-                <div class="field"><label>CP/CPK 기준</label><input type="number" step="any" id="spcCpkStd" value="1.33"></div>
-                <div class="field"><label>관리도 RULE</label><select id="spcRule"><option value="basic">기본 (관리한계)</option><option value="rule1">Rule1 포함</option></select></div>
-                <div class="field"><label>보고서 번호</label><input id="spcReportNo" placeholder="DMAX-2026-001"></div>
-                <div class="field"><label>LOT 대표명</label><input id="spcLot" placeholder="1~4lot"></div>
-              </div>
-              <input type="hidden" id="spcEditId"><textarea id="spcValues" style="display:none"></textarea><div class="spc-note" id="spcSpecModeNote">단측 규격 항목은 Cp/Cpk 대신 Cpu 또는 Cpl 기준으로 판정합니다. 양측 규격 항목만 Cp/Cpk를 표시합니다.</div>
-            </div></div>
-
-            <div class="spc-kpi spc-kpi-pro">
-              <div class="kpi"><div class="kpi-l">총 시료수 (N)</div><div class="kpi-v" id="spcN">-</div></div>
-              <div class="kpi"><div class="kpi-l">부분군 수 (K)</div><div class="kpi-v" id="spcKpiK">-</div></div>
-              <div class="kpi"><div class="kpi-l">전체 평균 (X̄)</div><div class="kpi-v" id="spcMean">-</div></div>
-              <div class="kpi"><div class="kpi-l">군내 표준편차 (σ)</div><div class="kpi-v" id="spcStd">-</div></div>
-              <div class="kpi"><div class="kpi-l">Cpu / Cpk</div><div class="kpi-v" id="spcCpk">-</div></div>
-              <div class="kpi"><div class="kpi-l">최종 판정</div><div class="kpi-v" id="spcJudge">-</div></div>
-            </div>
-
-            <div class="spc-view active" id="spcView-command">
-              <div class="spc-three">
-                <div class="card"><div class="ch"><h3>공정능력 (CAPABILITY)</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcCapabilityBody"></tbody></table></div></div>
-                <div class="card"><div class="ch"><h3>관리도 (CONTROL CHART)</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcControlBody"></tbody></table></div></div>
-                <div class="card"><div class="ch"><h3>규격 / PPM</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcSpecBody"></tbody></table></div></div>
-              </div>
-              <div class="card mt14"><div class="ch"><h3>공정 분석 차트</h3></div><div class="cb"><div class="spc-chart-grid"><div class="card"><div class="ch"><h3>규격선 포함 분포 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcHistChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>공정능력 지표</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReadinessChart"></canvas></div></div></div></div></div></div>
-            </div>
-
-            <div class="spc-view" id="spcView-data">
-              <div class="card"><div class="ch"><h3>Raw 데이터 입력 · 관리 (부분군 x 측정값)</h3><div class="ca"><button class="btn pri sm" type="button" id="spcAddRow">+ 행 추가</button><button class="btn light sm" type="button" id="spcDeleteSelected">선택 삭제</button></div></div><div class="cb"><div class="tw"><table><thead id="spcRawHead"></thead><tbody id="spcRawTable"></tbody></table></div><div class="spc-note">측정값 수정 즉시 Xbar/R, 관리도, Cp/Cpk, PPM이 재계산됩니다. 최소 100ea 기준입니다.</div></div></div>
-              <div class="spc-chart-grid"><div class="card"><div class="ch"><h3>평균 관리도 (실시간)</h3></div><div class="cb"><div class="cwrap"><canvas id="spcXbarChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>범위 관리도 (실시간)</h3></div><div class="cb"><div class="cwrap"><canvas id="spcRChart"></canvas></div></div></div></div>
-            </div>
-
-            <div class="spc-view" id="spcView-process">
-              <div class="card"><div class="ch"><h3>공정 분석</h3></div><div class="cb"><div class="spc-chart-grid"><div class="card"><div class="ch"><h3>개별값 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcIChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>이동범위 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcMRChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>분포 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcHist2Chart"></canvas></div></div></div><div class="card"><div class="ch"><h3>규격 정렬 분석</h3></div><div class="cb"><div class="cwrap"><canvas id="spcScatterChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>최근 25개 측정값</h3></div><div class="cb"><div class="cwrap"><canvas id="spcLastChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>공정 통계</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReadinessBody"></tbody></table></div></div></div></div></div>
-            </div>
-
-            <div class="spc-view" id="spcView-stability">
-              <div class="card"><div class="ch"><h3>안정성 분석</h3></div><div class="cb"><div class="spc-chart-grid"><div class="card"><div class="ch"><h3>평균 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcXbarChart2"></canvas></div></div></div><div class="card"><div class="ch"><h3>범위 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcRChart2"></canvas></div></div></div></div><div class="spc-two mt14"><div class="card"><div class="ch"><h3>관리 기준값</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcThresholdBody"></tbody></table></div></div><div class="card"><div class="ch"><h3>이상 신호 알림</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcSignalBody"></tbody></table></div></div></div></div></div>
-            </div>
-
-            <div class="spc-view" id="spcView-variation">
-              <div class="card"><div class="ch"><h3>산포 분석</h3></div><div class="cb"><div class="spc-chart-grid"><div class="card"><div class="ch"><h3>부분군 범위 순위</h3></div><div class="cb"><div class="cwrap"><canvas id="spcRangeRankChart"></canvas></div></div></div><div class="card"><div class="ch"><h3>이상치 분포</h3></div><div class="cb"><div class="cwrap"><canvas id="spcOutlierChart"></canvas></div></div></div></div></div></div>
-            </div>
-
-            <div class="spc-view" id="spcView-report">
-              <div class="card"><div class="ch"><h3 id="spcReportTitle">측정 보고서</h3><div class="ca"><button class="btn pri sm" type="button" id="spcDownloadJson">데이터 다운로드</button><button class="btn light sm" type="button" id="spcPrintReport">보고서 인쇄</button></div></div><div class="cb" id="spcReportArea"><div class="spc-three"><div class="card"><div class="ch"><h3>1. 요약 정보</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportExec"></tbody></table></div></div><div class="card"><div class="ch"><h3>2. 관리 기준</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportBoundary"></tbody></table></div></div><div class="card"><div class="ch"><h3>3. 공정 적합성</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportReadiness"></tbody></table></div></div></div><div class="spc-chart-grid mt14"><div class="card"><div class="ch"><h3>히스토그램</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReportHist"></canvas></div></div></div><div class="card"><div class="ch"><h3>평균 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReportXbar"></canvas></div></div></div></div><h3 class="mt14">4. 측정값 기록</h3><div class="tw"><table><thead id="spcReportHead"></thead><tbody id="spcReportTable"></tbody></table></div></div></div>
-            </div>
-
-            </section>
-
-      <!-- ■ LOT 추적 -->
-      <section class="page" id="page-trace">
-        <div class="ph"><div><div class="ph-title">LOT 추적</div><div class="ph-sub">완제품 / 원료 LOT를 검색합니다.</div></div>
-          <div class="ph-actions">
-            <input id="traceKeyword" placeholder="LOT 번호 또는 원료명 입력" style="height:36px;min-width:270px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:13px;background:var(--sf);outline:none;"/>
-            <button class="btn pri" id="traceSearch">조회</button>
-          </div>
-        </div>
-        <div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>순번</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th></tr></thead><tbody id="traceTable"></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ■ 회원 -->
-      <section class="page" id="page-users">
-        <div class="ph"><div><div class="ph-title">회원등록현황</div><div class="ph-sub">관리자 전용 · 직책 등록으로 검토자/승인자 자격 부여 (부장·이사·임원 이상)</div></div>
-          <div class="ph-actions"><button class="btn light" id="userReset">초기화</button><button class="btn pri" id="userSave">저장</button></div></div>
-        <div class="card"><div class="ch"><h2>회원 등록 / 수정</h2></div><div class="cb">
-          <div class="fg4">
-            <div class="field"><label>성명</label><input id="userName" placeholder="성명"></div>
-            <div class="field"><label>이메일</label><input id="userEmail" placeholder="이메일 주소"></div>
-            <div class="field"><label>부서명</label><input id="userDepartment" placeholder="부서명"></div>
-            <div class="field"><label>직책</label><input id="userTitle" placeholder="예: 부장, 이사, 사원 등"></div>
-            <div class="field"><label>권한</label><select id="userRole"><option value="user">일반회원</option><option value="admin">관리자</option></select></div>
-            <div class="field"><label>상태</label><select id="userStatus"><option value="APPROVED">승인</option><option value="REJECTED">반려</option></select></div>
-            <div class="field"><label>초기 비밀번호</label><input id="userPassword" placeholder="미입력 시 1234"></div>
-          </div>
-          <div style="margin-top:12px;padding:10px 14px;background:var(--pris);border-radius:var(--r2);font-size:12px;color:var(--pri);">
-            ℹ️ <strong>검토자·승인자 자격 직책:</strong> 부장, 이사, 상무, 전무, 임원, 대표이사, 대표, 사장, 회장, 본부장, 실장, 센터장, CEO, CTO, COO, CFO + 관리자(admin) 권한
-          </div>
-          <input type="hidden" id="userEditId">
-        </div></div>
-        <div class="card mt14"><div class="ch"><h3>회원 목록</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>성명</th><th>이메일</th><th>부서명</th><th>직책</th><th>권한</th><th>상태</th><th>등록일</th><th>작업</th></tr></thead><tbody id="userTable"></tbody></table>
-          </div>
-        </div>
-      </section>
-
-    
-
+      
 <!-- ■ SPC -->
 <section class="page" id="page-spc">
-  <div style="height:calc(100vh - 140px);background:#0a0c10;border-radius:16px;overflow:hidden;border:1px solid #d0d5de;">
-    <iframe id="spcFrame"
-      srcdoc="&lt;!DOCTYPE html&gt;
+  <iframe
+    id="procapSpcFullFrame"
+    title="ProCap SPC 공정능력 분석"
+    srcdoc="&lt;!DOCTYPE html&gt;
 &lt;html lang=&quot;ko&quot;&gt;
 &lt;head&gt;
 &lt;meta charset=&quot;UTF-8&quot;&gt;
@@ -1246,16 +1124,16 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   @import url(&#x27;https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&amp;family=IBM+Plex+Sans+KR:wght@300;400;500;700&amp;display=swap&#x27;);
 
   :root {
-    --bg-0: #0a0c10;
-    --bg-1: #111318;
-    --bg-2: #181b22;
-    --bg-3: #1e222c;
-    --bg-4: #252a36;
-    --border: #2a3040;
-    --border-bright: #3a4560;
-    --text-0: #e8ecf4;
-    --text-1: #a8b4cc;
-    --text-2: #6a7890;
+    --bg-0: #f0f2f5;
+    --bg-1: #ffffff;
+    --bg-2: #ffffff;
+    --bg-3: #f8f9fb;
+    --bg-4: #eef2f7;
+    --border: #e4e7ed;
+    --border-bright: #cbd5e1;
+    --text-0: #0d1117;
+    --text-1: #3d4a5c;
+    --text-2: #6b7688;
     --accent-b: #2d8cf0;
     --accent-g: #19c97d;
     --accent-y: #f5c842;
@@ -1272,7 +1150,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg-0);
+    background: #f0f2f5;
     color: var(--text-0);
     font-family: var(--font-main);
     font-size: 13px;
@@ -1302,7 +1180,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   }
   .logo-badge {
     background: var(--accent-b);
-    color: #000;
+    color: #fff;
     font-size: 9px;
     font-weight: 700;
     padding: 2px 5px;
@@ -1388,7 +1266,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   .btn-sm { padding: 5px 10px; font-size: 11px; }
 
   /* ── Main Content ── */
-  .main { padding: 20px; overflow-y: auto; background: var(--bg-0); }
+  .main { padding: 20px; overflow-y: auto; background: #f0f2f5; }
 
   /* Summary Cards */
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
@@ -1511,6 +1389,13 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     .charts-grid { grid-template-columns: 1fr; }
     .nelson-grid { grid-template-columns: repeat(2,1fr); }
   }
+
+  .topbar { box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .sidebar, .main { background: #f0f2f5; }
+  .sidebar { background:#ffffff; }
+  .card, .chart-box, .table-box, .nelson-card { box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .drop-zone { background:#f8fafc; }
+  canvas { background:#ffffff; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -2604,14 +2489,60 @@ function showToast(msg) {
 &lt;/body&gt;
 &lt;/html&gt;
 "
-      style="width:100%;height:100%;border:none;background:#0a0c10;"
-      title="공정능력 분석">
-    </iframe>
-  </div>
+    style="
+      display:block;
+      width:100%;
+      height:calc(100vh - 110px);
+      min-height:760px;
+      border:0;
+      background:#f0f2f5;
+    ">
+  </iframe>
 </section>
 
 
-</main>
+      <!-- ■ LOT 추적 -->
+      <section class="page" id="page-trace">
+        <div class="ph"><div><div class="ph-title">LOT 추적</div><div class="ph-sub">완제품 / 원료 LOT를 검색합니다.</div></div>
+          <div class="ph-actions">
+            <input id="traceKeyword" placeholder="LOT 번호 또는 원료명 입력" style="height:36px;min-width:270px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:13px;background:var(--sf);outline:none;"/>
+            <button class="btn pri" id="traceSearch">조회</button>
+          </div>
+        </div>
+        <div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
+          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
+            <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>순번</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th></tr></thead><tbody id="traceTable"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ■ 회원 -->
+      <section class="page" id="page-users">
+        <div class="ph"><div><div class="ph-title">회원등록현황</div><div class="ph-sub">관리자 전용 · 직책 등록으로 검토자/승인자 자격 부여 (부장·이사·임원 이상)</div></div>
+          <div class="ph-actions"><button class="btn light" id="userReset">초기화</button><button class="btn pri" id="userSave">저장</button></div></div>
+        <div class="card"><div class="ch"><h2>회원 등록 / 수정</h2></div><div class="cb">
+          <div class="fg4">
+            <div class="field"><label>성명</label><input id="userName" placeholder="성명"></div>
+            <div class="field"><label>이메일</label><input id="userEmail" placeholder="이메일 주소"></div>
+            <div class="field"><label>부서명</label><input id="userDepartment" placeholder="부서명"></div>
+            <div class="field"><label>직책</label><input id="userTitle" placeholder="예: 부장, 이사, 사원 등"></div>
+            <div class="field"><label>권한</label><select id="userRole"><option value="user">일반회원</option><option value="admin">관리자</option></select></div>
+            <div class="field"><label>상태</label><select id="userStatus"><option value="APPROVED">승인</option><option value="REJECTED">반려</option></select></div>
+            <div class="field"><label>초기 비밀번호</label><input id="userPassword" placeholder="미입력 시 1234"></div>
+          </div>
+          <div style="margin-top:12px;padding:10px 14px;background:var(--pris);border-radius:var(--r2);font-size:12px;color:var(--pri);">
+            ℹ️ <strong>검토자·승인자 자격 직책:</strong> 부장, 이사, 상무, 전무, 임원, 대표이사, 대표, 사장, 회장, 본부장, 실장, 센터장, CEO, CTO, COO, CFO + 관리자(admin) 권한
+          </div>
+          <input type="hidden" id="userEditId">
+        </div></div>
+        <div class="card mt14"><div class="ch"><h3>회원 목록</h3></div>
+          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
+            <table><thead><tr><th>성명</th><th>이메일</th><th>부서명</th><th>직책</th><th>권한</th><th>상태</th><th>등록일</th><th>작업</th></tr></thead><tbody id="userTable"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div>
   <div class="footer">© 2026 Namochemical Inc. All rights reserved. · Quality Management System</div>
 </div></div>
