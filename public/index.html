@@ -510,6 +510,28 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .instrument-photo-modal-img{display:block;width:100%;max-height:52vh;object-fit:contain;border:1px solid var(--bd);border-radius:var(--r3);background:#f8fafc;}
 .instrument-photo-meta{margin-top:12px;font-size:13px;color:var(--t2);line-height:1.7;}
 
+/* 교육 보고서 사진 및 사전보기 */
+.training-photo-box{border:1.5px dashed var(--bd2);border-radius:var(--r3);background:var(--s2);padding:14px;}
+.training-photo-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.training-photo-card{width:145px;border:1px solid var(--bd);border-radius:var(--r2);background:#fff;padding:7px;position:relative;}
+.training-photo-card img{display:block;width:100%;height:92px;object-fit:cover;border-radius:var(--r1);background:#f8fafc;}
+.training-photo-card input{width:100%;height:28px;margin-top:6px;border:1px solid var(--bd);border-radius:var(--r1);padding:0 6px;font-size:11px;}
+.training-photo-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;font-size:12px;}
+.training-preview-sheet{border:1.5px solid var(--bd2);border-radius:var(--r4);padding:20px;background:#fff;}
+.training-preview-title{text-align:center;font-size:18px;font-weight:900;margin-bottom:14px;}
+.training-preview-meta{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.training-preview-meta th,.training-preview-meta td{border:1px solid var(--bd2);padding:8px;text-align:left;font-size:12px;}
+.training-preview-meta th{background:var(--s2);width:120px;color:var(--t2);}
+.training-preview-section{margin-top:12px;}
+.training-preview-section h4{font-size:13px;font-weight:800;margin-bottom:6px;color:var(--t1);}
+.training-preview-box{border:1px solid var(--bd);border-radius:var(--r2);padding:10px;min-height:46px;white-space:pre-wrap;color:var(--t2);}
+.training-preview-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+.training-preview-photo{border:1px solid var(--bd);border-radius:var(--r2);padding:6px;background:#fff;break-inside:avoid;}
+.training-preview-photo img{width:100%;height:130px;object-fit:cover;border-radius:var(--r1);display:block;}
+.training-preview-photo div{font-size:11px;color:var(--t3);margin-top:4px;text-align:center;}
+@media(max-width:900px){.training-preview-photos{grid-template-columns:1fr 1fr;}}
+@media print{.training-photo-box,.training-photo-del{display:none!important}.training-preview-photos{grid-template-columns:repeat(2,1fr)}.training-preview-photo img{height:120px}}
+
 </style>
 </head>
 <body>
@@ -984,7 +1006,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="sign-grid" id="signGrid_nc"></div>
               </div>
             </div>
-            <div class="rprint-sign mt14">
+            <div class="card mt14" id="trainingPreviewCard"><div class="ch"><h2>보고서 사전보기</h2><span class="tag">PREVIEW</span></div><div class="cb"><div class="training-preview-sheet" id="trainingPreviewSheet"></div></div></div>
+          <div class="rprint-sign mt14">
               <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rNcWriter">-</div><div class="rpsign-title" id="rNcWriterT"></div><div class="rpsign-line"></div></div>
               <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rNcReviewer">-</div><div class="rpsign-title" id="rNcReviewerT"></div><div class="rpsign-line"></div></div>
               <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rNcApprover">-</div><div class="rpsign-title" id="rNcApproverT"></div><div class="rpsign-line"></div></div>
@@ -3953,6 +3976,235 @@ function renderMatrix(){
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700)); else setTimeout(init,700);
 })();
 </script>
+
+
+<script>
+/* ═══════════════════════════════════════
+   교육 보고서 기능 추가
+   - 교육 보고서 등록/수정/삭제/인쇄/CSV
+   - 작성자 / 검토자 / 승인자 결재란 포함
+   - 브라우저 localStorage 저장
+═══════════════════════════════════════ */
+(function(){
+  const KEY='namo_qms_training_reports_v2';
+  const $id=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  const today=()=>typeof todayKST==='function'?todayKST():new Date().toISOString().slice(0,10);
+  function read(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')||[];}catch(e){return[];}}
+  function write(list){localStorage.setItem(KEY,JSON.stringify(list||[]));}
+  function badge(v){
+    if(v==='완료')return '<span class="status pass">완료</span>';
+    if(v==='미실시')return '<span class="status fail">미실시</span>';
+    return '<span class="status hold">예정</span>';
+  }
+  let trainingPhotos=[];
+  function nameFromUser(u){return [u?.name,u?.title].filter(Boolean).join(' / ') || u?.email || '';}
+  function seniorUser(u){
+    if(!u)return false;
+    if((u.role||'')==='admin')return true;
+    const s=String(u.title||'').toLowerCase();
+    return ['부장','이사','상무','전무','임원','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo'].some(x=>s.includes(x));
+  }
+  function userOptions(mode){
+    const users=(window.state?.adminUsers||window.state?.signableUsers||[]).filter(Boolean);
+    const filtered=mode==='senior'?users.filter(seniorUser):users;
+    return '<option value="">-- 선택 --</option>'+filtered.map(u=>'<option value="'+esc(nameFromUser(u))+'">'+esc(nameFromUser(u))+'</option>').join('');
+  }
+  function ensureUi(){
+    if($id('page-training'))return;
+    const sidebar=document.querySelector('.sidebar');
+    const worklog=sidebar?.querySelector('.nav-item[data-page="worklog"]');
+    const btn=document.createElement('button');
+    btn.className='nav-item'; btn.type='button'; btn.dataset.page='training';
+    btn.innerHTML='<span class="nav-icon">🎓</span><span>교육 보고서</span>';
+    if(worklog)worklog.insertAdjacentElement('beforebegin',btn); else sidebar?.appendChild(btn);
+
+    const main=document.querySelector('main.content');
+    const page=document.createElement('section');
+    page.className='page'; page.id='page-training';
+    page.innerHTML=`
+      <div class="ph">
+        <div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>교육 보고서</span></div><div class="ph-title">교육 보고서</div><div class="ph-sub">안전·품질·직무 교육 이력과 작성/검토/승인을 관리합니다.</div></div>
+        <div class="ph-actions"><button class="btn light" id="trainingReset" type="button">초기화</button><button class="btn ghost" id="trainingCsv" type="button">CSV 다운로드</button><button class="btn pri" id="trainingSave" type="button">저장</button></div>
+      </div>
+      <div class="card"><div class="ch"><h2>교육 보고서 등록 / 수정</h2><div class="ca"><button class="btn light sm" id="trainingPreviewBtn" type="button">👁 사전보기</button><button class="btn light sm" id="trainingPrint" type="button">🖨 인쇄</button></div></div>
+        <div class="cb" id="trainingPrintArea">
+          <div class="fg4">
+            <div class="field"><label>교육일자 *</label><input type="date" id="trainingDate"></div>
+            <div class="field"><label>보고서 번호</label><input id="trainingNo" placeholder="예: EDU-2026-001"></div>
+            <div class="field"><label>교육 구분</label><select id="trainingType"><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select></div>
+            <div class="field"><label>교육명 *</label><input id="trainingTitle" placeholder="교육명"></div>
+            <div class="field"><label>교육 장소</label><input id="trainingPlace" placeholder="회의실 / 현장 등"></div>
+            <div class="field"><label>강사</label><input id="trainingInstructor" placeholder="강사명"></div>
+            <div class="field"><label>대상 부서</label><input id="trainingDept" placeholder="대상 부서"></div>
+            <div class="field"><label>교육 시간</label><input id="trainingHours" placeholder="예: 2H"></div>
+            <div class="field"><label>참석자</label><textarea id="trainingAttendees" placeholder="참석자명을 쉼표 또는 줄바꿈으로 입력" style="min-height:60px;"></textarea></div>
+            <div class="field"><label>불참자</label><textarea id="trainingAbsentees" placeholder="불참자명" style="min-height:60px;"></textarea></div>
+            <div class="field cfall"><label>교육 내용 *</label><textarea id="trainingContent" placeholder="교육 주요 내용을 입력하세요."></textarea></div>
+            <div class="field"><label>평가 방법</label><input id="trainingEvalMethod" placeholder="예: 서명 확인 / 테스트 / 질의응답"></div>
+            <div class="field"><label>평가 결과</label><select id="trainingResult"><option>완료</option><option>예정</option><option>미실시</option></select></div>
+            <div class="field cfall"><label>비고 / 개선사항</label><textarea id="trainingRemark" placeholder="특이사항, 개선사항, 후속 조치"></textarea></div>
+            <div class="field cfall"><label>교육 사진</label><div class="training-photo-box"><input type="file" id="trainingPhotoFiles" accept="image/*" multiple><div style="font-size:12px;color:var(--t3);margin-top:6px;">교육 현장 사진을 여러 장 첨부할 수 있습니다. 저장 및 인쇄 보고서에 포함됩니다.</div><div class="training-photo-preview" id="trainingPhotoPreview"></div></div></div>
+          </div>
+          <div class="sp mt14">
+            <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
+            <div class="cb" style="padding:12px 14px;">
+              <div class="sign-grid">
+                <div class="sign-box"><div class="sign-box-hdr"><div class="sign-box-role">작성자</div><span class="sign-box-badge any">ANY</span></div><div class="sign-box-body"><select class="sign-sel" id="trainingWriter"></select><div class="sign-sub">교육 보고서 작성 담당자</div></div></div>
+                <div class="sign-box"><div class="sign-box-hdr"><div class="sign-box-role">검토자</div><span class="sign-box-badge mgr">MGR</span></div><div class="sign-box-body"><select class="sign-sel" id="trainingReviewer"></select><div class="sign-sub">부장·이사·관리자 등</div></div></div>
+                <div class="sign-box"><div class="sign-box-hdr"><div class="sign-box-role">승인자</div><span class="sign-box-badge mgr">MGR</span></div><div class="sign-box-body"><select class="sign-sel" id="trainingApprover"></select><div class="sign-sub">최종 승인권자</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="rprint-sign mt14">
+            <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="trainingWriterText">-</div><div class="rpsign-line"></div></div>
+            <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="trainingReviewerText">-</div><div class="rpsign-line"></div></div>
+            <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="trainingApproverText">-</div><div class="rpsign-line"></div></div>
+          </div>
+          <input type="hidden" id="trainingEditId">
+        </div>
+      </div>
+      <div class="card mt14"><div class="ch"><h3>교육 보고서 목록</h3></div>
+        <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
+          <table><thead><tr><th>교육일자</th><th>보고서번호</th><th>구분</th><th>교육명</th><th>강사</th><th>대상부서</th><th>참석자</th><th>사진</th><th>결과</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="trainingTable"></tbody></table>
+        </div>
+      </div>`;
+    main?.appendChild(page);
+  }
+  function refreshApproverOptions(){
+    const current={w:$id('trainingWriter')?.value,r:$id('trainingReviewer')?.value,a:$id('trainingApprover')?.value};
+    if($id('trainingWriter'))$id('trainingWriter').innerHTML=userOptions('all');
+    if($id('trainingReviewer'))$id('trainingReviewer').innerHTML=userOptions('senior');
+    if($id('trainingApprover'))$id('trainingApprover').innerHTML=userOptions('senior');
+    if($id('trainingWriter'))$id('trainingWriter').value=current.w||'';
+    if($id('trainingReviewer'))$id('trainingReviewer').value=current.r||'';
+    if($id('trainingApprover'))$id('trainingApprover').value=current.a||'';
+  }
+  function renderPhotoPreview(){
+    const wrap=$id('trainingPhotoPreview'); if(!wrap)return;
+    wrap.innerHTML=trainingPhotos.length?trainingPhotos.map((p,i)=>`<div class="training-photo-card"><button type="button" class="training-photo-del" data-training-photo-del="${i}">×</button><img src="${esc(p.src)}" alt="교육 사진 ${i+1}"><input data-training-photo-caption="${i}" value="${esc(p.caption||'')}" placeholder="사진 설명"></div>`).join(''):'<div style="font-size:12px;color:var(--t3);">첨부된 교육 사진이 없습니다.</div>';
+  }
+  function addPhotoFiles(files){
+    const arr=Array.from(files||[]).filter(f=>/^image\//.test(f.type));
+    if(!arr.length)return;
+    arr.forEach(file=>{
+      const reader=new FileReader();
+      reader.onload=e=>{trainingPhotos.push({src:e.target.result,caption:file.name||''}); renderPhotoPreview(); updatePreview();};
+      reader.readAsDataURL(file);
+    });
+    const input=$id('trainingPhotoFiles'); if(input)input.value='';
+  }
+  function previewRows(r){
+    return `
+      <tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서 번호</th><td>${esc(r.no||'-')}</td></tr>
+      <tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr>
+      <tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr>
+      <tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr>
+      <tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td>${esc(r.result||'-')}</td></tr>`;
+  }
+  function updatePreview(){
+    const sheet=$id('trainingPreviewSheet'); if(!sheet)return;
+    const r=values();
+    const photos=(r.photos||[]).map((p,i)=>`<div class="training-preview-photo"><img src="${esc(p.src)}" alt="교육 사진 ${i+1}"><div>${esc(p.caption||('교육 사진 '+(i+1)))}</div></div>`).join('') || '<div class="training-preview-box">첨부된 사진이 없습니다.</div>';
+    sheet.innerHTML=`<div class="training-preview-title">교육 보고서</div>
+      <table class="training-preview-meta"><tbody>${previewRows(r)}</tbody></table>
+      <div class="training-preview-section"><h4>참석자</h4><div class="training-preview-box">${esc(r.attendees||'-')}</div></div>
+      <div class="training-preview-section"><h4>불참자</h4><div class="training-preview-box">${esc(r.absentees||'-')}</div></div>
+      <div class="training-preview-section"><h4>교육 내용</h4><div class="training-preview-box">${esc(r.content||'-')}</div></div>
+      <div class="training-preview-section"><h4>비고 / 개선사항</h4><div class="training-preview-box">${esc(r.remark||'-')}</div></div>
+      <div class="training-preview-section"><h4>교육 사진</h4><div class="training-preview-photos">${photos}</div></div>
+      <div class="rprint-sign mt14"><div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name">${esc(r.writer||'-')}</div><div class="rpsign-line"></div></div><div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name">${esc(r.reviewer||'-')}</div><div class="rpsign-line"></div></div><div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name">${esc(r.approver||'-')}</div><div class="rpsign-line"></div></div></div>`;
+  }
+  function values(){
+    return {
+      id:$id('trainingEditId')?.value||String(Date.now()), date:$id('trainingDate')?.value||today(), no:$id('trainingNo')?.value.trim(),
+      type:$id('trainingType')?.value, title:$id('trainingTitle')?.value.trim(), place:$id('trainingPlace')?.value.trim(), instructor:$id('trainingInstructor')?.value.trim(),
+      dept:$id('trainingDept')?.value.trim(), hours:$id('trainingHours')?.value.trim(), attendees:$id('trainingAttendees')?.value.trim(), absentees:$id('trainingAbsentees')?.value.trim(),
+      content:$id('trainingContent')?.value.trim(), evalMethod:$id('trainingEvalMethod')?.value.trim(), result:$id('trainingResult')?.value, remark:$id('trainingRemark')?.value.trim(),
+      writer:$id('trainingWriter')?.value||'', reviewer:$id('trainingReviewer')?.value||'', approver:$id('trainingApprover')?.value||'', photos:trainingPhotos
+    };
+  }
+  function syncSignText(){
+    if($id('trainingWriterText'))$id('trainingWriterText').textContent=$id('trainingWriter')?.value||'-';
+    if($id('trainingReviewerText'))$id('trainingReviewerText').textContent=$id('trainingReviewer')?.value||'-';
+    if($id('trainingApproverText'))$id('trainingApproverText').textContent=$id('trainingApprover')?.value||'-';
+    updatePreview();
+  }
+  function fill(r={}){
+    refreshApproverOptions();
+    trainingPhotos=Array.isArray(r.photos)?JSON.parse(JSON.stringify(r.photos)):[];
+    renderPhotoPreview();
+    ['trainingEditId','trainingDate','trainingNo','trainingTitle','trainingPlace','trainingInstructor','trainingDept','trainingHours','trainingAttendees','trainingAbsentees','trainingContent','trainingEvalMethod','trainingRemark'].forEach(id=>{if($id(id))$id(id).value='';});
+    if($id('trainingDate'))$id('trainingDate').value=today();
+    if($id('trainingType'))$id('trainingType').value='안전교육';
+    if($id('trainingResult'))$id('trainingResult').value='완료';
+    Object.entries({trainingEditId:r.id,trainingDate:r.date,trainingNo:r.no,trainingTitle:r.title,trainingPlace:r.place,trainingInstructor:r.instructor,trainingDept:r.dept,trainingHours:r.hours,trainingAttendees:r.attendees,trainingAbsentees:r.absentees,trainingContent:r.content,trainingEvalMethod:r.evalMethod,trainingRemark:r.remark,trainingWriter:r.writer,trainingReviewer:r.reviewer,trainingApprover:r.approver}).forEach(([id,val])=>{if($id(id)&&val!==undefined)$id(id).value=val||'';});
+    if($id('trainingType')&&r.type)$id('trainingType').value=r.type;
+    if($id('trainingResult')&&r.result)$id('trainingResult').value=r.result;
+    syncSignText();
+  }
+  function attendeeCount(s){return String(s||'').split(/[,
+]/).map(x=>x.trim()).filter(Boolean).length;}
+  function render(){
+    const tb=$id('trainingTable'); if(!tb)return;
+    const list=read();
+    tb.innerHTML=list.length?list.map(r=>`<tr><td>${esc(r.date)}</td><td><strong>${esc(r.no||'-')}</strong></td><td>${esc(r.type)}</td><td>${esc(r.title)}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${attendeeCount(r.attendees)}명</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${badge(r.result)}</td><td>${esc(r.writer||'-')}</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.approver||'-')}</td><td><div class="ai"><button class="sb edit" data-training-edit="${esc(r.id)}">수정</button><button class="sb del" data-training-del="${esc(r.id)}">삭제</button></div></td></tr>`).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13">교육 보고서가 없습니다.</td></tr>');
+  }
+  function save(){
+    const r=values();
+    if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}
+    if(!r.writer||!r.reviewer||!r.approver){alert('작성자, 검토자, 승인자를 모두 선택하세요.');return;}
+    if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(read().length+1).padStart(3,'0');
+    const list=read(); const i=list.findIndex(x=>String(x.id)===String(r.id));
+    if(i>=0)list[i]=r; else list.unshift(r);
+    write(list); fill(r); render(); alert('교육 보고서가 저장되었습니다.');
+  }
+  function edit(id){const r=read().find(x=>String(x.id)===String(id)); if(r)fill(r);}
+  function del(id){if(!confirm('교육 보고서를 삭제하시겠습니까?'))return; write(read().filter(x=>String(x.id)!==String(id))); render(); fill();}
+  function gotoTraining(){
+    document.querySelectorAll('.nav-item[data-page],#wfNavBtn').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.nav-item[data-page="training"]')?.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $id('page-training')?.classList.add('active'); refreshApproverOptions(); render(); syncSignText();
+  }
+  function print(){
+    syncSignText();
+    updatePreview();
+    const el=$id('trainingPreviewSheet'); if(!el)return;
+    const w=window.open('','_blank');
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>교육 보고서</title><style>body{font-family:Arial,Malgun Gothic,sans-serif;padding:20px}h2{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #333;padding:8px}.field{margin-bottom:8px}label{font-weight:bold;display:block;margin-bottom:3px}.sp{border:1px solid #ddd;margin-top:12px}.sph{background:#f3f4f6;padding:8px}.sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}.sign-box{border:1px solid #999}.sign-box-hdr{padding:6px;background:#f8f8f8;font-weight:bold}.sign-box-body{padding:8px}.rprint-sign{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #333;margin-top:18px}.rpsign-col{text-align:center;border-right:1px solid #333;padding:14px;min-height:90px}.rpsign-col:last-child{border-right:none}.rpsign-role{font-weight:bold;border-bottom:1px solid #aaa;padding-bottom:6px;margin-bottom:12px}.btn,.ph-actions,.ch .ca,input[type=hidden],.sign-sub,.sign-box-badge{display:none!important}textarea,input,select{border:0;width:100%;font:inherit;white-space:pre-wrap;appearance:none}.training-preview-title{text-align:center;font-size:20px;font-weight:bold;margin-bottom:14px}.training-preview-meta{width:100%;border-collapse:collapse;margin-bottom:12px}.training-preview-meta th,.training-preview-meta td{border:1px solid #333;padding:8px;text-align:left}.training-preview-section{margin-top:12px}.training-preview-box{border:1px solid #999;padding:10px;white-space:pre-wrap}.training-preview-photos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.training-preview-photo{border:1px solid #999;padding:6px}.training-preview-photo img{width:100%;height:150px;object-fit:cover}.training-preview-photo div{text-align:center;font-size:11px;margin-top:4px}</style></head><body>'+el.innerHTML+'</body></html>');
+    w.document.close(); w.focus(); w.print();
+  }
+  function csv(){
+    const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];
+    const rows=read().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,(Array.isArray(r.photos)?r.photos.length:0),(Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):''),r.writer,r.reviewer,r.approver]);
+    const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
+    const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='교육보고서_'+today()+'.csv'; a.click(); URL.revokeObjectURL(a.href);
+  }
+  function bind(){
+    document.querySelector('.nav-item[data-page="training"]')?.addEventListener('click',gotoTraining);
+    $id('trainingSave')?.addEventListener('click',save);
+    $id('trainingReset')?.addEventListener('click',()=>fill());
+    $id('trainingPrint')?.addEventListener('click',print);
+    $id('trainingPreviewBtn')?.addEventListener('click',()=>{updatePreview(); $id('trainingPreviewCard')?.scrollIntoView({behavior:'smooth',block:'start'});});
+    $id('trainingPhotoFiles')?.addEventListener('change',e=>addPhotoFiles(e.target.files));
+    $id('trainingCsv')?.addEventListener('click',csv);
+    ['trainingWriter','trainingReviewer','trainingApprover'].forEach(id=>$id(id)?.addEventListener('change',syncSignText));
+    ['trainingDate','trainingNo','trainingType','trainingTitle','trainingPlace','trainingInstructor','trainingDept','trainingHours','trainingAttendees','trainingAbsentees','trainingContent','trainingEvalMethod','trainingResult','trainingRemark'].forEach(id=>$id(id)?.addEventListener('input',updatePreview));
+    document.addEventListener('click',e=>{
+      const ed=e.target.closest('[data-training-edit]'); if(ed){edit(ed.dataset.trainingEdit);gotoTraining();return;}
+      const de=e.target.closest('[data-training-del]'); if(de){del(de.dataset.trainingDel);return;}
+      const pd=e.target.closest('[data-training-photo-del]'); if(pd){trainingPhotos.splice(Number(pd.dataset.trainingPhotoDel),1); renderPhotoPreview(); updatePreview(); return;}
+    });
+    document.addEventListener('input',e=>{const cap=e.target.closest('[data-training-photo-caption]'); if(cap){const i=Number(cap.dataset.trainingPhotoCaption); if(trainingPhotos[i])trainingPhotos[i].caption=cap.value; updatePreview();}});
+  }
+  function init(){ensureUi();refreshApproverOptions();bind();fill();render();updatePreview();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,900)); else setTimeout(init,900);
+})();
+</script>
+
+<!-- v7: training report preview and education photo support added -->
 
 <!-- v5: approval inbox, notifications, document lookup fixed -->
 </body>
