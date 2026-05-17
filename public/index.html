@@ -728,6 +728,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <button class="nav-item" data-page="instruments"><span class="nav-icon"></span><span>측정기 관리</span></button>
       <div class="nav-sec">공정능력 관리</div>
       <button class="nav-item" data-page="spc"><span class="nav-icon"></span><span>공정능력 분석</span></button>
+      <div class="nav-sec">교육 관리</div>
+      <button class="nav-item" data-page="training"><span class="nav-icon">🎓</span><span>교육 보고서</span></button>
       <div class="nav-sec" id="adminNavTitle" style="display:none;">관리자</div>
       <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon"></span><span>회원등록현황</span></button>
     </aside>
@@ -1222,6 +1224,58 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>순번</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th></tr></thead><tbody id="traceTable"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ■ 교육 보고서 -->
+      <section class="page" id="page-training">
+        <div class="ph">
+          <div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>교육 보고서</span></div><div class="ph-title">교육 보고서</div><div class="ph-sub">안전·품질·직무 교육 이력과 작성/검토/승인을 관리합니다.</div></div>
+          <div class="ph-actions"><button class="btn light" id="trainingReset" type="button">초기화</button><button class="btn ghost" id="trainingCsv" type="button">CSV 다운로드</button><button class="btn pri" id="trainingSave" type="button">저장</button></div>
+        </div>
+        <div class="card"><div class="ch"><h2>교육 보고서 등록 / 수정</h2><div class="ca"><button class="btn light sm" id="trainingPreviewBtn" type="button">👁 사전보기</button><button class="btn light sm" id="trainingPrint" type="button">🖨 인쇄</button></div></div>
+          <div class="cb" id="trainingPrintArea">
+            <div class="fg4">
+              <div class="field"><label>교육일자 *</label><input type="date" id="trainingDate"></div>
+              <div class="field"><label>보고서 번호</label><input id="trainingNo" placeholder="예: EDU-2026-001"></div>
+              <div class="field"><label>교육 구분</label><select id="trainingType"><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select></div>
+              <div class="field"><label>교육명 *</label><input id="trainingTitle" placeholder="교육명"></div>
+              <div class="field"><label>교육 장소</label><input id="trainingPlace" placeholder="회의실 / 현장 등"></div>
+              <div class="field"><label>강사</label><input id="trainingInstructor" placeholder="강사명"></div>
+              <div class="field"><label>대상 부서</label><input id="trainingDept" placeholder="대상 부서"></div>
+              <div class="field"><label>교육 시간</label><input id="trainingHours" placeholder="예: 2H"></div>
+              <div class="field"><label>참석자</label><textarea id="trainingAttendees" placeholder="참석자명을 쉼표 또는 줄바꿈으로 입력" style="min-height:60px;"></textarea></div>
+              <div class="field"><label>불참자</label><textarea id="trainingAbsentees" placeholder="불참자명" style="min-height:60px;"></textarea></div>
+              <div class="field cfall"><label>교육 내용 *</label><textarea id="trainingContent" placeholder="교육 주요 내용을 입력하세요."></textarea></div>
+              <div class="field"><label>평가 방법</label><input id="trainingEvalMethod" placeholder="예: 서명 확인 / 테스트 / 질의응답"></div>
+              <div class="field"><label>평가 결과</label><select id="trainingResult"><option>완료</option><option>예정</option><option>미실시</option></select></div>
+              <div class="field cfall"><label>비고 / 개선사항</label><textarea id="trainingRemark" placeholder="특이사항, 개선사항, 후속 조치"></textarea></div>
+              <div class="field cfall"><label>교육 사진</label><div class="training-photo-box"><input type="file" id="trainingPhotoFiles" accept="image/*" multiple><div style="font-size:12px;color:var(--t3);margin-top:6px;">교육 현장 사진을 여러 장 첨부할 수 있습니다. 저장 및 인쇄 보고서에 포함됩니다.</div><div class="training-photo-preview" id="trainingPhotoPreview"></div></div></div>
+            </div>
+            <div class="sp mt14">
+              <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
+              <div class="cb" style="padding:12px 14px;">
+                <div class="sign-grid">
+                  <div class="sign-box"><div class="sign-box-hdr"><div class="sign-box-role">작성자</div><span class="sign-box-badge any">ANY</span></div><div class="sign-box-body"><select class="sign-sel" id="trainingWriter"></select><div class="sign-sub">교육 보고서 작성 담당자</div></div></div>
+                  <div class="sign-box"><div class="sign-box-hdr"><div class="sign-box-role">검토자</div><span class="sign-box-badge mgr">MGR</span></div><div class="sign-box-body"><select class="sign-sel" id="trainingReviewer"></select><div class="sign-sub">부장·이사·관리자 등</div></div></div>
+                  <div class="sign-box"><div class="sign-box-hdr"><div class="sign-box-role">승인자</div><span class="sign-box-badge mgr">MGR</span></div><div class="sign-box-body"><select class="sign-sel" id="trainingApprover"></select><div class="sign-sub">최종 승인권자</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="card mt14" id="trainingPreviewCard"><div class="ch"><h2>보고서 사전보기</h2><span class="tag">PREVIEW</span></div><div class="cb"><div class="training-preview-sheet" id="trainingPreviewSheet"></div></div></div>
+            <div class="rprint-sign mt14">
+              <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="trainingWriterText">-</div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="trainingReviewerText">-</div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="trainingApproverText">-</div><div class="rpsign-line"></div></div>
+            </div>
+            <input type="hidden" id="trainingEditId">
+          </div>
+        </div>
+        <div class="card mt14"><div class="ch"><h3>교육 보고서 목록</h3></div>
+          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
+            <table><thead><tr><th>교육일자</th><th>보고서번호</th><th>구분</th><th>교육명</th><th>강사</th><th>대상부서</th><th>참석자</th><th>사진</th><th>결과</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="trainingTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -4143,8 +4197,7 @@ function renderMatrix(){
     if($id('trainingResult')&&r.result)$id('trainingResult').value=r.result;
     syncSignText();
   }
-  function attendeeCount(s){return String(s||'').split(/[,
-]/).map(x=>x.trim()).filter(Boolean).length;}
+  function attendeeCount(s){return String(s||'').split(/[\n,]/).map(x=>x.trim()).filter(Boolean).length;}
   function render(){
     const tb=$id('trainingTable'); if(!tb)return;
     const list=read();
