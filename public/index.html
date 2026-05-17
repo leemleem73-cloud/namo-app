@@ -1230,19 +1230,20 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       </section>
 
     
+
 <!-- ■ SPC -->
 <section class="page" id="page-spc">
   <div style="height:calc(100vh - 140px);background:#0a0c10;border-radius:16px;overflow:hidden;border:1px solid #d0d5de;">
     <iframe id="spcFrame"
-      srcdoc='<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProCap SPC — 공정능력 분석 시스템</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-  @import url(&apos;https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=IBM+Plex+Sans+KR:wght@300;400;500;700&display=swap&apos;);
+      srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;ProCap SPC — 공정능력 분석 시스템&lt;/title&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  @import url(&#x27;https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&amp;family=IBM+Plex+Sans+KR:wght@300;400;500;700&amp;display=swap&#x27;);
 
   :root {
     --bg-0: #0a0c10;
@@ -1264,8 +1265,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     --cp-ok: #19c97d;
     --cp-warn: #f5c842;
     --cp-fail: #f05050;
-    --font-main: &apos;IBM Plex Sans KR&apos;, sans-serif;
-    --font-mono: &apos;IBM Plex Mono&apos;, monospace;
+    --font-main: &#x27;IBM Plex Sans KR&#x27;, sans-serif;
+    --font-mono: &#x27;IBM Plex Mono&#x27;, monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1397,7 +1398,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     position: relative; overflow: hidden;
   }
   .card::before {
-    content: &apos;&apos;; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    content: &#x27;&#x27;; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   }
   .card.ok::before { background: var(--cp-ok); }
   .card.warn::before { background: var(--cp-warn); }
@@ -1510,147 +1511,147 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     .charts-grid { grid-template-columns: 1fr; }
     .nelson-grid { grid-template-columns: repeat(2,1fr); }
   }
-</style>
-</head>
-<body>
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
 
-<!-- Top Bar -->
-<div class="topbar">
-  <div class="logo">
-    <span>⬡ PROCAP</span>
-    <span class="logo-badge">SPC</span>
-  </div>
-  <div class="topbar-tabs">
-    <button class="tab-btn active" onclick="setTab(&apos;capability&apos;)">공정능력</button>
-    <button class="tab-btn" onclick="setTab(&apos;control&apos;)">관리도</button>
-    <button class="tab-btn" onclick="setTab(&apos;dist&apos;)">분포분석</button>
-    <button class="tab-btn" onclick="setTab(&apos;nelson&apos;)">Nelson 규칙</button>
-  </div>
-  <div class="topbar-right">
-    <div class="status-dot"></div>
-    <span style="font-size:11px;color:var(--text-2)">ISO 22514 · AIAG</span>
-  </div>
-</div>
+&lt;!-- Top Bar --&gt;
+&lt;div class=&quot;topbar&quot;&gt;
+  &lt;div class=&quot;logo&quot;&gt;
+    &lt;span&gt;⬡ PROCAP&lt;/span&gt;
+    &lt;span class=&quot;logo-badge&quot;&gt;SPC&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;topbar-tabs&quot;&gt;
+    &lt;button class=&quot;tab-btn active&quot; onclick=&quot;setTab(&#x27;capability&#x27;)&quot;&gt;공정능력&lt;/button&gt;
+    &lt;button class=&quot;tab-btn&quot; onclick=&quot;setTab(&#x27;control&#x27;)&quot;&gt;관리도&lt;/button&gt;
+    &lt;button class=&quot;tab-btn&quot; onclick=&quot;setTab(&#x27;dist&#x27;)&quot;&gt;분포분석&lt;/button&gt;
+    &lt;button class=&quot;tab-btn&quot; onclick=&quot;setTab(&#x27;nelson&#x27;)&quot;&gt;Nelson 규칙&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;topbar-right&quot;&gt;
+    &lt;div class=&quot;status-dot&quot;&gt;&lt;/div&gt;
+    &lt;span style=&quot;font-size:11px;color:var(--text-2)&quot;&gt;ISO 22514 · AIAG&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
 
-<div class="app">
-  <!-- Sidebar -->
-  <div class="sidebar">
+&lt;div class=&quot;app&quot;&gt;
+  &lt;!-- Sidebar --&gt;
+  &lt;div class=&quot;sidebar&quot;&gt;
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">데이터 입력</div>
+    &lt;div class=&quot;sidebar-section&quot;&gt;
+      &lt;div class=&quot;sidebar-label&quot;&gt;데이터 입력&lt;/div&gt;
 
-      <!-- File Upload -->
-      <div class="form-group">
-        <label class="form-label">Excel / CSV 업로드</label>
-        <div class="drop-zone" id="dropZone">
-          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(event)">
-          <div class="drop-icon">📂</div>
-          <div class="drop-text">파일을 끌어다 놓거나 클릭</div>
-          <div class="drop-hint">.xlsx · .xls · .csv 지원</div>
-        </div>
-      </div>
+      &lt;!-- File Upload --&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;Excel / CSV 업로드&lt;/label&gt;
+        &lt;div class=&quot;drop-zone&quot; id=&quot;dropZone&quot;&gt;
+          &lt;input type=&quot;file&quot; id=&quot;fileInput&quot; accept=&quot;.xlsx,.xls,.csv&quot; onchange=&quot;handleFile(event)&quot;&gt;
+          &lt;div class=&quot;drop-icon&quot;&gt;📂&lt;/div&gt;
+          &lt;div class=&quot;drop-text&quot;&gt;파일을 끌어다 놓거나 클릭&lt;/div&gt;
+          &lt;div class=&quot;drop-hint&quot;&gt;.xlsx · .xls · .csv 지원&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
 
-      <!-- Excel column picker -->
-      <div class="form-group" id="colPickerGroup" style="display:none">
-        <label class="form-label">데이터 열 선택</label>
-        <select class="form-select" id="colPicker" onchange="applyColumnData()"></select>
-      </div>
+      &lt;!-- Excel column picker --&gt;
+      &lt;div class=&quot;form-group&quot; id=&quot;colPickerGroup&quot; style=&quot;display:none&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;데이터 열 선택&lt;/label&gt;
+        &lt;select class=&quot;form-select&quot; id=&quot;colPicker&quot; onchange=&quot;applyColumnData()&quot;&gt;&lt;/select&gt;
+      &lt;/div&gt;
 
-      <!-- Manual input -->
-      <div class="form-group">
-        <label class="form-label">직접 입력 <span style="color:var(--text-2)">(쉼표/줄바꿈 구분)</span></label>
-        <textarea class="data-textarea" id="manualData"
-          placeholder="예: 10.2, 10.5, 9.8, 10.1, 10.4 ..."></textarea>
-      </div>
+      &lt;!-- Manual input --&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;직접 입력 &lt;span style=&quot;color:var(--text-2)&quot;&gt;(쉼표/줄바꿈 구분)&lt;/span&gt;&lt;/label&gt;
+        &lt;textarea class=&quot;data-textarea&quot; id=&quot;manualData&quot;
+          placeholder=&quot;예: 10.2, 10.5, 9.8, 10.1, 10.4 ...&quot;&gt;&lt;/textarea&gt;
+      &lt;/div&gt;
 
-      <button class="btn btn-primary" onclick="analyze()">▶ 분석 실행</button>
-    </div>
+      &lt;button class=&quot;btn btn-primary&quot; onclick=&quot;analyze()&quot;&gt;▶ 분석 실행&lt;/button&gt;
+    &lt;/div&gt;
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">규격 한계 (Spec Limits)</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">USL (상한)</label>
-          <input class="form-input" id="usl" type="number" placeholder="예: 10.5" step="any">
-        </div>
-        <div class="form-group">
-          <label class="form-label">LSL (하한)</label>
-          <input class="form-input" id="lsl" type="number" placeholder="예: 9.5" step="any">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">목표값 (Target) <span class="help" title="목표값은 히스토그램에 기준선으로 표시됩니다">?</span></label>
-        <input class="form-input" id="target" type="number" placeholder="선택사항" step="any">
-      </div>
-    </div>
+    &lt;div class=&quot;sidebar-section&quot;&gt;
+      &lt;div class=&quot;sidebar-label&quot;&gt;규격 한계 (Spec Limits)&lt;/div&gt;
+      &lt;div class=&quot;form-row&quot;&gt;
+        &lt;div class=&quot;form-group&quot;&gt;
+          &lt;label class=&quot;form-label&quot;&gt;USL (상한)&lt;/label&gt;
+          &lt;input class=&quot;form-input&quot; id=&quot;usl&quot; type=&quot;number&quot; placeholder=&quot;예: 10.5&quot; step=&quot;any&quot;&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;form-group&quot;&gt;
+          &lt;label class=&quot;form-label&quot;&gt;LSL (하한)&lt;/label&gt;
+          &lt;input class=&quot;form-input&quot; id=&quot;lsl&quot; type=&quot;number&quot; placeholder=&quot;예: 9.5&quot; step=&quot;any&quot;&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;목표값 (Target) &lt;span class=&quot;help&quot; title=&quot;목표값은 히스토그램에 기준선으로 표시됩니다&quot;&gt;?&lt;/span&gt;&lt;/label&gt;
+        &lt;input class=&quot;form-input&quot; id=&quot;target&quot; type=&quot;number&quot; placeholder=&quot;선택사항&quot; step=&quot;any&quot;&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">관리도 설정</div>
-      <div class="form-group">
-        <label class="form-label">서브그룹 크기 (n)</label>
-        <input class="form-input" id="subgroupSize" type="number" value="5" min="2" max="25">
-      </div>
-      <div class="form-group">
-        <label class="form-label">관리도 유형</label>
-        <select class="form-select" id="chartType">
-          <option value="xbar-r">X̄-R (n ≤ 8)</option>
-          <option value="xbar-s">X̄-S (n > 8)</option>
-          <option value="i-mr">I-MR (개별값)</option>
-        </select>
-      </div>
-    </div>
+    &lt;div class=&quot;sidebar-section&quot;&gt;
+      &lt;div class=&quot;sidebar-label&quot;&gt;관리도 설정&lt;/div&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;서브그룹 크기 (n)&lt;/label&gt;
+        &lt;input class=&quot;form-input&quot; id=&quot;subgroupSize&quot; type=&quot;number&quot; value=&quot;5&quot; min=&quot;2&quot; max=&quot;25&quot;&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;관리도 유형&lt;/label&gt;
+        &lt;select class=&quot;form-select&quot; id=&quot;chartType&quot;&gt;
+          &lt;option value=&quot;xbar-r&quot;&gt;X̄-R (n ≤ 8)&lt;/option&gt;
+          &lt;option value=&quot;xbar-s&quot;&gt;X̄-S (n &gt; 8)&lt;/option&gt;
+          &lt;option value=&quot;i-mr&quot;&gt;I-MR (개별값)&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">판정 기준</div>
-      <div class="form-group">
-        <label class="form-label">Cp / Cpk 합격 기준</label>
-        <select class="form-select" id="cpCriteria">
-          <option value="1.33">1.33 (일반)</option>
-          <option value="1.67">1.67 (엄격)</option>
-          <option value="1.0">1.00 (최소)</option>
-        </select>
-      </div>
-    </div>
+    &lt;div class=&quot;sidebar-section&quot;&gt;
+      &lt;div class=&quot;sidebar-label&quot;&gt;판정 기준&lt;/div&gt;
+      &lt;div class=&quot;form-group&quot;&gt;
+        &lt;label class=&quot;form-label&quot;&gt;Cp / Cpk 합격 기준&lt;/label&gt;
+        &lt;select class=&quot;form-select&quot; id=&quot;cpCriteria&quot;&gt;
+          &lt;option value=&quot;1.33&quot;&gt;1.33 (일반)&lt;/option&gt;
+          &lt;option value=&quot;1.67&quot;&gt;1.67 (엄격)&lt;/option&gt;
+          &lt;option value=&quot;1.0&quot;&gt;1.00 (최소)&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">예제 데이터</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick="loadDemo(&apos;normal&apos;)">정규분포</button>
-        <button class="btn btn-secondary btn-sm" onclick="loadDemo(&apos;skewed&apos;)">편중분포</button>
-        <button class="btn btn-secondary btn-sm" onclick="loadDemo(&apos;bimodal&apos;)">이봉분포</button>
-        <button class="btn btn-secondary btn-sm" onclick="loadDemo(&apos;dmax&apos;)">Dmax 예제</button>
-      </div>
-    </div>
+    &lt;div class=&quot;sidebar-section&quot;&gt;
+      &lt;div class=&quot;sidebar-label&quot;&gt;예제 데이터&lt;/div&gt;
+      &lt;div style=&quot;display:flex;flex-wrap:wrap;gap:6px&quot;&gt;
+        &lt;button class=&quot;btn btn-secondary btn-sm&quot; onclick=&quot;loadDemo(&#x27;normal&#x27;)&quot;&gt;정규분포&lt;/button&gt;
+        &lt;button class=&quot;btn btn-secondary btn-sm&quot; onclick=&quot;loadDemo(&#x27;skewed&#x27;)&quot;&gt;편중분포&lt;/button&gt;
+        &lt;button class=&quot;btn btn-secondary btn-sm&quot; onclick=&quot;loadDemo(&#x27;bimodal&#x27;)&quot;&gt;이봉분포&lt;/button&gt;
+        &lt;button class=&quot;btn btn-secondary btn-sm&quot; onclick=&quot;loadDemo(&#x27;dmax&#x27;)&quot;&gt;Dmax 예제&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
 
-  </div>
+  &lt;/div&gt;
 
-  <!-- Main -->
-  <div class="main" id="mainContent">
-    <div class="empty-state" id="emptyState">
-      <div class="empty-icon">⬡</div>
-      <div class="empty-title">ProCap SPC 공정능력 분석</div>
-      <div class="empty-desc">좌측 패널에서 데이터를 입력하고 규격 한계를 설정한 후<br>분석 실행 버튼을 클릭하세요.<br><br>ISO 22514 · AIAG 기반 Cp, Cpk, Pp, Ppk 산출<br>Nelson 규칙 8개 자동 판정</div>
-    </div>
-    <div id="results" style="display:none"></div>
-  </div>
-</div>
+  &lt;!-- Main --&gt;
+  &lt;div class=&quot;main&quot; id=&quot;mainContent&quot;&gt;
+    &lt;div class=&quot;empty-state&quot; id=&quot;emptyState&quot;&gt;
+      &lt;div class=&quot;empty-icon&quot;&gt;⬡&lt;/div&gt;
+      &lt;div class=&quot;empty-title&quot;&gt;ProCap SPC 공정능력 분석&lt;/div&gt;
+      &lt;div class=&quot;empty-desc&quot;&gt;좌측 패널에서 데이터를 입력하고 규격 한계를 설정한 후&lt;br&gt;분석 실행 버튼을 클릭하세요.&lt;br&gt;&lt;br&gt;ISO 22514 · AIAG 기반 Cp, Cpk, Pp, Ppk 산출&lt;br&gt;Nelson 규칙 8개 자동 판정&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;results&quot; style=&quot;display:none&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
 
-<div class="toast" id="toast"></div>
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
 
-<script>
+&lt;script&gt;
 /* ═══════════════════════════════════════════════
-   DATA & STATE
+   DATA &amp; STATE
 ═══════════════════════════════════════════════ */
 let state = {
   data: [],
   excelCols: {},
-  currentTab: &apos;capability&apos;
+  currentTab: &#x27;capability&#x27;
 };
 
 function setTab(tab) {
   state.currentTab = tab;
-  document.querySelectorAll(&apos;.tab-btn&apos;).forEach(b => b.classList.remove(&apos;active&apos;));
-  event.target.classList.add(&apos;active&apos;);
+  document.querySelectorAll(&#x27;.tab-btn&#x27;).forEach(b =&gt; b.classList.remove(&#x27;active&#x27;));
+  event.target.classList.add(&#x27;active&#x27;);
   if (state.data.length) renderAll();
 }
 
@@ -1660,31 +1661,31 @@ function setTab(tab) {
 function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const ext = file.name.split(&apos;.&apos;).pop().toLowerCase();
+  const ext = file.name.split(&#x27;.&#x27;).pop().toLowerCase();
   const reader = new FileReader();
 
-  if (ext === &apos;csv&apos;) {
-    reader.onload = ev => {
-      const rows = ev.target.result.split(&apos;\n&apos;).map(r => r.split(&apos;,&apos;));
-      const headers = rows[0].map((h,i) => h.trim() || `열${i+1}`);
+  if (ext === &#x27;csv&#x27;) {
+    reader.onload = ev =&gt; {
+      const rows = ev.target.result.split(&#x27;\n&#x27;).map(r =&gt; r.split(&#x27;,&#x27;));
+      const headers = rows[0].map((h,i) =&gt; h.trim() || `열${i+1}`);
       const cols = {};
-      headers.forEach((h,i) => {
-        cols[h] = rows.slice(1).map(r => parseFloat(r[i])).filter(v => !isNaN(v));
+      headers.forEach((h,i) =&gt; {
+        cols[h] = rows.slice(1).map(r =&gt; parseFloat(r[i])).filter(v =&gt; !isNaN(v));
       });
       state.excelCols = cols;
       populateColPicker();
     };
     reader.readAsText(file);
   } else {
-    reader.onload = ev => {
-      const wb = XLSX.read(ev.target.result, { type: &apos;array&apos; });
+    reader.onload = ev =&gt; {
+      const wb = XLSX.read(ev.target.result, { type: &#x27;array&#x27; });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
       if (!json.length) return;
-      const headers = json[0].map((h,i) => (h || `열${i+1}`).toString().trim());
+      const headers = json[0].map((h,i) =&gt; (h || `열${i+1}`).toString().trim());
       const cols = {};
-      headers.forEach((h,i) => {
-        cols[h] = json.slice(1).map(r => parseFloat(r[i])).filter(v => !isNaN(v));
+      headers.forEach((h,i) =&gt; {
+        cols[h] = json.slice(1).map(r =&gt; parseFloat(r[i])).filter(v =&gt; !isNaN(v));
       });
       state.excelCols = cols;
       populateColPicker();
@@ -1695,29 +1696,29 @@ function handleFile(e) {
 }
 
 function populateColPicker() {
-  const picker = document.getElementById(&apos;colPicker&apos;);
-  picker.innerHTML = Object.keys(state.excelCols).map(k =>
-    `<option value="${k}">${k} (${state.excelCols[k].length}개)</option>`
-  ).join(&apos;&apos;);
-  document.getElementById(&apos;colPickerGroup&apos;).style.display = &apos;block&apos;;
+  const picker = document.getElementById(&#x27;colPicker&#x27;);
+  picker.innerHTML = Object.keys(state.excelCols).map(k =&gt;
+    `&lt;option value=&quot;${k}&quot;&gt;${k} (${state.excelCols[k].length}개)&lt;/option&gt;`
+  ).join(&#x27;&#x27;);
+  document.getElementById(&#x27;colPickerGroup&#x27;).style.display = &#x27;block&#x27;;
   applyColumnData();
 }
 
 function applyColumnData() {
-  const key = document.getElementById(&apos;colPicker&apos;).value;
-  if (key && state.excelCols[key]) {
-    document.getElementById(&apos;manualData&apos;).value = state.excelCols[key].join(&apos;, &apos;);
+  const key = document.getElementById(&#x27;colPicker&#x27;).value;
+  if (key &amp;&amp; state.excelCols[key]) {
+    document.getElementById(&#x27;manualData&#x27;).value = state.excelCols[key].join(&#x27;, &#x27;);
   }
 }
 
 /* Drag-drop */
-const dz = document.getElementById(&apos;dropZone&apos;);
-dz.addEventListener(&apos;dragover&apos;, e => { e.preventDefault(); dz.classList.add(&apos;drag&apos;); });
-dz.addEventListener(&apos;dragleave&apos;, () => dz.classList.remove(&apos;drag&apos;));
-dz.addEventListener(&apos;drop&apos;, e => {
-  e.preventDefault(); dz.classList.remove(&apos;drag&apos;);
+const dz = document.getElementById(&#x27;dropZone&#x27;);
+dz.addEventListener(&#x27;dragover&#x27;, e =&gt; { e.preventDefault(); dz.classList.add(&#x27;drag&#x27;); });
+dz.addEventListener(&#x27;dragleave&#x27;, () =&gt; dz.classList.remove(&#x27;drag&#x27;));
+dz.addEventListener(&#x27;drop&#x27;, e =&gt; {
+  e.preventDefault(); dz.classList.remove(&#x27;drag&#x27;);
   const f = e.dataTransfer.files[0];
-  if (f) { document.getElementById(&apos;fileInput&apos;).files = e.dataTransfer.files; handleFile({ target: { files: [f] } }); }
+  if (f) { document.getElementById(&#x27;fileInput&#x27;).files = e.dataTransfer.files; handleFile({ target: { files: [f] } }); }
 });
 
 /* ═══════════════════════════════════════════════
@@ -1736,32 +1737,32 @@ const CTRL_CONSTANTS = {
 
 function stats(data) {
   const n = data.length;
-  const mean = data.reduce((a,b) => a+b, 0) / n;
-  const variance = data.reduce((a,b) => a + (b-mean)**2, 0) / (n-1);
+  const mean = data.reduce((a,b) =&gt; a+b, 0) / n;
+  const variance = data.reduce((a,b) =&gt; a + (b-mean)**2, 0) / (n-1);
   const std = Math.sqrt(variance);
-  const sorted = [...data].sort((a,b) => a-b);
+  const sorted = [...data].sort((a,b) =&gt; a-b);
   const median = n%2 ? sorted[~~(n/2)] : (sorted[n/2-1]+sorted[n/2])/2;
   const min = sorted[0], max = sorted[n-1];
   // Skewness (Fisher)
-  const skew = n<3 ? 0 : data.reduce((a,b) => a + ((b-mean)/std)**3, 0) * n / ((n-1)*(n-2));
+  const skew = n&lt;3 ? 0 : data.reduce((a,b) =&gt; a + ((b-mean)/std)**3, 0) * n / ((n-1)*(n-2));
   // Kurtosis excess
-  const kurt = n<4 ? 0 : (data.reduce((a,b) => a + ((b-mean)/std)**4, 0) * n*(n+1) / ((n-1)*(n-2)*(n-3))) - 3*(n-1)**2/((n-2)*(n-3));
+  const kurt = n&lt;4 ? 0 : (data.reduce((a,b) =&gt; a + ((b-mean)/std)**4, 0) * n*(n+1) / ((n-1)*(n-2)*(n-3))) - 3*(n-1)**2/((n-2)*(n-3));
   return { n, mean, std, variance, median, min, max, skew, kurt };
 }
 
 function makeSubgroups(data, n) {
   const groups = [];
-  for (let i = 0; i+n <= data.length; i += n) groups.push(data.slice(i, i+n));
+  for (let i = 0; i+n &lt;= data.length; i += n) groups.push(data.slice(i, i+n));
   return groups;
 }
 
 function xbarRStats(data, n) {
   const groups = makeSubgroups(data, n);
   if (!groups.length) return null;
-  const xbars = groups.map(g => g.reduce((a,b)=>a+b,0)/g.length);
-  const ranges = groups.map(g => Math.max(...g) - Math.min(...g));
-  const xbarBar = xbars.reduce((a,b)=>a+b,0)/xbars.length;
-  const rBar = ranges.reduce((a,b)=>a+b,0)/ranges.length;
+  const xbars = groups.map(g =&gt; g.reduce((a,b)=&gt;a+b,0)/g.length);
+  const ranges = groups.map(g =&gt; Math.max(...g) - Math.min(...g));
+  const xbarBar = xbars.reduce((a,b)=&gt;a+b,0)/xbars.length;
+  const rBar = ranges.reduce((a,b)=&gt;a+b,0)/ranges.length;
   const A2 = CTRL_CONSTANTS.A2[n] ?? 0.577;
   const D3 = CTRL_CONSTANTS.D3[n] ?? 0;
   const D4 = CTRL_CONSTANTS.D4[n] ?? 2.115;
@@ -1777,13 +1778,13 @@ function xbarRStats(data, n) {
 function xbarSStats(data, n) {
   const groups = makeSubgroups(data, n);
   if (!groups.length) return null;
-  const xbars = groups.map(g => g.reduce((a,b)=>a+b,0)/g.length);
-  const stds = groups.map(g => {
-    const m = g.reduce((a,b)=>a+b,0)/g.length;
-    return Math.sqrt(g.reduce((a,b)=>a+(b-m)**2,0)/(g.length-1));
+  const xbars = groups.map(g =&gt; g.reduce((a,b)=&gt;a+b,0)/g.length);
+  const stds = groups.map(g =&gt; {
+    const m = g.reduce((a,b)=&gt;a+b,0)/g.length;
+    return Math.sqrt(g.reduce((a,b)=&gt;a+(b-m)**2,0)/(g.length-1));
   });
-  const xbarBar = xbars.reduce((a,b)=>a+b,0)/xbars.length;
-  const sBar = stds.reduce((a,b)=>a+b,0)/stds.length;
+  const xbarBar = xbars.reduce((a,b)=&gt;a+b,0)/xbars.length;
+  const sBar = stds.reduce((a,b)=&gt;a+b,0)/stds.length;
   const A3 = CTRL_CONSTANTS.A3[n] ?? 1.427;
   const B3 = CTRL_CONSTANTS.B3[n] ?? 0;
   const B4 = CTRL_CONSTANTS.B4[n] ?? 2.089;
@@ -1797,9 +1798,9 @@ function xbarSStats(data, n) {
 }
 
 function iMRStats(data) {
-  const mrs = data.slice(1).map((v,i) => Math.abs(v - data[i]));
-  const xBar = data.reduce((a,b)=>a+b,0)/data.length;
-  const mrBar = mrs.reduce((a,b)=>a+b,0)/mrs.length;
+  const mrs = data.slice(1).map((v,i) =&gt; Math.abs(v - data[i]));
+  const xBar = data.reduce((a,b)=&gt;a+b,0)/data.length;
+  const mrBar = mrs.reduce((a,b)=&gt;a+b,0)/mrs.length;
   return {
     values: data, mrs,
     xBar, mrBar,
@@ -1811,20 +1812,20 @@ function iMRStats(data) {
 
 function capability(data, usl, lsl, sigmaWithin, overall) {
   const s = stats(data);
-  const hasBoth = usl !== null && lsl !== null;
+  const hasBoth = usl !== null &amp;&amp; lsl !== null;
   const hasU = usl !== null;
   const hasL = lsl !== null;
 
   // Within (short-term)
   const cpU = hasU ? (usl - s.mean) / (3 * sigmaWithin) : null;
   const cpL = hasL ? (s.mean - lsl) / (3 * sigmaWithin) : null;
-  const cpk = cpU !== null && cpL !== null ? Math.min(cpU, cpL) : (cpU ?? cpL);
+  const cpk = cpU !== null &amp;&amp; cpL !== null ? Math.min(cpU, cpL) : (cpU ?? cpL);
   const cp = hasBoth ? (usl - lsl) / (6 * sigmaWithin) : null;
 
   // Overall (long-term)
   const ppU = hasU ? (usl - s.mean) / (3 * overall) : null;
   const ppL = hasL ? (s.mean - lsl) / (3 * overall) : null;
-  const ppk = ppU !== null && ppL !== null ? Math.min(ppU, ppL) : (ppU ?? ppL);
+  const ppk = ppU !== null &amp;&amp; ppL !== null ? Math.min(ppU, ppL) : (ppU ?? ppL);
   const pp = hasBoth ? (usl - lsl) / (6 * overall) : null;
 
   // PPM
@@ -1839,13 +1840,13 @@ function capability(data, usl, lsl, sigmaWithin, overall) {
 
 // Standard normal CDF (Hart approximation)
 function normalCDF(z) {
-  if (z > 8) return 1; if (z < -8) return 0;
+  if (z &gt; 8) return 1; if (z &lt; -8) return 0;
   const p = 0.2316419, b = [0.319381530,-0.356563782,1.781477937,-1.821255978,1.330274429];
   const t = 1/(1+p*Math.abs(z));
-  const poly = b.reduce((acc,c,i) => acc + c*Math.pow(t,i+1), 0);
+  const poly = b.reduce((acc,c,i) =&gt; acc + c*Math.pow(t,i+1), 0);
   const pdf = Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
   const c = 1 - pdf*poly;
-  return z >= 0 ? c : 1-c;
+  return z &gt;= 0 ? c : 1-c;
 }
 
 function normalPDF(x, mean, std) {
@@ -1857,48 +1858,48 @@ function normalPDF(x, mean, std) {
 ═══════════════════════════════════════════════ */
 function shapiroWilk(x) {
   const n = x.length;
-  if (n < 3 || n > 50) return { W: null, p: null, normal: null };
-  const sorted = [...x].sort((a,b)=>a-b);
+  if (n &lt; 3 || n &gt; 50) return { W: null, p: null, normal: null };
+  const sorted = [...x].sort((a,b)=&gt;a-b);
   // Approximation coefficients for small n
   // Using polynomial approximation of p-value
-  const mean = x.reduce((a,b)=>a+b,0)/n;
-  const S2 = x.reduce((a,b)=>a+(b-mean)**2,0);
+  const mean = x.reduce((a,b)=&gt;a+b,0)/n;
+  const S2 = x.reduce((a,b)=&gt;a+(b-mean)**2,0);
   // Simplified W statistic
   const m = Math.floor(n/2);
   const aCoeffs = generateSWCoeffs(n);
   let b = 0;
-  for(let i=0;i<m;i++) b += aCoeffs[i]*(sorted[n-1-i]-sorted[i]);
+  for(let i=0;i&lt;m;i++) b += aCoeffs[i]*(sorted[n-1-i]-sorted[i]);
   const W = (b*b)/S2;
   // Approximate p-value using log transform
   const mu = Math.log(1-W);
   const p = Math.exp(-Math.exp((mu+0.5)/0.8)) ; // rough approximation
-  return { W: W.toFixed(4), p: Math.min(p,1).toFixed(4), normal: p > 0.05 };
+  return { W: W.toFixed(4), p: Math.min(p,1).toFixed(4), normal: p &gt; 0.05 };
 }
 
 function generateSWCoeffs(n) {
   // Simplified polynomial coefficients (approximation)
   const coeffs = [];
-  for(let i=0;i<Math.floor(n/2);i++) {
+  for(let i=0;i&lt;Math.floor(n/2);i++) {
     const q = (i+0.5-0.375)/(n+0.25);
     const z = probit(q);
     coeffs.push(Math.abs(z));
   }
-  const norm = Math.sqrt(coeffs.reduce((a,b)=>a+b*b,0));
-  return coeffs.map(c=>c/norm);
+  const norm = Math.sqrt(coeffs.reduce((a,b)=&gt;a+b*b,0));
+  return coeffs.map(c=&gt;c/norm);
 }
 
 function probit(p) {
   // Rational approximation
-  if (p <= 0) return -8; if (p >= 1) return 8;
+  if (p &lt;= 0) return -8; if (p &gt;= 1) return 8;
   const a = [-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
   const b = [-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
   const c = [-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
   const d = [7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
   const plo = 0.02425, phi = 1 - plo;
-  if (p < plo) {
+  if (p &lt; plo) {
     const q = Math.sqrt(-2*Math.log(p));
     return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  } else if (p <= phi) {
+  } else if (p &lt;= phi) {
     const q = p-0.5, r = q*q;
     return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
   } else {
@@ -1913,48 +1914,48 @@ function probit(p) {
 function nelsonRules(values, mean, sigma) {
   const n = values.length;
   const results = Array(8).fill(false);
-  const z = values.map(v => (v-mean)/sigma);
+  const z = values.map(v =&gt; (v-mean)/sigma);
 
   // Rule 1: Beyond 3σ
-  results[0] = z.some(v => Math.abs(v) > 3);
+  results[0] = z.some(v =&gt; Math.abs(v) &gt; 3);
   // Rule 2: 9 consecutive same side
-  for(let i=8;i<n;i++) {
+  for(let i=8;i&lt;n;i++) {
     const run = z.slice(i-8,i+1);
-    if(run.every(v=>v>0)||run.every(v=>v<0)) { results[1]=true; break; }
+    if(run.every(v=&gt;v&gt;0)||run.every(v=&gt;v&lt;0)) { results[1]=true; break; }
   }
   // Rule 3: 6 consecutive increasing/decreasing
-  for(let i=5;i<n;i++) {
+  for(let i=5;i&lt;n;i++) {
     const run = values.slice(i-5,i+1);
     let inc=true,dec=true;
-    for(let j=1;j<run.length;j++){if(run[j]<=run[j-1])inc=false;if(run[j]>=run[j-1])dec=false;}
+    for(let j=1;j&lt;run.length;j++){if(run[j]&lt;=run[j-1])inc=false;if(run[j]&gt;=run[j-1])dec=false;}
     if(inc||dec){results[2]=true;break;}
   }
   // Rule 4: 14 alternating up-down
-  if(n>=14){
+  if(n&gt;=14){
     let alt=true;
-    for(let i=1;i<14;i++) if((values[i]-values[i-1])*(values[i+1]-values[i])>=0){alt=false;break;}
+    for(let i=1;i&lt;14;i++) if((values[i]-values[i-1])*(values[i+1]-values[i])&gt;=0){alt=false;break;}
     results[3]=alt;
   }
   // Rule 5: 2 of 3 beyond 2σ same side
-  for(let i=2;i<n;i++){
+  for(let i=2;i&lt;n;i++){
     const s=z.slice(i-2,i+1);
-    if(s.filter(v=>v>2).length>=2||s.filter(v=>v<-2).length>=2){results[4]=true;break;}
+    if(s.filter(v=&gt;v&gt;2).length&gt;=2||s.filter(v=&gt;v&lt;-2).length&gt;=2){results[4]=true;break;}
   }
   // Rule 6: 4 of 5 beyond 1σ same side
-  for(let i=4;i<n;i++){
+  for(let i=4;i&lt;n;i++){
     const s=z.slice(i-4,i+1);
-    if(s.filter(v=>v>1).length>=4||s.filter(v=>v<-1).length>=4){results[5]=true;break;}
+    if(s.filter(v=&gt;v&gt;1).length&gt;=4||s.filter(v=&gt;v&lt;-1).length&gt;=4){results[5]=true;break;}
   }
   // Rule 7: 15 within ±1σ
-  if(n>=15){
+  if(n&gt;=15){
     let cnt=0;
-    for(let i=0;i<15;i++) if(Math.abs(z[i])<1)cnt++;
-    results[6]=cnt>=15;
+    for(let i=0;i&lt;15;i++) if(Math.abs(z[i])&lt;1)cnt++;
+    results[6]=cnt&gt;=15;
   }
   // Rule 8: 8 beyond ±1σ (no point within 1σ)
-  for(let i=7;i<n;i++){
+  for(let i=7;i&lt;n;i++){
     const s=z.slice(i-7,i+1);
-    if(s.every(v=>Math.abs(v)>1)){results[7]=true;break;}
+    if(s.every(v=&gt;Math.abs(v)&gt;1)){results[7]=true;break;}
   }
   return results;
 }
@@ -1963,28 +1964,28 @@ function nelsonRules(values, mean, sigma) {
    ANALYZE MAIN
 ═══════════════════════════════════════════════ */
 function analyze() {
-  const raw = document.getElementById(&apos;manualData&apos;).value;
-  const data = raw.split(/[\s,;\n]+/).map(Number).filter(v => !isNaN(v) && v !== 0 || raw.includes(&apos;0&apos;));
-  const cleaned = raw.split(/[\s,;\n]+/).map(s=>s.trim()).filter(s=>s!==&apos;&apos;).map(Number).filter(v=>!isNaN(v));
+  const raw = document.getElementById(&#x27;manualData&#x27;).value;
+  const data = raw.split(/[\s,;\n]+/).map(Number).filter(v =&gt; !isNaN(v) &amp;&amp; v !== 0 || raw.includes(&#x27;0&#x27;));
+  const cleaned = raw.split(/[\s,;\n]+/).map(s=&gt;s.trim()).filter(s=&gt;s!==&#x27;&#x27;).map(Number).filter(v=&gt;!isNaN(v));
 
-  if (cleaned.length < 4) { showToast(&apos;⚠ 데이터가 너무 적습니다 (최소 4개)&apos;); return; }
+  if (cleaned.length &lt; 4) { showToast(&#x27;⚠ 데이터가 너무 적습니다 (최소 4개)&#x27;); return; }
 
-  const usl = document.getElementById(&apos;usl&apos;).value !== &apos;&apos; ? +document.getElementById(&apos;usl&apos;).value : null;
-  const lsl = document.getElementById(&apos;lsl&apos;).value !== &apos;&apos; ? +document.getElementById(&apos;lsl&apos;).value : null;
-  const target = document.getElementById(&apos;target&apos;).value !== &apos;&apos; ? +document.getElementById(&apos;target&apos;).value : null;
-  const n = +document.getElementById(&apos;subgroupSize&apos;).value || 5;
-  const chartTypeVal = document.getElementById(&apos;chartType&apos;).value;
-  const cpCriteria = +document.getElementById(&apos;cpCriteria&apos;).value;
+  const usl = document.getElementById(&#x27;usl&#x27;).value !== &#x27;&#x27; ? +document.getElementById(&#x27;usl&#x27;).value : null;
+  const lsl = document.getElementById(&#x27;lsl&#x27;).value !== &#x27;&#x27; ? +document.getElementById(&#x27;lsl&#x27;).value : null;
+  const target = document.getElementById(&#x27;target&#x27;).value !== &#x27;&#x27; ? +document.getElementById(&#x27;target&#x27;).value : null;
+  const n = +document.getElementById(&#x27;subgroupSize&#x27;).value || 5;
+  const chartTypeVal = document.getElementById(&#x27;chartType&#x27;).value;
+  const cpCriteria = +document.getElementById(&#x27;cpCriteria&#x27;).value;
 
   state.data = cleaned;
 
   // Control chart stats
   let ctrlStats;
-  if (chartTypeVal === &apos;i-mr&apos;) ctrlStats = iMRStats(cleaned);
-  else if (chartTypeVal === &apos;xbar-s&apos; || n > 8) ctrlStats = xbarSStats(cleaned, n);
+  if (chartTypeVal === &#x27;i-mr&#x27;) ctrlStats = iMRStats(cleaned);
+  else if (chartTypeVal === &#x27;xbar-s&#x27; || n &gt; 8) ctrlStats = xbarSStats(cleaned, n);
   else ctrlStats = xbarRStats(cleaned, n);
 
-  if (!ctrlStats) { showToast(&apos;⚠ 서브그룹 생성 실패. 데이터 수를 확인하세요.&apos;); return; }
+  if (!ctrlStats) { showToast(&#x27;⚠ 서브그룹 생성 실패. 데이터 수를 확인하세요.&#x27;); return; }
 
   const sigmaWithin = ctrlStats.sigmaWithin;
   const s = stats(cleaned);
@@ -1996,8 +1997,8 @@ function analyze() {
     sigmaWithin
   );
 
-  document.getElementById(&apos;emptyState&apos;).style.display = &apos;none&apos;;
-  document.getElementById(&apos;results&apos;).style.display = &apos;block&apos;;
+  document.getElementById(&#x27;emptyState&#x27;).style.display = &#x27;none&#x27;;
+  document.getElementById(&#x27;results&#x27;).style.display = &#x27;block&#x27;;
   renderAll(cap, ctrlStats, sw, nelson, n, chartTypeVal, usl, lsl, target, cpCriteria);
   showToast(`✓ ${cleaned.length}개 데이터 분석 완료`);
 }
@@ -2008,200 +2009,200 @@ function analyze() {
 function renderAll(cap, ctrl, sw, nelson, n, chartType, usl, lsl, target, cpCriteria) {
   if (!cap) return;
   const tab = state.currentTab;
-  const el = document.getElementById(&apos;results&apos;);
+  const el = document.getElementById(&#x27;results&#x27;);
 
-  let html = &apos;&apos;;
+  let html = &#x27;&#x27;;
 
-  if (tab === &apos;capability&apos; || tab === &apos;control&apos;) {
+  if (tab === &#x27;capability&#x27; || tab === &#x27;control&#x27;) {
     // Summary Cards
-    const cardClass = v => v === null ? &apos;info&apos; : v >= cpCriteria ? &apos;ok&apos; : v >= 1.0 ? &apos;warn&apos; : &apos;fail&apos;;
-    html += `<div class="cards-grid">
-      ${cap.cp !== null ? `<div class="card ${cardClass(cap.cp)}"><div class="card-label">Cp</div><div class="card-value">${fmt(cap.cp)}</div><div class="card-sub">단기 정밀도</div></div>` : &apos;&apos;}
-      ${cap.cpk !== null ? `<div class="card ${cardClass(cap.cpk)}"><div class="card-label">Cpk</div><div class="card-value">${fmt(cap.cpk)}</div><div class="card-sub">단기 편차 포함</div></div>` : &apos;&apos;}
-      ${cap.pp !== null ? `<div class="card ${cardClass(cap.pp)}"><div class="card-label">Pp</div><div class="card-value">${fmt(cap.pp)}</div><div class="card-sub">장기 정밀도</div></div>` : &apos;&apos;}
-      ${cap.ppk !== null ? `<div class="card ${cardClass(cap.ppk)}"><div class="card-label">Ppk</div><div class="card-value">${fmt(cap.ppk)}</div><div class="card-sub">장기 편차 포함</div></div>` : &apos;&apos;}
-      <div class="card info"><div class="card-label">X̄ 평균</div><div class="card-value" style="font-size:18px">${fmt4(cap.mean)}</div><div class="card-sub">n = ${cap.n}</div></div>
-      <div class="card info"><div class="card-label">σ Overall</div><div class="card-value" style="font-size:18px">${fmt4(cap.std)}</div><div class="card-sub">σ Within: ${fmt4(cap.sigmaWithin)}</div></div>
-      ${cap.ppmTotal > 0 ? `<div class="card ${cap.ppmTotal < 1000 ? &apos;ok&apos; : cap.ppmTotal < 6210 ? &apos;warn&apos; : &apos;fail&apos;}"><div class="card-label">PPM 불량</div><div class="card-value" style="font-size:18px">${Math.round(cap.ppmTotal)}</div><div class="card-sub">추정 불량률</div></div>` : &apos;&apos;}
-    </div>`;
+    const cardClass = v =&gt; v === null ? &#x27;info&#x27; : v &gt;= cpCriteria ? &#x27;ok&#x27; : v &gt;= 1.0 ? &#x27;warn&#x27; : &#x27;fail&#x27;;
+    html += `&lt;div class=&quot;cards-grid&quot;&gt;
+      ${cap.cp !== null ? `&lt;div class=&quot;card ${cardClass(cap.cp)}&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;Cp&lt;/div&gt;&lt;div class=&quot;card-value&quot;&gt;${fmt(cap.cp)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;단기 정밀도&lt;/div&gt;&lt;/div&gt;` : &#x27;&#x27;}
+      ${cap.cpk !== null ? `&lt;div class=&quot;card ${cardClass(cap.cpk)}&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;Cpk&lt;/div&gt;&lt;div class=&quot;card-value&quot;&gt;${fmt(cap.cpk)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;단기 편차 포함&lt;/div&gt;&lt;/div&gt;` : &#x27;&#x27;}
+      ${cap.pp !== null ? `&lt;div class=&quot;card ${cardClass(cap.pp)}&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;Pp&lt;/div&gt;&lt;div class=&quot;card-value&quot;&gt;${fmt(cap.pp)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;장기 정밀도&lt;/div&gt;&lt;/div&gt;` : &#x27;&#x27;}
+      ${cap.ppk !== null ? `&lt;div class=&quot;card ${cardClass(cap.ppk)}&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;Ppk&lt;/div&gt;&lt;div class=&quot;card-value&quot;&gt;${fmt(cap.ppk)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;장기 편차 포함&lt;/div&gt;&lt;/div&gt;` : &#x27;&#x27;}
+      &lt;div class=&quot;card info&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;X̄ 평균&lt;/div&gt;&lt;div class=&quot;card-value&quot; style=&quot;font-size:18px&quot;&gt;${fmt4(cap.mean)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;n = ${cap.n}&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;card info&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;σ Overall&lt;/div&gt;&lt;div class=&quot;card-value&quot; style=&quot;font-size:18px&quot;&gt;${fmt4(cap.std)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;σ Within: ${fmt4(cap.sigmaWithin)}&lt;/div&gt;&lt;/div&gt;
+      ${cap.ppmTotal &gt; 0 ? `&lt;div class=&quot;card ${cap.ppmTotal &lt; 1000 ? &#x27;ok&#x27; : cap.ppmTotal &lt; 6210 ? &#x27;warn&#x27; : &#x27;fail&#x27;}&quot;&gt;&lt;div class=&quot;card-label&quot;&gt;PPM 불량&lt;/div&gt;&lt;div class=&quot;card-value&quot; style=&quot;font-size:18px&quot;&gt;${Math.round(cap.ppmTotal)}&lt;/div&gt;&lt;div class=&quot;card-sub&quot;&gt;추정 불량률&lt;/div&gt;&lt;/div&gt;` : &#x27;&#x27;}
+    &lt;/div&gt;`;
   }
 
-  if (tab === &apos;capability&apos;) {
-    html += `<div class="charts-grid">
-      <div class="chart-box">
-        <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-b)"></span>히스토그램 + 정규분포 곡선</div>
-        <canvas id="histChart" height="180"></canvas>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-p)"></span>정규확률도 (Normal Probability Plot)</div>
-        <canvas id="probChart" height="180"></canvas>
-      </div>
-    </div>`;
+  if (tab === &#x27;capability&#x27;) {
+    html += `&lt;div class=&quot;charts-grid&quot;&gt;
+      &lt;div class=&quot;chart-box&quot;&gt;
+        &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-b)&quot;&gt;&lt;/span&gt;히스토그램 + 정규분포 곡선&lt;/div&gt;
+        &lt;canvas id=&quot;histChart&quot; height=&quot;180&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-box&quot;&gt;
+        &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-p)&quot;&gt;&lt;/span&gt;정규확률도 (Normal Probability Plot)&lt;/div&gt;
+        &lt;canvas id=&quot;probChart&quot; height=&quot;180&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;`;
     html += buildCapabilityTable(cap, sw, usl, lsl, cpCriteria);
   }
 
-  if (tab === &apos;control&apos;) {
-    html += `<div class="charts-grid">
-      <div class="chart-box">
-        <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-b)"></span>X̄ 관리도</div>
-        <canvas id="xbarChart" height="180"></canvas>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-o)"></span>${chartType===&apos;i-mr&apos;?&apos;MR&apos;:&apos;Range / S&apos;} 관리도</div>
-        <canvas id="rChart" height="180"></canvas>
-      </div>
-    </div>`;
+  if (tab === &#x27;control&#x27;) {
+    html += `&lt;div class=&quot;charts-grid&quot;&gt;
+      &lt;div class=&quot;chart-box&quot;&gt;
+        &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-b)&quot;&gt;&lt;/span&gt;X̄ 관리도&lt;/div&gt;
+        &lt;canvas id=&quot;xbarChart&quot; height=&quot;180&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-box&quot;&gt;
+        &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-o)&quot;&gt;&lt;/span&gt;${chartType===&#x27;i-mr&#x27;?&#x27;MR&#x27;:&#x27;Range / S&#x27;} 관리도&lt;/div&gt;
+        &lt;canvas id=&quot;rChart&quot; height=&quot;180&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;`;
     html += buildControlTable(ctrl, chartType);
   }
 
-  if (tab === &apos;dist&apos;) {
-    html += `<div class="charts-grid">
-      <div class="chart-box">
-        <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-g)"></span>Box Plot</div>
-        <canvas id="boxChart" height="180"></canvas>
-      </div>
-      <div class="chart-box">
-        <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-y)"></span>런 차트 (개별값)</div>
-        <canvas id="runChart" height="180"></canvas>
-      </div>
-    </div>`;
+  if (tab === &#x27;dist&#x27;) {
+    html += `&lt;div class=&quot;charts-grid&quot;&gt;
+      &lt;div class=&quot;chart-box&quot;&gt;
+        &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-g)&quot;&gt;&lt;/span&gt;Box Plot&lt;/div&gt;
+        &lt;canvas id=&quot;boxChart&quot; height=&quot;180&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;chart-box&quot;&gt;
+        &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-y)&quot;&gt;&lt;/span&gt;런 차트 (개별값)&lt;/div&gt;
+        &lt;canvas id=&quot;runChart&quot; height=&quot;180&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;`;
     html += buildDistTable(cap, sw);
   }
 
-  if (tab === &apos;nelson&apos;) {
+  if (tab === &#x27;nelson&#x27;) {
     html += buildNelsonCards(nelson);
-    html += `<div class="chart-box" style="margin-bottom:16px">
-      <div class="chart-title"><span class="chart-title-dot" style="background:var(--accent-r)"></span>Nelson 규칙 적용 관리도</div>
-      <canvas id="nelsonChart" height="200"></canvas>
-    </div>`;
+    html += `&lt;div class=&quot;chart-box&quot; style=&quot;margin-bottom:16px&quot;&gt;
+      &lt;div class=&quot;chart-title&quot;&gt;&lt;span class=&quot;chart-title-dot&quot; style=&quot;background:var(--accent-r)&quot;&gt;&lt;/span&gt;Nelson 규칙 적용 관리도&lt;/div&gt;
+      &lt;canvas id=&quot;nelsonChart&quot; height=&quot;200&quot;&gt;&lt;/canvas&gt;
+    &lt;/div&gt;`;
   }
 
   el.innerHTML = html;
 
   // Draw charts after DOM update
-  requestAnimationFrame(() => {
-    if (tab === &apos;capability&apos;) {
+  requestAnimationFrame(() =&gt; {
+    if (tab === &#x27;capability&#x27;) {
       drawHistogram(cap, usl, lsl, target);
       drawProbPlot(state.data);
     }
-    if (tab === &apos;control&apos;) drawControlCharts(ctrl, chartType);
-    if (tab === &apos;dist&apos;) {
+    if (tab === &#x27;control&#x27;) drawControlCharts(ctrl, chartType);
+    if (tab === &#x27;dist&#x27;) {
       drawBoxPlot(state.data, usl, lsl);
       drawRunChart(state.data);
     }
-    if (tab === &apos;nelson&apos;) drawNelsonChart(ctrl, state.data, nelson);
+    if (tab === &#x27;nelson&#x27;) drawNelsonChart(ctrl, state.data, nelson);
   });
 }
 
 /* ═══════════════════════════════════════════════
    TABLE BUILDERS
 ═══════════════════════════════════════════════ */
-function fmt(v,d=3) { return v===null?&apos;—&apos;:v.toFixed(d); }
-function fmt4(v) { return v===null?&apos;—&apos;:v.toFixed(4); }
+function fmt(v,d=3) { return v===null?&#x27;—&#x27;:v.toFixed(d); }
+function fmt4(v) { return v===null?&#x27;—&#x27;:v.toFixed(4); }
 
 function passClass(v, crit) {
-  if (v === null) return &apos;&apos;;
-  return v >= crit ? &apos;td-ok&apos; : v >= 1.0 ? &apos;td-warn&apos; : &apos;td-fail&apos;;
+  if (v === null) return &#x27;&#x27;;
+  return v &gt;= crit ? &#x27;td-ok&#x27; : v &gt;= 1.0 ? &#x27;td-warn&#x27; : &#x27;td-fail&#x27;;
 }
 
 function buildCapabilityTable(cap, sw, usl, lsl, crit) {
-  return `<div class="table-box">
-    <div class="table-header">공정능력 분석 결과 (ISO 22514 기준)</div>
-    <table>
-      <thead><tr><th>항목</th><th>값</th><th>설명</th><th>판정</th></tr></thead>
-      <tbody>
-        <tr><td class="td-label">데이터 수 (n)</td><td>${cap.n}</td><td>분석에 사용된 측정값</td><td>—</td></tr>
-        <tr><td class="td-label">평균 (X̄)</td><td>${fmt4(cap.mean)}</td><td>산술 평균</td><td>—</td></tr>
-        <tr><td class="td-label">중앙값</td><td>${fmt4(cap.median)}</td><td>Median</td><td>—</td></tr>
-        <tr><td class="td-label">표준편차 Overall (σ)</td><td>${fmt4(cap.std)}</td><td>장기 변동 (n-1 기반)</td><td>—</td></tr>
-        <tr><td class="td-label">표준편차 Within (σ̂)</td><td>${fmt4(cap.sigmaWithin)}</td><td>단기 변동 (관리도 기반)</td><td>—</td></tr>
-        <tr><td class="td-label">왜도 (Skewness)</td><td>${fmt(cap.skew)}</td><td>±0.5 이내: 대칭</td><td class="${Math.abs(cap.skew)<0.5?&apos;td-ok&apos;:&apos;td-warn&apos;}">${Math.abs(cap.skew)<0.5?&apos;정상&apos;:&apos;비대칭&apos;}</td></tr>
-        <tr><td class="td-label">첨도 (Kurtosis)</td><td>${fmt(cap.kurt)}</td><td>0 기준 초과 첨도</td><td>—</td></tr>
-        ${cap.cp!==null?`<tr><td class="td-label">Cp</td><td class="${passClass(cap.cp,crit)}">${fmt(cap.cp)}</td><td>단기 정밀도 지수 (USL-LSL)/(6σ̂)</td><td class="${passClass(cap.cp,crit)}">${cap.cp>=crit?&apos;합격&apos;:cap.cp>=1?&apos;경고&apos;:&apos;불합격&apos;}</td></tr>`:&apos;&apos;}
-        ${cap.cpk!==null?`<tr><td class="td-label">Cpk</td><td class="${passClass(cap.cpk,crit)}">${fmt(cap.cpk)}</td><td>단기 능력 지수 (편차 보정)</td><td class="${passClass(cap.cpk,crit)}">${cap.cpk>=crit?&apos;합격&apos;:cap.cpk>=1?&apos;경고&apos;:&apos;불합격&apos;}</td></tr>`:&apos;&apos;}
-        ${cap.cpU!==null?`<tr><td class="td-label">CpU (상한측)</td><td>${fmt(cap.cpU)}</td><td>(USL-X̄)/(3σ̂)</td><td>—</td></tr>`:&apos;&apos;}
-        ${cap.cpL!==null?`<tr><td class="td-label">CpL (하한측)</td><td>${fmt(cap.cpL)}</td><td>(X̄-LSL)/(3σ̂)</td><td>—</td></tr>`:&apos;&apos;}
-        ${cap.pp!==null?`<tr><td class="td-label">Pp</td><td class="${passClass(cap.pp,crit)}">${fmt(cap.pp)}</td><td>장기 정밀도 지수 (USL-LSL)/(6σ)</td><td class="${passClass(cap.pp,crit)}">${cap.pp>=crit?&apos;합격&apos;:cap.pp>=1?&apos;경고&apos;:&apos;불합격&apos;}</td></tr>`:&apos;&apos;}
-        ${cap.ppk!==null?`<tr><td class="td-label">Ppk</td><td class="${passClass(cap.ppk,crit)}">${fmt(cap.ppk)}</td><td>장기 능력 지수 (편차 보정)</td><td class="${passClass(cap.ppk,crit)}">${cap.ppk>=crit?&apos;합격&apos;:cap.ppk>=1?&apos;경고&apos;:&apos;불합격&apos;}</td></tr>`:&apos;&apos;}
-        <tr><td class="td-label">추정 PPM (불량)</td><td class="${cap.ppmTotal<1000?&apos;td-ok&apos;:cap.ppmTotal<6210?&apos;td-warn&apos;:&apos;td-fail&apos;}">${Math.round(cap.ppmTotal)}</td><td>정규분포 가정 추정치</td><td>—</td></tr>
-        ${sw.W?`<tr><td class="td-label">Shapiro-Wilk W</td><td>${sw.W}</td><td>정규성 검정 (p=${sw.p})</td><td class="${sw.normal?&apos;td-ok&apos;:&apos;td-warn&apos;}">${sw.normal?&apos;정규분포&apos;:&apos;비정규&apos;}</td></tr>`:&apos;&apos;}
-      </tbody>
-    </table>
-  </div>`;
+  return `&lt;div class=&quot;table-box&quot;&gt;
+    &lt;div class=&quot;table-header&quot;&gt;공정능력 분석 결과 (ISO 22514 기준)&lt;/div&gt;
+    &lt;table&gt;
+      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;항목&lt;/th&gt;&lt;th&gt;값&lt;/th&gt;&lt;th&gt;설명&lt;/th&gt;&lt;th&gt;판정&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;데이터 수 (n)&lt;/td&gt;&lt;td&gt;${cap.n}&lt;/td&gt;&lt;td&gt;분석에 사용된 측정값&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;평균 (X̄)&lt;/td&gt;&lt;td&gt;${fmt4(cap.mean)}&lt;/td&gt;&lt;td&gt;산술 평균&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;중앙값&lt;/td&gt;&lt;td&gt;${fmt4(cap.median)}&lt;/td&gt;&lt;td&gt;Median&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;표준편차 Overall (σ)&lt;/td&gt;&lt;td&gt;${fmt4(cap.std)}&lt;/td&gt;&lt;td&gt;장기 변동 (n-1 기반)&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;표준편차 Within (σ̂)&lt;/td&gt;&lt;td&gt;${fmt4(cap.sigmaWithin)}&lt;/td&gt;&lt;td&gt;단기 변동 (관리도 기반)&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;왜도 (Skewness)&lt;/td&gt;&lt;td&gt;${fmt(cap.skew)}&lt;/td&gt;&lt;td&gt;±0.5 이내: 대칭&lt;/td&gt;&lt;td class=&quot;${Math.abs(cap.skew)&lt;0.5?&#x27;td-ok&#x27;:&#x27;td-warn&#x27;}&quot;&gt;${Math.abs(cap.skew)&lt;0.5?&#x27;정상&#x27;:&#x27;비대칭&#x27;}&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;첨도 (Kurtosis)&lt;/td&gt;&lt;td&gt;${fmt(cap.kurt)}&lt;/td&gt;&lt;td&gt;0 기준 초과 첨도&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        ${cap.cp!==null?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Cp&lt;/td&gt;&lt;td class=&quot;${passClass(cap.cp,crit)}&quot;&gt;${fmt(cap.cp)}&lt;/td&gt;&lt;td&gt;단기 정밀도 지수 (USL-LSL)/(6σ̂)&lt;/td&gt;&lt;td class=&quot;${passClass(cap.cp,crit)}&quot;&gt;${cap.cp&gt;=crit?&#x27;합격&#x27;:cap.cp&gt;=1?&#x27;경고&#x27;:&#x27;불합격&#x27;}&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+        ${cap.cpk!==null?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Cpk&lt;/td&gt;&lt;td class=&quot;${passClass(cap.cpk,crit)}&quot;&gt;${fmt(cap.cpk)}&lt;/td&gt;&lt;td&gt;단기 능력 지수 (편차 보정)&lt;/td&gt;&lt;td class=&quot;${passClass(cap.cpk,crit)}&quot;&gt;${cap.cpk&gt;=crit?&#x27;합격&#x27;:cap.cpk&gt;=1?&#x27;경고&#x27;:&#x27;불합격&#x27;}&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+        ${cap.cpU!==null?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;CpU (상한측)&lt;/td&gt;&lt;td&gt;${fmt(cap.cpU)}&lt;/td&gt;&lt;td&gt;(USL-X̄)/(3σ̂)&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+        ${cap.cpL!==null?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;CpL (하한측)&lt;/td&gt;&lt;td&gt;${fmt(cap.cpL)}&lt;/td&gt;&lt;td&gt;(X̄-LSL)/(3σ̂)&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+        ${cap.pp!==null?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Pp&lt;/td&gt;&lt;td class=&quot;${passClass(cap.pp,crit)}&quot;&gt;${fmt(cap.pp)}&lt;/td&gt;&lt;td&gt;장기 정밀도 지수 (USL-LSL)/(6σ)&lt;/td&gt;&lt;td class=&quot;${passClass(cap.pp,crit)}&quot;&gt;${cap.pp&gt;=crit?&#x27;합격&#x27;:cap.pp&gt;=1?&#x27;경고&#x27;:&#x27;불합격&#x27;}&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+        ${cap.ppk!==null?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Ppk&lt;/td&gt;&lt;td class=&quot;${passClass(cap.ppk,crit)}&quot;&gt;${fmt(cap.ppk)}&lt;/td&gt;&lt;td&gt;장기 능력 지수 (편차 보정)&lt;/td&gt;&lt;td class=&quot;${passClass(cap.ppk,crit)}&quot;&gt;${cap.ppk&gt;=crit?&#x27;합격&#x27;:cap.ppk&gt;=1?&#x27;경고&#x27;:&#x27;불합격&#x27;}&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+        &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;추정 PPM (불량)&lt;/td&gt;&lt;td class=&quot;${cap.ppmTotal&lt;1000?&#x27;td-ok&#x27;:cap.ppmTotal&lt;6210?&#x27;td-warn&#x27;:&#x27;td-fail&#x27;}&quot;&gt;${Math.round(cap.ppmTotal)}&lt;/td&gt;&lt;td&gt;정규분포 가정 추정치&lt;/td&gt;&lt;td&gt;—&lt;/td&gt;&lt;/tr&gt;
+        ${sw.W?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Shapiro-Wilk W&lt;/td&gt;&lt;td&gt;${sw.W}&lt;/td&gt;&lt;td&gt;정규성 검정 (p=${sw.p})&lt;/td&gt;&lt;td class=&quot;${sw.normal?&#x27;td-ok&#x27;:&#x27;td-warn&#x27;}&quot;&gt;${sw.normal?&#x27;정규분포&#x27;:&#x27;비정규&#x27;}&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;`;
 }
 
 function buildControlTable(ctrl, chartType) {
   const rows = [];
-  if (chartType === &apos;i-mr&apos;) {
-    rows.push([&apos;X̄ (개별값 평균)&apos;, fmt4(ctrl.xBar)]);
-    rows.push([&apos;MR̄ (평균 이동범위)&apos;, fmt4(ctrl.mrBar)]);
-    rows.push([&apos;X UCL&apos;, fmt4(ctrl.xUCL)]);
-    rows.push([&apos;X LCL&apos;, fmt4(ctrl.xLCL)]);
-    rows.push([&apos;MR UCL&apos;, fmt4(ctrl.mrUCL)]);
-  } else if (chartType === &apos;xbar-s&apos;) {
-    rows.push([&apos;X̄̄ (총평균)&apos;, fmt4(ctrl.xbarBar)]);
-    rows.push([&apos;S̄ (평균표준편차)&apos;, fmt4(ctrl.sBar)]);
-    rows.push([&apos;X̄ UCL&apos;, fmt4(ctrl.xUCL)]);
-    rows.push([&apos;X̄ LCL&apos;, fmt4(ctrl.xLCL)]);
-    rows.push([&apos;S UCL&apos;, fmt4(ctrl.sUCL)]);
-    rows.push([&apos;S LCL&apos;, fmt4(ctrl.sLCL)]);
+  if (chartType === &#x27;i-mr&#x27;) {
+    rows.push([&#x27;X̄ (개별값 평균)&#x27;, fmt4(ctrl.xBar)]);
+    rows.push([&#x27;MR̄ (평균 이동범위)&#x27;, fmt4(ctrl.mrBar)]);
+    rows.push([&#x27;X UCL&#x27;, fmt4(ctrl.xUCL)]);
+    rows.push([&#x27;X LCL&#x27;, fmt4(ctrl.xLCL)]);
+    rows.push([&#x27;MR UCL&#x27;, fmt4(ctrl.mrUCL)]);
+  } else if (chartType === &#x27;xbar-s&#x27;) {
+    rows.push([&#x27;X̄̄ (총평균)&#x27;, fmt4(ctrl.xbarBar)]);
+    rows.push([&#x27;S̄ (평균표준편차)&#x27;, fmt4(ctrl.sBar)]);
+    rows.push([&#x27;X̄ UCL&#x27;, fmt4(ctrl.xUCL)]);
+    rows.push([&#x27;X̄ LCL&#x27;, fmt4(ctrl.xLCL)]);
+    rows.push([&#x27;S UCL&#x27;, fmt4(ctrl.sUCL)]);
+    rows.push([&#x27;S LCL&#x27;, fmt4(ctrl.sLCL)]);
   } else {
-    rows.push([&apos;X̄̄ (총평균)&apos;, fmt4(ctrl.xbarBar)]);
-    rows.push([&apos;R̄ (평균범위)&apos;, fmt4(ctrl.rBar)]);
-    rows.push([&apos;X̄ UCL&apos;, fmt4(ctrl.xUCL)]);
-    rows.push([&apos;X̄ LCL&apos;, fmt4(ctrl.xLCL)]);
-    rows.push([&apos;R UCL&apos;, fmt4(ctrl.rUCL)]);
-    rows.push([&apos;R LCL&apos;, fmt4(ctrl.rLCL)]);
+    rows.push([&#x27;X̄̄ (총평균)&#x27;, fmt4(ctrl.xbarBar)]);
+    rows.push([&#x27;R̄ (평균범위)&#x27;, fmt4(ctrl.rBar)]);
+    rows.push([&#x27;X̄ UCL&#x27;, fmt4(ctrl.xUCL)]);
+    rows.push([&#x27;X̄ LCL&#x27;, fmt4(ctrl.xLCL)]);
+    rows.push([&#x27;R UCL&#x27;, fmt4(ctrl.rUCL)]);
+    rows.push([&#x27;R LCL&#x27;, fmt4(ctrl.rLCL)]);
   }
-  rows.push([&apos;σ Within&apos;, fmt4(ctrl.sigmaWithin)]);
-  return `<div class="table-box">
-    <div class="table-header">관리도 통계량</div>
-    <table><thead><tr><th>항목</th><th>값</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr><td class="td-label">${r[0]}</td><td>${r[1]}</td></tr>`).join(&apos;&apos;)}</tbody>
-    </table></div>`;
+  rows.push([&#x27;σ Within&#x27;, fmt4(ctrl.sigmaWithin)]);
+  return `&lt;div class=&quot;table-box&quot;&gt;
+    &lt;div class=&quot;table-header&quot;&gt;관리도 통계량&lt;/div&gt;
+    &lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;항목&lt;/th&gt;&lt;th&gt;값&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+    &lt;tbody&gt;${rows.map(r=&gt;`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;${r[0]}&lt;/td&gt;&lt;td&gt;${r[1]}&lt;/td&gt;&lt;/tr&gt;`).join(&#x27;&#x27;)}&lt;/tbody&gt;
+    &lt;/table&gt;&lt;/div&gt;`;
 }
 
 function buildDistTable(cap, sw) {
-  return `<div class="table-box">
-    <div class="table-header">기초 통계량</div>
-    <table><thead><tr><th>항목</th><th>값</th></tr></thead>
-    <tbody>
-      <tr><td class="td-label">최솟값</td><td>${fmt4(cap.min)}</td></tr>
-      <tr><td class="td-label">Q1 (25%)</td><td>${fmt4(quantile(state.data,.25))}</td></tr>
-      <tr><td class="td-label">중앙값</td><td>${fmt4(cap.median)}</td></tr>
-      <tr><td class="td-label">Q3 (75%)</td><td>${fmt4(quantile(state.data,.75))}</td></tr>
-      <tr><td class="td-label">최댓값</td><td>${fmt4(cap.max)}</td></tr>
-      <tr><td class="td-label">범위 (Range)</td><td>${fmt4(cap.max-cap.min)}</td></tr>
-      <tr><td class="td-label">IQR</td><td>${fmt4(quantile(state.data,.75)-quantile(state.data,.25))}</td></tr>
-      <tr><td class="td-label">분산 (Variance)</td><td>${fmt4(cap.variance)}</td></tr>
-      <tr><td class="td-label">왜도</td><td>${fmt(cap.skew)}</td></tr>
-      <tr><td class="td-label">초과첨도</td><td>${fmt(cap.kurt)}</td></tr>
-      ${sw.W?`<tr><td class="td-label">Shapiro-Wilk W</td><td>${sw.W} (p=${sw.p})</td></tr>`:&apos;&apos;}
-    </tbody></table></div>`;
+  return `&lt;div class=&quot;table-box&quot;&gt;
+    &lt;div class=&quot;table-header&quot;&gt;기초 통계량&lt;/div&gt;
+    &lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;항목&lt;/th&gt;&lt;th&gt;값&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;최솟값&lt;/td&gt;&lt;td&gt;${fmt4(cap.min)}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Q1 (25%)&lt;/td&gt;&lt;td&gt;${fmt4(quantile(state.data,.25))}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;중앙값&lt;/td&gt;&lt;td&gt;${fmt4(cap.median)}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Q3 (75%)&lt;/td&gt;&lt;td&gt;${fmt4(quantile(state.data,.75))}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;최댓값&lt;/td&gt;&lt;td&gt;${fmt4(cap.max)}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;범위 (Range)&lt;/td&gt;&lt;td&gt;${fmt4(cap.max-cap.min)}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;IQR&lt;/td&gt;&lt;td&gt;${fmt4(quantile(state.data,.75)-quantile(state.data,.25))}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;분산 (Variance)&lt;/td&gt;&lt;td&gt;${fmt4(cap.variance)}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;왜도&lt;/td&gt;&lt;td&gt;${fmt(cap.skew)}&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;초과첨도&lt;/td&gt;&lt;td&gt;${fmt(cap.kurt)}&lt;/td&gt;&lt;/tr&gt;
+      ${sw.W?`&lt;tr&gt;&lt;td class=&quot;td-label&quot;&gt;Shapiro-Wilk W&lt;/td&gt;&lt;td&gt;${sw.W} (p=${sw.p})&lt;/td&gt;&lt;/tr&gt;`:&#x27;&#x27;}
+    &lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;`;
 }
 
 function buildNelsonCards(nelson) {
   const names = [
-    [&apos;규칙 1&apos;,&apos;3σ 이탈 — 1점이 관리한계 밖&apos;],
-    [&apos;규칙 2&apos;,&apos;9점 연속 — 중심선 한쪽&apos;],
-    [&apos;규칙 3&apos;,&apos;6점 연속 — 단조 증가/감소&apos;],
-    [&apos;규칙 4&apos;,&apos;14점 교대 — 지그재그 패턴&apos;],
-    [&apos;규칙 5&apos;,&apos;2/3점이 2σ 이상 (같은 쪽)&apos;],
-    [&apos;규칙 6&apos;,&apos;4/5점이 1σ 이상 (같은 쪽)&apos;],
-    [&apos;규칙 7&apos;,&apos;15점이 ±1σ 이내&apos;],
-    [&apos;규칙 8&apos;,&apos;8점이 모두 ±1σ 밖&apos;]
+    [&#x27;규칙 1&#x27;,&#x27;3σ 이탈 — 1점이 관리한계 밖&#x27;],
+    [&#x27;규칙 2&#x27;,&#x27;9점 연속 — 중심선 한쪽&#x27;],
+    [&#x27;규칙 3&#x27;,&#x27;6점 연속 — 단조 증가/감소&#x27;],
+    [&#x27;규칙 4&#x27;,&#x27;14점 교대 — 지그재그 패턴&#x27;],
+    [&#x27;규칙 5&#x27;,&#x27;2/3점이 2σ 이상 (같은 쪽)&#x27;],
+    [&#x27;규칙 6&#x27;,&#x27;4/5점이 1σ 이상 (같은 쪽)&#x27;],
+    [&#x27;규칙 7&#x27;,&#x27;15점이 ±1σ 이내&#x27;],
+    [&#x27;규칙 8&#x27;,&#x27;8점이 모두 ±1σ 밖&#x27;]
   ];
-  return `<div class="nelson-grid">
-    ${names.map((nm,i)=>`<div class="nelson-card ${nelson[i]?&apos;triggered&apos;:&apos;ok&apos;}">
-      <div class="nelson-num">${nm[0]}</div>
-      <div class="nelson-name">${nm[1]}</div>
-      <div class="nelson-status">${nelson[i]?&apos;⚠ 위반&apos;:&apos;✓ 정상&apos;}</div>
-    </div>`).join(&apos;&apos;)}
-  </div>`;
+  return `&lt;div class=&quot;nelson-grid&quot;&gt;
+    ${names.map((nm,i)=&gt;`&lt;div class=&quot;nelson-card ${nelson[i]?&#x27;triggered&#x27;:&#x27;ok&#x27;}&quot;&gt;
+      &lt;div class=&quot;nelson-num&quot;&gt;${nm[0]}&lt;/div&gt;
+      &lt;div class=&quot;nelson-name&quot;&gt;${nm[1]}&lt;/div&gt;
+      &lt;div class=&quot;nelson-status&quot;&gt;${nelson[i]?&#x27;⚠ 위반&#x27;:&#x27;✓ 정상&#x27;}&lt;/div&gt;
+    &lt;/div&gt;`).join(&#x27;&#x27;)}
+  &lt;/div&gt;`;
 }
 
 function quantile(arr, q) {
-  const sorted = [...arr].sort((a,b)=>a-b);
+  const sorted = [...arr].sort((a,b)=&gt;a-b);
   const pos = (sorted.length-1)*q;
   const lo = Math.floor(pos), hi = Math.ceil(pos);
   return sorted[lo]+(sorted[hi]-sorted[lo])*(pos-lo);
@@ -2217,9 +2218,9 @@ function getCanvasCtx(id) {
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width * dpr;
   canvas.height = canvas.height * dpr || 200 * dpr;
-  canvas.style.width = rect.width + &apos;px&apos;;
-  canvas.style.height = (canvas.height/dpr) + &apos;px&apos;;
-  const ctx = canvas.getContext(&apos;2d&apos;);
+  canvas.style.width = rect.width + &#x27;px&#x27;;
+  canvas.style.height = (canvas.height/dpr) + &#x27;px&#x27;;
+  const ctx = canvas.getContext(&#x27;2d&#x27;);
   ctx.scale(dpr, dpr);
   ctx.W = rect.width;
   ctx.H = canvas.height / dpr;
@@ -2227,21 +2228,21 @@ function getCanvasCtx(id) {
 }
 
 const C = {
-  bg: &apos;#181b22&apos;, grid: &apos;#2a3040&apos;, text: &apos;#6a7890&apos;,
-  text1: &apos;#a8b4cc&apos;, accent: &apos;#2d8cf0&apos;, green: &apos;#19c97d&apos;,
-  red: &apos;#f05050&apos;, yellow: &apos;#f5c842&apos;, purple: &apos;#a78bfa&apos;,
-  orange: &apos;#fb923c&apos;
+  bg: &#x27;#181b22&#x27;, grid: &#x27;#2a3040&#x27;, text: &#x27;#6a7890&#x27;,
+  text1: &#x27;#a8b4cc&#x27;, accent: &#x27;#2d8cf0&#x27;, green: &#x27;#19c97d&#x27;,
+  red: &#x27;#f05050&#x27;, yellow: &#x27;#f5c842&#x27;, purple: &#x27;#a78bfa&#x27;,
+  orange: &#x27;#fb923c&#x27;
 };
 
 function drawGrid(ctx, pad, minY, maxY, steps=5) {
   const W=ctx.W, H=ctx.H;
   ctx.strokeStyle = C.grid; ctx.lineWidth = .5;
-  for(let i=0;i<=steps;i++) {
+  for(let i=0;i&lt;=steps;i++) {
     const y = pad.t + (H-pad.t-pad.b)*i/steps;
     ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
     const val = maxY - (maxY-minY)*i/steps;
-    ctx.fillStyle = C.text; ctx.font = &apos;9px IBM Plex Mono, monospace&apos;;
-    ctx.textAlign = &apos;right&apos;; ctx.fillText(val.toFixed(3), pad.l-3, y+3);
+    ctx.fillStyle = C.text; ctx.font = &#x27;9px IBM Plex Mono, monospace&#x27;;
+    ctx.textAlign = &#x27;right&#x27;; ctx.fillText(val.toFixed(3), pad.l-3, y+3);
   }
 }
 
@@ -2254,7 +2255,7 @@ function idxToX(i, n, W, pad) {
 
 /* Histogram */
 function drawHistogram(cap, usl, lsl, target) {
-  const ctx = getCanvasCtx(&apos;histChart&apos;);
+  const ctx = getCanvasCtx(&#x27;histChart&#x27;);
   if (!ctx) return;
   const data = state.data;
   const W=ctx.W, H=ctx.H, pad={t:15,r:15,b:25,l:45};
@@ -2269,25 +2270,25 @@ function drawHistogram(cap, usl, lsl, target) {
   const rangeMax = Math.max(dmax, uslV) + ext;
   const bw = (rangeMax-rangeMin)/bins;
   const counts = Array(bins).fill(0);
-  data.forEach(v => { const i=Math.min(bins-1,Math.floor((v-rangeMin)/bw)); counts[i]++; });
+  data.forEach(v =&gt; { const i=Math.min(bins-1,Math.floor((v-rangeMin)/bw)); counts[i]++; });
   const maxCount = Math.max(...counts);
 
   // Bars
   const barW = (W-pad.l-pad.r)/bins;
-  counts.forEach((c,i) => {
+  counts.forEach((c,i) =&gt; {
     const x = pad.l + barW*i;
     const barH = (H-pad.t-pad.b)*(c/maxCount);
     const y = H-pad.b-barH;
     const centerVal = rangeMin + bw*(i+0.5);
-    const inSpec = (lsl===null||centerVal>=lsl) && (usl===null||centerVal<=usl);
-    ctx.fillStyle = inSpec ? &apos;rgba(45,140,240,0.7)&apos; : &apos;rgba(240,80,80,0.7)&apos;;
+    const inSpec = (lsl===null||centerVal&gt;=lsl) &amp;&amp; (usl===null||centerVal&lt;=usl);
+    ctx.fillStyle = inSpec ? &#x27;rgba(45,140,240,0.7)&#x27; : &#x27;rgba(240,80,80,0.7)&#x27;;
     ctx.fillRect(x+1, y, barW-2, barH);
   });
 
   // Normal curve
   const pts = 100;
   ctx.beginPath(); ctx.strokeStyle = C.green; ctx.lineWidth = 2;
-  for(let i=0;i<=pts;i++) {
+  for(let i=0;i&lt;=pts;i++) {
     const x = rangeMin + (rangeMax-rangeMin)*i/pts;
     const y_pdf = normalPDF(x, cap.mean, cap.std) * data.length * bw;
     const px = pad.l + (x-rangeMin)/(rangeMax-rangeMin)*(W-pad.l-pad.r);
@@ -2297,23 +2298,23 @@ function drawHistogram(cap, usl, lsl, target) {
   ctx.stroke();
 
   // Spec lines
-  const drawVLine = (v, color, label) => {
+  const drawVLine = (v, color, label) =&gt; {
     if (v === null) return;
     const px = pad.l + (v-rangeMin)/(rangeMax-rangeMin)*(W-pad.l-pad.r);
     ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1.5;
     ctx.setLineDash([4,3]); ctx.moveTo(px,pad.t); ctx.lineTo(px,H-pad.b); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = color; ctx.font = &apos;bold 9px IBM Plex Mono, monospace&apos;;
-    ctx.textAlign = &apos;center&apos;; ctx.fillText(label, px, pad.t+8);
+    ctx.fillStyle = color; ctx.font = &#x27;bold 9px IBM Plex Mono, monospace&#x27;;
+    ctx.textAlign = &#x27;center&#x27;; ctx.fillText(label, px, pad.t+8);
   };
-  drawVLine(usl, C.red, &apos;USL&apos;);
-  drawVLine(lsl, C.red, &apos;LSL&apos;);
-  drawVLine(target, C.yellow, &apos;TGT&apos;);
-  drawVLine(cap.mean, C.accent, &apos;X̄&apos;);
+  drawVLine(usl, C.red, &#x27;USL&#x27;);
+  drawVLine(lsl, C.red, &#x27;LSL&#x27;);
+  drawVLine(target, C.yellow, &#x27;TGT&#x27;);
+  drawVLine(cap.mean, C.accent, &#x27;X̄&#x27;);
 
   // X-axis labels
-  ctx.fillStyle=C.text; ctx.font=&apos;9px IBM Plex Mono,monospace&apos;; ctx.textAlign=&apos;center&apos;;
-  for(let i=0;i<=4;i++) {
+  ctx.fillStyle=C.text; ctx.font=&#x27;9px IBM Plex Mono,monospace&#x27;; ctx.textAlign=&#x27;center&#x27;;
+  for(let i=0;i&lt;=4;i++) {
     const v = rangeMin+(rangeMax-rangeMin)*i/4;
     const px = pad.l+(W-pad.l-pad.r)*i/4;
     ctx.fillText(v.toFixed(2), px, H-pad.b+12);
@@ -2322,15 +2323,15 @@ function drawHistogram(cap, usl, lsl, target) {
 
 /* Probability Plot */
 function drawProbPlot(data) {
-  const ctx = getCanvasCtx(&apos;probChart&apos;);
+  const ctx = getCanvasCtx(&#x27;probChart&#x27;);
   if (!ctx) return;
   const W=ctx.W, H=ctx.H, pad={t:15,r:20,b:30,l:50};
   ctx.fillStyle = C.bg; ctx.fillRect(0,0,W,H);
 
-  const sorted = [...data].sort((a,b)=>a-b);
+  const sorted = [...data].sort((a,b)=&gt;a-b);
   const n = sorted.length;
-  const probs = sorted.map((_,i) => (i+0.5)/n);
-  const zScores = probs.map(p => probit(p));
+  const probs = sorted.map((_,i) =&gt; (i+0.5)/n);
+  const zScores = probs.map(p =&gt; probit(p));
 
   const minX=Math.min(...zScores), maxX=Math.max(...zScores);
   const minY=sorted[0], maxY=sorted[n-1];
@@ -2339,7 +2340,7 @@ function drawProbPlot(data) {
 
   // Reference line (theoretical)
   const s = stats(data);
-  ctx.beginPath(); ctx.strokeStyle=&apos;rgba(45,140,240,0.5)&apos;; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.strokeStyle=&#x27;rgba(45,140,240,0.5)&#x27;; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
   const x1=pad.l, x2=W-pad.r;
   const v1=s.mean+minX*s.std, v2=s.mean+maxX*s.std;
   ctx.moveTo(x1, dataToY(v1,minY,maxY,H,pad));
@@ -2347,7 +2348,7 @@ function drawProbPlot(data) {
   ctx.stroke(); ctx.setLineDash([]);
 
   // Points
-  sorted.forEach((v,i) => {
+  sorted.forEach((v,i) =&gt; {
     const px = pad.l+(zScores[i]-minX)/(maxX-minX)*(W-pad.l-pad.r);
     const py = dataToY(v,minY,maxY,H,pad);
     ctx.beginPath(); ctx.arc(px,py,2.5,0,2*Math.PI);
@@ -2355,30 +2356,30 @@ function drawProbPlot(data) {
   });
 
   // X-axis
-  ctx.fillStyle=C.text; ctx.font=&apos;9px IBM Plex Mono,monospace&apos;; ctx.textAlign=&apos;center&apos;;
-  [-3,-2,-1,0,1,2,3].forEach(z => {
-    if(z<minX||z>maxX) return;
+  ctx.fillStyle=C.text; ctx.font=&#x27;9px IBM Plex Mono,monospace&#x27;; ctx.textAlign=&#x27;center&#x27;;
+  [-3,-2,-1,0,1,2,3].forEach(z =&gt; {
+    if(z&lt;minX||z&gt;maxX) return;
     const px=pad.l+(z-minX)/(maxX-minX)*(W-pad.l-pad.r);
     ctx.fillText(z, px, H-pad.b+12);
   });
-  ctx.fillStyle=C.text1; ctx.font=&apos;10px IBM Plex Mono,monospace&apos;;
-  ctx.fillText(&apos;Normal Score (Z)&apos;, W/2, H-2);
+  ctx.fillStyle=C.text1; ctx.font=&#x27;10px IBM Plex Mono,monospace&#x27;;
+  ctx.fillText(&#x27;Normal Score (Z)&#x27;, W/2, H-2);
 }
 
 /* Control Charts */
 function drawControlCharts(ctrl, chartType) {
-  drawLineChart(&apos;xbarChart&apos;, {
+  drawLineChart(&#x27;xbarChart&#x27;, {
     values: ctrl.xbars || ctrl.values,
     ucl: ctrl.xUCL, lcl: ctrl.xLCL,
     cl: ctrl.xbarBar || ctrl.xBar,
-    color: C.accent, label: &apos;X̄&apos;
+    color: C.accent, label: &#x27;X̄&#x27;
   });
-  drawLineChart(&apos;rChart&apos;, {
+  drawLineChart(&#x27;rChart&#x27;, {
     values: ctrl.ranges || ctrl.stds || ctrl.mrs,
     ucl: ctrl.rUCL || ctrl.sUCL || ctrl.mrUCL,
     lcl: ctrl.rLCL || ctrl.sLCL || ctrl.mrLCL,
     cl: ctrl.rBar || ctrl.sBar || ctrl.mrBar,
-    color: C.orange, label: &apos;R&apos;
+    color: C.orange, label: &#x27;R&#x27;
   });
 }
 
@@ -2389,45 +2390,45 @@ function drawLineChart(id, opts) {
   const W=ctx.W, H=ctx.H, pad={t:20,r:20,b:25,l:55};
   ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
 
-  const allV = [...values, ucl, lcl].filter(v=>v!==undefined&&!isNaN(v));
+  const allV = [...values, ucl, lcl].filter(v=&gt;v!==undefined&amp;&amp;!isNaN(v));
   const minY = Math.min(...allV)*0.995, maxY = Math.max(...allV)*1.005;
 
   drawGrid(ctx, pad, minY, maxY, 4);
 
   // UCL / CL / LCL lines
-  const hline = (v, color, dash=[]) => {
+  const hline = (v, color, dash=[]) =&gt; {
     if(v===undefined||isNaN(v)) return;
     const py = dataToY(v,minY,maxY,H,pad);
     ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1;
     ctx.setLineDash(dash); ctx.moveTo(pad.l,py); ctx.lineTo(W-pad.r,py); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle=color; ctx.font=&apos;9px IBM Plex Mono,monospace&apos;;
-    ctx.textAlign=&apos;left&apos;; ctx.fillText(v.toFixed(3), W-pad.r+2, py+3);
+    ctx.fillStyle=color; ctx.font=&#x27;9px IBM Plex Mono,monospace&#x27;;
+    ctx.textAlign=&#x27;left&#x27;; ctx.fillText(v.toFixed(3), W-pad.r+2, py+3);
   };
   hline(ucl, C.red, [4,3]);
   hline(lcl, C.red, [4,3]);
-  hline(cl, &apos;rgba(45,140,240,0.6)&apos;);
+  hline(cl, &#x27;rgba(45,140,240,0.6)&#x27;);
 
   // Line
   ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.5;
-  values.forEach((v,i) => {
+  values.forEach((v,i) =&gt; {
     const px=idxToX(i,values.length,W,pad), py=dataToY(v,minY,maxY,H,pad);
     i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
   });
   ctx.stroke();
 
   // Points
-  values.forEach((v,i) => {
+  values.forEach((v,i) =&gt; {
     const px=idxToX(i,values.length,W,pad), py=dataToY(v,minY,maxY,H,pad);
-    const outOfCtrl = (ucl!==undefined&&v>ucl)||(lcl!==undefined&&v<lcl);
+    const outOfCtrl = (ucl!==undefined&amp;&amp;v&gt;ucl)||(lcl!==undefined&amp;&amp;v&lt;lcl);
     ctx.beginPath(); ctx.arc(px,py,3,0,2*Math.PI);
     ctx.fillStyle=outOfCtrl?C.red:color; ctx.fill();
   });
 
   // X labels
-  ctx.fillStyle=C.text; ctx.font=&apos;9px IBM Plex Mono,monospace&apos;; ctx.textAlign=&apos;center&apos;;
+  ctx.fillStyle=C.text; ctx.font=&#x27;9px IBM Plex Mono,monospace&#x27;; ctx.textAlign=&#x27;center&#x27;;
   const step=Math.max(1,Math.floor(values.length/8));
-  values.forEach((_,i) => {
+  values.forEach((_,i) =&gt; {
     if(i%step===0) {
       ctx.fillText(i+1, idxToX(i,values.length,W,pad), H-pad.b+12);
     }
@@ -2436,29 +2437,29 @@ function drawLineChart(id, opts) {
 
 /* Box Plot */
 function drawBoxPlot(data, usl, lsl) {
-  const ctx = getCanvasCtx(&apos;boxChart&apos;);
+  const ctx = getCanvasCtx(&#x27;boxChart&#x27;);
   if (!ctx) return;
   const W=ctx.W, H=ctx.H, pad={t:20,r:30,b:30,l:55};
   ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
 
-  const sorted=[...data].sort((a,b)=>a-b);
+  const sorted=[...data].sort((a,b)=&gt;a-b);
   const q1=quantile(data,.25), q3=quantile(data,.75);
   const med=quantile(data,.5);
   const iqr=q3-q1;
   const wisLo=Math.max(sorted[0],q1-1.5*iqr);
   const wisHi=Math.min(sorted[sorted.length-1],q3+1.5*iqr);
-  const outliers=data.filter(v=>v<wisLo||v>wisHi);
+  const outliers=data.filter(v=&gt;v&lt;wisLo||v&gt;wisHi);
 
-  const all=[...data, usl, lsl].filter(v=>v!==undefined&&v!==null&&!isNaN(v));
+  const all=[...data, usl, lsl].filter(v=&gt;v!==undefined&amp;&amp;v!==null&amp;&amp;!isNaN(v));
   const minY=Math.min(...all)-iqr*.3, maxY=Math.max(...all)+iqr*.3;
 
   drawGrid(ctx, pad, minY, maxY, 5);
 
   const cx=(W+pad.l-pad.r)/2, bw=Math.min(80,(W-pad.l-pad.r)*0.4);
-  const toY=v=>dataToY(v,minY,maxY,H,pad);
+  const toY=v=&gt;dataToY(v,minY,maxY,H,pad);
 
   // Box
-  ctx.fillStyle=&apos;rgba(45,140,240,0.15)&apos;;
+  ctx.fillStyle=&#x27;rgba(45,140,240,0.15)&#x27;;
   ctx.fillRect(cx-bw/2, toY(q3), bw, toY(q1)-toY(q3));
   ctx.strokeStyle=C.accent; ctx.lineWidth=1.5;
   ctx.strokeRect(cx-bw/2, toY(q3), bw, toY(q1)-toY(q3));
@@ -2475,7 +2476,7 @@ function drawBoxPlot(data, usl, lsl) {
   ctx.beginPath(); ctx.moveTo(cx-bw/5,toY(wisHi)); ctx.lineTo(cx+bw/5,toY(wisHi)); ctx.stroke();
 
   // Outliers
-  outliers.forEach(v => {
+  outliers.forEach(v =&gt; {
     ctx.beginPath(); ctx.arc(cx,toY(v),4,0,2*Math.PI);
     ctx.fillStyle=C.red; ctx.fill();
   });
@@ -2483,15 +2484,15 @@ function drawBoxPlot(data, usl, lsl) {
   // Spec lines
   if(usl!==null){ const py=toY(usl); ctx.strokeStyle=C.red; ctx.lineWidth=1; ctx.setLineDash([4,3]);
     ctx.beginPath(); ctx.moveTo(pad.l,py); ctx.lineTo(W-pad.r,py); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=C.red; ctx.font=&apos;9px IBM Plex Mono&apos;; ctx.textAlign=&apos;left&apos;; ctx.fillText(&apos;USL&apos;,W-pad.r+2,py+3); }
+    ctx.fillStyle=C.red; ctx.font=&#x27;9px IBM Plex Mono&#x27;; ctx.textAlign=&#x27;left&#x27;; ctx.fillText(&#x27;USL&#x27;,W-pad.r+2,py+3); }
   if(lsl!==null){ const py=toY(lsl); ctx.strokeStyle=C.red; ctx.lineWidth=1; ctx.setLineDash([4,3]);
     ctx.beginPath(); ctx.moveTo(pad.l,py); ctx.lineTo(W-pad.r,py); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=C.red; ctx.font=&apos;9px IBM Plex Mono&apos;; ctx.textAlign=&apos;left&apos;; ctx.fillText(&apos;LSL&apos;,W-pad.r+2,py+3); }
+    ctx.fillStyle=C.red; ctx.font=&#x27;9px IBM Plex Mono&#x27;; ctx.textAlign=&#x27;left&#x27;; ctx.fillText(&#x27;LSL&#x27;,W-pad.r+2,py+3); }
 }
 
 /* Run Chart */
 function drawRunChart(data) {
-  const ctx = getCanvasCtx(&apos;runChart&apos;);
+  const ctx = getCanvasCtx(&#x27;runChart&#x27;);
   if (!ctx) return;
   const W=ctx.W, H=ctx.H, pad={t:15,r:20,b:25,l:55};
   ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
@@ -2500,19 +2501,19 @@ function drawRunChart(data) {
   drawGrid(ctx, pad, minY, maxY, 4);
   // Mean line
   const mpy=dataToY(s.mean,minY,maxY,H,pad);
-  ctx.beginPath(); ctx.strokeStyle=&apos;rgba(45,140,240,0.5)&apos;; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.strokeStyle=&#x27;rgba(45,140,240,0.5)&#x27;; ctx.lineWidth=1;
   ctx.moveTo(pad.l,mpy); ctx.lineTo(W-pad.r,mpy); ctx.stroke();
   // Data line
   ctx.beginPath(); ctx.strokeStyle=C.yellow; ctx.lineWidth=1;
-  data.forEach((v,i)=>{ const px=idxToX(i,data.length,W,pad),py=dataToY(v,minY,maxY,H,pad); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  data.forEach((v,i)=&gt;{ const px=idxToX(i,data.length,W,pad),py=dataToY(v,minY,maxY,H,pad); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
   ctx.stroke();
-  data.forEach((v,i)=>{ const px=idxToX(i,data.length,W,pad),py=dataToY(v,minY,maxY,H,pad);
+  data.forEach((v,i)=&gt;{ const px=idxToX(i,data.length,W,pad),py=dataToY(v,minY,maxY,H,pad);
     ctx.beginPath(); ctx.arc(px,py,2,0,2*Math.PI); ctx.fillStyle=C.yellow; ctx.fill(); });
 }
 
 /* Nelson Chart */
 function drawNelsonChart(ctrl, data, nelson) {
-  const ctx = getCanvasCtx(&apos;nelsonChart&apos;);
+  const ctx = getCanvasCtx(&#x27;nelsonChart&#x27;);
   if (!ctx) return;
   const vals = ctrl.xbars || data;
   const cl = ctrl.xbarBar || ctrl.xBar || stats(data).mean;
@@ -2525,32 +2526,32 @@ function drawNelsonChart(ctrl, data, nelson) {
   drawGrid(ctx, pad, minY, maxY, 6);
 
   // Sigma zone lines
-  [1,2,3].forEach(z => {
-    [[cl+z*sigma,&apos;rgba(240,80,80,0.3)&apos;],[cl-z*sigma,&apos;rgba(240,80,80,0.3)&apos;]].forEach(([v,c])=>{
+  [1,2,3].forEach(z =&gt; {
+    [[cl+z*sigma,&#x27;rgba(240,80,80,0.3)&#x27;],[cl-z*sigma,&#x27;rgba(240,80,80,0.3)&#x27;]].forEach(([v,c])=&gt;{
       const py=dataToY(v,minY,maxY,H,pad);
       ctx.beginPath(); ctx.strokeStyle=c; ctx.lineWidth=.5; ctx.setLineDash([2,4]);
       ctx.moveTo(pad.l,py); ctx.lineTo(W-pad.r,py); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle=C.text; ctx.font=&apos;8px IBM Plex Mono&apos;; ctx.textAlign=&apos;right&apos;;
-      ctx.fillText(`${z>0?&apos;+&apos;:&apos;&apos;}${z}σ`, pad.l-3, py+3);
+      ctx.fillStyle=C.text; ctx.font=&#x27;8px IBM Plex Mono&#x27;; ctx.textAlign=&#x27;right&#x27;;
+      ctx.fillText(`${z&gt;0?&#x27;+&#x27;:&#x27;&#x27;}${z}σ`, pad.l-3, py+3);
     });
   });
 
   // CL
   const clpy=dataToY(cl,minY,maxY,H,pad);
-  ctx.beginPath(); ctx.strokeStyle=&apos;rgba(45,140,240,0.7)&apos;; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.strokeStyle=&#x27;rgba(45,140,240,0.7)&#x27;; ctx.lineWidth=1;
   ctx.moveTo(pad.l,clpy); ctx.lineTo(W-pad.r,clpy); ctx.stroke();
 
   // Line
-  ctx.beginPath(); ctx.strokeStyle=&apos;rgba(45,140,240,0.5)&apos;; ctx.lineWidth=1;
-  vals.forEach((v,i)=>{ const px=idxToX(i,vals.length,W,pad),py=dataToY(v,minY,maxY,H,pad);
+  ctx.beginPath(); ctx.strokeStyle=&#x27;rgba(45,140,240,0.5)&#x27;; ctx.lineWidth=1;
+  vals.forEach((v,i)=&gt;{ const px=idxToX(i,vals.length,W,pad),py=dataToY(v,minY,maxY,H,pad);
     i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
   ctx.stroke();
 
   // Points
-  vals.forEach((v,i)=>{
+  vals.forEach((v,i)=&gt;{
     const px=idxToX(i,vals.length,W,pad),py=dataToY(v,minY,maxY,H,pad);
-    const outCtrl=v>ucl3||v<lcl3;
+    const outCtrl=v&gt;ucl3||v&lt;lcl3;
     ctx.beginPath(); ctx.arc(px,py,3.5,0,2*Math.PI);
     ctx.fillStyle=outCtrl?C.red:C.accent; ctx.fill();
     if(outCtrl){
@@ -2570,23 +2571,23 @@ function randNorm(mu=0, sigma=1) {
 
 function loadDemo(type) {
   let data=[], usl=null, lsl=null, target=null;
-  if(type===&apos;normal&apos;){
-    data=Array.from({length:100},()=>randNorm(10,.15));
+  if(type===&#x27;normal&#x27;){
+    data=Array.from({length:100},()=&gt;randNorm(10,.15));
     usl=10.5; lsl=9.5; target=10;
-  } else if(type===&apos;skewed&apos;){
-    data=Array.from({length:80},()=>Math.abs(randNorm(10,.3))+0.2);
+  } else if(type===&#x27;skewed&#x27;){
+    data=Array.from({length:80},()=&gt;Math.abs(randNorm(10,.3))+0.2);
     usl=11.5; lsl=9.5;
-  } else if(type===&apos;bimodal&apos;){
-    data=[...Array.from({length:50},()=>randNorm(9.5,.1)),...Array.from({length:50},()=>randNorm(10.5,.1))];
+  } else if(type===&#x27;bimodal&#x27;){
+    data=[...Array.from({length:50},()=&gt;randNorm(9.5,.1)),...Array.from({length:50},()=&gt;randNorm(10.5,.1))];
     usl=11; lsl=9;
-  } else if(type===&apos;dmax&apos;){
-    data=Array.from({length:60},()=>randNorm(45,2.5));
+  } else if(type===&#x27;dmax&#x27;){
+    data=Array.from({length:60},()=&gt;randNorm(45,2.5));
     usl=50; lsl=40; target=45;
   }
-  document.getElementById(&apos;manualData&apos;).value = data.map(v=>v.toFixed(3)).join(&apos;, &apos;);
-  if(usl!==null) document.getElementById(&apos;usl&apos;).value=usl;
-  if(lsl!==null) document.getElementById(&apos;lsl&apos;).value=lsl;
-  if(target!==null) document.getElementById(&apos;target&apos;).value=target;
+  document.getElementById(&#x27;manualData&#x27;).value = data.map(v=&gt;v.toFixed(3)).join(&#x27;, &#x27;);
+  if(usl!==null) document.getElementById(&#x27;usl&#x27;).value=usl;
+  if(lsl!==null) document.getElementById(&#x27;lsl&#x27;).value=lsl;
+  if(target!==null) document.getElementById(&#x27;target&#x27;).value=target;
   showToast(`📊 ${type} 예제 데이터 로드됨`);
 }
 
@@ -2594,19 +2595,21 @@ function loadDemo(type) {
    TOAST
 ═══════════════════════════════════════════════ */
 function showToast(msg) {
-  const t=document.getElementById(&apos;toast&apos;);
-  t.textContent=msg; t.style.display=&apos;block&apos;;
+  const t=document.getElementById(&#x27;toast&#x27;);
+  t.textContent=msg; t.style.display=&#x27;block&#x27;;
   clearTimeout(t._timer);
-  t._timer=setTimeout(()=>t.style.display=&apos;none&apos;, 2800);
+  t._timer=setTimeout(()=&gt;t.style.display=&#x27;none&#x27;, 2800);
 }
-</script>
-</body>
-</html>
-'
-      style="width:100%;height:100%;border:none;background:#0a0c10;">
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"
+      style="width:100%;height:100%;border:none;background:#0a0c10;"
+      title="공정능력 분석">
     </iframe>
   </div>
 </section>
+
 
 </main>
   </div>
