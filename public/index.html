@@ -936,6 +936,74 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   }
 }
 
+
+/* 서명 이미지 첨부 전용 v16 - 직접 그리기 삭제 */
+.sign-pad-wrap{display:none!important;}
+.sign-file-wrap{
+  margin-top:8px;
+  border:1.5px dashed var(--bd2);
+  border-radius:var(--r2);
+  background:#fff;
+  padding:8px;
+}
+.sign-file-preview{
+  width:100%;
+  height:94px;
+  border-radius:var(--r1);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.sign-file-preview img{
+  max-width:100%;
+  max-height:88px;
+  object-fit:contain;
+  display:block;
+}
+.sign-file-empty{
+  color:var(--t3);
+  font-size:12px;
+  font-weight:600;
+}
+.sign-file-tools{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:7px;
+}
+.sign-file-input{
+  width:1px;
+  height:1px;
+  opacity:0;
+  position:absolute;
+  pointer-events:none;
+}
+.sign-file-btn,
+.sign-clear-btn{
+  height:26px;
+  padding:0 9px;
+  border:1px solid var(--bd);
+  border-radius:var(--r1);
+  background:var(--s2);
+  color:var(--t2);
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.sign-file-btn:hover,
+.sign-clear-btn:hover{background:var(--bd);}
+.sign-date{
+  font-size:10px;
+  color:var(--t3);
+  min-height:14px;
+}
+@media print{
+  .sign-file-wrap,.sign-clear-btn,.sign-file-btn{display:none!important;}
+}
+
 </style>
 </head>
 <body>
@@ -2094,11 +2162,15 @@ function buildSignGrid(type){
     list.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.title||u.department||'-')})</option>`).join('');
 
   const signPad=(role,label)=>`
-    <div class="sign-pad-wrap">
-      <canvas class="sign-pad" id="sg_${type}_${role}_pad" data-sign-type="${type}" data-sign-role="${role}" aria-label="${label} 전자서명"></canvas>
-      <div class="sign-tools">
+    <div class="sign-file-wrap" data-sign-file-wrap="${type}:${role}">
+      <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
+      <div class="sign-file-tools">
         <span class="sign-date" id="sg_${type}_${role}_date"></span>
-        <button type="button" class="sign-clear-btn" data-sign-clear="${type}:${role}">서명 지우기</button>
+        <div>
+          <input type="file" class="sign-file-input" id="sg_${type}_${role}_file" accept="image/*" data-sign-file="${type}:${role}">
+          <button type="button" class="sign-file-btn" data-sign-file-btn="${type}:${role}">서명 첨부</button>
+          <button type="button" class="sign-clear-btn" data-sign-clear="${type}:${role}">서명 지우기</button>
+        </div>
       </div>
     </div>`;
 
@@ -3615,6 +3687,125 @@ document.addEventListener('DOMContentLoaded',async()=>{
   renderIqcItems();renderPqcItems();renderOqcItems();renderWorklogMats();applySpcSpec();renderSpcResult(null);
   const ok=await checkLogin();if(ok)await loadAll데이터();
 });
+
+/* 서명 이미지 첨부 전용 v16 - 직접 입력 기능 삭제 */
+(function(){
+  function qs(id){return document.getElementById(id);}
+  function nowText(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function previewEl(type,role){return qs(`sg_${type}_${role}_preview`);}
+  function dateEl(type,role){return qs(`sg_${type}_${role}_date`);}
+  function getStore(type,role){
+    window.__signImageStore = window.__signImageStore || {};
+    const key = `${type}:${role}`;
+    window.__signImageStore[key] = window.__signImageStore[key] || {};
+    return window.__signImageStore[key];
+  }
+  function setPreview(type,role,img){
+    const box = previewEl(type,role);
+    if(!box) return;
+    if(img){
+      box.innerHTML = `<img src="${img}" alt="서명 이미지">`;
+    }else{
+      box.innerHTML = `<span class="sign-file-empty">서명 이미지 없음</span>`;
+    }
+  }
+  function readSelectedUser(type,role){
+    const sel = qs(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return {name:'',title:'',department:''};
+    const users = (window.state && state.signableUsers) || [];
+    const u = users.find(x => String(x.id) === String(sel.value));
+    return u ? {id:u.id,name:u.name||'',title:u.title||'',department:u.department||''} : {name:'',title:'',department:''};
+  }
+
+  window.signature데이터 = function(type,role){
+    const s = getStore(type,role);
+    return {
+      signImage: s.signImage || '',
+      signDate: s.signDate || ''
+    };
+  };
+
+  window.clearSignaturePad = function(type,role){
+    const s = getStore(type,role);
+    s.signImage = '';
+    s.signDate = '';
+    setPreview(type,role,'');
+    const d = dateEl(type,role);
+    if(d) d.textContent = '';
+    const f = qs(`sg_${type}_${role}_file`);
+    if(f) f.value = '';
+  };
+
+  window.restoreSignaturePad = function(type,role,data){
+    const s = getStore(type,role);
+    s.signImage = (data && data.signImage) || '';
+    s.signDate = (data && data.signDate) || '';
+    setPreview(type,role,s.signImage);
+    const d = dateEl(type,role);
+    if(d) d.textContent = s.signDate || '';
+  };
+
+  window.updateSignaturePreview = function(type,role){
+    const s = getStore(type,role);
+    setPreview(type,role,s.signImage || '');
+    const d = dateEl(type,role);
+    if(d) d.textContent = s.signDate || '';
+  };
+
+  window.getSignPayload = function(type){
+    const find = role => {
+      const u = readSelectedUser(type,role);
+      const sig = window.signature데이터(type,role);
+      return {
+        id: u.id || '',
+        name: u.name || '',
+        title: u.title || '',
+        department: u.department || '',
+        signImage: sig.signImage || '',
+        signDate: sig.signDate || ''
+      };
+    };
+    return {writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
+  };
+
+  document.addEventListener('click', function(e){
+    const attachBtn = e.target.closest('[data-sign-file-btn]');
+    if(attachBtn){
+      const [type,role] = attachBtn.getAttribute('data-sign-file-btn').split(':');
+      const input = qs(`sg_${type}_${role}_file`);
+      if(input) input.click();
+      return;
+    }
+    const clearBtn = e.target.closest('[data-sign-clear]');
+    if(clearBtn){
+      const [type,role] = clearBtn.getAttribute('data-sign-clear').split(':');
+      window.clearSignaturePad(type,role);
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    const input = e.target.closest('[data-sign-file]');
+    if(!input || !input.files || !input.files[0]) return;
+    const [type,role] = input.getAttribute('data-sign-file').split(':');
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(){
+      const s = getStore(type,role);
+      s.signImage = String(reader.result || '');
+      s.signDate = nowText();
+      setPreview(type,role,s.signImage);
+      const d = dateEl(type,role);
+      if(d) d.textContent = s.signDate;
+      if(typeof onSignChange === 'function') onSignChange(type,role);
+    };
+    reader.readAsDataURL(file);
+  });
+})();
+
 </script>
 <script>
 /* ═══ 측정시스템 분석(MSA / Gauge R&R) 안정화 모듈 ═══ */
@@ -3659,1514 +3850,4 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
   
 function avgArr(a){const v=a.filter(Number.isFinite);return v.length?sum(v)/v.length:NaN;}
-function rangeArr(a){const v=a.filter(Number.isFinite);return v.length?Math.max(...v)-Math.min(...v):NaN;}
-function msaFmt(v,d=3){return Number.isFinite(v)?Number(v).toFixed(d):'';}
-function msaInputValue(o,r,p){return msa.data?.[o]?.[r]?.[p];}
-function msaOperatorName(i){
-  const ids=['msaOpA','msaOpB','msaOpC','msaOpD','msaOpE'];
-  const val=$m(ids[i])?.value?.trim();
-  return val || msa.operators?.[i] || String.fromCharCode(65+i);
-}
-function msaMetaValue(id, fallback=''){return $m(id)?.value || fallback;}
-
-
-function renderMatrix(){
-    readConfig();
-    const head=$m('msaHead'), body=$m('msaBody'); if(!head||!body)return;
-    head.innerHTML='<tr><th>측정자</th><th>반복</th>'+Array.from({length:msa.parts},(_,i)=>`<th>시료 ${i+1}</th>`).join('')+'<th>평균</th><th>범위</th><th style="width:100px">작업</th></tr>';
-    const rows=[];
-    msa.operators.forEach((op,oi)=>{
-      for(let r=0;r<msa.repeats;r++){
-        const vals=(msa.data[oi]&&msa.data[oi][r])?msa.data[oi][r]:Array(msa.parts).fill('');
-        const nums=vals.map(Number).filter(Number.isFinite);
-        rows.push(`<tr><td><strong>${op}</strong></td><td>${r+1}회</td>`+
-          vals.map((v,pi)=>`<td><input class="spc-raw-input" data-msa-op="${oi}" data-msa-rep="${r}" data-msa-part="${pi}" value="${v??''}"></td>`).join('')+
-          `<td>${fmt(avg(nums),3)}</td><td>${nums.length?fmt(Math.max(...nums)-Math.min(...nums),3):'-'}</td>`+
-          `<td><div class="ai"><button class="sb edit" type="button" data-msa-action="edit" data-msa-op="${oi}" data-msa-rep="${r}">수정</button><button class="sb del" type="button" data-msa-action="delete" data-msa-op="${oi}" data-msa-rep="${r}">삭제</button></div></td></tr>`);
-      }
-      const all=Array.from({length:msa.parts},(_,pi)=>{
-        const arr=[]; for(let r=0;r<msa.repeats;r++){const v=Number(msa.data[oi]?.[r]?.[pi]); if(Number.isFinite(v))arr.push(v);} return avg(arr);
-      });
-      rows.push(`<tr style="background:#f8fbff"><td><strong>${op}</strong></td><td><strong>평균</strong></td>`+all.map(v=>`<td><strong>${fmt(v,3)}</strong></td>`).join('')+`<td colspan="3"></td></tr>`);
-    });
-    body.innerHTML=rows.join('');
-  }
-  function collect(){
-    readConfig();
-    if(!msa.data.length) return [];
-    const values=[];
-    msa.operators.forEach((op,oi)=>{for(let r=0;r<msa.repeats;r++){for(let p=0;p<msa.parts;p++){const v=Number(msa.data[oi]?.[r]?.[p]);if(Number.isFinite(v))values.push({op,oi,r,p,v});}}});
-    return values;
-  }
-  function calc(){
-    const values=collect(); if(!values.length)return null;
-    const all=values.map(x=>x.v); const totalSd=sd(all)||0;
-    const opMeans=msa.operators.map((op,oi)=>avg(values.filter(x=>x.oi===oi).map(x=>x.v)));
-    const partMeans=Array.from({length:msa.parts},(_,p)=>avg(values.filter(x=>x.p===p).map(x=>x.v)));
-    const cellRanges=[];
-    for(let oi=0;oi<msa.operators.length;oi++){for(let p=0;p<msa.parts;p++){const a=[];for(let r=0;r<msa.repeats;r++){const v=Number(msa.data[oi]?.[r]?.[p]);if(Number.isFinite(v))a.push(v);} if(a.length>1)cellRanges.push(Math.max(...a)-Math.min(...a));}}
-    const d2ByRep={2:1.128,3:1.693,4:2.059,5:2.326};
-    const ev=(avg(cellRanges)||0)/(d2ByRep[msa.repeats]||1.693);
-    const av=sd(opMeans)||0;
-    const pv=sd(partMeans)||0;
-    const grr=Math.sqrt(ev*ev+av*av);
-    const tv=Math.sqrt(grr*grr+pv*pv);
-    const tol=Number($m('msaTolerance')?.value||0);
-    const study=tv>0?grr/tv*100:NaN;
-    const tolPct=tol>0?6*grr/tol*100:NaN;
-    const ndc=grr>0?Math.floor(1.41*pv/grr):NaN;
-    let judge='-'; if(Number.isFinite(study)){judge=study<10?'우수':study<=30?'조건부 사용':'부적합';}
-    return {all,totalSd,opMeans,partMeans,cellRanges,ev,av,pv,grr,tv,study,tolPct,ndc,judge};
-  }
-  function pill(v){const cls=v==='우수'?'good':(v==='조건부 사용'?'warn':'bad');return `<span class="spc-status-pill ${cls}">${v}</span>`;}
-  function row(a,b){return `<tr><td>${a}</td><td>${b}</td></tr>`;}
-  function recalc(){
-    const r=calc();
-    const set=(id,v)=>{const e=$m(id); if(e)e.textContent=v;};
-    if(!r){['msaStudyVar','msaTolerancePct','msaNdc','msaEV','msaAV','msaJudge'].forEach(id=>set(id,'-'));if($m('msaTemplatePreview'))$m('msaTemplatePreview').innerHTML='';return;}
-    const unit=$m('msaUnit')?.value||'';
-    set('msaStudyVar',Number.isFinite(r.study)?fmt(r.study,1)+'%':'-');
-    set('msaTolerancePct',Number.isFinite(r.tolPct)?fmt(r.tolPct,1)+'%':'-');
-    set('msaNdc',Number.isFinite(r.ndc)?String(r.ndc):'-');
-    set('msaEV',fmt(r.ev,3)); set('msaAV',fmt(r.av,3)); set('msaJudge',r.judge);
-    if($m('msaResultBody'))$m('msaResultBody').innerHTML=[row('반복성 EV',fmt(r.ev,4)+' '+unit),row('재현성 AV',fmt(r.av,4)+' '+unit),row('GRR',fmt(r.grr,4)+' '+unit),row('제품변동 PV',fmt(r.pv,4)+' '+unit),row('총변동 TV',fmt(r.tv,4)+' '+unit),row('%연구변동',fmt(r.study,1)+'%'),row('%공차',fmt(r.tolPct,1)+'%'),row('ndc',fmt(r.ndc,0)),row('판정',pill(r.judge))].join('');
-    if($m('msaOperatorBody'))$m('msaOperatorBody').innerHTML=msa.operators.map((op,i)=>row(`측정자 ${op}`,fmt(r.opMeans[i],4)+' '+unit)).join('');
-    if($m('msaJudgeBody'))$m('msaJudgeBody').innerHTML=[row('%GRR < 10%', '<span class="spc-status-pill good">우수</span>'),row('10% ≤ %GRR ≤ 30%', '<span class="spc-status-pill warn">조건부 사용</span>'),row('%GRR > 30%', '<span class="spc-status-pill bad">부적합</span>'),row('ndc 기준','5 이상 권장')].join('');
-    chart('op','msaOperatorChart','bar',msa.operators.map(o=>'측정자 '+o),[{label:'평균',data:r.opMeans}]);
-    chart('part','msaPartChart','line',Array.from({length:msa.parts},(_,i)=>String(i+1)),[{label:'시료 평균',data:r.partMeans,tension:.25}]);
-    chart('var','msaVariationChart','bar',['EV','AV','GRR','PV','TV'],[{label:'변동',data:[r.ev,r.av,r.grr,r.pv,r.tv]}]);
-    chart('range','msaRangeChart','line',r.cellRanges.map((_,i)=>String(i+1)),[{label:'반복 범위',data:r.cellRanges,tension:.25}]);
-    
-  }
-  function selectWorksheet(wb){
-    function sheetScore(ws){
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:'',blankrows:false});
-      let score=0;
-      rows.forEach((row,ri)=>{
-        const txt=row.map(v=>String(v??'')).join(' ');
-        if(/측정자\s*\/|측정자/.test(txt)&&/반복/.test(txt))score+=5;
-        if(/Sample\s*시\s*료|Sample|시\s*료/.test(txt))score+=5;
-        if(row.some(v=>String(v??'').includes('Gage R&R')))score+=2;
-        if(row.some(v=>String(v??'').includes('Gage Repeatability')))score+=2;
-        const nums=row.map(toNumber);
-        for(let c=0;c<nums.length-4;c++){
-          if(nums[c]===1&&nums[c+1]===2&&nums[c+2]===3&&nums[c+3]===4&&nums[c+4]===5)score+=4;
-        }
-      });
-      return score;
-    }
-    let bestName=wb.SheetNames[0], bestScore=-1;
-    wb.SheetNames.forEach(name=>{
-      const sc=sheetScore(wb.Sheets[name]);
-      if(sc>bestScore){bestScore=sc;bestName=name;}
-    });
-    return wb.Sheets[bestName];
-  }
-  function fillFromNumbers(nums){
-    readConfig(); let idx=0; msa.data=[];
-    for(let oi=0;oi<msa.operators.length;oi++){
-      const op=[];
-      for(let r=0;r<msa.repeats;r++){
-        const row=[];
-        for(let p=0;p<msa.parts;p++) row.push(Number.isFinite(nums[idx])?nums[idx++]:0);
-        op.push(row);
-      }
-      msa.data.push(op);
-    }
-    renderMatrix(); recalc();
-    alert(`측정값 ${Math.min(nums.length, msa.operators.length*msa.repeats*msa.parts)}개를 불러왔습니다.`);
-  }
-  function normText(v){return String(v??'').replace(/\s+/g,'').trim();}
-  function toNumber(v){
-    if(v===null||v===undefined)return NaN;
-    if(typeof v==='number')return Number.isFinite(v)?v:NaN;
-    const s=String(v).replace(/,/g,'').replace(/[<>≤≥=]/g,'').trim();
-    if(!s)return NaN;
-    const n=Number(s);
-    return Number.isFinite(n)?n:NaN;
-  }
-  function firstNumberAfter(row, labelPattern){
-    for(let i=0;i<row.length;i++){
-      if(labelPattern.test(String(row[i]??''))){
-        for(let j=i+1;j<Math.min(row.length,i+6);j++){
-          const n=toNumber(row[j]);
-          if(Number.isFinite(n))return n;
-        }
-      }
-    }
-    return NaN;
-  }
-  function setIf(id,v){const e=$m(id); if(e&&v!==undefined&&v!==null&&v!=='')e.value=v;}
-  function dateToInput(v){
-    if(!v)return '';
-    if(v instanceof Date&&!isNaN(v.getTime()))return v.toISOString().slice(0,10);
-    const s=String(v);
-    const m=s.match(/(20\d{2})[-/.년\s]*(\d{1,2})[-/.월\s]*(\d{1,2})/);
-    if(!m)return '';
-    return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
-  }
-  function extractOperatorLabel(v){
-    const s=String(v??'').replace(/\s+/g,'').toUpperCase();
-    // 실제 행 라벨만 인식: "A", "1.A", "1. A", "6.B"
-    // "Appraiser A" 같은 우측 보조표 텍스트는 제외.
-    const m=s.match(/^(?:\d+\.)?([A-E])$/);
-    return m?m[1]:null;
-  }
-  function extractRepeat(v){
-    const s=String(v??'').replace(/\s+/g,'').trim();
-    // 반복은 반드시 "1회", "2회", "3회"처럼 회차 표시가 있는 셀만 인식한다.
-    // 첨부 양식 좌측의 행 번호 4,5,6...을 반복수로 오인하지 않기 위함.
-    const m=s.match(/^(\d+)회$/);
-    if(m)return Number(m[1])-1;
-    return null;
-  }
-  function detectPartColumns(rows, headerRowIdx, preferredStart=null, preferredEnd=null){
-    const row=rows[headerRowIdx]||[];
-    let best=[];
-    const startMin = Number.isInteger(preferredStart) ? Math.max(0, preferredStart) : 0;
-    const startMax = Number.isInteger(preferredEnd) ? Math.min(row.length-1, preferredEnd) : row.length-1;
-    for(let start=startMin; start<=startMax; start++){
-      const first=toNumber(row[start]);
-      if(first!==1)continue;
-      const cols=[];
-      let expected=1;
-      for(let c=start; c<row.length && expected<=80; c++){
-        const raw=row[c];
-        const n=toNumber(raw);
-        if(Number.isInteger(n) && n===expected){
-          cols.push(c);
-          expected++;
-        }else if(cols.length>0){
-          // stop at first non-sequential value. Do not jump across far-right helper tables.
-          break;
-        }
-      }
-      if(cols.length>best.length) best=cols;
-    }
-    return best.length>=3?best:[];
-  }
-  function applyMetaFromRows(rows){
-    const flat=rows.flat();
-    const text=flat.map(v=>String(v??'')).join(' ');
-    const itemHit=['Dmax','D50','점도','고형분','수분','접착력','절연저항','팽윤성','입도'].find(k=>new RegExp(k,'i').test(text));
-    if(itemHit&&$m('msaItem'))$m('msaItem').value=itemHit;
-    const equipIdx=flat.findIndex(v=>/측정장비/.test(String(v??'')));
-    if(equipIdx>=0){for(let i=equipIdx+1;i<Math.min(flat.length,equipIdx+10);i++){const v=String(flat[i]??'').trim();if(v&&!/측정자|번호/.test(v)){setIf('msaGauge',v);break;}}}
-    const tolIdx=flat.findIndex(v=>/규격상한|공차|Tolerance/i.test(String(v??'')));
-    if(tolIdx>=0){for(let i=tolIdx+1;i<Math.min(flat.length,tolIdx+10);i++){const n=toNumber(flat[i]);if(Number.isFinite(n)){setIf('msaTolerance',n);break;}}}
-    const unitIdx=flat.findIndex(v=>/단위/.test(String(v??'')));
-    if(unitIdx>=0){for(let i=unitIdx+1;i<Math.min(flat.length,unitIdx+5);i++){const v=String(flat[i]??'').trim();if(v){setIf('msaUnit',v);break;}}}
-    for(const row of rows){
-      let n=firstNumberAfter(row,/시료수|Parts/i); if(Number.isFinite(n)&&n>=2)setIf('msaParts',Math.round(n));
-      n=firstNumberAfter(row,/반복횟수|반복수|Repeat/i); if(Number.isFinite(n)&&n>=2)setIf('msaRepeats',Math.round(n));
-      n=firstNumberAfter(row,/측정자수|Appraisers/i); if(Number.isFinite(n)&&n>=2)setIf('msaOperators',Math.round(n));
-      for(const v of row){const d=dateToInput(v); if(d){setIf('msaDate',d);}}
-    }
-    // names from Appraiser A/B/C blocks or Korean measuring person fields
-    for(let r=0;r<rows.length;r++){
-      for(let c=0;c<rows[r].length;c++){
-        const v=String(rows[r][c]??'');
-        let m=v.match(/Appraiser\s*([A-E])/i)||v.match(/측정자\s*([A-E])/i);
-        if(m){
-          const name=String((rows[r+1]&&rows[r+1][c])||'').trim();
-          if(name&&name!=='0')setIf('msaOp'+m[1].toUpperCase(),name);
-        }
-      }
-    }
-  }
-  function findMatrixFromRows(rows){
-    applyMetaFromRows(rows);
-
-    let header=-1, partCols=[], repeatCol=-1;
-
-    function consecutivePartCols(row, start, stop){
-      const cols=[];
-      let expected=1;
-      for(let c=start;c<=stop && c<row.length;c++){
-        const n=toNumber(row[c]);
-        if(Number.isInteger(n)&&n===expected){
-          cols.push(c);
-          expected++;
-        }else if(cols.length>0){
-          break;
-        }
-      }
-      return cols;
-    }
-
-    // 첨부 양식의 "Sample 시료" 바로 아래 1~10만 측정치 열로 인식한다.
-    for(let r=0;r<rows.length-1;r++){
-      const row=rows[r]||[];
-      const next=rows[r+1]||[];
-      const sampleIdx=row.findIndex(v=>/Sample\s*시\s*료|Sample|시\s*료/.test(String(v??'')) && !/시료수|PV|K3|기준/.test(String(v??'')));
-      const repIdx=next.findIndex(v=>/반복/.test(String(v??'')));
-      if(sampleIdx<0||repIdx<0)continue;
-
-      let end=next.findIndex((v,c)=>c>sampleIdx && /Ave|평균값|평균/.test(String(v??'')));
-      if(end<0)end=Math.min(next.length-1,sampleIdx+30);
-      const cols=consecutivePartCols(next,sampleIdx,end-1);
-      if(cols.length>=5){
-        header=r+1;
-        partCols=cols;
-        repeatCol=repIdx;
-        break;
-      }
-    }
-    if(header<0||partCols.length<5)return false;
-
-    const opIndex={A:0,B:1,C:2,D:3,E:4};
-    const records=[];
-    let currentOp=null;
-
-    for(let r=header+1;r<rows.length;r++){
-      const row=rows[r]||[];
-      const fullText=row.map(v=>String(v??'')).join(' ');
-      const leftCells=row.slice(0,partCols[0]);
-
-      if(/Part\s*AVE|시료평균|시료변동|Gage\s*R&R|연구변동|총변동|UCLR|LCLR|요약|판정기준/i.test(fullText))break;
-      if(/AVE|평균|Range|범위|ra=|rb=|rc=|xa=|xb=|xc=/i.test(leftCells.map(v=>String(v??'')).join(' ')))continue;
-
-      // Operator label: "A", "B", "C" or "1. A" in left cells.
-      for(let c=0;c<Math.min(partCols[0], row.length);c++){
-        const op=extractOperatorLabel(row[c]);
-        if(op&&opIndex[op]!==undefined){currentOp=op;break;}
-      }
-      if(!currentOp)continue;
-
-      // Repeat must come from the designated repeat column or one/two nearby cells only,
-      // and must include "회" (1회, 2회, 3회).
-      let rep=null;
-      for(const c of [repeatCol, repeatCol-1, repeatCol+1]){
-        if(c>=0&&c<row.length){
-          const rr=extractRepeat(row[c]);
-          if(rr!==null){rep=rr;break;}
-        }
-      }
-      if(rep===null)continue;
-
-      const vals=partCols.map(c=>toNumber(row[c]));
-      const valid=vals.filter(Number.isFinite);
-      if(valid.length<Math.max(5,Math.ceil(partCols.length*0.8)))continue;
-
-      records.push({
-        op:currentOp,
-        rep,
-        vals:vals.map(v=>Number.isFinite(v)?Number(v.toFixed(6)):'')
-      });
-    }
-
-    if(!records.length)return false;
-
-    const opLabels=[...new Set(records.map(x=>x.op))].sort((a,b)=>opIndex[a]-opIndex[b]);
-    const reps=Math.max(...records.map(x=>x.rep))+1;
-    const parts=partCols.length;
-
-    if(opLabels.length<2||reps<2||parts<5)return false;
-
-    // Keep only exactly one row per operator x repeat; ignore accidental duplicate rows.
-    const seen=new Set();
-    const clean=[];
-    records.forEach(rec=>{
-      const key=rec.op+'|'+rec.rep;
-      if(!seen.has(key)){
-        seen.add(key);
-        clean.push(rec);
-      }
-    });
-
-    const expected=opLabels.length*reps;
-    if(clean.length<expected)return false;
-
-    setIf('msaOperators',opLabels.length);
-    setIf('msaRepeats',reps);
-    setIf('msaParts',parts);
-    readConfig();
-    msa.operators=opLabels;
-    msa.repeats=reps;
-    msa.parts=parts;
-
-    const data=Array.from({length:opLabels.length},()=>Array.from({length:reps},()=>Array(parts).fill('')));
-    const labelToIndex=Object.fromEntries(opLabels.map((op,i)=>[op,i]));
-    clean.forEach(rec=>{
-      const oi=labelToIndex[rec.op];
-      if(oi===undefined||rec.rep>=reps)return;
-      data[oi][rec.rep]=rec.vals.slice(0,parts);
-    });
-
-    msa.data=data;
-    renderMatrix();
-    recalc();
-
-    console.log('MSA matrix loaded', {operators:opLabels,repeats:reps,parts,firstVal:data[0]?.[0]?.[0],partCols,header,repeatCol});
-    alert(`첨부 양식에서 측정 매트릭스를 불러왔습니다. (측정자 ${opLabels.length}명 × 반복 ${reps}회 × 시료 ${parts}개)`);
-    return true;
-  }
-  function parseUploaded(file){
-    if(!file)return;
-    const reader=new FileReader();
-    reader.onload=e=>{
-      try{
-        let rows=[];
-        const lower=file.name.toLowerCase();
-        if(lower.endsWith('.csv')){
-          rows=String(e.target.result).replace(/^\ufeff/,'').split(/\r?\n/).map(line=>line.split(/,|\t/));
-        }else{
-          if(!window.XLSX){alert('엑셀 읽기 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인해주세요.');return;}
-          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
-          const ws=selectWorksheet(wb);
-          rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:'',blankrows:false});
-        }
-        if(findMatrixFromRows(rows))return;
-        applyMetaFromRows(rows); readConfig();
-        const nums=[];
-        rows.flat().forEach(x=>{const n=toNumber(x); if(Number.isFinite(n)) nums.push(n);});
-        const need=msa.operators.length*msa.repeats*msa.parts;
-        if(nums.length<need){alert(`업로드 파일에서 측정 매트릭스를 찾지 못했습니다. 양식의 Sample 시료 표(측정자/반복/시료값)를 확인해주세요. 필요 ${need}개 / 인식 ${nums.length}개`);return;}
-        fillFromNumbers(nums.slice(-need));
-      }catch(err){console.error(err);alert('업로드 파일을 읽지 못했습니다. CSV 또는 XLSX 형식을 확인해주세요.');}
-    };
-    if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file,'utf-8'); else reader.readAsArrayBuffer(file);
-  }
-  function downloadReport(){
-    const r=calc(); if(!r){alert('분석 데이터가 없습니다.'); return;}
-    if(!window.XLSX){alert('엑셀 생성 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단 여부를 확인해주세요.');return;}
-
-    const reportNo=$m('msaReportNo')?.value||'MSA-GRR-2026-001';
-    const item=$m('msaItem')?.value||'';
-    const gauge=$m('msaGauge')?.value||'';
-    const unit=$m('msaUnit')?.value||'';
-    const tol=Number($m('msaTolerance')?.value||0);
-    const date=$m('msaDate')?.value||'';
-    const opNames=msa.operators.map((op,i)=>($m('msaOp'+op)?.value||('측정자 '+op)));
-    const name=safeFileName(reportNo+'_측정시스템분석보고서.xlsx');
-
-    const aoa=Array.from({length:52},()=>Array(22).fill(''));
-    const put=(r,c,v)=>{aoa[r][c]=v;};
-    const caddr=(r,c)=>XLSX.utils.encode_cell({r,c});
-    const setFormula=(ws,r,c,f,v)=>{ws[caddr(r,c)]={t:(typeof v==='number'?'n':'s'),f:f,v:(v??'')};};
-
-    put(0,1,'측정시스템 분석 보고서');
-    put(0,12,'작성'); put(0,13,'검토'); put(0,14,'승인');
-    put(0,16,'Gage Repeatability & Reproducibility Data Sheet');
-    put(2,16,'Variable Data Results');
-
-    put(4,1,'분석항목'); put(4,6,'측정장비'); put(4,10,'측정자 A'); put(4,16,'Project'); put(4,18,'Gage Name'); put(4,20,'Appraiser A');
-    put(5,1,item); put(5,6,gauge); put(5,10,opNames[0]||''); put(5,16,item); put(5,18,gauge); put(5,20,opNames[0]||'');
-    put(6,1,'측정장소'); put(6,6,'측정장비 번호'); put(6,10,'측정자 B'); put(6,16,'Part Name'); put(6,18,'Gage Number'); put(6,20,'Appraiser B');
-    put(7,1,'연구소'); put(7,10,opNames[1]||''); put(7,16,'연구소'); put(7,18,'-'); put(7,20,opNames[1]||'');
-    put(8,1,'Nominal'); put(8,3,'단위'); put(8,4,'규격하한'); put(8,5,'규격상한'); put(8,6,'측정항목'); put(8,16,'Upper limit'); put(8,18,tol); put(8,20,'Appraiser C');
-    put(9,1,tol/2||''); put(9,3,unit); put(9,4,''); put(9,5,tol); put(9,6,item); put(9,16,'Lower limit'); put(9,18,''); put(9,20,opNames[2]||'');
-    put(10,1,'평가자'); put(10,6,'반복횟수'); put(10,8,'시료수'); put(10,10,'측정자수'); put(10,12,'평가일자'); put(10,16,'Evaluator'); put(10,18,'Trials'); put(10,20,'Parts');
-    put(11,1,opNames.filter(Boolean).join(', ')); put(11,6,msa.repeats); put(11,8,msa.parts); put(11,10,msa.operators.length); put(11,12,date); put(11,16,opNames.join(',')); put(11,18,msa.repeats); put(11,20,msa.parts);
-
-    const headerRow=14, dataStart=15;
-    put(13,1,'측정자 / 반복'); put(13,3,'Sample 시료'); put(13,15,'측정시스템분석');
-    put(headerRow,1,'측정자'); put(headerRow,2,'반복');
-    for(let p=0;p<msa.parts;p++)put(headerRow,3+p,p+1);
-    const avgCol=3+msa.parts, rangeCol=avgCol+1;
-    put(headerRow,avgCol,'Ave. 평균값'); put(headerRow,rangeCol,'Range 범위');
-
-    const opAvgRows=[], opRangeRows=[], dataRowsByOp=[];
-    let rr=dataStart;
-    msa.operators.forEach((op,oi)=>{
-      const opRows=[];
-      for(let rep=0;rep<msa.repeats;rep++){
-        put(rr,1,rep===0?`${1+oi*msa.repeats}.   ${op}`:rr-dataStart+1);
-        put(rr,2,(rep+1)+'회');
-        for(let p=0;p<msa.parts;p++)put(rr,3+p,Number(msa.data[oi]?.[rep]?.[p]||0));
-        opRows.push(rr);
-        rr++;
-      }
-      put(rr,1,(rr-dataStart+1)+'. AVE.'); put(rr,2,'평균');
-      for(let p=0;p<msa.parts;p++)put(rr,3+p,'');
-      opAvgRows.push(rr); rr++;
-      put(rr,1,(rr-dataStart+1)+'. Range'); put(rr,2,'범위');
-      for(let p=0;p<msa.parts;p++)put(rr,3+p,'');
-      opRangeRows.push(rr); dataRowsByOp.push(opRows); rr++;
-    });
-    const partAvgRow=rr+1; put(partAvgRow,1,'Part AVE'); put(partAvgRow,2,'시료평균(Xp)');
-    for(let p=0;p<msa.parts;p++)put(partAvgRow,3+p,'');
-
-    const calcRow=13;
-    put(calcRow,15,'반복성 EV'); put(calcRow,16,'= Rbar × K1'); put(calcRow,20,'K1'); put(calcRow,21,k1Const(msa.repeats));
-    put(calcRow+2,15,'재현성 AV'); put(calcRow+2,16,'= √((Xdiff×K2)^2 - EV^2/(n×r))'); put(calcRow+2,20,'K2'); put(calcRow+2,21,k2Const(msa.operators.length));
-    put(calcRow+4,15,'반복성 및 재현성 GRR'); put(calcRow+4,16,'= √(EV^2 + AV^2)');
-    put(calcRow+6,15,'시료변동 PV'); put(calcRow+6,16,'= Rp × K3'); put(calcRow+6,20,'K3'); put(calcRow+6,21,k3Const(msa.parts));
-    put(calcRow+8,15,'총변동 TV'); put(calcRow+8,16,'= √(GRR^2 + PV^2)');
-    put(calcRow+10,15,'판정'); put(calcRow+10,16,'= %GRR 기준');
-
-    put(35,1,'요약 결과'); put(36,1,'구분'); put(36,2,'결과'); put(36,3,'산식');
-    put(37,1,'EV 반복성'); put(38,1,'AV 재현성'); put(39,1,'GRR'); put(40,1,'PV 제품변동'); put(41,1,'TV 총변동'); put(42,1,'%연구변동'); put(43,1,'%공차'); put(44,1,'ndc'); put(45,1,'최종 판정');
-    put(47,1,'판정 기준'); put(47,2,'%GRR < 10% 우수 / 10~30% 조건부 사용 / 30% 초과 부적합, ndc 5 이상 권장');
-    put(48,1,'비고'); put(48,2,'본 보고서는 나모케미칼 내부 품질관리용 시스템(Q Insight)에서 생성되었습니다.');
-
-    const ws=XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols']=[{wch:4},{wch:18},{wch:12},...Array.from({length:msa.parts},()=>({wch:11})),{wch:14},{wch:14},{wch:18},{wch:18},{wch:14},{wch:12},{wch:12},{wch:14},{wch:14}];
-    ws['!merges']=[
-      {s:{r:0,c:1},e:{r:1,c:10}},
-      {s:{r:0,c:16},e:{r:0,c:21}},
-      {s:{r:13,c:3},e:{r:13,c:2+msa.parts}},
-      {s:{r:35,c:1},e:{r:35,c:3}}
-    ];
-
-    // Matrix formulas: row averages/ranges, operator averages/ranges, part averages.
-    dataRowsByOp.forEach((opRows,oi)=>{
-      opRows.forEach(row=>{
-        const a=caddr(row,3), b=caddr(row,2+msa.parts);
-        setFormula(ws,row,avgCol,`AVERAGE(${a}:${b})`,Number(avg((msa.data[oi][opRows.indexOf(row)]||[]).map(Number).filter(Number.isFinite))||0));
-        setFormula(ws,row,rangeCol,`MAX(${a}:${b})-MIN(${a}:${b})`,0);
-      });
-      const avgRow=opAvgRows[oi], rangeRow=opRangeRows[oi];
-      for(let p=0;p<msa.parts;p++){
-        const refs=opRows.map(row=>caddr(row,3+p)).join(',');
-        setFormula(ws,avgRow,3+p,`AVERAGE(${refs})`,0);
-        setFormula(ws,rangeRow,3+p,`MAX(${refs})-MIN(${refs})`,0);
-      }
-      setFormula(ws,avgRow,avgCol,`AVERAGE(${caddr(avgRow,3)}:${caddr(avgRow,2+msa.parts)})`,0);
-      setFormula(ws,rangeRow,rangeCol,`AVERAGE(${caddr(rangeRow,3)}:${caddr(rangeRow,2+msa.parts)})`,0);
-    });
-    for(let p=0;p<msa.parts;p++){
-      const refs=opAvgRows.map(row=>caddr(row,3+p)).join(',');
-      setFormula(ws,partAvgRow,3+p,`AVERAGE(${refs})`,0);
-    }
-    const allRangeRefs=opRangeRows.map(row=>`${caddr(row,3)}:${caddr(row,2+msa.parts)}`).join(',');
-    const rbarCell=caddr(37,5), xdiffCell=caddr(38,5), rpCell=caddr(40,5);
-    ws[rbarCell]={t:'n',f:`AVERAGE(${allRangeRefs})`,v:0};
-    ws[xdiffCell]={t:'n',f:`MAX(${opAvgRows.map(row=>caddr(row,avgCol)).join(',')})-MIN(${opAvgRows.map(row=>caddr(row,avgCol)).join(',')})`,v:0};
-    ws[rpCell]={t:'n',f:`MAX(${caddr(partAvgRow,3)}:${caddr(partAvgRow,2+msa.parts)})-MIN(${caddr(partAvgRow,3)}:${caddr(partAvgRow,2+msa.parts)})`,v:0};
-
-    // Result formulas. Excel will recalculate when opened; cached values are also provided.
-    setFormula(ws,37,2,`${rbarCell}*${caddr(calcRow,21)}`,r.ev);
-    put(37,3,'Rbar × K1');
-    setFormula(ws,38,2,`SQRT(MAX(0,(${xdiffCell}*${caddr(calcRow+2,21)})^2-(${caddr(37,2)}^2/(${msa.parts}*${msa.repeats}))))`,r.av);
-    put(38,3,'√MAX(0,(Xdiff×K2)^2 - EV^2/(n×r))');
-    setFormula(ws,39,2,`SQRT(${caddr(37,2)}^2+${caddr(38,2)}^2)`,r.grr);
-    put(39,3,'√(EV²+AV²)');
-    setFormula(ws,40,2,`${rpCell}*${caddr(calcRow+6,21)}`,r.pv);
-    put(40,3,'Rp × K3');
-    setFormula(ws,41,2,`SQRT(${caddr(39,2)}^2+${caddr(40,2)}^2)`,r.tv);
-    put(41,3,'√(GRR²+PV²)');
-    setFormula(ws,42,2,`IF(${caddr(41,2)}=0,"",${caddr(39,2)}/${caddr(41,2)}*100)`,r.study);
-    put(42,3,'GRR / TV × 100');
-    setFormula(ws,43,2,`IF(${tol}=0,"",6*${caddr(39,2)}/${tol}*100)`,r.tolPct);
-    put(43,3,'6 × GRR / 공차 × 100');
-    setFormula(ws,44,2,`IF(${caddr(39,2)}=0,"",INT(1.41*${caddr(40,2)}/${caddr(39,2)}))`,r.ndc);
-    put(44,3,'INT(1.41 × PV / GRR)');
-    setFormula(ws,45,2,`IF(${caddr(42,2)}<10,"우수",IF(${caddr(42,2)}<=30,"조건부 사용","부적합"))`,r.judge);
-    put(45,3,'%연구변동 기준');
-
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Gage_RR_보고서');
-    wb.Workbook={CalcPr:{fullCalcOnLoad:true,forceFullCalc:true}};
-    XLSX.writeFile(wb,name);
-  }
-  function safeFileName(s){return String(s||'report.xlsx').replace(/[\\/:*?"<>|]/g,'_');}
-  function k1Const(r){return {2:0.8862,3:0.5908,4:0.4857,5:0.4299}[Number(r)]||0.5908;}
-  function k2Const(a){return {2:0.7071,3:0.5231,4:0.4467,5:0.4030}[Number(a)]||0.5231;}
-  function k3Const(n){return {2:0.7071,3:0.5231,4:0.4467,5:0.4030,6:0.3742,7:0.3534,8:0.3375,9:0.3249,10:0.3146}[Number(n)]||0.3146;}
-
-  function editMsaRow(oi,rep){
-    const first=$m('msaBody')?.querySelector(`input[data-msa-op="${oi}"][data-msa-rep="${rep}"][data-msa-part="0"]`);
-    if(first){first.focus();first.select();}
-  }
-  function deleteMsaRow(oi,rep){
-    if(!confirm('해당 측정 행의 시료값을 삭제하시겠습니까?'))return;
-    if(!msa.data[oi])msa.data[oi]=[];
-    msa.data[oi][rep]=Array(msa.parts).fill('');
-    renderMatrix();
-    recalc();
-  }
-
-  function bind(){
-    if(msa.bound)return; msa.bound=true;
-    setToday(); sampleData();
-    document.addEventListener('click',e=>{
-    });
-    ['msaOperators','msaParts','msaRepeats'].forEach(id=>$m(id)?.addEventListener('change',()=>{blankData();}));
-    ['msaTolerance','msaUnit'].forEach(id=>$m(id)?.addEventListener('input',recalc));
-    $m('msaBody')?.addEventListener('change',e=>{const t=e.target;if(t.dataset.msaOp===undefined)return;const oi=Number(t.dataset.msaOp),rep=Number(t.dataset.msaRep),part=Number(t.dataset.msaPart); if(!msa.data[oi])msa.data[oi]=[]; if(!msa.data[oi][rep])msa.data[oi][rep]=[]; msa.data[oi][rep][part]=t.value===''?'':Number(t.value); renderMatrix(); recalc();});
-    $m('msaBody')?.addEventListener('click',e=>{const btn=e.target.closest('[data-msa-action]');if(!btn)return;const oi=Number(btn.dataset.msaOp),rep=Number(btn.dataset.msaRep);if(btn.dataset.msaAction==='edit')editMsaRow(oi,rep);if(btn.dataset.msaAction==='delete')deleteMsaRow(oi,rep);});
-  }
-  window.__namoMsaBind=bind;
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,100));else setTimeout(bind,100);
-})();
-</script>
-
-
-
-<script id="namo-approval-workflow-v3-reject">
-/* ═══════════════════════════════════════
-   NAMO QMS 전자결재 / 알림 워크플로우 패치 v6 - 업무함/알림/문서찾기 보강
-   - 기존 검사 데이터/API 구조 유지
-   - 작성 → 검토대기 → 승인대기 → 승인완료
-   - 상단 알림, 검토/승인 업무함, 검토반려/승인반려, 반려 사유, 감사로그
-═══════════════════════════════════════ */
-(function(){
-  const WF_KEY='namo_qms_approval_workflow_v2'; // v4 keeps existing workflow data key
-  const READ_KEY='namo_qms_approval_read_v2';
-  const TYPE_LABEL={iqc:'수입검사',pqc:'공정검사',oqc:'출하검사',nc:'부적합보고서',training:'교육보고서'};
-  const TYPE_ARR={iqc:'incoming',pqc:'process',oqc:'shipment',nc:'nonconform',training:'trainingReports'};
-  const TYPE_API={iqc:'/api/iqc',pqc:'/api/pqc',oqc:'/api/oqc',nc:'/api/nonconform',training:'/api/training'};
-  const STATUS_LABEL={DRAFT:'작성중',REVIEW_WAIT:'검토대기',APPROVAL_WAIT:'승인대기',APPROVED:'승인완료',REJECTED:'반려',REVIEW_REJECTED:'검토반려',APPROVAL_REJECTED:'승인반려'};
-
-  function qs(id){return document.getElementById(id);}
-  function qsa(s){return Array.from(document.querySelectorAll(s));}
-  function nowKst(){
-    try{return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()).replace(/\. /g,'-').replace('.','').replace(/-/,'-');}
-    catch(e){return new Date().toLocaleString('ko-KR');}
-  }
-  function today(){return (typeof todayKST==='function')?todayKST():new Date().toISOString().slice(0,10);}
-  function clean(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
-  function readJson(key,fb){try{return JSON.parse(localStorage.getItem(key)||'')||fb;}catch(e){return fb;}}
-  function saveJson(key,val){localStorage.setItem(key,JSON.stringify(val));}
-  function store(){return readJson(WF_KEY,{});}
-  function saveStore(s){saveJson(WF_KEY,s);}
-  function normalizeRole(v){return String(v||'').toLowerCase();}
-  function effectiveUser(){
-    const cur=(typeof state!=='undefined' && state.currentUser)?state.currentUser:null;
-    if(!cur)return null;
-    const email=String(cur.email||'').toLowerCase();
-    const name=String(cur.name||'').trim();
-    const list=(typeof state!=='undefined' && Array.isArray(state.adminUsers))?state.adminUsers:[];
-    const extra=list.find(u=>String(u.email||'').toLowerCase()===email || (name&&String(u.name||'').trim()===name));
-    return {...(extra||{}),...cur,role:cur.role||extra?.role,title:cur.title||extra?.title,department:cur.department||extra?.department,status:cur.status||extra?.status};
-  }
-  function domProfileName(){return (document.getElementById('profileName')?.textContent||'').trim();}
-  function domProfileEmail(){return (document.getElementById('profileEmail')?.textContent||'').trim().toLowerCase();}
-  function me(){
-    const u=effectiveUser();
-    if(u)return u;
-    const n=domProfileName(), e=domProfileEmail();
-    if(n||e)return {name:n,email:e,role:(n==='임흥배'||e.includes('hbleem')||e.includes('bhleem'))?'admin':'',title:n==='임흥배'?'대표':''};
-    return null;
-  }
-  function myName(){return me()?.name||'';}
-  function myEmail(){return me()?.email||'';}
-  function hasNoWriter(r,wf){
-    const n=String(r?.signWriter?.name||wf?.writer||'').trim();
-    return !n || n==='-' || n==='미지정';
-  }
-  function key(type,id){return `${type}:${String(id??'').trim()}`;}
-  function arr(type){return (typeof state!=='undefined' && state[TYPE_ARR[type]])?state[TYPE_ARR[type]]:[];}
-
-  // 서버 id가 비어 있거나 숫자/문자 타입이 섞여도 전자결재가 문서를 찾도록 보정
-  function rawId(r){
-    if(!r)return '';
-    return String(r.id ?? r._id ?? r.iqc_id ?? r.pqc_id ?? r.oqc_id ?? r.nc_id ?? '').trim();
-  }
-  function docId(type,r){
-    const rid=rawId(r);
-    if(rid)return rid;
-    if(!r.__wfId){
-      const idx=Math.max(0,arr(type).indexOf(r));
-      const base=[type,r.date||r.ncDate||'',r.lot||r.ncNo||'',r.item||r.product||r.supplier||r.customer||'',idx]
-        .map(v=>String(v??'').trim().replace(/[^0-9a-zA-Z가-힣_-]+/g,'_')).join('__');
-      r.__wfId='__wf__'+base;
-    }
-    return r.__wfId;
-  }
-  function sameDocId(type,r,id){
-    const t=String(id??'').trim();
-    if(!t)return false;
-    return rawId(r)===t || docId(type,r)===t || String(r?.id??'').trim()===t;
-  }
-  function rowTitle(type,r){
-    if(!r)return '-';
-    if(type==='iqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.item||r.supplier||''}`;
-    if(type==='pqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.product||''}`;
-    if(type==='oqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.product||r.customer||''}`;
-    if(type==='training')return `${r.date||''} / ${r.no||'-'} / ${r.title||r.type||''}`;
-    return `${r.ncDate||''} / ${r.ncNo||r.lot||'-'} / ${r.item||r.ncType||''}`;
-  }
-  function isAdminUser(u){
-    const r=normalizeRole(u?.role);
-    const e=String(u?.email||myEmail()||domProfileEmail()).toLowerCase();
-    const n=String(u?.name||myName()||domProfileName()).trim();
-    // 대표/관리자 계정 오타, 대소문자, 프로필 표시값까지 보정
-    return r==='admin'||r==='administrator'||r.includes('admin')
-      || e==='hbleem@namochemical.com'||e==='bhleem@namochemical.com'||e.includes('hbleem@namochemical.com')
-      || n==='임흥배'||n.includes('임흥배');
-  }
-  function isSeniorUser(u){
-    u=u||me();
-    if(!u)return false;
-    if(isAdminUser(u))return true;
-    if((u.status||'')==='APPROVED' && !u.title && !u.role)return true; // 기존 DB에 직책/권한이 없는 경우 알림 누락 방지
-    return (typeof isSenior==='function')?isSenior(u):false;
-  }
-  function canReview(){return isSeniorUser(me());}
-  function canApprove(){
-    const u=me(); if(!u)return isAdminUser(null);
-    if(isAdminUser(u))return true;
-    const t=String(u.title||'').toLowerCase();
-    return ['대표','대표이사','사장','회장','임원','이사','상무','전무','본부장','ceo','coo','cto','cfo'].some(x=>t.includes(x.toLowerCase()));
-  }
-  function sign(role){
-    const u=me()||{};
-    return {id:String(u.id||u.email||role),name:u.name||'-',title:u.title||'',department:u.department||'',role,signDate:today(),approvedAt:nowKst(),signImage:''};
-  }
-  function legacyStatus(r){
-    if(r?.signApprover && r.signApprover.name && r.signApprover.name!=='-')return 'APPROVED';
-    if(r?.signReviewer && r.signReviewer.name && r.signReviewer.name!=='-')return 'APPROVAL_WAIT';
-    if(r?.signWriter && r.signWriter.name && r.signWriter.name!=='-')return 'REVIEW_WAIT';
-    return 'DRAFT';
-  }
-  function getWf(type,id,row){
-    id = row ? docId(type,row) : String(id??'').trim();
-    const s=store(); const k=key(type,id);
-    if(!s[k]){
-      const st=legacyStatus(row);
-      s[k]={type,id:String(id),status:st,createdAt:nowKst(),updatedAt:nowKst(),writer:row?.signWriter?.name||'',history:[]};
-      if(st!=='DRAFT')s[k].history.push({at:nowKst(),by:row?.signWriter?.name||'기존 데이터',action:'기존 데이터 불러오기',status:st});
-      saveStore(s);
-    }
-    return s[k];
-  }
-  function setWf(type,id,patch,log){
-    id = String(id??'').trim();
-    const s=store(); const k=key(type,id);
-    const cur=s[k]||{type,id:String(id),status:'DRAFT',createdAt:nowKst(),history:[]};
-    const next={...cur,...patch,id:String(id),updatedAt:nowKst()};
-    if(log)next.history=[...(cur.history||[]),{at:nowKst(),by:myName()||'system',...log,status:patch.status||cur.status}];
-    s[k]=next; saveStore(s); return next;
-  }
-  function statusBadge(status){
-    const cls=status==='APPROVED'?'pass':(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(status)?'fail':status==='APPROVAL_WAIT'?'hold':'info');
-    return `<span class="badge ${cls}">${STATUS_LABEL[status]||status}</span>`;
-  }
-  function rowStatus(type,r){return getWf(type,docId(type,r),r).status;}
-  function currentUserIsWriter(r,wf){
-    const n=myName()||domProfileName();
-    const e=(myEmail()||domProfileEmail()).toLowerCase();
-    const wn=String(r?.signWriter?.name||wf?.writer||'').trim();
-    const we=String(r?.signWriter?.email||r?.signWriter?.id||wf?.writerEmail||'').toLowerCase();
-    if(!wn || wn==='-')return false;
-    return !!((n&&wn===n)||(e&&we===e));
-  }
-  function currentUserIsReviewer(r,wf){
-    const myId=String(me()?.id||me()?.email||myEmail()||'').toLowerCase();
-    const rid=String(wf?.reviewerId||r?.signReviewer?.id||r?.signReviewer?.email||'').toLowerCase();
-    return !rid || rid===myId;
-  }
-  function currentUserIsApprover(r,wf){
-    const myId=String(me()?.id||me()?.email||myEmail()||'').toLowerCase();
-    const aid=String(wf?.approverId||r?.signApprover?.id||r?.signApprover?.email||'').toLowerCase();
-    return !aid || aid===myId;
-  }
-  function actions(type,r){
-    const st=rowStatus(type,r); const wf=getWf(type,docId(type,r),r); const id=clean(docId(type,r));
-    let html='';
-    if(st==='DRAFT') html+=`<button class="sb edit" data-wf="submit" data-type="${type}" data-id="${id}">제출</button>`;
-    if(st==='REVIEW_WAIT' && canReview() && currentUserIsReviewer(r,wf) && !currentUserIsWriter(r,wf)) html+=`<button class="sb edit" data-wf="review" data-type="${type}" data-id="${id}">검토승인</button><button class="sb del" data-wf="reject" data-type="${type}" data-id="${id}">반려</button>`;
-    if(st==='APPROVAL_WAIT' && canApprove() && currentUserIsApprover(r,wf) && !currentUserIsWriter(r,wf)) html+=`<button class="sb edit" data-wf="approve" data-type="${type}" data-id="${id}">최종승인</button><button class="sb del" data-wf="reject" data-type="${type}" data-id="${id}">반려</button>`;
-    if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(st) && currentUserIsWriter(r,wf)) html+=`<button class="sb edit" data-wf="resubmit" data-type="${type}" data-id="${id}">재제출</button>`;
-    html+=`<button class="sb lbl" data-wf="history" data-type="${type}" data-id="${id}">이력</button>`;
-    return html;
-  }
-  function makeWriterOnly(type){
-    const u=me();
-    return {writer:{id:String(u?.id||u?.email||''),name:u?.name||'-',title:u?.title||'',department:u?.department||'',signDate:today(),approvedAt:nowKst(),signImage:''},reviewer:{name:'-',title:'',department:'',signDate:'',signImage:''},approver:{name:'-',title:'',department:'',signDate:'',signImage:''}};
-  }
-  function replaceSignGrids(){
-    ['iqc','pqc','oqc','nc'].forEach(type=>{
-      const c=qs(`signGrid_${type}`); if(!c)return;
-      const u=me()||{};
-      c.innerHTML=`<div class="sign-box" style="grid-column:1/-1">
-        <div class="sign-box-hdr"><span class="sign-box-role">전자결재 상태</span><span class="sign-box-badge any">대기업식 Workflow</span></div>
-        <div class="sign-box-body" style="line-height:1.8">
-          <div><b>작성자</b>: ${clean(u.name||'-')} ${clean(u.title||'')}</div>
-          <div style="color:var(--t3);font-size:12px">저장하면 자동으로 <b>검토대기</b>가 되며, 검토권한자에게 알림이 생성됩니다. 검토자/승인자는 작성 단계에서 선택하지 않습니다.</div>
-          <div style="margin-top:6px;font-size:12px;color:var(--wa)">작성자와 최종 승인자는 분리됩니다. 검토/승인은 업무함 또는 알림에서 처리합니다.</div>
-        </div>
-      </div>`;
-    });
-  }
-  function installUi(){
-    if(qs('wfBell'))return;
-    const style=document.createElement('style');
-    style.textContent=`
-    .wf-bell{position:relative;height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);background:#fff;padding:0 12px;cursor:pointer;font-weight:800;color:var(--t2)}
-    .wf-count{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:999px;background:#dc2626;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 5px}
-    .wf-panel{position:absolute;right:0;top:44px;width:380px;max-height:520px;overflow:auto;background:#fff;border:1px solid var(--bd);border-radius:var(--r3);box-shadow:var(--sh3);z-index:1500;display:none;padding:8px}
-    .wf-panel.show{display:block}.wf-item{border-bottom:1px solid var(--bd);padding:10px}.wf-item:last-child{border-bottom:none}.wf-title{font-weight:800;color:var(--t1);font-size:13px}.wf-meta{font-size:12px;color:var(--t3);margin-top:3px}.wf-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}.wf-log{font-size:12px;line-height:1.7;padding:8px 0;border-bottom:1px dashed var(--bd)}
-    `;
-    document.head.appendChild(style);
-    const tr=document.querySelector('.tright');
-    if(tr){
-      const wrap=document.createElement('div'); wrap.style.position='relative';
-      wrap.innerHTML=`<button type="button" class="wf-bell" id="wfBell">🔔 알림 <span class="wf-count" id="wfCount">0</span></button><div class="wf-panel" id="wfPanel"></div>`;
-      tr.insertBefore(wrap,tr.firstChild);
-      qs('wfBell').onclick=()=>{qs('wfPanel').classList.toggle('show'); renderNotifications();};
-    }
-    const side=document.querySelector('.sidebar');
-    if(side && !qs('wfNavBtn')){
-      const sec=document.createElement('div'); sec.className='nav-sec'; sec.textContent='전자결재';
-      const btn=document.createElement('button'); btn.className='nav-item'; btn.id='wfNavBtn'; btn.type='button'; btn.innerHTML='<span class="nav-icon">✅</span><span>검토/승인 업무함</span>';
-      side.insertBefore(btn,qs('adminNavTitle')||null); side.insertBefore(sec,btn);
-      btn.onclick=()=>showApprovalPage();
-    }
-    const main=document.querySelector('main.content');
-    if(main && !qs('page-approval')){
-      const page=document.createElement('section'); page.className='page'; page.id='page-approval';
-      page.innerHTML=`<div class="ph"><div><div class="ph-title">검토/승인 업무함</div><div class="ph-sub">내 작성문서, 검토할 문서, 승인할 문서, 반려문서를 구분해서 표시합니다.</div></div><div class="ph-actions"><button class="btn light" id="wfRefresh">새로고침</button></div></div>
-      <div class="card"><div class="ch"><h3>업무 요약</h3><span class="tag" id="wfRoleText"></span></div><div class="cb" id="wfSummary" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
-      <div class="card mt14"><div class="ch"><h3>내 작성문서</h3><span class="tag" id="wfMineCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfMineTable"></tbody></table></div></div>
-      <div class="card mt14"><div class="ch"><h3>검토할 문서</h3><span class="tag" id="wfReviewCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfReviewTable"></tbody></table></div></div>
-      <div class="card mt14"><div class="ch"><h3>승인할 문서</h3><span class="tag" id="wfApproveCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfApproveTable"></tbody></table></div></div>
-      <div class="card mt14"><div class="ch"><h3>반려문서</h3><span class="tag" id="wfRejectCount">0</span></div><div class="tw" style="border:none;border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>구분</th><th>문서</th><th>상태</th><th>작성자</th><th>최근변경</th><th>작업</th></tr></thead><tbody id="wfRejectTable"></tbody></table></div></div>`;
-      main.appendChild(page); qs('wfRefresh').onclick=renderTaskTable;
-    }
-  }
-  function showApprovalPage(){
-    qsa('.nav-item[data-page],#wfNavBtn').forEach(b=>b.classList.remove('active'));
-    qs('wfNavBtn')?.classList.add('active');
-    qsa('.page').forEach(p=>p.classList.remove('active'));
-    qs('page-approval')?.classList.add('active');
-    // 업무함 진입 시 최신 검사 목록/결재상태/알림을 강제로 다시 계산
-    try{patchTables();}catch(e){console.warn('[wf] patchTables failed',e);}
-    renderTaskTable();
-    renderNotifications();
-    updateBell();
-  }
-  function allDocs(){
-    const out=[];
-    Object.keys(TYPE_ARR).forEach(t=>arr(t).forEach(r=>out.push({type:t,row:r,wf:getWf(t,docId(t,r),r)})));
-    return out;
-  }
-  function visibleTasks(){
-    return taskBuckets().all;
-  }
-  function taskBuckets(){
-    const docs=allDocs().filter(x=>x.wf.status && x.wf.status!=='DRAFT');
-    const rejected=['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'];
-
-    // 중요: 기존 데이터에는 reviewerId/approverId가 비어 있거나 계정 id가 서로 다르게 저장될 수 있음.
-    // 그래서 업무함은 권한 기준으로 우선 표시하고, 작성자 본인 문서만 제외한다.
-    const mine=docs.filter(x=>currentUserIsWriter(x.row,x.wf) || hasNoWriter(x.row,x.wf));
-
-    const review=docs.filter(x=>
-      x.wf.status==='REVIEW_WAIT' &&
-      canReview() &&
-      (!currentUserIsWriter(x.row,x.wf) || hasNoWriter(x.row,x.wf))
-    );
-
-    const approve=docs.filter(x=>
-      x.wf.status==='APPROVAL_WAIT' &&
-      canApprove() &&
-      (!currentUserIsWriter(x.row,x.wf) || hasNoWriter(x.row,x.wf))
-    );
-
-    const reject=docs.filter(x=>
-      rejected.includes(x.wf.status) &&
-      (currentUserIsWriter(x.row,x.wf) || hasNoWriter(x.row,x.wf))
-    );
-
-    const byKey=new Map();
-    [...mine,...review,...approve,...reject].forEach(x=>byKey.set(`${x.type}:${docId(x.type,x.row)}`,x));
-    return {mine,review,approve,reject,all:[...byKey.values()]};
-  }
-  function deleteActionName(type){
-    if(type==='iqc')return 'deleteIncoming';
-    if(type==='pqc')return 'deleteProcess';
-    if(type==='oqc')return 'deleteShipment';
-    if(type==='nc')return 'deleteNc';
-    return '';
-  }
-  function taskRowHtml(x){
-    const id=clean(docId(x.type,x.row));
-    const delName=deleteActionName(x.type);
-    const delBtn=delName?`<button class="sb del" data-action="${delName}" data-id="${id}">삭제</button>`:'';
-    return `<tr><td>${TYPE_LABEL[x.type]}</td><td><strong>${clean(rowTitle(x.type,x.row))}</strong></td><td>${statusBadge(x.wf.status)}${x.wf.rejectReason?`<div style="margin-top:4px;color:var(--er);font-size:12px">사유: ${clean(x.wf.rejectReason)}</div>`:''}</td><td>${clean(x.row.signWriter?.name||x.wf.writer||'-')}</td><td>${clean(x.wf.updatedAt||'-')}</td><td><div class="ai">${actions(x.type,x.row)}${delBtn}</div></td></tr>`;
-  }
-  function fillTaskTable(tbodyId,countId,items,emptyMsg){
-    const tb=qs(tbodyId); if(!tb)return;
-    const c=qs(countId); if(c)c.textContent=String(items.length);
-    tb.innerHTML=items.length?items.map(taskRowHtml).join(''):`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t3)">${emptyMsg}</td></tr>`;
-  }
-  function renderTaskTable(){
-    if(!qs('page-approval'))return;
-    qs('wfRoleText').textContent=`검토권한:${canReview()?'Y':'N'} / 승인권한:${canApprove()?'Y':'N'}`;
-    const b=taskBuckets();
-    const sum=qs('wfSummary');
-    if(sum){
-      sum.innerHTML=`<span class="badge info">내 작성문서 ${b.mine.length}</span><span class="badge hold">검토할 문서 ${b.review.length}</span><span class="badge hold">승인할 문서 ${b.approve.length}</span><span class="badge fail">반려문서 ${b.reject.length}</span>`;
-    }
-    fillTaskTable('wfMineTable','wfMineCount',b.mine,'내가 작성한 결재 문서가 없습니다.');
-    fillTaskTable('wfReviewTable','wfReviewCount',b.review,'검토할 문서가 없습니다.');
-    fillTaskTable('wfApproveTable','wfApproveCount',b.approve,'승인할 문서가 없습니다.');
-    fillTaskTable('wfRejectTable','wfRejectCount',b.reject,'반려된 문서가 없습니다.');
-  }
-  function notifications(){
-    const out=[];
-    allDocs().forEach(x=>{
-      // 업무함과 동일하게 권한 기준으로 알림 생성. reviewerId/approverId 누락으로 알림이 0건 되는 문제 방지.
-      if(x.wf.status==='REVIEW_WAIT' && canReview() && (!currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf))){
-        out.push({...x,msg:'검토 요청이 있습니다.',kind:'검토요청'});
-      }
-      if(x.wf.status==='APPROVAL_WAIT' && canApprove() && (!currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf))){
-        out.push({...x,msg:'최종 승인 요청이 있습니다.',kind:'승인요청'});
-      }
-      if(['REJECTED','REVIEW_REJECTED','APPROVAL_REJECTED'].includes(x.wf.status) && (currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf))){
-        out.push({...x,msg:(x.wf.status==='REVIEW_REJECTED'?'검토 반려되었습니다.':x.wf.status==='APPROVAL_REJECTED'?'승인 반려되었습니다.':'문서가 반려되었습니다.')+' 수정 후 재제출하세요.',kind:'반려'});
-      }
-      if(x.wf.status==='APPROVED' && (currentUserIsWriter(x.row,x.wf)||hasNoWriter(x.row,x.wf))){
-        out.push({...x,msg:'문서가 최종 승인되었습니다.',kind:'승인완료'});
-      }
-    });
-    return out.sort((a,b)=>String(b.wf.updatedAt||'').localeCompare(String(a.wf.updatedAt||'')));
-  }
-  function unreadId(n){return `${n.type}:${docId(n.type,n.row)}:${n.wf.status}:${n.wf.updatedAt}`;}
-  function readMap(){return readJson(READ_KEY,{});} function saveRead(m){saveJson(READ_KEY,m);}
-  function updateBell(){
-    const cnt=qs('wfCount'); if(!cnt)return;
-    const rm=readMap(); const n=notifications().filter(x=>!rm[unreadId(x)]).length;
-    cnt.textContent=String(n); cnt.style.display=n?'flex':'none';
-  }
-  function renderNotifications(){
-    const p=qs('wfPanel'); if(!p)return;
-    const ns=notifications(); const rm=readMap();
-    if(!ns.length){p.innerHTML='<div style="padding:18px;text-align:center;color:var(--t3)">알림이 없습니다.</div>'; updateBell(); return;}
-    p.innerHTML=ns.map(n=>`<div class="wf-item"><div class="wf-title">${clean(n.kind)} · ${TYPE_LABEL[n.type]}</div><div class="wf-meta">${clean(n.msg)}<br>${clean(rowTitle(n.type,n.row))}<br>최근변경: ${clean(n.wf.updatedAt||'-')}</div><div class="wf-actions">${actions(n.type,n.row)}<button class="sb lbl" data-wf="read" data-read-id="${clean(unreadId(n))}">읽음</button></div></div>`).join('');
-    ns.forEach(n=>{ if(n.wf.status==='APPROVED')rm[unreadId(n)]=1; }); saveRead(rm); updateBell();
-  }
-  async function updateServer(type,r){
-    const sid=rawId(r);
-    if(!sid){
-      console.warn('[전자결재] 서버 id가 없어 서버 PUT은 생략하고 화면/로컬 workflow만 갱신합니다.',{type,row:r});
-      return {localOnly:true};
-    }
-    let p={};
-    if(type==='iqc')p={date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:r.signWriter?.name||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
-    if(type==='pqc')p={date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:r.signWriter?.name||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
-    if(type==='oqc')p={date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:r.signWriter?.name||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
-    if(type==='nc')p={ncDate:r.ncDate,ncNo:r.ncNo,ncType:r.ncType,dept:r.dept,lot:r.lot,item:r.item,qty:r.qty,issue:r.issue,cause:r.cause,action:r.action,actionDate:r.actionDate||null,verify:r.verify,verifyDate:r.verifyDate||null,owner:r.owner,status:r.status,signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
-    if(type==='training')p={date:r.date,no:r.no,reportNo:r.no,type:r.type,title:r.title,place:r.place,instructor:r.instructor,dept:r.dept,hours:r.hours,attendees:r.attendees,absentees:r.absentees,content:r.content,evalMethod:r.evalMethod,result:r.result,remark:r.remark,photos:r.photos||[],writer:r.writer||r.signWriter?.name||'',reviewer:r.reviewer||r.signReviewer?.name||'',approver:r.approver||r.signApprover?.name||'',signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
-    const {data}=await api(`${TYPE_API[type]}/${sid}`,{method:'PUT',body:JSON.stringify(p)});
-    return data;
-  }
-  async function refreshType(type){
-    if(type==='iqc' && typeof loadIncoming==='function')await loadIncoming();
-    if(type==='pqc' && typeof loadProcess==='function')await loadProcess();
-    if(type==='oqc' && typeof loadShipment==='function')await loadShipment();
-    if(type==='nc' && typeof loadNonconform==='function')await loadNonconform();
-    if(type==='training' && typeof loadTrainingReports==='function')await loadTrainingReports();
-    if(typeof renderSummary==='function')renderSummary();
-    patchTables(); renderTaskTable(); renderNotifications(); updateBell();
-  }
-  function findDoc(type,id){
-    const target=String(id??'').trim();
-    const list=arr(type);
-
-    let r=list.find(x=>sameDocId(type,x,target));
-    if(r)return r;
-
-    // 버튼 data-id가 비었거나 기존 HTML 캐시에서 id가 다르게 넘어온 경우: 해당 유형 문서가 1건이면 그 문서를 사용
-    if((!target || target==='undefined' || target==='null') && list.length===1)return list[0];
-
-    const found=allDocs()
-      .filter(x=>x.type===type)
-      .map(x=>x.row)
-      .find(x=>sameDocId(type,x,target));
-    if(found)return found;
-
-    console.warn('[전자결재] findDoc 실패 상세',{type,id:target,list:list.map(x=>({id:x.id,rawId:rawId(x),docId:docId(type,x),date:x.date||x.ncDate,lot:x.lot||x.ncNo,item:x.item||x.product}))});
-    return null;
-  }
-  async function doAction(act,type,id){
-    if(act==='read'){
-      const rm=readMap();
-      rm[id]=1;
-      saveRead(rm);
-      renderNotifications();
-      return;
-    }
-
-    const r=findDoc(type,id);
-    if(!r){
-      console.warn('[전자결재] 문서 찾기 실패',{act,type,id,arr:arr(type),docs:allDocs()});
-      alert('문서를 찾을 수 없습니다. 새로고침 후 다시 시도하세요.');
-      return;
-    }
-
-    const wf=getWf(type,docId(type,r),r);
-
-    if(act==='history')return showHistory(type,r);
-
-    if(act==='submit' || act==='resubmit'){
-      if(!r.signWriter || !r.signWriter.name || r.signWriter.name==='-')r.signWriter=sign('writer');
-      r.signReviewer={name:'-',title:'',department:'',signDate:'',signImage:''};
-      r.signApprover={name:'-',title:'',department:'',signDate:'',signImage:''};
-      await updateServer(type,r);
-      setWf(type,docId(type,r),{status:'REVIEW_WAIT',writer:r.signWriter.name,writerEmail:r.signWriter.email||r.signWriter.id||'',reviewerId:r.signReviewer?.id||r.signReviewer?.email||wf.reviewerId||'',approverId:r.signApprover?.id||r.signApprover?.email||wf.approverId||'',rejectReason:'',rejectedAt:'',rejectedBy:''},{action:act==='resubmit'?'재제출':'검토요청',memo:'지정 검토자에게 알림 생성'});
-      alert('검토 요청되었습니다.');
-      return refreshType(type);
-    }
-
-    if(act==='review'){
-      if(!canReview())return alert('검토 권한이 없습니다.');
-      if(currentUserIsWriter(r,wf))return alert('작성자는 본인 문서를 검토할 수 없습니다.');
-      r.signReviewer=sign('reviewer');
-      await updateServer(type,r);
-      setWf(type,docId(type,r),{status:'APPROVAL_WAIT',reviewer:r.signReviewer.name,approverId:wf.approverId||r.signApprover?.id||r.signApprover?.email||''},{action:'검토승인',memo:'지정 승인자에게 알림 생성'});
-      alert('검토 승인되었습니다.');
-      return refreshType(type);
-    }
-
-    if(act==='approve'){
-      if(!canApprove())return alert('승인 권한이 없습니다.');
-      if(currentUserIsWriter(r,wf))return alert('작성자는 본인 문서를 최종 승인할 수 없습니다.');
-      r.signApprover=sign('approver');
-      await updateServer(type,r);
-      setWf(type,docId(type,r),{status:'APPROVED',approver:r.signApprover.name},{action:'최종승인',memo:'성적서 확정'});
-      alert('최종 승인되었습니다.');
-      return refreshType(type);
-    }
-
-    if(act==='reject'){
-      const reason=prompt('반려 사유를 입력하세요.\n예: 검사값 누락, LOT 오기재, 첨부자료 부족');
-      if(!reason || !String(reason).trim())return alert('반려 사유는 필수입니다.');
-
-      if(wf.status==='REVIEW_WAIT'){
-        if(!canReview())return alert('검토 반려 권한이 없습니다.');
-        if(currentUserIsWriter(r,wf))return alert('작성자는 본인 문서를 검토 반려할 수 없습니다.');
-        r.signReviewer=sign('reviewer');
-        r.signApprover={name:'-',title:'',department:'',signDate:'',signImage:''};
-        await updateServer(type,r);
-        setWf(type,docId(type,r),{status:'REVIEW_REJECTED',reviewer:r.signReviewer.name,rejectReason:String(reason).trim(),rejectedAt:nowKst(),rejectedBy:r.signReviewer.name},{action:'검토반려',memo:String(reason).trim()});
-        alert('검토 반려 처리되었습니다. 작성자에게 반려 알림이 표시됩니다.');
-        return refreshType(type);
-      }
-
-      if(wf.status==='APPROVAL_WAIT'){
-        if(!canApprove())return alert('승인 반려 권한이 없습니다.');
-        if(currentUserIsWriter(r,wf))return alert('작성자는 본인 문서를 승인 반려할 수 없습니다.');
-        r.signApprover=sign('approver');
-        await updateServer(type,r);
-        setWf(type,docId(type,r),{status:'APPROVAL_REJECTED',approver:r.signApprover.name,rejectReason:String(reason).trim(),rejectedAt:nowKst(),rejectedBy:r.signApprover.name},{action:'승인반려',memo:String(reason).trim()});
-        alert('승인 반려 처리되었습니다. 작성자에게 반려 알림이 표시됩니다.');
-        return refreshType(type);
-      }
-
-      alert('현재 상태에서는 반려할 수 없습니다.');
-      return;
-    }
-  }
-  function showHistory(type,r){
-    const wf=getWf(type,docId(type,r),r);
-    const logs=(wf.history||[]).map(h=>`<div class="wf-log"><b>${clean(h.action||'-')}</b> · ${clean(h.by||'-')} · ${clean(h.at||'-')}<br><span style="color:var(--t3)">${clean(h.memo||'')}</span></div>`).join('')||'<div style="color:var(--t3)">이력이 없습니다.</div>';
-    const msg=`${TYPE_LABEL[type]}\n${rowTitle(type,r)}\n상태: ${STATUS_LABEL[wf.status]||wf.status}\n\n`+(wf.history||[]).map(h=>`${h.at} / ${h.by} / ${h.action}${h.memo?' / '+h.memo:''}`).join('\n');
-    if(qs('wfPanel')){qs('wfPanel').classList.add('show'); qs('wfPanel').innerHTML=`<div class="wf-item"><div class="wf-title">결재 이력</div><div class="wf-meta">${clean(rowTitle(type,r))}<br>${statusBadge(wf.status)}</div>${logs}</div>`;}
-    else alert(msg);
-  }
-  function patchTables(){
-    if(typeof window.__wfOrigRenderIncoming==='undefined' && typeof renderIncomingTable==='function')window.__wfOrigRenderIncoming=renderIncomingTable;
-    if(typeof window.__wfOrigRenderProcess==='undefined' && typeof renderProcessTable==='function')window.__wfOrigRenderProcess=renderProcessTable;
-    if(typeof window.__wfOrigRenderShipment==='undefined' && typeof renderShipmentTable==='function')window.__wfOrigRenderShipment=renderShipmentTable;
-    if(typeof window.__wfOrigRenderNc==='undefined' && typeof renderNcTable==='function')window.__wfOrigRenderNc=renderNcTable;
-    window.renderIncomingTable=function(){const tb=qs('incomingTable'); if(!tb)return; if(!state.incoming.length){tb.innerHTML=eRow(12);return;} tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.supplier||'')}</td><td>${clean(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}<br>${statusBadge(rowStatus('iqc',r))}</td><td>${clean(r.signWriter?.name||'-')}</td><td>${clean(r.signReviewer?.name||'-')}</td><td>${clean(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${clean(docId('iqc',r))}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${clean(docId('iqc',r))}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${clean(docId('iqc',r))}">🏷라벨</button>${actions('iqc',r)}</div></td></tr>`).join('');};
-    window.renderProcessTable=function(){const tb=qs('processTable'); if(!tb)return; if(!state.process.length){tb.innerHTML=eRow(11);return;} tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.product||'')}</td><td>${clean(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}<br>${statusBadge(rowStatus('pqc',r))}</td><td>${clean(r.signWriter?.name||'-')}</td><td>${clean(r.signReviewer?.name||'-')}</td><td>${clean(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${clean(docId('pqc',r))}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${clean(docId('pqc',r))}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${clean(docId('pqc',r))}">🏷라벨</button>${actions('pqc',r)}</div></td></tr>`).join('');};
-    window.renderShipmentTable=function(){const tb=qs('shipmentTable'); if(!tb)return; if(!state.shipment.length){tb.innerHTML=eRow(11);return;} tb.innerHTML=state.shipment.map(r=>`<tr><td>${r.date||''}</td><td>${clean(r.customer||'')}</td><td>${clean(r.product||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}<br>${statusBadge(rowStatus('oqc',r))}</td><td>${clean(r.signWriter?.name||'-')}</td><td>${clean(r.signReviewer?.name||'-')}</td><td>${clean(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="${clean(docId('oqc',r))}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${clean(docId('oqc',r))}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${clean(docId('oqc',r))}">🏷라벨</button>${actions('oqc',r)}</div></td></tr>`).join('');};
-    window.renderNcTable=function(){const tb=qs('nonconformTable'); if(!tb)return; if(!state.nonconform.length){tb.innerHTML=eRow(13);return;} tb.innerHTML=state.nonconform.map(r=>`<tr><td>${r.ncDate||''}</td><td><strong>${clean(r.ncNo||'-')}</strong></td><td>${clean(r.ncType||'-')}</td><td>${clean(r.dept||'-')}</td><td>${clean(r.lot||'-')}</td><td>${clean(r.item||'-')}</td><td>${r.qty??0}</td><td>${clean(r.owner||'-')}</td><td>${ncStatusBadge(r.status)}<br>${statusBadge(rowStatus('nc',r))}</td><td>${clean(r.signWriter?.name||'-')}</td><td>${clean(r.signReviewer?.name||'-')}</td><td>${clean(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${clean(docId('nc',r))}">수정</button><button class="sb del" data-action="deleteNc" data-id="${clean(docId('nc',r))}">삭제</button>${actions('nc',r)}</div></td></tr>`).join('');};
-    renderIncomingTable(); renderProcessTable(); renderShipmentTable(); renderNcTable();
-  }
-  function overrideSaveFunctions(){
-    // 중복 초기화 방지: init/bind가 다시 호출되어도 저장 함수가 여러 번 래핑되지 않도록 보호
-    if(window.__namoWfSavePatched)return;
-    window.__namoWfSavePatched=true;
-
-    const oldI=window.__namoOrigSaveIqc || window.saveIqc;
-    const oldP=window.__namoOrigSavePqc || window.savePqc;
-    const oldO=window.__namoOrigSaveOqc || window.saveOqc;
-    const oldN=window.__namoOrigSaveNc  || window.saveNc;
-    const oldT=window.__namoOrigSaveTraining || window.saveTrainingReport;
-    window.__namoOrigSaveIqc=oldI;
-    window.__namoOrigSavePqc=oldP;
-    window.__namoOrigSaveOqc=oldO;
-    window.__namoOrigSaveNc=oldN;
-    window.__namoOrigSaveTraining=oldT;
-
-    function applySubmitWf(type,row,memo){
-      if(!row)return;
-      setWf(type,docId(type,row),{
-        status:'REVIEW_WAIT',
-        writer:row.signWriter?.name||myName(),
-        writerEmail:row.signWriter?.email||row.signWriter?.id||myEmail(),
-        reviewerId:row.signReviewer?.id||row.signReviewer?.email||'',
-        reviewer:row.signReviewer?.name||'',
-        approverId:row.signApprover?.id||row.signApprover?.email||'',
-        approver:row.signApprover?.name||''
-      },{action:'검토요청',memo});
-    }
-
-    window.saveIqc=async function(){
-      const before=(state.incoming||[]).map(x=>String(x.id));
-      if(typeof oldI==='function')await oldI();
-      const newest=(state.incoming||[]).find(x=>!before.includes(String(x.id))) || [...(state.incoming||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
-      applySubmitWf('iqc',newest,'입고검사 작성 후 지정 검토자에게 검토 요청');
-      await refreshType('iqc');
-    };
-    window.savePqc=async function(){
-      const before=(state.process||[]).map(x=>String(x.id));
-      if(typeof oldP==='function')await oldP();
-      const newest=(state.process||[]).find(x=>!before.includes(String(x.id))) || [...(state.process||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
-      applySubmitWf('pqc',newest,'공정검사 작성 후 지정 검토자에게 검토 요청');
-      await refreshType('pqc');
-    };
-    window.saveOqc=async function(){
-      const before=(state.shipment||[]).map(x=>String(x.id));
-      if(typeof oldO==='function')await oldO();
-      const newest=(state.shipment||[]).find(x=>!before.includes(String(x.id))) || [...(state.shipment||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
-      applySubmitWf('oqc',newest,'출하검사 작성 후 지정 검토자에게 검토 요청');
-      await refreshType('oqc');
-    };
-    window.saveNc=async function(){
-      const before=(state.nonconform||[]).map(x=>String(x.id));
-      if(typeof oldN==='function')await oldN();
-      const newest=(state.nonconform||[]).find(x=>!before.includes(String(x.id))) || [...(state.nonconform||[])].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
-      applySubmitWf('nc',newest,'부적합 보고 후 지정 검토자에게 검토 요청');
-      await refreshType('nc');
-    };
-    window.saveTrainingReport=async function(){
-      const before=(typeof readTrainingReports==='function'?readTrainingReports():(state.trainingReports||[])).map(x=>String(x.id));
-      if(typeof oldT==='function')await oldT();
-      if(typeof loadTrainingReports==='function')await loadTrainingReports();
-      const list=(typeof readTrainingReports==='function'?readTrainingReports():(state.trainingReports||[]));
-      const newest=list.find(x=>!before.includes(String(x.id))) || [...list].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
-      applySubmitWf('training',newest,'교육보고서 작성 후 지정 검토자에게 검토 요청');
-      await refreshType('training');
-    };
-
-    if(qs('incomingSave'))qs('incomingSave').onclick=withSaving('iqc',qs('incomingSave'),window.saveIqc);
-    if(qs('processSave'))qs('processSave').onclick=withSaving('pqc',qs('processSave'),window.savePqc);
-    if(qs('shipmentSave'))qs('shipmentSave').onclick=withSaving('oqc',qs('shipmentSave'),window.saveOqc);
-    if(qs('ncSave'))qs('ncSave').onclick=withSaving('nc',qs('ncSave'),window.saveNc);
-    if(qs('trainingSave'))qs('trainingSave').onclick=withSaving('training',qs('trainingSave'),window.saveTrainingReport);
-  }
-  function migrateExistingWorkflow(){
-    try{
-      Object.keys(TYPE_ARR).forEach(type=>{
-        arr(type).forEach(r=>{
-          const id=docId(type,r);
-          const wf=getWf(type,id,r);
-          // 작성자는 있는데 workflow가 초안/없음이면 검토대기로 자동 이관
-          if((!wf.status || wf.status==='DRAFT') && r?.signWriter?.name && r.signWriter.name!=='-'){
-            setWf(type,id,{
-              status:'REVIEW_WAIT',
-              writer:r.signWriter.name,
-              writerEmail:r.signWriter.email||r.signWriter.id||'',
-              reviewerId:r.signReviewer?.id||r.signReviewer?.email||'',
-              reviewer:r.signReviewer?.name&&r.signReviewer.name!=='-'?r.signReviewer.name:'',
-              approverId:r.signApprover?.id||r.signApprover?.email||'',
-              approver:r.signApprover?.name&&r.signApprover.name!=='-'?r.signApprover.name:''
-            },{action:'기존문서이관',memo:'기존 저장 문서를 검토대기 workflow로 자동 이관'});
-          }
-        });
-      });
-    }catch(e){console.warn('[전자결재] 기존문서 이관 실패',e);}
-  }
-
-  function bindDelegates(){
-    document.addEventListener('click',e=>{
-      const read=e.target.closest('[data-wf="read"]'); if(read){doAction('read',null,read.dataset.readId); return;}
-      const btn=e.target.closest('[data-wf]'); if(!btn)return;
-      const act=btn.dataset.wf; if(act==='read')return;
-      doAction(act,btn.dataset.type,btn.dataset.id);
-    });
-    document.addEventListener('click',e=>{const p=qs('wfPanel'),b=qs('wfBell'); if(p&&b&&!p.contains(e.target)&&!b.contains(e.target)&&!e.target.closest('[data-wf]'))p.classList.remove('show');});
-  }
-  function init(){
-    installUi(); rebuildAllSignGrids(); overrideSaveFunctions(); patchTables(); migrateExistingWorkflow(); bindDelegates(); renderTaskTable(); renderNotifications(); updateBell();
-    setInterval(()=>{updateBell();},5000);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700)); else setTimeout(init,700);
-})();
-</script>
-
-
-
-
-<script>
-/* ═══════════════════════════════════════
-   서버 목록 강제 동기화 보강 v7
-   - 측정기 목록: /api/instruments 조회 후 화면 렌더
-   - 교육 보고서 목록: /api/training 조회 후 화면 렌더
-   - 기존 localStorage 데이터가 있고 서버가 비어 있으면 자동 이전
-═══════════════════════════════════════ */
-(function(){
-  const $q = (id)=>document.getElementById(id);
-  const esc2 = (v)=>String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
-  const txt2 = (v)=>(v ?? '').toString().trim();
-  const arr2 = (v)=>Array.isArray(v)?v:[];
-  const date2 = (v)=>{
-    if(!v) return '';
-    const s=String(v);
-    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    try{ const d=new Date(s); if(!Number.isNaN(d.getTime())) return new Date(d.getTime()+9*60*60*1000).toISOString().slice(0,10); }catch(e){}
-    return s.slice(0,10);
-  };
-  async function jfetch(url,opt={}){
-    const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt});
-    const d=await r.json().catch(()=>null);
-    return {res:r,data:d};
-  }
-  function safeJson(key,def=[]){try{const v=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(v)?v:def;}catch(e){return def;}}
-  function normalizeInstrument(x){
-    return {
-      id:x.id || x._id || ('I-'+Date.now()+Math.random()),
-      no:txt2(x.no || x.code || x.instrumentNo),
-      name:txt2(x.name || x.instrumentName),
-      model:txt2(x.model), maker:txt2(x.maker), location:txt2(x.location),
-      cycle:txt2(x.cycle) || '12',
-      lastCal:date2(x.lastCal || x.last_cal),
-      nextCal:date2(x.nextCal || x.next_cal),
-      status:txt2(x.status) || '정상',
-      remark:txt2(x.remark), photo:txt2(x.photo || x.photoUrl),
-      createdAt:x.createdAt || x.created_at || ''
-    };
-  }
-  function isDeletedTraining(x){
-    const v=String(x?.deleted ?? x?.isDeleted ?? x?._deleted ?? '').toLowerCase();
-    const st=String(x?.status ?? '').toUpperCase();
-    return v==='true'||v==='1'||st==='DELETED'||st==='TRASH'||st==='REMOVED'||st==='삭제';
-  }
-  function signName(x){return x && typeof x==='object' ? txt2(x.name || x.userName || x.label) : '';}
-  function normalizeTraining(x){
-    const sw=x.signWriter || x.sign_writer || {};
-    const sr=x.signReviewer || x.sign_reviewer || {};
-    const sa=x.signApprover || x.sign_approver || {};
-    return {
-      id:x.id || x._id || ('T-'+Date.now()+Math.random()),
-      date:date2(x.date || x.trainingDate),
-      no:txt2(x.no || x.reportNo || x.report_no),
-      type:txt2(x.type), title:txt2(x.title || x.trainingTitle), place:txt2(x.place),
-      instructor:txt2(x.instructor), dept:txt2(x.dept), hours:txt2(x.hours),
-      attendees:txt2(x.attendees), absentees:txt2(x.absentees), content:txt2(x.content),
-      evalMethod:txt2(x.evalMethod || x.eval_method), result:txt2(x.result) || '완료', remark:txt2(x.remark),
-      photos:Array.isArray(x.photos)?x.photos:[],
-      signWriter:sw, signReviewer:sr, signApprover:sa,
-      writer:txt2(x.writer) || signName(sw),
-      reviewer:txt2(x.reviewer) || signName(sr),
-      approver:txt2(x.approver) || signName(sa),
-      createdAt:x.createdAt || x.created_at || '', updatedAt:x.updatedAt || x.updated_at || ''
-    };
-  }
-  async function migrateInstrumentsIfNeeded(serverRows){
-    if(Array.isArray(serverRows)&&serverRows.length) return false;
-    const marker='namo_qms_instruments_migrated_to_server_v7';
-    if(localStorage.getItem(marker)==='1') return false;
-    const legacy=safeJson('namo_qms_instruments',[]).map(normalizeInstrument).filter(x=>x.no&&x.name);
-    if(!legacy.length) return false;
-    let ok=0;
-    for(const x of legacy){
-      const payload={no:x.no,name:x.name,model:x.model,maker:x.maker,location:x.location,cycle:x.cycle,lastCal:x.lastCal||null,nextCal:x.nextCal||null,status:x.status,remark:x.remark,photo:x.photo};
-      try{const r=await jfetch('/api/instruments',{method:'POST',body:JSON.stringify(payload)}); if(r.res.ok&&r.data?.success) ok++;}catch(e){}
-    }
-    if(ok){localStorage.setItem(marker,'1'); return true;}
-    return false;
-  }
-  async function migrateTrainingIfNeeded(serverRows){
-    if(Array.isArray(serverRows)&&serverRows.length) return false;
-    const marker='namo_qms_training_reports_migrated_to_server_v7';
-    if(localStorage.getItem(marker)==='1') return false;
-    const legacy=safeJson('namo_qms_training_reports_v2',[]).filter(x=>!isDeletedTraining(x)).map(normalizeTraining).filter(x=>x.date&&x.title);
-    if(!legacy.length) return false;
-    let ok=0;
-    for(const x of legacy){
-      const payload={...x,reportNo:x.no,no:x.no,evalMethod:x.evalMethod,photos:arr2(x.photos),signWriter:x.signWriter||{},signReviewer:x.signReviewer||{},signApprover:x.signApprover||{}};
-      try{const r=await jfetch('/api/training',{method:'POST',body:JSON.stringify(payload)}); if(r.res.ok&&r.data?.success) ok++;}catch(e){}
-    }
-    if(ok){localStorage.setItem(marker,'1'); return true;}
-    return false;
-  }
-  function renderInstrumentFallback(list,msg){
-    const tb=$q('instrumentTable'); if(!tb) return;
-    if(msg){tb.innerHTML=`<tr><td colspan="12" style="text-align:center;padding:20px;color:#6b7280;">${esc2(msg)}</td></tr>`; return;}
-    if(!list.length){tb.innerHTML='<tr><td colspan="12" style="text-align:center;padding:20px;color:#6b7280;">측정기 목록이 없습니다.</td></tr>';return;}
-    tb.innerHTML=list.map(r=>`<tr><td>${esc2(r.no||'-')}</td><td>${esc2(r.name||'-')}</td><td>${esc2(r.model||'-')}</td><td>${esc2(r.maker||'-')}</td><td>${esc2(r.location||'-')}</td><td>${esc2(r.cycle||'-')}개월</td><td>${esc2(r.lastCal||'-')}</td><td>${esc2(r.nextCal||'-')}</td><td><span class="badge ${r.status==='정상'?'pass':(r.status==='교정초과'?'fail':'hold')}">${esc2(r.status||'-')}</span></td><td>${esc2(r.remark||'-')}</td><td>${r.photo?'<button class="sb lbl" data-action="viewInstrumentPhoto" data-id="'+esc2(r.id)+'">보기</button>':'-'}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc2(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc2(r.id)}">삭제</button></div></td></tr>`).join('');
-  }
-  function renderTrainingFallback(list,msg){
-    const tb=$q('trainingTable'); if(!tb) return;
-    if(msg){tb.innerHTML=`<tr><td colspan="13" style="text-align:center;padding:20px;color:#6b7280;">${esc2(msg)}</td></tr>`; return;}
-    if(!list.length){tb.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:#6b7280;">교육 보고서가 없습니다.</td></tr>';return;}
-    const badge=v=>v==='완료'?'<span class="status pass">완료</span>':(v==='미실시'?'<span class="status fail">미실시</span>':'<span class="status hold">예정</span>');
-    const cnt=v=>String(v||'').split(/,|\n/).map(x=>x.trim()).filter(Boolean).length || '-';
-    tb.innerHTML=list.map(r=>`<tr><td>${esc2(r.date||'-')}</td><td>${esc2(r.no||'-')}</td><td>${esc2(r.type||'-')}</td><td>${esc2(r.title||'-')}</td><td>${esc2(r.instructor||'-')}</td><td>${esc2(r.dept||'-')}</td><td>${esc2(cnt(r.attendees))}</td><td>${arr2(r.photos).length}장</td><td>${badge(r.result||'완료')}</td><td>${esc2(r.writer||'-')}</td><td>${esc2(r.reviewer||'-')}</td><td>${esc2(r.approver||'-')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc2(r.id)}">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc2(r.id)}">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc2(r.id)}">삭제</button></div></td></tr>`).join('');
-  }
-  async function refreshInstrumentsFromServer(){
-    const tb=$q('instrumentTable'); if(tb&&!tb.children.length) renderInstrumentFallback([], '측정기 목록 불러오는 중...');
-    try{
-      let out=await jfetch('/api/instruments');
-      if(!out.res.ok || !out.data?.success){renderInstrumentFallback([], out.data?.message || '측정기 목록을 불러오지 못했습니다. 로그인 상태를 확인하세요.'); return;}
-      let rows=arr2(out.data.data).map(normalizeInstrument);
-      if(await migrateInstrumentsIfNeeded(rows)){out=await jfetch('/api/instruments'); rows=arr2(out.data?.data).map(normalizeInstrument);}
-      try{state.instruments=rows;}catch(e){}
-      if(typeof renderInstrumentTable==='function') renderInstrumentTable(); else renderInstrumentFallback(rows);
-    }catch(e){renderInstrumentFallback([], '측정기 목록 조회 중 오류가 발생했습니다.');}
-  }
-  async function refreshTrainingFromServer(){
-    const tb=$q('trainingTable'); if(tb&&!tb.children.length) renderTrainingFallback([], '교육 보고서 목록 불러오는 중...');
-    try{
-      let out=await jfetch('/api/training');
-      if(!out.res.ok || !out.data?.success){renderTrainingFallback([], out.data?.message || '교육 보고서 목록을 불러오지 못했습니다. 로그인 상태를 확인하세요.'); return;}
-      let rows=arr2(out.data.data).filter(x=>!isDeletedTraining(x)).map(normalizeTraining);
-      if(await migrateTrainingIfNeeded(rows)){out=await jfetch('/api/training'); rows=arr2(out.data?.data).filter(x=>!isDeletedTraining(x)).map(normalizeTraining);}
-      try{state.trainingReports=rows;}catch(e){}
-      if(typeof renderTrainingTable==='function') renderTrainingTable(); else renderTrainingFallback(rows);
-      if(typeof renderTrainingPreview==='function') renderTrainingPreview();
-    }catch(e){renderTrainingFallback([], '교육 보고서 목록 조회 중 오류가 발생했습니다.');}
-  }
-  window.refreshTrainingAndInstruments = async function(){
-    await Promise.all([refreshInstrumentsFromServer(), refreshTrainingFromServer()]);
-  };
-  function isLoggedInForRefresh(){
-    return !!(window.state?.currentUser) || document.querySelector('.shell')?.style.display === 'flex';
-  }
-  function scheduleRefresh(){
-    if(!isLoggedInForRefresh())return;
-    setTimeout(()=>{ if(isLoggedInForRefresh()) window.refreshTrainingAndInstruments?.(); }, 600);
-    setTimeout(()=>{ if(isLoggedInForRefresh()) window.refreshTrainingAndInstruments?.(); }, 1800);
-  }
-  // 로그인 전에는 /api/instruments, /api/training을 호출하지 않음: 401 콘솔 오류 방지
-  document.addEventListener('DOMContentLoaded', scheduleRefresh);
-  document.addEventListener('click', function(e){
-    if(!isLoggedInForRefresh())return;
-    const nav=e.target.closest?.('[data-page="instruments"],[data-page="training"]');
-    if(nav) setTimeout(()=>{ if(isLoggedInForRefresh()) window.refreshTrainingAndInstruments?.(); }, 250);
-    const save=e.target.closest?.('#instrumentSave,#trainingSave');
-    if(save) setTimeout(()=>{ if(isLoggedInForRefresh()) window.refreshTrainingAndInstruments?.(); }, 900);
-  });
-})();
-</script>
-
-
-<script>
-/* v12: 작성/검토/승인 저장 레코드 기준 인쇄/목록 출력 통일 패치
-   - 교육보고서, 성적서(IQC/PQC/OQC), 부적합 보고서 모두 현재 로그인 사용자로 덮어쓰기 금지
-   - 저장된 signWriter/signReviewer/signApprover 값을 직접 사용
-   - 검토/승인 없을 때 '-' 대신 빈칸 표시
-*/
-(function(){
-  const q = id => document.getElementById(id);
-  const clean = v => (typeof esc === 'function' ? esc(v) : String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])));
-  const arr = v => Array.isArray(v) ? v : [];
-  const nameOf = s => (s && s.name) ? String(s.name) : '';
-  const titleOf = s => (s && s.title) ? String(s.title) : '';
-  const deptOf = s => (s && (s.department || s.dept)) ? String(s.department || s.dept) : '';
-  const signImageHtml = s => (s && s.signImage) ? `<img class="rpsign-img" src="${clean(s.signImage)}" alt="전자서명">` : '';
-  const tableEmpty = n => (typeof eRow === 'function' ? eRow(n) : `<tr><td colspan="${n}" style="text-align:center;color:#6b7688;">데이터가 없습니다.</td></tr>`);
-  const docIdSafe = (type,r) => (typeof docId === 'function' ? docId(type,r) : r.id);
-  const statusSafe = (type,r) => {
-    try{
-      if(typeof getWf === 'function' && typeof statusBadge === 'function'){
-        const wf = getWf(type, docIdSafe(type,r), r);
-        return wf ? '<br>' + statusBadge(wf.status) : '';
-      }
-    }catch(e){}
-    return '';
-  };
-  const actionsSafe = (type,r) => {
-    try{ return typeof actions === 'function' ? actions(type,r) : ''; }catch(e){ return ''; }
-  };
-  const judgeSafe = items => (typeof calcJ === 'function' ? calcJ(items || []) : '합격');
-  const judgeBadge = v => (typeof jBadge === 'function' ? jBadge(v || '합격') : clean(v || '합격'));
-
-  function writeSignBlock(prefix, sw, sr, sa){
-    const set = (role, data) => {
-      const cap = role === 'writer' ? 'Writer' : role === 'reviewer' ? 'Reviewer' : 'Approver';
-      const nameEl = q(`${prefix}${cap}`);
-      const titleEl = q(`${prefix}${cap}T`);
-      if(!nameEl) return;
-      const col = nameEl.closest('.rpsign-col');
-      if(col){
-        col.querySelectorAll('.rpsign-img,.rpsign-date').forEach(x => x.remove());
-        if(data && data.signImage){
-          const img = document.createElement('img');
-          img.className = 'rpsign-img';
-          img.alt = '전자서명';
-          img.src = data.signImage;
-          col.insertBefore(img, nameEl);
-        }
-        if(data && data.signDate){
-          const dateEl = document.createElement('div');
-          dateEl.className = 'rpsign-date';
-          dateEl.style.fontSize = '10px';
-          dateEl.style.color = '#666';
-          dateEl.style.marginTop = '2px';
-          if(titleEl) titleEl.insertAdjacentElement('afterend', dateEl);
-          else nameEl.insertAdjacentElement('afterend', dateEl);
-          dateEl.textContent = data.signDate;
-        }
-      }
-      nameEl.textContent = nameOf(data);
-      if(titleEl) titleEl.textContent = titleOf(data);
-    };
-    set('writer', sw || {});
-    set('reviewer', sr || {});
-    set('approver', sa || {});
-  }
-
-  function renderSavedQualityReport(type, row){
-    if(!row) return false;
-    const target = q('reportPrintTarget');
-    if(!target) return false;
-
-    const title =
-      type === 'iqc' ? '입고검사 성적서 (IQC Report)' :
-      type === 'pqc' ? '공정검사 성적서 (PQC Report)' :
-      '출하검사 성적서 (OQC Report)';
-    const docNo = `${String(type).toUpperCase()}-${String(row.date || '').replaceAll('-','')}-0001`;
-    if(q('reportPageTitle')) q('reportPageTitle').textContent = title;
-
-    const meta = type === 'iqc'
-      ? `<tr><th>문서번호</th><td>${clean(docNo)}</td><th>일자</th><td>${clean(row.date || '')}</td></tr>
-         <tr><th>LOT</th><td>${clean(row.lot || '')}</td><th>협력업체</th><td>${clean(row.supplier || '')}</td></tr>
-         <tr><th>품목</th><td>${clean(row.item || '')}</td><th>입고수량</th><td>${clean(row.incomingQty ?? '')}</td></tr>`
-      : type === 'pqc'
-      ? `<tr><th>문서번호</th><td>${clean(docNo)}</td><th>일자</th><td>${clean(row.date || '')}</td></tr>
-         <tr><th>LOT</th><td>${clean(row.lot || '')}</td><th>설비명</th><td>${clean(row.line || '')}</td></tr>
-         <tr><th>제품명</th><td>${clean(row.product || '')}</td><th>검사수량</th><td>${clean(row.qty ?? '')}</td></tr>`
-      : `<tr><th>문서번호</th><td>${clean(docNo)}</td><th>일자</th><td>${clean(row.date || '')}</td></tr>
-         <tr><th>LOT</th><td>${clean(row.lot || '')}</td><th>고객사</th><td>${clean(row.customer || '')}</td></tr>
-         <tr><th>제품명</th><td>${clean(row.product || '')}</td><th>검사수량</th><td>${clean(row.qty ?? '')}</td></tr>`;
-
-    if(q('reportMetaTable')) q('reportMetaTable').innerHTML = meta;
-    const items = arr(row.items);
-    if(q('reportBodyTable')){
-      q('reportBodyTable').innerHTML = items.length
-        ? items.map((x,i)=>`<tr><td>${i+1}</td><td>${clean(x.item || '')}</td><td>${clean(x.spec || '')}</td><td>${clean(x.value || '')}</td><td>${judgeBadge(x.judge || '합격')}</td></tr>`).join('')
-        : '<tr><td colspan="5">항목 없음</td></tr>';
-    }
-    if(q('reportFinalText')) q('reportFinalText').textContent = judgeSafe(items);
-
-    const sw = row.signWriter || {};
-    const sr = row.signReviewer || {};
-    const sa = row.signApprover || {};
-    writeSignBlock('rRpt', sw, sr, sa);
-
-    if(typeof renderBC === 'function'){
-      setTimeout(()=>{ renderBC('bcRptLot', row.lot || 'LOT'); renderBC('bcRptDoc', docNo); }, 50);
-    }
-    return true;
-  }
-
-  window.loadStandaloneReport = function(){
-    const type = q('reportType')?.value || 'iqc';
-    const selId = q('reportSelect')?.value || '';
-    const list = type === 'iqc' ? (state.incoming || []) : type === 'pqc' ? (state.process || []) : (state.shipment || []);
-    const row = selId ? list.find(r => String(r.id) === String(selId)) : list[0];
-    if(!row){
-      if(q('reportMetaTable')) q('reportMetaTable').innerHTML = '<tr><td>데이터가 없습니다.</td></tr>';
-      if(q('reportBodyTable')) q('reportBodyTable').innerHTML = '';
-      if(q('reportFinalText')) q('reportFinalText').textContent = '';
-      writeSignBlock('rRpt', {}, {}, {});
-      return;
-    }
-    renderSavedQualityReport(type, row);
-  };
-
-  window.printSavedQualityReport = function(type, id){
-    const list = type === 'iqc' ? (state.incoming || []) : type === 'pqc' ? (state.process || []) : (state.shipment || []);
-    const row = list.find(r => String(r.id) === String(id));
-    if(!row) return;
-    if(q('reportType')) q('reportType').value = type;
-    if(q('reportSelect')) q('reportSelect').value = String(id);
-    renderSavedQualityReport(type, row);
-    setTimeout(()=>{ if(typeof printEl === 'function') printEl(q('reportPrintTarget')); }, 250);
-  };
-
-  function renderNcPrintFromRecord(record){
-    const r = record || {};
-    const sw = r.signWriter || {};
-    const sr = r.signReviewer || {};
-    const sa = r.signApprover || {};
-    const title = r.ncNo ? `부적합 보고서 (${r.ncNo})` : '부적합 보고서';
-    const box = document.createElement('div');
-    box.className = 'rsheet nc-print-sheet';
-    box.innerHTML = `
-      <div class="rhdr"><h2>${clean(title)}</h2><div><div class="rbname">Namochemical</div></div></div>
-      <div class="tw"><table><tbody>
-        <tr><th>발생일자</th><td>${clean(r.ncDate || '')}</td><th>보고서번호</th><td>${clean(r.ncNo || '')}</td></tr>
-        <tr><th>부적합 유형</th><td>${clean(r.ncType || '')}</td><th>발생부서</th><td>${clean(r.dept || '')}</td></tr>
-        <tr><th>LOT</th><td>${clean(r.lot || '')}</td><th>품목/제품명</th><td>${clean(r.item || '')}</td></tr>
-        <tr><th>부적합 수량</th><td>${clean(r.qty ?? '')}</td><th>담당자</th><td>${clean(r.owner || '')}</td></tr>
-        <tr><th>처리상태</th><td>${clean(r.status || '')}</td><th>조치 예정일</th><td>${clean(r.actionDate || '')}</td></tr>
-      </tbody></table></div>
-      <div class="training-preview-section"><h4>부적합 내용</h4><div class="training-preview-box">${clean(r.issue || '')}</div></div>
-      <div class="training-preview-section"><h4>원인 분석</h4><div class="training-preview-box">${clean(r.cause || '')}</div></div>
-      <div class="training-preview-section"><h4>시정조치 내용</h4><div class="training-preview-box">${clean(r.action || '')}</div></div>
-      <div class="training-preview-section"><h4>검증 내용</h4><div class="training-preview-box">${clean(r.verify || '')}</div></div>
-      <div class="rprint-sign">
-        <div class="rpsign-col">${signImageHtml(sw)}<div class="rpsign-role">작성자</div><div class="rpsign-name">${clean(nameOf(sw))}</div><div class="rpsign-title">${clean(titleOf(sw))}</div><div class="rpsign-line"></div></div>
-        <div class="rpsign-col">${signImageHtml(sr)}<div class="rpsign-role">검토자</div><div class="rpsign-name">${clean(nameOf(sr))}</div><div class="rpsign-title">${clean(titleOf(sr))}</div><div class="rpsign-line"></div></div>
-        <div class="rpsign-col">${signImageHtml(sa)}<div class="rpsign-role">승인자</div><div class="rpsign-name">${clean(nameOf(sa))}</div><div class="rpsign-title">${clean(titleOf(sa))}</div><div class="rpsign-line"></div></div>
-      </div>`;
-    return box;
-  }
-
-  window.printNcSaved = function(id){
-    const row = (state.nonconform || []).find(r => String(r.id) === String(id));
-    if(!row) return;
-    const box = renderNcPrintFromRecord(row);
-    if(typeof printEl === 'function') printEl(box);
-  };
-
-  window.printNcCurrentOrSaved = function(){
-    const id = q('ncEditId')?.value || '';
-    const row = id ? (state.nonconform || []).find(r => String(r.id) === String(id)) : null;
-    if(row){
-      window.printNcSaved(id);
-      return;
-    }
-    if(typeof printEl === 'function') printEl(q('ncFormPrintTarget'));
-  };
-
-  window.renderIncomingTable = function(){
-    const tb = q('incomingTable'); if(!tb) return;
-    if(!(state.incoming || []).length){ tb.innerHTML = tableEmpty(12); return; }
-    tb.innerHTML = state.incoming.map(r=>`<tr><td>${clean(r.date||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.supplier||'')}</td><td>${clean(r.item||'')}</td><td>${clean(r.incomingQty??'')}</td><td>${clean(r.checkQty??'')}</td><td>${clean(r.failQty??'')}</td><td>${judgeBadge(judgeSafe(r.items||[]))}${statusSafe('iqc',r)}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printQuality" data-type="iqc" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editIncoming" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${clean(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${clean(r.id)}">🏷라벨</button>${actionsSafe('iqc',r)}</div></td></tr>`).join('');
-  };
-
-  window.renderProcessTable = function(){
-    const tb = q('processTable'); if(!tb) return;
-    if(!(state.process || []).length){ tb.innerHTML = tableEmpty(11); return; }
-    tb.innerHTML = state.process.map(r=>`<tr><td>${clean(r.date||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.product||'')}</td><td>${clean(r.line||'')}</td><td>${clean(r.qty??'')}</td><td>${clean(r.failQty??'')}</td><td>${judgeBadge(judgeSafe(r.items||[]))}${statusSafe('pqc',r)}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printQuality" data-type="pqc" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editProcess" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${clean(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${clean(r.id)}">🏷라벨</button>${actionsSafe('pqc',r)}</div></td></tr>`).join('');
-  };
-
-  window.renderShipmentTable = function(){
-    const tb = q('shipmentTable'); if(!tb) return;
-    if(!(state.shipment || []).length){ tb.innerHTML = tableEmpty(11); return; }
-    tb.innerHTML = state.shipment.map(r=>`<tr><td>${clean(r.date||'')}</td><td>${clean(r.customer||'')}</td><td>${clean(r.product||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.qty??'')}</td><td>${clean(r.failQty??'')}</td><td>${judgeBadge(judgeSafe(r.items||[]))}${statusSafe('oqc',r)}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printQuality" data-type="oqc" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editShipment" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${clean(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${clean(r.id)}">🏷라벨</button>${actionsSafe('oqc',r)}</div></td></tr>`).join('');
-  };
-
-  window.renderNcTable = function(){
-    const tb = q('nonconformTable'); if(!tb) return;
-    if(!(state.nonconform || []).length){ tb.innerHTML = tableEmpty(13); return; }
-    tb.innerHTML = state.nonconform.map(r=>`<tr><td>${clean(r.ncDate||'')}</td><td><strong>${clean(r.ncNo||'')}</strong></td><td>${clean(r.ncType||'')}</td><td>${clean(r.dept||'')}</td><td>${clean(r.lot||'')}</td><td>${clean(r.item||'')}</td><td>${clean(r.qty??'')}</td><td>${clean(r.owner||'')}</td><td>${typeof ncStatusBadge==='function'?ncStatusBadge(r.status):clean(r.status||'')}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printNcSaved" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editNc" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${clean(r.id)}">삭제</button>${actionsSafe('nc',r)}</div></td></tr>`).join('');
-  };
-
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('[data-action="printQuality"],[data-action="printNcSaved"]');
-    if(!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if(btn.dataset.action === 'printQuality') window.printSavedQualityReport(btn.dataset.type, btn.dataset.id);
-    if(btn.dataset.action === 'printNcSaved') window.printNcSaved(btn.dataset.id);
-  }, true);
-
-  const ncBtn = q('printNcReport');
-  if(ncBtn) ncBtn.onclick = window.printNcCurrentOrSaved;
-
-  const reportBtn = q('printReportPage');
-  if(reportBtn){
-    reportBtn.onclick = function(){
-      window.loadStandaloneReport();
-      setTimeout(()=>{ if(typeof printEl === 'function') printEl(q('reportPrintTarget')); }, 300);
-    };
-  }
-
-  try{ window.renderIncomingTable(); window.renderProcessTable(); window.renderShipmentTable(); window.renderNcTable(); }catch(e){}
-})();
-</script>
-
-</body>
-</html>
+function rangeArr(a){const v=a.filter(Number.isFinite);return v.length?Math.max(...v)-Math.min(...v):NaN;}>
