@@ -687,6 +687,88 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .training-approval-log th{background:var(--s2);color:var(--t3);padding:8px;border-bottom:1px solid var(--bd);}
 .training-approval-log td{padding:8px;border-bottom:1px solid var(--bd);text-align:center;}
 
+
+
+/* 교육보고서 인쇄 1페이지 맞춤 보강 */
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:5mm;
+  }
+  #printTarget.training-print-onepage{
+    width:137%!important;
+    max-width:none!important;
+    transform:scale(.73);
+    transform-origin:top left;
+    padding:6px!important;
+    margin:0!important;
+    border:none!important;
+    box-shadow:none!important;
+    font-size:10px!important;
+    line-height:1.28!important;
+    page-break-after:avoid!important;
+    break-after:avoid!important;
+  }
+  #printTarget.training-print-onepage .training-preview-title{
+    font-size:15px!important;
+    margin-bottom:6px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-meta{
+    margin-bottom:6px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-meta th,
+  #printTarget.training-print-onepage .training-preview-meta td{
+    padding:4px 5px!important;
+    font-size:10px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-meta th{
+    width:82px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-section{
+    margin-top:5px!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+  #printTarget.training-print-onepage .training-preview-section h4{
+    font-size:10.5px!important;
+    margin-bottom:3px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-box{
+    padding:5px 6px!important;
+    min-height:0!important;
+    font-size:10px!important;
+    line-height:1.35!important;
+  }
+  #printTarget.training-print-onepage .training-preview-photos{
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:5px!important;
+    margin-top:4px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-photo{
+    padding:3px!important;
+  }
+  #printTarget.training-print-onepage .training-preview-photo img{
+    height:74px!important;
+    object-fit:cover!important;
+  }
+  #printTarget.training-print-onepage .training-preview-photo div{
+    font-size:9px!important;
+    margin-top:2px!important;
+  }
+  #printTarget.training-print-onepage .training-approval-log{
+    margin-top:3px!important;
+  }
+  #printTarget.training-print-onepage .training-approval-log th,
+  #printTarget.training-print-onepage .training-approval-log td{
+    padding:4px 5px!important;
+    font-size:10px!important;
+  }
+  #printTarget.training-print-onepage .status{
+    padding:2px 6px!important;
+    font-size:9px!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2264,6 +2346,7 @@ function printEl(el){
 
   const clone = el.cloneNode(true);
   clone.id = 'printTarget';
+  if(el.id==='trainingPreviewSheet') clone.classList.add('training-print-onepage');
 
   // canvas 서명은 cloneNode 때 그림이 복사되지 않으므로 이미지로 변환해서 인쇄
   const originalCanvases=el.querySelectorAll('canvas');
