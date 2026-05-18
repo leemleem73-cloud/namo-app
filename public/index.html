@@ -689,79 +689,80 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 
 
-/* 교육보고서 인쇄 1페이지 맞춤 보강 */
+/* 교육보고서 A4 인쇄 맞춤 보강 */
 @media print{
   @page{
     size:A4 portrait;
-    margin:5mm;
+    margin:8mm;
   }
   #printTarget.training-print-onepage{
-    width:137%!important;
-    max-width:none!important;
-    transform:scale(.73);
-    transform-origin:top left;
-    padding:6px!important;
-    margin:0!important;
+    width:194mm!important;
+    max-width:194mm!important;
+    min-height:281mm!important;
+    transform:none!important;
+    padding:0!important;
+    margin:0 auto!important;
     border:none!important;
     box-shadow:none!important;
-    font-size:10px!important;
-    line-height:1.28!important;
+    font-size:11.2px!important;
+    line-height:1.34!important;
     page-break-after:avoid!important;
     break-after:avoid!important;
   }
   #printTarget.training-print-onepage .training-preview-title{
-    font-size:15px!important;
-    margin-bottom:6px!important;
+    font-size:16px!important;
+    margin-bottom:7px!important;
   }
   #printTarget.training-print-onepage .training-preview-meta{
     margin-bottom:6px!important;
   }
   #printTarget.training-print-onepage .training-preview-meta th,
   #printTarget.training-print-onepage .training-preview-meta td{
-    padding:4px 5px!important;
-    font-size:10px!important;
+    padding:4px 6px!important;
+    font-size:10.6px!important;
   }
   #printTarget.training-print-onepage .training-preview-meta th{
     width:82px!important;
   }
   #printTarget.training-print-onepage .training-preview-section{
-    margin-top:5px!important;
+    margin-top:6px!important;
     page-break-inside:avoid!important;
     break-inside:avoid!important;
   }
   #printTarget.training-print-onepage .training-preview-section h4{
-    font-size:10.5px!important;
+    font-size:11px!important;
     margin-bottom:3px!important;
   }
   #printTarget.training-print-onepage .training-preview-box{
-    padding:5px 6px!important;
+    padding:6px 7px!important;
     min-height:0!important;
-    font-size:10px!important;
-    line-height:1.35!important;
+    font-size:10.8px!important;
+    line-height:1.38!important;
   }
   #printTarget.training-print-onepage .training-preview-photos{
-    grid-template-columns:repeat(3,1fr)!important;
-    gap:5px!important;
+    grid-template-columns:repeat(2,1fr)!important;
+    gap:6px!important;
     margin-top:4px!important;
   }
   #printTarget.training-print-onepage .training-preview-photo{
-    padding:3px!important;
+    padding:4px!important;
+    max-width:72mm!important;
   }
   #printTarget.training-print-onepage .training-preview-photo img{
-    height:74px!important;
+    height:88px!important;
     object-fit:cover!important;
   }
   #printTarget.training-print-onepage .training-preview-photo div{
-    font-size:9px!important;
+    font-size:9.5px!important;
     margin-top:2px!important;
   }
   #printTarget.training-print-onepage .training-approval-log{
-    margin-top:3px!important;
+    margin-top:4px!important;
   }
   #printTarget.training-print-onepage .training-approval-log th,
   #printTarget.training-print-onepage .training-approval-log td{
-    padding:4px 5px!important;
-    font-size:10px!important;
+    padding:4px 6px!important;
+    font-size:10.5px!important;
   }
   #printTarget.training-print-onepage .status{
     padding:2px 6px!important;
@@ -3047,13 +3048,14 @@ function renderTrainingPreview(){
 }
 async function saveTrainingReport(){const r=readTrainingForm();if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}if(!r.writer){alert('작성자를 선택하세요.');return;}if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(readTrainingReports().length+1).padStart(3,'0');const list=readTrainingReports();const i=list.findIndex(x=>String(x.id)===String(r.id));if(i>=0)list[i]=r;else list.unshift(r);writeTrainingReports(list);fillTrainingForm(r);renderTrainingTable();alert('교육 보고서가 저장되었습니다.');}
 function editTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(r){fillTrainingForm(r);document.querySelector('[data-page="training"]')?.click();$('trainingPrintArea')?.scrollIntoView({behavior:'smooth',block:'start'});}}
+function printTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(!r)return;fillTrainingForm(r);renderTrainingPreview();setTimeout(()=>printEl($('trainingPreviewSheet')),200);}
 function deleteTraining(id){
   if(!confirm('교육 보고서를 삭제하시겠습니까?'))return;
   const list=readTrainingReports().filter(x=>String(x.id)!==String(id));
   writeTrainingReports(list);
   renderTrainingTable();clearTrainingReport();
 }
-function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}</td><td>${esc(r.writer||'-')}</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.approver||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button></div></td></tr>`).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
+function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}</td><td>${esc(r.writer||'-')}</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.approver||'-')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button></div></td></tr>`).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
 function downloadTrainingCsv(){const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];const rows=readTrainingReports().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):'',r.writer,r.reviewer,r.approver]);const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='교육보고서_'+trainingToday()+'.csv';a.click();URL.revokeObjectURL(a.href);}
 function bindTrainingEvents(){
   if($('trainingSave'))$('trainingSave').onclick=withSaving('training',$('trainingSave'),saveTrainingReport);
@@ -3155,7 +3157,7 @@ $('printReportPage').onclick=()=>{
   if($('globalSearch')) $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
   // 테이블 위임
   const tA={
-    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,viewInstrumentPhoto,editSpc,deleteSpc,editTraining,deleteTraining,
+    editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,viewInstrumentPhoto,editSpc,deleteSpc,editTraining,printTraining,deleteTraining,
     labelIncoming:id=>{const r=state.incoming.find(x=>String(x.id)===String(id));if(r)openLabelModal('iqc',[r]);},
     labelProcess:id=>{const r=state.process.find(x=>String(x.id)===String(id));if(r)openLabelModal('pqc',[r]);},
     labelShipment:id=>{const r=state.shipment.find(x=>String(x.id)===String(id));if(r)openLabelModal('oqc',[r]);},
