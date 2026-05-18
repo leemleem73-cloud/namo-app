@@ -4892,5 +4892,235 @@ function renderMatrix(){
 })();
 </script>
 
+
+<script>
+/* v12: 작성/검토/승인 저장 레코드 기준 인쇄/목록 출력 통일 패치
+   - 교육보고서, 성적서(IQC/PQC/OQC), 부적합 보고서 모두 현재 로그인 사용자로 덮어쓰기 금지
+   - 저장된 signWriter/signReviewer/signApprover 값을 직접 사용
+   - 검토/승인 없을 때 '-' 대신 빈칸 표시
+*/
+(function(){
+  const q = id => document.getElementById(id);
+  const clean = v => (typeof esc === 'function' ? esc(v) : String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])));
+  const arr = v => Array.isArray(v) ? v : [];
+  const nameOf = s => (s && s.name) ? String(s.name) : '';
+  const titleOf = s => (s && s.title) ? String(s.title) : '';
+  const deptOf = s => (s && (s.department || s.dept)) ? String(s.department || s.dept) : '';
+  const signImageHtml = s => (s && s.signImage) ? `<img class="rpsign-img" src="${clean(s.signImage)}" alt="전자서명">` : '';
+  const tableEmpty = n => (typeof eRow === 'function' ? eRow(n) : `<tr><td colspan="${n}" style="text-align:center;color:#6b7688;">데이터가 없습니다.</td></tr>`);
+  const docIdSafe = (type,r) => (typeof docId === 'function' ? docId(type,r) : r.id);
+  const statusSafe = (type,r) => {
+    try{
+      if(typeof getWf === 'function' && typeof statusBadge === 'function'){
+        const wf = getWf(type, docIdSafe(type,r), r);
+        return wf ? '<br>' + statusBadge(wf.status) : '';
+      }
+    }catch(e){}
+    return '';
+  };
+  const actionsSafe = (type,r) => {
+    try{ return typeof actions === 'function' ? actions(type,r) : ''; }catch(e){ return ''; }
+  };
+  const judgeSafe = items => (typeof calcJ === 'function' ? calcJ(items || []) : '합격');
+  const judgeBadge = v => (typeof jBadge === 'function' ? jBadge(v || '합격') : clean(v || '합격'));
+
+  function writeSignBlock(prefix, sw, sr, sa){
+    const set = (role, data) => {
+      const cap = role === 'writer' ? 'Writer' : role === 'reviewer' ? 'Reviewer' : 'Approver';
+      const nameEl = q(`${prefix}${cap}`);
+      const titleEl = q(`${prefix}${cap}T`);
+      if(!nameEl) return;
+      const col = nameEl.closest('.rpsign-col');
+      if(col){
+        col.querySelectorAll('.rpsign-img,.rpsign-date').forEach(x => x.remove());
+        if(data && data.signImage){
+          const img = document.createElement('img');
+          img.className = 'rpsign-img';
+          img.alt = '전자서명';
+          img.src = data.signImage;
+          col.insertBefore(img, nameEl);
+        }
+        if(data && data.signDate){
+          const dateEl = document.createElement('div');
+          dateEl.className = 'rpsign-date';
+          dateEl.style.fontSize = '10px';
+          dateEl.style.color = '#666';
+          dateEl.style.marginTop = '2px';
+          if(titleEl) titleEl.insertAdjacentElement('afterend', dateEl);
+          else nameEl.insertAdjacentElement('afterend', dateEl);
+          dateEl.textContent = data.signDate;
+        }
+      }
+      nameEl.textContent = nameOf(data);
+      if(titleEl) titleEl.textContent = titleOf(data);
+    };
+    set('writer', sw || {});
+    set('reviewer', sr || {});
+    set('approver', sa || {});
+  }
+
+  function renderSavedQualityReport(type, row){
+    if(!row) return false;
+    const target = q('reportPrintTarget');
+    if(!target) return false;
+
+    const title =
+      type === 'iqc' ? '입고검사 성적서 (IQC Report)' :
+      type === 'pqc' ? '공정검사 성적서 (PQC Report)' :
+      '출하검사 성적서 (OQC Report)';
+    const docNo = `${String(type).toUpperCase()}-${String(row.date || '').replaceAll('-','')}-0001`;
+    if(q('reportPageTitle')) q('reportPageTitle').textContent = title;
+
+    const meta = type === 'iqc'
+      ? `<tr><th>문서번호</th><td>${clean(docNo)}</td><th>일자</th><td>${clean(row.date || '')}</td></tr>
+         <tr><th>LOT</th><td>${clean(row.lot || '')}</td><th>협력업체</th><td>${clean(row.supplier || '')}</td></tr>
+         <tr><th>품목</th><td>${clean(row.item || '')}</td><th>입고수량</th><td>${clean(row.incomingQty ?? '')}</td></tr>`
+      : type === 'pqc'
+      ? `<tr><th>문서번호</th><td>${clean(docNo)}</td><th>일자</th><td>${clean(row.date || '')}</td></tr>
+         <tr><th>LOT</th><td>${clean(row.lot || '')}</td><th>설비명</th><td>${clean(row.line || '')}</td></tr>
+         <tr><th>제품명</th><td>${clean(row.product || '')}</td><th>검사수량</th><td>${clean(row.qty ?? '')}</td></tr>`
+      : `<tr><th>문서번호</th><td>${clean(docNo)}</td><th>일자</th><td>${clean(row.date || '')}</td></tr>
+         <tr><th>LOT</th><td>${clean(row.lot || '')}</td><th>고객사</th><td>${clean(row.customer || '')}</td></tr>
+         <tr><th>제품명</th><td>${clean(row.product || '')}</td><th>검사수량</th><td>${clean(row.qty ?? '')}</td></tr>`;
+
+    if(q('reportMetaTable')) q('reportMetaTable').innerHTML = meta;
+    const items = arr(row.items);
+    if(q('reportBodyTable')){
+      q('reportBodyTable').innerHTML = items.length
+        ? items.map((x,i)=>`<tr><td>${i+1}</td><td>${clean(x.item || '')}</td><td>${clean(x.spec || '')}</td><td>${clean(x.value || '')}</td><td>${judgeBadge(x.judge || '합격')}</td></tr>`).join('')
+        : '<tr><td colspan="5">항목 없음</td></tr>';
+    }
+    if(q('reportFinalText')) q('reportFinalText').textContent = judgeSafe(items);
+
+    const sw = row.signWriter || {};
+    const sr = row.signReviewer || {};
+    const sa = row.signApprover || {};
+    writeSignBlock('rRpt', sw, sr, sa);
+
+    if(typeof renderBC === 'function'){
+      setTimeout(()=>{ renderBC('bcRptLot', row.lot || 'LOT'); renderBC('bcRptDoc', docNo); }, 50);
+    }
+    return true;
+  }
+
+  window.loadStandaloneReport = function(){
+    const type = q('reportType')?.value || 'iqc';
+    const selId = q('reportSelect')?.value || '';
+    const list = type === 'iqc' ? (state.incoming || []) : type === 'pqc' ? (state.process || []) : (state.shipment || []);
+    const row = selId ? list.find(r => String(r.id) === String(selId)) : list[0];
+    if(!row){
+      if(q('reportMetaTable')) q('reportMetaTable').innerHTML = '<tr><td>데이터가 없습니다.</td></tr>';
+      if(q('reportBodyTable')) q('reportBodyTable').innerHTML = '';
+      if(q('reportFinalText')) q('reportFinalText').textContent = '';
+      writeSignBlock('rRpt', {}, {}, {});
+      return;
+    }
+    renderSavedQualityReport(type, row);
+  };
+
+  window.printSavedQualityReport = function(type, id){
+    const list = type === 'iqc' ? (state.incoming || []) : type === 'pqc' ? (state.process || []) : (state.shipment || []);
+    const row = list.find(r => String(r.id) === String(id));
+    if(!row) return;
+    if(q('reportType')) q('reportType').value = type;
+    if(q('reportSelect')) q('reportSelect').value = String(id);
+    renderSavedQualityReport(type, row);
+    setTimeout(()=>{ if(typeof printEl === 'function') printEl(q('reportPrintTarget')); }, 250);
+  };
+
+  function renderNcPrintFromRecord(record){
+    const r = record || {};
+    const sw = r.signWriter || {};
+    const sr = r.signReviewer || {};
+    const sa = r.signApprover || {};
+    const title = r.ncNo ? `부적합 보고서 (${r.ncNo})` : '부적합 보고서';
+    const box = document.createElement('div');
+    box.className = 'rsheet nc-print-sheet';
+    box.innerHTML = `
+      <div class="rhdr"><h2>${clean(title)}</h2><div><div class="rbname">Namochemical</div></div></div>
+      <div class="tw"><table><tbody>
+        <tr><th>발생일자</th><td>${clean(r.ncDate || '')}</td><th>보고서번호</th><td>${clean(r.ncNo || '')}</td></tr>
+        <tr><th>부적합 유형</th><td>${clean(r.ncType || '')}</td><th>발생부서</th><td>${clean(r.dept || '')}</td></tr>
+        <tr><th>LOT</th><td>${clean(r.lot || '')}</td><th>품목/제품명</th><td>${clean(r.item || '')}</td></tr>
+        <tr><th>부적합 수량</th><td>${clean(r.qty ?? '')}</td><th>담당자</th><td>${clean(r.owner || '')}</td></tr>
+        <tr><th>처리상태</th><td>${clean(r.status || '')}</td><th>조치 예정일</th><td>${clean(r.actionDate || '')}</td></tr>
+      </tbody></table></div>
+      <div class="training-preview-section"><h4>부적합 내용</h4><div class="training-preview-box">${clean(r.issue || '')}</div></div>
+      <div class="training-preview-section"><h4>원인 분석</h4><div class="training-preview-box">${clean(r.cause || '')}</div></div>
+      <div class="training-preview-section"><h4>시정조치 내용</h4><div class="training-preview-box">${clean(r.action || '')}</div></div>
+      <div class="training-preview-section"><h4>검증 내용</h4><div class="training-preview-box">${clean(r.verify || '')}</div></div>
+      <div class="rprint-sign">
+        <div class="rpsign-col">${signImageHtml(sw)}<div class="rpsign-role">작성자</div><div class="rpsign-name">${clean(nameOf(sw))}</div><div class="rpsign-title">${clean(titleOf(sw))}</div><div class="rpsign-line"></div></div>
+        <div class="rpsign-col">${signImageHtml(sr)}<div class="rpsign-role">검토자</div><div class="rpsign-name">${clean(nameOf(sr))}</div><div class="rpsign-title">${clean(titleOf(sr))}</div><div class="rpsign-line"></div></div>
+        <div class="rpsign-col">${signImageHtml(sa)}<div class="rpsign-role">승인자</div><div class="rpsign-name">${clean(nameOf(sa))}</div><div class="rpsign-title">${clean(titleOf(sa))}</div><div class="rpsign-line"></div></div>
+      </div>`;
+    return box;
+  }
+
+  window.printNcSaved = function(id){
+    const row = (state.nonconform || []).find(r => String(r.id) === String(id));
+    if(!row) return;
+    const box = renderNcPrintFromRecord(row);
+    if(typeof printEl === 'function') printEl(box);
+  };
+
+  window.printNcCurrentOrSaved = function(){
+    const id = q('ncEditId')?.value || '';
+    const row = id ? (state.nonconform || []).find(r => String(r.id) === String(id)) : null;
+    if(row){
+      window.printNcSaved(id);
+      return;
+    }
+    if(typeof printEl === 'function') printEl(q('ncFormPrintTarget'));
+  };
+
+  window.renderIncomingTable = function(){
+    const tb = q('incomingTable'); if(!tb) return;
+    if(!(state.incoming || []).length){ tb.innerHTML = tableEmpty(12); return; }
+    tb.innerHTML = state.incoming.map(r=>`<tr><td>${clean(r.date||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.supplier||'')}</td><td>${clean(r.item||'')}</td><td>${clean(r.incomingQty??'')}</td><td>${clean(r.checkQty??'')}</td><td>${clean(r.failQty??'')}</td><td>${judgeBadge(judgeSafe(r.items||[]))}${statusSafe('iqc',r)}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printQuality" data-type="iqc" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editIncoming" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${clean(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${clean(r.id)}">🏷라벨</button>${actionsSafe('iqc',r)}</div></td></tr>`).join('');
+  };
+
+  window.renderProcessTable = function(){
+    const tb = q('processTable'); if(!tb) return;
+    if(!(state.process || []).length){ tb.innerHTML = tableEmpty(11); return; }
+    tb.innerHTML = state.process.map(r=>`<tr><td>${clean(r.date||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.product||'')}</td><td>${clean(r.line||'')}</td><td>${clean(r.qty??'')}</td><td>${clean(r.failQty??'')}</td><td>${judgeBadge(judgeSafe(r.items||[]))}${statusSafe('pqc',r)}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printQuality" data-type="pqc" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editProcess" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${clean(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${clean(r.id)}">🏷라벨</button>${actionsSafe('pqc',r)}</div></td></tr>`).join('');
+  };
+
+  window.renderShipmentTable = function(){
+    const tb = q('shipmentTable'); if(!tb) return;
+    if(!(state.shipment || []).length){ tb.innerHTML = tableEmpty(11); return; }
+    tb.innerHTML = state.shipment.map(r=>`<tr><td>${clean(r.date||'')}</td><td>${clean(r.customer||'')}</td><td>${clean(r.product||'')}</td><td><strong>${clean(r.lot||'')}</strong></td><td>${clean(r.qty??'')}</td><td>${clean(r.failQty??'')}</td><td>${judgeBadge(judgeSafe(r.items||[]))}${statusSafe('oqc',r)}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printQuality" data-type="oqc" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editShipment" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${clean(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${clean(r.id)}">🏷라벨</button>${actionsSafe('oqc',r)}</div></td></tr>`).join('');
+  };
+
+  window.renderNcTable = function(){
+    const tb = q('nonconformTable'); if(!tb) return;
+    if(!(state.nonconform || []).length){ tb.innerHTML = tableEmpty(13); return; }
+    tb.innerHTML = state.nonconform.map(r=>`<tr><td>${clean(r.ncDate||'')}</td><td><strong>${clean(r.ncNo||'')}</strong></td><td>${clean(r.ncType||'')}</td><td>${clean(r.dept||'')}</td><td>${clean(r.lot||'')}</td><td>${clean(r.item||'')}</td><td>${clean(r.qty??'')}</td><td>${clean(r.owner||'')}</td><td>${typeof ncStatusBadge==='function'?ncStatusBadge(r.status):clean(r.status||'')}</td><td>${clean(nameOf(r.signWriter))}</td><td>${clean(nameOf(r.signReviewer))}</td><td>${clean(nameOf(r.signApprover))}</td><td><div class="ai"><button class="sb lbl" data-action="printNcSaved" data-id="${clean(r.id)}">인쇄</button><button class="sb edit" data-action="editNc" data-id="${clean(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${clean(r.id)}">삭제</button>${actionsSafe('nc',r)}</div></td></tr>`).join('');
+  };
+
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-action="printQuality"],[data-action="printNcSaved"]');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(btn.dataset.action === 'printQuality') window.printSavedQualityReport(btn.dataset.type, btn.dataset.id);
+    if(btn.dataset.action === 'printNcSaved') window.printNcSaved(btn.dataset.id);
+  }, true);
+
+  const ncBtn = q('printNcReport');
+  if(ncBtn) ncBtn.onclick = window.printNcCurrentOrSaved;
+
+  const reportBtn = q('printReportPage');
+  if(reportBtn){
+    reportBtn.onclick = function(){
+      window.loadStandaloneReport();
+      setTimeout(()=>{ if(typeof printEl === 'function') printEl(q('reportPrintTarget')); }, 300);
+    };
+  }
+
+  try{ window.renderIncomingTable(); window.renderProcessTable(); window.renderShipmentTable(); window.renderNcTable(); }catch(e){}
+})();
+</script>
+
 </body>
 </html>
