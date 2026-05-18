@@ -770,6 +770,84 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   }
 }
 
+
+
+/* 교육보고서 그림파일 양식 v5 */
+.training-form-v5{
+  --train-blue:#174a8b;
+  --train-blue2:#2563a8;
+  --train-line:#b7c7dc;
+  --train-soft:#f7fbff;
+  background:#fff;
+  color:#111827;
+  border:1px solid #d4dde8;
+  border-radius:14px;
+  padding:22px 24px;
+  font-family:var(--font);
+  box-shadow:var(--sh1);
+}
+.training-form-v5 .tf-head{display:grid;grid-template-columns:1fr 1.4fr 1fr;align-items:start;margin-bottom:16px;}
+.training-form-v5 .tf-brand{font-size:18px;font-weight:900;color:var(--train-blue);letter-spacing:-.7px;line-height:1.1;}
+.training-form-v5 .tf-brand small{font-size:12px;font-weight:700;color:#555;margin-left:3px;letter-spacing:-.4px;}
+.training-form-v5 .tf-title{text-align:center;font-size:32px;font-weight:900;color:#0f2f5f;letter-spacing:8px;line-height:1.05;}
+.training-form-v5 .tf-title:after{content:'';display:block;width:86px;height:3px;background:linear-gradient(90deg,var(--train-blue),#9db7d8);margin:8px auto 0;border-radius:9px;}
+.training-form-v5 .tf-qms{text-align:right;font-size:13px;font-weight:800;color:#111827;}
+.training-form-v5 .tf-meta{width:100%;border-collapse:separate;border-spacing:0;border:1.5px solid var(--train-line);border-radius:9px;overflow:hidden;margin-bottom:16px;}
+.training-form-v5 .tf-meta th,.training-form-v5 .tf-meta td{border-right:1px solid var(--train-line);border-bottom:1px solid var(--train-line);padding:9px 12px;text-align:left;font-size:13px;}
+.training-form-v5 .tf-meta tr:last-child th,.training-form-v5 .tf-meta tr:last-child td{border-bottom:none;}
+.training-form-v5 .tf-meta th{width:90px;background:var(--train-soft);color:#10396d;font-weight:900;}
+.training-form-v5 .tf-meta td{font-weight:600;}
+.training-form-v5 .tf-meta td:nth-child(2){width:28%;}.training-form-v5 .tf-meta td:nth-child(4){width:34%;border-right:none;}
+.training-form-v5 .tf-ok{color:#078944;font-weight:900;}
+.training-form-v5 .tf-sec{margin-top:13px;break-inside:avoid;page-break-inside:avoid;}
+.training-form-v5 .tf-sec-title{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:17px;font-weight:900;color:#113c70;}
+.training-form-v5 .tf-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;background:linear-gradient(180deg,#2867ac,#174a8b);color:#fff;font-size:13px;font-weight:900;box-shadow:0 1px 2px rgba(0,0,0,.12);}
+.training-form-v5 .tf-box{border:1.5px solid var(--train-line);border-radius:9px;background:#fff;padding:11px 13px;min-height:42px;font-size:13px;font-weight:500;line-height:1.7;white-space:pre-wrap;}
+.training-form-v5 .tf-content{min-height:190px;font-size:13px;line-height:1.72;}
+.training-form-v5 .tf-bottom{display:grid;grid-template-columns:0.82fr 1.18fr;gap:18px;align-items:start;margin-top:16px;break-inside:avoid;page-break-inside:avoid;}
+.training-form-v5 .tf-photo-grid{display:grid;grid-template-columns:1fr;gap:8px;}
+.training-form-v5 .tf-photo{border:1.5px solid var(--train-line);border-radius:11px;background:#fff;padding:7px;text-align:center;overflow:hidden;}
+.training-form-v5 .tf-photo img{width:100%;height:130px;object-fit:cover;border-radius:7px;display:block;background:#f8fafc;}
+.training-form-v5 .tf-photo div{font-size:12px;color:#111;font-weight:700;margin-top:5px;}
+.training-form-v5 .tf-approval{width:100%;border-collapse:separate;border-spacing:0;border:1.5px solid var(--train-line);border-radius:6px;overflow:hidden;}
+.training-form-v5 .tf-approval th{background:linear-gradient(180deg,#255ca0,#174a8b);color:#fff;font-size:13px;font-weight:900;padding:8px;border-right:1px solid rgba(255,255,255,.35);}
+.training-form-v5 .tf-approval th:last-child{border-right:none;}
+.training-form-v5 .tf-approval td{padding:9px 8px;border-right:1px solid var(--train-line);border-bottom:1px solid var(--train-line);text-align:center;font-size:13px;font-weight:600;}
+.training-form-v5 .tf-approval tr:last-child td{border-bottom:none;}.training-form-v5 .tf-approval td:last-child{border-right:none;}
+.training-form-v5 .tf-sign{font-family:cursive;font-size:18px;color:#222;}
+.training-form-v5 .tf-footer{display:grid;grid-template-columns:1fr auto;align-items:center;margin-top:24px;border-top:2px solid #164174;padding-top:12px;font-size:12px;font-weight:700;}
+.training-form-v5 .tf-footer div:first-child{text-align:center;padding-left:80px;}.training-form-v5 .tf-page{text-align:right;font-size:13px;font-weight:900;}
+
+@media print{
+  @page{size:A4 portrait;margin:8mm;}
+  #printTarget.training-print-onepage{
+    width:194mm!important;max-width:194mm!important;min-height:281mm!important;height:281mm!important;
+    margin:0 auto!important;padding:9mm 8mm 7mm!important;border:none!important;border-radius:0!important;box-shadow:none!important;
+    overflow:hidden!important;font-size:12px!important;line-height:1.45!important;break-after:avoid!important;page-break-after:avoid!important;
+  }
+  #printTarget.training-print-onepage.training-form-v5{display:flex!important;flex-direction:column!important;}
+  #printTarget.training-print-onepage .tf-head{margin-bottom:10px!important;}
+  #printTarget.training-print-onepage .tf-title{font-size:27px!important;letter-spacing:7px!important;}
+  #printTarget.training-print-onepage .tf-brand{font-size:15px!important;}.training-print-onepage .tf-brand small{font-size:10px!important;}
+  #printTarget.training-print-onepage .tf-qms{font-size:11px!important;}
+  #printTarget.training-print-onepage .tf-meta{margin-bottom:10px!important;}
+  #printTarget.training-print-onepage .tf-meta th,#printTarget.training-print-onepage .tf-meta td{padding:6px 9px!important;font-size:11.5px!important;}
+  #printTarget.training-print-onepage .tf-sec{margin-top:9px!important;}
+  #printTarget.training-print-onepage .tf-sec-title{font-size:14px!important;margin-bottom:5px!important;}
+  #printTarget.training-print-onepage .tf-num{width:19px!important;height:19px!important;font-size:11px!important;}
+  #printTarget.training-print-onepage .tf-box{padding:7px 9px!important;min-height:0!important;font-size:11.5px!important;line-height:1.55!important;}
+  #printTarget.training-print-onepage .tf-content{min-height:112px!important;font-size:11.2px!important;line-height:1.54!important;}
+  #printTarget.training-print-onepage .tf-bottom{grid-template-columns:0.82fr 1.18fr!important;gap:12px!important;margin-top:10px!important;}
+  #printTarget.training-print-onepage .tf-photo{padding:5px!important;}
+  #printTarget.training-print-onepage .tf-photo img{height:96px!important;}
+  #printTarget.training-print-onepage .tf-photo div{font-size:10.5px!important;margin-top:3px!important;}
+  #printTarget.training-print-onepage .tf-approval th{padding:6px!important;font-size:11.2px!important;}
+  #printTarget.training-print-onepage .tf-approval td{padding:6px!important;font-size:11px!important;}
+  #printTarget.training-print-onepage .tf-sign{font-size:15px!important;}
+  #printTarget.training-print-onepage .tf-footer{margin-top:auto!important;padding-top:8px!important;font-size:10.5px!important;}
+  #printTarget.training-print-onepage .tf-page{font-size:11.5px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -3042,8 +3120,14 @@ function clearTrainingReport(){fillTrainingForm({date:trainingToday(),type:'안�
 function renderTrainingPhotoCards(){const box=$('trainingPhotoPreview');if(!box)return;box.innerHTML=trainingPhotoDrafts.map((p,i)=>`<div class="training-photo-card"><button class="training-photo-del" type="button" data-training-photo-del="${i}">×</button><img src="${esc(p.src||'')}" alt="교육 사진 ${i+1}"><input data-training-photo-caption="${i}" value="${esc(p.caption||'')}" placeholder="사진 설명"></div>`).join('');}
 function renderTrainingPreview(){
   const r=readTrainingForm();
-  const photos=(r.photos||[]).length?`<div class="training-preview-photos">${r.photos.map(p=>`<div class="training-preview-photo"><img src="${esc(p.src||'')}" alt="교육 사진"><div>${esc(p.caption||'')}</div></div>`).join('')}</div>`:'<div class="training-preview-box">첨부 사진 없음</div>';
-  const el=$('trainingPreviewSheet');if(el)el.innerHTML=`<div class="training-preview-title">교육 보고서</div><table class="training-preview-meta"><tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서번호</th><td>${esc(r.no||'-')}</td></tr><tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr><tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr><tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr><tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td>${trainingBadge(r.result||'완료')}</td></tr></table><div class="training-preview-section"><h4>1. 참석자</h4><div class="training-preview-box">${esc(r.attendees||'-')}</div></div><div class="training-preview-section"><h4>2. 불참자</h4><div class="training-preview-box">${esc(r.absentees||'-')}</div></div><div class="training-preview-section"><h4>3. 교육 내용</h4><div class="training-preview-box">${esc(r.content||'-')}</div></div><div class="training-preview-section"><h4>4. 비고 / 개선사항</h4><div class="training-preview-box">${esc(r.remark||'-')}</div></div><div class="training-preview-section"><h4>5. 교육 사진</h4>${photos}</div><div class="training-preview-section"><h4>6. 작성 / 검토 / 승인</h4><div class="training-approval-log"><table><thead><tr><th>구분</th><th>담당자</th><th>처리일시</th></tr></thead><tbody><tr><td>작성자</td><td>${esc(r.writer||'-')}</td><td>${esc(r.writer?r.updatedAt:'-')}</td></tr><tr><td>검토자</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.reviewer?r.updatedAt:'-')}</td></tr><tr><td>승인자</td><td>${esc(r.approver||'-')}</td><td>${esc(r.approver?r.updatedAt:'-')}</td></tr></tbody></table></div></div>`;
+  const resultText=String(r.result||'완료');
+  const photos=(r.photos||[]).length?`<div class="tf-photo-grid">${r.photos.slice(0,2).map(p=>`<div class="tf-photo"><img src="${esc(p.src||'')}" alt="교육 사진"><div>${esc(p.caption||'제목 없음')}</div></div>`).join('')}</div>`:'<div class="tf-box">첨부 사진 없음</div>';
+  const signText=(name)=>name&&name!=='-'?'서명':'-';
+  const el=$('trainingPreviewSheet');
+  if(el){
+    el.className='training-preview-sheet training-form-v5';
+    el.innerHTML=`<div class="tf-head"><div class="tf-brand">NAMO<small>Chemical</small></div><div class="tf-title">교육 보고서</div><div class="tf-qms">Namochemical QMS</div></div><table class="tf-meta"><tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서번호</th><td>${esc(r.no||'-')}</td></tr><tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr><tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr><tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr><tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td><span class="tf-ok">${esc(resultText)}</span></td></tr></table><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">1</span>참석자</div><div class="tf-box">${esc(r.attendees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">2</span>불참자</div><div class="tf-box">${esc(r.absentees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">3</span>교육 내용</div><div class="tf-box tf-content">${esc(r.content||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">4</span>비고 / 개선사항</div><div class="tf-box">${esc(r.remark||'-')}</div></div><div class="tf-bottom"><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">5</span>교육 사진</div>${photos}</div><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">6</span>작성 / 검토 / 승인</div><table class="tf-approval"><thead><tr><th>구분</th><th>담당자</th><th>처리일시</th><th>서명</th></tr></thead><tbody><tr><td>작성자</td><td>${esc(r.writer||'-')}</td><td>${esc(r.writer?r.updatedAt:'-')}</td><td class="tf-sign">${signText(r.writer)}</td></tr><tr><td>검토자</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.reviewer?r.updatedAt:'-')}</td><td class="tf-sign">${signText(r.reviewer)}</td></tr><tr><td>승인자</td><td>${esc(r.approver||'-')}</td><td>${esc(r.approver?r.updatedAt:'-')}</td><td class="tf-sign">${signText(r.approver)}</td></tr></tbody></table></div></div><div class="tf-footer"><div>Namochemical QMS</div><div class="tf-page">1 / 1</div></div>`;
+  }
   if($('trainingWriterText'))$('trainingWriterText').textContent=r.writer||'-';if($('trainingReviewerText'))$('trainingReviewerText').textContent=r.reviewer||'-';if($('trainingApproverText'))$('trainingApproverText').textContent=r.approver||'-';
 }
 async function saveTrainingReport(){const r=readTrainingForm();if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}if(!r.writer){alert('작성자를 선택하세요.');return;}if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(readTrainingReports().length+1).padStart(3,'0');const list=readTrainingReports();const i=list.findIndex(x=>String(x.id)===String(r.id));if(i>=0)list[i]=r;else list.unshift(r);writeTrainingReports(list);fillTrainingForm(r);renderTrainingTable();alert('교육 보고서가 저장되었습니다.');}
