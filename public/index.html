@@ -3261,106 +3261,12 @@ function trainingAttendCount(v){const n=String(v||'').split(/,|\n/).map(x=>x.tri
 function trainingSignName(role){const p=typeof getSignPayload==='function'?getSignPayload('training'):{};return (p&&p[role]&&p[role].name&&p[role].name!=='-')?p[role].name:'';}
 function readTrainingForm(){
   const sign=typeof getSignPayload==='function'?getSignPayload('training'):{writer:{},reviewer:{},approver:{}};
-  const editId=$('trainingEditId')?.value||'';
-  const id=editId||('TR-'+Date.now()+'-'+Math.random().toString(16).slice(2,8));
-  const isEdit=!!editId;
-
-  /* 교육보고서 수정 시 작성자는 최초 작성자 그대로 고정 */
-  const old=isEdit
-    ? (readTrainingReports().find(x=>String(x.id)===String(id))||{})
-    : {};
-
-  const validName=o=>(o&&o.name&&o.name!=='-')?o.name:'';
-  const oldWriterName=old.writer||old.signWriter?.name||'';
-  const oldReviewerName=old.reviewer||old.signReviewer?.name||'';
-  const oldApproverName=old.approver||old.signApprover?.name||'';
-
-  const writerName=isEdit
-    ? oldWriterName
-    : validName(sign.writer);
-
-  const reviewerName=validName(sign.reviewer)||(isEdit?oldReviewerName:'');
-  const approverName=validName(sign.approver)||(isEdit?oldApproverName:'');
-
-  const signWriter=isEdit
-    ? (old.signWriter||{name:oldWriterName,title:old.signWriter?.title||'',department:old.signWriter?.department||''})
-    : (sign.writer||{});
-
-  const signReviewer=validName(sign.reviewer)
-    ? (sign.reviewer||{})
-    : (isEdit?(old.signReviewer||{name:oldReviewerName,title:old.signReviewer?.title||'',department:old.signReviewer?.department||''}):(sign.reviewer||{}));
-
-  const signApprover=validName(sign.approver)
-    ? (sign.approver||{})
-    : (isEdit?(old.signApprover||{name:oldApproverName,title:old.signApprover?.title||'',department:old.signApprover?.department||''}):(sign.approver||{}));
-
-  return {
-    id,
-    date:$('trainingDate')?.value||'',
-    no:$('trainingNo')?.value||'',
-    type:$('trainingType')?.value||'',
-    title:$('trainingTitle')?.value||'',
-    place:$('trainingPlace')?.value||'',
-    instructor:$('trainingInstructor')?.value||'',
-    dept:$('trainingDept')?.value||'',
-    hours:$('trainingHours')?.value||'',
-    attendees:$('trainingAttendees')?.value||'',
-    absentees:$('trainingAbsentees')?.value||'',
-    content:$('trainingContent')?.value||'',
-    evalMethod:$('trainingEvalMethod')?.value||'',
-    result:$('trainingResult')?.value||'완료',
-    remark:$('trainingRemark')?.value||'',
-    photos:trainingPhotoDrafts.slice(),
-    writer:writerName,
-    reviewer:reviewerName,
-    approver:approverName,
-    signWriter,
-    signReviewer,
-    signApprover,
-    deleted:false,
-    isDeleted:false,
-    _deleted:false,
-    status:'ACTIVE',
-    createdAt:old.createdAt||trainingNow(),
-    updatedAt:trainingNow()
-  };
-}
-
-function lockTrainingWriterOnEdit(r={}){
-  const sel=$('sg_training_writer');
-  if(!sel)return;
-  const isEdit=!!r.id;
-  sel.disabled=false;
-
-  if(!isEdit){
-    return;
-  }
-
-  const writer=r.signWriter||{};
-  const writerName=writer.name||r.writer||'';
-  if(!writerName){
-    sel.disabled=true;
-    return;
-  }
-
-  const writerValue=writer.id||('__writer_'+writerName);
-  const hasOption=Array.from(sel.options).some(o=>o.value===writerValue);
-  if(!hasOption){
-    const opt=document.createElement('option');
-    opt.value=writerValue;
-    opt.textContent=writerName+' ('+(writer.title||writer.department||'작성자')+')';
-    sel.appendChild(opt);
-  }
-
-  sel.value=writerValue;
-  sel.disabled=true;
-
-  const sub=$('sg_training_writer_sub');
-  if(sub)sub.textContent=[writer.department||'',writer.title||''].join(' ').trim();
-
-  if(typeof restoreSignaturePad==='function'){
-    restoreSignaturePad('training','writer',writer);
-  }
+  const id=$('trainingEditId')?.value||('TR-'+Date.now()+'-'+Math.random().toString(16).slice(2,8));
+  const old=readTrainingReports().find(x=>String(x.id)===String(id))||{};
+  const isEdit=!!($('trainingEditId')?.value);
+  const oldWriter=old.writer || old.signWriter?.name || '';
+  const oldSignWriter=old.signWriter || (oldWriter?{name:oldWriter,title:'',department:'',role:'writer'}:{});
+  return {id,date:$('trainingDate')?.value||'',no:$('trainingNo')?.value||'',type:$('trainingType')?.value||'',title:$('trainingTitle')?.value||'',place:$('trainingPlace')?.value||'',instructor:$('trainingInstructor')?.value||'',dept:$('trainingDept')?.value||'',hours:$('trainingHours')?.value||'',attendees:$('trainingAttendees')?.value||'',absentees:$('trainingAbsentees')?.value||'',content:$('trainingContent')?.value||'',evalMethod:$('trainingEvalMethod')?.value||'',result:$('trainingResult')?.value||'완료',remark:$('trainingRemark')?.value||'',photos:trainingPhotoDrafts.slice(),writer:isEdit?oldWriter:(sign.writer?.name&&sign.writer.name!=='-'?sign.writer.name:''),reviewer:sign.reviewer?.name&&sign.reviewer.name!=='-'?sign.reviewer.name:'',approver:sign.approver?.name&&sign.approver.name!=='-'?sign.approver.name:'',signWriter:isEdit?oldSignWriter:(sign.writer||{}),signReviewer:sign.reviewer||{},signApprover:sign.approver||{},deleted:false,isDeleted:false,_deleted:false,status:'ACTIVE',updatedAt:trainingNow()};
 }
 function fillTrainingForm(r={}){
   const set=(id,v)=>{if($(id))$(id).value=v??'';};
@@ -3368,10 +3274,16 @@ function fillTrainingForm(r={}){
   trainingPhotoDrafts=Array.isArray(r.photos)?r.photos.slice():[];
   if(typeof restoreSign==='function' && (r.signWriter||r.signReviewer||r.signApprover))restoreSign('training',r);
   else if(typeof clearSign==='function')clearSign('training');
-  if(typeof lockTrainingWriterOnEdit==='function')lockTrainingWriterOnEdit(r);
+  setTimeout(()=>{
+    const writerSel=$('sg_training_writer');
+    if(writerSel){
+      writerSel.disabled=!!r.id;
+      writerSel.title=r.id?'최초 작성자는 수정할 수 없습니다.':'';
+    }
+  },0);
   renderTrainingPhotoCards();renderTrainingPreview();
 }
-function clearTrainingReport(){fillTrainingForm({date:trainingToday(),type:'안전교육',result:'완료'});}
+function clearTrainingReport(){fillTrainingForm({date:trainingToday(),type:'안전교육',result:'완료'});setTimeout(()=>{const w=$('sg_training_writer');if(w){w.disabled=false;w.title='';}},0);}
 function renderTrainingPhotoCards(){const box=$('trainingPhotoPreview');if(!box)return;box.innerHTML=trainingPhotoDrafts.map((p,i)=>`<div class="training-photo-card"><button class="training-photo-del" type="button" data-training-photo-del="${i}">×</button><img src="${esc(p.src||'')}" alt="교육 사진 ${i+1}"><input data-training-photo-caption="${i}" value="${esc(p.caption||'')}" placeholder="사진 설명"></div>`).join('');}
 function renderTrainingPreview(sourceRecord){
   const r=sourceRecord?normalizeTrainingReport(sourceRecord):readTrainingForm();
@@ -3432,7 +3344,7 @@ async function deleteTraining(id){
   }
   renderTrainingTable();clearTrainingReport();
 }
-function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}</td><td>${esc(r.writer||'')}</td><td>${esc(r.reviewer||'')}</td><td>${esc(r.approver||'')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button></div></td></tr>`).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
+function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>{const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;const st=(typeof statusBadge==='function'&&wfStatus)?'<br>'+statusBadge(wfStatus.status):'';const act=(typeof actions==='function')?actions('training',r):'';return `<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}${st}</td><td>${esc(r.writer||r.signWriter?.name||'')}</td><td>${esc(r.reviewer||r.signReviewer?.name||'')}</td><td>${esc(r.approver||r.signApprover?.name||'')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button>${act}</div></td></tr>`}).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
 function downloadTrainingCsv(){const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];const rows=readTrainingReports().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):'',r.writer,r.reviewer,r.approver]);const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='교육보고서_'+trainingToday()+'.csv';a.click();URL.revokeObjectURL(a.href);}
 function bindTrainingEvents(){
   if($('trainingSave'))$('trainingSave').onclick=withSaving('training',$('trainingSave'),saveTrainingReport);
@@ -4154,9 +4066,9 @@ function renderMatrix(){
 (function(){
   const WF_KEY='namo_qms_approval_workflow_v2'; // v4 keeps existing workflow data key
   const READ_KEY='namo_qms_approval_read_v2';
-  const TYPE_LABEL={iqc:'수입검사',pqc:'공정검사',oqc:'출하검사',nc:'부적합보고서'};
-  const TYPE_ARR={iqc:'incoming',pqc:'process',oqc:'shipment',nc:'nonconform'};
-  const TYPE_API={iqc:'/api/iqc',pqc:'/api/pqc',oqc:'/api/oqc',nc:'/api/nonconform'};
+  const TYPE_LABEL={iqc:'수입검사',pqc:'공정검사',oqc:'출하검사',nc:'부적합보고서',training:'교육보고서'};
+  const TYPE_ARR={iqc:'incoming',pqc:'process',oqc:'shipment',nc:'nonconform',training:'trainingReports'};
+  const TYPE_API={iqc:'/api/iqc',pqc:'/api/pqc',oqc:'/api/oqc',nc:'/api/nonconform',training:'/api/training'};
   const STATUS_LABEL={DRAFT:'작성중',REVIEW_WAIT:'검토대기',APPROVAL_WAIT:'승인대기',APPROVED:'승인완료',REJECTED:'반려',REVIEW_REJECTED:'검토반려',APPROVAL_REJECTED:'승인반려'};
 
   function qs(id){return document.getElementById(id);}
@@ -4225,6 +4137,7 @@ function renderMatrix(){
     if(type==='iqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.item||r.supplier||''}`;
     if(type==='pqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.product||''}`;
     if(type==='oqc')return `${r.date||''} / LOT ${r.lot||'-'} / ${r.product||r.customer||''}`;
+    if(type==='training')return `${r.date||''} / ${r.no||'-'} / ${r.title||r.type||''}`;
     return `${r.ncDate||''} / ${r.ncNo||r.lot||'-'} / ${r.item||r.ncType||''}`;
   }
   function isAdminUser(u){
@@ -4489,6 +4402,7 @@ function renderMatrix(){
     if(type==='pqc')p={date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:r.signWriter?.name||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
     if(type==='oqc')p={date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:r.signWriter?.name||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
     if(type==='nc')p={ncDate:r.ncDate,ncNo:r.ncNo,ncType:r.ncType,dept:r.dept,lot:r.lot,item:r.item,qty:r.qty,issue:r.issue,cause:r.cause,action:r.action,actionDate:r.actionDate||null,verify:r.verify,verifyDate:r.verifyDate||null,owner:r.owner,status:r.status,signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
+    if(type==='training')p={date:r.date,no:r.no,reportNo:r.no,type:r.type,title:r.title,place:r.place,instructor:r.instructor,dept:r.dept,hours:r.hours,attendees:r.attendees,absentees:r.absentees,content:r.content,evalMethod:r.evalMethod,result:r.result,remark:r.remark,photos:r.photos||[],writer:r.writer||r.signWriter?.name||'',reviewer:r.reviewer||r.signReviewer?.name||'',approver:r.approver||r.signApprover?.name||'',signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover};
     const {data}=await api(`${TYPE_API[type]}/${sid}`,{method:'PUT',body:JSON.stringify(p)});
     return data;
   }
@@ -4497,6 +4411,7 @@ function renderMatrix(){
     if(type==='pqc' && typeof loadProcess==='function')await loadProcess();
     if(type==='oqc' && typeof loadShipment==='function')await loadShipment();
     if(type==='nc' && typeof loadNonconform==='function')await loadNonconform();
+    if(type==='training' && typeof loadTrainingReports==='function')await loadTrainingReports();
     if(typeof renderSummary==='function')renderSummary();
     patchTables(); renderTaskTable(); renderNotifications(); updateBell();
   }
@@ -4625,10 +4540,12 @@ function renderMatrix(){
     const oldP=window.__namoOrigSavePqc || window.savePqc;
     const oldO=window.__namoOrigSaveOqc || window.saveOqc;
     const oldN=window.__namoOrigSaveNc  || window.saveNc;
+    const oldT=window.__namoOrigSaveTraining || window.saveTrainingReport;
     window.__namoOrigSaveIqc=oldI;
     window.__namoOrigSavePqc=oldP;
     window.__namoOrigSaveOqc=oldO;
     window.__namoOrigSaveNc=oldN;
+    window.__namoOrigSaveTraining=oldT;
 
     function applySubmitWf(type,row,memo){
       if(!row)return;
@@ -4671,11 +4588,21 @@ function renderMatrix(){
       applySubmitWf('nc',newest,'부적합 보고 후 지정 검토자에게 검토 요청');
       await refreshType('nc');
     };
+    window.saveTrainingReport=async function(){
+      const before=(typeof readTrainingReports==='function'?readTrainingReports():(state.trainingReports||[])).map(x=>String(x.id));
+      if(typeof oldT==='function')await oldT();
+      if(typeof loadTrainingReports==='function')await loadTrainingReports();
+      const list=(typeof readTrainingReports==='function'?readTrainingReports():(state.trainingReports||[]));
+      const newest=list.find(x=>!before.includes(String(x.id))) || [...list].sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];
+      applySubmitWf('training',newest,'교육보고서 작성 후 지정 검토자에게 검토 요청');
+      await refreshType('training');
+    };
 
     if(qs('incomingSave'))qs('incomingSave').onclick=withSaving('iqc',qs('incomingSave'),window.saveIqc);
     if(qs('processSave'))qs('processSave').onclick=withSaving('pqc',qs('processSave'),window.savePqc);
     if(qs('shipmentSave'))qs('shipmentSave').onclick=withSaving('oqc',qs('shipmentSave'),window.saveOqc);
     if(qs('ncSave'))qs('ncSave').onclick=withSaving('nc',qs('ncSave'),window.saveNc);
+    if(qs('trainingSave'))qs('trainingSave').onclick=withSaving('training',qs('trainingSave'),window.saveTrainingReport);
   }
   function migrateExistingWorkflow(){
     try{
