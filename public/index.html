@@ -2491,8 +2491,7 @@ async function appendPrintUserInfo(target){
     (user.title ? ' ' + user.title : '') +
     (user.department ? ' / ' + user.department : '') +
     (user.email ? ' (' + user.email + ')' : '') +
-    ' ｜ 출력시간 : ' + getPrintDateTime() +
-    ' ｜ IP : ' + (ip || '-');
+    ' ｜ 출력시간 : ' + getPrintDateTime() ;
 
   target.appendChild(info);
 }
