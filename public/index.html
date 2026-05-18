@@ -850,6 +850,27 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   #printTarget.training-print-onepage .tf-page{font-size:11.5px!important;}
 }
 
+
+/* 인쇄 하단 출력 정보 */
+.print-user-info{
+  margin-top:14px;
+  padding-top:8px;
+  border-top:1px dashed #999;
+  font-size:11px;
+  color:#666;
+  text-align:right;
+  line-height:1.5;
+  page-break-inside:avoid;
+  break-inside:avoid;
+}
+@media print{
+  #printTarget .print-user-info{
+    display:block!important;
+    visibility:visible!important;
+    color:#555!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2420,7 +2441,63 @@ function loadStandaloneReport(){
 }
 
 /* ═══ PRINT ═══ */
-function printEl(el){
+let cachedPrintIp = '';
+
+function getPrintUser(){
+  const cur = (typeof state !== 'undefined' && state.currentUser) ? state.currentUser : null;
+  const nameFromDom = (document.getElementById('profileName')?.textContent || '').trim();
+  const emailFromDom = (document.getElementById('profileEmail')?.textContent || '').trim();
+  return {
+    name: cur?.name || nameFromDom || '-',
+    email: cur?.email || emailFromDom || '',
+    department: cur?.department || cur?.dept || '',
+    title: cur?.title || cur?.position || ''
+  };
+}
+
+function getPrintDateTime(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return now.getFullYear() + '-' +
+    pad(now.getMonth() + 1) + '-' +
+    pad(now.getDate()) + ' ' +
+    pad(now.getHours()) + ':' +
+    pad(now.getMinutes()) + ':' +
+    pad(now.getSeconds());
+}
+
+async function getPrintIp(){
+  if(cachedPrintIp) return cachedPrintIp;
+  try{
+    const res = await fetch('https://api.ipify.org?format=json',{cache:'no-store'});
+    const data = await res.json();
+    cachedPrintIp = data?.ip || '-';
+  }catch(e){
+    cachedPrintIp = '-';
+  }
+  return cachedPrintIp;
+}
+
+async function appendPrintUserInfo(target){
+  if(!target) return;
+  target.querySelectorAll('.print-user-info').forEach(x=>x.remove());
+
+  const user = getPrintUser();
+  const ip = await getPrintIp();
+  const info = document.createElement('div');
+  info.className = 'print-user-info';
+  info.textContent =
+    '출력자 : ' + (user.name || '-') +
+    (user.title ? ' ' + user.title : '') +
+    (user.department ? ' / ' + user.department : '') +
+    (user.email ? ' (' + user.email + ')' : '') +
+    ' ｜ 출력시간 : ' + getPrintDateTime() +
+    ' ｜ IP : ' + (ip || '-');
+
+  target.appendChild(info);
+}
+
+async function printEl(el){
   if(!el) return;
 
   document.querySelectorAll('#printTarget').forEach(x=>{
@@ -2446,6 +2523,7 @@ function printEl(el){
     ccv.replaceWith(img);
   });
 
+  await appendPrintUserInfo(clone);
   document.body.appendChild(clone);
 
   setTimeout(()=>{
