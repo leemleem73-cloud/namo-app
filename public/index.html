@@ -1569,7 +1569,18 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="card"><div class="ch"><h3 id="spcReportTitle">측정 보고서</h3><div class="ca"><button class="btn pri sm" type="button" id="spcDownloadJson">데이터 다운로드</button><button class="btn light sm" type="button" id="spcPrintReport">보고서 인쇄</button></div></div><div class="cb" id="spcReportArea"><div class="spc-three"><div class="card"><div class="ch"><h3>1. 요약 정보</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportExec"></tbody></table></div></div><div class="card"><div class="ch"><h3>2. 관리 기준</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportBoundary"></tbody></table></div></div><div class="card"><div class="ch"><h3>3. 공정 적합성</h3></div><div class="cb"><table class="spc-mini"><tbody id="spcReportReadiness"></tbody></table></div></div></div><div class="spc-chart-grid mt14"><div class="card"><div class="ch"><h3>히스토그램</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReportHist"></canvas></div></div></div><div class="card"><div class="ch"><h3>평균 관리도</h3></div><div class="cb"><div class="cwrap"><canvas id="spcReportXbar"></canvas></div></div></div></div><h3 class="mt14">4. 측정값 기록</h3><div class="tw"><table><thead id="spcReportHead"></thead><tbody id="spcReportTable"></tbody></table></div></div></div>
             </div>
 
-            </section>
+            <div class="card mt14">
+              <div class="ch"><h3>SPC 저장 목록</h3></div>
+              <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
+                <table>
+                  <thead><tr><th>일자</th><th>보고서번호</th><th>LOT</th><th>항목</th><th>N</th><th>평균</th><th>σ</th><th>Cp/Cpk</th><th>Ppk</th><th>판정</th><th>작업</th></tr></thead>
+                  <tbody id="spcTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ■ LOT 추적 -->
       <section class="page" id="page-trace">
@@ -1621,9 +1632,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
             <div class="card mt14" id="trainingPreviewCard"><div class="ch"><h2>보고서 사전보기</h2><span class="tag">PREVIEW</span></div><div class="cb"><div class="training-preview-sheet" id="trainingPreviewSheet"></div></div></div>
             <div class="rprint-sign mt14">
-              <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="trainingWriterText">-</div><div class="rpsign-line"></div></div>
-              <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="trainingReviewerText">-</div><div class="rpsign-line"></div></div>
-              <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="trainingApproverText">-</div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rTrainingWriter">-</div><div class="rpsign-title" id="rTrainingWriterT"></div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rTrainingReviewer">-</div><div class="rpsign-title" id="rTrainingReviewerT"></div><div class="rpsign-line"></div></div>
+              <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rTrainingApprover">-</div><div class="rpsign-title" id="rTrainingApproverT"></div><div class="rpsign-line"></div></div>
             </div>
             <input type="hidden" id="trainingEditId">
           </div>
@@ -1715,6 +1726,7 @@ const state={
 };
 const $=id=>document.getElementById(id);
 const $$=s=>Array.from(document.querySelectorAll(s));
+function txt(v){return (v??'').toString().trim();}
 
 /* ═══ API ═══ */
 async function api(url,o={}){
@@ -1795,7 +1807,7 @@ const SIGN_TYPES=['iqc','pqc','oqc','nc','training'];
 
 
 function signPrefix(type){
-  return type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':type==='nc'?'Nc':'Rpt';
+  return type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':type==='nc'?'Nc':type==='training'?'Training':'Rpt';
 }
 function signRoleCap(role){
   return role.charAt(0).toUpperCase()+role.slice(1);
@@ -3427,7 +3439,7 @@ async function deleteTraining(id){
 function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>{const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;const st=(typeof statusBadge==='function'&&wfStatus)?'<br>'+statusBadge(wfStatus.status):'';const act=(typeof actions==='function')?actions('training',r):'';return `<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}${st}</td><td>${esc(r.writer||r.signWriter?.name||'')}</td><td>${esc(r.reviewer||r.signReviewer?.name||'')}</td><td>${esc(r.approver||r.signApprover?.name||'')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button>${act}</div></td></tr>`}).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
 function downloadTrainingCsv(){const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];const rows=readTrainingReports().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):'',r.writer,r.reviewer,r.approver]);const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='교육보고서_'+trainingToday()+'.csv';a.click();URL.revokeObjectURL(a.href);}
 function bindTrainingEvents(){
-  if($('trainingSave'))$('trainingSave').onclick=withSaving('training',$('trainingSave'),saveTrainingReport);
+  if($('trainingSave')&&!window.__namoWfSavePatched)$('trainingSave').onclick=withSaving('training',$('trainingSave'),saveTrainingReport);
   if($('trainingReset'))$('trainingReset').onclick=clearTrainingReport;
   if($('trainingCsv'))$('trainingCsv').onclick=downloadTrainingCsv;
   if($('trainingPrint'))$('trainingPrint').onclick=()=>{renderTrainingPreview();printEl($('trainingPreviewSheet'));};
