@@ -248,6 +248,45 @@ async function ensureSchema() {
       sign_approver JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS training_reports (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      date DATE NOT NULL,
+      report_no TEXT DEFAULT '',
+      type TEXT DEFAULT '',
+      title TEXT NOT NULL,
+      place TEXT DEFAULT '',
+      instructor TEXT DEFAULT '',
+      dept TEXT DEFAULT '',
+      hours TEXT DEFAULT '',
+      attendees TEXT DEFAULT '',
+      absentees TEXT DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      eval_method TEXT DEFAULT '',
+      result TEXT DEFAULT '완료',
+      remark TEXT DEFAULT '',
+      photos JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS instruments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      no TEXT NOT NULL,
+      name TEXT NOT NULL,
+      model TEXT DEFAULT '',
+      maker TEXT DEFAULT '',
+      location TEXT DEFAULT '',
+      cycle TEXT DEFAULT '12',
+      last_cal DATE,
+      next_cal DATE,
+      status TEXT DEFAULT '정상',
+      remark TEXT DEFAULT '',
+      photo TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 
   await db(`
@@ -838,6 +877,223 @@ app.get('/api/trace', requireLogin, async (req, res) => {
   }
 });
 
+/* ───────────────────────────────────────
+   교육 보고서 API  /api/training
+─────────────────────────────────────── */
+app.get('/api/training', requireLogin, async (_req, res) => {
+  try {
+    const r = await db('SELECT * FROM training_reports ORDER BY created_at DESC');
+    ok(res, r.rows.map(row => ({
+      id: row.id,
+      date: row.date,
+      no: row.report_no,
+      type: row.type,
+      title: row.title,
+      place: row.place,
+      instructor: row.instructor,
+      dept: row.dept,
+      hours: row.hours,
+      attendees: row.attendees,
+      absentees: row.absentees,
+      content: row.content,
+      evalMethod: row.eval_method,
+      result: row.result,
+      remark: row.remark,
+      photos: Array.isArray(row.photos) ? row.photos : [],
+      signWriter: row.sign_writer,
+      signReviewer: row.sign_reviewer,
+      signApprover: row.sign_approver,
+      createdAt: row.created_at,
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/training', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!txt(b.date) || !txt(b.title)) {
+      return fail(res, 400, '교육일자와 교육명은 필수입니다.');
+    }
+    const r = await db(
+      `INSERT INTO training_reports
+        (date, report_no, type, title, place, instructor, dept, hours,
+         attendees, absentees, content, eval_method, result, remark, photos,
+         sign_writer, sign_reviewer, sign_approver)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+       RETURNING id`,
+      [
+        txt(b.date),
+        txt(b.no || b.reportNo),
+        txt(b.type),
+        txt(b.title),
+        txt(b.place),
+        txt(b.instructor),
+        txt(b.dept),
+        txt(b.hours),
+        txt(b.attendees),
+        txt(b.absentees),
+        txt(b.content),
+        txt(b.evalMethod || b.eval_method),
+        txt(b.result) || '완료',
+        txt(b.remark),
+        JSON.stringify(arr(b.photos)),
+        sign(b.signWriter),
+        sign(b.signReviewer),
+        sign(b.signApprover),
+      ]
+    );
+    ok(res, { id: r.rows[0].id }, '교육 보고서가 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.put('/api/training/:id', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const r = await db(
+      `UPDATE training_reports SET
+        date=$1, report_no=$2, type=$3, title=$4, place=$5, instructor=$6,
+        dept=$7, hours=$8, attendees=$9, absentees=$10, content=$11,
+        eval_method=$12, result=$13, remark=$14, photos=$15,
+        sign_writer=$16, sign_reviewer=$17, sign_approver=$18
+       WHERE id=$19 RETURNING id`,
+      [
+        txt(b.date),
+        txt(b.no || b.reportNo),
+        txt(b.type),
+        txt(b.title),
+        txt(b.place),
+        txt(b.instructor),
+        txt(b.dept),
+        txt(b.hours),
+        txt(b.attendees),
+        txt(b.absentees),
+        txt(b.content),
+        txt(b.evalMethod || b.eval_method),
+        txt(b.result) || '완료',
+        txt(b.remark),
+        JSON.stringify(arr(b.photos)),
+        sign(b.signWriter),
+        sign(b.signReviewer),
+        sign(b.signApprover),
+        req.params.id,
+      ]
+    );
+    if (!r.rowCount) return fail(res, 404, '교육 보고서를 찾을 수 없습니다.');
+    ok(res, null, '수정되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.delete('/api/training/:id', requireLogin, async (req, res) => {
+  try {
+    const r = await db('DELETE FROM training_reports WHERE id=$1 RETURNING id', [req.params.id]);
+    if (!r.rowCount) return fail(res, 404, '교육 보고서를 찾을 수 없습니다.');
+    ok(res, null, '삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+/* ───────────────────────────────────────
+   측정기 관리 API  /api/instruments
+─────────────────────────────────────── */
+app.get('/api/instruments', requireLogin, async (_req, res) => {
+  try {
+    const r = await db('SELECT * FROM instruments ORDER BY created_at ASC');
+    ok(res, r.rows.map(row => ({
+      id: row.id,
+      no: row.no,
+      name: row.name,
+      model: row.model,
+      maker: row.maker,
+      location: row.location,
+      cycle: row.cycle,
+      lastCal: row.last_cal,
+      nextCal: row.next_cal,
+      status: row.status,
+      remark: row.remark,
+      photo: row.photo,
+      createdAt: row.created_at,
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/instruments', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!txt(b.no) || !txt(b.name)) return fail(res, 400, '관리번호와 측정기명은 필수입니다.');
+    const r = await db(
+      `INSERT INTO instruments (no, name, model, maker, location, cycle, last_cal, next_cal, status, remark, photo)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING id`,
+      [
+        txt(b.no),
+        txt(b.name),
+        txt(b.model),
+        txt(b.maker),
+        txt(b.location),
+        txt(b.cycle) || '12',
+        txt(b.lastCal) || null,
+        txt(b.nextCal) || null,
+        txt(b.status) || '정상',
+        txt(b.remark),
+        txt(b.photo),
+      ]
+    );
+    ok(res, { id: r.rows[0].id }, '측정기가 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.put('/api/instruments/:id', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!txt(b.no) || !txt(b.name)) return fail(res, 400, '관리번호와 측정기명은 필수입니다.');
+    const r = await db(
+      `UPDATE instruments SET
+        no=$1, name=$2, model=$3, maker=$4, location=$5, cycle=$6,
+        last_cal=$7, next_cal=$8, status=$9, remark=$10, photo=$11
+       WHERE id=$12 RETURNING id`,
+      [
+        txt(b.no),
+        txt(b.name),
+        txt(b.model),
+        txt(b.maker),
+        txt(b.location),
+        txt(b.cycle) || '12',
+        txt(b.lastCal) || null,
+        txt(b.nextCal) || null,
+        txt(b.status) || '정상',
+        txt(b.remark),
+        txt(b.photo),
+        req.params.id,
+      ]
+    );
+    if (!r.rowCount) return fail(res, 404, '측정기를 찾을 수 없습니다.');
+    ok(res, null, '수정되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.delete('/api/instruments/:id', requireLogin, async (req, res) => {
+  try {
+    const r = await db('DELETE FROM instruments WHERE id=$1 RETURNING id', [req.params.id]);
+    if (!r.rowCount) return fail(res, 404, '측정기를 찾을 수 없습니다.');
+    ok(res, null, '삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
 app.get('/api/admin/users', requireAdmin, async (_req, res) => {
   try {
     const r = await db(`
@@ -977,7 +1233,9 @@ app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
         suppliers,
         oqc,
         pqc,
-        iqc
+        iqc,
+        training_reports,
+        instruments
       RESTART IDENTITY CASCADE
     `);
     ok(res, null, '전체 데이터가 삭제되었습니다.');
@@ -988,7 +1246,7 @@ app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
 
 app.get('/api/backup', requireLogin, async (_req, res) => {
   try {
-    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates] = await Promise.all([
+    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments] = await Promise.all([
       db('SELECT * FROM iqc ORDER BY created_at DESC'),
       db('SELECT * FROM pqc ORDER BY created_at DESC'),
       db('SELECT * FROM oqc ORDER BY created_at DESC'),
@@ -996,6 +1254,8 @@ app.get('/api/backup', requireLogin, async (_req, res) => {
       db('SELECT * FROM nonconform ORDER BY created_at DESC'),
       db('SELECT * FROM worklog ORDER BY created_at DESC'),
       db('SELECT * FROM certificates ORDER BY created_at DESC'),
+      db('SELECT * FROM training_reports ORDER BY created_at DESC'),
+      db('SELECT * FROM instruments ORDER BY created_at ASC'),
     ]);
 
     const payload = {
@@ -1006,6 +1266,8 @@ app.get('/api/backup', requireLogin, async (_req, res) => {
       nonconform: nonconform.rows,
       worklog: worklog.rows,
       certificates: certificates.rows,
+      training: training.rows,
+      instruments: instruments.rows,
     };
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
