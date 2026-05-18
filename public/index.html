@@ -3304,19 +3304,63 @@ function readTrainingForm(){
   const oldSignWriter=old.signWriter || (oldWriter?{name:oldWriter,title:'',department:'',role:'writer'}:{});
   return {id,date:$('trainingDate')?.value||'',no:$('trainingNo')?.value||'',type:$('trainingType')?.value||'',title:$('trainingTitle')?.value||'',place:$('trainingPlace')?.value||'',instructor:$('trainingInstructor')?.value||'',dept:$('trainingDept')?.value||'',hours:$('trainingHours')?.value||'',attendees:$('trainingAttendees')?.value||'',absentees:$('trainingAbsentees')?.value||'',content:$('trainingContent')?.value||'',evalMethod:$('trainingEvalMethod')?.value||'',result:$('trainingResult')?.value||'완료',remark:$('trainingRemark')?.value||'',photos:trainingPhotoDrafts.slice(),writer:isEdit?oldWriter:(sign.writer?.name&&sign.writer.name!=='-'?sign.writer.name:''),reviewer:sign.reviewer?.name&&sign.reviewer.name!=='-'?sign.reviewer.name:'',approver:sign.approver?.name&&sign.approver.name!=='-'?sign.approver.name:'',signWriter:isEdit?oldSignWriter:(sign.writer||{}),signReviewer:sign.reviewer||{},signApprover:sign.approver||{},deleted:false,isDeleted:false,_deleted:false,status:'ACTIVE',updatedAt:trainingNow()};
 }
+function ensureTrainingWriterLocked(record){
+  if(!record || !record.id)return;
+
+  const oldWriter = record.signWriter || {};
+  const writerName = oldWriter.name || record.writer || '';
+  if(!writerName)return;
+
+  const writerId = oldWriter.id || oldWriter.email || ('locked-training-writer-' + writerName);
+  const writerObj = {
+    id:writerId,
+    name:writerName,
+    title:oldWriter.title || record.writerTitle || '',
+    department:oldWriter.department || record.writerDepartment || '',
+    email:oldWriter.email || record.writerEmail || '',
+    status:'APPROVED'
+  };
+
+  if(!Array.isArray(state.signableUsers))state.signableUsers=[];
+  if(!state.signableUsers.some(u => String(u.id) === String(writerObj.id))){
+    state.signableUsers.push(writerObj);
+  }
+
+  const writerSel = $('sg_training_writer');
+  if(writerSel){
+    let opt = Array.from(writerSel.options).find(o => String(o.value) === String(writerObj.id));
+    if(!opt){
+      opt = new Option(`${writerObj.name} (${writerObj.title || writerObj.department || '-'})`, writerObj.id);
+      writerSel.add(opt);
+    }
+    writerSel.value = writerObj.id;
+    writerSel.disabled = true;
+    writerSel.title = '최초 작성자는 수정할 수 없습니다.';
+  }
+
+  if(typeof restoreSignaturePad === 'function')restoreSignaturePad('training','writer',record.signWriter || writerObj);
+  if(typeof onSignChange === 'function')onSignChange('training','writer');
+}
+
 function fillTrainingForm(r={}){
   const set=(id,v)=>{if($(id))$(id).value=v??'';};
   set('trainingEditId',r.id||'');set('trainingDate',r.date||trainingToday());set('trainingNo',r.no||'');set('trainingType',r.type||'안전교육');set('trainingTitle',r.title||'');set('trainingPlace',r.place||'');set('trainingInstructor',r.instructor||'');set('trainingDept',r.dept||'');set('trainingHours',r.hours||'');set('trainingAttendees',r.attendees||'');set('trainingAbsentees',r.absentees||'');set('trainingContent',r.content||'');set('trainingEvalMethod',r.evalMethod||'');set('trainingResult',r.result||'완료');set('trainingRemark',r.remark||'');
   trainingPhotoDrafts=Array.isArray(r.photos)?r.photos.slice():[];
+
   if(typeof restoreSign==='function' && (r.signWriter||r.signReviewer||r.signApprover))restoreSign('training',r);
   else if(typeof clearSign==='function')clearSign('training');
+
   setTimeout(()=>{
     const writerSel=$('sg_training_writer');
-    if(writerSel){
-      writerSel.disabled=!!r.id;
-      writerSel.title=r.id?'최초 작성자는 수정할 수 없습니다.':'';
+    if(r.id){
+      ensureTrainingWriterLocked(r);
+    }else if(writerSel){
+      writerSel.disabled=false;
+      writerSel.title='';
     }
+    renderTrainingPreview();
   },0);
+
   renderTrainingPhotoCards();renderTrainingPreview();
 }
 function clearTrainingReport(){fillTrainingForm({date:trainingToday(),type:'안전교육',result:'완료'});setTimeout(()=>{const w=$('sg_training_writer');if(w){w.disabled=false;w.title='';}},0);}
