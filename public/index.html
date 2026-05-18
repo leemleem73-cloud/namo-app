@@ -2151,7 +2151,9 @@ function buildSignGrid(type){
 
   /* 작성자: 로그인 사용자 본인 / 검토자·승인자: 승인된 부장급 이상 또는 관리자 전체 */
   const me = state.currentUser || state.signableUsers[0] || null;
-  const writerUsers = me ? [normalizeSignUser(me)].filter(Boolean) : [];
+  const writerUsers = uniqSignUsers(state.signableUsers).filter(u =>
+    String(u.status || '').toUpperCase() === 'APPROVED'
+  );
   const managerUsers = uniqSignUsers(state.signableUsers).filter(u =>
     String(u.status || '').toUpperCase() === 'APPROVED' && isSenior(u)
   );
@@ -3803,6 +3805,218 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(typeof onSignChange === 'function') onSignChange(type,role);
     };
     reader.readAsDataURL(file);
+  });
+})();
+
+
+/* v17 서명 이미지 첨부 후 작성/검토/승인 이름 누락 보정 */
+(function(){
+  function qs(id){ return document.getElementById(id); }
+  function users(){ return (window.state && Array.isArray(state.signableUsers)) ? state.signableUsers : []; }
+  function current(){ return (window.state && state.currentUser) ? state.currentUser : null; }
+  function firstOptionValue(sel){
+    if(!sel) return '';
+    for(const opt of Array.from(sel.options || [])){
+      if(opt.value) return opt.value;
+    }
+    return '';
+  }
+  function selectFallback(type, role){
+    const sel = qs(`sg_${type}_${role}`);
+    if(!sel) return null;
+
+    if(!sel.value){
+      if(role === 'writer'){
+        const me = current();
+        if(me && me.id && Array.from(sel.options || []).some(o => String(o.value) === String(me.id))){
+          sel.value = me.id;
+        }else{
+          sel.value = firstOptionValue(sel);
+        }
+      }else{
+        sel.value = firstOptionValue(sel);
+      }
+      if(sel.value){
+        sel.dispatchEvent(new Event('change', { bubbles:true }));
+      }
+    }
+
+    const u = users().find(x => String(x.id) === String(sel.value));
+    return u || null;
+  }
+  function signData(type, role){
+    if(typeof window.signature데이터 === 'function'){
+      return window.signature데이터(type, role) || {};
+    }
+    return {};
+  }
+  window.getSignPayload = function(type){
+    const find = role => {
+      const u = selectFallback(type, role);
+      const sig = signData(type, role);
+      return {
+        id: u ? (u.id || '') : '',
+        name: u ? (u.name || '') : '',
+        title: u ? (u.title || '') : '',
+        department: u ? (u.department || '') : '',
+        signImage: sig.signImage || '',
+        signDate: sig.signDate || ''
+      };
+    };
+    return {
+      writer: find('writer'),
+      reviewer: find('reviewer'),
+      approver: find('approver')
+    };
+  };
+  function updatePreviewName(type, role){
+    const payload = window.getSignPayload(type);
+    const data = payload && payload[role] ? payload[role] : {};
+    const prefixMap = { iqc:'Iqc', pqc:'Pqc', oqc:'Oqc', nc:'Nc', training:'Training', report:'Rpt' };
+    const capMap = { writer:'Writer', reviewer:'Reviewer', approver:'Approver' };
+    const pfx = prefixMap[type] || '';
+    const cap = capMap[role] || '';
+    if(!pfx || !cap) return;
+    const nameEl = qs(`r${pfx}${cap}`);
+    const titleEl = qs(`r${pfx}${cap}T`);
+    if(nameEl) nameEl.textContent = data.name || '';
+    if(titleEl) titleEl.textContent = data.title || data.department || '';
+  }
+  function refreshAllVisibleNames(){
+    ['iqc','pqc','oqc','nc','training'].forEach(type => {
+      ['writer','reviewer','approver'].forEach(role => updatePreviewName(type, role));
+    });
+    if(typeof syncIqcPreview === 'function') try{ syncIqcPreview(); }catch(e){}
+    if(typeof syncPqcPreview === 'function') try{ syncPqcPreview(); }catch(e){}
+    if(typeof syncOqcPreview === 'function') try{ syncOqcPreview(); }catch(e){}
+    if(typeof renderTrainingPreview === 'function') try{ renderTrainingPreview(); }catch(e){}
+    if(typeof renderNcPreview === 'function') try{ renderNcPreview(); }catch(e){}
+  }
+
+  document.addEventListener('change', function(e){
+    const fileInput = e.target.closest && e.target.closest('[data-sign-file]');
+    const select = e.target.closest && e.target.closest('.sign-sel');
+    if(fileInput){
+      const parts = fileInput.getAttribute('data-sign-file').split(':');
+      setTimeout(function(){
+        selectFallback(parts[0], parts[1]);
+        refreshAllVisibleNames();
+      }, 120);
+    }
+    if(select){
+      setTimeout(refreshAllVisibleNames, 50);
+    }
+  });
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest && (e.target.closest('[data-sign-file-btn]') || e.target.closest('[data-sign-clear]'))){
+      setTimeout(refreshAllVisibleNames, 200);
+    }
+  });
+
+  window.addEventListener('load', function(){
+    setTimeout(refreshAllVisibleNames, 800);
+  });
+})();
+
+
+/* v18 결재자 보존 수정 - 다른 PC 검토/승인 시 작성자 덮어쓰기 방지 */
+(function(){
+  function qs(id){ return document.getElementById(id); }
+  function users(){ return (window.state && Array.isArray(state.signableUsers)) ? state.signableUsers : []; }
+  function current(){ return (window.state && state.currentUser) ? state.currentUser : null; }
+  function selectedUser(type, role){
+    const sel = qs(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return null;
+    return users().find(x => String(x.id) === String(sel.value)) || null;
+  }
+  function isNewRecord(type){
+    const map = {
+      iqc:'incomingEditId',
+      pqc:'processEditId',
+      oqc:'shipmentEditId',
+      nc:'ncEditId',
+      training:'trainingEditId'
+    };
+    const idEl = qs(map[type] || '');
+    return !(idEl && String(idEl.value || '').trim());
+  }
+  function chooseCurrentWriterOnlyForNew(type){
+    const sel = qs(`sg_${type}_writer`);
+    const me = current();
+    if(!sel || sel.value || !isNewRecord(type) || !me || !me.id) return;
+    if(Array.from(sel.options || []).some(o => String(o.value) === String(me.id))){
+      sel.value = me.id;
+      sel.dispatchEvent(new Event('change', { bubbles:true }));
+    }
+  }
+  function signData(type, role){
+    if(typeof window.signature데이터 === 'function'){
+      return window.signature데이터(type, role) || {};
+    }
+    return {};
+  }
+
+  window.getSignPayload = function(type){
+    chooseCurrentWriterOnlyForNew(type);
+    const find = role => {
+      const u = selectedUser(type, role);
+      const sig = signData(type, role);
+      return {
+        id: u ? (u.id || '') : '',
+        name: u ? (u.name || '') : '',
+        title: u ? (u.title || '') : '',
+        department: u ? (u.department || '') : '',
+        signImage: sig.signImage || '',
+        signDate: sig.signDate || ''
+      };
+    };
+    return {
+      writer: find('writer'),
+      reviewer: find('reviewer'),
+      approver: find('approver')
+    };
+  };
+
+  const oldRestore = window.restoreSign;
+  window.restoreSign = function(type, record){
+    if(typeof oldRestore === 'function') oldRestore(type, record);
+
+    // 보존 핵심: 저장된 signWriter/signReviewer/signApprover가 있으면 현재 로그인 사용자로 절대 대체하지 않음.
+    const apply = (role, data) => {
+      const sel = qs(`sg_${type}_${role}`);
+      if(!sel || !data) return;
+      let val = '';
+      if(data.id && Array.from(sel.options || []).some(o => String(o.value) === String(data.id))){
+        val = data.id;
+      }else if(data.name){
+        const u = users().find(x => String(x.name || '') === String(data.name || ''));
+        if(u && Array.from(sel.options || []).some(o => String(o.value) === String(u.id))){
+          val = u.id;
+        }
+      }
+      if(val) sel.value = val;
+      if(typeof window.restoreSignaturePad === 'function') window.restoreSignaturePad(type, role, data);
+      if(typeof window.onSignChange === 'function') window.onSignChange(type, role);
+    };
+
+    apply('writer', record && record.signWriter);
+    apply('reviewer', record && record.signReviewer);
+    apply('approver', record && record.signApprover);
+  };
+
+  document.addEventListener('change', function(e){
+    const fileInput = e.target.closest && e.target.closest('[data-sign-file]');
+    if(fileInput){
+      const [type] = fileInput.getAttribute('data-sign-file').split(':');
+      chooseCurrentWriterOnlyForNew(type);
+    }
+  });
+
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      ['iqc','pqc','oqc','nc','training'].forEach(chooseCurrentWriterOnlyForNew);
+    }, 900);
   });
 })();
 
