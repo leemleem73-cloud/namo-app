@@ -1047,7 +1047,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <div class="nav-sec">공정능력 관리</div>
       <button class="nav-item" data-page="spc"><span class="nav-icon"></span><span>공정능력 분석</span></button>
       <div class="nav-sec">교육 관리</div>
-      <button class="nav-item" data-page="training"><span class="nav-icon">🎓</span><span>교육 보고서</span></button>
+      <button class="nav-item" data-page="training"><span class="nav-icon"></span><span>교육 보고서</span></button>
       <div class="nav-sec" id="adminNavTitle" style="display:none;">관리자</div>
       <button class="nav-item" data-page="users" id="usersNavBtn" style="display:none;"><span class="nav-icon"></span><span>회원등록현황</span></button>
     </aside>
@@ -1076,10 +1076,10 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           <div class="card"><div class="ch"><h3>공지사항</h3><span class="tag">NOTICE</span></div>
             <div class="cb" style="padding:0 18px;">
               <div class="nlist">
-                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">QMES 시스템 업데이트 진행 중</div><div class="ndate">2026-04-22</div></div></div>
-                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">생산담당자 작업일지 기록해 주세요</div><div class="ndate">2026-04-22</div></div></div>
-                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">품질담당자 검사성적서 기록 해주세요</div><div class="ndate">2026-04-22</div></div></div>
-                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">연구원1명 품질1명 안전교육 확인 안내</div><div class="ndate">2026-04-22</div></div></div>
+                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">작성→검토→승인 알림 기능 추가</div><div class="ndate">2026-05-18</div></div></div>
+                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">측정기관리 대장 추가</div><div class="ndate">2026-05-18</div></div></div>
+                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">공정능력 분석 추가</div><div class="ndate">2026-05-18</div></div></div>
+                <div class="nitem"><div class="ndot"></div><div><div class="ntxt">교육보고서 추가</div><div class="ndate">2026-05-18</div></div></div>
                 <div class="nitem"><div class="ndot" style="background:var(--wa);"></div><div><div class="ntxt">로그인ID(회사개인 이메일) 비번(초기비번1234) 상단 이름클릭 후 변경</div><div class="ndate">2026-04-22</div></div></div>
               </div>
             </div>
@@ -1666,7 +1666,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 ═══════════════════════════════════════ */
 const state={
   currentUser:null,
-  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],instruments:[],spcReports:[],spcRows:[],
+  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],instruments:[],trainingReports:[],spcReports:[],spcRows:[],
   adminUsers:[],
   signableUsers:[],
   charts:{},
@@ -2203,6 +2203,8 @@ function printLabel(){
 .msa-template-report .msa-bold{font-weight:900;}
 
 </style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
+
+
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
@@ -2630,27 +2632,59 @@ function defaultInstruments(){
     {id:'default-04',no:'NM측정-04',name:'입도분석기',model:'Mastersizer 3000',maker:'Malvern Panalytical',location:'연구소',cycle:'12',lastCal:'',nextCal:'',status:'정상',remark:''}
   ];
 }
-function loadInstruments(){
-  const raw=localStorage.getItem('namo_qms_instruments');
-  let list=[];
-  try{list=raw?JSON.parse(raw):[];}catch(e){list=[];}
-  // 다른 PC/브라우저에는 localStorage가 비어 있으므로 기본 측정기 목록을 자동 생성
-  if(!Array.isArray(list)||list.length===0){
-    list=defaultInstruments();
-    localStorage.setItem('namo_qms_instruments',JSON.stringify(list));
+async function migrateLegacyInstrumentsToServerIfNeeded(serverList){
+  const marker='namo_qms_instruments_migrated_to_server_v1';
+  if(Array.isArray(serverList)&&serverList.length>0)return false;
+  if(localStorage.getItem(marker)==='1')return false;
+  let legacy=[];
+  try{legacy=JSON.parse(localStorage.getItem('namo_qms_instruments')||'[]')||[];}catch(e){legacy=[];}
+  if(!Array.isArray(legacy)||!legacy.length)return false;
+  let migrated=0;
+  for(const x of legacy){
+    if(!x||!txt(x.no)||!txt(x.name))continue;
+    const p={
+      no:txt(x.no),name:txt(x.name),model:txt(x.model),maker:txt(x.maker),location:txt(x.location),
+      cycle:txt(x.cycle)||'12',lastCal:txt(x.lastCal||x.last_cal)||null,nextCal:txt(x.nextCal||x.next_cal)||null,
+      status:txt(x.status)||'정상',remark:txt(x.remark),photo:txt(x.photo)
+    };
+    const {res}=await api('/api/instruments',{method:'POST',body:JSON.stringify(p)});
+    if(res.ok)migrated++;
   }
-  state.instruments=list.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
-  saveInstrumentsLocal();
+  if(migrated>0){localStorage.setItem(marker,'1');return true;}
+  return false;
+}
+async function loadInstruments(){
+  const {res,data}=await api('/api/instruments');
+  if(res.ok&&data?.success){
+    let rows=data.data||[];
+    const migrated=await migrateLegacyInstrumentsToServerIfNeeded(rows);
+    if(migrated){
+      const again=await api('/api/instruments');
+      rows=again.data?.data||rows;
+    }
+    state.instruments=(rows||[]).map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+    if(!state.instruments.length){
+      // DB와 기존 브라우저 저장소가 모두 비어 있을 때만 기본 측정기를 화면에 표시합니다.
+      state.instruments=defaultInstruments().map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+    }
+  }else{
+    const raw=localStorage.getItem('namo_qms_instruments');
+    let list=[];
+    try{list=raw?JSON.parse(raw):[];}catch(e){list=[];}
+    if(!Array.isArray(list)||list.length===0){
+      list=defaultInstruments();
+      try{localStorage.setItem('namo_qms_instruments',JSON.stringify(list));}catch(e){}
+    }
+    state.instruments=list.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+  }
   renderInstrumentTable();
 }
 function saveInstrumentsLocal(){
-  localStorage.setItem('namo_qms_instruments',JSON.stringify(state.instruments));
+  try{localStorage.setItem('namo_qms_instruments',JSON.stringify(state.instruments));}catch(e){}
 }
-
 async function loadAll데이터(){
   await loadSignableUsers();
-  await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform()]);
-  loadInstruments();
+  await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform(),loadInstruments(),loadTrainingReports()]);
   loadSpcReports();
   if(state.currentUser?.role==='admin')await loadAdminUsers();
   renderSummary();populateReportSelect();loadStandaloneReport();
@@ -2776,8 +2810,8 @@ function updateInstrumentStatusByDate(){
   const auto=instrumentAutoStatus(next,cur);
   if($('instrumentStatus'))$('instrumentStatus').value=auto;
 }
-function saveInstrument(){
-  const id=$('instrumentEditId').value||String(Date.now());
+async function saveInstrument(){
+  const id=$('instrumentEditId').value||'';
   const p={
     id,
     name:$('instrumentName').value.trim(),
@@ -2793,9 +2827,13 @@ function saveInstrument(){
     photo:$('instrumentPhoto')?.value.trim()||''
   };
   if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
-  const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
-  if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
-  saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
+  const isExisting=!!id&&state.instruments.some(x=>String(x.id)===String(id));
+  const {res,data}=await api(isExisting?`/api/instruments/${encodeURIComponent(id)}`:'/api/instruments',{
+    method:isExisting?'PUT':'POST',
+    body:JSON.stringify(p)
+  });
+  if(!res.ok||!data?.success){alert(data?.message||'측정기 저장에 실패했습니다.');return;}
+  await loadInstruments();clearInstrument();alert('저장되었습니다.');
 }
 function clearInstrument(){
   ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentLocation','instrumentLastCal','instrumentNextCal','instrumentPhoto','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
@@ -2808,10 +2846,11 @@ function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
   $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);if($('instrumentPhoto'))$('instrumentPhoto').value=instrumentPhotoSrc(r);$('instrumentRemark').value=r.remark||'';renderInstrumentPhotoPreview();
 }
-function deleteInstrument(id){
+async function deleteInstrument(id){
   if(!confirm('삭제하시겠습니까?'))return;
-  state.instruments=state.instruments.filter(x=>String(x.id)!==String(id));
-  saveInstrumentsLocal();renderInstrumentTable();
+  const {res,data}=await api(`/api/instruments/${encodeURIComponent(id)}`,{method:'DELETE'});
+  if(!res.ok||!data?.success){alert(data?.message||'삭제에 실패했습니다.');return;}
+  await loadInstruments();
 }
 
 /* ═══ SAVE ═══ */
@@ -3094,12 +3133,50 @@ function normalizeTrainingReport(r){
   return {...(r||{}),deleted:false,isDeleted:false,_deleted:false,status:(r&&r.status&&String(r.status).toUpperCase()!=='DELETED')?r.status:'ACTIVE'};
 }
 function readTrainingReports(){
-  try{
-    const raw=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];
-    return (Array.isArray(raw)?raw:[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
-  }catch(e){return[];}
+  const fromState=Array.isArray(state.trainingReports)?state.trainingReports:[];
+  return fromState.filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
 }
-function writeTrainingReports(list){localStorage.setItem(TRAINING_STORAGE_KEY,JSON.stringify((list||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport)));}
+function writeTrainingReports(list){
+  state.trainingReports=(list||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+  try{localStorage.setItem(TRAINING_STORAGE_KEY,JSON.stringify(state.trainingReports));}catch(e){}
+}
+async function migrateLegacyTrainingToServerIfNeeded(serverList){
+  const marker='namo_qms_training_reports_migrated_to_server_v1';
+  if(Array.isArray(serverList)&&serverList.length>0)return false;
+  if(localStorage.getItem(marker)==='1')return false;
+  let legacy=[];
+  try{legacy=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];}catch(e){legacy=[];}
+  legacy=(Array.isArray(legacy)?legacy:[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+  if(!legacy.length)return false;
+  let migrated=0;
+  for(const r of legacy){
+    if(!r||!txt(r.date)||!txt(r.title))continue;
+    const payload={...r,no:r.no||r.reportNo||'',reportNo:r.no||r.reportNo||'',evalMethod:r.evalMethod||r.eval_method||'',photos:Array.isArray(r.photos)?r.photos:[],signWriter:r.signWriter||{},signReviewer:r.signReviewer||{},signApprover:r.signApprover||{}};
+    const {res}=await api('/api/training',{method:'POST',body:JSON.stringify(payload)});
+    if(res.ok)migrated++;
+  }
+  if(migrated>0){localStorage.setItem(marker,'1');return true;}
+  return false;
+}
+async function loadTrainingReports(){
+  const {res,data}=await api('/api/training');
+  if(res.ok&&data?.success){
+    let rows=(data.data||[]).filter(r=>!isTrainingDeleted(r));
+    const migrated=await migrateLegacyTrainingToServerIfNeeded(rows);
+    if(migrated){
+      const again=await api('/api/training');
+      rows=(again.data?.data||rows).filter(r=>!isTrainingDeleted(r));
+    }
+    state.trainingReports=rows.map(normalizeTrainingReport);
+  }else{
+    try{
+      const raw=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];
+      state.trainingReports=(Array.isArray(raw)?raw:[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+    }catch(e){state.trainingReports=[];}
+  }
+  renderTrainingTable();
+  renderTrainingPreview();
+}
 function trainingBadge(v){return v==='완료'?'<span class="status pass">완료</span>':v==='미실시'?'<span class="status fail">미실시</span>':'<span class="status hold">예정</span>';}
 function trainingNow(){const d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function trainingToday(){return typeof todayKST==='function'?todayKST():new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})).toISOString().slice(0,10);}
@@ -3137,13 +3214,37 @@ function renderTrainingPreview(){
   }
   if($('trainingWriterText'))$('trainingWriterText').textContent=r.writer||'-';if($('trainingReviewerText'))$('trainingReviewerText').textContent=r.reviewer||'-';if($('trainingApproverText'))$('trainingApproverText').textContent=r.approver||'-';
 }
-async function saveTrainingReport(){const r=readTrainingForm();if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}if(!r.writer){alert('작성자를 선택하세요.');return;}if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(readTrainingReports().length+1).padStart(3,'0');const list=readTrainingReports();const i=list.findIndex(x=>String(x.id)===String(r.id));if(i>=0)list[i]=r;else list.unshift(r);writeTrainingReports(list);fillTrainingForm(r);renderTrainingTable();alert('교육 보고서가 저장되었습니다.');}
+async function saveTrainingReport(){
+  const r=readTrainingForm();
+  if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}
+  if(!r.writer){alert('작성자를 선택하세요.');return;}
+  if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(readTrainingReports().length+1).padStart(3,'0');
+
+  const isExisting=readTrainingReports().some(x=>String(x.id)===String(r.id));
+  const {res,data}=await api(isExisting?`/api/training/${encodeURIComponent(r.id)}`:'/api/training',{
+    method:isExisting?'PUT':'POST',
+    body:JSON.stringify(r)
+  });
+  if(!res.ok||!data?.success){alert(data?.message||'교육 보고서 저장에 실패했습니다.');return;}
+
+  if(data.data) r.id=data.data.id||r.id;
+  await loadTrainingReports();
+  const saved=readTrainingReports().find(x=>String(x.id)===String(r.id))||r;
+  fillTrainingForm(saved);
+  renderTrainingTable();
+  alert('교육 보고서가 저장되었습니다.');
+}
 function editTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(r){fillTrainingForm(r);document.querySelector('[data-page="training"]')?.click();$('trainingPrintArea')?.scrollIntoView({behavior:'smooth',block:'start'});}}
 function printTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(!r)return;fillTrainingForm(r);renderTrainingPreview();setTimeout(()=>printEl($('trainingPreviewSheet')),200);}
-function deleteTraining(id){
+async function deleteTraining(id){
   if(!confirm('교육 보고서를 삭제하시겠습니까?'))return;
-  const list=readTrainingReports().filter(x=>String(x.id)!==String(id));
-  writeTrainingReports(list);
+  const {res,data}=await api(`/api/training/${encodeURIComponent(id)}`,{method:'DELETE'});
+  if(!res.ok||!data?.success){
+    const list=readTrainingReports().filter(x=>String(x.id)!==String(id));
+    writeTrainingReports(list);
+  }else{
+    await loadTrainingReports();
+  }
   renderTrainingTable();clearTrainingReport();
 }
 function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}</td><td>${esc(r.writer||'-')}</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.approver||'-')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button></div></td></tr>`).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
@@ -3209,7 +3310,7 @@ function bindEvents(){
   $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
   $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
   $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
-  if($('instrumentSave'))$('instrumentSave').onclick=saveInstrument;
+  if($('instrumentSave'))$('instrumentSave').onclick=withSaving('instrument',$('instrumentSave'),saveInstrument);
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
@@ -4431,6 +4532,155 @@ function renderMatrix(){
 })();
 </script>
 
+
+
+
+<script>
+/* ═══════════════════════════════════════
+   서버 목록 강제 동기화 보강 v7
+   - 측정기 목록: /api/instruments 조회 후 화면 렌더
+   - 교육 보고서 목록: /api/training 조회 후 화면 렌더
+   - 기존 localStorage 데이터가 있고 서버가 비어 있으면 자동 이전
+═══════════════════════════════════════ */
+(function(){
+  const $q = (id)=>document.getElementById(id);
+  const esc2 = (v)=>String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  const txt2 = (v)=>(v ?? '').toString().trim();
+  const arr2 = (v)=>Array.isArray(v)?v:[];
+  const date2 = (v)=>{
+    if(!v) return '';
+    const s=String(v);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    try{ const d=new Date(s); if(!Number.isNaN(d.getTime())) return new Date(d.getTime()+9*60*60*1000).toISOString().slice(0,10); }catch(e){}
+    return s.slice(0,10);
+  };
+  async function jfetch(url,opt={}){
+    const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt});
+    const d=await r.json().catch(()=>null);
+    return {res:r,data:d};
+  }
+  function safeJson(key,def=[]){try{const v=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(v)?v:def;}catch(e){return def;}}
+  function normalizeInstrument(x){
+    return {
+      id:x.id || x._id || ('I-'+Date.now()+Math.random()),
+      no:txt2(x.no || x.code || x.instrumentNo),
+      name:txt2(x.name || x.instrumentName),
+      model:txt2(x.model), maker:txt2(x.maker), location:txt2(x.location),
+      cycle:txt2(x.cycle) || '12',
+      lastCal:date2(x.lastCal || x.last_cal),
+      nextCal:date2(x.nextCal || x.next_cal),
+      status:txt2(x.status) || '정상',
+      remark:txt2(x.remark), photo:txt2(x.photo || x.photoUrl),
+      createdAt:x.createdAt || x.created_at || ''
+    };
+  }
+  function isDeletedTraining(x){
+    const v=String(x?.deleted ?? x?.isDeleted ?? x?._deleted ?? '').toLowerCase();
+    const st=String(x?.status ?? '').toUpperCase();
+    return v==='true'||v==='1'||st==='DELETED'||st==='TRASH'||st==='REMOVED'||st==='삭제';
+  }
+  function signName(x){return x && typeof x==='object' ? txt2(x.name || x.userName || x.label) : '';}
+  function normalizeTraining(x){
+    const sw=x.signWriter || x.sign_writer || {};
+    const sr=x.signReviewer || x.sign_reviewer || {};
+    const sa=x.signApprover || x.sign_approver || {};
+    return {
+      id:x.id || x._id || ('T-'+Date.now()+Math.random()),
+      date:date2(x.date || x.trainingDate),
+      no:txt2(x.no || x.reportNo || x.report_no),
+      type:txt2(x.type), title:txt2(x.title || x.trainingTitle), place:txt2(x.place),
+      instructor:txt2(x.instructor), dept:txt2(x.dept), hours:txt2(x.hours),
+      attendees:txt2(x.attendees), absentees:txt2(x.absentees), content:txt2(x.content),
+      evalMethod:txt2(x.evalMethod || x.eval_method), result:txt2(x.result) || '완료', remark:txt2(x.remark),
+      photos:Array.isArray(x.photos)?x.photos:[],
+      signWriter:sw, signReviewer:sr, signApprover:sa,
+      writer:txt2(x.writer) || signName(sw),
+      reviewer:txt2(x.reviewer) || signName(sr),
+      approver:txt2(x.approver) || signName(sa),
+      createdAt:x.createdAt || x.created_at || '', updatedAt:x.updatedAt || x.updated_at || ''
+    };
+  }
+  async function migrateInstrumentsIfNeeded(serverRows){
+    if(Array.isArray(serverRows)&&serverRows.length) return false;
+    const marker='namo_qms_instruments_migrated_to_server_v7';
+    if(localStorage.getItem(marker)==='1') return false;
+    const legacy=safeJson('namo_qms_instruments',[]).map(normalizeInstrument).filter(x=>x.no&&x.name);
+    if(!legacy.length) return false;
+    let ok=0;
+    for(const x of legacy){
+      const payload={no:x.no,name:x.name,model:x.model,maker:x.maker,location:x.location,cycle:x.cycle,lastCal:x.lastCal||null,nextCal:x.nextCal||null,status:x.status,remark:x.remark,photo:x.photo};
+      try{const r=await jfetch('/api/instruments',{method:'POST',body:JSON.stringify(payload)}); if(r.res.ok&&r.data?.success) ok++;}catch(e){}
+    }
+    if(ok){localStorage.setItem(marker,'1'); return true;}
+    return false;
+  }
+  async function migrateTrainingIfNeeded(serverRows){
+    if(Array.isArray(serverRows)&&serverRows.length) return false;
+    const marker='namo_qms_training_reports_migrated_to_server_v7';
+    if(localStorage.getItem(marker)==='1') return false;
+    const legacy=safeJson('namo_qms_training_reports_v2',[]).filter(x=>!isDeletedTraining(x)).map(normalizeTraining).filter(x=>x.date&&x.title);
+    if(!legacy.length) return false;
+    let ok=0;
+    for(const x of legacy){
+      const payload={...x,reportNo:x.no,no:x.no,evalMethod:x.evalMethod,photos:arr2(x.photos),signWriter:x.signWriter||{},signReviewer:x.signReviewer||{},signApprover:x.signApprover||{}};
+      try{const r=await jfetch('/api/training',{method:'POST',body:JSON.stringify(payload)}); if(r.res.ok&&r.data?.success) ok++;}catch(e){}
+    }
+    if(ok){localStorage.setItem(marker,'1'); return true;}
+    return false;
+  }
+  function renderInstrumentFallback(list,msg){
+    const tb=$q('instrumentTable'); if(!tb) return;
+    if(msg){tb.innerHTML=`<tr><td colspan="12" style="text-align:center;padding:20px;color:#6b7280;">${esc2(msg)}</td></tr>`; return;}
+    if(!list.length){tb.innerHTML='<tr><td colspan="12" style="text-align:center;padding:20px;color:#6b7280;">측정기 목록이 없습니다.</td></tr>';return;}
+    tb.innerHTML=list.map(r=>`<tr><td>${esc2(r.no||'-')}</td><td>${esc2(r.name||'-')}</td><td>${esc2(r.model||'-')}</td><td>${esc2(r.maker||'-')}</td><td>${esc2(r.location||'-')}</td><td>${esc2(r.cycle||'-')}개월</td><td>${esc2(r.lastCal||'-')}</td><td>${esc2(r.nextCal||'-')}</td><td><span class="badge ${r.status==='정상'?'pass':(r.status==='교정초과'?'fail':'hold')}">${esc2(r.status||'-')}</span></td><td>${esc2(r.remark||'-')}</td><td>${r.photo?'<button class="sb lbl" data-action="viewInstrumentPhoto" data-id="'+esc2(r.id)+'">보기</button>':'-'}</td><td><div class="ai"><button class="sb edit" data-action="editInstrument" data-id="${esc2(r.id)}">수정</button><button class="sb del" data-action="deleteInstrument" data-id="${esc2(r.id)}">삭제</button></div></td></tr>`).join('');
+  }
+  function renderTrainingFallback(list,msg){
+    const tb=$q('trainingTable'); if(!tb) return;
+    if(msg){tb.innerHTML=`<tr><td colspan="13" style="text-align:center;padding:20px;color:#6b7280;">${esc2(msg)}</td></tr>`; return;}
+    if(!list.length){tb.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:#6b7280;">교육 보고서가 없습니다.</td></tr>';return;}
+    const badge=v=>v==='완료'?'<span class="status pass">완료</span>':(v==='미실시'?'<span class="status fail">미실시</span>':'<span class="status hold">예정</span>');
+    const cnt=v=>String(v||'').split(/,|\n/).map(x=>x.trim()).filter(Boolean).length || '-';
+    tb.innerHTML=list.map(r=>`<tr><td>${esc2(r.date||'-')}</td><td>${esc2(r.no||'-')}</td><td>${esc2(r.type||'-')}</td><td>${esc2(r.title||'-')}</td><td>${esc2(r.instructor||'-')}</td><td>${esc2(r.dept||'-')}</td><td>${esc2(cnt(r.attendees))}</td><td>${arr2(r.photos).length}장</td><td>${badge(r.result||'완료')}</td><td>${esc2(r.writer||'-')}</td><td>${esc2(r.reviewer||'-')}</td><td>${esc2(r.approver||'-')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc2(r.id)}">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc2(r.id)}">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc2(r.id)}">삭제</button></div></td></tr>`).join('');
+  }
+  async function refreshInstrumentsFromServer(){
+    const tb=$q('instrumentTable'); if(tb&&!tb.children.length) renderInstrumentFallback([], '측정기 목록 불러오는 중...');
+    try{
+      let out=await jfetch('/api/instruments');
+      if(!out.res.ok || !out.data?.success){renderInstrumentFallback([], out.data?.message || '측정기 목록을 불러오지 못했습니다. 로그인 상태를 확인하세요.'); return;}
+      let rows=arr2(out.data.data).map(normalizeInstrument);
+      if(await migrateInstrumentsIfNeeded(rows)){out=await jfetch('/api/instruments'); rows=arr2(out.data?.data).map(normalizeInstrument);}
+      try{state.instruments=rows;}catch(e){}
+      if(typeof renderInstrumentTable==='function') renderInstrumentTable(); else renderInstrumentFallback(rows);
+    }catch(e){renderInstrumentFallback([], '측정기 목록 조회 중 오류가 발생했습니다.');}
+  }
+  async function refreshTrainingFromServer(){
+    const tb=$q('trainingTable'); if(tb&&!tb.children.length) renderTrainingFallback([], '교육 보고서 목록 불러오는 중...');
+    try{
+      let out=await jfetch('/api/training');
+      if(!out.res.ok || !out.data?.success){renderTrainingFallback([], out.data?.message || '교육 보고서 목록을 불러오지 못했습니다. 로그인 상태를 확인하세요.'); return;}
+      let rows=arr2(out.data.data).filter(x=>!isDeletedTraining(x)).map(normalizeTraining);
+      if(await migrateTrainingIfNeeded(rows)){out=await jfetch('/api/training'); rows=arr2(out.data?.data).filter(x=>!isDeletedTraining(x)).map(normalizeTraining);}
+      try{state.trainingReports=rows;}catch(e){}
+      if(typeof renderTrainingTable==='function') renderTrainingTable(); else renderTrainingFallback(rows);
+      if(typeof renderTrainingPreview==='function') renderTrainingPreview();
+    }catch(e){renderTrainingFallback([], '교육 보고서 목록 조회 중 오류가 발생했습니다.');}
+  }
+  window.refreshTrainingAndInstruments = async function(){
+    await Promise.all([refreshInstrumentsFromServer(), refreshTrainingFromServer()]);
+  };
+  function scheduleRefresh(){
+    setTimeout(()=>window.refreshTrainingAndInstruments?.(), 600);
+    setTimeout(()=>window.refreshTrainingAndInstruments?.(), 1800);
+  }
+  document.addEventListener('DOMContentLoaded', scheduleRefresh);
+  document.addEventListener('click', function(e){
+    const nav=e.target.closest?.('[data-page="instruments"],[data-page="training"]');
+    if(nav) setTimeout(()=>window.refreshTrainingAndInstruments?.(), 250);
+    const save=e.target.closest?.('#instrumentSave,#trainingSave');
+    if(save) setTimeout(()=>window.refreshTrainingAndInstruments?.(), 900);
+  });
+})();
+</script>
 
 </body>
 </html>
