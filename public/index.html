@@ -1666,7 +1666,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 ═══════════════════════════════════════ */
 const state={
   currentUser:null,
-  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],instruments:[],spcReports:[],spcRows:[],
+  incoming:[],process:[],shipment:[],suppliers:[],worklog:[],nonconform:[],instruments:[],trainingReports:[],spcReports:[],spcRows:[],
   adminUsers:[],
   signableUsers:[],
   charts:{},
@@ -2630,27 +2630,28 @@ function defaultInstruments(){
     {id:'default-04',no:'NM측정-04',name:'입도분석기',model:'Mastersizer 3000',maker:'Malvern Panalytical',location:'연구소',cycle:'12',lastCal:'',nextCal:'',status:'정상',remark:''}
   ];
 }
-function loadInstruments(){
-  const raw=localStorage.getItem('namo_qms_instruments');
-  let list=[];
-  try{list=raw?JSON.parse(raw):[];}catch(e){list=[];}
-  // 다른 PC/브라우저에는 localStorage가 비어 있으므로 기본 측정기 목록을 자동 생성
-  if(!Array.isArray(list)||list.length===0){
-    list=defaultInstruments();
-    localStorage.setItem('namo_qms_instruments',JSON.stringify(list));
+async function loadInstruments(){
+  const {res,data}=await api('/api/instruments');
+  if(res.ok&&data?.success){
+    state.instruments=(data.data||[]).map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+  }else{
+    const raw=localStorage.getItem('namo_qms_instruments');
+    let list=[];
+    try{list=raw?JSON.parse(raw):[];}catch(e){list=[];}
+    if(!Array.isArray(list)||list.length===0){
+      list=defaultInstruments();
+      try{localStorage.setItem('namo_qms_instruments',JSON.stringify(list));}catch(e){}
+    }
+    state.instruments=list.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
   }
-  state.instruments=list.map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
-  saveInstrumentsLocal();
   renderInstrumentTable();
 }
 function saveInstrumentsLocal(){
-  localStorage.setItem('namo_qms_instruments',JSON.stringify(state.instruments));
+  try{localStorage.setItem('namo_qms_instruments',JSON.stringify(state.instruments));}catch(e){}
 }
-
 async function loadAll데이터(){
   await loadSignableUsers();
-  await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform()]);
-  loadInstruments();
+  await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform(),loadInstruments(),loadTrainingReports()]);
   loadSpcReports();
   if(state.currentUser?.role==='admin')await loadAdminUsers();
   renderSummary();populateReportSelect();loadStandaloneReport();
@@ -2776,8 +2777,8 @@ function updateInstrumentStatusByDate(){
   const auto=instrumentAutoStatus(next,cur);
   if($('instrumentStatus'))$('instrumentStatus').value=auto;
 }
-function saveInstrument(){
-  const id=$('instrumentEditId').value||String(Date.now());
+async function saveInstrument(){
+  const id=$('instrumentEditId').value||'';
   const p={
     id,
     name:$('instrumentName').value.trim(),
@@ -2793,9 +2794,13 @@ function saveInstrument(){
     photo:$('instrumentPhoto')?.value.trim()||''
   };
   if(!p.name||!p.no){alert('측정기명과 관리번호는 필수입니다.');return;}
-  const idx=state.instruments.findIndex(x=>String(x.id)===String(id));
-  if(idx>=0)state.instruments[idx]=p;else state.instruments.push(p);
-  saveInstrumentsLocal();renderInstrumentTable();clearInstrument();alert('저장되었습니다.');
+  const isExisting=!!id&&state.instruments.some(x=>String(x.id)===String(id));
+  const {res,data}=await api(isExisting?`/api/instruments/${encodeURIComponent(id)}`:'/api/instruments',{
+    method:isExisting?'PUT':'POST',
+    body:JSON.stringify(p)
+  });
+  if(!res.ok||!data?.success){alert(data?.message||'측정기 저장에 실패했습니다.');return;}
+  await loadInstruments();clearInstrument();alert('저장되었습니다.');
 }
 function clearInstrument(){
   ['instrumentEditId','instrumentName','instrumentNo','instrumentModel','instrumentMaker','instrumentLocation','instrumentLastCal','instrumentNextCal','instrumentPhoto','instrumentRemark'].forEach(id=>{if($(id))$(id).value='';});
@@ -2808,10 +2813,11 @@ function editInstrument(id){
   const r=state.instruments.find(x=>String(x.id)===String(id));if(!r)return;
   $('instrumentEditId').value=r.id;$('instrumentName').value=r.name||'';$('instrumentNo').value=r.no||'';$('instrumentModel').value=r.model||'';$('instrumentMaker').value=r.maker||'';$('instrumentLocation').value=r.location||'';$('instrumentCycle').value=r.cycle||'12';$('instrumentLastCal').value=r.lastCal||'';$('instrumentNextCal').value=r.nextCal||'';$('instrumentStatus').value=instrumentAutoStatus(r.nextCal,r.status);if($('instrumentPhoto'))$('instrumentPhoto').value=instrumentPhotoSrc(r);$('instrumentRemark').value=r.remark||'';renderInstrumentPhotoPreview();
 }
-function deleteInstrument(id){
+async function deleteInstrument(id){
   if(!confirm('삭제하시겠습니까?'))return;
-  state.instruments=state.instruments.filter(x=>String(x.id)!==String(id));
-  saveInstrumentsLocal();renderInstrumentTable();
+  const {res,data}=await api(`/api/instruments/${encodeURIComponent(id)}`,{method:'DELETE'});
+  if(!res.ok||!data?.success){alert(data?.message||'삭제에 실패했습니다.');return;}
+  await loadInstruments();
 }
 
 /* ═══ SAVE ═══ */
@@ -3094,12 +3100,26 @@ function normalizeTrainingReport(r){
   return {...(r||{}),deleted:false,isDeleted:false,_deleted:false,status:(r&&r.status&&String(r.status).toUpperCase()!=='DELETED')?r.status:'ACTIVE'};
 }
 function readTrainingReports(){
-  try{
-    const raw=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];
-    return (Array.isArray(raw)?raw:[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
-  }catch(e){return[];}
+  const fromState=Array.isArray(state.trainingReports)?state.trainingReports:[];
+  return fromState.filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
 }
-function writeTrainingReports(list){localStorage.setItem(TRAINING_STORAGE_KEY,JSON.stringify((list||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport)));}
+function writeTrainingReports(list){
+  state.trainingReports=(list||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+  try{localStorage.setItem(TRAINING_STORAGE_KEY,JSON.stringify(state.trainingReports));}catch(e){}
+}
+async function loadTrainingReports(){
+  const {res,data}=await api('/api/training');
+  if(res.ok&&data?.success){
+    state.trainingReports=(data.data||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+  }else{
+    try{
+      const raw=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];
+      state.trainingReports=(Array.isArray(raw)?raw:[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+    }catch(e){state.trainingReports=[];}
+  }
+  renderTrainingTable();
+  renderTrainingPreview();
+}
 function trainingBadge(v){return v==='완료'?'<span class="status pass">완료</span>':v==='미실시'?'<span class="status fail">미실시</span>':'<span class="status hold">예정</span>';}
 function trainingNow(){const d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function trainingToday(){return typeof todayKST==='function'?todayKST():new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})).toISOString().slice(0,10);}
@@ -3137,13 +3157,37 @@ function renderTrainingPreview(){
   }
   if($('trainingWriterText'))$('trainingWriterText').textContent=r.writer||'-';if($('trainingReviewerText'))$('trainingReviewerText').textContent=r.reviewer||'-';if($('trainingApproverText'))$('trainingApproverText').textContent=r.approver||'-';
 }
-async function saveTrainingReport(){const r=readTrainingForm();if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}if(!r.writer){alert('작성자를 선택하세요.');return;}if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(readTrainingReports().length+1).padStart(3,'0');const list=readTrainingReports();const i=list.findIndex(x=>String(x.id)===String(r.id));if(i>=0)list[i]=r;else list.unshift(r);writeTrainingReports(list);fillTrainingForm(r);renderTrainingTable();alert('교육 보고서가 저장되었습니다.');}
+async function saveTrainingReport(){
+  const r=readTrainingForm();
+  if(!r.date||!r.title||!r.content){alert('교육일자, 교육명, 교육 내용을 입력하세요.');return;}
+  if(!r.writer){alert('작성자를 선택하세요.');return;}
+  if(!r.no)r.no='EDU-'+r.date.replaceAll('-','')+'-'+String(readTrainingReports().length+1).padStart(3,'0');
+
+  const isExisting=readTrainingReports().some(x=>String(x.id)===String(r.id));
+  const {res,data}=await api(isExisting?`/api/training/${encodeURIComponent(r.id)}`:'/api/training',{
+    method:isExisting?'PUT':'POST',
+    body:JSON.stringify(r)
+  });
+  if(!res.ok||!data?.success){alert(data?.message||'교육 보고서 저장에 실패했습니다.');return;}
+
+  if(data.data) r.id=data.data.id||r.id;
+  await loadTrainingReports();
+  const saved=readTrainingReports().find(x=>String(x.id)===String(r.id))||r;
+  fillTrainingForm(saved);
+  renderTrainingTable();
+  alert('교육 보고서가 저장되었습니다.');
+}
 function editTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(r){fillTrainingForm(r);document.querySelector('[data-page="training"]')?.click();$('trainingPrintArea')?.scrollIntoView({behavior:'smooth',block:'start'});}}
 function printTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(!r)return;fillTrainingForm(r);renderTrainingPreview();setTimeout(()=>printEl($('trainingPreviewSheet')),200);}
-function deleteTraining(id){
+async function deleteTraining(id){
   if(!confirm('교육 보고서를 삭제하시겠습니까?'))return;
-  const list=readTrainingReports().filter(x=>String(x.id)!==String(id));
-  writeTrainingReports(list);
+  const {res,data}=await api(`/api/training/${encodeURIComponent(id)}`,{method:'DELETE'});
+  if(!res.ok||!data?.success){
+    const list=readTrainingReports().filter(x=>String(x.id)!==String(id));
+    writeTrainingReports(list);
+  }else{
+    await loadTrainingReports();
+  }
   renderTrainingTable();clearTrainingReport();
 }
 function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}</td><td>${esc(r.writer||'-')}</td><td>${esc(r.reviewer||'-')}</td><td>${esc(r.approver||'-')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button></div></td></tr>`).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
@@ -3209,7 +3253,7 @@ function bindEvents(){
   $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
   $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
   $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
-  if($('instrumentSave'))$('instrumentSave').onclick=saveInstrument;
+  if($('instrumentSave'))$('instrumentSave').onclick=withSaving('instrument',$('instrumentSave'),saveInstrument);
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
   if($('instrumentNextCal'))$('instrumentNextCal').addEventListener('input',updateInstrumentStatusByDate);
