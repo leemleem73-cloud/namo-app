@@ -2630,10 +2630,41 @@ function defaultInstruments(){
     {id:'default-04',no:'NM측정-04',name:'입도분석기',model:'Mastersizer 3000',maker:'Malvern Panalytical',location:'연구소',cycle:'12',lastCal:'',nextCal:'',status:'정상',remark:''}
   ];
 }
+async function migrateLegacyInstrumentsToServerIfNeeded(serverList){
+  const marker='namo_qms_instruments_migrated_to_server_v1';
+  if(Array.isArray(serverList)&&serverList.length>0)return false;
+  if(localStorage.getItem(marker)==='1')return false;
+  let legacy=[];
+  try{legacy=JSON.parse(localStorage.getItem('namo_qms_instruments')||'[]')||[];}catch(e){legacy=[];}
+  if(!Array.isArray(legacy)||!legacy.length)return false;
+  let migrated=0;
+  for(const x of legacy){
+    if(!x||!txt(x.no)||!txt(x.name))continue;
+    const p={
+      no:txt(x.no),name:txt(x.name),model:txt(x.model),maker:txt(x.maker),location:txt(x.location),
+      cycle:txt(x.cycle)||'12',lastCal:txt(x.lastCal||x.last_cal)||null,nextCal:txt(x.nextCal||x.next_cal)||null,
+      status:txt(x.status)||'정상',remark:txt(x.remark),photo:txt(x.photo)
+    };
+    const {res}=await api('/api/instruments',{method:'POST',body:JSON.stringify(p)});
+    if(res.ok)migrated++;
+  }
+  if(migrated>0){localStorage.setItem(marker,'1');return true;}
+  return false;
+}
 async function loadInstruments(){
   const {res,data}=await api('/api/instruments');
   if(res.ok&&data?.success){
-    state.instruments=(data.data||[]).map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+    let rows=data.data||[];
+    const migrated=await migrateLegacyInstrumentsToServerIfNeeded(rows);
+    if(migrated){
+      const again=await api('/api/instruments');
+      rows=again.data?.data||rows;
+    }
+    state.instruments=(rows||[]).map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+    if(!state.instruments.length){
+      // DB와 기존 브라우저 저장소가 모두 비어 있을 때만 기본 측정기를 화면에 표시합니다.
+      state.instruments=defaultInstruments().map(x=>({...x,status:instrumentAutoStatus(x.nextCal,x.status)}));
+    }
   }else{
     const raw=localStorage.getItem('namo_qms_instruments');
     let list=[];
@@ -3107,10 +3138,34 @@ function writeTrainingReports(list){
   state.trainingReports=(list||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
   try{localStorage.setItem(TRAINING_STORAGE_KEY,JSON.stringify(state.trainingReports));}catch(e){}
 }
+async function migrateLegacyTrainingToServerIfNeeded(serverList){
+  const marker='namo_qms_training_reports_migrated_to_server_v1';
+  if(Array.isArray(serverList)&&serverList.length>0)return false;
+  if(localStorage.getItem(marker)==='1')return false;
+  let legacy=[];
+  try{legacy=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];}catch(e){legacy=[];}
+  legacy=(Array.isArray(legacy)?legacy:[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+  if(!legacy.length)return false;
+  let migrated=0;
+  for(const r of legacy){
+    if(!r||!txt(r.date)||!txt(r.title))continue;
+    const payload={...r,no:r.no||r.reportNo||'',reportNo:r.no||r.reportNo||'',evalMethod:r.evalMethod||r.eval_method||'',photos:Array.isArray(r.photos)?r.photos:[],signWriter:r.signWriter||{},signReviewer:r.signReviewer||{},signApprover:r.signApprover||{}};
+    const {res}=await api('/api/training',{method:'POST',body:JSON.stringify(payload)});
+    if(res.ok)migrated++;
+  }
+  if(migrated>0){localStorage.setItem(marker,'1');return true;}
+  return false;
+}
 async function loadTrainingReports(){
   const {res,data}=await api('/api/training');
   if(res.ok&&data?.success){
-    state.trainingReports=(data.data||[]).filter(r=>!isTrainingDeleted(r)).map(normalizeTrainingReport);
+    let rows=(data.data||[]).filter(r=>!isTrainingDeleted(r));
+    const migrated=await migrateLegacyTrainingToServerIfNeeded(rows);
+    if(migrated){
+      const again=await api('/api/training');
+      rows=(again.data?.data||rows).filter(r=>!isTrainingDeleted(r));
+    }
+    state.trainingReports=rows.map(normalizeTrainingReport);
   }else{
     try{
       const raw=JSON.parse(localStorage.getItem(TRAINING_STORAGE_KEY)||'[]')||[];
