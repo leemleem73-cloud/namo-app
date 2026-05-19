@@ -2023,7 +2023,7 @@ function txt(v){return (v??'').toString().trim();}
 /* ═══ API ═══ */
 async function api(url,o={}){
   try{
-    const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(o.headers||{})},...o}));
+    const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(o.headers||{})},...o});
     const d=await r.json().catch(()=>null);return{res:r,data:d};
   }catch(e){console.error(url,e);return{res:{ok:false},data:null};}
 }
@@ -2534,76 +2534,8 @@ function printLabel(){
   .jstamp{display:inline-block;border:2px solid;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;margin-top:5px}
   .jstamp.pass{border-color:#0a7c4e;color:#0a7c4e}.jstamp.fail{border-color:#c52b2b;color:#c52b2b}
   @media print{@page{margin:8mm}}
-/* MSA 첨부파일형 보고서 화면 */
-.msa-template-report{background:#fff;border:2px solid #1d4ed8;border-radius:0;padding:0;margin-top:14px;overflow:auto;font-size:12px;}
-.msa-template-report table{border-collapse:collapse;width:100%;min-width:1180px;background:#fff;}
-.msa-template-report th,.msa-template-report td{border:1px solid #111;padding:4px 6px;text-align:center;vertical-align:middle;color:#111;}
-.msa-template-report .msa-title{font-weight:900;font-size:15px;background:#fff;}
-.msa-template-report .msa-subtitle{font-weight:800;background:#fff;}
-.msa-template-report .msa-gray{background:#d9d9d9;font-weight:700;}
-.msa-template-report .msa-blue{color:#0000ff;font-weight:800;}
-.msa-template-report .msa-red{color:#ff0000;font-weight:800;}
-.msa-template-report .msa-green{background:#00ff00;font-weight:900;}
-.msa-template-report .msa-peach{background:#f8cbad;font-weight:800;}
-.msa-template-report .msa-lightblue{background:#d9eaf7;font-weight:800;}
-.msa-template-report .msa-left{text-align:left;}
-.msa-template-report .msa-small{font-size:11px;line-height:1.25;}
-.msa-template-report .msa-bold{font-weight:900;}
+</style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
 
-/* 교육보고서 인쇄 잘림 방지 - 긴 내용은 다음 페이지로 이어서 출력 */
-@media print{
-  #printTarget.training-print-onepage .tf-sec,
-  #printTarget.training-print-onepage .tf-box,
-  #printTarget.training-print-onepage .tf-bottom,
-  #printTarget.training-print-onepage .tf-approval,
-  #printTarget.training-print-onepage .print-user-info{
-    break-inside:avoid!important;
-    page-break-inside:avoid!important;
-  }
-  #printTarget.training-print-onepage{
-    overflow:visible!important;
-    height:auto!important;
-    min-height:auto!important;
-  }
-}
-
-
-/* ══════════════════════════════════
-   Dashboard / SRM Quality Score Final Patch v33
-   통합관제 KPI 5개 + 월별 차트 이동 + 품질점수 상세 화면
-══════════════════════════════════ */
-#qmesCockpit + .card.qmes-trend-wide,
-.qmes-trend-wide{margin:0 0 18px 0; width:100%;}
-#page-dashboard .dlower{grid-template-columns:1fr;}
-#page-dashboard .dlower > .card:first-child{display:none;}
-.srm-quality-wrap{display:grid;grid-template-columns:1.1fr .85fr 1.25fr;gap:16px;margin-bottom:16px}
-.srm-quality-card{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);padding:20px;overflow:hidden}
-.srm-quality-card h3{font-size:15px;font-weight:900;color:#0f172a;margin-bottom:14px}.srm-quality-score{font-size:44px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1}.srm-quality-score small{font-size:18px;letter-spacing:-.4px}.srm-quality-grade{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dcfce7;color:#16a34a;font-size:32px;font-weight:900}.srm-quality-headrow{display:flex;align-items:center;justify-content:space-between;gap:14px}.srm-quality-sub{font-size:13px;color:#334155;margin-top:12px;font-weight:700}.srm-quality-delta{font-size:12px;font-weight:900;margin-top:8px}.srm-quality-delta.good{color:#16a34a}.srm-quality-delta.bad{color:#ef4444}.srm-score-scale{position:relative;height:52px;margin-top:26px}.srm-score-track{height:8px;border-radius:999px;background:linear-gradient(90deg,#ef4444 0 25%,#f97316 25% 45%,#f59e0b 45% 65%,#22c55e 65% 85%,#2563eb 85% 100%)}.srm-score-pointer{position:absolute;top:-8px;width:4px;height:24px;border-radius:999px;background:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.12)}.srm-scale-labels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;font-size:10px;font-weight:900;margin-top:16px;text-align:center}.srm-scale-labels span:nth-child(1){color:#ef4444}.srm-scale-labels span:nth-child(2){color:#f97316}.srm-scale-labels span:nth-child(3){color:#f59e0b}.srm-scale-labels span:nth-child(4){color:#16a34a}.srm-scale-labels span:nth-child(5){color:#2563eb}
-.srm-summary-list{display:flex;flex-direction:column;gap:0}.srm-summary-row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #edf2f7;padding:10px 0;font-size:13px}.srm-summary-row:last-child{border-bottom:none}.srm-summary-left{display:flex;align-items:center;gap:10px;color:#334155}.srm-summary-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;background:#eff6ff;color:#2563eb}.srm-summary-val{font-weight:900;color:#0f172a}.srm-donut-grid{display:grid;grid-template-columns:210px 1fr;gap:18px;align-items:center}.srm-donut-box{height:210px;position:relative}.srm-score-breakdown{display:flex;flex-direction:column;gap:12px}.srm-break-row{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;font-size:13px;color:#334155}.srm-break-dot{width:12px;height:12px;border-radius:4px;background:var(--c)}.srm-break-val{font-weight:900;color:#0f172a}.srm-tabs{display:flex;gap:22px;border-bottom:1px solid #e2e8f0;margin-bottom:18px}.srm-tab{height:42px;border:none;background:transparent;font-size:13px;font-weight:900;color:#64748b;cursor:pointer;border-bottom:3px solid transparent}.srm-tab.active{color:#2563eb;border-bottom-color:#2563eb}.srm-quality-grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.srm-defect-bars{display:flex;flex-direction:column;gap:16px}.srm-defect-row{display:grid;grid-template-columns:120px 1fr 46px 50px;align-items:center;gap:12px;font-size:13px}.srm-defect-name{color:#334155;font-weight:700}.srm-defect-bar{height:10px;border-radius:999px;background:#edf2f7;overflow:hidden}.srm-defect-bar span{display:block;height:100%;border-radius:999px;background:var(--c,#ef4444)}.srm-defect-num,.srm-defect-rate{font-weight:900;color:#0f172a;text-align:right}.srm-quality-note{font-size:12px;color:#64748b;margin-top:12px}.srm-rule-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.srm-rule{border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;padding:14px}.srm-rule b{display:block;font-size:13px;color:#0f172a}.srm-rule .pts{font-size:24px;font-weight:900;color:#2563eb;margin-top:8px}.srm-rule p{font-size:12px;color:#64748b;line-height:1.5;margin-top:8px}.srm-trend-box{height:230px;position:relative}.srm-small-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.srm-small-kpi{border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;text-align:center}.srm-small-kpi b{font-size:20px;color:#0f172a}.srm-small-kpi span{display:block;font-size:12px;color:#64748b;margin-top:4px}@media(max-width:1500px){.srm-quality-wrap{grid-template-columns:1fr}.srm-quality-grid2{grid-template-columns:1fr}.srm-rule-grid,.srm-small-kpis{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.srm-donut-grid{grid-template-columns:1fr}.srm-rule-grid,.srm-small-kpis{grid-template-columns:1fr}.srm-defect-row{grid-template-columns:1fr}.srm-defect-num,.srm-defect-rate{text-align:left}}
-
-</style>
-</head>
-<body>
-<!-- v5: approval inbox, notifications, document lookup fixed -->
-
-
-
-
-
-
-<script>
-window.__chartStore = window.__chartStore || {};
-function safeDestroyChart(id){
-  try{
-    if(window.__chartStore[id]){
-      window.__chartStore[id].destroy();
-      delete window.__chartStore[id];
-    }
-    const old = Chart.getChart(id);
-    if(old) old.destroy();
-  }catch(e){}
-}
-</script>
 
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
@@ -5268,8 +5200,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const tb=qs('#sqIqcTable'); if(tb){const bad=m.failRows.slice(0,8); tb.innerHTML=bad.length?bad.map(r=>`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.item||'-')}</td><td><strong>${esc(r.lot||'-')}</strong></td><td>${esc(r.supplier||'-')}</td><td>${fmt(toNum(r.failQty))}</td><td><span class="srm-status bad">불량</span></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8">수입검사 불량 데이터가 없습니다.</td></tr>';}
     const bars=qs('#sqDefectBars'); if(bars){const colors=['#ef4444','#f97316','#f59e0b','#22c55e','#06b6d4']; const list=m.defectTypes.length?m.defectTypes:[{name:'불량 없음',count:0,rate:0}]; bars.innerHTML=list.slice(0,6).map((x,i)=>`<div class="srm-defect-row"><div class="srm-defect-name">${esc(x.name)}</div><div class="srm-defect-bar"><span style="--c:${colors[i%colors.length]};width:${Math.max(0,Math.min(x.rate,100))}%"></span></div><div class="srm-defect-num">${fmt(x.count)}</div><div class="srm-defect-rate">${x.rate.toFixed(1)}%</div></div>`).join('');}
     if(window.Chart){
-      const d=qs('#srmQualityDonut'); if(d){if(window.srmQualityDonutChart) window.srmQualityDonutChart.destroy(); window.srmQualityDonutChart=new Chart(d,{type:'doughnut',data:{labels:['수입검사 불량','NCR 발생','재발 발생','CAPA 대응'],datasets:[{data:[m.iqcScore,m.ncrScore,m.repeatScore,m.capaScore],backgroundColor:['#2563eb','#22c55e','#f97316','#8b5cf6'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{enabled:true}}}});}
-      const t=qs('#srmQualityTrend'); if(t){if(window.srmQualityTrendChart) window.srmQualityTrendChart.destroy(); window.srmQualityTrendChart=new Chart(t,{type:'line',data:{labels:m.trend.map(x=>x.m),datasets:[{label:'불량률(%)',data:m.trend.map(x=>x.failRate),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',tension:.35,yAxisID:'y'},{label:'품질점수',data:m.trend.map(x=>x.score),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.12)',tension:.35,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,position:'left'},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}}});}
+      const d=qs('#srmQualityDonut'); if(d){const old=Chart.getChart(d); if(old) old.destroy(); if(window.srmQualityDonutChart && typeof window.srmQualityDonutChart.destroy==='function') window.srmQualityDonutChart.destroy(); window.srmQualityDonutChart=new Chart(d,{type:'doughnut',data:{labels:['수입검사 불량','NCR 발생','재발 발생','CAPA 대응'],datasets:[{data:[m.iqcScore,m.ncrScore,m.repeatScore,m.capaScore],backgroundColor:['#2563eb','#22c55e','#f97316','#8b5cf6'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{enabled:true}}}});}
+      const t=qs('#srmQualityTrend'); if(t){const oldT=Chart.getChart(t); if(oldT) oldT.destroy(); if(window.srmQualityTrendChart && typeof window.srmQualityTrendChart.destroy==='function') window.srmQualityTrendChart.destroy(); window.srmQualityTrendChart=new Chart(t,{type:'line',data:{labels:m.trend.map(x=>x.m),datasets:[{label:'불량률(%)',data:m.trend.map(x=>x.failRate),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',tension:.35,yAxisID:'y'},{label:'품질점수',data:m.trend.map(x=>x.score),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.12)',tension:.35,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,position:'left'},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}}});}
     }
   }
   function ensureSupplierGradePage(){
@@ -5409,21 +5341,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200)); else setTimeout(init,200);
 })();
-</script>
-
-
-<script>
-window.__chartStore = window.__chartStore || {};
-function safeDestroyChart(id){
-  try{
-    if(window.__chartStore[id]){
-      window.__chartStore[id].destroy();
-      delete window.__chartStore[id];
-    }
-    const old = Chart.getChart(id);
-    if(old) old.destroy();
-  }catch(e){}
-}
 </script>
 
 </body>
