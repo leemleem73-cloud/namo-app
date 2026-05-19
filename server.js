@@ -63,6 +63,40 @@ async function db(sql, params = []) {
   return pool.query(sql, params);
 }
 
+
+function jsonObj(v, fallback = {}) {
+  if (v === null || v === undefined || v === '') return fallback;
+  if (typeof v === 'object') return v;
+  try {
+    return JSON.parse(v);
+  } catch (_err) {
+    return fallback;
+  }
+}
+
+async function auditLog(req, action, targetTable, targetId, beforeData = null, afterData = null) {
+  try {
+    const user = req.session?.user || {};
+    await db(
+      `INSERT INTO audit_logs
+       (user_id, user_name, user_email, action, target_table, target_id, before_data, after_data)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        user.id || null,
+        user.name || '',
+        user.email || '',
+        action,
+        targetTable,
+        targetId ? String(targetId) : '',
+        beforeData ? JSON.stringify(beforeData) : null,
+        afterData ? JSON.stringify(afterData) : null,
+      ]
+    );
+  } catch (err) {
+    console.warn('auditLog failed:', err.message);
+  }
+}
+
 function requireLogin(req, res, next) {
   if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
   next();
@@ -287,6 +321,52 @@ async function ensureSchema() {
       photo TEXT DEFAULT '',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID,
+      user_name TEXT DEFAULT '',
+      user_email TEXT DEFAULT '',
+      action TEXT NOT NULL,
+      target_table TEXT NOT NULL,
+      target_id TEXT DEFAULT '',
+      before_data JSONB,
+      after_data JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS supplier_scores (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      supplier_id UUID,
+      supplier_name TEXT DEFAULT '',
+      score_month TEXT NOT NULL,
+      quality_score NUMERIC DEFAULT 0,
+      delivery_score NUMERIC DEFAULT 0,
+      response_score NUMERIC DEFAULT 0,
+      defect_rate NUMERIC DEFAULT 0,
+      ncr_count INTEGER DEFAULT 0,
+      capa_delay_count INTEGER DEFAULT 0,
+      total_score NUMERIC DEFAULT 0,
+      grade TEXT DEFAULT 'C',
+      remark TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS equipments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      no TEXT NOT NULL,
+      name TEXT NOT NULL,
+      maker TEXT DEFAULT '',
+      model TEXT DEFAULT '',
+      location TEXT DEFAULT '',
+      pm_cycle TEXT DEFAULT '월간',
+      last_pm DATE,
+      next_pm DATE,
+      status TEXT DEFAULT '정상',
+      remark TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 
   await db(`
@@ -312,6 +392,27 @@ async function ensureSchema() {
     ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS nc_no TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS dept TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS qty NUMERIC DEFAULT 0;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS severity TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS action_date DATE;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS verify TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS verify_date DATE;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS capa_status TEXT DEFAULT 'OPEN';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS containment TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS impact_scope TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS correction TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS preventive_action TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS verification_result TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS due_date DATE;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS progress NUMERIC DEFAULT 0;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS photos JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS why_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS fishbone_json JSONB NOT NULL DEFAULT '{}'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS capa_actions JSONB NOT NULL DEFAULT '[]'::jsonb;
 
     ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
@@ -481,6 +582,7 @@ function bindCrud(table, mapper) {
         vals
       );
 
+      await auditLog(req, 'CREATE', table, r.rows[0]?.id, null, r.rows[0]);
       ok(res, r.rows[0], '저장되었습니다.');
     } catch (err) {
       fail(res, 500, err.message);
@@ -489,6 +591,9 @@ function bindCrud(table, mapper) {
 
   app.put(`/api/${table}/:id`, requireLogin, async (req, res) => {
     try {
+      const before = await db(`SELECT * FROM ${table} WHERE id = $1`, [req.params.id]);
+      if (!before.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
+
       const body = mapper(req.body);
       const keys = Object.keys(body);
       const vals = Object.values(body);
@@ -499,7 +604,7 @@ function bindCrud(table, mapper) {
         [...vals, req.params.id]
       );
 
-      if (!r.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
+      await auditLog(req, 'UPDATE', table, req.params.id, before.rows[0], r.rows[0]);
       ok(res, r.rows[0], '수정되었습니다.');
     } catch (err) {
       fail(res, 500, err.message);
@@ -508,8 +613,11 @@ function bindCrud(table, mapper) {
 
   app.delete(`/api/${table}/:id`, requireLogin, async (req, res) => {
     try {
+      const before = await db(`SELECT * FROM ${table} WHERE id = $1`, [req.params.id]);
+      if (!before.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
+
       const r = await db(`DELETE FROM ${table} WHERE id = $1 RETURNING id`, [req.params.id]);
-      if (!r.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
+      await auditLog(req, 'DELETE', table, req.params.id, before.rows[0], null);
       ok(res, null, '삭제되었습니다.');
     } catch (err) {
       fail(res, 500, err.message);
@@ -600,6 +708,26 @@ bindCrud('nonconform', (b) => ({
   sign_writer: sign(b.signWriter),
   sign_reviewer: sign(b.signReviewer),
   sign_approver: sign(b.signApprover),
+  nc_no: txt(b.ncNo ?? b.no ?? b.reportNo),
+  dept: txt(b.dept ?? b.department),
+  qty: num(b.qty ?? b.ncQty) ?? 0,
+  severity: txt(b.severity),
+  priority: txt(b.priority),
+  action_date: txt(b.actionDate) || null,
+  verify: txt(b.verify),
+  verify_date: txt(b.verifyDate) || null,
+  capa_status: txt(b.capaStatus) || 'OPEN',
+  containment: txt(b.containment),
+  impact_scope: txt(b.impactScope),
+  correction: txt(b.correction),
+  preventive_action: txt(b.preventiveAction),
+  verification_result: txt(b.verificationResult),
+  due_date: txt(b.dueDate) || null,
+  progress: num(b.progress) ?? 0,
+  photos: JSON.stringify(arr(b.photos)),
+  why_json: JSON.stringify(arr(b.whyList ?? b.whys)),
+  fishbone_json: JSON.stringify(jsonObj(b.fishbone)),
+  capa_actions: JSON.stringify(arr(b.capaActions)),
 }));
 
 app.get('/api/worklog', requireLogin, async (_req, res) => {
@@ -1244,9 +1372,80 @@ app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
   }
 });
 
+
+app.get('/api/audit-logs', requireAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit || 200), 1000);
+    const r = await db(
+      `SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT $1`,
+      [limit]
+    );
+    ok(res, r.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/dashboard/kpi', requireLogin, async (_req, res) => {
+  try {
+    const [iqc, pqc, oqc, ncOpen, suppliers, instruments, training] = await Promise.all([
+      db('SELECT COUNT(*)::int AS count, COALESCE(SUM(fail),0)::numeric AS fail FROM iqc'),
+      db('SELECT COUNT(*)::int AS count, COALESCE(SUM(fail),0)::numeric AS fail FROM pqc'),
+      db('SELECT COUNT(*)::int AS count, COALESCE(SUM(fail),0)::numeric AS fail FROM oqc'),
+      db(`SELECT COUNT(*)::int AS count FROM nonconform WHERE COALESCE(status,'') <> '완결'`),
+      db('SELECT COUNT(*)::int AS count FROM suppliers'),
+      db(`SELECT COUNT(*)::int AS count FROM instruments WHERE status IN ('교정예정','교정초과')`),
+      db('SELECT COUNT(*)::int AS count FROM training_reports'),
+    ]);
+
+    ok(res, {
+      iqcCount: iqc.rows[0].count,
+      pqcCount: pqc.rows[0].count,
+      oqcCount: oqc.rows[0].count,
+      iqcFailQty: Number(iqc.rows[0].fail || 0),
+      pqcFailQty: Number(pqc.rows[0].fail || 0),
+      oqcFailQty: Number(oqc.rows[0].fail || 0),
+      ncrOpen: ncOpen.rows[0].count,
+      supplierCount: suppliers.rows[0].count,
+      instrumentDue: instruments.rows[0].count,
+      trainingCount: training.rows[0].count,
+    });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+bindCrud('supplier_scores', (b) => ({
+  supplier_id: txt(b.supplierId) || null,
+  supplier_name: txt(b.supplierName),
+  score_month: txt(b.month || b.scoreMonth),
+  quality_score: num(b.qualityScore) ?? 0,
+  delivery_score: num(b.deliveryScore) ?? 0,
+  response_score: num(b.responseScore) ?? 0,
+  defect_rate: num(b.defectRate) ?? 0,
+  ncr_count: num(b.ncrCount) ?? 0,
+  capa_delay_count: num(b.capaDelayCount) ?? 0,
+  total_score: num(b.totalScore) ?? 0,
+  grade: txt(b.grade) || 'C',
+  remark: txt(b.remark),
+}));
+
+bindCrud('equipments', (b) => ({
+  no: txt(b.no),
+  name: txt(b.name),
+  maker: txt(b.maker),
+  model: txt(b.model),
+  location: txt(b.location),
+  pm_cycle: txt(b.pmCycle) || '월간',
+  last_pm: txt(b.lastPm) || null,
+  next_pm: txt(b.nextPm) || null,
+  status: txt(b.status) || '정상',
+  remark: txt(b.remark),
+}));
+
 app.get('/api/backup', requireLogin, async (_req, res) => {
   try {
-    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments] = await Promise.all([
+    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments, supplierScores, equipments, auditLogs] = await Promise.all([
       db('SELECT * FROM iqc ORDER BY created_at DESC'),
       db('SELECT * FROM pqc ORDER BY created_at DESC'),
       db('SELECT * FROM oqc ORDER BY created_at DESC'),
@@ -1256,6 +1455,9 @@ app.get('/api/backup', requireLogin, async (_req, res) => {
       db('SELECT * FROM certificates ORDER BY created_at DESC'),
       db('SELECT * FROM training_reports ORDER BY created_at DESC'),
       db('SELECT * FROM instruments ORDER BY created_at ASC'),
+      db('SELECT * FROM supplier_scores ORDER BY created_at DESC'),
+      db('SELECT * FROM equipments ORDER BY created_at DESC'),
+      db('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 1000'),
     ]);
 
     const payload = {
@@ -1268,6 +1470,9 @@ app.get('/api/backup', requireLogin, async (_req, res) => {
       certificates: certificates.rows,
       training: training.rows,
       instruments: instruments.rows,
+      supplierScores: supplierScores.rows,
+      equipments: equipments.rows,
+      auditLogs: auditLogs.rows,
     };
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -1299,15 +1504,25 @@ ensureSchema()
     } else {
       await db(
         `UPDATE users
-         SET password_hash = $1,
-             name = $2,
-             department = $3,
-             title = $4,
-             role = 'admin',
+         SET role = 'admin',
              status = 'APPROVED'
-         WHERE email = $5`,
-        [hash, '관리자', '관리부', '관리자', adminEmail]
+         WHERE email = $1`,
+        [adminEmail]
       );
+
+      if (process.env.ADMIN_RESET_ON_START === 'true') {
+        await db(
+          `UPDATE users
+           SET password_hash = $1,
+               name = $2,
+               department = $3,
+               title = $4,
+               role = 'admin',
+               status = 'APPROVED'
+           WHERE email = $5`,
+          [hash, '관리자', '관리부', '관리자', adminEmail]
+        );
+      }
     }
 
     app.listen(port, () => {
