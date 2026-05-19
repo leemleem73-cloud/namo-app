@@ -4995,18 +4995,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button><button class="btn pri" data-qmes-go="worklog">기존 기능 열기</button></div>
       </div>
       <div class="mes-prod-kpi-grid">
-        <div class="mes-prod-kpi blue"><div class="mes-prod-kpi-top"><div class="mes-prod-kpi-icon">▥</div><div><div class="mes-prod-kpi-label">오늘 생산량</div><div><span class="mes-prod-kpi-value" id="mesTodayProd">0</span></div></div></div><div class="mes-prod-kpi-sub">계획 <span id="mesTodayPlan">0</span><span class="mes-prod-kpi-trend" id="mesTodayRate">0.0%</span></div><div class="mes-prod-progress"><span id="mesTodayProgress" style="width:0%"></span></div></div>
+        <div class="mes-prod-kpi blue"><div class="mes-prod-kpi-top"><div class="mes-prod-kpi-icon">▥</div><div><div class="mes-prod-kpi-label">총 생산량</div><div><span class="mes-prod-kpi-value" id="mesTodayProd">0</span></div></div></div><div class="mes-prod-kpi-sub">총 계획 <span id="mesTodayPlan">0</span><span class="mes-prod-kpi-trend" id="mesTodayRate">0.0%</span></div><div class="mes-prod-progress"><span id="mesTodayProgress" style="width:0%"></span></div></div>
         <div class="mes-prod-kpi green"><div class="mes-prod-kpi-top"><div class="mes-prod-kpi-icon">◷</div><div><div class="mes-prod-kpi-label">가동률</div><div><span class="mes-prod-kpi-value" id="mesRunRate">0.0</span><span class="mes-prod-kpi-unit">%</span></div></div></div><div class="mes-prod-kpi-sub">계획 대비 실적 <span class="mes-prod-kpi-trend good" id="mesRunTrend">-</span></div></div>
         <div class="mes-prod-kpi orange"><div class="mes-prod-kpi-top"><div class="mes-prod-kpi-icon">◇</div><div><div class="mes-prod-kpi-label">불량률</div><div><span class="mes-prod-kpi-value" id="mesFailRate">0.0</span><span class="mes-prod-kpi-unit">%</span></div></div></div><div class="mes-prod-kpi-sub">불량수량 <span id="mesFailQty">0</span><span class="mes-prod-kpi-trend" id="mesFailTrend">-</span></div></div>
-        <div class="mes-prod-kpi purple"><div class="mes-prod-kpi-top"><div class="mes-prod-kpi-icon">▤</div><div><div class="mes-prod-kpi-label">진행 작업</div><div><span class="mes-prod-kpi-value" id="mesWorkCount">0</span><span class="mes-prod-kpi-unit">건</span></div></div></div><div class="mes-prod-kpi-sub">오늘 등록 작업 <span id="mesTodayRows">0건</span></div></div>
+        <div class="mes-prod-kpi purple"><div class="mes-prod-kpi-top"><div class="mes-prod-kpi-icon">▤</div><div><div class="mes-prod-kpi-label">작업일지</div><div><span class="mes-prod-kpi-value" id="mesWorkCount">0</span><span class="mes-prod-kpi-unit">건</span></div></div></div><div class="mes-prod-kpi-sub">현재 등록 <span id="mesTodayRows">0건</span></div></div>
         <div class="mes-prod-kpi cyan"><div class="mes-prod-kpi-label">실시간 상태</div><div class="mes-live-status"><span class="mes-live-dot"></span><span id="mesLiveStatus">정상</span></div><div class="mes-live-time">Last Update <span id="mesLastUpdate">-</span></div></div>
       </div>
       <div class="mes-prod-card">
         <div class="mes-prod-card-head"><div><div class="mes-prod-card-title">생산관리 메뉴</div><div class="mes-prod-card-sub">작업지시부터 LOT 연계까지 생산 흐름별로 관리합니다.</div></div><span class="mes-prod-tag">MES MENU</span></div>
         <div class="mes-menu-grid">
-          <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#2563eb;--mes-soft:#eff6ff"><div class="mes-menu-main"><div class="mes-menu-icon">▤</div><div><div class="mes-menu-name">작업지시</div><div class="mes-menu-desc">생산계획과 작업오더</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuWorkOrder">TODAY 0건</span><span class="mes-menu-arrow">›</span></div></div>
-          <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#22c55e;--mes-soft:#dcfce7"><div class="mes-menu-main"><div class="mes-menu-icon">◔</div><div><div class="mes-menu-name">생산실적</div><div class="mes-menu-desc">계획/실적/불량 수량</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuResult">TODAY 0.0%</span><span class="mes-menu-arrow">›</span></div></div>
-          <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#7c3aed;--mes-soft:#ede9fe"><div class="mes-menu-main"><div class="mes-menu-icon">♙</div><div><div class="mes-menu-name">원료투입</div><div class="mes-menu-desc">원료 LOT 투입 추적</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuMaterial">TODAY 0 LOT</span><span class="mes-menu-arrow">›</span></div></div>
+          <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#2563eb;--mes-soft:#eff6ff"><div class="mes-menu-main"><div class="mes-menu-icon">▤</div><div><div class="mes-menu-name">작업지시</div><div class="mes-menu-desc">생산계획과 작업오더</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuWorkOrder">전체 0건</span><span class="mes-menu-arrow">›</span></div></div>
+          <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#22c55e;--mes-soft:#dcfce7"><div class="mes-menu-main"><div class="mes-menu-icon">◔</div><div><div class="mes-menu-name">생산실적</div><div class="mes-menu-desc">계획/실적/불량 수량</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuResult">실적 0.0%</span><span class="mes-menu-arrow">›</span></div></div>
+          <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#7c3aed;--mes-soft:#ede9fe"><div class="mes-menu-main"><div class="mes-menu-icon">♙</div><div><div class="mes-menu-name">원료투입</div><div class="mes-menu-desc">원료 LOT 투입 추적</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuMaterial">원료 0 LOT</span><span class="mes-menu-arrow">›</span></div></div>
           <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#f59e0b;--mes-soft:#fff7ed"><div class="mes-menu-main"><div class="mes-menu-icon">⚙</div><div><div class="mes-menu-name">공정조건</div><div class="mes-menu-desc">유량/온도/압력 기록</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuCondition">ALARM 0건</span><span class="mes-menu-arrow">›</span></div></div>
           <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#2563eb;--mes-soft:#eff6ff"><div class="mes-menu-main"><div class="mes-menu-icon">⌁</div><div><div class="mes-menu-name">수율관리</div><div class="mes-menu-desc">생산수율·불량률</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuYield">YIELD 0.0%</span><span class="mes-menu-arrow">›</span></div></div>
           <div class="mes-menu-tile" data-qmes-go="trace" style="--mes-color:#06b6d4;--mes-soft:#cffafe"><div class="mes-menu-main"><div class="mes-menu-icon">∞</div><div><div class="mes-menu-name">LOT연계</div><div class="mes-menu-desc">IQC→PQC→OQC 연결</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuTrace">TRACE 0%</span><span class="mes-menu-arrow">›</span></div></div>
@@ -5014,7 +5014,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       </div>
       <div class="mes-recent-card">
         <div class="mes-recent-head"><div><div class="mes-recent-title">최근 작업 현황</div><div class="mes-recent-sub">실제 생산작업일지 데이터 기준으로 표시합니다.</div></div><button class="btn light sm" data-qmes-go="worklog">더보기 ›</button></div>
-        <div class="mes-recent-table-wrap"><table class="mes-recent-table"><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>계획수량</th><th>생산수량</th><th>불량수량</th><th>진행률</th><th>연동검사</th><th>상태</th></tr></thead><tbody id="productionRecentTable"></tbody></table></div>
+        <div class="mes-recent-table-wrap"><table class="mes-recent-table"><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>계획수량</th><th>생산수량</th><th>불량수량</th><th>연동 검사</th><th>작업</th></tr></thead><tbody id="productionRecentTable"></tbody></table></div>
         <div class="mes-note">ⓘ 실시간 데이터는 기존 생산작업일지 API/DB 기준으로 표시됩니다.</div>
       </div>`;
     main.appendChild(sec);
@@ -5052,9 +5052,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderProductionData(){
     if(!qs('#page-production')) return;
     const rows=getWorklogRows();
-    const t=today();
-    const todayRows=rows.filter(r=>String(r.workDate||'').startsWith(t));
-    const base=todayRows.length?todayRows:rows;
+    const base=rows; // 생산관리 화면은 생산작업일지 전체 데이터 기준으로 표시
     const plan=base.reduce((a,r)=>a+toNum(r.planQty),0);
     const prod=base.reduce((a,r)=>a+toNum(r.prodQty),0);
     const fail=base.reduce((a,r)=>a+toNum(r.failQty),0);
@@ -5064,22 +5062,33 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const traceTotal=rows.filter(r=>r.finishedLot).length;
     const traceLinked=rows.filter(r=>linkedCountForLot(r.finishedLot)>0).length;
     const traceRate=traceTotal?Math.round(traceLinked/traceTotal*100):0;
-    const alarm=base.filter(r=>toNum(r.failQty)>0 || (toNum(r.planQty)>0 && toNum(r.prodQty)<toNum(r.planQty))).length;
+    const alarm=base.filter(r=>toNum(r.failQty)>0).length;
     const set=(id,val)=>{const el=qs('#'+id); if(el) el.textContent=val;};
-    set('mesTodayProd',fmt(prod)); set('mesTodayPlan',fmt(plan)); set('mesTodayRate',rate.toFixed(1)+'%'); set('mesRunRate',rate.toFixed(1)); set('mesFailRate',failRate.toFixed(1)); set('mesFailQty',fmt(fail)); set('mesWorkCount',fmt(base.length)); set('mesTodayRows',`${todayRows.length}건`); set('mesLastUpdate',nowText());
-    set('mesMenuWorkOrder',`TODAY ${todayRows.length}건`); set('mesMenuResult',`TODAY ${rate.toFixed(1)}%`); set('mesMenuMaterial',`TODAY ${materialLots} LOT`); set('mesMenuCondition',`ALARM ${alarm}건`); set('mesMenuYield',`YIELD ${(100-failRate).toFixed(1)}%`); set('mesMenuTrace',`TRACE ${traceRate}%`);
+    set('mesTodayProd',fmt(prod));
+    set('mesTodayPlan',fmt(plan));
+    set('mesTodayRate',rate.toFixed(1)+'%');
+    set('mesRunRate',rate.toFixed(1));
+    set('mesFailRate',failRate.toFixed(1));
+    set('mesFailQty',fmt(fail));
+    set('mesWorkCount',fmt(base.length));
+    set('mesTodayRows',`${base.length}건`);
+    set('mesLastUpdate',nowText());
+    set('mesMenuWorkOrder',`전체 ${base.length}건`);
+    set('mesMenuResult',`실적 ${rate.toFixed(1)}%`);
+    set('mesMenuMaterial',`원료 ${materialLots} LOT`);
+    set('mesMenuCondition',`불량 ${alarm}건`);
+    set('mesMenuYield',`YIELD ${(100-failRate).toFixed(1)}%`);
+    set('mesMenuTrace',`TRACE ${traceRate}%`);
     const pbar=qs('#mesTodayProgress'); if(pbar) pbar.style.width=Math.max(0,Math.min(rate,100))+'%';
-    const runTrend=qs('#mesRunTrend'); if(runTrend){runTrend.textContent=rate>=100?'완료':rate>0?'진행':'대기'; runTrend.className='mes-prod-kpi-trend '+(rate>=100?'good':'');}
+    const runTrend=qs('#mesRunTrend'); if(runTrend){runTrend.textContent=base.length?`${base.length}건`:'대기'; runTrend.className='mes-prod-kpi-trend '+(base.length?'good':'');}
     const failTrend=qs('#mesFailTrend'); if(failTrend){failTrend.textContent=failRate>0?'확인필요':'정상'; failTrend.className='mes-prod-kpi-trend '+(failRate>0?'bad':'good');}
     const live=qs('#mesLiveStatus'); if(live) live.textContent=alarm?'확인필요':'정상';
     const tb=qs('#productionRecentTable'); if(!tb) return;
-    const recent=rows.slice(0,8);
-    if(!recent.length){tb.innerHTML='<tr><td class="mes-empty" colspan="9">등록된 생산작업일지가 없습니다.</td></tr>';return;}
+    const recent=rows.slice(0,10);
+    if(!recent.length){tb.innerHTML='<tr><td class="mes-empty" colspan="8">등록된 생산작업일지가 없습니다.</td></tr>';return;}
     tb.innerHTML=recent.map(r=>{
-      const p=toNum(r.planQty), q=toNum(r.prodQty), f=toNum(r.failQty), pr=p?Math.round(q/p*100):0;
-      const cls=q>=p&&p>0?'done':q>0?'run':'wait';
-      const status=q>=p&&p>0?'완료':q>0?'진행중':'대기';
-      return `<tr><td>${esc(r.workDate||'-')}</td><td><strong>${esc(r.finishedLot||'-')}</strong></td><td>${esc(r.worker||'-')}</td><td>${fmt(p)}</td><td>${q?fmt(q):'-'}</td><td>${fmt(f)}</td><td><div class="mes-inline-progress"><div class="bar"><span style="width:${Math.max(0,Math.min(pr,100))}%"></span></div><span class="pct">${pr}%</span></div></td><td>${linkedBadges(r.finishedLot)}</td><td><span class="mes-status-pill ${cls}">${status}</span></td></tr>`;
+      const p=toNum(r.planQty), q=toNum(r.prodQty), f=toNum(r.failQty);
+      return `<tr><td>${esc(r.workDate||'-')}</td><td><strong>${esc(r.finishedLot||'-')}</strong></td><td>${esc(r.worker||'-')}</td><td>${fmt(p)}</td><td>${q?fmt(q):'-'}</td><td>${fmt(f)}</td><td>${linkedBadges(r.finishedLot)}</td><td><div class="ai"><button class="sb edit" data-production-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-production-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
     }).join('');
   }
   function updateCounts(){
@@ -5092,9 +5101,29 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const u=qs('#usersNavBtn'), adm=qs('#adminNavTitle'), open=qs('#openUserManage');
     if(isAdmin()){ if(u)u.style.display=''; if(adm)adm.style.display=''; if(open)open.style.display=''; }
   }
+  function bindProductionTableActions(){
+    const tb=qs('#productionRecentTable');
+    if(!tb || tb.dataset.productionBound) return;
+    tb.dataset.productionBound='1';
+    tb.addEventListener('click',async e=>{
+      const btn=e.target.closest('[data-production-action]');
+      if(!btn) return;
+      const action=btn.dataset.productionAction;
+      const id=btn.dataset.id;
+      if(action==='editWorklog'){
+        activate('worklog');
+        setTimeout(()=>{ if(typeof window.editWorklog==='function') window.editWorklog(id); else if(typeof editWorklog==='function') editWorklog(id); },50);
+      }
+      if(action==='deleteWorklog'){
+        if(typeof delApi==='function'){
+          await delApi(`/api/worklog/${id}`,'삭제하시겠습니까?',async()=>{ if(typeof loadWorklog==='function') await loadWorklog(); renderProductionData(); if(typeof renderSummary==='function') renderSummary(); });
+        }
+      }
+    });
+  }
   function init(){
-    ensureNav(); ensurePages(); renderDashboard(); ensureUsersVisible(); updateCounts();
-    setInterval(()=>{ensureUsersVisible();updateCounts();},1500);
+    ensureNav(); ensurePages(); renderDashboard(); ensureUsersVisible(); updateCounts(); bindProductionTableActions();
+    setInterval(()=>{ensureUsersVisible();updateCounts();bindProductionTableActions();},1500);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200)); else setTimeout(init,200);
 })();
