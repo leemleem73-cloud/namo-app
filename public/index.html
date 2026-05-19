@@ -1176,7 +1176,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #qmesCockpit + .card.qmes-trend-wide,
 .qmes-trend-wide{margin:0 0 18px 0; width:100%;}
 #page-dashboard .dlower{grid-template-columns:1fr;}
-#page-dashboard .dlower > .card:first-child{display:none;}
+#page-dashboard .dlower > .card:first-child{display:block;}
 .srm-quality-wrap{display:grid;grid-template-columns:1.1fr .85fr 1.25fr;gap:16px;margin-bottom:16px}
 .srm-quality-card{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);padding:20px;overflow:hidden}
 .srm-quality-card h3{font-size:15px;font-weight:900;color:#0f172a;margin-bottom:14px}.srm-quality-score{font-size:44px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1}.srm-quality-score small{font-size:18px;letter-spacing:-.4px}.srm-quality-grade{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dcfce7;color:#16a34a;font-size:32px;font-weight:900}.srm-quality-headrow{display:flex;align-items:center;justify-content:space-between;gap:14px}.srm-quality-sub{font-size:13px;color:#334155;margin-top:12px;font-weight:700}.srm-quality-delta{font-size:12px;font-weight:900;margin-top:8px}.srm-quality-delta.good{color:#16a34a}.srm-quality-delta.bad{color:#ef4444}.srm-score-scale{position:relative;height:52px;margin-top:26px}.srm-score-track{height:8px;border-radius:999px;background:linear-gradient(90deg,#ef4444 0 25%,#f97316 25% 45%,#f59e0b 45% 65%,#22c55e 65% 85%,#2563eb 85% 100%)}.srm-score-pointer{position:absolute;top:-8px;width:4px;height:24px;border-radius:999px;background:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.12)}.srm-scale-labels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;font-size:10px;font-weight:900;margin-top:16px;text-align:center}.srm-scale-labels span:nth-child(1){color:#ef4444}.srm-scale-labels span:nth-child(2){color:#f97316}.srm-scale-labels span:nth-child(3){color:#f59e0b}.srm-scale-labels span:nth-child(4){color:#16a34a}.srm-scale-labels span:nth-child(5){color:#2563eb}
@@ -1228,6 +1228,29 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .qmes-donut-card.iqc{--c:#3b82f6}.qmes-donut-card.pqc{--c:#22c55e}.qmes-donut-card.oqc{--c:#f97316}.qmes-donut-card.nc{--c:#8b5cf6}.qmes-donut-card.tr{--c:#06b6d4}
 @media(max-width:1400px){.qmes-hero-grid.donut{grid-template-columns:repeat(3,1fr)!important}}
 @media(max-width:760px){.qmes-hero-grid.donut{grid-template-columns:1fr!important}.qmes-donut-card{min-height:142px}.qmes-donut{width:84px;height:84px}}
+
+
+.dlower{display:grid!important;grid-template-columns:1.4fr .9fr!important;gap:18px!important;margin-top:18px!important}
+.dlower .card{display:block!important;visibility:visible!important;opacity:1!important}
+.cwrap{position:relative;height:340px!important}
+@media(max-width:1100px){.dlower{grid-template-columns:1fr!important}}
+
+
+/* 통합 안정화 vFinal: 월별 추이/LOT 추적 복구 */
+.dlower{display:grid!important;grid-template-columns:1.45fr .85fr!important;gap:18px!important;margin-top:18px!important}
+.dlower .card{display:block!important;visibility:visible!important;opacity:1!important}
+#trendChart{display:block!important;width:100%!important;height:100%!important}
+.cwrap{position:relative!important;height:340px!important;min-height:340px!important}
+.trace-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.trace-kpi{background:#fff;border:1px solid var(--bd);border-radius:var(--r3);padding:13px;box-shadow:var(--sh1)}
+.trace-kpi .l{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase}
+.trace-kpi .v{font-size:22px;font-weight:900;color:var(--t1);margin-top:4px}
+.trace-link{color:var(--pri);font-weight:900;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.trace-timeline{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
+.trace-step{border:1px solid var(--bd);border-radius:999px;background:#fff;padding:6px 11px;font-size:12px;font-weight:800;color:var(--t2)}
+.trace-step.on{background:var(--pris);color:var(--pri);border-color:rgba(26,86,219,.25)}
+.trace-empty{padding:24px!important;text-align:center!important;color:var(--t3)!important}
+@media(max-width:1100px){.dlower,.trace-summary{grid-template-columns:1fr!important}}
 
 </style>
 </head>
@@ -1442,13 +1465,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <select id="dashYear" style="height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"></select>
             <button class="btn pri" id="dashRefresh">조회</button>
           </div>
-        </div>
-        <div class="sgrid">
-          <div class="sc blue" data-go="incoming" role="button" tabindex="0" title="수입검사로 이동"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
-          <div class="sc purple" data-go="process" role="button" tabindex="0" title="공정검사로 이동"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
-          <div class="sc orange" data-go="shipment" role="button" tabindex="0" title="출하검사로 이동"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
-          <div class="sc green" data-go="worklog" role="button" tabindex="0" title="생산작업일지로 이동"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
-          <div class="sc red" data-go="nonconform" role="button" tabindex="0" title="부적합 보고서로 이동"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
         </div>
         <div class="dlower">
           <div class="card"><div class="ch"><h3>월별 검사 현황 추이</h3><span class="tag">YEARLY</span></div><div class="cb"><div class="cwrap"><canvas id="trendChart"></canvas></div></div></div>
@@ -1929,7 +1945,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <button class="btn pri" id="traceSearch">조회</button>
           </div>
         </div>
-        <div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
+        <div class="trace-summary" id="traceSummary"></div><div class="trace-timeline" id="traceTimeline"></div><div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>순번</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th></tr></thead><tbody id="traceTable"></tbody></table>
           </div>
@@ -2687,6 +2703,7 @@ function bindNav(){
       setTimeout(()=>refreshSignaturePads($(`page-${pg}`)),80);
       if(pg==='users')await loadAdminUsers();
       if(pg==='report'){populateReportSelect();loadStandaloneReport();}
+      if(pg==='trace'){setTimeout(()=>searchTrace(),50);}
     });
   });
 
@@ -3234,7 +3251,7 @@ function renderWorklogTable(){
     const pq=state.process.filter(x=>(x.lot||'').toLowerCase()===lot).length;
     const oq=state.shipment.filter(x=>(x.lot||'').toLowerCase()===lot).length;
     const lk=[iq?`<span class="badge info">IQC ${iq}</span>`:'',pq?`<span class="badge info">PQC ${pq}</span>`:'',oq?`<span class="badge info">OQC ${oq}</span>`:''].filter(Boolean).join(' ')||`<span style="color:var(--t3);font-size:11px;">없음</span>`;
-    return`<tr><td>${r.workDate||''}</td><td><strong>${esc(r.finishedLot||'')}</strong></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td style="min-width:120px;">${lk}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
+    return`<tr><td>${r.workDate||''}</td><td><span class="trace-link" onclick="gotoTrace('${esc(String(r.finishedLot||'')).replace(/'/g,'&#39;')}')">${esc(r.finishedLot||'')}</span></td><td>${esc(r.worker||'')}</td><td>${esc(r.planQty||'')}</td><td>${esc(r.prodQty||'')}</td><td>${esc(r.failQty||'')}</td><td style="min-width:120px;">${lk}</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteWorklog" data-id="${esc(r.id)}">삭제</button></div></td></tr>`;
   }).join('');
 }
 function renderUserTable(){
@@ -3265,27 +3282,69 @@ function updateQmesDonuts(vals){
 }
 
 /* ═══ DASHBOARD ═══ */
+function setTextSafe(id,val){
+  const el=$(id);
+  if(el) el.textContent=val;
+}
+function setTrendSafe(id,c,pp){
+  const el=$(id);
+  if(!el) return;
+  const s=(!pp)?(c?'신규':'-'):(((Math.round((c-pp)/pp*100))>=0?'+':'')+Math.round((c-pp)/pp*100)+'%');
+  el.textContent=s;
+  el.className='trend '+(s.startsWith('+')?'up':s.startsWith('-')?'down':'neutral');
+}
+function recordDateOf(r){
+  return String(r?.date||r?.workDate||r?.ncDate||r?.trainingDate||r?.reportDate||'');
+}
+function countByYear(arr,yr){
+  return (Array.isArray(arr)?arr:[]).filter(r=>recordDateOf(r).startsWith(String(yr))).length;
+}
 function renderSummary(){
-  const y=Number($('dashYear').value||new Date().getFullYear()),p=y-1;
-  const cnt=(arr,yr)=>arr.filter(r=>String(r.date||r.workDate||r.ncDate||'').startsWith(String(yr))).length;
-  const rate=(c,pp)=>{if(!pp)return c?'신규':'-';const pc=Math.round((c-pp)/pp*100);return(pc>=0?'+':'')+pc+'%';};
-  const iC=cnt(state.incoming,y),pC=cnt(state.process,y),sC=cnt(state.shipment,y),wC=cnt(state.worklog,y);
-  const iP=cnt(state.incoming,p),pP=cnt(state.process,p),sP=cnt(state.shipment,p),wP=cnt(state.worklog,p);
-  const tC=cnt(state.training||[],y);
-  const ncOpen=state.nonconform.filter(r=>r.status!=='완결').length;
-  $('sumIncoming').textContent=iC;$('sumProcess').textContent=pC;$('sumShipment').textContent=sC;$('sumWorklog').textContent=wC;$('sumNc').textContent=ncOpen;
-  updateQmesDonuts({incoming:iC,process:pC,shipment:sC,nonconform:ncOpen,training:tC});
-  const setT=(id,c,pp)=>{const el=$(id),s=rate(c,pp);el.textContent=s;el.className='trend '+(s.startsWith('+')?'up':s.startsWith('-')?'down':'neutral');};
-  setT('sumIncomingRate',iC,iP);setT('sumProcessRate',pC,pP);setT('sumShipmentRate',sC,sP);setT('sumWorklogRate',wC,wP);
+  const y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear()),p=y-1;
+  const iC=countByYear(state.incoming,y),pC=countByYear(state.process,y),sC=countByYear(state.shipment,y),wC=countByYear(state.worklog,y);
+  const iP=countByYear(state.incoming,p),pP=countByYear(state.process,p),sP=countByYear(state.shipment,p),wP=countByYear(state.worklog,p);
+  const tC=countByYear(state.trainingReports||state.training||[],y);
+  const ncOpen=(state.nonconform||[]).filter(r=>String(r.status||'미결')!=='완결').length;
+
+  setTextSafe('sumIncoming',iC);setTextSafe('sumProcess',pC);setTextSafe('sumShipment',sC);setTextSafe('sumWorklog',wC);setTextSafe('sumNc',ncOpen);
+  setTrendSafe('sumIncomingRate',iC,iP);setTrendSafe('sumProcessRate',pC,pP);setTrendSafe('sumShipmentRate',sC,sP);setTrendSafe('sumWorklogRate',wC,wP);
+  if(typeof updateQmesDonuts==='function') updateQmesDonuts({incoming:iC,process:pC,shipment:sC,nonconform:ncOpen,training:tC});
   renderCharts();
 }
 function renderCharts(){
-  const y=Number($('dashYear').value||new Date().getFullYear());
-  const lbl=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  const mo=arr=>lbl.map((_,i)=>arr.filter(r=>String(r.date||r.workDate||'').startsWith(`${y}-${String(i+1).padStart(2,'0')}`)).length);
-  if(state.charts.trend)state.charts.trend.destroy();
-  state.charts.trend=new Chart($('trendChart'),{type:'bar',data:{labels:lbl,datasets:[{label:'수입검사',data:mo(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:4},{label:'공정검사',data:mo(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:4},{label:'출하검사',data:mo(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  const canvas=$('trendChart');
+  if(!canvas || !window.Chart) return;
+  const y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
+  const labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const monthData=(arr)=>labels.map((_,i)=>{
+    const ym=`${y}-${String(i+1).padStart(2,'0')}`;
+    return (Array.isArray(arr)?arr:[]).filter(r=>recordDateOf(r).startsWith(ym)).length;
+  });
+
+  safeDestroyChart('trendChart');
+  state.charts.trend=new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'수입검사',data:monthData(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:5},
+        {label:'공정검사',data:monthData(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:5},
+        {label:'출하검사',data:monthData(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:5}
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},
+      scales:{
+        y:{beginAtZero:true,ticks:{precision:0,stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},
+        x:{ticks:{font:{size:11}},grid:{display:false}}
+      }
+    }
+  });
+  window.__chartStore['trendChart']=state.charts.trend;
 }
+
 
 function calcInstrumentNext(){
   const last=$('instrumentLastCal')?.value||'';
@@ -3383,7 +3442,7 @@ async function saveWorklog(){
   const p={workDate:$('worklogDate').value,finishedLot:$('worklogFinishedLot').value.trim(),worker:$('worklogWorker').value.trim(),planQty:$('worklogPlanQty').value.trim(),prodQty:$('worklogProdQty').value.trim(),failQty:$('worklogFailQty').value.trim(),remark:$('worklogRemark').value.trim(),flowSet:$('worklogFlowSet').value.trim(),flowActual:$('worklogFlowActual').value.trim(),tempSet:$('worklogTempSet').value.trim(),tempActual:$('worklogTempActual').value.trim(),pressSet:$('worklogPressSet').value.trim(),pressActual:$('worklogPressActual').value.trim(),materials:JSON.parse(JSON.stringify(state.worklogMaterialDrafts))};
   const id=$('worklogEditId').value;
   const{data}=await api(id?`/api/worklog/${id}`:'/api/worklog',{method:id?'PUT':'POST',body:JSON.stringify(p)});
-  alert(data?.message||'저장되었습니다.');if(data?.success){clearWorklog();await loadWorklog();renderSummary();}
+  alert(data?.message||'저장되었습니다.');if(data?.success){clearWorklog();await loadWorklog();renderSummary();if($('page-trace')?.classList.contains('active'))searchTrace();}
 }
 async function saveUser(){
   const id=$('userEditId').value;
@@ -3603,13 +3662,147 @@ function downloadSpcJson(){const r=calcSpc();if(!r){alert('분석 데이터가 �
 function printSpcReport(){const area=$('spcReportArea');if(area)printEl(area);}
 /* ═══ TRACE ═══ */
 
-async function searchTrace(){
-  const kw=$('traceKeyword').value.trim();
-  if(!kw){$('traceTable').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--t3);">검색어를 입력하세요.</td></tr>`;return;}
-  const{data}=await api(`/api/trace?keyword=${encodeURIComponent(kw)}`);const rows=data?.data||[];
-  $('traceTable').innerHTML=rows.length?rows.map(x=>`<tr><td>${toKSTDate(x.workDate)}</td><td><strong>${esc(x.finishedLot||'')}</strong></td><td>${esc(x.worker||'')}</td><td>${esc(x.seq||'')}</td><td>${esc(x.material||'')}</td><td>${esc(x.supName||'')}</td><td><strong>${esc(x.lotNo||'')}</strong></td><td>${esc(x.inputQty||'')}</td><td>${esc(x.inputTime||'')}</td></tr>`).join(''):`<tr><td colspan="9" style="text-align:center;padding:22px;color:var(--t3);">조회 결과가 없습니다.</td></tr>`;
+async function normLot(v){return String(v||'').trim().toLowerCase();}
+function includesKw(v,kw){return normLot(v).includes(normLot(kw));}
+function materialRowsFromWorklog(w){
+  const mats=Array.isArray(w?.materials)?w.materials:[];
+  if(mats.length) return mats.map((m,i)=>({work:w,mat:m,seq:i+1}));
+  return [{work:w,mat:{material:'-',supName:'-',lotNo:'-',inputQty:'',inputTime:''},seq:1}];
 }
-function gotoTrace(kw){if(!kw)return;$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));document.querySelector('.nav-item[data-page="trace"]')?.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-trace').classList.add('active');$('traceKeyword').value=kw;searchTrace();}
+function buildLocalTraceRows(keyword){
+  const kw=normLot(keyword);
+  const rows=[];
+  (state.worklog||[]).forEach(w=>{
+    materialRowsFromWorklog(w).forEach(x=>{
+      const wLot=w.finishedLot||w.finished_lot||w.lot||'';
+      const m=x.mat||{};
+      const matched=!kw || [wLot,w.worker,m.material,m.supName,m.supplier,m.lotNo,m.materialLot].some(v=>includesKw(v,kw));
+      if(matched){
+        rows.push({
+          workDate:w.workDate||w.work_date||w.date||'',
+          finishedLot:wLot,
+          worker:w.worker||'',
+          seq:x.seq,
+          material:m.material||m.name||m.item||'-',
+          supName:m.supName||m.supplier||m.supplierName||'-',
+          lotNo:m.lotNo||m.materialLot||m.lot||'-',
+          inputQty:m.inputQty||m.qty||'',
+          inputTime:m.inputTime||m.time||'',
+          source:'worklog'
+        });
+      }
+    });
+  });
+  (state.incoming||[]).forEach(r=>{
+    if(!kw || [r.lot,r.supplier,r.item].some(v=>includesKw(v,kw))){
+      rows.push({workDate:r.date,finishedLot:r.lot,worker:'IQC',seq:'IQC',material:r.item||'입고검사',supName:r.supplier||'',lotNo:r.lot||'',inputQty:r.incomingQty||r.qty||'',inputTime:'',source:'iqc'});
+    }
+  });
+  (state.process||[]).forEach(r=>{
+    if(!kw || [r.lot,r.product,r.line].some(v=>includesKw(v,kw))){
+      rows.push({workDate:r.date,finishedLot:r.lot,worker:r.shift||'PQC',seq:'PQC',material:r.product||'공정검사',supName:r.line||'',lotNo:r.lot||'',inputQty:r.qty||'',inputTime:'',source:'pqc'});
+    }
+  });
+  (state.shipment||[]).forEach(r=>{
+    if(!kw || [r.lot,r.customer,r.product].some(v=>includesKw(v,kw))){
+      rows.push({workDate:r.date,finishedLot:r.lot,worker:'OQC',seq:'OQC',material:r.product||'출하검사',supName:r.customer||'',lotNo:r.lot||'',inputQty:r.qty||'',inputTime:'',source:'oqc'});
+    }
+  });
+  return rows.sort((a,b)=>String(a.workDate||'').localeCompare(String(b.workDate||'')));
+}
+function renderTraceSummary(rows,kw){
+  const area=$('traceSummary');
+  if(!area) return;
+  const uniq=new Set(rows.map(r=>normLot(r.finishedLot)).filter(Boolean));
+  const mats=new Set(rows.map(r=>normLot(r.lotNo)).filter(Boolean));
+  const iqc=rows.filter(r=>r.source==='iqc').length;
+  const pqc=rows.filter(r=>r.source==='pqc').length;
+  const oqc=rows.filter(r=>r.source==='oqc').length;
+  area.innerHTML=`
+    <div class="trace-kpi"><div class="l">검색 LOT</div><div class="v">${esc(kw||'전체')}</div></div>
+    <div class="trace-kpi"><div class="l">완제품 LOT</div><div class="v">${uniq.size}</div></div>
+    <div class="trace-kpi"><div class="l">원료 LOT</div><div class="v">${mats.size}</div></div>
+    <div class="trace-kpi"><div class="l">검사 연결</div><div class="v">IQC ${iqc} / PQC ${pqc} / OQC ${oqc}</div></div>
+    <div class="trace-kpi"><div class="l">총 이력</div><div class="v">${rows.length}</div></div>`;
+}
+function renderTraceTimeline(rows){
+  const area=$('traceTimeline');
+  if(!area) return;
+  const has={
+    iqc:rows.some(r=>r.source==='iqc'),
+    worklog:rows.some(r=>r.source==='worklog'),
+    pqc:rows.some(r=>r.source==='pqc'),
+    oqc:rows.some(r=>r.source==='oqc')
+  };
+  area.innerHTML=[
+    `<span class="trace-step ${has.iqc?'on':''}">① IQC 수입</span>`,
+    `<span class="trace-step ${has.worklog?'on':''}">② 생산 투입/작업</span>`,
+    `<span class="trace-step ${has.pqc?'on':''}">③ PQC 공정</span>`,
+    `<span class="trace-step ${has.oqc?'on':''}">④ OQC 출하</span>`
+  ].join('');
+}
+function renderTraceRows(rows){
+  const tb=$('traceTable');
+  if(!tb) return;
+  if(!rows.length){
+    tb.innerHTML=`<tr><td colspan="9" class="trace-empty">조회 결과가 없습니다.</td></tr>`;
+    return;
+  }
+  tb.innerHTML=rows.map(x=>`<tr>
+    <td>${esc(toKSTDate(x.workDate)||'')}</td>
+    <td><span class="trace-link" onclick="gotoTrace('${esc(String(x.finishedLot||'')).replace(/'/g,'&#39;')}')">${esc(x.finishedLot||'')}</span></td>
+    <td>${esc(x.worker||'')}</td>
+    <td>${esc(x.seq||'')}</td>
+    <td>${esc(x.material||'')}</td>
+    <td>${esc(x.supName||'')}</td>
+    <td><strong>${esc(x.lotNo||'')}</strong></td>
+    <td>${esc(x.inputQty||'')}</td>
+    <td>${esc(x.inputTime||'')}</td>
+  </tr>`).join('');
+}
+async function searchTrace(){
+  const kw=($('traceKeyword')?.value||'').trim();
+  if(!kw){
+    const rows=buildLocalTraceRows('');
+    renderTraceSummary(rows,'전체');
+    renderTraceTimeline(rows);
+    renderTraceRows(rows.slice(0,80));
+    return;
+  }
+
+  let rows=[];
+  try{
+    const {res,data}=await api(`/api/trace?keyword=${encodeURIComponent(kw)}`);
+    if(res?.ok && Array.isArray(data?.data) && data.data.length){
+      rows=data.data.map((x,i)=>({
+        workDate:x.workDate||x.work_date||x.date||'',
+        finishedLot:x.finishedLot||x.finished_lot||x.lot||'',
+        worker:x.worker||'',
+        seq:x.seq||i+1,
+        material:x.material||x.item||'',
+        supName:x.supName||x.supplier||'',
+        lotNo:x.lotNo||x.materialLot||x.lot_no||'',
+        inputQty:x.inputQty||x.qty||'',
+        inputTime:x.inputTime||x.time||'',
+        source:x.source||'server'
+      }));
+    }
+  }catch(e){console.warn('trace api fallback',e);}
+  if(!rows.length) rows=buildLocalTraceRows(kw);
+  renderTraceSummary(rows,kw);
+  renderTraceTimeline(rows);
+  renderTraceRows(rows);
+}
+function gotoTrace(kw){
+  if(!kw)return;
+  $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="trace"]')?.classList.add('active');
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  $('page-trace')?.classList.add('active');
+  if($('traceKeyword'))$('traceKeyword').value=kw;
+  searchTrace();
+}
+
 
 /* ═══ EVENTS ═══ */
 /* ═══ 교육 보고서: 메인 JS 통합 로직 ═══ */
@@ -5077,7 +5270,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     block.innerHTML=`
       <div class="qmes-hero">
         <div class="qmes-hero-top">
-          <div><div class="qmes-title">대시보드 현황</div>
+          <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다.<br>기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
           <div class="qmes-badges"><span class="qmes-badge">LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
         </div>
         <div class="qmes-hero-grid donut">
@@ -5105,7 +5298,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(ph) ph.insertAdjacentElement('afterend',block); else dash.prepend(block);
     const trendCard=qs('#page-dashboard .dlower > .card:first-child');
     const hero=qs('#qmesCockpit .qmes-hero');
-    if(trendCard && hero){trendCard.classList.add('qmes-trend-wide'); hero.insertAdjacentElement('afterend',trendCard);}
+    if(trendCard && hero){trendCard.classList.add('qmes-trend-wide'); hero.insertAdjacentElement('afterend',trendCard); setTimeout(()=>{if(typeof renderCharts==='function')renderCharts();},80);}
     block.addEventListener('click',e=>{const m=e.target.closest('[data-qmes-go]');if(m) activate(m.dataset.qmesGo);});
   }
   function pageTemplate(id,title,sub,tiles,linkPage){
