@@ -1004,144 +1004,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   .sign-file-wrap,.sign-clear-btn,.sign-file-btn{display:none!important;}
 }
 
-
-
-/* NCR 사진/이미지 등록 v24 - 대기업형 NCR 첨부 UI */
-.ncr-photo-section{
-  margin-top:14px;
-  border:1px solid var(--bd);
-  border-radius:var(--r4);
-  background:#fff;
-  box-shadow:var(--sh1);
-  overflow:hidden;
-}
-.ncr-photo-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:13px 16px;
-  border-bottom:1px solid var(--bd);
-  background:linear-gradient(180deg,#fff,#f8fbff);
-}
-.ncr-photo-title{
-  font-size:14px;
-  font-weight:900;
-  color:#0b2f66;
-  letter-spacing:-.2px;
-}
-.ncr-photo-title small{
-  display:inline-flex;
-  margin-left:8px;
-  color:var(--t3);
-  font-size:11px;
-  font-weight:700;
-}
-.ncr-photo-body{
-  display:grid;
-  grid-template-columns:minmax(280px,420px) 1fr;
-  gap:14px;
-  padding:14px 16px;
-}
-.ncr-photo-drop{
-  min-height:128px;
-  border:1.5px dashed #9bbcf3;
-  border-radius:14px;
-  background:linear-gradient(180deg,#fbfdff,#f6f9ff);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  cursor:pointer;
-  transition:var(--tr);
-  color:#1e3a8a;
-  padding:16px;
-}
-.ncr-photo-drop:hover,
-.ncr-photo-drop.dragover{
-  border-color:#2563eb;
-  background:#eff6ff;
-  box-shadow:0 0 0 3px rgba(37,99,235,.10);
-}
-.ncr-photo-drop .ico{font-size:30px;line-height:1;margin-bottom:8px;}
-.ncr-photo-drop b{font-size:13px;font-weight:900;color:#1d4ed8;}
-.ncr-photo-drop span{font-size:12px;color:var(--t3);margin-top:4px;}
-.ncr-photo-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
-.ncr-photo-input{display:none;}
-.ncr-photo-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(128px,1fr));
-  gap:10px;
-  align-content:start;
-  min-height:128px;
-}
-.ncr-photo-card{
-  position:relative;
-  border:1px solid var(--bd);
-  border-radius:12px;
-  background:#fff;
-  overflow:hidden;
-  box-shadow:var(--sh1);
-}
-.ncr-photo-card img{
-  display:block;
-  width:100%;
-  height:96px;
-  object-fit:cover;
-  background:#f8fafc;
-}
-.ncr-photo-meta{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:6px;
-  padding:6px 8px;
-  font-size:11px;
-  color:var(--t3);
-}
-.ncr-photo-del{
-  position:absolute;
-  top:6px;
-  right:6px;
-  width:22px;
-  height:22px;
-  border:none;
-  border-radius:50%;
-  background:rgba(15,23,42,.72);
-  color:#fff;
-  font-size:12px;
-  font-weight:900;
-  cursor:pointer;
-}
-.ncr-photo-empty{
-  border:1px dashed var(--bd2);
-  border-radius:12px;
-  min-height:128px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--t3);
-  font-size:12px;
-  background:#fbfcff;
-  grid-column:1/-1;
-}
-.ncr-photo-count{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:24px;
-  height:22px;
-  padding:0 8px;
-  border-radius:999px;
-  background:var(--pris);
-  color:var(--pri);
-  font-size:11px;
-  font-weight:900;
-}
-@media(max-width:1000px){.ncr-photo-body{grid-template-columns:1fr;}}
-@media print{.ncr-photo-section{display:none!important;}}
-
 </style>
 </head>
 <body>
@@ -1611,26 +1473,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="field"><label>검증 내용</label><textarea id="ncVerify" placeholder="시정조치 검증 결과." style="min-height:60px;"></textarea></div>
               <div class="field"><label>검증 완료일</label><input type="date" id="ncVerifyDate"></div>
             </div>
-            <div class="ncr-photo-section" id="ncPhotoSection">
-              <div class="ncr-photo-head">
-                <div class="ncr-photo-title">부적합 사진/이미지 <small>불량 위치, 현품 상태, 비교 사진 등록</small></div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span class="ncr-photo-count" id="ncPhotoCount">0장</span>
-                  <button class="btn light sm" id="ncPhotoAddBtn" type="button">+ 사진 추가</button>
-                </div>
-              </div>
-              <div class="ncr-photo-body">
-                <label class="ncr-photo-drop" id="ncPhotoDrop" for="ncPhotoInput">
-                  <div class="ico">☁</div>
-                  <b>사진을 드래그하거나 클릭하여 업로드</b>
-                  <span>JPG, PNG, GIF / 최대 5장 권장</span>
-                  <div class="ncr-photo-actions"><span class="btn ghost sm" type="button">파일 선택</span></div>
-                </label>
-                <input class="ncr-photo-input" type="file" id="ncPhotoInput" accept="image/*" multiple>
-                <div class="ncr-photo-grid" id="ncPhotoGrid"><div class="ncr-photo-empty">등록된 사진이 없습니다.</div></div>
-              </div>
-            </div>
-
             <div class="sp mt14">
               <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
               <div class="cb" style="padding:12px 14px;">
@@ -1649,7 +1491,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
         <div class="card mt14"><div class="ch"><h3>부적합 보고서 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>발생일자</th><th>보고서번호</th><th>유형</th><th>부서</th><th>LOT</th><th>품목</th><th>수량</th><th>사진</th><th>담당자</th><th>상태</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead>
+            <table><thead><tr><th>발생일자</th><th>보고서번호</th><th>유형</th><th>부서</th><th>LOT</th><th>품목</th><th>수량</th><th>담당자</th><th>상태</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead>
             <tbody id="nonconformTable"></tbody></table>
           </div>
         </div>
@@ -2549,194 +2391,6 @@ function printLabel(){
 
 </style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
 
-
-
-
-<script>
-/* NCR 사진/이미지 등록 v24 - 기존 NCR 로직 보존 + 사진 등록만 확장 */
-(function(){
-  const MAX_NC_PHOTOS = 5;
-  const $id = id => document.getElementById(id);
-  const escHtml = v => String(v ?? '').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
-
-  function readStore(){
-    try{return JSON.parse(localStorage.getItem('namo_qms_nc_photos_v1') || '{}') || {};}catch(e){return {};}
-  }
-  function writeStore(obj){
-    try{localStorage.setItem('namo_qms_nc_photos_v1', JSON.stringify(obj || {}));}catch(e){}
-  }
-  function keyForRecord(r){
-    if(!r) return 'draft';
-    return String(r.id || r.ncNo || r.nc_no || [r.ncDate||r.nc_date||'', r.lot||'', r.item||''].join('|') || 'draft');
-  }
-  function currentKey(){
-    const id = $id('ncEditId')?.value || '';
-    const no = $id('ncNo')?.value || '';
-    const lot = $id('ncLot')?.value || '';
-    const item = $id('ncItem')?.value || '';
-    const date = $id('ncDate')?.value || '';
-    return String(id || no || [date,lot,item].join('|') || 'draft');
-  }
-  function normalizePhotos(v){
-    if(!v) return [];
-    if(Array.isArray(v)) return v.filter(Boolean).map((x,i)=>typeof x==='string'?{src:x,name:'사진 '+(i+1)}:{...x,src:x.src||x.url||x.dataUrl||x.image||'',name:x.name||('사진 '+(i+1))}).filter(x=>x.src);
-    if(typeof v === 'string'){
-      try{return normalizePhotos(JSON.parse(v));}catch(e){return v.startsWith('data:image')?[{src:v,name:'사진 1'}]:[];}
-    }
-    return [];
-  }
-  function getNcPhotos(r){
-    const store = readStore();
-    const keys = [keyForRecord(r), r?.id, r?.ncNo, r?.nc_no].filter(Boolean).map(String);
-    for(const k of keys){ if(Array.isArray(store[k])) return normalizePhotos(store[k]); }
-    return normalizePhotos(r?.photos || r?.ncPhotos || r?.photo_json || r?.photos_json || r?.images || r?.image_json);
-  }
-  function setNcPhotosForKey(k, photos){
-    const store = readStore();
-    store[String(k || currentKey())] = normalizePhotos(photos).slice(0, MAX_NC_PHOTOS);
-    writeStore(store);
-  }
-  function setCurrentPhotos(photos){
-    window.__ncPhotoDraft = normalizePhotos(photos).slice(0, MAX_NC_PHOTOS);
-    setNcPhotosForKey(currentKey(), window.__ncPhotoDraft);
-    renderNcPhotos();
-  }
-  function renderNcPhotos(){
-    const grid = $id('ncPhotoGrid');
-    const count = $id('ncPhotoCount');
-    const photos = normalizePhotos(window.__ncPhotoDraft || []);
-    if(count) count.textContent = photos.length + '장';
-    if(!grid) return;
-    if(!photos.length){
-      grid.innerHTML = '<div class="ncr-photo-empty">등록된 사진이 없습니다.</div>';
-      return;
-    }
-    grid.innerHTML = photos.map((p,i)=>`<div class="ncr-photo-card">
-      <button class="ncr-photo-del" type="button" data-nc-photo-del="${i}" title="삭제">×</button>
-      <img src="${escHtml(p.src)}" alt="부적합 사진 ${i+1}">
-      <div class="ncr-photo-meta"><span>${escHtml(p.name || ('사진 '+(i+1)))}</span><span>${i+1}</span></div>
-    </div>`).join('');
-  }
-  async function addFiles(files){
-    const list = Array.from(files || []).filter(f => /^image\//.test(f.type || ''));
-    if(!list.length) return;
-    const photos = normalizePhotos(window.__ncPhotoDraft || []);
-    for(const file of list){
-      if(photos.length >= MAX_NC_PHOTOS) break;
-      const src = await new Promise((resolve,reject)=>{
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      photos.push({src, name:file.name || ('사진 '+(photos.length+1)), size:file.size || 0, addedAt:new Date().toISOString()});
-    }
-    setCurrentPhotos(photos);
-  }
-  function bindNcPhotoUi(){
-    const input = $id('ncPhotoInput');
-    const addBtn = $id('ncPhotoAddBtn');
-    const drop = $id('ncPhotoDrop');
-    const grid = $id('ncPhotoGrid');
-    if(addBtn && input) addBtn.onclick = () => input.click();
-    if(input) input.onchange = e => { addFiles(e.target.files); input.value=''; };
-    if(drop){
-      ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover');}));
-      ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover');}));
-      drop.addEventListener('drop',e=>addFiles(e.dataTransfer && e.dataTransfer.files));
-    }
-    if(grid){
-      grid.addEventListener('click',e=>{
-        const btn = e.target.closest('[data-nc-photo-del]');
-        if(!btn) return;
-        const idx = Number(btn.dataset.ncPhotoDel);
-        const photos = normalizePhotos(window.__ncPhotoDraft || []);
-        photos.splice(idx,1);
-        setCurrentPhotos(photos);
-      });
-    }
-    if(!window.__ncPhotoDraft) window.__ncPhotoDraft = [];
-    renderNcPhotos();
-  }
-
-  const oldLoadNonconform = window.loadNonconform;
-  if(typeof oldLoadNonconform === 'function'){
-    window.loadNonconform = async function(){
-      await oldLoadNonconform.apply(this, arguments);
-      if(Array.isArray(window.state?.nonconform)){
-        window.state.nonconform = window.state.nonconform.map(r => ({...r, photos:getNcPhotos(r)}));
-      }
-      if(typeof window.renderNcTable === 'function') window.renderNcTable();
-    };
-  }
-
-  const oldRenderNcTable = window.renderNcTable;
-  window.renderNcTable = function(){
-    const tb = $id('nonconformTable');
-    if(!tb || !window.state) return oldRenderNcTable && oldRenderNcTable.apply(this, arguments);
-    const list = Array.isArray(window.state.nonconform) ? window.state.nonconform : [];
-    if(!list.length){
-      tb.innerHTML = (typeof window.eRow === 'function') ? window.eRow(14) : '<tr><td colspan="14" style="text-align:center;padding:18px;color:var(--t3);">데이터가 없습니다.</td></tr>';
-      return;
-    }
-    const badge = typeof window.ncStatusBadge === 'function' ? window.ncStatusBadge : (s=>`<span class="nc-status open">${escHtml(s||'미결')}</span>`);
-    tb.innerHTML = list.map(r=>{
-      const photos = getNcPhotos(r);
-      return `<tr><td>${escHtml(r.ncDate||'')}</td><td><strong>${escHtml(r.ncNo||'-')}</strong></td><td>${escHtml(r.ncType||'-')}</td><td>${escHtml(r.dept||'-')}</td><td>${escHtml(r.lot||'-')}</td><td>${escHtml(r.item||'-')}</td><td>${r.qty??0}</td><td><span class="badge info">${photos.length}장</span></td><td>${escHtml(r.owner||'-')}</td><td>${badge(r.status)}</td><td>${escHtml(r.signWriter?.name||'-')}</td><td>${escHtml(r.signReviewer?.name||'-')}</td><td>${escHtml(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${escHtml(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${escHtml(r.id)}">삭제</button></div></td></tr>`;
-    }).join('');
-  };
-
-  const oldEditNc = window.editNc;
-  if(typeof oldEditNc === 'function'){
-    window.editNc = function(id){
-      oldEditNc.apply(this, arguments);
-      const r = (window.state?.nonconform || []).find(x => String(x.id) === String(id));
-      window.__ncPhotoDraft = getNcPhotos(r);
-      setNcPhotosForKey(currentKey(), window.__ncPhotoDraft);
-      renderNcPhotos();
-    };
-  }
-
-  const oldClearNc = window.clearNc;
-  if(typeof oldClearNc === 'function'){
-    window.clearNc = function(){
-      oldClearNc.apply(this, arguments);
-      window.__ncPhotoDraft = [];
-      setNcPhotosForKey('draft', []);
-      renderNcPhotos();
-    };
-  }
-
-  const oldSaveNc = window.saveNc;
-  if(typeof oldSaveNc === 'function'){
-    window.saveNc = async function(){
-      const photos = normalizePhotos(window.__ncPhotoDraft || []);
-      setNcPhotosForKey(currentKey(), photos);
-      const oldApi = window.api;
-      if(typeof oldApi === 'function'){
-        window.api = async function(url, opt){
-          try{
-            if(String(url).includes('/api/nonconform') && opt && opt.body){
-              const body = JSON.parse(opt.body);
-              body.photos = photos;
-              body.ncPhotos = photos;
-              body.photo_json = photos;
-              opt = {...opt, body:JSON.stringify(body)};
-            }
-          }catch(e){}
-          return oldApi.call(this, url, opt);
-        };
-        try{ return await oldSaveNc.apply(this, arguments); }
-        finally{ window.api = oldApi; setNcPhotosForKey(currentKey(), photos); }
-      }
-      return oldSaveNc.apply(this, arguments);
-    };
-  }
-
-  document.addEventListener('DOMContentLoaded', bindNcPhotoUi);
-  setTimeout(bindNcPhotoUi, 0);
-})();
-</script>
 
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
@@ -4458,46 +4112,199 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 </script>
 <script>
-/* ═══ 측정시스템 분석(MSA / Gauge R&R) 안정화 모듈 ═══ */
+/* ═══ 측정시스템 분석(MSA / Gauge R&R) 안정화 모듈 v24 ═══ */
 (function(){
-  const $m=id=>document.getElementById(id);
-  const msa={operators:['A','B','C'],parts:10,repeats:3,data:[],charts:{},bound:false};
-  const fmt=(v,d=3)=>Number.isFinite(v)?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:d}).replace(/\.000$/,''):'-';
-  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
-  const sd=a=>{if(a.length<2)return NaN;const m=avg(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/(a.length-1));};
-  const destroy=name=>{try{msa.charts[name]?.destroy();}catch(e){} msa.charts[name]=null;};
-  const chart=(name,id,type,labels,datasets,opts={})=>{const el=$m(id);if(!el||!window.Chart)return;destroy(name);msa.charts[name]=new Chart(el,{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},...opts}});};
-  function setToday(){const e=$m('msaDate');if(e&&!e.value){const d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));e.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}}
+  const $m = id => document.getElementById(id);
+  const msa = { operators:['A','B','C'], parts:10, repeats:3, data:[], charts:{}, bound:false };
+  const fmt = (v,d=3) => Number.isFinite(v) ? Number(v).toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:d}).replace(/\.000$/,'') : '-';
+  const nums = a => (a || []).map(Number).filter(Number.isFinite);
+  const sum = a => nums(a).reduce((x,y)=>x+y,0);
+  const avgArr = a => { const v = nums(a); return v.length ? sum(v) / v.length : NaN; };
+  const rangeArr = a => { const v = nums(a); return v.length ? Math.max(...v) - Math.min(...v) : NaN; };
+  const sdArr = a => { const v = nums(a); if(v.length < 2) return NaN; const m = avgArr(v); return Math.sqrt(v.reduce((s,x)=>s+(x-m)*(x-m),0)/(v.length-1)); };
+  const destroy = name => { try{ msa.charts[name] && msa.charts[name].destroy(); }catch(e){} msa.charts[name] = null; };
+  const chart = (name,id,type,labels,datasets,opts={}) => {
+    const el = $m(id);
+    if(!el || !window.Chart) return;
+    destroy(name);
+    msa.charts[name] = new Chart(el, {
+      type,
+      data:{labels,datasets},
+      options:Object.assign({responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}, opts)
+    });
+  };
+  function setToday(){
+    const e = $m('msaDate');
+    if(e && !e.value){
+      const d = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));
+      e.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+  }
   function readConfig(){
-    const ops=Number($m('msaOperators')?.value||3), parts=Number($m('msaParts')?.value||10), reps=Number($m('msaRepeats')?.value||3);
-    msa.operators=Array.from({length:Math.max(2,Math.min(5,ops))},(_,i)=>String.fromCharCode(65+i));
-    msa.parts=Math.max(5,Math.min(30,parts)); msa.repeats=Math.max(2,Math.min(5,reps));
+    const ops = Number($m('msaOperators')?.value || 3);
+    const parts = Number($m('msaParts')?.value || 10);
+    const reps = Number($m('msaRepeats')?.value || 3);
+    msa.operators = Array.from({length:Math.max(2,Math.min(5,ops))},(_,i)=>String.fromCharCode(65+i));
+    msa.parts = Math.max(5,Math.min(30,parts));
+    msa.repeats = Math.max(2,Math.min(5,reps));
   }
   function blankData(){
     readConfig();
-    msa.data=Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
-    renderMatrix(); recalc();
+    msa.data = Array.from({length:msa.operators.length},()=>Array.from({length:msa.repeats},()=>Array(msa.parts).fill('')));
+    renderMatrix();
+    recalc();
   }
   function sampleData(){
-    readConfig(); msa.data=[];
-    for(let oi=0;oi<msa.operators.length;oi++){
-      const op=[];
-      for(let r=0;r<msa.repeats;r++){
-        const row=[];
-        for(let p=0;p<msa.parts;p++){
-          const base=7.00+p*0.055;
-          const opBias=oi*0.012;
-          const repNoise=(r-1)*0.004;
-          const noise=Math.sin((p+1)*(oi+2)*(r+1))*0.012;
-          row.push(Number((base+opBias+repNoise+noise).toFixed(3)));
+    readConfig();
+    msa.data = [];
+    for(let oi=0; oi<msa.operators.length; oi++){
+      const op = [];
+      for(let r=0; r<msa.repeats; r++){
+        const row = [];
+        for(let p=0; p<msa.parts; p++){
+          const base = 7.00 + p * 0.055;
+          const opBias = oi * 0.012;
+          const repNoise = (r - 1) * 0.004;
+          const noise = Math.sin((p+1)*(oi+2)*(r+1)) * 0.012;
+          row.push(Number((base + opBias + repNoise + noise).toFixed(3)));
         }
         op.push(row);
       }
       msa.data.push(op);
     }
-    renderMatrix(); recalc();
+    renderMatrix();
+    recalc();
   }
-  function ensureData(){readConfig(); if(msa.data.length!==msa.operators.length) blankData();}
-  
-function avgArr(a){const v=a.filter(Number.isFinite);return v.length?sum(v)/v.length:NaN;}
-function rangeArr(a){const v=a.filter(Number.isFinite);return v.length?Math.max(...v)-Math.min(...v):NaN;}>
+  function ensureData(){
+    readConfig();
+    const bad = !msa.data.length || msa.data.length !== msa.operators.length || !msa.data[0] || msa.data[0].length !== msa.repeats || !msa.data[0][0] || msa.data[0][0].length !== msa.parts;
+    if(bad) blankData();
+  }
+  function renderMatrix(){
+    const wrap = $m('msaMatrix') || $m('msaDataMatrix') || $m('msaInputMatrix');
+    if(!wrap) return;
+    let html = '<div class="tw"><table><thead><tr><th>평가자</th><th>반복</th>';
+    for(let p=0; p<msa.parts; p++) html += `<th>Part ${p+1}</th>`;
+    html += '</tr></thead><tbody>';
+    msa.operators.forEach((op,oi)=>{
+      for(let r=0; r<msa.repeats; r++){
+        html += `<tr><td>${op}</td><td>${r+1}</td>`;
+        for(let p=0; p<msa.parts; p++){
+          const val = msa.data?.[oi]?.[r]?.[p] ?? '';
+          html += `<td><input type="number" step="any" value="${val}" data-msa-cell="${oi}:${r}:${p}"></td>`;
+        }
+        html += '</tr>';
+      }
+    });
+    html += '</tbody></table></div>';
+    wrap.innerHTML = html;
+  }
+  function flatten(){
+    const values=[];
+    msa.data.forEach(op => op.forEach(rep => rep.forEach(v => { const n=Number(v); if(Number.isFinite(n)) values.push(n); })));
+    return values;
+  }
+  function byOperatorMeans(){
+    return msa.data.map(op => avgArr(op.flat()));
+  }
+  function byPartMeans(){
+    const out=[];
+    for(let p=0; p<msa.parts; p++){
+      const vals=[];
+      msa.data.forEach(op => op.forEach(rep => vals.push(Number(rep[p]))));
+      out.push(avgArr(vals));
+    }
+    return out;
+  }
+  function calc(){
+    const all = flatten();
+    const overall = avgArr(all);
+    const totalSd = sdArr(all);
+    const ranges=[];
+    msa.data.forEach(op => op.forEach(rep => ranges.push(rangeArr(rep))));
+    const avgRange = avgArr(ranges);
+    const repeatability = Number.isFinite(avgRange) ? avgRange / 2.326 : NaN;
+    const opMeans = byOperatorMeans();
+    const reproducibility = sdArr(opMeans);
+    const grr = Math.sqrt((repeatability||0)**2 + (reproducibility||0)**2);
+    const partVariation = sdArr(byPartMeans());
+    const totalVariation = Math.sqrt((grr||0)**2 + (partVariation||0)**2);
+    const pctGrr = totalVariation > 0 ? grr / totalVariation * 100 : NaN;
+    const ndc = grr > 0 && Number.isFinite(partVariation) ? Math.floor(1.41 * partVariation / grr) : NaN;
+    const judge = !Number.isFinite(pctGrr) ? '-' : pctGrr <= 10 ? '적합' : pctGrr <= 30 ? '조건부' : '부적합';
+    return {all, overall, totalSd, avgRange, repeatability, reproducibility, grr, partVariation, totalVariation, pctGrr, ndc, judge, opMeans};
+  }
+  function setText(id, text){ const el=$m(id); if(el) el.textContent = text; }
+  function renderResults(res){
+    setText('msaAvg', fmt(res.overall));
+    setText('msaStd', fmt(res.totalSd));
+    setText('msaRange', fmt(res.avgRange));
+    setText('msaRepeatability', fmt(res.repeatability));
+    setText('msaReproducibility', fmt(res.reproducibility));
+    setText('msaGRR', fmt(res.grr));
+    setText('msaPartVariation', fmt(res.partVariation));
+    setText('msaTotalVariation', fmt(res.totalVariation));
+    setText('msaPctGRR', Number.isFinite(res.pctGrr) ? fmt(res.pctGrr,1)+'%' : '-');
+    setText('msaNdc', Number.isFinite(res.ndc) ? String(res.ndc) : '-');
+    setText('msaJudge', res.judge);
+    const body = $m('msaResultBody') || $m('msaResultsBody');
+    if(body){
+      body.innerHTML = [
+        ['평균', fmt(res.overall)], ['전체 표준편차', fmt(res.totalSd)], ['평균 범위', fmt(res.avgRange)],
+        ['반복성(EV)', fmt(res.repeatability)], ['재현성(AV)', fmt(res.reproducibility)],
+        ['Gauge R&R', fmt(res.grr)], ['Part Variation', fmt(res.partVariation)],
+        ['Total Variation', fmt(res.totalVariation)], ['%GRR', Number.isFinite(res.pctGrr)?fmt(res.pctGrr,1)+'%':'-'],
+        ['NDC', Number.isFinite(res.ndc)?String(res.ndc):'-'], ['판정', res.judge]
+      ].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    }
+    const report = $m('msaReport') || $m('msaTemplateReport');
+    if(report){
+      report.innerHTML = `<div class="msa-template-report"><table><tbody>
+        <tr><td class="msa-title" colspan="4">MSA Gauge R&R 결과</td></tr>
+        <tr><td class="msa-gray">평가자 수</td><td>${msa.operators.length}</td><td class="msa-gray">부품 수</td><td>${msa.parts}</td></tr>
+        <tr><td class="msa-gray">반복 수</td><td>${msa.repeats}</td><td class="msa-gray">측정 수</td><td>${res.all.length}</td></tr>
+        <tr><td class="msa-gray">%GRR</td><td class="msa-blue">${Number.isFinite(res.pctGrr)?fmt(res.pctGrr,1)+'%':'-'}</td><td class="msa-gray">NDC</td><td>${Number.isFinite(res.ndc)?res.ndc:'-'}</td></tr>
+        <tr><td class="msa-gray">최종 판정</td><td colspan="3" class="${res.judge==='적합'?'msa-green':res.judge==='부적합'?'msa-red':'msa-peach'}">${res.judge}</td></tr>
+      </tbody></table></div>`;
+    }
+  }
+  function renderCharts(res){
+    const labels = msa.operators;
+    chart('op','msaOperatorChart','bar',labels,[{label:'평가자 평균',data:res.opMeans}],{});
+    chart('pct','msaPctChart','doughnut',['Gauge R&R','Part Variation'],[{label:'Variation',data:[res.grr||0,res.partVariation||0]}],{});
+  }
+  function recalc(){
+    ensureDomSafe();
+    const res = calc();
+    renderResults(res);
+    renderCharts(res);
+    return res;
+  }
+  function ensureDomSafe(){ /* placeholder for compatibility */ }
+  function bindMsaEvents(){
+    if(msa.bound) return;
+    msa.bound = true;
+    document.addEventListener('input', e => {
+      const cell = e.target.closest && e.target.closest('[data-msa-cell]');
+      if(cell){
+        const [oi,r,p] = cell.dataset.msaCell.split(':').map(Number);
+        if(msa.data[oi] && msa.data[oi][r]) msa.data[oi][r][p] = cell.value === '' ? '' : Number(cell.value);
+        recalc();
+      }
+    });
+    [['msaOperators','change'],['msaParts','change'],['msaRepeats','change']].forEach(([id,ev]) => $m(id)?.addEventListener(ev, blankData));
+    $m('msaSampleData')?.addEventListener('click', sampleData);
+    $m('msaBlankData')?.addEventListener('click', blankData);
+    $m('msaRecalc')?.addEventListener('click', recalc);
+    $m('msaReset')?.addEventListener('click', blankData);
+  }
+  window.msaModule = {state:msa, readConfig, blankData, sampleData, renderMatrix, recalc, avgArr, rangeArr};
+  window.blankMsaData = blankData;
+  window.sampleMsaData = sampleData;
+  window.recalcMsa = recalc;
+  function init(){ setToday(); readConfig(); bindMsaEvents(); if($m('msaMatrix') || $m('msaDataMatrix') || $m('msaInputMatrix')) blankData(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+</body>
+</html>
