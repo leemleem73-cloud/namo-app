@@ -1229,12 +1229,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:1400px){.qmes-hero-grid.donut{grid-template-columns:repeat(3,1fr)!important}}
 @media(max-width:760px){.qmes-hero-grid.donut{grid-template-columns:1fr!important}.qmes-donut-card{min-height:142px}.qmes-donut{width:84px;height:84px}}
 
-
-.dlower{display:grid!important;grid-template-columns:1.4fr .9fr!important;gap:18px!important;margin-top:18px!important}
-.dlower .card{display:block!important;visibility:visible!important;opacity:1!important}
-.cwrap{position:relative;height:340px!important}
-@media(max-width:1100px){.dlower{grid-template-columns:1fr!important}}
-
 </style>
 </head>
 <body>
@@ -1448,6 +1442,13 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <select id="dashYear" style="height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"></select>
             <button class="btn pri" id="dashRefresh">조회</button>
           </div>
+        </div>
+        <div class="sgrid">
+          <div class="sc blue" data-go="incoming" role="button" tabindex="0" title="수입검사로 이동"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
+          <div class="sc purple" data-go="process" role="button" tabindex="0" title="공정검사로 이동"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
+          <div class="sc orange" data-go="shipment" role="button" tabindex="0" title="출하검사로 이동"><div class="sc-top"><div><div class="sc-lbl">출하검사 (OQC)</div><div class="sc-val" id="sumShipment">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumShipmentRate">-</span></div></div>
+          <div class="sc green" data-go="worklog" role="button" tabindex="0" title="생산작업일지로 이동"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
+          <div class="sc red" data-go="nonconform" role="button" tabindex="0" title="부적합 보고서로 이동"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
         </div>
         <div class="dlower">
           <div class="card"><div class="ch"><h3>월별 검사 현황 추이</h3><span class="tag">YEARLY</span></div><div class="cb"><div class="cwrap"><canvas id="trendChart"></canvas></div></div></div>
