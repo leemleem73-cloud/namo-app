@@ -1182,6 +1182,50 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .srm-quality-card h3{font-size:15px;font-weight:900;color:#0f172a;margin-bottom:14px}.srm-quality-score{font-size:44px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1}.srm-quality-score small{font-size:18px;letter-spacing:-.4px}.srm-quality-grade{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dcfce7;color:#16a34a;font-size:32px;font-weight:900}.srm-quality-headrow{display:flex;align-items:center;justify-content:space-between;gap:14px}.srm-quality-sub{font-size:13px;color:#334155;margin-top:12px;font-weight:700}.srm-quality-delta{font-size:12px;font-weight:900;margin-top:8px}.srm-quality-delta.good{color:#16a34a}.srm-quality-delta.bad{color:#ef4444}.srm-score-scale{position:relative;height:52px;margin-top:26px}.srm-score-track{height:8px;border-radius:999px;background:linear-gradient(90deg,#ef4444 0 25%,#f97316 25% 45%,#f59e0b 45% 65%,#22c55e 65% 85%,#2563eb 85% 100%)}.srm-score-pointer{position:absolute;top:-8px;width:4px;height:24px;border-radius:999px;background:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.12)}.srm-scale-labels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;font-size:10px;font-weight:900;margin-top:16px;text-align:center}.srm-scale-labels span:nth-child(1){color:#ef4444}.srm-scale-labels span:nth-child(2){color:#f97316}.srm-scale-labels span:nth-child(3){color:#f59e0b}.srm-scale-labels span:nth-child(4){color:#16a34a}.srm-scale-labels span:nth-child(5){color:#2563eb}
 .srm-summary-list{display:flex;flex-direction:column;gap:0}.srm-summary-row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #edf2f7;padding:10px 0;font-size:13px}.srm-summary-row:last-child{border-bottom:none}.srm-summary-left{display:flex;align-items:center;gap:10px;color:#334155}.srm-summary-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;background:#eff6ff;color:#2563eb}.srm-summary-val{font-weight:900;color:#0f172a}.srm-donut-grid{display:grid;grid-template-columns:210px 1fr;gap:18px;align-items:center}.srm-donut-box{height:210px;position:relative}.srm-score-breakdown{display:flex;flex-direction:column;gap:12px}.srm-break-row{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;font-size:13px;color:#334155}.srm-break-dot{width:12px;height:12px;border-radius:4px;background:var(--c)}.srm-break-val{font-weight:900;color:#0f172a}.srm-tabs{display:flex;gap:22px;border-bottom:1px solid #e2e8f0;margin-bottom:18px}.srm-tab{height:42px;border:none;background:transparent;font-size:13px;font-weight:900;color:#64748b;cursor:pointer;border-bottom:3px solid transparent}.srm-tab.active{color:#2563eb;border-bottom-color:#2563eb}.srm-quality-grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.srm-defect-bars{display:flex;flex-direction:column;gap:16px}.srm-defect-row{display:grid;grid-template-columns:120px 1fr 46px 50px;align-items:center;gap:12px;font-size:13px}.srm-defect-name{color:#334155;font-weight:700}.srm-defect-bar{height:10px;border-radius:999px;background:#edf2f7;overflow:hidden}.srm-defect-bar span{display:block;height:100%;border-radius:999px;background:var(--c,#ef4444)}.srm-defect-num,.srm-defect-rate{font-weight:900;color:#0f172a;text-align:right}.srm-quality-note{font-size:12px;color:#64748b;margin-top:12px}.srm-rule-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.srm-rule{border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;padding:14px}.srm-rule b{display:block;font-size:13px;color:#0f172a}.srm-rule .pts{font-size:24px;font-weight:900;color:#2563eb;margin-top:8px}.srm-rule p{font-size:12px;color:#64748b;line-height:1.5;margin-top:8px}.srm-trend-box{height:230px;position:relative}.srm-small-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.srm-small-kpi{border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;text-align:center}.srm-small-kpi b{font-size:20px;color:#0f172a}.srm-small-kpi span{display:block;font-size:12px;color:#64748b;margin-top:4px}@media(max-width:1500px){.srm-quality-wrap{grid-template-columns:1fr}.srm-quality-grid2{grid-template-columns:1fr}.srm-rule-grid,.srm-small-kpis{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.srm-donut-grid{grid-template-columns:1fr}.srm-rule-grid,.srm-small-kpis{grid-template-columns:1fr}.srm-defect-row{grid-template-columns:1fr}.srm-defect-num,.srm-defect-rate{text-align:left}}
 
+
+/* 통합 관제 도넛형 KPI 패치 */
+.qmes-hero-grid.donut{
+  display:grid!important;
+  grid-template-columns:repeat(5,1fr)!important;
+  gap:16px!important;
+  margin-top:22px!important;
+}
+.qmes-donut-card{
+  min-height:168px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:18px;
+  padding:15px 12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+}
+.qmes-donut{
+  width:96px;height:96px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(var(--c) var(--p), rgba(255,255,255,.14) 0);
+  position:relative;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.16));
+}
+.qmes-donut:after{
+  content:'';
+  position:absolute;inset:15px;border-radius:50%;
+  background:linear-gradient(135deg,#10284b,#0e7490);
+  border:1px solid rgba(255,255,255,.12);
+}
+.qmes-donut .num{
+  position:relative;z-index:1;
+  font-size:28px;font-weight:900;color:#fff;letter-spacing:-.6px;
+}
+.qmes-donut-label{font-size:13px;font-weight:900;color:#e0f2fe;margin-top:12px}
+.qmes-donut-sub{font-size:12px;color:#bfdbfe;margin-top:4px}
+.qmes-donut-card.iqc{--c:#3b82f6}.qmes-donut-card.pqc{--c:#22c55e}.qmes-donut-card.oqc{--c:#f97316}.qmes-donut-card.nc{--c:#8b5cf6}.qmes-donut-card.tr{--c:#06b6d4}
+@media(max-width:1400px){.qmes-hero-grid.donut{grid-template-columns:repeat(3,1fr)!important}}
+@media(max-width:760px){.qmes-hero-grid.donut{grid-template-columns:1fr!important}.qmes-donut-card{min-height:142px}.qmes-donut{width:84px;height:84px}}
+
 </style>
 </head>
 <body>
@@ -5006,15 +5050,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
     block.innerHTML=`
       <div class="qmes-hero">
         <div class="qmes-hero-top">
-          <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다. 기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
+          <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다.<br>기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
           <div class="qmes-badges"><span class="qmes-badge">LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
         </div>
-        <div class="qmes-hero-grid">
-          <div class="qmes-hero-card"><div class="l">수입검사</div><div class="v" data-qmes-count="incoming">0</div><div class="s">IQC records</div></div>
-          <div class="qmes-hero-card"><div class="l">공정검사</div><div class="v" data-qmes-count="process">0</div><div class="s">PQC records</div></div>
-          <div class="qmes-hero-card"><div class="l">출하검사</div><div class="v" data-qmes-count="shipment">0</div><div class="s">OQC records</div></div>
-          <div class="qmes-hero-card"><div class="l">부적합/CAPA</div><div class="v" data-qmes-count="nonconform">0</div><div class="s">NCR tracking</div></div>
-          <div class="qmes-hero-card"><div class="l">교육보고서</div><div class="v" data-qmes-count="training">0</div><div class="s">Training</div></div>
+        <div class="qmes-hero-grid donut">
+          <div class="qmes-donut-card iqc"><div class="qmes-donut" style="--p:72%"><span class="num" data-qmes-count="incoming">0</span></div><div class="qmes-donut-label">수입검사</div><div class="qmes-donut-sub">IQC records</div></div>
+          <div class="qmes-donut-card pqc"><div class="qmes-donut" style="--p:68%"><span class="num" data-qmes-count="process">0</span></div><div class="qmes-donut-label">공정검사</div><div class="qmes-donut-sub">PQC records</div></div>
+          <div class="qmes-donut-card oqc"><div class="qmes-donut" style="--p:64%"><span class="num" data-qmes-count="shipment">0</span></div><div class="qmes-donut-label">출하검사</div><div class="qmes-donut-sub">OQC records</div></div>
+          <div class="qmes-donut-card nc"><div class="qmes-donut" style="--p:52%"><span class="num" data-qmes-count="nonconform">0</span></div><div class="qmes-donut-label">부적합/CAPA</div><div class="qmes-donut-sub">NCR tracking</div></div>
+          <div class="qmes-donut-card tr"><div class="qmes-donut" style="--p:58%"><span class="num" data-qmes-count="training">0</span></div><div class="qmes-donut-label">교육보고서</div><div class="qmes-donut-sub">Training</div></div>
         </div>
       </div>
       <div class="qmes-panel">
