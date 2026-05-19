@@ -1329,6 +1329,92 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   #qmesCockpit .qmes-module-grid{grid-template-columns:1fr}
 }
 
+
+/* ══════════════════════════════════
+   QMES KPI Donut Motion Dashboard v41
+   품질점수 도넛형 KPI + 데이터 연동 + 공지/차트/구조 정렬
+══════════════════════════════════ */
+#qmesCockpit{display:flex!important;flex-direction:column!important;gap:18px!important}
+#qmesCockpit .qmes-hero{padding:26px 26px 18px!important;margin:0!important}
+.qmes-hero-grid.donut{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:16px!important;margin-top:22px!important}
+.qmes-donut-card{
+  min-height:196px!important;
+  padding:16px 16px!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  text-align:left!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.105)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 14px 22px rgba(0,0,0,.08)!important;
+}
+.qmes-kpi-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.qmes-kpi-title{font-size:15px;font-weight:900;color:#f8fbff;letter-spacing:-.3px}
+.qmes-kpi-total{font-size:12px;font-weight:900;color:#fff;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:3px 8px;white-space:nowrap}
+.qmes-kpi-body{display:grid;grid-template-columns:128px 1fr;gap:12px;align-items:center}
+.qmes-donut{
+  width:128px!important;height:128px!important;border-radius:50%!important;
+  background:conic-gradient(var(--seg1,#3b82f6) 0 var(--p1,0%),var(--seg2,#22c55e) var(--p1,0%) var(--p2,0%),var(--seg3,#f97316) var(--p2,0%) var(--p3,0%),var(--seg4,#8b5cf6) var(--p3,0%) var(--p4,0%),rgba(255,255,255,.16) var(--p4,0%) 100%)!important;
+  position:relative!important;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.20))!important;
+  transition:background .55s ease, transform .25s ease!important;
+}
+.qmes-donut:hover{transform:scale(1.035)}
+.qmes-donut:before{
+  content:'';position:absolute;inset:7px;border-radius:50%;
+  background:conic-gradient(from 35deg,transparent 0 20%,rgba(255,255,255,.95) 22%,transparent 28%,transparent 58%,rgba(255,255,255,.55) 61%,transparent 66%,transparent 100%);
+  opacity:.5;filter:blur(.3px);animation:qmesSpin 4.8s linear infinite;pointer-events:none;
+}
+.qmes-donut:after{
+  content:'';position:absolute;inset:25px;border-radius:50%;
+  background:radial-gradient(circle at 42% 35%,#17416a 0,#0f3457 45%,#0a2a49 100%)!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  box-shadow:inset 0 8px 20px rgba(0,0,0,.20),0 0 0 1px rgba(255,255,255,.06)!important;
+}
+.qmes-donut .num{
+  position:absolute!important;z-index:3!important;inset:0!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  color:#fff!important;font-size:40px!important;font-weight:900!important;line-height:1!important;letter-spacing:-1.4px!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.25)!important;
+}
+.qmes-donut .unit{
+  position:absolute;z-index:3;left:0;right:0;top:76px;text-align:center;
+  font-size:12px;font-weight:900;color:#dbeafe;
+}
+.qmes-kpi-meta{display:flex;flex-direction:column;gap:9px;min-width:0}
+.qmes-kpi-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;color:#e0f2fe;font-size:12px;font-weight:800;white-space:nowrap}
+.qmes-kpi-dot{width:11px;height:11px;border-radius:4px;background:var(--dot,#3b82f6);box-shadow:0 0 0 3px rgba(255,255,255,.05)}
+.qmes-kpi-val{color:#fff;font-weight:900}
+.qmes-donut-label,.qmes-donut-sub{display:none!important}
+.qmes-trend-wide .cwrap{height:390px!important;min-height:390px!important}
+.qmes-main-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(420px,.9fr);gap:18px;align-items:stretch}
+.qmes-main-grid .qmes-trend-wide{margin:0!important;width:100%!important}
+.qmes-main-grid #qmesNoticeSlot .card{height:100%!important;min-height:0!important}
+#qmesNoticeSlot .ch h3{font-size:16px!important}
+#qmesNoticeSlot .cb{padding:12px 20px 16px!important}
+#qmesNoticeSlot .nitem{padding:13px 0!important;font-size:14px!important}
+#qmesNoticeSlot .ntxt{font-size:14px!important;line-height:1.55!important;font-weight:700!important}
+#qmesNoticeSlot .ndate{font-size:12px!important}
+#qmesCockpit .qmes-panel{margin:0!important}
+#qmesCockpit .qmes-module-grid{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:12px!important}
+#qmesCockpit .qmes-module{min-height:150px!important;text-align:center!important;padding:18px 12px!important}
+#qmesCockpit .qmes-module .icon{margin:0 auto 12px!important}
+#qmesCockpit .qmes-module .meta{justify-content:center!important}
+@keyframes qmesSpin{to{transform:rotate(360deg)}}
+@media(max-width:1600px){
+  .qmes-kpi-body{grid-template-columns:112px 1fr}.qmes-donut{width:112px!important;height:112px!important}.qmes-donut .num{font-size:34px!important}.qmes-donut .unit{top:68px}
+  #qmesCockpit .qmes-module-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:1300px){
+  .qmes-hero-grid.donut{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .qmes-main-grid{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .qmes-hero-grid.donut{grid-template-columns:1fr!important}
+  .qmes-kpi-body{grid-template-columns:120px 1fr}
+  #qmesCockpit .qmes-module-grid{grid-template-columns:1fr!important}
+}
+
 </style>
 </head>
 <body>
@@ -3338,13 +3424,42 @@ function renderUserTable(){
 
 
 /* 통합 관제 도넛 KPI: 현재 데이터/조회연도 기준 연동 */
+function num(v){const n=Number(v);return isFinite(n)?n:0;}
+function sumFail(arr){return (Array.isArray(arr)?arr:[]).reduce((a,r)=>a+num(r.failQty??r.fail_qty??r.fail??r.ngQty??0),0);}
+function byLotSet(arr){return new Set((Array.isArray(arr)?arr:[]).map(r=>String(r.lot||r.finishedLot||r.ncLot||'').trim()).filter(Boolean));}
+function cntStatus(arr,match){
+  return (Array.isArray(arr)?arr:[]).filter(r=>match(String(r.status||r.state||r.result||'').trim(),r)).length;
+}
+function setBreak(key,name,val){document.querySelectorAll(`[data-qmes-break="${key}:${name}"]`).forEach(el=>el.textContent=`${Number(val)||0}건`);}
+function setDonutSegments(key,total,parts){
+  const donut=document.querySelector(`[data-qmes-donut="${key}"]`);
+  if(!donut)return;
+  const vals=parts.map(v=>Math.max(0,Number(v)||0));
+  let denom=vals.reduce((a,b)=>a+b,0);
+  if(denom<=0) denom=Math.max(1,Number(total)||0);
+  let acc=0;
+  const ps=vals.map(v=>{acc+=denom?Math.round(v/denom*100):0;return Math.min(100,acc);});
+  if(vals.reduce((a,b)=>a+b,0)<=0 && Number(total)>0){ps[0]=100;ps[1]=100;ps[2]=100;ps[3]=100;}
+  donut.style.setProperty('--p1',(ps[0]||0)+'%');
+  donut.style.setProperty('--p2',(ps[1]||ps[0]||0)+'%');
+  donut.style.setProperty('--p3',(ps[2]||ps[1]||ps[0]||0)+'%');
+  donut.style.setProperty('--p4',(ps[3]||ps[2]||ps[1]||ps[0]||0)+'%');
+}
 function updateQmesDonuts(vals){
+  const s=(typeof state==='object'&&state)?state:{};
+  const y=Number((document.getElementById('dashYear')&&document.getElementById('dashYear').value)||new Date().getFullYear());
+  const inRows=(Array.isArray(s.incoming)?s.incoming:[]).filter(r=>recordDateOf(r).startsWith(String(y)));
+  const prRows=(Array.isArray(s.process)?s.process:[]).filter(r=>recordDateOf(r).startsWith(String(y)));
+  const shRows=(Array.isArray(s.shipment)?s.shipment:[]).filter(r=>recordDateOf(r).startsWith(String(y)));
+  const ncRows=(Array.isArray(s.nonconform)?s.nonconform:[]);
+  const trRows=(Array.isArray(s.trainingReports)?s.trainingReports:(Array.isArray(s.training)?s.training:[])).filter(r=>recordDateOf(r).startsWith(String(y)));
+
   const numbers={
-    incoming:Number(vals?.incoming||0),
-    process:Number(vals?.process||0),
-    shipment:Number(vals?.shipment||0),
-    nonconform:Number(vals?.nonconform||0),
-    training:Number(vals?.training||0)
+    incoming:Number(vals?.incoming ?? inRows.length ?? 0),
+    process:Number(vals?.process ?? prRows.length ?? 0),
+    shipment:Number(vals?.shipment ?? shRows.length ?? 0),
+    nonconform:Number(vals?.nonconform ?? ncRows.filter(r=>String(r.status||'미결')!=='완결').length ?? 0),
+    training:Number(vals?.training ?? trRows.length ?? 0)
   };
   const labels={
     incoming:`전체 ${numbers.incoming}건`,
@@ -3353,16 +3468,32 @@ function updateQmesDonuts(vals){
     nonconform:`미결 ${numbers.nonconform}건`,
     training:`전체 ${numbers.training}건`
   };
-  const max=Math.max(1,...Object.values(numbers));
+
+  const lotIncoming=byLotSet(inRows), lotProcess=byLotSet(prRows), lotShipment=byLotSet(shRows);
+  const ncIncoming=ncRows.filter(r=>lotIncoming.has(String(r.ncLot||r.lot||'').trim())).length;
+  const ncProcess=ncRows.filter(r=>lotProcess.has(String(r.ncLot||r.lot||'').trim())).length;
+  const ncShipment=ncRows.filter(r=>lotShipment.has(String(r.ncLot||r.lot||'').trim())).length;
+  const ncOpen=ncRows.filter(r=>String(r.status||'미결')!=='완결').length;
+  const ncCapa=ncRows.filter(r=>String(r.action||r.capa||r.actionPlan||r.correctiveAction||'').trim()).length;
+  const trDone=cntStatus(trRows,(st)=>/완료|승인|done|complete/i.test(st));
+  const trProgress=cntStatus(trRows,(st)=>/진행|검토|review|progress/i.test(st));
+  const trOpen=Math.max(0,trRows.length-trDone-trProgress);
+
+  const data={
+    incoming:{fail:sumFail(inRows),ncr:ncIncoming,hold:inRows.filter(r=>String(calcJ?.(r.items||[])||r.judge||'').includes('보류')).length,capa:ncCapa},
+    process:{fail:sumFail(prRows),ncr:ncProcess,repeat:0,capa:ncCapa},
+    shipment:{fail:sumFail(shRows),ncr:ncShipment,repeat:0,capa:ncCapa},
+    nonconform:{ncr:ncRows.length,capa:ncCapa,open:ncOpen},
+    training:{done:trDone||trRows.length,progress:trProgress,open:trOpen}
+  };
+
   Object.entries(numbers).forEach(([key,val])=>{
     document.querySelectorAll(`[data-qmes-count="${key}"]`).forEach(el=>{el.textContent=val;});
     document.querySelectorAll(`[data-qmes-note="${key}"]`).forEach(el=>{el.textContent=labels[key]||`전체 ${val}건`;});
-    const card=document.querySelector(`[data-qmes-card="${key}"]`);
-    if(card){
-      const donut=card.querySelector('.qmes-donut');
-      const pct=val<=0?0:Math.max(12,Math.round(val/max*100));
-      if(donut) donut.style.setProperty('--p', pct+'%');
-    }
+  });
+  Object.entries(data).forEach(([key,obj])=>{
+    Object.entries(obj).forEach(([k,v])=>setBreak(key,k,v));
+    setDonutSegments(key,numbers[key],Object.values(obj));
   });
 }
 
@@ -5356,60 +5487,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const dash=qs('#page-dashboard'); if(!dash || qs('#qmesCockpit')) return;
     const block=document.createElement('div');
     block.id='qmesCockpit';
+    const kpi=(key,cls,title,sub,rows)=>`
+      <div class="qmes-donut-card ${cls}" data-qmes-card="${key}">
+        <div class="qmes-kpi-head"><div class="qmes-kpi-title">${title}</div><div class="qmes-kpi-total" data-qmes-note="${key}">전체 0건</div></div>
+        <div class="qmes-kpi-body">
+          <div class="qmes-donut" data-qmes-donut="${key}" style="--p1:0%;--p2:0%;--p3:0%;--p4:0%"><span class="num" data-qmes-count="${key}">0</span><span class="unit">건</span></div>
+          <div class="qmes-kpi-meta">
+            ${rows.map(r=>`<div class="qmes-kpi-row"><span class="qmes-kpi-dot" style="--dot:${r[2]}"></span><span>${r[0]}</span><span class="qmes-kpi-val" data-qmes-break="${key}:${r[1]}">0건</span></div>`).join('')}
+          </div>
+        </div>
+        <div class="qmes-donut-label">${title}</div><div class="qmes-donut-sub">${sub}</div>
+      </div>`;
     block.innerHTML=`
       <div class="qmes-hero">
         <div class="qmes-hero-top">
           <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다.<br>기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
-          <div class="qmes-badges"><span class="qmes-badge">LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
+          <div class="qmes-badges"><span class="qmes-badge">● LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
         </div>
         <div class="qmes-hero-grid donut">
-          <div class="qmes-donut-card iqc" data-qmes-card="incoming"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="incoming">0</span></div><div class="qmes-donut-label">수입검사</div><div class="qmes-donut-sub">IQC records<span class="qmes-count-note" data-qmes-note="incoming">전체 0건</span></div></div>
-          <div class="qmes-donut-card pqc" data-qmes-card="process"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="process">0</span></div><div class="qmes-donut-label">공정검사</div><div class="qmes-donut-sub">PQC records<span class="qmes-count-note" data-qmes-note="process">전체 0건</span></div></div>
-          <div class="qmes-donut-card oqc" data-qmes-card="shipment"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="shipment">0</span></div><div class="qmes-donut-label">출하검사</div><div class="qmes-donut-sub">OQC records<span class="qmes-count-note" data-qmes-note="shipment">전체 0건</span></div></div>
-          <div class="qmes-donut-card nc" data-qmes-card="nonconform"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="nonconform">0</span></div><div class="qmes-donut-label">부적합/CAPA</div><div class="qmes-donut-sub">NCR tracking<span class="qmes-count-note" data-qmes-note="nonconform">미결 0건</span></div></div>
-          <div class="qmes-donut-card tr" data-qmes-card="training"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="training">0</span></div><div class="qmes-donut-label">교육보고서</div><div class="qmes-donut-sub">Training<span class="qmes-count-note" data-qmes-note="training">전체 0건</span></div></div>
+          ${kpi('incoming','iqc','수입검사 (IQC)','IQC records',[['불량','fail','#3b82f6'],['NCR','ncr','#22c55e'],['재검','hold','#f97316'],['CAPA','capa','#8b5cf6']])}
+          ${kpi('process','pqc','공정검사 (PQC)','PQC records',[['불량','fail','#3b82f6'],['NCR','ncr','#22c55e'],['재발','repeat','#f97316'],['CAPA','capa','#8b5cf6']])}
+          ${kpi('shipment','oqc','출하검사 (OQC)','OQC records',[['불량','fail','#3b82f6'],['NCR','ncr','#22c55e'],['재발','repeat','#f97316'],['CAPA','capa','#8b5cf6']])}
+          ${kpi('nonconform','nc','부적합/CAPA','NCR tracking',[['NCR','ncr','#3b82f6'],['CAPA','capa','#22c55e'],['미완료','open','#f97316']])}
+          ${kpi('training','tr','교육보고서','Training',[['완료','done','#8b5cf6'],['진행중','progress','#22c55e'],['미완료','open','#f97316']])}
         </div>
       </div>
-      <div class="qmes-bottom-grid">
-        <div class="qmes-panel">
-          <div class="qmes-panel-h"><h3>최종 QMES 구조</h3><span class="tag">ENTERPRISE STRUCTURE</span></div>
-          <div class="qmes-panel-b"><div class="qmes-module-grid">
-            ${card('품질관리 QMS','수입·공정·출하검사, 성적서, NCR/CAPA, 전자결재',['IQC/PQC/OQC','CAPA','전자서명'],'incoming','▦')}
-            ${card('생산관리 MES','생산작업일지, LOT 연결, 생산실적 및 불량 연동',['작업일지','LOT','실적'],'production','▤')}
-            ${card('설비관리 EAM','측정기, 설비점검, 교정일정, 예방보전 관리',['측정기','교정','PM'],'equipment','▧')}
-            ${card('협력업체 SRM','협력사 현황, 품질평가, NCR 발생률 및 납기 평가',['협력사','평가','등급'],'supplier-eval','▨')}
-            ${card('출하관리 WMS','출하검사 기반 출하판정, 고객사/LOT 추적 관리',['OQC','고객사','LOT'],'outbound','▥')}
-            ${card('교육관리 TMS','교육보고서, 사진, 전자결재, 교육 이력 유지',['교육','사진','결재'],'training','▩')}
-            ${card('경영검토 MRM','월간 KPI, 품질 목표, 개선조치 및 대표 승인',['KPI','회의록','승인'],'management-review','▦')}
-            ${card('시스템관리 ADMIN','회원등록 현황, 권한, 백업, 감사로그 관리',['회원','권한','백업'],'system','▣')}
-          </div></div>
-        </div>
+      <div class="qmes-main-grid">
+        <div id="qmesTrendSlot"></div>
         <div id="qmesNoticeSlot"></div>
+      </div>
+      <div class="qmes-panel">
+        <div class="qmes-panel-h"><h3>최종 QMES 구조</h3><span class="tag">ENTERPRISE STRUCTURE</span></div>
+        <div class="qmes-panel-b"><div class="qmes-module-grid">
+          ${card('품질관리 QMS','수입·공정·출하검사, 성적서, NCR/CAPA, 전자결재',['IQC/PQC/OQC','CAPA','전자서명'],'incoming','▦')}
+          ${card('생산관리 MES','생산작업일지, LOT 연결, 생산실적 및 불량 연동',['작업일지','LOT','실적'],'production','▤')}
+          ${card('설비관리 EAM','측정기, 설비점검, 교정일정, 예방보전 관리',['측정기','교정','PM'],'equipment','▧')}
+          ${card('협력업체 SRM','협력사 현황, 품질평가, NCR 발생률 및 납기 평가',['협력사','평가','등급'],'supplier-eval','▨')}
+          ${card('출하관리 WMS','출하검사 기반 출하판정, 고객사/LOT 추적 관리',['OQC','고객사','LOT'],'outbound','▥')}
+          ${card('교육관리 TMS','교육보고서, 사진, 전자결재, 교육 이력 유지',['교육','사진','결재'],'training','▩')}
+          ${card('경영검토 MRM','월간 KPI, 품질 목표, 개선조치 및 대표 승인',['KPI','회의록','승인'],'management-review','▦')}
+          ${card('시스템관리 ADMIN','회원등록 현황, 권한, 백업, 감사로그 관리',['회원','권한','백업'],'system','▣')}
+        </div></div>
       </div>`;
     const ph=qs('#page-dashboard .ph');
     if(ph) ph.insertAdjacentElement('afterend',block); else dash.prepend(block);
-
     const dlower=qs('#page-dashboard > .dlower');
     const trendCard=qs('#page-dashboard > .dlower > .card:first-child');
     const noticeCard=qs('#page-dashboard > .dlower > .card:nth-child(2)');
-    const hero=qs('#qmesCockpit .qmes-hero');
+    const trendSlot=qs('#qmesTrendSlot');
     const noticeSlot=qs('#qmesNoticeSlot');
-
-    if(trendCard && hero){
-      trendCard.classList.add('qmes-trend-wide');
-      hero.insertAdjacentElement('afterend',trendCard);
-    }
-    if(noticeCard && noticeSlot){
-      noticeSlot.appendChild(noticeCard);
-    }
+    if(trendCard && trendSlot){trendCard.classList.add('qmes-trend-wide');trendSlot.appendChild(trendCard);}
+    if(noticeCard && noticeSlot){noticeSlot.appendChild(noticeCard);}
     if(dlower && !dlower.children.length) dlower.remove();
-
     block.addEventListener('click',e=>{const m=e.target.closest('[data-qmes-go]');if(m) activate(m.dataset.qmesGo);});
-
-    setTimeout(()=>{
-      if(typeof renderSummary==='function') renderSummary();
-      else if(typeof renderCharts==='function') renderCharts();
-    },120);
+    setTimeout(()=>{if(typeof renderSummary==='function')renderSummary();},120);
   }
   function pageTemplate(id,title,sub,tiles,linkPage){
     if(document.getElementById(pageId(id))) return;
@@ -5702,7 +5833,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function updateCounts(){
     const s=st();
     const map={incoming:s.incoming,process:s.process,shipment:s.shipment,nonconform:s.nonconform,instruments:s.instruments,training:s.trainingReports||s.training};
-    Object.entries(map).forEach(([k,v])=>qsa(`[data-qmes-count="${k}"]`).forEach(el=>el.textContent=count(v)));
+    if(typeof updateQmesDonuts==='function') updateQmesDonuts({incoming:count(s.incoming),process:count(s.process),shipment:count(s.shipment),nonconform:count(s.nonconform),training:count(s.trainingReports||s.training)});
     renderProductionData();
     renderSupplierEvalData();
     renderSupplierQualityData();
