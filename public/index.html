@@ -2487,149 +2487,6 @@ function printLabel(){
 </style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
 
 
-
-<script>
-/* QMES Enterprise Cockpit v27 - 기존 기능/데이터 보존용 확장 */
-(function(){
-  const qs=(s,r=document)=>r.querySelector(s);
-  const qsa=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  const pageId=p=>'page-'+p;
-  const esc=v=>String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-  const arr=v=>Array.isArray(v)?v:[];
-  const count=a=>arr(a).length;
-  const today=()=>new Date().toLocaleDateString('ko-KR');
-
-  function st(){return window.state||{};}
-  function isAdmin(){const u=st().currentUser||{};return u.role==='admin'||u.email==='admin@namochemical.com'||u.isAdmin===true;}
-  function activate(page){
-    qsa('.nav-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
-    qsa('.page').forEach(p=>p.classList.remove('active'));
-    const el=document.getElementById(pageId(page));
-    if(el) el.classList.add('active');
-    if(page==='users' && typeof window.loadAdminUsers==='function') window.loadAdminUsers();
-    const content=qs('.content'); if(content) content.scrollTo({top:0,behavior:'smooth'});
-  }
-
-  function addNavAfter(anchorPage, html){
-    const anchor=qs(`.nav-item[data-page="${anchorPage}"]`);
-    if(anchor && !qs(`.nav-item[data-page="${html.match(/data-page="([^"]+)"/)?.[1]}"]`)){
-      anchor.insertAdjacentHTML('afterend',html);
-    }
-  }
-  function addSecBefore(beforePage, title){
-    const before=qs(`.nav-item[data-page="${beforePage}"]`);
-    if(before && !qs(`.nav-sec[data-qmes-sec="${title}"]`)) before.insertAdjacentHTML('beforebegin',`<div class="nav-sec" data-qmes-sec="${title}">${title}</div>`);
-  }
-  function ensureNav(){
-    addSecBefore('worklog','QMES 운영');
-    addNavAfter('suppliers','<button class="nav-item" data-page="supplier-eval"><span class="nav-icon">▣</span><span>협력업체 평가</span></button>');
-    addNavAfter('instruments','<button class="nav-item" data-page="equipment"><span class="nav-icon">▣</span><span>설비관리</span></button>');
-    addNavAfter('worklog','<button class="nav-item" data-page="production"><span class="nav-icon">▣</span><span>생산관리</span></button>');
-    addNavAfter('shipment','<button class="nav-item" data-page="outbound"><span class="nav-icon">▣</span><span>출하관리</span></button>');
-    addSecBefore('users','경영 / 시스템');
-    addNavAfter('training','<button class="nav-item" data-page="management-review"><span class="nav-icon">▣</span><span>경영검토</span></button>');
-    addNavAfter('management-review','<button class="nav-item" data-page="system"><span class="nav-icon">▣</span><span>시스템관리</span></button>');
-    const users=qs('#usersNavBtn'); if(users){ users.style.display = isAdmin()? '' : users.style.display; users.querySelector('span:last-child').textContent='회원등록 현황'; }
-    const adm=qs('#adminNavTitle'); if(adm && isAdmin()) adm.style.display='';
-    qsa('.nav-item[data-page]').forEach(btn=>{
-      if(btn.dataset.qmesBound) return;
-      btn.dataset.qmesBound='1';
-      btn.addEventListener('click',e=>{
-        const pg=btn.dataset.page;
-        if(document.getElementById(pageId(pg))){ e.preventDefault(); activate(pg); }
-      });
-    });
-  }
-  function card(title, desc, meta, page, icon){
-    return `<div class="qmes-module" data-qmes-go="${page}"><div class="icon">${icon}</div><div class="name">${title}</div><div class="desc">${desc}</div><div class="meta">${meta.map(x=>`<span class="qmes-chip ${x[1]||''}">${x[0]}</span>`).join('')}</div></div>`;
-  }
-  function renderDashboard(){
-    const dash=qs('#page-dashboard'); if(!dash || qs('#qmesCockpit')) return;
-    const block=document.createElement('div');
-    block.id='qmesCockpit';
-    block.innerHTML=`
-      <div class="qmes-hero">
-        <div class="qmes-hero-top">
-          <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다. 기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
-          <div class="qmes-badges"><span class="qmes-badge">LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
-        </div>
-        <div class="qmes-hero-grid">
-          <div class="qmes-hero-card"><div class="l">수입검사</div><div class="v" data-qmes-count="incoming">0</div><div class="s">IQC records</div></div>
-          <div class="qmes-hero-card"><div class="l">공정검사</div><div class="v" data-qmes-count="process">0</div><div class="s">PQC records</div></div>
-          <div class="qmes-hero-card"><div class="l">출하검사</div><div class="v" data-qmes-count="shipment">0</div><div class="s">OQC records</div></div>
-          <div class="qmes-hero-card"><div class="l">부적합/CAPA</div><div class="v" data-qmes-count="nonconform">0</div><div class="s">NCR tracking</div></div>
-          <div class="qmes-hero-card"><div class="l">측정기</div><div class="v" data-qmes-count="instruments">0</div><div class="s">Calibration</div></div>
-          <div class="qmes-hero-card"><div class="l">교육보고서</div><div class="v" data-qmes-count="training">0</div><div class="s">Training</div></div>
-        </div>
-      </div>
-      <div class="qmes-panel">
-        <div class="qmes-panel-h"><h3>최종 QMES 구조</h3><span class="tag">ENTERPRISE STRUCTURE</span></div>
-        <div class="qmes-panel-b"><div class="qmes-module-grid">
-          ${card('품질관리 QMS','수입·공정·출하검사, 성적서, NCR/CAPA, 전자결재',['IQC/PQC/OQC','CAPA','전자서명'],'incoming','▦')}
-          ${card('생산관리 MES','생산작업일지, LOT 연결, 생산실적 및 불량 연동',['작업일지','LOT','실적'],'production','▤')}
-          ${card('설비관리 EAM','측정기, 설비점검, 교정일정, 예방보전 관리',['측정기','교정','PM'],'equipment','▧')}
-          ${card('협력업체 SRM','협력사 현황, 품질평가, NCR 발생률 및 납기 평가',['협력사','평가','등급'],'supplier-eval','▨')}
-          ${card('출하관리 WMS','출하검사 기반 출하판정, 고객사/LOT 추적 관리',['OQC','고객사','LOT'],'outbound','▥')}
-          ${card('교육관리 TMS','교육보고서, 사진, 전자결재, 교육 이력 유지',['교육','사진','결재'],'training','▩')}
-          ${card('경영검토 MRM','월간 KPI, 품질 목표, 개선조치 및 대표 승인',['KPI','회의록','승인'],'management-review','▦')}
-          ${card('시스템관리 ADMIN','회원등록 현황, 권한, 백업, 감사로그 관리',['회원','권한','백업'],'system','▣')}
-        </div></div>
-      </div>
-      <div class="qmes-layout">
-        <div class="qmes-panel"><div class="qmes-panel-h"><h3>업무 흐름</h3><span class="tag">PROCESS FLOW</span></div><div class="qmes-panel-b"><div class="qmes-flow">
-          <div class="qmes-flow-step"><div class="no">1</div><div class="t">수입검사</div><div class="d">협력사 / 원료 LOT</div></div>
-          <div class="qmes-flow-step"><div class="no">2</div><div class="t">생산관리</div><div class="d">작업일지 / 공정 LOT</div></div>
-          <div class="qmes-flow-step"><div class="no">3</div><div class="t">공정검사</div><div class="d">PQC / SPC 분석</div></div>
-          <div class="qmes-flow-step"><div class="no">4</div><div class="t">출하검사</div><div class="d">OQC / 성적서</div></div>
-          <div class="qmes-flow-step"><div class="no">5</div><div class="t">NCR/CAPA</div><div class="d">부적합 / 개선 / 검증</div></div>
-        </div></div></div>
-        <div class="qmes-panel"><div class="qmes-panel-h"><h3>알림센터</h3><span class="tag">NOTICE</span></div><div class="qmes-panel-b"><div class="qmes-alert-list" id="qmesAlerts"></div></div></div>
-      </div>`;
-    const ph=qs('#page-dashboard .ph');
-    if(ph) ph.insertAdjacentElement('afterend',block); else dash.prepend(block);
-    block.addEventListener('click',e=>{const m=e.target.closest('[data-qmes-go]');if(m) activate(m.dataset.qmesGo);});
-  }
-  function pageTemplate(id,title,sub,tiles,linkPage){
-    if(document.getElementById(pageId(id))) return;
-    const main=qs('main.content'); if(!main) return;
-    const sec=document.createElement('section'); sec.className='page'; sec.id=pageId(id);
-    sec.innerHTML=`<div class="ph"><div><div class="ph-title">${title}</div><div class="ph-sub">${sub}</div></div><div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button>${linkPage?`<button class="btn pri" data-qmes-go="${linkPage}">기존 기능 열기</button>`:''}</div></div><div class="qmes-placeholder"><div class="qmes-placeholder-title">${title}</div><div class="qmes-placeholder-sub">현재 운영 중인 데이터와 API를 변경하지 않고, 대기업 QMES 메뉴 구조로 확장한 화면입니다.</div><div class="qmes-placeholder-grid">${tiles.map(t=>`<div class="qmes-tile"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</div>${id==='system'?`<div class="qmes-quick-users"><b>회원등록 현황</b><div style="font-size:12px;color:#64748b;margin-top:4px">관리자 계정은 기존 회원관리 화면에서 사용자, 직책, 권한을 유지·관리합니다.</div><div class="row"><button class="qmes-link-btn" data-qmes-go="users">회원등록 현황 열기</button><button class="qmes-link-btn light" data-qmes-go="dashboard">통합 대시보드</button></div></div>`:''}</div>`;
-    main.appendChild(sec);
-    sec.addEventListener('click',e=>{const b=e.target.closest('[data-qmes-go]'); if(b) activate(b.dataset.qmesGo);});
-  }
-  function ensurePages(){
-    pageTemplate('supplier-eval','협력업체 평가','협력사 현황 데이터를 기반으로 품질·납기·NCR 대응 평가 구조를 제공합니다.',[['품질점수','NCR 발생 건수와 불량률 기반'],['납기점수','입고/출하 일정 준수율 관리'],['대응점수','CAPA 회신 및 조치 완료율'],['등급관리','S/A/B/C/D 등급 체계'],['평가이력','월별·분기별 협력사 평가'],['개선요청','협력업체 CAPA 요청 연동']],'suppliers');
-    pageTemplate('equipment','설비관리','측정기 관리 기능을 유지하면서 설비·예방보전 구조를 확장합니다.',[['설비마스터','설비번호, 위치, 제조사, 담당자'],['예방보전','일상/월간/정기 점검'],['교정관리','측정기 교정일과 연동'],['고장이력','원인, 조치, 다운타임'],['OEE','가동률·성능·품질 지표'],['알림','교정/점검 예정일 알림']],'instruments');
-    pageTemplate('production','생산관리','생산작업일지와 LOT 추적을 중심으로 MES 구조를 제공합니다.',[['작업지시','생산계획과 작업오더'],['생산실적','계획/실적/불량 수량'],['원료투입','원료 LOT 투입 추적'],['공정조건','유량/온도/압력 기록'],['수율관리','생산수율·불량률'],['LOT연계','IQC→PQC→OQC 연결']],'worklog');
-    pageTemplate('outbound','출하관리','출하검사 데이터를 유지하면서 출하판정과 고객 LOT 추적을 강화합니다.',[['출하판정','OQC 합격 기준 출하 가능'],['고객사관리','고객별 출하 LOT 이력'],['바코드/QR','LOT 라벨 및 추적'],['출하보류','NCR 발생 LOT 자동 보류'],['성적서','출하검사 성적서 연동'],['이력조회','LOT별 출하 이력']],'shipment');
-    pageTemplate('management-review','경영검토','월간 품질 KPI와 개선조치를 경영검토 자료로 집계합니다.',[['품질목표','불량률, 클레임, CAPA 목표'],['월간KPI','IQC/PQC/OQC/NCR 자동 집계'],['협력사평가','월별 협력사 품질 등급'],['교육현황','교육 보고서와 이수 현황'],['개선조치','CAPA 효과 검증 결과'],['대표승인','경영검토 전자결재']],'dashboard');
-    pageTemplate('system','시스템관리','회원등록 현황, 권한, 백업, 감사로그 등 관리자 운영 영역입니다.',[['회원관리','회원등록 현황과 직책/권한'],['권한관리','관리자/일반/검토/승인'],['데이터보존','현재 DB와 API 그대로 유지'],['백업','DB/파일 백업 정책'],['감사로그','수정자, 수정일, 이전값'],['환경설정','SMTP, 세션, 관리자 정책']],'users');
-  }
-  function updateCounts(){
-    const s=st();
-    const map={incoming:s.incoming,process:s.process,shipment:s.shipment,nonconform:s.nonconform,instruments:s.instruments,training:s.trainingReports||s.training};
-    Object.entries(map).forEach(([k,v])=>qsa(`[data-qmes-count="${k}"]`).forEach(el=>el.textContent=count(v)));
-    const alerts=qs('#qmesAlerts');
-    if(alerts){
-      const nc=count(map.nonconform), inst=count(map.instruments), tr=count(map.training);
-      alerts.innerHTML=`
-        <div class="qmes-alert ${nc?'bad':''}"><span class="dot"></span><div><div class="txt">부적합 보고서 ${nc}건 관리 중입니다.</div><div class="time">NCR/CAPA</div></div></div>
-        <div class="qmes-alert warn"><span class="dot"></span><div><div class="txt">측정기 ${inst}건의 교정일정을 확인하세요.</div><div class="time">설비/측정기</div></div></div>
-        <div class="qmes-alert"><span class="dot"></span><div><div class="txt">교육보고서 ${tr}건의 결재/인쇄 데이터를 유지합니다.</div><div class="time">교육관리</div></div></div>`;
-    }
-  }
-  function ensureUsersVisible(){
-    const u=qs('#usersNavBtn'), adm=qs('#adminNavTitle'), open=qs('#openUserManage');
-    if(isAdmin()){ if(u)u.style.display=''; if(adm)adm.style.display=''; if(open)open.style.display=''; }
-  }
-  function init(){
-    ensureNav(); ensurePages(); renderDashboard(); ensureUsersVisible(); updateCounts();
-    setInterval(()=>{ensureUsersVisible();updateCounts();},1500);
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200)); else setTimeout(init,200);
-})();
-</script>
-
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
@@ -5008,5 +4865,148 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 
 </script>
+
+<script>
+/* QMES Enterprise Cockpit v27 - 기존 기능/데이터 보존용 확장 */
+(function(){
+  const qs=(s,r=document)=>r.querySelector(s);
+  const qsa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const pageId=p=>'page-'+p;
+  const esc=v=>String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  const arr=v=>Array.isArray(v)?v:[];
+  const count=a=>arr(a).length;
+  const today=()=>new Date().toLocaleDateString('ko-KR');
+
+  function st(){return window.state||{};}
+  function isAdmin(){const u=st().currentUser||{};return u.role==='admin'||u.email==='admin@namochemical.com'||u.isAdmin===true;}
+  function activate(page){
+    qsa('.nav-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+    qsa('.page').forEach(p=>p.classList.remove('active'));
+    const el=document.getElementById(pageId(page));
+    if(el) el.classList.add('active');
+    if(page==='users' && typeof window.loadAdminUsers==='function') window.loadAdminUsers();
+    const content=qs('.content'); if(content) content.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function addNavAfter(anchorPage, html){
+    const anchor=qs(`.nav-item[data-page="${anchorPage}"]`);
+    if(anchor && !qs(`.nav-item[data-page="${html.match(/data-page="([^"]+)"/)?.[1]}"]`)){
+      anchor.insertAdjacentHTML('afterend',html);
+    }
+  }
+  function addSecBefore(beforePage, title){
+    const before=qs(`.nav-item[data-page="${beforePage}"]`);
+    if(before && !qs(`.nav-sec[data-qmes-sec="${title}"]`)) before.insertAdjacentHTML('beforebegin',`<div class="nav-sec" data-qmes-sec="${title}">${title}</div>`);
+  }
+  function ensureNav(){
+    addSecBefore('worklog','QMES 운영');
+    addNavAfter('suppliers','<button class="nav-item" data-page="supplier-eval"><span class="nav-icon">▣</span><span>협력업체 평가</span></button>');
+    addNavAfter('instruments','<button class="nav-item" data-page="equipment"><span class="nav-icon">▣</span><span>설비관리</span></button>');
+    addNavAfter('worklog','<button class="nav-item" data-page="production"><span class="nav-icon">▣</span><span>생산관리</span></button>');
+    addNavAfter('shipment','<button class="nav-item" data-page="outbound"><span class="nav-icon">▣</span><span>출하관리</span></button>');
+    addSecBefore('users','경영 / 시스템');
+    addNavAfter('training','<button class="nav-item" data-page="management-review"><span class="nav-icon">▣</span><span>경영검토</span></button>');
+    addNavAfter('management-review','<button class="nav-item" data-page="system"><span class="nav-icon">▣</span><span>시스템관리</span></button>');
+    const users=qs('#usersNavBtn'); if(users){ users.style.display = isAdmin()? '' : users.style.display; users.querySelector('span:last-child').textContent='회원등록 현황'; }
+    const adm=qs('#adminNavTitle'); if(adm && isAdmin()) adm.style.display='';
+    qsa('.nav-item[data-page]').forEach(btn=>{
+      if(btn.dataset.qmesBound) return;
+      btn.dataset.qmesBound='1';
+      btn.addEventListener('click',e=>{
+        const pg=btn.dataset.page;
+        if(document.getElementById(pageId(pg))){ e.preventDefault(); activate(pg); }
+      });
+    });
+  }
+  function card(title, desc, meta, page, icon){
+    return `<div class="qmes-module" data-qmes-go="${page}"><div class="icon">${icon}</div><div class="name">${title}</div><div class="desc">${desc}</div><div class="meta">${meta.map(x=>`<span class="qmes-chip ${x[1]||''}">${x[0]}</span>`).join('')}</div></div>`;
+  }
+  function renderDashboard(){
+    const dash=qs('#page-dashboard'); if(!dash || qs('#qmesCockpit')) return;
+    const block=document.createElement('div');
+    block.id='qmesCockpit';
+    block.innerHTML=`
+      <div class="qmes-hero">
+        <div class="qmes-hero-top">
+          <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다. 기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
+          <div class="qmes-badges"><span class="qmes-badge">LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
+        </div>
+        <div class="qmes-hero-grid">
+          <div class="qmes-hero-card"><div class="l">수입검사</div><div class="v" data-qmes-count="incoming">0</div><div class="s">IQC records</div></div>
+          <div class="qmes-hero-card"><div class="l">공정검사</div><div class="v" data-qmes-count="process">0</div><div class="s">PQC records</div></div>
+          <div class="qmes-hero-card"><div class="l">출하검사</div><div class="v" data-qmes-count="shipment">0</div><div class="s">OQC records</div></div>
+          <div class="qmes-hero-card"><div class="l">부적합/CAPA</div><div class="v" data-qmes-count="nonconform">0</div><div class="s">NCR tracking</div></div>
+          <div class="qmes-hero-card"><div class="l">측정기</div><div class="v" data-qmes-count="instruments">0</div><div class="s">Calibration</div></div>
+          <div class="qmes-hero-card"><div class="l">교육보고서</div><div class="v" data-qmes-count="training">0</div><div class="s">Training</div></div>
+        </div>
+      </div>
+      <div class="qmes-panel">
+        <div class="qmes-panel-h"><h3>최종 QMES 구조</h3><span class="tag">ENTERPRISE STRUCTURE</span></div>
+        <div class="qmes-panel-b"><div class="qmes-module-grid">
+          ${card('품질관리 QMS','수입·공정·출하검사, 성적서, NCR/CAPA, 전자결재',['IQC/PQC/OQC','CAPA','전자서명'],'incoming','▦')}
+          ${card('생산관리 MES','생산작업일지, LOT 연결, 생산실적 및 불량 연동',['작업일지','LOT','실적'],'production','▤')}
+          ${card('설비관리 EAM','측정기, 설비점검, 교정일정, 예방보전 관리',['측정기','교정','PM'],'equipment','▧')}
+          ${card('협력업체 SRM','협력사 현황, 품질평가, NCR 발생률 및 납기 평가',['협력사','평가','등급'],'supplier-eval','▨')}
+          ${card('출하관리 WMS','출하검사 기반 출하판정, 고객사/LOT 추적 관리',['OQC','고객사','LOT'],'outbound','▥')}
+          ${card('교육관리 TMS','교육보고서, 사진, 전자결재, 교육 이력 유지',['교육','사진','결재'],'training','▩')}
+          ${card('경영검토 MRM','월간 KPI, 품질 목표, 개선조치 및 대표 승인',['KPI','회의록','승인'],'management-review','▦')}
+          ${card('시스템관리 ADMIN','회원등록 현황, 권한, 백업, 감사로그 관리',['회원','권한','백업'],'system','▣')}
+        </div></div>
+      </div>
+      <div class="qmes-layout">
+        <div class="qmes-panel"><div class="qmes-panel-h"><h3>업무 흐름</h3><span class="tag">PROCESS FLOW</span></div><div class="qmes-panel-b"><div class="qmes-flow">
+          <div class="qmes-flow-step"><div class="no">1</div><div class="t">수입검사</div><div class="d">협력사 / 원료 LOT</div></div>
+          <div class="qmes-flow-step"><div class="no">2</div><div class="t">생산관리</div><div class="d">작업일지 / 공정 LOT</div></div>
+          <div class="qmes-flow-step"><div class="no">3</div><div class="t">공정검사</div><div class="d">PQC / SPC 분석</div></div>
+          <div class="qmes-flow-step"><div class="no">4</div><div class="t">출하검사</div><div class="d">OQC / 성적서</div></div>
+          <div class="qmes-flow-step"><div class="no">5</div><div class="t">NCR/CAPA</div><div class="d">부적합 / 개선 / 검증</div></div>
+        </div></div></div>
+        <div class="qmes-panel"><div class="qmes-panel-h"><h3>알림센터</h3><span class="tag">NOTICE</span></div><div class="qmes-panel-b"><div class="qmes-alert-list" id="qmesAlerts"></div></div></div>
+      </div>`;
+    const ph=qs('#page-dashboard .ph');
+    if(ph) ph.insertAdjacentElement('afterend',block); else dash.prepend(block);
+    block.addEventListener('click',e=>{const m=e.target.closest('[data-qmes-go]');if(m) activate(m.dataset.qmesGo);});
+  }
+  function pageTemplate(id,title,sub,tiles,linkPage){
+    if(document.getElementById(pageId(id))) return;
+    const main=qs('main.content'); if(!main) return;
+    const sec=document.createElement('section'); sec.className='page'; sec.id=pageId(id);
+    sec.innerHTML=`<div class="ph"><div><div class="ph-title">${title}</div><div class="ph-sub">${sub}</div></div><div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button>${linkPage?`<button class="btn pri" data-qmes-go="${linkPage}">기존 기능 열기</button>`:''}</div></div><div class="qmes-placeholder"><div class="qmes-placeholder-title">${title}</div><div class="qmes-placeholder-sub">현재 운영 중인 데이터와 API를 변경하지 않고, 대기업 QMES 메뉴 구조로 확장한 화면입니다.</div><div class="qmes-placeholder-grid">${tiles.map(t=>`<div class="qmes-tile"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</div>${id==='system'?`<div class="qmes-quick-users"><b>회원등록 현황</b><div style="font-size:12px;color:#64748b;margin-top:4px">관리자 계정은 기존 회원관리 화면에서 사용자, 직책, 권한을 유지·관리합니다.</div><div class="row"><button class="qmes-link-btn" data-qmes-go="users">회원등록 현황 열기</button><button class="qmes-link-btn light" data-qmes-go="dashboard">통합 대시보드</button></div></div>`:''}</div>`;
+    main.appendChild(sec);
+    sec.addEventListener('click',e=>{const b=e.target.closest('[data-qmes-go]'); if(b) activate(b.dataset.qmesGo);});
+  }
+  function ensurePages(){
+    pageTemplate('supplier-eval','협력업체 평가','협력사 현황 데이터를 기반으로 품질·납기·NCR 대응 평가 구조를 제공합니다.',[['품질점수','NCR 발생 건수와 불량률 기반'],['납기점수','입고/출하 일정 준수율 관리'],['대응점수','CAPA 회신 및 조치 완료율'],['등급관리','S/A/B/C/D 등급 체계'],['평가이력','월별·분기별 협력사 평가'],['개선요청','협력업체 CAPA 요청 연동']],'suppliers');
+    pageTemplate('equipment','설비관리','측정기 관리 기능을 유지하면서 설비·예방보전 구조를 확장합니다.',[['설비마스터','설비번호, 위치, 제조사, 담당자'],['예방보전','일상/월간/정기 점검'],['교정관리','측정기 교정일과 연동'],['고장이력','원인, 조치, 다운타임'],['OEE','가동률·성능·품질 지표'],['알림','교정/점검 예정일 알림']],'instruments');
+    pageTemplate('production','생산관리','생산작업일지와 LOT 추적을 중심으로 MES 구조를 제공합니다.',[['작업지시','생산계획과 작업오더'],['생산실적','계획/실적/불량 수량'],['원료투입','원료 LOT 투입 추적'],['공정조건','유량/온도/압력 기록'],['수율관리','생산수율·불량률'],['LOT연계','IQC→PQC→OQC 연결']],'worklog');
+    pageTemplate('outbound','출하관리','출하검사 데이터를 유지하면서 출하판정과 고객 LOT 추적을 강화합니다.',[['출하판정','OQC 합격 기준 출하 가능'],['고객사관리','고객별 출하 LOT 이력'],['바코드/QR','LOT 라벨 및 추적'],['출하보류','NCR 발생 LOT 자동 보류'],['성적서','출하검사 성적서 연동'],['이력조회','LOT별 출하 이력']],'shipment');
+    pageTemplate('management-review','경영검토','월간 품질 KPI와 개선조치를 경영검토 자료로 집계합니다.',[['품질목표','불량률, 클레임, CAPA 목표'],['월간KPI','IQC/PQC/OQC/NCR 자동 집계'],['협력사평가','월별 협력사 품질 등급'],['교육현황','교육 보고서와 이수 현황'],['개선조치','CAPA 효과 검증 결과'],['대표승인','경영검토 전자결재']],'dashboard');
+    pageTemplate('system','시스템관리','회원등록 현황, 권한, 백업, 감사로그 등 관리자 운영 영역입니다.',[['회원관리','회원등록 현황과 직책/권한'],['권한관리','관리자/일반/검토/승인'],['데이터보존','현재 DB와 API 그대로 유지'],['백업','DB/파일 백업 정책'],['감사로그','수정자, 수정일, 이전값'],['환경설정','SMTP, 세션, 관리자 정책']],'users');
+  }
+  function updateCounts(){
+    const s=st();
+    const map={incoming:s.incoming,process:s.process,shipment:s.shipment,nonconform:s.nonconform,instruments:s.instruments,training:s.trainingReports||s.training};
+    Object.entries(map).forEach(([k,v])=>qsa(`[data-qmes-count="${k}"]`).forEach(el=>el.textContent=count(v)));
+    const alerts=qs('#qmesAlerts');
+    if(alerts){
+      const nc=count(map.nonconform), inst=count(map.instruments), tr=count(map.training);
+      alerts.innerHTML=`
+        <div class="qmes-alert ${nc?'bad':''}"><span class="dot"></span><div><div class="txt">부적합 보고서 ${nc}건 관리 중입니다.</div><div class="time">NCR/CAPA</div></div></div>
+        <div class="qmes-alert warn"><span class="dot"></span><div><div class="txt">측정기 ${inst}건의 교정일정을 확인하세요.</div><div class="time">설비/측정기</div></div></div>
+        <div class="qmes-alert"><span class="dot"></span><div><div class="txt">교육보고서 ${tr}건의 결재/인쇄 데이터를 유지합니다.</div><div class="time">교육관리</div></div></div>`;
+    }
+  }
+  function ensureUsersVisible(){
+    const u=qs('#usersNavBtn'), adm=qs('#adminNavTitle'), open=qs('#openUserManage');
+    if(isAdmin()){ if(u)u.style.display=''; if(adm)adm.style.display=''; if(open)open.style.display=''; }
+  }
+  function init(){
+    ensureNav(); ensurePages(); renderDashboard(); ensureUsersVisible(); updateCounts();
+    setInterval(()=>{ensureUsersVisible();updateCounts();},1500);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200)); else setTimeout(init,200);
+})();
+</script>
+
 </body>
 </html>
