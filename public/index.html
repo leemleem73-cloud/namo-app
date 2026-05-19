@@ -214,7 +214,7 @@ button,input,select,textarea{font:inherit}
 .ch h2{font-size:15px;font-weight:700;color:var(--t1);}
 .ch h3{font-size:14px;font-weight:700;color:var(--t1);}
 .cb{padding:18px;}.ca{display:flex;gap:8px;align-items:center;}
-.sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px;}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
 .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r4);padding:18px;box-shadow:var(--sh1);position:relative;overflow:hidden;}
 .sc[data-go]{cursor:pointer;transition:transform var(--tr),box-shadow var(--tr),border-color var(--tr);}
 .sc[data-go]:hover{transform:translateY(-2px);box-shadow:var(--sh3);border-color:var(--bd2);}
@@ -480,7 +480,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   }
 }
 .mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt14{margin-top:14px;}.mt16{margin-top:16px;}
-@media(max-width:1400px){.sgrid{grid-template-columns:repeat(3,1fr);}.wgrid{grid-column-template:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
+@media(max-width:1400px){.sgrid{grid-template-columns:repeat(2,1fr);}.wgrid{grid-column-template:1fr;}.fg4{grid-template-columns:repeat(2,1fr);}.dlower{grid-template-columns:1fr;}}
 @media(max-width:1000px){.wgrid{grid-template-columns:1fr;}}
 @media(max-width:900px){:root{--sw:0px;}.sidebar{display:none;}.content{padding:14px;}.sgrid{grid-template-columns:repeat(2,1fr);}.fg4,.fg3,.fg5{grid-template-columns:1fr;}.sign-grid,.rprint-sign,.lgrid{grid-template-columns:1fr;}}
 
@@ -1442,6 +1442,12 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <select id="dashYear" style="height:36px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 12px;font-size:13px;background:var(--sf);outline:none;"></select>
             <button class="btn pri" id="dashRefresh">조회</button>
           </div>
+        </div>
+        <div class="sgrid">
+          <div class="sc blue" data-go="incoming" role="button" tabindex="0" title="수입검사로 이동"><div class="sc-top"><div><div class="sc-lbl">수입검사 (IQC)</div><div class="sc-val" id="sumIncoming">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumIncomingRate">-</span></div></div>
+          <div class="sc purple" data-go="process" role="button" tabindex="0" title="공정검사로 이동"><div class="sc-top"><div><div class="sc-lbl">공정검사 (PQC)</div><div class="sc-val" id="sumProcess">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumProcessRate">-</span></div></div>
+          <div class="sc green" data-go="worklog" role="button" tabindex="0" title="생산작업일지로 이동"><div class="sc-top"><div><div class="sc-lbl">생산작업일지</div><div class="sc-val" id="sumWorklog">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">이번 연도 · <span class="trend neutral" id="sumWorklogRate">-</span></div></div>
+          <div class="sc red" data-go="nonconform" role="button" tabindex="0" title="부적합 보고서로 이동"><div class="sc-top"><div><div class="sc-lbl">부적합 (미결)</div><div class="sc-val" id="sumNc">0</div></div><div class="sc-icon"></div></div><div class="sc-meta">전체 부적합 건수</div></div>
         </div>
         <div class="dlower">
           <div class="card"><div class="ch"><h3>월별 검사 현황 추이</h3><span class="tag">YEARLY</span></div><div class="cb"><div class="cwrap"><canvas id="trendChart"></canvas></div></div></div>
