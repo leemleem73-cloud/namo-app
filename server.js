@@ -1502,27 +1502,20 @@ ensureSchema()
         ['관리자', adminEmail, hash, '관리부', '관리자']
       );
     } else {
+      // 관리자 권한 403 방지:
+      // 서버 시작 시 ADMIN_EMAIL 계정을 항상 관리자(admin)로 고정하고,
+      // .env의 ADMIN_PASSWORD 값으로 비밀번호도 동기화합니다.
       await db(
         `UPDATE users
-         SET role = 'admin',
+         SET password_hash = $1,
+             name = $2,
+             department = $3,
+             title = $4,
+             role = 'admin',
              status = 'APPROVED'
-         WHERE email = $1`,
-        [adminEmail]
+         WHERE email = $5`,
+        [hash, '관리자', '관리부', '관리자', adminEmail]
       );
-
-      if (process.env.ADMIN_RESET_ON_START === 'true') {
-        await db(
-          `UPDATE users
-           SET password_hash = $1,
-               name = $2,
-               department = $3,
-               title = $4,
-               role = 'admin',
-               status = 'APPROVED'
-           WHERE email = $5`,
-          [hash, '관리자', '관리부', '관리자', adminEmail]
-        );
-      }
     }
 
     app.listen(port, () => {
