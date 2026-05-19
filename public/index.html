@@ -5431,7 +5431,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const arr=v=>Array.isArray(v)?v:[];
   const count=a=>arr(a).length;
-  const st=()=>window.state||{};
+  const st=()=>{try{return (typeof state!=='undefined'&&state)?state:(window.state||{});}catch(e){return window.state||{};}};
   const toNum=v=>{const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?n:0;};
   const fmt=n=>Number(n||0).toLocaleString('ko-KR');
   const pct=(num,den,d=1)=>den?((num/den)*100).toFixed(d):'0.0';
@@ -5832,8 +5832,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function updateCounts(){
     const s=st();
-    const map={incoming:s.incoming,process:s.process,shipment:s.shipment,nonconform:s.nonconform,instruments:s.instruments,training:s.trainingReports||s.training};
-    if(typeof updateQmesDonuts==='function') updateQmesDonuts({incoming:count(s.incoming),process:count(s.process),shipment:count(s.shipment),nonconform:count(s.nonconform),training:count(s.trainingReports||s.training)});
+    if(typeof renderSummary==='function'){
+      const y=Number((document.getElementById('dashYear')&&document.getElementById('dashYear').value)||new Date().getFullYear());
+      const dateOf=r=>String(r?.date||r?.workDate||r?.ncDate||r?.trainingDate||r?.reportDate||'');
+      const byY=a=>arr(a).filter(r=>dateOf(r).startsWith(String(y))).length;
+      const ncOpen=arr(s.nonconform).filter(r=>String(r.status||'미결')!=='완결').length;
+      if(typeof updateQmesDonuts==='function') updateQmesDonuts({incoming:byY(s.incoming),process:byY(s.process),shipment:byY(s.shipment),nonconform:ncOpen,training:byY(s.trainingReports||s.training)});
+    }
     renderProductionData();
     renderSupplierEvalData();
     renderSupplierQualityData();
