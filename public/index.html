@@ -1099,6 +1099,23 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:1400px){.qmes-hero-grid{grid-template-columns:repeat(3,1fr)}.qmes-module-grid{grid-template-columns:repeat(2,1fr)}.qmes-layout{grid-template-columns:1fr}.qmes-flow{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.qmes-hero-grid,.qmes-module-grid,.qmes-placeholder-grid,.qmes-flow{grid-template-columns:1fr}.qmes-title{font-size:22px}.content{padding:14px}}
 
+
+
+/* ══════════════════════════════════
+   Production Management MES Cockpit v28
+   생산관리 전용 화면 - 캡처 시안 반영
+══════════════════════════════════ */
+.prod-cockpit{display:flex;flex-direction:column;gap:18px}
+.prod-kpi-grid{display:grid;grid-template-columns:1.05fr 1fr 1fr 1fr 1.15fr;gap:16px}
+.prod-kpi{position:relative;overflow:hidden;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:20px 20px 18px;box-shadow:0 10px 26px rgba(15,23,42,.07);min-height:140px}
+.prod-kpi-top{display:flex;align-items:flex-start;gap:14px}
+.prod-kpi-icon{width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;flex-shrink:0}
+.prod-kpi.blue .prod-kpi-icon{background:#e8f1ff;color:#2563eb}.prod-kpi.green .prod-kpi-icon{background:#dcfce7;color:#16a34a}.prod-kpi.orange .prod-kpi-icon{background:#ffedd5;color:#f97316}.prod-kpi.purple .prod-kpi-icon{background:#ede9fe;color:#7c3aed}.prod-kpi.status .prod-kpi-icon{background:#f1f5f9;color:#64748b}
+.prod-kpi-label{font-size:14px;font-weight:900;color:#0f172a;margin-bottom:3px}.prod-kpi-value{font-size:34px;font-weight:900;line-height:1.05;color:#0f172a;letter-spacing:-1.2px}.prod-kpi-unit{font-size:18px;font-weight:900;margin-left:3px}.prod-kpi-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;font-size:12px;color:#64748b}.prod-kpi-good{color:#16a34a;font-weight:900}.prod-kpi-blue{color:#2563eb;font-weight:900}.prod-kpi-progress{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:8px}.prod-kpi-progress span{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:99px}.prod-live{font-size:22px;font-weight:900;color:#16a34a;display:flex;align-items:center;gap:8px;margin-top:8px}.prod-live:before{content:'';width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.10)}.prod-machine-bg{position:absolute;right:16px;bottom:14px;font-size:52px;opacity:.06}
+.prod-section{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 10px 26px rgba(15,23,42,.06);padding:20px}.prod-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.prod-section-title{font-size:20px;font-weight:900;color:#0f172a;letter-spacing:-.4px}.prod-section-sub{font-size:12px;color:#64748b;margin-top:2px}.prod-menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.prod-menu-card{position:relative;overflow:hidden;border:1px solid #e2e8f0;border-radius:16px;background:#fff;padding:22px 22px 18px;min-height:154px;cursor:pointer;transition:.22s ease;box-shadow:0 4px 14px rgba(15,23,42,.035)}.prod-menu-card:hover{transform:translateY(-4px);border-color:#bfdbfe;box-shadow:0 18px 34px rgba(15,23,42,.11);background:#fbfdff}.prod-menu-card:before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--prod-accent,#2563eb)}.prod-menu-main{display:flex;align-items:flex-start;gap:18px}.prod-menu-icon{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:31px;background:var(--prod-soft,#eff6ff);color:var(--prod-accent,#2563eb);flex-shrink:0}.prod-menu-name{font-size:22px;font-weight:900;color:#0f172a;letter-spacing:-.5px}.prod-menu-desc{font-size:14px;color:#64748b;margin-top:5px;line-height:1.55}.prod-menu-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid #edf2f7}.prod-menu-chip{font-size:13px;font-weight:900;color:var(--prod-accent,#2563eb)}.prod-menu-arrow{font-size:24px;line-height:1;color:#334155}.prod-table-wrap{overflow:auto;border:1px solid #e2e8f0;border-radius:14px}.prod-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1080px}.prod-table thead th{background:#f8fafc;color:#334155;font-size:12px;font-weight:900;padding:13px 14px;text-transform:none;letter-spacing:0;border-bottom:1px solid #e2e8f0}.prod-table tbody td{padding:12px 14px;color:#0f172a;border-bottom:1px solid #edf2f7}.prod-table tbody tr:last-child td{border-bottom:none}.prod-progress-line{width:118px;height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}.prod-progress-line span{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa)}.prod-pill{display:inline-flex;align-items:center;justify-content:center;min-width:56px;height:24px;border-radius:99px;padding:0 10px;font-size:12px;font-weight:900}.prod-pill.run{background:#dcfce7;color:#15803d}.prod-pill.done{background:#dbeafe;color:#2563eb}.prod-pill.wait{background:#f1f5f9;color:#64748b}.prod-note{margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;color:#64748b;font-size:12px;display:flex;align-items:center;gap:8px}
+@media(max-width:1500px){.prod-kpi-grid{grid-template-columns:repeat(3,1fr)}.prod-menu-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.prod-kpi-grid,.prod-menu-grid{grid-template-columns:1fr}.prod-menu-main{gap:14px}.prod-menu-icon{width:52px;height:52px}.prod-menu-name{font-size:19px}}
+
 </style>
 </head>
 <body>
@@ -4971,7 +4988,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(document.getElementById(pageId(id))) return;
     const main=qs('main.content'); if(!main) return;
     const sec=document.createElement('section'); sec.className='page'; sec.id=pageId(id);
-    sec.innerHTML=`<div class="ph"><div><div class="ph-title">${title}</div><div class="ph-sub">${sub}</div></div><div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button>${linkPage?`<button class="btn pri" data-qmes-go="${linkPage}">기존 기능 열기</button>`:''}</div></div><div class="qmes-placeholder"><div class="qmes-placeholder-title">${title}</div><div class="qmes-placeholder-sub">현재 운영 중인 데이터와 API를 변경하지 않고, 대기업 QMES 메뉴 구조로 확장한 화면입니다.</div><div class="qmes-placeholder-grid">${tiles.map(t=>`<div class="qmes-tile"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</div>${id==='system'?`<div class="qmes-quick-users"><b>회원등록 현황</b><div style="font-size:12px;color:#64748b;margin-top:4px">관리자 계정은 기존 회원관리 화면에서 사용자, 직책, 권한을 유지·관리합니다.</div><div class="row"><button class="qmes-link-btn" data-qmes-go="users">회원등록 현황 열기</button><button class="qmes-link-btn light" data-qmes-go="dashboard">통합 대시보드</button></div></div>`:''}</div>`;
+    if(id==='production'){
+      sec.innerHTML=`
+        <div class="ph">
+          <div><div class="ph-title">생산관리</div><div class="ph-sub">생산작업일지와 LOT 추적을 중심으로 MES 구조를 제공합니다.</div></div>
+          <div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button><button class="btn pri" data-qmes-go="worklog">기존 기능 열기</button></div>
+        </div>
+        <div class="prod-cockpit">
+          <div class="prod-kpi-grid">
+            <div class="prod-kpi blue">
+              <div class="prod-kpi-top"><div class="prod-kpi-icon">▥</div><div><div class="prod-kpi-label">오늘 생산량</div><div class="prod-kpi-value">12,580</div></div></div>
+              <div class="prod-kpi-foot"><span>목표 14,000</span><span class="prod-kpi-blue">89.9%</span></div><div class="prod-kpi-progress"><span style="width:89.9%"></span></div>
+            </div>
+            <div class="prod-kpi green">
+              <div class="prod-kpi-top"><div class="prod-kpi-icon">◷</div><div><div class="prod-kpi-label">가동률</div><div class="prod-kpi-value">96.2<span class="prod-kpi-unit">%</span></div></div></div>
+              <div class="prod-kpi-foot"><span>전일 92.1%</span><span class="prod-kpi-good">▲ 4.1%p</span></div>
+            </div>
+            <div class="prod-kpi orange">
+              <div class="prod-kpi-top"><div class="prod-kpi-icon">◇</div><div><div class="prod-kpi-label">불량률</div><div class="prod-kpi-value">0.8<span class="prod-kpi-unit">%</span></div></div></div>
+              <div class="prod-kpi-foot"><span>전일 1.2%</span><span class="prod-kpi-good">▼ 0.4%p</span></div>
+            </div>
+            <div class="prod-kpi purple">
+              <div class="prod-kpi-top"><div class="prod-kpi-icon">▤</div><div><div class="prod-kpi-label">진행 작업</div><div class="prod-kpi-value">18<span class="prod-kpi-unit">건</span></div></div></div>
+              <div class="prod-kpi-foot"><span>대기 5건</span><span class="prod-kpi-blue" data-qmes-go="worklog" style="cursor:pointer">상세보기 ›</span></div>
+            </div>
+            <div class="prod-kpi status">
+              <div class="prod-kpi-label">실시간 상태</div><div class="prod-live">정상</div>
+              <div class="prod-kpi-foot"><span>Last Update 14:52:53</span></div><div class="prod-machine-bg">▰</div>
+            </div>
+          </div>
+          <div class="prod-section">
+            <div class="prod-section-head"><div><div class="prod-section-title">생산관리 메뉴</div><div class="prod-section-sub">작업지시부터 LOT 연계까지 생산 흐름별로 관리합니다.</div></div><span class="tag">MES MENU</span></div>
+            <div class="prod-menu-grid">
+              <div class="prod-menu-card" data-qmes-go="worklog" style="--prod-accent:#2563eb;--prod-soft:#eff6ff"><div class="prod-menu-main"><div class="prod-menu-icon">▤</div><div><div class="prod-menu-name">작업지시</div><div class="prod-menu-desc">생산계획과 작업오더</div></div></div><div class="prod-menu-bottom"><span class="prod-menu-chip">TODAY 12건</span><span class="prod-menu-arrow">›</span></div></div>
+              <div class="prod-menu-card" data-qmes-go="worklog" style="--prod-accent:#22c55e;--prod-soft:#dcfce7"><div class="prod-menu-main"><div class="prod-menu-icon">◔</div><div><div class="prod-menu-name">생산실적</div><div class="prod-menu-desc">계획/실적/불량 수량</div></div></div><div class="prod-menu-bottom"><span class="prod-menu-chip">TODAY 95.2%</span><span class="prod-menu-arrow">›</span></div></div>
+              <div class="prod-menu-card" data-qmes-go="worklog" style="--prod-accent:#7c3aed;--prod-soft:#ede9fe"><div class="prod-menu-main"><div class="prod-menu-icon">♙</div><div><div class="prod-menu-name">원료투입</div><div class="prod-menu-desc">원료 LOT 투입 추적</div></div></div><div class="prod-menu-bottom"><span class="prod-menu-chip">TODAY 32 LOT</span><span class="prod-menu-arrow">›</span></div></div>
+              <div class="prod-menu-card" data-qmes-go="worklog" style="--prod-accent:#f59e0b;--prod-soft:#fff7ed"><div class="prod-menu-main"><div class="prod-menu-icon">⚙</div><div><div class="prod-menu-name">공정조건</div><div class="prod-menu-desc">유량/온도/압력 기록</div></div></div><div class="prod-menu-bottom"><span class="prod-menu-chip">ALARM 0건</span><span class="prod-menu-arrow">›</span></div></div>
+              <div class="prod-menu-card" data-qmes-go="worklog" style="--prod-accent:#2563eb;--prod-soft:#eff6ff"><div class="prod-menu-main"><div class="prod-menu-icon">⌁</div><div><div class="prod-menu-name">수율관리</div><div class="prod-menu-desc">생산수율·불량률</div></div></div><div class="prod-menu-bottom"><span class="prod-menu-chip">YIELD 98.7%</span><span class="prod-menu-arrow">›</span></div></div>
+              <div class="prod-menu-card" data-qmes-go="trace" style="--prod-accent:#06b6d4;--prod-soft:#e0f7fa"><div class="prod-menu-main"><div class="prod-menu-icon">∞</div><div><div class="prod-menu-name">LOT연계</div><div class="prod-menu-desc">IQC→PQC→OQC 연결</div></div></div><div class="prod-menu-bottom"><span class="prod-menu-chip">TRACE 100%</span><span class="prod-menu-arrow">›</span></div></div>
+            </div>
+          </div>
+          <div class="prod-section">
+            <div class="prod-section-head"><div><div class="prod-section-title">최근 작업 현황</div><div class="prod-section-sub">실시간 생산 진행률과 LOT 상태를 확인합니다.</div></div><button class="btn light sm" data-qmes-go="worklog">더보기 ›</button></div>
+            <div class="prod-table-wrap"><table class="prod-table"><thead><tr><th>작업오더</th><th>품목명</th><th>LOT No.</th><th>설비</th><th>작업자</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th><th>시작시간</th></tr></thead><tbody>
+              <tr><td>WO-2025-0519-001</td><td>EP-100A</td><td>LOT250519-001</td><td>MIX-01</td><td>김지훈</td><td>2,000</td><td>1,680</td><td><span class="prod-progress-line"><span style="width:84%"></span></span>84%</td><td><span class="prod-pill run">진행중</span></td><td>2026-05-19 08:30</td></tr>
+              <tr><td>WO-2025-0519-002</td><td>EP-200B</td><td>LOT250519-002</td><td>REA-02</td><td>박수현</td><td>1,500</td><td>1,500</td><td><span class="prod-progress-line"><span style="width:100%"></span></span>100%</td><td><span class="prod-pill done">완료</span></td><td>2026-05-19 07:15</td></tr>
+              <tr><td>WO-2025-0519-003</td><td>EP-300C</td><td>LOT250519-003</td><td>DRY-01</td><td>이정민</td><td>1,200</td><td>960</td><td><span class="prod-progress-line"><span style="width:80%"></span></span>80%</td><td><span class="prod-pill run">진행중</span></td><td>2026-05-19 09:10</td></tr>
+              <tr><td>WO-2025-0519-004</td><td>EP-100A</td><td>LOT250519-004</td><td>PKG-01</td><td>최민석</td><td>800</td><td>-</td><td><span class="prod-progress-line"><span style="width:0%"></span></span>0%</td><td><span class="prod-pill wait">대기</span></td><td>2026-05-19 13:00</td></tr>
+            </tbody></table></div>
+            <div class="prod-note">⚙ 실시간 데이터는 5분 간격으로 자동 갱신됩니다.</div>
+          </div>
+        </div>`;
+    }else{
+      sec.innerHTML=`<div class="ph"><div><div class="ph-title">${title}</div><div class="ph-sub">${sub}</div></div><div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button>${linkPage?`<button class="btn pri" data-qmes-go="${linkPage}">기존 기능 열기</button>`:''}</div></div><div class="qmes-placeholder"><div class="qmes-placeholder-title">${title}</div><div class="qmes-placeholder-sub">현재 운영 중인 데이터와 API를 변경하지 않고, 대기업 QMES 메뉴 구조로 확장한 화면입니다.</div><div class="qmes-placeholder-grid">${tiles.map(t=>`<div class="qmes-tile" data-qmes-go="${linkPage || 'dashboard'}" role="button" tabindex="0"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</div>${id==='system'?`<div class="qmes-quick-users"><b>회원등록 현황</b><div style="font-size:12px;color:#64748b;margin-top:4px">관리자 계정은 기존 회원관리 화면에서 사용자, 직책, 권한을 유지·관리합니다.</div><div class="row"><button class="qmes-link-btn" data-qmes-go="users">회원등록 현황 열기</button><button class="qmes-link-btn light" data-qmes-go="dashboard">통합 대시보드</button></div></div>`:''}</div>`;
+    }
     main.appendChild(sec);
     sec.addEventListener('click',e=>{const b=e.target.closest('[data-qmes-go]'); if(b) activate(b.dataset.qmesGo);});
   }
