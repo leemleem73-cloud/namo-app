@@ -1004,6 +1004,71 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   .sign-file-wrap,.sign-clear-btn,.sign-file-btn{display:none!important;}
 }
 
+
+/* ══════════════════════════════════
+   Enterprise NCR / CAPA Upgrade v25
+   부적합보고서 + 시정조치 보고서 전용 보강
+══════════════════════════════════ */
+.nc-ent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.nc-ent-grid.two{grid-template-columns:1fr 1fr}
+.nc-panel{border:1px solid var(--bd);border-radius:var(--r4);background:#fff;box-shadow:var(--sh1);margin-top:14px;overflow:hidden}
+.nc-panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;background:linear-gradient(180deg,#fbfdff,#f5f7fb);border-bottom:1px solid var(--bd)}
+.nc-panel-h h3{font-size:14px;font-weight:900;color:#0f172a;display:flex;gap:8px;align-items:center}
+.nc-panel-b{padding:14px 16px}
+.nc-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.nc-kpi{border:1px solid var(--bd);border-radius:var(--r3);padding:12px;background:#fff}
+.nc-kpi-l{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase}
+.nc-kpi-v{font-size:22px;font-weight:900;color:#0f172a;margin-top:3px}
+.nc-badge{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:900}
+.nc-badge.critical{background:#fee2e2;color:#991b1b}
+.nc-badge.major{background:#ffedd5;color:#9a3412}
+.nc-badge.minor{background:#e0f2fe;color:#075985}
+.nc-badge.open{background:#fee2e2;color:#b91c1c}
+.nc-badge.action{background:#dbeafe;color:#1d4ed8}
+.nc-badge.verify{background:#fef3c7;color:#92400e}
+.nc-badge.closed{background:#dcfce7;color:#166534}
+.nc-photo-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.nc-photo-input{display:none}
+.nc-photo-drop{border:1.5px dashed #bfdbfe;border-radius:var(--r3);background:#f8fbff;padding:18px;text-align:center;color:#64748b;font-size:13px;margin-bottom:12px;transition:var(--tr)}
+.nc-photo-drop.dragover{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.nc-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.nc-photo-card{border:1px solid var(--bd);border-radius:var(--r3);background:#fff;overflow:hidden;position:relative}
+.nc-photo-img{height:112px;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nc-photo-img img{width:100%;height:100%;object-fit:cover;display:block}
+.nc-photo-meta{padding:8px}
+.nc-photo-meta input,.nc-photo-meta select{width:100%;height:28px;border:1px solid var(--bd);border-radius:7px;padding:0 7px;font-size:11px;margin-top:5px}
+.nc-photo-del{position:absolute;top:6px;right:6px;border:none;background:rgba(0,0,0,.55);color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-weight:900}
+.nc-photo-mark{position:absolute;inset:18px;border:3px solid #ef4444;border-radius:50%;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.02)}
+.nc-stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--bd);border-radius:var(--r4);overflow:hidden;background:#fff;margin-bottom:14px}
+.nc-step{padding:13px 14px;display:flex;align-items:center;gap:10px;border-right:1px solid var(--bd);background:#fff}
+.nc-step:last-child{border-right:none}
+.nc-step-no{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e5e7eb;color:#475569;font-weight:900}
+.nc-step.active .nc-step-no{background:#2563eb;color:#fff}
+.nc-step.done .nc-step-no{background:#16a34a;color:#fff}
+.nc-step-t{font-weight:900;color:#0f172a;font-size:13px}
+.nc-step-s{font-size:11px;color:var(--t3)}
+.nc-tabbar{display:flex;gap:4px;border-bottom:1px solid var(--bd);padding:0 14px;background:#fff}
+.nc-tab{height:42px;border:none;background:transparent;padding:0 13px;font-weight:800;color:#64748b;cursor:pointer;border-bottom:3px solid transparent}
+.nc-tab.active{color:#1d4ed8;border-bottom-color:#2563eb}
+.nc-why-table{width:100%;border-collapse:collapse}
+.nc-why-table th,.nc-why-table td{border:1px solid var(--bd);padding:8px;font-size:12px}
+.nc-why-table th{background:var(--s2);color:var(--t3)}
+.nc-why-table input{width:100%;height:30px;border:1px solid var(--bd);border-radius:6px;padding:0 8px}
+.nc-fishbone{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.nc-fishbone .field textarea{min-height:54px}
+.nc-capa-table{width:100%;border-collapse:collapse}
+.nc-capa-table th,.nc-capa-table td{border-bottom:1px solid var(--bd);padding:8px;font-size:12px}
+.nc-capa-table th{background:var(--s2);color:var(--t3);font-weight:900}
+.nc-capa-table input,.nc-capa-table select{height:30px;border:1px solid var(--bd);border-radius:7px;padding:0 8px;width:100%;font-size:12px}
+.nc-progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+.nc-progress span{display:block;height:100%;background:#2563eb;border-radius:99px}
+.capa-page-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.capa-page-grid.three{grid-template-columns:1fr 1fr 1fr}
+.capa-link{color:#1d4ed8;font-weight:900;text-decoration:none}
+@media(max-width:1200px){.nc-ent-grid,.nc-kpis,.capa-page-grid.three{grid-template-columns:repeat(2,1fr)}.capa-page-grid{grid-template-columns:1fr}.nc-stepper{grid-template-columns:1fr 1fr}.nc-fishbone{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.nc-ent-grid,.nc-ent-grid.two,.nc-kpis,.nc-stepper,.nc-fishbone{grid-template-columns:1fr}.nc-step{border-right:none;border-bottom:1px solid var(--bd)}}
+@media print{.nc-photo-toolbar,.nc-photo-del,.nc-photo-drop,.nc-tabbar,.ph-actions{display:none!important}.nc-panel{break-inside:avoid;page-break-inside:avoid}}
+
 </style>
 </head>
 <body>
@@ -4305,6 +4370,462 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function init(){ setToday(); readConfig(); bindMsaEvents(); if($m('msaMatrix') || $m('msaDataMatrix') || $m('msaInputMatrix')) blankData(); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+/* ══════════════════════════════════
+   Enterprise NCR / CAPA Upgrade v25
+   부적합보고서 + 시정조치 보고서 전용 보강
+══════════════════════════════════ */
+(function(){
+  const EXT_KEY = 'namo_qms_nc_enterprise_ext_v25';
+  const $id = id => document.getElementById(id);
+  const esc2 = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+  const today2 = () => (typeof todayKST === 'function' ? todayKST() : new Date().toISOString().slice(0,10));
+  let ncPhotos = [];
+  let ncCapaRows = [];
+
+  function loadExt(){
+    try{return JSON.parse(localStorage.getItem(EXT_KEY)||'{}')||{};}catch(e){return{};}
+  }
+  function saveExtMap(m){localStorage.setItem(EXT_KEY, JSON.stringify(m||{}));}
+  function ncKeyFromForm(){
+    const id = $id('ncEditId')?.value || '';
+    const no = $id('ncNo')?.value || '';
+    return String(id || no || 'draft');
+  }
+  function ncKeyFromRecord(r){return String(r?.id || r?.ncNo || 'draft');}
+  function getExt(key){return loadExt()[String(key||'draft')] || {};}
+  function setExt(key, data){
+    const m=loadExt();
+    m[String(key||'draft')] = {...(m[String(key||'draft')]||{}), ...(data||{})};
+    saveExtMap(m);
+  }
+  function severityBadge(v){
+    const s = v || 'Major';
+    const cls = s==='Critical'?'critical':s==='Minor'?'minor':'major';
+    return `<span class="nc-badge ${cls}">${esc2(s)}</span>`;
+  }
+  function capaStatusBadge(v){
+    const s = v || 'OPEN';
+    const cls = s==='CLOSED'?'closed':s==='VERIFY'?'verify':s==='ACTION'?'action':'open';
+    const ko = s==='CLOSED'?'종결':s==='VERIFY'?'검증':s==='ACTION'?'조치중':'미결';
+    return `<span class="nc-badge ${cls}">${ko}</span>`;
+  }
+
+  function addCapaNav(){
+    const old = document.querySelector('.nav-item[data-page="capa"]');
+    if(old) return;
+    const ncNav = document.querySelector('.nav-item[data-page="nonconform"]');
+    if(!ncNav) return;
+    const btn = document.createElement('button');
+    btn.className='nav-item';
+    btn.dataset.page='capa';
+    btn.innerHTML='<span class="nav-icon"></span><span>시정/예방조치 (CAPA)</span>';
+    ncNav.insertAdjacentElement('afterend', btn);
+    btn.addEventListener('click',()=>showEnterprisePage('capa'));
+  }
+  function showEnterprisePage(pg){
+    document.querySelectorAll('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`.nav-item[data-page="${pg}"]`)?.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const page = $id(`page-${pg}`);
+    if(page) page.classList.add('active');
+    if(pg==='capa') renderCapaPage();
+  }
+
+  function addCapaPage(){
+    if($id('page-capa')) return;
+    const main = document.querySelector('main.content');
+    if(!main) return;
+    main.insertAdjacentHTML('beforeend', `
+      <section class="page" id="page-capa">
+        <div class="ph">
+          <div>
+            <div class="ph-bc"><span>품질관리</span><span class="sep">›</span><span>CAPA</span></div>
+            <div class="ph-title">시정조치 보고서 (CAPA)</div>
+            <div class="ph-sub">부적합 보고서와 연계하여 시정/예방조치, 효과검증, 종결까지 추적합니다.</div>
+          </div>
+          <div class="ph-actions">
+            <button class="btn light" type="button" id="capaReload">새로고침</button>
+            <button class="btn pri" type="button" id="capaPrint">PDF 출력</button>
+          </div>
+        </div>
+        <div id="capaRoot"></div>
+      </section>
+    `);
+    $id('capaReload')?.addEventListener('click', renderCapaPage);
+    $id('capaPrint')?.addEventListener('click',()=>{ if(typeof printEl==='function') printEl($id('page-capa')); else window.print(); });
+  }
+
+  function enhanceNcForm(){
+    const ncSection = $id('page-nonconform');
+    if(!ncSection || ncSection.dataset.enterpriseNcr==='1') return;
+    ncSection.dataset.enterpriseNcr='1';
+
+    const formGrid = ncSection.querySelector('#ncFormPrintTarget .fg4');
+    if(formGrid && !$id('ncSeverity')){
+      formGrid.insertAdjacentHTML('beforeend', `
+        <div class="field"><label>심각도</label><select id="ncSeverity"><option>Critical</option><option selected>Major</option><option>Minor</option></select></div>
+        <div class="field"><label>우선순위</label><select id="ncPriority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+        <div class="field"><label>불량 분류</label><select id="ncDefectCategory"><option>외관</option><option>치수</option><option>중량</option><option>혼입/오염</option><option>포장</option><option>라벨</option><option>성능</option><option>문서</option><option>공정이탈</option><option>고객클레임</option></select></div>
+        <div class="field"><label>발견자</label><input id="ncDetectedBy" placeholder="로그인 사용자 또는 발견자"></div>
+      `);
+    }
+
+    const signBlock = $id('signGrid_nc')?.closest('.sp');
+    if(signBlock && !$id('ncPhotoPanel')){
+      signBlock.insertAdjacentHTML('beforebegin', `
+        <div class="nc-panel" id="ncPhotoPanel">
+          <div class="nc-panel-h">
+            <h3>📷 부적합 사진 / 증거자료</h3>
+            <div class="nc-photo-toolbar">
+              <button class="btn light sm" type="button" id="ncPhotoBtn">사진 추가</button>
+              <button class="btn light sm" type="button" id="ncPhotoClear">전체 삭제</button>
+              <input class="nc-photo-input" type="file" id="ncPhotoInput" accept="image/*" multiple>
+            </div>
+          </div>
+          <div class="nc-panel-b">
+            <div class="nc-photo-drop" id="ncPhotoDrop">사진을 드래그하거나 [사진 추가]를 누르세요. 불량 위치는 빨간 원으로 표시됩니다.</div>
+            <div class="nc-photo-grid" id="ncPhotoGrid"></div>
+          </div>
+        </div>
+
+        <div class="nc-panel" id="ncAnalysisPanel">
+          <div class="nc-panel-h"><h3>🔎 원인 분석 / 영향 범위</h3><span class="tag">5Why · Fishbone · LOT Impact</span></div>
+          <div class="nc-panel-b">
+            <div class="nc-ent-grid two">
+              <div>
+                <h3 style="font-size:13px;margin-bottom:8px;">5Why 분석</h3>
+                <table class="nc-why-table">
+                  <thead><tr><th style="width:70px;">단계</th><th>질문</th><th>원인</th></tr></thead>
+                  <tbody>
+                    ${[1,2,3,4,5].map(i=>`<tr><td>Why ${i}</td><td><input id="ncWhyQ${i}" placeholder="왜 발생했는가?"></td><td><input id="ncWhyA${i}" placeholder="원인 입력"></td></tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <h3 style="font-size:13px;margin-bottom:8px;">영향 범위 분석</h3>
+                <div class="fg3" style="grid-template-columns:1fr 1fr;">
+                  <div class="field"><label>영향 LOT</label><input id="ncImpactLot" placeholder="영향 LOT 범위"></div>
+                  <div class="field"><label>영향 수량</label><input id="ncImpactQty" placeholder="0"></div>
+                  <div class="field"><label>출하 영향</label><input id="ncShipmentImpact" placeholder="예: 출하 보류"></div>
+                  <div class="field"><label>고객 영향</label><input id="ncCustomerImpact" placeholder="예: 고객 통보 없음"></div>
+                  <div class="field cfall"><label>공정 영향</label><textarea id="ncProcessImpact" placeholder="영향 공정 및 리스크를 입력하세요."></textarea></div>
+                </div>
+              </div>
+            </div>
+            <div class="nc-panel" style="margin-top:14px;">
+              <div class="nc-panel-h"><h3>🐟 Fishbone 6M 분석</h3></div>
+              <div class="nc-panel-b">
+                <div class="nc-fishbone">
+                  ${['Man','Machine','Material','Method','Measurement','Environment'].map(k=>`<div class="field"><label>${k}</label><textarea id="ncFish${k}" placeholder="${k} 관련 원인"></textarea></div>`).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nc-panel" id="ncCapaPanel">
+          <div class="nc-panel-h">
+            <h3>🛠 시정/예방조치 (CAPA)</h3>
+            <button class="btn light sm" type="button" id="ncAddCapa">+ 조치 항목 추가</button>
+          </div>
+          <div class="nc-panel-b">
+            <div class="field cfall"><label>임시조치 / 격리조치</label><textarea id="ncContainment" placeholder="출하보류, 격리, 재검사 등 즉시 조치"></textarea></div>
+            <div class="tw mt12"><table class="nc-capa-table"><thead><tr><th style="width:70px;">구분</th><th>조치 내용</th><th>책임자</th><th>예정일</th><th>완료일</th><th>상태</th><th style="width:50px;">삭제</th></tr></thead><tbody id="ncCapaRows"></tbody></table></div>
+            <div class="field cfall mt12"><label>재발 방지 대책</label><textarea id="ncPreventiveAction" placeholder="표준 개정, 교육, 설비 개선, 검사 강화 등"></textarea></div>
+          </div>
+        </div>
+      `);
+    }
+
+    bindEnterpriseNcEvents();
+    renderNcPhotos();
+    renderNcCapaRows();
+  }
+
+  function bindEnterpriseNcEvents(){
+    if(document.body.dataset.enterpriseNcrBound==='1') return;
+    document.body.dataset.enterpriseNcrBound='1';
+
+    document.addEventListener('click', e=>{
+      if(e.target.closest('#ncPhotoBtn')){$id('ncPhotoInput')?.click();return;}
+      if(e.target.closest('#ncPhotoClear')){if(confirm('첨부 사진을 모두 삭제할까요?')){ncPhotos=[];renderNcPhotos();}return;}
+      const delPhoto = e.target.closest('[data-nc-photo-del]');
+      if(delPhoto){ncPhotos.splice(Number(delPhoto.dataset.ncPhotoDel),1);renderNcPhotos();return;}
+      const addCapa = e.target.closest('#ncAddCapa');
+      if(addCapa){ncCapaRows.push({type:'시정조치',action:'',owner:'',planDate:'',doneDate:'',status:'대기'});renderNcCapaRows();return;}
+      const delCapa = e.target.closest('[data-nc-capa-del]');
+      if(delCapa){ncCapaRows.splice(Number(delCapa.dataset.ncCapaDel),1);renderNcCapaRows();return;}
+      const openCapa = e.target.closest('[data-action="openCapa"]');
+      if(openCapa){openCapaFromNc(openCapa.dataset.id);return;}
+    });
+
+    document.addEventListener('change', e=>{
+      if(e.target && e.target.id==='ncPhotoInput') handleNcFiles(e.target.files);
+      const photoSel = e.target.closest('[data-nc-photo-type]');
+      if(photoSel){const i=Number(photoSel.dataset.ncPhotoType);if(ncPhotos[i])ncPhotos[i].type=photoSel.value;return;}
+      const capaSel = e.target.closest('[data-nc-capa-key]');
+      if(capaSel){updateCapaCell(capaSel);return;}
+    });
+    document.addEventListener('input', e=>{
+      const cap = e.target.closest('[data-nc-photo-comment]');
+      if(cap){const i=Number(cap.dataset.ncPhotoComment);if(ncPhotos[i])ncPhotos[i].comment=cap.value;return;}
+      const cell = e.target.closest('[data-nc-capa-key]');
+      if(cell){updateCapaCell(cell);return;}
+    });
+
+    const drop = $id('ncPhotoDrop');
+    if(drop && !drop.dataset.bound){
+      drop.dataset.bound='1';
+      ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.add('dragover');}));
+      ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.remove('dragover');}));
+      drop.addEventListener('drop', e=>handleNcFiles(e.dataTransfer.files));
+    }
+  }
+
+  function handleNcFiles(files){
+    Array.from(files||[]).forEach(file=>{
+      if(!file.type || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        ncPhotos.push({
+          id:'IMG-'+String(Date.now()).slice(-6),
+          type:'불량',
+          name:file.name,
+          src:ev.target.result,
+          uploadedAt:new Date().toLocaleString('ko-KR'),
+          comment:file.name.replace(/\.[^.]+$/,'')
+        });
+        renderNcPhotos();
+      };
+      reader.readAsDataURL(file);
+    });
+    const inp=$id('ncPhotoInput'); if(inp) inp.value='';
+  }
+
+  function renderNcPhotos(){
+    const grid=$id('ncPhotoGrid');
+    if(!grid) return;
+    if(!ncPhotos.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--t3);padding:18px;">첨부된 부적합 사진이 없습니다.</div>';return;}
+    grid.innerHTML=ncPhotos.map((p,i)=>`
+      <div class="nc-photo-card">
+        <button class="nc-photo-del" type="button" data-nc-photo-del="${i}">×</button>
+        <div class="nc-photo-img"><img src="${esc2(p.src)}" alt="${esc2(p.name||'사진')}"><span class="nc-photo-mark"></span></div>
+        <div class="nc-photo-meta">
+          <select data-nc-photo-type="${i}">
+            ${['불량','원인','조치전','조치후','LOT','포장','공정'].map(x=>`<option ${p.type===x?'selected':''}>${x}</option>`).join('')}
+          </select>
+          <input data-nc-photo-comment="${i}" value="${esc2(p.comment||'')}" placeholder="사진 설명">
+        </div>
+      </div>`).join('');
+  }
+
+  function renderNcCapaRows(){
+    const tb=$id('ncCapaRows');
+    if(!tb) return;
+    if(!ncCapaRows.length){
+      ncCapaRows=[
+        {type:'시정조치',action:'',owner:'',planDate:'',doneDate:'',status:'대기'},
+        {type:'예방조치',action:'',owner:'',planDate:'',doneDate:'',status:'대기'}
+      ];
+    }
+    tb.innerHTML=ncCapaRows.map((r,i)=>`
+      <tr>
+        <td><select data-nc-capa-key="type" data-nc-capa-idx="${i}"><option ${r.type==='시정조치'?'selected':''}>시정조치</option><option ${r.type==='예방조치'?'selected':''}>예방조치</option><option ${r.type==='검증'?'selected':''}>검증</option></select></td>
+        <td><input data-nc-capa-key="action" data-nc-capa-idx="${i}" value="${esc2(r.action||'')}" placeholder="조치 내용"></td>
+        <td><input data-nc-capa-key="owner" data-nc-capa-idx="${i}" value="${esc2(r.owner||'')}" placeholder="책임자"></td>
+        <td><input type="date" data-nc-capa-key="planDate" data-nc-capa-idx="${i}" value="${esc2(r.planDate||'')}"></td>
+        <td><input type="date" data-nc-capa-key="doneDate" data-nc-capa-idx="${i}" value="${esc2(r.doneDate||'')}"></td>
+        <td><select data-nc-capa-key="status" data-nc-capa-idx="${i}"><option ${r.status==='대기'?'selected':''}>대기</option><option ${r.status==='진행중'?'selected':''}>진행중</option><option ${r.status==='완료'?'selected':''}>완료</option></select></td>
+        <td><button class="sb del" type="button" data-nc-capa-del="${i}">삭제</button></td>
+      </tr>`).join('');
+  }
+  function updateCapaCell(el){
+    const i=Number(el.dataset.ncCapaIdx), k=el.dataset.ncCapaKey;
+    if(!ncCapaRows[i]) return;
+    ncCapaRows[i][k]=el.value;
+  }
+
+  function collectNcExt(){
+    const ids = ['ncSeverity','ncPriority','ncDefectCategory','ncDetectedBy','ncContainment','ncPreventiveAction','ncImpactLot','ncImpactQty','ncShipmentImpact','ncCustomerImpact','ncProcessImpact'];
+    const data={};
+    ids.forEach(id=>data[id.replace(/^nc/,'').replace(/^./,c=>c.toLowerCase())]=$id(id)?.value||'');
+    data.why = [1,2,3,4,5].map(i=>({q:$id('ncWhyQ'+i)?.value||'', a:$id('ncWhyA'+i)?.value||''}));
+    data.fishbone = {};
+    ['Man','Machine','Material','Method','Measurement','Environment'].forEach(k=>data.fishbone[k]=$id('ncFish'+k)?.value||'');
+    data.photos = ncPhotos;
+    data.capaRows = ncCapaRows;
+    return data;
+  }
+
+  function applyNcExtToForm(ext){
+    ext = ext || {};
+    const map = {
+      ncSeverity: ext.severity || 'Major',
+      ncPriority: ext.priority || 'Medium',
+      ncDefectCategory: ext.defectCategory || '외관',
+      ncDetectedBy: ext.detectedBy || '',
+      ncContainment: ext.containment || '',
+      ncPreventiveAction: ext.preventiveAction || '',
+      ncImpactLot: ext.impactLot || '',
+      ncImpactQty: ext.impactQty || '',
+      ncShipmentImpact: ext.shipmentImpact || '',
+      ncCustomerImpact: ext.customerImpact || '',
+      ncProcessImpact: ext.processImpact || ''
+    };
+    Object.entries(map).forEach(([id,val])=>{if($id(id))$id(id).value=val;});
+    (ext.why||[]).forEach((w,i)=>{if($id('ncWhyQ'+(i+1)))$id('ncWhyQ'+(i+1)).value=w.q||'';if($id('ncWhyA'+(i+1)))$id('ncWhyA'+(i+1)).value=w.a||'';});
+    ['Man','Machine','Material','Method','Measurement','Environment'].forEach(k=>{if($id('ncFish'+k))$id('ncFish'+k).value=ext.fishbone?.[k]||'';});
+    ncPhotos = Array.isArray(ext.photos) ? JSON.parse(JSON.stringify(ext.photos)) : [];
+    ncCapaRows = Array.isArray(ext.capaRows) ? JSON.parse(JSON.stringify(ext.capaRows)) : [];
+    renderNcPhotos(); renderNcCapaRows();
+  }
+
+  const oldSaveNc = (typeof saveNc === 'function') ? saveNc : null;
+  if(oldSaveNc){
+    saveNc = async function(){
+      const keyBefore = ncKeyFromForm();
+      setExt(keyBefore, collectNcExt());
+      // 서버가 확장 필드를 허용하면 같이 전달되도록 기존 payload 생성 함수도 보강하지 않고, 로컬 확장 저장을 기본으로 사용
+      const result = await oldSaveNc.apply(this, arguments);
+      const no = $id('ncNo')?.value || keyBefore;
+      if(no && no !== keyBefore) setExt(no, getExt(keyBefore));
+      return result;
+    };
+  }
+
+  const oldClearNc = (typeof clearNc === 'function') ? clearNc : null;
+  if(oldClearNc){
+    clearNc = function(){
+      oldClearNc.apply(this, arguments);
+      ncPhotos=[]; ncCapaRows=[];
+      applyNcExtToForm({});
+      if($id('ncSeverity')) $id('ncSeverity').value='Major';
+      if($id('ncPriority')) $id('ncPriority').value='Medium';
+      if($id('ncDefectCategory')) $id('ncDefectCategory').value='외관';
+    };
+  }
+
+  const oldEditNc = (typeof editNc === 'function') ? editNc : null;
+  if(oldEditNc){
+    editNc = function(id){
+      oldEditNc.apply(this, arguments);
+      enhanceNcForm();
+      const r = state.nonconform.find(x=>String(x.id)===String(id));
+      applyNcExtToForm(getExt(ncKeyFromRecord(r)));
+    };
+  }
+
+  const oldRenderNcTable = (typeof renderNcTable === 'function') ? renderNcTable : null;
+  if(oldRenderNcTable){
+    renderNcTable = function(){
+      const tb=$id('nonconformTable');
+      if(!tb){oldRenderNcTable.apply(this, arguments);return;}
+      const rows=state.nonconform||[];
+      if(!rows.length){tb.innerHTML=typeof eRow==='function'?eRow(15):'<tr><td colspan="15">데이터가 없습니다.</td></tr>';return;}
+      tb.innerHTML=rows.map(r=>{
+        const ext=getExt(ncKeyFromRecord(r));
+        const capaRows=ext.capaRows||[];
+        const done=capaRows.filter(x=>x.status==='완료').length;
+        const total=capaRows.length||0;
+        const pct=total?Math.round(done/total*100):0;
+        const capaStatus = (r.status==='완결'||pct===100)?'CLOSED':pct>0?'ACTION':'OPEN';
+        return `<tr>
+          <td>${esc2(r.ncDate||'')}</td>
+          <td><strong>${esc2(r.ncNo||'-')}</strong></td>
+          <td>${esc2(r.ncType||'-')}</td>
+          <td>${esc2(r.dept||'-')}</td>
+          <td>${esc2(r.lot||'-')}</td>
+          <td>${esc2(r.item||'-')}</td>
+          <td>${r.qty??0}</td>
+          <td>${severityBadge(ext.severity)}</td>
+          <td>${capaStatusBadge(capaStatus)}</td>
+          <td><div class="nc-progress" title="${pct}%"><span style="width:${pct}%"></span></div></td>
+          <td>${esc2(r.owner||'-')}</td>
+          <td>${esc2(r.signWriter?.name||'-')}</td>
+          <td>${esc2(r.signReviewer?.name||'-')}</td>
+          <td>${esc2(r.signApprover?.name||'-')}</td>
+          <td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${esc2(r.id)}">수정</button><button class="sb lbl" data-action="openCapa" data-id="${esc2(r.id)}">CAPA</button><button class="sb del" data-action="deleteNc" data-id="${esc2(r.id)}">삭제</button></div></td>
+        </tr>`;
+      }).join('');
+      const th = tb.closest('table')?.querySelector('thead tr');
+      if(th && !th.dataset.enterpriseNcr){
+        th.dataset.enterpriseNcr='1';
+        th.innerHTML='<th>발생일자</th><th>보고서번호</th><th>유형</th><th>부서</th><th>LOT</th><th>품목</th><th>수량</th><th>심각도</th><th>CAPA</th><th>진행률</th><th>담당자</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th>';
+      }
+    };
+  }
+
+  function openCapaFromNc(id){
+    showEnterprisePage('capa');
+    renderCapaPage(id);
+  }
+
+  function renderCapaPage(focusId){
+    const root=$id('capaRoot');
+    if(!root) return;
+    const rows = state.nonconform || [];
+    const open = rows.filter(r=>(r.status||'미결')!=='완결').length;
+    const closed = rows.filter(r=>(r.status||'')==='완결').length;
+    const critical = rows.filter(r=>(getExt(ncKeyFromRecord(r)).severity||'Major')==='Critical').length;
+    const totalCapa = rows.reduce((n,r)=>n+((getExt(ncKeyFromRecord(r)).capaRows||[]).length),0);
+    const cards = `
+      <div class="nc-kpis">
+        <div class="nc-kpi"><div class="nc-kpi-l">전체 NCR</div><div class="nc-kpi-v">${rows.length}</div></div>
+        <div class="nc-kpi"><div class="nc-kpi-l">진행중</div><div class="nc-kpi-v">${open}</div></div>
+        <div class="nc-kpi"><div class="nc-kpi-l">종결</div><div class="nc-kpi-v">${closed}</div></div>
+        <div class="nc-kpi"><div class="nc-kpi-l">Critical</div><div class="nc-kpi-v">${critical}</div></div>
+        <div class="nc-kpi"><div class="nc-kpi-l">CAPA 항목</div><div class="nc-kpi-v">${totalCapa}</div></div>
+      </div>`;
+    const list = rows.map(r=>{
+      const ext=getExt(ncKeyFromRecord(r));
+      const capa=ext.capaRows||[];
+      const done=capa.filter(x=>x.status==='완료').length;
+      const pct=capa.length?Math.round(done/capa.length*100):0;
+      const selected = String(r.id)===String(focusId);
+      return `<tr ${selected?'style="outline:2px solid var(--pri);outline-offset:-2px;background:#eff6ff;"':''}>
+        <td><a href="#" class="capa-link" data-action="editNc" data-id="${esc2(r.id)}">${esc2(r.ncNo||'-')}</a></td>
+        <td>${esc2(r.ncDate||'')}</td><td>${esc2(r.item||'-')}</td><td>${esc2(r.lot||'-')}</td>
+        <td>${severityBadge(ext.severity)}</td><td>${capaStatusBadge((r.status==='완결'||pct===100)?'CLOSED':pct>0?'ACTION':'OPEN')}</td>
+        <td><div class="nc-progress"><span style="width:${pct}%"></span></div></td>
+        <td>${esc2(r.owner||'-')}</td>
+      </tr>`;
+    }).join('');
+    const focus = rows.find(r=>String(r.id)===String(focusId)) || rows[0];
+    const ext = focus ? getExt(ncKeyFromRecord(focus)) : {};
+    root.innerHTML = `
+      ${cards}
+      <div class="nc-stepper">
+        <div class="nc-step done"><div class="nc-step-no">1</div><div><div class="nc-step-t">계획 Plan</div><div class="nc-step-s">원인분석 / 조치계획</div></div></div>
+        <div class="nc-step active"><div class="nc-step-no">2</div><div><div class="nc-step-t">실행 Do</div><div class="nc-step-s">시정조치 진행</div></div></div>
+        <div class="nc-step"><div class="nc-step-no">3</div><div><div class="nc-step-t">검증 Check</div><div class="nc-step-s">효과 검증</div></div></div>
+        <div class="nc-step"><div class="nc-step-no">4</div><div><div class="nc-step-t">종결 Act</div><div class="nc-step-s">표준화 / 재발방지</div></div></div>
+      </div>
+      <div class="card"><div class="ch"><h2>CAPA 대상 NCR 목록</h2><span class="tag">NCR LINK</span></div><div class="tw" style="border:none;border-radius:0"><table><thead><tr><th>NCR번호</th><th>발생일</th><th>품목</th><th>LOT</th><th>심각도</th><th>상태</th><th>진행률</th><th>담당자</th></tr></thead><tbody>${list||'<tr><td colspan="8" style="text-align:center;padding:22px;color:var(--t3)">등록된 NCR이 없습니다.</td></tr>'}</tbody></table></div></div>
+      ${focus?`
+      <div class="capa-page-grid mt14">
+        <div class="nc-panel" style="margin-top:0"><div class="nc-panel-h"><h3>📷 이미지 / 증거자료</h3></div><div class="nc-panel-b"><div class="nc-photo-grid">${(ext.photos||[]).slice(0,6).map(p=>`<div class="nc-photo-card"><div class="nc-photo-img"><img src="${esc2(p.src)}"><span class="nc-photo-mark"></span></div><div class="nc-photo-meta"><strong>${esc2(p.type||'사진')}</strong><br><small>${esc2(p.comment||'')}</small></div></div>`).join('')||'<div style="color:var(--t3);padding:16px;">첨부 사진 없음</div>'}</div></div></div>
+        <div class="nc-panel" style="margin-top:0"><div class="nc-panel-h"><h3>🛠 시정조치 항목</h3></div><div class="nc-panel-b"><table class="nc-capa-table"><thead><tr><th>구분</th><th>내용</th><th>책임자</th><th>예정일</th><th>상태</th></tr></thead><tbody>${(ext.capaRows||[]).map(x=>`<tr><td>${esc2(x.type)}</td><td>${esc2(x.action)}</td><td>${esc2(x.owner)}</td><td>${esc2(x.planDate)}</td><td>${esc2(x.status)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--t3)">CAPA 항목 없음</td></tr>'}</tbody></table></div></div>
+      </div>
+      <div class="capa-page-grid three mt14">
+        <div class="nc-panel" style="margin-top:0"><div class="nc-panel-h"><h3>재발 방지 대책</h3></div><div class="nc-panel-b">${esc2(ext.preventiveAction||'입력된 재발 방지 대책이 없습니다.')}</div></div>
+        <div class="nc-panel" style="margin-top:0"><div class="nc-panel-h"><h3>효과 검증 계획</h3></div><div class="nc-panel-b">${esc2(focus.verify||'검증 내용 미입력')}</div></div>
+        <div class="nc-panel" style="margin-top:0"><div class="nc-panel-h"><h3>진행 이력</h3></div><div class="nc-panel-b">NCR 등록: ${esc2(focus.ncDate||'-')}<br>담당자: ${esc2(focus.owner||'-')}<br>처리상태: ${esc2(focus.status||'-')}</div></div>
+      </div>`:''}
+    `;
+  }
+
+  function initEnterpriseNcr(){
+    addCapaNav();
+    addCapaPage();
+    enhanceNcForm();
+    if(typeof renderNcTable==='function') renderNcTable();
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(initEnterpriseNcr,150));
+  else setTimeout(initEnterpriseNcr,150);
+})();
+
 </script>
 </body>
 </html>
