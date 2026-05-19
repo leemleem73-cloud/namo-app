@@ -2215,9 +2215,7 @@ function buildSignGrid(type){
     const sel=document.getElementById(`sg_${type}_${role}`);
     if(sel){
       sel.addEventListener('change',()=>onSignChange(type,role));
-      if(sel.options.length===2 && !sel.value){
-        sel.selectedIndex=1;
-      }
+      /* 자동 첫 번째 사용자 선택 금지: 신규 작성자는 로그인 본인만 v20에서 지정 */
     }
     initSignaturePad(type,role);
     onSignChange(type,role);
@@ -3690,7 +3688,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ok=await checkLogin();if(ok)await loadAll데이터();
 });
 
-/* 서명 이미지 첨부 / 결재자 보존 통합 v19 - v16/v17/v18 충돌 제거 */
+/* 서명 이미지 첨부 / 결재자 보존 통합 v20 - 본인 외 자동 선택 금지 */
 (function(){
   const ROLES = ['writer','reviewer','approver'];
   const TYPES = ['iqc','pqc','oqc','nc','training'];
@@ -3736,8 +3734,31 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function selectedUser(type, role){
     const sel = qs(`sg_${type}_${role}`);
     if(!sel || !sel.value) return null;
+
+    const me = current();
+    const isNew = isNewRecord(type);
+
+    /*
+      v20 핵심:
+      - 신규 작성(writer)은 로그인 본인만 저장 허용
+      - 신규 검토/승인은 자동 선택하지 않음. 사용자가 직접 선택한 값만 저장
+      - 수정(edit)은 기존 저장값 복원 허용
+    */
+    if(isNew && role === 'writer'){
+      if(!me || !me.id || String(sel.value) !== String(me.id)) return null;
+      return {
+        id: me.id || '',
+        name: me.name || '',
+        title: me.title || '',
+        department: me.department || ''
+      };
+    }
+
     const u = users().find(x => String(x.id) === String(sel.value));
     if(u) return {id:u.id || '', name:u.name || '', title:u.title || '', department:u.department || ''};
+
+    if(isNew) return null;
+
     const opt = sel.options[sel.selectedIndex];
     return {
       id: sel.value,
@@ -3767,11 +3788,33 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function chooseCurrentWriterOnlyForNew(type){
     if(!isNewRecord(type)) return;
     const me = current();
+
+    // 신규 문서는 검토자/승인자 자동 선택을 항상 제거
+    ['reviewer','approver'].forEach(role => {
+      const s = qs(`sg_${type}_${role}`);
+      if(s && s.dataset.userPicked !== '1' && s.value){
+        s.value = '';
+        s.dispatchEvent(new Event('change', {bubbles:true}));
+      }
+    });
+
     const sel = qs(`sg_${type}_writer`);
-    if(!me || !me.id || !sel || sel.value) return;
+    if(!sel) return;
+
+    if(!me || !me.id){
+      if(sel.value){
+        sel.value = '';
+        sel.dispatchEvent(new Event('change', {bubbles:true}));
+      }
+      return;
+    }
+
     const exists = Array.from(sel.options || []).some(o => String(o.value) === String(me.id));
-    if(exists){
+    if(exists && String(sel.value) !== String(me.id)){
       sel.value = me.id;
+      sel.dispatchEvent(new Event('change', {bubbles:true}));
+    }else if(!exists && sel.value){
+      sel.value = '';
       sel.dispatchEvent(new Event('change', {bubbles:true}));
     }
   }
@@ -3873,6 +3916,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     const sel = e.target.closest && e.target.closest('.sign-sel');
     if(sel){
+      sel.dataset.userPicked = '1';
       const m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id || '');
       if(m) notify(m[1], m[2]);
     }
