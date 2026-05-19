@@ -1120,6 +1120,54 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:1500px){.mes-prod-kpi-grid{grid-template-columns:repeat(3,1fr)}.mes-menu-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.mes-prod-kpi-grid,.mes-menu-grid{grid-template-columns:1fr}.mes-prod-card,.mes-recent-card{padding:16px}.mes-prod-kpi-value{font-size:28px}}
 
+
+
+/* ══════════════════════════════════
+   SRM Enterprise Supplier Evaluation v31
+   협력업체 평가: 등급/KPI/개선요청/평가이력
+══════════════════════════════════ */
+.srm-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px}
+.srm-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:18px 20px;box-shadow:0 8px 22px rgba(15,23,42,.055);position:relative;overflow:hidden}
+.srm-kpi:before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--srm-color,#2563eb),#06b6d4)}
+.srm-kpi-label{font-size:12px;font-weight:900;color:#64748b;letter-spacing:-.2px}
+.srm-kpi-value{font-size:32px;font-weight:900;color:#0f172a;line-height:1;margin-top:8px;letter-spacing:-1px}
+.srm-kpi-sub{font-size:11px;color:#64748b;margin-top:10px}
+.srm-section{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);padding:18px;margin-bottom:16px}
+.srm-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.srm-title{font-size:20px;font-weight:900;color:#0f172a;letter-spacing:-.5px}
+.srm-sub{font-size:12px;color:#64748b;margin-top:3px}
+.srm-tag{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:900}
+.srm-menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.srm-menu-tile{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:.2s ease}
+.srm-menu-tile:hover{transform:translateY(-3px);box-shadow:0 16px 30px rgba(15,23,42,.10);border-color:#bfdbfe}
+.srm-menu-tile:before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--srm-color,#2563eb)}
+.srm-menu-main{display:flex;gap:14px;align-items:flex-start}
+.srm-menu-icon{width:48px;height:48px;border-radius:15px;background:var(--srm-soft,#eff6ff);color:var(--srm-color,#2563eb);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex-shrink:0}
+.srm-menu-name{font-size:18px;font-weight:900;color:#0f172a}
+.srm-menu-desc{font-size:13px;color:#64748b;line-height:1.5;margin-top:4px}
+.srm-menu-bottom{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #edf2f7;margin-top:16px;padding-top:12px}
+.srm-menu-status{font-size:12px;font-weight:900;color:var(--srm-color,#2563eb)}
+.srm-grade-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.srm-grade-card{border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;padding:14px;position:relative;overflow:hidden}
+.srm-grade-card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--grade-color,#2563eb)}
+.srm-grade-label{font-size:13px;font-weight:900;color:#64748b;padding-left:4px}
+.srm-grade-value{font-size:28px;font-weight:900;color:#0f172a;margin-top:5px;padding-left:4px}
+.srm-grade-bar{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px}
+.srm-grade-bar span{display:block;height:100%;background:var(--grade-color,#2563eb);border-radius:999px}
+.srm-table-wrap{border:1px solid #dbe3ee;border-radius:16px;overflow:auto;background:#fff}
+.srm-table{width:100%;border-collapse:collapse;font-size:13px}
+.srm-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid #e2e8f0;white-space:nowrap;text-align:left}
+.srm-table td{padding:12px 14px;border-bottom:1px solid #edf2f7;color:#334155;vertical-align:middle}
+.srm-table tr:last-child td{border-bottom:none}
+.srm-score{font-weight:900;color:#0f172a}
+.srm-grade-badge{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;border-radius:999px;font-size:12px;font-weight:900;color:#fff;background:var(--grade-color,#2563eb)}
+.srm-status{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900}
+.srm-status.good{background:#dcfce7;color:#166534}.srm-status.warn{background:#fef3c7;color:#92400e}.srm-status.bad{background:#fee2e2;color:#991b1b}
+.srm-progress{display:inline-flex;align-items:center;gap:8px;min-width:120px}.srm-progress-bar{width:72px;height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden}.srm-progress-bar span{display:block;height:100%;background:#2563eb;border-radius:999px}
+.srm-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:1400px){.srm-kpi-grid{grid-template-columns:repeat(3,1fr)}.srm-menu-grid{grid-template-columns:repeat(2,1fr)}.srm-grade-grid{grid-template-columns:repeat(3,1fr)}.srm-two-col{grid-template-columns:1fr}}
+@media(max-width:760px){.srm-kpi-grid,.srm-menu-grid,.srm-grade-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -4924,8 +4972,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function ensureNav(){
     addSecBefore('worklog','QMES 운영');
     addNavAfter('suppliers','<button class="nav-item" data-page="supplier-eval"><span class="nav-icon">▣</span><span>협력업체 평가</span></button>');
+    addNavAfter('supplier-eval','<button class="nav-item" data-page="supplier-grade"><span class="nav-icon">▣</span><span>협력사 등급관리</span></button>');
     addNavAfter('instruments','<button class="nav-item" data-page="equipment"><span class="nav-icon">▣</span><span>설비관리</span></button>');
     addNavAfter('worklog','<button class="nav-item" data-page="production"><span class="nav-icon">▣</span><span>생산관리</span></button>');
+    addNavAfter('production','<button class="nav-item" data-page="production-order"><span class="nav-icon">▣</span><span>작업지시 관리</span></button>');
+    addNavAfter('production-order','<button class="nav-item" data-page="production-result"><span class="nav-icon">▣</span><span>생산실적 관리</span></button>');
+    addNavAfter('production-result','<button class="nav-item" data-page="material-input"><span class="nav-icon">▣</span><span>원료투입 관리</span></button>');
+    addNavAfter('material-input','<button class="nav-item" data-page="process-condition"><span class="nav-icon">▣</span><span>공정조건 관리</span></button>');
+    addNavAfter('process-condition','<button class="nav-item" data-page="yield-management"><span class="nav-icon">▣</span><span>수율관리</span></button>');
     addNavAfter('shipment','<button class="nav-item" data-page="outbound"><span class="nav-icon">▣</span><span>출하관리</span></button>');
     addSecBefore('users','경영 / 시스템');
     addNavAfter('training','<button class="nav-item" data-page="management-review"><span class="nav-icon">▣</span><span>경영검토</span></button>');
@@ -5020,8 +5074,104 @@ document.addEventListener('DOMContentLoaded',async()=>{
     main.appendChild(sec);
     sec.addEventListener('click',e=>{const b=e.target.closest('[data-qmes-go]'); if(b) activate(b.dataset.qmesGo);});
   }
+
+  function supplierNames(){
+    const s=st();
+    const names=new Set();
+    arr(s.suppliers).forEach(x=>{ if(String(x.name||'').trim()) names.add(String(x.name).trim()); });
+    arr(s.incoming).forEach(x=>{ if(String(x.supplier||'').trim()) names.add(String(x.supplier).trim()); });
+    return Array.from(names).sort((a,b)=>a.localeCompare(b,'ko'));
+  }
+  function supplierGrade(score){
+    const n=Number(score)||0;
+    if(n>=95) return 'S'; if(n>=90) return 'A'; if(n>=80) return 'B'; if(n>=70) return 'C'; return 'D';
+  }
+  function gradeColor(g){return ({S:'#7c3aed',A:'#2563eb',B:'#10b981',C:'#f59e0b',D:'#ef4444'}[g]||'#64748b');}
+  function supplierEvalRows(){
+    const s=st();
+    return supplierNames().map(name=>{
+      const iqc=arr(s.incoming).filter(x=>String(x.supplier||'').trim()===name);
+      const incomingQty=iqc.reduce((a,x)=>a+toNum(x.incomingQty||x.qty),0);
+      const failQty=iqc.reduce((a,x)=>a+toNum(x.failQty),0);
+      const failRate=incomingQty?failQty/incomingQty*100:0;
+      const ncr=arr(s.nonconform).filter(x=>String(x.supplier||x.vendor||'').trim()===name || String(x.issue||'').includes(name)).length;
+      const quality=Math.max(0, Math.round(100 - failRate*8 - ncr*6));
+      const delivery=iqc.length?96:90;
+      const response=Math.max(70, 95 - ncr*8);
+      const total=Math.round(quality*0.5 + delivery*0.3 + response*0.2);
+      const grade=supplierGrade(total);
+      const status=grade==='D'||grade==='C'?'개선필요':(grade==='S'||grade==='A'?'우수':'관리');
+      const statusClass=grade==='D'||grade==='C'?'bad':(grade==='S'||grade==='A'?'good':'warn');
+      const manager=(arr(s.suppliers).find(x=>String(x.name||'').trim()===name)||{}).manager||'-';
+      return {name,manager,iqcCount:iqc.length,incomingQty,failQty,failRate,quality,delivery,response,total,grade,status,statusClass,ncr};
+    }).sort((a,b)=>b.total-a.total || a.name.localeCompare(b.name,'ko'));
+  }
+  function ensureSupplierEvalPage(){
+    let sec=document.getElementById('page-supplier-eval');
+    const main=qs('main.content'); if(!main) return;
+    if(!sec){sec=document.createElement('section');sec.className='page';sec.id='page-supplier-eval';main.appendChild(sec);}
+    sec.innerHTML=`
+      <div class="ph">
+        <div><div class="ph-title">협력업체 평가</div><div class="ph-sub">협력사 현황·수입검사·부적합 데이터를 기준으로 품질/납기/대응 등급을 자동 산정합니다.</div></div>
+        <div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button><button class="btn pri" data-qmes-go="suppliers">협력사 현황 열기</button></div>
+      </div>
+      <div class="srm-kpi-grid">
+        <div class="srm-kpi" style="--srm-color:#2563eb"><div class="srm-kpi-label">총 협력사</div><div class="srm-kpi-value" id="srmTotalSuppliers">0</div><div class="srm-kpi-sub">등록/거래 협력사 기준</div></div>
+        <div class="srm-kpi" style="--srm-color:#7c3aed"><div class="srm-kpi-label">S/A 등급</div><div class="srm-kpi-value" id="srmHighGrade">0</div><div class="srm-kpi-sub">우수 협력사</div></div>
+        <div class="srm-kpi" style="--srm-color:#10b981"><div class="srm-kpi-label">평균 평가점수</div><div class="srm-kpi-value" id="srmAvgScore">0</div><div class="srm-kpi-sub">품질 50 · 납기 30 · 대응 20</div></div>
+        <div class="srm-kpi" style="--srm-color:#f59e0b"><div class="srm-kpi-label">개선요청</div><div class="srm-kpi-value" id="srmImproveCount">0</div><div class="srm-kpi-sub">C/D 등급 및 NCR 대상</div></div>
+        <div class="srm-kpi" style="--srm-color:#ef4444"><div class="srm-kpi-label">고위험 협력사</div><div class="srm-kpi-value" id="srmRiskCount">0</div><div class="srm-kpi-sub">D 등급 또는 반복 NCR</div></div>
+      </div>
+      <div class="srm-section">
+        <div class="srm-section-head"><div><div class="srm-title">협력업체 평가 메뉴</div><div class="srm-sub">품질점수·납기점수·대응점수·등급관리·평가이력·개선요청을 통합 관리합니다.</div></div><span class="srm-tag">SRM MENU</span></div>
+        <div class="srm-menu-grid">
+          <div class="srm-menu-tile" style="--srm-color:#2563eb;--srm-soft:#eff6ff"><div class="srm-menu-main"><div class="srm-menu-icon">Q</div><div><div class="srm-menu-name">품질점수</div><div class="srm-menu-desc">수입검사 불량수량, NCR 발생 건수 기반 자동 산정</div></div></div><div class="srm-menu-bottom"><span class="srm-menu-status" id="srmMenuQuality">AVG 0</span><span>›</span></div></div>
+          <div class="srm-menu-tile" style="--srm-color:#10b981;--srm-soft:#dcfce7"><div class="srm-menu-main"><div class="srm-menu-icon">D</div><div><div class="srm-menu-name">납기점수</div><div class="srm-menu-desc">입고/출하 일정 준수율 및 지연 이력 관리</div></div></div><div class="srm-menu-bottom"><span class="srm-menu-status" id="srmMenuDelivery">AVG 0</span><span>›</span></div></div>
+          <div class="srm-menu-tile" style="--srm-color:#f59e0b;--srm-soft:#fff7ed"><div class="srm-menu-main"><div class="srm-menu-icon">R</div><div><div class="srm-menu-name">대응점수</div><div class="srm-menu-desc">CAPA 회신, 조치 완료율, 재발 방지 대응 수준</div></div></div><div class="srm-menu-bottom"><span class="srm-menu-status" id="srmMenuResponse">AVG 0</span><span>›</span></div></div>
+          <div class="srm-menu-tile" data-qmes-go="supplier-grade" style="--srm-color:#7c3aed;--srm-soft:#ede9fe"><div class="srm-menu-main"><div class="srm-menu-icon">G</div><div><div class="srm-menu-name">등급관리</div><div class="srm-menu-desc">S/A/B/C/D 등급 기준 및 협력사별 등급 현황</div></div></div><div class="srm-menu-bottom"><span class="srm-menu-status">등급표 보기</span><span>›</span></div></div>
+          <div class="srm-menu-tile" style="--srm-color:#06b6d4;--srm-soft:#cffafe"><div class="srm-menu-main"><div class="srm-menu-icon">H</div><div><div class="srm-menu-name">평가이력</div><div class="srm-menu-desc">월별·분기별 협력사 평가 이력 및 추세 관리</div></div></div><div class="srm-menu-bottom"><span class="srm-menu-status" id="srmMenuHistory">최근 평가</span><span>›</span></div></div>
+          <div class="srm-menu-tile" style="--srm-color:#ef4444;--srm-soft:#fee2e2"><div class="srm-menu-main"><div class="srm-menu-icon">!</div><div><div class="srm-menu-name">개선요청</div><div class="srm-menu-desc">C/D 등급 및 NCR 발생 협력사 개선요청 추적</div></div></div><div class="srm-menu-bottom"><span class="srm-menu-status" id="srmMenuImprove">0건</span><span>›</span></div></div>
+        </div>
+      </div>
+      <div class="srm-section">
+        <div class="srm-section-head"><div><div class="srm-title">협력사 등급 현황</div><div class="srm-sub">S:95 이상 · A:90 이상 · B:80 이상 · C:70 이상 · D:70 미만</div></div><span class="srm-tag">GRADE</span></div>
+        <div class="srm-grade-grid" id="srmGradeGrid"></div>
+      </div>
+      <div class="srm-section">
+        <div class="srm-section-head"><div><div class="srm-title">최근 평가 현황</div><div class="srm-sub">현재 등록된 협력사/입고검사 데이터를 기준으로 산정됩니다.</div></div><span class="srm-tag">LIVE DATA</span></div>
+        <div class="srm-table-wrap"><table class="srm-table"><thead><tr><th>협력사명</th><th>담당자</th><th>검사건수</th><th>불량수량</th><th>품질</th><th>납기</th><th>대응</th><th>종합</th><th>등급</th><th>개선요청</th></tr></thead><tbody id="srmEvalTable"></tbody></table></div>
+      </div>`;
+    sec.addEventListener('click',e=>{const b=e.target.closest('[data-qmes-go]'); if(b) activate(b.dataset.qmesGo);});
+  }
+  function ensureSupplierGradePage(){
+    if(document.getElementById('page-supplier-grade')) return;
+    const main=qs('main.content'); if(!main) return;
+    const sec=document.createElement('section');sec.className='page';sec.id='page-supplier-grade';
+    sec.innerHTML=`<div class="ph"><div><div class="ph-title">협력사 등급관리</div><div class="ph-sub">S/A/B/C/D 등급 기준과 협력사별 개선 필요 항목을 관리합니다.</div></div><div class="ph-actions"><button class="btn light" data-qmes-go="supplier-eval">협력업체 평가</button><button class="btn pri" data-qmes-go="suppliers">협력사 현황</button></div></div><div class="srm-two-col"><div class="srm-section"><div class="srm-section-head"><div><div class="srm-title">등급 기준</div><div class="srm-sub">협력사 종합점수 기준</div></div><span class="srm-tag">STANDARD</span></div><div class="srm-table-wrap"><table class="srm-table"><thead><tr><th>등급</th><th>점수</th><th>관리 기준</th></tr></thead><tbody><tr><td><span class="srm-grade-badge" style="--grade-color:#7c3aed">S</span></td><td>95점 이상</td><td>핵심 우수 협력사 · 우선 발주</td></tr><tr><td><span class="srm-grade-badge" style="--grade-color:#2563eb">A</span></td><td>90점 이상</td><td>우수 협력사 · 정기 유지</td></tr><tr><td><span class="srm-grade-badge" style="--grade-color:#10b981">B</span></td><td>80점 이상</td><td>일반 협력사 · 월별 모니터링</td></tr><tr><td><span class="srm-grade-badge" style="--grade-color:#f59e0b">C</span></td><td>70점 이상</td><td>개선요청 · 품질/납기 집중관리</td></tr><tr><td><span class="srm-grade-badge" style="--grade-color:#ef4444">D</span></td><td>70점 미만</td><td>고위험 · 신규 발주 제한 검토</td></tr></tbody></table></div></div><div class="srm-section"><div class="srm-section-head"><div><div class="srm-title">등급별 협력사</div><div class="srm-sub">현재 데이터 기준 자동 분류</div></div><span class="srm-tag">AUTO</span></div><div id="srmGradeList"></div></div></div>`;
+    main.appendChild(sec);
+    sec.addEventListener('click',e=>{const b=e.target.closest('[data-qmes-go]'); if(b) activate(b.dataset.qmesGo);});
+  }
+  function renderSupplierEvalData(){
+    const rows=supplierEvalRows();
+    const total=rows.length, high=rows.filter(r=>['S','A'].includes(r.grade)).length, improve=rows.filter(r=>['C','D'].includes(r.grade)||r.ncr>0).length, risk=rows.filter(r=>r.grade==='D'||r.ncr>=2).length;
+    const avg=total?Math.round(rows.reduce((a,r)=>a+r.total,0)/total):0;
+    const avgQ=total?Math.round(rows.reduce((a,r)=>a+r.quality,0)/total):0, avgD=total?Math.round(rows.reduce((a,r)=>a+r.delivery,0)/total):0, avgR=total?Math.round(rows.reduce((a,r)=>a+r.response,0)/total):0;
+    const set=(id,val)=>{const el=qs('#'+id); if(el) el.textContent=val;};
+    set('srmTotalSuppliers',fmt(total)); set('srmHighGrade',fmt(high)); set('srmAvgScore',fmt(avg)); set('srmImproveCount',fmt(improve)); set('srmRiskCount',fmt(risk));
+    set('srmMenuQuality','AVG '+avgQ); set('srmMenuDelivery','AVG '+avgD); set('srmMenuResponse','AVG '+avgR); set('srmMenuImprove',improve+'건');
+    const grades=['S','A','B','C','D'];
+    const grid=qs('#srmGradeGrid'); if(grid){grid.innerHTML=grades.map(g=>{const c=rows.filter(r=>r.grade===g).length; const w=total?Math.round(c/total*100):0; return `<div class="srm-grade-card" style="--grade-color:${gradeColor(g)}"><div class="srm-grade-label">${g} 등급</div><div class="srm-grade-value">${c}</div><div class="srm-grade-bar"><span style="width:${w}%"></span></div><div class="srm-kpi-sub">${w}%</div></div>`;}).join('');}
+    const tb=qs('#srmEvalTable'); if(tb){tb.innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td>${esc(r.manager)}</td><td>${fmt(r.iqcCount)}</td><td>${fmt(r.failQty)}</td><td><span class="srm-score">${r.quality}</span></td><td><span class="srm-score">${r.delivery}</span></td><td><span class="srm-score">${r.response}</span></td><td><div class="srm-progress"><div class="srm-progress-bar"><span style="width:${Math.max(0,Math.min(r.total,100))}%"></span></div><b>${r.total}</b></div></td><td><span class="srm-grade-badge" style="--grade-color:${gradeColor(r.grade)}">${r.grade}</span></td><td><span class="srm-status ${r.statusClass}">${r.status}</span></td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:26px;color:#94a3b8">등록된 협력사/수입검사 데이터가 없습니다.</td></tr>';}
+    const list=qs('#srmGradeList'); if(list){list.innerHTML=grades.map(g=>{const rs=rows.filter(r=>r.grade===g); return `<div class="srm-grade-card" style="--grade-color:${gradeColor(g)};margin-bottom:10px"><div class="srm-grade-label">${g} 등급 · ${rs.length}개사</div><div style="margin-top:8px;color:#334155;font-size:13px;line-height:1.7">${rs.length?rs.map(r=>`${esc(r.name)} <b>${r.total}</b>점`).join('<br>'):'해당 없음'}</div></div>`;}).join('');}
+  }
   function ensurePages(){
-    pageTemplate('supplier-eval','협력업체 평가','협력사 현황 데이터를 기반으로 품질·납기·NCR 대응 평가 구조를 제공합니다.',[['품질점수','NCR 발생 건수와 불량률 기반'],['납기점수','입고/출하 일정 준수율 관리'],['대응점수','CAPA 회신 및 조치 완료율'],['등급관리','S/A/B/C/D 등급 체계'],['평가이력','월별·분기별 협력사 평가'],['개선요청','협력업체 CAPA 요청 연동']],'suppliers');
+    ensureSupplierEvalPage();
+    ensureSupplierGradePage();
+    pageTemplate('production-order','작업지시 관리','생산계획과 작업오더를 생산작업일지와 연결해 관리합니다.',[['작업오더','생산계획·품목·LOT'],['우선순위','긴급/일반 작업 구분'],['작업배포','작업자/설비 배정'],['진행상태','대기·진행·완료'],['변경이력','오더 수정 이력'],['작업일지','기존 생산작업일지 연동']],'worklog');
+    pageTemplate('production-result','생산실적 관리','계획수량·생산수량·불량수량을 기준으로 실적을 분석합니다.',[['계획대비','계획/실적 차이'],['생산량','LOT별 생산수량'],['불량수량','불량 및 폐기'],['진행률','오더별 달성률'],['작업자','작업자별 실적'],['작업일지','기존 데이터 연동']],'worklog');
+    pageTemplate('material-input','원료투입 관리','원료명·업체명·원료 LOT·투입량·투입시간을 추적합니다.',[['원료 LOT','원료 추적성'],['투입량','배합/투입량'],['업체명','협력사 연계'],['투입시간','공정 시간'],['재고차감','사용량 관리'],['작업일지','기존 원료 행 연동']],'worklog');
+    pageTemplate('process-condition','공정조건 관리','유량·온도·압력 설정/실적 값을 생산작업일지 기준으로 관리합니다.',[['유량','설정/실적'],['온도','설정/실적'],['압력','설정/실적'],['이상알람','편차 관리'],['이력조회','LOT별 조건'],['작업일지','기존 조건값 연동']],'worklog');
+    pageTemplate('yield-management','수율관리','생산수량과 불량수량 기준으로 생산수율과 불량률을 관리합니다.',[['수율','생산수율'],['불량률','불량수량 기준'],['LOT별','LOT별 수율'],['추세','월별 추이'],['개선대상','저수율 LOT'],['작업일지','기존 실적 연동']],'worklog');
     pageTemplate('equipment','설비관리','측정기 관리 기능을 유지하면서 설비·예방보전 구조를 확장합니다.',[['설비마스터','설비번호, 위치, 제조사, 담당자'],['예방보전','일상/월간/정기 점검'],['교정관리','측정기 교정일과 연동'],['고장이력','원인, 조치, 다운타임'],['OEE','가동률·성능·품질 지표'],['알림','교정/점검 예정일 알림']],'instruments');
     ensureProductionPage();
     pageTemplate('outbound','출하관리','출하검사 데이터를 유지하면서 출하판정과 고객 LOT 추적을 강화합니다.',[['출하판정','OQC 합격 기준 출하 가능'],['고객사관리','고객별 출하 LOT 이력'],['바코드/QR','LOT 라벨 및 추적'],['출하보류','NCR 발생 LOT 자동 보류'],['성적서','출하검사 성적서 연동'],['이력조회','LOT별 출하 이력']],'shipment');
@@ -5096,6 +5246,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const map={incoming:s.incoming,process:s.process,shipment:s.shipment,nonconform:s.nonconform,instruments:s.instruments,training:s.trainingReports||s.training};
     Object.entries(map).forEach(([k,v])=>qsa(`[data-qmes-count="${k}"]`).forEach(el=>el.textContent=count(v)));
     renderProductionData();
+    renderSupplierEvalData();
   }
   function ensureUsersVisible(){
     const u=qs('#usersNavBtn'), adm=qs('#adminNavTitle'), open=qs('#openUserManage');
