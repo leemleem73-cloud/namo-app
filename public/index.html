@@ -4399,9 +4399,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
     m[String(key||'draft')] = {...(m[String(key||'draft')]||{}), ...(data||{})};
     saveExtMap(m);
   }
+  function koSeverity(v){
+    const m = {Critical:'치명', Major:'중대', Minor:'경미', '치명':'치명', '중대':'중대', '경미':'경미'};
+    return m[String(v||'').trim()] || '중대';
+  }
+  function koPriority(v){
+    const m = {High:'높음', Medium:'보통', Low:'낮음', '높음':'높음', '보통':'보통', '낮음':'낮음'};
+    return m[String(v||'').trim()] || '보통';
+  }
   function severityBadge(v){
-    const s = v || 'Major';
-    const cls = s==='Critical'?'critical':s==='Minor'?'minor':'major';
+    const s = koSeverity(v);
+    const cls = s==='치명'?'critical':s==='경미'?'minor':'major';
     return `<span class="nc-badge ${cls}">${esc2(s)}</span>`;
   }
   function capaStatusBadge(v){
@@ -4464,8 +4472,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const formGrid = ncSection.querySelector('#ncFormPrintTarget .fg4');
     if(formGrid && !$id('ncSeverity')){
       formGrid.insertAdjacentHTML('beforeend', `
-        <div class="field"><label>심각도</label><select id="ncSeverity"><option>Critical</option><option selected>Major</option><option>Minor</option></select></div>
-        <div class="field"><label>우선순위</label><select id="ncPriority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+        <div class="field"><label>심각도</label><select id="ncSeverity"><option>치명</option><option selected>중대</option><option>경미</option></select></div>
+        <div class="field"><label>우선순위</label><select id="ncPriority"><option>높음</option><option selected>보통</option><option>낮음</option></select></div>
         <div class="field"><label>불량 분류</label><select id="ncDefectCategory"><option>외관</option><option>치수</option><option>중량</option><option>혼입/오염</option><option>포장</option><option>라벨</option><option>성능</option><option>문서</option><option>공정이탈</option><option>고객클레임</option></select></div>
         <div class="field"><label>발견자</label><input id="ncDetectedBy" placeholder="로그인 사용자 또는 발견자"></div>
       `);
@@ -4661,8 +4669,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function applyNcExtToForm(ext){
     ext = ext || {};
     const map = {
-      ncSeverity: ext.severity || 'Major',
-      ncPriority: ext.priority || 'Medium',
+      ncSeverity: koSeverity(ext.severity),
+      ncPriority: koPriority(ext.priority),
       ncDefectCategory: ext.defectCategory || '외관',
       ncDetectedBy: ext.detectedBy || '',
       ncContainment: ext.containment || '',
@@ -4700,8 +4708,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       oldClearNc.apply(this, arguments);
       ncPhotos=[]; ncCapaRows=[];
       applyNcExtToForm({});
-      if($id('ncSeverity')) $id('ncSeverity').value='Major';
-      if($id('ncPriority')) $id('ncPriority').value='Medium';
+      if($id('ncSeverity')) $id('ncSeverity').value='중대';
+      if($id('ncPriority')) $id('ncPriority').value='보통';
       if($id('ncDefectCategory')) $id('ncDefectCategory').value='외관';
     };
   }
@@ -4767,14 +4775,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const rows = state.nonconform || [];
     const open = rows.filter(r=>(r.status||'미결')!=='완결').length;
     const closed = rows.filter(r=>(r.status||'')==='완결').length;
-    const critical = rows.filter(r=>(getExt(ncKeyFromRecord(r)).severity||'Major')==='Critical').length;
+    const critical = rows.filter(r=>(koSeverity(getExt(ncKeyFromRecord(r)).severity))==='치명').length;
     const totalCapa = rows.reduce((n,r)=>n+((getExt(ncKeyFromRecord(r)).capaRows||[]).length),0);
     const cards = `
       <div class="nc-kpis">
         <div class="nc-kpi"><div class="nc-kpi-l">전체 NCR</div><div class="nc-kpi-v">${rows.length}</div></div>
         <div class="nc-kpi"><div class="nc-kpi-l">진행중</div><div class="nc-kpi-v">${open}</div></div>
         <div class="nc-kpi"><div class="nc-kpi-l">종결</div><div class="nc-kpi-v">${closed}</div></div>
-        <div class="nc-kpi"><div class="nc-kpi-l">Critical</div><div class="nc-kpi-v">${critical}</div></div>
+        <div class="nc-kpi"><div class="nc-kpi-l">치명</div><div class="nc-kpi-v">${critical}</div></div>
         <div class="nc-kpi"><div class="nc-kpi-l">CAPA 항목</div><div class="nc-kpi-v">${totalCapa}</div></div>
       </div>`;
     const list = rows.map(r=>{
