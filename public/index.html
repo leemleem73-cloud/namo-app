@@ -2417,14 +2417,24 @@ async function signup(){
 async function checkLogin(){
   const{res,data}=await api('/api/auth/me');
   if(!res.ok||!data?.success){$('loginPage').style.display='flex';document.querySelector('.shell').style.display='none';state.currentUser=null;return false;}
-  state.currentUser=data.data;$('loginPage').style.display='none';document.querySelector('.shell').style.display='flex';updateProfileUI(data.data);return true;
+  state.currentUser=data.data;$('loginPage').style.display='none';document.querySelector('.shell').style.display='flex';updateProfileUI(data.data);setTimeout(()=>{if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},100);setTimeout(()=>{if(typeof rebuildAllSignGrids==='function')rebuildAllSignGrids();else if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},500);return true;
 }
 function updateProfileUI(u){
   const n=u?.name||'사용자';
   if($('profileName'))$('profileName').textContent=n;
   if($('profileEmail'))$('profileEmail').textContent=u?.email||'';
   if($('profileAvatar'))$('profileAvatar').textContent=n.charAt(0)||'사';
-  const isAdmin=u?.role==='admin';
+  const isAdmin=!!(
+    u?.isAdmin === true || u?.admin === true || u?.is_admin === true ||
+    String(u?.role||'').toLowerCase()==='admin' ||
+    String(u?.role||'').includes('관리자') ||
+    String(u?.permission||'').toLowerCase().includes('admin') ||
+    String(u?.auth||'').toLowerCase().includes('admin') ||
+    String(u?.authority||'').toLowerCase().includes('admin') ||
+    String(u?.grade||'').includes('관리자') ||
+    String(u?.name||'').includes('관리자') ||
+    String(u?.email||'').toLowerCase().includes('admin')
+  );
   $('openUserManage').style.display=isAdmin?'block':'none';
   $('usersNavBtn').style.display=isAdmin?'flex':'none';
   $('adminNavTitle').style.display=isAdmin?'block':'none';
@@ -3688,7 +3698,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ok=await checkLogin();if(ok)await loadAll데이터();
 });
 
-/* 서명 이미지 첨부 / 결재 권한 통합 v22 - 관리자 전체 수정, 일반 사용자는 본인 역할만 수정 */
+/* 서명 이미지 첨부 / 결재 권한 통합 v23 - 관리자 전체 수정 잠김 해제, 일반 사용자는 본인 역할만 수정 */
 (function(){
   const ROLES = ['writer','reviewer','approver'];
   const TYPES = ['iqc','pqc','oqc','nc','training'];
@@ -3738,7 +3748,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function meObj(){ return userObj(current()); }
   function currentIsAdmin(){
     const me = current();
-    return !!(me && clean(me.role).toLowerCase() === 'admin');
+    if(!me) return false;
+    if(me.isAdmin === true || me.admin === true || me.is_admin === true) return true;
+    const vals = [
+      me.role, me.permission, me.auth, me.authority, me.grade, me.level,
+      me.type, me.userType, me.user_type, me.accountType, me.name, me.email, me.id
+    ].map(v => clean(v).toLowerCase()).filter(Boolean);
+    return vals.some(v =>
+      v === 'admin' || v === 'administrator' || v === 'superadmin' ||
+      v === 'super_admin' || v === '관리자' ||
+      v.includes('admin') || v.includes('관리자')
+    );
   }
   function currentIsSenior(){
     const me = current();
@@ -4037,6 +4057,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   };
   window.applySignPermissions = applySignPermissions;
   window.applyAllSignPermissions = function(){ TYPES.forEach(applySignPermissions); };
+
+  /* v23: 로그인 직후 currentUser 세팅 타이밍 보정. 관리자 판별 후 잠김 해제 재적용 */
+  [100,300,700,1200,2000,3500].forEach(ms => setTimeout(() => {
+    if(typeof window.applyAllSignPermissions === 'function') window.applyAllSignPermissions();
+  }, ms));
 
   document.addEventListener('click', function(e){
     const attach = e.target.closest && e.target.closest('[data-sign-file-btn]');
