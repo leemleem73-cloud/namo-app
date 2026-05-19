@@ -1218,7 +1218,10 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 .qmes-donut .num{
   position:relative;z-index:1;
-  font-size:28px;font-weight:900;color:#fff;letter-spacing:-.6px;
+  display:flex;align-items:center;justify-content:center;
+  min-width:0!important;width:auto!important;height:auto!important;
+  background:transparent!important;border:none!important;box-shadow:none!important;
+  font-size:28px;font-weight:900;color:#fff;letter-spacing:-.6px;line-height:1;
 }
 .qmes-donut-label{font-size:13px;font-weight:900;color:#e0f2fe;margin-top:12px}
 .qmes-donut-sub{font-size:12px;color:#bfdbfe;margin-top:4px}
@@ -3239,6 +3242,28 @@ function renderUserTable(){
   tb.innerHTML=state.adminUsers.map(r=>`<tr><td><strong>${esc(r.name||'')}</strong></td><td>${esc(r.email||'')}</td><td>${esc(r.department||'')}</td><td><span style="font-weight:600;">${esc(r.title||'-')}</span>${isSenior(r)?'<span class="badge info" style="margin-left:6px;font-size:10px;">검토/승인 가능</span>':''}</td><td><span class="badge ${r.role==='admin'?'info':''}">${r.role==='admin'?'관리자':'일반회원'}</span></td><td><span class="badge ${r.status==='APPROVED'?'pass':'fail'}">${r.status||''}</span></td><td>${toKSTDate(String(r.created_at||'').slice(0,10)||r.created_at)}</td><td><div class="ai"><button class="sb edit" data-action="editUser" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteUser" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 
+
+/* 통합 관제 도넛 KPI: 현재 데이터/조회연도 기준 연동 */
+function updateQmesDonuts(vals){
+  const numbers={
+    incoming:Number(vals?.incoming||0),
+    process:Number(vals?.process||0),
+    shipment:Number(vals?.shipment||0),
+    nonconform:Number(vals?.nonconform||0),
+    training:Number(vals?.training||0)
+  };
+  const max=Math.max(1,...Object.values(numbers));
+  Object.entries(numbers).forEach(([key,val])=>{
+    document.querySelectorAll(`[data-qmes-count="${key}"]`).forEach(el=>{el.textContent=val;});
+    const card=document.querySelector(`[data-qmes-card="${key}"]`);
+    if(card){
+      const donut=card.querySelector('.qmes-donut');
+      const pct=val<=0?0:Math.max(10,Math.round(val/max*100));
+      if(donut) donut.style.setProperty('--p', pct+'%');
+    }
+  });
+}
+
 /* ═══ DASHBOARD ═══ */
 function renderSummary(){
   const y=Number($('dashYear').value||new Date().getFullYear()),p=y-1;
@@ -3246,8 +3271,10 @@ function renderSummary(){
   const rate=(c,pp)=>{if(!pp)return c?'신규':'-';const pc=Math.round((c-pp)/pp*100);return(pc>=0?'+':'')+pc+'%';};
   const iC=cnt(state.incoming,y),pC=cnt(state.process,y),sC=cnt(state.shipment,y),wC=cnt(state.worklog,y);
   const iP=cnt(state.incoming,p),pP=cnt(state.process,p),sP=cnt(state.shipment,p),wP=cnt(state.worklog,p);
+  const tC=cnt(state.training||[],y);
   const ncOpen=state.nonconform.filter(r=>r.status!=='완결').length;
   $('sumIncoming').textContent=iC;$('sumProcess').textContent=pC;$('sumShipment').textContent=sC;$('sumWorklog').textContent=wC;$('sumNc').textContent=ncOpen;
+  updateQmesDonuts({incoming:iC,process:pC,shipment:sC,nonconform:ncOpen,training:tC});
   const setT=(id,c,pp)=>{const el=$(id),s=rate(c,pp);el.textContent=s;el.className='trend '+(s.startsWith('+')?'up':s.startsWith('-')?'down':'neutral');};
   setT('sumIncomingRate',iC,iP);setT('sumProcessRate',pC,pP);setT('sumShipmentRate',sC,sP);setT('sumWorklogRate',wC,wP);
   renderCharts();
@@ -5054,11 +5081,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="qmes-badges"><span class="qmes-badge">LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
         </div>
         <div class="qmes-hero-grid donut">
-          <div class="qmes-donut-card iqc"><div class="qmes-donut" style="--p:72%"><span class="num" data-qmes-count="incoming">0</span></div><div class="qmes-donut-label">수입검사</div><div class="qmes-donut-sub">IQC records</div></div>
-          <div class="qmes-donut-card pqc"><div class="qmes-donut" style="--p:68%"><span class="num" data-qmes-count="process">0</span></div><div class="qmes-donut-label">공정검사</div><div class="qmes-donut-sub">PQC records</div></div>
-          <div class="qmes-donut-card oqc"><div class="qmes-donut" style="--p:64%"><span class="num" data-qmes-count="shipment">0</span></div><div class="qmes-donut-label">출하검사</div><div class="qmes-donut-sub">OQC records</div></div>
-          <div class="qmes-donut-card nc"><div class="qmes-donut" style="--p:52%"><span class="num" data-qmes-count="nonconform">0</span></div><div class="qmes-donut-label">부적합/CAPA</div><div class="qmes-donut-sub">NCR tracking</div></div>
-          <div class="qmes-donut-card tr"><div class="qmes-donut" style="--p:58%"><span class="num" data-qmes-count="training">0</span></div><div class="qmes-donut-label">교육보고서</div><div class="qmes-donut-sub">Training</div></div>
+          <div class="qmes-donut-card iqc" data-qmes-card="incoming"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="incoming">0</span></div><div class="qmes-donut-label">수입검사</div><div class="qmes-donut-sub">IQC records</div></div>
+          <div class="qmes-donut-card pqc" data-qmes-card="process"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="process">0</span></div><div class="qmes-donut-label">공정검사</div><div class="qmes-donut-sub">PQC records</div></div>
+          <div class="qmes-donut-card oqc" data-qmes-card="shipment"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="shipment">0</span></div><div class="qmes-donut-label">출하검사</div><div class="qmes-donut-sub">OQC records</div></div>
+          <div class="qmes-donut-card nc" data-qmes-card="nonconform"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="nonconform">0</span></div><div class="qmes-donut-label">부적합/CAPA</div><div class="qmes-donut-sub">NCR tracking</div></div>
+          <div class="qmes-donut-card tr" data-qmes-card="training"><div class="qmes-donut" style="--p:0%"><span class="num" data-qmes-count="training">0</span></div><div class="qmes-donut-label">교육보고서</div><div class="qmes-donut-sub">Training</div></div>
         </div>
       </div>
       <div class="qmes-panel">
