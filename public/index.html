@@ -2584,6 +2584,149 @@ function printLabel(){
 </style></head><body>${g.outerHTML}<!-- v5: approval inbox, notifications, document lookup fixed -->
 
 
+
+
+<!-- SRM 품질점수 탭/평가기준 보강 패치 v34 -->
+<style>
+.srm-tab-panel{display:none!important;}
+.srm-tab-panel.active{display:block!important;}
+.srm-tab-panel.grid-active{display:grid!important;}
+.srm-criteria-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+.srm-criteria-card{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:hidden}
+.srm-criteria-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #e2e8f0;background:linear-gradient(180deg,#fff,#f8fafc)}
+.srm-criteria-title{font-size:17px;font-weight:900;color:#0f172a;letter-spacing:-.4px}
+.srm-criteria-sub{font-size:12px;color:#64748b;margin-top:3px;line-height:1.5}
+.srm-criteria-body{padding:14px 16px}
+.srm-criteria-table{width:100%;border-collapse:collapse;font-size:12px}
+.srm-criteria-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:none;padding:10px 11px;border:1px solid #e2e8f0;text-align:left;white-space:nowrap}
+.srm-criteria-table td{padding:10px 11px;border:1px solid #edf2f7;color:#334155;vertical-align:top;line-height:1.45}
+.srm-criteria-table .score{font-weight:900;color:#2563eb;white-space:nowrap}
+.srm-criteria-table .minus{font-weight:900;color:#ef4444;white-space:nowrap}
+.srm-grade-standard{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.srm-grade-standard .grade-box{border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;padding:14px;position:relative;overflow:hidden}
+.srm-grade-standard .grade-box:before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--grade-color,#2563eb)}
+.srm-grade-standard .g{font-size:28px;font-weight:900;color:var(--grade-color,#2563eb);padding-left:6px}
+.srm-grade-standard .r{font-size:13px;font-weight:900;color:#0f172a;margin-top:5px;padding-left:6px}
+.srm-grade-standard .a{font-size:12px;color:#64748b;margin-top:6px;line-height:1.45;padding-left:6px}
+.srm-calc-table .good{color:#16a34a;font-weight:900}.srm-calc-table .bad{color:#ef4444;font-weight:900}
+@media(max-width:1300px){.srm-criteria-grid{grid-template-columns:1fr}.srm-grade-standard{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.srm-grade-standard{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+  function q(s,r=document){return r.querySelector(s)}
+  function qa(s,r=document){return Array.from(r.querySelectorAll(s))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+  function arr(v){return Array.isArray(v)?v:[]}
+  function num(v){const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?n:0}
+  function state(){return window.state || window.appState || {}}
+  function finalJudge(items){
+    if(!Array.isArray(items)) return '';
+    return items.some(x=>String(x.judge||x.result||'').includes('불')||String(x.judge||x.result||'').toLowerCase()==='fail')?'불합격':'합격';
+  }
+  function incomingRows(){return arr(state().incoming)}
+  function badRows(){return incomingRows().filter(r=>num(r.failQty)>0 || finalJudge(r.items||[])==='불합격')}
+  function ncrRows(){return arr(state().nonconform)}
+  function openNcr(){return ncrRows().filter(x=>!['완료','완결'].includes(String(x.status||'').trim()))}
+  function defectType(r){
+    const bad=arr(r.items).find(x=>String(x.judge||x.result||'').includes('불')||String(x.judge||x.result||'').toLowerCase()==='fail');
+    return (bad&&(bad.name||bad.item||bad.title)) || r.item || '수입검사 불량';
+  }
+  function metrics(){
+    const iqc=incomingRows(), bad=badRows(), ncr=ncrRows(), open=openNcr();
+    const total=iqc.length, fail=bad.length;
+    const typeMap={}; bad.forEach(r=>{const t=defectType(r); typeMap[t]=(typeMap[t]||0)+1;});
+    const repeat=Object.values(typeMap).filter(v=>v>=2).reduce((a,v)=>a+v-1,0);
+    const failRate=total?fail/total*100:0;
+    const iqcScore=Math.max(0, +(40-failRate*0.293).toFixed(1));
+    const ncrScore=Math.max(0, +(20-ncr.length*4).toFixed(1));
+    const repeatScore=Math.max(0, +(20-repeat*5).toFixed(1));
+    const capaScore=Math.max(0, +(20-open.length*5).toFixed(1));
+    const totalScore=+(iqcScore+ncrScore+repeatScore+capaScore).toFixed(1);
+    return {iqc,bad,ncr,open,total,fail,failRate,repeat,iqcScore,ncrScore,repeatScore,capaScore,totalScore};
+  }
+  function criteriaHtml(){return `
+    <div class="srm-criteria-grid">
+      <div class="srm-criteria-card">
+        <div class="srm-criteria-head"><div><div class="srm-criteria-title">품질 평가 기준표</div><div class="srm-criteria-sub">나모케미칼 수입검사(IQC), NCR, 재발불량, CAPA 조치 상태를 기준으로 산정합니다.</div></div><span class="srm-tag">QUALITY 40</span></div>
+        <div class="srm-criteria-body"><table class="srm-criteria-table"><thead><tr><th>평가항목</th><th>기준</th><th>배점</th><th>감점/산정 기준</th></tr></thead><tbody>
+          <tr><td>수입검사 합격률</td><td>98% 이상 우수</td><td class="score">20</td><td>불합격 건수 증가 시 단계 감점</td></tr>
+          <tr><td>수입검사 불량률</td><td>1% 이하 관리</td><td class="score">10</td><td>불량률 초과 시 비례 감점</td></tr>
+          <tr><td>NCR 발생</td><td>0건 기준</td><td class="score">5</td><td class="minus">건당 -2</td></tr>
+          <tr><td>동일 불량 재발</td><td>재발 없음</td><td class="score">5</td><td class="minus">건당 -3</td></tr>
+        </tbody></table></div>
+      </div>
+      <div class="srm-criteria-card">
+        <div class="srm-criteria-head"><div><div class="srm-criteria-title">납기 평가 기준표</div><div class="srm-criteria-sub">납품 예정일, 실제 입고일, 긴급 납기 대응, 지연 횟수를 기준으로 평가합니다.</div></div><span class="srm-tag">DELIVERY 30</span></div>
+        <div class="srm-criteria-body"><table class="srm-criteria-table"><thead><tr><th>평가항목</th><th>기준</th><th>배점</th><th>감점/산정 기준</th></tr></thead><tbody>
+          <tr><td>납기 준수율</td><td>100% 준수</td><td class="score">20</td><td>95% 이상 18점, 90% 이상 15점, 80% 미만 8점</td></tr>
+          <tr><td>긴급 납기 대응</td><td>요청 시 정상 대응</td><td class="score">5</td><td class="minus">미대응 -5</td></tr>
+          <tr><td>납기 지연 횟수</td><td>0건 기준</td><td class="score">5</td><td class="minus">건당 -1</td></tr>
+        </tbody></table></div>
+      </div>
+      <div class="srm-criteria-card">
+        <div class="srm-criteria-head"><div><div class="srm-criteria-title">대응 평가 기준표</div><div class="srm-criteria-sub">CAPA 회신 속도, 시정조치 완료율, 협조 수준, 재발방지 대책 제출 여부를 평가합니다.</div></div><span class="srm-tag">RESPONSE 30</span></div>
+        <div class="srm-criteria-body"><table class="srm-criteria-table"><thead><tr><th>평가항목</th><th>기준</th><th>배점</th><th>감점/산정 기준</th></tr></thead><tbody>
+          <tr><td>CAPA 회신 속도</td><td>24시간 이내</td><td class="score">10</td><td>3일 이내 8점, 7일 이내 5점, 미회신 0점</td></tr>
+          <tr><td>시정조치 완료율</td><td>100% 완료</td><td class="score">10</td><td class="minus">미완료 건당 -3</td></tr>
+          <tr><td>협조 수준</td><td>자료/현장대응 우수</td><td class="score">5</td><td>대응 지연 및 자료 미흡 시 감점</td></tr>
+          <tr><td>재발방지 대책</td><td>대책 제출 완료</td><td class="score">5</td><td class="minus">미제출 -5</td></tr>
+        </tbody></table></div>
+      </div>
+      <div class="srm-criteria-card">
+        <div class="srm-criteria-head"><div><div class="srm-criteria-title">최종 등급표</div><div class="srm-criteria-sub">품질 40점 + 납기 30점 + 대응 30점, 총 100점 기준으로 등급과 조치를 자동 분류합니다.</div></div><span class="srm-tag">GRADE</span></div>
+        <div class="srm-criteria-body"><div class="srm-grade-standard">
+          <div class="grade-box" style="--grade-color:#7c3aed"><div class="g">S</div><div class="r">95점 이상</div><div class="a">우수협력사<br>우선 발주</div></div>
+          <div class="grade-box" style="--grade-color:#2563eb"><div class="g">A</div><div class="r">90~94</div><div class="a">정상 관리<br>정기 유지</div></div>
+          <div class="grade-box" style="--grade-color:#10b981"><div class="g">B</div><div class="r">80~89</div><div class="a">관찰 관리<br>월별 모니터링</div></div>
+          <div class="grade-box" style="--grade-color:#f59e0b"><div class="g">C</div><div class="r">70~79</div><div class="a">개선요청<br>CAPA 검토</div></div>
+          <div class="grade-box" style="--grade-color:#ef4444"><div class="g">D</div><div class="r">70 미만</div><div class="a">특별관리<br>Audit 대상</div></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="srm-quality-note">※ QSA 평가시트의 Audit 방식은 향후 품질운영, 검사관리, 부적합관리, 표준/변경관리, Tool/현장/자재/물류 관리 항목으로 확장할 수 있습니다.</div>`}
+  function calcHtml(){const m=metrics();return `
+    <div class="srm-section"><div class="srm-section-head"><div><div class="srm-title">점수 산정 내역</div><div class="srm-sub">현재 등록된 수입검사/NCR/CAPA 데이터 기준 자동 산정 결과입니다.</div></div><span class="srm-tag">AUTO CALC</span></div>
+      <div class="srm-table-wrap"><table class="srm-table srm-calc-table"><thead><tr><th>항목</th><th>기준 데이터</th><th>산식</th><th>점수</th><th>판정</th></tr></thead><tbody>
+        <tr><td>수입검사 불량</td><td>${m.fail} / ${m.total}건 · ${m.failRate.toFixed(1)}%</td><td>40 - 불량률 × 0.293</td><td><b>${m.iqcScore.toFixed(1)}</b></td><td class="${m.fail?'bad':'good'}">${m.fail?'감점':'정상'}</td></tr>
+        <tr><td>NCR 발생</td><td>${m.ncr.length}건</td><td>20 - NCR건수 × 4</td><td><b>${m.ncrScore.toFixed(1)}</b></td><td class="${m.ncr.length?'bad':'good'}">${m.ncr.length?'감점':'정상'}</td></tr>
+        <tr><td>재발 발생</td><td>${m.repeat}건</td><td>20 - 재발건수 × 5</td><td><b>${m.repeatScore.toFixed(1)}</b></td><td class="${m.repeat?'bad':'good'}">${m.repeat?'감점':'정상'}</td></tr>
+        <tr><td>CAPA 대응</td><td>미완료 ${m.open.length}건</td><td>20 - 미완료건수 × 5</td><td><b>${m.capaScore.toFixed(1)}</b></td><td class="${m.open.length?'bad':'good'}">${m.open.length?'감점':'정상'}</td></tr>
+        <tr><td><b>합계</b></td><td colspan="2">품질점수 총점</td><td><b style="color:#2563eb">${m.totalScore.toFixed(1)}</b></td><td><b>${m.totalScore>=95?'S':m.totalScore>=90?'A':m.totalScore>=80?'B':m.totalScore>=70?'C':'D'} 등급</b></td></tr>
+      </tbody></table></div>
+    </div>`}
+  function patch(){
+    const page=q('#page-supplier-quality'); if(!page) return;
+    const tabs=qa('.srm-tabs .srm-tab',page); if(tabs.length<5) return;
+    if(!page.dataset.srmTabsPatched){
+      const names=['overview','criteria','defects','calc','trend'];
+      tabs.forEach((b,i)=>{b.dataset.srmTab=names[i];});
+      const wrap=q('.srm-quality-wrap',page); if(wrap){wrap.id='srmPanelOverview'; wrap.classList.add('srm-tab-panel','active','grid-active');}
+      const sections=qa(':scope > .srm-section, :scope > .srm-quality-grid2',page);
+      const rule=sections.find(el=>el.textContent.includes('품질점수 평가 기준'));
+      if(rule){rule.id='srmPanelCriteria'; rule.className='srm-tab-panel'; rule.innerHTML=criteriaHtml();}
+      const grids=qa(':scope > .srm-quality-grid2',page);
+      if(grids[0]){grids[0].id='srmPanelDefects'; grids[0].classList.add('srm-tab-panel');}
+      if(!q('#srmPanelCalc',page)){
+        const calc=document.createElement('div'); calc.id='srmPanelCalc'; calc.className='srm-tab-panel'; calc.innerHTML=calcHtml();
+        (grids[1]||page.lastElementChild).before(calc);
+      }
+      if(grids[1]){grids[1].id='srmPanelTrend'; grids[1].classList.add('srm-tab-panel');}
+      tabs.forEach(b=>b.addEventListener('click',()=>show(page,b.dataset.srmTab)));
+      page.dataset.srmTabsPatched='1';
+    }
+    const calc=q('#srmPanelCalc',page); if(calc) calc.innerHTML=calcHtml();
+  }
+  function show(page,name){
+    qa('.srm-tabs .srm-tab',page).forEach(b=>b.classList.toggle('active',b.dataset.srmTab===name));
+    const map={overview:'srmPanelOverview',criteria:'srmPanelCriteria',defects:'srmPanelDefects',calc:'srmPanelCalc',trend:'srmPanelTrend'};
+    Object.entries(map).forEach(([k,id])=>{const el=q('#'+id,page); if(!el)return; const on=k===name; el.classList.toggle('active',on); el.classList.toggle('grid-active',on && (id==='srmPanelOverview'||id==='srmPanelDefects'||id==='srmPanelTrend'));});
+  }
+  document.addEventListener('click',e=>{ if(e.target.closest('[data-qmes-go="supplier-quality"]')) setTimeout(patch,350); });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setInterval(patch,700)); else setInterval(patch,700);
+})();
+</script>
+
 </body></html>`);
   w.document.close();setTimeout(()=>{w.focus();w.print();},300);
 }
