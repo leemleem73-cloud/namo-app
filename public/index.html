@@ -3688,7 +3688,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ok=await checkLogin();if(ok)await loadAll데이터();
 });
 
-/* 서명 이미지 첨부 / 결재 권한 통합 v21 - 본인 외 작성/검토/승인 금지 */
+/* 서명 이미지 첨부 / 결재 권한 통합 v22 - 관리자 전체 수정, 일반 사용자는 본인 역할만 수정 */
 (function(){
   const ROLES = ['writer','reviewer','approver'];
   const TYPES = ['iqc','pqc','oqc','nc','training'];
@@ -3696,6 +3696,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const qs = id => document.getElementById(id);
   const users = () => (window.state && Array.isArray(state.signableUsers)) ? state.signableUsers : [];
   const current = () => (window.state && state.currentUser) ? state.currentUser : null;
+
+  window.__qmsSignBooting = true;
+  setTimeout(() => { window.__qmsSignBooting = false; }, 1800);
 
   function nowText(){
     const d = new Date();
@@ -3723,22 +3726,29 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const aid = clean(a.id || a.email || a.name);
     const bid = clean(b.id || b.email || b.name);
     if(aid && bid && aid === bid) return true;
+    const ae = clean(a.email), be = clean(b.email);
+    if(ae && be && ae === be) return true;
     const an = clean(a.name), bn = clean(b.name);
     return !!(an && bn && an === bn);
+  }
+  function userObj(u){
+    if(!u) return null;
+    return {id:u.id || u.email || u.name || '', name:u.name || '', title:u.title || '', department:u.department || '', email:u.email || '', role:u.role || ''};
+  }
+  function meObj(){ return userObj(current()); }
+  function currentIsAdmin(){
+    const me = current();
+    return !!(me && clean(me.role).toLowerCase() === 'admin');
   }
   function currentIsSenior(){
     const me = current();
     if(!me) return false;
+    if(currentIsAdmin()) return true;
     if(typeof window.isSenior === 'function') return !!window.isSenior(me);
     if(typeof isSenior === 'function') return !!isSenior(me);
     const title = clean(me.title);
-    return /대표|이사|상무|전무|부장|팀장|관리자|admin/i.test(title) || clean(me.role).toLowerCase() === 'admin';
+    return /대표|이사|상무|전무|부장|팀장|관리자|본부장|실장|센터장|CEO|CTO|COO|CFO/i.test(title);
   }
-  function userObj(u){
-    if(!u) return null;
-    return {id:u.id || u.email || u.name || '', name:u.name || '', title:u.title || '', department:u.department || '', email:u.email || ''};
-  }
-  function meObj(){ return userObj(current()); }
   function findUserByIdOrName(data){
     if(!data) return null;
     return users().find(u =>
@@ -3751,6 +3761,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const s = getStore(type, role);
     return s.saved || null;
   }
+  function optionText(data, label){
+    return `${data.name || ''} (${data.title || data.department || label || '사용자'})`;
+  }
   function ensureOption(sel, data, label){
     if(!sel || !data) return;
     const id = data.id || data.email || data.name;
@@ -3761,16 +3774,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
       opt.value = id;
       sel.appendChild(opt);
     }
-    opt.textContent = `${data.name} (${data.title || data.department || label || '사용자'})`;
+    opt.textContent = optionText(data, label);
     opt.dataset.name = data.name || '';
     opt.dataset.title = data.title || '';
     opt.dataset.department = data.department || '';
     opt.dataset.email = data.email || '';
+    opt.dataset.role = data.role || '';
+  }
+  function populateUserOptions(sel, placeholder, filterFn){
+    if(!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = `<option value="">${placeholder}</option>`;
+    users().filter(u => !filterFn || filterFn(u)).forEach(u => ensureOption(sel, userObj(u), '사용자'));
+    if(prev && Array.from(sel.options).some(o => String(o.value) === String(prev))) sel.value = prev;
   }
   function keepOnlyBlankAnd(sel, data, placeholder){
     if(!sel) return;
     const value = data && (data.id || data.email || data.name);
-    const text = data && data.name ? `${data.name} (${data.title || data.department || '본인'})` : '';
+    const text = data && data.name ? optionText(data, '본인') : '';
     sel.innerHTML = `<option value="">${placeholder}</option>`;
     if(value && text){
       const opt = document.createElement('option');
@@ -3780,8 +3801,22 @@ document.addEventListener('DOMContentLoaded',async()=>{
       opt.dataset.title = data.title || '';
       opt.dataset.department = data.department || '';
       opt.dataset.email = data.email || '';
+      opt.dataset.role = data.role || '';
       sel.appendChild(opt);
     }
+  }
+  function selectedUserFromSelect(type, role){
+    const sel = qs(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return null;
+    const opt = sel.options[sel.selectedIndex];
+    return userObj(users().find(u => clean(u.id || u.email || u.name) === clean(sel.value))) || {
+      id: sel.value,
+      name: opt?.dataset?.name || (opt?.textContent || '').replace(/\s*\(.*\)\s*$/,''),
+      title: opt?.dataset?.title || '',
+      department: opt?.dataset?.department || '',
+      email: opt?.dataset?.email || '',
+      role: opt?.dataset?.role || ''
+    };
   }
   function setPreview(type, role, img){
     const box = qs(`sg_${type}_${role}_preview`);
@@ -3796,7 +3831,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const sub = qs(`sg_${type}_${role}_sub`);
     if(sub){
       sub.textContent = text || '';
-      if(color) sub.style.color = color;
+      sub.style.color = color || '';
     }
   }
   function setRoleControls(type, role, canEdit){
@@ -3812,10 +3847,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
   }
   function canEditRole(type, role){
+    if(window.__qmsSignBooting) return true;
     const me = meObj();
     if(!me || !me.id) return false;
+    if(currentIsAdmin()) return true;
     const saved = savedData(type, role);
     const isNew = isNewRecord(type);
+
     if(role === 'writer'){
       if(isNew) return true;
       return !!saved && samePerson(saved, me);
@@ -3830,30 +3868,57 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const saved = savedData(type, role);
     const sig = window.signature데이터(type, role);
     const isNew = isNewRecord(type);
-    const sel = qs(`sg_${type}_${role}`);
+    const picked = selectedUserFromSelect(type, role);
+
+    if(currentIsAdmin()){
+      const base = picked || saved || (role === 'writer' ? me : null);
+      return base ? {...base, signImage:sig.signImage || base.signImage || '', signDate:sig.signDate || base.signDate || ''} : {id:'', name:'', title:'', department:'', signImage:'', signDate:''};
+    }
 
     if(role === 'writer'){
-      if(isNew){
-        return me ? {...me, ...sig} : {id:'', name:'', title:'', department:'', ...sig};
-      }
+      if(isNew) return me ? {...me, ...sig} : {id:'', name:'', title:'', department:'', ...sig};
       if(saved && saved.name) return {...saved, signImage:sig.signImage || saved.signImage || '', signDate:sig.signDate || saved.signDate || ''};
       return me ? {...me, ...sig} : {id:'', name:'', title:'', department:'', ...sig};
     }
 
     if(isNew){
-      if(currentIsSenior() && me && sel && String(sel.value || '') === String(me.id || me.email || me.name)) return {...me, ...sig};
+      if(currentIsSenior() && me && picked && samePerson(picked, me)) return {...me, ...sig};
       return {id:'', name:'', title:'', department:'', signImage:'', signDate:''};
     }
-
-    if(saved && saved.name){
-      return {...saved, signImage:sig.signImage || saved.signImage || '', signDate:sig.signDate || saved.signDate || ''};
-    }
-    if(currentIsSenior() && me && sel && String(sel.value || '') === String(me.id || me.email || me.name)) return {...me, ...sig};
+    if(saved && saved.name) return {...saved, signImage:sig.signImage || saved.signImage || '', signDate:sig.signDate || saved.signDate || ''};
+    if(currentIsSenior() && me && picked && samePerson(picked, me)) return {...me, ...sig};
     return {id:'', name:'', title:'', department:'', signImage:'', signDate:''};
+  }
+  function applyAdminRole(type, role){
+    const sel = qs(`sg_${type}_${role}`);
+    if(!sel) return;
+    const saved = savedData(type, role);
+    const isNew = isNewRecord(type);
+    const me = meObj();
+    const currentValue = sel.value;
+
+    populateUserOptions(sel, `-- ${ROLE_LABEL[role]} 선택 --`);
+    if(saved && saved.name){
+      ensureOption(sel, saved, `저장된 ${ROLE_LABEL[role]}`);
+      sel.value = saved.id || saved.email || saved.name || '';
+    }else if(isNew && role === 'writer' && me){
+      ensureOption(sel, me, '관리자');
+      sel.value = me.id || me.email || me.name || '';
+    }else if(currentValue && Array.from(sel.options).some(o => String(o.value) === String(currentValue))){
+      sel.value = currentValue;
+    }
+    sel.disabled = false;
+    setSub(type, role, '관리자: 모든 사용자 선택/수정 가능', 'var(--pri)');
+    setRoleControls(type, role, true);
   }
   function applyRolePermission(type, role){
     const sel = qs(`sg_${type}_${role}`);
     if(!sel) return;
+    if(currentIsAdmin()){
+      applyAdminRole(type, role);
+      return;
+    }
+
     const me = meObj();
     const saved = savedData(type, role);
     const isNew = isNewRecord(type);
@@ -3927,10 +3992,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     setDateText(type, role, s.signDate || '');
   };
   window.clearSignaturePad = function(type, role){
-    if(!canEditRole(type, role)){
-      alert(`${ROLE_LABEL[role] || '서명'}는 본인 권한에서만 지울 수 있습니다.`);
-      return;
-    }
+    if(!canEditRole(type, role)) return false;
     const s = getStore(type, role);
     s.signImage = '';
     s.signDate = '';
@@ -3939,6 +4001,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const f = qs(`sg_${type}_${role}_file`);
     if(f) f.value = '';
     notify(type, role);
+    return true;
   };
   window.restoreSignaturePad = function(type, role, data){
     const s = getStore(type, role);
@@ -3950,11 +4013,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   };
   window.getSignPayload = function(type){
     applySignPermissions(type);
-    return {
-      writer: selectedPayload(type, 'writer'),
-      reviewer: selectedPayload(type, 'reviewer'),
-      approver: selectedPayload(type, 'approver')
-    };
+    return {writer: selectedPayload(type, 'writer'), reviewer: selectedPayload(type, 'reviewer'), approver: selectedPayload(type, 'approver')};
   };
   window.restoreSign = function(type, record){
     if(!record) return;
@@ -3965,7 +4024,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       s.saved = data && (data.name || data.id) ? {...data} : null;
       if(data){
         const found = findUserByIdOrName(data);
-        const use = found ? {...data, id: found.id || data.id, name: found.name || data.name, title: data.title || found.title || '', department: data.department || found.department || ''} : data;
+        const use = found ? {...data, id: found.id || data.id, name: found.name || data.name, title: data.title || found.title || '', department: data.department || found.department || '', email: data.email || found.email || '', role: data.role || found.role || ''} : data;
         ensureOption(qs(`sg_${type}_${role}`), use, `저장된 ${ROLE_LABEL[role]}`);
         const sel = qs(`sg_${type}_${role}`);
         if(sel) sel.value = use.id || use.email || use.name || '';
@@ -3983,10 +4042,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const attach = e.target.closest && e.target.closest('[data-sign-file-btn]');
     if(attach){
       const [type, role] = attach.getAttribute('data-sign-file-btn').split(':');
-      if(!canEditRole(type, role)){
-        alert(`${ROLE_LABEL[role] || '서명'}는 본인 권한에서만 첨부할 수 있습니다.`);
-        return;
-      }
+      if(!canEditRole(type, role)) return false;
       qs(`sg_${type}_${role}_file`)?.click();
       return;
     }
@@ -4002,8 +4058,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const [type, role] = fileInput.getAttribute('data-sign-file').split(':');
       if(!canEditRole(type, role)){
         fileInput.value = '';
-        alert(`${ROLE_LABEL[role] || '서명'}는 본인 권한에서만 첨부할 수 있습니다.`);
-        return;
+        return false;
       }
       const reader = new FileReader();
       reader.onload = function(){
@@ -4024,8 +4079,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
   });
   window.addEventListener('load', function(){
-    setTimeout(window.applyAllSignPermissions, 400);
-    setTimeout(window.applyAllSignPermissions, 1200);
+    setTimeout(window.applyAllSignPermissions, 500);
+    setTimeout(window.applyAllSignPermissions, 1500);
+    setTimeout(() => { window.__qmsSignBooting = false; window.applyAllSignPermissions(); }, 2200);
   });
 })();
 
