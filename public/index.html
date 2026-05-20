@@ -31,14 +31,14 @@
 
   /*
     아래 실제 입력/버튼은 캡쳐 이미지 위에 얹은 클릭 영역입니다.
-    기존 JS가 있다면 id(loginEmail, loginPassword, loginBtn 등)를 그대로 연결해서 쓰면 됩니다.
+    화면 이미지는 배경으로 보이고, 실제 입력/버튼은 투명 클릭 영역으로만 동작합니다.
   */
   .login-hotspot {
     position: absolute;
-    right: 7.8vw;
-    top: 16.8vh;
-    width: min(31.8vw, 500px);
-    height: 75vh;
+    right: 7.2vw;
+    top: 18.5vh;
+    width: min(32.4vw, 520px);
+    height: 72vh;
   }
 
   .login-input {
@@ -49,15 +49,18 @@
     border: 0;
     border-radius: 10px;
     background: transparent;
-    color: #111827;
-    font-size: clamp(12px, 1.05vw, 16px);
-    padding-left: 14.5%;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 1px;
+    padding-left: 0;
     outline: none;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
   .login-input:focus {
-    box-shadow: 0 0 0 3px rgba(37,99,235,.24);
-    background: rgba(255,255,255,.08);
+    box-shadow: none;
+    background: transparent;
   }
 
   #loginEmail {
@@ -97,17 +100,17 @@
 
   #loginBtn {
     /* 로그인 클릭 영역: 회사 홈페이지 버튼과 겹치지 않도록 조금 축소 */
-    left: 10.2%;
-    top: 70.0%;
-    width: 79.6%;
-    height: 6.2%;
+    left: 9.0%;
+    top: 69.0%;
+    width: 82.0%;
+    height: 7.0%;
   }
 
   #homeBtn {
-    left: 8.2%;
-    top: 80.3%;
-    width: 83.6%;
-    height: 6.8%;
+    left: 8.8%;
+    top: 80.8%;
+    width: 82.4%;
+    height: 7.0%;
   }
 
   .sr-only {
@@ -185,11 +188,11 @@
   const HOME_URL = "https://namochemical.com/";
 
   document.getElementById("homeBtn").addEventListener("click", function () {
-    window.open(HOME_URL, "_blank", "noopener");
+    window.location.href = HOME_URL;
   });
 
   document.getElementById("tabSignupBtn").addEventListener("click", function () {
-    alert("회원가입 화면 연결이 필요합니다.");
+    return false;
   });
 
   // 로그인은 form 기본 제출로 처리합니다.
