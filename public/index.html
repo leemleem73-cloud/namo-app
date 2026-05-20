@@ -1628,6 +1628,20 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   background:var(--pris);
 }
 
+
+/* Dashboard top header removal patch - title/subtitle/badges removed */
+#qmesCockpit .qmes-hero{
+  padding:18px 26px 14px!important;
+}
+#qmesCockpit .qmes-hero-top{
+  display:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+#qmesCockpit .qmes-hero-grid.donut{
+  margin-top:0!important;
+}
+
 </style>
 </head>
 <body class="login-active">
@@ -5912,10 +5926,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
       </div>`;
     block.innerHTML=`
       <div class="qmes-hero">
-        <div class="qmes-hero-top">
-          <div><div class="qmes-title">Namochemical QMES 통합 관제</div><div class="qmes-sub">품질(QMS) · 생산(MES) · 설비(EAM) · 협력업체(SRM) · 경영검토(MRM)를 한 화면에서 관리합니다.<br>기존 회원/검사/서명/교육/측정기 데이터는 그대로 유지됩니다.</div></div>
-          <div class="qmes-badges"><span class="qmes-badge">● LIVE</span><span class="qmes-badge">ISO/QMS</span><span class="qmes-badge">${today()}</span></div>
-        </div>
         <div class="qmes-hero-grid donut">
           ${kpi('incoming','iqc','수입검사 (IQC)','IQC records',[['불량','fail','#3b82f6'],['NCR','ncr','#22c55e'],['재검','hold','#f97316'],['CAPA','capa','#8b5cf6']])}
           ${kpi('process','pqc','공정검사 (PQC)','PQC records',[['불량','fail','#3b82f6'],['NCR','ncr','#22c55e'],['재발','repeat','#f97316'],['CAPA','capa','#8b5cf6']])}
