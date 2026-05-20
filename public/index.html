@@ -1810,7 +1810,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <button class="nav-item" data-page="nonconform"><span class="nav-icon"></span><span>부적합 보고서</span></button>
       <div class="nav-sec">생산 관리</div>
       <button class="nav-item" data-page="worklog"><span class="nav-icon"></span><span>생산작업일지</span></button>
-      <button class="nav-item" data-page="suppliers"><span class="nav-icon"></span><span>협력사 현황</span></button>
       <button class="nav-item" data-page="trace"><span class="nav-icon"></span><span>LOT 추적</span></button>
       <div class="nav-sec">측정기 관리</div>
       <button class="nav-item" data-page="instruments"><span class="nav-icon"></span><span>측정기 관리</span></button>
@@ -2505,6 +2504,7 @@ function startClock(){const e=$('currentDateTime');if(!e)return;const r=()=>{e.t
 function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
 function jBadge(j){if(j==='합격')return'<span class="status pass">합격</span>';if(j==='불합격')return'<span class="status fail">불합격</span>';return'<span class="status hold">보류</span>';}
 function calcJ(items=[]){if(!items.length)return'합격';if(items.some(x=>String(x.judge||'')==='불합격'))return'불합격';if(items.some(x=>String(x.judge||'')==='보류'))return'보류';return'합격';}
+function safeCalcJ(items=[]){return (typeof calcJ==='function')?calcJ(items):'';}
 function eRow(cols,msg='데이터 없음'){return`<tr><td colspan="${cols}" style="text-align:center;padding:22px;color:var(--t3);">${msg}</td></tr>`;}
 function safeBC(v){return String(v||'').replace(/[^\x20-\x7E]/g,'').trim()||'N-A';}
 function tryJSON(v){if(!v)return null;if(typeof v==='object')return v;try{return JSON.parse(v);}catch(e){return null;}}
@@ -2565,11 +2565,15 @@ function canvasHasSignature(canvas){
   return canvas.dataset.signed==='1';
 }
 function signature데이터(type,role){
+  // 서명 저장소는 파일 첨부형 서명과 동일한 window.__signImageStore로 통일한다.
+  const k=`${type}:${role}`;
+  const store=(window.__signImageStore&&window.__signImageStore[k])||{};
   const canvas=getSignatureCanvas(type,role);
   const dateEl=getSignatureDateEl(type,role);
+  const canvasImage=(canvas&&canvasHasSignature(canvas))?canvas.toDataURL('image/png'):'';
   return {
-    signImage:canvas&&canvasHasSignature(canvas)?canvas.toDataURL('image/png'):'',
-    signDate:dateEl?dateEl.textContent:''
+    signImage:store.signImage||canvasImage||'',
+    signDate:store.signDate||(dateEl?dateEl.textContent:'')||''
   };
 }
 function ensureSignaturePreviewSlot(type,role){
@@ -2749,6 +2753,11 @@ function clearSignaturePad(type,role){
 }
 function restoreSignaturePad(type,role,data){
   if(!data)return;
+  window.__signImageStore=window.__signImageStore||{};
+  const k=`${type}:${role}`;
+  window.__signImageStore[k]=window.__signImageStore[k]||{};
+  window.__signImageStore[k].signImage=data.signImage||'';
+  window.__signImageStore[k].signDate=data.signDate||'';
   const canvas=getSignatureCanvas(type,role);
   const dateEl=getSignatureDateEl(type,role);
   if(dateEl)dateEl.textContent=data.signDate||'';
@@ -2761,7 +2770,7 @@ function restoreSignaturePad(type,role,data){
   img.onload=()=>{
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0,rect.width,76);
+    ctx.drawImage(img,0,0,Math.max(rect.width,canvas.width||1),76);
     canvas.dataset.signed='1';
     updateSignaturePreview(type,role);
   };
@@ -2873,7 +2882,31 @@ function onSignChange(type,changedRole){
   if(type==='oqc')syncOqcPreview();
 }
 
-function rebuildAllSignGrids(){SIGN_TYPES.forEach(t=>buildSignGrid(t));setTimeout(()=>{if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},0);}
+function rebuildAllSignGrids(){
+  const snapshots={};
+  SIGN_TYPES.forEach(t=>{try{snapshots[t]=typeof getSignPayload==='function'?getSignPayload(t):null;}catch(e){snapshots[t]=null;}});
+  SIGN_TYPES.forEach(t=>buildSignGrid(t));
+  SIGN_TYPES.forEach(t=>{
+    const p=snapshots[t];
+    if(!p)return;
+    ['writer','reviewer','approver'].forEach(role=>{
+      const data=p[role];
+      if(!data)return;
+      const sel=document.getElementById(`sg_${t}_${role}`);
+      if(sel && (data.id||data.email||data.name)){
+        const value=data.id||data.email||data.name;
+        if(!Array.from(sel.options).some(o=>String(o.value)===String(value)) && data.name){
+          sel.add(new Option(`${data.name} (${data.title||data.department||'-'})`,value));
+        }
+        sel.value=value;
+        if(value)sel.dataset.userPicked='1';
+      }
+      if(data.signImage||data.signDate)restoreSignaturePad(t,role,data);
+    });
+    if(typeof onSignChange==='function')onSignChange(t,'restore');
+  });
+  setTimeout(()=>{if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},0);
+}
 
 function getSignPayload(type){
   const find=role=>{
@@ -3293,8 +3326,14 @@ async function printEl(el){
     img.style.width=cv.style.width||'100%';
     img.style.height=cv.style.height||'76px';
     img.style.objectFit='contain';
-    img.src=cv.toDataURL('image/png');
-    ccv.replaceWith(img);
+    const key=(cv.dataset.signType&&cv.dataset.signRole)?`${cv.dataset.signType}:${cv.dataset.signRole}`:'';
+    const stored=key&&window.__signImageStore&&window.__signImageStore[key]?window.__signImageStore[key].signImage:'';
+    try{
+      img.src=stored||cv.toDataURL('image/png');
+    }catch(e){
+      img.src=stored||'';
+    }
+    if(img.src)ccv.replaceWith(img);
   });
 
   await appendPrintUserInfo(clone);
@@ -3714,7 +3753,7 @@ function updateQmesDonuts(vals){
   const trOpen=Math.max(0,trRows.length-trDone-trProgress);
 
   const data={
-    incoming:{fail:sumFail(inRows),ncr:ncIncoming,hold:inRows.filter(r=>String(calcJ?.(r.items||[])||r.judge||'').includes('보류')).length,capa:ncCapa},
+    incoming:{fail:sumFail(inRows),ncr:ncIncoming,hold:inRows.filter(r=>String(safeCalcJ(r.items||[])||r.judge||'').includes('보류')).length,capa:ncCapa},
     process:{fail:sumFail(prRows),ncr:ncProcess,repeat:0,capa:ncCapa},
     shipment:{fail:sumFail(shRows),ncr:ncShipment,repeat:0,capa:ncCapa},
     nonconform:{ncr:ncRows.length,capa:ncCapa,open:ncOpen},
@@ -4051,7 +4090,12 @@ function erf(x){const sign=x>=0?1:-1;x=Math.abs(x);const a1=0.254829592,a2=-0.28
 function spcBadge(j){const cls=(j==='관리양호'||j==='합격'||j==='우수'||j==='양호')?'pass':(j==='주의'||j==='조치필요')?'hold':'fail';return `<span class="badge ${cls}">${esc(j||'-')}</span>`;}
 function spcPill(j){const cls=(j==='관리양호'||j==='합격'||j==='PASS')?'good':(j==='검토'||j==='조치필요')?'warn':'bad';return `<span class="spc-status-pill ${cls}">${esc(j||'-')}</span>`;}
 function spcRows(){return state.spcRows||[];}
-function spcFlatValues(rows=spcRows()){return rows.flatMap(r=>(r.values||[]).map(Number).filter(Number.isFinite));}
+function spcFlatValues(rows=spcRows()){
+  return rows.flatMap(r=>(r.values||[])
+    .map(v=>typeof cellNum==='function'?cellNum(v):(String(v??'').trim()===''?NaN:Number(v)))
+    .filter(Number.isFinite)
+  );
+}
 function spcGetSpec(){const item=$('spcItem')?.value||'Dmax';const base=SPC_SPECS[item]||SPC_SPECS['Dmax'];return {...base,item,lsl:$('spcLsl')?.value===''?NaN:Number($('spcLsl')?.value),target:$('spcTarget')?.value===''?NaN:Number($('spcTarget')?.value),usl:$('spcUsl')?.value===''?NaN:Number($('spcUsl')?.value),unit:$('spcUnit')?.value||base.unit,criteria:Number($('spcCpkStd')?.value||1.33),n:Number($('spcSubgroup')?.value||5),A2:Number($('spcA2')?.value||0.577),D3:Number($('spcD3')?.value||0),D4:Number($('spcD4')?.value||2.115),d2:Number($('spcD2')?.value||2.326)};}
 function applySpcSpec(){const item=$('spcItem')?.value||'Dmax';const spec=SPC_SPECS[item]||SPC_SPECS['Dmax'];if($('spcLsl'))$('spcLsl').value=spec.lsl;if($('spcTarget'))$('spcTarget').value=spec.target;if($('spcUsl'))$('spcUsl').value=spec.usl;if($('spcUnit'))$('spcUnit').value=spec.unit;if($('spcProcess'))$('spcProcess').value=spec.spec;if($('spcReportNo')&&!$('spcReportNo').value)$('spcReportNo').value=spec.report;if($('spcSpecText'))$('spcSpecText').textContent=spec.spec;const n=Number($('spcSubgroup')?.value||5);const c=SPC_CONST[n]||SPC_CONST[5];if($('spcA2'))$('spcA2').value=c.A2;if($('spcD3'))$('spcD3').value=c.D3;if($('spcD4'))$('spcD4').value=c.D4;if($('spcD2'))$('spcD2').value=c.d2;spcRecalc(false);}
 function parseSpcValues(){const txt=($('spcValues')?.value||'').replace(/,/g,' ');return txt.split(/[\s\t\n\r]+/).map(x=>x.trim()).filter(Boolean).map(x=>Number(x)).filter(Number.isFinite);}
@@ -4438,8 +4482,13 @@ function ensureTrainingWriterLocked(record){
   };
 
   if(!Array.isArray(state.signableUsers))state.signableUsers=[];
+  let addedWriter=false;
   if(!state.signableUsers.some(u => String(u.id) === String(writerObj.id))){
     state.signableUsers.push(writerObj);
+    addedWriter=true;
+  }
+  if(addedWriter && typeof buildSignGrid==='function'){
+    buildSignGrid('training');
   }
 
   const writerSel = $('sg_training_writer');
@@ -4533,8 +4582,17 @@ async function deleteTraining(id){
   if(!confirm('교육 보고서를 삭제하시겠습니까?'))return;
   const {res,data}=await api(`/api/training/${encodeURIComponent(id)}`,{method:'DELETE'});
   if(!res.ok||!data?.success){
+    const now=trainingNow();
     const list=readTrainingReports().filter(x=>String(x.id)!==String(id));
     writeTrainingReports(list);
+    try{
+      const deleted=JSON.parse(localStorage.getItem(TRAINING_DELETED_KEY)||'[]')||[];
+      if(!deleted.some(x=>String(x.id)===String(id))){
+        deleted.push({id,deletedAt:now});
+        localStorage.setItem(TRAINING_DELETED_KEY,JSON.stringify(deleted));
+      }
+    }catch(e){}
+    await loadTrainingReports();
   }else{
     await loadTrainingReports();
   }
@@ -4623,13 +4681,19 @@ function bindEvents(){
   if($('spcPrintReport'))$('spcPrintReport').onclick=printSpcReport;
   ['spcLsl','spcUsl','spcTarget','spcSubgroup','spcA2','spcD3','spcD4','spcD2','spcCpkStd'].forEach(id=>{if($(id))$(id).addEventListener('input',()=>spcRecalc(false));});
   if($('userSave'))$('userSave').onclick=withSaving('user',$('userSave'),saveUser);if($('userReset'))$('userReset').onclick=clearUser;
+  let __reportTypeChanging=false;
   $('reportType').onchange=()=>{
-  populateReportSelect();
-  loadStandaloneReport();
-};
+    if(__reportTypeChanging)return;
+    __reportTypeChanging=true;
+    populateReportSelect();
+    requestAnimationFrame(()=>{
+      loadStandaloneReport();
+      __reportTypeChanging=false;
+    });
+  };
 
-$('reportSelect').onchange=loadStandaloneReport;
-$('reportReload').onclick=loadStandaloneReport;
+$('reportSelect').onchange=()=>loadStandaloneReport();
+$('reportReload').onclick=()=>loadStandaloneReport();
 
 $('printReportPage').onclick=()=>{
   loadStandaloneReport();
@@ -4980,7 +5044,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   window.signature데이터 = function(type, role){
     const s = getStore(type, role);
-    return {signImage: s.signImage || '', signDate: s.signDate || ''};
+    const dateEl = qs(`sg_${type}_${role}_date`);
+    return {signImage: s.signImage || '', signDate: s.signDate || (dateEl ? dateEl.textContent : '') || ''};
   };
   window.updateSignaturePreview = function(type, role){
     const s = getStore(type, role);
@@ -5032,7 +5097,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
     applySignPermissions(type);
   };
   window.applySignPermissions = applySignPermissions;
-  window.applyAllSignPermissions = function(){ TYPES.forEach(applySignPermissions); };
+  window.applyAllSignPermissions = function(){
+    const active=document.activeElement;
+    TYPES.forEach(type=>{
+      const before={};
+      ROLES.forEach(role=>{const sel=qs(`sg_${type}_${role}`);before[role]=sel?{value:sel.value,userPicked:sel.dataset.userPicked}:null;});
+      applySignPermissions(type);
+      ROLES.forEach(role=>{
+        const sel=qs(`sg_${type}_${role}`), b=before[role];
+        if(!sel||!b||!b.value)return;
+        const exists=Array.from(sel.options).some(o=>String(o.value)===String(b.value));
+        if(exists && (b.userPicked==='1'||active===sel)){
+          sel.value=b.value;
+          sel.dataset.userPicked='1';
+        }
+      });
+      ROLES.forEach(role=>notify(type,role));
+    });
+  };
 
   /* v23: 로그인 직후 currentUser 세팅 타이밍 보정. 관리자 판별 후 잠김 해제 재적용 */
   [100,300,700,1200,2000,3500].forEach(ms => setTimeout(() => {
@@ -5783,16 +5865,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function ensureNav(){
     addSecBefore('worklog','QMES 운영');
-    addNavAfter('suppliers','<button class="nav-item" data-page="supplier-eval"><span class="nav-icon">▣</span><span>협력업체 평가</span></button>');
-    addNavAfter('supplier-eval','<button class="nav-item" data-page="supplier-quality"><span class="nav-icon">▣</span><span>품질점수</span></button>');
+    addNavAfter('worklog','<button class="nav-item" data-page="production"><span class="nav-icon">▣</span><span>생산관리</span></button>');
+    addNavAfter('production','<button class="nav-item" data-page="supplier-eval"><span class="nav-icon">▣</span><span>협력업체 평가</span></button>');
+    addNavAfter('supplier-eval','<button class="nav-item" data-page="suppliers"><span class="nav-icon">▣</span><span>협력사 현황</span></button>');
+    addNavAfter('suppliers','<button class="nav-item" data-page="supplier-quality"><span class="nav-icon">▣</span><span>품질점수</span></button>');
     addNavAfter('supplier-quality','<button class="nav-item" data-page="supplier-grade"><span class="nav-icon">▣</span><span>협력사 등급관리</span></button>');
     addNavAfter('instruments','<button class="nav-item" data-page="equipment"><span class="nav-icon">▣</span><span>설비관리</span></button>');
-    addNavAfter('worklog','<button class="nav-item" data-page="production"><span class="nav-icon">▣</span><span>생산관리</span></button>');
-    addNavAfter('production','<button class="nav-item" data-page="production-order"><span class="nav-icon">▣</span><span>작업지시 관리</span></button>');
-    addNavAfter('production-order','<button class="nav-item" data-page="production-result"><span class="nav-icon">▣</span><span>생산실적 관리</span></button>');
-    addNavAfter('production-result','<button class="nav-item" data-page="material-input"><span class="nav-icon">▣</span><span>원료투입 관리</span></button>');
-    addNavAfter('material-input','<button class="nav-item" data-page="process-condition"><span class="nav-icon">▣</span><span>공정조건 관리</span></button>');
-    addNavAfter('process-condition','<button class="nav-item" data-page="yield-management"><span class="nav-icon">▣</span><span>수율관리</span></button>');
     addNavAfter('shipment','<button class="nav-item" data-page="outbound"><span class="nav-icon">▣</span><span>출하관리</span></button>');
     addSecBefore('users','경영 / 시스템');
     addNavAfter('training','<button class="nav-item" data-page="management-review"><span class="nav-icon">▣</span><span>경영검토</span></button>');
@@ -5841,19 +5919,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div id="qmesTrendSlot"></div>
         <div id="qmesNoticeSlot"></div>
       </div>
-      <div class="qmes-panel">
-        <div class="qmes-panel-h"><h3>최종 QMES 구조</h3><span class="tag">ENTERPRISE STRUCTURE</span></div>
-        <div class="qmes-panel-b"><div class="qmes-module-grid">
-          ${card('품질관리 QMS','수입·공정·출하검사, 성적서, NCR/CAPA, 전자결재',['IQC/PQC/OQC','CAPA','전자서명'],'incoming','▦')}
-          ${card('생산관리 MES','생산작업일지, LOT 연결, 생산실적 및 불량 연동',['작업일지','LOT','실적'],'production','▤')}
-          ${card('설비관리 EAM','측정기, 설비점검, 교정일정, 예방보전 관리',['측정기','교정','PM'],'equipment','▧')}
-          ${card('협력업체 SRM','협력사 현황, 품질평가, NCR 발생률 및 납기 평가',['협력사','평가','등급'],'supplier-eval','▨')}
-          ${card('출하관리 WMS','출하검사 기반 출하판정, 고객사/LOT 추적 관리',['OQC','고객사','LOT'],'outbound','▥')}
-          ${card('교육관리 TMS','교육보고서, 사진, 전자결재, 교육 이력 유지',['교육','사진','결재'],'training','▩')}
-          ${card('경영검토 MRM','월간 KPI, 품질 목표, 개선조치 및 대표 승인',['KPI','회의록','승인'],'management-review','▦')}
-          ${card('시스템관리 ADMIN','회원등록 현황, 권한, 백업, 감사로그 관리',['회원','권한','백업'],'system','▣')}
-        </div></div>
-      </div>`;
     const ph=qs('#page-dashboard .ph');
     if(ph) ph.insertAdjacentElement('afterend',block); else dash.prepend(block);
     const dlower=qs('#page-dashboard > .dlower');
