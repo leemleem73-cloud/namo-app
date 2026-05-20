@@ -164,7 +164,7 @@
 </head>
 <body>
   <main id="loginPage" aria-label="Namochemical QMS 로그인 화면">
-    <form class="login-hotspot" id="loginForm" autocomplete="on">
+    <form class="login-hotspot" id="loginForm" method="post" action="/login" autocomplete="on">
       <button class="login-click" id="tabLoginBtn" type="button" aria-label="로그인 탭"></button>
       <button class="login-click" id="tabSignupBtn" type="button" aria-label="회원가입 탭"></button>
 
@@ -192,15 +192,8 @@
     alert("회원가입 화면 연결이 필요합니다.");
   });
 
-  document.getElementById("loginForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    /*
-      실제 QMS 로그인 로직이 있으면 이 부분을 기존 loginBtn 함수와 연결하세요.
-      예: 기존 코드의 login 함수 호출 또는 서버 API 요청.
-    */
-    alert("로그인 기능은 기존 QMS 로그인 스크립트와 연결하세요.");
-  });
+  // 로그인은 form 기본 제출로 처리합니다.
+  // action="/login"으로 POST 전송되므로, 로그인 버튼이 회사 홈페이지로 이동하지 않습니다.
 </script>
 </body>
 </html>
