@@ -1601,6 +1601,24 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .qmes-chart-unit{font-size:12px;font-weight:800;color:#64748b;margin-left:auto}
 #qmesTrendSlot .qmes-trend-wide .ch .tag{display:inline-flex!important}
 
+
+/* 로그인 화면: 회사 홈페이지 바로가기 버튼 */
+.lform .home-link{
+  height:42px;
+  margin-top:0;
+  width:100%;
+  background:#fff;
+  color:var(--pri);
+  border:1.5px solid var(--pri);
+  border-radius:var(--r2);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:800;
+}
+.lform .home-link:hover{
+  background:var(--pris);
+}
+
 </style>
 </head>
 <body>
@@ -1737,6 +1755,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         <input type="password" id="loginPassword" placeholder="비밀번호"/>
         <div class="lerr" id="loginError"></div>
         <button type="button" class="btn pri" id="loginBtn" style="height:44px;font-size:14px;">로그인</button>
+        <a href="https://namochemical.com" class="btn home-link" target="_blank" rel="noopener">회사홈페이지 바로가기</a>
       </div>
     </div>
     <div class="lpanel" id="panelSignup">
