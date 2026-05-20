@@ -1415,6 +1415,184 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   #qmesCockpit .qmes-module-grid{grid-template-columns:1fr!important}
 }
 
+
+/* ══════════════════════════════════
+   Dashboard Area Trend Final v42
+   - 이미지 추천형 대시보드
+   - 막대그래프 → Area Line
+   - 공지사항 축소
+   - 교육보고서 완료/미완료 판정 보정
+══════════════════════════════════ */
+#qmesCockpit{gap:18px!important}
+#qmesCockpit .qmes-hero{padding:26px 26px 20px!important;border-radius:24px!important}
+.qmes-main-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,2.75fr) minmax(320px,.9fr)!important;
+  gap:16px!important;
+  align-items:stretch!important;
+}
+#qmesTrendSlot .qmes-trend-wide,
+.qmes-main-grid .qmes-trend-wide{
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+}
+#qmesTrendSlot .qmes-trend-wide .ch{
+  min-height:58px!important;
+  padding:16px 20px!important;
+}
+#qmesTrendSlot .qmes-trend-wide .cb{
+  padding:14px 22px 18px!important;
+}
+#qmesTrendSlot .qmes-trend-wide .cwrap{
+  height:300px!important;
+  min-height:300px!important;
+}
+#qmesTrendSlot .qmes-trend-wide canvas{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+}
+.qmes-chart-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:8px;
+  flex-wrap:wrap;
+}
+.qmes-chart-kpis{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.qmes-mini-kpi{
+  min-width:132px;
+  border-radius:12px;
+  background:linear-gradient(180deg,#f8fafc,#eef4fb);
+  border:1px solid #e3eaf3;
+  padding:10px 14px;
+}
+.qmes-mini-kpi .l{
+  font-size:11px;
+  color:#64748b;
+  font-weight:800;
+}
+.qmes-mini-kpi .v{
+  font-size:22px;
+  line-height:1.1;
+  font-weight:900;
+  color:#0f2f5f;
+  margin-top:3px;
+}
+.qmes-mini-kpi .v.ok{color:#10b981}
+.qmes-chart-tabs{
+  display:flex;
+  gap:7px;
+  align-items:center;
+}
+.qmes-chart-tab{
+  height:31px;
+  padding:0 14px;
+  border-radius:10px;
+  border:1px solid #dbe3ee;
+  background:#fff;
+  color:#64748b;
+  font-size:12px;
+  font-weight:900;
+}
+.qmes-chart-tab.active{
+  background:#2563eb;
+  color:#fff;
+  border-color:#2563eb;
+  box-shadow:0 6px 14px rgba(37,99,235,.18);
+}
+#qmesNoticeSlot .card{
+  height:100%!important;
+  border-radius:18px!important;
+}
+#qmesNoticeSlot .ch{
+  min-height:58px!important;
+  padding:16px 18px!important;
+}
+#qmesNoticeSlot .ch h3{
+  font-size:16px!important;
+}
+#qmesNoticeSlot .cb{
+  padding:8px 18px 14px!important;
+}
+#qmesNoticeSlot .nitem{
+  padding:12px 0!important;
+  gap:10px!important;
+  font-size:13px!important;
+}
+#qmesNoticeSlot .ntxt{
+  font-size:13px!important;
+  line-height:1.48!important;
+  font-weight:750!important;
+  color:#1f334d!important;
+}
+#qmesNoticeSlot .ndate{
+  font-size:11.5px!important;
+  color:#64748b!important;
+}
+#qmesNoticeSlot .ndot{
+  width:7px!important;
+  height:7px!important;
+  margin-top:7px!important;
+}
+#qmesCockpit .qmes-panel{
+  margin:0!important;
+  border-radius:18px!important;
+}
+#qmesCockpit .qmes-panel-b{
+  padding:14px!important;
+}
+#qmesCockpit .qmes-module-grid{
+  display:grid!important;
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+#qmesCockpit .qmes-module{
+  min-height:158px!important;
+  padding:18px 12px!important;
+  text-align:center!important;
+  border-radius:16px!important;
+  background:#fff!important;
+}
+#qmesCockpit .qmes-module .icon{
+  margin:0 auto 12px!important;
+  width:44px!important;
+  height:44px!important;
+  border-radius:16px!important;
+  font-size:23px!important;
+}
+#qmesCockpit .qmes-module .name{
+  font-size:14px!important;
+}
+#qmesCockpit .qmes-module .desc{
+  font-size:12px!important;
+  line-height:1.5!important;
+}
+#qmesCockpit .qmes-module .meta{
+  justify-content:center!important;
+}
+@media(max-width:1500px){
+  .qmes-main-grid{grid-template-columns:minmax(0,2fr) minmax(300px,.8fr)!important}
+  #qmesCockpit .qmes-module-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:1150px){
+  .qmes-main-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:760px){
+  #qmesTrendSlot .qmes-trend-wide .cwrap{height:250px!important;min-height:250px!important}
+  #qmesCockpit .qmes-module-grid{grid-template-columns:1fr!important}
+  .qmes-chart-kpis{width:100%}
+  .qmes-mini-kpi{flex:1}
+}
+
 </style>
 </head>
 <body>
@@ -3445,6 +3623,35 @@ function setDonutSegments(key,total,parts){
   donut.style.setProperty('--p3',(ps[2]||ps[1]||ps[0]||0)+'%');
   donut.style.setProperty('--p4',(ps[3]||ps[2]||ps[1]||ps[0]||0)+'%');
 }
+
+function isTrainingDone(r){
+  const raw=[r?.status,r?.approvalStatus,r?.approval_status,r?.state,r?.result,r?.signStatus,r?.sign_status].map(v=>String(v||'')).join(' ').toLowerCase();
+  const signApprover = r?.signApprover || r?.sign_approver || r?.approver || {};
+  const signReviewer = r?.signReviewer || r?.sign_reviewer || r?.reviewer || {};
+  const approvedBy = r?.approvedBy || r?.approved_by || '';
+  const approvedAt = r?.approvedAt || r?.approved_at || '';
+  if(/반려|reject|취소|cancel/.test(raw)) return false;
+  if(/완료|승인|approved|complete|done|closed/.test(raw)) return true;
+  if(approvedBy || approvedAt) return true;
+  if(signApprover && (signApprover.name || signApprover.email || signApprover.date || signApprover.signedAt)) return true;
+  if(signReviewer && signApprover && (signReviewer.name || signReviewer.email) && (signApprover.name || signApprover.email)) return true;
+  return false;
+}
+function isTrainingProgress(r){
+  const raw=[r?.status,r?.approvalStatus,r?.approval_status,r?.state,r?.result].map(v=>String(v||'')).join(' ').toLowerCase();
+  if(isTrainingDone(r)) return false;
+  return /진행|검토|상신|결재|review|progress|pending/.test(raw);
+}
+function updateTrendKpis(inRows,prRows,shRows){
+  const total=(inRows?.length||0)+(prRows?.length||0)+(shRows?.length||0);
+  const fail=[...(inRows||[]),...(prRows||[]),...(shRows||[])].reduce((a,r)=>a+num(r.failQty??r.fail_qty??r.fail??r.ngQty??0),0);
+  const passRate=total?Math.max(0,Math.min(100,((total-fail)/total*100))).toFixed(1):'0.0';
+  const totalEl=document.getElementById('trendTotalCount');
+  const passEl=document.getElementById('trendPassRate');
+  if(totalEl) totalEl.textContent=`${total}건`;
+  if(passEl) passEl.textContent=`${passRate}%`;
+}
+
 function updateQmesDonuts(vals){
   const s=(typeof state==='object'&&state)?state:{};
   const y=Number((document.getElementById('dashYear')&&document.getElementById('dashYear').value)||new Date().getFullYear());
@@ -3475,8 +3682,8 @@ function updateQmesDonuts(vals){
   const ncShipment=ncRows.filter(r=>lotShipment.has(String(r.ncLot||r.lot||'').trim())).length;
   const ncOpen=ncRows.filter(r=>String(r.status||'미결')!=='완결').length;
   const ncCapa=ncRows.filter(r=>String(r.action||r.capa||r.actionPlan||r.correctiveAction||'').trim()).length;
-  const trDone=cntStatus(trRows,(st)=>/완료|승인|done|complete/i.test(st));
-  const trProgress=cntStatus(trRows,(st)=>/진행|검토|review|progress/i.test(st));
+  const trDone=trRows.filter(isTrainingDone).length;
+  const trProgress=trRows.filter(isTrainingProgress).length;
   const trOpen=Math.max(0,trRows.length-trDone-trProgress);
 
   const data={
@@ -3484,7 +3691,7 @@ function updateQmesDonuts(vals){
     process:{fail:sumFail(prRows),ncr:ncProcess,repeat:0,capa:ncCapa},
     shipment:{fail:sumFail(shRows),ncr:ncShipment,repeat:0,capa:ncCapa},
     nonconform:{ncr:ncRows.length,capa:ncCapa,open:ncOpen},
-    training:{done:trDone||trRows.length,progress:trProgress,open:trOpen}
+    training:{done:trDone,progress:trProgress,open:trOpen}
   };
 
   Object.entries(numbers).forEach(([key,val])=>{
@@ -3540,31 +3747,53 @@ function renderCharts(){
     return (Array.isArray(arr)?arr:[]).filter(r=>recordDateOf(r).startsWith(ym)).length;
   });
 
+  const incoming=monthData(state.incoming);
+  const process=monthData(state.process);
+  const shipment=monthData(state.shipment);
+  const inRows=(Array.isArray(state.incoming)?state.incoming:[]).filter(r=>recordDateOf(r).startsWith(String(y)));
+  const prRows=(Array.isArray(state.process)?state.process:[]).filter(r=>recordDateOf(r).startsWith(String(y)));
+  const shRows=(Array.isArray(state.shipment)?state.shipment:[]).filter(r=>recordDateOf(r).startsWith(String(y)));
+  updateTrendKpis(inRows,prRows,shRows);
+
   safeDestroyChart('trendChart');
+  const ctx=canvas.getContext('2d');
+  const blue=ctx.createLinearGradient(0,0,0,300);
+  blue.addColorStop(0,'rgba(37,99,235,.30)');
+  blue.addColorStop(1,'rgba(37,99,235,.02)');
+  const purple=ctx.createLinearGradient(0,0,0,300);
+  purple.addColorStop(0,'rgba(139,92,246,.24)');
+  purple.addColorStop(1,'rgba(139,92,246,.02)');
+  const orange=ctx.createLinearGradient(0,0,0,300);
+  orange.addColorStop(0,'rgba(249,115,22,.24)');
+  orange.addColorStop(1,'rgba(249,115,22,.02)');
+
   state.charts.trend=new Chart(canvas,{
-    type:'bar',
+    type:'line',
     data:{
       labels,
       datasets:[
-        {label:'수입검사',data:monthData(state.incoming),backgroundColor:'rgba(26,86,219,.75)',borderRadius:5},
-        {label:'공정검사',data:monthData(state.process),backgroundColor:'rgba(109,40,217,.75)',borderRadius:5},
-        {label:'출하검사',data:monthData(state.shipment),backgroundColor:'rgba(217,119,6,.75)',borderRadius:5}
+        {label:'수입검사 (IQC)',data:incoming,borderColor:'#2563eb',backgroundColor:blue,fill:true,tension:.36,borderWidth:2.4,pointRadius:3.6,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2},
+        {label:'공정검사 (PQC)',data:process,borderColor:'#8b5cf6',backgroundColor:purple,fill:true,tension:.36,borderWidth:2.4,pointRadius:3.6,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2},
+        {label:'출하검사 (OQC)',data:shipment,borderColor:'#f97316',backgroundColor:orange,fill:true,tension:.36,borderWidth:2.4,pointRadius:3.6,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2}
       ]
     },
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{legend:{position:'top',labels:{font:{size:12,weight:'600'},boxWidth:12,boxHeight:12}}},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',align:'center',labels:{font:{size:12,weight:'700'},boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded'}},
+        tooltip:{backgroundColor:'rgba(15,23,42,.92)',padding:12,titleFont:{weight:'800'},bodyFont:{weight:'700'},callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}건`}}
+      },
       scales:{
-        y:{beginAtZero:true,ticks:{precision:0,stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},
-        x:{ticks:{font:{size:11}},grid:{display:false}}
+        y:{beginAtZero:true,suggestedMax:Math.max(4,...incoming,...process,...shipment)+1,ticks:{precision:0,stepSize:1,font:{size:11,weight:'700'},color:'#64748b'},grid:{color:'rgba(15,23,42,.07)',drawBorder:false}},
+        x:{ticks:{font:{size:11,weight:'700'},color:'#64748b'},grid:{display:false}}
       }
     }
   });
   window.__chartStore['trendChart']=state.charts.trend;
-  setTimeout(()=>{try{state.charts.trend.resize();}catch(e){}},50);
+  setTimeout(()=>{try{state.charts.trend.resize();}catch(e){}},80);
 }
-
 
 function calcInstrumentNext(){
   const last=$('instrumentLastCal')?.value||'';
@@ -5536,7 +5765,25 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const noticeCard=qs('#page-dashboard > .dlower > .card:nth-child(2)');
     const trendSlot=qs('#qmesTrendSlot');
     const noticeSlot=qs('#qmesNoticeSlot');
-    if(trendCard && trendSlot){trendCard.classList.add('qmes-trend-wide');trendSlot.appendChild(trendCard);}
+    if(trendCard && trendSlot){
+      trendCard.classList.add('qmes-trend-wide');
+      trendSlot.appendChild(trendCard);
+      const cb=trendCard.querySelector('.cb');
+      if(cb && !cb.querySelector('.qmes-chart-top')){
+        cb.insertAdjacentHTML('afterbegin',`
+          <div class="qmes-chart-top">
+            <div class="qmes-chart-kpis">
+              <div class="qmes-mini-kpi"><div class="l">총 검사 건수</div><div class="v" id="trendTotalCount">0건</div></div>
+              <div class="qmes-mini-kpi"><div class="l">합격률</div><div class="v ok" id="trendPassRate">0%</div></div>
+            </div>
+            <div class="qmes-chart-tabs">
+              <button type="button" class="qmes-chart-tab active">월간</button>
+              <button type="button" class="qmes-chart-tab">분기</button>
+              <button type="button" class="qmes-chart-tab">연간</button>
+            </div>
+          </div>`);
+      }
+    }
     if(noticeCard && noticeSlot){noticeSlot.appendChild(noticeCard);}
     if(dlower && !dlower.children.length) dlower.remove();
     block.addEventListener('click',e=>{const m=e.target.closest('[data-qmes-go]');if(m) activate(m.dataset.qmesGo);});
