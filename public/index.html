@@ -6416,6 +6416,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
 .nmc-add-btn{height:30px;border:1px solid #2563eb;background:#fff;color:#2563eb;border-radius:7px;padding:0 11px;font-weight:900;font-size:12px;cursor:pointer}
 .nmc-upload{height:64px;border:1.5px dashed #cbd5e1;border-radius:8px;background:#fbfdff;display:flex;align-items:center;justify-content:center;gap:18px;color:#64748b;font-size:12px}
 .nmc-textarea{width:100%;height:86px;border:1px solid #dbe3ee;border-radius:8px;resize:vertical;padding:12px;color:#0f172a;font-size:13px;outline:none}
+.nmc-instruction-card{padding:24px!important}
+.nmc-instruction-card h3{font-size:18px!important;margin-bottom:16px!important}
+.nmc-instruction-box{width:100%!important;min-height:180px!important;height:180px;border:1.5px solid #d9e3f0!important;border-radius:14px!important;resize:vertical;padding:16px 18px!important;font-size:14px!important;line-height:1.7!important;background:#fff!important;color:#0f172a!important;outline:none!important;transition:.18s ease!important}
+.nmc-instruction-box:focus{border-color:#2563eb!important;box-shadow:0 0 0 4px rgba(37,99,235,.12)!important}
 .nmc-bell-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .nmc-toast{position:fixed;right:24px;top:84px;z-index:9999;min-width:330px;max-width:420px;background:#fff;border:1px solid #dbe3ee;border-left:5px solid #2563eb;border-radius:12px;box-shadow:0 18px 40px rgba(15,23,42,.18);padding:14px 16px;animation:nmcToastIn .18s ease}
 .nmc-toast b{display:block;font-size:14px;color:#0f172a;margin-bottom:4px}.nmc-toast span{font-size:12px;color:#475569}
@@ -6608,12 +6612,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
         </tbody><tfoot><tr><td colspan="4">합계</td><td id="nmcMaterialTotalQty">0.00 kg</td><td id="nmcMaterialTotalRatio">0.00 %</td><td>-</td><td></td></tr></tfoot></table></div>
         <div class="nmc-material-info"><b>ℹ</b> 투입량(kg)을 입력하면 비율(%)이 자동으로 계산됩니다.<br><b></b> 전체 투입량 합계의 비율이 마지막에 100.00%로 자동 표시됩니다.</div>
       </div>
-      <div class="nmc-split">
-        <div class="nmc-workorder-card"><h3>4. 첨부 파일</h3><div class="nmc-upload" id="nmcFileDrop"><span>▧</span><span>파일을 드래그 하거나 클릭하여 업로드하세요.<br><small>(PDF, JPG, PNG, Excel / 최대 10MB)</small></span><button class="nmc-small-btn" id="nmcFileBtn" type="button">파일 선택</button><input type="file" id="nmcFileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xls,.xlsx" style="display:none"></div><div id="nmcFileList" class="nmc-file-list"></div></div>
-        <div class="nmc-workorder-card"><h3>5. 지시 사항</h3><textarea class="nmc-textarea" placeholder="지시 사항을 입력하세요."></textarea></div>
+      <div class="nmc-workorder-card nmc-instruction-card">
+        <h3>4. 지시 사항</h3>
+        <textarea id="nmcInstruction" class="nmc-textarea nmc-instruction-box" placeholder="지시 사항을 입력하세요."></textarea>
       </div>
       <div class="nmc-workorder-card">
-        <h3>6. 발송 정보</h3>
+        <h3>5. 발송 정보</h3>
         <div class="nmc-form-grid">
           <div class="nmc-field"><label>발송부서<span class="req">*</span></label><input class="nmc-input" id="nmcSenderName" readonly placeholder="로그인 사용자 성명 자동 표시"></div>
           <div class="nmc-field"><label>수신부서<span class="req">*</span></label><select class="nmc-select" id="nmcRecvDept" multiple size="4"></select></div>
@@ -6867,16 +6871,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
     updateMaterialRows();
   }
 
-  function handleFiles(files){
-    const list=qs('#nmcFileList'); if(!list || !files || !files.length) return;
-    Array.from(files).forEach(file=>{
-      if(file.size > 10*1024*1024){ notify('첨부파일 오류',`${file.name}은 10MB를 초과하여 제외되었습니다.`); return; }
-      const size = file.size > 1024*1024 ? (file.size/1024/1024).toFixed(1)+'MB' : Math.max(1,Math.round(file.size/1024))+'KB';
-      list.insertAdjacentHTML('beforeend', `<div class="nmc-file-item"><span>📎 ${esc(file.name)} <small>(${size})</small></span><button class="nmc-file-remove" type="button">삭제</button></div>`);
-    });
-    notify('첨부파일 추가',`${files.length}개 파일이 첨부 목록에 추가되었습니다.`);
-  }
-
   function val(id){
     const el=$(id);
     if(!el) return '-';
@@ -6909,6 +6903,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       </tbody></table>
       <h4 style="margin:16px 0 8px">투입 원료</h4>
       <table><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량(kg)</th><th>비율(%)</th><th>비고</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td colspan="4"><b>합계</b></td><td><b>${esc(matTotalQty)}</b></td><td><b>${esc(matTotalRatio)}</b></td><td>-</td></tr></tfoot></table>
+      <h4 style="margin:16px 0 8px">지시 사항</h4>
+      <div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">${esc(qs('#nmcInstruction')?.value || '-')}</div>
       <h4 style="margin:16px 0 8px">발송 정보</h4>
       <table><tbody><tr><th>발송부서</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${esc(recvNames)}</td><th>참조부서</th><td>${esc(refNames)}</td></tr><tr><th>발송일시</th><td>${val('nmcSendTime')}</td><th>비고</th><td colspan="3">${val('nmcSendNote')}</td></tr></tbody></table>
       <div class="print-user-info">출력자: ${val('nmcSenderName')} / 출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
@@ -6951,8 +6947,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
       }
       if(e.target.closest('#nmcMaterialAdd')){ e.preventDefault(); addMaterialRow(); }
       if(e.target.closest('[data-nmc-del-row]')){ e.preventDefault(); e.target.closest('tr')?.remove(); updateMaterialRows(); }
-      if(e.target.closest('#nmcFileBtn') || e.target.closest('#nmcFileDrop')){ const btn=e.target.closest('#nmcFileBtn'); if(btn || !e.target.closest('.nmc-file-remove')) $('nmcFileInput')?.click(); }
-      if(e.target.closest('.nmc-file-remove')){ e.preventDefault(); e.target.closest('.nmc-file-item')?.remove(); }
       if(e.target.closest('#nmcPlanCreate')){
         notify('생산계획 작성 알림','신규 생산계획 등록 화면이 준비되었습니다.');
         showPage('workorder-final');
@@ -6963,7 +6957,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
         renderWorkOrderAlert();
         notify('요청부서 변경 알림',`요청부서가 ${e.target.value || '미입력'}(으)로 변경되었습니다.`);
       }
-      if(e.target && e.target.id==='nmcFileInput') handleFiles(e.target.files);
       if(e.target && e.target.classList.contains('nmc-lot-source')) generateProdLot(false);
       if(e.target && e.target.classList.contains('nmc-mat-qty')) updateMaterialTotal();
     });
@@ -6971,9 +6964,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(e.target && e.target.classList.contains('nmc-lot-source')) generateProdLot(false);
       if(e.target && e.target.classList.contains('nmc-mat-qty')) updateMaterialTotal();
     });
-    document.addEventListener('dragover',e=>{ const drop=e.target.closest('#nmcFileDrop'); if(drop){ e.preventDefault(); drop.classList.add('dragover'); }});
-    document.addEventListener('dragleave',e=>{ const drop=e.target.closest('#nmcFileDrop'); if(drop) drop.classList.remove('dragover'); });
-    document.addEventListener('drop',e=>{ const drop=e.target.closest('#nmcFileDrop'); if(drop){ e.preventDefault(); drop.classList.remove('dragover'); handleFiles(e.dataTransfer.files); }});
   }
 
   function init(){
