@@ -2521,6 +2521,21 @@ function toKSTDate(v){
   }
 }
 
+
+function pickRecordDate(r){
+  if(!r) return '';
+  const candidates=[
+    r.date,r.inspectionDate,r.inspection_date,r.workDate,r.work_date,
+    r.ncDate,r.nc_date,r.trainingDate,r.training_date,r.reportDate,r.report_date,
+    r.createdAt,r.created_at,r.updatedAt,r.updated_at
+  ];
+  for(const v of candidates){
+    const d=toKSTDate(v);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  }
+  return '';
+}
+
 function todayKST(){const s=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;}
 function formatDT(){const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;}
 function startClock(){const e=$('currentDateTime');if(!e)return;const r=()=>{e.textContent=formatDT();};r();setInterval(r,1000);}
@@ -3438,7 +3453,7 @@ async function loadIncoming(){
   const{data}=await api('/api/iqc');
   state.incoming=(data?.data||[]).map(r=>({
     id:r.id,
-    date:toKSTDate(r.date),          // ★ KST 변환
+    date:pickRecordDate(r),          // ★ KST 변환/대체 날짜 자동 인식
     lot:r.lot,
     supplier:r.supplier,
     item:r.item,
@@ -3459,7 +3474,7 @@ async function loadProcess(){
   const{data}=await api('/api/pqc');
   state.process=(data?.data||[]).map(r=>({
     id:r.id,
-    date:toKSTDate(r.date),          // ★ KST 변환
+    date:pickRecordDate(r),          // ★ KST 변환/대체 날짜 자동 인식
     lot:r.lot,
     product:r.product,
     line:r.visual,
@@ -3481,7 +3496,7 @@ async function loadShipment(){
   const{data}=await api('/api/oqc');
   state.shipment=(data?.data||[]).map(r=>({
     id:r.id,
-    date:toKSTDate(r.date),          // ★ KST 변환
+    date:pickRecordDate(r),          // ★ KST 변환/대체 날짜 자동 인식
     customer:r.customer,
     product:r.product,
     lot:r.lot,
@@ -3807,7 +3822,9 @@ function setTrendSafe(id,c,pp){
   el.className='trend '+(s.startsWith('+')?'up':s.startsWith('-')?'down':'neutral');
 }
 function recordDateOf(r){
-  const raw=String(r?.date||r?.workDate||r?.work_date||r?.inspectionDate||r?.inspection_date||r?.createdAt||r?.created_at||r?.ncDate||r?.trainingDate||r?.reportDate||'').trim();
+  const picked=pickRecordDate(r);
+  if(picked) return picked;
+  const raw=String(r?.date||r?.workDate||r?.work_date||r?.inspectionDate||r?.inspection_date||r?.createdAt||r?.created_at||r?.ncDate||r?.nc_date||r?.trainingDate||r?.training_date||r?.reportDate||r?.report_date||'').trim();
   if(!raw) return '';
   const m=raw.match(/(\d{4})[-./년\s]*(\d{1,2})?[-./월\s]*(\d{1,2})?/);
   if(!m) return raw;
@@ -3851,7 +3868,10 @@ function renderSummary(){
 function renderCharts(){
   const canvas=$('trendChart');
   if(!canvas || !window.Chart) return;
-  const y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
+  let y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
+  const allTrendRows=[...(Array.isArray(state.incoming)?state.incoming:[]),...(Array.isArray(state.process)?state.process:[]),...(Array.isArray(state.shipment)?state.shipment:[])];
+  const availableYears=[...new Set(allTrendRows.map(r=>recordDateOf(r).slice(0,4)).filter(v=>/^\d{4}$/.test(v)))].map(Number).sort((a,b)=>b-a);
+  if(availableYears.length && !allTrendRows.some(r=>recordDateOf(r).startsWith(String(y)))) y=availableYears[0];
   const mode=window.qmesTrendMode||'month';
 
   const makeGradient=(ctx,color)=>{
@@ -6272,8 +6292,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const s=st();
     if(typeof renderSummary==='function'){
       const y=Number((document.getElementById('dashYear')&&document.getElementById('dashYear').value)||new Date().getFullYear());
-      const dateOf=r=>String(r?.date||r?.workDate||r?.ncDate||r?.trainingDate||r?.reportDate||'');
-      const byY=a=>arr(a).filter(r=>dateOf(r).startsWith(String(y))).length;
+      const byY=a=>arr(a).filter(r=>recordDateOf(r).startsWith(String(y))).length;
       const ncOpen=arr(s.nonconform).filter(r=>String(r.status||'미결')!=='완결').length;
       if(typeof updateQmesDonuts==='function') updateQmesDonuts({incoming:byY(s.incoming),process:byY(s.process),shipment:byY(s.shipment),nonconform:ncOpen,training:byY(s.trainingReports||s.training)});
     }
@@ -6326,7 +6345,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 @media print{body *{visibility:hidden!important}#prodPrintTarget,#prodPrintTarget *{visibility:visible!important}#prodPrintTarget{display:block!important;position:absolute!important;left:0;top:0;width:100%;background:#fff;padding:10mm}.ph,.sidebar,.topbar,.ph-actions,.prod-tabs,.btn{display:none!important}}
 
 /* 작업지시서 첨부파일/검토 승인 화면 재구성 v44 */
-.wo-page-wrap{background:#f8fbff;min-height:calc(100vh - 64px);padding:4px 0 10px;color:#09265a}.wo-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}.wo-title{font-size:26px;font-weight:900;color:#0b2a5b;letter-spacing:-.5px}.wo-bc{margin-top:26px;font-size:11px;font-weight:800;color:#294c84}.wo-bc span{margin:0 10px;color:#8aa0c1}.wo-live{height:30px;display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px;padding:0 12px;font-size:12px;font-weight:900;box-shadow:0 4px 14px rgba(15,23,42,.04)}.wo-live-dot{width:8px;height:8px;border-radius:50%;background:#22c55e}.wo-card-grid{display:grid;grid-template-columns:2.2fr .82fr .82fr .82fr;gap:10px}.wo-card,.wo-full{border-radius:6px!important;border:1px solid #e0e7f2!important;box-shadow:0 6px 18px rgba(15,23,42,.035)!important}.wo-card .prod-section-h,.wo-full .prod-section-h{padding:12px 18px!important;background:#fff!important;border-bottom:none!important}.wo-card .prod-section-h h3,.wo-full .prod-section-h h3{font-size:15px!important;color:#08275c!important}.wo-card .prod-section-b{padding:6px 18px 14px!important}.prod-form-grid.one{grid-template-columns:1fr!important}.wo-card .field label,.wo-full .field label{font-size:12px!important;color:#08275c!important;text-transform:none!important;letter-spacing:0!important}.wo-card .field label b{color:#dc2626}.wo-card input,.wo-card select{height:34px!important;border-color:#dce6f5!important;border-radius:5px!important;color:#0a2a62!important;font-weight:800!important}.wo-full{margin-top:10px!important}.wo-full .prod-section-b{padding:0 12px 12px!important}.wo-actions{display:flex;gap:8px;align-items:center}.wo-full table{font-size:12px!important}.wo-full thead th{height:31px;background:#f5f7fb!important;color:#08275c!important;font-size:11px!important;text-transform:none!important;text-align:center!important}.wo-full tbody td{text-align:center!important;color:#08275c!important;font-weight:800!important;padding:7px 10px!important}.wo-approval-box{border:2px solid #ff2b2b!important;margin-top:12px!important}.wo-approval-box .prod-section-b{padding:8px 14px 12px!important}.wo-approval-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.18fr .95fr;gap:16px;align-items:stretch}.wo-review-card,.wo-attach-card,.wo-opinion-card{min-height:70px;border-right:1px solid #edf1f7;padding:0 10px}.wo-opinion-card{border-right:none}.wo-review-card b,.wo-attach-card b,.wo-opinion-card b{display:block;font-size:12px;font-weight:900;color:#08275c;margin-bottom:7px}.wo-review-card label{display:block;font-size:11px;font-weight:900;color:#08275c;margin:4px 0}.wo-review-card input{height:28px;border:1px solid #dce6f5;border-radius:5px;padding:0 8px;font-size:11px;font-weight:900;color:#08275c;width:100%}.wo-wait{height:28px;border:1px solid #e7edf7;border-radius:5px;background:#fff;color:#b77900;font-size:11px;font-weight:900;display:flex;align-items:center;padding:0 8px}.wo-upload-line{display:flex;gap:8px;align-items:center}.wo-upload-line input{height:34px;border:1px solid #dce6f5;border-radius:5px;padding:0 10px;font-size:11px;color:#94a3b8;flex:1}.wo-file-hint{font-size:10.5px;color:#6480a8;font-weight:800;margin-top:8px}.wo-opinion-card textarea{width:100%;height:64px;border:1px solid #dce6f5;border-radius:5px;padding:9px;font-size:11px;resize:none;color:#08275c}.wo-bottom-actions{display:flex;justify-content:flex-end;gap:16px;margin-top:14px}.wo-bottom-actions .btn{min-width:132px;height:38px}@media(max-width:1400px){.wo-card-grid{grid-template-columns:1fr 1fr}.wo-card.span2{grid-column:1/-1}.wo-approval-grid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.wo-card-grid,.wo-approval-grid{grid-template-columns:1fr}.wo-review-card,.wo-attach-card{border-right:none;border-bottom:1px solid #edf1f7;padding-bottom:10px}}
+.wo-page-wrap{background:#f8fbff;min-height:calc(100vh - 64px);padding:4px 0 10px;color:#09265a}.wo-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}.wo-title{font-size:26px;font-weight:900;color:#0b2a5b;letter-spacing:-.5px}.wo-bc{margin-top:26px;font-size:11px;font-weight:800;color:#294c84}.wo-bc span{margin:0 10px;color:#8aa0c1}.wo-top-actions{display:flex;align-items:center;gap:8px}.wo-top-actions .btn{height:32px!important}.wo-card-grid{display:grid;grid-template-columns:2.2fr .82fr .82fr .82fr;gap:10px}.wo-card,.wo-full{border-radius:6px!important;border:1px solid #e0e7f2!important;box-shadow:0 6px 18px rgba(15,23,42,.035)!important}.wo-card .prod-section-h,.wo-full .prod-section-h{padding:12px 18px!important;background:#fff!important;border-bottom:none!important}.wo-card .prod-section-h h3,.wo-full .prod-section-h h3{font-size:15px!important;color:#08275c!important}.wo-card .prod-section-b{padding:6px 18px 14px!important}.prod-form-grid.one{grid-template-columns:1fr!important}.wo-card .field label,.wo-full .field label{font-size:12px!important;color:#08275c!important;text-transform:none!important;letter-spacing:0!important}.wo-card .field label b{color:#dc2626}.wo-card input,.wo-card select{height:34px!important;border-color:#dce6f5!important;border-radius:5px!important;color:#0a2a62!important;font-weight:800!important}.wo-full{margin-top:10px!important}.wo-full .prod-section-b{padding:0 12px 12px!important}.wo-actions{display:flex;gap:8px;align-items:center}.wo-full table{font-size:12px!important}.wo-full thead th{height:31px;background:#f5f7fb!important;color:#08275c!important;font-size:11px!important;text-transform:none!important;text-align:center!important}.wo-full tbody td{text-align:center!important;color:#08275c!important;font-weight:800!important;padding:7px 10px!important}.wo-full tbody td input{width:100%;height:30px;border:1px solid #dce6f5;border-radius:5px;padding:0 8px;color:#08275c;font-weight:800;background:#fff}.wo-full tbody td textarea{width:100%;min-height:34px;border:1px solid #dce6f5;border-radius:5px;padding:6px 8px;color:#08275c;font-weight:800;resize:vertical;background:#fff}.wo-approval-box{border:1px solid #e0e7f2!important;margin-top:12px!important}.wo-approval-box .prod-section-b{padding:8px 14px 12px!important}.wo-approval-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.18fr .95fr;gap:16px;align-items:stretch}.wo-review-card,.wo-attach-card,.wo-opinion-card{min-height:70px;border-right:1px solid #edf1f7;padding:0 10px}.wo-opinion-card{border-right:none}.wo-review-card b,.wo-attach-card b,.wo-opinion-card b{display:block;font-size:12px;font-weight:900;color:#08275c;margin-bottom:7px}.wo-review-card label{display:block;font-size:11px;font-weight:900;color:#08275c;margin:4px 0}.wo-review-card input{height:28px;border:1px solid #dce6f5;border-radius:5px;padding:0 8px;font-size:11px;font-weight:900;color:#08275c;width:100%}.wo-wait{height:28px;border:1px solid #e7edf7;border-radius:5px;background:#fff;color:#b77900;font-size:11px;font-weight:900;display:flex;align-items:center;padding:0 8px}.wo-upload-line{display:flex;gap:8px;align-items:center}.wo-upload-line input{height:34px;border:1px solid #dce6f5;border-radius:5px;padding:0 10px;font-size:11px;color:#94a3b8;flex:1}.wo-file-hint{font-size:10.5px;color:#6480a8;font-weight:800;margin-top:8px}.wo-opinion-card textarea{width:100%;height:64px;border:1px solid #dce6f5;border-radius:5px;padding:9px;font-size:11px;resize:none;color:#08275c}.wo-bottom-actions{display:flex;justify-content:flex-end;gap:16px;margin-top:14px}.wo-bottom-actions .btn{min-width:132px;height:38px}@media(max-width:1400px){.wo-card-grid{grid-template-columns:1fr 1fr}.wo-card.span2{grid-column:1/-1}.wo-approval-grid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.wo-card-grid,.wo-approval-grid{grid-template-columns:1fr}.wo-review-card,.wo-attach-card{border-right:none;border-bottom:1px solid #edf1f7;padding-bottom:10px}}
 
 </style>
 <script id="production-only-patch-script">
@@ -6354,7 +6373,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
             <div class="wo-title">작업 지시서</div>
             <div class="wo-bc">홈 <span>›</span> 생산 관리 <span>›</span> 작업지시 관리 <span>›</span> 작업지시서</div>
           </div>
-          <div class="wo-live"><span class="wo-live-dot"></span> LIVE 실시간</div>
+          <div class="wo-top-actions"><button class="btn light" onclick="window.print()">인쇄</button></div>
         </div>
 
         <div class="wo-card-grid">
@@ -6394,18 +6413,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
         </tbody></table></div></div></div>
 
         <div class="prod-section wo-full"><div class="prod-section-h"><h3>6. 공정 단계 및 지시 내용</h3><div class="wo-actions"><button class="btn light sm">+ 공정 단계 추가</button><button class="btn light sm">순서 변경</button><button class="btn light sm">엑셀 다운로드</button></div></div><div class="prod-section-b"><div class="tw"><table><thead><tr><th>순번</th><th>공정 단계</th><th>지시 내용 / 조건</th><th>핵심 관리 항목</th><th>기준값</th><th>허용 범위</th><th>비고</th></tr></thead><tbody>
-          <tr><td>1</td><td>원료 준비</td><td>드라이룸 원료 준비 및 개봉</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>2</td><td>저점도 투입</td><td>NMP → AOH30 → BYK180 투입</td><td>투입 순서</td><td>순서 준수</td><td>-</td><td>필수</td></tr><tr><td>3</td><td>1차 MIXING</td><td>ON 20 MIN MIXING</td><td>RPM</td><td>120</td><td>100 ~ 150</td><td>-</td></tr><tr><td>4</td><td>1차 저중 투입</td><td>TK-501A → SBR 투입</td><td>온도</td><td>25.0</td><td>20.0 ~ 30.0</td><td>-</td></tr><tr><td>5</td><td>2차 MIXING 순환</td><td>-</td><td>온도 / 시간</td><td>25.0 / 30분</td><td>20.0 ~ 30.0 / 20 ~ 40분</td><td>-</td></tr><tr><td>6</td><td>중간 SPL 검사</td><td>점도, 밀도, 고형분 검사</td><td>점도 (cP)</td><td>3,000</td><td>2,500 ~ 3,500</td><td>-</td></tr>
+          <tr><td>1</td><td><input></td><td><textarea></textarea></td><td><input></td><td><input></td><td><input></td><td><input></td></tr><tr><td>2</td><td><input></td><td><textarea></textarea></td><td><input></td><td><input></td><td><input></td><td><input></td></tr><tr><td>3</td><td><input></td><td><textarea></textarea></td><td><input></td><td><input></td><td><input></td><td><input></td></tr><tr><td>4</td><td><input></td><td><textarea></textarea></td><td><input></td><td><input></td><td><input></td><td><input></td></tr><tr><td>5</td><td><input></td><td><textarea></textarea></td><td><input></td><td><input></td><td><input></td><td><input></td></tr><tr><td>6</td><td><input></td><td><textarea></textarea></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
         </tbody></table></div></div></div>
 
-        <div class="prod-section wo-full wo-approval-box"><div class="prod-section-h"><h3>7. 검토 및 승인</h3></div><div class="prod-section-b"><div class="wo-approval-grid">
-          <div class="wo-review-card"><b>1차 검토 (생산)</b><label>검토자</label><input value="김현수 (생산 책임자)"><label>상태</label><div class="wo-wait">⚠ 대기 중</div></div>
-          <div class="wo-review-card"><b>2차 검토 (품질)</b><label>검토자</label><input value="이정훈 (품질 책임자)"><label>상태</label><div class="wo-wait">⚠ 대기 중</div></div>
-          <div class="wo-review-card"><b>최종 승인 (관리자)</b><label>검토자</label><input value="박도훈 (생산 관리자)"><label>상태</label><div class="wo-wait">⚠ 대기 중</div></div>
-          <div class="wo-attach-card"><b>첨부 문서</b><div class="wo-upload-line"><input placeholder="파일을 드래그하거나 클립아이콘 첨부하세요."><button class="btn light sm">+ 파일 추가</button></div><div class="wo-file-hint">ⓘ 허용 파일 : PDF, JPG, PNG, Excel (최대 10MB)</div></div>
-          <div class="wo-opinion-card"><b>검토 의견</b><textarea placeholder="검토 의견을 입력하세요."></textarea></div>
-        </div></div></div>
+        <div class="prod-section wo-full wo-approval-box"><div class="prod-section-h"><h3>7. 작성 / 검토 / 승인</h3><span class="prod-status draft" id="woStatusBadge">작성 중</span></div><div class="prod-section-b"><div class="prod-tabs"><button class="prod-tab active" data-wo-step="draft">작성</button><button class="prod-tab" data-wo-step="review">검토</button><button class="prod-tab" data-wo-step="approve">승인</button></div><div class="prod-approval"><div class="prod-approval-card"><div class="role">작성자</div><div class="body"><div class="name">관리자</div><div class="date" id="woWriterDate">작성대기</div></div></div><div class="prod-approval-card"><div class="role">검토자</div><div class="body"><div class="name">생산관리자</div><div class="date" id="woReviewerDate">검토대기</div></div></div><div class="prod-approval-card"><div class="role">승인자</div><div class="body"><div class="name">품질/생산 승인</div><div class="date" id="woApproverDate">승인대기</div></div></div><div class="prod-approval-card"><div class="role">첨부파일</div><div class="body"><div class="wo-upload-line"><input placeholder="첨부파일을 선택하세요."><button class="btn light sm">+ 파일 추가</button></div><div class="wo-file-hint">허용 파일 : PDF, JPG, PNG, Excel (최대 10MB)</div></div></div></div><div class="wo-opinion-card" style="margin-top:12px;border-right:none;padding:0"><b>검토 의견</b><textarea placeholder="검토 의견을 입력하세요."></textarea></div></div></div>
 
-        <div class="wo-bottom-actions"><button class="btn light">취소</button><button class="btn pri">작성 저장</button><button class="btn pri">작성 완료</button></div>
+        <div class="wo-bottom-actions"><button class="btn light" onclick="window.print()">인쇄</button><button class="btn light">취소</button><button class="btn pri" data-wo-action="save">작성 저장</button><button class="btn pri" data-wo-action="draftDone">작성 완료</button><button class="btn pri" data-wo-action="reviewDone">검토 완료</button><button class="btn pri" data-wo-action="approveDone">승인 완료</button></div>
       </div>
     </section>`;
   }
@@ -6426,7 +6439,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const wl=qs('#page-worklog'); if(wl) wl.innerHTML=worklogPage();
     main.insertAdjacentHTML('beforeend',prodResultPage());
   }
-  function init(){cleanProductionNav();buildPages();cleanProductionNav();}
+
+  function bindWorkOrderApproval(){
+    const page=qs('#page-workorder'); if(!page) return;
+    const badge=qs('#woStatusBadge',page);
+    const tabs=qsa('[data-wo-step]',page);
+    function now(){const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+    function setStep(step){
+      tabs.forEach(t=>t.classList.toggle('active',t.dataset.woStep===step));
+      if(!badge) return;
+      badge.className='prod-status '+(step==='approve'?'approve':step==='review'?'review':'draft');
+      badge.textContent=step==='approve'?'승인 완료':step==='review'?'검토 중':'작성 중';
+    }
+    tabs.forEach(t=>{t.onclick=()=>setStep(t.dataset.woStep);});
+    qsa('[data-wo-action]',page).forEach(btn=>{btn.onclick=()=>{
+      const a=btn.dataset.woAction;
+      if(a==='save'){setStep('draft'); return;}
+      if(a==='draftDone'){const e=qs('#woWriterDate',page); if(e)e.textContent='작성 완료 '+now(); setStep('review'); return;}
+      if(a==='reviewDone'){const e=qs('#woReviewerDate',page); if(e)e.textContent='검토 완료 '+now(); setStep('approve'); return;}
+      if(a==='approveDone'){const e=qs('#woApproverDate',page); if(e)e.textContent='승인 완료 '+now(); setStep('approve'); return;}
+    };});
+  }
+  function init(){cleanProductionNav();buildPages();cleanProductionNav();bindWorkOrderApproval();}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700)); else setTimeout(init,700);
   setTimeout(init,1800);
 })();
