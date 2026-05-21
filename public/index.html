@@ -6646,6 +6646,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(force) notify('생산 LOT 자동생성',`${lotInputs[0].value} 번호가 자동 생성되었습니다.`);
   }
 
+  function nmcScopeFrom(el){
+    return el?.closest('#page-production, #page-workorder-final, .nmc-workorder-card') || document;
+  }
+  function nmcField(scope,id){
+    return (scope && scope.querySelector ? scope.querySelector('#'+id) : null) || document.getElementById(id);
+  }
+  function nmcVisibleField(id){
+    const nodes=[...document.querySelectorAll('#'+id)];
+    return nodes.find(x=>x.offsetParent!==null) || nodes[0] || null;
+  }
+
   function syncSendInfo(){
     const u=(window.state && state.currentUser) ? state.currentUser : {};
     const dept=u.department || u.dept || '';
@@ -6659,17 +6670,31 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function fillProductionManagers(){
     const users=[];
     if(window.state){
-      if(state.currentUser) users.push(state.currentUser);
       if(Array.isArray(state.adminUsers)) users.push(...state.adminUsers);
       if(Array.isArray(state.signableUsers)) users.push(...state.signableUsers);
+      if(state.currentUser) users.push(state.currentUser);
     }
     const map=new Map();
-    users.forEach(u=>{ if(u && (u.name || u.email)) map.set(u.id || u.email || u.name, u); });
-    const prod=[...map.values()].filter(u=>String(u.department || u.dept || '').includes('생산'));
+    users.forEach(u=>{ if(u && (u.name || u.email)) map.set(String(u.id || u.email || u.name), u); });
+    const prod=[...map.values()].filter(u=>{
+      const dept=String(u.department || u.dept || '').replace(/\s/g,'');
+      const status=String(u.status || 'APPROVED').toUpperCase();
+      return /생산부서|생산부|생산팀|생산/.test(dept) && status !== 'REJECTED' && status !== '퇴사';
+    });
     qsa('#nmcProdManager').forEach(sel=>{
       const cur=sel.value;
-      sel.innerHTML='<option value="">회원등록현황에서 선택</option>' + prod.map(u=>`<option value="${esc(u.email || u.name || '')}" data-name="${esc(u.name || '')}">${esc(u.department || '')} ${esc(u.name || u.email || '')}${u.title?' / '+esc(u.title):''}</option>`).join('');
-      if(cur) sel.value=cur;
+      if(!prod.length){
+        sel.innerHTML='<option value="">등록된 생산부 담당자 없음</option>';
+        return;
+      }
+      sel.innerHTML='<option value="">생산부 담당자 선택</option>' + prod.map(u=>{
+        const value=esc(u.id || u.email || u.name || '');
+        const name=esc(u.name || u.email || '');
+        const email=esc(u.email || '');
+        const dept=esc(u.department || u.dept || '생산부서');
+        return `<option value="${value}" data-name="${name}" data-email="${email}" data-dept="${dept}">${dept} ${name}${u.title?' / '+esc(u.title):''}</option>`;
+      }).join('');
+      if(cur && [...sel.options].some(o=>o.value===cur)) sel.value=cur;
     });
   }
 
@@ -6709,7 +6734,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!target){ target=document.createElement('div'); target.id='printTarget'; document.body.appendChild(target); }
     target.className='rsheet';
     const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[3]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[4]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[5]?.querySelector('input')?.value||'kg')}</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
-    const mgr=$('nmcProdManager')?.selectedOptions?.[0]?.textContent || '-';
+    const mgr=nmcVisibleField('nmcProdManager')?.selectedOptions?.[0]?.textContent || '-';
     target.innerHTML=`
       <div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">${val('nmcWoNo')}</div></div>
       <table><tbody>
@@ -6745,11 +6770,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
         if(a==='write') notify('작업지시서 저장',`${woNo} 저장이 완료되었습니다.`);
         if(a==='send'){
           syncSendInfo();
-          const mgr=$('nmcProdManager');
-          const mgrName=mgr?.selectedOptions?.[0]?.dataset?.name || mgr?.selectedOptions?.[0]?.textContent || '생산부서 담당자';
-          if(!$('nmcProdManager')?.value){ notify('발송 대상 확인','생산부서 담당자를 먼저 선택하세요.'); return; }
-          $('nmcSendTime') && ($('nmcSendTime').value=new Date().toLocaleString('ko-KR'));
-          notify('작업지시서 발송 알림',`${woNo} 작업지시서가 생산부서 담당자 ${mgrName}에게 발송되었습니다.`);
+          const scope=nmcScopeFrom(act);
+          const mgr=nmcField(scope,'nmcProdManager');
+          const opt=mgr?.selectedOptions?.[0];
+          if(!mgr || !mgr.value){ notify('발송 대상 확인','생산부서 담당자를 먼저 선택하세요.'); return; }
+          const mgrName=opt?.dataset?.name || opt?.textContent || '생산부서 담당자';
+          const sendTime=nmcField(scope,'nmcSendTime');
+          if(sendTime) sendTime.value=new Date().toLocaleString('ko-KR');
+          notify('작업지시서 발송 알림',`${woNo} 작업지시서가 선택한 생산부서 담당자 ${mgrName}에게만 발송되었습니다.`);
         }
         if(a==='print'){ notify('작업지시서 출력 알림',`${woNo} 출력/PDF 화면을 생성했습니다.`); printWorkOrder(); }
       }
