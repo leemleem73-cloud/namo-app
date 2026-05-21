@@ -1652,6 +1652,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 /* 작업지시서 하위 빈 메뉴(>) 완전 숨김 */
 .sidebar .nav-item[data-page="production"]:has(span:last-child:empty){display:none!important;}
 
+
+/* 작업지시서 발송정보 패치: 발송부서=로그인 이름, 수신부서=생산부 전원 */
 </style>
 </head>
 <body class="login-active">
@@ -6575,8 +6577,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="nmc-workorder-card">
         <h3>6. 발송 정보</h3>
         <div class="nmc-form-grid">
-          <div class="nmc-field"><label>발송부서<span class="req">*</span></label><input class="nmc-input" id="nmcSenderName" readonly placeholder="로그인 사용자 이름/부서 자동 표시"></div>
-          <div class="nmc-field"><label>수신부서<span class="req">*</span></label><input class="nmc-input" id="nmcRecvDept" value="생산부" readonly></div>
+          <div class="nmc-field"><label>발송부서<span class="req">*</span></label><input class="nmc-input" id="nmcSenderName" readonly placeholder="로그인 사용자 이름 자동 표시"></div>
+          <div class="nmc-field"><label>수신부서<span class="req">*</span></label><input class="nmc-input" id="nmcRecvDept" value="생산부 전원" readonly></div>
           <div class="nmc-field"><label>발송일시</label><input class="nmc-input" id="nmcSendTime" readonly></div>
           <div class="nmc-field" style="grid-column:span 5"><label>발송 비고</label><input class="nmc-input" id="nmcSendNote" placeholder="발송 관련 비고 입력"></div>
         </div>
@@ -6619,7 +6621,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderWorkOrderAlert(){
     qsa('#nmcWorkorderAlert').forEach(box=>{
       const dept = $('nmcReqDept')?.value || '미입력';
-      box.innerHTML = `<span>🔔 발송부서(로그인 사용자 이름/부서)에서 수신부서(생산부 담당자)로 작업지시서가 발송됩니다.</span><span class="right">작성 대기 ●</span>`;
+      box.innerHTML = `<span>🔔 발송부서(로그인 사용자 이름)에서 수신부서(생산부 전원)로 작업지시서가 발송됩니다.</span><span class="right">작성 대기 ●</span>`;
     });
   }
 
@@ -6674,14 +6676,25 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return name || dept || '';
   }
 
+  function loginUserNameOnly(u){
+    return (u?.name || u?.username || u?.displayName || '').trim()
+      || String(u?.email || '').split('@')[0]
+      || '로그인 사용자';
+  }
+
+  function productionUserNameOnly(u){
+    return (u?.name || u?.username || u?.displayName || '').trim()
+      || String(u?.email || '').split('@')[0]
+      || '';
+  }
+
   function syncSendInfo(){
     const appState = window.state || {};
     const u = appState.currentUser || {};
-    const sender = userDisplay(u) || '로그인 사용자';
+    const sender = loginUserNameOnly(u);
     const prodUsers = getProductionUsers();
-    const recv = prodUsers.length
-      ? `생산부 (${prodUsers.map(userDisplay).filter(Boolean).join(', ')})`
-      : '생산부';
+    const prodNames = prodUsers.map(productionUserNameOnly).filter(Boolean);
+    const recv = prodNames.length ? `생산부 전원 (${prodNames.join(', ')})` : '생산부 전원';
     qsa('#nmcSenderName').forEach(x=>x.value=sender);
     qsa('#nmcRecvDept').forEach(x=>x.value=recv);
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
@@ -6743,7 +6756,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     target.className='rsheet';
     const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[3]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[4]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[5]?.querySelector('input')?.value||'kg')}</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
     const prodUsers=getProductionUsers();
-    const prodNames=prodUsers.length ? prodUsers.map(u=>u.name || u.email || '').filter(Boolean).join(', ') : '현재 등록된 생산부 전원';
+    const prodNames=prodUsers.length ? prodUsers.map(productionUserNameOnly).filter(Boolean).join(', ') : '현재 등록된 생산부 전원';
     target.innerHTML=`
       <div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">${val('nmcWoNo')}</div></div>
       <table><tbody>
@@ -6833,6 +6846,381 @@ document.addEventListener('DOMContentLoaded',async()=>{
     setTimeout(()=>{insertProductionNav();ensurePages();ensureNotificationBadge();generateWorkOrderNo(false);syncSendInfo();},2600);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+
+
+<script>
+/* ═══════════════════════════════════════
+   QMS SIGNATURE STABLE PATCH vFinal-20260521
+   - 작성/검토/승인 공통 안정화
+   - IQC/PQC/OQC/NC/Training 전체 동일 동작
+   - 기존 IIFE 권한/이벤트 충돌 차단
+═══════════════════════════════════════ */
+(function(){
+  if(window.__qmsSignatureStablePatchApplied) return;
+  window.__qmsSignatureStablePatchApplied = true;
+
+  const ROLES = ['writer','reviewer','approver'];
+  const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const ROLE_TITLE = {writer:'작성자 (검사자)', reviewer:'검토자', approver:'승인자'};
+  const TYPE_LABEL = {iqc:'입고검사', pqc:'공정검사', oqc:'출하검사', nc:'부적합 보고서', training:'교육보고서'};
+  const SENIOR_WORDS = ['대표','대표이사','사장','회장','임원','이사','상무','전무','본부장','실장','센터장','팀장','부장','관리자','admin','administrator','ceo','cto','coo','cfo'];
+
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  const clean = v => String(v ?? '').trim();
+
+  function appState(){
+    try{return state || window.state || null;}catch(e){return window.state || null;}
+  }
+  function currentUser(){
+    const s = appState();
+    return s && s.currentUser ? normalizeUser(s.currentUser) : null;
+  }
+  function normalizeUser(u){
+    if(!u) return null;
+    const name = clean(u.name || u.username || u.userName || u.fullName || u.displayName || u.email || '');
+    const email = clean(u.email || u.mail || '');
+    return {
+      id: clean(u.id || u.userId || u.uid || email || name),
+      name,
+      title: clean(u.title || u.position || u.rank || u.jobTitle || ''),
+      department: clean(u.department || u.dept || u.team || u.org || ''),
+      email,
+      role: clean(u.role || u.userRole || ''),
+      status: clean(u.status || u.approvalStatus || 'APPROVED')
+    };
+  }
+  function isApproved(u){
+    const st = clean(u && u.status).toUpperCase();
+    return !st || st === 'APPROVED' || st === 'ACTIVE' || st === 'Y' || st === '승인';
+  }
+  function isSeniorUser(u){
+    const t = `${u?.title || ''} ${u?.role || ''}`.toLowerCase();
+    return SENIOR_WORDS.some(w => t.includes(String(w).toLowerCase()));
+  }
+  function isAdminUser(u){
+    const v = `${u?.role || ''} ${u?.title || ''}`.toLowerCase();
+    return v.includes('admin') || v.includes('관리자') || !!(u && (u.isAdmin || u.admin || u.is_admin));
+  }
+  function uniqueUsers(list){
+    const out = [], seen = new Set();
+    (list || []).map(normalizeUser).filter(Boolean).forEach(u => {
+      if(!u.name && !u.email) return;
+      const key = clean(u.id || u.email || u.name);
+      if(!key || seen.has(key)) return;
+      seen.add(key);
+      out.push(u);
+    });
+    return out;
+  }
+  function allUsers(){
+    const s = appState();
+    const me = currentUser();
+    const pool = [
+      ...(me ? [me] : []),
+      ...((s && Array.isArray(s.signableUsers)) ? s.signableUsers : []),
+      ...((s && Array.isArray(s.adminUsers)) ? s.adminUsers : [])
+    ];
+    return uniqueUsers(pool).filter(isApproved);
+  }
+  function candidateUsers(role){
+    const users = allUsers();
+    const me = currentUser();
+    if(role === 'writer'){
+      const arr = uniqueUsers([...(me ? [me] : []), ...users]);
+      return arr.length ? arr : [{id:'login-user', name:'로그인 사용자', title:'', department:'', status:'APPROVED'}];
+    }
+    const seniors = users.filter(isSeniorUser);
+    return seniors.length ? seniors : users;
+  }
+  function typeList(){
+    const set = new Set(Array.from(document.querySelectorAll('[id^="signGrid_"]')).map(el => el.id.replace('signGrid_','')));
+    ['iqc','pqc','oqc','nc','training'].forEach(t => { if($(`signGrid_${t}`)) set.add(t); });
+    return Array.from(set);
+  }
+  function signPrefix(type){
+    return type === 'iqc' ? 'Iqc' : type === 'pqc' ? 'Pqc' : type === 'oqc' ? 'Oqc' : type === 'nc' ? 'Nc' : type === 'training' ? 'Training' : 'Rpt';
+  }
+  function roleCap(role){ return role.charAt(0).toUpperCase() + role.slice(1); }
+  function nowText(){
+    const d = new Date();
+    const p = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function store(type, role){
+    window.__signImageStore = window.__signImageStore || {};
+    const k = `${type}:${role}`;
+    window.__signImageStore[k] = window.__signImageStore[k] || {};
+    return window.__signImageStore[k];
+  }
+  function setPreview(type, role, img){
+    const box = $(`sg_${type}_${role}_preview`);
+    if(box) box.innerHTML = img ? `<img src="${img}" alt="서명 이미지">` : '<span class="sign-file-empty">서명 이미지 없음</span>';
+  }
+  function setDate(type, role, text){
+    const el = $(`sg_${type}_${role}_date`);
+    if(el) el.textContent = text || '';
+  }
+  function updateReportPreview(type, role){
+    const pfx = signPrefix(type);
+    const cap = roleCap(role);
+    const nameEl = $(`r${pfx}${cap}`);
+    const titleEl = $(`r${pfx}${cap}T`);
+    const sel = $(`sg_${type}_${role}`);
+    const opt = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
+    const user = selectedUser(type, role);
+    if(nameEl) nameEl.textContent = user && user.name ? user.name : '-';
+    if(titleEl) titleEl.textContent = user && user.title ? user.title : '';
+    if(nameEl){
+      const col = nameEl.closest('.rpsign-col');
+      if(col){
+        let img = col.querySelector('.rpsign-img');
+        if(!img){
+          img = document.createElement('img');
+          img.className = 'rpsign-img';
+          img.alt = '전자서명';
+          img.style.display = 'none';
+          col.insertBefore(img, nameEl);
+        }
+        let date = col.querySelector('.rpsign-date');
+        if(!date){
+          date = document.createElement('div');
+          date.className = 'rpsign-date';
+          date.style.fontSize = '10px';
+          date.style.color = '#666';
+          date.style.marginTop = '2px';
+          (titleEl || nameEl).insertAdjacentElement('afterend', date);
+        }
+        const sig = signatureData(type, role);
+        if(sig.signImage){
+          img.src = sig.signImage;
+          img.style.display = 'block';
+        }else{
+          img.removeAttribute('src');
+          img.style.display = 'none';
+        }
+        date.textContent = sig.signDate || '';
+      }
+    }
+    try{
+      if(type === 'iqc' && typeof syncIqcPreview === 'function') syncIqcPreview();
+      if(type === 'pqc' && typeof syncPqcPreview === 'function') syncPqcPreview();
+      if(type === 'oqc' && typeof syncOqcPreview === 'function') syncOqcPreview();
+      if(type === 'training' && typeof renderTrainingPreview === 'function') renderTrainingPreview();
+    }catch(e){console.warn('[sign patch] preview sync skipped', e);}
+  }
+  function selectedUser(type, role){
+    const sel = $(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return null;
+    const opt = sel.options[sel.selectedIndex];
+    return {
+      id: sel.value,
+      name: clean(opt?.dataset?.name || (opt?.textContent || '').replace(/\s*\(.*\)\s*$/,'')),
+      title: clean(opt?.dataset?.title || ''),
+      department: clean(opt?.dataset?.department || ''),
+      email: clean(opt?.dataset?.email || ''),
+      role: clean(opt?.dataset?.role || '')
+    };
+  }
+  function signatureData(type, role){
+    const s = store(type, role);
+    return {signImage:s.signImage || '', signDate:s.signDate || ''};
+  }
+  function opts(list, ph){
+    return `<option value="">${esc(ph)}</option>` + (list || []).map(u => {
+      const label = `${u.name || u.email || '사용자'} (${u.title || u.department || '-'})`;
+      return `<option value="${esc(u.id || u.email || u.name)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(label)}</option>`;
+    }).join('');
+  }
+  function roleBox(type, role){
+    const list = candidateUsers(role);
+    return `
+      <div class="sign-box" data-qms-role="${role}">
+        <div class="sign-box-hdr">
+          <span class="sign-box-role">${esc(ROLE_TITLE[role])}</span>
+        </div>
+        <div class="sign-box-body">
+          <select class="sign-sel" id="sg_${type}_${role}" data-qms-sign-select="${type}:${role}">
+            ${opts(list, role === 'writer' ? '-- 작성자 본인 --' : `-- ${ROLE_LABEL[role]} 선택 --`)}
+          </select>
+          <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
+          <div class="sign-file-wrap" data-sign-file-wrap="${type}:${role}">
+            <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
+            <div class="sign-file-tools">
+              <span class="sign-date" id="sg_${type}_${role}_date"></span>
+              <div>
+                <input type="file" class="sign-file-input" id="sg_${type}_${role}_file" accept="image/*" data-sign-file="${type}:${role}">
+                <button type="button" class="sign-file-btn" data-sign-file-btn="${type}:${role}">서명 첨부</button>
+                <button type="button" class="sign-clear-btn" data-sign-clear="${type}:${role}">서명 지우기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+  function applySub(type, role){
+    const user = selectedUser(type, role);
+    const sub = $(`sg_${type}_${role}_sub`);
+    if(sub){
+      if(user && user.name) sub.textContent = `${user.department || ''} ${user.title || ''}`.trim() || ROLE_LABEL[role];
+      else sub.textContent = role === 'writer' ? '로그인 사용자 자동 지정' : '선택 후 서명 첨부';
+    }
+    setPreview(type, role, store(type, role).signImage || '');
+    setDate(type, role, store(type, role).signDate || '');
+    updateReportPreview(type, role);
+  }
+  function buildGrid(type, keep=true){
+    const grid = $(`signGrid_${type}`);
+    if(!grid) return;
+    const prev = {};
+    ROLES.forEach(role => {
+      const sel = $(`sg_${type}_${role}`);
+      prev[role] = {value: sel ? sel.value : '', sig: {...store(type, role)}};
+    });
+    const warn = $(`signWarn_${type}`);
+    if(warn) warn.style.display = allUsers().length ? 'none' : 'block';
+    grid.innerHTML = ROLES.map(role => roleBox(type, role)).join('');
+    ROLES.forEach(role => {
+      const sel = $(`sg_${type}_${role}`);
+      const me = currentUser();
+      const old = prev[role] || {};
+      const valueToUse = keep && old.value ? old.value : (role === 'writer' && me ? (me.id || me.email || me.name) : '');
+      if(valueToUse && sel && !Array.from(sel.options).some(o => String(o.value) === String(valueToUse))){
+        const u = role === 'writer' && me ? me : {id:valueToUse, name:valueToUse, title:'', department:''};
+        sel.add(new Option(`${u.name} (${u.title || u.department || '-'})`, valueToUse));
+      }
+      if(sel) sel.value = valueToUse || '';
+      if(old.sig && old.sig.signImage) Object.assign(store(type, role), old.sig);
+      applySub(type, role);
+    });
+  }
+  function refreshAll(force=false){
+    typeList().forEach(type => {
+      const grid = $(`signGrid_${type}`);
+      if(!grid) return;
+      if(force || !grid.dataset.qmsStableSign || !grid.querySelector('.sign-file-wrap')){
+        buildGrid(type, true);
+        grid.dataset.qmsStableSign = '1';
+      }else{
+        ROLES.forEach(role => applySub(type, role));
+      }
+    });
+  }
+
+  window.qmsRefreshSignatures = () => refreshAll(true);
+  window.buildSignGrid = function(type){ buildGrid(type, true); };
+  window.rebuildAllSignGrids = function(){ refreshAll(true); };
+  window.applySignPermissions = function(type){ if(type) ROLES.forEach(role => applySub(type, role)); else refreshAll(false); };
+  window.applyAllSignPermissions = function(){ refreshAll(false); };
+  window.signature데이터 = signatureData;
+  window.updateSignaturePreview = function(type, role){ applySub(type, role); };
+  window.clearSignaturePad = function(type, role){
+    const s = store(type, role);
+    s.signImage = '';
+    s.signDate = '';
+    const file = $(`sg_${type}_${role}_file`);
+    if(file) file.value = '';
+    applySub(type, role);
+    return true;
+  };
+  window.restoreSignaturePad = function(type, role, data){
+    const s = store(type, role);
+    s.signImage = data && data.signImage ? data.signImage : '';
+    s.signDate = data && data.signDate ? data.signDate : '';
+    applySub(type, role);
+  };
+  window.getSignPayload = function(type){
+    const payload = {};
+    ROLES.forEach(role => {
+      const u = selectedUser(type, role) || {id:'', name:'', title:'', department:'', email:''};
+      payload[role] = {...u, ...signatureData(type, role)};
+    });
+    return {writer:payload.writer, reviewer:payload.reviewer, approver:payload.approver};
+  };
+  window.restoreSign = function(type, record){
+    if(!record) return;
+    refreshAll(false);
+    const map = {writer:record.signWriter, reviewer:record.signReviewer, approver:record.signApprover};
+    ROLES.forEach(role => {
+      const data = map[role] || {};
+      const sel = $(`sg_${type}_${role}`);
+      const value = data.id || data.email || data.name || '';
+      if(sel && value){
+        if(!Array.from(sel.options).some(o => String(o.value) === String(value))){
+          const opt = new Option(`${data.name || value} (${data.title || data.department || '-'})`, value);
+          opt.dataset.name = data.name || value;
+          opt.dataset.title = data.title || '';
+          opt.dataset.department = data.department || '';
+          opt.dataset.email = data.email || '';
+          sel.add(opt);
+        }
+        sel.value = value;
+      }
+      Object.assign(store(type, role), {signImage:data.signImage || '', signDate:data.signDate || ''});
+      applySub(type, role);
+    });
+  };
+  window.clearSign = function(type){
+    ROLES.forEach(role => {
+      const sel = $(`sg_${type}_${role}`);
+      if(sel) sel.value = role === 'writer' && currentUser() ? (currentUser().id || currentUser().email || currentUser().name) : '';
+      window.clearSignaturePad(type, role);
+    });
+  };
+
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest && e.target.closest('[data-sign-file-btn]');
+    if(btn){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const [type, role] = btn.getAttribute('data-sign-file-btn').split(':');
+      $(`sg_${type}_${role}_file`)?.click();
+      return false;
+    }
+    const clear = e.target.closest && e.target.closest('[data-sign-clear]');
+    if(clear){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const [type, role] = clear.getAttribute('data-sign-clear').split(':');
+      window.clearSignaturePad(type, role);
+      return false;
+    }
+  }, true);
+
+  document.addEventListener('change', function(e){
+    const file = e.target.closest && e.target.closest('[data-sign-file]');
+    if(file){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const [type, role] = file.getAttribute('data-sign-file').split(':');
+      if(file.files && file.files[0]){
+        const reader = new FileReader();
+        reader.onload = function(){
+          const s = store(type, role);
+          s.signImage = String(reader.result || '');
+          s.signDate = nowText();
+          applySub(type, role);
+        };
+        reader.readAsDataURL(file.files[0]);
+      }
+      return false;
+    }
+    const sel = e.target.closest && e.target.closest('[data-qms-sign-select], .sign-sel');
+    if(sel && /^sg_[^_]+_(writer|reviewer|approver)$/.test(sel.id || '')){
+      e.stopImmediatePropagation();
+      const m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id);
+      if(m) applySub(m[1], m[2]);
+      return false;
+    }
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', () => refreshAll(true));
+  window.addEventListener('load', () => {
+    [0,200,700,1500,3000].forEach(ms => setTimeout(() => refreshAll(ms === 0), ms));
+  });
+  [300,900,1800,3500].forEach(ms => setTimeout(() => refreshAll(false), ms));
 })();
 </script>
 
