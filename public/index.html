@@ -6493,25 +6493,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
             <label>상태</label><select><option>전체</option><option>진행 중</option><option>완료</option><option>취소</option></select>
           </div>
           <div class="nmc-plan-kpis">
-            <div class="nmc-plan-kpi blue"><div class="l">전체 계획</div><div class="v">5 <small>건</small></div></div>
-            <div class="nmc-plan-kpi green"><div class="l">진행 중</div><div class="v">3 <small>건</small></div></div>
-            <div class="nmc-plan-kpi orange"><div class="l">완료</div><div class="v">1 <small>건</small></div></div>
-            <div class="nmc-plan-kpi red"><div class="l">취소</div><div class="v">1 <small>건</small></div></div>
+            <div class="nmc-plan-kpi blue"><div class="l">전체 계획</div><div class="v">0 <small>건</small></div></div>
+            <div class="nmc-plan-kpi green"><div class="l">진행 중</div><div class="v">0 <small>건</small></div></div>
+            <div class="nmc-plan-kpi orange"><div class="l">완료</div><div class="v">0 <small>건</small></div></div>
+            <div class="nmc-plan-kpi red"><div class="l">취소</div><div class="v">0 <small>건</small></div></div>
           </div>
         </div>
         <div class="nmc-table-card">
           <table class="nmc-table">
             <thead><tr><th>No.</th><th>계획일자</th><th>계획번호</th><th>제품명</th><th>계획수량 (kg)</th><th>실투입량 (kg)</th><th>상태</th><th>생산 LOT</th><th>요청부서</th><th>등록자</th><th>등록일시</th><th></th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>2026-05-21</td><td>PP-202605-00012</td><td>NMC622 양극활물질</td><td>2,500</td><td>-</td><td><span class="nmc-pill run">진행 중</span></td><td>FG-20260521-0001</td><td>생산변경</td><td>김철수</td><td>2026-05-21 10:30:21</td><td><button class="nmc-small-btn" data-open-workorder>···</button></td></tr>
-              <tr><td>2</td><td>2026-05-20</td><td>PP-202605-00011</td><td>NMC622 양극활물질</td><td>2,000</td><td>2,000</td><td><span class="nmc-pill done">완료</span></td><td>FG-20260520-0004</td><td>연구소</td><td>김철수</td><td>2026-05-20 09:15:10</td><td><button class="nmc-small-btn" data-open-workorder>···</button></td></tr>
-              <tr><td>3</td><td>2026-05-18</td><td>PP-202605-00010</td><td>NMC523 양극활물질</td><td>3,000</td><td>-</td><td><span class="nmc-pill run">진행 중</span></td><td>FG-20260518-0002</td><td>품질</td><td>김철수</td><td>2026-05-18 14:22:33</td><td><button class="nmc-small-btn" data-open-workorder>···</button></td></tr>
-              <tr><td>4</td><td>2026-05-15</td><td>PP-202605-00009</td><td>Mn(OH)₂</td><td>1,500</td><td>-</td><td><span class="nmc-pill cancel">취소</span></td><td>-</td><td>영업</td><td>김철수</td><td>2026-05-15 11:05:44</td><td><button class="nmc-small-btn">···</button></td></tr>
-              <tr><td>5</td><td>2026-05-10</td><td>PP-202605-00008</td><td>Li₂CO₃</td><td>1,000</td><td>1,000</td><td><span class="nmc-pill done">완료</span></td><td>FG-20260510-0001</td><td>연구소</td><td>김철수</td><td>2026-05-10 16:40:18</td><td><button class="nmc-small-btn">···</button></td></tr>
+              <tr><td colspan="12" class="nmc-empty" style="padding:32px;text-align:center;color:#94a3b8;font-weight:800">등록된 생산계획 데이터가 없습니다.</td></tr>
             </tbody>
           </table>
         </div>
-        <div class="nmc-pager"><span>총 5건</span><div class="nmc-pages"><button class="nmc-page-btn">‹</button><button class="nmc-page-btn active">1</button><button class="nmc-page-btn">›</button></div><select class="nmc-select" style="width:110px"><option>10 / 페이지</option></select></div>
+        <div class="nmc-pager"><span>총 0건</span><div class="nmc-pages"><button class="nmc-page-btn">‹</button><button class="nmc-page-btn active">1</button><button class="nmc-page-btn">›</button></div><select class="nmc-select" style="width:110px"><option>10 / 페이지</option></select></div>
       </div>
     </section>`;
   }
@@ -6665,7 +6661,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         e.preventDefault(); e.stopPropagation(); showPage(nav.dataset.page);
       }
       const open=e.target.closest('[data-open-workorder]');
-      if(open){ e.preventDefault(); showPage('workorder-final'); notify('작업지시서 작성 알림','생산계획 PP-202605-00012에서 작업지시서 작성 화면으로 이동했습니다.'); }
+      if(open){ e.preventDefault(); showPage('workorder-final'); notify('작업지시서 작성 알림','신규 작업지시서 작성 화면으로 이동했습니다.'); }
       const target=e.target.closest('[data-page-target]');
       if(target){ e.preventDefault(); showPage(target.dataset.pageTarget); }
       const act=e.target.closest('[data-nmc-action]');
