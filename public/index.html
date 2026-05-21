@@ -1112,7 +1112,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 /* ══════════════════════════════════
    Production MES Cockpit v28
-   생산관리 화면: 기존 worklog 데이터 연동형
+    화면: 기존 worklog 데이터 연동형
 ══════════════════════════════════ */
 .mes-prod-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:18px}
 .mes-prod-kpi{position:relative;background:#fff;border:1px solid #dbe3ee;border-radius:18px;min-height:132px;padding:22px 20px;box-shadow:0 10px 24px rgba(15,23,42,.06);overflow:hidden}
@@ -5845,7 +5845,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 <script>
-/* QMES Enterprise Cockpit v28 - 기존 기능/데이터 보존 + 생산관리 실데이터 연동 */
+/* QMES Enterprise Cockpit v28 - 기존 기능/데이터 보존 +  실데이터 연동 */
 (function(){
   const qs=(s,r=document)=>r.querySelector(s);
   const qsa=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -5986,7 +5986,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const sec=document.createElement('section'); sec.className='page'; sec.id='page-production';
     sec.innerHTML=`
       <div class="ph">
-        <div><div class="ph-title">생산관리</div><div class="ph-sub">생산작업일지와 LOT 추적을 중심으로 MES 구조를 제공합니다.</div></div>
+        <div><div class="ph-title"></div><div class="ph-sub">생산작업일지와 LOT 추적을 중심으로 MES 구조를 제공합니다.</div></div>
         <div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button><button class="btn pri" data-qmes-go="worklog">기존 기능 열기</button></div>
       </div>
       <div class="mes-prod-kpi-grid">
@@ -5997,7 +5997,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div class="mes-prod-kpi cyan"><div class="mes-prod-kpi-label">실시간 상태</div><div class="mes-live-status"><span class="mes-live-dot"></span><span id="mesLiveStatus">정상</span></div><div class="mes-live-time">Last Update <span id="mesLastUpdate">-</span></div></div>
       </div>
       <div class="mes-prod-card">
-        <div class="mes-prod-card-head"><div><div class="mes-prod-card-title">생산관리 메뉴</div><div class="mes-prod-card-sub">작업지시부터 LOT 연계까지 생산 흐름별로 관리합니다.</div></div><span class="mes-prod-tag">MES MENU</span></div>
+        <div class="mes-prod-card-head"><div><div class="mes-prod-card-title"> 메뉴</div><div class="mes-prod-card-sub">작업지시부터 LOT 연계까지 생산 흐름별로 관리합니다.</div></div><span class="mes-prod-tag">MES MENU</span></div>
         <div class="mes-menu-grid">
           <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#2563eb;--mes-soft:#eff6ff"><div class="mes-menu-main"><div class="mes-menu-icon">▤</div><div><div class="mes-menu-name">작업지시</div><div class="mes-menu-desc">생산계획과 작업오더</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuWorkOrder">전체 0건</span><span class="mes-menu-arrow">›</span></div></div>
           <div class="mes-menu-tile" data-qmes-go="worklog" style="--mes-color:#22c55e;--mes-soft:#dcfce7"><div class="mes-menu-main"><div class="mes-menu-icon">◔</div><div><div class="mes-menu-name">생산실적</div><div class="mes-menu-desc">계획/실적/불량 수량</div></div></div><div class="mes-menu-bottom"><span class="mes-menu-status" id="mesMenuResult">실적 0.0%</span><span class="mes-menu-arrow">›</span></div></div>
@@ -6220,7 +6220,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderProductionData(){
     if(!qs('#page-production')) return;
     const rows=getWorklogRows();
-    const base=rows; // 생산관리 화면은 생산작업일지 전체 데이터 기준으로 표시
+    const base=rows; //  화면은 생산작업일지 전체 데이터 기준으로 표시
     const plan=base.reduce((a,r)=>a+toNum(r.planQty),0);
     const prod=base.reduce((a,r)=>a+toNum(r.prodQty),0);
     const fail=base.reduce((a,r)=>a+toNum(r.failQty),0);
@@ -6308,7 +6308,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 <!-- NMC Production Plan + Final Work Order Patch -->
 <style id="nmc-production-workorder-final-patch-style">
-/* 생산계획 관리 + 작업지시서 최종 화면 추가 */
+/*  + 작업지시서 최종 화면 추가 */
 .nmc-page-wrap{display:flex;flex-direction:column;gap:18px}
 .nmc-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:18px 0}
 .nmc-filter-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -6424,7 +6424,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     if(!qs('.nav-item[data-page="production-plan"]', side)){
       prodSec.insertAdjacentHTML('afterend', `
-        <button class="nav-item" data-page="production-plan"><span class="nav-icon">▾</span><span>생산계획 관리</span></button>
+        <button class="nav-item" data-page="production-plan"><span class="nav-icon">▾</span><span></span></button>
         <button class="nav-item" data-page="workorder-final"><span class="nav-icon">›</span><span>작업지시서</span></button>
       `);
     }
@@ -6482,12 +6482,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <section class="page" id="page-production-plan">
       <div class="ph">
         <div>
-          <div class="ph-title">생산계획 관리</div>
-          <div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산계획 관리</div>
+          <div class="ph-title"></div>
+          <div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> </div>
         </div>
         <div class="ph-actions">
           <button class="btn light" id="nmcPlanExcel">엑셀 다운로드</button>
-          <button class="btn pri" id="nmcPlanCreate">+ 생산계획 등록</button>
+          <button class="btn pri" id="nmcPlanCreate">+ </button>
         </div>
       </div>
       <div class="nmc-page-wrap">
@@ -6506,13 +6506,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
         </div>
         <div class="nmc-table-card">
           <table class="nmc-table">
-            <thead><tr><th>No.</th><th>계획일자</th><th>계획번호</th><th>제품명</th><th>계획수량 (kg)</th><th>실투입량 (kg)</th><th>상태</th><th>생산 LOT</th><th>요청부서</th><th>등록자</th><th>등록일시</th><th></th></tr></thead>
+            <thead><tr><th>No.</th><th>계획일자</th><th>계획번호</th><th>제품명</th><th>계획수량 (kg)</th><th>실투입량 (kg)</th><th>상태</th><th>생산 LOT</th><th></th><th></th><th></th><th></th></tr></thead>
             <tbody>
-              <tr><td colspan="12" class="nmc-empty" style="padding:32px;text-align:center;color:#94a3b8;font-weight:800">등록된 생산계획 데이터가 없습니다.</td></tr>
+              <tr><td colspan="12" class="nmc-empty" style="padding:32px;text-align:center;color:#94a3b8;font-weight:800"></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="nmc-pager"><span>총 0건</span><div class="nmc-pages"><button class="nmc-page-btn">‹</button><button class="nmc-page-btn active">1</button><button class="nmc-page-btn">›</button></div><select class="nmc-select" style="width:110px"><option>10 / 페이지</option></select></div>
+        <div class="nmc-pager"><span></span><div class="nmc-pages"><button class="nmc-page-btn">‹</button><button class="nmc-page-btn active">1</button><button class="nmc-page-btn">›</button></div><select class="nmc-select" style="width:110px"><option>10 / 페이지</option></select></div>
       </div>
     </section>`;
   }
@@ -6587,8 +6587,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return `
       <section class="page" id="page-production">
         <div class="ph">
-          <div><div class="ph-title">생산관리</div><div class="ph-sub">생산계획 관리와 작업지시서를 한 화면에서 확인합니다.</div></div>
-          <div class="ph-actions"><button class="btn pri" data-page-target="production-plan">생산계획 관리</button><button class="btn ghost" data-page-target="workorder-final">작업지시서</button></div>
+          <div><div class="ph-title"></div><div class="ph-sub">와 작업지시서를 한 화면에서 확인합니다.</div></div>
+          <div class="ph-actions"><button class="btn pri" data-page-target="production-plan"></button><button class="btn ghost" data-page-target="workorder-final">작업지시서</button></div>
         </div>
         <div class="card"><div class="cb" style="padding:0">${productionPlanPage().replace('<section class="page" id="page-production-plan">','<div>').replace('</section>','</div>')}</div></div>
         <div class="card mt14"><div class="cb" style="padding:0">${workOrderPage().replace('<section class="page" id="page-workorder-final">','<div>').replace('</section>','</div>')}</div></div>
@@ -6728,7 +6728,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">${val('nmcWoNo')}</div></div>
       <table><tbody>
         <tr><th>작업지시번호</th><td>${val('nmcWoNo')}</td><th>지시일자</th><td>${val('nmcOrderDate')}</td><th>계획구분</th><td>${val('nmcPlanType')}</td></tr>
-        <tr><th>요청부서</th><td>${val('nmcReqDept')}</td><th>우선순위</th><td>${esc(qs('#page-workorder-final select:not(#nmcPlanType)')?.value||'-')}</td><th>작업자</th><td>${val('nmcWorker')}</td></tr>
+        <tr><th></th><td>${val('nmcReqDept')}</td><th>우선순위</th><td>${esc(qs('#page-workorder-final select:not(#nmcPlanType)')?.value||'-')}</td><th>작업자</th><td>${val('nmcWorker')}</td></tr>
         <tr><th>제품명</th><td>${val('nmcProdName')}</td><th>제품코드</th><td>${val('nmcProdCode')}</td><th>생산 LOT</th><td>${val('nmcProdLot')}</td></tr>
         <tr><th>계획수량</th><td>${val('nmcPlanQty')} kg</td><th>실투입량</th><td>${val('nmcActualQty')} kg</td><th></th><td></td></tr>
       </tbody></table>
@@ -6778,14 +6778,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(e.target.closest('#nmcFileBtn') || e.target.closest('#nmcFileDrop')){ const btn=e.target.closest('#nmcFileBtn'); if(btn || !e.target.closest('.nmc-file-remove')) $('nmcFileInput')?.click(); }
       if(e.target.closest('.nmc-file-remove')){ e.preventDefault(); e.target.closest('.nmc-file-item')?.remove(); }
       if(e.target.closest('#nmcPlanCreate')){
-        notify('생산계획 작성 알림','신규 생산계획 등록 화면이 준비되었습니다.');
+        notify('생산계획 작성 알림','신규  화면이 준비되었습니다.');
         showPage('workorder-final');
       }
     }, true);
     document.addEventListener('change',e=>{
       if(e.target && e.target.id==='nmcReqDept'){
         renderWorkOrderAlert();
-        notify('요청부서 변경 알림',`요청부서가 ${e.target.value || '미입력'}(으)로 변경되었습니다.`);
+        notify(' 변경 알림',`가 ${e.target.value || '미입력'}(으)로 변경되었습니다.`);
       }
       if(e.target && e.target.id==='nmcFileInput') handleFiles(e.target.files);
       if(e.target && e.target.classList.contains('nmc-lot-source')) generateProdLot(false);
