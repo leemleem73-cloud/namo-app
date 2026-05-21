@@ -4667,8 +4667,10 @@ function bindEvents(){
   bindTrainingEvents();
   // 기타
   $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
-  $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
-  $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
+  if($('worklogSave'))$('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);
+  if($('worklogReset'))$('worklogReset').onclick=clearWorklog;
+  if($('addWorklogMaterial'))$('addWorklogMaterial').onclick=addWorklogMat;
+  if($('worklogFinishedLot'))$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
   if($('instrumentSave'))$('instrumentSave').onclick=withSaving('instrument',$('instrumentSave'),saveInstrument);
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
