@@ -3746,9 +3746,10 @@ function isTrainingProgress(r){
   if(isTrainingDone(r)) return false;
   return /진행|검토|상신|결재|review|progress|pending/.test(raw);
 }
-function updateTrendKpis(inRows,prRows,shRows,wRows=[]){
-  const total=(inRows?.length||0)+(prRows?.length||0)+(shRows?.length||0)+(wRows?.length||0);
-  const fail=[...(inRows||[]),...(prRows||[]),...(shRows||[]),...(wRows||[])].reduce((a,r)=>a+num(r.failQty??r.fail_qty??r.fail??r.ngQty??0),0);
+function updateTrendKpis(inRows,prRows,shRows){
+  // 월별 검사 현황 추이는 수입검사(IQC), 공정검사(PQC), 출하검사(OQC)만 집계합니다.
+  const total=(inRows?.length||0)+(prRows?.length||0)+(shRows?.length||0);
+  const fail=[...(inRows||[]),...(prRows||[]),...(shRows||[])].reduce((a,r)=>a+num(r.failQty??r.fail_qty??r.fail??r.ngQty??0),0);
   const passRate=total?Math.max(0,Math.min(100,((total-fail)/total*100))).toFixed(1):'0.0';
   const totalEl=document.getElementById('trendTotalCount');
   const passEl=document.getElementById('trendPassRate');
@@ -3869,7 +3870,7 @@ function renderCharts(){
   const canvas=$('trendChart');
   if(!canvas || !window.Chart) return;
   let y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
-  const allTrendRows=[...(Array.isArray(state.incoming)?state.incoming:[]),...(Array.isArray(state.process)?state.process:[]),...(Array.isArray(state.shipment)?state.shipment:[]),...(Array.isArray(state.worklog)?state.worklog:[])];
+  const allTrendRows=[...(Array.isArray(state.incoming)?state.incoming:[]),...(Array.isArray(state.process)?state.process:[]),...(Array.isArray(state.shipment)?state.shipment:[])];
   const availableYears=[...new Set(allTrendRows.map(r=>recordDateOf(r).slice(0,4)).filter(v=>/^\d{4}$/.test(v)))].map(Number).sort((a,b)=>b-a);
   if(availableYears.length && !allTrendRows.some(r=>recordDateOf(r).startsWith(String(y)))) y=availableYears[0];
   const mode=window.qmesTrendMode||'month';
@@ -3883,27 +3884,24 @@ function renderCharts(){
     return g;
   };
 
-  let labels=[], incoming=[], process=[], shipment=[], worklog=[], titleSuffix='월간';
+  let labels=[], incoming=[], process=[], shipment=[], titleSuffix='월간';
   if(mode==='quarter'){
     labels=['1분기','2분기','3분기','4분기'];
     incoming=labels.map((_,i)=>qmesCountForQuarter(state.incoming,y,i));
     process=labels.map((_,i)=>qmesCountForQuarter(state.process,y,i));
     shipment=labels.map((_,i)=>qmesCountForQuarter(state.shipment,y,i));
-    worklog=labels.map((_,i)=>qmesCountForQuarter(state.worklog,y,i));
     titleSuffix='분기';
   }else if(mode==='year'){
     labels=Array.from({length:5},(_,i)=>String(y-4+i));
     incoming=labels.map(yy=>countByYear(state.incoming,yy));
     process=labels.map(yy=>countByYear(state.process,yy));
     shipment=labels.map(yy=>countByYear(state.shipment,yy));
-    worklog=labels.map(yy=>countByYear(state.worklog,yy));
     titleSuffix='연간';
   }else{
     labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
     incoming=labels.map((_,i)=>qmesCountForYearMonth(state.incoming,y,i));
     process=labels.map((_,i)=>qmesCountForYearMonth(state.process,y,i));
     shipment=labels.map((_,i)=>qmesCountForYearMonth(state.shipment,y,i));
-    worklog=labels.map((_,i)=>qmesCountForYearMonth(state.worklog,y,i));
     titleSuffix='월간';
   }
 
@@ -3916,10 +3914,7 @@ function renderCharts(){
   const shRows=mode==='year'
     ? (Array.isArray(state.shipment)?state.shipment:[]).filter(r=>labels.includes(recordDateOf(r).slice(0,4)))
     : qmesRowsByYear(state.shipment,y);
-  const wRows=mode==='year'
-    ? (Array.isArray(state.worklog)?state.worklog:[]).filter(r=>labels.includes(recordDateOf(r).slice(0,4)))
-    : qmesRowsByYear(state.worklog,y);
-  updateTrendKpis(inRows,prRows,shRows,wRows);
+  updateTrendKpis(inRows,prRows,shRows);
 
   const tag=document.querySelector('#qmesTrendSlot .qmes-trend-wide .tag');
   if(tag) tag.textContent=titleSuffix.toUpperCase();
@@ -3929,7 +3924,7 @@ function renderCharts(){
 
   safeDestroyChart('trendChart');
   const ctx=canvas.getContext('2d');
-  const maxVal=Math.max(1,...incoming,...process,...shipment,...worklog);
+  const maxVal=Math.max(1,...incoming,...process,...shipment);
   const pointLabelPlugin={
     id:'qmesPointLabel',
     afterDatasetsDraw(chart){
@@ -3958,8 +3953,7 @@ function renderCharts(){
       datasets:[
         {label:'수입검사 (IQC)',data:incoming,borderColor:'#2563eb',backgroundColor:makeGradient(ctx,'blue'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},
         {label:'공정검사 (PQC)',data:process,borderColor:'#8b5cf6',backgroundColor:makeGradient(ctx,'purple'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},
-        {label:'출하검사 (OQC)',data:shipment,borderColor:'#f97316',backgroundColor:makeGradient(ctx,'orange'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},
-        {label:'생산작업일지',data:worklog,borderColor:'#10b981',backgroundColor:makeGradient(ctx,'green'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5}
+        {label:'출하검사 (OQC)',data:shipment,borderColor:'#f97316',backgroundColor:makeGradient(ctx,'orange'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5}
       ]
     },
     plugins:[pointLabelPlugin],
