@@ -1832,7 +1832,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <button class="nav-item" data-page="report"><span class="nav-icon"></span><span>성적서</span></button>
       <button class="nav-item" data-page="nonconform"><span class="nav-icon"></span><span>부적합 보고서</span></button>
       <div class="nav-sec">생산 관리</div>
-      <button class="nav-item" data-page="worklog"><span class="nav-icon"></span><span>생산작업일지</span></button>
       <button class="nav-item" data-page="trace"><span class="nav-icon"></span><span>LOT 추적</span></button>
       <div class="nav-sec">측정기 관리</div>
       <button class="nav-item" data-page="instruments"><span class="nav-icon"></span><span>측정기 관리</span></button>
@@ -2124,41 +2123,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
             <table><thead><tr><th>발생일자</th><th>보고서번호</th><th>유형</th><th>부서</th><th>LOT</th><th>품목</th><th>수량</th><th>담당자</th><th>상태</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead>
             <tbody id="nonconformTable"></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ■ 생산작업일지 -->
-      <section class="page" id="page-worklog">
-        <div class="ph">
-          <div><div class="ph-title">생산작업일지</div><div class="ph-sub">원료 투입과 작업자 기록 / IQC·PQC·OQC 연동</div></div>
-          <div class="ph-actions"><button class="btn light" id="worklogReset">초기화</button><button class="btn pri" id="worklogSave">저장</button></div>
-        </div>
-        <div class="card"><div class="ch"><h2>작업일지 등록</h2></div><div class="cb">
-          <div class="fg4">
-            <div class="field"><label>작업일자</label><input type="date" id="worklogDate"></div>
-            <div class="field"><label>완제품 LOT</label><input id="worklogFinishedLot" placeholder="LOT 번호"></div>
-            <div class="field"><label>작업자</label><input id="worklogWorker" placeholder="작업자명"></div>
-            <div class="field"><label>계획수량</label><input id="worklogPlanQty" placeholder="0"></div>
-            <div class="field"><label>생산수량</label><input id="worklogProdQty" placeholder="0"></div>
-            <div class="field"><label>불량수량</label><input id="worklogFailQty" placeholder="0"></div>
-            <div class="field"><label>유량 설정</label><input id="worklogFlowSet" placeholder="설정값"></div>
-            <div class="field"><label>유량 실적</label><input id="worklogFlowActual" placeholder="실적값"></div>
-            <div class="field"><label>온도 설정</label><input id="worklogTempSet" placeholder="설정값"></div>
-            <div class="field"><label>온도 실적</label><input id="worklogTempActual" placeholder="실적값"></div>
-            <div class="field"><label>압력 설정</label><input id="worklogPressSet" placeholder="설정값"></div>
-            <div class="field"><label>압력 실적</label><input id="worklogPressActual" placeholder="실적값"></div>
-            <div class="field cfall"><label>비고</label><textarea id="worklogRemark" placeholder="비고 사항"></textarea></div>
-          </div>
-          <div class="sp"><div class="sph"><h3>투입 원료</h3><button class="btn light sm" id="addWorklogMaterial" type="button">+ 행 추가</button></div>
-            <div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th>No.</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th><th>삭제</th></tr></thead><tbody id="worklogMaterialsTable"></tbody></table></div>
-          </div>
-          <div id="worklogLinkBox" style="display:none;"><div class="lkbox"><div class="lkbox-title">🔗 연동된 검사 기록 (완제품 LOT 기준)</div><div id="worklogLinkRows"></div></div></div>
-          <input type="hidden" id="worklogEditId">
-        </div></div>
-        <div class="card mt14"><div class="ch"><h3>생산작업일지 목록</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>계획수량</th><th>생산수량</th><th>불량수량</th><th>연동 검사</th><th>작업</th></tr></thead><tbody id="worklogTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -3689,7 +3653,7 @@ function renderInstrumentTable(){
   }).join('');
 }
 function renderWorklogTable(){
-  const tb=$('worklogTable');if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
+  const tb=$('worklogTable');if(!tb)return;if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
   tb.innerHTML=state.worklog.map(r=>{
     const lot=(r.finishedLot||'').toLowerCase();
     const iq=state.incoming.filter(x=>(x.lot||'').toLowerCase()===lot).length;
@@ -4111,6 +4075,7 @@ async function delApi(url,msg,reload){if(!confirm(msg))return;const{data}=await 
 /* ═══ WORKLOG MATERIALS ═══ */
 function renderWorklogMats(){
   const tb=$('worklogMaterialsTable');
+  if(!tb)return;
   if(!state.worklogMaterialDrafts.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--t3);">원료 행이 없습니다.</td></tr>`;return;}
   tb.innerHTML=state.worklogMaterialDrafts.map((r,i)=>`<tr><td>${i+1}</td><td><input value="${esc(r.material||'')}" data-widx="${i}" data-wkey="material"></td><td><input value="${esc(r.supName||'')}" data-widx="${i}" data-wkey="supName"></td><td><input value="${esc(r.lotNo||'')}" data-widx="${i}" data-wkey="lotNo"></td><td><input value="${esc(r.inputQty||'')}" data-widx="${i}" data-wkey="inputQty"></td><td><input value="${esc(r.inputTime||'')}" data-widx="${i}" data-wkey="inputTime"></td><td><button class="sb del" type="button" data-waction="remove" data-widx="${i}">삭제</button></td></tr>`).join('');
 }
@@ -5910,7 +5875,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function ensureNav(){
     addSecBefore('worklog','QMES 운영');
-    addNavAfter('worklog','<button class="nav-item" data-page="production"><span class="nav-icon">▣</span><span>생산관리</span></button>');
+    
     addNavAfter('production','<button class="nav-item" data-page="supplier-eval"><span class="nav-icon">▣</span><span>협력업체 평가</span></button>');
     addNavAfter('supplier-eval','<button class="nav-item" data-page="suppliers"><span class="nav-icon">▣</span><span>협력사 현황</span></button>');
     addNavAfter('suppliers','<button class="nav-item" data-page="supplier-quality"><span class="nav-icon">▣</span><span>품질점수</span></button>');
@@ -6334,156 +6299,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 
-
-<style id="production-only-patch-style">
-/* 생산기능 전용 수정 패치 - 기존 QMS 화면 유지 */
-.prod-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:8px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
-.prod-tab{height:36px;border:none;border-radius:10px;background:#f1f5f9;color:#475569;font-weight:900;font-size:13px;padding:0 14px;cursor:pointer}.prod-tab.active{background:#2563eb;color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.18)}
-.prod-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.prod-step{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:14px;box-shadow:0 8px 22px rgba(15,23,42,.045)}.prod-step .n{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dbeafe;color:#1d4ed8;font-weight:900;margin-bottom:8px}.prod-step .t{font-size:14px;font-weight:900;color:#0f172a}.prod-step .d{font-size:12px;color:#64748b;margin-top:3px}.prod-step.on{border-color:#93c5fd;background:#f8fbff}
-.prod-form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.prod-form-grid.three{grid-template-columns:repeat(3,1fr)}.prod-form-grid.two{grid-template-columns:repeat(2,1fr)}.prod-section{background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 8px 22px rgba(15,23,42,.055);margin-bottom:14px;overflow:hidden}.prod-section-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e2e8f0;background:linear-gradient(180deg,#fff,#f8fafc)}.prod-section-h h3{font-size:15px;font-weight:900;color:#0f172a}.prod-section-b{padding:18px}.prod-note{font-size:12px;color:#64748b;line-height:1.6}.prod-status{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900}.prod-status.draft{background:#fff3e0;color:#a05c00}.prod-status.review{background:#e0f2fe;color:#0369a1}.prod-status.approve{background:#dcfce7;color:#166534}.prod-status.return{background:#fde9e9;color:#c52b2b}.prod-approval{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.prod-approval-card{border:1.5px solid #d0d7e2;border-radius:14px;background:#fff;overflow:hidden}.prod-approval-card .role{background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:9px 12px;font-size:12px;font-weight:900;color:#475569}.prod-approval-card .body{padding:12px}.prod-approval-card .name{height:34px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-weight:800;color:#0f172a;background:#fff}.prod-approval-card .date{font-size:11px;color:#64748b;margin-top:6px}.prod-attach{border:1.5px dashed #93c5fd;border-radius:14px;background:#f8fbff;padding:16px;text-align:center;color:#475569;font-size:13px;font-weight:700}.prod-print-area{display:none}.prod-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}.prod-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:16px;box-shadow:0 8px 22px rgba(15,23,42,.045)}.prod-kpi .l{font-size:12px;font-weight:900;color:#64748b}.prod-kpi .v{font-size:26px;font-weight:900;color:#0f172a;margin-top:6px}.prod-kpi .s{font-size:11px;color:#64748b;margin-top:5px}
-.prod-menu-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}.prod-menu-card{background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:18px;box-shadow:0 8px 22px rgba(15,23,42,.05);cursor:pointer}.prod-menu-card b{display:block;font-size:17px;color:#0f172a}.prod-menu-card span{display:block;font-size:12px;color:#64748b;margin-top:6px;line-height:1.5}
-@media(max-width:1200px){.prod-flow,.prod-form-grid,.prod-form-grid.three,.prod-approval,.prod-kpi-grid,.prod-menu-cards{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.prod-flow,.prod-form-grid,.prod-form-grid.three,.prod-form-grid.two,.prod-approval,.prod-kpi-grid,.prod-menu-cards{grid-template-columns:1fr}}
-@media print{body *{visibility:hidden!important}#prodPrintTarget,#prodPrintTarget *{visibility:visible!important}#prodPrintTarget{display:block!important;position:absolute!important;left:0;top:0;width:100%;background:#fff;padding:10mm}.ph,.sidebar,.topbar,.ph-actions,.prod-tabs,.btn{display:none!important}}
-
-/* 작업지시서 첨부파일/검토 승인 화면 재구성 v44 */
-.wo-page-wrap{background:#f8fbff;min-height:calc(100vh - 64px);padding:4px 0 10px;color:#09265a}.wo-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}.wo-title{font-size:26px;font-weight:900;color:#0b2a5b;letter-spacing:-.5px}.wo-bc{margin-top:26px;font-size:11px;font-weight:800;color:#294c84}.wo-bc span{margin:0 10px;color:#8aa0c1}.wo-top-actions{display:flex;align-items:center;gap:8px}.wo-top-actions .btn{height:32px!important}.wo-card-grid{display:grid;grid-template-columns:2.2fr .82fr .82fr .82fr;gap:10px}.wo-card,.wo-full{border-radius:6px!important;border:1px solid #e0e7f2!important;box-shadow:0 6px 18px rgba(15,23,42,.035)!important}.wo-card .prod-section-h,.wo-full .prod-section-h{padding:12px 18px!important;background:#fff!important;border-bottom:none!important}.wo-card .prod-section-h h3,.wo-full .prod-section-h h3{font-size:15px!important;color:#08275c!important}.wo-card .prod-section-b{padding:6px 18px 14px!important}.prod-form-grid.one{grid-template-columns:1fr!important}.wo-card .field label,.wo-full .field label{font-size:12px!important;color:#08275c!important;text-transform:none!important;letter-spacing:0!important}.wo-card .field label b{color:#dc2626}.wo-card input,.wo-card select{height:34px!important;border-color:#dce6f5!important;border-radius:5px!important;color:#0a2a62!important;font-weight:800!important}.wo-full{margin-top:10px!important}.wo-full .prod-section-b{padding:0 12px 12px!important}.wo-actions{display:flex;gap:8px;align-items:center}.wo-full table{font-size:12px!important}.wo-full thead th{height:31px;background:#f5f7fb!important;color:#08275c!important;font-size:11px!important;text-transform:none!important;text-align:center!important}.wo-full tbody td{text-align:center!important;color:#08275c!important;font-weight:800!important;padding:7px 10px!important}.wo-full tbody td input{width:100%;height:30px;border:1px solid #dce6f5;border-radius:5px;padding:0 8px;color:#08275c;font-weight:800;background:#fff}.wo-full tbody td textarea{width:100%;min-height:34px;border:1px solid #dce6f5;border-radius:5px;padding:6px 8px;color:#08275c;font-weight:800;resize:vertical;background:#fff}.wo-approval-box{border:1px solid #e0e7f2!important;margin-top:12px!important}.wo-approval-box .prod-section-b{padding:8px 14px 12px!important}.wo-approval-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.18fr .95fr;gap:16px;align-items:stretch}.wo-review-card,.wo-attach-card,.wo-opinion-card{min-height:70px;border-right:1px solid #edf1f7;padding:0 10px}.wo-opinion-card{border-right:none}.wo-review-card b,.wo-attach-card b,.wo-opinion-card b{display:block;font-size:12px;font-weight:900;color:#08275c;margin-bottom:7px}.wo-review-card label{display:block;font-size:11px;font-weight:900;color:#08275c;margin:4px 0}.wo-review-card input{height:28px;border:1px solid #dce6f5;border-radius:5px;padding:0 8px;font-size:11px;font-weight:900;color:#08275c;width:100%}.wo-wait{height:28px;border:1px solid #e7edf7;border-radius:5px;background:#fff;color:#b77900;font-size:11px;font-weight:900;display:flex;align-items:center;padding:0 8px}.wo-upload-line{display:flex;gap:8px;align-items:center}.wo-upload-line input{height:34px;border:1px solid #dce6f5;border-radius:5px;padding:0 10px;font-size:11px;color:#94a3b8;flex:1}.wo-file-hint{font-size:10.5px;color:#6480a8;font-weight:800;margin-top:8px}.wo-opinion-card textarea{width:100%;height:64px;border:1px solid #dce6f5;border-radius:5px;padding:9px;font-size:11px;resize:none;color:#08275c}.wo-bottom-actions{display:flex;justify-content:flex-end;gap:16px;margin-top:14px}.wo-bottom-actions .btn{min-width:132px;height:38px}@media(max-width:1400px){.wo-card-grid{grid-template-columns:1fr 1fr}.wo-card.span2{grid-column:1/-1}.wo-approval-grid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.wo-card-grid,.wo-approval-grid{grid-template-columns:1fr}.wo-review-card,.wo-attach-card{border-right:none;border-bottom:1px solid #edf1f7;padding-bottom:10px}}
-
-
-/* 작업지시서 캡처 기준 최종 보정 v45 */
-#page-workorder .wo-card-grid{grid-template-columns:2.05fr .72fr .72fr .72fr!important;gap:10px!important}
-#page-workorder .wo-card.span2{grid-column:auto!important}
-#page-workorder .wo-card input:not([value]){font-weight:700!important;color:#0a2a62!important}
-#page-workorder .wo-full tbody td{padding:5px 8px!important}
-#page-workorder .wo-full tbody td input,#page-workorder .wo-full tbody td select{height:28px!important;border:1px solid #dce6f5!important;border-radius:5px!important;background:#fff!important;color:#08275c!important;font-weight:800!important}
-#page-workorder .wo-full tbody td select{padding:0 8px!important}
-#page-workorder .wo-row-btns{white-space:nowrap!important;min-width:62px!important}
-#page-workorder .wo-row-add,#page-workorder .wo-row-del{width:27px;height:27px;border:1px solid #d7e4f6;border-radius:5px;background:#fff;color:#1a56db;font-size:18px;font-weight:900;line-height:1;cursor:pointer;margin:0 2px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-#page-workorder .wo-row-del{color:#2563eb}
-#page-workorder .wo-bottom-actions{display:none!important}
-#page-workorder .wo-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;align-items:stretch}
-#page-workorder .wo-attach-only .prod-section-b,#page-workorder .wo-approval-current .prod-section-b{padding:12px 18px 14px!important}
-#page-workorder .wo-attach-drop{height:70px;border:1.5px dashed #c8d7ee;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;gap:12px;color:#47648e;font-size:13px;font-weight:800;margin-bottom:14px}
-#page-workorder .wo-upload-icon{font-size:32px;line-height:1;color:#1f4a87;font-weight:400}
-#page-workorder .wo-print-left{display:flex;justify-content:flex-start}.wo-print-left .btn{min-width:104px;height:36px}
-#page-workorder .wo-flow-approval{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr;gap:10px;align-items:center;height:100%}
-#page-workorder .wo-flow-card{min-height:104px;border:1px solid #dce6f5;border-radius:6px;background:#fff;padding:14px 16px;position:relative;color:#08275c}
-#page-workorder .wo-flow-card b{display:block;text-align:center;font-size:15px;font-weight:900;margin-bottom:16px}
-#page-workorder .wo-flow-card label{display:block;font-size:12px;font-weight:900;margin-bottom:7px;color:#08275c}
-#page-workorder .wo-flow-name{font-size:13px;font-weight:900;color:#08275c}
-#page-workorder .wo-flow-status{position:absolute;right:14px;bottom:12px;display:inline-flex;height:24px;align-items:center;padding:0 10px;border-radius:6px;font-size:12px;font-weight:900}
-#page-workorder .wo-flow-status.draft{background:#dbeafe;color:#2563eb}.wo-flow-status.review{background:#fff3cd;color:#d97706}.wo-flow-status.approve{background:#dcfce7;color:#16a34a}
-#page-workorder .wo-arrow{text-align:center;font-size:28px;color:#8aa0c1;font-weight:900}
-#page-workorder .wo-top-actions .btn:first-child::before{content:''!important}
-@media(max-width:1400px){#page-workorder .wo-card-grid{grid-template-columns:1fr 1fr!important}#page-workorder .wo-bottom-grid{grid-template-columns:1fr!important}}
-@media(max-width:760px){#page-workorder .wo-card-grid,#page-workorder .wo-bottom-grid,#page-workorder .wo-flow-approval{grid-template-columns:1fr!important}#page-workorder .wo-arrow{display:none}}
-
-</style>
-<script id="production-only-patch-script">
-(function(){
-  const qs=(s,r=document)=>r.querySelector(s); const qsa=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const today=()=>new Date().toISOString().slice(0,10);
-  function activate(page){qsa('.nav-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));qsa('.page').forEach(p=>p.classList.remove('active'));const el=qs('#page-'+page);if(el)el.classList.add('active');const c=qs('.content');if(c)c.scrollTo({top:0,behavior:'smooth'});}
-  function cleanProductionNav(){
-    ['production','production-order','production-result','material-input','process-condition','yield-management','prodresult'].forEach(p=>{qsa(`.nav-item[data-page="${p}"]`).forEach(e=>e.remove());const pg=qs('#page-'+p); if(pg) pg.remove();});
-    qsa('.nav-sec').forEach(sec=>{if((sec.textContent||'').trim()==='QMES 운영') sec.remove();});
-    let work=qs('.nav-item[data-page="worklog"]');
-    if(!work){const prodSec=[...qsa('.nav-sec')].find(x=>(x.textContent||'').includes('생산 관리')); if(prodSec){prodSec.insertAdjacentHTML('afterend','<button class="nav-item" data-page="worklog"><span class="nav-icon">▣</span><span>생산작업일지</span></button>'); work=qs('.nav-item[data-page="worklog"]');}}
-    if(work){work.querySelector('span:last-child').textContent='생산작업일지';}
-    if(work && !qs('.nav-item[data-page="workorder"]')) work.insertAdjacentHTML('beforebegin','<button class="nav-item" data-page="workorder"><span class="nav-icon">▣</span><span>작업지시서</span></button>');
-    qsa('.nav-item[data-page]').forEach(btn=>{btn.onclick=(e)=>{const pg=btn.dataset.page;if(qs('#page-'+pg)){e.preventDefault();activate(pg);}}});
-  }
-  const input=(label,id,ph='')=>`<div class="field"><label>${label}</label><input id="${id}" placeholder="${ph}"></div>`;
-  function workOrderPage(){
-    const rowInput=(i)=>`<tr><td>${i}</td><td><input></td><td><input></td><td><input></td><td><input></td><td><select><option>kg</option><option>g</option><option>L</option></select></td><td><input></td><td><input type="date"></td><td><input></td><td class="wo-row-btns"><button type="button" class="wo-row-add">+</button>${i===5?'<button type="button" class="wo-row-del">−</button>':''}</td></tr>`;
-    const procRow=(i)=>`<tr><td>${i}</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>`;
-    return `<section class="page" id="page-workorder">
-      <div class="wo-page-wrap">
-        <div class="wo-top">
-          <div><div class="wo-title">작업 지시서</div><div class="wo-bc">홈 <span>›</span> 생산 관리 <span>›</span> 작업지시 관리 <span>›</span> 작업지시서</div></div>
-          <div class="wo-top-actions"><button class="btn light sm">${today()} (수) 14:25:32</button><span class="pavatar">M</span><div style="font-size:12px;font-weight:900;color:#08275c;line-height:1.2">관리자<br><small style="font-size:9px;color:#6480a8">admin@namochemical.com</small></div></div>
-        </div>
-
-        <div class="wo-card-grid">
-          <div class="prod-section wo-card span2"><div class="prod-section-h"><h3>1. 기본 정보</h3></div><div class="prod-section-b"><div class="prod-form-grid two">
-            <div class="field"><label>작업지시번호 <b>*</b></label><input></div><div class="field"><label>원재료 LOT <b>*</b></label><input></div>
-            <div class="field"><label>지시 구분 <b>*</b></label><select><option>선택</option><option>정상</option><option>긴급</option></select></div><div class="field"><label>계획 생산량 (kg) <b>*</b></label><input></div>
-            <div class="field"><label>지시 유형 <b>*</b></label><select><option>선택</option><option>생산</option><option>재작업</option></select></div><div class="field"><label>목표 수율 (%) <b>*</b></label><input></div>
-            <div class="field"><label>우선순위</label><select><option>선택</option><option>보통</option><option>높음</option></select></div><div class="field"><label>계획 시작일시 <b>*</b></label><input type="datetime-local"></div>
-            <div class="field"><label>상태</label><input value="작성 중"></div><div class="field"><label>계획 종료일시 <b>*</b></label><input type="datetime-local"></div>
-            <div class="field"><label>지시일시 <b>*</b></label><input type="datetime-local"></div><div class="field"><label>생산 LOT (예정) <b>*</b></label><input></div>
-            <div class="field"><label>필요 완료일 <b>*</b></label><input type="date"></div><div class="field"><label>단위 <b>*</b></label><select><option>선택</option><option>kg</option><option>g</option><option>L</option></select></div>
-            <div class="field cfall"><label>비고</label><input placeholder="비고를 입력하세요."></div>
-          </div></div></div>
-
-          <div class="prod-section wo-card"><div class="prod-section-h"><h3>2. 제품 정보</h3></div><div class="prod-section-b"><div class="prod-form-grid one">
-            <div class="field"><label>제품명</label><input></div><div class="field"><label>제품코드</label><input></div><div class="field"><label>제품규격</label><input></div><div class="field"><label>배합 레시피</label><input></div><div class="field"><label>버전</label><input></div>
-          </div></div></div>
-
-          <div class="prod-section wo-card"><div class="prod-section-h"><h3>3. 설비 / 라인</h3></div><div class="prod-section-b"><div class="prod-form-grid one">
-            <div class="field"><label>설비</label><input></div><div class="field"><label>라인</label><input></div><div class="field"><label>작업장</label><input></div><div class="field"><label>교대조</label><input></div><div class="field"><label>설비 상태</label><input></div>
-          </div></div></div>
-
-          <div class="prod-section wo-card"><div class="prod-section-h"><h3>4. 작업자 / 조직</h3></div><div class="prod-section-b"><div class="prod-form-grid one">
-            <div class="field"><label>작업자 1</label><input></div><div class="field"><label>작업자 2</label><input></div><div class="field"><label>작업자 3</label><input></div><div class="field"><label>작업 책임자</label><input></div><div class="field"><label>조직(팀)</label><input></div>
-          </div></div></div>
-        </div>
-
-        <div class="prod-section wo-full"><div class="prod-section-h"><h3>5. 투입 원료</h3><div class="wo-actions"><button class="btn light sm" type="button">+ 원료 추가</button><button class="btn light sm" type="button">순서 변경</button><button class="btn light sm" type="button">전체 삭제</button><button class="btn light sm" type="button">엑셀 다운로드</button></div></div><div class="prod-section-b"><div class="tw"><table><thead><tr><th>순번</th><th>원료명</th><th>원료 LOT (권장)</th><th>계획 투입량 (kg)</th><th>투입량 (kg)</th><th>단위</th><th>공급업체</th><th>입고일</th><th>비고</th><th>행</th></tr></thead><tbody>
-          ${[1,2,3,4,5].map(rowInput).join('')}
-        </tbody></table></div></div></div>
-
-        <div class="prod-section wo-full"><div class="prod-section-h"><h3>6. 공정 단계 및 지시 내용</h3><div class="wo-actions"><button class="btn light sm" type="button">+ 공정 단계 추가</button><button class="btn light sm" type="button">순서 변경</button><button class="btn light sm" type="button">엑셀 다운로드</button></div></div><div class="prod-section-b"><div class="tw"><table><thead><tr><th>순번</th><th>공정 단계</th><th>지시 내용 / 조건</th><th>핵심 관리 항목</th><th>기준값</th><th>허용 범위</th><th>비고</th></tr></thead><tbody>
-          ${[1,2,3,4,5].map(procRow).join('')}
-        </tbody></table></div></div></div>
-
-        <div class="wo-bottom-grid">
-          <div class="prod-section wo-full wo-attach-only"><div class="prod-section-h"><h3>7. 첨부 파일</h3><div class="wo-actions"><button class="btn light sm" type="button">+ 파일 추가</button></div></div><div class="prod-section-b"><div class="wo-attach-drop"><span class="wo-upload-icon">↥</span><span>파일을 드래그하거나 클릭하여 첨부하세요.</span></div><div class="wo-print-left"><button class="btn light" onclick="window.print()">🖨 인쇄</button></div></div></div>
-          <div class="prod-section wo-full wo-approval-current"><div class="prod-section-h"><h3>8. 작성 · 검토 · 승인</h3></div><div class="prod-section-b"><div class="wo-flow-approval"><div class="wo-flow-card"><b>작성</b><label>작성자</label><div class="wo-flow-name">-</div><span class="wo-flow-status draft">작성 중</span></div><div class="wo-arrow">→</div><div class="wo-flow-card"><b>검토</b><label>검토자</label><div class="wo-flow-name">-</div><span class="wo-flow-status review">대기 중</span></div><div class="wo-arrow">→</div><div class="wo-flow-card"><b>승인</b><label>승인자</label><div class="wo-flow-name">-</div><span class="wo-flow-status approve">대기 중</span></div></div></div></div>
-        </div>
-      </div>
-    </section>`;
-  }
-  
-  function worklogPage(){
-    return `<div class="ph"><div><div class="ph-title">생산작업일지</div><div class="ph-sub">작업지시 승인 후 실제 생산 기록 작성/검토/승인</div></div><div class="ph-actions"><button class="btn light" onclick="window.print()">인쇄</button><button class="btn light">임시저장</button><button class="btn pri">승인요청</button></div></div>
-      <div class="prod-tabs"><button class="prod-tab active">작성</button><button class="prod-tab">검토</button><button class="prod-tab">승인</button></div>
-      <div class="prod-section"><div class="prod-section-h"><h3>1. 작업 기본정보</h3><span class="prod-status draft">작성 중</span></div><div class="prod-section-b"><div class="prod-form-grid">${input('작업지시번호','wlWoNo','WO-YYYYMMDD-001')}${input('작업일자','wlDate','YYYY-MM-DD')}${input('생산 LOT','wlLot','LOT 번호')}${input('작업자','wlWorker','작업자명')}${input('제품명','wlProduct','제품명')}${input('계획수량(kg)','wlPlan','0')}${input('실제 생산량(kg)','wlActual','0')}${input('불량수량(kg)','wlFail','0')}</div></div></div>
-      <div class="prod-section"><div class="prod-section-h"><h3>2. 생산 실적 기록</h3></div><div class="prod-section-b"><div class="tw"><table><thead><tr><th>공정</th><th>시작시간</th><th>종료시간</th><th>작업내용</th><th>실적</th><th>작업자</th><th>비고</th></tr></thead><tbody><tr><td>원료투입</td><td><input type="time"></td><td><input type="time"></td><td><input></td><td><input></td><td><input></td><td><input></td></tr><tr><td>혼합</td><td><input type="time"></td><td><input type="time"></td><td><input></td><td><input></td><td><input></td><td><input></td></tr></tbody></table></div></div></div>
-      <div class="prod-section"><div class="prod-section-h"><h3>3. 검토 및 승인</h3></div><div class="prod-section-b"><div class="prod-approval"><div class="prod-approval-card"><div class="role">작성자</div><div class="body"><div class="name">작업자</div><div class="date">작성대기</div></div></div><div class="prod-approval-card"><div class="role">검토자</div><div class="body"><div class="name">생산관리자</div><div class="date">검토대기</div></div></div><div class="prod-approval-card"><div class="role">승인자</div><div class="body"><div class="name">품질/생산 승인</div><div class="date">승인대기</div></div></div><div class="prod-approval-card"><div class="role">첨부파일</div><div class="body"><div class="prod-attach">작업사진 / 이상보고 첨부</div></div></div></div></div></div>`;
-  }
-  function buildPages(){
-    const main=qs('main.content'); if(!main)return;
-    ['workorder','prodresult','production-result'].forEach(p=>{const e=qs('#page-'+p); if(e)e.remove();});
-    main.insertAdjacentHTML('beforeend',workOrderPage());
-    const wl=qs('#page-worklog'); if(wl) wl.innerHTML=worklogPage();
-  }
-
-  function bindWorkOrderApproval(){
-    const page=qs('#page-workorder'); if(!page) return;
-    const badge=qs('#woStatusBadge',page);
-    const tabs=qsa('[data-wo-step]',page);
-    function now(){const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
-    function setStep(step){
-      tabs.forEach(t=>t.classList.toggle('active',t.dataset.woStep===step));
-      if(!badge) return;
-      badge.className='prod-status '+(step==='approve'?'approve':step==='review'?'review':'draft');
-      badge.textContent=step==='approve'?'승인 완료':step==='review'?'검토 중':'작성 중';
-    }
-    tabs.forEach(t=>{t.onclick=()=>setStep(t.dataset.woStep);});
-    qsa('[data-wo-action]',page).forEach(btn=>{btn.onclick=()=>{
-      const a=btn.dataset.woAction;
-      if(a==='save'){setStep('draft'); return;}
-      if(a==='draftDone'){const e=qs('#woWriterDate',page); if(e)e.textContent='작성 완료 '+now(); setStep('review'); return;}
-      if(a==='reviewDone'){const e=qs('#woReviewerDate',page); if(e)e.textContent='검토 완료 '+now(); setStep('approve'); return;}
-      if(a==='approveDone'){const e=qs('#woApproverDate',page); if(e)e.textContent='승인 완료 '+now(); setStep('approve'); return;}
-    };});
-  }
-  function init(){cleanProductionNav();buildPages();cleanProductionNav();bindWorkOrderApproval();}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700)); else setTimeout(init,700);
-  setTimeout(init,1800);
-})();
-</script>
 
 </body>
 </html>
