@@ -3021,7 +3021,126 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- ══════════════════════════════════
+     NAMOCHEMICAL 생산관리 최종 패치
+     - 생산계획 관리 화면 적용
+     - 작업지시서 최종 화면 적용
+     - 작성/검토/승인 전체 알림 기능 적용
+══════════════════════════════════ -->
+<style id="namo-production-final-style">
+.namo-final-page{font-family:var(--font);color:#0f172a}.namo-final-page .ph{margin-bottom:18px}.namo-final-bc{font-size:12px;color:#64748b;margin-top:6px}.namo-final-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.namo-card{background:#fff;border:1px solid #dbe3ee;border-radius:16px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:hidden}.namo-card.pad{padding:18px}.namo-filter{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:end}.namo-field{display:flex;flex-direction:column;gap:6px}.namo-field label{font-size:12px;font-weight:900;color:#334155}.namo-field input,.namo-field select,.namo-field textarea{height:38px;border:1px solid #dbe3ee;border-radius:9px;padding:0 11px;background:#fff;color:#0f172a;outline:none;font-size:13px}.namo-field textarea{height:86px;padding:10px 12px;resize:vertical}.namo-field input:focus,.namo-field select:focus,.namo-field textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.10)}.namo-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:16px 0}.namo-kpi{border:1px solid #dbe3ee;border-radius:16px;padding:18px 22px;background:linear-gradient(180deg,#fff,#f8fbff);box-shadow:0 8px 22px rgba(15,23,42,.045)}.namo-kpi .l{font-size:12px;font-weight:900;color:#64748b}.namo-kpi .v{font-size:28px;font-weight:900;color:#0f2f5f;margin-top:4px}.namo-kpi.blue{background:#f2f7ff}.namo-kpi.green{background:#effcf6}.namo-kpi.orange{background:#fff7ed}.namo-kpi.red{background:#fff1f2}.namo-table-wrap{border:1px solid #dbe3ee;border-radius:15px;overflow:auto;background:#fff}.namo-table{width:100%;border-collapse:collapse;min-width:1120px}.namo-table th{background:#f8fafc;color:#334155;font-size:12px;font-weight:900;padding:12px 14px;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}.namo-table td{padding:12px 14px;border-bottom:1px solid #edf2f7;color:#19304f;font-size:13px;text-align:center;vertical-align:middle}.namo-table tr:last-child td{border-bottom:none}.namo-table tr:hover td{background:#fbfdff}.namo-pill{display:inline-flex;align-items:center;justify-content:center;min-width:54px;height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900}.namo-pill.blue{background:#dbeafe;color:#2563eb}.namo-pill.green{background:#dcfce7;color:#15803d}.namo-pill.orange{background:#ffedd5;color:#c2410c}.namo-pill.red{background:#fee2e2;color:#b91c1c}.namo-pill.gray{background:#f1f5f9;color:#64748b}.namo-tabs{display:flex;gap:26px;border-bottom:1px solid #e2e8f0;margin-bottom:14px}.namo-tab{height:44px;border:none;background:transparent;color:#334155;font-weight:800;cursor:pointer;border-bottom:3px solid transparent}.namo-tab.active{color:#2563eb;border-bottom-color:#2563eb}.namo-section-title{font-size:15px;font-weight:900;color:#0b55d9;margin-bottom:14px}.namo-wo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.namo-wo-wide{grid-column:1/-1}.namo-wo-card{background:#fff;border:1px solid #dbe3ee;border-radius:14px;padding:16px;box-shadow:0 8px 22px rgba(15,23,42,.045)}.namo-row-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.namo-row-grid.five{grid-template-columns:1.2fr 1.2fr 1.2fr 1.2fr auto}.namo-input-unit{display:flex;align-items:center}.namo-input-unit input{border-top-right-radius:0;border-bottom-right-radius:0;text-align:right}.namo-input-unit span{height:38px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;border:1px solid #dbe3ee;border-left:none;border-radius:0 9px 9px 0;background:#f8fafc;font-size:12px;color:#64748b;font-weight:800}.namo-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #bfdbfe;background:#f8fbff;color:#1d4ed8;border-radius:11px;padding:12px 16px;font-size:13px;font-weight:800;margin:8px 0 16px}.namo-notice .right{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.namo-notice-ok{color:#15803d;font-weight:900}.namo-alert-chips{display:flex;gap:8px;flex-wrap:wrap}.namo-alert-chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;border:1px solid #dbe3ee;background:#fff;font-size:12px;font-weight:900;color:#334155}.namo-alert-chip.write{border-color:#bfdbfe;color:#2563eb;background:#eff6ff}.namo-alert-chip.review{border-color:#fde68a;color:#b45309;background:#fffbeb}.namo-alert-chip.approve{border-color:#bbf7d0;color:#15803d;background:#f0fdf4}.namo-upload{height:86px;border:1.5px dashed #c7d7ee;border-radius:11px;background:#fbfdff;display:flex;align-items:center;justify-content:center;text-align:center;color:#64748b;font-size:13px}.namo-footer-actions{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.namo-required{font-size:12px;color:#ef4444}.namo-btn-mini{height:30px;padding:0 10px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;color:#334155;font-size:12px;font-weight:800;cursor:pointer}.namo-btn-mini.blue{border-color:#2563eb;color:#2563eb}.namo-icon-btn{width:30px;height:30px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;cursor:pointer;color:#334155}.namo-pagination{display:flex;justify-content:space-between;align-items:center;padding:13px 4px;color:#64748b;font-size:12px}.namo-page-btns{display:flex;gap:6px;align-items:center}.namo-page-btns button{width:32px;height:32px;border:1px solid #dbe3ee;border-radius:8px;background:#fff}.namo-page-btns button.active{border-color:#2563eb;color:#2563eb;background:#eff6ff;font-weight:900}.namo-bell-badge{position:absolute;top:-4px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center}.namo-toast-wrap{position:fixed;right:24px;top:78px;z-index:9999;display:flex;flex-direction:column;gap:10px}.namo-toast{width:340px;background:#fff;border:1px solid #bfdbfe;border-left:4px solid #2563eb;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.18);padding:13px 14px;animation:namoToastIn .18s ease}.namo-toast b{display:block;color:#0f172a;font-size:13px;margin-bottom:3px}.namo-toast span{display:block;color:#475569;font-size:12px;line-height:1.5}@keyframes namoToastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:1500px){.namo-filter{grid-template-columns:repeat(6,minmax(0,1fr))}.namo-row-grid,.namo-row-grid.five{grid-template-columns:repeat(2,minmax(0,1fr))}.namo-kpis{grid-template-columns:repeat(2,1fr)}}@media(max-width:900px){.namo-filter,.namo-row-grid,.namo-row-grid.five,.namo-wo-grid,.namo-kpis{grid-template-columns:1fr}.namo-wo-wide{grid-column:auto}.namo-final-actions{justify-content:flex-start}.namo-toast{width:calc(100vw - 48px)}}
+</style>
+<script id="namo-production-final-script">
+(function(){
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  let notices=[];
+  function fmt(n){return Number(n||0).toLocaleString('ko-KR');}
+  function today(){return '2026-05-21';}
+  function ensureBell(){
+    const top=$('.tright')||$('.topbar')||document.body;
+    let bell=$('#namoGlobalBell');
+    if(!bell){
+      bell=document.createElement('button');
+      bell.id='namoGlobalBell';bell.type='button';bell.title='알림';bell.style.cssText='position:relative;width:36px;height:36px;border:0;background:transparent;font-size:18px;cursor:pointer;color:#1e3a8a;';
+      bell.innerHTML='🔔<span class="namo-bell-badge" id="namoBellCount" style="display:none">0</span>';
+      top.insertBefore(bell, top.firstChild);
+      bell.addEventListener('click',()=>showToast('전체 알림', notices.length?notices.slice(-5).map(n=>`• ${n.title} - ${n.to}`).join('<br>'):'알림 내역이 없습니다.'));
+    }
+    const cnt=$('#namoBellCount'); if(cnt){cnt.textContent=notices.length; cnt.style.display=notices.length?'flex':'none';}
+  }
+  function showToast(title,msg){
+    let wrap=$('.namo-toast-wrap'); if(!wrap){wrap=document.createElement('div');wrap.className='namo-toast-wrap';document.body.appendChild(wrap);} 
+    const div=document.createElement('div');div.className='namo-toast';div.innerHTML=`<b>${title}</b><span>${msg}</span>`;wrap.appendChild(div);setTimeout(()=>{div.remove();},5200);
+  }
+  function pushNotice(type,to,detail){
+    const title=({write:'작성 알림',review:'검토 알림',approve:'승인 알림'}[type]||'알림');
+    notices.push({type,title,to,detail,at:new Date().toLocaleString('ko-KR')});
+    ensureBell();
+    showToast(title,`${to}에 알림이 발송되었습니다.<br>${detail||''}`);
+    const log=$('#namoWoNoticeLog');
+    if(log){log.innerHTML=`<span>알림 수신 부서 : <b>생산부 (생산1팀)</b></span><span class="namo-notice-ok">알림 발송 완료 ●</span>`;}
+  }
+  function activatePage(page){
+    if(typeof window.activate==='function'){try{window.activate(page);return;}catch(e){}}
+    $$('.page').forEach(p=>p.classList.remove('active'));
+    const sec=$(`#page-${page}`); if(sec)sec.classList.add('active');
+    $$('.nav-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  }
+  function addNav(){
+    const side=$('.sidebar'); if(!side) return;
+    function item(page,label,icon){return `<button class="nav-item" data-page="${page}"><span class="nav-icon">${icon||'›'}</span><span>${label}</span></button>`;}
+    let prod=$('.nav-item[data-page="production"]');
+    if(!prod){
+      const sec=document.createElement('div');sec.className='nav-sec';sec.textContent='생산 관리';
+      side.appendChild(sec); side.insertAdjacentHTML('beforeend',item('production','생산 관리','▾')); prod=$('.nav-item[data-page="production"]');
+    }
+    if(!$('.nav-item[data-page="production-plan"]')) prod.insertAdjacentHTML('afterend',item('production-plan','생산계획 관리','›'));
+    const pp=$('.nav-item[data-page="production-plan"]');
+    if(!$('.nav-item[data-page="work-order-final"]')) pp.insertAdjacentHTML('afterend',item('work-order-final','작업지시서','›'));
+    $$('.nav-item[data-page="worklog"]').forEach(x=>{if(x.textContent.includes('작업지시')) x.querySelector('span:last-child').textContent='생산작업일지';});
+    $$('.nav-item[data-page]').forEach(btn=>{ if(!btn.dataset.namoBound){btn.dataset.namoBound='1';btn.addEventListener('click',e=>{e.preventDefault();activatePage(btn.dataset.page);}); }});
+  }
+  function ensurePage(id){
+    let sec=$(`#page-${id}`); if(!sec){sec=document.createElement('section');sec.className='page namo-final-page';sec.id=`page-${id}`;($('.content')||document.body).appendChild(sec);} return sec;
+  }
+  function productionPlanHTML(){
+    return `<div class="namo-final-page">
+      <div class="ph"><div><div class="ph-title">생산계획 관리</div><div class="namo-final-bc">홈 › 생산 관리 › 생산계획 관리</div></div><div class="namo-final-actions"><button class="btn light" id="namoPlanExcel">엑셀 다운로드</button><button class="btn pri" id="namoPlanNew">+ 생산계획 등록</button></div></div>
+      <div class="namo-card pad">
+        <div class="namo-filter">
+          <div class="namo-field" style="grid-column:span 2"><label>계획일자</label><input type="date" value="2026-05-01"></div><div class="namo-field" style="grid-column:span 2"><label>~</label><input type="date" value="2026-05-21"></div>
+          <div class="namo-field" style="grid-column:span 2"><label>제품명</label><input placeholder="제품명을 선택하세요."></div><div class="namo-field" style="grid-column:span 2"><label>상태</label><select><option>전체</option><option>진행 중</option><option>완료</option><option>취소</option></select></div>
+          <div style="grid-column:span 4" class="namo-final-actions"><button class="btn light">초기화</button><button class="btn pri">조회</button></div>
+        </div>
+      </div>
+      <div class="namo-kpis"><div class="namo-kpi blue"><div class="l">전체 계획</div><div class="v">5 건</div></div><div class="namo-kpi green"><div class="l">진행 중</div><div class="v">3 건</div></div><div class="namo-kpi orange"><div class="l">완료</div><div class="v">1 건</div></div><div class="namo-kpi red"><div class="l">취소</div><div class="v">1 건</div></div></div>
+      <div class="namo-table-wrap"><table class="namo-table"><thead><tr><th>No.</th><th>계획일자</th><th>계획번호</th><th>제품명</th><th>계획수량 (kg)</th><th>실투입량 (kg)</th><th>상태</th><th>생산 LOT</th><th>요청부서</th><th>등록자</th><th>등록일시</th><th></th></tr></thead><tbody>
+        <tr><td>1</td><td>2026-05-21</td><td>PP-202605-00012</td><td>NMC622 양극활물질</td><td>2,500</td><td>-</td><td><span class="namo-pill blue">진행 중</span></td><td>FG-20260521-0001</td><td>생산변경</td><td>김철수</td><td>2026-05-21 10:30:21</td><td><button class="namo-icon-btn">···</button></td></tr>
+        <tr><td>2</td><td>2026-05-20</td><td>PP-202605-00011</td><td>NMC622 양극활물질</td><td>2,000</td><td>2,000</td><td><span class="namo-pill green">완료</span></td><td>FG-20260520-0004</td><td>연구소</td><td>김철수</td><td>2026-05-20 09:15:10</td><td><button class="namo-icon-btn">···</button></td></tr>
+        <tr><td>3</td><td>2026-05-18</td><td>PP-202605-00010</td><td>NMC523 양극활물질</td><td>3,000</td><td>-</td><td><span class="namo-pill blue">진행 중</span></td><td>FG-20260518-0002</td><td>품질</td><td>김철수</td><td>2026-05-18 14:22:33</td><td><button class="namo-icon-btn">···</button></td></tr>
+        <tr><td>4</td><td>2026-05-15</td><td>PP-202605-00009</td><td>Mn(OH)₂</td><td>1,500</td><td>-</td><td><span class="namo-pill red">취소</span></td><td>-</td><td>영업</td><td>김철수</td><td>2026-05-15 11:05:44</td><td><button class="namo-icon-btn">···</button></td></tr>
+        <tr><td>5</td><td>2026-05-10</td><td>PP-202605-00008</td><td>Li₂CO₃</td><td>1,000</td><td>1,000</td><td><span class="namo-pill green">완료</span></td><td>FG-20260510-0001</td><td>연구소</td><td>김철수</td><td>2026-05-10 16:40:18</td><td><button class="namo-icon-btn">···</button></td></tr>
+      </tbody></table></div><div class="namo-pagination"><span>총 5건</span><div class="namo-page-btns"><button>‹</button><button class="active">1</button><button>›</button></div><select><option>10 / 페이지</option></select></div>
+    </div>`;
+  }
+  function workOrderHTML(){
+    return `<div class="namo-final-page">
+      <div class="ph"><div><div class="ph-title">작업지시서</div><div class="namo-final-bc">홈 › 생산 관리 › 작업지시서</div></div><div class="namo-final-actions"><button class="btn light namo-alert-action" data-alert="write">작성 알림</button><button class="btn light namo-alert-action" data-alert="review">검토 알림</button><button class="btn light namo-alert-action" data-alert="approve">승인 알림</button><button class="btn light" id="namoWoDraft">임시저장</button><button class="btn ghost" id="namoWoSave">저장</button><button class="btn pri" id="namoWoPrint">출력 / PDF</button></div></div>
+      <div class="namo-tabs"><button class="namo-tab">목록</button><button class="namo-tab active">작성</button><button class="namo-tab">이력</button><button class="namo-tab">출력 / PDF</button></div>
+      <div class="namo-wo-card namo-wo-wide"><div class="namo-section-title">1. 기본 정보</div><div class="namo-row-grid">
+        <div class="namo-field"><label>작업지시서 번호</label><input value="WO-20260521-0001" readonly></div><div class="namo-field"><label>지시일자 *</label><input type="date" value="2026-05-21"></div><div class="namo-field"><label>지시자</label><input value="홍길동 (팀장)"></div><div class="namo-field"><label>상태</label><input value="작성중" readonly></div>
+        <div class="namo-field"><label>계획 구분 *</label><select><option>월간</option><option>주간</option><option>일간</option></select></div><div class="namo-field"><label>계획 번호</label><input value="PP-202605-00012"></div><div class="namo-field"><label>우선순위</label><select><option>보통</option><option>높음</option><option>낮음</option></select></div><div class="namo-field"><label>요청 부서 *</label><select id="namoReqDept"><option>생산변경</option><option>연구소</option><option>품질</option><option>영업</option><option>생산부</option></select></div>
+        <div class="namo-field"><label>담당자 *</label><select><option>김철수</option><option>이영희</option><option>박민수</option></select></div><div class="namo-field"><label>연락처</label><input value="010-1234-5678"></div><div class="namo-field" style="grid-column:span 2"><label>비고</label><input placeholder="비고를 입력하세요."></div>
+      </div><div class="namo-notice"><span>🔔 요청 부서가 <b>'생산변경'</b>으로 선택되어 자동으로 <b>생산부(생산1팀)</b>에 작성/검토/승인 알림이 발송됩니다.</span><span class="right" id="namoWoNoticeLog"><span>알림 수신 부서 : <b>생산부 (생산1팀)</b></span><span class="namo-notice-ok">알림 발송 완료 ●</span></span></div><div class="namo-alert-chips"><span class="namo-alert-chip write">● 작성 알림 ON</span><span class="namo-alert-chip review">● 검토 알림 ON</span><span class="namo-alert-chip approve">● 승인 알림 ON</span></div></div>
+      <div class="namo-wo-card namo-wo-wide" style="margin-top:14px"><div class="namo-section-title">2. 제품 정보</div><div class="namo-row-grid five"><div class="namo-field"><label>제품명 *</label><input value="NMC622 양극활물질"></div><div class="namo-field"><label>계획 수량 (kg) *</label><div class="namo-input-unit"><input value="2,500"><span>kg</span></div></div><div class="namo-field"><label>실 투입량 (kg) *</label><div class="namo-input-unit"><input value="2,550"><span>kg</span></div></div><div class="namo-field"><label>생산 LOT *</label><input value="FG-20260521-0001"></div><div class="namo-field"><label>LOT 자동생성</label><button class="namo-btn-mini blue" id="namoLotGen">↻ 자동생성</button></div></div></div>
+      <div class="namo-wo-grid" style="margin-top:14px"><div class="namo-wo-card"><div class="namo-section-title">3. 작업자 정보</div><div style="display:flex;gap:8px;align-items:end;margin-bottom:10px"><div class="namo-field" style="flex:1"><label>작업자 *</label><input value="박민수"></div><button class="namo-btn-mini blue">추가</button></div><div class="namo-table-wrap"><table class="namo-table" style="min-width:620px"><thead><tr><th>No.</th><th>작업자명</th><th>역할</th><th>소속</th><th>연락처</th><th>삭제</th></tr></thead><tbody><tr><td>1</td><td>박민수</td><td>작업자</td><td>생산2팀</td><td>010-1111-1111</td><td>🗑</td></tr><tr><td>2</td><td>이영희</td><td>보조작업자</td><td>생산2팀</td><td>010-2222-2222</td><td>🗑</td></tr></tbody></table></div></div>
+        <div class="namo-wo-card"><div style="display:flex;justify-content:space-between;align-items:center"><div class="namo-section-title">4. 투입 원료 (예정)</div><button class="namo-btn-mini blue">+ 원료 추가</button></div><div class="namo-table-wrap"><table class="namo-table" style="min-width:720px"><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량</th><th>단위</th><th>검사상태</th><th>삭제</th></tr></thead><tbody><tr><td>1</td><td>RM-NCA-001</td><td>NCA 분말</td><td>RM-20260520-001</td><td>1,200</td><td>kg</td><td>적합</td><td>🗑</td></tr><tr><td>2</td><td>RM-MN-001</td><td>Mn(OH)₂</td><td>RM-20260519-003</td><td>800</td><td>kg</td><td>적합</td><td>🗑</td></tr><tr><td>3</td><td>RM-Li2CO3-001</td><td>Li₂CO₃</td><td>RM-20260518-002</td><td>500</td><td>kg</td><td>적합</td><td>🗑</td></tr><tr><td colspan="4"><b>합계</b></td><td><b>2,500</b></td><td><b>kg</b></td><td>-</td><td></td></tr></tbody></table></div></div>
+        <div class="namo-wo-card"><div class="namo-section-title">5. 첨부 파일</div><div class="namo-upload">파일을 드래그 하거나 클릭하여 업로드하세요.<br>(PDF, JPG, PNG, Excel / 최대 10MB)</div></div><div class="namo-wo-card"><div class="namo-section-title">6. 지시 사항</div><div class="namo-field"><textarea placeholder="지시 사항을 입력하세요."></textarea></div></div></div>
+      <div class="namo-footer-actions"><span class="namo-required">* 표시는 필수 입력 항목입니다.</span><div class="namo-final-actions"><button class="btn light namo-alert-action" data-alert="write">작성 알림</button><button class="btn light namo-alert-action" data-alert="review">검토 알림</button><button class="btn light namo-alert-action" data-alert="approve">승인 알림</button><button class="btn light" id="namoWoDraft2">임시저장</button><button class="btn pri" id="namoWoSave2">저장</button><button class="btn pri" id="namoWoPrint2">출력 / PDF</button></div></div>
+    </div>`;
+  }
+  function renderPages(){
+    ensurePage('production-plan').innerHTML=productionPlanHTML();
+    ensurePage('work-order-final').innerHTML=workOrderHTML();
+    bindActions();
+  }
+  function bindActions(){
+    $$('.namo-alert-action').forEach(b=>{if(b.dataset.bound)return;b.dataset.bound='1';b.addEventListener('click',()=>pushNotice(b.dataset.alert,'생산부 (생산1팀)',`작업지시서 WO-20260521-0001 / 요청부서: ${$('#namoReqDept')?.value||'생산변경'}`));});
+    ['namoWoSave','namoWoSave2'].forEach(id=>{const b=$('#'+id);if(b&&!b.dataset.bound){b.dataset.bound='1';b.addEventListener('click',()=>{pushNotice('write','생산부 (생산1팀)','작업지시서 저장 완료');pushNotice('review','검토자','검토 요청이 등록되었습니다.');});}});
+    ['namoWoPrint','namoWoPrint2'].forEach(id=>{const b=$('#'+id);if(b&&!b.dataset.bound){b.dataset.bound='1';b.addEventListener('click',()=>{pushNotice('approve','승인자','출력/PDF 승인 알림이 등록되었습니다.');window.print();});}});
+    const dept=$('#namoReqDept'); if(dept&&!dept.dataset.bound){dept.dataset.bound='1';dept.addEventListener('change',()=>pushNotice('write','생산부 (생산1팀)',`요청부서가 ${dept.value}로 변경되었습니다.`));}
+  }
+  function boot(){addNav();renderPages();ensureBell();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,400));else setTimeout(boot,400);
+  setInterval(()=>{addNav();bindActions();ensureBell();},2000);
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
