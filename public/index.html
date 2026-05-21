@@ -1677,6 +1677,20 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #page-workorder-final .nmc-material-info{margin-top:14px!important;border:1px solid #bfdbfe!important;border-radius:12px!important;background:#f8fbff!important;padding:16px 18px!important;color:#334155!important;font-size:13px!important;line-height:1.7!important;}
 #page-workorder-final .nmc-material-info b{color:#1d4ed8!important;margin-right:8px!important;}
 
+
+
+/* 투입 원료 kg/비율 자동계산 최종 보강 */
+#page-workorder-final #nmcMaterialTable th:nth-child(5),
+#page-workorder-final #nmcMaterialTable th:nth-child(6){text-transform:none!important;}
+#page-workorder-final .nmc-input-unit-wrap{display:flex!important;align-items:center!important;width:100%!important;}
+#page-workorder-final .nmc-input-unit-wrap input{border-top-right-radius:0!important;border-bottom-right-radius:0!important;min-width:0!important;}
+#page-workorder-final .nmc-unit-box{height:40px!important;min-width:40px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:1.5px solid #d9e3f0!important;border-left:none!important;border-radius:0 9px 9px 0!important;background:#f8fafc!important;color:#0f172a!important;font-size:13px!important;font-weight:800!important;}
+#page-workorder-final .nmc-ratio-input{background:#f3f4f6!important;color:#4b5563!important;}
+#page-workorder-final #nmcMaterialTotalQty,
+#page-workorder-final #nmcMaterialTotalRatio{color:#0b57d0!important;font-size:15px!important;font-weight:900!important;}
+#page-workorder-final .nmc-material-info{margin-top:14px!important;border:1px solid #bfdbfe!important;border-radius:12px!important;background:#f8fbff!important;padding:16px 18px!important;color:#334155!important;font-size:13px!important;line-height:1.7!important;}
+#page-workorder-final .nmc-material-info b{color:#1d4ed8!important;margin-right:8px!important;}
+
 </style>
 </head>
 <body class="login-active">
@@ -6589,9 +6603,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
       </div>
       <div class="nmc-workorder-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin:0">3. 투입 원료</h3><button class="nmc-add-btn" id="nmcMaterialAdd" type="button">+ 원료 행추가</button></div>
-        <div class="nmc-subtable"><table id="nmcMaterialTable"><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량</th><th>단위</th><th>비고</th><th>삭제</th></tr></thead><tbody>
-          <tr><td>1</td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input nmc-mat-qty" placeholder="0"></td><td><input class="nmc-input" value="kg"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>
-        </tbody><tfoot><tr><td colspan="4">합계</td><td id="nmcMatTotal">0</td><td>kg</td><td>-</td><td></td></tr></tfoot></table></div>
+        <div class="nmc-subtable nmc-material-final-wrap"><table id="nmcMaterialTable"><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량(kg)</th><th>비율(%)</th><th>비고</th><th>삭제</th></tr></thead><tbody>
+          <tr><td>1</td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="0.00" readonly><span class="nmc-unit-box">%</span></div></td><td><input class="nmc-input" placeholder="직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>
+        </tbody><tfoot><tr><td colspan="4">합계</td><td id="nmcMaterialTotalQty">0.00 kg</td><td id="nmcMaterialTotalRatio">0.00 %</td><td>-</td><td></td></tr></tfoot></table></div>
+        <div class="nmc-material-info"><b>ℹ</b> 투입량(kg)을 입력하면 비율(%)이 자동으로 계산됩니다.<br><b></b> 전체 투입량 합계의 비율이 마지막에 100.00%로 자동 표시됩니다.</div>
       </div>
       <div class="nmc-split">
         <div class="nmc-workorder-card"><h3>4. 첨부 파일</h3><div class="nmc-upload" id="nmcFileDrop"><span>▧</span><span>파일을 드래그 하거나 클릭하여 업로드하세요.<br><small>(PDF, JPG, PNG, Excel / 최대 10MB)</small></span><button class="nmc-small-btn" id="nmcFileBtn" type="button">파일 선택</button><input type="file" id="nmcFileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.xls,.xlsx" style="display:none"></div><div id="nmcFileList" class="nmc-file-list"></div></div>
@@ -6815,15 +6830,40 @@ document.addEventListener('DOMContentLoaded',async()=>{
     updateMaterialTotal();
   }
 
+  function nmcNum(v){
+    return Number(String(v || '0').replace(/,/g,'').replace(/[^0-9.\-]/g,'')) || 0;
+  }
+
   function updateMaterialTotal(){
-    let total=0;
-    qsa('#nmcMaterialTable .nmc-mat-qty').forEach(inp=>{ total += Number(String(inp.value||'0').replace(/,/g,'')) || 0; });
-    qsa('#nmcMatTotal').forEach(x=>x.textContent=total.toLocaleString('ko-KR'));
+    const rows = qsa('#nmcMaterialTable tbody tr');
+    let total = 0;
+    rows.forEach(tr=>{
+      total += nmcNum(tr.querySelector('.nmc-mat-qty')?.value);
+    });
+
+    rows.forEach((tr, idx)=>{
+      const qty = nmcNum(tr.querySelector('.nmc-mat-qty')?.value);
+      const ratioInput = tr.querySelector('.nmc-mat-ratio');
+      let ratio = total > 0 ? (qty / total * 100) : 0;
+      if(total > 0 && idx === rows.length - 1){
+        let prev = 0;
+        rows.forEach((r, j)=>{
+          if(j < rows.length - 1){
+            prev += Number(r.querySelector('.nmc-mat-ratio')?.value || 0) || 0;
+          }
+        });
+        ratio = Math.max(0, 100 - prev);
+      }
+      if(ratioInput) ratioInput.value = ratio.toFixed(2);
+    });
+
+    qsa('#nmcMaterialTotalQty, #nmcMatTotal').forEach(x=>x.textContent = total.toFixed(2) + ' kg');
+    qsa('#nmcMaterialTotalRatio').forEach(x=>x.textContent = total > 0 ? '100.00 %' : '0.00 %');
   }
 
   function addMaterialRow(){
     const tbody=qs('#nmcMaterialTable tbody'); if(!tbody) return;
-    tbody.insertAdjacentHTML('beforeend', `<tr><td></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input nmc-mat-qty" placeholder="0"></td><td><input class="nmc-input" value="kg"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>`);
+    tbody.insertAdjacentHTML('beforeend', `<tr><td></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><input class="nmc-input" placeholder="직접입력"></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="0.00" readonly><span class="nmc-unit-box">%</span></div></td><td><input class="nmc-input" placeholder="직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>`);
     updateMaterialRows();
   }
 
@@ -6853,7 +6893,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     let target=$('printTarget');
     if(!target){ target=document.createElement('div'); target.id='printTarget'; document.body.appendChild(target); }
     target.className='rsheet';
-    const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[3]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[4]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[5]?.querySelector('input')?.value||'kg')}</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
+    updateMaterialTotal();
+    const matTotalQty = qs('#nmcMaterialTotalQty')?.textContent || '0.00 kg';
+    const matTotalRatio = qs('#nmcMaterialTotalRatio')?.textContent || '0.00 %';
+    const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[3]?.querySelector('input')?.value||'')}</td><td>${esc(tr.querySelector('.nmc-mat-qty')?.value||'0')} kg</td><td>${esc(tr.querySelector('.nmc-mat-ratio')?.value||'0.00')} %</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
     const recvNames=selectedFieldText('nmcRecvDept','선택된 수신부서 없음');
     const refNames=selectedFieldText('nmcRefDept','선택된 참조부서 없음');
     target.innerHTML=`
@@ -6865,7 +6908,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <tr><th>계획수량</th><td>${val('nmcPlanQty')} kg</td><th>실투입량</th><td>${val('nmcActualQty')} kg</td><th></th><td></td></tr>
       </tbody></table>
       <h4 style="margin:16px 0 8px">투입 원료</h4>
-      <table><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량</th><th>단위</th><th>비고</th></tr></thead><tbody>${mats}</tbody></table>
+      <table><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량(kg)</th><th>비율(%)</th><th>비고</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td colspan="4"><b>합계</b></td><td><b>${esc(matTotalQty)}</b></td><td><b>${esc(matTotalRatio)}</b></td><td>-</td></tr></tfoot></table>
       <h4 style="margin:16px 0 8px">발송 정보</h4>
       <table><tbody><tr><th>발송부서</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${esc(recvNames)}</td><th>참조부서</th><td>${esc(refNames)}</td></tr><tr><th>발송일시</th><td>${val('nmcSendTime')}</td><th>비고</th><td colspan="3">${val('nmcSendNote')}</td></tr></tbody></table>
       <div class="print-user-info">출력자: ${val('nmcSenderName')} / 출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
