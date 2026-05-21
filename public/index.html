@@ -3166,7 +3166,7 @@ function printLabel(){
     if(!parent || parent.querySelector('.nmc-material-info')) return;
     const info = document.createElement('div');
     info.className = 'nmc-material-info';
-    info.innerHTML = '<b>i</b> 투입량(kg)을 입력하면 비율(%)이 자동으로 계산됩니다. 전체 투입량 합계 기준으로 합계 비율은 100.00%로 표시됩니다.';
+    info.innerHTML = `<b>i</b> 투입량(kg)을 입력하면 비율(%)이 자동으로 계산됩니다. 전체 투입량 합계 기준으로 합계 비율은 100.00%로 표시됩니다.`;
     const wrap = tb.closest('.nmc-material-final-wrap') || tb;
     wrap.insertAdjacentElement('afterend', info);
   }
