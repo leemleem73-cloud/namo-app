@@ -1642,6 +1642,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   margin-top:0!important;
 }
 
+
+/* 작업지시서 발송정보 최종 패치: 발송부서/담당자 선택 삭제 */
+#page-workorder-final #nmcSenderDept,
+#page-workorder-final #nmcProdManager{display:none!important;}
+
 </style>
 </head>
 <body class="login-active">
@@ -6563,14 +6568,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="nmc-workorder-card">
         <h3>6. 발송 정보</h3>
         <div class="nmc-form-grid">
-          <div class="nmc-field"><label>발송부서(로그인 당사자)<span class="req">*</span></label><input class="nmc-input" id="nmcSenderDept" readonly placeholder="로그인 후 자동 표시"></div>
           <div class="nmc-field"><label>발송자 성명<span class="req">*</span></label><input class="nmc-input" id="nmcSenderName" readonly placeholder="로그인 후 자동 표시"></div>
-          <div class="nmc-field"><label>수신부서<span class="req">*</span></label><input class="nmc-input" id="nmcRecvDept" value="생산부서" readonly></div>
-          <div class="nmc-field"><label>생산부서 담당자<span class="req">*</span></label><select class="nmc-select" id="nmcProdManager"><option value="">회원등록현황에서 선택</option></select></div>
+          <div class="nmc-field"><label>수신부서<span class="req">*</span></label><input class="nmc-input" id="nmcRecvDept" value="생산부 (현재 등록된 생산부 전원)" readonly></div>
           <div class="nmc-field"><label>발송일시</label><input class="nmc-input" id="nmcSendTime" readonly></div>
-          <div class="nmc-field" style="grid-column:span 3"><label>발송 비고</label><input class="nmc-input" id="nmcSendNote" placeholder="발송 관련 비고 입력"></div>
+          <div class="nmc-field" style="grid-column:span 5"><label>발송 비고</label><input class="nmc-input" id="nmcSendNote" placeholder="발송 관련 비고 입력"></div>
         </div>
-        <div class="nmc-actions" style="justify-content:flex-end;margin-top:12px"><button class="nmc-btn primary" data-nmc-action="send" type="button">생산부서 담당자에게 발송</button></div>
+        <div class="nmc-actions" style="justify-content:flex-end;margin-top:12px"><button class="nmc-btn primary" data-nmc-action="send" type="button">생산부 전체 발송</button></div>
       </div>
       <div class="nmc-actions">
         <button class="nmc-btn" data-nmc-action="draft">임시저장</button>
@@ -6609,7 +6612,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderWorkOrderAlert(){
     qsa('#nmcWorkorderAlert').forEach(box=>{
       const dept = $('nmcReqDept')?.value || '미입력';
-      box.innerHTML = `<span>🔔 로그인 사용자의 발송부서와 생산부서 담당자 기준으로 작업지시서가 발송됩니다.</span><span class="right">작성 대기 ●</span>`;
+      box.innerHTML = `<span>🔔 로그인 사용자 성명으로 생산부 전체 인원에게 작업지시서가 발송됩니다.</span><span class="right">작성 대기 ●</span>`;
     });
   }
 
@@ -6659,42 +6662,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function syncSendInfo(){
     const u=(window.state && state.currentUser) ? state.currentUser : {};
-    const dept=u.department || u.dept || '';
     const name=u.name || u.username || u.email || '';
-    qsa('#nmcSenderDept').forEach(x=>x.value=dept || '');
     qsa('#nmcSenderName').forEach(x=>x.value=name || '');
+    qsa('#nmcRecvDept').forEach(x=>x.value='생산부 (현재 등록된 생산부 전원)');
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
-    fillProductionManagers();
   }
 
-  function fillProductionManagers(){
+  function getProductionUsers(){
     const users=[];
     if(window.state){
       if(Array.isArray(state.adminUsers)) users.push(...state.adminUsers);
       if(Array.isArray(state.signableUsers)) users.push(...state.signableUsers);
+      if(Array.isArray(state.users)) users.push(...state.users);
+      if(Array.isArray(state.members)) users.push(...state.members);
       if(state.currentUser) users.push(state.currentUser);
     }
     const map=new Map();
     users.forEach(u=>{ if(u && (u.name || u.email)) map.set(String(u.id || u.email || u.name), u); });
-    const prod=[...map.values()].filter(u=>{
+    return [...map.values()].filter(u=>{
       const dept=String(u.department || u.dept || '').replace(/\s/g,'');
       const status=String(u.status || 'APPROVED').toUpperCase();
-      return /생산부서|생산부|생산팀|생산/.test(dept) && status !== 'REJECTED' && status !== '퇴사';
-    });
-    qsa('#nmcProdManager').forEach(sel=>{
-      const cur=sel.value;
-      if(!prod.length){
-        sel.innerHTML='<option value="">등록된 생산부 담당자 없음</option>';
-        return;
-      }
-      sel.innerHTML='<option value="">생산부 담당자 선택</option>' + prod.map(u=>{
-        const value=esc(u.id || u.email || u.name || '');
-        const name=esc(u.name || u.email || '');
-        const email=esc(u.email || '');
-        const dept=esc(u.department || u.dept || '생산부서');
-        return `<option value="${value}" data-name="${name}" data-email="${email}" data-dept="${dept}">${dept} ${name}${u.title?' / '+esc(u.title):''}</option>`;
-      }).join('');
-      if(cur && [...sel.options].some(o=>o.value===cur)) sel.value=cur;
+      return dept === '생산부' && status !== 'REJECTED' && status !== '퇴사';
     });
   }
 
@@ -6734,19 +6722,20 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!target){ target=document.createElement('div'); target.id='printTarget'; document.body.appendChild(target); }
     target.className='rsheet';
     const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[3]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[4]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[5]?.querySelector('input')?.value||'kg')}</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
-    const mgr=nmcVisibleField('nmcProdManager')?.selectedOptions?.[0]?.textContent || '-';
+    const prodUsers=getProductionUsers();
+    const prodNames=prodUsers.length ? prodUsers.map(u=>u.name || u.email || '').filter(Boolean).join(', ') : '현재 등록된 생산부 전원';
     target.innerHTML=`
       <div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">${val('nmcWoNo')}</div></div>
       <table><tbody>
         <tr><th>작업지시번호</th><td>${val('nmcWoNo')}</td><th>지시일자</th><td>${val('nmcOrderDate')}</td><th>계획구분</th><td>${val('nmcPlanType')}</td></tr>
-        <tr><th>요청부서</th><td>${val('nmcReqDept')}</td><th>우선순위</th><td>${esc(qs('#page-workorder-final select:not(#nmcPlanType):not(#nmcProdManager)')?.value||'-')}</td><th>작업자</th><td>${val('nmcWorker')}</td></tr>
+        <tr><th>요청부서</th><td>${val('nmcReqDept')}</td><th>우선순위</th><td>${esc(qs('#page-workorder-final select:not(#nmcPlanType)')?.value||'-')}</td><th>작업자</th><td>${val('nmcWorker')}</td></tr>
         <tr><th>제품명</th><td>${val('nmcProdName')}</td><th>제품코드</th><td>${val('nmcProdCode')}</td><th>생산 LOT</th><td>${val('nmcProdLot')}</td></tr>
         <tr><th>계획수량</th><td>${val('nmcPlanQty')} kg</td><th>실투입량</th><td>${val('nmcActualQty')} kg</td><th></th><td></td></tr>
       </tbody></table>
       <h4 style="margin:16px 0 8px">투입 원료</h4>
       <table><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량</th><th>단위</th><th>비고</th></tr></thead><tbody>${mats}</tbody></table>
       <h4 style="margin:16px 0 8px">발송 정보</h4>
-      <table><tbody><tr><th>발송부서</th><td>${val('nmcSenderDept')}</td><th>발송자</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${val('nmcRecvDept')}</td></tr><tr><th>생산부서 담당자</th><td>${esc(mgr)}</td><th>발송일시</th><td>${val('nmcSendTime')}</td><th>비고</th><td>${val('nmcSendNote')}</td></tr></tbody></table>
+      <table><tbody><tr><th>발송자</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${val('nmcRecvDept')}</td><th>발송일시</th><td>${val('nmcSendTime')}</td></tr><tr><th>수신대상</th><td colspan="3">${esc(prodNames)}</td><th>비고</th><td>${val('nmcSendNote')}</td></tr></tbody></table>
       <div class="print-user-info">출력자: ${val('nmcSenderName')} / 출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
     window.print();
   }
@@ -6771,13 +6760,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
         if(a==='send'){
           syncSendInfo();
           const scope=nmcScopeFrom(act);
-          const mgr=nmcField(scope,'nmcProdManager');
-          const opt=mgr?.selectedOptions?.[0];
-          if(!mgr || !mgr.value){ notify('발송 대상 확인','생산부서 담당자를 먼저 선택하세요.'); return; }
-          const mgrName=opt?.dataset?.name || opt?.textContent || '생산부서 담당자';
           const sendTime=nmcField(scope,'nmcSendTime');
           if(sendTime) sendTime.value=new Date().toLocaleString('ko-KR');
-          notify('작업지시서 발송 알림',`${woNo} 작업지시서가 선택한 생산부서 담당자 ${mgrName}에게만 발송되었습니다.`);
+          const prodUsers=getProductionUsers();
+          const count=prodUsers.length || 0;
+          const targetMsg = count ? `등록된 생산부 ${count}명 전원` : '생산부 전체';
+          notify('작업지시서 발송 알림',`${woNo} 작업지시서가 ${targetMsg}에게 발송되었습니다.`);
         }
         if(a==='print'){ notify('작업지시서 출력 알림',`${woNo} 출력/PDF 화면을 생성했습니다.`); printWorkOrder(); }
       }
