@@ -6390,7 +6390,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!work){const prodSec=[...qsa('.nav-sec')].find(x=>(x.textContent||'').includes('생산 관리')); if(prodSec){prodSec.insertAdjacentHTML('afterend','<button class="nav-item" data-page="worklog"><span class="nav-icon">▣</span><span>생산작업일지</span></button>'); work=qs('.nav-item[data-page="worklog"]');}}
     if(work){work.querySelector('span:last-child').textContent='생산작업일지';}
     if(work && !qs('.nav-item[data-page="workorder"]')) work.insertAdjacentHTML('beforebegin','<button class="nav-item" data-page="workorder"><span class="nav-icon">▣</span><span>작업지시서</span></button>');
-    if(work && !qs('.nav-item[data-page="prodresult"]')) work.insertAdjacentHTML('afterend','<button class="nav-item" data-page="prodresult"><span class="nav-icon">▣</span><span>생산실적관리</span></button>');
     qsa('.nav-item[data-page]').forEach(btn=>{btn.onclick=(e)=>{const pg=btn.dataset.page;if(qs('#page-'+pg)){e.preventDefault();activate(pg);}}});
   }
   const input=(label,id,ph='')=>`<div class="field"><label>${label}</label><input id="${id}" placeholder="${ph}"></div>`;
