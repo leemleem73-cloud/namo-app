@@ -3689,7 +3689,9 @@ function renderInstrumentTable(){
   }).join('');
 }
 function renderWorklogTable(){
-  const tb=$('worklogTable');if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
+  const tb=$('worklogTable');
+  if(!tb){console.warn('worklogTable element not found - renderWorklogTable skipped');return;}
+  if(!state.worklog.length){tb.innerHTML=eRow(8);return;}
   tb.innerHTML=state.worklog.map(r=>{
     const lot=(r.finishedLot||'').toLowerCase();
     const iq=state.incoming.filter(x=>(x.lot||'').toLowerCase()===lot).length;
@@ -6486,6 +6488,223 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function init(){cleanProductionNav();buildPages();cleanProductionNav();bindWorkOrderApproval();}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700)); else setTimeout(init,700);
   setTimeout(init,1800);
+})();
+</script>
+
+
+
+<script id="trend-zero-repair-patch">
+(function(){
+  'use strict';
+  function qs(sel){return document.querySelector(sel);}
+  function arr(v){return Array.isArray(v)?v:[];}
+  function pad(n){return String(n).padStart(2,'0');}
+  function today(){
+    try{var d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+    catch(e){var d2=new Date();return d2.getFullYear()+'-'+pad(d2.getMonth()+1)+'-'+pad(d2.getDate());}
+  }
+  function toIsoDate(v){
+    if(v===undefined||v===null||v==='') return '';
+    var s=String(v).trim();
+    var m=s.match(/(20\d{2})[-./년\s]*(\d{1,2})[-./월\s]*(\d{1,2})?/);
+    if(m) return m[1]+'-'+pad(m[2]||1)+'-'+pad(m[3]||1);
+    var d=new Date(s);
+    if(!isNaN(d.getTime())){try{var k=new Date(d.getTime()+9*60*60*1000);return k.toISOString().slice(0,10);}catch(e){}}
+    return '';
+  }
+  function dateFromLotLike(r){
+    var keys=['lot','finishedLot','finished_lot','ncLot','nc_lot','reportNo','report_no','no','id','inspectionNo','inspection_no'];
+    for(var i=0;i<keys.length;i++){
+      var v=r&&r[keys[i]]; if(!v) continue;
+      var m=String(v).match(/(?:^|[^0-9])(\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);
+      if(m){var yy=Number(m[1]);var year=(yy>=70?1900+yy:2000+yy);var mm=Number(m[2]),dd=Number(m[3]);if(mm>=1&&mm<=12&&dd>=1&&dd<=31)return year+'-'+pad(mm)+'-'+pad(dd);}
+    }
+    return '';
+  }
+  window.recordDateOf=function(r){
+    if(!r) return '';
+    var preferred=['date','workDate','work_date','inspectionDate','inspection_date','checkDate','check_date','testDate','test_date','incomingDate','incoming_date','processDate','process_date','shipmentDate','shipment_date','createdAt','created_at','updatedAt','updated_at','ncDate','nc_date','trainingDate','training_date','reportDate','report_date'];
+    for(var i=0;i<preferred.length;i++){var d=toIsoDate(r[preferred[i]]); if(d) return d;}
+    for(var k in r){if(Object.prototype.hasOwnProperty.call(r,k)&&/date|time|_at|At$/i.test(k)){var d2=toIsoDate(r[k]); if(d2) return d2;}}
+    return dateFromLotLike(r)||'';
+  };
+  window.countByYear=function(a,yr){a=arr(a);yr=String(yr);var dated=a.filter(function(r){return window.recordDateOf(r).startsWith(yr);});if(dated.length)return dated.length;return a.filter(function(r){return !window.recordDateOf(r);}).length||a.length;};
+  window.qmesRowsByYear=function(a,yr){a=arr(a);yr=String(yr);var dated=a.filter(function(r){return window.recordDateOf(r).startsWith(yr);});return dated.length?dated:a;};
+  window.qmesMonthIndex=function(r){var d=window.recordDateOf(r);var m=d.match(/^\d{4}-(\d{2})/);if(m)return Number(m[1])-1;var t=today().match(/^\d{4}-(\d{2})/);return t?Number(t[1])-1:0;};
+  window.qmesCountForYearMonth=function(a,yr,mi){return window.qmesRowsByYear(a,yr).filter(function(r){return window.qmesMonthIndex(r)===mi;}).length;};
+  window.qmesCountForQuarter=function(a,yr,qi){return window.qmesRowsByYear(a,yr).filter(function(r){var mi=window.qmesMonthIndex(r);return mi>=qi*3&&mi<qi*3+3;}).length;};
+  window.renderCharts=function(){
+    var canvas=document.getElementById('trendChart'); if(!canvas||!window.Chart||!window.state) return;
+    var y=Number((document.getElementById('dashYear')&&document.getElementById('dashYear').value)||new Date().getFullYear());
+    var rowsAll=[].concat(arr(state.incoming),arr(state.process),arr(state.shipment));
+    var years=Array.from(new Set(rowsAll.map(function(r){return window.recordDateOf(r).slice(0,4);}).filter(function(v){return /^\d{4}$/.test(v);}))).map(Number).sort(function(a,b){return b-a;});
+    if(years.length && !rowsAll.some(function(r){return window.recordDateOf(r).startsWith(String(y));})) y=years[0];
+    var mode=window.qmesTrendMode||'month';
+    var labels=[],incoming=[],process=[],shipment=[],titleSuffix='월간';
+    if(mode==='quarter'){
+      labels=['1분기','2분기','3분기','4분기'];incoming=labels.map(function(_,i){return window.qmesCountForQuarter(state.incoming,y,i);});process=labels.map(function(_,i){return window.qmesCountForQuarter(state.process,y,i);});shipment=labels.map(function(_,i){return window.qmesCountForQuarter(state.shipment,y,i);});titleSuffix='분기';
+    }else if(mode==='year'){
+      labels=years.length?years.slice(0,5).reverse().map(String):Array.from({length:5},function(_,i){return String(y-4+i);});incoming=labels.map(function(yy){return window.countByYear(state.incoming,yy);});process=labels.map(function(yy){return window.countByYear(state.process,yy);});shipment=labels.map(function(yy){return window.countByYear(state.shipment,yy);});titleSuffix='연간';
+    }else{
+      labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];incoming=labels.map(function(_,i){return window.qmesCountForYearMonth(state.incoming,y,i);});process=labels.map(function(_,i){return window.qmesCountForYearMonth(state.process,y,i);});shipment=labels.map(function(_,i){return window.qmesCountForYearMonth(state.shipment,y,i);});titleSuffix='월간';
+    }
+    var inRows=mode==='year'?arr(state.incoming).filter(function(r){return labels.indexOf(window.recordDateOf(r).slice(0,4))>=0;}):window.qmesRowsByYear(state.incoming,y);
+    var prRows=mode==='year'?arr(state.process).filter(function(r){return labels.indexOf(window.recordDateOf(r).slice(0,4))>=0;}):window.qmesRowsByYear(state.process,y);
+    var shRows=mode==='year'?arr(state.shipment).filter(function(r){return labels.indexOf(window.recordDateOf(r).slice(0,4))>=0;}):window.qmesRowsByYear(state.shipment,y);
+    if(typeof window.updateTrendKpis==='function') window.updateTrendKpis(inRows,prRows,shRows);
+    var tag=qs('#qmesTrendSlot .qmes-trend-wide .tag'); if(tag) tag.textContent=titleSuffix.toUpperCase();
+    var unit=document.getElementById('trendUnitText'); if(unit) unit.textContent=mode==='year'?'(최근 5년 / 단위: 건)':'(단위: 건)';
+    document.querySelectorAll('[data-trend-mode]').forEach(function(b){b.classList.toggle('active',(b.dataset.trendMode||'month')===mode);});
+    if(typeof window.safeDestroyChart==='function') window.safeDestroyChart('trendChart'); else if(window.Chart&&Chart.getChart){var old=Chart.getChart(canvas); if(old) old.destroy();}
+    var ctx=canvas.getContext('2d');
+    function grad(color){var g=ctx.createLinearGradient(0,0,0,320);var c=color==='blue'?'37,99,235':color==='purple'?'139,92,246':'249,115,22';g.addColorStop(0,'rgba('+c+',.28)');g.addColorStop(1,'rgba('+c+',.02)');return g;}
+    var maxVal=Math.max.apply(null,[1].concat(incoming,process,shipment));
+    var pointLabelPlugin={id:'qmesPointLabelRepair',afterDatasetsDraw:function(chart){var c=chart.ctx;c.save();c.textAlign='center';c.textBaseline='bottom';c.font='700 11px Inter, sans-serif';chart.data.datasets.forEach(function(ds,di){var meta=chart.getDatasetMeta(di);meta.data.forEach(function(pt,i){var val=Number(ds.data[i]||0);if(!val)return;c.fillStyle=ds.borderColor;c.fillText(String(val),pt.x,pt.y-7-(di*2));});});c.restore();}};
+    state.charts=state.charts||{};
+    state.charts.trend=new Chart(canvas,{type:'line',data:{labels:labels,datasets:[{label:'수입검사 (IQC)',data:incoming,borderColor:'#2563eb',backgroundColor:grad('blue'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},{label:'공정검사 (PQC)',data:process,borderColor:'#8b5cf6',backgroundColor:grad('purple'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},{label:'출하검사 (OQC)',data:shipment,borderColor:'#f97316',backgroundColor:grad('orange'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5}]},plugins:[pointLabelPlugin],options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'center',labels:{font:{size:12,weight:'800'},boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',padding:18}},tooltip:{backgroundColor:'rgba(15,23,42,.92)',padding:12,titleFont:{weight:'900'},bodyFont:{weight:'800'},callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y+'건';}}}},scales:{y:{beginAtZero:true,suggestedMax:maxVal+1,ticks:{precision:0,stepSize:1,font:{size:11,weight:'800'},color:'#64748b'},grid:{color:'rgba(15,23,42,.07)',drawBorder:false}},x:{offset:false,ticks:{font:{size:11,weight:'800'},color:'#64748b'},grid:{display:false}}}}});
+    window.__chartStore=window.__chartStore||{}; window.__chartStore.trendChart=state.charts.trend; setTimeout(function(){try{state.charts.trend.resize();}catch(e){}},80);
+  };
+  window.renderSummary=function(){
+    if(!window.state) return;
+    var y=Number((document.getElementById('dashYear')&&document.getElementById('dashYear').value)||new Date().getFullYear()); var p=y-1;
+    var trainingArr=Array.isArray(state.trainingReports)?state.trainingReports:(Array.isArray(state.training)?state.training:[]);
+    var iC=window.countByYear(state.incoming,y),pC=window.countByYear(state.process,y),sC=window.countByYear(state.shipment,y),wC=window.countByYear(state.worklog,y);
+    var iP=window.countByYear(state.incoming,p),pP=window.countByYear(state.process,p),sP=window.countByYear(state.shipment,p),wP=window.countByYear(state.worklog,p);
+    var tC=window.countByYear(trainingArr,y); var ncOpen=arr(state.nonconform).filter(function(r){return String(r.status||'미결')!=='완결';}).length;
+    function set(id,val){var el=document.getElementById(id); if(el) el.textContent=val;}
+    if(typeof window.setTrendSafe==='function'){window.setTrendSafe('sumIncomingRate',iC,iP);window.setTrendSafe('sumProcessRate',pC,pP);window.setTrendSafe('sumShipmentRate',sC,sP);window.setTrendSafe('sumWorklogRate',wC,wP);}
+    set('sumIncoming',iC);set('sumProcess',pC);set('sumShipment',sC);set('sumWorklog',wC);set('sumNc',ncOpen);
+    if(typeof window.updateQmesDonuts==='function') window.updateQmesDonuts({incoming:iC,process:pC,shipment:sC,nonconform:ncOpen,training:tC});
+    window.renderCharts();
+  };
+  function rerun(){try{window.renderSummary&&window.renderSummary();}catch(e){console.error('trend repair rerun failed',e);}}
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(rerun,400);setTimeout(rerun,1200);});
+})();
+</script>
+
+
+<script id="final-null-safe-dashboard-trend-patch">
+(function(){
+  'use strict';
+  function $(id){return document.getElementById(id);}
+  function arr(v){return Array.isArray(v)?v:[];}
+  function pad(n){return String(n).padStart(2,'0');}
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function eRow(n){return '<tr><td colspan="'+n+'" style="text-align:center;color:#94a3b8;padding:20px;">데이터가 없습니다.</td></tr>';}
+  function toIsoDate(v){
+    if(v===undefined||v===null||v==='') return '';
+    var s=String(v).trim();
+    var m=s.match(/(20\d{2})[-.\/년\s]*(\d{1,2})[-.\/월\s]*(\d{1,2})?/);
+    if(m) return m[1]+'-'+pad(Number(m[2]||1))+'-'+pad(Number(m[3]||1));
+    var d=new Date(s);
+    if(!isNaN(d.getTime())) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    return '';
+  }
+  function dateFromLotLike(r){
+    var keys=['lot','finishedLot','finished_lot','ncLot','nc_lot','reportNo','report_no','no','id','inspectionNo','inspection_no','workOrderNo','work_order_no'];
+    for(var i=0;i<keys.length;i++){
+      var v=r&&r[keys[i]]; if(!v) continue;
+      var m=String(v).match(/(?:^|[^0-9])(\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);
+      if(m){var yy=Number(m[1]);var year=(yy>=70?1900+yy:2000+yy);var mm=Number(m[2]),dd=Number(m[3]);if(mm>=1&&mm<=12&&dd>=1&&dd<=31)return year+'-'+pad(mm)+'-'+pad(dd);}
+    }
+    return '';
+  }
+  window.recordDateOf=function(r){
+    if(!r) return '';
+    var keys=['date','workDate','work_date','inspectionDate','inspection_date','checkDate','check_date','testDate','test_date','incomingDate','incoming_date','processDate','process_date','shipmentDate','shipment_date','createdAt','created_at','updatedAt','updated_at','ncDate','nc_date','trainingDate','training_date','reportDate','report_date'];
+    for(var i=0;i<keys.length;i++){var d=toIsoDate(r[keys[i]]); if(d) return d;}
+    for(var k in r){if(Object.prototype.hasOwnProperty.call(r,k)&&/date|time|_at|At$/i.test(k)){var d2=toIsoDate(r[k]); if(d2) return d2;}}
+    return dateFromLotLike(r)||'';
+  };
+  window.renderWorklogTable=function(){
+    var tb=$('worklogTable');
+    if(!tb){console.warn('worklogTable element not found - skipped');return;}
+    var st=window.state||{};
+    var rows=arr(st.worklog);
+    if(!rows.length){tb.innerHTML=eRow(8);return;}
+    tb.innerHTML=rows.map(function(r){
+      var lot=String(r.finishedLot||r.finished_lot||r.lot||'').toLowerCase();
+      var iq=arr(st.incoming).filter(function(x){return String(x.lot||'').toLowerCase()===lot;}).length;
+      var pq=arr(st.process).filter(function(x){return String(x.lot||'').toLowerCase()===lot;}).length;
+      var oq=arr(st.shipment).filter(function(x){return String(x.lot||'').toLowerCase()===lot;}).length;
+      var lk=[iq?'<span class="badge info">IQC '+iq+'</span>':'',pq?'<span class="badge info">PQC '+pq+'</span>':'',oq?'<span class="badge info">OQC '+oq+'</span>':''].filter(Boolean).join(' ')||'<span style="color:var(--t3);font-size:11px;">없음</span>';
+      var id=esc(r.id||'');
+      return '<tr><td>'+esc(r.workDate||r.work_date||r.date||'')+'</td><td>'+esc(r.finishedLot||r.finished_lot||r.lot||'')+'</td><td>'+esc(r.worker||'')+'</td><td>'+esc(r.planQty||r.plan_qty||'')+'</td><td>'+esc(r.prodQty||r.prod_qty||'')+'</td><td>'+esc(r.failQty||r.fail_qty||'')+'</td><td style="min-width:120px;">'+lk+'</td><td><div class="ai"><button class="sb edit" data-action="editWorklog" data-id="'+id+'">수정</button><button class="sb del" data-action="deleteWorklog" data-id="'+id+'">삭제</button></div></td></tr>';
+    }).join('');
+  };
+  window.countByYear=function(a,yr){
+    a=arr(a);yr=String(yr);
+    var dated=a.filter(function(r){return window.recordDateOf(r).startsWith(yr);});
+    if(dated.length) return dated.length;
+    return a.filter(function(r){return !window.recordDateOf(r);}).length || a.length;
+  };
+  window.qmesRowsByYear=function(a,yr){
+    a=arr(a);yr=String(yr);
+    var dated=a.filter(function(r){return window.recordDateOf(r).startsWith(yr);});
+    return dated.length?dated:a;
+  };
+  window.qmesMonthIndex=function(r){
+    var d=window.recordDateOf(r);var m=d.match(/^\d{4}-(\d{2})/);
+    if(m) return Number(m[1])-1;
+    var now=new Date();return now.getMonth();
+  };
+  window.qmesCountForYearMonth=function(a,yr,mi){return window.qmesRowsByYear(a,yr).filter(function(r){return window.qmesMonthIndex(r)===mi;}).length;};
+  window.qmesCountForQuarter=function(a,yr,qi){return window.qmesRowsByYear(a,yr).filter(function(r){var mi=window.qmesMonthIndex(r);return mi>=qi*3&&mi<qi*3+3;}).length;};
+  window.renderCharts=function(){
+    var canvas=$('trendChart'); if(!canvas||!window.Chart||!window.state) return;
+    var y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
+    var rowsAll=[].concat(arr(state.incoming),arr(state.process),arr(state.shipment));
+    var years=Array.from(new Set(rowsAll.map(function(r){return window.recordDateOf(r).slice(0,4);}).filter(function(v){return /^\d{4}$/.test(v);}))).map(Number).sort(function(a,b){return b-a;});
+    if(years.length && !rowsAll.some(function(r){return window.recordDateOf(r).startsWith(String(y));})) y=years[0];
+    var mode=window.qmesTrendMode||'month';
+    var labels,incoming,process,shipment,titleSuffix='월간';
+    if(mode==='quarter'){
+      labels=['1분기','2분기','3분기','4분기'];
+      incoming=labels.map(function(_,i){return window.qmesCountForQuarter(state.incoming,y,i);});
+      process=labels.map(function(_,i){return window.qmesCountForQuarter(state.process,y,i);});
+      shipment=labels.map(function(_,i){return window.qmesCountForQuarter(state.shipment,y,i);});
+      titleSuffix='분기';
+    }else if(mode==='year'){
+      labels=years.length?years.slice(0,5).reverse().map(String):Array.from({length:5},function(_,i){return String(y-4+i);});
+      incoming=labels.map(function(yy){return window.countByYear(state.incoming,yy);});
+      process=labels.map(function(yy){return window.countByYear(state.process,yy);});
+      shipment=labels.map(function(yy){return window.countByYear(state.shipment,yy);});
+      titleSuffix='연간';
+    }else{
+      labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+      incoming=labels.map(function(_,i){return window.qmesCountForYearMonth(state.incoming,y,i);});
+      process=labels.map(function(_,i){return window.qmesCountForYearMonth(state.process,y,i);});
+      shipment=labels.map(function(_,i){return window.qmesCountForYearMonth(state.shipment,y,i);});
+    }
+    if(typeof window.updateTrendKpis==='function') window.updateTrendKpis(window.qmesRowsByYear(state.incoming,y),window.qmesRowsByYear(state.process,y),window.qmesRowsByYear(state.shipment,y));
+    var tag=document.querySelector('#qmesTrendSlot .qmes-trend-wide .tag')||document.querySelector('.qmes-trend-wide .tag'); if(tag) tag.textContent=titleSuffix.toUpperCase();
+    document.querySelectorAll('[data-trend-mode]').forEach(function(b){b.classList.toggle('active',(b.dataset.trendMode||'month')===mode);});
+    try{if(window.safeDestroyChart) window.safeDestroyChart('trendChart'); else if(Chart.getChart){var old=Chart.getChart(canvas); if(old) old.destroy();}}catch(e){}
+    var ctx=canvas.getContext('2d');
+    function grad(rgb){var g=ctx.createLinearGradient(0,0,0,320);g.addColorStop(0,'rgba('+rgb+',.25)');g.addColorStop(1,'rgba('+rgb+',.02)');return g;}
+    var maxVal=Math.max.apply(null,[1].concat(incoming,process,shipment));
+    state.charts=state.charts||{};
+    state.charts.trend=new Chart(canvas,{type:'line',data:{labels:labels,datasets:[{label:'수입검사 (IQC)',data:incoming,borderColor:'#2563eb',backgroundColor:grad('37,99,235'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4},{label:'공정검사 (PQC)',data:process,borderColor:'#8b5cf6',backgroundColor:grad('139,92,246'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4},{label:'출하검사 (OQC)',data:shipment,borderColor:'#f97316',backgroundColor:grad('249,115,22'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top'},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y+'건';}}}},scales:{y:{beginAtZero:true,suggestedMax:maxVal+1,ticks:{precision:0,stepSize:1}},x:{grid:{display:false}}}}});
+  };
+  window.renderSummary=function(){
+    if(!window.state) return;
+    var y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear()); var p=y-1;
+    function set(id,val){var el=$(id); if(el) el.textContent=val;}
+    var iC=window.countByYear(state.incoming,y),pC=window.countByYear(state.process,y),sC=window.countByYear(state.shipment,y),wC=window.countByYear(state.worklog,y);
+    var iP=window.countByYear(state.incoming,p),pP=window.countByYear(state.process,p),sP=window.countByYear(state.shipment,p),wP=window.countByYear(state.worklog,p);
+    var trainingArr=arr(state.trainingReports).length?state.trainingReports:state.training;
+    var tC=window.countByYear(trainingArr,y);
+    var ncOpen=arr(state.nonconform).filter(function(r){return String(r.status||'미결')!=='완결';}).length;
+    if(typeof window.setTrendSafe==='function'){window.setTrendSafe('sumIncomingRate',iC,iP);window.setTrendSafe('sumProcessRate',pC,pP);window.setTrendSafe('sumShipmentRate',sC,sP);window.setTrendSafe('sumWorklogRate',wC,wP);}
+    set('sumIncoming',iC);set('sumProcess',pC);set('sumShipment',sC);set('sumWorklog',wC);set('sumNc',ncOpen);
+    if(typeof window.updateQmesDonuts==='function') window.updateQmesDonuts({incoming:iC,process:pC,shipment:sC,nonconform:ncOpen,training:tC});
+    try{window.renderCharts();}catch(e){console.error('renderCharts failed',e);}
+  };
+  window.addEventListener('error',function(e){
+    if(e&&String(e.message||'').indexOf("Cannot set properties of null")>=0){console.warn('null DOM render blocked',e.message);}
+  });
+  function rerun(){try{if(window.renderWorklogTable)window.renderWorklogTable(); if(window.renderSummary)window.renderSummary();}catch(e){console.error('final repair rerun failed',e);}}
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(rerun,200);setTimeout(rerun,900);setTimeout(rerun,1800);});
 })();
 </script>
 
