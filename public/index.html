@@ -1647,6 +1647,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #page-workorder-final #nmcSenderDept,
 #page-workorder-final #nmcProdManager{display:none!important;}
 
+
+
+/* 작업지시서 하위 빈 메뉴(>) 완전 숨김 */
+.sidebar .nav-item[data-page="production"]:has(span:last-child:empty){display:none!important;}
+
 </style>
 </head>
 <body class="login-active">
@@ -6428,9 +6433,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <button class="nav-item" data-page="workorder-final"><span class="nav-icon">›</span><span>작업지시서</span></button>
       `);
     }
-    if(!qs('.nav-item[data-page="production"]', side)){
-      qs('.nav-item[data-page="workorder-final"]', side)?.insertAdjacentHTML('afterend','<button class="nav-item" data-page="production"><span class="nav-icon">›</span><span></span></button>');
-    }
+    /* 작업지시서 아래 빈 '›' 하위 메뉴는 표시하지 않음 */
+    qsa('.nav-item[data-page="production"]', side).forEach(btn=>{
+      const label = btn.querySelector('span:last-child')?.textContent.trim() || '';
+      if(!label) btn.remove();
+    });
   }
 
   function ensureNotificationBadge(){
@@ -6568,8 +6575,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="nmc-workorder-card">
         <h3>6. 발송 정보</h3>
         <div class="nmc-form-grid">
-          <div class="nmc-field"><label>발송자 성명<span class="req">*</span></label><input class="nmc-input" id="nmcSenderName" readonly placeholder="로그인 후 자동 표시"></div>
-          <div class="nmc-field"><label>수신부서<span class="req">*</span></label><input class="nmc-input" id="nmcRecvDept" value="생산부 (현재 등록된 생산부 전원)" readonly></div>
+          <div class="nmc-field"><label>발송부서<span class="req">*</span></label><input class="nmc-input" id="nmcSenderName" readonly placeholder="로그인 사용자 이름/부서 자동 표시"></div>
+          <div class="nmc-field"><label>수신부서<span class="req">*</span></label><input class="nmc-input" id="nmcRecvDept" value="생산부" readonly></div>
           <div class="nmc-field"><label>발송일시</label><input class="nmc-input" id="nmcSendTime" readonly></div>
           <div class="nmc-field" style="grid-column:span 5"><label>발송 비고</label><input class="nmc-input" id="nmcSendNote" placeholder="발송 관련 비고 입력"></div>
         </div>
@@ -6612,7 +6619,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderWorkOrderAlert(){
     qsa('#nmcWorkorderAlert').forEach(box=>{
       const dept = $('nmcReqDept')?.value || '미입력';
-      box.innerHTML = `<span>🔔 로그인 사용자 성명으로 생산부 전체 인원에게 작업지시서가 발송됩니다.</span><span class="right">작성 대기 ●</span>`;
+      box.innerHTML = `<span>🔔 발송부서(로그인 사용자 이름/부서)에서 수신부서(생산부 담당자)로 작업지시서가 발송됩니다.</span><span class="right">작성 대기 ●</span>`;
     });
   }
 
@@ -6660,27 +6667,40 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return nodes.find(x=>x.offsetParent!==null) || nodes[0] || null;
   }
 
+  function userDisplay(u){
+    const name = u?.name || u?.username || u?.displayName || u?.email || '';
+    const dept = u?.department || u?.dept || u?.departmentName || u?.deptName || '';
+    if(name && dept) return `${name} (${dept})`;
+    return name || dept || '';
+  }
+
   function syncSendInfo(){
-    const u=(window.state && state.currentUser) ? state.currentUser : {};
-    const name=u.name || u.username || u.email || '';
-    qsa('#nmcSenderName').forEach(x=>x.value=name || '');
-    qsa('#nmcRecvDept').forEach(x=>x.value='생산부 (현재 등록된 생산부 전원)');
+    const appState = window.state || {};
+    const u = appState.currentUser || {};
+    const sender = userDisplay(u) || '로그인 사용자';
+    const prodUsers = getProductionUsers();
+    const recv = prodUsers.length
+      ? `생산부 (${prodUsers.map(userDisplay).filter(Boolean).join(', ')})`
+      : '생산부';
+    qsa('#nmcSenderName').forEach(x=>x.value=sender);
+    qsa('#nmcRecvDept').forEach(x=>x.value=recv);
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
   }
 
   function getProductionUsers(){
     const users=[];
-    if(window.state){
-      if(Array.isArray(state.adminUsers)) users.push(...state.adminUsers);
-      if(Array.isArray(state.signableUsers)) users.push(...state.signableUsers);
-      if(Array.isArray(state.users)) users.push(...state.users);
-      if(Array.isArray(state.members)) users.push(...state.members);
-      if(state.currentUser) users.push(state.currentUser);
+    const appState = window.state || {};
+    if(appState){
+      if(Array.isArray(appState.adminUsers)) users.push(...appState.adminUsers);
+      if(Array.isArray(appState.signableUsers)) users.push(...appState.signableUsers);
+      if(Array.isArray(appState.users)) users.push(...appState.users);
+      if(Array.isArray(appState.members)) users.push(...appState.members);
+      if(appState.currentUser) users.push(appState.currentUser);
     }
     const map=new Map();
-    users.forEach(u=>{ if(u && (u.name || u.email)) map.set(String(u.id || u.email || u.name), u); });
+    users.forEach(u=>{ if(u && (u.name || u.email || u.username)) map.set(String(u.id || u.email || u.name || u.username), u); });
     return [...map.values()].filter(u=>{
-      const dept=String(u.department || u.dept || '').replace(/\s/g,'');
+      const dept=String(u.department || u.dept || u.departmentName || u.deptName || '').replace(/\s/g,'');
       const status=String(u.status || 'APPROVED').toUpperCase();
       return dept === '생산부' && status !== 'REJECTED' && status !== '퇴사';
     });
@@ -6735,7 +6755,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <h4 style="margin:16px 0 8px">투입 원료</h4>
       <table><thead><tr><th>No.</th><th>원료코드</th><th>원료명</th><th>LOT 번호</th><th>투입량</th><th>단위</th><th>비고</th></tr></thead><tbody>${mats}</tbody></table>
       <h4 style="margin:16px 0 8px">발송 정보</h4>
-      <table><tbody><tr><th>발송자</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${val('nmcRecvDept')}</td><th>발송일시</th><td>${val('nmcSendTime')}</td></tr><tr><th>수신대상</th><td colspan="3">${esc(prodNames)}</td><th>비고</th><td>${val('nmcSendNote')}</td></tr></tbody></table>
+      <table><tbody><tr><th>발송부서</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${val('nmcRecvDept')}</td><th>발송일시</th><td>${val('nmcSendTime')}</td></tr><tr><th>수신대상</th><td colspan="3">${esc(prodNames)}</td><th>비고</th><td>${val('nmcSendNote')}</td></tr></tbody></table>
       <div class="print-user-info">출력자: ${val('nmcSenderName')} / 출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
     window.print();
   }
