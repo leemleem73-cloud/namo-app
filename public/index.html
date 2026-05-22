@@ -4808,6 +4808,9 @@ function onSafe(id,event,handler){
 function clickSafe(id,handler){onSafe(id,'click',handler);}
 
 function bindEvents(){
+  const elSafe=id=>$(id);
+  const clickSafe2=(id,fn)=>{const el=elSafe(id); if(el) el.onclick=fn;};
+  const onSafe2=(id,ev,fn)=>{const el=elSafe(id); if(el) el.addEventListener(ev,fn);};
   clickSafe('tabLoginBtn',()=>openLoginTab('login'));
   clickSafe('tabSignupBtn',()=>openLoginTab('signup'));
   clickSafe('loginBtn',login);
@@ -4828,15 +4831,15 @@ function bindEvents(){
   clickSafe('openIncomingLabel',()=>openLabelModal('iqc',state.incoming));clickSafe('openProcessLabel',()=>openLabelModal('pqc',state.process));clickSafe('openShipmentLabel',()=>openLabelModal('oqc',state.shipment));
   clickSafe('openReportLabel',()=>{const rt=$('reportType');const t=rt?rt.value:'iqc';openLabelModal(t,t==='iqc'?state.incoming:t==='pqc'?state.process:state.shipment);});
   // IQC
-  $('incomingSave').onclick=withSaving('iqc',$('incomingSave'),saveIqc);$('incomingReset').onclick=clearIqc;
-  $('addIncomingRow').onclick=()=>{state.incomingItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderIqcItems();};
-  ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>$(id).addEventListener('input',syncIqcPreview));
-  $('printIncomingReport').onclick=()=>printEl($('incomingReportPreview'));
+  clickSafe2('incomingSave',withSaving('iqc',$('incomingSave'),saveIqc));clickSafe2('incomingReset',clearIqc);
+  clickSafe2('addIncomingRow',()=>{state.incomingItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderIqcItems();});
+  ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>onSafe2(id,'input',syncIqcPreview));
+  clickSafe2('printIncomingReport',()=>printEl($('incomingReportPreview')));
   // PQC
-  $('processSave').onclick=withSaving('pqc',$('processSave'),savePqc);$('processReset').onclick=clearPqc;
-  $('addProcessRow').onclick=()=>{state.processItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderPqcItems();};
-  ['processDate','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>$(id).addEventListener('input',syncPqcPreview));
-  $('printProcessReport').onclick=()=>{
+  clickSafe2('processSave',withSaving('pqc',$('processSave'),savePqc));clickSafe2('processReset',clearPqc);
+  clickSafe2('addProcessRow',()=>{state.processItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderPqcItems();});
+  ['processDate','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>onSafe2(id,'input',syncPqcPreview));
+  clickSafe2('printProcessReport',()=>{
   syncPqcPreview();
 
   setTimeout(()=>{
@@ -4844,18 +4847,18 @@ function bindEvents(){
   },300);
 };
   // OQC
-  $('shipmentSave').onclick=withSaving('oqc',$('shipmentSave'),saveOqc);$('shipmentReset').onclick=clearOqc;
-  $('addShipmentRow').onclick=()=>{state.shipmentItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderOqcItems();};
-  ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>$(id).addEventListener('input',syncOqcPreview));
-  $('printShipmentReport').onclick=()=>printEl($('shipmentReportPreview'));
+  clickSafe2('shipmentSave',withSaving('oqc',$('shipmentSave'),saveOqc));clickSafe2('shipmentReset',clearOqc);
+  clickSafe2('addShipmentRow',()=>{state.shipmentItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderOqcItems();});
+  ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>onSafe2(id,'input',syncOqcPreview));
+  clickSafe2('printShipmentReport',()=>printEl($('shipmentReportPreview')));
   // NC
-  $('ncSave').onclick=withSaving('nc',$('ncSave'),saveNc);$('ncReset').onclick=clearNc;$('printNcReport').onclick=()=>printEl($('ncFormPrintTarget'));
+  clickSafe2('ncSave',withSaving('nc',$('ncSave'),saveNc));clickSafe2('ncReset',clearNc);clickSafe2('printNcReport',()=>printEl($('ncFormPrintTarget')));
   // Training
   bindTrainingEvents();
   // 기타
-  $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
-  $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
-  $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
+  clickSafe2('supplierSave',withSaving('sup',$('supplierSave'),saveSupplier));clickSafe2('supplierReset',clearSupplier);
+  clickSafe2('worklogSave',withSaving('wlog',$('worklogSave'),saveWorklog));clickSafe2('worklogReset',clearWorklog);
+  clickSafe2('addWorklogMaterial',addWorklogMat);onSafe2('worklogFinishedLot','input',updateWorklogLinkage);
   if($('instrumentSave'))$('instrumentSave').onclick=withSaving('instrument',$('instrumentSave'),saveInstrument);
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
@@ -4888,9 +4891,9 @@ function bindEvents(){
   };
 
 $('reportSelect').onchange=()=>loadStandaloneReport();
-$('reportReload').onclick=()=>loadStandaloneReport();
+clickSafe2('reportReload',()=>loadStandaloneReport());
 
-$('printReportPage').onclick=()=>{
+clickSafe2('printReportPage',()=>{
   loadStandaloneReport();
   setTimeout(()=>{
     printEl($('reportPrintTarget'));
@@ -4920,8 +4923,8 @@ $('printReportPage').onclick=()=>{
   });
   ['incomingItemsTable','processItemsTable','shipmentItemsTable'].forEach(id=>{if($(id))bindItemDelegate(id);});
   if($('worklogMaterialsTable')){
-    $('worklogMaterialsTable').addEventListener('input',e=>{const el=e.target,i=el.dataset.widx,k=el.dataset.wkey;if(i===undefined||!k)return;state.worklogMaterialDrafts[Number(i)][k]=el.value;});
-    $('worklogMaterialsTable').addEventListener('click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
+    onSafe2('worklogMaterialsTable','input',e=>{const el=e.target,i=el.dataset.widx,k=el.dataset.wkey;if(i===undefined||!k)return;state.worklogMaterialDrafts[Number(i)][k]=el.value;});
+    onSafe2('worklogMaterialsTable','click',e=>{const btn=e.target.closest('[data-waction="remove"]');if(!btn)return;state.worklogMaterialDrafts.splice(Number(btn.dataset.widx),1);renderWorklogMats();});
   }
 }
 
