@@ -6979,12 +6979,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function workOrderUserOption(u){
-    const dept = u.department || '-';
-    const name = u.name || '사용자';
-    const title = u.title ? ` / ${u.title}` : '';
+    const dept = String(u.department || '-').trim() || '-';
+    const name = String(u.name || '사용자').trim() || '사용자';
     return {
       value: String(u.id || u.email || name || ''),
-      text: `${dept} ${name}${title}`,
+      text: `${name} (${dept})`,
       department: dept,
       name,
       email: u.email || '',
@@ -6992,22 +6991,67 @@ document.addEventListener('DOMContentLoaded',async()=>{
     };
   }
 
+  function sameWorkOrderUser(a,b){
+    if(!a || !b) return false;
+    const aid = String(a.id || '').trim();
+    const bid = String(b.id || '').trim();
+    if(aid && bid && aid === bid) return true;
+    const ae = String(a.email || '').trim().toLowerCase();
+    const be = String(b.email || '').trim().toLowerCase();
+    if(ae && be && ae === be) return true;
+    const an = String(a.name || '').trim();
+    const bn = String(b.name || '').trim();
+    return !!(an && bn && an === bn);
+  }
+
+  function ensureWorkOrderAdminMembersLoaded(){
+    const appState = (typeof state !== 'undefined' && state) ? state : (window.state = window.state || {});
+    if(appState.__nmcAdminMembersLoaded || appState.__nmcAdminMembersLoading) return;
+    if(typeof api !== 'function') return;
+    appState.__nmcAdminMembersLoading = true;
+    api('/api/admin/users').then(({data})=>{
+      const list = Array.isArray(data?.data) ? data.data :
+                   Array.isArray(data?.users) ? data.users :
+                   Array.isArray(data?.members) ? data.members :
+                   Array.isArray(data) ? data : [];
+      if(list.length){
+        appState.adminUsers = uniqWorkOrderUsers(list);
+        appState.signableUsers = uniqWorkOrderUsers([...(appState.signableUsers || []), ...appState.adminUsers]);
+      }
+      appState.__nmcAdminMembersLoaded = true;
+    }).catch(e=>{
+      console.warn('[workorder] 관리자 회원등록 목록 로드 실패:', e);
+    }).finally(()=>{
+      appState.__nmcAdminMembersLoading = false;
+      populateManualSendTargets();
+    });
+  }
+
+  function uniqWorkOrderUsers(list){
+    const map = new Map();
+    (list || []).map(normalizeWorkOrderUser).filter(Boolean).forEach(u=>{
+      const status = String(u.status || 'APPROVED').toUpperCase();
+      if(status === 'REJECTED' || status === '퇴사' || status === 'INACTIVE') return;
+      const key = String(u.id || u.email || u.name).trim();
+      if(key) map.set(key,u);
+    });
+    return [...map.values()].sort((a,b)=>
+      String(a.department||'').localeCompare(String(b.department||''),'ko') ||
+      String(a.name||'').localeCompare(String(b.name||''),'ko')
+    );
+  }
+
   function populateManualSendTargets(){
     const appState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
     const currentRaw = appState.currentUser || window.loginUser || window.userInfo || {};
     const current = normalizeWorkOrderUser(currentRaw);
     const allUsers = getAllWorkOrderUsers();
-    const findSameUser = u => current && u && (
-      (current.id && String(u.id) === String(current.id)) ||
-      (current.email && String(u.email).toLowerCase() === String(current.email).toLowerCase()) ||
-      (current.name && String(u.name) === String(current.name))
-    );
-    const matchedCurrent = allUsers.find(findSameUser) || current;
-    const recipientUsers = allUsers.length ? allUsers : (matchedCurrent ? [matchedCurrent] : []);
+    const matchedCurrent = allUsers.find(u=>sameWorkOrderUser(u,current)) || current;
+    const recipientUsers = allUsers.filter(u=>!sameWorkOrderUser(u,matchedCurrent));
 
     qsa('#nmcSenderName').forEach(sel=>{
       if(sel.tagName !== 'SELECT') return;
-      const me = matchedCurrent || recipientUsers[0] || {id:'login-user', name:'로그인 사용자', department:'-'};
+      const me = matchedCurrent || {id:'login-user', name:'로그인 사용자', department:'-'};
       setSelectOptions(sel,[me],workOrderUserOption);
       sel.value = String(me.id || me.email || me.name || '');
       if(sel.options.length) sel.options[0].selected = true;
@@ -7023,6 +7067,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function syncSendInfo(){
+    ensureWorkOrderAdminMembersLoaded();
     populateManualSendTargets();
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
   }
