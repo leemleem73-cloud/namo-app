@@ -3197,7 +3197,13 @@ function printLabel(){
 }
 
 /* ═══ AUTH ═══ */
-function openLoginTab(t){$('tabLoginBtn').classList.toggle('active',t==='login');$('tabSignupBtn').classList.toggle('active',t==='signup');$('panelLogin').classList.toggle('active',t==='login');$('panelSignup').classList.toggle('active',t==='signup');}
+function openLoginTab(t){
+  const toggle=(id,on)=>{const el=$(id);if(el)el.classList.toggle('active',on);};
+  toggle('tabLoginBtn',t==='login');
+  toggle('tabSignupBtn',t==='signup');
+  toggle('panelLogin',t==='login');
+  toggle('panelSignup',t==='signup');
+}
 async function login(){
   $('loginError').textContent='';
   const email=$('loginEmail').value.trim(),pwd=$('loginPassword').value.trim();
@@ -3549,17 +3555,20 @@ async function loadSignableUsers(){
   // 현재 로그인 사용자는 항상 작성자 후보에 포함
   if(state.currentUser) users.push(state.currentUser);
 
-  // 검토자/승인자 후보를 위해 서버 회원 목록을 함께 불러온다.
-  // 권한 문제로 실패하더라도 작성자 본인은 유지한다.
-  try{
-    const {data} = await api('/api/admin/users');
-    if(data?.data) users = users.concat(data.data);
-  }catch(e){
-    console.warn('[sign] 전체 회원 목록 로드 실패:', e);
+  // 일반 사용자는 /api/admin/users 권한이 없어 403이 발생하므로 관리자만 호출한다.
+  // 필요 시 서버에 /api/users/signable 같은 별도 공개 API를 만든 뒤 여기서 추가 호출하면 된다.
+  const isAdminUser = String(state.currentUser?.role || '').toLowerCase() === 'admin';
+  if(isAdminUser){
+    try{
+      const {res,data} = await api('/api/admin/users');
+      if(res?.ok && data?.data) users = users.concat(data.data);
+    }catch(e){
+      console.warn('[sign] 전체 회원 목록 로드 실패:', e);
+    }
   }
 
   state.signableUsers = uniqSignUsers(users);
-  state.adminUsers = state.signableUsers;
+  if(isAdminUser) state.adminUsers = state.signableUsers;
 
   console.log(`[sign] 서명 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
@@ -4791,24 +4800,33 @@ function bindTrainingEvents(){
   clearTrainingReport();renderTrainingTable();
 }
 
+function onSafe(id,event,handler){
+  const el=$(id);
+  if(!el) return;
+  el.addEventListener(event,handler);
+}
+function clickSafe(id,handler){onSafe(id,'click',handler);}
+
 function bindEvents(){
-  $('tabLoginBtn').onclick=()=>openLoginTab('login');$('tabSignupBtn').onclick=()=>openLoginTab('signup');
-  $('loginBtn').onclick=login;$('signupBtn').onclick=signup;
-  $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
-  $('profileBtn').onclick=e=>{e.stopPropagation();$('profileDropdown').classList.toggle('show');};
+  clickSafe('tabLoginBtn',()=>openLoginTab('login'));
+  clickSafe('tabSignupBtn',()=>openLoginTab('signup'));
+  clickSafe('loginBtn',login);
+  clickSafe('signupBtn',signup);
+  onSafe('loginPassword','keydown',e=>{if(e.key==='Enter')login();});
+  clickSafe('profileBtn',e=>{e.stopPropagation();const d=$('profileDropdown');if(d)d.classList.toggle('show');});
   const homeLogo=$('homeLogo');
   if(homeLogo){
     homeLogo.onclick=goHome;
     homeLogo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
   }
-  $('logoutBtn').onclick=logout;
-  $('openChangePassword').onclick=()=>{closeProfileMenu();openPwdModal();};
-  $('closePasswordModal').onclick=closePwdModal;$('cancelPasswordModal').onclick=closePwdModal;$('submitChangePassword').onclick=changePwd;
-  $('openUserManage').onclick=()=>{closeProfileMenu();$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));$('usersNavBtn').classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));$('page-users').classList.add('active');loadAdminUsers();};
+  clickSafe('logoutBtn',logout);
+  clickSafe('openChangePassword',()=>{closeProfileMenu();openPwdModal();});
+  clickSafe('closePasswordModal',closePwdModal);clickSafe('cancelPasswordModal',closePwdModal);clickSafe('submitChangePassword',changePwd);
+  clickSafe('openUserManage',()=>{closeProfileMenu();$$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));const n=$('usersNavBtn');if(n)n.classList.add('active');$$('.page').forEach(p=>p.classList.remove('active'));const p=$('page-users');if(p)p.classList.add('active');loadAdminUsers();});
   document.addEventListener('click',e=>{const m=$('profileDropdown'),b=$('profileBtn');if(m&&b&&!m.contains(e.target)&&!b.contains(e.target))closeProfileMenu();});
-  $('closeLabelModal').onclick=()=>$('labelModal').classList.remove('show');$('cancelLabelModal').onclick=()=>$('labelModal').classList.remove('show');$('printLabelBtn').onclick=printLabel;
-  $('openIncomingLabel').onclick=()=>openLabelModal('iqc',state.incoming);$('openProcessLabel').onclick=()=>openLabelModal('pqc',state.process);$('openShipmentLabel').onclick=()=>openLabelModal('oqc',state.shipment);
-  $('openReportLabel').onclick=()=>{const t=$('reportType').value;openLabelModal(t,t==='iqc'?state.incoming:t==='pqc'?state.process:state.shipment);};
+  clickSafe('closeLabelModal',()=>{const m=$('labelModal');if(m)m.classList.remove('show');});clickSafe('cancelLabelModal',()=>{const m=$('labelModal');if(m)m.classList.remove('show');});clickSafe('printLabelBtn',printLabel);
+  clickSafe('openIncomingLabel',()=>openLabelModal('iqc',state.incoming));clickSafe('openProcessLabel',()=>openLabelModal('pqc',state.process));clickSafe('openShipmentLabel',()=>openLabelModal('oqc',state.shipment));
+  clickSafe('openReportLabel',()=>{const rt=$('reportType');const t=rt?rt.value:'iqc';openLabelModal(t,t==='iqc'?state.incoming:t==='pqc'?state.process:state.shipment);});
   // IQC
   $('incomingSave').onclick=withSaving('iqc',$('incomingSave'),saveIqc);$('incomingReset').onclick=clearIqc;
   $('addIncomingRow').onclick=()=>{state.incomingItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderIqcItems();};
