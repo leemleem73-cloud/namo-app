@@ -8423,5 +8423,224 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<script>
+/* ==========================================================================
+   QMS ADMIN ALL-MEMBER SIGN SELECT FINAL FIX v3
+   - 관리자 판별: role/title 뿐 아니라 name/email/id/권한 필드까지 확인
+   - 관리자 로그인 시 작성자/검토자/승인자 셀렉트에 전체 회원 강제 표시
+   - 기존 buildSignGrid / restoreSign / refresh 함수가 다시 덮어써도 후처리로 복구
+========================================================================== */
+(function(){
+  'use strict';
+  const ROLES = ['writer','reviewer','approver'];
+  const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const $ = id => document.getElementById(id);
+  const txt = v => String(v == null ? '' : v).trim();
+  const esc = v => txt(v)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#39;");
+
+  function appState(){
+    try { return window.state || state || {}; }
+    catch(e){ return window.state || {}; }
+  }
+
+  function norm(u){
+    if(!u) return null;
+    const email = txt(u.email || u.mail || '');
+    const name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || u.label || email || '');
+    const id = txt(u.id || u.userId || u.uid || email || name);
+    if(!id && !name && !email) return null;
+    return {
+      id: id || email || name,
+      name: name || email || id,
+      department: txt(u.department || u.dept || u.team || u.org || u.departmentName || u.deptName || ''),
+      title: txt(u.title || u.position || u.rank || u.jobTitle || ''),
+      email,
+      role: txt(u.role || u.userRole || u.permission || u.auth || u.authority || u.grade || ''),
+      status: txt(u.status || u.approvalStatus || 'APPROVED')
+    };
+  }
+
+  function currentUser(){
+    const s = appState();
+    return norm(s.currentUser || window.currentUser || null);
+  }
+
+  function isAdminUser(u){
+    u = norm(u);
+    if(!u) return false;
+    const blob = [
+      u.id, u.name, u.email, u.role, u.title,
+      u.permission, u.auth, u.authority, u.grade
+    ].map(x => txt(x).toLowerCase()).join(' ');
+    return (
+      blob.includes('admin') ||
+      blob.includes('관리자') ||
+      blob.includes('administrator') ||
+      u.email === 'admin@namochemical.com'
+    );
+  }
+
+  function isCurrentAdmin(){
+    const s = appState();
+    const u = currentUser();
+    if(s.currentUser && (
+      s.currentUser.isAdmin === true ||
+      s.currentUser.admin === true ||
+      s.currentUser.is_admin === true
+    )) return true;
+    return isAdminUser(u);
+  }
+
+  function keyOf(u){
+    u = norm(u);
+    return txt(u && (u.id || u.email || u.name));
+  }
+
+  function addUnique(arr, u){
+    u = norm(u);
+    const k = keyOf(u);
+    if(!k) return;
+    if(String(u.status || '').toUpperCase() === 'REJECTED') return;
+    if(!arr.some(x => keyOf(x) === k || (u.email && x.email === u.email) || (u.name && x.name === u.name))){
+      arr.push(u);
+    }
+  }
+
+  function allMembers(){
+    const s = appState();
+    const arr = [];
+    const keys = [
+      'signableUsers','adminUsers','users','members','memberList','userList',
+      'employees','employeeList','empList'
+    ];
+    keys.forEach(k => {
+      if(Array.isArray(s[k])) s[k].forEach(u => addUnique(arr, u));
+      if(Array.isArray(window[k])) window[k].forEach(u => addUnique(arr, u));
+    });
+    addUnique(arr, currentUser());
+    return arr;
+  }
+
+  function optionHtml(users, placeholder){
+    return `<option value="">${esc(placeholder)}</option>` + users.map(u => {
+      const label = `${u.name || u.email || '사용자'} / ${u.title || u.department || '-'}`;
+      return `<option value="${esc(u.id || u.email || u.name)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(label)}</option>`;
+    }).join('');
+  }
+
+  function selectedValue(sel){
+    if(!sel) return '';
+    return sel.value || sel.getAttribute('data-qms-admin-prev') || '';
+  }
+
+  function enhanceOneSelect(type, role, users){
+    const sel = $(`sg_${type}_${role}`);
+    if(!sel) return;
+    const me = currentUser();
+    const before = selectedValue(sel);
+    const wanted = before || (role === 'writer' && me ? (me.id || me.email || me.name) : '');
+    sel.setAttribute('data-qms-admin-prev', wanted || '');
+    sel.disabled = false;
+    sel.innerHTML = optionHtml(users, `-- ${ROLE_LABEL[role]} 선택 --`);
+    if(wanted && !Array.from(sel.options).some(o => String(o.value) === String(wanted))){
+      const u = role === 'writer' && me ? me : {id:wanted, name:wanted, title:'', department:'', email:''};
+      const opt = new Option(`${u.name || wanted} / ${u.title || u.department || '-'}`, wanted);
+      opt.dataset.name = u.name || wanted;
+      opt.dataset.title = u.title || '';
+      opt.dataset.department = u.department || '';
+      opt.dataset.email = u.email || '';
+      sel.add(opt, 1);
+    }
+    if(wanted) sel.value = wanted;
+    const sub = $(`sg_${type}_${role}_sub`);
+    if(sub){
+      const opt = sel.options[sel.selectedIndex];
+      sub.textContent = opt && sel.value ? `${opt.dataset.department || ''} ${opt.dataset.title || ''}`.trim() : '관리자: 전체 회원 선택 가능';
+    }
+  }
+
+  function getTypes(){
+    const ids = Array.from(document.querySelectorAll('[id^="signGrid_"]'))
+      .map(el => el.id.replace(/^signGrid_/, ''))
+      .filter(Boolean);
+    return Array.from(new Set(ids.length ? ids : ['iqc','pqc','oqc','training']));
+  }
+
+  function patchAdminAllMembers(){
+    if(!isCurrentAdmin()) return false;
+    const users = allMembers();
+    if(!users.length) return false;
+    getTypes().forEach(type => {
+      ROLES.forEach(role => enhanceOneSelect(type, role, users));
+    });
+    return true;
+  }
+
+  function requestMemberReloadThenPatch(){
+    if(!isCurrentAdmin()) return;
+    const jobs = [];
+    try {
+      if(typeof window.loadAdminUsers === 'function') jobs.push(Promise.resolve(window.loadAdminUsers()));
+    } catch(e){}
+    try {
+      if(typeof window.loadSignableUsers === 'function') jobs.push(Promise.resolve(window.loadSignableUsers()));
+    } catch(e){}
+    if(jobs.length){
+      Promise.allSettled(jobs).then(() => setTimeout(patchAdminAllMembers, 80));
+    }
+  }
+
+  function wrap(name){
+    const old = window[name];
+    if(typeof old !== 'function' || old.__qmsAdminWrapped) return;
+    const fn = function(){
+      const ret = old.apply(this, arguments);
+      setTimeout(patchAdminAllMembers, 0);
+      setTimeout(patchAdminAllMembers, 120);
+      return ret;
+    };
+    fn.__qmsAdminWrapped = true;
+    window[name] = fn;
+  }
+
+  ['buildSignGrid','restoreSign','qmsRefreshSignatures','rebuildAllSignGrids','applyAllSignPermissions','applySignPermissions'].forEach(wrap);
+
+  document.addEventListener('change', function(e){
+    const sel = e.target && e.target.closest && e.target.closest('.sign-sel');
+    if(sel && isCurrentAdmin()){
+      sel.setAttribute('data-qms-admin-prev', sel.value || '');
+      setTimeout(patchAdminAllMembers, 0);
+    }
+  }, true);
+
+  window.qmsAdminPatchAllMemberSignSelects = function(){
+    const ok = patchAdminAllMembers();
+    if(!ok) requestMemberReloadThenPatch();
+    return ok;
+  };
+
+  window.addEventListener('load', function(){
+    requestMemberReloadThenPatch();
+    let n = 0;
+    const timer = setInterval(function(){
+      n += 1;
+      patchAdminAllMembers();
+      if(n >= 20) clearInterval(timer);
+    }, 300);
+  });
+
+  setTimeout(function(){
+    requestMemberReloadThenPatch();
+    patchAdminAllMembers();
+  }, 50);
+})();
+</script>
+
 </body>
 </html>
