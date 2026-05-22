@@ -8407,12 +8407,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return {writer:r.writer, reviewer:r.reviewer, approver:r.approver};
   };
   window.restoreSign = (type, record) => {
+    // 목록 수정 모드: 저장된 작성/검토/승인자를 그대로 보존하고 다른 선택자는 숨김
     build(type,true);
     const map={writer:record?.signWriter || {}, reviewer:record?.signReviewer || {}, approver:record?.signApprover || {}};
     ROLES.forEach(role => {
-      const d=map[role]; const sel=$(`sg_${type}_${role}`); const val=d.id || d.email || d.name || '';
-      if(sel && val){ if(!Array.from(sel.options).some(o=>String(o.value)===String(val))){ const opt=new Option(labelUser(norm(d)),val); opt.dataset.name=d.name || val; opt.dataset.title=d.title || ''; opt.dataset.department=d.department || ''; opt.dataset.email=d.email || ''; sel.add(opt); } sel.value=val; }
+      const d=map[role] || {};
+      const sel=$(`sg_${type}_${role}`);
+      const val=String(d.id || d.email || d.name || '');
+      if(sel){
+        sel.innerHTML = '';
+        const nd = norm(d) || {id:val, name:val || '-', title:'', department:'', email:''};
+        const opt = new Option(val ? labelUser(nd) : '-', val);
+        opt.dataset.name = nd.name || '';
+        opt.dataset.title = nd.title || '';
+        opt.dataset.department = nd.department || '';
+        opt.dataset.email = nd.email || '';
+        opt.dataset.role = nd.role || '';
+        sel.add(opt);
+        sel.value = val;
+        sel.disabled = true;
+      }
       window.restoreSignaturePad(type, role, d);
+      syncOne(type, role);
     });
   };
   window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); if(sel) sel.value = r === 'writer' && currentUser() ? currentUser().id : ''; window.clearSignaturePad(type,r); }); };
