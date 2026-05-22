@@ -8177,10 +8177,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 <script>
-/* QMS FINAL OVERRIDE: 원본 유지 + 로그인 당사자 검토/승인 가능 규칙 v20260522-4
+/* QMS FINAL OVERRIDE: 원본 유지 + 검토/승인란 '-' 표시 + 로그인 권한자만 내부 처리 v20260522-5
    - 관리자: 작성자/검토자/승인자 전체 회원 표시
-   - 일반 사용자 신규 작성: 작성자만 본인 표시, 검토자/승인자는 '-' 표시로 저장
-   - 저장된 문서의 검토자/승인자가 '-' 인 경우: 로그인 사용자가 작성자 직급별 권한자이면 본인 표시 후 검토/승인 가능
+   - 일반 사용자: 작성자는 로그인 본인만 표시
+   - 일반 사용자: 검토자/승인자는 화면에 항상 '-' 표시, 이름을 미리 노출하지 않음
+   - 단, 저장/검토/승인 시 현재 로그인 사용자가 작성자 직급별 권한자이면 내부 payload에는 로그인 사용자 정보가 들어감
    - 작성자 사원~과장: 검토/승인 = 부장 이상
    - 작성자 부장: 검토/승인 = 이사 이상
    - 작성자 이사/상무: 검토 없음, 승인 = 전무 이상
@@ -8288,16 +8289,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       }
       return me ? [me] : [];
     }
-    // 신규 작성 시 일반 사용자는 검토자/승인자를 실제 회원으로 선택하지 않고 '-' 표시만 한다.
-    if(!editRecord) return [noneUser()];
-
-    const map = {writer:editRecord.signWriter || editRecord.writer, reviewer:editRecord.signReviewer || editRecord.reviewer, approver:editRecord.signApprover || editRecord.approver};
-    const saved = normalizeSaved(map[role]);
-    if(saved && saved.name && saved.name !== '-') return [saved];
-
-    // 저장값이 '-'이면 현재 로그인 사용자가 권한자인 경우에만 본인을 표시하여 검토/승인할 수 있게 한다.
-    const writer = normalizeSaved(map.writer) || me;
-    if(canActByWriter(role, writer, me)) return [me];
+    // 일반 사용자는 검토자/승인자 이름을 절대 미리 표시하지 않는다.
+    // 권한자 로그인 여부와 관계없이 화면은 '-' 하나만 표시한다.
     return [noneUser()];
   }
   function fileBlock(type,role){
@@ -8347,6 +8340,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const list = roleList(type,role,rec);
       const fixedDash = !adminMode && role !== 'writer' && list.length === 1 && list[0].name === '-';
       const hasSaved = !!rec && list.length === 1 && list[0].name && list[0].name !== '-' && role !== 'writer';
+      // 일반 사용자의 검토자/승인자 선택칸은 항상 '-'로 고정한다.
+      // 실제 권한자 검토/승인은 getSignPayload에서 로그인 사용자를 내부 반영한다.
       const disabled = adminMode ? false : (role === 'writer' || hasSaved || fixedDash);
       return renderRole(type, role, list, disabled);
     }).join('');
@@ -8382,7 +8377,23 @@ document.addEventListener('DOMContentLoaded',async()=>{
   window.clearSignaturePad = function(type,role){ const st=sigStore(type,role); st.signImage=''; st.signDate=''; const f=$(`sg_${type}_${role}_file`); if(f) f.value=''; refreshSub(type,role); };
   window.getSignPayload = function(type){
     const out = {};
-    ROLES.forEach(role => { out[role] = {...selected(type,role), ...window.signature데이터(type,role)}; if(!out[role].name && role !== 'writer') out[role] = noneUser(); });
+    const me = currentUser();
+    const adminMode = isAdmin(me);
+    const rec = window.__qmsEditSignRecord && window.__qmsEditSignRecord[type];
+    ROLES.forEach(role => {
+      const sig = window.signature데이터(type,role);
+      out[role] = {...selected(type,role), ...sig};
+      if(role !== 'writer'){
+        const map = rec ? {writer:rec.signWriter || rec.writer, reviewer:rec.signReviewer || rec.reviewer, approver:rec.signApprover || rec.approver} : null;
+        const writer = (map && normalizeSaved(map.writer)) || out.writer || me;
+        // 일반 사용자는 화면상 '-'를 유지하지만, 권한자가 서명/검토/승인을 실행한 경우 내부 저장값은 로그인 사용자로 기록한다.
+        // 권한이 없으면 '-' 그대로 저장되어 검토/승인 처리되지 않는다.
+        if(!adminMode && out[role].name === '-' && canActByWriter(role, writer, me) && (sig.signImage || sig.signDate)){
+          out[role] = {...me, ...sig};
+        }
+        if(!out[role].name) out[role] = noneUser();
+      }
+    });
     return {writer:out.writer, reviewer:out.reviewer, approver:out.approver};
   };
   document.addEventListener('change', function(e){
