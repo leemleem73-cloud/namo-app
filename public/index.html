@@ -3229,7 +3229,372 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<style>
+/* QMS Final Approval Rule Patch - selectable reviewer/approver */
+.sign-sel-final{
+  width:100%;height:34px;border:1.5px solid var(--bd);border-radius:var(--r1);
+  padding:0 9px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr);
+}
+.sign-sel-final:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
+.sign-sel-final:disabled{background:#f3f4f6;color:#6b7280;cursor:not-allowed;}
+.qms-approval-empty{color:var(--t3);font-size:12px;font-weight:700;}
+</style>
+<script>
+/* QMS 결재선 최종 규칙 패치 v20260522
+   신규 작성 기준
+   - 작성: 로그인 본인 고정
+   - 작성자가 사원~과장: 검토=부장 이상 선택, 승인=부장 이상 선택
+   - 작성자가 부장: 검토='-' 처리, 승인=이사 이상 선택
+   - 작성자가 이사 이상: 검토='-' 처리, 승인=대표/대표이사 선택 가능, 없으면 '-'
+   수정 기준
+   - 기존 저장된 작성/검토/승인 결재선 그대로 표시/저장
+*/
+(function(){
+  if(window.__qmsFinalApprovalRuleApplied) return;
+  window.__qmsFinalApprovalRuleApplied = true;
+
+  const TYPES = ['iqc','pqc','oqc','nc','training'];
+  const ROLES = ['writer','reviewer','approver'];
+  const LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const TITLE = {writer:'작성자 (본인)', reviewer:'검토자', approver:'승인자'};
+  const EDIT_ID = {iqc:'incomingEditId', pqc:'processEditId', oqc:'shipmentEditId', nc:'ncEditId', training:'trainingEditId'};
+  const SIGN_FIELD = {writer:'signWriter', reviewer:'signReviewer', approver:'signApprover'};
+  const $ = id => document.getElementById(id);
+  const clean = v => String(v ?? '').trim();
+  const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  const appState = () => { try { return window.state || state || {}; } catch(e){ return window.state || {}; } };
+
+  function norm(u){
+    if(!u) return null;
+    const email = clean(u.email || u.mail || '');
+    const name = clean(u.name || u.username || u.userName || u.fullName || u.displayName || email || u.label || '');
+    const id = clean(u.id || u.userId || u.uid || email || name);
+    if(!id && !name) return null;
+    return {
+      id, name:name || id,
+      title:clean(u.title || u.position || u.rank || u.jobTitle || ''),
+      department:clean(u.department || u.dept || u.team || u.org || ''),
+      email,
+      role:clean(u.role || u.userRole || ''),
+      status:clean(u.status || u.approvalStatus || 'APPROVED'),
+      signImage:u.signImage || '', signDate:u.signDate || ''
+    };
+  }
+  function currentUser(){ return norm(appState().currentUser || window.currentUser || null); }
+  function approved(u){
+    const st = clean(u && u.status).toUpperCase();
+    return !st || ['APPROVED','ACTIVE','Y','승인'].includes(st);
+  }
+  function addOptionUsers(arr, selector){
+    document.querySelectorAll(selector).forEach(sel=>{
+      Array.from(sel.options || []).forEach(o=>{
+        const raw = clean(o.textContent || o.label || '');
+        if(!o.value || !raw || raw.includes('선택')) return;
+        const parts = raw.split('/').map(clean);
+        arr.push(norm({id:o.value, name:parts[0] || raw, title:parts[1] || '', department:''}));
+      });
+    });
+  }
+  function allUsers(){
+    const s = appState();
+    const arr = [];
+    const me = currentUser();
+    if(me) arr.push(me);
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(k=>{
+      if(Array.isArray(s[k])) arr.push(...s[k].map(norm));
+      if(Array.isArray(window[k])) arr.push(...window[k].map(norm));
+    });
+    addOptionUsers(arr, '#nmcSenderDept,#nmcRecvDept,#nmcRefDept');
+    const out=[], seen=new Set();
+    arr.filter(Boolean).filter(approved).forEach(u=>{
+      const key = clean(u.id || u.email || u.name);
+      if(!key || seen.has(key)) return;
+      seen.add(key); out.push(u);
+    });
+    return out;
+  }
+  function rank(u){
+    const t = `${u?.title || ''} ${u?.role || ''}`.toLowerCase();
+    if(/대표이사|대표|사장|회장|ceo/.test(t)) return 50;
+    if(/전무|상무|임원|이사|director|executive/.test(t)) return 40;
+    if(/부장|본부장|실장|센터장|팀장|manager|head/.test(t)) return 30;
+    if(/차장/.test(t)) return 25;
+    if(/과장/.test(t)) return 20;
+    if(/대리|주임|사원|연구원|선임|책임/.test(t)) return 10;
+    return 10;
+  }
+  const isManagerUp = u => rank(u) >= 30;
+  const isDirectorUp = u => rank(u) >= 40;
+  const isCEO = u => rank(u) >= 50;
+  function writerRank(){ return rank(currentUser()); }
+  function isEdit(type){ const el = $(EDIT_ID[type]); return !!(el && clean(el.value)); }
+  function store(type, role){
+    window.__qmsApprovalRuleStore = window.__qmsApprovalRuleStore || {};
+    const k = type + ':' + role;
+    window.__qmsApprovalRuleStore[k] = window.__qmsApprovalRuleStore[k] || {signImage:'', signDate:'', saved:null};
+    return window.__qmsApprovalRuleStore[k];
+  }
+  function now(){
+    const d=new Date(), p=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function optionHtml(list, ph){
+    return `<option value="">${esc(ph)}</option>` + (list || []).map(u=>`<option value="${esc(u.id)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(u.name)} / ${esc(u.title || u.department || '-')}</option>`).join('');
+  }
+  function candidates(role){
+    const me = currentUser();
+    const users = allUsers();
+    const wr = writerRank();
+    if(role === 'writer') return me ? [me] : [{id:'login-user', name:'로그인 사용자', title:'', department:''}];
+    if(role === 'reviewer'){
+      if(wr < 30) return users.filter(isManagerUp);
+      return [];
+    }
+    if(role === 'approver'){
+      if(wr < 30) return users.filter(isManagerUp);
+      if(wr >= 30 && wr < 40) return users.filter(isDirectorUp);
+      if(wr >= 40 && wr < 50) return users.filter(isCEO);
+      return [];
+    }
+    return [];
+  }
+  function help(role){
+    const wr = writerRank();
+    if(role === 'writer') return '작성자는 로그인 본인으로 고정됩니다.';
+    if(role === 'reviewer') return wr < 30 ? '작성자가 사원~과장이므로 부장 이상 검토자를 선택하세요.' : '작성자가 부장 이상이므로 검토는 - 처리합니다.';
+    if(wr < 30) return '작성자가 사원~과장이므로 부장 이상 승인자를 선택하세요.';
+    if(wr < 40) return '작성자가 부장이므로 이사 이상 승인자를 선택하세요.';
+    if(wr < 50) return '작성자가 이사 이상이므로 대표/대표이사 승인자를 선택하세요.';
+    return '대표 작성 건은 승인자를 - 처리할 수 있습니다.';
+  }
+  function roleHtml(type, role){
+    const list = candidates(role);
+    const ph = role === 'writer' ? '-- 작성자 본인 --' : (list.length ? `-- ${LABEL[role]} 선택 --` : '-');
+    return `<div class="sign-box" data-approval-rule-role="${role}">
+      <div class="sign-box-hdr"><span class="sign-box-role">${esc(TITLE[role])}</span></div>
+      <div class="sign-box-body">
+        <select class="sign-sel-final" id="sg_${type}_${role}" data-approval-rule-select="${type}:${role}">${optionHtml(list, ph)}</select>
+        <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
+        <div class="sign-file-wrap" data-approval-file-wrap="${type}:${role}">
+          <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
+          <div class="sign-file-tools">
+            <span class="sign-date" id="sg_${type}_${role}_date"></span>
+            <div>
+              <input type="file" class="sign-file-input" id="sg_${type}_${role}_file" accept="image/*" data-approval-rule-file="${type}:${role}">
+              <button type="button" class="sign-file-btn" data-approval-rule-file-btn="${type}:${role}">서명 첨부</button>
+              <button type="button" class="sign-clear-btn" data-approval-rule-clear="${type}:${role}">서명 지우기</button>
+            </div>
+          </div>
+        </div>
+        <div class="sign-sub" style="color:var(--t3);margin-top:6px;">${esc(help(role))}</div>
+      </div>
+    </div>`;
+  }
+  function selected(type, role){
+    const sel = $(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return {id:'', name:'', title:'', department:'', email:'', role:''};
+    const o = sel.options[sel.selectedIndex];
+    const fallback = clean(o?.textContent || '').replace(/\s*\/\s*.*$/,'');
+    return {id:sel.value, name:clean(o?.dataset?.name || fallback), title:clean(o?.dataset?.title || ''), department:clean(o?.dataset?.department || ''), email:clean(o?.dataset?.email || ''), role:clean(o?.dataset?.role || '')};
+  }
+  function same(a,b){
+    if(!a || !b) return false;
+    const ae=clean(a.email), be=clean(b.email); if(ae && be && ae===be) return true;
+    const ai=clean(a.id), bi=clean(b.id); if(ai && bi && ai===bi) return true;
+    const an=clean(a.name), bn=clean(b.name); return !!(an && bn && an===bn);
+  }
+  function canSign(type, role){
+    const me = currentUser();
+    if(!me) return false;
+    if(role === 'writer') return true;
+    const picked = selected(type, role);
+    if(!picked.name) return false;
+    return same(me, picked);
+  }
+  function setButtons(type, role){
+    const enabled = canSign(type, role);
+    const file = $(`sg_${type}_${role}_file`);
+    if(file) file.disabled = !enabled;
+    const wrap = document.querySelector(`[data-approval-file-wrap="${type}:${role}"]`);
+    if(wrap){
+      wrap.querySelectorAll('button').forEach(btn=>{
+        btn.disabled = !enabled;
+        btn.style.opacity = enabled ? '' : '.45';
+        btn.style.cursor = enabled ? '' : 'not-allowed';
+      });
+    }
+  }
+  function setPreview(type, role){
+    const s = store(type, role);
+    const box = $(`sg_${type}_${role}_preview`);
+    if(box) box.innerHTML = s.signImage ? `<img src="${s.signImage}" alt="서명 이미지">` : '<span class="sign-file-empty">서명 이미지 없음</span>';
+    const date = $(`sg_${type}_${role}_date`);
+    if(date) date.textContent = s.signDate || '';
+  }
+  function prefix(type){ return type === 'iqc' ? 'Iqc' : type === 'pqc' ? 'Pqc' : type === 'oqc' ? 'Oqc' : type === 'nc' ? 'Nc' : type === 'training' ? 'Training' : 'Rpt'; }
+  function cap(role){ return role.charAt(0).toUpperCase() + role.slice(1); }
+  function syncPrint(type, role){
+    const u = selected(type, role), s = store(type, role);
+    const nameEl = $(`r${prefix(type)}${cap(role)}`);
+    const titleEl = $(`r${prefix(type)}${cap(role)}T`);
+    if(nameEl) nameEl.textContent = u.name || '-';
+    if(titleEl) titleEl.textContent = u.title || '';
+    if(nameEl){
+      const col = nameEl.closest('.rpsign-col');
+      if(col){
+        let img = col.querySelector('.rpsign-img');
+        if(!img){ img=document.createElement('img'); img.className='rpsign-img'; img.alt='전자서명'; img.style.display='none'; col.insertBefore(img,nameEl); }
+        if(s.signImage){ img.src=s.signImage; img.style.display='block'; } else { img.removeAttribute('src'); img.style.display='none'; }
+        let dt = col.querySelector('.rpsign-date');
+        if(!dt){ dt=document.createElement('div'); dt.className='rpsign-date'; dt.style.cssText='font-size:10px;color:#666;margin-top:2px;'; (titleEl || nameEl).insertAdjacentElement('afterend', dt); }
+        dt.textContent = s.signDate || '';
+      }
+    }
+  }
+  function refreshSub(type, role){
+    const u = selected(type, role);
+    const sub = $(`sg_${type}_${role}_sub`);
+    if(sub) sub.textContent = u.name ? `${u.department || ''} ${u.title || ''}`.trim() : help(role);
+    setPreview(type, role);
+    setButtons(type, role);
+    syncPrint(type, role);
+    try{
+      if(type === 'iqc' && typeof syncIqcPreview === 'function') syncIqcPreview();
+      if(type === 'pqc' && typeof syncPqcPreview === 'function') syncPqcPreview();
+      if(type === 'oqc' && typeof syncOqcPreview === 'function') syncOqcPreview();
+      if(type === 'training' && typeof renderTrainingPreview === 'function') renderTrainingPreview();
+    }catch(e){}
+  }
+  function addSavedOption(sel, data, role){
+    if(!sel || !data || !(data.name || data.id || data.email)) return '';
+    const value = data.id || data.email || data.name;
+    if(!Array.from(sel.options).some(o=>String(o.value)===String(value))){
+      const opt = new Option(`${data.name || value} / ${data.title || data.department || LABEL[role] || '-'}`, value);
+      opt.dataset.name = data.name || value;
+      opt.dataset.title = data.title || '';
+      opt.dataset.department = data.department || '';
+      opt.dataset.email = data.email || '';
+      opt.dataset.role = data.role || '';
+      sel.add(opt);
+    }
+    return value;
+  }
+  function build(type, keep=true){
+    const grid = $(`signGrid_${type}`);
+    if(!grid) return;
+    const prev = {};
+    ROLES.forEach(r=>{ const sel=$(`sg_${type}_${r}`); prev[r]={value:sel ? sel.value : '', sig:{...store(type,r)}}; });
+    grid.innerHTML = ROLES.map(r=>roleHtml(type,r)).join('');
+    const warn=$(`signWarn_${type}`); if(warn) warn.style.display='none';
+    const me=currentUser();
+    ROLES.forEach(r=>{
+      const sel=$(`sg_${type}_${r}`); if(!sel) return;
+      let value = '';
+      if(isEdit(type)){
+        const saved = store(type,r).saved;
+        value = addSavedOption(sel, saved, r);
+      }else if(r === 'writer' && me){
+        value = addSavedOption(sel, me, r) || me.id;
+      }else if(keep && prev[r].value && Array.from(sel.options).some(o=>String(o.value)===String(prev[r].value))){
+        value = prev[r].value;
+      }
+      sel.value = value || '';
+      sel.disabled = (r === 'writer') || (isEdit(type) && !!value) || (!isEdit(type) && r !== 'writer' && candidates(r).length === 0);
+      if(r === 'writer') sel.title = '작성자는 로그인 본인으로 고정됩니다.';
+      else if(isEdit(type) && value) sel.title = '수정 모드에서는 저장된 결재선을 그대로 표시합니다.';
+      else sel.title = help(r);
+      Object.assign(store(type,r), prev[r].sig || {});
+      refreshSub(type,r);
+    });
+  }
+  function refresh(force=false){
+    TYPES.forEach(t=>{
+      const grid=$(`signGrid_${t}`); if(!grid) return;
+      if(force || !grid.dataset.approvalRuleReady){ build(t,true); grid.dataset.approvalRuleReady='1'; }
+      else ROLES.forEach(r=>refreshSub(t,r));
+    });
+  }
+  function savedPayload(type, role){
+    const s=store(type, role);
+    const base = s.saved || selected(type, role) || {};
+    return {...base, signImage:s.signImage || base.signImage || '', signDate:s.signDate || base.signDate || ''};
+  }
+  function validate(type){
+    const wr = writerRank();
+    if(!selected(type,'writer').name){ alert('작성자는 로그인 본인으로 지정되어야 합니다.'); return false; }
+    if(!isEdit(type)){
+      if(wr < 30){
+        if(!selected(type,'reviewer').name){ alert('사원~과장 작성 건은 부장 이상 검토자를 선택하세요.'); return false; }
+        if(!selected(type,'approver').name){ alert('사원~과장 작성 건은 부장 이상 승인자를 선택하세요.'); return false; }
+      }else if(wr >= 30 && wr < 40){
+        if(!selected(type,'approver').name){ alert('부장 작성 건은 이사 이상 승인자를 선택하세요.'); return false; }
+      }else if(wr >= 40 && wr < 50){
+        const ceoList = candidates('approver');
+        if(ceoList.length && !selected(type,'approver').name){ alert('이사 이상 작성 건은 대표/대표이사 승인자를 선택하세요.'); return false; }
+      }
+    }
+    return true;
+  }
+
+  window.qmsRefreshSignatures = () => refresh(true);
+  window.buildSignGrid = type => build(type,true);
+  window.rebuildAllSignGrids = () => refresh(true);
+  window.applySignPermissions = type => type ? ROLES.forEach(r=>refreshSub(type,r)) : refresh(false);
+  window.applyAllSignPermissions = () => refresh(false);
+  window.signature데이터 = (type, role) => ({signImage:store(type,role).signImage || '', signDate:store(type,role).signDate || ''});
+  window.updateSignaturePreview = (type, role) => refreshSub(type, role);
+  window.clearSignaturePad = (type, role) => { if(!canSign(type, role)) return false; const s=store(type,role); s.signImage=''; s.signDate=''; const f=$(`sg_${type}_${role}_file`); if(f) f.value=''; refreshSub(type,role); return true; };
+  window.restoreSignaturePad = (type, role, data) => { const s=store(type,role); s.signImage=data?.signImage || ''; s.signDate=data?.signDate || ''; refreshSub(type,role); };
+  window.getSignPayload = type => ({writer:savedPayload(type,'writer'), reviewer:savedPayload(type,'reviewer'), approver:savedPayload(type,'approver')});
+  window.qmsValidateSignRoles = validate;
+  const oldSaveIncoming = window.saveIncoming, oldSaveProcess = window.saveProcess, oldSaveShipment = window.saveShipment, oldSaveNc = window.saveNc, oldSaveTraining = window.saveTrainingReport;
+  if(typeof oldSaveIncoming === 'function') window.saveIncoming = function(){ if(!validate('iqc')) return; return oldSaveIncoming.apply(this, arguments); };
+  if(typeof oldSaveProcess === 'function') window.saveProcess = function(){ if(!validate('pqc')) return; return oldSaveProcess.apply(this, arguments); };
+  if(typeof oldSaveShipment === 'function') window.saveShipment = function(){ if(!validate('oqc')) return; return oldSaveShipment.apply(this, arguments); };
+  if(typeof oldSaveNc === 'function') window.saveNc = function(){ if(!validate('nc')) return; return oldSaveNc.apply(this, arguments); };
+  if(typeof oldSaveTraining === 'function') window.saveTrainingReport = function(){ if(!validate('training')) return; return oldSaveTraining.apply(this, arguments); };
+
+  window.restoreSign = function(type, record){
+    if(record){
+      ROLES.forEach(r=>{
+        const data = norm(record[SIGN_FIELD[r]] || null);
+        const s = store(type,r);
+        s.saved = data && (data.name || data.id || data.email) ? {...data, signImage:(record[SIGN_FIELD[r]]||{}).signImage || '', signDate:(record[SIGN_FIELD[r]]||{}).signDate || ''} : null;
+        s.signImage = s.saved?.signImage || '';
+        s.signDate = s.saved?.signDate || '';
+      });
+    }
+    build(type,true);
+  };
+  window.clearSign = function(type){
+    ROLES.forEach(r=>{
+      const s=store(type,r); s.saved=null; s.signImage=''; s.signDate='';
+    });
+    build(type,false);
+  };
+
+  document.addEventListener('click', function(e){
+    const b=e.target.closest && e.target.closest('[data-approval-rule-file-btn]');
+    if(b){ e.preventDefault(); e.stopPropagation(); const [t,r]=b.getAttribute('data-approval-rule-file-btn').split(':'); if(canSign(t,r)) $(`sg_${t}_${r}_file`)?.click(); return false; }
+    const c=e.target.closest && e.target.closest('[data-approval-rule-clear]');
+    if(c){ e.preventDefault(); e.stopPropagation(); const [t,r]=c.getAttribute('data-approval-rule-clear').split(':'); window.clearSignaturePad(t,r); return false; }
+  }, false);
+  document.addEventListener('change', function(e){
+    const file=e.target.closest && e.target.closest('[data-approval-rule-file]');
+    if(file){ const [t,r]=file.getAttribute('data-approval-rule-file').split(':'); if(!canSign(t,r)){ file.value=''; return false; } if(file.files && file.files[0]){ const rd=new FileReader(); rd.onload=()=>{ const s=store(t,r); s.signImage=String(rd.result || ''); s.signDate=now(); refreshSub(t,r); }; rd.readAsDataURL(file.files[0]); } return false; }
+    const sel=e.target.closest && e.target.closest('[data-approval-rule-select]');
+    if(sel){ const [t,r]=sel.getAttribute('data-approval-rule-select').split(':'); const s=store(t,r); s.signImage=''; s.signDate=''; refreshSub(t,r); return false; }
+  }, false);
+
+  document.addEventListener('DOMContentLoaded', ()=>refresh(true));
+  window.addEventListener('load', ()=>[0,250,800,1600,3000].forEach(ms=>setTimeout(()=>refresh(ms===0), ms)));
+  [300,900,1800,3500].forEach(ms=>setTimeout(()=>refresh(false), ms));
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -8353,6 +8718,371 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(btn) setTimeout(() => TYPES.forEach(type => applyEditView(type)), 80);
   }, true);
   [300,800,1500,2500].forEach(ms => setTimeout(() => TYPES.forEach(type => { if(isEdit(type)) applyEditView(type); }), ms));
+})();
+</script>
+
+
+
+<style>
+/* QMS Final Approval Rule Patch - selectable reviewer/approver */
+.sign-sel-final{
+  width:100%;height:34px;border:1.5px solid var(--bd);border-radius:var(--r1);
+  padding:0 9px;font-size:13px;color:var(--t1);background:var(--sf);outline:none;transition:var(--tr);
+}
+.sign-sel-final:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--prit);}
+.sign-sel-final:disabled{background:#f3f4f6;color:#6b7280;cursor:not-allowed;}
+.qms-approval-empty{color:var(--t3);font-size:12px;font-weight:700;}
+</style>
+<script>
+/* QMS 결재선 최종 규칙 패치 v20260522
+   신규 작성 기준
+   - 작성: 로그인 본인 고정
+   - 작성자가 사원~과장: 검토=부장 이상 선택, 승인=부장 이상 선택
+   - 작성자가 부장: 검토='-' 처리, 승인=이사 이상 선택
+   - 작성자가 이사 이상: 검토='-' 처리, 승인=대표/대표이사 선택 가능, 없으면 '-'
+   수정 기준
+   - 기존 저장된 작성/검토/승인 결재선 그대로 표시/저장
+*/
+(function(){
+  if(window.__qmsFinalApprovalRuleApplied) return;
+  window.__qmsFinalApprovalRuleApplied = true;
+
+  const TYPES = ['iqc','pqc','oqc','nc','training'];
+  const ROLES = ['writer','reviewer','approver'];
+  const LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const TITLE = {writer:'작성자 (본인)', reviewer:'검토자', approver:'승인자'};
+  const EDIT_ID = {iqc:'incomingEditId', pqc:'processEditId', oqc:'shipmentEditId', nc:'ncEditId', training:'trainingEditId'};
+  const SIGN_FIELD = {writer:'signWriter', reviewer:'signReviewer', approver:'signApprover'};
+  const $ = id => document.getElementById(id);
+  const clean = v => String(v ?? '').trim();
+  const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  const appState = () => { try { return window.state || state || {}; } catch(e){ return window.state || {}; } };
+
+  function norm(u){
+    if(!u) return null;
+    const email = clean(u.email || u.mail || '');
+    const name = clean(u.name || u.username || u.userName || u.fullName || u.displayName || email || u.label || '');
+    const id = clean(u.id || u.userId || u.uid || email || name);
+    if(!id && !name) return null;
+    return {
+      id, name:name || id,
+      title:clean(u.title || u.position || u.rank || u.jobTitle || ''),
+      department:clean(u.department || u.dept || u.team || u.org || ''),
+      email,
+      role:clean(u.role || u.userRole || ''),
+      status:clean(u.status || u.approvalStatus || 'APPROVED'),
+      signImage:u.signImage || '', signDate:u.signDate || ''
+    };
+  }
+  function currentUser(){ return norm(appState().currentUser || window.currentUser || null); }
+  function approved(u){
+    const st = clean(u && u.status).toUpperCase();
+    return !st || ['APPROVED','ACTIVE','Y','승인'].includes(st);
+  }
+  function addOptionUsers(arr, selector){
+    document.querySelectorAll(selector).forEach(sel=>{
+      Array.from(sel.options || []).forEach(o=>{
+        const raw = clean(o.textContent || o.label || '');
+        if(!o.value || !raw || raw.includes('선택')) return;
+        const parts = raw.split('/').map(clean);
+        arr.push(norm({id:o.value, name:parts[0] || raw, title:parts[1] || '', department:''}));
+      });
+    });
+  }
+  function allUsers(){
+    const s = appState();
+    const arr = [];
+    const me = currentUser();
+    if(me) arr.push(me);
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(k=>{
+      if(Array.isArray(s[k])) arr.push(...s[k].map(norm));
+      if(Array.isArray(window[k])) arr.push(...window[k].map(norm));
+    });
+    addOptionUsers(arr, '#nmcSenderDept,#nmcRecvDept,#nmcRefDept');
+    const out=[], seen=new Set();
+    arr.filter(Boolean).filter(approved).forEach(u=>{
+      const key = clean(u.id || u.email || u.name);
+      if(!key || seen.has(key)) return;
+      seen.add(key); out.push(u);
+    });
+    return out;
+  }
+  function rank(u){
+    const t = `${u?.title || ''} ${u?.role || ''}`.toLowerCase();
+    if(/대표이사|대표|사장|회장|ceo/.test(t)) return 50;
+    if(/전무|상무|임원|이사|director|executive/.test(t)) return 40;
+    if(/부장|본부장|실장|센터장|팀장|manager|head/.test(t)) return 30;
+    if(/차장/.test(t)) return 25;
+    if(/과장/.test(t)) return 20;
+    if(/대리|주임|사원|연구원|선임|책임/.test(t)) return 10;
+    return 10;
+  }
+  const isManagerUp = u => rank(u) >= 30;
+  const isDirectorUp = u => rank(u) >= 40;
+  const isCEO = u => rank(u) >= 50;
+  function writerRank(){ return rank(currentUser()); }
+  function isEdit(type){ const el = $(EDIT_ID[type]); return !!(el && clean(el.value)); }
+  function store(type, role){
+    window.__qmsApprovalRuleStore = window.__qmsApprovalRuleStore || {};
+    const k = type + ':' + role;
+    window.__qmsApprovalRuleStore[k] = window.__qmsApprovalRuleStore[k] || {signImage:'', signDate:'', saved:null};
+    return window.__qmsApprovalRuleStore[k];
+  }
+  function now(){
+    const d=new Date(), p=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function optionHtml(list, ph){
+    return `<option value="">${esc(ph)}</option>` + (list || []).map(u=>`<option value="${esc(u.id)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(u.name)} / ${esc(u.title || u.department || '-')}</option>`).join('');
+  }
+  function candidates(role){
+    const me = currentUser();
+    const users = allUsers();
+    const wr = writerRank();
+    if(role === 'writer') return me ? [me] : [{id:'login-user', name:'로그인 사용자', title:'', department:''}];
+    if(role === 'reviewer'){
+      if(wr < 30) return users.filter(isManagerUp);
+      return [];
+    }
+    if(role === 'approver'){
+      if(wr < 30) return users.filter(isManagerUp);
+      if(wr >= 30 && wr < 40) return users.filter(isDirectorUp);
+      if(wr >= 40 && wr < 50) return users.filter(isCEO);
+      return [];
+    }
+    return [];
+  }
+  function help(role){
+    const wr = writerRank();
+    if(role === 'writer') return '작성자는 로그인 본인으로 고정됩니다.';
+    if(role === 'reviewer') return wr < 30 ? '작성자가 사원~과장이므로 부장 이상 검토자를 선택하세요.' : '작성자가 부장 이상이므로 검토는 - 처리합니다.';
+    if(wr < 30) return '작성자가 사원~과장이므로 부장 이상 승인자를 선택하세요.';
+    if(wr < 40) return '작성자가 부장이므로 이사 이상 승인자를 선택하세요.';
+    if(wr < 50) return '작성자가 이사 이상이므로 대표/대표이사 승인자를 선택하세요.';
+    return '대표 작성 건은 승인자를 - 처리할 수 있습니다.';
+  }
+  function roleHtml(type, role){
+    const list = candidates(role);
+    const ph = role === 'writer' ? '-- 작성자 본인 --' : (list.length ? `-- ${LABEL[role]} 선택 --` : '-');
+    return `<div class="sign-box" data-approval-rule-role="${role}">
+      <div class="sign-box-hdr"><span class="sign-box-role">${esc(TITLE[role])}</span></div>
+      <div class="sign-box-body">
+        <select class="sign-sel-final" id="sg_${type}_${role}" data-approval-rule-select="${type}:${role}">${optionHtml(list, ph)}</select>
+        <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
+        <div class="sign-file-wrap" data-approval-file-wrap="${type}:${role}">
+          <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
+          <div class="sign-file-tools">
+            <span class="sign-date" id="sg_${type}_${role}_date"></span>
+            <div>
+              <input type="file" class="sign-file-input" id="sg_${type}_${role}_file" accept="image/*" data-approval-rule-file="${type}:${role}">
+              <button type="button" class="sign-file-btn" data-approval-rule-file-btn="${type}:${role}">서명 첨부</button>
+              <button type="button" class="sign-clear-btn" data-approval-rule-clear="${type}:${role}">서명 지우기</button>
+            </div>
+          </div>
+        </div>
+        <div class="sign-sub" style="color:var(--t3);margin-top:6px;">${esc(help(role))}</div>
+      </div>
+    </div>`;
+  }
+  function selected(type, role){
+    const sel = $(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return {id:'', name:'', title:'', department:'', email:'', role:''};
+    const o = sel.options[sel.selectedIndex];
+    const fallback = clean(o?.textContent || '').replace(/\s*\/\s*.*$/,'');
+    return {id:sel.value, name:clean(o?.dataset?.name || fallback), title:clean(o?.dataset?.title || ''), department:clean(o?.dataset?.department || ''), email:clean(o?.dataset?.email || ''), role:clean(o?.dataset?.role || '')};
+  }
+  function same(a,b){
+    if(!a || !b) return false;
+    const ae=clean(a.email), be=clean(b.email); if(ae && be && ae===be) return true;
+    const ai=clean(a.id), bi=clean(b.id); if(ai && bi && ai===bi) return true;
+    const an=clean(a.name), bn=clean(b.name); return !!(an && bn && an===bn);
+  }
+  function canSign(type, role){
+    const me = currentUser();
+    if(!me) return false;
+    if(role === 'writer') return true;
+    const picked = selected(type, role);
+    if(!picked.name) return false;
+    return same(me, picked);
+  }
+  function setButtons(type, role){
+    const enabled = canSign(type, role);
+    const file = $(`sg_${type}_${role}_file`);
+    if(file) file.disabled = !enabled;
+    const wrap = document.querySelector(`[data-approval-file-wrap="${type}:${role}"]`);
+    if(wrap){
+      wrap.querySelectorAll('button').forEach(btn=>{
+        btn.disabled = !enabled;
+        btn.style.opacity = enabled ? '' : '.45';
+        btn.style.cursor = enabled ? '' : 'not-allowed';
+      });
+    }
+  }
+  function setPreview(type, role){
+    const s = store(type, role);
+    const box = $(`sg_${type}_${role}_preview`);
+    if(box) box.innerHTML = s.signImage ? `<img src="${s.signImage}" alt="서명 이미지">` : '<span class="sign-file-empty">서명 이미지 없음</span>';
+    const date = $(`sg_${type}_${role}_date`);
+    if(date) date.textContent = s.signDate || '';
+  }
+  function prefix(type){ return type === 'iqc' ? 'Iqc' : type === 'pqc' ? 'Pqc' : type === 'oqc' ? 'Oqc' : type === 'nc' ? 'Nc' : type === 'training' ? 'Training' : 'Rpt'; }
+  function cap(role){ return role.charAt(0).toUpperCase() + role.slice(1); }
+  function syncPrint(type, role){
+    const u = selected(type, role), s = store(type, role);
+    const nameEl = $(`r${prefix(type)}${cap(role)}`);
+    const titleEl = $(`r${prefix(type)}${cap(role)}T`);
+    if(nameEl) nameEl.textContent = u.name || '-';
+    if(titleEl) titleEl.textContent = u.title || '';
+    if(nameEl){
+      const col = nameEl.closest('.rpsign-col');
+      if(col){
+        let img = col.querySelector('.rpsign-img');
+        if(!img){ img=document.createElement('img'); img.className='rpsign-img'; img.alt='전자서명'; img.style.display='none'; col.insertBefore(img,nameEl); }
+        if(s.signImage){ img.src=s.signImage; img.style.display='block'; } else { img.removeAttribute('src'); img.style.display='none'; }
+        let dt = col.querySelector('.rpsign-date');
+        if(!dt){ dt=document.createElement('div'); dt.className='rpsign-date'; dt.style.cssText='font-size:10px;color:#666;margin-top:2px;'; (titleEl || nameEl).insertAdjacentElement('afterend', dt); }
+        dt.textContent = s.signDate || '';
+      }
+    }
+  }
+  function refreshSub(type, role){
+    const u = selected(type, role);
+    const sub = $(`sg_${type}_${role}_sub`);
+    if(sub) sub.textContent = u.name ? `${u.department || ''} ${u.title || ''}`.trim() : help(role);
+    setPreview(type, role);
+    setButtons(type, role);
+    syncPrint(type, role);
+    try{
+      if(type === 'iqc' && typeof syncIqcPreview === 'function') syncIqcPreview();
+      if(type === 'pqc' && typeof syncPqcPreview === 'function') syncPqcPreview();
+      if(type === 'oqc' && typeof syncOqcPreview === 'function') syncOqcPreview();
+      if(type === 'training' && typeof renderTrainingPreview === 'function') renderTrainingPreview();
+    }catch(e){}
+  }
+  function addSavedOption(sel, data, role){
+    if(!sel || !data || !(data.name || data.id || data.email)) return '';
+    const value = data.id || data.email || data.name;
+    if(!Array.from(sel.options).some(o=>String(o.value)===String(value))){
+      const opt = new Option(`${data.name || value} / ${data.title || data.department || LABEL[role] || '-'}`, value);
+      opt.dataset.name = data.name || value;
+      opt.dataset.title = data.title || '';
+      opt.dataset.department = data.department || '';
+      opt.dataset.email = data.email || '';
+      opt.dataset.role = data.role || '';
+      sel.add(opt);
+    }
+    return value;
+  }
+  function build(type, keep=true){
+    const grid = $(`signGrid_${type}`);
+    if(!grid) return;
+    const prev = {};
+    ROLES.forEach(r=>{ const sel=$(`sg_${type}_${r}`); prev[r]={value:sel ? sel.value : '', sig:{...store(type,r)}}; });
+    grid.innerHTML = ROLES.map(r=>roleHtml(type,r)).join('');
+    const warn=$(`signWarn_${type}`); if(warn) warn.style.display='none';
+    const me=currentUser();
+    ROLES.forEach(r=>{
+      const sel=$(`sg_${type}_${r}`); if(!sel) return;
+      let value = '';
+      if(isEdit(type)){
+        const saved = store(type,r).saved;
+        value = addSavedOption(sel, saved, r);
+      }else if(r === 'writer' && me){
+        value = addSavedOption(sel, me, r) || me.id;
+      }else if(keep && prev[r].value && Array.from(sel.options).some(o=>String(o.value)===String(prev[r].value))){
+        value = prev[r].value;
+      }
+      sel.value = value || '';
+      sel.disabled = (r === 'writer') || (isEdit(type) && !!value) || (!isEdit(type) && r !== 'writer' && candidates(r).length === 0);
+      if(r === 'writer') sel.title = '작성자는 로그인 본인으로 고정됩니다.';
+      else if(isEdit(type) && value) sel.title = '수정 모드에서는 저장된 결재선을 그대로 표시합니다.';
+      else sel.title = help(r);
+      Object.assign(store(type,r), prev[r].sig || {});
+      refreshSub(type,r);
+    });
+  }
+  function refresh(force=false){
+    TYPES.forEach(t=>{
+      const grid=$(`signGrid_${t}`); if(!grid) return;
+      if(force || !grid.dataset.approvalRuleReady){ build(t,true); grid.dataset.approvalRuleReady='1'; }
+      else ROLES.forEach(r=>refreshSub(t,r));
+    });
+  }
+  function savedPayload(type, role){
+    const s=store(type, role);
+    const base = s.saved || selected(type, role) || {};
+    return {...base, signImage:s.signImage || base.signImage || '', signDate:s.signDate || base.signDate || ''};
+  }
+  function validate(type){
+    const wr = writerRank();
+    if(!selected(type,'writer').name){ alert('작성자는 로그인 본인으로 지정되어야 합니다.'); return false; }
+    if(!isEdit(type)){
+      if(wr < 30){
+        if(!selected(type,'reviewer').name){ alert('사원~과장 작성 건은 부장 이상 검토자를 선택하세요.'); return false; }
+        if(!selected(type,'approver').name){ alert('사원~과장 작성 건은 부장 이상 승인자를 선택하세요.'); return false; }
+      }else if(wr >= 30 && wr < 40){
+        if(!selected(type,'approver').name){ alert('부장 작성 건은 이사 이상 승인자를 선택하세요.'); return false; }
+      }else if(wr >= 40 && wr < 50){
+        const ceoList = candidates('approver');
+        if(ceoList.length && !selected(type,'approver').name){ alert('이사 이상 작성 건은 대표/대표이사 승인자를 선택하세요.'); return false; }
+      }
+    }
+    return true;
+  }
+
+  window.qmsRefreshSignatures = () => refresh(true);
+  window.buildSignGrid = type => build(type,true);
+  window.rebuildAllSignGrids = () => refresh(true);
+  window.applySignPermissions = type => type ? ROLES.forEach(r=>refreshSub(type,r)) : refresh(false);
+  window.applyAllSignPermissions = () => refresh(false);
+  window.signature데이터 = (type, role) => ({signImage:store(type,role).signImage || '', signDate:store(type,role).signDate || ''});
+  window.updateSignaturePreview = (type, role) => refreshSub(type, role);
+  window.clearSignaturePad = (type, role) => { if(!canSign(type, role)) return false; const s=store(type,role); s.signImage=''; s.signDate=''; const f=$(`sg_${type}_${role}_file`); if(f) f.value=''; refreshSub(type,role); return true; };
+  window.restoreSignaturePad = (type, role, data) => { const s=store(type,role); s.signImage=data?.signImage || ''; s.signDate=data?.signDate || ''; refreshSub(type,role); };
+  window.getSignPayload = type => ({writer:savedPayload(type,'writer'), reviewer:savedPayload(type,'reviewer'), approver:savedPayload(type,'approver')});
+  window.qmsValidateSignRoles = validate;
+  const oldSaveIncoming = window.saveIncoming, oldSaveProcess = window.saveProcess, oldSaveShipment = window.saveShipment, oldSaveNc = window.saveNc, oldSaveTraining = window.saveTrainingReport;
+  if(typeof oldSaveIncoming === 'function') window.saveIncoming = function(){ if(!validate('iqc')) return; return oldSaveIncoming.apply(this, arguments); };
+  if(typeof oldSaveProcess === 'function') window.saveProcess = function(){ if(!validate('pqc')) return; return oldSaveProcess.apply(this, arguments); };
+  if(typeof oldSaveShipment === 'function') window.saveShipment = function(){ if(!validate('oqc')) return; return oldSaveShipment.apply(this, arguments); };
+  if(typeof oldSaveNc === 'function') window.saveNc = function(){ if(!validate('nc')) return; return oldSaveNc.apply(this, arguments); };
+  if(typeof oldSaveTraining === 'function') window.saveTrainingReport = function(){ if(!validate('training')) return; return oldSaveTraining.apply(this, arguments); };
+
+  window.restoreSign = function(type, record){
+    if(record){
+      ROLES.forEach(r=>{
+        const data = norm(record[SIGN_FIELD[r]] || null);
+        const s = store(type,r);
+        s.saved = data && (data.name || data.id || data.email) ? {...data, signImage:(record[SIGN_FIELD[r]]||{}).signImage || '', signDate:(record[SIGN_FIELD[r]]||{}).signDate || ''} : null;
+        s.signImage = s.saved?.signImage || '';
+        s.signDate = s.saved?.signDate || '';
+      });
+    }
+    build(type,true);
+  };
+  window.clearSign = function(type){
+    ROLES.forEach(r=>{
+      const s=store(type,r); s.saved=null; s.signImage=''; s.signDate='';
+    });
+    build(type,false);
+  };
+
+  document.addEventListener('click', function(e){
+    const b=e.target.closest && e.target.closest('[data-approval-rule-file-btn]');
+    if(b){ e.preventDefault(); e.stopPropagation(); const [t,r]=b.getAttribute('data-approval-rule-file-btn').split(':'); if(canSign(t,r)) $(`sg_${t}_${r}_file`)?.click(); return false; }
+    const c=e.target.closest && e.target.closest('[data-approval-rule-clear]');
+    if(c){ e.preventDefault(); e.stopPropagation(); const [t,r]=c.getAttribute('data-approval-rule-clear').split(':'); window.clearSignaturePad(t,r); return false; }
+  }, false);
+  document.addEventListener('change', function(e){
+    const file=e.target.closest && e.target.closest('[data-approval-rule-file]');
+    if(file){ const [t,r]=file.getAttribute('data-approval-rule-file').split(':'); if(!canSign(t,r)){ file.value=''; return false; } if(file.files && file.files[0]){ const rd=new FileReader(); rd.onload=()=>{ const s=store(t,r); s.signImage=String(rd.result || ''); s.signDate=now(); refreshSub(t,r); }; rd.readAsDataURL(file.files[0]); } return false; }
+    const sel=e.target.closest && e.target.closest('[data-approval-rule-select]');
+    if(sel){ const [t,r]=sel.getAttribute('data-approval-rule-select').split(':'); const s=store(t,r); s.signImage=''; s.signDate=''; refreshSub(t,r); return false; }
+  }, false);
+
+  document.addEventListener('DOMContentLoaded', ()=>refresh(true));
+  window.addEventListener('load', ()=>[0,250,800,1600,3000].forEach(ms=>setTimeout(()=>refresh(ms===0), ms)));
+  [300,900,1800,3500].forEach(ms=>setTimeout(()=>refresh(false), ms));
 })();
 </script>
 
