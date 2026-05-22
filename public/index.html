@@ -3229,7 +3229,35 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+<script>
+/* 작업지시서 5. 작성/검토/승인 결재선 최종 보강 */
+(function(){
+  function initWorkorderApproval(){
+    const grid = document.getElementById('signGrid_workorder');
+    if(!grid) return;
+    try{
+      if(typeof window.buildSignGrid === 'function' && (!grid.dataset.finalSignReady || !grid.querySelector('.sign-box'))){
+        window.buildSignGrid('workorder');
+      }
+      if(typeof window.applySignPermissions === 'function') window.applySignPermissions('workorder');
+    }catch(e){ console.warn('[workorder] approval init failed', e); }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    initWorkorderApproval();
+    [200,800,1600,2800].forEach(function(ms){ setTimeout(initWorkorderApproval, ms); });
+  });
+  document.addEventListener('click', function(e){
+    if(e.target && (e.target.closest('[data-page="workorder-final"]') || e.target.closest('[data-page-target="workorder-final"]'))){
+      setTimeout(initWorkorderApproval, 100);
+      setTimeout(initWorkorderApproval, 500);
+    }
+  }, true);
+  window.nmcInitWorkorderApproval = initWorkorderApproval;
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -6852,34 +6880,23 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <h3>4. 지시 사항</h3>
         <textarea id="nmcInstruction" class="nmc-textarea nmc-instruction-box" placeholder="지시 사항을 입력하세요."></textarea>
       </div>
-      <div class="nmc-workorder-card nmc-send-card">
-        <h3>5. 발송 정보</h3>
-        <div class="nmc-send-grid">
+      <div class="nmc-workorder-card nmc-send-card nmc-approval-card">
+        <h3>5. 작성 / 검토 / 승인</h3>
+        <div class="sign-warning" id="signWarn_workorder">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록하면 작성자/검토자/승인자를 선택할 수 있습니다.</div>
+        <div class="sign-grid" id="signGrid_workorder"></div>
+        <div class="nmc-send-grid" style="margin-top:14px">
           <div class="nmc-send-field">
-            <label>발송 부서<span class="req">*</span></label>
-            <select class="nmc-select nmc-send-select" id="nmcSenderName"></select>
-            <p class="nmc-send-help">회원등록현황 기준 본인 부서명과 성명이 자동 표시됩니다.</p>
-          </div>
-          <div class="nmc-send-field">
-            <label>수신 부서<span class="req">*</span></label>
-            <select class="nmc-select nmc-send-select" id="nmcRecvDept" multiple size="4"></select>
-            <p class="nmc-send-help">회원등록현황 기준 부서명과 성명이 표시됩니다.</p>
-          </div>
-          <div class="nmc-send-field">
-            <label>참조 부서</label>
-            <select class="nmc-select nmc-send-select" id="nmcRefDept" multiple size="4"></select>
-            <p class="nmc-send-help">회원등록현황 기준 부서명과 성명이 표시됩니다.</p>
-          </div>
-          <div class="nmc-send-field">
-            <label>발송 일시</label>
+            <label>처리 일시</label>
             <input class="nmc-input nmc-send-input" id="nmcSendTime" readonly>
           </div>
           <div class="nmc-send-field nmc-send-note">
-            <label>발송 비고</label>
-            <textarea class="nmc-textarea nmc-send-textarea" id="nmcSendNote" placeholder="발송 관련 비고를 입력하세요."></textarea>
+            <label>비고</label>
+            <textarea class="nmc-textarea nmc-send-textarea" id="nmcSendNote" placeholder="작성 / 검토 / 승인 관련 비고를 입력하세요."></textarea>
           </div>
         </div>
-        <div class="nmc-actions nmc-send-actions"><button class="nmc-btn primary" data-nmc-action="send" type="button">선택 대상에게 발송</button></div>
+        <select id="nmcSenderName" style="display:none"></select>
+        <select id="nmcRecvDept" multiple style="display:none"></select>
+        <select id="nmcRefDept" multiple style="display:none"></select>
       </div>
       <div class="nmc-actions">
         <button class="nmc-btn" data-nmc-action="draft">임시저장</button>
@@ -7128,6 +7145,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function syncSendInfo(){
     populateManualSendTargets();
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
+    try{
+      if(document.getElementById('signGrid_workorder') && typeof window.buildSignGrid === 'function'){
+        window.buildSignGrid('workorder');
+        if(typeof window.applySignPermissions === 'function') window.applySignPermissions('workorder');
+      }
+    }catch(e){ console.warn('[workorder] 결재선 초기화 실패:', e); }
   }
 
   function updateMaterialRows(){
@@ -7196,8 +7219,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const matTotalQty = qs('#nmcMaterialTotalQty')?.textContent || '0.00 kg';
     const matTotalRatio = qs('#nmcMaterialTotalRatio')?.textContent || '0.00 %';
     const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.querySelector('.nmc-mat-plan-qty')?.value||'0')} kg</td><td>${esc(tr.querySelector('.nmc-mat-qty')?.value||'0')} kg</td><td>${esc(tr.querySelector('.nmc-mat-ratio')?.value||'0.00')} %</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
-    const recvNames=selectedFieldText('nmcRecvDept','선택된 수신부서 없음');
-    const refNames=selectedFieldText('nmcRefDept','선택된 참조부서 없음');
+    const workSign = (typeof window.getSignPayload === 'function') ? window.getSignPayload('workorder') : {};
+    const signName = data => data && data.name ? `${data.name}${data.title ? ' / ' + data.title : ''}` : '-';
+    const signImg = data => data && data.signImage ? `<img class="rpsign-img" src="${data.signImage}" alt="전자서명">` : '';
+    const signDate = data => data && data.signDate ? data.signDate : '';
     target.innerHTML=`
       <div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">${val('nmcWoNo')}</div></div>
       <table><tbody>
@@ -7210,9 +7235,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT 번호</th><th>계획투입량 (kg)</th><th>실투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td colspan="3"><b>합계</b></td><td><b>${esc(matTotalPlanQty)}</b></td><td><b>${esc(matTotalQty)}</b></td><td><b>${esc(matTotalRatio)}</b></td><td>-</td></tr></tfoot></table>
       <h4 style="margin:16px 0 8px">지시 사항</h4>
       <div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">${esc(qs('#nmcInstruction')?.value || '-')}</div>
-      <h4 style="margin:16px 0 8px">발송 정보</h4>
-      <table><tbody><tr><th>발송부서</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${esc(recvNames)}</td><th>참조부서</th><td>${esc(refNames)}</td></tr><tr><th>발송일시</th><td>${val('nmcSendTime')}</td><th>비고</th><td colspan="3">${val('nmcSendNote')}</td></tr></tbody></table>
-      <div class="print-user-info">출력자: ${val('nmcSenderName')} / 출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
+      <h4 style="margin:16px 0 8px">작성 / 검토 / 승인</h4>
+      <div class="rprint-sign">
+        <div class="rpsign-col"><div class="rpsign-role">작성자</div>${signImg(workSign.writer)}<div class="rpsign-name">${esc(signName(workSign.writer))}</div><div class="rpsign-title">${esc(signDate(workSign.writer))}</div><div class="rpsign-line"></div></div>
+        <div class="rpsign-col"><div class="rpsign-role">검토자</div>${signImg(workSign.reviewer)}<div class="rpsign-name">${esc(signName(workSign.reviewer))}</div><div class="rpsign-title">${esc(signDate(workSign.reviewer))}</div><div class="rpsign-line"></div></div>
+        <div class="rpsign-col"><div class="rpsign-role">승인자</div>${signImg(workSign.approver)}<div class="rpsign-name">${esc(signName(workSign.approver))}</div><div class="rpsign-title">${esc(signDate(workSign.approver))}</div><div class="rpsign-line"></div></div>
+      </div>
+      <table style="margin-top:12px"><tbody><tr><th>처리일시</th><td>${val('nmcSendTime')}</td><th>비고</th><td colspan="3">${val('nmcSendNote')}</td></tr></tbody></table>
+      <div class="print-user-info">출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
     window.print();
   }
 
@@ -8177,22 +8207,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 <script>
-/* QMS FINAL OVERRIDE: 원본 유지 + 검토/승인란 '-' 표시 + 로그인 권한자만 내부 처리 v20260522-5
-   - 관리자: 작성자/검토자/승인자 전체 회원 표시
-   - 일반 사용자: 작성자는 로그인 본인만 표시
-   - 일반 사용자: 검토자/승인자는 화면에 항상 '-' 표시, 이름을 미리 노출하지 않음
-   - 단, 저장/검토/승인 시 현재 로그인 사용자가 작성자 직급별 권한자이면 내부 payload에는 로그인 사용자 정보가 들어감
-   - 작성자 사원~과장: 검토/승인 = 부장 이상
-   - 작성자 부장: 검토/승인 = 이사 이상
-   - 작성자 이사/상무: 검토 없음, 승인 = 전무 이상
-*/
+/* QMS FINAL OVERRIDE: 관리자 전체회원 선택 + 직급별 작성/검토/승인 권한 규칙 최종 적용 v20260522-3 */
 (function(){
   'use strict';
   const TYPES = ['iqc','pqc','oqc','nc','training'];
   const ROLES = ['writer','reviewer','approver'];
   const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const DEPT_MANAGER_WORDS = ['부장'];
   const DIRECTOR_WORDS = ['이사','상무','전무','임원','대표이사','대표','사장','회장'];
   const EXECUTIVE_WORDS = ['전무','대표이사','대표','사장','회장'];
+  const LOW_WORDS = ['사원','주임','대리','과장','연구원'];
   const $ = id => document.getElementById(id);
   const txt = v => String(v == null ? '' : v).trim();
   const esc = v => txt(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
@@ -8218,13 +8242,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     });
     return arr;
   }
-  function isAdmin(u){
-    const s = `${u?.id || ''} ${u?.name || ''} ${u?.email || ''} ${u?.role || ''} ${u?.title || ''}`.toLowerCase();
-    return s.includes('admin') || s.includes('관리자');
-  }
+  function isAdmin(u){ const r = `${u?.role || ''} ${u?.title || ''}`.toLowerCase(); return r.includes('admin') || r.includes('관리자'); }
   function titleText(u){ return `${u?.title || ''} ${u?.role || ''}`; }
   function hasAny(u, words){ const s = titleText(u); return words.some(w => s.includes(w)); }
-  function isDeptManagerOrAbove(u){ return titleText(u).includes('부장') || hasAny(u, DIRECTOR_WORDS); }
+  function isDeptManager(u){ return hasAny(u, DEPT_MANAGER_WORDS); }
   function isDirectorOrAbove(u){ return hasAny(u, DIRECTOR_WORDS); }
   function isExecutiveOrAbove(u){ return hasAny(u, EXECUTIVE_WORDS); }
   function writerLevel(u){
@@ -8237,7 +8258,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function userLabel(u){ u = norm(u) || {}; return `${u.name || '-'} / ${u.title || u.department || '-'}`; }
   function emptyUser(){ return {id:'', name:'', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
-  function noneUser(){ return {id:'-', name:'-', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
+  function noneUser(){ return {id:'', name:'-', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
   function sigStore(type, role){
     window.__qmsFinalSignStore = window.__qmsFinalSignStore || {};
     const k = `${type}:${role}`;
@@ -8263,35 +8284,72 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const fallback = txt(o && o.textContent).replace(/\s*\/\s*.*$/,'');
     return {id:sel.value, name:txt(o?.dataset?.name || fallback), title:txt(o?.dataset?.title || ''), department:txt(o?.dataset?.department || ''), email:txt(o?.dataset?.email || ''), role:txt(o?.dataset?.role || '')};
   }
-  function canActByWriter(role, writer, user){
+  function eligibleListByWriter(type, role, writer){
     const lv = writerLevel(writer || currentUser());
-    if(!user || !user.name || user.name === '-') return false;
+    const users = allUsers();
+    // 작성자 직급별 결재 규칙
+    // 사원~과장: 검토자=부장 이상, 승인자=부장 이상
+    // 부장: 검토자=이사 이상, 승인자=이사 이상
+    // 이사/상무: 검토자='-', 승인자=전무 이상
+    // 전무 이상: 검토자='-', 승인자='-'
+    const deptManagerOrAbove = users.filter(u => isDeptManager(u) || isDirectorOrAbove(u));
     if(role === 'reviewer'){
-      if(lv <= 1) return isDeptManagerOrAbove(user); // 사원~과장 작성: 부장 이상 검토
-      if(lv === 2) return isDirectorOrAbove(user);  // 부장 작성: 이사 이상 검토
-      return false;                                  // 이사 이상 작성: 검토 없음
+      if(lv <= 1) return deptManagerOrAbove;
+      if(lv === 2) return users.filter(isDirectorOrAbove);
+      return [noneUser()];
     }
     if(role === 'approver'){
-      if(lv <= 1) return isDeptManagerOrAbove(user); // 사원~과장 작성: 부장 이상 승인
-      if(lv === 2) return isDirectorOrAbove(user);   // 부장 작성: 이사 이상 승인
-      if(lv === 3 || lv === 4) return isExecutiveOrAbove(user); // 이사/상무 작성: 전무 이상 승인
-      return false;                                  // 전무 이상 작성: 승인 생략
+      if(lv <= 1) return deptManagerOrAbove;
+      if(lv === 2) return users.filter(isDirectorOrAbove);
+      if(lv === 3 || lv === 4) return users.filter(isExecutiveOrAbove);
+      return [noneUser()];
     }
-    return false;
+    return [];
   }
   function roleList(type, role, editRecord){
     const me = currentUser();
-    if(isAdmin(me)) return allUsers();
-    if(role === 'writer'){
-      if(editRecord){
-        const saved = normalizeSaved(editRecord.signWriter || editRecord.writer);
-        return saved && saved.name && saved.name !== '-' ? [saved] : (me ? [me] : []);
+    if(editRecord){
+      const map = {writer:editRecord.signWriter || editRecord.writer, reviewer:editRecord.signReviewer || editRecord.reviewer, approver:editRecord.signApprover || editRecord.approver};
+      const saved = normalizeSaved(map[role]);
+
+      // 관리자 계정은 작성자/검토자/승인자 모든 칸에서 전체 회원을 선택할 수 있다.
+      // 기존 저장값이 있으면 목록 첫 번째에 우선 배치하고, 나머지 회원도 모두 표시한다.
+      if(isAdmin(me)){
+        const list = [];
+        if(saved && saved.name && saved.name !== '-') addUnique(list, saved);
+        allUsers().forEach(u => addUnique(list, u));
+        return list.length ? list : (saved ? [saved] : []);
       }
-      return me ? [me] : [];
+
+      if(role === 'writer') return saved && saved.name && saved.name !== '-' ? [saved] : [];
+      if(saved && saved.name && saved.name !== '-') return [saved];
+
+      // 기존 문서를 검토/승인할 때, 빈칸('-')이면 로그인 사용자가 권한자인지 다시 계산한다.
+      // 그래야 부장 작성 문서를 이사 로그인 후 승인할 수 있다.
+      const writer = normalizeSaved(map.writer) || me;
+      let list = eligibleListByWriter(type, role, writer);
+      if(role === 'approver'){
+        const k = keyOf(me);
+        // 승인권한자가 로그인한 경우 본인을 우선 표시한다.
+        if(k && list.some(u => keyOf(u) === k || (me?.name && u.name === me.name))){
+          list = [me].concat(list.filter(u => !(keyOf(u) === k || (me?.name && u.name === me.name))));
+        }
+      }
+      if(role === 'reviewer'){
+        const k = keyOf(me);
+        if(k && list.some(u => keyOf(u) === k || (me?.name && u.name === me.name))){
+          list = [me].concat(list.filter(u => !(keyOf(u) === k || (me?.name && u.name === me.name))));
+        }
+      }
+      return list.length ? list : [noneUser()];
     }
-    // 일반 사용자는 검토자/승인자 이름을 절대 미리 표시하지 않는다.
-    // 권한자 로그인 여부와 관계없이 화면은 '-' 하나만 표시한다.
-    return [noneUser()];
+    // 관리자 계정은 신규 작성 시에도 작성자/검토자/승인자 전체 회원 표시
+    if(isAdmin(me)) return allUsers();
+    if(role === 'writer') return me ? [me] : [];
+
+    let writer = selected(type,'writer');
+    if(!writer || !writer.name) writer = me;
+    return eligibleListByWriter(type, role, writer);
   }
   function fileBlock(type,role){
     return `<div class="sign-file-wrap">
@@ -8302,17 +8360,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <button type="button" class="sign-clear-btn" data-qms-final-clear="${type}:${role}">서명 지우기</button>
       </div></div></div>`;
   }
-  function helpText(role){
-    if(role === 'writer') return '일반 사용자는 로그인 본인 고정, 관리자는 전체 회원 선택 가능.';
-    return '신규 작성 시 일반 사용자는 - 표시. 저장 후 해당 권한자 로그인 시 본인 검토/승인 가능. 관리자는 전체 회원 선택 가능.';
-  }
   function renderRole(type, role, list, disabled){
     const ph = role === 'writer' ? '-- 작성자 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
+    const help = role === 'writer' ? '일반 사용자는 로그인 본인 고정, 관리자는 전체 회원 선택 가능.' : '관리자는 전체 회원 선택 가능. 일반 사용자는 사원~과장=부장 이상, 부장=이사 이상, 이사/상무=승인 전무 이상 규칙 적용.';
     return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
       <select class="sign-sel" id="sg_${type}_${role}" ${disabled ? 'disabled' : ''}>${opts(list, ph)}</select>
       <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
       ${fileBlock(type,role)}
-      <div class="sign-sub" style="color:var(--t3);margin-top:6px;">${esc(helpText(role))}</div>
+      <div class="sign-sub" style="color:var(--t3);margin-top:6px;">${esc(help)}</div>
     </div></div>`;
   }
   function setPreview(type,role){
@@ -8325,7 +8380,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function refreshSub(type,role){
     const u = selected(type,role);
     const sub = $(`sg_${type}_${role}_sub`);
-    if(sub) sub.textContent = u.name ? (u.name === '-' ? '-' : `${u.department || ''} ${u.title || ''}`.trim()) : '선택 후 서명 첨부';
+    if(sub) sub.textContent = u.name ? `${u.department || ''} ${u.title || ''}`.trim() : '선택 후 서명 첨부';
     setPreview(type,role);
   }
   function build(type, editRecord){
@@ -8334,15 +8389,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     window.__qmsEditSignRecord = window.__qmsEditSignRecord || {};
     if(editRecord) window.__qmsEditSignRecord[type] = editRecord;
     const rec = editRecord || null;
-    const me = currentUser();
-    const adminMode = isAdmin(me);
     grid.innerHTML = ROLES.map(role => {
       const list = roleList(type,role,rec);
-      const fixedDash = !adminMode && role !== 'writer' && list.length === 1 && list[0].name === '-';
+      const me = currentUser();
+      const adminMode = isAdmin(me);
       const hasSaved = !!rec && list.length === 1 && list[0].name && list[0].name !== '-' && role !== 'writer';
-      // 일반 사용자의 검토자/승인자 선택칸은 항상 '-'로 고정한다.
-      // 실제 권한자 검토/승인은 getSignPayload에서 로그인 사용자를 내부 반영한다.
-      const disabled = adminMode ? false : (role === 'writer' || hasSaved || fixedDash);
+      // 관리자는 모든 결재칸 선택 가능, 일반 사용자는 작성자 고정 및 저장된 결재자 잠금
+      const disabled = adminMode ? false : (role === 'writer' || hasSaved);
       return renderRole(type, role, list, disabled);
     }).join('');
     ROLES.forEach(role => {
@@ -8362,10 +8415,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(rec) return;
     ['reviewer','approver'].forEach(role => {
       const sel = $(`sg_${type}_${role}`); if(!sel) return;
-      const list = roleList(type,role,null);
-      sel.innerHTML = opts(list, `-- ${ROLE_LABEL[role]} 선택 --`);
-      if(list.length) sel.value = list[0].id || list[0].name || '';
-      sel.disabled = !isAdmin(currentUser());
+      sel.innerHTML = opts(roleList(type,role,null), `-- ${ROLE_LABEL[role]} 선택 --`);
       refreshSub(type,role);
     });
   }
@@ -8377,23 +8427,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   window.clearSignaturePad = function(type,role){ const st=sigStore(type,role); st.signImage=''; st.signDate=''; const f=$(`sg_${type}_${role}_file`); if(f) f.value=''; refreshSub(type,role); };
   window.getSignPayload = function(type){
     const out = {};
-    const me = currentUser();
-    const adminMode = isAdmin(me);
-    const rec = window.__qmsEditSignRecord && window.__qmsEditSignRecord[type];
-    ROLES.forEach(role => {
-      const sig = window.signature데이터(type,role);
-      out[role] = {...selected(type,role), ...sig};
-      if(role !== 'writer'){
-        const map = rec ? {writer:rec.signWriter || rec.writer, reviewer:rec.signReviewer || rec.reviewer, approver:rec.signApprover || rec.approver} : null;
-        const writer = (map && normalizeSaved(map.writer)) || out.writer || me;
-        // 일반 사용자는 화면상 '-'를 유지하지만, 권한자가 서명/검토/승인을 실행한 경우 내부 저장값은 로그인 사용자로 기록한다.
-        // 권한이 없으면 '-' 그대로 저장되어 검토/승인 처리되지 않는다.
-        if(!adminMode && out[role].name === '-' && canActByWriter(role, writer, me) && (sig.signImage || sig.signDate)){
-          out[role] = {...me, ...sig};
-        }
-        if(!out[role].name) out[role] = noneUser();
-      }
-    });
+    ROLES.forEach(role => { out[role] = {...selected(type,role), ...window.signature데이터(type,role)}; if(!out[role].name && role !== 'writer') out[role] = noneUser(); });
     return {writer:out.writer, reviewer:out.reviewer, approver:out.approver};
   };
   document.addEventListener('change', function(e){
@@ -8418,6 +8452,253 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }, true);
   window.qmsRefreshSignatures = function(){ TYPES.forEach(t => { if($(`signGrid_${t}`)) build(t, null); }); };
   window.addEventListener('load', function(){ setTimeout(window.qmsRefreshSignatures, 500); });
+})();
+</script>
+
+
+<script>
+/* ==========================================================================
+   QMS ADMIN ALL-MEMBER SIGN SELECT FINAL FIX v3
+   - 관리자 판별: role/title 뿐 아니라 name/email/id/권한 필드까지 확인
+   - 관리자 로그인 시 작성자/검토자/승인자 셀렉트에 전체 회원 강제 표시
+   - 기존 buildSignGrid / restoreSign / refresh 함수가 다시 덮어써도 후처리로 복구
+========================================================================== */
+(function(){
+  'use strict';
+  const ROLES = ['writer','reviewer','approver'];
+  const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const $ = id => document.getElementById(id);
+  const txt = v => String(v == null ? '' : v).trim();
+  const esc = v => txt(v)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#39;");
+
+  function appState(){
+    try { return window.state || state || {}; }
+    catch(e){ return window.state || {}; }
+  }
+
+  function norm(u){
+    if(!u) return null;
+    const email = txt(u.email || u.mail || '');
+    const name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || u.label || email || '');
+    const id = txt(u.id || u.userId || u.uid || email || name);
+    if(!id && !name && !email) return null;
+    return {
+      id: id || email || name,
+      name: name || email || id,
+      department: txt(u.department || u.dept || u.team || u.org || u.departmentName || u.deptName || ''),
+      title: txt(u.title || u.position || u.rank || u.jobTitle || ''),
+      email,
+      role: txt(u.role || u.userRole || u.permission || u.auth || u.authority || u.grade || ''),
+      status: txt(u.status || u.approvalStatus || 'APPROVED')
+    };
+  }
+
+  function currentUser(){
+    const s = appState();
+    return norm(s.currentUser || window.currentUser || null);
+  }
+
+  function isAdminUser(u){
+    u = norm(u);
+    if(!u) return false;
+    const blob = [
+      u.id, u.name, u.email, u.role, u.title,
+      u.permission, u.auth, u.authority, u.grade
+    ].map(x => txt(x).toLowerCase()).join(' ');
+    return (
+      blob.includes('admin') ||
+      blob.includes('관리자') ||
+      blob.includes('administrator') ||
+      u.email === 'admin@namochemical.com'
+    );
+  }
+
+  function isCurrentAdmin(){
+    const s = appState();
+    const u = currentUser();
+    if(s.currentUser && (
+      s.currentUser.isAdmin === true ||
+      s.currentUser.admin === true ||
+      s.currentUser.is_admin === true
+    )) return true;
+    return isAdminUser(u);
+  }
+
+  function keyOf(u){
+    u = norm(u);
+    return txt(u && (u.id || u.email || u.name));
+  }
+
+  function addUnique(arr, u){
+    u = norm(u);
+    const k = keyOf(u);
+    if(!k) return;
+    if(String(u.status || '').toUpperCase() === 'REJECTED') return;
+    if(!arr.some(x => keyOf(x) === k || (u.email && x.email === u.email) || (u.name && x.name === u.name))){
+      arr.push(u);
+    }
+  }
+
+  function allMembers(){
+    const s = appState();
+    const arr = [];
+    const keys = [
+      'signableUsers','adminUsers','users','members','memberList','userList',
+      'employees','employeeList','empList'
+    ];
+    keys.forEach(k => {
+      if(Array.isArray(s[k])) s[k].forEach(u => addUnique(arr, u));
+      if(Array.isArray(window[k])) window[k].forEach(u => addUnique(arr, u));
+    });
+    addUnique(arr, currentUser());
+    return arr;
+  }
+
+  function optionHtml(users, placeholder){
+    return `<option value="">${esc(placeholder)}</option>` + users.map(u => {
+      const label = `${u.name || u.email || '사용자'} / ${u.title || u.department || '-'}`;
+      return `<option value="${esc(u.id || u.email || u.name)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(label)}</option>`;
+    }).join('');
+  }
+
+  function selectedValue(sel){
+    if(!sel) return '';
+    return sel.value || sel.getAttribute('data-qms-admin-prev') || '';
+  }
+
+  function enhanceOneSelect(type, role, users){
+    const sel = $(`sg_${type}_${role}`);
+    if(!sel) return;
+    const me = currentUser();
+    const before = selectedValue(sel);
+    const wanted = before || (role === 'writer' && me ? (me.id || me.email || me.name) : '');
+    sel.setAttribute('data-qms-admin-prev', wanted || '');
+    sel.disabled = false;
+    sel.innerHTML = optionHtml(users, `-- ${ROLE_LABEL[role]} 선택 --`);
+    if(wanted && !Array.from(sel.options).some(o => String(o.value) === String(wanted))){
+      const u = role === 'writer' && me ? me : {id:wanted, name:wanted, title:'', department:'', email:''};
+      const opt = new Option(`${u.name || wanted} / ${u.title || u.department || '-'}`, wanted);
+      opt.dataset.name = u.name || wanted;
+      opt.dataset.title = u.title || '';
+      opt.dataset.department = u.department || '';
+      opt.dataset.email = u.email || '';
+      sel.add(opt, 1);
+    }
+    if(wanted) sel.value = wanted;
+    const sub = $(`sg_${type}_${role}_sub`);
+    if(sub){
+      const opt = sel.options[sel.selectedIndex];
+      sub.textContent = opt && sel.value ? `${opt.dataset.department || ''} ${opt.dataset.title || ''}`.trim() : '관리자: 전체 회원 선택 가능';
+    }
+  }
+
+  function getTypes(){
+    const ids = Array.from(document.querySelectorAll('[id^="signGrid_"]'))
+      .map(el => el.id.replace(/^signGrid_/, ''))
+      .filter(Boolean);
+    return Array.from(new Set(ids.length ? ids : ['iqc','pqc','oqc','training']));
+  }
+
+  function patchAdminAllMembers(){
+    if(!isCurrentAdmin()) return false;
+    const users = allMembers();
+    if(!users.length) return false;
+    getTypes().forEach(type => {
+      ROLES.forEach(role => enhanceOneSelect(type, role, users));
+    });
+    return true;
+  }
+
+  function requestMemberReloadThenPatch(){
+    if(!isCurrentAdmin()) return;
+    const jobs = [];
+    try {
+      if(typeof window.loadAdminUsers === 'function') jobs.push(Promise.resolve(window.loadAdminUsers()));
+    } catch(e){}
+    try {
+      if(typeof window.loadSignableUsers === 'function') jobs.push(Promise.resolve(window.loadSignableUsers()));
+    } catch(e){}
+    if(jobs.length){
+      Promise.allSettled(jobs).then(() => setTimeout(patchAdminAllMembers, 80));
+    }
+  }
+
+  function wrap(name){
+    const old = window[name];
+    if(typeof old !== 'function' || old.__qmsAdminWrapped) return;
+    const fn = function(){
+      const ret = old.apply(this, arguments);
+      setTimeout(patchAdminAllMembers, 0);
+      setTimeout(patchAdminAllMembers, 120);
+      return ret;
+    };
+    fn.__qmsAdminWrapped = true;
+    window[name] = fn;
+  }
+
+  ['buildSignGrid','restoreSign','qmsRefreshSignatures','rebuildAllSignGrids','applyAllSignPermissions','applySignPermissions'].forEach(wrap);
+
+  document.addEventListener('change', function(e){
+    const sel = e.target && e.target.closest && e.target.closest('.sign-sel');
+    if(sel && isCurrentAdmin()){
+      sel.setAttribute('data-qms-admin-prev', sel.value || '');
+      setTimeout(patchAdminAllMembers, 0);
+    }
+  }, true);
+
+  window.qmsAdminPatchAllMemberSignSelects = function(){
+    const ok = patchAdminAllMembers();
+    if(!ok) requestMemberReloadThenPatch();
+    return ok;
+  };
+
+  window.addEventListener('load', function(){
+    requestMemberReloadThenPatch();
+    let n = 0;
+    const timer = setInterval(function(){
+      n += 1;
+      patchAdminAllMembers();
+      if(n >= 20) clearInterval(timer);
+    }, 300);
+  });
+
+  setTimeout(function(){
+    requestMemberReloadThenPatch();
+    patchAdminAllMembers();
+  }, 50);
+})();
+</script>
+
+
+<script>
+/* 작업지시서 5. 작성/검토/승인 결재선 최종 보강 */
+(function(){
+  function initWorkorderApproval(){
+    const grid = document.getElementById('signGrid_workorder');
+    if(!grid) return;
+    try{
+      if(typeof window.buildSignGrid === 'function' && (!grid.dataset.finalSignReady || !grid.querySelector('.sign-box'))){
+        window.buildSignGrid('workorder');
+      }
+      if(typeof window.applySignPermissions === 'function') window.applySignPermissions('workorder');
+    }catch(e){ console.warn('[workorder] approval init failed', e); }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    initWorkorderApproval();
+    [200,800,1600,2800].forEach(function(ms){ setTimeout(initWorkorderApproval, ms); });
+  });
+  document.addEventListener('click', function(e){
+    if(e.target && (e.target.closest('[data-page="workorder-final"]') || e.target.closest('[data-page-target="workorder-final"]'))){
+      setTimeout(initWorkorderApproval, 100);
+      setTimeout(initWorkorderApproval, 500);
+    }
+  }, true);
+  window.nmcInitWorkorderApproval = initWorkorderApproval;
 })();
 </script>
 
