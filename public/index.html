@@ -8177,7 +8177,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 <script>
-/* QMS FINAL OVERRIDE: 직급별 작성/검토/승인 권한 규칙 최종 적용 v20260522 */
+/* QMS FINAL OVERRIDE: 관리자 전체회원 선택 + 직급별 작성/검토/승인 권한 규칙 최종 적용 v20260522-3 */
 (function(){
   'use strict';
   const TYPES = ['iqc','pqc','oqc','nc','training'];
@@ -8254,21 +8254,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const fallback = txt(o && o.textContent).replace(/\s*\/\s*.*$/,'');
     return {id:sel.value, name:txt(o?.dataset?.name || fallback), title:txt(o?.dataset?.title || ''), department:txt(o?.dataset?.department || ''), email:txt(o?.dataset?.email || ''), role:txt(o?.dataset?.role || '')};
   }
-  function roleList(type, role, editRecord){
-    if(editRecord){
-      const map = {writer:editRecord.signWriter || editRecord.writer, reviewer:editRecord.signReviewer || editRecord.reviewer, approver:editRecord.signApprover || editRecord.approver};
-      const saved = normalizeSaved(map[role]);
-      if(saved && saved.name && saved.name !== '-') return [saved];
-      return role === 'writer' ? [] : [noneUser()];
-    }
-    const me = currentUser();
-    if(role === 'writer') return isAdmin(me) ? allUsers() : (me ? [me] : []);
-
-    let writer = selected(type,'writer');
-    if(!writer || !writer.name) writer = me;
-    const lv = writerLevel(writer);
+  function eligibleListByWriter(type, role, writer){
+    const lv = writerLevel(writer || currentUser());
     const users = allUsers();
-
     // 작성자 직급별 결재 규칙
     // 사원~과장: 검토자=부장, 승인자=부장
     // 부장: 검토자='-', 승인자=이사 이상
@@ -8286,6 +8274,51 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     return [];
   }
+  function roleList(type, role, editRecord){
+    const me = currentUser();
+    if(editRecord){
+      const map = {writer:editRecord.signWriter || editRecord.writer, reviewer:editRecord.signReviewer || editRecord.reviewer, approver:editRecord.signApprover || editRecord.approver};
+      const saved = normalizeSaved(map[role]);
+
+      // 관리자 계정은 작성자/검토자/승인자 모든 칸에서 전체 회원을 선택할 수 있다.
+      // 기존 저장값이 있으면 목록 첫 번째에 우선 배치하고, 나머지 회원도 모두 표시한다.
+      if(isAdmin(me)){
+        const list = [];
+        if(saved && saved.name && saved.name !== '-') addUnique(list, saved);
+        allUsers().forEach(u => addUnique(list, u));
+        return list.length ? list : (saved ? [saved] : []);
+      }
+
+      if(role === 'writer') return saved && saved.name && saved.name !== '-' ? [saved] : [];
+      if(saved && saved.name && saved.name !== '-') return [saved];
+
+      // 기존 문서를 검토/승인할 때, 빈칸('-')이면 로그인 사용자가 권한자인지 다시 계산한다.
+      // 그래야 부장 작성 문서를 이사 로그인 후 승인할 수 있다.
+      const writer = normalizeSaved(map.writer) || me;
+      let list = eligibleListByWriter(type, role, writer);
+      if(role === 'approver'){
+        const k = keyOf(me);
+        // 승인권한자가 로그인한 경우 본인을 우선 표시한다.
+        if(k && list.some(u => keyOf(u) === k || (me?.name && u.name === me.name))){
+          list = [me].concat(list.filter(u => !(keyOf(u) === k || (me?.name && u.name === me.name))));
+        }
+      }
+      if(role === 'reviewer'){
+        const k = keyOf(me);
+        if(k && list.some(u => keyOf(u) === k || (me?.name && u.name === me.name))){
+          list = [me].concat(list.filter(u => !(keyOf(u) === k || (me?.name && u.name === me.name))));
+        }
+      }
+      return list.length ? list : [noneUser()];
+    }
+    // 관리자 계정은 신규 작성 시에도 작성자/검토자/승인자 전체 회원 표시
+    if(isAdmin(me)) return allUsers();
+    if(role === 'writer') return me ? [me] : [];
+
+    let writer = selected(type,'writer');
+    if(!writer || !writer.name) writer = me;
+    return eligibleListByWriter(type, role, writer);
+  }
   function fileBlock(type,role){
     return `<div class="sign-file-wrap">
       <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
@@ -8297,7 +8330,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function renderRole(type, role, list, disabled){
     const ph = role === 'writer' ? '-- 작성자 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
-    const help = role === 'writer' ? '작성자는 로그인 본인으로 고정됩니다.' : '사원~과장 작성 시 부장, 부장 작성 시 이사 이상, 이사/상무 작성 시 전무 이상만 선택됩니다.';
+    const help = role === 'writer' ? '일반 사용자는 로그인 본인 고정, 관리자는 전체 회원 선택 가능.' : '관리자는 전체 회원 선택 가능. 일반 사용자는 사원~과장=부장, 부장=이사 이상, 이사/상무=전무 이상 규칙 적용.';
     return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
       <select class="sign-sel" id="sg_${type}_${role}" ${disabled ? 'disabled' : ''}>${opts(list, ph)}</select>
       <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
@@ -8325,8 +8358,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(editRecord) window.__qmsEditSignRecord[type] = editRecord;
     const rec = editRecord || null;
     grid.innerHTML = ROLES.map(role => {
-      const disabled = !!rec || role === 'writer';
-      return renderRole(type, role, roleList(type,role,rec), disabled);
+      const list = roleList(type,role,rec);
+      const me = currentUser();
+      const adminMode = isAdmin(me);
+      const hasSaved = !!rec && list.length === 1 && list[0].name && list[0].name !== '-' && role !== 'writer';
+      // 관리자는 모든 결재칸 선택 가능, 일반 사용자는 작성자 고정 및 저장된 결재자 잠금
+      const disabled = adminMode ? false : (role === 'writer' || hasSaved);
+      return renderRole(type, role, list, disabled);
     }).join('');
     ROLES.forEach(role => {
       const sel = $(`sg_${type}_${role}`);
