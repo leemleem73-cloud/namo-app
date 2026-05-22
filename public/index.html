@@ -3188,187 +3188,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '<script id="nmc-workorder-sendinfo-member-sync-force-patch">
-(function(){
-  'use strict';
-  if(window.__nmcSendInfoMemberSyncForcePatch) return;
-  window.__nmcSendInfoMemberSyncForcePatch = true;
-
-  const DEFAULT_MEMBERS = [
-    {name:'박현아', email:'hapark@namochemical.com', department:'품질', title:'사원', status:'APPROVED'},
-    {name:'박지현', email:'jhp1767@namochemical.com', department:'연구소', title:'연구원', status:'APPROVED'},
-    {name:'박도훈', email:'dhbak@namochemical.com', department:'생산부', title:'대리', status:'APPROVED'},
-    {name:'김현진', email:'hyunjinkim@namochemical.com', department:'영업부', title:'과장', status:'APPROVED'},
-    {name:'황동준', email:'djhwang@namochemical.com', department:'품질부', title:'부장', status:'APPROVED'},
-    {name:'정명기', email:'ygjeong@namochemical.com', department:'연구원', title:'임원', status:'APPROVED'},
-    {name:'김세희', email:'shkim@namochemical.com', department:'연구원', title:'임원', status:'APPROVED'},
-    {name:'임흥배', email:'hbleem@namochemical.com', department:'품질', title:'부장', status:'APPROVED'},
-    {name:'관리자', email:'admin@namochemical.com', department:'관리부', title:'관리자', status:'APPROVED'}
-  ];
-
-  const $ = id => document.getElementById(id);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
-  const clean = v => String(v ?? '').trim();
-  const keyOf = u => (clean(u.email).toLowerCase() || clean(u.id) || `${clean(u.name)}|${clean(u.department)}`);
-  const nameOf = u => clean(u.name || u.username || u.displayName || u.userName || u.empName || u.employeeName || (u.email ? String(u.email).split('@')[0] : ''));
-  const deptOf = u => clean(u.department || u.dept || u.departmentName || u.deptName || u.team || u.part || '');
-  const titleOf = u => clean(u.title || u.position || u.jobTitle || u.rank || '');
-  const isActive = u => !['REJECTED','INACTIVE','퇴사'].includes(clean(u.status || u.approvalStatus || 'APPROVED').toUpperCase());
-
-  function normalize(u){
-    if(!u) return null;
-    const name = nameOf(u), dept = deptOf(u), email = clean(u.email || u.mail), title = titleOf(u);
-    if(!name && !email && !dept) return null;
-    return {id: clean(u.id || u.userId || email || name), name: name || email.split('@')[0], email, department: dept, title, status: clean(u.status || u.approvalStatus || 'APPROVED'), role: clean(u.role)};
-  }
-
-  function rowsFromAdminTable(){
-    const rows = [];
-    const table = $('userTable');
-    if(!table) return rows;
-    table.querySelectorAll('tr').forEach(tr => {
-      const td = tr.querySelectorAll('td');
-      if(td.length < 4) return;
-      const name = clean(td[0].innerText);
-      const email = clean(td[1].innerText);
-      const department = clean(td[2].innerText);
-      let title = clean(td[3].innerText).replace(/검토\/승인 가능/g,'').trim();
-      const status = clean(td[5]?.innerText || 'APPROVED');
-      if(name && !/데이터 없음/.test(name)) rows.push({name,email,department,title,status});
-    });
-    return rows;
-  }
-
-  function stateObj(){
-    try { return (typeof state !== 'undefined' && state) ? state : (window.state || {}); }
-    catch(e){ return window.state || {}; }
-  }
-
-  function currentRaw(){
-    const s = stateObj();
-    return s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
-  }
-
-  function allMembers(){
-    const s = stateObj();
-    const list = [];
-    ['adminUsers','signableUsers','users','members','userList','memberList','employeeList','empList'].forEach(k => {
-      if(Array.isArray(s[k])) list.push(...s[k]);
-      if(Array.isArray(window[k])) list.push(...window[k]);
-    });
-    if(s.currentUser) list.push(s.currentUser);
-    list.push(...rowsFromAdminTable());
-    list.push(...DEFAULT_MEMBERS);
-
-    const map = new Map();
-    list.map(normalize).filter(Boolean).filter(isActive).forEach(u => {
-      const k = keyOf(u);
-      const old = map.get(k) || {};
-      map.set(k, {...old, ...u, department: u.department || old.department || '', title: u.title || old.title || ''});
-    });
-    return Array.from(map.values()).sort((a,b) =>
-      clean(a.department).localeCompare(clean(b.department),'ko') || clean(a.name).localeCompare(clean(b.name),'ko')
-    );
-  }
-
-  function sameUser(a,b){
-    if(!a || !b) return false;
-    const ae = clean(a.email).toLowerCase(), be = clean(b.email).toLowerCase();
-    if(ae && be && ae === be) return true;
-    if(clean(a.id) && clean(b.id) && clean(a.id) === clean(b.id)) return true;
-    return clean(a.name) && clean(a.name) === clean(b.name);
-  }
-
-  function loginMember(){
-    const cur = normalize(currentRaw());
-    const members = allMembers();
-    const matched = members.find(m => sameUser(m, cur));
-    return matched || cur || DEFAULT_MEMBERS.find(m => m.name === '임흥배') || {name:'로그인 사용자', department:'', title:''};
-  }
-
-  function optionText(u){
-    const name = clean(u.name) || clean(u.email) || '사용자';
-    const dept = clean(u.department) || '-';
-    const title = clean(u.title);
-    return `${name} (${dept})${title ? ' / ' + title : ''}`;
-  }
-
-  function fillSelect(sel, users, keepSelection){
-    if(!sel || sel.tagName !== 'SELECT') return;
-    const selected = new Set(Array.from(sel.selectedOptions).map(o => o.value));
-    const nextKey = users.map(u => `${keyOf(u)}:${optionText(u)}`).join('|');
-    if(sel.dataset.nmcMemberKey === nextKey && sel.options.length === users.length) return;
-    sel.dataset.nmcMemberKey = nextKey;
-    sel.innerHTML = '';
-    users.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = keyOf(u);
-      opt.textContent = optionText(u);
-      opt.dataset.name = clean(u.name);
-      opt.dataset.department = clean(u.department);
-      opt.dataset.email = clean(u.email);
-      opt.dataset.title = clean(u.title);
-      if(keepSelection && selected.has(opt.value)) opt.selected = true;
-      sel.appendChild(opt);
-    });
-    if(sel.multiple && !keepSelection) sel.selectedIndex = -1;
-  }
-
-  function syncSendInfoForce(){
-    const members = allMembers();
-    const me = loginMember();
-    const targets = members.filter(u => !sameUser(u, me));
-
-    $$('#nmcSenderName').forEach(sel => {
-      fillSelect(sel, [me], true);
-      if(sel.options.length) sel.options[0].selected = true;
-    });
-    $$('#nmcRecvDept').forEach(sel => fillSelect(sel, targets, true));
-    $$('#nmcRefDept').forEach(sel => fillSelect(sel, targets, true));
-    $$('#nmcSendTime').forEach(inp => { if(!inp.value) inp.value = new Date().toLocaleString('ko-KR'); });
-  }
-
-  async function fetchAdminMembersOnce(){
-    try{
-      const res = await fetch('/api/admin/users', {credentials:'include', headers:{'Content-Type':'application/json'}});
-      const data = await res.json().catch(() => null);
-      if(data && Array.isArray(data.data)){
-        const s = stateObj();
-        s.adminUsers = data.data;
-        s.signableUsers = data.data;
-        window.adminUsers = data.data;
-        syncSendInfoForce();
-      }
-    }catch(e){
-      // API 접근 권한이 없거나 오프라인이면 기본 회원목록/화면 회원목록으로 동작
-    }
-  }
-
-  window.syncWorkOrderSendInfo = syncSendInfoForce;
-  window.nmcForceMemberSendInfoSync = syncSendInfoForce;
-
-  function boot(){
-    syncSendInfoForce();
-    fetchAdminMembersOnce();
-    setTimeout(syncSendInfoForce, 300);
-    setTimeout(syncSendInfoForce, 1000);
-    document.addEventListener('click', e => {
-      if(e.target.closest('[data-page="workorder-final"], #usersNavBtn, [data-action="editUser"], [data-action="deleteUser"], #userSave, #userReset')) setTimeout(syncSendInfoForce, 300);
-    }, true);
-    document.addEventListener('focusin', e => {
-      if(e.target && ['nmcRecvDept','nmcRefDept','nmcSenderName'].includes(e.target.id)) syncSendInfoForce();
-    });
-    setInterval(() => {
-      if(document.getElementById('page-workorder-final')?.classList.contains('active')) syncSendInfoForce();
-    }, 1500);
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-})();
-</script>
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -7178,68 +6998,105 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   async function populateManualSendTargets(){
-    // API에서 직접 회원 목록을 가져옴
     let userList = [];
-    try {
-      const {res, data} = await api('/api/admin/users');
-      if(res.ok && data?.data) {
-        userList = data.data.filter(u =>
-          String(u.status || '').toUpperCase() === 'APPROVED'
+
+    /* 관리자 로그인 > 회원등록현황 API 직접 조회 */
+    try{
+      const res = await fetch('/api/admin/users', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      const data = await res.json().catch(()=>({}));
+      const rows = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+      if(res.ok && rows.length){
+        userList = rows.filter(u =>
+          String(u.status || u.approvalStatus || 'APPROVED').toUpperCase() === 'APPROVED'
         );
       }
-    } catch(e) {
+    }catch(e){
       console.warn('[workorder] API 회원목록 조회 실패:', e);
     }
 
-    // API 실패 시 state 폴백
-    if(!userList.length) {
+    /* API 실패 시 관리자 회원목록/state/window 폴백 */
+    if(!userList.length){
       const s = appState();
       userList = [
         ...((s && Array.isArray(s.adminUsers)) ? s.adminUsers : []),
-        ...((s && Array.isArray(s.signableUsers)) ? s.signableUsers : [])
-      ].filter(u => String(u.status || '').toUpperCase() === 'APPROVED');
+        ...((s && Array.isArray(s.signableUsers)) ? s.signableUsers : []),
+        ...((s && Array.isArray(s.users)) ? s.users : []),
+        ...((s && Array.isArray(s.members)) ? s.members : []),
+        ...((s && Array.isArray(s.userList)) ? s.userList : []),
+        ...((s && Array.isArray(s.memberList)) ? s.memberList : []),
+        ...(Array.isArray(window.adminUsers) ? window.adminUsers : []),
+        ...(Array.isArray(window.signableUsers) ? window.signableUsers : []),
+        ...(Array.isArray(window.users) ? window.users : []),
+        ...(Array.isArray(window.members) ? window.members : []),
+        ...(Array.isArray(window.userList) ? window.userList : []),
+        ...(Array.isArray(window.memberList) ? window.memberList : [])
+      ].filter(u =>
+        String(u.status || u.approvalStatus || 'APPROVED').toUpperCase() === 'APPROVED'
+      );
     }
 
-    // 중복 제거
+    userList = userList.map(normalizeWorkOrderUser).filter(Boolean);
+
+    /* 중복 제거 */
     const seen = new Set();
     userList = userList.filter(u => {
-      const key = String(u.id || u.email || u.name || '').trim();
+      const key = String(u.id || u.email || u.name || '').trim().toLowerCase();
       if(!key || seen.has(key)) return false;
       seen.add(key);
       return true;
-    });
+    }).sort((a,b)=>
+      String(a.department||'').localeCompare(String(b.department||''),'ko') ||
+      String(a.name||'').localeCompare(String(b.name||''),'ko')
+    );
 
     const appStateVal = appState();
-    const currentRaw = appStateVal?.currentUser || window.loginUser || window.userInfo || {};
+    const currentRaw =
+      appStateVal?.currentUser ||
+      window.currentUser ||
+      window.loginUser ||
+      window.userInfo ||
+      {};
     const current = normalizeWorkOrderUser(currentRaw);
 
-    /* 발송부서: 로그인 당사자 */
+    /* 발송부서: 로그인 당사자 성명 + 부서명 + 직책 */
     qsa('#nmcSenderName').forEach(sel => {
       if(sel.tagName !== 'SELECT') return;
-      const me = current || {id:'login-user', name:'로그인 사용자', department:'-'};
+      const me = current || {id:'login-user', name:'로그인 사용자', department:'-', title:''};
       setSelectOptions(sel, [me], workOrderUserOption);
       sel.value = String(me.id || me.email || me.name || '');
       if(sel.options.length) sel.options[0].selected = true;
     });
 
-    /* 수신/참조: 로그인 당사자 제외한 전체 회원 */
-    const targetUsers = userList.map(normalizeWorkOrderUser).filter(Boolean).filter(u => {
+    /* 수신/참조: 관리자 회원등록현황 전체 회원, 로그인 당사자는 제외 */
+    const targetUsers = userList.filter(u => {
       if(!current) return true;
-      const sameId = current.id && String(u.id) === String(current.id);
+      const sameId = current.id && String(u.id || '') === String(current.id || '');
       const sameEmail = current.email && String(u.email || '').toLowerCase() === String(current.email || '').toLowerCase();
-      const sameName = current.name && String(u.name) === String(current.name);
+      const sameName = current.name && String(u.name || '') === String(current.name || '');
       return !(sameId || sameEmail || sameName);
     });
 
     qsa('#nmcRecvDept').forEach(sel => {
       const before = [...(sel.selectedOptions || [])].map(o => o.value);
       setSelectOptions(sel, targetUsers, workOrderUserOption);
+      before.forEach(v=>{
+        const opt = [...sel.options].find(o=>o.value===v);
+        if(opt) opt.selected = true;
+      });
       if(!before.length) clearMultiSelection(sel);
     });
 
     qsa('#nmcRefDept').forEach(sel => {
       const before = [...(sel.selectedOptions || [])].map(o => o.value);
       setSelectOptions(sel, targetUsers, workOrderUserOption);
+      before.forEach(v=>{
+        const opt = [...sel.options].find(o=>o.value===v);
+        if(opt) opt.selected = true;
+      });
       if(!before.length) clearMultiSelection(sel);
     });
   }
