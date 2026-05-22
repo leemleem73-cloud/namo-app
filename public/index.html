@@ -7895,7 +7895,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       window.restoreSignaturePad(type,r,data);
     });
   };
-  window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); if(sel) sel.value = r === 'writer' && currentUser() ? currentUser().id : ''; window.clearSignaturePad(type,r); }); };
+  window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); const list=candidates(r); if(sel) sel.value = list.length === 1 ? list[0].id : ''; window.clearSignaturePad(type,r); }); };
 
   document.addEventListener('click', e => {
     const b = e.target.closest?.('[data-final-sign-file-btn],[data-sign-file-btn]');
@@ -7989,10 +7989,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function candidates(role){
     const me = currentUser();
-    const users = allUsers();
     if(role === 'writer') return me ? [me] : [{id:'login-user', name:'로그인 사용자', department:'', title:''}];
-    if(role === 'reviewer') return users.filter(isReviewer);
-    if(role === 'approver') return users.filter(isApprover);
+    /* 최종 결재권한 잠금: 검토/승인도 로그인 당사자만 표시한다.
+       - 검토: 로그인 사용자가 부장일 때 본인 1명만
+       - 승인: 로그인 사용자가 부장 이상일 때 본인 1명만
+       권한이 없으면 후보를 비워 다른 회원이 노출/선택되지 않게 한다. */
+    if(role === 'reviewer') return (me && isReviewer(me)) ? [me] : [];
+    if(role === 'approver') return (me && isApprover(me)) ? [me] : [];
     return [];
   }
   function prefix(type){
@@ -8014,8 +8017,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function helpText(role){
     if(role === 'writer') return '작성자는 로그인한 본인으로 고정됩니다.';
-    if(role === 'reviewer') return '검토자는 직책이 부장인 회원만 선택 가능합니다.';
-    return '승인자는 부장 이상 직책만 선택 가능합니다.';
+    if(role === 'reviewer') return '검토는 로그인한 본인이 부장일 때만 가능합니다.';
+    return '승인은 로그인한 본인이 부장 이상일 때만 가능합니다.';
   }
   function roleHtml(type, role){
     const list = candidates(role);
@@ -8102,6 +8105,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(r === 'writer' && me) value = me.id;
       sel.value = value || '';
       if(r === 'writer') sel.disabled = true;
+      if(r !== 'writer'){
+        if(!value && list.length === 1) value = list[0].id;
+        sel.value = value || '';
+        sel.disabled = true;
+        sel.title = list.length === 1 ? `${ROLE_LABEL[r]}는 로그인 당사자로 고정됩니다.` : `${ROLE_LABEL[r]} 권한이 없는 계정입니다.`;
+      }
       Object.assign(store(type,r), prev[r].sig || {});
       refreshSub(type,r);
     });
@@ -8149,7 +8158,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       window.restoreSignaturePad(type,r,data);
     });
   };
-  window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); if(sel) sel.value = r === 'writer' && currentUser() ? currentUser().id : ''; window.clearSignaturePad(type,r); }); };
+  window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); const list=candidates(r); if(sel) sel.value = list.length === 1 ? list[0].id : ''; window.clearSignaturePad(type,r); }); };
   window.qmsValidateSignRoles = function(type){
     if(!validateRole(type,'writer')){ alert('작성자는 로그인 본인만 가능합니다.'); return false; }
     if(!validateRole(type,'reviewer')){ alert('검토자는 부장 직책만 가능합니다.'); return false; }
