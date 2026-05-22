@@ -7916,5 +7916,265 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<script>
+/* QMS 작성/검토/승인 권한 규칙 최종 패치 v20260522
+   규칙: 작성=로그인 본인 / 검토=부장 / 승인=부장 이상
+*/
+(function(){
+  window.__qmsRoleRulePatchApplied = true;
+
+  const ROLES = ['writer','reviewer','approver'];
+  const TYPES = ['iqc','pqc','oqc','nc','training'];
+  const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const ROLE_TITLE = {writer:'작성자 (본인)', reviewer:'검토자 (부장)', approver:'승인자 (부장 이상)'};
+  const SENIOR_WORDS = ['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo','chief'];
+  const $ = id => document.getElementById(id);
+  const text = v => String(v ?? '').trim();
+  const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  const appState = () => { try { return window.state || state || {}; } catch(e){ return window.state || {}; } };
+
+  function norm(u){
+    if(!u) return null;
+    const email = text(u.email || u.mail || '');
+    const name = text(u.name || u.username || u.userName || u.fullName || u.displayName || email || u.label || '');
+    const id = text(u.id || u.userId || u.uid || email || name);
+    if(!id && !name) return null;
+    return {
+      id, name: name || id,
+      department: text(u.department || u.dept || u.team || u.org || ''),
+      title: text(u.title || u.position || u.rank || u.jobTitle || ''),
+      email,
+      role: text(u.role || u.userRole || ''),
+      status: text(u.status || u.approvalStatus || 'APPROVED')
+    };
+  }
+  function currentUser(){ return norm(appState().currentUser || window.currentUser || null); }
+  function approved(u){
+    const st = text(u && u.status).toUpperCase();
+    return !st || ['APPROVED','ACTIVE','Y','승인'].includes(st);
+  }
+  function addOptionUsers(arr, selector){
+    document.querySelectorAll(selector).forEach(sel => {
+      Array.from(sel.options || []).forEach(o => {
+        const raw = text(o.textContent || o.label || '');
+        if(!o.value || !raw || raw.includes('선택')) return;
+        const parts = raw.split('/').map(text);
+        arr.push(norm({id:o.value, name:parts[0] || raw, title:parts[1] || '', department:''}));
+      });
+    });
+  }
+  function allUsers(){
+    const s = appState();
+    const arr = [];
+    const me = currentUser();
+    if(me) arr.push(me);
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(k => {
+      if(Array.isArray(s[k])) arr.push(...s[k].map(norm));
+      if(Array.isArray(window[k])) arr.push(...window[k].map(norm));
+    });
+    addOptionUsers(arr, '#nmcSenderDept,#nmcRecvDept,#nmcRefDept');
+    const out = [], seen = new Set();
+    arr.filter(Boolean).filter(approved).forEach(u => {
+      const key = text(u.id || u.email || u.name);
+      if(!key || seen.has(key)) return;
+      seen.add(key); out.push(u);
+    });
+    return out;
+  }
+  function isReviewer(u){ return text(u && u.title).includes('부장'); }
+  function isApprover(u){
+    const t = `${u?.title || ''} ${u?.role || ''}`.toLowerCase();
+    return SENIOR_WORDS.some(w => t.includes(String(w).toLowerCase()));
+  }
+  function candidates(role){
+    const me = currentUser();
+    const users = allUsers();
+    if(role === 'writer') return me ? [me] : [{id:'login-user', name:'로그인 사용자', department:'', title:''}];
+    if(role === 'reviewer') return users.filter(isReviewer);
+    if(role === 'approver') return users.filter(isApprover);
+    return [];
+  }
+  function prefix(type){
+    return type === 'iqc' ? 'Iqc' : type === 'pqc' ? 'Pqc' : type === 'oqc' ? 'Oqc' : type === 'nc' ? 'Nc' : type === 'training' ? 'Training' : 'Rpt';
+  }
+  function cap(role){ return role.charAt(0).toUpperCase() + role.slice(1); }
+  function store(type, role){
+    window.__qmsRoleRuleSignStore = window.__qmsRoleRuleSignStore || {};
+    const k = `${type}:${role}`;
+    window.__qmsRoleRuleSignStore[k] = window.__qmsRoleRuleSignStore[k] || {signImage:'', signDate:''};
+    return window.__qmsRoleRuleSignStore[k];
+  }
+  function now(){
+    const d = new Date(), p = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function optionHtml(users, ph){
+    return `<option value="">${esc(ph)}</option>` + users.map(u => `<option value="${esc(u.id)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(u.name)} / ${esc(u.title || u.department || '-')}</option>`).join('');
+  }
+  function helpText(role){
+    if(role === 'writer') return '작성자는 로그인한 본인으로 고정됩니다.';
+    if(role === 'reviewer') return '검토자는 직책이 부장인 회원만 선택 가능합니다.';
+    return '승인자는 부장 이상 직책만 선택 가능합니다.';
+  }
+  function roleHtml(type, role){
+    const list = candidates(role);
+    const ph = role === 'writer' ? '-- 작성자 본인 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
+    return `<div class="sign-box" data-qms-rule-role="${role}">
+      <div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_TITLE[role])}</span></div>
+      <div class="sign-box-body">
+        <select class="sign-sel" id="sg_${type}_${role}" data-qms-rule-select="${type}:${role}">${optionHtml(list, ph)}</select>
+        <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
+        <div class="sign-file-wrap" data-sign-file-wrap="${type}:${role}">
+          <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
+          <div class="sign-file-tools">
+            <span class="sign-date" id="sg_${type}_${role}_date"></span>
+            <div>
+              <input type="file" class="sign-file-input" id="sg_${type}_${role}_file" accept="image/*" data-qms-rule-file="${type}:${role}">
+              <button type="button" class="sign-file-btn" data-qms-rule-file-btn="${type}:${role}">서명 첨부</button>
+              <button type="button" class="sign-clear-btn" data-qms-rule-clear="${type}:${role}">서명 지우기</button>
+            </div>
+          </div>
+        </div>
+        <div class="sign-sub" style="color:var(--t3);margin-top:6px;">${esc(helpText(role))}</div>
+      </div>
+    </div>`;
+  }
+  function selected(type, role){
+    const sel = $(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return {id:'', name:'', title:'', department:'', email:'', role:''};
+    const o = sel.options[sel.selectedIndex];
+    const fallback = text(o?.textContent || '').replace(/\s*\/\s*.*$/,'');
+    return {id:sel.value, name:text(o?.dataset?.name || fallback), title:text(o?.dataset?.title || ''), department:text(o?.dataset?.department || ''), email:text(o?.dataset?.email || ''), role:text(o?.dataset?.role || '')};
+  }
+  function setPreview(type, role){
+    const s = store(type, role);
+    const box = $(`sg_${type}_${role}_preview`);
+    if(box) box.innerHTML = s.signImage ? `<img src="${s.signImage}" alt="서명 이미지">` : '<span class="sign-file-empty">서명 이미지 없음</span>';
+    const date = $(`sg_${type}_${role}_date`);
+    if(date) date.textContent = s.signDate || '';
+  }
+  function syncPrint(type, role){
+    const u = selected(type, role), s = store(type, role);
+    const nameEl = $(`r${prefix(type)}${cap(role)}`);
+    const titleEl = $(`r${prefix(type)}${cap(role)}T`);
+    if(nameEl) nameEl.textContent = u.name || '-';
+    if(titleEl) titleEl.textContent = u.title || '';
+    if(nameEl){
+      const col = nameEl.closest('.rpsign-col');
+      if(col){
+        let img = col.querySelector('.rpsign-img');
+        if(!img){ img = document.createElement('img'); img.className='rpsign-img'; img.alt='전자서명'; img.style.display='none'; col.insertBefore(img, nameEl); }
+        if(s.signImage){ img.src=s.signImage; img.style.display='block'; } else { img.removeAttribute('src'); img.style.display='none'; }
+        let dt = col.querySelector('.rpsign-date');
+        if(!dt){ dt = document.createElement('div'); dt.className='rpsign-date'; dt.style.cssText='font-size:10px;color:#666;margin-top:2px;'; (titleEl || nameEl).insertAdjacentElement('afterend', dt); }
+        dt.textContent = s.signDate || '';
+      }
+    }
+  }
+  function refreshSub(type, role){
+    const u = selected(type, role);
+    const sub = $(`sg_${type}_${role}_sub`);
+    if(sub) sub.textContent = u.name ? `${u.department || ''} ${u.title || ''}`.trim() : helpText(role);
+    setPreview(type, role);
+    syncPrint(type, role);
+    try{
+      if(type === 'iqc' && typeof syncIqcPreview === 'function') syncIqcPreview();
+      if(type === 'pqc' && typeof syncPqcPreview === 'function') syncPqcPreview();
+      if(type === 'oqc' && typeof syncOqcPreview === 'function') syncOqcPreview();
+      if(type === 'training' && typeof renderTrainingPreview === 'function') renderTrainingPreview();
+    }catch(e){}
+  }
+  function build(type, keep=true){
+    const grid = $(`signGrid_${type}`);
+    if(!grid) return;
+    const prev = {};
+    ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); prev[r] = {value: sel ? sel.value : '', sig:{...store(type,r)}}; });
+    grid.innerHTML = ROLES.map(r => roleHtml(type, r)).join('');
+    const warn = $(`signWarn_${type}`); if(warn) warn.style.display = allUsers().length ? 'none' : 'block';
+    const me = currentUser();
+    ROLES.forEach(r => {
+      const sel = $(`sg_${type}_${r}`);
+      if(!sel) return;
+      const list = candidates(r);
+      const valid = new Set(list.map(u => String(u.id)));
+      let value = keep && prev[r].value && valid.has(String(prev[r].value)) ? prev[r].value : '';
+      if(r === 'writer' && me) value = me.id;
+      sel.value = value || '';
+      if(r === 'writer') sel.disabled = true;
+      Object.assign(store(type,r), prev[r].sig || {});
+      refreshSub(type,r);
+    });
+  }
+  function refresh(force=false){
+    TYPES.forEach(t => {
+      const grid = $(`signGrid_${t}`);
+      if(!grid) return;
+      if(force || !grid.dataset.qmsRoleRuleReady){ build(t,true); grid.dataset.qmsRoleRuleReady='1'; }
+      else ROLES.forEach(r => refreshSub(t,r));
+    });
+  }
+  function validateRole(type, role){
+    const u = selected(type, role);
+    if(role === 'writer') return !!u.name;
+    if(role === 'reviewer') return !u.name || isReviewer(u);
+    if(role === 'approver') return !u.name || isApprover(u);
+    return true;
+  }
+
+  window.qmsRefreshSignatures = () => refresh(true);
+  window.buildSignGrid = type => build(type, true);
+  window.rebuildAllSignGrids = () => refresh(true);
+  window.applySignPermissions = type => type ? ROLES.forEach(r => refreshSub(type,r)) : refresh(false);
+  window.applyAllSignPermissions = () => refresh(false);
+  window.signature데이터 = (type, role) => ({signImage:store(type,role).signImage || '', signDate:store(type,role).signDate || ''});
+  window.updateSignaturePreview = (type, role) => refreshSub(type, role);
+  window.clearSignaturePad = (type, role) => { const s=store(type,role); s.signImage=''; s.signDate=''; const f=$(`sg_${type}_${role}_file`); if(f) f.value=''; refreshSub(type,role); return true; };
+  window.restoreSignaturePad = (type, role, data) => { const s=store(type,role); s.signImage=data?.signImage || ''; s.signDate=data?.signDate || ''; refreshSub(type,role); };
+  window.getSignPayload = type => {
+    const res = {};
+    ROLES.forEach(r => res[r] = {...selected(type,r), ...window.signature데이터(type,r)});
+    return {writer:res.writer, reviewer:res.reviewer, approver:res.approver};
+  };
+  window.restoreSign = (type, record) => {
+    if(!record) return;
+    build(type,true);
+    const map = {writer:record.signWriter, reviewer:record.signReviewer, approver:record.signApprover};
+    ROLES.forEach(r => {
+      const data = map[r] || {};
+      const sel = $(`sg_${type}_${r}`);
+      const value = data.id || data.email || data.name || '';
+      if(sel && value && Array.from(sel.options).some(o => String(o.value) === String(value))) sel.value = value;
+      if(r === 'writer' && currentUser()) sel.value = currentUser().id;
+      window.restoreSignaturePad(type,r,data);
+    });
+  };
+  window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); if(sel) sel.value = r === 'writer' && currentUser() ? currentUser().id : ''; window.clearSignaturePad(type,r); }); };
+  window.qmsValidateSignRoles = function(type){
+    if(!validateRole(type,'writer')){ alert('작성자는 로그인 본인만 가능합니다.'); return false; }
+    if(!validateRole(type,'reviewer')){ alert('검토자는 부장 직책만 가능합니다.'); return false; }
+    if(!validateRole(type,'approver')){ alert('승인자는 부장 이상 직책만 가능합니다.'); return false; }
+    return true;
+  };
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest?.('[data-qms-rule-file-btn],[data-final-sign-file-btn],[data-sign-file-btn]');
+    if(b){ e.preventDefault(); e.stopImmediatePropagation(); const [t,r] = (b.getAttribute('data-qms-rule-file-btn') || b.getAttribute('data-final-sign-file-btn') || b.getAttribute('data-sign-file-btn')).split(':'); $(`sg_${t}_${r}_file`)?.click(); return false; }
+    const c = e.target.closest?.('[data-qms-rule-clear],[data-final-sign-clear],[data-sign-clear]');
+    if(c){ e.preventDefault(); e.stopImmediatePropagation(); const [t,r] = (c.getAttribute('data-qms-rule-clear') || c.getAttribute('data-final-sign-clear') || c.getAttribute('data-sign-clear')).split(':'); window.clearSignaturePad(t,r); return false; }
+  }, true);
+  document.addEventListener('change', e => {
+    const file = e.target.closest?.('[data-qms-rule-file],[data-final-sign-file],[data-sign-file]');
+    if(file){ e.preventDefault(); e.stopImmediatePropagation(); const [t,r] = (file.getAttribute('data-qms-rule-file') || file.getAttribute('data-final-sign-file') || file.getAttribute('data-sign-file')).split(':'); if(file.files && file.files[0]){ const rd = new FileReader(); rd.onload = () => { const s=store(t,r); s.signImage=String(rd.result || ''); s.signDate=now(); refreshSub(t,r); }; rd.readAsDataURL(file.files[0]); } return false; }
+    const sel = e.target.closest?.('[data-qms-rule-select],#signGrid_iqc .sign-sel,#signGrid_pqc .sign-sel,#signGrid_oqc .sign-sel,#signGrid_nc .sign-sel,#signGrid_training .sign-sel');
+    if(sel && /^sg_[^_]+_(writer|reviewer|approver)$/.test(sel.id || '')){ e.stopImmediatePropagation(); const m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id); if(m) refreshSub(m[1],m[2]); return false; }
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', () => refresh(true));
+  window.addEventListener('load', () => [0,250,800,1600,3000].forEach(ms => setTimeout(() => refresh(ms===0), ms)));
+  [300,900,1800,3500].forEach(ms => setTimeout(() => refresh(false), ms));
+})();
+</script>
+
 </body>
 </html>
