@@ -8258,16 +8258,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const lv = writerLevel(writer || currentUser());
     const users = allUsers();
     // 작성자 직급별 결재 규칙
-    // 사원~과장: 검토자=부장, 승인자=부장
-    // 부장: 검토자='-', 승인자=이사 이상
+    // 사원~과장: 검토자=부장 이상, 승인자=부장 이상
+    // 부장: 검토자=이사 이상, 승인자=이사 이상
     // 이사/상무: 검토자='-', 승인자=전무 이상
     // 전무 이상: 검토자='-', 승인자='-'
+    const deptManagerOrAbove = users.filter(u => isDeptManager(u) || isDirectorOrAbove(u));
     if(role === 'reviewer'){
-      if(lv <= 1) return users.filter(isDeptManager);
+      if(lv <= 1) return deptManagerOrAbove;
+      if(lv === 2) return users.filter(isDirectorOrAbove);
       return [noneUser()];
     }
     if(role === 'approver'){
-      if(lv <= 1) return users.filter(isDeptManager);
+      if(lv <= 1) return deptManagerOrAbove;
       if(lv === 2) return users.filter(isDirectorOrAbove);
       if(lv === 3 || lv === 4) return users.filter(isExecutiveOrAbove);
       return [noneUser()];
@@ -8330,7 +8332,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function renderRole(type, role, list, disabled){
     const ph = role === 'writer' ? '-- 작성자 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
-    const help = role === 'writer' ? '일반 사용자는 로그인 본인 고정, 관리자는 전체 회원 선택 가능.' : '관리자는 전체 회원 선택 가능. 일반 사용자는 사원~과장=부장, 부장=이사 이상, 이사/상무=전무 이상 규칙 적용.';
+    const help = role === 'writer' ? '일반 사용자는 로그인 본인 고정, 관리자는 전체 회원 선택 가능.' : '관리자는 전체 회원 선택 가능. 일반 사용자는 사원~과장=부장 이상, 부장=이사 이상, 이사/상무=승인 전무 이상 규칙 적용.';
     return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
       <select class="sign-sel" id="sg_${type}_${role}" ${disabled ? 'disabled' : ''}>${opts(list, ph)}</select>
       <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
