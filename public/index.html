@@ -8177,14 +8177,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 <script>
-/* QMS FINAL OVERRIDE: edit mode must preserve saved writer/reviewer/approver exactly. */
+/* QMS FINAL OVERRIDE: 직급별 작성/검토/승인 권한 규칙 최종 적용 v20260522 */
 (function(){
   'use strict';
   const TYPES = ['iqc','pqc','oqc','nc','training'];
   const ROLES = ['writer','reviewer','approver'];
   const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
-  const SENIOR_WORDS = ['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장'];
-  const LOW_WORDS = ['사원','주임','대리','과장','연구원','임원'];
+  const DEPT_MANAGER_WORDS = ['부장'];
+  const DIRECTOR_WORDS = ['이사','상무','전무','임원','대표이사','대표','사장','회장'];
+  const EXECUTIVE_WORDS = ['전무','대표이사','대표','사장','회장'];
+  const LOW_WORDS = ['사원','주임','대리','과장','연구원'];
   const $ = id => document.getElementById(id);
   const txt = v => String(v == null ? '' : v).trim();
   const esc = v => txt(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
@@ -8211,8 +8213,19 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return arr;
   }
   function isAdmin(u){ const r = `${u?.role || ''} ${u?.title || ''}`.toLowerCase(); return r.includes('admin') || r.includes('관리자'); }
-  function isSenior(u){ const s = `${u?.title || ''} ${u?.role || ''}`; return SENIOR_WORDS.some(w => s.includes(w)); }
-  function isBelowManager(u){ const s = `${u?.title || ''} ${u?.role || ''}`; return !isSenior(u) || LOW_WORDS.some(w => s.includes(w)); }
+  function titleText(u){ return `${u?.title || ''} ${u?.role || ''}`; }
+  function hasAny(u, words){ const s = titleText(u); return words.some(w => s.includes(w)); }
+  function isDeptManager(u){ return hasAny(u, DEPT_MANAGER_WORDS); }
+  function isDirectorOrAbove(u){ return hasAny(u, DIRECTOR_WORDS); }
+  function isExecutiveOrAbove(u){ return hasAny(u, EXECUTIVE_WORDS); }
+  function writerLevel(u){
+    const s = titleText(u);
+    if(EXECUTIVE_WORDS.some(w => s.includes(w))) return 5; // 전무 이상
+    if(s.includes('상무')) return 4;
+    if(s.includes('이사')) return 3;
+    if(s.includes('부장')) return 2;
+    return 1; // 사원~과장
+  }
   function userLabel(u){ u = norm(u) || {}; return `${u.name || '-'} / ${u.title || u.department || '-'}`; }
   function emptyUser(){ return {id:'', name:'', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
   function noneUser(){ return {id:'', name:'-', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
@@ -8250,9 +8263,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     const me = currentUser();
     if(role === 'writer') return isAdmin(me) ? allUsers() : (me ? [me] : []);
-    const writer = selected(type,'writer') || me;
-    if(writer && !isBelowManager(writer)) return [noneUser()];
-    return allUsers().filter(isSenior);
+
+    let writer = selected(type,'writer');
+    if(!writer || !writer.name) writer = me;
+    const lv = writerLevel(writer);
+    const users = allUsers();
+
+    // 작성자 직급별 결재 규칙
+    // 사원~과장: 검토자=부장, 승인자=부장
+    // 부장: 검토자='-', 승인자=이사 이상
+    // 이사/상무: 검토자='-', 승인자=전무 이상
+    // 전무 이상: 검토자='-', 승인자='-'
+    if(role === 'reviewer'){
+      if(lv <= 1) return users.filter(isDeptManager);
+      return [noneUser()];
+    }
+    if(role === 'approver'){
+      if(lv <= 1) return users.filter(isDeptManager);
+      if(lv === 2) return users.filter(isDirectorOrAbove);
+      if(lv === 3 || lv === 4) return users.filter(isExecutiveOrAbove);
+      return [noneUser()];
+    }
+    return [];
   }
   function fileBlock(type,role){
     return `<div class="sign-file-wrap">
@@ -8265,7 +8297,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function renderRole(type, role, list, disabled){
     const ph = role === 'writer' ? '-- 작성자 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
-    const help = role === 'writer' ? '작성자는 로그인 본인으로 고정됩니다.' : '작성자가 부장 이상이면 검토/승인은 생략됩니다.';
+    const help = role === 'writer' ? '작성자는 로그인 본인으로 고정됩니다.' : '사원~과장 작성 시 부장, 부장 작성 시 이사 이상, 이사/상무 작성 시 전무 이상만 선택됩니다.';
     return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
       <select class="sign-sel" id="sg_${type}_${role}" ${disabled ? 'disabled' : ''}>${opts(list, ph)}</select>
       <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
