@@ -8272,8 +8272,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(wr >= 6) return {list:[], disabled:true, empty:'-', help:'작성자가 부장 이상이면 검토는 생략합니다.'};
       return {list: allUsers().filter(u => rankOf(u) >= 6), disabled:false, empty:'- 검토자 선택 -', help:'사원~과장 작성 시 검토자는 부장 이상입니다.'};
     }
-    if(wr >= 7) return {list: allUsers().filter(u => rankOf(u) >= 10), disabled:false, empty:'- 승인자 선택 -', help:'이사 이상 작성 시 승인은 대표/대표이사 기준입니다.'};
-    if(wr >= 6) return {list: allUsers().filter(u => rankOf(u) >= 7), disabled:false, empty:'- 승인자 선택 -', help:'부장 작성 시 승인은 이사 이상입니다.'};
+    if(wr >= 6) return {list:[], disabled:true, empty:'-', help:'작성자가 부장 이상이면 승인은 생략합니다.'};
     return {list: allUsers().filter(u => rankOf(u) >= 6), disabled:false, empty:'- 승인자 선택 -', help:'사원~과장 작성 시 승인은 부장 이상입니다.'};
   }
   function optHtml(list, empty){
@@ -8390,10 +8389,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const ap = selectedUser(type,'approver');
     if(writerRank < 6 && !rv.name){ alert('사원~과장 작성 문서는 부장 이상 검토자가 필요합니다.'); return false; }
     if(writerRank < 6 && !ap.name){ alert('사원~과장 작성 문서는 부장 이상 승인자가 필요합니다.'); return false; }
-    if(writerRank >= 6 && writerRank < 7 && !ap.name){ alert('부장 작성 문서는 이사 이상 승인자가 필요합니다.'); return false; }
-    if(writerRank >= 7 && !ap.name){ alert('이사 이상 작성 문서는 대표/대표이사 승인이 필요합니다.'); return false; }
     if(rv.name && rankOf(rv) < 6){ alert('검토자는 부장 이상만 가능합니다.'); return false; }
-    if(ap.name && ((writerRank >= 7 && rankOf(ap) < 10) || (writerRank >= 6 && writerRank < 7 && rankOf(ap) < 7) || (writerRank < 6 && rankOf(ap) < 6))){ alert('승인자 직급이 결재 기준에 맞지 않습니다.'); return false; }
+    if(ap.name && writerRank < 6 && rankOf(ap) < 6){ alert('승인자는 부장 이상만 가능합니다.'); return false; }
     return true;
   };
   function fillWorkorderSend(){
