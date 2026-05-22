@@ -3549,38 +3549,17 @@ async function loadSignableUsers(){
   // 현재 로그인 사용자는 항상 작성자 후보에 포함
   if(state.currentUser) users.push(state.currentUser);
 
-  // 일반 사용자는 /api/admin/users 권한이 없으므로 관리자 API를 호출하지 않는다.
-  // 관리자 로그인일 때만 최신 회원등록현황을 읽고, 그 외에는 관리자 페이지에서 저장된 캐시/기본목록을 사용한다.
-  const canLoadAdminUsers = !!(
-    state.currentUser && (
-      state.currentUser.isAdmin === true || state.currentUser.admin === true || state.currentUser.is_admin === true ||
-      String(state.currentUser.role || '').toLowerCase() === 'admin' ||
-      String(state.currentUser.email || '').toLowerCase() === 'admin@namochemical.com' ||
-      String(state.currentUser.name || '').includes('관리자')
-    )
-  );
-
-  if(canLoadAdminUsers){
-    try{
-      const {data} = await api('/api/admin/users');
-      if(data?.data){
-        users = users.concat(data.data);
-        try{ localStorage.setItem('nmcAdminUsersCache', JSON.stringify(data.data)); }catch(_e){}
-      }
-    }catch(e){
-      console.warn('[sign] 관리자 회원 목록 로드 실패, 캐시로 대체:', e);
-    }
+  // 검토자/승인자 후보를 위해 서버 회원 목록을 함께 불러온다.
+  // 권한 문제로 실패하더라도 작성자 본인은 유지한다.
+  try{
+    const {data} = await api('/api/admin/users');
+    if(data?.data) users = users.concat(data.data);
+  }catch(e){
+    console.warn('[sign] 전체 회원 목록 로드 실패:', e);
   }
 
-  try{
-    const cached = JSON.parse(localStorage.getItem('nmcAdminUsersCache') || '[]');
-    if(Array.isArray(cached)) users = users.concat(cached);
-  }catch(_e){}
-
-  if(Array.isArray(window.NMC_WORKORDER_DEFAULT_USERS)) users = users.concat(window.NMC_WORKORDER_DEFAULT_USERS);
-
   state.signableUsers = uniqSignUsers(users);
-  if(canLoadAdminUsers) state.adminUsers = state.signableUsers;
+  state.adminUsers = state.signableUsers;
 
   console.log(`[sign] 서명 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
@@ -3589,7 +3568,6 @@ async function loadAdminUsers(){
   try{
     const {data} = await api('/api/admin/users');
     state.adminUsers = data?.data || [];
-    try{ localStorage.setItem('nmcAdminUsersCache', JSON.stringify(state.adminUsers)); }catch(_e){}
     state.signableUsers = uniqSignUsers([
       ...(state.currentUser ? [state.currentUser] : []),
       ...state.adminUsers
@@ -4834,8 +4812,8 @@ function bindEvents(){
   // IQC
   $('incomingSave').onclick=withSaving('iqc',$('incomingSave'),saveIqc);$('incomingReset').onclick=clearIqc;
   $('addIncomingRow').onclick=()=>{state.incomingItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderIqcItems();};
-  ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>{ if($(id)) $(id).addEventListener('input',syncIqcPreview); });
-  if($('printIncomingReport')) $('printIncomingReport').onclick=()=>printEl($('incomingReportPreview'));
+  ['incomingDate','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingCheckQty','incomingFailQty'].forEach(id=>$(id).addEventListener('input',syncIqcPreview));
+  $('printIncomingReport').onclick=()=>printEl($('incomingReportPreview'));
   // PQC
   $('processSave').onclick=withSaving('pqc',$('processSave'),savePqc);$('processReset').onclick=clearPqc;
   $('addProcessRow').onclick=()=>{state.processItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderPqcItems();};
@@ -4858,10 +4836,8 @@ function bindEvents(){
   bindTrainingEvents();
   // 기타
   $('supplierSave').onclick=withSaving('sup',$('supplierSave'),saveSupplier);$('supplierReset').onclick=clearSupplier;
-  if($('worklogSave')) $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);
-  if($('worklogReset')) $('worklogReset').onclick=clearWorklog;
-  if($('addWorklogMaterial')) $('addWorklogMaterial').onclick=addWorklogMat;
-  if($('worklogFinishedLot')) $('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
+  $('worklogSave').onclick=withSaving('wlog',$('worklogSave'),saveWorklog);$('worklogReset').onclick=clearWorklog;
+  $('addWorklogMaterial').onclick=addWorklogMat;$('worklogFinishedLot').addEventListener('input',updateWorklogLinkage);
   if($('instrumentSave'))$('instrumentSave').onclick=withSaving('instrument',$('instrumentSave'),saveInstrument);
   if($('instrumentReset'))$('instrumentReset').onclick=clearInstrument;
   ['instrumentLastCal','instrumentCycle'].forEach(id=>{if($(id))$(id).addEventListener('input',calcInstrumentNext);});
@@ -6596,50 +6572,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
   };
 
   function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-  function appState(){
-    try{return (typeof state !== 'undefined' && state) ? state : (window.state || null);}
-    catch(e){return window.state || null;}
-  }
-
-  const NMC_WORKORDER_DEFAULT_USERS = [
-    {name:'박현아', email:'hapark@namochemical.com', department:'품질', title:'사원', status:'APPROVED'},
-    {name:'박지현', email:'jhp1767@namochemical.com', department:'연구소', title:'연구원', status:'APPROVED'},
-    {name:'박도훈', email:'dhbak@namochemical.com', department:'생산부', title:'대리', status:'APPROVED'},
-    {name:'김현진', email:'hyunjinkim@namochemical.com', department:'영업부', title:'과장', status:'APPROVED'},
-    {name:'황동준', email:'djhwang@namochemical.com', department:'품질부', title:'부장', status:'APPROVED'},
-    {name:'정명기', email:'ygjeong@namochemical.com', department:'연구원', title:'임원', status:'APPROVED'},
-    {name:'김세희', email:'shkim@namochemical.com', department:'연구원', title:'임원', status:'APPROVED'},
-    {name:'임흥배', email:'hbleem@namochemical.com', department:'품질', title:'부장', status:'APPROVED'},
-    {name:'관리자', email:'admin@namochemical.com', department:'관리부', title:'관리자', role:'admin', status:'APPROVED'}
-  ];
-  window.NMC_WORKORDER_DEFAULT_USERS = NMC_WORKORDER_DEFAULT_USERS;
-
-  function readWorkOrderUserCache(){
-    const out=[];
-    ['nmcAdminUsersCache','nmcWorkOrderUsersCache','adminUsersCache','memberListCache'].forEach(k=>{
-      try{
-        const v=JSON.parse(localStorage.getItem(k)||'[]');
-        if(Array.isArray(v)) out.push(...v);
-      }catch(_e){}
-    });
-    return out;
-  }
-
-  function isCurrentAdminForWorkOrder(){
-    const s=appState() || {};
-    const u=s.currentUser || window.currentUser || window.loginUser || window.userInfo || {};
-    return !!(u.isAdmin===true || u.admin===true || u.is_admin===true ||
-      String(u.role||'').toLowerCase()==='admin' ||
-      String(u.email||'').toLowerCase()==='admin@namochemical.com' ||
-      String(u.name||'').includes('관리자'));
-  }
-
   async function refreshWorkOrderMembers(){
     try{
-      if(isCurrentAdminForWorkOrder() && typeof loadAdminUsers === 'function') await loadAdminUsers();
+      const rootState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+      const hasMembers = Array.isArray(rootState.adminUsers) && rootState.adminUsers.length > 0;
+      const hasSignable = Array.isArray(rootState.signableUsers) && rootState.signableUsers.length > 1;
+      if(!hasMembers && !hasSignable){
+        if(typeof loadAdminUsers === 'function') await loadAdminUsers();
+        else if(typeof loadSignableUsers === 'function') await loadSignableUsers();
+      }
     }catch(e){ console.warn('[workorder] 회원등록현황 로드 실패:', e); }
-    await populateManualSendTargets();
-    await syncSendInfo();
+    populateManualSendTargets();
+    syncSendInfo();
   }
 
   function showPage(pg){
@@ -6962,8 +6906,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function getAllWorkOrderUsers(){
     const users=[];
     const appState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-
-    // 1순위: 관리자 로그인 > 회원등록현황에서 로드된 최신 state
     if(appState){
       if(Array.isArray(appState.adminUsers)) users.push(...appState.adminUsers);
       if(Array.isArray(appState.signableUsers)) users.push(...appState.signableUsers);
@@ -6973,23 +6915,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(Array.isArray(appState.memberList)) users.push(...appState.memberList);
       if(appState.currentUser) users.push(appState.currentUser);
     }
-
-    // 2순위: 관리자 회원등록현황을 불러온 뒤 저장된 브라우저 캐시
-    users.push(...readWorkOrderUserCache());
-
-    // 3순위: 전역 변수로 노출된 회원목록
     ['userList','memberList','empList','employeeList','users','members','adminUsers','signableUsers'].forEach(k=>{
       if(Array.isArray(window[k])) users.push(...window[k]);
     });
-
-    // 4순위: 기본 회원목록. API 권한이 없어도 수신/참조가 빈칸이 되지 않게 한다.
-    users.push(...NMC_WORKORDER_DEFAULT_USERS);
-
     const map=new Map();
     users.map(normalizeWorkOrderUser).filter(Boolean).forEach(u=>{
       const status=String(u.status || 'APPROVED').toUpperCase();
-      if(status === 'REJECTED' || status === '퇴사' || status === 'INACTIVE' || status === 'DELETED') return;
-      const key=String(u.id || u.email || u.name).trim().toLowerCase();
+      if(status === 'REJECTED' || status === '퇴사' || status === 'INACTIVE') return;
+      const key=String(u.id || u.email || u.name).trim();
       map.set(key,u);
     });
     return [...map.values()].sort((a,b)=>
@@ -7065,72 +6998,51 @@ document.addEventListener('DOMContentLoaded',async()=>{
     sel.selectedIndex = -1;
   }
 
-  async function populateManualSendTargets(){
-    const appStateVal = appState() || {};
-    const currentRaw =
-      appStateVal.currentUser ||
-      window.currentUser ||
-      window.loginUser ||
-      window.userInfo ||
-      {};
+  function populateManualSendTargets(){
+    const appState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+    const currentRaw = appState.currentUser || window.loginUser || window.userInfo || {};
     const current = normalizeWorkOrderUser(currentRaw);
+    const allUsers = getAllWorkOrderUsers();
+    const findSameUser = u => current && u && (
+      (current.id && String(u.id) === String(current.id)) ||
+      (current.email && String(u.email || '').toLowerCase() === String(current.email || '').toLowerCase()) ||
+      (current.name && String(u.name) === String(current.name))
+    );
+    const matchedCurrent = allUsers.find(findSameUser) || current;
+    const me = matchedCurrent || {id:'login-user', name:'로그인 사용자', department:'-'};
 
-    // 관리자 회원등록현황과 연동된 state/cache/default 전체 목록을 사용한다.
-    // 일반 사용자는 /api/admin/users 권한이 없으므로 여기서는 관리자 API를 직접 호출하지 않는다.
-    let userList = getAllWorkOrderUsers();
-
-    // 회원등록현황 갱신 직후 state.adminUsers가 있으면 캐시도 즉시 최신화
-    try{
-      if(Array.isArray(appStateVal.adminUsers) && appStateVal.adminUsers.length){
-        localStorage.setItem('nmcAdminUsersCache', JSON.stringify(appStateVal.adminUsers));
-      }
-    }catch(_e){}
-
-    // 발송부서: 현재 로그인 당사자 성명 + 부서명 + 직책
-    const sender = current ||
-      userList.find(u => String(u.email || '').toLowerCase() === 'hbleem@namochemical.com') ||
-      userList.find(u => String(u.name || '') === '임흥배') ||
-      {id:'login-user', name:'로그인 사용자', department:'-', title:''};
-
-    qsa('#nmcSenderName').forEach(sel => {
+    /* 발송부서: 고정값이 아니라 현재 로그인 당사자의 회원등록현황 정보(성명+부서)를 표시 */
+    qsa('#nmcSenderName').forEach(sel=>{
       if(sel.tagName !== 'SELECT') return;
-      setSelectOptions(sel, [sender], workOrderUserOption);
-      sel.value = String(sender.id || sender.email || sender.name || '');
+      setSelectOptions(sel,[me],workOrderUserOption);
+      sel.value = String(me.id || me.email || me.name || '');
       if(sel.options.length) sel.options[0].selected = true;
     });
 
-    // 수신/참조: 전체 회원등록현황 목록. 로그인 당사자는 제외한다.
-    const targetUsers = userList.filter(u => {
-      if(!sender) return true;
-      const sameId = sender.id && String(u.id || '') === String(sender.id || '');
-      const sameEmail = sender.email && String(u.email || '').toLowerCase() === String(sender.email || '').toLowerCase();
-      const sameName = sender.name && String(u.name || '') === String(sender.name || '');
-      return !(sameId || sameEmail || sameName);
+    /* 수신/참조: 관리자 회원등록현황 전체와 항상 연동, 로그인 당사자는 기본 선택하지 않음 */
+    const targetUsers = (allUsers.length ? allUsers : []).filter(u => {
+      if(!matchedCurrent) return true;
+      const sameId = matchedCurrent.id && String(u.id) === String(matchedCurrent.id);
+      const sameEmail = matchedCurrent.email && String(u.email || '').toLowerCase() === String(matchedCurrent.email || '').toLowerCase();
+      const sameNameDept = matchedCurrent.name && String(u.name) === String(matchedCurrent.name) && String(u.department || '') === String(matchedCurrent.department || '');
+      return !(sameId || sameEmail || sameNameDept);
     });
 
-    qsa('#nmcRecvDept').forEach(sel => {
-      const before = [...(sel.selectedOptions || [])].map(o => o.value);
-      setSelectOptions(sel, targetUsers, workOrderUserOption);
-      before.forEach(v=>{
-        const opt = [...sel.options].find(o=>o.value===v);
-        if(opt) opt.selected = true;
-      });
+    qsa('#nmcRecvDept').forEach(sel=>{
+      const before = [...sel.selectedOptions].map(o=>o.value);
+      setSelectOptions(sel,targetUsers,workOrderUserOption);
       if(!before.length) clearMultiSelection(sel);
     });
 
-    qsa('#nmcRefDept').forEach(sel => {
-      const before = [...(sel.selectedOptions || [])].map(o => o.value);
-      setSelectOptions(sel, targetUsers, workOrderUserOption);
-      before.forEach(v=>{
-        const opt = [...sel.options].find(o=>o.value===v);
-        if(opt) opt.selected = true;
-      });
+    qsa('#nmcRefDept').forEach(sel=>{
+      const before = [...sel.selectedOptions].map(o=>o.value);
+      setSelectOptions(sel,targetUsers,workOrderUserOption);
       if(!before.length) clearMultiSelection(sel);
     });
   }
 
-  async function syncSendInfo(){
-    await populateManualSendTargets();
+  function syncSendInfo(){
+    populateManualSendTargets();
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
   }
   window.syncWorkOrderSendInfo = syncSendInfo;
