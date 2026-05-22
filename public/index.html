@@ -4840,12 +4840,11 @@ function bindEvents(){
   clickSafe2('addProcessRow',()=>{state.processItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderPqcItems();});
   ['processDate','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>onSafe2(id,'input',syncPqcPreview));
   clickSafe2('printProcessReport',()=>{
-  syncPqcPreview();
-
-  setTimeout(()=>{
-    printEl($('processReportPreview'));
-  },300);
-};
+    syncPqcPreview();
+    setTimeout(()=>{
+      printEl($('processReportPreview'));
+    },300);
+  });
   // OQC
   clickSafe2('shipmentSave',withSaving('oqc',$('shipmentSave'),saveOqc));clickSafe2('shipmentReset',clearOqc);
   clickSafe2('addShipmentRow',()=>{state.shipmentItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderOqcItems();});
@@ -4880,7 +4879,8 @@ function bindEvents(){
   ['spcLsl','spcUsl','spcTarget','spcSubgroup','spcA2','spcD3','spcD4','spcD2','spcCpkStd'].forEach(id=>{if($(id))$(id).addEventListener('input',()=>spcRecalc(false));});
   if($('userSave'))$('userSave').onclick=withSaving('user',$('userSave'),saveUser);if($('userReset'))$('userReset').onclick=clearUser;
   let __reportTypeChanging=false;
-  $('reportType').onchange=()=>{
+  const reportTypeEl=$('reportType');
+  if(reportTypeEl) reportTypeEl.onchange=()=>{
     if(__reportTypeChanging)return;
     __reportTypeChanging=true;
     populateReportSelect();
@@ -4890,7 +4890,8 @@ function bindEvents(){
     });
   };
 
-$('reportSelect').onchange=()=>loadStandaloneReport();
+const reportSelectEl=$('reportSelect');
+if(reportSelectEl) reportSelectEl.onchange=()=>loadStandaloneReport();
 clickSafe2('reportReload',()=>loadStandaloneReport());
 
 clickSafe2('printReportPage',()=>{
@@ -4898,7 +4899,7 @@ clickSafe2('printReportPage',()=>{
   setTimeout(()=>{
     printEl($('reportPrintTarget'));
   },300);
-};
+});
   if($('traceSearch'))$('traceSearch').onclick=searchTrace;if($('traceKeyword'))$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
   if($('dashRefresh'))$('dashRefresh').onclick=()=>{renderSummary();setTimeout(()=>{try{state.charts.trend&&state.charts.trend.resize();}catch(e){}},80);};
   if($('globalSearch')) $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
