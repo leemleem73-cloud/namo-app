@@ -8185,5 +8185,176 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<script>
+/* 수정 모드 작성/검토/승인 보존 패치 vFinal
+   - 신규 작성: 작성=로그인 본인, 검토/승인=본인 권한 범위
+   - 수정: 목록에 저장된 작성/검토/승인 값을 그대로 표시/저장
+*/
+(function(){
+  const TYPES = ['iqc','pqc','oqc','nc','training'];
+  const ROLES = ['writer','reviewer','approver'];
+  const LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  const EDIT = {iqc:'incomingEditId', pqc:'processEditId', oqc:'shipmentEditId', nc:'ncEditId', training:'trainingEditId'};
+  const FIELD = {writer:'signWriter', reviewer:'signReviewer', approver:'signApprover'};
+  const $ = id => document.getElementById(id);
+  const clean = v => String(v || '').trim();
+  function users(){ return window.state && Array.isArray(state.signableUsers) ? state.signableUsers : []; }
+  function current(){ return window.state && state.currentUser ? state.currentUser : null; }
+  function userObj(u){
+    if(!u) return null;
+    return {id:u.id || u.email || u.name || '', name:u.name || '', title:u.title || '', department:u.department || '', email:u.email || '', role:u.role || '', signImage:u.signImage || '', signDate:u.signDate || ''};
+  }
+  function same(a,b){
+    if(!a || !b) return false;
+    const ae=clean(a.email), be=clean(b.email);
+    if(ae && be && ae===be) return true;
+    const ai=clean(a.id), bi=clean(b.id);
+    if(ai && bi && ai===bi) return true;
+    const an=clean(a.name), bn=clean(b.name);
+    return !!(an && bn && an===bn);
+  }
+  function isEdit(type){ const el=$(EDIT[type]); return !!(el && clean(el.value)); }
+  function store(type, role){
+    window.__signImageStore = window.__signImageStore || {};
+    const k = type + ':' + role;
+    window.__signImageStore[k] = window.__signImageStore[k] || {};
+    return window.__signImageStore[k];
+  }
+  function find(data){
+    if(!data) return null;
+    return users().find(u =>
+      (data.id && clean(u.id)===clean(data.id)) ||
+      (data.email && clean(u.email)===clean(data.email)) ||
+      (data.name && clean(u.name)===clean(data.name))
+    ) || null;
+  }
+  function optionText(data, role){ return (data.name || '-') + ' (' + (data.title || data.department || LABEL[role] || '사용자') + ')'; }
+  function setOnlyOption(type, role, data, placeholder){
+    const sel = $('sg_' + type + '_' + role);
+    if(!sel) return;
+    sel.innerHTML = '<option value="">' + placeholder + '</option>';
+    if(data && (data.name || data.id || data.email)){
+      const value = data.id || data.email || data.name;
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = optionText(data, role);
+      opt.dataset.name = data.name || '';
+      opt.dataset.title = data.title || '';
+      opt.dataset.department = data.department || '';
+      opt.dataset.email = data.email || '';
+      opt.dataset.role = data.role || '';
+      sel.appendChild(opt);
+      sel.value = value;
+    }
+    sel.disabled = true;
+  }
+  function setSub(type, role, text, color){
+    const el = $('sg_' + type + '_' + role + '_sub');
+    if(el){ el.textContent = text || ''; el.style.color = color || ''; }
+  }
+  function setPreview(type, role, img){
+    const box = $('sg_' + type + '_' + role + '_preview');
+    if(box) box.innerHTML = img ? '<img src="' + img + '" alt="서명 이미지">' : '<span class="sign-file-empty">서명 이미지 없음</span>';
+    const date = $('sg_' + type + '_' + role + '_date');
+    const s = store(type, role);
+    if(date) date.textContent = s.signDate || '';
+  }
+  function setButtons(type, role, enabled){
+    const file = $('sg_' + type + '_' + role + '_file');
+    if(file) file.disabled = !enabled;
+    const wrap = document.querySelector('[data-sign-file-wrap="' + type + ':' + role + '"]');
+    if(wrap){
+      wrap.querySelectorAll('button').forEach(btn => {
+        btn.disabled = !enabled;
+        btn.style.opacity = enabled ? '' : '.45';
+        btn.style.cursor = enabled ? '' : 'not-allowed';
+      });
+    }
+  }
+  function isSenior(u){
+    if(!u) return false;
+    if(u.role === 'admin' || u.isAdmin === true || u.is_admin === true) return true;
+    if(typeof window.isSenior === 'function') return !!window.isSenior(u);
+    return /대표|이사|상무|전무|부장|팀장|본부장|실장|센터장|관리자/i.test(clean(u.title));
+  }
+  function saved(type, role){ return store(type, role).saved || null; }
+  function selectedFromSelect(type, role){
+    const sel = $('sg_' + type + '_' + role);
+    if(!sel || !sel.value) return null;
+    const opt = sel.options[sel.selectedIndex];
+    return userObj(find({id:sel.value,email:sel.value,name:sel.value})) || {id:sel.value, name:opt?.dataset?.name || (opt?.textContent || '').replace(/\s*\(.*\)\s*$/,''), title:opt?.dataset?.title || '', department:opt?.dataset?.department || '', email:opt?.dataset?.email || '', role:opt?.dataset?.role || ''};
+  }
+  function sig(type, role){
+    const s = store(type, role);
+    const date = $('sg_' + type + '_' + role + '_date');
+    return {signImage:s.signImage || '', signDate:s.signDate || date?.textContent || ''};
+  }
+  function applyEditView(type){
+    if(!isEdit(type)) return false;
+    const me = userObj(current());
+    ROLES.forEach(role => {
+      const data = saved(type, role);
+      setOnlyOption(type, role, data, '-- 저장된 ' + LABEL[role] + ' --');
+      setPreview(type, role, data?.signImage || store(type,role).signImage || '');
+      const mine = same(data, me);
+      setButtons(type, role, mine);
+      setSub(type, role, data && data.name ? (mine ? '수정목록 보존 · 본인 서명 수정 가능' : '수정목록 값 그대로 표시') : '저장된 값 없음', mine ? 'var(--pri)' : 'var(--t3)');
+    });
+    return true;
+  }
+  const oldRestore = window.restoreSign;
+  window.restoreSign = function(type, record){
+    if(record){
+      ROLES.forEach(role => {
+        const raw = record[FIELD[role]] || null;
+        const found = find(raw);
+        const data = raw ? Object.assign({}, raw, found ? {id:found.id || raw.id || '', name:raw.name || found.name || '', title:raw.title || found.title || '', department:raw.department || found.department || '', email:raw.email || found.email || '', role:raw.role || found.role || ''} : {}) : null;
+        const s = store(type, role);
+        s.saved = data && (data.name || data.id || data.email) ? data : null;
+        s.signImage = data?.signImage || '';
+        s.signDate = data?.signDate || '';
+      });
+    }
+    if(typeof oldRestore === 'function'){
+      try{ oldRestore(type, record); }catch(e){ console.warn('[sign] old restore skipped', e); }
+    }
+    applyEditView(type);
+  };
+  const oldApply = window.applySignPermissions;
+  window.applySignPermissions = function(type){
+    if(applyEditView(type)) return;
+    if(typeof oldApply === 'function') return oldApply(type);
+  };
+  window.applyAllSignPermissions = function(){
+    TYPES.forEach(type => window.applySignPermissions(type));
+  };
+  window.getSignPayload = function(type){
+    if(isEdit(type)){
+      const payload = {};
+      ROLES.forEach(role => {
+        const base = saved(type, role) || selectedFromSelect(type, role) || {};
+        const s = sig(type, role);
+        payload[role] = Object.assign({}, base, {signImage:s.signImage || base.signImage || '', signDate:s.signDate || base.signDate || ''});
+      });
+      return payload;
+    }
+    const me = userObj(current());
+    const payload = {};
+    ROLES.forEach(role => {
+      const picked = selectedFromSelect(type, role);
+      if(role === 'writer') payload[role] = Object.assign({}, me || {}, sig(type, role));
+      else payload[role] = picked && me && same(picked, me) && isSenior(me) ? Object.assign({}, me, sig(type, role)) : {id:'',name:'',title:'',department:'',email:'',role:'',signImage:'',signDate:''};
+    });
+    return payload;
+  };
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest && e.target.closest('[data-action^="edit"]');
+    if(btn) setTimeout(() => TYPES.forEach(type => applyEditView(type)), 80);
+  }, true);
+  [300,800,1500,2500].forEach(ms => setTimeout(() => TYPES.forEach(type => { if(isEdit(type)) applyEditView(type); }), ms));
+})();
+</script>
+
 </body>
 </html>
