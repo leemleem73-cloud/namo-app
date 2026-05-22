@@ -3599,38 +3599,60 @@ function uniqSignUsers(list){
   });
   return Array.from(m.values());
 }
+async function fetchUserListForSelectors(){
+  const endpoints = [
+    '/api/users/signable',
+    '/api/users',
+    '/api/members',
+    '/api/auth/users',
+    '/api/admin/users'
+  ];
+  for(const url of endpoints){
+    try{
+      const {res,data} = await api(url);
+      if(!res || !res.ok) continue;
+      const list = Array.isArray(data) ? data : (data?.data || data?.users || data?.members || data?.list || []);
+      if(Array.isArray(list) && list.length) return list;
+    }catch(e){
+      console.warn('[users] 회원 후보 API 실패:', url, e);
+    }
+  }
+  return [];
+}
 async function loadSignableUsers(){
   let users = [];
 
   // 현재 로그인 사용자는 항상 작성자 후보에 포함
   if(state.currentUser) users.push(state.currentUser);
 
-  // 일반 사용자는 /api/admin/users 권한이 없어 403이 발생하므로 관리자만 호출한다.
-  // 필요 시 서버에 /api/users/signable 같은 별도 공개 API를 만든 뒤 여기서 추가 호출하면 된다.
-  const isAdminUser = String(state.currentUser?.role || '').toLowerCase() === 'admin';
-  if(isAdminUser){
-    try{
-      const {res,data} = await api('/api/admin/users');
-      if(res?.ok && data?.data) users = users.concat(data.data);
-    }catch(e){
-      console.warn('[sign] 전체 회원 목록 로드 실패:', e);
-    }
+  // 관리자/일반회원 모두 동일하게 수신부서·참조부서 후보를 보도록 공개 회원 API를 우선 사용한다.
+  // 서버에 공개 API가 있으면 /api/users/signable 또는 /api/users가 사용되고,
+  // 관리자 계정에서는 기존 /api/admin/users도 마지막 fallback으로 동작한다.
+  try{
+    const allUsers = await fetchUserListForSelectors();
+    if(allUsers.length) users = users.concat(allUsers);
+  }catch(e){
+    console.warn('[sign] 전체 회원 목록 로드 실패:', e);
   }
 
   state.signableUsers = uniqSignUsers(users);
-  if(isAdminUser) state.adminUsers = state.signableUsers;
+  state.adminUsers = state.signableUsers;
+  window.signableUsers = state.signableUsers;
+  window.adminUsers = state.adminUsers;
 
   console.log(`[sign] 서명 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
   try{
-    const {data} = await api('/api/admin/users');
-    state.adminUsers = data?.data || [];
+    const list = await fetchUserListForSelectors();
+    state.adminUsers = list || [];
     state.signableUsers = uniqSignUsers([
       ...(state.currentUser ? [state.currentUser] : []),
       ...state.adminUsers
     ]);
+    window.signableUsers = state.signableUsers;
+    window.adminUsers = state.adminUsers;
     renderUserTable();
     rebuildAllSignGrids();
   }catch(e){
@@ -6647,11 +6669,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   async function refreshWorkOrderMembers(){
     try{
       const rootState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      const hasMembers = Array.isArray(rootState.adminUsers) && rootState.adminUsers.length > 0;
+      const hasMembers = Array.isArray(rootState.adminUsers) && rootState.adminUsers.length > 1;
       const hasSignable = Array.isArray(rootState.signableUsers) && rootState.signableUsers.length > 1;
       if(!hasMembers && !hasSignable){
-        if(typeof loadAdminUsers === 'function') await loadAdminUsers();
-        else if(typeof loadSignableUsers === 'function') await loadSignableUsers();
+        if(typeof loadSignableUsers === 'function') await loadSignableUsers();
+        else if(typeof loadAdminUsers === 'function') await loadAdminUsers();
       }
     }catch(e){ console.warn('[workorder] 회원등록현황 로드 실패:', e); }
     populateManualSendTargets();
