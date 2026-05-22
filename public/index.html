@@ -6752,18 +6752,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
   };
 
   function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function appState(){
+    try{return (typeof state !== 'undefined' && state) ? state : (window.state || null);}
+    catch(e){return window.state || null;}
+  }
   async function refreshWorkOrderMembers(){
     try{
-      const rootState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      const hasMembers = Array.isArray(rootState.adminUsers) && rootState.adminUsers.length > 0;
-      const hasSignable = Array.isArray(rootState.signableUsers) && rootState.signableUsers.length > 1;
-      if(!hasMembers && !hasSignable){
-        if(typeof loadAdminUsers === 'function') await loadAdminUsers();
-        else if(typeof loadSignableUsers === 'function') await loadSignableUsers();
-      }
+      if(typeof loadAdminUsers === 'function') await loadAdminUsers();
+      else if(typeof loadSignableUsers === 'function') await loadSignableUsers();
     }catch(e){ console.warn('[workorder] 회원등록현황 로드 실패:', e); }
-    populateManualSendTargets();
-    syncSendInfo();
+    await populateManualSendTargets();
+    await syncSendInfo();
   }
 
   function showPage(pg){
@@ -7178,51 +7177,75 @@ document.addEventListener('DOMContentLoaded',async()=>{
     sel.selectedIndex = -1;
   }
 
-  function populateManualSendTargets(){
-    const appState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-    const currentRaw = appState.currentUser || window.loginUser || window.userInfo || {};
-    const current = normalizeWorkOrderUser(currentRaw);
-    const allUsers = getAllWorkOrderUsers();
-    const findSameUser = u => current && u && (
-      (current.id && String(u.id) === String(current.id)) ||
-      (current.email && String(u.email || '').toLowerCase() === String(current.email || '').toLowerCase()) ||
-      (current.name && String(u.name) === String(current.name))
-    );
-    const matchedCurrent = allUsers.find(findSameUser) || current;
-    const me = matchedCurrent || {id:'login-user', name:'로그인 사용자', department:'-'};
+  async function populateManualSendTargets(){
+    // API에서 직접 회원 목록을 가져옴
+    let userList = [];
+    try {
+      const {res, data} = await api('/api/admin/users');
+      if(res.ok && data?.data) {
+        userList = data.data.filter(u =>
+          String(u.status || '').toUpperCase() === 'APPROVED'
+        );
+      }
+    } catch(e) {
+      console.warn('[workorder] API 회원목록 조회 실패:', e);
+    }
 
-    /* 발송부서: 고정값이 아니라 현재 로그인 당사자의 회원등록현황 정보(성명+부서)를 표시 */
-    qsa('#nmcSenderName').forEach(sel=>{
+    // API 실패 시 state 폴백
+    if(!userList.length) {
+      const s = appState();
+      userList = [
+        ...((s && Array.isArray(s.adminUsers)) ? s.adminUsers : []),
+        ...((s && Array.isArray(s.signableUsers)) ? s.signableUsers : [])
+      ].filter(u => String(u.status || '').toUpperCase() === 'APPROVED');
+    }
+
+    // 중복 제거
+    const seen = new Set();
+    userList = userList.filter(u => {
+      const key = String(u.id || u.email || u.name || '').trim();
+      if(!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const appStateVal = appState();
+    const currentRaw = appStateVal?.currentUser || window.loginUser || window.userInfo || {};
+    const current = normalizeWorkOrderUser(currentRaw);
+
+    /* 발송부서: 로그인 당사자 */
+    qsa('#nmcSenderName').forEach(sel => {
       if(sel.tagName !== 'SELECT') return;
-      setSelectOptions(sel,[me],workOrderUserOption);
+      const me = current || {id:'login-user', name:'로그인 사용자', department:'-'};
+      setSelectOptions(sel, [me], workOrderUserOption);
       sel.value = String(me.id || me.email || me.name || '');
       if(sel.options.length) sel.options[0].selected = true;
     });
 
-    /* 수신/참조: 관리자 회원등록현황 전체와 항상 연동, 로그인 당사자는 기본 선택하지 않음 */
-    const targetUsers = (allUsers.length ? allUsers : []).filter(u => {
-      if(!matchedCurrent) return true;
-      const sameId = matchedCurrent.id && String(u.id) === String(matchedCurrent.id);
-      const sameEmail = matchedCurrent.email && String(u.email || '').toLowerCase() === String(matchedCurrent.email || '').toLowerCase();
-      const sameNameDept = matchedCurrent.name && String(u.name) === String(matchedCurrent.name) && String(u.department || '') === String(matchedCurrent.department || '');
-      return !(sameId || sameEmail || sameNameDept);
+    /* 수신/참조: 로그인 당사자 제외한 전체 회원 */
+    const targetUsers = userList.map(normalizeWorkOrderUser).filter(Boolean).filter(u => {
+      if(!current) return true;
+      const sameId = current.id && String(u.id) === String(current.id);
+      const sameEmail = current.email && String(u.email || '').toLowerCase() === String(current.email || '').toLowerCase();
+      const sameName = current.name && String(u.name) === String(current.name);
+      return !(sameId || sameEmail || sameName);
     });
 
-    qsa('#nmcRecvDept').forEach(sel=>{
-      const before = [...sel.selectedOptions].map(o=>o.value);
-      setSelectOptions(sel,targetUsers,workOrderUserOption);
+    qsa('#nmcRecvDept').forEach(sel => {
+      const before = [...(sel.selectedOptions || [])].map(o => o.value);
+      setSelectOptions(sel, targetUsers, workOrderUserOption);
       if(!before.length) clearMultiSelection(sel);
     });
 
-    qsa('#nmcRefDept').forEach(sel=>{
-      const before = [...sel.selectedOptions].map(o=>o.value);
-      setSelectOptions(sel,targetUsers,workOrderUserOption);
+    qsa('#nmcRefDept').forEach(sel => {
+      const before = [...(sel.selectedOptions || [])].map(o => o.value);
+      setSelectOptions(sel, targetUsers, workOrderUserOption);
       if(!before.length) clearMultiSelection(sel);
     });
   }
 
-  function syncSendInfo(){
-    populateManualSendTargets();
+  async function syncSendInfo(){
+    await populateManualSendTargets();
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
   }
   window.syncWorkOrderSendInfo = syncSendInfo;
