@@ -6575,15 +6575,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   async function refreshWorkOrderMembers(){
     try{
       const rootState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      const cur = rootState.currentUser || window.loginUser || window.userInfo || {};
-      const adminLogin = cur.role === 'admin' || cur.isAdmin === true || cur.email === 'admin@namochemical.com' || (typeof isAdmin === 'function' && isAdmin());
-
-      // 관리자 로그인에서는 반드시 회원등록현황 목록(/api/admin/users)을 기준으로 발송/수신/참조 목록을 다시 만든다.
-      // 기존 signableUsers는 직책/결재용 필터가 섞일 수 있어 발송정보의 원본으로 쓰지 않는다.
-      if(typeof loadAdminUsers === 'function' && (adminLogin || !Array.isArray(rootState.adminUsers) || rootState.adminUsers.length === 0)){
-        await loadAdminUsers();
-      }else if(typeof loadSignableUsers === 'function' && (!Array.isArray(rootState.signableUsers) || rootState.signableUsers.length === 0)){
-        await loadSignableUsers();
+      const hasMembers = Array.isArray(rootState.adminUsers) && rootState.adminUsers.length > 0;
+      const hasSignable = Array.isArray(rootState.signableUsers) && rootState.signableUsers.length > 1;
+      if(!hasMembers && !hasSignable){
+        if(typeof loadAdminUsers === 'function') await loadAdminUsers();
+        else if(typeof loadSignableUsers === 'function') await loadSignableUsers();
       }
     }catch(e){ console.warn('[workorder] 회원등록현황 로드 실패:', e); }
     populateManualSendTargets();
@@ -6759,17 +6755,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-send-field">
             <label>발송 부서<span class="req">*</span></label>
             <select class="nmc-select nmc-send-select" id="nmcSenderName"></select>
-            <p class="nmc-send-help">회원등록현황의 부서명과 성명이 표시됩니다.</p>
+            <p class="nmc-send-help">회원등록현황 기준 본인 부서명과 성명이 자동 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>수신 부서<span class="req">*</span></label>
             <select class="nmc-select nmc-send-select" id="nmcRecvDept" multiple size="4"></select>
-            <p class="nmc-send-help">회원등록현황의 부서명과 성명이 표시됩니다.</p>
+            <p class="nmc-send-help">회원등록현황 기준 부서명과 성명이 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>참조 부서</label>
             <select class="nmc-select nmc-send-select" id="nmcRefDept" multiple size="4"></select>
-            <p class="nmc-send-help">회원등록현황의 부서명과 성명이 표시됩니다.</p>
+            <p class="nmc-send-help">회원등록현황 기준 부서명과 성명이 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>발송 일시</label>
@@ -6880,60 +6876,46 @@ document.addEventListener('DOMContentLoaded',async()=>{
       || '로그인 사용자';
   }
 
-  function pickWorkOrderValue(u, keys){
-    for(const k of keys){
-      const v = u && u[k];
-      if(v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim();
-    }
-    return '';
-  }
-
   function productionUserNameOnly(u){
-    return pickWorkOrderValue(u, ['name','username','displayName','display_name','userName','user_name','empName','emp_name','employeeName','employee_name','memberName','member_name','korName','kor_name'])
-      || String(u?.email || u?.mail || '').split('@')[0]
+    return (u?.name || u?.username || u?.displayName || u?.userName || u?.empName || u?.employeeName || '').trim()
+      || String(u?.email || '').split('@')[0]
       || '';
   }
 
   function userDeptName(u){
-    return pickWorkOrderValue(u, ['department','dept','departmentName','department_name','deptName','dept_name','team','teamName','team_name','part','division','divisionName','division_name','userDepartment','user_department']);
+    return String(u?.department || u?.dept || u?.departmentName || u?.deptName || u?.team || '').trim();
   }
 
   function normalizeWorkOrderUser(u){
     if(!u) return null;
     const name = productionUserNameOnly(u);
-    const email = pickWorkOrderValue(u, ['email','mail','userEmail','user_email']);
-    const id = pickWorkOrderValue(u, ['id','userId','user_id','memberId','member_id','empId','emp_id','employeeId','employee_id']) || email || name;
+    const email = String(u.email || u.mail || '').trim();
+    const id = String(u.id || u.userId || u.empId || u.email || name || '').trim();
     if(!id && !name && !email) return null;
     return {
       id: id || email || name,
       name: name || email.split('@')[0] || '사용자',
       department: userDeptName(u),
-      title: pickWorkOrderValue(u, ['title','position','jobTitle','job_title','rank','roleTitle','role_title']),
+      title: String(u.title || u.position || u.jobTitle || u.rank || '').trim(),
       email,
-      role: pickWorkOrderValue(u, ['role','authority','auth','userRole','user_role']),
-      status: pickWorkOrderValue(u, ['status','approvalStatus','approval_status','state']) || 'APPROVED'
+      role: String(u.role || '').trim(),
+      status: String(u.status || u.approvalStatus || 'APPROVED').trim()
     };
   }
 
   function getAllWorkOrderUsers(){
     const users=[];
     const appState = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-    const cur = appState.currentUser || window.loginUser || window.userInfo || {};
-    const adminLogin = cur.role === 'admin' || cur.isAdmin === true || cur.email === 'admin@namochemical.com' || (typeof isAdmin === 'function' && isAdmin());
     if(appState){
-      // 관리자 화면의 회원등록현황 목록을 최우선 원본으로 사용한다.
       if(Array.isArray(appState.adminUsers)) users.push(...appState.adminUsers);
-      // 일반 로그인 또는 관리자 목록이 비어 있을 때만 보조 목록을 사용한다.
-      if(!adminLogin || !Array.isArray(appState.adminUsers) || appState.adminUsers.length === 0){
-        if(Array.isArray(appState.users)) users.push(...appState.users);
-        if(Array.isArray(appState.members)) users.push(...appState.members);
-        if(Array.isArray(appState.userList)) users.push(...appState.userList);
-        if(Array.isArray(appState.memberList)) users.push(...appState.memberList);
-        if(Array.isArray(appState.signableUsers)) users.push(...appState.signableUsers);
-      }
+      if(Array.isArray(appState.signableUsers)) users.push(...appState.signableUsers);
+      if(Array.isArray(appState.users)) users.push(...appState.users);
+      if(Array.isArray(appState.members)) users.push(...appState.members);
+      if(Array.isArray(appState.userList)) users.push(...appState.userList);
+      if(Array.isArray(appState.memberList)) users.push(...appState.memberList);
       if(appState.currentUser) users.push(appState.currentUser);
     }
-    ['adminUsers','userList','memberList','empList','employeeList','users','members'].forEach(k=>{
+    ['userList','memberList','empList','employeeList','users','members','adminUsers','signableUsers'].forEach(k=>{
       if(Array.isArray(window[k])) users.push(...window[k]);
     });
     const map=new Map();
@@ -6997,14 +6979,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function workOrderUserOption(u){
-    // 회원등록현황의 컬럼 기준: 부서명 + 성명만 표시합니다.
-    // 직책(부장/이사 등)은 발송정보 선택칸에 표시하지 않습니다.
-    const dept = String(u.department || '').trim();
-    const name = String(u.name || '').trim() || '사용자';
-    const display = dept ? `${dept} ${name}` : name;
+    const dept = u.department || '-';
+    const name = u.name || '사용자';
+    const title = u.title ? ` / ${u.title}` : '';
     return {
       value: String(u.id || u.email || name || ''),
-      text: display,
+      text: `${dept} ${name}${title}`,
       department: dept,
       name,
       email: u.email || '',
