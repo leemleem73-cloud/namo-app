@@ -8421,5 +8421,290 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<script id="namo-approval-position-lock-final">
+/* ════════════════════════════════════════════════════════════════
+   NAMO MES/QMES 전자결재 권한 최종 교체 패치
+   - 작성: 로그인 본인 고정
+   - 작성자 사원~과장: 검토/승인 = 부장 이상 로그인자만 가능
+   - 작성자 부장: 검토/승인 = 이사 이상 로그인자만 가능
+   - 작성자 이사: 검토 = 이사 이상, 승인 = 대표이사만 가능
+   - 작성자 본인 자기 검토/승인 금지
+   - 권한 없는 사용자는 검토/승인 이름/서명 영역 잠금
+════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  const TYPES = ['iqc','pqc','oqc','nc','training'];
+  const ROLES = ['writer','reviewer','approver'];
+  const LEVEL = { STAFF:1, MANAGER:2, DIRECTOR:3, CEO:9 };
+
+  function escHtml(v){
+    return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  function txt(v){ return String(v ?? '').trim(); }
+
+  function getMe(){
+    return (window.state && state.currentUser) ? state.currentUser : null;
+  }
+
+  function allUsers(){
+    const list = [];
+    if(window.state){
+      if(Array.isArray(state.signableUsers)) list.push(...state.signableUsers);
+      if(Array.isArray(state.adminUsers)) list.push(...state.adminUsers);
+    }
+    const me = getMe();
+    if(me) list.push(me);
+
+    const map = new Map();
+    list.forEach(u => {
+      if(!u) return;
+      const key = txt(u.id || u.email || u.name);
+      if(!key) return;
+      if(!map.has(key)) map.set(key, u);
+    });
+    return Array.from(map.values());
+  }
+
+  function normalizeUser(u){
+    if(!u) return null;
+    const users = allUsers();
+    const key = txt(u.id || u.email || u.name);
+    return users.find(x =>
+      txt(x.id) === key ||
+      txt(x.email) === key ||
+      txt(x.name) === key ||
+      (u.email && x.email && txt(x.email) === txt(u.email)) ||
+      (u.name && x.name && txt(x.name) === txt(u.name))
+    ) || u;
+  }
+
+  function sameUser(a,b){
+    a = normalizeUser(a);
+    b = normalizeUser(b);
+    if(!a || !b) return false;
+    const aid = txt(a.id || a.email || a.name);
+    const bid = txt(b.id || b.email || b.name);
+    if(aid && bid && aid === bid) return true;
+    if(a.email && b.email && txt(a.email) === txt(b.email)) return true;
+    if(a.name && b.name && txt(a.name) === txt(b.name)) return true;
+    return false;
+  }
+
+  function titleText(u){
+    u = normalizeUser(u);
+    return `${txt(u?.title)} ${txt(u?.position)} ${txt(u?.roleTitle)} ${txt(u?.department)} ${txt(u?.role)}`.toLowerCase();
+  }
+
+  function userLevel(u){
+    u = normalizeUser(u);
+    if(!u) return 0;
+    if(txt(u.role).toLowerCase() === 'admin') return LEVEL.CEO;
+
+    const t = titleText(u);
+
+    if(/대표이사|대표|ceo|사장|회장/.test(t)) return LEVEL.CEO;
+    if(/이사|상무|전무|임원|cto|coo|cfo|chief/.test(t)) return LEVEL.DIRECTOR;
+    if(/부장|본부장|실장|센터장/.test(t)) return LEVEL.MANAGER;
+
+    return LEVEL.STAFF;
+  }
+
+  function requiredLevel(writer, role){
+    const wl = userLevel(writer);
+
+    if(role === 'writer') return LEVEL.STAFF;
+
+    if(wl <= LEVEL.STAFF) return LEVEL.MANAGER;     // 사원~과장 작성: 부장 이상
+    if(wl === LEVEL.MANAGER) return LEVEL.DIRECTOR; // 부장 작성: 이사 이상
+
+    if(wl === LEVEL.DIRECTOR){
+      return role === 'approver' ? LEVEL.CEO : LEVEL.DIRECTOR; // 이사 작성: 승인 대표이사
+    }
+
+    return LEVEL.CEO;
+  }
+
+  function canAct(writer, role, user){
+    writer = normalizeUser(writer);
+    user = normalizeUser(user);
+    if(!writer || !user) return false;
+    if(role === 'writer') return sameUser(writer, user);
+    if(sameUser(writer, user)) return false;
+    return userLevel(user) >= requiredLevel(writer, role);
+  }
+
+  function userLabel(u){
+    u = normalizeUser(u);
+    if(!u) return '-';
+    const extra = txt(u.title || u.department || '-');
+    return `${txt(u.name || u.email || u.id)} (${extra || '-'})`;
+  }
+
+  function setSingleOption(sel, u, placeholder){
+    if(!sel) return;
+    const val = u ? txt(u.id || u.email || u.name) : '';
+    sel.innerHTML = `<option value="${escHtml(val)}">${escHtml(u ? userLabel(u) : placeholder)}</option>`;
+    sel.value = val;
+  }
+
+  function selectedUser(type, role){
+    const sel = document.getElementById(`sg_${type}_${role}`);
+    if(!sel || !sel.value) return null;
+    const v = txt(sel.value);
+    return allUsers().find(u =>
+      txt(u.id) === v ||
+      txt(u.email) === v ||
+      txt(u.name) === v
+    ) || null;
+  }
+
+  function roleElements(type, role){
+    const sel = document.getElementById(`sg_${type}_${role}`);
+    const box = sel ? sel.closest('.sign-box') : null;
+    const wrap = document.querySelector(`[data-sign-file-wrap="${type}:${role}"]`);
+    const fileBtn = document.querySelector(`[data-sign-file-btn="${type}:${role}"]`);
+    const clearBtn = document.querySelector(`[data-sign-clear="${type}:${role}"]`);
+    const fileInput = document.getElementById(`sg_${type}_${role}_file`);
+    const sub = document.getElementById(`sg_${type}_${role}_sub`);
+    return { sel, box, wrap, fileBtn, clearBtn, fileInput, sub };
+  }
+
+  function lockRole(type, role, mode, user, message){
+    const el = roleElements(type, role);
+    if(!el.sel) return;
+
+    el.sel.disabled = true;
+    el.sel.style.pointerEvents = 'none';
+
+    if(mode === 'active'){
+      setSingleOption(el.sel, user, '-');
+      if(el.sub) el.sub.textContent = message || '현재 로그인 계정으로 처리 가능';
+    }else{
+      setSingleOption(el.sel, null, '-');
+      if(el.sub) el.sub.textContent = message || '권한자 로그인 후 처리 가능';
+    }
+
+    [el.fileBtn, el.clearBtn, el.fileInput].forEach(x => {
+      if(!x) return;
+      x.disabled = mode !== 'active';
+      x.style.pointerEvents = mode === 'active' ? '' : 'none';
+      x.style.opacity = mode === 'active' ? '' : '.45';
+    });
+
+    if(el.wrap){
+      el.wrap.style.opacity = mode === 'active' ? '1' : '.55';
+      el.wrap.style.filter = mode === 'active' ? '' : 'grayscale(.25)';
+    }
+
+    if(el.box){
+      el.box.dataset.approvalLock = mode === 'active' ? 'active' : 'locked';
+      el.box.style.borderColor = mode === 'active' ? 'rgba(26,86,219,.45)' : 'var(--bd2)';
+    }
+  }
+
+  function syncPreview(type){
+    if(typeof window.onSignChange === 'function'){
+      try{ window.onSignChange(type, 'approval-lock'); }catch(e){}
+    }
+  }
+
+  function applyType(type){
+    const me = getMe();
+    if(!me) return;
+
+    const writerSel = document.getElementById(`sg_${type}_writer`);
+    const reviewerSel = document.getElementById(`sg_${type}_reviewer`);
+    const approverSel = document.getElementById(`sg_${type}_approver`);
+    if(!writerSel || !reviewerSel || !approverSel) return;
+
+    const meFull = normalizeUser(me);
+
+    // 신규/작성 화면: 작성자는 반드시 로그인 본인으로 고정
+    setSingleOption(writerSel, meFull, '-');
+    lockRole(type, 'writer', 'active', meFull, '작성자는 로그인 본인으로 고정');
+
+    const writer = selectedUser(type, 'writer') || meFull;
+    const reviewerAllowed = canAct(writer, 'reviewer', meFull);
+    const approverAllowed = canAct(writer, 'approver', meFull);
+
+    if(reviewerAllowed){
+      lockRole(type, 'reviewer', 'active', meFull, requiredText(writer, 'reviewer') + ' · 현재 계정 검토 가능');
+    }else{
+      lockRole(type, 'reviewer', 'locked', null, requiredText(writer, 'reviewer') + ' 로그인 후 검토 가능');
+    }
+
+    if(approverAllowed){
+      lockRole(type, 'approver', 'active', meFull, requiredText(writer, 'approver') + ' · 현재 계정 승인 가능');
+    }else{
+      lockRole(type, 'approver', 'locked', null, requiredText(writer, 'approver') + ' 로그인 후 승인 가능');
+    }
+
+    syncPreview(type);
+  }
+
+  function requiredText(writer, role){
+    const wl = userLevel(writer);
+    if(wl <= LEVEL.STAFF) return '부장 이상';
+    if(wl === LEVEL.MANAGER) return '이사 이상';
+    if(wl === LEVEL.DIRECTOR && role === 'approver') return '대표이사';
+    if(wl === LEVEL.DIRECTOR) return '이사 이상';
+    return '대표이사';
+  }
+
+  function applyAll(){
+    TYPES.forEach(type => {
+      try{ applyType(type); }catch(e){ console.warn('[approval-lock]', type, e); }
+    });
+  }
+
+  // 기존 함수와 연동: 기존 build/rebuild 이후에도 항상 최종 잠금 적용
+  const oldBuild = window.buildSignGrid;
+  if(typeof oldBuild === 'function'){
+    window.buildSignGrid = function(type){
+      const r = oldBuild.apply(this, arguments);
+      setTimeout(() => applyType(type), 0);
+      return r;
+    };
+  }
+
+  const oldRebuild = window.rebuildAllSignGrids;
+  if(typeof oldRebuild === 'function'){
+    window.rebuildAllSignGrids = function(){
+      const r = oldRebuild.apply(this, arguments);
+      setTimeout(applyAll, 0);
+      setTimeout(applyAll, 300);
+      return r;
+    };
+  }
+
+  const oldPerm = window.applyAllSignPermissions;
+  window.applyAllSignPermissions = function(){
+    if(typeof oldPerm === 'function'){
+      try{ oldPerm.apply(this, arguments); }catch(e){}
+    }
+    applyAll();
+  };
+
+  window.namoApprovalLevel = userLevel;
+  window.namoCanApprovalAct = canAct;
+  window.namoApplyApprovalLocks = applyAll;
+
+  document.addEventListener('change', function(e){
+    if(e.target && /^sg_.*_(writer|reviewer|approver)$/.test(e.target.id || '')){
+      setTimeout(applyAll, 0);
+    }
+  }, true);
+
+  window.addEventListener('load', function(){
+    setTimeout(applyAll, 200);
+    setTimeout(applyAll, 800);
+    setTimeout(applyAll, 1800);
+  });
+})();
+</script>
+
 </body>
 </html>
