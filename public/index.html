@@ -3227,9 +3227,9 @@ function printLabel(){
     '.jstamp{display:inline-block;border:2px solid;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;margin-top:5px}',
     '.jstamp.pass{border-color:#0a7c4e;color:#0a7c4e}.jstamp.fail{border-color:#c52b2b;color:#c52b2b}',
     '@media print{@page{margin:8mm}}',
-    '</style></head><body>',
+    '<\/style><\/head><body>',
     g.outerHTML,
-    '</body></html>'
+    '<\/body><\/html>'
   ].join('');
   w.document.open();
   w.document.write(html);
