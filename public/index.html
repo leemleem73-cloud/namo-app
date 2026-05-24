@@ -8840,5 +8840,178 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(document.readyState!=='loading') setTimeout(applyAll,0); else document.addEventListener('DOMContentLoaded',applyAll);
 })();
 </script>
+
+
+<!-- NAMO approval edit restore bugfix v2: 성적서 수정 시 검토/승인 로그인 당사자 표시 고정 -->
+<script id="namo-approval-edit-restore-bugfix-v2">
+(function(){
+  'use strict';
+  var TYPES=['iqc','pqc','oqc','nc','training'];
+  var ROLES=['writer','reviewer','approver'];
+  var ROLE_LABEL={writer:'작성',reviewer:'검토',approver:'승인'};
+  var timer=null;
+  function $id(id){return document.getElementById(id);} 
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function trim(v){return String(v==null?'':v).trim();}
+  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function uniqUser(u){
+    if(!u) return null;
+    var name=trim(u.name||u.username||u.displayName||u.fullName||u.email||u.id);
+    if(!name) name='-';
+    return {
+      id:trim(u.id||u.email||name||'login-user'),
+      name:name,
+      title:trim(u.title||u.position||u.roleTitle||u.roleName||''),
+      department:trim(u.department||u.dept||''),
+      email:trim(u.email||''),
+      role:trim(u.role||'')
+    };
+  }
+  function currentUser(){
+    var s=appState();
+    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
+    if(!u){
+      var pn=document.querySelector('.pname');
+      var pe=document.querySelector('.pemail');
+      if(pn && trim(pn.textContent)) u={name:trim(pn.textContent),email:pe?trim(pe.textContent):''};
+    }
+    if(!u && Array.isArray(s.adminUsers)){
+      var email=(document.querySelector('.pemail')||{}).textContent||'';
+      u=s.adminUsers.find(function(x){return email && trim(x.email)===trim(email);})||null;
+    }
+    if(!u && Array.isArray(s.signableUsers)){
+      var email2=(document.querySelector('.pemail')||{}).textContent||'';
+      u=s.signableUsers.find(function(x){return email2 && trim(x.email)===trim(email2);})||null;
+    }
+    return uniqUser(u);
+  }
+  function capType(t){return {iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc',training:'Training'}[t]||String(t).charAt(0).toUpperCase()+String(t).slice(1);} 
+  function capRole(r){return {writer:'Writer',reviewer:'Reviewer',approver:'Approver'}[r]||r;} 
+  function label(u){
+    if(!u) return '-';
+    var sub=u.title||u.department||'';
+    return u.name+(sub?' '+sub:'');
+  }
+  function setOnlyLoginUser(type,role){
+    var sel=$id('sg_'+type+'_'+role);
+    if(!sel) return;
+    var u=currentUser();
+    sel.innerHTML='';
+    var opt=document.createElement('option');
+    if(u){
+      opt.value=u.id;
+      opt.textContent=label(u);
+      opt.dataset.name=u.name;
+      opt.dataset.title=u.title;
+      opt.dataset.department=u.department;
+      opt.dataset.email=u.email;
+      opt.dataset.role=u.role;
+      sel.appendChild(opt);
+      sel.value=u.id;
+    }else{
+      opt.value='';
+      opt.textContent='-';
+      sel.appendChild(opt);
+      sel.value='';
+    }
+    sel.disabled=true;
+    sel.style.pointerEvents='none';
+    sel.dataset.namoLoginOnly='1';
+    var sub=$id('sg_'+type+'_'+role+'_sub');
+    if(sub) sub.textContent=u ? (ROLE_LABEL[role]+' 로그인 당사자 자동 표시') : '로그인 정보 없음';
+    var pfx='r'+capType(type)+capRole(role);
+    var nameEl=$id(pfx);
+    var titleEl=$id(pfx+'T');
+    if(nameEl) nameEl.textContent=u?u.name:'-';
+    if(titleEl) titleEl.textContent=u?(u.title||u.department||''):'';
+  }
+  function applyType(type){
+    if(!$id('signGrid_'+type)) return;
+    ROLES.forEach(function(role){setOnlyLoginUser(type,role);});
+    if(typeof window.onSignChange==='function'){
+      try{window.onSignChange(type,'namo-login-only');}catch(e){}
+      ROLES.forEach(function(role){setOnlyLoginUser(type,role);});
+    }
+    if(typeof window.syncIqcPreview==='function' && type==='iqc') try{window.syncIqcPreview();}catch(e){}
+    if(typeof window.syncPqcPreview==='function' && type==='pqc') try{window.syncPqcPreview();}catch(e){}
+    if(typeof window.syncOqcPreview==='function' && type==='oqc') try{window.syncOqcPreview();}catch(e){}
+  }
+  function applyAll(){TYPES.forEach(applyType);} 
+  function schedule(ms){clearTimeout(timer); timer=setTimeout(applyAll, ms||0);} 
+  function mePayload(){
+    var u=currentUser()||{id:'',name:'-',title:'',department:'',email:'',role:''};
+    return {id:u.id,name:u.name,title:u.title,department:u.department,email:u.email,role:u.role};
+  }
+  var oldGet=window.getSignPayload;
+  window.getSignPayload=function(type){
+    var sig=function(role){
+      try{return typeof window.signature데이터==='function' ? window.signature데이터(type,role) : {signImage:'',signDate:''};}catch(e){return {signImage:'',signDate:''};}
+    };
+    var m=mePayload();
+    return {
+      writer:Object.assign({},m,sig('writer')),
+      reviewer:Object.assign({},m,sig('reviewer')),
+      approver:Object.assign({},m,sig('approver'))
+    };
+  };
+  var oldBuild=window.buildSignGrid;
+  if(typeof oldBuild==='function'){
+    window.buildSignGrid=function(type){
+      var r=oldBuild.apply(this,arguments);
+      setTimeout(function(){applyType(type);},0);
+      setTimeout(function(){applyType(type);},80);
+      return r;
+    };
+  }
+  var oldRestore=window.restoreSign;
+  if(typeof oldRestore==='function'){
+    window.restoreSign=function(type,record){
+      var r=oldRestore.apply(this,arguments);
+      setTimeout(function(){applyType(type);},0);
+      setTimeout(function(){applyType(type);},80);
+      setTimeout(function(){applyType(type);},250);
+      return r;
+    };
+  }
+  ['editIncoming','editProcess','editShipment','editNc','editTraining'].forEach(function(fn){
+    if(typeof window[fn]==='function'){
+      var old=window[fn];
+      window[fn]=function(){
+        var r=old.apply(this,arguments);
+        setTimeout(applyAll,0);
+        setTimeout(applyAll,100);
+        setTimeout(applyAll,300);
+        return r;
+      };
+    }
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target && e.target.closest && e.target.closest('button,.sb,.btn,[onclick]');
+    if(!b) return;
+    var txt=trim(b.textContent||b.value||b.title||'');
+    var oc=trim(b.getAttribute('onclick')||'');
+    if(/수정|editIncoming|editProcess|editShipment|editNc|editTraining/.test(txt+' '+oc)){
+      setTimeout(applyAll,0);setTimeout(applyAll,120);setTimeout(applyAll,350);
+    }
+  },true);
+  try{
+    var mo=new MutationObserver(function(muts){
+      for(var i=0;i<muts.length;i++){
+        var nodes=muts[i].addedNodes||[];
+        for(var j=0;j<nodes.length;j++){
+          var n=nodes[j];
+          if(n.nodeType===1 && (String(n.id||'').indexOf('signGrid_')===0 || (n.querySelector && n.querySelector('[id^="sg_"]')))){
+            schedule(30); return;
+          }
+        }
+      }
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+  window.namoApprovalLoginOnlyFix=applyAll;
+  window.addEventListener('load',function(){setTimeout(applyAll,200);setTimeout(applyAll,1000);});
+  if(document.readyState!=='loading') setTimeout(applyAll,0); else document.addEventListener('DOMContentLoaded',applyAll);
+})();
+</script>
 </body>
 </html>
