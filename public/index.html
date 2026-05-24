@@ -8276,15 +8276,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function roleList(type, role, editRecord){
     const me = currentUser();
     if(isAdmin(me)) return allUsers();
-    if(role === 'writer'){
-      if(editRecord){
-        const saved = normalizeSaved(editRecord.signWriter || editRecord.writer);
-        return saved && saved.name && saved.name !== '-' ? [saved] : (me ? [me] : []);
-      }
-      return me ? [me] : [];
+
+    // 수정 모드에서는 저장된 작성/검토/승인 담당자를 최우선으로 복원한다.
+    // 기존에는 작성자만 복원되고 검토자/승인자는 '-'로 고정되어 기타 문서 수정 시 이름이 사라졌다.
+    if(editRecord){
+      const savedMap = {
+        writer: editRecord.signWriter || editRecord.writer,
+        reviewer: editRecord.signReviewer || editRecord.reviewer,
+        approver: editRecord.signApprover || editRecord.approver
+      };
+      const saved = normalizeSaved(savedMap[role]);
+      if(saved && saved.name && saved.name !== '-') return [saved];
     }
-    // 일반 사용자는 검토자/승인자 이름을 절대 미리 표시하지 않는다.
-    // 권한자 로그인 여부와 관계없이 화면은 '-' 하나만 표시한다.
+
+    // 신규 작성 시 작성자는 로그인 본인, 검토/승인은 권한 처리 전까지 '-' 표시
+    if(role === 'writer') return me ? [me] : [];
     return [noneUser()];
   }
   function fileBlock(type,role){
@@ -8605,6 +8611,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
   }
 
+  function savedRecord(type){
+    return (window.__qmsEditSignRecord && window.__qmsEditSignRecord[type]) || null;
+  }
+
+  function savedUserFromRecord(rec, role){
+    if(!rec) return null;
+    const raw = role === 'writer' ? (rec.signWriter || rec.writer) : role === 'reviewer' ? (rec.signReviewer || rec.reviewer) : (rec.signApprover || rec.approver);
+    if(!raw) return null;
+    const u = typeof raw === 'string' ? {id:raw, name:raw} : raw;
+    const n = txt(u.name || u.username || u.displayName || u.email || u.id);
+    if(!n || n === '-') return null;
+    return normalizeUser({
+      id: txt(u.id || u.email || n),
+      name: n,
+      title: txt(u.title || u.position || u.roleName || ''),
+      department: txt(u.department || u.dept || ''),
+      email: txt(u.email || ''),
+      role: txt(u.role || '')
+    });
+  }
+
   function applyType(type){
     const me = getMe();
     if(!me) return;
@@ -8615,6 +8642,38 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!writerSel || !reviewerSel || !approverSel) return;
 
     const meFull = normalizeUser(me);
+    const rec = savedRecord(type);
+
+    // 수정 모드: 기존 저장된 작성/검토/승인 담당자를 화면에 보존한다.
+    if(rec){
+      const savedWriter = savedUserFromRecord(rec, 'writer') || meFull;
+      const savedReviewer = savedUserFromRecord(rec, 'reviewer');
+      const savedApprover = savedUserFromRecord(rec, 'approver');
+
+      setSingleOption(writerSel, savedWriter, '-');
+      lockRole(type, 'writer', sameUser(savedWriter, meFull) ? 'active' : 'locked', savedWriter, sameUser(savedWriter, meFull) ? '저장된 작성자 · 현재 계정' : '저장된 작성자 보존');
+
+      if(savedReviewer){
+        setSingleOption(reviewerSel, savedReviewer, '-');
+        lockRole(type, 'reviewer', sameUser(savedReviewer, meFull) ? 'active' : 'locked', savedReviewer, sameUser(savedReviewer, meFull) ? '저장된 검토자 · 현재 계정' : '저장된 검토자 보존');
+      }else if(canAct(savedWriter, 'reviewer', meFull)){
+        lockRole(type, 'reviewer', 'active', meFull, requiredText(savedWriter, 'reviewer') + ' · 현재 계정 검토 가능');
+      }else{
+        lockRole(type, 'reviewer', 'locked', null, requiredText(savedWriter, 'reviewer') + ' 로그인 후 검토 가능');
+      }
+
+      if(savedApprover){
+        setSingleOption(approverSel, savedApprover, '-');
+        lockRole(type, 'approver', sameUser(savedApprover, meFull) ? 'active' : 'locked', savedApprover, sameUser(savedApprover, meFull) ? '저장된 승인자 · 현재 계정' : '저장된 승인자 보존');
+      }else if(canAct(savedWriter, 'approver', meFull)){
+        lockRole(type, 'approver', 'active', meFull, requiredText(savedWriter, 'approver') + ' · 현재 계정 승인 가능');
+      }else{
+        lockRole(type, 'approver', 'locked', null, requiredText(savedWriter, 'approver') + ' 로그인 후 승인 가능');
+      }
+
+      syncPreview(type);
+      return;
+    }
 
     // 신규/작성 화면: 작성자는 반드시 로그인 본인으로 고정
     setSingleOption(writerSel, meFull, '-');
@@ -8743,6 +8802,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return {id:String(u.id||u.email||name||'login-user'),name:String(name||'-'),title:String(u.title||u.position||u.roleName||u.role||''),department:String(u.department||u.dept||''),email:String(u.email||''),role:String(u.role||'')};
   }
   function label(u){return u ? (u.name + (u.title ? ' ' + u.title : '')) : '-';}
+  function editRecord(type){return (window.__qmsEditSignRecord && window.__qmsEditSignRecord[type]) || null;}
+  function savedUser(type,role){
+    var rec=editRecord(type); if(!rec) return null;
+    var raw=role==='writer' ? (rec.signWriter||rec.writer) : role==='reviewer' ? (rec.signReviewer||rec.reviewer) : (rec.signApprover||rec.approver);
+    if(!raw) return null;
+    var obj=typeof raw==='string'?{id:raw,name:raw}:raw;
+    var name=String(obj.name||obj.username||obj.displayName||obj.email||obj.id||'').trim();
+    if(!name || name==='-') return null;
+    return {id:String(obj.id||obj.email||name),name:name,title:String(obj.title||obj.position||obj.roleName||''),department:String(obj.department||obj.dept||''),email:String(obj.email||''),role:String(obj.role||'')};
+  }
   function setOnlyOption(sel,u,placeholder){
     if(!sel) return;
     var val=u ? u.id : '';
@@ -8763,15 +8832,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function applyOne(type){
     var u=me();
+    var rec=editRecord(type);
     ROLES.forEach(function(role){
       var sel=$id('sg_'+type+'_'+role);
       if(!sel) return;
-      setOnlyOption(sel,u,ROLE_LABEL[role]);
-      syncSub(type,role,u, role==='writer'?'작성자 로그인 당사자 고정':ROLE_LABEL[role]+' 로그인 당사자만 표시');
+      var shown = rec ? (savedUser(type,role) || (role==='writer' ? u : null)) : u;
+      setOnlyOption(sel,shown,ROLE_LABEL[role]);
+      syncSub(type,role,shown, rec ? (shown ? '저장된 '+ROLE_LABEL[role]+' 담당자 표시' : ROLE_LABEL[role]+' 담당자 미지정') : (role==='writer'?'작성자 로그인 당사자 고정':ROLE_LABEL[role]+' 로그인 당사자만 표시'));
       var nameEl=$id('r'+capType(type)+capRole(role));
       var titleEl=$id('r'+capType(type)+capRole(role)+'T');
-      if(nameEl) nameEl.textContent=u?u.name:'-';
-      if(titleEl) titleEl.textContent=u?(u.title||u.department||''):'';
+      if(nameEl) nameEl.textContent=shown?shown.name:'-';
+      if(titleEl) titleEl.textContent=shown?(shown.title||shown.department||''):'';
     });
     addActions(type);
   }
@@ -8837,179 +8908,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   document.addEventListener('change',function(e){if(e.target && /^sg_.*_(writer|reviewer|approver)$/.test(e.target.id||'')) setTimeout(applyAll,0);},true);
   document.addEventListener('click',function(e){ if(e.target && (e.target.id==='loginBtn'||e.target.id==='signupBtn')) setTimeout(applyAll,300); },true);
   window.addEventListener('load',function(){setTimeout(applyAll,200);setTimeout(applyAll,800);setTimeout(applyAll,1800);});
-  if(document.readyState!=='loading') setTimeout(applyAll,0); else document.addEventListener('DOMContentLoaded',applyAll);
-})();
-</script>
-
-
-<!-- NAMO approval edit restore bugfix v2: 성적서 수정 시 검토/승인 로그인 당사자 표시 고정 -->
-<script id="namo-approval-edit-restore-bugfix-v2">
-(function(){
-  'use strict';
-  var TYPES=['iqc','pqc','oqc','nc','training'];
-  var ROLES=['writer','reviewer','approver'];
-  var ROLE_LABEL={writer:'작성',reviewer:'검토',approver:'승인'};
-  var timer=null;
-  function $id(id){return document.getElementById(id);} 
-  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function trim(v){return String(v==null?'':v).trim();}
-  function appState(){try{return window.state||{};}catch(e){return {};}}
-  function uniqUser(u){
-    if(!u) return null;
-    var name=trim(u.name||u.username||u.displayName||u.fullName||u.email||u.id);
-    if(!name) name='-';
-    return {
-      id:trim(u.id||u.email||name||'login-user'),
-      name:name,
-      title:trim(u.title||u.position||u.roleTitle||u.roleName||''),
-      department:trim(u.department||u.dept||''),
-      email:trim(u.email||''),
-      role:trim(u.role||'')
-    };
-  }
-  function currentUser(){
-    var s=appState();
-    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
-    if(!u){
-      var pn=document.querySelector('.pname');
-      var pe=document.querySelector('.pemail');
-      if(pn && trim(pn.textContent)) u={name:trim(pn.textContent),email:pe?trim(pe.textContent):''};
-    }
-    if(!u && Array.isArray(s.adminUsers)){
-      var email=(document.querySelector('.pemail')||{}).textContent||'';
-      u=s.adminUsers.find(function(x){return email && trim(x.email)===trim(email);})||null;
-    }
-    if(!u && Array.isArray(s.signableUsers)){
-      var email2=(document.querySelector('.pemail')||{}).textContent||'';
-      u=s.signableUsers.find(function(x){return email2 && trim(x.email)===trim(email2);})||null;
-    }
-    return uniqUser(u);
-  }
-  function capType(t){return {iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc',training:'Training'}[t]||String(t).charAt(0).toUpperCase()+String(t).slice(1);} 
-  function capRole(r){return {writer:'Writer',reviewer:'Reviewer',approver:'Approver'}[r]||r;} 
-  function label(u){
-    if(!u) return '-';
-    var sub=u.title||u.department||'';
-    return u.name+(sub?' '+sub:'');
-  }
-  function setOnlyLoginUser(type,role){
-    var sel=$id('sg_'+type+'_'+role);
-    if(!sel) return;
-    var u=currentUser();
-    sel.innerHTML='';
-    var opt=document.createElement('option');
-    if(u){
-      opt.value=u.id;
-      opt.textContent=label(u);
-      opt.dataset.name=u.name;
-      opt.dataset.title=u.title;
-      opt.dataset.department=u.department;
-      opt.dataset.email=u.email;
-      opt.dataset.role=u.role;
-      sel.appendChild(opt);
-      sel.value=u.id;
-    }else{
-      opt.value='';
-      opt.textContent='-';
-      sel.appendChild(opt);
-      sel.value='';
-    }
-    sel.disabled=true;
-    sel.style.pointerEvents='none';
-    sel.dataset.namoLoginOnly='1';
-    var sub=$id('sg_'+type+'_'+role+'_sub');
-    if(sub) sub.textContent=u ? (ROLE_LABEL[role]+' 로그인 당사자 자동 표시') : '로그인 정보 없음';
-    var pfx='r'+capType(type)+capRole(role);
-    var nameEl=$id(pfx);
-    var titleEl=$id(pfx+'T');
-    if(nameEl) nameEl.textContent=u?u.name:'-';
-    if(titleEl) titleEl.textContent=u?(u.title||u.department||''):'';
-  }
-  function applyType(type){
-    if(!$id('signGrid_'+type)) return;
-    ROLES.forEach(function(role){setOnlyLoginUser(type,role);});
-    if(typeof window.onSignChange==='function'){
-      try{window.onSignChange(type,'namo-login-only');}catch(e){}
-      ROLES.forEach(function(role){setOnlyLoginUser(type,role);});
-    }
-    if(typeof window.syncIqcPreview==='function' && type==='iqc') try{window.syncIqcPreview();}catch(e){}
-    if(typeof window.syncPqcPreview==='function' && type==='pqc') try{window.syncPqcPreview();}catch(e){}
-    if(typeof window.syncOqcPreview==='function' && type==='oqc') try{window.syncOqcPreview();}catch(e){}
-  }
-  function applyAll(){TYPES.forEach(applyType);} 
-  function schedule(ms){clearTimeout(timer); timer=setTimeout(applyAll, ms||0);} 
-  function mePayload(){
-    var u=currentUser()||{id:'',name:'-',title:'',department:'',email:'',role:''};
-    return {id:u.id,name:u.name,title:u.title,department:u.department,email:u.email,role:u.role};
-  }
-  var oldGet=window.getSignPayload;
-  window.getSignPayload=function(type){
-    var sig=function(role){
-      try{return typeof window.signature데이터==='function' ? window.signature데이터(type,role) : {signImage:'',signDate:''};}catch(e){return {signImage:'',signDate:''};}
-    };
-    var m=mePayload();
-    return {
-      writer:Object.assign({},m,sig('writer')),
-      reviewer:Object.assign({},m,sig('reviewer')),
-      approver:Object.assign({},m,sig('approver'))
-    };
-  };
-  var oldBuild=window.buildSignGrid;
-  if(typeof oldBuild==='function'){
-    window.buildSignGrid=function(type){
-      var r=oldBuild.apply(this,arguments);
-      setTimeout(function(){applyType(type);},0);
-      setTimeout(function(){applyType(type);},80);
-      return r;
-    };
-  }
-  var oldRestore=window.restoreSign;
-  if(typeof oldRestore==='function'){
-    window.restoreSign=function(type,record){
-      var r=oldRestore.apply(this,arguments);
-      setTimeout(function(){applyType(type);},0);
-      setTimeout(function(){applyType(type);},80);
-      setTimeout(function(){applyType(type);},250);
-      return r;
-    };
-  }
-  ['editIncoming','editProcess','editShipment','editNc','editTraining'].forEach(function(fn){
-    if(typeof window[fn]==='function'){
-      var old=window[fn];
-      window[fn]=function(){
-        var r=old.apply(this,arguments);
-        setTimeout(applyAll,0);
-        setTimeout(applyAll,100);
-        setTimeout(applyAll,300);
-        return r;
-      };
-    }
-  });
-  document.addEventListener('click',function(e){
-    var b=e.target && e.target.closest && e.target.closest('button,.sb,.btn,[onclick]');
-    if(!b) return;
-    var txt=trim(b.textContent||b.value||b.title||'');
-    var oc=trim(b.getAttribute('onclick')||'');
-    if(/수정|editIncoming|editProcess|editShipment|editNc|editTraining/.test(txt+' '+oc)){
-      setTimeout(applyAll,0);setTimeout(applyAll,120);setTimeout(applyAll,350);
-    }
-  },true);
-  try{
-    var mo=new MutationObserver(function(muts){
-      for(var i=0;i<muts.length;i++){
-        var nodes=muts[i].addedNodes||[];
-        for(var j=0;j<nodes.length;j++){
-          var n=nodes[j];
-          if(n.nodeType===1 && (String(n.id||'').indexOf('signGrid_')===0 || (n.querySelector && n.querySelector('[id^="sg_"]')))){
-            schedule(30); return;
-          }
-        }
-      }
-    });
-    mo.observe(document.body,{childList:true,subtree:true});
-  }catch(e){}
-  window.namoApprovalLoginOnlyFix=applyAll;
-  window.addEventListener('load',function(){setTimeout(applyAll,200);setTimeout(applyAll,1000);});
   if(document.readyState!=='loading') setTimeout(applyAll,0); else document.addEventListener('DOMContentLoaded',applyAll);
 })();
 </script>
