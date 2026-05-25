@@ -6762,7 +6762,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     addNavAfter('suppliers','<button class="nav-item" data-page="supplier-quality"><span class="nav-icon">▣</span><span>품질점수</span></button>');
     addNavAfter('supplier-quality','<button class="nav-item" data-page="supplier-grade"><span class="nav-icon">▣</span><span>협력사 등급관리</span></button>');
     addNavAfter('shipment','<button class="nav-item" data-page="outbound"><span class="nav-icon">▣</span><span>출하관리</span></button>');
-    addSecBefore('users','경영 / 시스템');
+    
     const users=qs('#usersNavBtn'); if(users){ users.style.display = isAdmin()? '' : users.style.display; users.querySelector('span:last-child').textContent='회원등록 현황'; }
     const adm=qs('#adminNavTitle'); if(adm && isAdmin()) adm.style.display='';
     qsa('.nav-item[data-page]').forEach(btn=>{
