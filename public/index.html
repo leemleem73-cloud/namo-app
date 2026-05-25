@@ -7464,9 +7464,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div class="ph-actions">
           <button class="btn light" data-nmc-action="draft">임시저장</button>
           <button class="btn ghost" data-nmc-action="write">저장</button>
-          <button class="btn pri" data-nmc-action="print">인쇄</button>
+          <button class="btn pri" data-nmc-action="print">출력 / PDF</button>
         </div>
       </div>
+      <div class="nmc-tabs"><button class="nmc-tab">목록</button><button class="nmc-tab active">작성</button><button class="nmc-tab">이력</button><button class="nmc-tab">출력 / PDF</button></div>
       <div class="nmc-workorder-card">
         <h3>1. 기본 정보</h3>
         <div class="nmc-form-grid">
@@ -7539,7 +7540,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="nmc-actions">
         <button class="nmc-btn" data-nmc-action="draft">임시저장</button>
         <button class="nmc-btn primary" data-nmc-action="write">저장</button>
-        <button class="nmc-btn dark" data-nmc-action="print">인쇄</button>
+        <button class="nmc-btn dark" data-nmc-action="print">출력 / PDF</button>
       </div>
     </section>`;
   }
@@ -7900,7 +7901,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           const refMsg = refTargets.length ? ` / 참조 ${refTargets.length}명` : '';
           notify('작업지시서 발송 알림',`${woNo} 작업지시서가 ${targetMsg}${refMsg}로 발송 처리되었습니다.`);
         }
-        if(a==='print'){ notify('작업지시서 출력 알림',`${woNo} 인쇄 화면을 생성했습니다.`); printWorkOrder(); }
+        if(a==='print'){ notify('작업지시서 출력 알림',`${woNo} 출력/PDF 화면을 생성했습니다.`); printWorkOrder(); }
       }
       if(e.target.closest('#nmcLotGen')){
         e.preventDefault();
@@ -9788,235 +9789,49 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<style id="nmc-final-policy-patch-style">
-/* 최종 정책 패치: 미연결 탭 숨김, 받은/참조 행별 삭제, 인쇄 명칭 통일 */
-#page-workorder-final .nmc-tabs{display:none!important;}
-#page-workorder-inbox [data-nmc-inbox-delete],
-#page-workorder-reference [data-nmc-inbox-delete]{display:none!important;}
-.nmc-row-actions{display:inline-flex;gap:6px;align-items:center;justify-content:center;}
-.nmc-small-btn.danger{background:#fff!important;color:#dc2626!important;border:1px solid #fecaca!important;}
-.nmc-small-btn.danger:hover{background:#fee2e2!important;color:#991b1b!important;}
+<!-- 검사성적서 작성/검토/반려/승인 시스템 알림 안정화 패치 v20260525-2 -->
+<style id="namo-report-approval-notify-v20260525-style">
+.namo-report-bell{position:relative;height:36px;min-width:42px;border:1.5px solid var(--bd);border-radius:12px;background:#fff;color:#0f172a;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:var(--sh1)}
+.namo-report-bell:hover{background:#f8fafc;border-color:#bfdbfe}.namo-report-bell-count{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:999px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;display:none;align-items:center;justify-content:center;padding:0 5px}.namo-report-bell.has-new .namo-report-bell-count{display:flex}
+.namo-report-panel{position:fixed;right:18px;top:72px;width:min(430px,calc(100vw - 36px));background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 20px 48px rgba(15,23,42,.18);z-index:4200;overflow:hidden;display:none}.namo-report-panel.show{display:block}.namo-report-panel-h{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0}.namo-report-panel-h b{font-size:15px;color:#0f172a}.namo-report-close,.namo-report-clear{border:none;background:transparent;cursor:pointer;font-weight:900;color:#64748b}.namo-report-clear{font-size:12px;margin-right:10px}.namo-report-body{max-height:360px;overflow:auto;padding:8px 14px}.namo-report-item{padding:11px 0;border-bottom:1px solid #edf2f7;font-size:12px;line-height:1.52;color:#334155}.namo-report-item:last-child{border-bottom:none}.namo-report-item b{font-size:13px;color:#0f172a}.namo-report-time{margin-top:3px;font-size:10px;color:#94a3b8}.namo-report-empty{padding:24px 0;text-align:center;color:#94a3b8;font-size:12px;font-weight:800}.namo-report-actbar{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc}.namo-report-actbar .label{font-size:12px;font-weight:900;color:#334155;margin-right:4px}.namo-report-action{height:32px;padding:0 13px;border-radius:10px;border:1px solid #dbe3ee;background:#fff;font-size:12px;font-weight:900;cursor:pointer}.namo-report-action.review{background:#e0f2fe;color:#075985;border-color:#bae6fd}.namo-report-action.approve{background:#dcfce7;color:#166534;border-color:#bbf7d0}.namo-report-action.reject{background:#fee2e2;color:#991b1b;border-color:#fecaca}.namo-report-status{font-size:12px;font-weight:900;color:#475569}.namo-report-status.submit{color:#92400e}.namo-report-status.review{color:#075985}.namo-report-status.approve{color:#166534}.namo-report-status.reject{color:#991b1b}
 </style>
-<script id="nmc-final-policy-production-link-patch">
+<script id="namo-report-approval-notify-v20260525-safe">
 (function(){
   'use strict';
-  if(window.__nmcFinalPolicyProductionLinkPatch) return;
-  window.__nmcFinalPolicyProductionLinkPatch = true;
-
-  var SENT_STORE='nmc_workorder_sent_items';
-  var PLAN_STORE='nmc_production_plans_auto';
-  var DRAFT_STORE='nmc_workorder_drafts';
-
-  function $(id){return document.getElementById(id);}
-  function qs(sel,root){return (root||document).querySelector(sel);}
-  function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  if(window.__namoReportApprovalNotifyV20260525Safe) return;
+  window.__namoReportApprovalNotifyV20260525Safe = true;
+  var TYPES=['iqc','pqc','oqc'];
+  var TYPE_LABEL={iqc:'입고검사 성적서(IQC)',pqc:'공정검사 성적서(PQC)',oqc:'출하검사 성적서(OQC)'};
+  var STORE='namo_report_approval_notifications_v20260525';
+  var STATUS_STORE='namo_report_approval_status_v20260525';
+  function $id(id){return document.getElementById(id);}
+  function qs(s,root){return (root||document).querySelector(s);}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
-  function readStore(key){try{return JSON.parse(localStorage.getItem(key)||'[]')||[];}catch(e){return [];}}
-  function writeStore(key,list){try{localStorage.setItem(key,JSON.stringify((list||[]).slice(0,1000)));}catch(e){}}
-  function notifySafe(title,msg){try{ if(typeof window.notify==='function') window.notify(title,msg); else alert(title+'\n'+msg); }catch(e){ alert(title+'\n'+msg); }}
-  function nowText(){return new Date().toLocaleString('ko-KR');}
-  function getState(){try{return (typeof window.state!=='undefined'&&window.state)?window.state:{};}catch(e){return {};}}
-  function userNameOnly(u){return String((u&&(u.name||u.username||u.displayName||u.userName||u.empName||u.employeeName))||'').trim() || String((u&&u.email)||'').split('@')[0] || '';}
-  function deptName(u){return String((u&&(u.department||u.dept||u.departmentName||u.deptName||u.team))||'').trim();}
-  function normalizeUser(u){if(!u) return null; var name=userNameOnly(u), email=String(u.email||u.mail||'').trim(), id=String(u.id||u.userId||u.empId||u.email||name||'').trim(); if(!id&&!name&&!email) return null; return {id:id||email||name,name:name||email.split('@')[0]||'사용자',department:deptName(u),title:String(u.title||u.position||u.jobTitle||u.rank||'').trim(),email:email};}
-  function inferSender(){var opt=qs('#nmcSenderName option:checked')||qs('#nmcSenderName option'); if(!opt) return null; return {id:opt.value||opt.dataset.email||opt.dataset.name||opt.textContent.trim(), name:opt.dataset.name||opt.textContent.trim(), department:opt.dataset.department||'', title:opt.dataset.title||'', email:opt.dataset.email||''};}
-  function currentUser(){var s=getState(); return normalizeUser(s.currentUser||window.loginUser||window.userInfo) || inferSender() || {id:'login-user',name:'로그인 사용자',department:'',title:''};}
-  function formatUser(u){if(!u) return '-'; return [u.department,u.name].filter(Boolean).join(' ')+(u.title?' / '+u.title:'');}
-  function val(id){var el=$(id); return el?(el.value||''):'';}
-  function setVal(id,v){var el=$(id); if(el) el.value=v;}
-  function num(v){return Number(String(v||'0').replace(/,/g,'').replace(/[^0-9.\-]/g,''))||0;}
-  function selectedUsers(id){var el=$(id); if(!el || el.tagName!=='SELECT') return []; return Array.prototype.slice.call(el.selectedOptions).filter(function(o){return !o.disabled && String(o.value||o.dataset.email||o.dataset.name||o.textContent.trim()).trim()!=='';}).map(function(o){var text=o.textContent.trim(); return {id:String(o.value||o.dataset.email||o.dataset.name||text).trim(),name:String(o.dataset.name||text).trim(),department:o.dataset.department||'',title:o.dataset.title||'',email:o.dataset.email||'',text:text};}).filter(function(x){return x.id||x.name;});}
-  function selectedText(id,fb){var arr=selectedUsers(id).map(function(u){return u.text||formatUser(u);}).filter(Boolean); return arr.length?arr.join(', '):(fb||'-');}
-  function ensureNumbers(){try{ if(typeof window.generateWorkOrderNo==='function') window.generateWorkOrderNo(false); }catch(e){} try{ if(typeof window.generateProdLot==='function') window.generateProdLot(false); }catch(e){} }
-
-  function makeWorkOrderSnapshot(action){
-    ensureNumbers();
-    var sender=currentUser();
-    var receivers=selectedUsers('nmcRecvDept');
-    var refs=selectedUsers('nmcRefDept');
-    var d=new Date();
-    var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
-    var woNo=val('nmcWoNo') || ('NM-'+y+m+dd+'-LOCAL');
-    var sendTime=val('nmcSendTime') || nowText();
-    setVal('nmcSendTime',sendTime);
-    return {
-      uid:'wo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
-      woNo:woNo,
-      action:action||'send',
-      title:val('nmcProdName')||'작업지시서',
-      productName:val('nmcProdName'),
-      productCode:val('nmcProdCode'),
-      prodLot:val('nmcProdLot'),
-      orderDate:val('nmcOrderDate'),
-      planQty:val('nmcPlanQty'),
-      actualQty:val('nmcActualQty'),
-      requestDept:val('nmcReqDept'),
-      worker:val('nmcWorker'),
-      instruction:val('nmcInstruction'),
-      sendNote:val('nmcSendNote'),
-      sendTime:sendTime,
-      sender:sender,
-      writer:formatUser(sender),
-      receivers:receivers,
-      refs:refs,
-      receiverIds:receivers.map(function(x){return String(x.id||x.email||x.name||'');}).filter(Boolean),
-      refIds:refs.map(function(x){return String(x.id||x.email||x.name||'');}).filter(Boolean),
-      receiverText:selectedText('nmcRecvDept','-'),
-      refText:selectedText('nmcRefDept','-'),
-      createdAt:new Date().toISOString(),
-      status:'sent',
-      readBy:{},
-      refReadBy:{}
-    };
-  }
-
-  function saveSentWorkOrderFinal(){
-    var snap=makeWorkOrderSnapshot('send');
-    if(!snap.receiverIds.length){alert('수신 부서를 먼저 선택하세요.'); return null;}
-    var list=readStore(SENT_STORE);
-    var idx=list.findIndex(function(x){return x.woNo===snap.woNo;});
-    if(idx>=0){
-      list[idx]=Object.assign({},list[idx],snap,{uid:list[idx].uid||snap.uid,readBy:list[idx].readBy||{},refReadBy:list[idx].refReadBy||{},deletedBy:list[idx].deletedBy||{},deletedRefBy:list[idx].deletedRefBy||{}});
-    }else{
-      list.unshift(snap);
-    }
-    writeStore(SENT_STORE,list);
-    return snap;
-  }
-
-  function saveDraftFinal(){
-    var snap=makeWorkOrderSnapshot('draft');
-    snap.status='draft';
-    var list=readStore(DRAFT_STORE);
-    var idx=list.findIndex(function(x){return x.woNo===snap.woNo;});
-    if(idx>=0) list[idx]=Object.assign({},list[idx],snap,{uid:list[idx].uid||snap.uid}); else list.unshift(snap);
-    writeStore(DRAFT_STORE,list);
-    return snap;
-  }
-
-  function upsertProductionPlan(workOrder){
-    if(!workOrder) return false;
-    var plans=readStore(PLAN_STORE);
-    var planNo=workOrder.woNo || workOrder.workOrderNo;
-    if(!planNo) return false;
-    var exists=plans.some(function(v){return String(v.planNo||'')===String(planNo);});
-    if(exists) return false;
-    plans.unshift({
-      planDate:workOrder.orderDate || workOrder.issueDate || '',
-      planNo:planNo,
-      productName:workOrder.productName || '',
-      planQty:workOrder.planQty || '0',
-      inputQty:workOrder.actualQty || workOrder.inputQty || '0',
-      status:'진행 중',
-      lotNo:workOrder.prodLot || workOrder.lotNo || '',
-      requestDept:workOrder.requestDept || '',
-      writer:workOrder.writer || formatUser(workOrder.sender),
-      createdAt:workOrder.sendTime || nowText(),
-      source:'workorder'
-    });
-    writeStore(PLAN_STORE,plans);
-    renderProductionPlans();
-    return true;
-  }
-
-  function renderProductionPlans(){
-    var page=$('page-production-plan'); if(!page) return;
-    var plans=readStore(PLAN_STORE);
-    var tbody=qs('.nmc-table tbody',page); if(!tbody) return;
-    if(!plans.length){
-      tbody.innerHTML='<tr><td colspan="12" class="nmc-empty" style="padding:32px;text-align:center;color:#94a3b8;font-weight:800">등록된 생산계획 데이터가 없습니다.</td></tr>';
-    }else{
-      tbody.innerHTML=plans.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.planDate||'-')+'</td><td><b>'+esc(p.planNo||'-')+'</b></td><td>'+esc(p.productName||'-')+'</td><td>'+esc(p.planQty||'0')+'</td><td>'+esc(p.inputQty||'0')+'</td><td><span class="badge info">'+esc(p.status||'진행 중')+'</span></td><td>'+esc(p.lotNo||'-')+'</td><td>'+esc(p.requestDept||'-')+'</td><td>'+esc(p.writer||'-')+'</td><td>'+esc(p.createdAt||'-')+'</td><td></td></tr>';}).join('');
-    }
-    var total=plans.length, run=plans.filter(function(p){return p.status==='진행 중';}).length, done=plans.filter(function(p){return p.status==='완료';}).length, cancel=plans.filter(function(p){return p.status==='취소';}).length;
-    var vals=[total,run,done,cancel];
-    qsa('.nmc-plan-kpi .v',page).forEach(function(el,i){el.innerHTML=vals[i]+' <small>건</small>';});
-    var pager=qs('.nmc-pager > span',page); if(pager) pager.textContent='총 '+total+'건';
-  }
-
-  function sameUserKey(){var u=currentUser(); return String(u.id||u.email||u.name||'login-user');}
-  function markInboxDeleted(uid,type){
-    var list=readStore(SENT_STORE);
-    var item=list.find(function(x){return x.uid===uid;});
-    if(!item) return false;
-    var key=sameUserKey();
-    if(type==='ref'){item.deletedRefBy=item.deletedRefBy||{}; item.deletedRefBy[key]=new Date().toISOString();}
-    else{item.deletedBy=item.deletedBy||{}; item.deletedBy[key]=new Date().toISOString();}
-    writeStore(SENT_STORE,list);
-    return true;
-  }
-  function enhanceInboxRows(){
-    ['page-workorder-inbox','page-workorder-reference'].forEach(function(pid){
-      var page=$(pid); if(!page) return;
-      qsa('[data-nmc-inbox-delete]',page).forEach(function(b){b.remove();});
-      var type=pid==='page-workorder-reference'?'ref':'inbox';
-      var th=qs('.nmc-inbox-table thead th:last-child',page); if(th) th.textContent='확인/삭제';
-      qsa('tbody tr',page).forEach(function(tr){
-        var open=qs('[data-nmc-open-inbox]',tr); if(!open || qs('[data-nmc-row-delete]',tr)) return;
-        var cell=tr.lastElementChild; if(!cell) return;
-        var uid=open.getAttribute('data-nmc-open-inbox')||'';
-        var old=open.outerHTML;
-        cell.innerHTML='<span class="nmc-row-actions">'+old+'<button class="nmc-small-btn danger" data-nmc-row-delete="'+esc(uid)+'" data-nmc-inbox-type="'+type+'">삭제</button></span>';
-      });
-    });
-  }
-
-  function replacePrintTexts(){
-    qsa('button,[data-nmc-action="print"],.nmc-tab').forEach(function(el){
-      if(/출력\s*\/\s*PDF|출력\/PDF/.test(el.textContent||'')) el.textContent=(el.textContent||'').replace(/출력\s*\/\s*PDF|출력\/PDF/g,'인쇄');
-    });
-  }
-
-  window.addEventListener('click',function(e){
-    var rowDel=e.target.closest('[data-nmc-row-delete]');
-    if(rowDel){
-      e.preventDefault(); e.stopPropagation();
-      var uid=rowDel.getAttribute('data-nmc-row-delete');
-      var type=rowDel.getAttribute('data-nmc-inbox-type')||'inbox';
-      if(!confirm('선택한 작업지시서를 삭제하시겠습니까?')) return;
-      if(markInboxDeleted(uid,type)){
-        var tr=rowDel.closest('tr'); if(tr) tr.remove();
-        notifySafe('작업지시서 삭제','선택한 작업지시서를 삭제했습니다.');
-        setTimeout(function(){var nav=qs('.nav-item.active[data-page]'); if(nav) nav.click(); enhanceInboxRows();},20);
-      }
-      return;
-    }
-
-    var act=e.target.closest('#page-workorder-final [data-nmc-action]');
-    if(!act) return;
-    var action=act.getAttribute('data-nmc-action');
-    if(['draft','write','send','print'].indexOf(action)<0) return;
-    e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation();
-    replacePrintTexts();
-    if(action==='print'){
-      try{ if(typeof window.printWorkOrder==='function') window.printWorkOrder(); else window.print(); }catch(err){ window.print(); }
-      return;
-    }
-    if(action==='draft'){
-      var draft=saveDraftFinal();
-      notifySafe('작업지시서 임시저장',(draft.woNo||'작업지시서')+' 임시저장이 완료되었습니다.');
-      return;
-    }
-    if(action==='write' || action==='send'){
-      var wo=saveSentWorkOrderFinal();
-      if(!wo) return;
-      var added=upsertProductionPlan(wo);
-      notifySafe('작업지시서 저장',wo.woNo+' 저장/발송이 완료되었습니다.'+(added?' 생산계획 관리에 자동 등록되었습니다.':' 이미 생산계획에 등록된 건입니다.'));
-      setTimeout(function(){enhanceInboxRows(); renderProductionPlans();},50);
-      return;
-    }
-  },true);
-
-  document.addEventListener('click',function(e){
-    var nav=e.target.closest('.nav-item[data-page]');
-    if(nav && nav.dataset.page==='production-plan') setTimeout(renderProductionPlans,80);
-    if(nav && (nav.dataset.page==='workorder-inbox'||nav.dataset.page==='workorder-reference')) setTimeout(enhanceInboxRows,120);
-  },true);
-
-  var mo=new MutationObserver(function(){replacePrintTexts(); enhanceInboxRows(); renderProductionPlans();});
-  if(document.body) mo.observe(document.body,{childList:true,subtree:true});
-  function init(){replacePrintTexts(); enhanceInboxRows(); renderProductionPlans(); setTimeout(function(){replacePrintTexts(); enhanceInboxRows(); renderProductionPlans();},1000);}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function state(){try{return (typeof window.state==='object'&&window.state)?window.state:{};}catch(e){return {};}}
+  function me(){var s=state(),u=s.currentUser||window.currentUser||window.loginUser||null;if(!u&&s.signableUsers&&s.signableUsers.length)u=s.signableUsers[0];var name=u&&(u.name||u.username||u.displayName||u.email||u.id);return {id:String((u&&(u.id||u.email||name))||'login-user'),name:String(name||'로그인 사용자'),title:String((u&&(u.title||u.position||u.roleName||u.role))||''),email:String((u&&u.email)||'')};}
+  function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function docInfo(type){var date=$id(type==='iqc'?'incomingDate':type==='pqc'?'processDate':'shipmentDate');var lot=$id(type==='iqc'?'incomingLot':type==='pqc'?'processLot':'shipmentLot');var name=$id(type==='iqc'?'incomingItem':type==='pqc'?'processProduct':'shipmentProduct');var idEl=$id(type==='iqc'?'incomingEditId':type==='pqc'?'processEditId':'shipmentEditId');var d=(date&&date.value)||new Date().toISOString().slice(0,10);return {type:type,label:TYPE_LABEL[type]||type.toUpperCase(),docNo:type.toUpperCase()+'-'+String(d).replace(/-/g,'')+'-0001',lot:(lot&&lot.value)||'-',item:(name&&name.value)||'-',recordId:(idEl&&idEl.value)||''};}
+  function statusKey(info){return [info.type,info.recordId||info.docNo,info.lot||'-'].join('|');}
+  function selectedUser(type,role){var sel=$id('sg_'+type+'_'+role);if(!sel||!sel.options)return null;var opt=sel.options[sel.selectedIndex];var name=(opt&&(opt.dataset.name||opt.textContent)||'').replace(/\s*\/\s*.*$/,'').trim();if(!name||name==='-')return null;return {id:String(sel.value||name),name:name,title:String((opt&&opt.dataset.title)||''),email:String((opt&&opt.dataset.email)||'')};}
+  function targetFor(type,action){if(action==='submit')return selectedUser(type,'reviewer')||selectedUser(type,'writer')||me();if(action==='review')return selectedUser(type,'approver')||selectedUser(type,'writer')||me();return selectedUser(type,'writer')||me();}
+  function pushNoti(info,action,target){var u=me(),actionLabel={submit:'검토 요청',review:'검토 완료',approve:'승인 완료',reject:'반려'}[action]||action;var list=read(STORE,[]);var dedup=[info.type,info.docNo,info.lot,action,(target&&target.id)||''].join('|');list=list.filter(function(n){return n.dedup!==dedup;});list.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2),dedup:dedup,type:info.type,docNo:info.docNo,lot:info.lot,item:info.item,action:action,actionLabel:actionLabel,from:u.name,fromTitle:u.title,targetName:(target&&target.name)||'',targetId:(target&&target.id)||'',targetEmail:(target&&target.email)||'',time:now(),read:false});write(STORE,list.slice(0,120));renderPanel(false);}
+  function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else console.log(msg);}catch(e){}}
+  function ensureUI(){try{var right=qs('.tright')||qs('.topbar')||document.body;if(!$id('namoReportBell')){var b=document.createElement('button');b.type='button';b.id='namoReportBell';b.className='namo-report-bell';b.innerHTML='🔔<span class="namo-report-bell-count" id="namoReportBellCount">0</span>';b.title='검사성적서 결재 알림';b.addEventListener('click',function(){renderPanel(true);});right.insertBefore(b,right.firstChild);}if(!$id('namoReportPanel')){var p=document.createElement('div');p.id='namoReportPanel';p.className='namo-report-panel';p.innerHTML='<div class="namo-report-panel-h"><b>검사성적서 결재 알림</b><div><button type="button" class="namo-report-clear" id="namoReportClear">모두 읽음</button><button type="button" class="namo-report-close" id="namoReportClose">×</button></div></div><div class="namo-report-body" id="namoReportBody"></div>';document.body.appendChild(p);$id('namoReportClose').onclick=function(){p.classList.remove('show');};$id('namoReportClear').onclick=function(){var list=read(STORE,[]).map(function(n){n.read=true;return n;});write(STORE,list);renderPanel(false);};}}catch(e){console.warn('[namo-report-notify] ensureUI',e);}}
+  function renderPanel(open){try{var list=read(STORE,[]),unread=list.filter(function(n){return !n.read;}).length;var bell=$id('namoReportBell'),count=$id('namoReportBellCount'),body=$id('namoReportBody'),panel=$id('namoReportPanel');if(count)count.textContent=String(unread>99?'99+':unread);if(bell)bell.classList.toggle('has-new',unread>0);if(body)body.innerHTML=list.length?list.slice(0,30).map(function(n){return '<div class="namo-report-item"><b>'+esc(n.actionLabel)+'</b> · '+esc(TYPE_LABEL[n.type]||n.type)+'<br><span>문서: '+esc(n.docNo)+' / LOT: '+esc(n.lot)+' / 품목: '+esc(n.item)+'</span><br><span>처리자: '+esc(n.from)+' '+esc(n.fromTitle||'')+'</span>'+(n.targetName?'<br><span>대상: '+esc(n.targetName)+'</span>':'')+'<div class="namo-report-time">'+esc(n.time)+'</div></div>';}).join(''):'<div class="namo-report-empty">알림이 없습니다.</div>';if(open&&panel){panel.classList.add('show');var all=read(STORE,[]).map(function(n){n.read=true;return n;});write(STORE,all);setTimeout(function(){renderPanel(false);panel.classList.add('show');},0);}}catch(e){console.warn('[namo-report-notify] renderPanel',e);}}
+  function setStatus(type,action){try{var info=docInfo(type),key=statusKey(info),u=me(),map=read(STATUS_STORE,{});map[key]={type:type,action:action,user:u.name,title:u.title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);pushNoti(info,action,targetFor(type,action));updateActionBars();toast(({submit:'검토 요청 알림이 등록되었습니다.',review:'검토 완료 후 승인자에게 알림이 등록되었습니다.',approve:'승인 완료 알림이 작성자에게 등록되었습니다.',reject:'반려 알림이 작성자에게 등록되었습니다.'}[action])||'처리되었습니다.');}catch(e){console.warn('[namo-report-notify] setStatus',e);}}
+  function addActionBar(type){var grid=$id('signGrid_'+type);if(!grid||grid.querySelector('.namo-report-actbar'))return;var bar=document.createElement('div');bar.className='namo-report-actbar';bar.setAttribute('data-namo-report-actbar',type);bar.innerHTML='<span class="label">결재 처리</span><button type="button" class="namo-report-action review" data-report-action="review">검토</button><button type="button" class="namo-report-action approve" data-report-action="approve">승인</button><button type="button" class="namo-report-action reject" data-report-action="reject">반려</button><span class="namo-report-status">작성 저장 시 검토자에게 알림 자동 생성</span>';bar.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var btn=t.closest('[data-report-action]');if(!btn)return;e.preventDefault();setStatus(type,btn.getAttribute('data-report-action'));});grid.appendChild(bar);}
+  function updateActionBars(){try{var map=read(STATUS_STORE,{});TYPES.forEach(function(type){addActionBar(type);var bar=qs('[data-namo-report-actbar="'+type+'"]');if(!bar)return;var info=docInfo(type),st=map[statusKey(info)],span=qs('.namo-report-status',bar);if(span){var label=st?({submit:'검토 요청',review:'검토 완료',approve:'승인 완료',reject:'반려'}[st.action]||st.action):'작성 저장 시 검토자에게 알림 자동 생성';span.className='namo-report-status '+(st?st.action:'');span.textContent=st?(label+' · '+st.user+' · '+st.time):'작성 저장 시 검토자에게 알림 자동 생성';}});}catch(e){console.warn('[namo-report-notify] updateActionBars',e);}}
+  function wrapSave(name,type){var old=window[name];if(typeof old!=='function'||old.__namoReportNotifyWrappedSafe)return;var fn=function(){var info=docInfo(type),ret;try{ret=old.apply(this,arguments);}catch(e){throw e;}var after=function(){try{pushNoti(info,'submit',targetFor(type,'submit'));var map=read(STATUS_STORE,{});map[statusKey(info)]={type:type,action:'submit',user:me().name,title:me().title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);updateActionBars();toast(info.label+' 저장 후 검토자에게 알림이 등록되었습니다.');}catch(e){console.warn('[namo-report-notify] save hook',e);}};if(ret&&typeof ret.then==='function')ret.then(after).catch(function(e){console.warn(e);});else setTimeout(after,0);return ret;};fn.__namoReportNotifyWrappedSafe=true;window[name]=fn;}
+  function patchButtons(){[['incomingSave','iqc'],['processSave','pqc'],['shipmentSave','oqc']].forEach(function(p){var btn=$id(p[0]);if(!btn||btn.__namoDirectNotifyBoundSafe)return;btn.__namoDirectNotifyBoundSafe=true;btn.addEventListener('click',function(){setTimeout(function(){renderPanel(false);updateActionBars();},600);},true);});}
+  function init(){try{ensureUI();renderPanel(false);updateActionBars();patchButtons();wrapSave('saveIqc','iqc');wrapSave('savePqc','pqc');wrapSave('saveOqc','oqc');}catch(e){console.warn('[namo-report-notify] init',e);}}
+  document.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('.nav-item,.ltab,#loginBtn,#signupBtn'))setTimeout(init,300);},true);
+  document.addEventListener('input',function(e){var t=e.target;if(t&&/^(incoming|process|shipment)/.test(t.id||''))setTimeout(updateActionBars,0);},true);
+  document.addEventListener('change',function(e){var t=e.target;if(t&&/^(sg_|incoming|process|shipment)/.test(t.id||''))setTimeout(updateActionBars,0);},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  setTimeout(init,500);setTimeout(init,1600);
+  window.namoReportApprovalNotifyRefresh=init;
 })();
 </script>
 
