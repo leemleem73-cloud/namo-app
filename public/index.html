@@ -2305,6 +2305,51 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 
 
+
+
+/* 작업지시서 발송정보 최종 보정 vFinal2 - 2번째 이미지형 단일 드롭다운 */
+#page-workorder-final .nmc-send-select-wrap{
+  position:relative!important;
+  width:100%!important;
+}
+#page-workorder-final .nmc-send-select,
+#page-workorder-final #nmcRecvDept.nmc-send-select,
+#page-workorder-final #nmcRefDept.nmc-send-select{
+  appearance:auto!important;
+  -webkit-appearance:menulist!important;
+  width:100%!important;
+  height:64px!important;
+  min-height:64px!important;
+  overflow:visible!important;
+  border:1.5px solid #d9e3f0!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  padding:0 48px 0 26px!important;
+  cursor:pointer!important;
+  box-shadow:none!important;
+}
+#page-workorder-final .nmc-send-select:focus,
+#page-workorder-final #nmcRecvDept.nmc-send-select:focus,
+#page-workorder-final #nmcRefDept.nmc-send-select:focus{
+  height:64px!important;
+  min-height:64px!important;
+  border-color:#2563eb!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;
+}
+#page-workorder-final .nmc-send-select option{
+  padding:8px 10px!important;
+  font-weight:800!important;
+}
+#page-workorder-final .nmc-send-help{
+  margin-top:10px!important;
+  color:#64748b!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  line-height:1.5!important;
+}
 </style>
 </head>
 <body class="login-active">
@@ -7462,18 +7507,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div class="nmc-send-grid">
           <div class="nmc-send-field">
             <label>발송 부서<span class="req">*</span></label>
-            <select class="nmc-select nmc-send-select" id="nmcSenderName"></select>
-            <p class="nmc-send-help">회원등록현황 기준 본인 부서명과 성명이 자동 표시됩니다.</p>
+            <div class="nmc-send-select-wrap">
+              <select class="nmc-select nmc-send-select" id="nmcSenderName"></select>
+            </div>
+            <p class="nmc-send-help">로그인 사용자 기준 부서/성명/직책이 자동 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>수신 부서<span class="req">*</span></label>
-            <select class="nmc-select nmc-send-select" id="nmcRecvDept" multiple size="4"></select>
-            <p class="nmc-send-help">회원등록현황 기준 부서명과 성명이 표시됩니다.</p>
+            <div class="nmc-send-select-wrap">
+              <select class="nmc-select nmc-send-select" id="nmcRecvDept"></select>
+            </div>
+            <p class="nmc-send-help">회원등록현황 전체 목록이 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>참조 부서</label>
-            <select class="nmc-select nmc-send-select" id="nmcRefDept" multiple size="4"></select>
-            <p class="nmc-send-help">회원등록현황 기준 부서명과 성명이 표시됩니다.</p>
+            <div class="nmc-send-select-wrap">
+              <select class="nmc-select nmc-send-select" id="nmcRefDept"></select>
+            </div>
+            <p class="nmc-send-help">회원등록현황 전체 목록이 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>발송 일시</label>
@@ -7846,7 +7897,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           const recvTargets=selectedOptionTexts(nmcField(scope,'nmcRecvDept'));
           const refTargets=selectedOptionTexts(nmcField(scope,'nmcRefDept'));
           const targetMsg = recvTargets.length ? `선택한 수신 ${recvTargets.length}명` : '수신 대상 미선택';
-          const refMsg = refTargets.length ? ` / 참조 ${refTargets.length}개 부서` : '';
+          const refMsg = refTargets.length ? ` / 참조 ${refTargets.length}명` : '';
           notify('작업지시서 발송 알림',`${woNo} 작업지시서가 ${targetMsg}${refMsg}로 발송 처리되었습니다.`);
         }
         if(a==='print'){ notify('작업지시서 출력 알림',`${woNo} 출력/PDF 화면을 생성했습니다.`); printWorkOrder(); }
@@ -7885,7 +7936,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const opt = e.target;
       if(!opt || opt.tagName !== 'OPTION') return;
       const sel = opt.parentElement;
-      if(!sel || (sel.id !== 'nmcRecvDept' && sel.id !== 'nmcRefDept')) return;
+      if(!sel || !sel.multiple || (sel.id !== 'nmcRecvDept' && sel.id !== 'nmcRefDept')) return;
       e.preventDefault();
       e.stopPropagation();
       opt.selected = !opt.selected;
@@ -7896,7 +7947,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const opt = e.target;
       if(!opt || opt.tagName !== 'OPTION') return;
       const sel = opt.parentElement;
-      if(!sel || (sel.id !== 'nmcRecvDept' && sel.id !== 'nmcRefDept')) return;
+      if(!sel || !sel.multiple || (sel.id !== 'nmcRecvDept' && sel.id !== 'nmcRefDept')) return;
       e.preventDefault();
       e.stopPropagation();
     }, true);
