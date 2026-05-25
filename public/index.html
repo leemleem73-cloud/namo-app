@@ -2350,6 +2350,24 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   font-weight:700!important;
   line-height:1.5!important;
 }
+
+
+/* 교육보고서 번호 클릭 시 보고서 내용 열기 */
+.training-no-link{
+  border:none;
+  background:transparent;
+  color:#0f2f5f;
+  font-weight:900;
+  cursor:pointer;
+  text-decoration:none;
+  padding:0;
+  font:inherit;
+}
+.training-no-link:hover{
+  color:#2563eb;
+  text-decoration:underline;
+}
+
 </style>
 </head>
 <body class="login-active">
@@ -5469,7 +5487,7 @@ function renderTrainingPreview(sourceRecord){
   const el=$('trainingPreviewSheet');
   if(el){
     el.className='training-preview-sheet training-form-v5';
-    el.innerHTML=`<div class="tf-head"><div class="tf-brand">NAMO<small>Chemical</small></div><div class="tf-title">교육 보고서</div><div class="tf-qms">Namochemical QMS</div></div><table class="tf-meta"><tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서번호</th><td>${esc(r.no||'-')}</td></tr><tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr><tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr><tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr><tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td><span class="tf-ok">${esc(resultText)}</span></td></tr></table><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">1</span>참석자</div><div class="tf-box">${esc(r.attendees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">2</span>불참자</div><div class="tf-box">${esc(r.absentees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">3</span>교육 내용</div><div class="tf-box tf-content">${esc(r.content||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">4</span>비고 / 개선사항</div><div class="tf-box">${esc(r.remark||'-')}</div></div><div class="tf-bottom"><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">5</span>교육 사진</div>${photos}</div><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">6</span>작성 / 검토 / 승인</div><table class="tf-approval"><thead><tr><th>구분</th><th>담당자</th><th>처리일시</th><th>서명</th></tr></thead><tbody><tr><td>작성자</td><td>${esc(writerName)}</td><td>${esc(writerName?updatedAt:'')}</td><td class="tf-sign">${signHtml(writerName,sw)}</td></tr><tr><td>검토자</td><td>${esc(reviewerName)}</td><td>${esc(reviewerName?updatedAt:'')}</td><td class="tf-sign">${signHtml(reviewerName,sr)}</td></tr><tr><td>승인자</td><td>${esc(approverName)}</td><td>${esc(approverName?updatedAt:'')}</td><td class="tf-sign">${signHtml(approverName,sa)}</td></tr></tbody></table></div></div><div class="tf-footer"><div>Namochemical QMS</div><div class="tf-page">1 / 1</div></div>`;
+    el.innerHTML=`<div class="tf-head"><div class="tf-brand">NAMO<small>Chemical</small></div><div class="tf-title">교육 보고서</div><div class="tf-qms">Namochemical QMS</div></div><table class="tf-meta"><tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서번호</th><td><button class="training-no-link" data-action="editTraining" data-id="${esc(r.id)}" type="button">${esc(r.no||'-')}</button></td></tr><tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr><tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr><tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr><tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td><span class="tf-ok">${esc(resultText)}</span></td></tr></table><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">1</span>참석자</div><div class="tf-box">${esc(r.attendees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">2</span>불참자</div><div class="tf-box">${esc(r.absentees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">3</span>교육 내용</div><div class="tf-box tf-content">${esc(r.content||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">4</span>비고 / 개선사항</div><div class="tf-box">${esc(r.remark||'-')}</div></div><div class="tf-bottom"><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">5</span>교육 사진</div>${photos}</div><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">6</span>작성 / 검토 / 승인</div><table class="tf-approval"><thead><tr><th>구분</th><th>담당자</th><th>처리일시</th><th>서명</th></tr></thead><tbody><tr><td>작성자</td><td>${esc(writerName)}</td><td>${esc(writerName?updatedAt:'')}</td><td class="tf-sign">${signHtml(writerName,sw)}</td></tr><tr><td>검토자</td><td>${esc(reviewerName)}</td><td>${esc(reviewerName?updatedAt:'')}</td><td class="tf-sign">${signHtml(reviewerName,sr)}</td></tr><tr><td>승인자</td><td>${esc(approverName)}</td><td>${esc(approverName?updatedAt:'')}</td><td class="tf-sign">${signHtml(approverName,sa)}</td></tr></tbody></table></div></div><div class="tf-footer"><div>Namochemical QMS</div><div class="tf-page">1 / 1</div></div>`;
   }
   if($('trainingWriterText'))$('trainingWriterText').textContent=writerName;
   if($('trainingReviewerText'))$('trainingReviewerText').textContent=reviewerName;
@@ -5521,7 +5539,7 @@ async function deleteTraining(id){
   }
   renderTrainingTable();clearTrainingReport();
 }
-function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>{const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;const st=(typeof statusBadge==='function'&&wfStatus)?'<br>'+statusBadge(wfStatus.status):'';const act=(typeof actions==='function')?actions('training',r):'';return `<tr><td>${esc(r.date||'-')}</td><td>${esc(r.no||'-')}</td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}${st}</td><td>${esc(r.writer||r.signWriter?.name||'')}</td><td>${esc(r.reviewer||r.signReviewer?.name||'')}</td><td>${esc(r.approver||r.signApprover?.name||'')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button>${act}</div></td></tr>`}).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
+function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>{const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;const st=(typeof statusBadge==='function'&&wfStatus)?'<br>'+statusBadge(wfStatus.status):'';const act=(typeof actions==='function')?actions('training',r):'';return `<tr><td>${esc(r.date||'-')}</td><td><button class="training-no-link" data-action="editTraining" data-id="${esc(r.id)}" type="button">${esc(r.no||'-')}</button></td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}${st}</td><td>${esc(r.writer||r.signWriter?.name||'')}</td><td>${esc(r.reviewer||r.signReviewer?.name||'')}</td><td>${esc(r.approver||r.signApprover?.name||'')}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button>${act}</div></td></tr>`}).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
 function downloadTrainingCsv(){const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];const rows=readTrainingReports().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):'',r.writer,r.reviewer,r.approver]);const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='교육보고서_'+trainingToday()+'.csv';a.click();URL.revokeObjectURL(a.href);}
 function bindTrainingEvents(){
   if($('trainingSave')&&!window.__namoWfSavePatched)$('trainingSave').onclick=withSaving('training',$('trainingSave'),saveTrainingReport);
@@ -9492,7 +9510,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{ if(typeof actions==='function') act=actions('training',r)||''; }catch(e){}
       return '<tr>'+
         '<td>'+esc(r.date||'-')+'</td>'+
-        '<td><b>'+esc(r.no||'-')+'</b></td>'+
+        '<td><button class="training-no-link" data-action="editTraining" data-id="'+esc(r.id)+'" type="button">'+esc(r.no||'-')+'</button></td>'+
         '<td>'+esc(r.type||'-')+'</td>'+
         '<td><div class="training-title-cell"><b>'+esc(r.title||'-')+'</b><span>사진 '+esc(Array.isArray(r.photos)?r.photos.length:0)+'장 · '+esc(r.place||'장소 미입력')+'</span></div></td>'+
         '<td>'+esc(r.instructor||'-')+'</td>'+
