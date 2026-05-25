@@ -3899,7 +3899,138 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- FINAL PATCH: 교육보고서 결재라인 최종 승인자 이름 표시 보정 -->
+<script id="training-final-approver-name-fix">
+(function(){
+  'use strict';
+  var FINAL_APPROVER = {
+    id: 'hbleem@namochemical.com',
+    name: '임흥배',
+    title: '',
+    department: '',
+    email: 'hbleem@namochemical.com',
+    status: 'APPROVED'
+  };
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function isLoginUserName(v){
+    var s = txt(v).toLowerCase();
+    return !s || s === '로그인 사용자' || s === 'login-user' || s === 'current user' || s === '현재 로그인 사용자';
+  }
+  function normalizeApproverObject(v){
+    if(!v) return v;
+    if(typeof v === 'string') return isLoginUserName(v) ? FINAL_APPROVER.name : v;
+    var name = txt(v.name || v.username || v.displayName || v.email || v.id);
+    if(isLoginUserName(name) || txt(v.id).toLowerCase() === 'login-user'){
+      return Object.assign({}, v, FINAL_APPROVER);
+    }
+    return v;
+  }
+  function readReports(){
+    try{
+      if(typeof window.readTrainingReports === 'function') return window.readTrainingReports() || [];
+      return JSON.parse(localStorage.getItem('trainingReports') || '[]') || [];
+    }catch(e){ return []; }
+  }
+  function writeReports(list){
+    try{
+      localStorage.setItem('trainingReports', JSON.stringify(list || []));
+    }catch(e){}
+  }
+  function normalizeTrainingReports(){
+    var changed = false;
+    var list = readReports();
+    list.forEach(function(r){
+      if(!r) return;
+      if(isLoginUserName(r.approver)){
+        r.approver = FINAL_APPROVER.name;
+        changed = true;
+      }
+      var fixed = normalizeApproverObject(r.signApprover);
+      if(fixed !== r.signApprover){
+        r.signApprover = fixed;
+        changed = true;
+      }
+      if(r.signApprover && isLoginUserName(r.signApprover.name)){
+        r.signApprover = Object.assign({}, r.signApprover, FINAL_APPROVER);
+        changed = true;
+      }
+    });
+    if(changed) writeReports(list);
+    return changed;
+  }
+  function patchTrainingLineDisplay(){
+    var tb = document.getElementById('trainingTable');
+    if(!tb) return;
+    tb.querySelectorAll('.training-line-mini span').forEach(function(span, idx){
+      if(isLoginUserName(span.textContent)) span.textContent = FINAL_APPROVER.name;
+    });
+    tb.querySelectorAll('tr').forEach(function(tr){
+      var line = tr.querySelector('.training-line-mini');
+      if(!line) return;
+      var spans = line.querySelectorAll('span');
+      if(spans.length >= 3 && isLoginUserName(spans[2].textContent)) spans[2].textContent = FINAL_APPROVER.name;
+    });
+  }
+  function patchTrainingFormApprover(){
+    var sel = document.getElementById('sg_training_approver');
+    if(sel && sel.options && sel.options.length === 1){
+      var opt = sel.options[0];
+      if(isLoginUserName(opt.textContent) || isLoginUserName(opt.dataset && opt.dataset.name) || txt(opt.value).toLowerCase() === 'login-user'){
+        opt.value = FINAL_APPROVER.id;
+        opt.textContent = FINAL_APPROVER.name;
+        opt.dataset.name = FINAL_APPROVER.name;
+        opt.dataset.email = FINAL_APPROVER.email;
+        sel.value = FINAL_APPROVER.id;
+      }
+    }
+    ['trainingApproverText','trainingLogApprover'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && isLoginUserName(el.textContent)) el.textContent = FINAL_APPROVER.name;
+    });
+  }
+  function refresh(){
+    normalizeTrainingReports();
+    patchTrainingLineDisplay();
+    patchTrainingFormApprover();
+  }
+  function wrapRender(){
+    if(typeof window.renderTrainingTable === 'function' && !window.renderTrainingTable.__finalApproverNameFixed){
+      var old = window.renderTrainingTable;
+      var fn = function(){
+        normalizeTrainingReports();
+        var ret = old.apply(this, arguments);
+        setTimeout(refresh, 0);
+        return ret;
+      };
+      fn.__finalApproverNameFixed = true;
+      window.renderTrainingTable = fn;
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ wrapRender(); refresh(); });
+  }else{
+    wrapRender(); refresh();
+  }
+  window.addEventListener('load', function(){
+    wrapRender();
+    [0, 300, 900, 1800].forEach(function(ms){ setTimeout(refresh, ms); });
+  });
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-train-appr="approve"],[data-training-approval-request],#trainingSave')){
+      setTimeout(function(){ wrapRender(); refresh(); }, 250);
+      setTimeout(function(){ try{ if(typeof window.renderTrainingTable === 'function') window.renderTrainingTable(); }catch(err){} refresh(); }, 700);
+    }
+  }, true);
+  document.addEventListener('change', function(e){
+    if(e.target && /^sg_training_approver$/.test(e.target.id || '')) setTimeout(refresh, 0);
+  }, true);
+  setInterval(refresh, 3000);
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
