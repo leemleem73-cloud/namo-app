@@ -3840,7 +3840,211 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- 교육보고서 목록 검토/승인/반려 처리 버튼 최종 패치 -->
+<style id="training-approval-action-list-style">
+.training-approval-row-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-start;margin-top:6px;padding-top:6px;border-top:1px dashed #e2e8f0;}
+.training-appr-act{height:28px;padding:0 10px;border:none;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer;transition:.15s ease;}
+.training-appr-act.review{background:#e0f2fe;color:#075985;border:1px solid #bae6fd;}
+.training-appr-act.approve{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.training-appr-act.reject{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.training-appr-act:hover{filter:brightness(.97);transform:translateY(-1px);}
+.training-appr-act:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.training-appr-done{display:inline-flex;align-items:center;height:23px;padding:0 8px;border-radius:99px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:900;white-space:nowrap;}
+.training-appr-done.reviewed{background:#e0f2fe;color:#075985;}
+.training-appr-done.approved{background:#dcfce7;color:#166534;}
+.training-appr-done.rejected{background:#fee2e2;color:#991b1b;}
+.training-line-mini .training-line-status{margin-left:6px;}
+</style>
+<script id="training-approval-action-list-final">
+(function(){
+  'use strict';
+  if(window.__trainingApprovalActionListFinal) return;
+  window.__trainingApprovalActionListFinal=true;
+
+  function $id(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});}
+  function txt(v){return String(v==null?'':v).trim();}
+  function appState(){try{return window.state||state||{};}catch(e){return window.state||{};}}
+  function nowText(){try{if(typeof trainingNow==='function') return trainingNow();}catch(e){} return new Date().toLocaleString('ko-KR');}
+  function me(){
+    var s=appState();
+    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
+    if(!u) return null;
+    var email=txt(u.email||u.mail||'');
+    var name=txt(u.name||u.username||u.userName||u.fullName||u.displayName||email||'');
+    var id=txt(u.id||u.userId||u.uid||email||name);
+    return {id:id||name,name:name||id,title:txt(u.title||u.position||u.rank||u.jobTitle||u.roleName||''),department:txt(u.department||u.dept||u.team||u.org||''),email:email,role:txt(u.role||u.userRole||'')};
+  }
+  function person(raw){
+    if(!raw) return null;
+    if(typeof raw==='string') raw={id:raw,name:raw};
+    var email=txt(raw.email||raw.mail||'');
+    var name=txt(raw.name||raw.username||raw.userName||raw.displayName||email||raw.id||'');
+    if(!name||name==='-') return null;
+    return {id:txt(raw.id||raw.userId||raw.uid||email||name),name:name,title:txt(raw.title||raw.position||raw.rank||raw.jobTitle||raw.roleName||''),department:txt(raw.department||raw.dept||raw.team||raw.org||''),email:email,role:txt(raw.role||raw.userRole||''),signImage:raw.signImage||'',signDate:raw.signDate||''};
+  }
+  function same(a,b){
+    a=person(a); b=person(b); if(!a||!b) return false;
+    if(a.id&&b.id&&a.id===b.id) return true;
+    if(a.email&&b.email&&a.email===b.email) return true;
+    return !!(a.name&&b.name&&a.name===b.name);
+  }
+  function titleText(u){u=person(u)||{}; return (u.title+' '+u.role+' '+u.department).toLowerCase();}
+  function level(u){
+    var t=titleText(u);
+    if(/admin|관리자|대표이사|대표|ceo|사장|회장/.test(t)) return 9;
+    if(/이사|상무|전무|임원|cto|coo|cfo|chief/.test(t)) return 3;
+    if(/부장|본부장|실장|센터장/.test(t)) return 2;
+    return 1;
+  }
+  function required(writer,role){
+    var wl=level(writer);
+    if(role==='reviewer'){
+      if(wl<=1) return 2;
+      if(wl===2) return 3;
+      if(wl===3) return 3;
+      return 9;
+    }
+    if(role==='approver'){
+      if(wl<=1) return 2;
+      if(wl===2) return 3;
+      if(wl===3) return 9;
+      return 9;
+    }
+    return 1;
+  }
+  function canAct(writer,role,user){
+    user=person(user); writer=person(writer)||user;
+    if(!user||!writer) return false;
+    if(same(writer,user)) return false;
+    if(typeof window.namoCanApprovalAct==='function'){
+      try{return !!window.namoCanApprovalAct(writer,role,user);}catch(e){}
+    }
+    return level(user)>=required(writer,role);
+  }
+  function reportWriter(r){return person(r.signWriter)||person(r.writer)||me();}
+  function reportReviewer(r){return person(r.signReviewer)||person(r.reviewer);}
+  function reportApprover(r){return person(r.signApprover)||person(r.approver);}
+  function statusOf(r){
+    var st=txt(r.approvalStatus||r.approval_status||'');
+    if(/reject|반려/i.test(st)) return 'rejected';
+    if(reportApprover(r)||/approve|승인완료|approved/i.test(st)) return 'approved';
+    if(reportReviewer(r)||/review|검토완료|reviewed/i.test(st)) return 'reviewed';
+    return 'draft';
+  }
+  function statusLabel(st){return st==='approved'?'승인완료':st==='reviewed'?'검토완료':st==='rejected'?'반려':'결재대기';}
+  function statusBadge(st){return '<span class="training-appr-done '+esc(st)+' training-line-status">'+esc(statusLabel(st))+'</span>';}
+  function buttonHtml(r){
+    var u=me(); if(!u) return '<span class="training-appr-done">로그인 필요</span>';
+    var writer=reportWriter(r);
+    var reviewer=reportReviewer(r);
+    var approver=reportApprover(r);
+    var st=statusOf(r);
+    var html=[];
+    if(st==='rejected') html.push('<span class="training-appr-done rejected">반려됨</span>');
+    if(reviewer) html.push('<span class="training-appr-done reviewed">검토: '+esc(reviewer.name)+'</span>');
+    else if(canAct(writer,'reviewer',u)) html.push('<button class="training-appr-act review" data-training-approval-action="review" data-id="'+esc(r.id)+'" type="button">검토</button>');
+    if(approver) html.push('<span class="training-appr-done approved">승인: '+esc(approver.name)+'</span>');
+    else if(canAct(writer,'approver',u)) html.push('<button class="training-appr-act approve" data-training-approval-action="approve" data-id="'+esc(r.id)+'" type="button">승인</button>');
+    if((canAct(writer,'reviewer',u)||canAct(writer,'approver',u)) && st!=='approved' && st!=='rejected') html.push('<button class="training-appr-act reject" data-training-approval-action="reject" data-id="'+esc(r.id)+'" type="button">반려</button>');
+    return html.length?'<div class="training-approval-row-actions">'+html.join('')+'</div>':'<div class="training-approval-row-actions"><span class="training-appr-done">해당 권한자만 처리</span></div>';
+  }
+  function attendCount(v){try{if(typeof trainingAttendCount==='function') return trainingAttendCount(v);}catch(e){} return String(v||'').split(/[,;\n]/).map(function(x){return x.trim();}).filter(Boolean).length||'-';}
+  function safeList(){try{if(typeof readTrainingReports==='function') return readTrainingReports()||[];}catch(e){} return [];}
+  function filtered(list){
+    var q=($id('trainingSearch')?.value||'').toLowerCase().trim();
+    var type=$id('trainingTypeFilter')?.value||'';
+    var st=$id('trainingStatusFilter')?.value||'';
+    return list.filter(function(r){
+      var hay=[r.date,r.no,r.type,r.title,r.instructor,r.dept,r.writer,r.reviewer,r.approver,r.approvalStatus].join(' ').toLowerCase();
+      if(q&&hay.indexOf(q)<0) return false;
+      if(type&&String(r.type||'')!==type) return false;
+      if(st&&String(r.result||'')!==st) return false;
+      return true;
+    });
+  }
+  function statusClass(v){v=String(v||'완료'); if(v.indexOf('미')>-1) return 'miss'; if(v.indexOf('예정')>-1||v.indexOf('작성')>-1) return 'draft'; if(v.indexOf('검토')>-1) return 'review'; return 'done';}
+  function updateKpis(list){
+    var total=list.length;
+    var done=list.filter(function(r){return String(r.result||'완료')==='완료';}).length;
+    var miss=list.filter(function(r){return String(r.result||'')==='미실시';}).length;
+    var review=list.filter(function(r){return statusOf(r)==='reviewed';}).length;
+    if($id('trainingKpiTotal')) $id('trainingKpiTotal').textContent=total;
+    if($id('trainingKpiDone')) $id('trainingKpiDone').textContent=done;
+    if($id('trainingKpiReview')) $id('trainingKpiReview').textContent=review;
+    if($id('trainingKpiMiss')) $id('trainingKpiMiss').textContent=miss;
+  }
+  window.renderTrainingTable=function(){
+    var tb=$id('trainingTable'); if(!tb) return;
+    var all=safeList(); var list=filtered(all); updateKpis(all);
+    tb.innerHTML=list.length?list.map(function(r){
+      var result=String(r.result||'완료');
+      var w=(reportWriter(r)||{}).name||'-';
+      var rv=(reportReviewer(r)||{}).name||'-';
+      var ap=(reportApprover(r)||{}).name||'-';
+      var st=statusOf(r);
+      return '<tr>'+ 
+        '<td>'+esc(r.date||'-')+'</td>'+ 
+        '<td><b>'+esc(r.no||'-')+'</b></td>'+ 
+        '<td>'+esc(r.type||'-')+'</td>'+ 
+        '<td><div class="training-title-cell"><b>'+esc(r.title||'-')+'</b><span>사진 '+esc(Array.isArray(r.photos)?r.photos.length:0)+'장 · '+esc(r.place||'장소 미입력')+'</span></div></td>'+ 
+        '<td>'+esc(r.instructor||'-')+'</td>'+ 
+        '<td>'+esc(r.dept||'-')+'</td>'+ 
+        '<td>'+esc(attendCount(r.attendees))+'명</td>'+ 
+        '<td><span class="training-status-chip '+statusClass(result)+'">'+esc(result)+'</span></td>'+ 
+        '<td><div class="training-line-mini"><span>'+esc(w)+'</span><i>›</i><span>'+esc(rv)+'</span><i>›</i><span>'+esc(ap)+'</span>'+statusBadge(st)+'</div></td>'+ 
+        '<td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="'+esc(r.id)+'" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="'+esc(r.id)+'" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="'+esc(r.id)+'" type="button">삭제</button></div>'+buttonHtml(r)+'</td>'+ 
+      '</tr>';
+    }).join(''):'<tr><td colspan="10" style="text-align:center;padding:34px;color:#94a3b8;font-weight:900;">교육 보고서가 없습니다.</td></tr>';
+  };
+  async function persistTrainingRecord(r){
+    var list=safeList();
+    var idx=list.findIndex(function(x){return String(x.id)===String(r.id);});
+    if(idx>-1){list[idx]=r;}
+    if(typeof writeTrainingReports==='function'){
+      try{writeTrainingReports(list);}catch(e){}
+    }
+    if(typeof api==='function'){
+      try{await api('/api/training/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(r)});}catch(e){}
+    }
+    try{if(typeof loadTrainingReports==='function') await loadTrainingReports();}catch(e){}
+    window.renderTrainingTable();
+  }
+  async function doAction(id,action){
+    var list=safeList();
+    var r=list.find(function(x){return String(x.id)===String(id);});
+    if(!r){alert('교육보고서를 찾을 수 없습니다.');return;}
+    var u=me(); if(!u){alert('로그인 후 처리할 수 있습니다.');return;}
+    var writer=reportWriter(r);
+    if(action==='review'){
+      if(!canAct(writer,'reviewer',u)){alert('검토 권한이 없습니다.');return;}
+      r.reviewer=u.name; r.signReviewer=Object.assign({},u,{signDate:nowText()}); r.reviewedAt=nowText(); r.approvalStatus='REVIEWED';
+    }else if(action==='approve'){
+      if(!canAct(writer,'approver',u)){alert('승인 권한이 없습니다.');return;}
+      r.approver=u.name; r.signApprover=Object.assign({},u,{signDate:nowText()}); r.approvedAt=nowText(); r.approvalStatus='APPROVED';
+    }else if(action==='reject'){
+      if(!canAct(writer,'reviewer',u)&&!canAct(writer,'approver',u)){alert('반려 권한이 없습니다.');return;}
+      r.rejectedBy=u.name; r.signRejecter=Object.assign({},u,{signDate:nowText()}); r.rejectedAt=nowText(); r.approvalStatus='REJECTED';
+    }
+    r.updatedAt=nowText();
+    await persistTrainingRecord(r);
+    alert(action==='review'?'검토 처리되었습니다.':action==='approve'?'승인 처리되었습니다.':'반려 처리되었습니다.');
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-training-approval-action]');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    doAction(b.getAttribute('data-id'),b.getAttribute('data-training-approval-action'));
+  },true);
+  ['trainingSearch','trainingTypeFilter','trainingStatusFilter'].forEach(function(id){var el=$id(id); if(el){el.addEventListener('input',window.renderTrainingTable);el.addEventListener('change',window.renderTrainingTable);}});
+  window.addEventListener('load',function(){setTimeout(window.renderTrainingTable,200);setTimeout(window.renderTrainingTable,1000);});
+  if(document.readyState!=='loading') setTimeout(window.renderTrainingTable,0); else document.addEventListener('DOMContentLoaded',function(){setTimeout(window.renderTrainingTable,0);});
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
