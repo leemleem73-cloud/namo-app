@@ -8918,8 +8918,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return '신규 작성 시 일반 사용자는 - 표시. 저장 후 해당 권한자 로그인 시 본인 검토/승인 가능. 관리자는 전체 회원 선택 가능.';
   }
   function renderRole(type, role, list, disabled){
+    const ROLE_TITLE = {writer:'작성자 (본인)', reviewer:'검토자 (부장)', approver:'승인자 (부장 이상)'};
     const ph = role === 'writer' ? '-- 작성자 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
-    return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
+    return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_TITLE[role] || ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
       <select class="sign-sel" id="sg_${type}_${role}" ${disabled ? 'disabled' : ''}>${opts(list, ph)}</select>
       <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
       ${fileBlock(type,role)}
@@ -9559,9 +9560,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
     ROLES.forEach(function(role){
       var sel=$id('sg_'+type+'_'+role);
       if(!sel) return;
-      var shown = rec ? (savedUser(type,role) || (role==='writer' ? u : null)) : u;
+      var shown = rec ? (savedUser(type,role) || (role==='writer' ? u : null)) : (role==='writer' ? u : null);
       setOnlyOption(sel,shown,ROLE_LABEL[role]);
-      syncSub(type,role,shown, rec ? (shown ? '저장된 '+ROLE_LABEL[role]+' 담당자 표시' : ROLE_LABEL[role]+' 담당자 미지정') : (role==='writer'?'작성자 로그인 당사자 고정':ROLE_LABEL[role]+' 로그인 당사자만 표시'));
+      syncSub(type,role,shown, rec ? (shown ? '저장된 '+ROLE_LABEL[role]+' 담당자 표시' : ROLE_LABEL[role]+' 담당자 미지정') : (role==='writer'?'작성자는 로그인 본인으로 고정됩니다.':ROLE_LABEL[role]+' 담당자 미지정'));
       var nameEl=$id('r'+capType(type)+capRole(role));
       var titleEl=$id('r'+capType(type)+capRole(role)+'T');
       if(nameEl) nameEl.textContent=shown?shown.name:'-';
