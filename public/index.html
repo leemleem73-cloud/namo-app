@@ -3032,10 +3032,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <span class="training-side-ico">👥</span>
               <span>교육대상자</span>
             </button>
-            <div class="training-side-note">
-              <b>알림 기준</b>
-              <span>작성·검토·승인 업무 알림은 해당자에게만 표시됩니다.</span>
-            </div>
           </aside>
 
           <main class="training-modern-main">
@@ -5497,7 +5493,11 @@ async function saveTrainingReport(){
   const saved=readTrainingReports().find(x=>String(x.id)===String(r.id))||r;
   fillTrainingForm(saved);
   renderTrainingTable();
-  alert('교육 보고서가 저장되었습니다.');
+  if(typeof notify==='function'){
+    notify('교육보고서 저장 알림', `${saved.no||r.no||'교육보고서'} 저장이 완료되었습니다.`);
+  }else{
+    alert('교육 보고서가 저장되었습니다.');
+  }
 }
 function editTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(r){fillTrainingForm(r);document.querySelector('[data-page="training"]')?.click();$('trainingPrintArea')?.scrollIntoView({behavior:'smooth',block:'start'});}}
 function printTraining(id){const r=readTrainingReports().find(x=>String(x.id)===String(id));if(!r)return;renderTrainingPreview(r);setTimeout(()=>printEl($('trainingPreviewSheet')),200);}
