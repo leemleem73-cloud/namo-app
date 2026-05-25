@@ -3128,16 +3128,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                       <div class="sign-grid" id="signGrid_training"></div>
                     </div>
                   </div>
-                  <div class="training-approval-log">
-                    <table>
-                      <thead><tr><th>구분</th><th>담당자</th><th>처리상태</th><th>알림대상</th></tr></thead>
-                      <tbody>
-                        <tr><td>작성</td><td id="trainingLogWriter">-</td><td><span class="training-status done">작성</span></td><td>검토자</td></tr>
-                        <tr><td>검토</td><td id="trainingLogReviewer">-</td><td><span class="training-status review">검토중</span></td><td>승인자</td></tr>
-                        <tr><td>승인</td><td id="trainingLogApprover">-</td><td><span class="training-status draft">대기</span></td><td>작성자</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
                 </div>
 
                 <div class="card mt14" id="trainingPreviewCard">
@@ -3145,11 +3135,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                   <div class="cb"><div class="training-preview-sheet" id="trainingPreviewSheet"></div></div>
                 </div>
 
-                <div class="rprint-sign mt14">
-                  <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rTrainingWriter">-</div><div class="rpsign-title" id="rTrainingWriterT"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rTrainingReviewer">-</div><div class="rpsign-title" id="rTrainingReviewerT"></div><div class="rpsign-line"></div></div>
-                  <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rTrainingApprover">-</div><div class="rpsign-title" id="rTrainingApproverT"></div><div class="rpsign-line"></div></div>
-                </div>
                 <input type="hidden" id="trainingEditId">
               </div>
             </section>
