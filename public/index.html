@@ -7906,8 +7906,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
         e.preventDefault();
         const a=act.dataset.nmcAction;
         const woNo = $('nmcWoNo')?.value || '작업지시서';
-        if(a==='draft') notify('작업지시서 임시저장',`${woNo} 임시저장이 완료되었습니다.`);
-        if(a==='write') notify('작업지시서 저장',`${woNo} 저장이 완료되었습니다.`);
+        if(a==='draft'){ nmcSaveWorkOrderHistory('임시저장'); notify('작업지시서 임시저장',`${woNo} 임시저장이 완료되었습니다.`); }
+        if(a==='write'){ nmcSaveWorkOrderHistory('저장완료'); notify('작업지시서 저장',`${woNo} 저장이 완료되었습니다.`); }
         if(a==='send'){
           syncSendInfo();
           const scope=nmcScopeFrom(act);
@@ -8385,19 +8385,29 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const txt = v => String(v ?? '').trim();
   const appState = () => { try { return window.state || state || {}; } catch(e){ return window.state || {}; } };
 
-  function norm(u){
-    if(!u) return null;
-    const email = txt(u.email || u.mail || '');
-    const name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || email || u.label || '');
-    const id = txt(u.id || u.userId || u.uid || email || name);
-    if(!id && !name) return null;
+  function norm(item,idx){
+    item=item||{};
+    var sender=item.sender;
+    if(sender && typeof sender === 'object') sender=[sender.department,sender.name].filter(Boolean).join(' ') || sender.email || '-';
     return {
-      id, name: name || id,
-      department: txt(u.department || u.dept || u.team || u.org || ''),
-      title: txt(u.title || u.position || u.rank || u.jobTitle || ''),
-      email,
-      role: txt(u.role || u.userRole || ''),
-      status: txt(u.status || u.approvalStatus || 'APPROVED')
+      id:item.uid||item.id||item.no||item.orderNo||item.workOrderNo||item.workorderNo||item.woNo||('wo_'+idx),
+      no:item.woNo||item.orderNo||item.workOrderNo||item.workorderNo||item.no||item.number||'-',
+      product:item.productName||item.product||item.itemName||item.title||item.name||'-',
+      code:item.productCode||item.code||'-',
+      lot:item.lot||item.productionLot||item.prodLot||item.lotNo||'-',
+      plan:item.planQty||item.plannedQty||item.planQuantity||item.qty||item.quantity||'-',
+      actual:item.actualQty||item.inputQty||item.realQty||item.actualInputQty||'-',
+      date:item.sendTime||item.sentAt||item.date||item.createdAt||item.createdDate||item.issueDate||'-',
+      orderDate:item.orderDate||item.date||'-',
+      status:item.status||item.state||'작성완료',
+      sender:item.senderText||sender||item.writer||item.author||'-',
+      receiver:item.receiverText||item.receiver||item.recvDept||item.receive||'-',
+      ref:item.refText||item.refDept||item.reference||item.cc||'-',
+      instruction:item.instruction||item.instructions||item.orderInstruction||'-',
+      sendNote:item.sendNote||item.memo||item.note||item.remark||item.description||'-',
+      memo:item.memo||item.sendNote||item.note||item.remark||item.description||'-',
+      materials:Array.isArray(item.materials)?item.materials:[],
+      raw:item
     };
   }
   function currentUser(){ return norm(appState().currentUser || window.currentUser || null); }
@@ -10277,17 +10287,20 @@ document.addEventListener('DOMContentLoaded',async()=>{
       'workOrders',
       'workOrderHistory',
       'nmcWorkorderHistory',
-      'nmcSentWorkorders'
+      'nmcSentWorkorders',
+      'nmc_workorder_sent_items'
     ];
 
     var merged = [];
+    function addArray(arr){
+      if(Array.isArray(arr)) merged = merged.concat(arr);
+    }
 
     keys.forEach(function(key){
       try{
         var raw = localStorage.getItem(key);
         if(!raw) return;
-        var arr = JSON.parse(raw);
-        if(Array.isArray(arr)) merged = merged.concat(arr);
+        addArray(JSON.parse(raw));
       }catch(e){}
     });
 
@@ -10296,17 +10309,56 @@ document.addEventListener('DOMContentLoaded',async()=>{
       window.workOrders,
       window.workOrderHistory,
       window.nmcSentWorkorders
-    ].forEach(function(arr){
-      if(Array.isArray(arr)) merged = merged.concat(arr);
-    });
+    ].forEach(addArray);
 
     var seen = {};
     return merged.filter(function(item){
       item = item || {};
-      var id = item.id || item.no || item.orderNo || item.workOrderNo || item.woNo || JSON.stringify(item);
+      var id = item.uid || item.id || item.no || item.orderNo || item.workOrderNo || item.workorderNo || item.woNo || JSON.stringify(item);
+      id = String(id || '').trim();
+      if(!id) return false;
       if(seen[id]) return false;
       seen[id] = true;
       return true;
+    });
+  }
+  function selectedTextsSafe(el){
+    if(!el) return [];
+    if(el.options){
+      return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return (o.textContent || o.value || '').trim();}).filter(Boolean);
+    }
+    return [];
+  }
+  function selectedValuesSafe(el){
+    if(!el || !el.options) return [];
+    return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return String(o.value || o.textContent || '').trim();}).filter(Boolean);
+  }
+  function storeList(key){
+    try{var arr=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(arr)?arr:[];}catch(e){return [];}
+  }
+  function upsertStore(key,item){
+    var arr = storeList(key);
+    var id = String(item.uid || item.id || item.no || item.orderNo || item.workOrderNo || item.woNo || '');
+    var found = false;
+    arr = arr.map(function(x){
+      var xid = String((x && (x.uid || x.id || x.no || x.orderNo || x.workOrderNo || x.woNo)) || '');
+      if(id && xid === id){ found = true; return Object.assign({}, x, item); }
+      return x;
+    });
+    if(!found) arr.unshift(item);
+    try{ localStorage.setItem(key, JSON.stringify(arr.slice(0,500))); }catch(e){}
+  }
+  function collectMaterialsSafe(){
+    return qa('#nmcMaterialTable tbody tr').map(function(tr,i){
+      return {
+        no:i+1,
+        name:(tr.children[1] && tr.children[1].querySelector('input') && tr.children[1].querySelector('input').value) || '',
+        lot:(tr.children[2] && tr.children[2].querySelector('input') && tr.children[2].querySelector('input').value) || '',
+        planQty:(tr.querySelector('.nmc-mat-plan-qty') && tr.querySelector('.nmc-mat-plan-qty').value) || '0',
+        actualQty:(tr.querySelector('.nmc-mat-qty') && tr.querySelector('.nmc-mat-qty').value) || '0',
+        ratio:(tr.querySelector('.nmc-mat-ratio') && tr.querySelector('.nmc-mat-ratio').value) || '0.00',
+        note:(tr.children[6] && tr.children[6].querySelector('input') && tr.children[6].querySelector('input').value) || ''
+      };
     });
   }
   function nmcSaveWorkOrderHistory(status){
@@ -10316,54 +10368,53 @@ document.addEventListener('DOMContentLoaded',async()=>{
     };
     var woNo = get('nmcWoNo') || ('NM-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-TEMP');
     var now = new Date();
-    var recv = selectedOptionTexts(document.getElementById('nmcRecvDept')).join(', ');
-    var ref = selectedOptionTexts(document.getElementById('nmcRefDept')).join(', ');
+    var recvEl = document.getElementById('nmcRecvDept');
+    var refEl = document.getElementById('nmcRefDept');
+    var recv = selectedTextsSafe(recvEl).join(', ');
+    var ref = selectedTextsSafe(refEl).join(', ');
+    var sendTime = get('nmcSendTime') || now.toLocaleString('ko-KR');
+    var senderName = get('nmcSenderName') || ((window.currentUser && (window.currentUser.name || window.currentUser.email)) || '');
+    var materials = collectMaterialsSafe();
     var item = {
+      uid: woNo,
       id: woNo,
       no: woNo,
+      woNo: woNo,
       orderNo: woNo,
       workOrderNo: woNo,
       productName: get('nmcProdName'),
       productCode: get('nmcProdCode'),
       productionLot: get('nmcProdLot'),
+      prodLot: get('nmcProdLot'),
       lot: get('nmcProdLot'),
       planQty: get('nmcPlanQty'),
       actualQty: get('nmcActualQty'),
-      date: get('nmcOrderDate') || now.toLocaleDateString('ko-KR'),
-      createdAt: now.toLocaleString('ko-KR'),
-      sentAt: now.toLocaleString('ko-KR'),
+      orderDate: get('nmcOrderDate'),
+      date: get('nmcOrderDate') || sendTime,
+      createdAt: sendTime,
+      sentAt: sendTime,
+      sendTime: sendTime,
       status: status || '발송완료',
       reqDept: get('nmcReqDept'),
+      planType: get('nmcPlanType'),
+      priority: '',
       worker: get('nmcWorker'),
-      sender: (window.currentUser && (window.currentUser.name || window.currentUser.email)) || '',
+      sender: {id: senderName, name: senderName},
+      senderText: senderName,
       receiver: recv,
       recvDept: recv,
+      receiverText: recv,
+      receiverIds: selectedValuesSafe(recvEl),
       refDept: ref,
-      memo: ''
+      refText: ref,
+      refIds: selectedValuesSafe(refEl),
+      instruction: get('nmcInstruction'),
+      sendNote: get('nmcSendNote'),
+      memo: get('nmcSendNote'),
+      materials: materials
     };
 
-    ['nmcWorkOrders','nmcSentWorkorders'].forEach(function(key){
-      var arr = [];
-      try{
-        var raw = localStorage.getItem(key);
-        if(raw){
-          var parsed = JSON.parse(raw);
-          if(Array.isArray(parsed)) arr = parsed;
-        }
-      }catch(e){}
-      var found = false;
-      arr = arr.map(function(x){
-        var xid = x && (x.id || x.no || x.orderNo || x.workOrderNo || x.woNo);
-        if(xid === woNo){
-          found = true;
-          return Object.assign({}, x, item);
-        }
-        return x;
-      });
-      if(!found) arr.push(item);
-      try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){}
-    });
-
+    ['nmcWorkOrders','nmcSentWorkorders','nmc_workorder_sent_items'].forEach(function(key){ upsertStore(key,item); });
     window.nmcWorkOrders = historyStore();
     return item;
   }
@@ -10419,7 +10470,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var detail=q('#nmcWorkorderHistoryDetail'); if(!detail) return;
     var item=historyStore().map(norm).filter(function(x){return String(x.id)===String(id);})[0];
     if(!item){detail.innerHTML='<div class="nmc-history-empty">상세 데이터를 찾을 수 없습니다.</div>';return;}
-    detail.innerHTML='<div class="card"><div class="ch"><h3>작업지시서 상세</h3></div><div class="cb"><div class="fg4"><div class="field"><label>작업지시번호</label><input readonly value="'+text(item.no)+'"></div><div class="field"><label>제품명</label><input readonly value="'+text(item.product)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+text(item.lot)+'"></div><div class="field"><label>상태</label><input readonly value="'+text(item.status)+'"></div><div class="field"><label>계획수량</label><input readonly value="'+text(item.plan)+'"></div><div class="field"><label>실투입량</label><input readonly value="'+text(item.actual)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+text(item.sender)+'"></div><div class="field"><label>작성/발송일</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>수신</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>비고</label><textarea readonly>'+text(item.memo)+'</textarea></div></div></div></div>';
+    var mats = (item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+text(m.name||m.materialName||'-')+'</td><td>'+text(m.lot||m.materialLot||'-')+'</td><td>'+text(m.planQty||'0')+' kg</td><td>'+text(m.actualQty||m.qty||'0')+' kg</td><td>'+text(m.ratio||'0.00')+' %</td><td>'+text(m.note||m.remark||'')+'</td></tr>';}).join('');
+    if(!mats) mats = '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
+    detail.innerHTML='<div class="card"><div class="ch"><h3>작업지시서 상세</h3></div><div class="cb">'
+      +'<h4 style="margin:0 0 10px;color:#0f172a">1. 기본 정보</h4><div class="fg4">'
+      +'<div class="field"><label>작업지시번호</label><input readonly value="'+text(item.no)+'"></div><div class="field"><label>지시일자</label><input readonly value="'+text(item.orderDate)+'"></div><div class="field"><label>상태</label><input readonly value="'+text(item.status)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+text(item.sender)+'"></div>'
+      +'</div><h4 style="margin:18px 0 10px;color:#0f172a">2. 제품 정보</h4><div class="fg4">'
+      +'<div class="field"><label>제품명</label><input readonly value="'+text(item.product)+'"></div><div class="field"><label>제품코드</label><input readonly value="'+text(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+text(item.lot)+'"></div><div class="field"><label>계획수량</label><input readonly value="'+text(item.plan)+' kg"></div><div class="field"><label>실투입량</label><input readonly value="'+text(item.actual)+' kg"></div>'
+      +'</div><h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량</th><th>실투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-detail-box" style="white-space:pre-wrap;border:1px solid #edf2f7;border-radius:10px;padding:12px;background:#fff;min-height:60px">'+text(item.instruction)+'</div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>발송 비고</label><textarea readonly>'+text(item.sendNote)+'</textarea></div></div>'
+      +'</div></div>';
     detail.scrollIntoView({behavior:'smooth',block:'start'});
   }
   function bind(){
