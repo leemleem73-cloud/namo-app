@@ -7505,7 +7505,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-field"><label>제품코드</label><input class="nmc-input nmc-lot-source" id="nmcProdCode" placeholder="제품코드 직접 입력"></div>
           <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit nmc-lot-source" id="nmcPlanQty" placeholder="0"><span class="nmc-unit">kg</span></span></div>
           <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit nmc-lot-source" id="nmcActualQty" placeholder="0"><span class="nmc-unit">kg</span></span></div>
-          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" readonly placeholder="NA-YYYYMMDD-0001 자동생성"><button class="nmc-lot-btn" id="nmcLotGen">↻ 재생성</button></span></div>
+          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" readonly placeholder="작업지시서 번호와 동일 자동연동"><button class="nmc-lot-btn" id="nmcLotGen">↻ 동기화</button></span></div>
         </div>
       </div>
       <div class="nmc-workorder-card">
@@ -7610,18 +7610,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(!force && inp.value) return;
       inp.value=`NM-${nmcDateCode()}-${nmcSeq('WO')}`;
     });
+    syncProdLotWithWorkOrderNo(false);
+  }
+
+  function syncProdLotWithWorkOrderNo(showNotify){
+    const wo = nmcVisibleField('nmcWoNo')?.value || qsa('#nmcWoNo')[0]?.value || '';
+    if(!wo) return;
+    qsa('#nmcProdLot').forEach(inp=>{ inp.value = wo; });
+    if(showNotify) notify('생산 LOT 동기화',`${wo} 번호로 작업지시서 번호와 생산 LOT가 동일하게 연동되었습니다.`);
   }
 
   function generateProdLot(force){
-    const lotInputs = qsa('#nmcProdLot');
-    if(!lotInputs.length) return;
-    const hasProductInfo = ['nmcProdName','nmcProdCode','nmcPlanQty','nmcActualQty'].some(id => ($(id)?.value || '').trim());
-    lotInputs.forEach(inp=>{
-      if(!force && inp.value) return;
-      if(!force && !hasProductInfo) return;
-      inp.value=`NA-${nmcDateCode()}-${nmcSeq('LOT')}`;
-    });
-    if(force) notify('생산 LOT 자동생성',`${lotInputs[0].value} 번호가 자동 생성되었습니다.`);
+    if(!nmcVisibleField('nmcWoNo')?.value && !qsa('#nmcWoNo')[0]?.value){
+      generateWorkOrderNo(true);
+    }
+    syncProdLotWithWorkOrderNo(!!force);
   }
 
   function nmcScopeFrom(el){
