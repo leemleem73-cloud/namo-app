@@ -10317,20 +10317,30 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(changed) writeArray(k,next);
     });
   }
+  function hasMats(x){
+    return x && Array.isArray(x.materials) &&
+      x.materials.some(function(m){
+        return m && (m.name || m.materialName || m.rawName || m.rawMaterialName || m.lot || m.materialLot || m.lotNo || m.rawLot || m.planQty || m.plannedQty || m.planInputQty || m.plannedInputQty || m.actualQty || m.qty || m.inputQty || m.actualInputQty || m.realInputQty || m.ratio || m.rate || m.percent || m.note || m.remark || m.memo);
+      });
+  }
   function historyStore(){
     cleanupRequestedOldRows();
     var keys=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
     var merged=[];
     keys.forEach(function(k){merged=merged.concat(readArray(k));});
     [window.nmcWorkOrders,window.workOrders,window.workOrderHistory,window.nmcSentWorkorders].forEach(function(a){if(Array.isArray(a)) merged=merged.concat(a);});
-    var seen={};
-    return merged.filter(function(x){
-      if(!x || typeof x!=='object') return false;
+    var map={};
+    merged.forEach(function(x){
+      if(!x || typeof x!=='object') return;
       var id=itemId(x) || JSON.stringify(x);
-      if(seen[id]) return false;
-      seen[id]=true;
-      return true;
+      var old=map[id];
+      if(!old){map[id]=x;return;}
+      var joined=Object.assign({},old,x);
+      if(hasMats(old) && !hasMats(x)) joined.materials=old.materials;
+      if(hasMats(x)) joined.materials=x.materials;
+      map[id]=joined;
     });
+    return Object.keys(map).map(function(k){return map[k];});
   }
   function selectedTextsSafe(el){if(!el||!el.options)return [];return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return (o.textContent||o.value||'').trim();}).filter(Boolean);}
   function selectedValuesSafe(el){if(!el||!el.options)return [];return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return String(o.value||o.textContent||'').trim();}).filter(Boolean);}
@@ -10354,13 +10364,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var senderOpt=q('#nmcSenderName option:checked')||q('#nmcSenderName option');
     var senderText=get('nmcSenderName') || (senderOpt?(senderOpt.textContent||'').trim():'') || ((window.currentUser&&(window.currentUser.name||window.currentUser.email))||'');
     var sendTime=get('nmcSendTime') || now.toLocaleString('ko-KR');
+    var mats=collectMaterialsSafe().filter(function(m){return m.name || m.lot || m.planQty || m.actualQty || m.note;});
     var item={
       uid:woNo,id:woNo,no:woNo,woNo:woNo,orderNo:woNo,workOrderNo:woNo,
       title:get('nmcProdName')||'작업지시서',productName:get('nmcProdName'),productCode:get('nmcProdCode'),prodLot:get('nmcProdLot'),productionLot:get('nmcProdLot'),lot:get('nmcProdLot'),
       orderDate:get('nmcOrderDate'),planType:get('nmcPlanType'),planQty:get('nmcPlanQty'),actualQty:get('nmcActualQty'),reqDept:get('nmcReqDept'),worker:get('nmcWorker'),
       instruction:get('nmcInstruction'),sendNote:get('nmcSendNote'),memo:get('nmcSendNote'),sendTime:sendTime,sentAt:sendTime,createdAt:sendTime,date:get('nmcOrderDate')||sendTime,
       status:status||'발송완료',senderText:senderText,sender:{name:senderText},receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
-      refDept:selectedTextsSafe(refEl).join(', '),refText:selectedTextsSafe(refEl).join(', '),refIds:selectedValuesSafe(refEl),materials:collectMaterialsSafe()
+      refDept:selectedTextsSafe(refEl).join(', '),refText:selectedTextsSafe(refEl).join(', '),refIds:selectedValuesSafe(refEl),materials:mats
     };
     ['nmc_workorder_sent_items','nmcWorkOrders','nmcSentWorkorders','workOrderHistory'].forEach(function(k){upsertStore(k,item);});
     window.nmcWorkOrders=historyStore();
