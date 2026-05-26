@@ -7480,7 +7480,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시서</div>
         </div>
         <div class="ph-actions">
-          <button class="btn light" data-nmc-action="draft">초기화</button>
+          <button class="btn light" data-nmc-action="reset">초기화</button>
           <button class="btn pri" data-nmc-action="print">인쇄</button>
         </div>
       </div>
@@ -7854,6 +7854,46 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     return esc(el.value || '-');
   }
+
+  function resetWorkOrderForm(){
+    const root = document.querySelector('#page-workorder-final');
+    if(!root) return;
+
+    root.querySelectorAll('input, textarea, select').forEach(el=>{
+      if(el.id === 'nmcWoNo' || el.id === 'nmcProdLot'){
+        el.value = '';
+        return;
+      }
+      if(el.id === 'nmcOrderDate'){
+        const d = new Date();
+        const p = n => String(n).padStart(2,'0');
+        el.value = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+        return;
+      }
+      if(el.id === 'nmcSendTime'){
+        el.value = '';
+        return;
+      }
+      if(el.tagName === 'SELECT'){
+        Array.from(el.options).forEach(o=>o.selected=false);
+        if(!el.multiple && el.options.length) el.selectedIndex = 0;
+        return;
+      }
+      el.value = '';
+    });
+
+    const tbody = root.querySelector('#nmcMaterialTable tbody');
+    if(tbody){
+      tbody.innerHTML = `<tr><td>1</td><td><input class="nmc-input" placeholder="원료명 직접입력"></td><td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력"></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="0.00" readonly><span class="nmc-unit-box">%</span></div></td><td><input class="nmc-input" placeholder="비고 직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>`;
+    }
+
+    updateMaterialRows();
+    updateMaterialTotal();
+    renderWorkOrderAlert();
+    generateWorkOrderNo(true);
+    syncSendInfo();
+  }
+
   function printWorkOrder(){
     syncSendInfo();
     generateWorkOrderNo(false);
@@ -7901,6 +7941,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         e.preventDefault();
         const a=act.dataset.nmcAction;
         const woNo = $('nmcWoNo')?.value || '작업지시서';
+        if(a==='reset'){ resetWorkOrderForm(); return; }
         if(a==='draft'){ nmcSaveWorkOrderHistory('임시저장'); notify('작업지시서 임시저장',`${woNo} 임시저장이 완료되었습니다.`); }
         if(a==='write'){ nmcSaveWorkOrderHistory('저장완료'); notify('작업지시서 저장',`${woNo} 저장이 완료되었습니다.`); }
         if(a==='send'){
