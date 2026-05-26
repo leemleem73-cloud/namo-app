@@ -7913,6 +7913,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           const scope=nmcScopeFrom(act);
           const sendTime=nmcField(scope,'nmcSendTime');
           if(sendTime) sendTime.value=new Date().toLocaleString('ko-KR');
+          nmcSaveWorkOrderHistory('발송완료');
           const recvTargets=selectedOptionTexts(nmcField(scope,'nmcRecvDept'));
           const refTargets=selectedOptionTexts(nmcField(scope,'nmcRefDept'));
           const targetMsg = recvTargets.length ? `선택한 수신 ${recvTargets.length}명` : '수신 대상 미선택';
@@ -10271,15 +10272,100 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function page(){return q('#page-workorder-final') || q('[id*="workorder"]') || document.body;}
   function tabs(){return qa('button, .tab, .nmc-tab, [role="tab"]',page()).filter(function(el){var t=(el.textContent||'').trim();return t==='작성'||t==='이력';});}
   function historyStore(){
-    var keys=['nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
-    for(var i=0;i<keys.length;i++){
-      try{var raw=localStorage.getItem(keys[i]); if(raw){var arr=JSON.parse(raw); if(Array.isArray(arr)) return arr;}}
-      catch(e){}
-    }
-    if(Array.isArray(window.nmcWorkOrders)) return window.nmcWorkOrders;
-    if(Array.isArray(window.workOrders)) return window.workOrders;
-    if(Array.isArray(window.workOrderHistory)) return window.workOrderHistory;
-    return [];
+    var keys = [
+      'nmcWorkOrders',
+      'workOrders',
+      'workOrderHistory',
+      'nmcWorkorderHistory',
+      'nmcSentWorkorders'
+    ];
+
+    var merged = [];
+
+    keys.forEach(function(key){
+      try{
+        var raw = localStorage.getItem(key);
+        if(!raw) return;
+        var arr = JSON.parse(raw);
+        if(Array.isArray(arr)) merged = merged.concat(arr);
+      }catch(e){}
+    });
+
+    [
+      window.nmcWorkOrders,
+      window.workOrders,
+      window.workOrderHistory,
+      window.nmcSentWorkorders
+    ].forEach(function(arr){
+      if(Array.isArray(arr)) merged = merged.concat(arr);
+    });
+
+    var seen = {};
+    return merged.filter(function(item){
+      item = item || {};
+      var id = item.id || item.no || item.orderNo || item.workOrderNo || item.woNo || JSON.stringify(item);
+      if(seen[id]) return false;
+      seen[id] = true;
+      return true;
+    });
+  }
+  function nmcSaveWorkOrderHistory(status){
+    var get = function(id){
+      var el = document.getElementById(id);
+      return el ? (el.value || '').trim() : '';
+    };
+    var woNo = get('nmcWoNo') || ('NM-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-TEMP');
+    var now = new Date();
+    var recv = selectedOptionTexts(document.getElementById('nmcRecvDept')).join(', ');
+    var ref = selectedOptionTexts(document.getElementById('nmcRefDept')).join(', ');
+    var item = {
+      id: woNo,
+      no: woNo,
+      orderNo: woNo,
+      workOrderNo: woNo,
+      productName: get('nmcProdName'),
+      productCode: get('nmcProdCode'),
+      productionLot: get('nmcProdLot'),
+      lot: get('nmcProdLot'),
+      planQty: get('nmcPlanQty'),
+      actualQty: get('nmcActualQty'),
+      date: get('nmcOrderDate') || now.toLocaleDateString('ko-KR'),
+      createdAt: now.toLocaleString('ko-KR'),
+      sentAt: now.toLocaleString('ko-KR'),
+      status: status || '발송완료',
+      reqDept: get('nmcReqDept'),
+      worker: get('nmcWorker'),
+      sender: (window.currentUser && (window.currentUser.name || window.currentUser.email)) || '',
+      receiver: recv,
+      recvDept: recv,
+      refDept: ref,
+      memo: ''
+    };
+
+    ['nmcWorkOrders','nmcSentWorkorders'].forEach(function(key){
+      var arr = [];
+      try{
+        var raw = localStorage.getItem(key);
+        if(raw){
+          var parsed = JSON.parse(raw);
+          if(Array.isArray(parsed)) arr = parsed;
+        }
+      }catch(e){}
+      var found = false;
+      arr = arr.map(function(x){
+        var xid = x && (x.id || x.no || x.orderNo || x.workOrderNo || x.woNo);
+        if(xid === woNo){
+          found = true;
+          return Object.assign({}, x, item);
+        }
+        return x;
+      });
+      if(!found) arr.push(item);
+      try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){}
+    });
+
+    window.nmcWorkOrders = historyStore();
+    return item;
   }
   function norm(item,idx){
     item=item||{};
