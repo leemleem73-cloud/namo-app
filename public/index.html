@@ -3914,7 +3914,84 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- 알림 중복 생성 방지 최종 패치 v20260527
+     목적: F5 새로고침 시 nmcTopBell / namoReportBell / namoUnifiedBell 이 동시에 보이는 문제 해결
+     정책: 상단 알림은 namoUnifiedBell 1개만 유지 -->
+<script id="namo-single-notification-bell-final-patch">
+(function(){
+  'use strict';
+  if(window.__namoSingleNotificationBellFinalPatch) return;
+  window.__namoSingleNotificationBellFinalPatch = true;
+
+  var KEEP_ID = 'namoUnifiedBell';
+  var REMOVE_IDS = ['nmcTopBell','namoReportBell'];
+
+  function byId(id){ return document.getElementById(id); }
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function removeDuplicateBells(){
+    REMOVE_IDS.forEach(function(id){
+      var el = byId(id);
+      if(el && el.parentNode) el.parentNode.removeChild(el);
+    });
+
+    var bells = qsa('#' + KEEP_ID);
+    if(bells.length > 1){
+      bells.slice(1).forEach(function(el){
+        if(el && el.parentNode) el.parentNode.removeChild(el);
+      });
+    }
+
+    var top = qs('.tright') || qs('.topbar') || document.body;
+    var keep = byId(KEEP_ID);
+    if(keep && top && keep.parentNode !== top){
+      top.insertBefore(keep, top.firstChild || null);
+    }
+  }
+
+  function ensureUnifiedBell(){
+    removeDuplicateBells();
+
+    var top = qs('.tright') || qs('.topbar') || document.body;
+    if(!byId(KEEP_ID) && top){
+      var b = document.createElement('button');
+      b.id = KEEP_ID;
+      b.type = 'button';
+      b.className = 'btn light sm';
+      b.title = '통합 알림';
+      b.style.position = 'relative';
+      b.innerHTML = '🔔 <span id="namoUnifiedCount" style="display:none;position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:99px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;align-items:center;justify-content:center;padding:0 5px;">0</span>';
+      b.addEventListener('click', function(){
+        var panel = byId('namoUnifiedPanel');
+        if(panel) panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+      });
+      top.insertBefore(b, top.firstChild || null);
+    }
+    removeDuplicateBells();
+  }
+
+  function boot(){
+    ensureUnifiedBell();
+    setTimeout(ensureUnifiedBell, 0);
+    setTimeout(ensureUnifiedBell, 300);
+    setTimeout(ensureUnifiedBell, 1000);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  }else{
+    boot();
+  }
+
+  var observer = new MutationObserver(function(){ removeDuplicateBells(); });
+  observer.observe(document.documentElement, {childList:true, subtree:true});
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
