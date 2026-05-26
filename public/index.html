@@ -1751,15 +1751,15 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 #page-workorder-final #nmcRecvDept.nmc-send-select,
 #page-workorder-final #nmcRefDept.nmc-send-select{
-  height:54px!important;
-  min-height:54px!important;
+  height:160px!important;
+  min-height:160px!important;
   overflow-y:auto!important;
-  padding:13px 18px!important;
+  padding:8px 10px!important;
 }
 #page-workorder-final #nmcRecvDept.nmc-send-select:focus,
 #page-workorder-final #nmcRefDept.nmc-send-select:focus{
-  height:auto!important;
-  min-height:108px!important;
+  height:160px!important;
+  min-height:160px!important;
 }
 #page-workorder-final .nmc-send-select option{
   padding:6px 8px!important;
@@ -2368,6 +2368,25 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   text-decoration:underline;
 }
 
+
+
+/* 작업지시서 수신/참조 다중 선택 표시 보정 - 체크 선택 가능 */
+#page-workorder-final #nmcRecvDept.nmc-send-select,
+#page-workorder-final #nmcRefDept.nmc-send-select{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  height:160px!important;
+  min-height:160px!important;
+  overflow-y:auto!important;
+  padding:8px 10px!important;
+  font-size:15px!important;
+  font-weight:800!important;
+}
+#page-workorder-final #nmcRecvDept.nmc-send-select:focus,
+#page-workorder-final #nmcRefDept.nmc-send-select:focus{
+  height:160px!important;
+  min-height:160px!important;
+}
 </style>
 </head>
 <body class="login-active">
@@ -7533,14 +7552,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-send-field">
             <label>수신 부서<span class="req">*</span></label>
             <div class="nmc-send-select-wrap">
-              <select class="nmc-select nmc-send-select" id="nmcRecvDept" multiple size="1"></select>
+              <select class="nmc-select nmc-send-select" id="nmcRecvDept" multiple size="6"></select>
             </div>
             <p class="nmc-send-help">회원등록현황 전체 목록이 표시됩니다.</p>
           </div>
           <div class="nmc-send-field">
             <label>참조 부서</label>
             <div class="nmc-send-select-wrap">
-              <select class="nmc-select nmc-send-select" id="nmcRefDept" multiple size="1"></select>
+              <select class="nmc-select nmc-send-select" id="nmcRefDept" multiple size="6"></select>
             </div>
             <p class="nmc-send-help">회원등록현황 전체 목록이 표시됩니다.</p>
           </div>
@@ -7801,7 +7820,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function syncSendInfo(){
     populateManualSendTargets();
-    qsa('#nmcRecvDept,#nmcRefDept').forEach(x=>{ if(x.tagName==='SELECT'){ x.multiple=true; x.size=1; } });
+    qsa('#nmcRecvDept,#nmcRefDept').forEach(x=>{ if(x.tagName==='SELECT'){ x.multiple=true; x.size=6; } });
     qsa('#nmcSendTime').forEach(x=>{ if(!x.value) x.value=new Date().toLocaleString('ko-KR'); });
   }
 
