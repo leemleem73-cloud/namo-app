@@ -7938,11 +7938,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
         notify('요청부서 변경 알림',`요청부서가 ${e.target.value || '미입력'}(으)로 변경되었습니다.`);
       }
       if(e.target && e.target.classList.contains('nmc-lot-source')) generateProdLot(false);
-      if(e.target && e.target.classList.contains('nmc-mat-qty')) updateMaterialTotal();
+      if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) updateMaterialTotal();
     });
     document.addEventListener('input',e=>{
       if(e.target && e.target.classList.contains('nmc-lot-source')) generateProdLot(false);
-      if(e.target && e.target.classList.contains('nmc-mat-qty')) updateMaterialTotal();
+      if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) updateMaterialTotal();
     });
   }
 
