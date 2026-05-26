@@ -3378,6 +3378,18 @@ function pickRecordDate(r){
   return '';
 }
 
+
+function generateNmDocNo(){
+  const d=new Date();
+  const yyyy=d.getFullYear();
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const key=`nmSerial_${yyyy}${mm}${dd}`;
+  let seq=parseInt(localStorage.getItem(key)||'0',10)+1;
+  localStorage.setItem(key,String(seq));
+  return `NM-${yyyy}${mm}${dd}-${String(seq).padStart(4,'0')}`;
+}
+
 function todayKST(){const s=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;}
 function formatDT(){const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const m={};f.formatToParts(new Date()).forEach(p=>{m[p.type]=p.value;});return`${m.year}년 ${m.month}월 ${m.day}일 (${String(m.weekday||'').replace('.','')})\u00a0${m.hour}:${m.minute}:${m.second}`;}
 function startClock(){const e=$('currentDateTime');if(!e)return;const r=()=>{e.textContent=formatDT();};r();setInterval(r,1000);}
@@ -3845,7 +3857,7 @@ function renderBC(svgId,value){
 function buildLabel(type,d){
   const judge=calcJ(d.items||[]);
   const jc=judge==='합격'?'pass':'fail';
-  const docNo=`${type.toUpperCase()}-${String(d.date||'').replaceAll('-','')}-0001`;
+  const docNo=generateNmDocNo();
   const uid='l'+Math.random().toString(36).slice(2,9);
   let rows='';
   if(type==='iqc')rows=`<div class="plrow"><span class="plkey">품목</span><span class="plval">${esc(d.item||'-')}</span></div><div class="plrow"><span class="plkey">협력업체</span><span class="plval">${esc(d.supplier||'-')}</span></div>`;
@@ -3865,7 +3877,7 @@ function openLabelModal(type,arr){
   $('labelModalTitle').textContent=`🏷 제품 부착용 라벨 — ${titles[type]}`;
   const body=$('labelModalBody');
   if(!arr||!arr.length){body.innerHTML='<p style="color:var(--t3);text-align:center;padding:20px;">저장된 데이터가 없습니다.</p>';$('labelModal').classList.add('show');return;}
-  const d=arr[0];const docNo=`${type.toUpperCase()}-${String(d.date||'').replaceAll('-','')}-0001`;
+  const d=arr[0];const docNo=generateNmDocNo();
   body.innerHTML=`<p style="font-size:12px;color:var(--t3);margin-bottom:10px;">※ 최신 데이터 기준 라벨 (4장)</p><div class="lgrid" id="labelGridContent">${buildLabel(type,d)}${buildLabel(type,d)}${buildLabel(type,d)}${buildLabel(type,d)}</div>`;
   setTimeout(()=>{
     body.querySelectorAll('.plabel').forEach(el=>{
@@ -4053,7 +4065,7 @@ function renderOqcItems(){renderItems('shipmentItemsTable',state.shipmentItemDra
 /* ═══ PREVIEW ═══ */
 function renderPrevRows(tbId,items){$(tbId).innerHTML=items.length?items.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item||'')}</td><td>${esc(r.spec||'')}</td><td>${esc(r.value||'-')}</td><td>${jBadge(r.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);">항목 없음</td></tr>';}
 function syncIqcPreview(){
-  const items=state.incomingItemDrafts;const date=$('incomingDate').value||todayKST();const doc=`IQC-${date.replaceAll('-','')}-0001`;
+  const items=state.incomingItemDrafts;const date=$('incomingDate').value||todayKST();const doc=generateNmDocNo();
   $('incomingMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>LOT</th><td>${esc($('incomingLot').value||'-')}</td><th>협력업체</th><td>${esc($('incomingSupplier').value||'-')}</td></tr><tr><th>품목</th><td>${esc($('incomingItem').value||'-')}</td><th>입고수량</th><td>${esc($('incomingQty').value||'0')}</td></tr><tr><th>검사수량</th><td>${esc($('incomingCheckQty').value||'0')}</td><th>불량수량</th><td>${esc($('incomingFailQty').value||'0')}</td></tr>`;
   renderPrevRows('incomingPreviewBody',items);$('incomingFinalJudgeText').textContent=calcJ(items);
   renderBC('bcIqcLot',$('incomingLot').value||'LOT');renderBC('bcIqcDoc',doc);
@@ -10454,7 +10466,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var mats=collectMaterialsSafe().filter(function(m){return m.name || m.lot || m.planQty || m.actualQty || m.note;});
     var item={
       uid:woNo,id:woNo,no:woNo,woNo:woNo,orderNo:woNo,workOrderNo:woNo,
-      title:get('nmcProdName')||'작업지시서',productName:get('nmcProdName'),productCode:get('nmcProdCode'),prodLot:get('nmcProdLot'),productionLot:get('nmcProdLot'),lot:get('nmcProdLot'),
+      title:get('nmcProdName')||'작업지시서',productName:get('nmcProdName'),productCode:get('nmcProdCode'),prodLot:get('nmcProdLot'),productionLot:get('nmcWorkOrderNo')||get('nmcProdLot'),lot:get('nmcProdLot'),
       orderDate:get('nmcOrderDate'),planType:get('nmcPlanType'),planQty:get('nmcPlanQty'),actualQty:get('nmcActualQty'),reqDept:get('nmcReqDept'),worker:get('nmcWorker'),
       instruction:get('nmcInstruction'),sendNote:get('nmcSendNote'),memo:get('nmcSendNote'),sendTime:sendTime,sentAt:sendTime,createdAt:sendTime,date:get('nmcOrderDate')||sendTime,
       status:status||'발송완료',senderText:senderText,sender:{name:senderText},receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
