@@ -9970,5 +9970,120 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+<!-- 통합 알림 1개 처리 패치: 작업지시서/교육보고서/부적합보고서/CAPA 작성·검토·승인 -->
+<script>
+(function(){
+  if(window.__namoUnifiedNotifyApplied) return;
+  window.__namoUnifiedNotifyApplied = true;
+
+  var STORE = 'namoUnifiedNotifications';
+  function $(id){return document.getElementById(id);}
+  function qs(sel, root){return (root||document).querySelector(sel);}
+  function read(){try{return JSON.parse(localStorage.getItem(STORE)||'[]');}catch(e){return [];}}
+  function write(list){localStorage.setItem(STORE, JSON.stringify((list||[]).slice(0,200)));}
+  function now(){return new Date().toLocaleString('ko-KR');}
+  function esc(v){return String(v||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+
+  window.namoNotify = function(type, action, title, msg, target){
+    var list = read();
+    list.unshift({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2),
+      type: type || '알림',
+      action: action || '',
+      title: title || '알림',
+      msg: msg || '',
+      target: target || '',
+      time: now(),
+      read: false
+    });
+    write(list);
+    render(false);
+  };
+
+  function removeOldBells(){
+    ['nmcTopBell','namoReportBell'].forEach(function(id){var el=$(id); if(el) el.remove();});
+  }
+
+  function ensureUI(){
+    removeOldBells();
+    var right = qs('.tright') || qs('.topbar') || document.body;
+    if(!$('namoUnifiedBell')){
+      var b = document.createElement('button');
+      b.id = 'namoUnifiedBell';
+      b.type = 'button';
+      b.className = 'btn light sm';
+      b.title = '통합 알림';
+      b.style.position = 'relative';
+      b.innerHTML = '🔔 <span id="namoUnifiedCount" style="display:none;position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:99px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;align-items:center;justify-content:center;padding:0 5px;">0</span>';
+      b.onclick = function(){render(true);};
+      right.insertBefore(b, right.firstChild);
+    }
+    if(!$('namoUnifiedPanel')){
+      var p = document.createElement('div');
+      p.id = 'namoUnifiedPanel';
+      p.style.cssText = 'position:fixed;right:18px;top:72px;width:min(460px,calc(100vw - 32px));max-height:70vh;background:#fff;border:1px solid #dbe3ee;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.14);z-index:3000;display:none;overflow:hidden;';
+      p.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e5e7eb;"><b>통합 알림</b><div><button type="button" id="namoUnifiedReadAll" class="btn light sm">모두 읽음</button> <button type="button" id="namoUnifiedClose" class="btn light sm">×</button></div></div><div id="namoUnifiedBody" style="max-height:58vh;overflow:auto;padding:10px 14px;"></div>';
+      document.body.appendChild(p);
+      $('namoUnifiedClose').onclick = function(){p.style.display='none';};
+      $('namoUnifiedReadAll').onclick = function(){write(read().map(function(x){x.read=true;return x;}));render(false);};
+    }
+  }
+
+  function render(open){
+    ensureUI();
+    var list = read();
+    var unread = list.filter(function(x){return !x.read;}).length;
+    var count = $('namoUnifiedCount');
+    var panel = $('namoUnifiedPanel');
+    var body = $('namoUnifiedBody');
+    if(count){count.textContent = unread > 99 ? '99+' : String(unread); count.style.display = unread ? 'inline-flex' : 'none';}
+    if(body){
+      body.innerHTML = list.length ? list.slice(0,50).map(function(n){
+        return '<div style="padding:11px 0;border-bottom:1px solid #eef2f7;">'
+          + '<b>'+esc(n.title)+'</b>'
+          + '<div style="font-size:13px;color:#334155;margin-top:3px;">'+esc(n.msg)+'</div>'
+          + '<div style="font-size:11px;color:#64748b;margin-top:5px;">'+esc(n.type)+' · '+esc(n.action)+' · '+esc(n.time)+'</div>'
+          + '</div>';
+      }).join('') : '<div style="padding:24px;text-align:center;color:#64748b;">알림이 없습니다.</div>';
+    }
+    if(open && panel){
+      panel.style.display = 'block';
+      write(list.map(function(x){x.read=true;return x;}));
+      setTimeout(function(){render(false);panel.style.display='block';},0);
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    var wo = e.target.closest && e.target.closest('[data-nmc-action]');
+    if(wo){
+      var a = wo.getAttribute('data-nmc-action') || '';
+      if(['draft','write','send','print','review','approve','reject'].indexOf(a) > -1){
+        window.namoNotify('작업지시서', a, '작업지시서 알림', '작업지시서 작성/검토/승인/발송 상태가 변경되었습니다.');
+      }
+    }
+    var train = e.target.closest && e.target.closest('[data-train-appr],[data-training-approval-request]');
+    if(train){
+      var ta = train.getAttribute('data-train-appr') || 'request';
+      window.namoNotify('교육보고서', ta, '교육보고서 결재 알림', '교육보고서 작성/검토/승인 상태가 변경되었습니다.');
+    }
+    var sign = e.target.closest && e.target.closest('[data-namo-act],[data-report-action]');
+    if(sign){
+      var sa = sign.getAttribute('data-namo-act') || sign.getAttribute('data-report-action') || '';
+      var page = (qs('.page.active')||{}).id || '';
+      var type = (page.indexOf('nonconform')>-1 || page.indexOf('capa')>-1 || page.indexOf('nc')>-1) ? '부적합/CAPA' : '검사성적서';
+      window.namoNotify(type, sa, type + ' 결재 알림', type + ' 검토/승인/반려 상태가 변경되었습니다.');
+    }
+    var capa = e.target.closest && e.target.closest('#ncAddCapa,[data-action="openCapa"],[data-page="capa"]');
+    if(capa){
+      window.namoNotify('시정/예방조치보고서', 'capa', 'CAPA 알림', '시정/예방조치 보고서가 작성 또는 변경되었습니다.');
+    }
+  }, true);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){render(false);}); else render(false);
+  setInterval(render, 3000);
+})();
+</script>
+
+
 </body>
 </html>
