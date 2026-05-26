@@ -7924,36 +7924,247 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function printWorkOrder(){
-    syncSendInfo();
-    generateWorkOrderNo(false);
-    generateProdLot(false);
-    let target=$('printTarget');
-    if(!target){ target=document.createElement('div'); target.id='printTarget'; document.body.appendChild(target); }
-    target.className='rsheet';
-    updateMaterialTotal();
-    const matTotalPlanQty = qs('#nmcMaterialTotalPlanQty')?.textContent || '0.00 kg';
-    const matTotalQty = qs('#nmcMaterialTotalQty')?.textContent || '0.00 kg';
-    const matTotalRatio = qs('#nmcMaterialTotalRatio')?.textContent || '0.00 %';
-    const mats=qsa('#nmcMaterialTable tbody tr').map((tr,i)=>`<tr><td>${i+1}</td><td>${esc(tr.children[1]?.querySelector('input')?.value||'')}</td><td>${esc(tr.children[2]?.querySelector('input')?.value||'')}</td><td>${esc(tr.querySelector('.nmc-mat-plan-qty')?.value||'0')} kg</td><td>${esc(tr.querySelector('.nmc-mat-qty')?.value||'0')} kg</td><td>${esc(tr.querySelector('.nmc-mat-ratio')?.value||'0.00')} %</td><td>${esc(tr.children[6]?.querySelector('input')?.value||'')}</td></tr>`).join('');
-    const recvNames=selectedFieldText('nmcRecvDept','선택된 수신부서 없음');
-    const refNames=selectedFieldText('nmcRefDept','선택된 참조부서 없음');
-    target.innerHTML=`
-      <div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">${val('nmcWoNo')}</div></div>
-      <table><tbody>
-        <tr><th>작업지시번호</th><td>${val('nmcWoNo')}</td><th>지시일자</th><td>${val('nmcOrderDate')}</td><th>계획구분</th><td>${val('nmcPlanType')}</td></tr>
-        <tr><th>요청부서</th><td>${val('nmcReqDept')}</td><th>우선순위</th><td>${esc(qs('#page-workorder-final select:not(#nmcPlanType)')?.value||'-')}</td><th>작업자</th><td>${val('nmcWorker')}</td></tr>
-        <tr><th>제품명</th><td>${val('nmcProdName')}</td><th>제품코드</th><td>${val('nmcProdCode')}</td><th>생산 LOT</th><td>${val('nmcProdLot')}</td></tr>
-        <tr><th>계획수량</th><td>${val('nmcPlanQty')} kg</td><th>실투입량</th><td>${val('nmcActualQty')} kg</td><th></th><td></td></tr>
-      </tbody></table>
-      <h4 style="margin:16px 0 8px">투입 원료</h4>
-      <table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT 번호</th><th>계획투입량 (kg)</th><th>실투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td colspan="3"><b>합계</b></td><td><b>${esc(matTotalPlanQty)}</b></td><td><b>${esc(matTotalQty)}</b></td><td><b>${esc(matTotalRatio)}</b></td><td>-</td></tr></tfoot></table>
-      <h4 style="margin:16px 0 8px">지시 사항</h4>
-      <div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">${esc(qs('#nmcInstruction')?.value || '-')}</div>
-      <h4 style="margin:16px 0 8px">발송 정보</h4>
-      <table><tbody><tr><th>발송부서</th><td>${val('nmcSenderName')}</td><th>수신부서</th><td>${esc(recvNames)}</td><th>참조부서</th><td>${esc(refNames)}</td></tr><tr><th>발송일시</th><td>${val('nmcSendTime')}</td><th>비고</th><td colspan="3">${val('nmcSendNote')}</td></tr></tbody></table>
-      <div class="print-user-info">출력자: ${val('nmcSenderName')} / 출력일시: ${new Date().toLocaleString('ko-KR')}</div>`;
-    window.print();
-  }
+  syncSendInfo();
+  generateWorkOrderNo(false);
+  generateProdLot(false);
+  updateMaterialTotal();
+
+  const matTotalPlanQty = qs('#nmcMaterialTotalPlanQty')?.textContent || '0.00 kg';
+  const matTotalQty     = qs('#nmcMaterialTotalQty')?.textContent    || '0.00 kg';
+  const matTotalRatio   = qs('#nmcMaterialTotalRatio')?.textContent  || '0.00 %';
+
+  const mats = qsa('#nmcMaterialTable tbody tr').map((tr,i)=>{
+    const planQty  = tr.querySelector('.nmc-mat-plan-qty')?.value || '0';
+    const actualQty= tr.querySelector('.nmc-mat-qty')?.value      || '0';
+    const ratio    = tr.querySelector('.nmc-mat-ratio')?.value    || '0.00';
+    const name     = tr.children[1]?.querySelector('input')?.value || '';
+    const lot      = tr.children[2]?.querySelector('input')?.value || '';
+    const note     = tr.children[6]?.querySelector('input')?.value || '';
+    if(!name && !lot && planQty==='0' && actualQty==='0') return '';
+    return `<tr>
+      <td style="text-align:center;width:36px;">${i+1}</td>
+      <td>${esc(name)||'-'}</td>
+      <td>${esc(lot)||'-'}</td>
+      <td style="text-align:right;">${esc(planQty)} kg</td>
+      <td style="text-align:right;">${esc(actualQty)} kg</td>
+      <td style="text-align:right;">${esc(ratio)} %</td>
+      <td>${esc(note)}</td>
+    </tr>`;
+  }).join('');
+
+  const recvNames  = selectedFieldText('nmcRecvDept','미선택');
+  const refNames   = selectedFieldText('nmcRefDept','미선택');
+  const senderName = val('nmcSenderName') || '-';
+  const woNo       = val('nmcWoNo') || '-';
+
+  const html = `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>작업지시서 ${woNo}</title>
+<style>
+@page { size: A4 portrait; margin: 15mm 14mm 12mm 14mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Apple SD Gothic Neo','Malgun Gothic','NanumGothic',Arial,sans-serif;
+  font-size: 11px; color: #1a1a2e; background: #fff;
+}
+.hd {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 2.5px solid #1a3a6b;
+  padding-bottom: 8px; margin-bottom: 12px;
+}
+.hd-left { display: flex; align-items: center; gap: 10px; }
+.hd-logo {
+  width: 34px; height: 34px; border-radius: 6px;
+  background: #1a3a6b;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; font-weight: 900; letter-spacing: -1px;
+}
+.hd-company { font-size: 10px; color: #5a6a8a; line-height: 1.4; }
+.hd-company b { font-size: 12px; color: #1a3a6b; display: block; }
+.hd-title { text-align: right; }
+.hd-title h1 {
+  font-size: 20px; font-weight: 900; color: #1a3a6b;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.hd-title .doc-no { font-size: 10px; color: #5a6a8a; margin-top: 3px; }
+.sec {
+  display: flex; align-items: center; gap: 6px; margin: 10px 0 5px;
+}
+.sec-bar { width: 3px; height: 14px; background: #1a3a6b; border-radius: 2px; flex-shrink: 0; }
+.sec-title { font-size: 10.5px; font-weight: 700; color: #1a3a6b; }
+.info-table { width: 100%; border-collapse: collapse; border: 1px solid #ccd3e0; }
+.info-table th {
+  background: #f0f4fa; color: #3a5080; font-size: 10px; font-weight: 700;
+  padding: 5px 8px; text-align: left;
+  border: 1px solid #ccd3e0; white-space: nowrap; width: 80px;
+}
+.info-table td { padding: 5px 8px; border: 1px solid #ccd3e0; font-size: 10.5px; color: #1a1a2e; font-weight: 500; }
+.mat-table { width: 100%; border-collapse: collapse; border: 1px solid #ccd3e0; }
+.mat-table thead th {
+  background: #1a3a6b; color: #fff; font-size: 10px; font-weight: 700;
+  padding: 5px 7px; text-align: center; border: 1px solid #2a5090; white-space: nowrap;
+}
+.mat-table tbody td { padding: 5px 7px; border: 1px solid #ccd3e0; font-size: 10.5px; color: #1a1a2e; }
+.mat-table tfoot td {
+  background: #f0f4fa; font-weight: 700; padding: 5px 7px;
+  border: 1px solid #ccd3e0; font-size: 10.5px; color: #1a3a6b;
+}
+.instr-box {
+  border: 1px solid #ccd3e0; border-radius: 4px;
+  padding: 8px 10px; min-height: 50px;
+  white-space: pre-wrap; line-height: 1.6;
+  font-size: 10.5px; color: #1a1a2e; background: #fafbfd;
+}
+.sign-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  border: 1px solid #ccd3e0; border-radius: 4px; overflow: hidden;
+}
+.sign-col { text-align: center; border-right: 1px solid #ccd3e0; }
+.sign-col:last-child { border-right: none; }
+.sign-col-hdr {
+  background: #1a3a6b; color: #fff;
+  font-size: 9.5px; font-weight: 700; padding: 4px 0;
+}
+.sign-col-body { padding: 14px 8px 10px; min-height: 52px; font-size: 10px; color: #3a5080; }
+.send-table { width: 100%; border-collapse: collapse; border: 1px solid #ccd3e0; }
+.send-table th {
+  background: #f0f4fa; color: #3a5080; font-size: 10px; font-weight: 700;
+  padding: 5px 8px; border: 1px solid #ccd3e0; white-space: nowrap; width: 72px; text-align: left;
+}
+.send-table td { padding: 5px 8px; border: 1px solid #ccd3e0; font-size: 10.5px; color: #1a1a2e; }
+.footer {
+  margin-top: 12px; padding-top: 7px; border-top: 0.5px solid #ccd3e0;
+  display: flex; justify-content: space-between; font-size: 9px; color: #8a9abf;
+}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-left">
+    <div class="hd-logo">NC</div>
+    <div class="hd-company">
+      <b>NAMO Chemical Co., Ltd.</b>
+      나모케미칼 품질관리시스템 · QMS
+    </div>
+  </div>
+  <div class="hd-title">
+    <h1>작업지시서</h1>
+    <div class="doc-no">PRODUCTION WORK ORDER &nbsp;|&nbsp; ${esc(woNo)}</div>
+  </div>
+</div>
+
+<div class="sec"><div class="sec-bar"></div><div class="sec-title">① 기본 정보</div></div>
+<table class="info-table">
+  <tbody>
+    <tr>
+      <th>작업지시번호</th><td><b>${esc(woNo)}</b></td>
+      <th>지시일자</th><td>${esc(val('nmcOrderDate'))}</td>
+      <th>계획구분</th><td>${esc(val('nmcPlanType'))}</td>
+    </tr>
+    <tr>
+      <th>요청부서</th><td>${esc(val('nmcReqDept'))}</td>
+      <th>작업자</th><td>${esc(val('nmcWorker'))}</td>
+      <th>처리상태</th><td>발송완료</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="sec"><div class="sec-bar"></div><div class="sec-title">② 제품 정보</div></div>
+<table class="info-table">
+  <tbody>
+    <tr>
+      <th>제품명</th><td><b>${esc(val('nmcProdName'))}</b></td>
+      <th>제품코드</th><td>${esc(val('nmcProdCode'))}</td>
+      <th>생산 LOT</th><td><b>${esc(val('nmcProdLot'))}</b></td>
+    </tr>
+    <tr>
+      <th>계획수량</th><td>${esc(val('nmcPlanQty'))} kg</td>
+      <th>실투입량</th><td>${esc(val('nmcActualQty'))} kg</td>
+      <th>&nbsp;</th><td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="sec"><div class="sec-bar"></div><div class="sec-title">③ 투입 원료</div></div>
+<table class="mat-table">
+  <thead>
+    <tr>
+      <th style="width:30px;">No.</th>
+      <th>원료명</th>
+      <th>원료 LOT 번호</th>
+      <th style="width:80px;">계획투입량 (kg)</th>
+      <th style="width:80px;">실투입량 (kg)</th>
+      <th style="width:64px;">비율 (%)</th>
+      <th>비고</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${mats || '<tr><td colspan="7" style="text-align:center;color:#8a9abf;padding:10px;">투입 원료 정보 없음</td></tr>'}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="3" style="text-align:center;font-weight:700;color:#1a3a6b;">합 계</td>
+      <td style="text-align:right;">${esc(matTotalPlanQty)}</td>
+      <td style="text-align:right;">${esc(matTotalQty)}</td>
+      <td style="text-align:right;">${esc(matTotalRatio)}</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="sec"><div class="sec-bar"></div><div class="sec-title">④ 작업 지시 사항</div></div>
+<div class="instr-box">${esc(qs('#nmcInstruction')?.value || '(지시 사항 없음)')}</div>
+
+<div class="sec"><div class="sec-bar"></div><div class="sec-title">⑤ 발송 정보</div></div>
+<table class="send-table">
+  <tbody>
+    <tr>
+      <th>발송부서</th><td>${esc(senderName)}</td>
+      <th>수신부서</th><td>${esc(recvNames)}</td>
+      <th>참조부서</th><td>${esc(refNames)}</td>
+    </tr>
+    <tr>
+      <th>발송일시</th><td>${esc(val('nmcSendTime'))}</td>
+      <th>비고</th><td colspan="3">${esc(val('nmcSendNote'))}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="sec"><div class="sec-bar"></div><div class="sec-title">⑥ 결재</div></div>
+<div class="sign-grid">
+  <div class="sign-col">
+    <div class="sign-col-hdr">작 성</div>
+    <div class="sign-col-body">${esc(senderName)}</div>
+  </div>
+  <div class="sign-col">
+    <div class="sign-col-hdr">검 토</div>
+    <div class="sign-col-body"></div>
+  </div>
+  <div class="sign-col">
+    <div class="sign-col-hdr">승 인</div>
+    <div class="sign-col-body"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Namochemical QMS · Production Work Order</span>
+  <span>출력자: ${esc(senderName)} &nbsp;|&nbsp; 출력일시: ${new Date().toLocaleString('ko-KR')}</span>
+</div>
+
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=820,height=780');
+  if(!w){ alert('팝업이 차단되었습니다. 브라우저 팝업 허용 후 다시 시도해주세요.'); return; }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>{ w.focus(); w.print(); }, 500);
+}
 
   function bindEvents(){
     document.addEventListener('click',e=>{
