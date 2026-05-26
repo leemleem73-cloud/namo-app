@@ -10261,241 +10261,159 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 
-<!-- 작업지시서 작성 화면 이력 탭 상세보기 패치 v20260526-2 -->
+<!-- 작업지시서 작성 화면 이력 탭 상세보기 패치 v20260526-3 -->
 <style id="nmc-workorder-history-tab-fix-style">
-#page-workorder-final #nmcWorkorderHistoryPanel{display:none;}
-#page-workorder-final #nmcWorkorderHistoryPanel.show{display:block;}
+#page-workorder-final #nmcWorkorderHistoryPanel{display:none!important;}
+#page-workorder-final #nmcWorkorderHistoryPanel.show{display:block!important;}
+#page-workorder-final.nmc-history-mode .nmc-workorder-card,
+#page-workorder-final.nmc-history-mode > .nmc-actions{display:none!important;}
+#page-workorder-final.nmc-history-mode #nmcWorkorderHistoryPanel{display:block!important;}
 #page-workorder-final .nmc-history-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px;}
 #page-workorder-final .nmc-history-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:16px 18px;box-shadow:0 8px 22px rgba(15,23,42,.055);}
 #page-workorder-final .nmc-history-kpi .l{font-size:12px;font-weight:900;color:#64748b;}
-#page-workorder-final .nmc-history-kpi .v{font-size:26px;font-weight:900;color:#0f172a;margin-top:4px;}
+#page-workorder-final .nmc-history-kpi .v{font-size:24px;font-weight:900;color:#0f172a;margin-top:4px;word-break:break-all;}
 #page-workorder-final .nmc-history-detail{margin-top:16px;}
 #page-workorder-final .nmc-history-empty{padding:28px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:14px;background:#f8fafc;}
+#page-workorder-final .nmc-history-box{white-space:pre-wrap;border:1px solid #edf2f7;border-radius:10px;padding:12px;background:#fff;min-height:54px;color:#334155;}
+#page-workorder-final .nmc-history-click{color:#1d4ed8;font-weight:900;cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:0;}
 @media(max-width:900px){#page-workorder-final .nmc-history-summary{grid-template-columns:1fr 1fr;}}
 </style>
 <script id="nmc-workorder-history-tab-fix-script">
 (function(){
   'use strict';
+  if(window.__nmcWorkorderHistoryTabFixV3) return;
+  window.__nmcWorkorderHistoryTabFixV3=true;
   function q(sel,root){return (root||document).querySelector(sel);}
   function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
   function text(v){return (v==null?'':String(v)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function page(){return q('#page-workorder-final') || q('[id*="workorder"]') || document.body;}
-  function tabs(){return qa('button, .tab, .nmc-tab, [role="tab"]',page()).filter(function(el){var t=(el.textContent||'').trim();return t==='작성'||t==='이력';});}
+  function page(){return q('#page-workorder-final') || document.body;}
+  function tabs(){return qa('#page-workorder-final .nmc-tabs .nmc-tab, #page-workorder-final button, #page-workorder-final [role="tab"]').filter(function(el){var t=(el.textContent||'').trim();return t==='작성'||t==='이력';});}
+  function readArray(key){try{var v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function writeArray(key,arr){try{localStorage.setItem(key,JSON.stringify((arr||[]).slice(0,500)));}catch(e){}}
+  function itemId(x){x=x||{};return String(x.uid||x.id||x.no||x.woNo||x.orderNo||x.workOrderNo||x.workorderNo||x.number||'').trim();}
   function historyStore(){
-    var keys = [
-      'nmcWorkOrders',
-      'workOrders',
-      'workOrderHistory',
-      'nmcWorkorderHistory',
-      'nmcSentWorkorders',
-      'nmc_workorder_sent_items'
-    ];
-
-    var merged = [];
-    function addArray(arr){
-      if(Array.isArray(arr)) merged = merged.concat(arr);
-    }
-
-    keys.forEach(function(key){
-      try{
-        var raw = localStorage.getItem(key);
-        if(!raw) return;
-        addArray(JSON.parse(raw));
-      }catch(e){}
-    });
-
-    [
-      window.nmcWorkOrders,
-      window.workOrders,
-      window.workOrderHistory,
-      window.nmcSentWorkorders
-    ].forEach(addArray);
-
-    var seen = {};
-    return merged.filter(function(item){
-      item = item || {};
-      var id = item.uid || item.id || item.no || item.orderNo || item.workOrderNo || item.workorderNo || item.woNo || JSON.stringify(item);
-      id = String(id || '').trim();
-      if(!id) return false;
+    var keys=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
+    var merged=[];
+    keys.forEach(function(k){merged=merged.concat(readArray(k));});
+    [window.nmcWorkOrders,window.workOrders,window.workOrderHistory,window.nmcSentWorkorders].forEach(function(a){if(Array.isArray(a)) merged=merged.concat(a);});
+    var seen={};
+    return merged.filter(function(x){
+      if(!x || typeof x!=='object') return false;
+      var id=itemId(x) || JSON.stringify(x);
       if(seen[id]) return false;
-      seen[id] = true;
+      seen[id]=true;
       return true;
     });
   }
-  function selectedTextsSafe(el){
-    if(!el) return [];
-    if(el.options){
-      return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return (o.textContent || o.value || '').trim();}).filter(Boolean);
-    }
-    return [];
-  }
-  function selectedValuesSafe(el){
-    if(!el || !el.options) return [];
-    return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return String(o.value || o.textContent || '').trim();}).filter(Boolean);
-  }
-  function storeList(key){
-    try{var arr=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(arr)?arr:[];}catch(e){return [];}
-  }
-  function upsertStore(key,item){
-    var arr = storeList(key);
-    var id = String(item.uid || item.id || item.no || item.orderNo || item.workOrderNo || item.woNo || '');
-    var found = false;
-    arr = arr.map(function(x){
-      var xid = String((x && (x.uid || x.id || x.no || x.orderNo || x.workOrderNo || x.woNo)) || '');
-      if(id && xid === id){ found = true; return Object.assign({}, x, item); }
-      return x;
-    });
-    if(!found) arr.unshift(item);
-    try{ localStorage.setItem(key, JSON.stringify(arr.slice(0,500))); }catch(e){}
-  }
+  function selectedTextsSafe(el){if(!el||!el.options)return [];return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return (o.textContent||o.value||'').trim();}).filter(Boolean);}
+  function selectedValuesSafe(el){if(!el||!el.options)return [];return Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){return String(o.value||o.textContent||'').trim();}).filter(Boolean);}
+  function get(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
   function collectMaterialsSafe(){
     return qa('#nmcMaterialTable tbody tr').map(function(tr,i){
-      return {
-        no:i+1,
-        name:(tr.children[1] && tr.children[1].querySelector('input') && tr.children[1].querySelector('input').value) || '',
-        lot:(tr.children[2] && tr.children[2].querySelector('input') && tr.children[2].querySelector('input').value) || '',
-        planQty:(tr.querySelector('.nmc-mat-plan-qty') && tr.querySelector('.nmc-mat-plan-qty').value) || '0',
-        actualQty:(tr.querySelector('.nmc-mat-qty') && tr.querySelector('.nmc-mat-qty').value) || '0',
-        ratio:(tr.querySelector('.nmc-mat-ratio') && tr.querySelector('.nmc-mat-ratio').value) || '0.00',
-        note:(tr.children[6] && tr.children[6].querySelector('input') && tr.children[6].querySelector('input').value) || ''
-      };
+      var td=tr.children;
+      return {no:i+1,name:(td[1]&&q('input',td[1])&&q('input',td[1]).value)||'',lot:(td[2]&&q('input',td[2])&&q('input',td[2]).value)||'',planQty:(q('.nmc-mat-plan-qty',tr)&&q('.nmc-mat-plan-qty',tr).value)||'0',actualQty:(q('.nmc-mat-qty',tr)&&q('.nmc-mat-qty',tr).value)||'0',ratio:(q('.nmc-mat-ratio',tr)&&q('.nmc-mat-ratio',tr).value)||'0.00',note:(td[6]&&q('input',td[6])&&q('input',td[6]).value)||''};
     });
   }
-  function nmcSaveWorkOrderHistory(status){
-    var get = function(id){
-      var el = document.getElementById(id);
-      return el ? (el.value || '').trim() : '';
+  function upsertStore(key,item){
+    var arr=readArray(key), id=itemId(item), found=false;
+    arr=arr.map(function(x){if(id && itemId(x)===id){found=true;return Object.assign({},x,item);} return x;});
+    if(!found) arr.unshift(item);
+    writeArray(key,arr);
+  }
+  function saveCurrentWorkOrder(status){
+    var now=new Date();
+    var woNo=get('nmcWoNo') || ('NM-'+now.toISOString().slice(0,10).replace(/-/g,'')+'-TEMP');
+    var recvEl=document.getElementById('nmcRecvDept'), refEl=document.getElementById('nmcRefDept');
+    var senderOpt=q('#nmcSenderName option:checked')||q('#nmcSenderName option');
+    var senderText=get('nmcSenderName') || (senderOpt?(senderOpt.textContent||'').trim():'') || ((window.currentUser&&(window.currentUser.name||window.currentUser.email))||'');
+    var sendTime=get('nmcSendTime') || now.toLocaleString('ko-KR');
+    var item={
+      uid:woNo,id:woNo,no:woNo,woNo:woNo,orderNo:woNo,workOrderNo:woNo,
+      title:get('nmcProdName')||'작업지시서',productName:get('nmcProdName'),productCode:get('nmcProdCode'),prodLot:get('nmcProdLot'),productionLot:get('nmcProdLot'),lot:get('nmcProdLot'),
+      orderDate:get('nmcOrderDate'),planType:get('nmcPlanType'),planQty:get('nmcPlanQty'),actualQty:get('nmcActualQty'),reqDept:get('nmcReqDept'),worker:get('nmcWorker'),
+      instruction:get('nmcInstruction'),sendNote:get('nmcSendNote'),memo:get('nmcSendNote'),sendTime:sendTime,sentAt:sendTime,createdAt:sendTime,date:get('nmcOrderDate')||sendTime,
+      status:status||'발송완료',senderText:senderText,sender:{name:senderText},receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
+      refDept:selectedTextsSafe(refEl).join(', '),refText:selectedTextsSafe(refEl).join(', '),refIds:selectedValuesSafe(refEl),materials:collectMaterialsSafe()
     };
-    var woNo = get('nmcWoNo') || ('NM-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-TEMP');
-    var now = new Date();
-    var recvEl = document.getElementById('nmcRecvDept');
-    var refEl = document.getElementById('nmcRefDept');
-    var recv = selectedTextsSafe(recvEl).join(', ');
-    var ref = selectedTextsSafe(refEl).join(', ');
-    var sendTime = get('nmcSendTime') || now.toLocaleString('ko-KR');
-    var senderName = get('nmcSenderName') || ((window.currentUser && (window.currentUser.name || window.currentUser.email)) || '');
-    var materials = collectMaterialsSafe();
-    var item = {
-      uid: woNo,
-      id: woNo,
-      no: woNo,
-      woNo: woNo,
-      orderNo: woNo,
-      workOrderNo: woNo,
-      productName: get('nmcProdName'),
-      productCode: get('nmcProdCode'),
-      productionLot: get('nmcProdLot'),
-      prodLot: get('nmcProdLot'),
-      lot: get('nmcProdLot'),
-      planQty: get('nmcPlanQty'),
-      actualQty: get('nmcActualQty'),
-      orderDate: get('nmcOrderDate'),
-      date: get('nmcOrderDate') || sendTime,
-      createdAt: sendTime,
-      sentAt: sendTime,
-      sendTime: sendTime,
-      status: status || '발송완료',
-      reqDept: get('nmcReqDept'),
-      planType: get('nmcPlanType'),
-      priority: '',
-      worker: get('nmcWorker'),
-      sender: {id: senderName, name: senderName},
-      senderText: senderName,
-      receiver: recv,
-      recvDept: recv,
-      receiverText: recv,
-      receiverIds: selectedValuesSafe(recvEl),
-      refDept: ref,
-      refText: ref,
-      refIds: selectedValuesSafe(refEl),
-      instruction: get('nmcInstruction'),
-      sendNote: get('nmcSendNote'),
-      memo: get('nmcSendNote'),
-      materials: materials
-    };
-
-    ['nmcWorkOrders','nmcSentWorkorders','nmc_workorder_sent_items'].forEach(function(key){ upsertStore(key,item); });
-    window.nmcWorkOrders = historyStore();
+    ['nmc_workorder_sent_items','nmcWorkOrders','nmcSentWorkorders','workOrderHistory'].forEach(function(k){upsertStore(k,item);});
+    window.nmcWorkOrders=historyStore();
     return item;
   }
-  function norm(item,idx){
-    item=item||{};
-    return {
-      id:item.id||item.no||item.orderNo||item.workOrderNo||item.workorderNo||('wo_'+idx),
-      no:item.orderNo||item.workOrderNo||item.workorderNo||item.no||item.number||'-',
-      product:item.productName||item.product||item.itemName||item.name||'-',
-      lot:item.lot||item.productionLot||item.prodLot||item.lotNo||'-',
-      plan:item.planQty||item.plannedQty||item.planQuantity||item.qty||item.quantity||'-',
-      actual:item.actualQty||item.inputQty||item.realQty||item.actualInputQty||'-',
-      date:item.date||item.createdAt||item.createdDate||item.issueDate||item.sentAt||'-',
-      status:item.status||item.state||'작성완료',
-      sender:item.sender||item.writer||item.author||'-',
-      receiver:item.receiver||item.recvDept||item.receive||'-',
-      ref:item.refDept||item.reference||item.cc||'-',
-      memo:item.memo||item.note||item.remark||item.description||'-',
-      raw:item
-    };
-  }
+  function statusLabel(v){v=String(v||'').trim(); if(!v) return '작성완료'; if(v==='sent') return '발송완료'; return v;}
+  function formatUser(u){if(!u)return '-'; if(typeof u==='string')return u; return [u.department,u.name||u.email||u.id].filter(Boolean).join(' ')+(u.title?' / '+u.title:'');}
+  function norm(x,idx){x=x||{};return {
+    id:itemId(x)||('wo_'+idx),
+    no:x.woNo||x.orderNo||x.workOrderNo||x.workorderNo||x.no||x.number||itemId(x)||'-',
+    product:x.productName||x.product||x.itemName||x.title||x.name||'-',
+    code:x.productCode||x.code||'-',
+    lot:x.prodLot||x.productionLot||x.lot||x.lotNo||'-',
+    plan:x.planQty||x.plannedQty||x.planQuantity||x.qty||x.quantity||'-',
+    actual:x.actualQty||x.inputQty||x.realQty||x.actualInputQty||'-',
+    orderDate:x.orderDate||x.issueDate||x.date||'-',
+    date:x.sendTime||x.sentAt||x.createdAt||x.date||'-',
+    status:statusLabel(x.status||x.state),
+    sender:formatUser(x.sender)||x.senderText||x.writer||x.author||'-',
+    receiver:x.receiverText||x.receiver||x.recvDept||x.receive||'-',
+    ref:x.refText||x.refDept||x.reference||x.cc||'-',
+    instruction:x.instruction||x.instructions||x.orderInstruction||'',
+    sendNote:x.sendNote||x.memo||x.note||x.remark||'',
+    reqDept:x.reqDept||x.requestDept||'', worker:x.worker||'', planType:x.planType||'',
+    materials:Array.isArray(x.materials)?x.materials:(Array.isArray(x.inputs)?x.inputs:[]), raw:x
+  };}
   function ensurePanel(){
-    var root=page();
-    var panel=q('#nmcWorkorderHistoryPanel',root);
+    var root=page(); var panel=q('#nmcWorkorderHistoryPanel',root);
     if(panel) return panel;
-    panel=document.createElement('section');
-    panel.id='nmcWorkorderHistoryPanel';
-    panel.className='card mt14';
+    panel=document.createElement('section'); panel.id='nmcWorkorderHistoryPanel'; panel.className='card mt14';
     panel.innerHTML='<div class="ch"><h3>작업지시서 이력</h3><div class="ca"><button type="button" class="btn light sm" data-nmc-history-refresh="1">새로고침</button></div></div><div class="cb"><div id="nmcWorkorderHistoryList"></div><div id="nmcWorkorderHistoryDetail" class="nmc-history-detail"></div></div>';
-    var tabEl=tabs()[0];
-    var host=tabEl && tabEl.parentElement ? tabEl.parentElement.parentElement : null;
-    var cards=qa('.card',root);
-    if(cards.length) cards[cards.length-1].after(panel); else root.appendChild(panel);
+    var t=q('.nmc-tabs',root); if(t) t.insertAdjacentElement('afterend',panel); else root.appendChild(panel);
     return panel;
   }
   function setMode(mode){
-    var root=page();
-    var panel=ensurePanel();
-    tabs().forEach(function(el){var is=(el.textContent||'').trim()===mode; el.classList.toggle('active',is); el.setAttribute('aria-selected',is?'true':'false');});
-    qa(':scope > .card, :scope > section.card',root).forEach(function(el){if(el.id==='nmcWorkorderHistoryPanel') return; el.style.display=(mode==='이력')?'none':'';});
-    panel.classList.toggle('show',mode==='이력');
+    var root=page(); ensurePanel();
+    tabs().forEach(function(el){var on=(el.textContent||'').trim()===mode; el.classList.toggle('active',on); el.setAttribute('aria-selected',on?'true':'false');});
+    root.classList.toggle('nmc-history-mode',mode==='이력');
     if(mode==='이력') renderHistory();
   }
   function renderHistory(){
-    var list=q('#nmcWorkorderHistoryList'); if(!list) return;
-    var arr=historyStore().map(norm).reverse();
-    var total=arr.length;
-    var done=arr.filter(function(x){return /완료|발송|확인/.test(x.status);}).length;
-    if(!total){list.innerHTML='<div class="nmc-history-empty">저장된 작업지시서 이력이 없습니다.</div>';return;}
-    list.innerHTML='<div class="nmc-history-summary"><div class="nmc-history-kpi"><div class="l">전체</div><div class="v">'+total+'</div></div><div class="nmc-history-kpi"><div class="l">완료/발송</div><div class="v">'+done+'</div></div><div class="nmc-history-kpi"><div class="l">최근 작업지시서</div><div class="v">'+text(arr[0].no)+'</div></div><div class="nmc-history-kpi"><div class="l">최근 제품</div><div class="v">'+text(arr[0].product)+'</div></div></div><div class="tw"><table><thead><tr><th>NO.</th><th>상태</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT</th><th>계획수량</th><th>작성/발송일</th><th>확인</th></tr></thead><tbody>'+arr.map(function(x,i){return '<tr><td>'+(i+1)+'</td><td><span class="status pass">'+text(x.status)+'</span></td><td><b>'+text(x.no)+'</b></td><td>'+text(x.product)+'</td><td>'+text(x.lot)+'</td><td>'+text(x.plan)+'</td><td>'+text(x.date)+'</td><td><button type="button" class="btn light sm" data-nmc-history-open="'+text(x.id)+'">상세보기</button></td></tr>';}).join('')+'</tbody></table></div>';
+    ensurePanel(); var list=q('#nmcWorkorderHistoryList'); if(!list) return;
+    var arr=historyStore().map(norm).sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+    var total=arr.length, done=arr.filter(function(x){return /완료|발송|확인|sent/.test(x.status);}).length;
+    q('#nmcWorkorderHistoryDetail') && (q('#nmcWorkorderHistoryDetail').innerHTML='');
+    if(!total){list.innerHTML='<div class="nmc-history-empty">저장된 작업지시서 이력이 없습니다.<br>받은 작업지시서/발송된 작업지시서 저장소를 확인했지만 표시할 데이터가 없습니다.</div>';return;}
+    list.innerHTML='<div class="nmc-history-summary"><div class="nmc-history-kpi"><div class="l">전체</div><div class="v">'+total+'</div></div><div class="nmc-history-kpi"><div class="l">완료/발송</div><div class="v">'+done+'</div></div><div class="nmc-history-kpi"><div class="l">최근 작업지시서</div><div class="v">'+text(arr[0].no)+'</div></div><div class="nmc-history-kpi"><div class="l">최근 제품</div><div class="v">'+text(arr[0].product)+'</div></div></div><div class="tw"><table><thead><tr><th>NO.</th><th>상태</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT</th><th>계획수량</th><th>작성/발송일</th><th>확인</th></tr></thead><tbody>'+arr.map(function(x,i){return '<tr><td>'+(i+1)+'</td><td><span class="status pass">'+text(x.status)+'</span></td><td><button type="button" class="nmc-history-click" data-nmc-history-open="'+text(x.id)+'">'+text(x.no)+'</button></td><td>'+text(x.product)+'</td><td>'+text(x.lot)+'</td><td>'+text(x.plan)+'</td><td>'+text(x.date)+'</td><td><button type="button" class="btn light sm" data-nmc-history-open="'+text(x.id)+'">상세보기</button></td></tr>';}).join('')+'</tbody></table></div>';
   }
   function showHistoryDetail(id){
     var detail=q('#nmcWorkorderHistoryDetail'); if(!detail) return;
     var item=historyStore().map(norm).filter(function(x){return String(x.id)===String(id);})[0];
     if(!item){detail.innerHTML='<div class="nmc-history-empty">상세 데이터를 찾을 수 없습니다.</div>';return;}
-    var mats = (item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+text(m.name||m.materialName||'-')+'</td><td>'+text(m.lot||m.materialLot||'-')+'</td><td>'+text(m.planQty||'0')+' kg</td><td>'+text(m.actualQty||m.qty||'0')+' kg</td><td>'+text(m.ratio||'0.00')+' %</td><td>'+text(m.note||m.remark||'')+'</td></tr>';}).join('');
-    if(!mats) mats = '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
+    var mats=(item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+text(m.name||m.materialName||m.rawName||'-')+'</td><td>'+text(m.lot||m.materialLot||m.lotNo||'-')+'</td><td>'+text(m.planQty||m.plannedQty||'0')+' kg</td><td>'+text(m.actualQty||m.qty||m.inputQty||'0')+' kg</td><td>'+text(m.ratio||'0.00')+' %</td><td>'+text(m.note||m.remark||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
     detail.innerHTML='<div class="card"><div class="ch"><h3>작업지시서 상세</h3></div><div class="cb">'
       +'<h4 style="margin:0 0 10px;color:#0f172a">1. 기본 정보</h4><div class="fg4">'
-      +'<div class="field"><label>작업지시번호</label><input readonly value="'+text(item.no)+'"></div><div class="field"><label>지시일자</label><input readonly value="'+text(item.orderDate)+'"></div><div class="field"><label>상태</label><input readonly value="'+text(item.status)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+text(item.sender)+'"></div>'
+      +'<div class="field"><label>작업지시번호</label><input readonly value="'+text(item.no)+'"></div><div class="field"><label>지시일자</label><input readonly value="'+text(item.orderDate)+'"></div><div class="field"><label>계획구분</label><input readonly value="'+text(item.planType)+'"></div><div class="field"><label>상태</label><input readonly value="'+text(item.status)+'"></div><div class="field"><label>요청부서</label><input readonly value="'+text(item.reqDept)+'"></div><div class="field"><label>작업자</label><input readonly value="'+text(item.worker)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+text(item.sender)+'"></div>'
       +'</div><h4 style="margin:18px 0 10px;color:#0f172a">2. 제품 정보</h4><div class="fg4">'
       +'<div class="field"><label>제품명</label><input readonly value="'+text(item.product)+'"></div><div class="field"><label>제품코드</label><input readonly value="'+text(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+text(item.lot)+'"></div><div class="field"><label>계획수량</label><input readonly value="'+text(item.plan)+' kg"></div><div class="field"><label>실투입량</label><input readonly value="'+text(item.actual)+' kg"></div>'
       +'</div><h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량</th><th>실투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
-      +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-detail-box" style="white-space:pre-wrap;border:1px solid #edf2f7;border-radius:10px;padding:12px;background:#fff;min-height:60px">'+text(item.instruction)+'</div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-history-box">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>발송 비고</label><textarea readonly>'+text(item.sendNote)+'</textarea></div></div>'
       +'</div></div>';
     detail.scrollIntoView({behavior:'smooth',block:'start'});
   }
   function bind(){
     document.addEventListener('click',function(e){
-      var tab=e.target.closest('button, .tab, .nmc-tab, [role="tab"]');
-      if(tab && page().contains(tab)){var t=(tab.textContent||'').trim(); if(t==='작성'||t==='이력'){e.preventDefault(); setMode(t); return;}}
-      if(e.target.closest('[data-nmc-history-refresh]')){e.preventDefault(); renderHistory(); return;}
-      var open=e.target.closest('[data-nmc-history-open]'); if(open){e.preventDefault(); showHistoryDetail(open.getAttribute('data-nmc-history-open')); return;}
-      var send=e.target.closest('[data-nmc-action="send"]'); if(send) setTimeout(renderHistory,120);
+      var root=page(); var tab=e.target.closest && e.target.closest('#page-workorder-final .nmc-tab, #page-workorder-final [role="tab"]');
+      if(tab){var t=(tab.textContent||'').trim(); if(t==='작성'||t==='이력'){e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); setMode(t); return false;}}
+      var refresh=e.target.closest && e.target.closest('[data-nmc-history-refresh]'); if(refresh){e.preventDefault(); renderHistory(); return;}
+      var open=e.target.closest && e.target.closest('[data-nmc-history-open]'); if(open){e.preventDefault(); showHistoryDetail(open.getAttribute('data-nmc-history-open')); return;}
+      var send=e.target.closest && e.target.closest('#page-workorder-final [data-nmc-action="send"]'); if(send){try{saveCurrentWorkOrder('발송완료');}catch(err){console.warn('[workorder history save]',err);} setTimeout(renderHistory,180);}
+      var save=e.target.closest && e.target.closest('#page-workorder-final [data-nmc-action="write"], #page-workorder-final [data-nmc-action="draft"]'); if(save){setTimeout(function(){try{saveCurrentWorkOrder(save.getAttribute('data-nmc-action')==='draft'?'임시저장':'저장완료');}catch(err){}},50);}
     },true);
   }
-  function boot(){ ensurePanel(); renderHistory(); bind(); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-  setTimeout(function(){ ensurePanel(); renderHistory(); },1200);
-  setTimeout(function(){ ensurePanel(); renderHistory(); },2600);
+  function boot(){ensurePanel(); bind(); renderHistory();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  setTimeout(function(){ensurePanel(); renderHistory();},800);
+  setTimeout(function(){ensurePanel(); renderHistory();},2200);
+  window.nmcSaveWorkOrderHistoryV3=saveCurrentWorkOrder;
+  window.nmcRenderWorkOrderHistoryV3=renderHistory;
 })();
 </script>
 </body>
