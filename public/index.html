@@ -8279,9 +8279,9 @@ body {
   function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
   function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
   function buildPayload(type,r){
-    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'',inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'',visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||'',visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
   }
   function pushNoti(type,r,action,target){
     var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
@@ -8301,14 +8301,6 @@ body {
     var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
     if(!r){alert('문서를 찾을 수 없습니다.');return;}
     var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
-    // 작성자 누락 방지: 결재 처리 전 기존 작성자 필드를 signWriter/writer로 보정
-    if(!hasName(r.signWriter)){
-      var writer=(r.writer||r.inspector||r.visual||r.solid||(r.signWriter&&r.signWriter.name)||'');
-      if(writer){
-        r.writer=writer;
-        r.signWriter=Object.assign({},r.signWriter||{},{name:writer,status:'APPROVED'});
-      }
-    }
     if(action==='review'){
       r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
       map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
@@ -11532,9 +11524,9 @@ body {
   function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
   function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
   function buildPayload(type,r){
-    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'',inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'',visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||'',visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
   }
   function pushNoti(type,r,action,target){
     var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
@@ -11554,14 +11546,6 @@ body {
     var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
     if(!r){alert('문서를 찾을 수 없습니다.');return;}
     var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
-    // 작성자 누락 방지: 결재 처리 전 기존 작성자 필드를 signWriter/writer로 보정
-    if(!hasName(r.signWriter)){
-      var writer=(r.writer||r.inspector||r.visual||r.solid||(r.signWriter&&r.signWriter.name)||'');
-      if(writer){
-        r.writer=writer;
-        r.signWriter=Object.assign({},r.signWriter||{},{name:writer,status:'APPROVED'});
-      }
-    }
     if(action==='review'){
       r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
       map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
@@ -11903,14 +11887,6 @@ body {
     var rows=getRows(), x=rows.find(function(v){return v.type===type && String(v.record.id)===String(id);});
     if(!x){alert('문서를 찾을 수 없습니다.');return;}
     var r=x.record, me=currentUser(), map=statusMap(), old=map[docKey(type,r)]||{};
-    // 작성자 누락 방지: 결재 처리 전 기존 작성자 필드를 signWriter/writer로 보정
-    if(!hasName(r.signWriter)){
-      var writer=(r.writer||r.inspector||r.visual||r.solid||(r.signWriter&&r.signWriter.name)||'');
-      if(writer){
-        r.writer=writer;
-        r.signWriter=Object.assign({},r.signWriter||{},{name:writer,status:'APPROVED'});
-      }
-    }
     if(action==='review'){
       r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.reviewer=me.name; r.approvalStatus='reviewed';
       map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
