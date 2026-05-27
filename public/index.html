@@ -11062,6 +11062,38 @@ body {
   }
   function statusLabel(v){v=String(v||'').trim(); if(!v) return '작성완료'; if(v==='sent') return '발송완료'; return v;}
   function formatUser(u){if(!u)return '-'; if(typeof u==='string')return u; return [u.department,u.name||u.email||u.id].filter(Boolean).join(' ')+(u.title?' / '+u.title:'');}
+  function isUuidLike(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v||'').trim());}
+  function workOrderSenderName(v,fallback){
+    var raw = v;
+    if(raw && typeof raw === 'object'){
+      return raw.name || raw.username || raw.displayName || raw.fullName || raw.email || raw.id || fallback || '-';
+    }
+    var key = String(raw == null ? '' : raw).trim();
+    var users = [];
+    try{
+      if(typeof getAllWorkOrderUsers === 'function') users = users.concat(getAllWorkOrderUsers() || []);
+    }catch(e){}
+    try{
+      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+      ['currentUser','user'].forEach(function(k){ if(s && s[k]) users.push(s[k]); if(window[k]) users.push(window[k]); });
+      ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+        if(s && Array.isArray(s[k])) users = users.concat(s[k]);
+        if(Array.isArray(window[k])) users = users.concat(window[k]);
+      });
+    }catch(e){}
+    var found = null;
+    users.some(function(u){
+      if(!u || typeof u !== 'object') return false;
+      var ids = [u.id,u.userId,u.uid,u.empId,u.employeeId,u.uuid,u.email,u.mail,u.name,u.username,u.displayName].map(function(x){return String(x||'').trim();});
+      if(ids.indexOf(key) > -1){ found = u; return true; }
+      return false;
+    });
+    if(found){
+      return found.name || found.username || found.displayName || found.fullName || found.email || found.id || fallback || '-';
+    }
+    if(key && !isUuidLike(key)) return key;
+    return fallback || '-';
+  }
   function norm(x,idx){x=x||{};return {
     id:itemId(x)||('wo_'+idx),
     no:x.woNo||x.orderNo||x.workOrderNo||x.workorderNo||x.no||x.number||itemId(x)||'-',
@@ -11073,7 +11105,7 @@ body {
     orderDate:x.orderDate||x.issueDate||x.date||'-',
     date:x.sendTime||x.sentAt||x.createdAt||x.date||'-',
     status:statusLabel(x.status||x.state),
-    sender:formatUser(x.sender)||x.senderText||x.writer||x.author||'-',
+    sender:workOrderSenderName(x.sender, x.senderText||x.writer||x.author||'-'),
     receiver:x.receiverText||x.receiver||x.recvDept||x.receive||'-',
     ref:x.refText||x.refDept||x.reference||x.cc||'-',
     instruction:x.instruction||x.instructions||x.orderInstruction||'',
