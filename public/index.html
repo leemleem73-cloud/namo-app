@@ -3914,7 +3914,240 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- NAMO Approval Inbox Unified Replacement v20260527 -->
+<style id="namo-approval-inbox-replacement-style">
+/* 기존 서명 박스 내부 중복 결재 버튼 제거: 결재 처리는 결재함에서만 수행 */
+#signGrid_iqc > .namo-approval-actions,
+#signGrid_pqc > .namo-approval-actions,
+#signGrid_oqc > .namo-approval-actions,
+#signGrid_training > .namo-approval-actions,
+#signGrid_training > .namo-training-approval-bar{display:none!important;}
+.approval-inbox-wrap{display:flex;flex-direction:column;gap:16px;}
+.approval-inbox-hero{background:linear-gradient(135deg,#071426,#10284b 55%,#0e7490);border-radius:22px;color:#fff;padding:22px 24px;box-shadow:0 14px 32px rgba(15,23,42,.18);position:relative;overflow:hidden;}
+.approval-inbox-hero:before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 18% 30%,rgba(56,189,248,.32),transparent 32%),radial-gradient(circle at 80% 20%,rgba(34,197,94,.18),transparent 30%);pointer-events:none;}
+.approval-inbox-hero>*{position:relative;}
+.approval-inbox-title{font-size:24px;font-weight:900;letter-spacing:-.5px;}
+.approval-inbox-sub{font-size:13px;color:#c7ddff;margin-top:6px;line-height:1.6;}
+.approval-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:18px;}
+.approval-kpi{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;}
+.approval-kpi span{display:block;font-size:11px;font-weight:900;color:#bfdbfe;}
+.approval-kpi strong{display:block;font-size:28px;font-weight:900;color:#fff;margin-top:3px;line-height:1;}
+.approval-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:14px 16px;box-shadow:0 8px 22px rgba(15,23,42,.055);}
+.approval-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.approval-tab{height:36px;border:1px solid #dbe3ee;border-radius:999px;background:#fff;color:#475569;padding:0 14px;font-size:13px;font-weight:900;cursor:pointer;}
+.approval-tab:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff;}
+.approval-tab.active{background:#2563eb;color:#fff;border-color:#2563eb;box-shadow:0 6px 14px rgba(37,99,235,.18);}
+.approval-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.approval-filter select,.approval-filter input{height:36px;border:1.5px solid #dbe3ee;border-radius:10px;background:#fff;color:#0f172a;font-size:13px;padding:0 12px;outline:none;}
+.approval-filter input{min-width:220px;}
+.approval-board{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:hidden;}
+.approval-board-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #e2e8f0;background:#fbfdff;}
+.approval-board-head h3{font-size:16px;font-weight:900;color:#0f172a;}
+.approval-table-wrap{overflow:auto;}
+.approval-table{width:100%;border-collapse:collapse;min-width:1180px;}
+.approval-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap;}
+.approval-table td{padding:13px 14px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;vertical-align:middle;}
+.approval-table tr:last-child td{border-bottom:none;}
+.approval-table tr:hover{background:#fbfdff;}
+.approval-doc-link{border:none;background:transparent;color:#1d4ed8;font-weight:900;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0;}
+.approval-chip{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:26px;border-radius:999px;padding:0 10px;font-size:11px;font-weight:900;}
+.approval-chip.pending{background:#e0f2fe;color:#075985;}
+.approval-chip.reviewed{background:#fef3c7;color:#92400e;}
+.approval-chip.approved{background:#dcfce7;color:#166534;}
+.approval-chip.rejected{background:#fee2e2;color:#991b1b;}
+.approval-actions-cell{display:flex;gap:6px;flex-wrap:wrap;}
+.approval-action-btn{height:28px;border:none;border-radius:8px;padding:0 10px;font-size:11px;font-weight:900;cursor:pointer;}
+.approval-action-btn.review{background:#e0f2fe;color:#075985;}
+.approval-action-btn.approve{background:#dcfce7;color:#166534;}
+.approval-action-btn.reject{background:#fee2e2;color:#991b1b;}
+.approval-action-btn.open{background:#f1f5f9;color:#334155;}
+.approval-action-btn:disabled{opacity:.45;cursor:not-allowed;}
+.approval-empty{padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important;}
+@media(max-width:1100px){.approval-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.approval-filter{width:100%;}.approval-filter input{flex:1;min-width:160px;}}
+@media(max-width:700px){.approval-kpi-grid{grid-template-columns:1fr;}.approval-toolbar{align-items:stretch;}.approval-tabs,.approval-filter{width:100%;}.approval-tab{flex:1;}}
+</style>
+<script id="namo-approval-inbox-replacement-script">
+(function(){
+  'use strict';
+  if(window.__namoApprovalInboxReplacement) return;
+  window.__namoApprovalInboxReplacement=true;
+
+  var STATUS_STORE='namo_unified_approval_inbox_status_v20260527';
+  var NOTI_STORE='namo_approval_notifications_v1';
+  var TYPE_META={
+    iqc:{label:'수입검사(IQC)',page:'incoming',api:'/api/iqc',arr:'incoming',edit:'editIncoming'},
+    pqc:{label:'공정검사(PQC)',page:'process',api:'/api/pqc',arr:'process',edit:'editProcess'},
+    oqc:{label:'출하검사(OQC)',page:'shipment',api:'/api/oqc',arr:'shipment',edit:'editShipment'}
+  };
+  var currentTab='all';
+  function $(id){return document.getElementById(id);} 
+  function qs(s,r){return (r||document).querySelector(s);} 
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function hasName(u){return !!(u&&String(u.name||u.email||u.id||'').trim()&&String(u.name||'').trim()!=='-');}
+  function normUser(u){
+    if(!u) return {id:'',name:'-',title:'',department:'',email:''};
+    if(typeof u==='string') return {id:u,name:u,title:'',department:'',email:''};
+    var name=String(u.name||u.username||u.displayName||u.email||u.id||'').trim();
+    return {id:String(u.id||u.email||name||''),name:name||'-',title:String(u.title||u.position||u.roleName||u.role||''),department:String(u.department||u.dept||''),email:String(u.email||'')};
+  }
+  function currentUser(){
+    var s=appState();
+    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
+    if(!u&&Array.isArray(s.signableUsers)&&s.signableUsers.length)u=s.signableUsers[0];
+    var nu=normUser(u);
+    if(!nu.id&&!nu.email&&nu.name==='-') return {id:'login-user',name:'로그인 사용자',title:'',department:'',email:''};
+    return nu;
+  }
+  function docKey(type,r){return type+':'+String((r&&r.id)||'');}
+  function statusMap(){return read(STATUS_STORE,{});} 
+  function saveStatusMap(m){write(STATUS_STORE,m||{});} 
+  function statusOf(type,r){
+    var map=statusMap(); var m=map[docKey(type,r)]||{};
+    var raw=String(m.status||r.approvalStatus||r.approval_status||r.signStatus||r.sign_status||'').toLowerCase();
+    if(['rejected','reject','반려'].indexOf(raw)>=0) return 'rejected';
+    if(['approved','approve','완료','승인완료'].indexOf(raw)>=0) return 'approved';
+    if(['reviewed','review','검토중','검토완료'].indexOf(raw)>=0) return 'reviewed';
+    if(['pending','requested','request','대기','결재대기'].indexOf(raw)>=0) return 'pending';
+    if(hasName(r.signApprover)) return 'approved';
+    if(hasName(r.signReviewer)) return 'reviewed';
+    return 'pending';
+  }
+  function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
+  function getRows(){
+    var s=appState(); var out=[];
+    Object.keys(TYPE_META).forEach(function(type){
+      var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[];
+      arr.forEach(function(r){
+        var st=statusOf(type,r);
+        out.push({type:type,meta:meta,record:r,status:st,key:docKey(type,r)});
+      });
+    });
+    out.sort(function(a,b){return String(b.record.date||'').localeCompare(String(a.record.date||''))||String(b.record.id||'').localeCompare(String(a.record.id||''));});
+    return out;
+  }
+  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
+  function writerName(r){return (r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'-';}
+  function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
+  function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
+  function buildPayload(type,r){
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+  }
+  function pushNoti(type,r,action,target){
+    var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
+    var recent=list.some(function(n){return n.namoKey===key && (Date.now()-new Date(n.time||0).getTime()<10000);});
+    if(recent) return;
+    list.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2),namoKey:key,type:type,action:action,user:me.name,title:me.title,targetId:(target&&target.id)||'',targetName:(target&&target.name)||'',targetEmail:(target&&target.email)||'',docNo:docNo(type,r),item:itemName(type,r),time:now(),read:false});
+    write(NOTI_STORE,list.slice(0,100));
+    try{if(typeof window.namoApplyApprovalSelfNotify==='function')window.namoApplyApprovalSelfNotify();}catch(e){}
+  }
+  async function persist(type,r){
+    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var idx=arr.findIndex(function(x){return String(x.id)===String(r.id);});
+    if(idx>=0) arr[idx]=r;
+    try{if(typeof window.api==='function'&&r.id){await window.api(meta.api+'/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(buildPayload(type,r))});}}catch(e){console.warn('[approval inbox] api save skipped',e);}
+    try{if(type==='iqc'&&typeof window.loadIncoming==='function')await window.loadIncoming(); if(type==='pqc'&&typeof window.loadProcess==='function')await window.loadProcess(); if(type==='oqc'&&typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}
+  }
+  async function act(type,id,action){
+    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
+    if(!r){alert('문서를 찾을 수 없습니다.');return;}
+    var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
+    if(action==='review'){
+      r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
+      map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
+      pushNoti(type,r,'review',r.signApprover||r.signWriter||me);
+    }else if(action==='approve'){
+      if(!hasName(r.signReviewer)){r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()});}
+      r.signApprover=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='approved';
+      map[docKey(type,r)]=Object.assign({},old,{status:'approved',approvedBy:me.name,approvedAt:now()});
+      pushNoti(type,r,'approve',r.signWriter||me);
+    }else if(action==='reject'){
+      r.approvalStatus='rejected';
+      map[docKey(type,r)]=Object.assign({},old,{status:'rejected',rejectedBy:me.name,rejectedAt:now()});
+      pushNoti(type,r,'reject',r.signWriter||me);
+    }
+    saveStatusMap(map); await persist(type,r); renderInbox();
+    try{if(typeof window.renderSummary==='function')window.renderSummary();}catch(e){}
+  }
+  function openDoc(type,id){
+    var meta=TYPE_META[type]; var nav=qs('.nav-item[data-page="'+meta.page+'"]'); if(nav) nav.click();
+    setTimeout(function(){try{if(typeof window[meta.edit]==='function')window[meta.edit](id);}catch(e){}},120);
+  }
+  function renderInbox(){
+    var body=$('approvalInboxTable'); if(!body) return;
+    var typeFilter=$('approvalTypeFilter')?$('approvalTypeFilter').value:'all';
+    var keyword=($('approvalSearch')?$('approvalSearch').value:'').trim().toLowerCase();
+    var rows=getRows(); var counts={all:rows.length,pending:0,reviewed:0,approved:0,rejected:0};
+    rows.forEach(function(x){counts[x.status]=(counts[x.status]||0)+1;});
+    Object.keys(counts).forEach(function(k){var el=$('approvalKpi_'+k); if(el)el.textContent=counts[k]||0; var tab=qs('.approval-tab[data-approval-tab="'+k+'"]'); if(tab)tab.textContent=tab.getAttribute('data-label')+' '+(counts[k]||0);});
+    rows=rows.filter(function(x){
+      if(currentTab!=='all'&&x.status!==currentTab) return false;
+      if(typeFilter!=='all'&&x.type!==typeFilter) return false;
+      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
+      return true;
+    });
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+  }
+  function ensurePage(){
+    var side=qs('.sidebar');
+    if(side&&!qs('.nav-item[data-page="approval-inbox"]',side)){
+      var anchor=qs('.nav-item[data-page="shipment"]',side)||qs('.nav-item[data-page="process"]',side)||side.lastElementChild;
+      var btn=document.createElement('button'); btn.className='nav-item'; btn.setAttribute('data-page','approval-inbox'); btn.innerHTML='<span class="nav-icon">☑</span><span>결재함</span>';
+      if(anchor) anchor.insertAdjacentElement('afterend',btn); else side.appendChild(btn);
+      btn.addEventListener('click',function(){qsa('.nav-item[data-page]').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');qsa('.page').forEach(function(p){p.classList.remove('active');});var page=$('page-approval-inbox');if(page)page.classList.add('active');setTimeout(renderInbox,50);});
+    }
+    var content=qs('.content');
+    if(content&&!$('page-approval-inbox')){
+      var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
+    }
+  }
+  function bind(){
+    document.addEventListener('click',function(e){
+      var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
+      if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
+      var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
+      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
+      if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
+      if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
+    },true);
+    document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')renderInbox();},true);
+    document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')renderInbox();},true);
+  }
+  async function refreshData(){try{if(typeof window.loadIncoming==='function')await window.loadIncoming();if(typeof window.loadProcess==='function')await window.loadProcess();if(typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}}
+
+  /* 검토/승인 이름 누락 방지: id/email/name/dataset까지 모두 조회 */
+  window.getSignPayload=function(type){
+    function find(role){
+      var sel=document.getElementById('sg_'+type+'_'+role);
+      var sig={}; try{if(typeof window['signature데이터']==='function')sig=window['signature데이터'](type,role)||{};}catch(e){}
+      if(!sel||!sel.value) return Object.assign({id:'',name:'-',title:'',department:'',email:''},sig);
+      var opt=sel.options&&sel.options[sel.selectedIndex];
+      var rawName=String((opt&&(opt.dataset.name||opt.textContent))||'').replace(/\s*\/\s*.*$/,'').trim();
+      var users=(appState().signableUsers||window.signableUsers||[]);
+      var u=Array.isArray(users)?users.find(function(x){return String(x.id)===String(sel.value)||String(x.email||'')===String(sel.value)||String(x.name||'')===rawName;}):null;
+      return Object.assign({id:(u&&u.id)||sel.value,name:(u&&u.name)||rawName||'-',title:(u&&u.title)||(opt&&opt.dataset.title)||'',department:(u&&u.department)||(opt&&opt.dataset.department)||'',email:(u&&u.email)||(opt&&opt.dataset.email)||''},sig);
+    }
+    return {writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
+  };
+
+  function boot(){ensurePage();bind();setTimeout(renderInbox,80);[300,800,1600,3000].forEach(function(ms){setTimeout(function(){ensurePage();renderInbox();},ms);});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.renderApprovalInbox=renderInbox;
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -8155,6 +8388,239 @@ body {
   <span>출력자: ${esc(senderName)} &nbsp;|&nbsp; 출력일시: ${new Date().toLocaleString('ko-KR')}</span>
 </div>
 
+
+
+<!-- NAMO Approval Inbox Unified Replacement v20260527 -->
+<style id="namo-approval-inbox-replacement-style">
+/* 기존 서명 박스 내부 중복 결재 버튼 제거: 결재 처리는 결재함에서만 수행 */
+#signGrid_iqc > .namo-approval-actions,
+#signGrid_pqc > .namo-approval-actions,
+#signGrid_oqc > .namo-approval-actions,
+#signGrid_training > .namo-approval-actions,
+#signGrid_training > .namo-training-approval-bar{display:none!important;}
+.approval-inbox-wrap{display:flex;flex-direction:column;gap:16px;}
+.approval-inbox-hero{background:linear-gradient(135deg,#071426,#10284b 55%,#0e7490);border-radius:22px;color:#fff;padding:22px 24px;box-shadow:0 14px 32px rgba(15,23,42,.18);position:relative;overflow:hidden;}
+.approval-inbox-hero:before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 18% 30%,rgba(56,189,248,.32),transparent 32%),radial-gradient(circle at 80% 20%,rgba(34,197,94,.18),transparent 30%);pointer-events:none;}
+.approval-inbox-hero>*{position:relative;}
+.approval-inbox-title{font-size:24px;font-weight:900;letter-spacing:-.5px;}
+.approval-inbox-sub{font-size:13px;color:#c7ddff;margin-top:6px;line-height:1.6;}
+.approval-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:18px;}
+.approval-kpi{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;}
+.approval-kpi span{display:block;font-size:11px;font-weight:900;color:#bfdbfe;}
+.approval-kpi strong{display:block;font-size:28px;font-weight:900;color:#fff;margin-top:3px;line-height:1;}
+.approval-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:14px 16px;box-shadow:0 8px 22px rgba(15,23,42,.055);}
+.approval-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.approval-tab{height:36px;border:1px solid #dbe3ee;border-radius:999px;background:#fff;color:#475569;padding:0 14px;font-size:13px;font-weight:900;cursor:pointer;}
+.approval-tab:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff;}
+.approval-tab.active{background:#2563eb;color:#fff;border-color:#2563eb;box-shadow:0 6px 14px rgba(37,99,235,.18);}
+.approval-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.approval-filter select,.approval-filter input{height:36px;border:1.5px solid #dbe3ee;border-radius:10px;background:#fff;color:#0f172a;font-size:13px;padding:0 12px;outline:none;}
+.approval-filter input{min-width:220px;}
+.approval-board{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:hidden;}
+.approval-board-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #e2e8f0;background:#fbfdff;}
+.approval-board-head h3{font-size:16px;font-weight:900;color:#0f172a;}
+.approval-table-wrap{overflow:auto;}
+.approval-table{width:100%;border-collapse:collapse;min-width:1180px;}
+.approval-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap;}
+.approval-table td{padding:13px 14px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;vertical-align:middle;}
+.approval-table tr:last-child td{border-bottom:none;}
+.approval-table tr:hover{background:#fbfdff;}
+.approval-doc-link{border:none;background:transparent;color:#1d4ed8;font-weight:900;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0;}
+.approval-chip{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:26px;border-radius:999px;padding:0 10px;font-size:11px;font-weight:900;}
+.approval-chip.pending{background:#e0f2fe;color:#075985;}
+.approval-chip.reviewed{background:#fef3c7;color:#92400e;}
+.approval-chip.approved{background:#dcfce7;color:#166534;}
+.approval-chip.rejected{background:#fee2e2;color:#991b1b;}
+.approval-actions-cell{display:flex;gap:6px;flex-wrap:wrap;}
+.approval-action-btn{height:28px;border:none;border-radius:8px;padding:0 10px;font-size:11px;font-weight:900;cursor:pointer;}
+.approval-action-btn.review{background:#e0f2fe;color:#075985;}
+.approval-action-btn.approve{background:#dcfce7;color:#166534;}
+.approval-action-btn.reject{background:#fee2e2;color:#991b1b;}
+.approval-action-btn.open{background:#f1f5f9;color:#334155;}
+.approval-action-btn:disabled{opacity:.45;cursor:not-allowed;}
+.approval-empty{padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important;}
+@media(max-width:1100px){.approval-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.approval-filter{width:100%;}.approval-filter input{flex:1;min-width:160px;}}
+@media(max-width:700px){.approval-kpi-grid{grid-template-columns:1fr;}.approval-toolbar{align-items:stretch;}.approval-tabs,.approval-filter{width:100%;}.approval-tab{flex:1;}}
+</style>
+<script id="namo-approval-inbox-replacement-script">
+(function(){
+  'use strict';
+  if(window.__namoApprovalInboxReplacement) return;
+  window.__namoApprovalInboxReplacement=true;
+
+  var STATUS_STORE='namo_unified_approval_inbox_status_v20260527';
+  var NOTI_STORE='namo_approval_notifications_v1';
+  var TYPE_META={
+    iqc:{label:'수입검사(IQC)',page:'incoming',api:'/api/iqc',arr:'incoming',edit:'editIncoming'},
+    pqc:{label:'공정검사(PQC)',page:'process',api:'/api/pqc',arr:'process',edit:'editProcess'},
+    oqc:{label:'출하검사(OQC)',page:'shipment',api:'/api/oqc',arr:'shipment',edit:'editShipment'}
+  };
+  var currentTab='all';
+  function $(id){return document.getElementById(id);} 
+  function qs(s,r){return (r||document).querySelector(s);} 
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function hasName(u){return !!(u&&String(u.name||u.email||u.id||'').trim()&&String(u.name||'').trim()!=='-');}
+  function normUser(u){
+    if(!u) return {id:'',name:'-',title:'',department:'',email:''};
+    if(typeof u==='string') return {id:u,name:u,title:'',department:'',email:''};
+    var name=String(u.name||u.username||u.displayName||u.email||u.id||'').trim();
+    return {id:String(u.id||u.email||name||''),name:name||'-',title:String(u.title||u.position||u.roleName||u.role||''),department:String(u.department||u.dept||''),email:String(u.email||'')};
+  }
+  function currentUser(){
+    var s=appState();
+    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
+    if(!u&&Array.isArray(s.signableUsers)&&s.signableUsers.length)u=s.signableUsers[0];
+    var nu=normUser(u);
+    if(!nu.id&&!nu.email&&nu.name==='-') return {id:'login-user',name:'로그인 사용자',title:'',department:'',email:''};
+    return nu;
+  }
+  function docKey(type,r){return type+':'+String((r&&r.id)||'');}
+  function statusMap(){return read(STATUS_STORE,{});} 
+  function saveStatusMap(m){write(STATUS_STORE,m||{});} 
+  function statusOf(type,r){
+    var map=statusMap(); var m=map[docKey(type,r)]||{};
+    var raw=String(m.status||r.approvalStatus||r.approval_status||r.signStatus||r.sign_status||'').toLowerCase();
+    if(['rejected','reject','반려'].indexOf(raw)>=0) return 'rejected';
+    if(['approved','approve','완료','승인완료'].indexOf(raw)>=0) return 'approved';
+    if(['reviewed','review','검토중','검토완료'].indexOf(raw)>=0) return 'reviewed';
+    if(['pending','requested','request','대기','결재대기'].indexOf(raw)>=0) return 'pending';
+    if(hasName(r.signApprover)) return 'approved';
+    if(hasName(r.signReviewer)) return 'reviewed';
+    return 'pending';
+  }
+  function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
+  function getRows(){
+    var s=appState(); var out=[];
+    Object.keys(TYPE_META).forEach(function(type){
+      var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[];
+      arr.forEach(function(r){
+        var st=statusOf(type,r);
+        out.push({type:type,meta:meta,record:r,status:st,key:docKey(type,r)});
+      });
+    });
+    out.sort(function(a,b){return String(b.record.date||'').localeCompare(String(a.record.date||''))||String(b.record.id||'').localeCompare(String(a.record.id||''));});
+    return out;
+  }
+  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
+  function writerName(r){return (r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'-';}
+  function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
+  function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
+  function buildPayload(type,r){
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+  }
+  function pushNoti(type,r,action,target){
+    var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
+    var recent=list.some(function(n){return n.namoKey===key && (Date.now()-new Date(n.time||0).getTime()<10000);});
+    if(recent) return;
+    list.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2),namoKey:key,type:type,action:action,user:me.name,title:me.title,targetId:(target&&target.id)||'',targetName:(target&&target.name)||'',targetEmail:(target&&target.email)||'',docNo:docNo(type,r),item:itemName(type,r),time:now(),read:false});
+    write(NOTI_STORE,list.slice(0,100));
+    try{if(typeof window.namoApplyApprovalSelfNotify==='function')window.namoApplyApprovalSelfNotify();}catch(e){}
+  }
+  async function persist(type,r){
+    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var idx=arr.findIndex(function(x){return String(x.id)===String(r.id);});
+    if(idx>=0) arr[idx]=r;
+    try{if(typeof window.api==='function'&&r.id){await window.api(meta.api+'/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(buildPayload(type,r))});}}catch(e){console.warn('[approval inbox] api save skipped',e);}
+    try{if(type==='iqc'&&typeof window.loadIncoming==='function')await window.loadIncoming(); if(type==='pqc'&&typeof window.loadProcess==='function')await window.loadProcess(); if(type==='oqc'&&typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}
+  }
+  async function act(type,id,action){
+    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
+    if(!r){alert('문서를 찾을 수 없습니다.');return;}
+    var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
+    if(action==='review'){
+      r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
+      map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
+      pushNoti(type,r,'review',r.signApprover||r.signWriter||me);
+    }else if(action==='approve'){
+      if(!hasName(r.signReviewer)){r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()});}
+      r.signApprover=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='approved';
+      map[docKey(type,r)]=Object.assign({},old,{status:'approved',approvedBy:me.name,approvedAt:now()});
+      pushNoti(type,r,'approve',r.signWriter||me);
+    }else if(action==='reject'){
+      r.approvalStatus='rejected';
+      map[docKey(type,r)]=Object.assign({},old,{status:'rejected',rejectedBy:me.name,rejectedAt:now()});
+      pushNoti(type,r,'reject',r.signWriter||me);
+    }
+    saveStatusMap(map); await persist(type,r); renderInbox();
+    try{if(typeof window.renderSummary==='function')window.renderSummary();}catch(e){}
+  }
+  function openDoc(type,id){
+    var meta=TYPE_META[type]; var nav=qs('.nav-item[data-page="'+meta.page+'"]'); if(nav) nav.click();
+    setTimeout(function(){try{if(typeof window[meta.edit]==='function')window[meta.edit](id);}catch(e){}},120);
+  }
+  function renderInbox(){
+    var body=$('approvalInboxTable'); if(!body) return;
+    var typeFilter=$('approvalTypeFilter')?$('approvalTypeFilter').value:'all';
+    var keyword=($('approvalSearch')?$('approvalSearch').value:'').trim().toLowerCase();
+    var rows=getRows(); var counts={all:rows.length,pending:0,reviewed:0,approved:0,rejected:0};
+    rows.forEach(function(x){counts[x.status]=(counts[x.status]||0)+1;});
+    Object.keys(counts).forEach(function(k){var el=$('approvalKpi_'+k); if(el)el.textContent=counts[k]||0; var tab=qs('.approval-tab[data-approval-tab="'+k+'"]'); if(tab)tab.textContent=tab.getAttribute('data-label')+' '+(counts[k]||0);});
+    rows=rows.filter(function(x){
+      if(currentTab!=='all'&&x.status!==currentTab) return false;
+      if(typeFilter!=='all'&&x.type!==typeFilter) return false;
+      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
+      return true;
+    });
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+  }
+  function ensurePage(){
+    var side=qs('.sidebar');
+    if(side&&!qs('.nav-item[data-page="approval-inbox"]',side)){
+      var anchor=qs('.nav-item[data-page="shipment"]',side)||qs('.nav-item[data-page="process"]',side)||side.lastElementChild;
+      var btn=document.createElement('button'); btn.className='nav-item'; btn.setAttribute('data-page','approval-inbox'); btn.innerHTML='<span class="nav-icon">☑</span><span>결재함</span>';
+      if(anchor) anchor.insertAdjacentElement('afterend',btn); else side.appendChild(btn);
+      btn.addEventListener('click',function(){qsa('.nav-item[data-page]').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');qsa('.page').forEach(function(p){p.classList.remove('active');});var page=$('page-approval-inbox');if(page)page.classList.add('active');setTimeout(renderInbox,50);});
+    }
+    var content=qs('.content');
+    if(content&&!$('page-approval-inbox')){
+      var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
+    }
+  }
+  function bind(){
+    document.addEventListener('click',function(e){
+      var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
+      if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
+      var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
+      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
+      if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
+      if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
+    },true);
+    document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')renderInbox();},true);
+    document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')renderInbox();},true);
+  }
+  async function refreshData(){try{if(typeof window.loadIncoming==='function')await window.loadIncoming();if(typeof window.loadProcess==='function')await window.loadProcess();if(typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}}
+
+  /* 검토/승인 이름 누락 방지: id/email/name/dataset까지 모두 조회 */
+  window.getSignPayload=function(type){
+    function find(role){
+      var sel=document.getElementById('sg_'+type+'_'+role);
+      var sig={}; try{if(typeof window['signature데이터']==='function')sig=window['signature데이터'](type,role)||{};}catch(e){}
+      if(!sel||!sel.value) return Object.assign({id:'',name:'-',title:'',department:'',email:''},sig);
+      var opt=sel.options&&sel.options[sel.selectedIndex];
+      var rawName=String((opt&&(opt.dataset.name||opt.textContent))||'').replace(/\s*\/\s*.*$/,'').trim();
+      var users=(appState().signableUsers||window.signableUsers||[]);
+      var u=Array.isArray(users)?users.find(function(x){return String(x.id)===String(sel.value)||String(x.email||'')===String(sel.value)||String(x.name||'')===rawName;}):null;
+      return Object.assign({id:(u&&u.id)||sel.value,name:(u&&u.name)||rawName||'-',title:(u&&u.title)||(opt&&opt.dataset.title)||'',department:(u&&u.department)||(opt&&opt.dataset.department)||'',email:(u&&u.email)||(opt&&opt.dataset.email)||''},sig);
+    }
+    return {writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
+  };
+
+  function boot(){ensurePage();bind();setTimeout(renderInbox,80);[300,800,1600,3000].forEach(function(ms){setTimeout(function(){ensurePage();renderInbox();},ms);});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.renderApprovalInbox=renderInbox;
+})();
+</script>
+
 </body>
 </html>`;
 
@@ -11165,5 +11631,238 @@ body {
   [300,800,1600,3000].forEach(function(ms){ setTimeout(boot, ms); });
 })();
 </script>
+
+
+<!-- NAMO Approval Inbox Unified Replacement v20260527 -->
+<style id="namo-approval-inbox-replacement-style">
+/* 기존 서명 박스 내부 중복 결재 버튼 제거: 결재 처리는 결재함에서만 수행 */
+#signGrid_iqc > .namo-approval-actions,
+#signGrid_pqc > .namo-approval-actions,
+#signGrid_oqc > .namo-approval-actions,
+#signGrid_training > .namo-approval-actions,
+#signGrid_training > .namo-training-approval-bar{display:none!important;}
+.approval-inbox-wrap{display:flex;flex-direction:column;gap:16px;}
+.approval-inbox-hero{background:linear-gradient(135deg,#071426,#10284b 55%,#0e7490);border-radius:22px;color:#fff;padding:22px 24px;box-shadow:0 14px 32px rgba(15,23,42,.18);position:relative;overflow:hidden;}
+.approval-inbox-hero:before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 18% 30%,rgba(56,189,248,.32),transparent 32%),radial-gradient(circle at 80% 20%,rgba(34,197,94,.18),transparent 30%);pointer-events:none;}
+.approval-inbox-hero>*{position:relative;}
+.approval-inbox-title{font-size:24px;font-weight:900;letter-spacing:-.5px;}
+.approval-inbox-sub{font-size:13px;color:#c7ddff;margin-top:6px;line-height:1.6;}
+.approval-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:18px;}
+.approval-kpi{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;}
+.approval-kpi span{display:block;font-size:11px;font-weight:900;color:#bfdbfe;}
+.approval-kpi strong{display:block;font-size:28px;font-weight:900;color:#fff;margin-top:3px;line-height:1;}
+.approval-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:14px 16px;box-shadow:0 8px 22px rgba(15,23,42,.055);}
+.approval-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.approval-tab{height:36px;border:1px solid #dbe3ee;border-radius:999px;background:#fff;color:#475569;padding:0 14px;font-size:13px;font-weight:900;cursor:pointer;}
+.approval-tab:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff;}
+.approval-tab.active{background:#2563eb;color:#fff;border-color:#2563eb;box-shadow:0 6px 14px rgba(37,99,235,.18);}
+.approval-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.approval-filter select,.approval-filter input{height:36px;border:1.5px solid #dbe3ee;border-radius:10px;background:#fff;color:#0f172a;font-size:13px;padding:0 12px;outline:none;}
+.approval-filter input{min-width:220px;}
+.approval-board{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:hidden;}
+.approval-board-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #e2e8f0;background:#fbfdff;}
+.approval-board-head h3{font-size:16px;font-weight:900;color:#0f172a;}
+.approval-table-wrap{overflow:auto;}
+.approval-table{width:100%;border-collapse:collapse;min-width:1180px;}
+.approval-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap;}
+.approval-table td{padding:13px 14px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;vertical-align:middle;}
+.approval-table tr:last-child td{border-bottom:none;}
+.approval-table tr:hover{background:#fbfdff;}
+.approval-doc-link{border:none;background:transparent;color:#1d4ed8;font-weight:900;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0;}
+.approval-chip{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:26px;border-radius:999px;padding:0 10px;font-size:11px;font-weight:900;}
+.approval-chip.pending{background:#e0f2fe;color:#075985;}
+.approval-chip.reviewed{background:#fef3c7;color:#92400e;}
+.approval-chip.approved{background:#dcfce7;color:#166534;}
+.approval-chip.rejected{background:#fee2e2;color:#991b1b;}
+.approval-actions-cell{display:flex;gap:6px;flex-wrap:wrap;}
+.approval-action-btn{height:28px;border:none;border-radius:8px;padding:0 10px;font-size:11px;font-weight:900;cursor:pointer;}
+.approval-action-btn.review{background:#e0f2fe;color:#075985;}
+.approval-action-btn.approve{background:#dcfce7;color:#166534;}
+.approval-action-btn.reject{background:#fee2e2;color:#991b1b;}
+.approval-action-btn.open{background:#f1f5f9;color:#334155;}
+.approval-action-btn:disabled{opacity:.45;cursor:not-allowed;}
+.approval-empty{padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important;}
+@media(max-width:1100px){.approval-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.approval-filter{width:100%;}.approval-filter input{flex:1;min-width:160px;}}
+@media(max-width:700px){.approval-kpi-grid{grid-template-columns:1fr;}.approval-toolbar{align-items:stretch;}.approval-tabs,.approval-filter{width:100%;}.approval-tab{flex:1;}}
+</style>
+<script id="namo-approval-inbox-replacement-script">
+(function(){
+  'use strict';
+  if(window.__namoApprovalInboxReplacement) return;
+  window.__namoApprovalInboxReplacement=true;
+
+  var STATUS_STORE='namo_unified_approval_inbox_status_v20260527';
+  var NOTI_STORE='namo_approval_notifications_v1';
+  var TYPE_META={
+    iqc:{label:'수입검사(IQC)',page:'incoming',api:'/api/iqc',arr:'incoming',edit:'editIncoming'},
+    pqc:{label:'공정검사(PQC)',page:'process',api:'/api/pqc',arr:'process',edit:'editProcess'},
+    oqc:{label:'출하검사(OQC)',page:'shipment',api:'/api/oqc',arr:'shipment',edit:'editShipment'}
+  };
+  var currentTab='all';
+  function $(id){return document.getElementById(id);} 
+  function qs(s,r){return (r||document).querySelector(s);} 
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function hasName(u){return !!(u&&String(u.name||u.email||u.id||'').trim()&&String(u.name||'').trim()!=='-');}
+  function normUser(u){
+    if(!u) return {id:'',name:'-',title:'',department:'',email:''};
+    if(typeof u==='string') return {id:u,name:u,title:'',department:'',email:''};
+    var name=String(u.name||u.username||u.displayName||u.email||u.id||'').trim();
+    return {id:String(u.id||u.email||name||''),name:name||'-',title:String(u.title||u.position||u.roleName||u.role||''),department:String(u.department||u.dept||''),email:String(u.email||'')};
+  }
+  function currentUser(){
+    var s=appState();
+    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
+    if(!u&&Array.isArray(s.signableUsers)&&s.signableUsers.length)u=s.signableUsers[0];
+    var nu=normUser(u);
+    if(!nu.id&&!nu.email&&nu.name==='-') return {id:'login-user',name:'로그인 사용자',title:'',department:'',email:''};
+    return nu;
+  }
+  function docKey(type,r){return type+':'+String((r&&r.id)||'');}
+  function statusMap(){return read(STATUS_STORE,{});} 
+  function saveStatusMap(m){write(STATUS_STORE,m||{});} 
+  function statusOf(type,r){
+    var map=statusMap(); var m=map[docKey(type,r)]||{};
+    var raw=String(m.status||r.approvalStatus||r.approval_status||r.signStatus||r.sign_status||'').toLowerCase();
+    if(['rejected','reject','반려'].indexOf(raw)>=0) return 'rejected';
+    if(['approved','approve','완료','승인완료'].indexOf(raw)>=0) return 'approved';
+    if(['reviewed','review','검토중','검토완료'].indexOf(raw)>=0) return 'reviewed';
+    if(['pending','requested','request','대기','결재대기'].indexOf(raw)>=0) return 'pending';
+    if(hasName(r.signApprover)) return 'approved';
+    if(hasName(r.signReviewer)) return 'reviewed';
+    return 'pending';
+  }
+  function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
+  function getRows(){
+    var s=appState(); var out=[];
+    Object.keys(TYPE_META).forEach(function(type){
+      var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[];
+      arr.forEach(function(r){
+        var st=statusOf(type,r);
+        out.push({type:type,meta:meta,record:r,status:st,key:docKey(type,r)});
+      });
+    });
+    out.sort(function(a,b){return String(b.record.date||'').localeCompare(String(a.record.date||''))||String(b.record.id||'').localeCompare(String(a.record.id||''));});
+    return out;
+  }
+  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
+  function writerName(r){return (r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'-';}
+  function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
+  function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
+  function buildPayload(type,r){
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+  }
+  function pushNoti(type,r,action,target){
+    var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
+    var recent=list.some(function(n){return n.namoKey===key && (Date.now()-new Date(n.time||0).getTime()<10000);});
+    if(recent) return;
+    list.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2),namoKey:key,type:type,action:action,user:me.name,title:me.title,targetId:(target&&target.id)||'',targetName:(target&&target.name)||'',targetEmail:(target&&target.email)||'',docNo:docNo(type,r),item:itemName(type,r),time:now(),read:false});
+    write(NOTI_STORE,list.slice(0,100));
+    try{if(typeof window.namoApplyApprovalSelfNotify==='function')window.namoApplyApprovalSelfNotify();}catch(e){}
+  }
+  async function persist(type,r){
+    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var idx=arr.findIndex(function(x){return String(x.id)===String(r.id);});
+    if(idx>=0) arr[idx]=r;
+    try{if(typeof window.api==='function'&&r.id){await window.api(meta.api+'/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(buildPayload(type,r))});}}catch(e){console.warn('[approval inbox] api save skipped',e);}
+    try{if(type==='iqc'&&typeof window.loadIncoming==='function')await window.loadIncoming(); if(type==='pqc'&&typeof window.loadProcess==='function')await window.loadProcess(); if(type==='oqc'&&typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}
+  }
+  async function act(type,id,action){
+    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
+    if(!r){alert('문서를 찾을 수 없습니다.');return;}
+    var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
+    if(action==='review'){
+      r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
+      map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
+      pushNoti(type,r,'review',r.signApprover||r.signWriter||me);
+    }else if(action==='approve'){
+      if(!hasName(r.signReviewer)){r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()});}
+      r.signApprover=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='approved';
+      map[docKey(type,r)]=Object.assign({},old,{status:'approved',approvedBy:me.name,approvedAt:now()});
+      pushNoti(type,r,'approve',r.signWriter||me);
+    }else if(action==='reject'){
+      r.approvalStatus='rejected';
+      map[docKey(type,r)]=Object.assign({},old,{status:'rejected',rejectedBy:me.name,rejectedAt:now()});
+      pushNoti(type,r,'reject',r.signWriter||me);
+    }
+    saveStatusMap(map); await persist(type,r); renderInbox();
+    try{if(typeof window.renderSummary==='function')window.renderSummary();}catch(e){}
+  }
+  function openDoc(type,id){
+    var meta=TYPE_META[type]; var nav=qs('.nav-item[data-page="'+meta.page+'"]'); if(nav) nav.click();
+    setTimeout(function(){try{if(typeof window[meta.edit]==='function')window[meta.edit](id);}catch(e){}},120);
+  }
+  function renderInbox(){
+    var body=$('approvalInboxTable'); if(!body) return;
+    var typeFilter=$('approvalTypeFilter')?$('approvalTypeFilter').value:'all';
+    var keyword=($('approvalSearch')?$('approvalSearch').value:'').trim().toLowerCase();
+    var rows=getRows(); var counts={all:rows.length,pending:0,reviewed:0,approved:0,rejected:0};
+    rows.forEach(function(x){counts[x.status]=(counts[x.status]||0)+1;});
+    Object.keys(counts).forEach(function(k){var el=$('approvalKpi_'+k); if(el)el.textContent=counts[k]||0; var tab=qs('.approval-tab[data-approval-tab="'+k+'"]'); if(tab)tab.textContent=tab.getAttribute('data-label')+' '+(counts[k]||0);});
+    rows=rows.filter(function(x){
+      if(currentTab!=='all'&&x.status!==currentTab) return false;
+      if(typeFilter!=='all'&&x.type!==typeFilter) return false;
+      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
+      return true;
+    });
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+  }
+  function ensurePage(){
+    var side=qs('.sidebar');
+    if(side&&!qs('.nav-item[data-page="approval-inbox"]',side)){
+      var anchor=qs('.nav-item[data-page="shipment"]',side)||qs('.nav-item[data-page="process"]',side)||side.lastElementChild;
+      var btn=document.createElement('button'); btn.className='nav-item'; btn.setAttribute('data-page','approval-inbox'); btn.innerHTML='<span class="nav-icon">☑</span><span>결재함</span>';
+      if(anchor) anchor.insertAdjacentElement('afterend',btn); else side.appendChild(btn);
+      btn.addEventListener('click',function(){qsa('.nav-item[data-page]').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');qsa('.page').forEach(function(p){p.classList.remove('active');});var page=$('page-approval-inbox');if(page)page.classList.add('active');setTimeout(renderInbox,50);});
+    }
+    var content=qs('.content');
+    if(content&&!$('page-approval-inbox')){
+      var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
+    }
+  }
+  function bind(){
+    document.addEventListener('click',function(e){
+      var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
+      if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
+      var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
+      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
+      if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
+      if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
+    },true);
+    document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')renderInbox();},true);
+    document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')renderInbox();},true);
+  }
+  async function refreshData(){try{if(typeof window.loadIncoming==='function')await window.loadIncoming();if(typeof window.loadProcess==='function')await window.loadProcess();if(typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}}
+
+  /* 검토/승인 이름 누락 방지: id/email/name/dataset까지 모두 조회 */
+  window.getSignPayload=function(type){
+    function find(role){
+      var sel=document.getElementById('sg_'+type+'_'+role);
+      var sig={}; try{if(typeof window['signature데이터']==='function')sig=window['signature데이터'](type,role)||{};}catch(e){}
+      if(!sel||!sel.value) return Object.assign({id:'',name:'-',title:'',department:'',email:''},sig);
+      var opt=sel.options&&sel.options[sel.selectedIndex];
+      var rawName=String((opt&&(opt.dataset.name||opt.textContent))||'').replace(/\s*\/\s*.*$/,'').trim();
+      var users=(appState().signableUsers||window.signableUsers||[]);
+      var u=Array.isArray(users)?users.find(function(x){return String(x.id)===String(sel.value)||String(x.email||'')===String(sel.value)||String(x.name||'')===rawName;}):null;
+      return Object.assign({id:(u&&u.id)||sel.value,name:(u&&u.name)||rawName||'-',title:(u&&u.title)||(opt&&opt.dataset.title)||'',department:(u&&u.department)||(opt&&opt.dataset.department)||'',email:(u&&u.email)||(opt&&opt.dataset.email)||''},sig);
+    }
+    return {writer:find('writer'),reviewer:find('reviewer'),approver:find('approver')};
+  };
+
+  function boot(){ensurePage();bind();setTimeout(renderInbox,80);[300,800,1600,3000].forEach(function(ms){setTimeout(function(){ensurePage();renderInbox();},ms);});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.renderApprovalInbox=renderInbox;
+})();
+</script>
+
 </body>
 </html>
