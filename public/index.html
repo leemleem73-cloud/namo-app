@@ -11631,5 +11631,102 @@ body {
 })();
 </script>
 
+
+
+<!-- NAMO Final Patch 20260527: 결재 버튼 위치 정리 + 결재함/알림 유지 -->
+<style id="namo-final-approval-inbox-only-style">
+/* 검사 작성 화면의 현재 위치 결재 처리 버튼은 숨김: 검토/승인/반려는 결재함에서만 처리 */
+#signGrid_iqc > .namo-approval-actions,
+#signGrid_pqc > .namo-approval-actions,
+#signGrid_oqc > .namo-approval-actions,
+#signGrid_iqc .namo-appr-btn,
+#signGrid_pqc .namo-appr-btn,
+#signGrid_oqc .namo-appr-btn,
+#signGrid_iqc .namo-report-actbar,
+#signGrid_pqc .namo-report-actbar,
+#signGrid_oqc .namo-report-actbar,
+[data-namo-report-actbar="iqc"],
+[data-namo-report-actbar="pqc"],
+[data-namo-report-actbar="oqc"]{
+  display:none!important;
+}
+/* 교육보고서는 결재요청만 작성 화면에 남기고, 검토/최종승인/반려는 결재함에서 처리 */
+#signGrid_training .namo-training-approval-btn.review,
+#signGrid_training .namo-training-approval-btn.approve,
+#signGrid_training .namo-training-approval-btn.reject{
+  display:none!important;
+}
+</style>
+<script id="namo-final-approval-inbox-only-script">
+(function(){
+  'use strict';
+  if(window.__namoFinalApprovalInboxOnlyPatch) return;
+  window.__namoFinalApprovalInboxOnlyPatch = true;
+
+  var STATUS_STORE = 'namo_unified_approval_inbox_status_v20260527';
+  var NOTI_STORE = 'namo_approval_notifications_v1';
+  var REPORT_NOTI_STORE = 'namo_report_approval_notifications_v20260525';
+  var TYPE_LABEL = {iqc:'수입검사(IQC)',pqc:'공정검사(PQC)',oqc:'출하검사(OQC)',training:'교육보고서'};
+
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function state(){try{return window.state||{};}catch(e){return {};}}
+  function currentUser(){var s=state();var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;if(!u&&Array.isArray(s.signableUsers)&&s.signableUsers.length)u=s.signableUsers[0];var name=u&&(u.name||u.username||u.displayName||u.email||u.id);return {id:String((u&&(u.id||u.email||name))||'login-user'),name:String(name||'로그인 사용자'),title:String((u&&(u.title||u.position||u.roleName||u.role))||''),email:String((u&&u.email)||'')};}
+  function selectedSignUser(type,role){var sel=document.getElementById('sg_'+type+'_'+role);if(!sel||!sel.value)return null;var opt=sel.options&&sel.options[sel.selectedIndex];var txt=String((opt&&(opt.dataset.name||opt.textContent))||sel.value||'').replace(/\s*\/\s*.*$/,'').trim();if(!txt||txt==='-')return null;return {id:String(sel.value||txt),name:txt,title:String((opt&&opt.dataset.title)||''),email:String((opt&&opt.dataset.email)||'')};}
+  function docInfo(type){
+    if(type==='iqc') return {type:type,docNo:(qs('#incomingLot')||{}).value||'',lot:(qs('#incomingLot')||{}).value||'',item:(qs('#incomingItem')||{}).value||''};
+    if(type==='pqc') return {type:type,docNo:(qs('#processLot')||{}).value||'',lot:(qs('#processLot')||{}).value||'',item:(qs('#processProduct')||{}).value||''};
+    if(type==='oqc') return {type:type,docNo:(qs('#shipmentLot')||{}).value||'',lot:(qs('#shipmentLot')||{}).value||'',item:(qs('#shipmentProduct')||{}).value||''};
+    return {type:type,docNo:(qs('#trainingNo')||{}).value||'',lot:'',item:(qs('#trainingTitle')||{}).value||''};
+  }
+  function notifyStores(info,action,target){
+    var me=currentUser();
+    var label={submit:'검토 요청',request:'검토 요청',review:'검토 완료',approve:'승인 완료',reject:'반려'}[action]||action;
+    var key=[info.type,info.docNo,info.lot,info.item,action,(target&&target.id)||''].join('|');
+    var n={id:Date.now()+'-'+Math.random().toString(36).slice(2),namoKey:key,dedup:key,type:info.type,action:action,actionLabel:label,user:me.name,from:me.name,fromTitle:me.title,title:me.title,targetId:(target&&target.id)||'',targetName:(target&&target.name)||'',targetEmail:(target&&target.email)||'',docNo:info.docNo||'',lot:info.lot||'',item:info.item||'',time:now(),read:false};
+    [NOTI_STORE,REPORT_NOTI_STORE].forEach(function(store){var list=read(store,[]).filter(function(x){return x.dedup!==key && x.namoKey!==key;});list.unshift(n);write(store,list.slice(0,120));});
+    try{if(typeof window.namoNotify==='function')window.namoNotify(TYPE_LABEL[info.type]||info.type, action, label, (TYPE_LABEL[info.type]||info.type)+' '+label+' 알림이 등록되었습니다.');}catch(e){}
+    try{if(typeof window.namoApplyApprovalSelfNotify==='function')window.namoApplyApprovalSelfNotify();}catch(e){}
+    try{if(typeof window.renderApprovalInbox==='function')window.renderApprovalInbox();}catch(e){}
+  }
+  function hideInlineApprovalButtons(){
+    qsa('#signGrid_iqc .namo-appr-btn,#signGrid_pqc .namo-appr-btn,#signGrid_oqc .namo-appr-btn,#signGrid_iqc .namo-report-actbar,#signGrid_pqc .namo-report-actbar,#signGrid_oqc .namo-report-actbar,[data-namo-report-actbar="iqc"],[data-namo-report-actbar="pqc"],[data-namo-report-actbar="oqc"]').forEach(function(el){el.style.display='none';});
+    qsa('#signGrid_training .namo-training-approval-btn.review,#signGrid_training .namo-training-approval-btn.approve,#signGrid_training .namo-training-approval-btn.reject').forEach(function(el){el.style.display='none';});
+  }
+  function wrapSave(fnName,type){
+    var old=window[fnName];
+    if(typeof old!=='function'||old.__namoInboxOnlyWrapped) return;
+    var wrapped=function(){
+      var info=docInfo(type);var target=selectedSignUser(type,'reviewer')||selectedSignUser(type,'approver')||currentUser();
+      var ret=old.apply(this,arguments);
+      var after=function(){notifyStores(info,'submit',target);var map=read(STATUS_STORE,{});var key=type+':'+(info.docNo||info.lot||info.item||'draft');map[key]=Object.assign({},map[key]||{},{status:'pending',requestedBy:currentUser().name,requestedAt:now(),reviewerName:target.name});write(STATUS_STORE,map);};
+      if(ret&&typeof ret.then==='function')ret.then(after).catch(function(e){console.warn(e);});else setTimeout(after,0);
+      return ret;
+    };
+    wrapped.__namoInboxOnlyWrapped=true;
+    window[fnName]=wrapped;
+  }
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('[data-appr-act]');
+    if(!btn) return;
+    setTimeout(function(){
+      var type=btn.getAttribute('data-type')||'';var action=btn.getAttribute('data-appr-act')||'';var info={type:type,docNo:btn.getAttribute('data-id')||'',lot:'',item:''};
+      notifyStores(info,action,currentUser());
+    },250);
+  },false);
+  function boot(){
+    hideInlineApprovalButtons();
+    wrapSave('saveIncoming','iqc');
+    wrapSave('saveProcess','pqc');
+    wrapSave('saveShipment','oqc');
+    [200,600,1200,2500].forEach(function(ms){setTimeout(hideInlineApprovalButtons,ms);});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+
 </body>
 </html>
