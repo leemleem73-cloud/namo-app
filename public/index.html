@@ -11756,7 +11756,34 @@ body {
   function appState(){try{return window.state||{};}catch(e){return {};}}
   function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
   function hasName(u){return !!(u && String(u.name||u.email||u.id||u||'').trim() && String(u.name||u||'').trim()!=='-');}
-  function currentUser(){var s=appState();var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;var n=(u&&(u.name||u.username||u.displayName||u.email||u.id))||'로그인 사용자';return {id:(u&&(u.id||u.email||n))||'login-user',name:n,title:(u&&(u.title||u.role||''))||'',email:(u&&u.email)||''};}
+  function badName(v){v=String(v||'').trim();return !v||v==='-'||v==='로그인 사용자'||v==='login-user'||v==='알 수 없음'||v==='사용자';}
+  function profileName(){var el=$('profileName')||qs('.pname');var v=el?String(el.textContent||'').trim():'';return badName(v)?'':v;}
+  function profileEmail(){var el=$('profileEmail')||qs('.pemail');var v=el?String(el.textContent||'').trim():'';return v;}
+  function pickName(u){
+    var n=(u&&(u.name||u.realName||u.fullName||u.displayName||u.username))||'';
+    if(badName(n)) n=profileName();
+    if(badName(n)&&u&&u.email) n=String(u.email).split('@')[0];
+    if(badName(n)) n='로그인 사용자';
+    return String(n).trim();
+  }
+  function currentUser(){
+    var s=appState();
+    var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||{};
+    var email=String((u&&(u.email||u.userEmail))||profileEmail()||'').trim();
+    var name=pickName(u);
+    return {
+      id:String((u&&(u.id||u.userId||u.uuid||u.employeeId))||email||name||'login-user'),
+      name:name,
+      title:String((u&&(u.title||u.position||u.roleName||u.role||u.grade))||''),
+      department:String((u&&(u.department||u.dept))||''),
+      email:email
+    };
+  }
+  function displayUserName(v){
+    var n=String(v||'').trim();
+    if(badName(n)){var me=currentUser(); if(me && !badName(me.name)) return me.name; return '-';}
+    return n;
+  }
   function docKey(type,r){return type+':'+String((r&&r.id)||'');}
   function altKey(type,r){return type+':'+String((r&&(r.docNo||r.reportNo||r.no||r.lot||r.item))||'');}
   function statusMap(){return read(STATUS_STORE,{});}
@@ -11776,9 +11803,9 @@ body {
   function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
   function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
-  function writerName(r){return (r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'-';}
-  function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
-  function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
+  function writerName(r){return displayUserName((r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'-');}
+  function reviewerName(r){return displayUserName((r.signReviewer&&r.signReviewer.name)||r.reviewer||'-');}
+  function approverName(r){return displayUserName((r.signApprover&&r.signApprover.name)||r.approver||'-');}
 
   function rowsFromState(){
     var s=appState(), out=[];
