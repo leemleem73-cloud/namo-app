@@ -3079,46 +3079,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <section class="training-panel">
               <div class="training-panel-head">
                 <div>
-                  <h2>교육보고서 목록</h2>
-                  <p>검색, 구분, 결과 조건으로 보고서를 빠르게 확인합니다.</p>
-                </div>
-                <span class="training-pill">Role-based Notification</span>
-              </div>
-              <div class="training-toolbar">
-                <div class="training-search">
-                  <span>🔎</span>
-                  <input id="trainingSearch" placeholder="교육명, 보고서번호, 강사, 부서 검색">
-                </div>
-                <select id="trainingTypeFilter">
-                  <option value="">전체 구분</option>
-                  <option>안전교육</option>
-                  <option>품질교육</option>
-                  <option>직무교육</option>
-                  <option>법정교육</option>
-                  <option>기타</option>
-                </select>
-                <select id="trainingStatusFilter">
-                  <option value="">전체 결과</option>
-                  <option>완료</option>
-                  <option>예정</option>
-                  <option>미실시</option>
-                </select>
-              </div>
-              <div class="training-table-wrap">
-                <table class="training-modern-table">
-                  <thead>
-                    <tr>
-                      <th>교육일자</th><th>보고서번호</th><th>구분</th><th>교육명</th><th>강사</th><th>대상부서</th><th>참석</th><th>상태</th><th>결재라인</th><th>작업</th>
-                    </tr>
-                  </thead>
-                  <tbody id="trainingTable"></tbody>
-                </table>
-              </div>
-            </section>
-
-            <section class="training-panel">
-              <div class="training-panel-head">
-                <div>
                   <h2>교육보고서 등록 / 수정</h2>
                   <p>기본정보, 교육내용, 첨부파일, 결재라인을 순서대로 입력합니다.</p>
                 </div>
@@ -3200,6 +3160,46 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <input type="hidden" id="trainingEditId">
               </div>
             </section>
+            <section class="training-panel">
+              <div class="training-panel-head">
+                <div>
+                  <h2>교육보고서 목록</h2>
+                  <p>검색, 구분, 결과 조건으로 보고서를 빠르게 확인합니다.</p>
+                </div>
+                <span class="training-pill">Role-based Notification</span>
+              </div>
+              <div class="training-toolbar">
+                <div class="training-search">
+                  <span>🔎</span>
+                  <input id="trainingSearch" placeholder="교육명, 보고서번호, 강사, 부서 검색">
+                </div>
+                <select id="trainingTypeFilter">
+                  <option value="">전체 구분</option>
+                  <option>안전교육</option>
+                  <option>품질교육</option>
+                  <option>직무교육</option>
+                  <option>법정교육</option>
+                  <option>기타</option>
+                </select>
+                <select id="trainingStatusFilter">
+                  <option value="">전체 결과</option>
+                  <option>완료</option>
+                  <option>예정</option>
+                  <option>미실시</option>
+                </select>
+              </div>
+              <div class="training-table-wrap">
+                <table class="training-modern-table">
+                  <thead>
+                    <tr>
+                      <th>교육일자</th><th>보고서번호</th><th>구분</th><th>교육명</th><th>강사</th><th>대상부서</th><th>참석</th><th>상태</th><th>결재라인</th><th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody id="trainingTable"></tbody>
+                </table>
+              </div>
+            </section>
+
           </main>
         </div>
       </section>
@@ -5502,7 +5502,7 @@ function renderTrainingPreview(sourceRecord){
   const el=$('trainingPreviewSheet');
   if(el){
     el.className='training-preview-sheet training-form-v5';
-    el.innerHTML=`<div class="tf-head"><div class="tf-brand">NAMO<small>Chemical</small></div><div class="tf-title">교육 보고서</div><div class="tf-qms">Namochemical QMS</div></div><table class="tf-meta"><tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서번호</th><td><button class="training-no-link" data-action="editTraining" data-id="${esc(r.id)}" type="button">${esc(r.no||'-')}</button></td></tr><tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr><tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr><tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr><tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td><span class="tf-ok">${esc(resultText)}</span></td></tr></table><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">1</span>참석자</div><div class="tf-box">${esc(r.attendees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">2</span>불참자</div><div class="tf-box">${esc(r.absentees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">3</span>교육 내용</div><div class="tf-box tf-content">${esc(r.content||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">4</span>비고 / 개선사항</div><div class="tf-box">${esc(r.remark||'-')}</div></div><div class="tf-bottom"><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">5</span>교육 사진</div>${photos}</div><div class="tf-sec" style="margin-top:0"><div class="tf-sec-title"><span class="tf-num">6</span>작성 / 검토 / 승인</div><table class="tf-approval"><thead><tr><th>구분</th><th>담당자</th><th>처리일시</th><th>서명</th></tr></thead><tbody><tr><td>작성자</td><td>${esc(writerName)}</td><td>${esc(writerName?updatedAt:'')}</td><td class="tf-sign">${signHtml(writerName,sw)}</td></tr><tr><td>검토자</td><td>${esc(reviewerName)}</td><td>${esc(reviewerName?updatedAt:'')}</td><td class="tf-sign">${signHtml(reviewerName,sr)}</td></tr><tr><td>승인자</td><td>${esc(approverName)}</td><td>${esc(approverName?updatedAt:'')}</td><td class="tf-sign">${signHtml(approverName,sa)}</td></tr></tbody></table></div></div><div class="tf-footer"><div>Namochemical QMS</div><div class="tf-page">1 / 1</div></div>`;
+    el.innerHTML=`<div class="tf-head"><div class="tf-brand">NAMO<small>Chemical</small></div><div class="tf-title">교육 보고서</div><div class="tf-qms">Namochemical QMS</div></div><table class="tf-meta"><tr><th>교육일자</th><td>${esc(r.date||'-')}</td><th>보고서번호</th><td><button class="training-no-link" data-action="editTraining" data-id="${esc(r.id)}" type="button">${esc(r.no||'-')}</button></td></tr><tr><th>교육구분</th><td>${esc(r.type||'-')}</td><th>교육명</th><td>${esc(r.title||'-')}</td></tr><tr><th>장소</th><td>${esc(r.place||'-')}</td><th>강사</th><td>${esc(r.instructor||'-')}</td></tr><tr><th>대상부서</th><td>${esc(r.dept||'-')}</td><th>교육시간</th><td>${esc(r.hours||'-')}</td></tr><tr><th>평가방법</th><td>${esc(r.evalMethod||'-')}</td><th>평가결과</th><td><span class="tf-ok">${esc(resultText)}</span></td></tr></table><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">1</span>참석자</div><div class="tf-box">${esc(r.attendees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">2</span>불참자</div><div class="tf-box">${esc(r.absentees||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">3</span>교육 내용</div><div class="tf-box tf-content">${esc(r.content||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">4</span>비고 / 개선사항</div><div class="tf-box">${esc(r.remark||'-')}</div></div><div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">5</span>교육 사진</div>${photos}</div><div class="tf-footer"><div>Namochemical QMS</div><div class="tf-page">1 / 1</div></div>`;
   }
   if($('trainingWriterText'))$('trainingWriterText').textContent=writerName;
   if($('trainingReviewerText'))$('trainingReviewerText').textContent=reviewerName;
@@ -10013,6 +10013,7 @@ body {
     try{ if(window.toast) window.toast(msg); else alert(msg); }catch(e){alert(msg);}
   }
   function addActions(type){
+    if(type==='training') return;
     var grid=$id('signGrid_'+type); if(!grid) return;
     if(grid.querySelector('.namo-approval-actions')) return;
     var box=document.createElement('div');
@@ -10723,6 +10724,11 @@ body {
   }
 }
 
+
+
+/* 교육보고서 UI 정리 패치: 중복 결재 버튼 제거 */
+#signGrid_training > .namo-approval-actions,
+#signGrid_training > .namo-report-actbar{display:none!important;}
 </style>
 <script id="nmc-workorder-history-tab-fix-script">
 (function(){
