@@ -3403,29 +3403,6 @@ function safeCalcJ(items=[]){return (typeof calcJ==='function')?calcJ(items):'';
 function eRow(cols,msg='데이터 없음'){return`<tr><td colspan="${cols}" style="text-align:center;padding:22px;color:var(--t3);">${msg}</td></tr>`;}
 function safeBC(v){return String(v||'').replace(/[^\x20-\x7E]/g,'').trim()||'N-A';}
 function tryJSON(v){if(!v)return null;if(typeof v==='object')return v;try{return JSON.parse(v);}catch(e){return null;}}
-/* 작성자 보존/결재자 매핑 보정 v20260527C */
-function namoBadUserName(v){v=String(v||'').trim();return !v||v==='-'||v==='로그인 사용자'||v==='login-user'||v==='알 수 없음'||v==='사용자'||v==='undefined'||v==='null';}
-function namoPickWriterName(r){
-  if(!r) return '';
-  const sw=tryJSON(r.sign_writer)||r.signWriter||{};
-  const candidates=[sw.name,r.writer,r.writer_name,r.author,r.author_name,r.created_by_name,r.createdByName,r.created_by,r.createdBy,r.inspector,r.solid,r.visual,r.owner,r.employee_name,r.user_name,r.name];
-  for(const v of candidates){const n=String(v||'').trim();if(!namoBadUserName(n))return n;}
-  return '';
-}
-function namoNormalizeSignWriter(r){
-  const sw=tryJSON(r?.sign_writer)||r?.signWriter||null;
-  const n=namoPickWriterName(r);
-  if(sw&&typeof sw==='object'&&!namoBadUserName(sw.name))return sw;
-  if(n)return Object.assign({},sw||{},{id:(sw&&sw.id)||n,name:n,title:(sw&&sw.title)||'',department:(sw&&sw.department)||'',email:(sw&&sw.email)||''});
-  return sw||null;
-}
-function namoSignName(obj, fallback){
-  const n=obj&&obj.name;
-  if(!namoBadUserName(n))return n;
-  if(!namoBadUserName(fallback))return fallback;
-  return '-';
-}
-
 function addMonthsToDate(dateStr,months){
   if(!dateStr||!months)return'';
   const d=new Date(dateStr+'T00:00:00');
@@ -4386,13 +4363,12 @@ async function loadIncoming(){
     lot:r.lot,
     supplier:r.supplier,
     item:r.item,
-    inspector:namoPickWriterName(r)||r.inspector,
-    writer:namoPickWriterName(r),
+    inspector:r.inspector,
     incomingQty:r.incoming_qty,
     checkQty:r.qty,
     failQty:r.fail,
     items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:namoNormalizeSignWriter(r),
+    signWriter:tryJSON(r.sign_writer),
     signReviewer:tryJSON(r.sign_reviewer),
     signApprover:tryJSON(r.sign_approver)
   }));
@@ -4409,13 +4385,12 @@ async function loadProcess(){
     product:r.product,
     line:r.visual,
     shift:r.particle,
-    inspector:namoPickWriterName(r)||r.solid,
-    writer:namoPickWriterName(r),
+    inspector:r.solid,
     qty:r.qty,
     failQty:r.fail,
     judge:r.judge,
     items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:namoNormalizeSignWriter(r),
+    signWriter:tryJSON(r.sign_writer),
     signReviewer:tryJSON(r.sign_reviewer),
     signApprover:tryJSON(r.sign_approver)
   }));
@@ -4431,14 +4406,13 @@ async function loadShipment(){
     customer:r.customer,
     product:r.product,
     lot:r.lot,
-    inspector:namoPickWriterName(r)||r.visual,
-    writer:namoPickWriterName(r),
+    inspector:r.visual,
     qty:r.qty,
     failQty:r.fail,
     judge:r.judge,
     package:r.package,
     items:Array.isArray(r.items_json)?r.items_json:[],
-    signWriter:namoNormalizeSignWriter(r),
+    signWriter:tryJSON(r.sign_writer),
     signReviewer:tryJSON(r.sign_reviewer),
     signApprover:tryJSON(r.sign_approver)
   }));
@@ -4465,7 +4439,7 @@ async function loadNonconform(){
     verifyDate:toKSTDate(r.verify_date),   // ★ KST 변환
     owner:r.owner,
     status:r.status,
-    signWriter:namoNormalizeSignWriter(r),
+    signWriter:tryJSON(r.sign_writer),
     signReviewer:tryJSON(r.sign_reviewer),
     signApprover:tryJSON(r.sign_approver)
   }));
@@ -4556,20 +4530,20 @@ async function loadAll데이터(){
 /* ═══ RENDER TABLES ═══ */
 function renderIncomingTable(){
   const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
-  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(namoSignName(r.signWriter,r.writer||r.inspector))}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderProcessTable(){
   const tb=$('processTable');if(!state.process.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(namoSignName(r.signWriter,r.writer||r.inspector))}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderShipmentTable(){
   const tb=$('shipmentTable');if(!state.shipment.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.shipment.map(r=>`<tr><td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(namoSignName(r.signWriter,r.writer||r.inspector))}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.shipment.map(r=>`<tr><td>${r.date||''}</td><td>${esc(r.customer||'')}</td><td>${esc(r.product||'')}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteShipment" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function ncStatusBadge(s){const cls=s==='완결'?'closed':s==='처리중'?'progress':'open';return`<span class="nc-status ${cls}">${esc(s||'미결')}</span>`;}
 function renderNcTable(){
   const tb=$('nonconformTable');if(!state.nonconform.length){tb.innerHTML=eRow(13);return;}
-  tb.innerHTML=state.nonconform.map(r=>`<tr><td>${r.ncDate||''}</td><td><strong>${esc(r.ncNo||'-')}</strong></td><td>${esc(r.ncType||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(r.lot||'-')}</td><td>${esc(r.item||'-')}</td><td>${r.qty??0}</td><td>${esc(r.owner||'-')}</td><td>${ncStatusBadge(r.status)}</td><td>${esc(namoSignName(r.signWriter,r.writer||r.inspector))}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
+  tb.innerHTML=state.nonconform.map(r=>`<tr><td>${r.ncDate||''}</td><td><strong>${esc(r.ncNo||'-')}</strong></td><td>${esc(r.ncType||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(r.lot||'-')}</td><td>${esc(r.item||'-')}</td><td>${r.qty??0}</td><td>${esc(r.owner||'-')}</td><td>${ncStatusBadge(r.status)}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteNc" data-id="${esc(r.id)}">삭제</button></div></td></tr>`).join('');
 }
 function renderSupplierTable(){
   const tb=$('supplierTable');if(!state.suppliers.length){tb.innerHTML=eRow(6);return;}
@@ -8301,13 +8275,13 @@ body {
   }
   function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
-  function writerName(r){return (r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'-';}
+  function writerName(r){var sw=(r.signWriter&&r.signWriter.name)||'';var rv=(r.signReviewer&&r.signReviewer.name)||r.reviewer||'';var av=(r.signApprover&&r.signApprover.name)||r.approver||'';var stable=String(r.writer||r.inspector||r.solid||r.visual||'').trim();if(sw&&sw!=='-'&&sw!==rv&&sw!==av)return sw;return stable||sw||'-';}
   function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
   function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
   function buildPayload(type,r){
-    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'',inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'',visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||'',visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
   }
   function pushNoti(type,r,action,target){
     var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
@@ -8327,6 +8301,20 @@ body {
     var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
     if(!r){alert('문서를 찾을 수 없습니다.');return;}
     var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
+    // 작성자 보정: 결재자(me)로 작성자를 덮어쓰지 않고 최초 작성자 필드만 유지
+    var writerCandidates=[];
+    if(type==='iqc') writerCandidates=[r.writer,r.inspector];
+    else if(type==='pqc') writerCandidates=[r.writer,r.solid,r.inspector];
+    else if(type==='oqc') writerCandidates=[r.writer,r.visual,r.inspector];
+    else writerCandidates=[r.writer,r.inspector,r.solid,r.visual];
+    var currentWriter=(r.signWriter&&r.signWriter.name)||r.writer||'';
+    var originalWriter=writerCandidates.map(function(v){return String(v||'').trim();}).find(function(v){return v && v!=='-' && v!==me.name;}) || String(currentWriter||'').trim();
+    if(originalWriter){
+      r.writer=originalWriter;
+      if(!hasName(r.signWriter) || (me.name && r.signWriter && r.signWriter.name===me.name && originalWriter!==me.name)){
+        r.signWriter=Object.assign({},r.signWriter||{},{name:originalWriter,status:'APPROVED'});
+      }
+    }
     if(action==='review'){
       r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
       map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
@@ -8412,7 +8400,7 @@ body {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
 })();
-</script>
+<\/script>
 
 
 
@@ -11546,13 +11534,13 @@ body {
   }
   function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
-  function writerName(r){return (r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'-';}
+  function writerName(r){var sw=(r.signWriter&&r.signWriter.name)||'';var rv=(r.signReviewer&&r.signReviewer.name)||r.reviewer||'';var av=(r.signApprover&&r.signApprover.name)||r.approver||'';var stable=String(r.writer||r.inspector||r.solid||r.visual||'').trim();if(sw&&sw!=='-'&&sw!==rv&&sw!==av)return sw;return stable||sw||'-';}
   function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
   function approverName(r){return (r.signApprover&&r.signApprover.name)||r.approver||'-';}
   function buildPayload(type,r){
-    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||'',inspector:(r.signWriter&&r.signWriter.name)||r.inspector||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'',visual:r.line,solid:(r.signWriter&&r.signWriter.name)||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,writer:(r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||'',visual:(r.signWriter&&r.signWriter.name)||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
   }
   function pushNoti(type,r,action,target){
     var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
@@ -11572,6 +11560,20 @@ body {
     var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
     if(!r){alert('문서를 찾을 수 없습니다.');return;}
     var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
+    // 작성자 보정: 결재자(me)로 작성자를 덮어쓰지 않고 최초 작성자 필드만 유지
+    var writerCandidates=[];
+    if(type==='iqc') writerCandidates=[r.writer,r.inspector];
+    else if(type==='pqc') writerCandidates=[r.writer,r.solid,r.inspector];
+    else if(type==='oqc') writerCandidates=[r.writer,r.visual,r.inspector];
+    else writerCandidates=[r.writer,r.inspector,r.solid,r.visual];
+    var currentWriter=(r.signWriter&&r.signWriter.name)||r.writer||'';
+    var originalWriter=writerCandidates.map(function(v){return String(v||'').trim();}).find(function(v){return v && v!=='-' && v!==me.name;}) || String(currentWriter||'').trim();
+    if(originalWriter){
+      r.writer=originalWriter;
+      if(!hasName(r.signWriter) || (me.name && r.signWriter && r.signWriter.name===me.name && originalWriter!==me.name)){
+        r.signWriter=Object.assign({},r.signWriter||{},{name:originalWriter,status:'APPROVED'});
+      }
+    }
     if(action==='review'){
       r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.approvalStatus='reviewed';
       map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
@@ -11807,7 +11809,7 @@ body {
   }
   function displayUserName(v){
     var n=String(v||'').trim();
-    if(badName(n)) return '-';
+    if(badName(n)){var me=currentUser(); if(me && !badName(me.name)) return me.name; return '-';}
     return n;
   }
   function docKey(type,r){return type+':'+String((r&&r.id)||'');}
@@ -11829,7 +11831,7 @@ body {
   function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
   function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
-  function writerName(r){var n=displayUserName((r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.solid||r.visual||r.author||r.createdByName||r.created_by_name||'-');if(n==='-'&&(((r.signReviewer&&r.signReviewer.name)||r.reviewer||'')==='임흥배'||((r.signApprover&&r.signApprover.name)||r.approver||'')==='임흥배'))return '박현아';return n;}
+  function writerName(r){return displayUserName((r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'-');}
   function reviewerName(r){return displayUserName((r.signReviewer&&r.signReviewer.name)||r.reviewer||'-');}
   function approverName(r){return displayUserName((r.signApprover&&r.signApprover.name)||r.approver||'-');}
 
@@ -11913,10 +11915,20 @@ body {
     var rows=getRows(), x=rows.find(function(v){return v.type===type && String(v.record.id)===String(id);});
     if(!x){alert('문서를 찾을 수 없습니다.');return;}
     var r=x.record, me=currentUser(), map=statusMap(), old=map[docKey(type,r)]||{};
-    var preservedWriter = (r.signWriter&&r.signWriter.name)?Object.assign({},r.signWriter):null;
-    var preservedWriterName = writerName(r);
-    if(!preservedWriter && preservedWriterName && preservedWriterName !== '-') preservedWriter = {id:preservedWriterName,name:preservedWriterName,title:'',department:'',email:''};
-    if(preservedWriter){ r.signWriter=preservedWriter; r.writer=preservedWriter.name; }
+    // 작성자 보정: 결재자(me)로 작성자를 덮어쓰지 않고 최초 작성자 필드만 유지
+    var writerCandidates=[];
+    if(type==='iqc') writerCandidates=[r.writer,r.inspector];
+    else if(type==='pqc') writerCandidates=[r.writer,r.solid,r.inspector];
+    else if(type==='oqc') writerCandidates=[r.writer,r.visual,r.inspector];
+    else writerCandidates=[r.writer,r.inspector,r.solid,r.visual];
+    var currentWriter=(r.signWriter&&r.signWriter.name)||r.writer||'';
+    var originalWriter=writerCandidates.map(function(v){return String(v||'').trim();}).find(function(v){return v && v!=='-' && v!==me.name;}) || String(currentWriter||'').trim();
+    if(originalWriter){
+      r.writer=originalWriter;
+      if(!hasName(r.signWriter) || (me.name && r.signWriter && r.signWriter.name===me.name && originalWriter!==me.name)){
+        r.signWriter=Object.assign({},r.signWriter||{},{name:originalWriter,status:'APPROVED'});
+      }
+    }
     if(action==='review'){
       r.signReviewer=Object.assign({},me,{status:'APPROVED',signDate:now()}); r.reviewer=me.name; r.approvalStatus='reviewed';
       map[docKey(type,r)]=Object.assign({},old,{status:'reviewed',reviewedBy:me.name,reviewedAt:now()});
@@ -11961,47 +11973,6 @@ body {
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
-})();
-</script>
-
-
-
-<!-- NAMO Writer Preserve Hotfix v20260527C: 작성자는 최초 작성자 보존, 검토/승인만 로그인 부장이상 표시 -->
-<script id="namo-writer-preserve-hotfix-20260527c">
-(function(){
-  'use strict';
-  if(window.__namoWriterPreserveHotfix20260527C) return;
-  window.__namoWriterPreserveHotfix20260527C=true;
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
-  function bad(v){return typeof namoBadUserName==='function'?namoBadUserName(v):(!String(v||'').trim()||['-','로그인 사용자','login-user','알 수 없음','사용자'].indexOf(String(v||'').trim())>=0);}
-  function clean(v){v=String(v||'').trim();return bad(v)?'':v;}
-  function writer(r){
-    var c=[r&&r.signWriter&&r.signWriter.name,r&&r.writer,r&&r.inspector,r&&r.solid,r&&r.visual,r&&r.author,r&&r.createdByName,r&&r.created_by_name];
-    for(var i=0;i<c.length;i++){var n=clean(c[i]);if(n)return n;}
-    var rv=clean(r&&r.signReviewer&&r.signReviewer.name)||clean(r&&r.reviewer);
-    var ap=clean(r&&r.signApprover&&r.signApprover.name)||clean(r&&r.approver);
-    if(rv==='임흥배'||ap==='임흥배') return '박현아';
-    return '-';
-  }
-  function reviewer(r){var n=clean(r&&r.signReviewer&&r.signReviewer.name)||clean(r&&r.reviewer);return n||'-';}
-  function approver(r){var n=clean(r&&r.signApprover&&r.signApprover.name)||clean(r&&r.approver);return n||'-';}
-  function patchRenderTables(){
-    if(typeof window.renderIncomingTable==='function') window.renderIncomingTable=function(){var tb=document.getElementById('incomingTable');if(!tb)return;if(!state.incoming.length){tb.innerHTML=typeof eRow==='function'?eRow(12):'';return;}tb.innerHTML=state.incoming.map(function(r){return '<tr><td>'+(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+(r.incomingQty??'')+'</td><td>'+(r.checkQty??'')+'</td><td>'+(r.failQty??'')+'</td><td>'+(typeof jBadge==='function'?jBadge(calcJ(r.items||[])):'')+'</td><td>'+esc(writer(r))+'</td><td>'+esc(reviewer(r))+'</td><td>'+esc(approver(r))+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>';}).join('');};
-    if(typeof window.renderProcessTable==='function') window.renderProcessTable=function(){var tb=document.getElementById('processTable');if(!tb)return;if(!state.process.length){tb.innerHTML=typeof eRow==='function'?eRow(11):'';return;}tb.innerHTML=state.process.map(function(r){return '<tr><td>'+(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.product||'')+'</td><td>'+esc(r.line||'')+'</td><td>'+(r.qty??'')+'</td><td>'+(r.failQty??'')+'</td><td>'+(typeof jBadge==='function'?jBadge(calcJ(r.items||[])):'')+'</td><td>'+esc(writer(r))+'</td><td>'+esc(reviewer(r))+'</td><td>'+esc(approver(r))+'</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>';}).join('');};
-    if(typeof window.renderShipmentTable==='function') window.renderShipmentTable=function(){var tb=document.getElementById('shipmentTable');if(!tb)return;if(!state.shipment.length){tb.innerHTML=typeof eRow==='function'?eRow(11):'';return;}tb.innerHTML=state.shipment.map(function(r){return '<tr><td>'+(r.date||'')+'</td><td>'+esc(r.customer||'')+'</td><td>'+esc(r.product||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+(r.qty??'')+'</td><td>'+(r.failQty??'')+'</td><td>'+(typeof jBadge==='function'?jBadge(calcJ(r.items||[])):'')+'</td><td>'+esc(writer(r))+'</td><td>'+esc(reviewer(r))+'</td><td>'+esc(approver(r))+'</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>';}).join('');};
-  }
-  function preserveWriterOnApproval(){
-    document.addEventListener('click',function(e){
-      var b=e.target&&e.target.closest&&e.target.closest('[data-appr-act]'); if(!b)return;
-      var type=b.getAttribute('data-type'), id=b.getAttribute('data-id');
-      var arr=type==='iqc'?(state.incoming||[]):type==='pqc'?(state.process||[]):type==='oqc'?(state.shipment||[]):[];
-      var r=arr.find(function(x){return String(x.id)===String(id);}); if(!r)return;
-      var w=writer(r); if(w&&w!=='-'){r.signWriter=Object.assign({},r.signWriter||{},{name:w,id:(r.signWriter&&r.signWriter.id)||w});r.writer=w;}
-    },true);
-  }
-  function boot(){patchRenderTables();preserveWriterOnApproval();try{renderIncomingTable&&renderIncomingTable();renderProcessTable&&renderProcessTable();renderShipmentTable&&renderShipmentTable();renderApprovalInbox&&renderApprovalInbox();}catch(e){}}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  [500,1500,3000].forEach(function(ms){setTimeout(function(){try{patchRenderTables();renderIncomingTable&&renderIncomingTable();renderProcessTable&&renderProcessTable();renderShipmentTable&&renderShipmentTable();renderApprovalInbox&&renderApprovalInbox();}catch(e){}},ms);});
 })();
 </script>
 
