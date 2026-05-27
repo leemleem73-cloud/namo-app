@@ -10644,6 +10644,85 @@ body {
 #page-workorder-final .nmc-history-note{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155;}
 #page-workorder-final .nmc-history-empty-note{color:#94a3b8;}
 @media(max-width:900px){#page-workorder-final .nmc-history-summary{grid-template-columns:1fr 1fr;}}
+
+
+/* ══════════════════════════════════
+   전 메뉴 공통 인쇄 2페이지 방지 최종 패치
+   - 수입/공정/출하/부적합/시정예방/작업지시서/교육보고서 공통
+   - 기존 화면 공간 제거 + #printTarget만 인쇄
+══════════════════════════════════ */
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:8mm;
+  }
+
+  html,
+  body{
+    width:100%!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:#fff!important;
+  }
+
+  body > *{
+    display:none!important;
+  }
+
+  body > #printTarget{
+    display:block!important;
+  }
+
+  #printTarget,
+  #printTarget *{
+    visibility:visible!important;
+  }
+
+  #printTarget{
+    position:static!important;
+    width:194mm!important;
+    max-width:194mm!important;
+    min-height:auto!important;
+    height:auto!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:#fff!important;
+    box-shadow:none!important;
+    page-break-before:auto!important;
+    page-break-after:auto!important;
+    break-before:auto!important;
+    break-after:auto!important;
+  }
+
+  #printTarget .rsheet,
+  #printTarget.training-print-onepage,
+  #printTarget.training-form-v5{
+    border:none!important;
+    box-shadow:none!important;
+    margin:0!important;
+  }
+
+  #printTarget table{
+    page-break-inside:auto!important;
+    break-inside:auto!important;
+  }
+
+  #printTarget tr{
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+
+  #printTarget .print-user-info{
+    margin-top:4px!important;
+    padding-top:3px!important;
+    font-size:9px!important;
+    line-height:1.2!important;
+  }
+}
+
 </style>
 <script id="nmc-workorder-history-tab-fix-script">
 (function(){
