@@ -3914,7 +3914,149 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- 교육보고서 검토자 표시 보강 패치: 작성/승인 기존 유지, 검토자만 부장 이상 로그인 사용자 성명/직책 적용 -->
+<script id="training-reviewer-login-user-fix">
+(function(){
+  'use strict';
+  if(window.__trainingReviewerLoginUserFix) return;
+  window.__trainingReviewerLoginUserFix = true;
+
+  function $(id){ return document.getElementById(id); }
+  function clean(v){ return String(v == null ? '' : v).trim(); }
+  function isPlaceholder(v){
+    var x = clean(v).toLowerCase();
+    return !x || x === '-' || x === '로그인 사용자' || x === '현재 로그인 사용자' || x === 'login-user' || x === 'current user';
+  }
+  function normalizeUser(u){
+    u = u || {};
+    var name = clean(u.name || u.username || u.displayName || u.userName || u.empName || u.employeeName || (u.email ? String(u.email).split('@')[0] : ''));
+    var email = clean(u.email || u.mail || '');
+    var id = clean(u.id || u.userId || u.empId || email || name || 'login-user');
+    return {
+      id:id,
+      name:name,
+      title:clean(u.title || u.position || u.jobTitle || u.rank || u.roleName || u.role || ''),
+      department:clean(u.department || u.dept || u.departmentName || u.deptName || u.team || ''),
+      email:email,
+      status:clean(u.status || 'APPROVED')
+    };
+  }
+  function currentLoginUser(){
+    var s = window.state || {};
+    var u = s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
+    if(!u && Array.isArray(s.signableUsers) && s.signableUsers.length){
+      var found = s.signableUsers.find(function(x){
+        return clean(x.email).toLowerCase() === clean(s.currentUserEmail || s.loginEmail || '').toLowerCase();
+      });
+      u = found || s.signableUsers[0];
+    }
+    return normalizeUser(u);
+  }
+  function seniorLevel(user){
+    var t = clean((user && (user.title || user.position || user.roleName || user.role)) || '');
+    if(/대표|사장|CEO/i.test(t)) return 6;
+    if(/전무/.test(t)) return 5;
+    if(/상무/.test(t)) return 4;
+    if(/이사/.test(t)) return 3;
+    if(/부장|팀장|실장|본부장/.test(t)) return 2;
+    return 0;
+  }
+  function isSenior(user){ return seniorLevel(user) >= 2; }
+  function labelOf(user){
+    if(!user || isPlaceholder(user.name)) return '-';
+    var sub = clean(user.title || user.department || '');
+    return sub ? (user.name + ' / ' + sub) : user.name;
+  }
+  function applyReviewerToFlow(user){
+    var label = labelOf(user);
+    ['trainingReviewerText','trainingLogReviewer'].forEach(function(id){
+      var el = $(id);
+      if(el && (isPlaceholder(el.textContent) || /로그인 사용자/.test(el.textContent))) el.textContent = label;
+    });
+    var sel = $('sg_training_reviewer');
+    if(sel && isSenior(user)){
+      var exists = Array.prototype.slice.call(sel.options || []).some(function(o){ return String(o.value) === String(user.id); });
+      if(!exists){
+        var opt = new Option(labelOf(user), user.id);
+        opt.dataset.name = user.name;
+        opt.dataset.title = user.title;
+        opt.dataset.department = user.department;
+        opt.dataset.email = user.email;
+        sel.add(opt);
+      }
+      if(!sel.value || isPlaceholder(sel.options[sel.selectedIndex] && sel.options[sel.selectedIndex].text)) sel.value = user.id;
+      var sub = $('sg_training_reviewer_sub');
+      if(sub) sub.textContent = clean((user.department ? user.department + ' ' : '') + user.title);
+    }
+  }
+  function patchGetSignPayload(){
+    if(typeof window.getSignPayload !== 'function' || window.getSignPayload.__trainingReviewerFixed) return;
+    var original = window.getSignPayload;
+    window.getSignPayload = function(type){
+      var payload = original.apply(this, arguments) || {};
+      if(type === 'training'){
+        var me = currentLoginUser();
+        if(isSenior(me)){
+          payload.reviewer = Object.assign({}, payload.reviewer || {}, me, {role:'reviewer'});
+        }
+      }
+      return payload;
+    };
+    window.getSignPayload.__trainingReviewerFixed = true;
+  }
+  function patchRenderTrainingPreview(){
+    if(typeof window.renderTrainingPreview !== 'function' || window.renderTrainingPreview.__trainingReviewerFixed) return;
+    var original = window.renderTrainingPreview;
+    window.renderTrainingPreview = function(){
+      var result = original.apply(this, arguments);
+      var me = currentLoginUser();
+      if(isSenior(me)) applyReviewerToFlow(me);
+      return result;
+    };
+    window.renderTrainingPreview.__trainingReviewerFixed = true;
+  }
+  function patchRenderTrainingTable(){
+    if(typeof window.renderTrainingTable !== 'function' || window.renderTrainingTable.__trainingReviewerFixed) return;
+    var original = window.renderTrainingTable;
+    window.renderTrainingTable = function(){
+      var result = original.apply(this, arguments);
+      var me = currentLoginUser();
+      if(isSenior(me)){
+        var label = me.name;
+        var tb = $('trainingTable');
+        if(tb){
+          Array.prototype.slice.call(tb.querySelectorAll('tr')).forEach(function(tr){
+            var cells = tr.children || [];
+            if(cells.length > 10 && (isPlaceholder(cells[10].textContent) || /로그인 사용자/.test(cells[10].textContent))) cells[10].textContent = label;
+          });
+        }
+      }
+      return result;
+    };
+    window.renderTrainingTable.__trainingReviewerFixed = true;
+  }
+  function run(){
+    patchGetSignPayload();
+    patchRenderTrainingPreview();
+    patchRenderTrainingTable();
+    var me = currentLoginUser();
+    if(isSenior(me)) applyReviewerToFlow(me);
+    if(typeof window.renderTrainingPreview === 'function'){
+      try{ window.renderTrainingPreview(); }catch(e){}
+    }
+  }
+  document.addEventListener('change', function(e){
+    if(e.target && /^(sg_training_writer|sg_training_reviewer|sg_training_approver)$/.test(e.target.id || '')) setTimeout(run, 0);
+  }, true);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); });
+  else setTimeout(run, 0);
+  window.addEventListener('load', function(){ setTimeout(run, 300); setTimeout(run, 1000); });
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
