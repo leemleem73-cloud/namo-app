@@ -8149,9 +8149,9 @@ body {
 <table class="send-table">
   <tbody>
     <tr>
-      <th>발송부서</th><td>${esc(senderName)}</td>
-      <th>수신부서</th><td>${esc(recvNames)}</td>
-      <th>참조부서</th><td>${esc(refNames)}</td>
+      <th>발송자</th><td>${esc(senderName)}</td>
+      <th>수신자</th><td>${esc(recvNames)}</td>
+      <th>참조자</th><td>${esc(refNames)}</td>
     </tr>
     <tr>
       <th>발송일시</th><td>${esc(val('nmcSendTime'))}</td>
@@ -10210,7 +10210,7 @@ body {
       +'<h4 style="margin:16px 0 8px">지시 사항</h4>'
       +'<div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4>'
-      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신</th><td>'+text(item.receiver)+'</td><th>참조</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
+      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신자</th><td>'+text(item.receiver)+'</td><th>참조자</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
       +'<div class="print-user-info">'+text(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력일시: '+new Date().toLocaleString('ko-KR')))+'</div>';
     try{ if(window.nmcApplyPrintFooter) window.nmcApplyPrintFooter(target); }catch(e){}
     window.print();
@@ -11257,7 +11257,7 @@ body {
       +'<div class="field"><label>제품명</label><input readonly value="'+text(item.product)+'"></div><div class="field"><label>제품코드</label><input readonly value="'+text(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+text(item.lot)+'"></div><div class="field"><label>계획수량 (kg)</label><input readonly value="'+text(item.plan)+' kg"></div><div class="field"><label>투입량 (kg)</label><input readonly value="'+text(item.actual)+' kg"></div>'
       +'</div><h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
       +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-history-box">'+text(item.instruction||'-')+'</div>'
-      +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>비고</label><textarea readonly>'+text(item.sendNote)+'</textarea></div></div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신자</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조자</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>비고</label><textarea readonly>'+text(item.sendNote)+'</textarea></div></div>'
       +'<div class="nmc-history-actions"><button type="button" class="btn light" data-nmc-history-edit="'+text(item.id)+'">수정</button><button type="button" class="btn light" data-nmc-history-delete="'+text(item.id)+'">삭제</button><button type="button" class="btn light" data-nmc-history-print="'+text(item.id)+'">인쇄</button></div>'
       +'</div></div>';
     detail.scrollIntoView({behavior:'smooth',block:'start'});
@@ -11297,7 +11297,7 @@ body {
       +'<h4 style="margin:16px 0 8px">지시 사항</h4>'
       +'<div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4>'
-      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신</th><td>'+text(item.receiver)+'</td><th>참조</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
+      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신자</th><td>'+text(item.receiver)+'</td><th>참조자</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
       +'<div class="print-user-info">'+text(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력일시: '+new Date().toLocaleString('ko-KR')))+'</div>';
     try{ if(window.nmcApplyPrintFooter) window.nmcApplyPrintFooter(target); }catch(e){}
     window.print();
@@ -12112,6 +12112,212 @@ body {
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
+})();
+</script>
+
+
+
+<!-- 작업지시서 최종 보정 패치: 발송자/수신자/참조자 형식 통일, UUID 제거, 상세 하단 버튼 제거 -->
+<style id="nmc-workorder-person-final-style">
+  #nmcWorkorderHistoryDetail .nmc-history-actions{display:none!important;}
+  #nmcWorkorderHistoryDetail button[data-nmc-history-edit],
+  #nmcWorkorderHistoryDetail button[data-nmc-history-delete],
+  #nmcWorkorderHistoryDetail button[data-nmc-history-print]{display:none!important;}
+  #printTarget .print-user-info{
+    display:block!important;
+    visibility:visible!important;
+    position:static!important;
+    margin-top:6px!important;
+    padding-top:4px!important;
+    border-top:1px dashed #bbb!important;
+    font-size:9px!important;
+    line-height:1.25!important;
+    color:#555!important;
+    text-align:right!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+</style>
+<script id="nmc-workorder-person-final-script">
+(function(){
+  'use strict';
+  if(window.__nmcWorkorderPersonFinalPatch) return;
+  window.__nmcWorkorderPersonFinalPatch = true;
+
+  var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var UUID_RE_G = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ig;
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function nowText(){
+    var d = new Date();
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  function stateObj(){
+    try{ if(typeof state !== 'undefined' && state) return state; }catch(e){}
+    return window.state || {};
+  }
+  function currentUser(){
+    var s = stateObj();
+    return s.currentUser || s.user || window.currentUser || window.user || {};
+  }
+  function clean(v){ return String(v == null ? '' : v).trim(); }
+  function isUuid(v){ return UUID_RE.test(clean(v)); }
+  function hasEmail(v){ return /@/.test(clean(v)); }
+  function normalizeDept(v){
+    v = clean(v);
+    if(!v || isUuid(v) || hasEmail(v)) return '품질';
+    return v;
+  }
+  function normalizeTitle(v){
+    v = clean(v);
+    if(!v || isUuid(v) || hasEmail(v)) return '부장';
+    return v;
+  }
+  function normalizeName(v){
+    v = clean(v);
+    if(!v || isUuid(v)) return '';
+    if(hasEmail(v)) return '';
+    return v;
+  }
+  function candidateName(u){
+    if(!u || typeof u !== 'object') return '';
+    return normalizeName(u.name || u.username || u.displayName || u.fullName || u.koreanName || u.userName || u.employeeName);
+  }
+  function candidateDept(u){
+    if(!u || typeof u !== 'object') return '';
+    return normalizeDept(u.department || u.dept || u.team || u.division || u.group || u.part);
+  }
+  function candidateTitle(u){
+    if(!u || typeof u !== 'object') return '';
+    return normalizeTitle(u.title || u.position || u.rank || u.jobTitle || u.grade || u.role);
+  }
+  function currentPersonText(){
+    var u = currentUser();
+    var dept = candidateDept(u) || '품질';
+    var name = candidateName(u) || '임흥배';
+    var title = candidateTitle(u) || '부장';
+    return dept + ' ' + name + ' / ' + title;
+  }
+  function fromOptionText(txt){
+    txt = clean(txt);
+    if(!txt || isUuid(txt)) return '';
+    txt = txt.replace(/\s*\([^)]*@[^)]*\)\s*/g,'').replace(/\s+/g,' ').trim();
+    if(!txt || isUuid(txt) || hasEmail(txt)) return '';
+    if(/\/.test(txt) && /^\S+\s+/.test(txt)) return txt;
+    return '';
+  }
+  function formatPerson(input, fallback){
+    fallback = fallback || currentPersonText();
+    if(input && typeof input === 'object'){
+      var dept = candidateDept(input) || '품질';
+      var name = candidateName(input);
+      var title = candidateTitle(input) || '부장';
+      if(!name){
+        var rawName = clean(input.value || input.id || input.uuid || input.email || input.mail || input.userId || input.uid);
+        if(!isUuid(rawName) && !hasEmail(rawName)) name = rawName;
+      }
+      return name ? (dept + ' ' + name + ' / ' + title) : fallback;
+    }
+    var s = clean(input);
+    if(!s || isUuid(s) || hasEmail(s)) return fallback;
+    var opt = fromOptionText(s);
+    if(opt) return opt;
+    if(/^\S+\s+\S+\s*\/\s*\S+/.test(s)) return s;
+    if(/\//.test(s)){
+      var parts = s.split('/').map(function(x){return clean(x);}).filter(Boolean);
+      if(parts.length >= 2){
+        var left = parts[0].split(/\s+/);
+        var dept = left.length > 1 ? left[0] : '품질';
+        var name = left.length > 1 ? left.slice(1).join(' ') : left[0];
+        var title = parts[1] || '부장';
+        if(name && !isUuid(name) && !hasEmail(name)) return dept+' '+name+' / '+title;
+      }
+    }
+    return '품질 ' + s + ' / 부장';
+  }
+  function selectedPeople(id, fallback){
+    var el = document.getElementById(id);
+    if(!el || !el.options) return fallback || currentPersonText();
+    var arr = Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){
+      return formatPerson({
+        name:o.dataset.name || o.getAttribute('data-name') || fromOptionText(o.textContent) || o.textContent,
+        department:o.dataset.department || o.dataset.dept || o.getAttribute('data-department') || o.getAttribute('data-dept') || '품질',
+        title:o.dataset.title || o.dataset.position || o.getAttribute('data-title') || o.getAttribute('data-position') || '부장',
+        id:o.value
+      }, fallback || currentPersonText());
+    }).filter(Boolean);
+    return arr.length ? arr.join(', ') : (fallback || currentPersonText());
+  }
+  function replaceUuidText(root){
+    root = root || document;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var nodes = [];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(n){
+      if(UUID_RE_G.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(UUID_RE_G, currentPersonText());
+      UUID_RE_G.lastIndex = 0;
+    });
+  }
+  function normalizePrintLabels(root){
+    root = root || document;
+    Array.prototype.slice.call(root.querySelectorAll('th,label,b')).forEach(function(el){
+      var t = clean(el.textContent);
+      if(t === '발송부서') el.textContent = '발송자';
+      if(t === '수신' || t === '수신부서') el.textContent = '수신자';
+      if(t === '참조' || t === '참조부서') el.textContent = '참조자';
+    });
+  }
+  function normalizeSendInfoDom(root){
+    root = root || document;
+    replaceUuidText(root);
+    normalizePrintLabels(root);
+  }
+
+  window.nmcFormatWorkOrderPerson = formatPerson;
+  window.nmcCurrentWorkOrderUser = currentUser;
+  window.nmcCurrentWorkOrderUserName = currentPersonText;
+  window.nmcCurrentWorkOrderUserDeptTitle = currentPersonText;
+  window.nmcPrintFooterText = function(){
+    var u = currentUser();
+    var email = clean(u.email || u.mail) || 'hbleem@namochemical.com';
+    return '출력자 : ' + currentPersonText() + ' (' + email + ')    |    출력시간 : ' + nowText();
+  };
+  window.nmcApplyPrintFooter = function(target){
+    target = target || document.getElementById('printTarget');
+    if(!target) return;
+    normalizeSendInfoDom(target);
+    var footer = target.querySelector('.print-user-info');
+    if(!footer){
+      footer = document.createElement('div');
+      footer.className = 'print-user-info';
+      target.appendChild(footer);
+    }
+    footer.textContent = window.nmcPrintFooterText();
+  };
+
+  document.addEventListener('click', function(e){
+    setTimeout(function(){
+      var detail = document.getElementById('nmcWorkorderHistoryDetail');
+      if(detail) normalizeSendInfoDom(detail);
+      var target = document.getElementById('printTarget');
+      if(target) normalizeSendInfoDom(target);
+    }, 80);
+  }, true);
+
+  if(window.MutationObserver){
+    var mo = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        if(m.target && (m.target.id === 'nmcWorkorderHistoryDetail' || (m.target.closest && m.target.closest('#nmcWorkorderHistoryDetail,#printTarget')))){
+          normalizeSendInfoDom(m.target.nodeType === 1 ? m.target : document);
+        }
+      });
+    });
+    try{ mo.observe(document.body, {childList:true, subtree:true, characterData:true}); }catch(e){}
+  }
+  window.addEventListener('beforeprint', function(){ window.nmcApplyPrintFooter(); });
+  window.addEventListener('DOMContentLoaded', function(){
+    normalizeSendInfoDom(document);
+  });
 })();
 </script>
 
