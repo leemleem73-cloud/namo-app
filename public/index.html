@@ -3940,7 +3940,248 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<script id="qms-review-approval-senior-only-patch">
+/* QMS 검토/승인 권한 패치 v20260528
+   - 검토자/승인자는 부장 이상 또는 관리자만 선택 가능
+   - 작성자와 검토자/승인자 동일 선택 방지
+   - 결재함 검토/승인 버튼도 동일 권한 검증
+   - 기존 화면/데이터 구조는 유지하고 권한 필터만 보강
+*/
+(function(){
+  'use strict';
+  if(window.__qmsSeniorApprovalOnlyPatchApplied) return;
+  window.__qmsSeniorApprovalOnlyPatchApplied = true;
+
+  var SENIOR_WORDS = ['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','관리자','admin','administrator','ceo','cto','coo','cfo','chief'];
+  var ROLES = ['writer','reviewer','approver'];
+  var TYPES = ['iqc','pqc','oqc','nc','training'];
+
+  function $(id){return document.getElementById(id);}
+  function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  function clean(v){return String(v == null ? '' : v).trim();}
+  function low(v){return clean(v).toLowerCase();}
+  function esc(v){return clean(v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function appState(){try{return window.state || state || {};}catch(e){return window.state || {};}}
+
+  function normalizeUser(u){
+    if(!u) return null;
+    if(typeof u === 'string') return {id:u,name:u,title:'',department:'',email:'',role:'',status:'APPROVED'};
+    var name = clean(u.name || u.username || u.userName || u.fullName || u.displayName || u.empName || u.memberName || u.email || u.id || '');
+    var email = clean(u.email || u.mail || '');
+    return {
+      id: clean(u.id || u.userId || u.uid || u.memberId || email || name),
+      name: name,
+      title: clean(u.title || u.position || u.rank || u.jobTitle || u.roleName || ''),
+      department: clean(u.department || u.dept || u.team || u.org || ''),
+      email: email,
+      role: clean(u.role || u.userRole || u.auth || ''),
+      status: clean(u.status || u.approvalStatus || 'APPROVED')
+    };
+  }
+  function isApproved(u){
+    var st = clean(u && u.status).toUpperCase();
+    return !st || st === 'APPROVED' || st === 'ACTIVE' || st === 'Y' || st === '승인';
+  }
+  function isSeniorUser(u){
+    if(!u) return false;
+    var src = low([u.title,u.position,u.rank,u.role,u.roleName,u.department].filter(Boolean).join(' '));
+    return SENIOR_WORDS.some(function(w){return src.indexOf(low(w)) >= 0;});
+  }
+  window.qmsIsSeniorApprover = isSeniorUser;
+
+  function currentUser(){
+    var s = appState();
+    return normalizeUser(s.currentUser || window.currentUser || window.loginUser || window.userInfo || null);
+  }
+  function collectOptionUsers(){
+    var arr = [];
+    qsa('select option').forEach(function(o){
+      if(!o.value) return;
+      var text = clean(o.textContent || o.label || '');
+      if(!text || /선택|전체|검색|대기|완료|반려/.test(text)) return;
+      var name = text.split('/')[0].replace(/\(.*\)/,'').trim();
+      var title = '';
+      if(text.indexOf('/') >= 0) title = text.split('/').slice(1).join('/').trim();
+      var m = text.match(/\(([^)]*)\)/); if(!title && m) title = m[1];
+      arr.push({id:o.value,name:name || text,title:title,department:'',email:'',role:'',status:'APPROVED'});
+    });
+    return arr;
+  }
+  function allUsers(){
+    var s = appState();
+    var arr = [];
+    var me = currentUser();
+    if(me) arr.push(me);
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+      if(Array.isArray(s[k])) arr = arr.concat(s[k].map(normalizeUser));
+      if(Array.isArray(window[k])) arr = arr.concat(window[k].map(normalizeUser));
+    });
+    arr = arr.concat(collectOptionUsers());
+    var seen = {}, out = [];
+    arr.filter(Boolean).filter(isApproved).forEach(function(u){
+      var key = clean(u.id || u.email || u.name);
+      if(!key || seen[key]) return;
+      seen[key] = true;
+      out.push(u);
+    });
+    return out;
+  }
+  function userByValue(value){
+    value = clean(value);
+    if(!value) return null;
+    return allUsers().find(function(u){return clean(u.id)===value || clean(u.email)===value || clean(u.name)===value;}) || null;
+  }
+  function optionUser(opt){
+    if(!opt) return null;
+    return normalizeUser({
+      id: opt.value,
+      name: opt.dataset.name || (opt.textContent || '').split('/')[0].replace(/\(.*\)/,'').trim(),
+      title: opt.dataset.title || ((opt.textContent || '').split('/')[1] || '').trim(),
+      department: opt.dataset.department || '',
+      email: opt.dataset.email || '',
+      role: opt.dataset.role || '',
+      status: 'APPROVED'
+    });
+  }
+  function optionHtml(list, placeholder){
+    return '<option value="">'+esc(placeholder)+'</option>' + list.map(function(u){
+      return '<option value="'+esc(u.id || u.email || u.name)+'" data-name="'+esc(u.name)+'" data-title="'+esc(u.title)+'" data-department="'+esc(u.department)+'" data-email="'+esc(u.email)+'" data-role="'+esc(u.role)+'">'+esc(u.name || u.email || '사용자')+' / '+esc(u.title || u.department || '-')+'</option>';
+    }).join('');
+  }
+  function selectedUser(type,role){
+    var sel = $('sg_'+type+'_'+role);
+    if(!sel || !sel.value) return null;
+    return userByValue(sel.value) || optionUser(sel.options[sel.selectedIndex]);
+  }
+  function filterSelect(type, role){
+    var sel = $('sg_'+type+'_'+role);
+    if(!sel) return;
+    var old = sel.value;
+    var users = allUsers();
+    var list;
+    if(role === 'writer'){
+      list = users;
+    }else{
+      list = users.filter(isSeniorUser);
+    }
+    var ph = role === 'writer' ? '-- 작성자 선택 --' : (role === 'reviewer' ? '-- 검토자 선택(부장 이상) --' : '-- 승인자 선택(부장 이상) --');
+    sel.innerHTML = optionHtml(list, ph);
+    if(old && list.some(function(u){return clean(u.id || u.email || u.name) === clean(old);})) sel.value = old;
+    else if(role !== 'writer') sel.value = '';
+  }
+  function updateSubAndPreview(type, role){
+    var sel = $('sg_'+type+'_'+role), sub = $('sg_'+type+'_'+role+'_sub');
+    if(!sel) return;
+    var u = selectedUser(type, role);
+    if(sub){
+      if(role !== 'writer' && !u) sub.textContent = '부장 이상만 선택 가능합니다.';
+      else sub.textContent = u ? [u.department,u.title].filter(Boolean).join(' ') : '';
+    }
+    try{ if(typeof window.updateSignaturePreview === 'function') window.updateSignaturePreview(type, role); }catch(e){}
+  }
+  function enforceDistinct(type, changedRole){
+    var writer = selectedUser(type,'writer');
+    var reviewer = selectedUser(type,'reviewer');
+    var approver = selectedUser(type,'approver');
+    function same(a,b){return a && b && clean(a.name || a.id) && (clean(a.id)===clean(b.id) || clean(a.email)&&clean(a.email)===clean(b.email) || clean(a.name)===clean(b.name));}
+    if(same(writer, reviewer)){
+      var r = $('sg_'+type+'_reviewer'); if(r) r.value = '';
+      alert('작성자와 검토자는 동일할 수 없습니다. 검토자는 부장 이상 다른 사용자로 선택하세요.');
+    }
+    if(same(writer, approver)){
+      var a = $('sg_'+type+'_approver'); if(a) a.value = '';
+      alert('작성자와 승인자는 동일할 수 없습니다. 승인자는 부장 이상 다른 사용자로 선택하세요.');
+    }
+    if(same(reviewer, approver)){
+      var ap = $('sg_'+type+'_approver'); if(ap) ap.value = '';
+      alert('검토자와 승인자는 동일할 수 없습니다.');
+    }
+  }
+  function patchSignGrid(type){
+    if(!$('signGrid_'+type)) return;
+    ROLES.forEach(function(role){filterSelect(type, role);});
+    enforceDistinct(type);
+    ROLES.forEach(function(role){updateSubAndPreview(type, role);});
+  }
+  function patchAllSignGrids(){TYPES.forEach(patchSignGrid);}
+
+  var oldBuild = window.buildSignGrid;
+  window.buildSignGrid = function(type){
+    if(typeof oldBuild === 'function') oldBuild.apply(this, arguments);
+    patchSignGrid(type);
+  };
+  var oldRebuild = window.rebuildAllSignGrids;
+  window.rebuildAllSignGrids = function(){
+    if(typeof oldRebuild === 'function') oldRebuild.apply(this, arguments);
+    patchAllSignGrids();
+  };
+  var oldRefresh = window.qmsRefreshSignatures;
+  window.qmsRefreshSignatures = function(){
+    if(typeof oldRefresh === 'function') oldRefresh.apply(this, arguments);
+    patchAllSignGrids();
+  };
+
+  document.addEventListener('change', function(e){
+    var sel = e.target && e.target.closest && e.target.closest('.sign-sel');
+    if(!sel || !/^sg_[^_]+_(writer|reviewer|approver)$/.test(sel.id || '')) return;
+    var m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id);
+    if(!m) return;
+    var type = m[1], role = m[2];
+    if(role !== 'writer'){
+      var u = selectedUser(type, role);
+      if(u && !isSeniorUser(u)){
+        sel.value = '';
+        alert((role === 'reviewer' ? '검토자' : '승인자') + '는 부장 이상만 가능합니다.');
+      }
+    }
+    enforceDistinct(type, role);
+    ROLES.forEach(function(r){updateSubAndPreview(type,r);});
+  }, true);
+
+  function recordByType(type,id){
+    var s = appState();
+    var map = {iqc:'incoming',pqc:'process',oqc:'shipment'};
+    var arr = Array.isArray(s[map[type]]) ? s[map[type]] : [];
+    return arr.find(function(x){return clean(x.id) === clean(id);}) || null;
+  }
+  function recordWriterName(type,r){
+    if(!r) return '';
+    var arr = [];
+    if(r.signWriter && r.signWriter.name) arr.push(r.signWriter.name);
+    ['writer','inspector','visual','solid','author','createdBy'].forEach(function(k){ if(r[k]) arr.push(r[k]); });
+    return clean(arr.find(Boolean) || '');
+  }
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('[data-appr-act]');
+    if(!btn) return;
+    var action = btn.getAttribute('data-appr-act');
+    if(action !== 'review' && action !== 'approve') return;
+    var me = currentUser();
+    if(!isSeniorUser(me)){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      alert((action === 'review' ? '검토' : '승인') + '는 부장 이상만 가능합니다.');
+      return false;
+    }
+    var r = recordByType(btn.getAttribute('data-type'), btn.getAttribute('data-id'));
+    var writer = recordWriterName(btn.getAttribute('data-type'), r);
+    if(writer && me && clean(writer) === clean(me.name)){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      alert('작성자는 본인 문서를 검토/승인할 수 없습니다.');
+      return false;
+    }
+  }, true);
+
+  function boot(){patchAllSignGrids();}
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load', function(){[0,300,900,1800,3500].forEach(function(ms){setTimeout(boot,ms);});});
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
