@@ -2372,6 +2372,32 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 
 </style>
+
+<style id="nmc-workorder-final-fixes-style">
+/* 작업지시서 수정/발송자/인쇄 하단정보 보정 */
+.print-user-info{
+  margin-top:8px!important;
+  padding-top:4px!important;
+  border-top:1px dashed #bbb!important;
+  font-size:9px!important;
+  color:#555!important;
+  text-align:right!important;
+  line-height:1.4!important;
+  position:static!important;
+  page-break-inside:avoid!important;
+  break-inside:avoid!important;
+}
+@media print{
+  #printTarget .print-user-info{
+    display:block!important;
+    visibility:visible!important;
+    position:static!important;
+    color:#555!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+}
+</style>
 </head>
 <body class="login-active">
 
@@ -7954,7 +7980,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   const recvNames  = selectedFieldText('nmcRecvDept','미선택');
   const refNames   = selectedFieldText('nmcRefDept','미선택');
-  const senderName = val('nmcSenderName') || '-';
+  const senderName = (window.nmcCurrentWorkOrderUserName ? window.nmcCurrentWorkOrderUserName() : (val('nmcSenderName') || '-'));
   const woNo       = val('nmcWoNo') || '-';
 
   const html = `<!doctype html>
@@ -8152,7 +8178,7 @@ body {
 
 <div class="footer">
   <span>Namochemical QMS · Production Work Order</span>
-  <span>출력자: ${esc(senderName)} &nbsp;|&nbsp; 출력일시: ${new Date().toLocaleString('ko-KR')}</span>
+  <span>${esc(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력자 : '+senderName+'    |    출력시간 : '+new Date().toLocaleString('ko-KR')))}</span>
 </div>
 
 
@@ -8403,6 +8429,58 @@ body {
 <\/script>
 
 
+
+<script id="nmc-workorder-final-fixes-script">
+(function(){
+  'use strict';
+  if(window.__nmcWorkorderFinalFixes) return;
+  window.__nmcWorkorderFinalFixes = true;
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function nowText(){
+    var d = new Date();
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  function stateObj(){
+    try{ if(typeof state !== 'undefined' && state) return state; }catch(e){}
+    return window.state || {};
+  }
+  function currentUser(){
+    var s = stateObj();
+    return s.currentUser || s.user || window.currentUser || window.user || {};
+  }
+  window.nmcCurrentWorkOrderUser = currentUser;
+  window.nmcCurrentWorkOrderUserName = function(){
+    var u = currentUser();
+    return u.name || u.username || u.displayName || u.fullName || u.email || '임흥배';
+  };
+  window.nmcCurrentWorkOrderUserDeptTitle = function(){
+    var u = currentUser();
+    var name = window.nmcCurrentWorkOrderUserName();
+    var dept = u.department || u.dept || '품질';
+    var title = u.title || u.position || u.rank || '부장';
+    return name + (title ? ' ' + title : '') + (dept ? ' / ' + dept : '');
+  };
+  window.nmcPrintFooterText = function(){
+    var u = currentUser();
+    var who = window.nmcCurrentWorkOrderUserDeptTitle();
+    var email = u.email || u.mail || 'hbleem@namochemical.com';
+    return '출력자 : ' + who + ' (' + email + ')    |    출력시간 : ' + nowText();
+  };
+  window.nmcApplyPrintFooter = function(target){
+    target = target || document.getElementById('printTarget');
+    if(!target) return;
+    var footer = target.querySelector('.print-user-info');
+    if(!footer){
+      footer = document.createElement('div');
+      footer.className = 'print-user-info';
+      target.appendChild(footer);
+    }
+    footer.textContent = window.nmcPrintFooterText();
+  };
+  window.addEventListener('beforeprint', function(){ window.nmcApplyPrintFooter(); });
+})();
+</script>
 
 </body>
 </html>`;
@@ -10076,6 +10154,37 @@ body {
     setValue('nmcProdCode',item.code); setValue('nmcProdLot',item.lot); setValue('nmcPlanQty',item.plan);
     setValue('nmcActualQty',item.actual); setValue('nmcInstruction',item.instruction); setValue('nmcSendNote',item.sendNote);
     setValue('nmcSendTime',raw.sendTime||raw.sentAt||item.date);
+
+    var senderEl=document.getElementById('nmcSenderName');
+    if(senderEl){
+      var senderName=(window.nmcCurrentWorkOrderUserName ? window.nmcCurrentWorkOrderUserName() : (item.sender || ''));
+      senderEl.value=senderName;
+      if(senderEl.tagName==='SELECT' && senderEl.value!==senderName){
+        Array.prototype.some.call(senderEl.options||[],function(o){
+          var t=(o.textContent||'').trim();
+          if(o.value===senderName || t.indexOf(senderName)>-1){ senderEl.value=o.value; return true; }
+          return false;
+        });
+      }
+    }
+
+    var tbody=document.querySelector('#nmcMaterialTable tbody');
+    var mats=item.materials||[];
+    if(tbody && mats.length){
+      tbody.innerHTML=mats.map(function(m,i){
+        return '<tr><td>'+(i+1)+'</td>'
+          +'<td><input class="nmc-input" placeholder="원료명 직접입력" value="'+text(m.name||m.materialName||m.rawName||m.rawMaterialName||'')+'"></td>'
+          +'<td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력" value="'+text(m.lot||m.materialLot||m.lotNo||m.rawLot||'')+'"></td>'
+          +'<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal" value="'+text(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+'"><span class="nmc-unit-box">kg</span></div></td>'
+          +'<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal" value="'+text(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+'"><span class="nmc-unit-box">kg</span></div></td>'
+          +'<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" readonly value="'+text(m.ratio||m.rate||m.percent||'0.00')+'"><span class="nmc-unit-box">%</span></div></td>'
+          +'<td><input class="nmc-input" placeholder="비고 직접입력" value="'+text(m.note||m.remark||m.memo||'')+'"></td>'
+          +'<td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>';
+      }).join('');
+      try{ if(typeof updateMaterialRows==='function') updateMaterialRows(); }catch(e){}
+      try{ if(typeof updateMaterialTotal==='function') updateMaterialTotal(); }catch(e){}
+    }
+
     setMode('작성');
     window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -10102,7 +10211,8 @@ body {
       +'<div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4>'
       +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신</th><td>'+text(item.receiver)+'</td><th>참조</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
-      +'<div class="print-user-info">출력일시: '+text(new Date().toLocaleString('ko-KR'))+'</div>';
+      +'<div class="print-user-info">'+text(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력일시: '+new Date().toLocaleString('ko-KR')))+'</div>';
+    try{ if(window.nmcApplyPrintFooter) window.nmcApplyPrintFooter(target); }catch(e){}
     window.print();
   }
   function deleteHistoryItem(id){
@@ -11045,7 +11155,7 @@ body {
     var woNo=get('nmcWoNo') || ('NM-'+now.toISOString().slice(0,10).replace(/-/g,'')+'-TEMP');
     var recvEl=document.getElementById('nmcRecvDept'), refEl=document.getElementById('nmcRefDept');
     var senderOpt=q('#nmcSenderName option:checked')||q('#nmcSenderName option');
-    var senderText=get('nmcSenderName') || (senderOpt?(senderOpt.textContent||'').trim():'') || ((window.currentUser&&(window.currentUser.name||window.currentUser.email))||'');
+    var senderText=(window.nmcCurrentWorkOrderUserName ? window.nmcCurrentWorkOrderUserName() : (get('nmcSenderName') || (senderOpt?(senderOpt.textContent||'').trim():'') || ((window.currentUser&&(window.currentUser.name||window.currentUser.email))||'')));
     var sendTime=get('nmcSendTime') || now.toLocaleString('ko-KR');
     var mats=collectMaterialsSafe().filter(function(m){return m.name || m.lot || m.planQty || m.actualQty || m.note;});
     var item={
@@ -11053,7 +11163,7 @@ body {
       title:get('nmcProdName')||'작업지시서',productName:get('nmcProdName'),productCode:get('nmcProdCode'),prodLot:get('nmcProdLot'),productionLot:get('nmcWorkOrderNo')||get('nmcProdLot'),lot:get('nmcProdLot'),
       orderDate:get('nmcOrderDate'),planType:get('nmcPlanType'),planQty:get('nmcPlanQty'),actualQty:get('nmcActualQty'),reqDept:get('nmcReqDept'),worker:get('nmcWorker'),
       instruction:get('nmcInstruction'),sendNote:get('nmcSendNote'),memo:get('nmcSendNote'),sendTime:sendTime,sentAt:sendTime,createdAt:sendTime,date:get('nmcOrderDate')||sendTime,
-      status:status||'발송완료',senderText:senderText,sender:{name:senderText},receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
+      status:status||'발송완료',senderText:senderText,sender:{name:senderText},writer:senderText,author:senderText,receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
       refDept:selectedTextsSafe(refEl).join(', '),refText:selectedTextsSafe(refEl).join(', '),refIds:selectedValuesSafe(refEl),materials:mats
     };
     ['nmc_workorder_sent_items','nmcWorkOrders','nmcSentWorkorders','workOrderHistory'].forEach(function(k){upsertStore(k,item);});
@@ -11188,7 +11298,8 @@ body {
       +'<div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4>'
       +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신</th><td>'+text(item.receiver)+'</td><th>참조</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
-      +'<div class="print-user-info">출력일시: '+text(new Date().toLocaleString('ko-KR'))+'</div>';
+      +'<div class="print-user-info">'+text(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력일시: '+new Date().toLocaleString('ko-KR')))+'</div>';
+    try{ if(window.nmcApplyPrintFooter) window.nmcApplyPrintFooter(target); }catch(e){}
     window.print();
   }
 
