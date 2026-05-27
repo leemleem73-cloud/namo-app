@@ -3914,205 +3914,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-
-<script id="namo-training-approval-name-dept-title-final">
-/* 교육보고서 결재 표시 최종 패치
-   - 작성/검토/승인 모두: 성명 / 부서 직책
-   - 기존 HTML/기능은 유지하고 교육보고서 출력/저장 표시값만 보강
-*/
-(function(){
-  'use strict';
-
-  function byId(id){ return document.getElementById(id); }
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function isBlankUserName(v){
-    var t = clean(v).toLowerCase();
-    return !t || t === '-' || t === 'login-user' || t === '로그인 사용자';
-  }
-  function escapeHtml(v){
-    if(typeof window.esc === 'function') return window.esc(v);
-    return String(v == null ? '' : v).replace(/[&<>"']/g,function(s){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];});
-  }
-  function appState(){ return window.state || {}; }
-  function currentUser(){
-    var s = appState();
-    var u = s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
-    if(!u && Array.isArray(s.signableUsers) && s.signableUsers.length) u = s.signableUsers[0];
-    return normalizeUser(u) || null;
-  }
-  function allUsers(){
-    var s = appState();
-    var list = [];
-    ['signableUsers','adminUsers','users'].forEach(function(k){ if(Array.isArray(s[k])) list = list.concat(s[k]); });
-    if(s.currentUser) list.push(s.currentUser);
-    if(window.currentUser) list.push(window.currentUser);
-    if(window.loginUser) list.push(window.loginUser);
-    var map = {};
-    return list.map(normalizeUser).filter(Boolean).filter(function(u){
-      var key = clean(u.id || u.email || u.name);
-      if(!key || map[key]) return false;
-      map[key] = true;
-      return true;
-    });
-  }
-  function normalizeUser(u){
-    if(!u) return null;
-    var name = clean(u.name || u.username || u.displayName || u.fullName || u.employeeName || u.email || u.id);
-    if(!name) return null;
-    return {
-      id: clean(u.id || u.userId || u.email || name),
-      name: name,
-      department: clean(u.department || u.dept || u.team || u.division || u.org || u.part),
-      title: clean(u.title || u.position || u.roleName || u.jobTitle || u.rank || u.grade),
-      email: clean(u.email)
-    };
-  }
-  function findUser(ref){
-    if(!ref) return null;
-    var r = typeof ref === 'string' ? {name:ref} : ref;
-    var keyId = clean(r.id || r.userId || r.email || '');
-    var keyName = clean(r.name || r.username || r.displayName || r.fullName || r.employeeName || '');
-    var users = allUsers();
-    return users.find(function(u){
-      return (keyId && (clean(u.id) === keyId || clean(u.email) === keyId)) ||
-             (keyName && clean(u.name) === keyName);
-    }) || normalizeUser(r);
-  }
-  function normalizeSign(sign, role, fallback){
-    var base = sign && typeof sign === 'object' ? Object.assign({}, sign) : {};
-    var name = clean(base.name || fallback || '');
-    var u = null;
-    if(isBlankUserName(name)) u = currentUser();
-    else u = findUser(base) || findUser(name);
-    if(u){
-      base.id = base.id || u.id;
-      base.name = u.name;
-      base.department = base.department || u.department;
-      base.title = base.title || base.position || u.title;
-      base.email = base.email || u.email;
-    }else if(name){
-      base.name = name;
-    }
-    base.role = base.role || role;
-    return base;
-  }
-  function displayUser(sign, fallback, role){
-    var rawText = clean(fallback);
-    if(rawText && rawText.indexOf(' / ') >= 0) return rawText;
-    var n = normalizeSign(sign, role, fallback);
-    var name = clean(n.name || fallback);
-    if(isBlankUserName(name)){
-      var me = currentUser();
-      if(me){ n = Object.assign({}, n, me); name = me.name; }
-    }
-    if(!name || name === '-') return '';
-    var dept = clean(n.department || n.dept);
-    var title = clean(n.title || n.position || n.jobTitle || n.roleName);
-    var sub = clean([dept, title].filter(Boolean).join(' '));
-    return sub ? (name + ' / ' + sub) : name;
-  }
-  function normalizeTrainingApprovalRecord(r){
-    if(!r) return r;
-    r.signWriter = normalizeSign(r.signWriter || {}, 'writer', r.writer);
-    r.signReviewer = normalizeSign(r.signReviewer || {}, 'reviewer', r.reviewer);
-    r.signApprover = normalizeSign(r.signApprover || {}, 'approver', r.approver);
-    r.writer = displayUser(r.signWriter, r.writer, 'writer');
-    r.reviewer = displayUser(r.signReviewer, r.reviewer, 'reviewer');
-    r.approver = displayUser(r.signApprover, r.approver, 'approver');
-    return r;
-  }
-
-  window.namoTrainingApprovalDisplay = displayUser;
-  window.namoNormalizeTrainingApprovalRecord = normalizeTrainingApprovalRecord;
-
-  var oldReadTrainingForm = window.readTrainingForm;
-  if(typeof oldReadTrainingForm === 'function'){
-    window.readTrainingForm = function(){
-      return normalizeTrainingApprovalRecord(oldReadTrainingForm.apply(this, arguments));
-    };
-  }
-
-  window.renderTrainingPreview = function(sourceRecord){
-    var r = sourceRecord ? (typeof window.normalizeTrainingReport === 'function' ? window.normalizeTrainingReport(sourceRecord) : Object.assign({}, sourceRecord)) : (typeof window.readTrainingForm === 'function' ? window.readTrainingForm() : {});
-    r = normalizeTrainingApprovalRecord(r || {});
-    var resultText = String(r.result || '완료');
-    var photos = (r.photos || []).length
-      ? '<div class="tf-photo-grid">' + r.photos.slice(0,2).map(function(p){return '<div class="tf-photo"><img src="'+escapeHtml(p.src||'')+'" alt="교육 사진"><div>'+escapeHtml(p.caption||'제목 없음')+'</div></div>';}).join('') + '</div>'
-      : '<div class="tf-box">첨부 사진 없음</div>';
-    var sw = r.signWriter || {}, sr = r.signReviewer || {}, sa = r.signApprover || {};
-    var writerText = displayUser(sw, r.writer, 'writer');
-    var reviewerText = displayUser(sr, r.reviewer, 'reviewer');
-    var approverText = displayUser(sa, r.approver, 'approver');
-    var signHtml = function(text, signObj){
-      var hasName = !!clean(text);
-      var img = (signObj && signObj.signImage) || '';
-      if(hasName && img) return '<img class="tf-sign-img" src="'+escapeHtml(img)+'" alt="서명">';
-      return hasName ? '서명' : '';
-    };
-    var el = byId('trainingPreviewSheet');
-    if(el){
-      el.className = 'training-preview-sheet training-form-v5';
-      el.innerHTML = '<div class="tf-head"><div class="tf-brand">NAMO<small>Chemical</small></div><div class="tf-title">교육 보고서</div><div class="tf-qms">Namochemical QMS</div></div>'
-        + '<table class="tf-meta"><tr><th>교육일자</th><td>'+escapeHtml(r.date||'-')+'</td><th>보고서번호</th><td><button class="training-no-link" data-action="editTraining" data-id="'+escapeHtml(r.id)+'" type="button">'+escapeHtml(r.no||'-')+'</button></td></tr>'
-        + '<tr><th>교육구분</th><td>'+escapeHtml(r.type||'-')+'</td><th>교육명</th><td>'+escapeHtml(r.title||'-')+'</td></tr>'
-        + '<tr><th>장소</th><td>'+escapeHtml(r.place||'-')+'</td><th>강사</th><td>'+escapeHtml(r.instructor||'-')+'</td></tr>'
-        + '<tr><th>대상부서</th><td>'+escapeHtml(r.dept||'-')+'</td><th>교육시간</th><td>'+escapeHtml(r.hours||'-')+'</td></tr>'
-        + '<tr><th>평가방법</th><td>'+escapeHtml(r.evalMethod||'-')+'</td><th>평가결과</th><td><span class="tf-ok">'+escapeHtml(resultText)+'</span></td></tr></table>'
-        + '<div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">1</span>참석자</div><div class="tf-box">'+escapeHtml(r.attendees||'-')+'</div></div>'
-        + '<div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">2</span>불참자</div><div class="tf-box">'+escapeHtml(r.absentees||'-')+'</div></div>'
-        + '<div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">3</span>교육 내용</div><div class="tf-box tf-content">'+escapeHtml(r.content||'-')+'</div></div>'
-        + '<div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">4</span>비고 / 개선사항</div><div class="tf-box">'+escapeHtml(r.remark||'-')+'</div></div>'
-        + '<div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">5</span>교육 사진</div>'+photos+'</div>'
-        + '<div class="tf-sec"><div class="tf-sec-title"><span class="tf-num">6</span>작성 / 검토 / 승인</div><table class="tf-approval"><thead><tr><th>작성</th><th>검토</th><th>승인</th></tr></thead><tbody><tr><td>'+escapeHtml(writerText||'-')+'</td><td>'+escapeHtml(reviewerText||'-')+'</td><td>'+escapeHtml(approverText||'-')+'</td></tr><tr><td class="tf-sign">'+signHtml(writerText,sw)+'</td><td class="tf-sign">'+signHtml(reviewerText,sr)+'</td><td class="tf-sign">'+signHtml(approverText,sa)+'</td></tr></tbody></table></div>'
-        + '<div class="tf-footer"><div>Namochemical QMS</div><div class="tf-page">1 / 1</div></div>';
-    }
-    if(byId('trainingWriterText')) byId('trainingWriterText').textContent = writerText || '-';
-    if(byId('trainingReviewerText')) byId('trainingReviewerText').textContent = reviewerText || '-';
-    if(byId('trainingApproverText')) byId('trainingApproverText').textContent = approverText || '-';
-  };
-
-  window.renderTrainingTable = function(){
-    var tb = byId('trainingTable');
-    if(!tb) return;
-    var list = typeof window.readTrainingReports === 'function' ? window.readTrainingReports() : [];
-    tb.innerHTML = list.length ? list.map(function(row){
-      var r = normalizeTrainingApprovalRecord(Object.assign({}, row));
-      var wfStatus = (typeof window.getWf === 'function' && typeof window.docId === 'function') ? window.getWf('training', window.docId('training', r), r) : null;
-      var st = (typeof window.statusBadge === 'function' && wfStatus) ? '<br>'+window.statusBadge(wfStatus.status) : '';
-      var act = (typeof window.actions === 'function') ? window.actions('training', r) : '';
-      var attend = typeof window.trainingAttendCount === 'function' ? window.trainingAttendCount(r.attendees) : '-';
-      var badge = typeof window.trainingBadge === 'function' ? window.trainingBadge(r.result || '완료') : escapeHtml(r.result || '완료');
-      return '<tr><td>'+escapeHtml(r.date||'-')+'</td><td><button class="training-no-link" data-action="editTraining" data-id="'+escapeHtml(r.id)+'" type="button">'+escapeHtml(r.no||'-')+'</button></td><td>'+escapeHtml(r.type||'-')+'</td><td>'+escapeHtml(r.title||'-')+'</td><td>'+escapeHtml(r.instructor||'-')+'</td><td>'+escapeHtml(r.dept||'-')+'</td><td>'+escapeHtml(attend)+'</td><td>'+escapeHtml(Array.isArray(r.photos)?r.photos.length:0)+'장</td><td>'+badge+st+'</td><td>'+escapeHtml(r.writer||'')+'</td><td>'+escapeHtml(r.reviewer||'')+'</td><td>'+escapeHtml(r.approver||'')+'</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="'+escapeHtml(r.id)+'" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="'+escapeHtml(r.id)+'" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="'+escapeHtml(r.id)+'" type="button">삭제</button>'+act+'</div></td></tr>';
-    }).join('') : (typeof window.eRow === 'function' ? window.eRow(13,'교육 보고서가 없습니다.') : '<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');
-  };
-
-  window.downloadTrainingCsv = function(){
-    var headers = ['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성','검토','승인'];
-    var list = typeof window.readTrainingReports === 'function' ? window.readTrainingReports() : [];
-    var rows = list.map(function(row){
-      var r = normalizeTrainingApprovalRecord(Object.assign({}, row));
-      return [r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(function(p){return p.caption||'';}).join('; '):'',r.writer,r.reviewer,r.approver];
-    });
-    var body = [headers].concat(rows).map(function(row){return row.map(function(v){return '"'+String(v == null ? '' : v).replaceAll('"','""')+'"';}).join(',');}).join('\n');
-    var blob = new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = '교육보고서_' + (typeof window.trainingToday === 'function' ? window.trainingToday() : new Date().toISOString().slice(0,10)) + '.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
-
-  function refresh(){
-    try{ if(typeof window.renderTrainingPreview === 'function') window.renderTrainingPreview(); }catch(e){}
-    try{ if(typeof window.renderTrainingTable === 'function') window.renderTrainingTable(); }catch(e){}
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(refresh, 0); });
-  else setTimeout(refresh, 0);
-})();
-</script>
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -11145,6 +10947,222 @@ body {
   setTimeout(function(){ensurePanel(); renderHistory();},2200);
   window.nmcSaveWorkOrderHistoryV4=saveCurrentWorkOrder;
   window.nmcRenderWorkOrderHistoryV4=renderHistory;
+})();
+</script>
+
+
+<script id="namo-training-approval-display-format-fix">
+/* 교육보고서 결재 표시 포맷 보강
+   - 작성/검토/승인 표시를 모두 "성명 / 부서 직책"으로 통일
+   - 기존 HTML/기능은 유지하고, 화면/목록/저장 payload의 표시값만 보강
+*/
+(function(){
+  'use strict';
+
+  var ROLES = ['writer','reviewer','approver'];
+  var FIELD = {writer:'writer', reviewer:'reviewer', approver:'approver'};
+  var SIGN_FIELD = {writer:'signWriter', reviewer:'signReviewer', approver:'signApprover'};
+  var FLOW_ID = {writer:'trainingWriterText', reviewer:'trainingReviewerText', approver:'trainingApproverText'};
+
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function isPlaceholder(v){
+    var t = txt(v).toLowerCase();
+    return !t || t === '-' || t === 'login-user' || t === '로그인 사용자';
+  }
+  function esc(v){
+    if(typeof window.esc === 'function') return window.esc(v);
+    return txt(v).replace(/[&<>"']/g,function(s){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];});
+  }
+  function appState(){
+    try{ return window.state || state || {}; }catch(e){ return window.state || {}; }
+  }
+  function norm(u){
+    if(!u) return null;
+    var email = txt(u.email || u.mail || '');
+    var name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || u.label || '');
+    var id = txt(u.id || u.userId || u.uid || email || name);
+    var department = txt(u.department || u.dept || u.team || u.org || u.departmentName || u.deptName || '');
+    var title = txt(u.title || u.position || u.rank || u.jobTitle || u.duty || '');
+    if(!name && email) name = email;
+    if(!id && name) id = name;
+    return {id:id, name:name, department:department, title:title, email:email, role:txt(u.role || u.userRole || '')};
+  }
+  function currentUser(){ return norm(appState().currentUser || window.currentUser || null); }
+  function userKey(u){ return txt(u && (u.id || u.email || u.name)); }
+  function allUsers(){
+    var s = appState();
+    var arr = [];
+    function add(u){
+      u = norm(u);
+      var k = userKey(u);
+      if(!k) return;
+      if(!arr.some(function(x){ return userKey(x) === k || (u.name && x.name === u.name); })) arr.push(u);
+    }
+    add(currentUser());
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+      if(Array.isArray(s[k])) s[k].forEach(add);
+      if(Array.isArray(window[k])) window[k].forEach(add);
+    });
+    document.querySelectorAll('#signGrid_training select option, #nmcSenderDept option, #nmcRecvDept option, #nmcRefDept option').forEach(function(o){
+      var raw = txt(o.textContent || o.label || '');
+      if(!raw || raw.indexOf('선택') >= 0) return;
+      add({
+        id:o.value || raw,
+        name:o.dataset && o.dataset.name ? o.dataset.name : raw.split('/')[0],
+        department:o.dataset && o.dataset.department ? o.dataset.department : '',
+        title:o.dataset && o.dataset.title ? o.dataset.title : (raw.split('/')[1] || ''),
+        email:o.dataset && o.dataset.email ? o.dataset.email : ''
+      });
+    });
+    return arr;
+  }
+  function findUser(ref){
+    ref = norm(ref);
+    var k = userKey(ref);
+    var users = allUsers();
+    return users.find(function(u){
+      return (k && userKey(u) === k) ||
+             (ref && ref.email && u.email === ref.email) ||
+             (ref && ref.name && u.name === ref.name);
+    }) || ref || null;
+  }
+  function selectedPerson(role){
+    var sel = document.getElementById('sg_training_' + role);
+    if(!sel) return null;
+    var o = sel.options[sel.selectedIndex];
+    if(!o || !sel.value) return null;
+    return findUser({
+      id: sel.value,
+      name: o.dataset && o.dataset.name ? o.dataset.name : txt(o.textContent || '').split('/')[0],
+      department: o.dataset && o.dataset.department ? o.dataset.department : '',
+      title: o.dataset && o.dataset.title ? o.dataset.title : (txt(o.textContent || '').split('/')[1] || ''),
+      email: o.dataset && o.dataset.email ? o.dataset.email : ''
+    });
+  }
+  function personFromRecord(record, role){
+    record = record || {};
+    var sign = record[SIGN_FIELD[role]] || {};
+    var baseName = sign.name || record[FIELD[role]] || '';
+    var person = findUser({
+      id: sign.id || sign.userId || sign.uid || '',
+      name: isPlaceholder(baseName) ? '' : baseName,
+      department: sign.department || sign.dept || sign.team || record[role + 'Department'] || '',
+      title: sign.title || sign.position || sign.rank || record[role + 'Title'] || '',
+      email: sign.email || ''
+    });
+    if((!person || isPlaceholder(person.name)) && !record.id){
+      person = selectedPerson(role) || null;
+    }
+    if((!person || isPlaceholder(person.name)) && (role === 'reviewer' || role === 'approver')){
+      person = currentUser() || person;
+    }
+    if((!person || isPlaceholder(person.name)) && role === 'writer'){
+      person = currentUser() || person;
+    }
+    return person;
+  }
+  function formatPerson(person){
+    person = findUser(person) || {};
+    var name = txt(person.name);
+    if(isPlaceholder(name)) return '';
+    var dept = txt(person.department || person.dept || person.team || '');
+    var title = txt(person.title || person.position || person.rank || '');
+    var tail = [dept, title].filter(Boolean).join(' ');
+    return tail ? (name + ' / ' + tail) : name;
+  }
+  function display(record, role){ return formatPerson(personFromRecord(record, role)); }
+  function enrichRecord(record){
+    if(!record || typeof record !== 'object') return record;
+    ROLES.forEach(function(role){
+      var p = personFromRecord(record, role);
+      var formatted = formatPerson(p);
+      if(formatted) record[FIELD[role]] = formatted;
+      var sign = record[SIGN_FIELD[role]] || {};
+      if(p){
+        record[SIGN_FIELD[role]] = Object.assign({}, sign, {
+          id: sign.id || p.id || '',
+          name: p.name || sign.name || '',
+          department: p.department || sign.department || '',
+          title: p.title || sign.title || '',
+          email: p.email || sign.email || '',
+          displayText: formatted
+        });
+      }
+    });
+    return record;
+  }
+  function applyFlow(record){
+    ROLES.forEach(function(role){
+      var el = document.getElementById(FLOW_ID[role]);
+      if(el) el.textContent = display(record, role) || '-';
+    });
+  }
+  function applyTable(){
+    var tbody = document.getElementById('trainingTable');
+    if(!tbody) return;
+    var list = [];
+    try{ if(typeof window.readTrainingReports === 'function') list = window.readTrainingReports() || []; }catch(e){}
+    tbody.querySelectorAll('tr').forEach(function(tr){
+      var btn = tr.querySelector('[data-action="editTraining"][data-id]');
+      if(!btn) return;
+      var id = btn.getAttribute('data-id');
+      var record = list.find(function(x){ return String(x.id) === String(id); }) || {};
+      var cells = tr.children;
+      if(cells[9]) cells[9].textContent = display(record, 'writer') || cells[9].textContent;
+      if(cells[10]) cells[10].textContent = display(record, 'reviewer') || cells[10].textContent;
+      if(cells[11]) cells[11].textContent = display(record, 'approver') || cells[11].textContent;
+    });
+  }
+
+  var oldReadTrainingForm = window.readTrainingForm;
+  if(typeof oldReadTrainingForm === 'function'){
+    window.readTrainingForm = function(){
+      var r = oldReadTrainingForm.apply(this, arguments);
+      return enrichRecord(r);
+    };
+  }
+
+  var oldRenderTrainingPreview = window.renderTrainingPreview;
+  if(typeof oldRenderTrainingPreview === 'function'){
+    window.renderTrainingPreview = function(sourceRecord){
+      var record = sourceRecord || null;
+      if(record) enrichRecord(record);
+      var ret = oldRenderTrainingPreview.apply(this, arguments);
+      try{
+        if(!record && typeof window.readTrainingForm === 'function') record = window.readTrainingForm();
+        applyFlow(record || {});
+      }catch(e){}
+      return ret;
+    };
+  }
+
+  var oldRenderTrainingTable = window.renderTrainingTable;
+  if(typeof oldRenderTrainingTable === 'function'){
+    window.renderTrainingTable = function(){
+      var ret = oldRenderTrainingTable.apply(this, arguments);
+      try{ applyTable(); }catch(e){}
+      return ret;
+    };
+  }
+
+  document.addEventListener('change', function(e){
+    if(e.target && /^sg_training_(writer|reviewer|approver)$/.test(e.target.id || '')){
+      setTimeout(function(){
+        try{
+          if(typeof window.renderTrainingPreview === 'function') window.renderTrainingPreview();
+          applyTable();
+        }catch(err){}
+      }, 0);
+    }
+  }, true);
+
+  function boot(){
+    try{ if(typeof window.renderTrainingPreview === 'function') window.renderTrainingPreview(); }catch(e){}
+    try{ applyTable(); }catch(e){}
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  [300,800,1600,3000].forEach(function(ms){ setTimeout(boot, ms); });
 })();
 </script>
 </body>
