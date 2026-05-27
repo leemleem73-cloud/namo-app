@@ -8482,6 +8482,164 @@ body {
 })();
 </script>
 
+
+<script id="nmc-final-author-sender-print-fix">
+/* 작성자/발송자 UUID 표시 및 인쇄 하단 출력자 정보 최종 보정
+   - 기존 HTML/기능은 유지하고, 표시값만 로그인 사용자 기준으로 보정합니다. */
+(function(){
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const UUID_FIND_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ig;
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function nowText(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  function textOf(id){
+    return (document.getElementById(id)?.textContent || '').trim();
+  }
+  function currentUserRaw(){
+    const st = (typeof window.state !== 'undefined') ? window.state : {};
+    const cur = st.currentUser || window.currentUser || window.user || {};
+    const email = cur.email || cur.mail || textOf('profileEmail') || 'bhleem@namochemical.com';
+    const name = cur.name || cur.username || textOf('profileName') || '임흥배';
+
+    const users = []
+      .concat(Array.isArray(st.adminUsers) ? st.adminUsers : [])
+      .concat(Array.isArray(st.signableUsers) ? st.signableUsers : []);
+
+    const found = users.find(u =>
+      (email && (u.email === email || u.mail === email)) ||
+      (name && (u.name === name || u.username === name)) ||
+      (cur.id && (String(u.id) === String(cur.id) || String(u.user_id) === String(cur.id)))
+    ) || {};
+
+    return Object.assign({}, found, cur, { email, name });
+  }
+  function currentUserDisplay(){
+    const u = currentUserRaw();
+    const name = u.name || u.username || '임흥배';
+    const title = u.title || u.position || u.rank || '부장';
+    const dept = u.department || u.dept || u.team || '품질';
+    return {
+      name,
+      title,
+      dept,
+      email: u.email || u.mail || 'bhleem@namochemical.com',
+      label: name + (title ? ' ' + title : '') + (dept ? ' / ' + dept : '')
+    };
+  }
+
+  window.nmcCurrentWorkOrderUserName = function(){
+    return currentUserDisplay().label;
+  };
+  window.nmcCurrentWorkOrderUserDeptTitle = function(){
+    return currentUserDisplay().label;
+  };
+  window.nmcPrintFooterText = function(){
+    const u = currentUserDisplay();
+    return '출력자 : ' + u.label + ' (' + u.email + ') ｜ 출력시간 : ' + nowText();
+  };
+
+  window.getPrintUser = function(){
+    const u = currentUserDisplay();
+    return { name:u.name, title:u.title, department:u.dept, email:u.email };
+  };
+
+  window.appendPrintUserInfo = async function(target){
+    if(!target) return;
+    fixUuidDisplay(target);
+    target.querySelectorAll('.print-user-info').forEach(x=>x.remove());
+    const info = document.createElement('div');
+    info.className = 'print-user-info';
+    info.textContent = window.nmcPrintFooterText();
+    target.appendChild(info);
+  };
+
+  window.nmcApplyPrintFooter = function(target){
+    target = target || document.getElementById('printTarget') || document.body;
+    if(!target) return;
+    fixUuidDisplay(target);
+    let footer = target.querySelector('.print-user-info');
+    if(!footer){
+      footer = document.createElement('div');
+      footer.className = 'print-user-info';
+      target.appendChild(footer);
+    }
+    footer.textContent = window.nmcPrintFooterText();
+  };
+
+  function shouldFixInput(el){
+    if(!el) return false;
+    const v = String(el.value || '').trim();
+    if(!UUID_RE.test(v)) return false;
+    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+    const id = (el.id || '').toLowerCase();
+    const name = (el.name || '').toLowerCase();
+    const parentText = (el.closest('.field,.nmc-send-field,td,div')?.textContent || '').slice(0,80);
+    return /작성자|발송자|출력자|sender|writer|author|created|issued|발송/.test(aria + ' ' + id + ' ' + name + ' ' + parentText);
+  }
+
+  function fixUuidDisplay(root){
+    if(!root) return;
+    const label = currentUserDisplay().label;
+
+    root.querySelectorAll('input,textarea').forEach(el=>{
+      if(shouldFixInput(el)) el.value = label;
+    });
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        const value = node.nodeValue || '';
+        if(!UUID_FIND_RE.test(value)) return NodeFilter.FILTER_REJECT;
+        UUID_FIND_RE.lastIndex = 0;
+        const parentText = (node.parentElement?.closest('tr,.field,.nmc-send-field,div')?.textContent || '').slice(0,140);
+        if(/작성자|발송자|출력자|sender|writer|author|발송 정보|발송정보/i.test(parentText)){
+          return NodeFilter.FILTER_ACCEPT;
+        }
+        return NodeFilter.FILTER_REJECT;
+      }
+    });
+
+    const nodes = [];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node=>{
+      node.nodeValue = node.nodeValue.replace(UUID_FIND_RE, label);
+      UUID_FIND_RE.lastIndex = 0;
+    });
+
+    const senderInput = document.getElementById('nmcSenderName');
+    if(senderInput && UUID_RE.test(String(senderInput.value || '').trim())){
+      senderInput.value = label;
+    }
+  }
+
+  window.nmcFixAuthorSenderUuidDisplay = function(){
+    fixUuidDisplay(document);
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    fixUuidDisplay(document);
+  });
+  document.addEventListener('click', function(){
+    setTimeout(function(){ fixUuidDisplay(document); }, 80);
+  }, true);
+  window.addEventListener('beforeprint', function(){
+    window.nmcApplyPrintFooter(document.getElementById('printTarget') || document.body);
+  });
+
+  const mo = new MutationObserver(function(){
+    clearTimeout(window.__nmcAuthorSenderFixTimer);
+    window.__nmcAuthorSenderFixTimer = setTimeout(function(){ fixUuidDisplay(document); }, 120);
+  });
+  if(document.documentElement){
+    mo.observe(document.documentElement, { childList:true, subtree:true });
+  }
+})();
+</script>
+
+
 </body>
 </html>`;
 
@@ -12320,6 +12478,164 @@ body {
   });
 })();
 </script>
+
+
+<script id="nmc-final-author-sender-print-fix">
+/* 작성자/발송자 UUID 표시 및 인쇄 하단 출력자 정보 최종 보정
+   - 기존 HTML/기능은 유지하고, 표시값만 로그인 사용자 기준으로 보정합니다. */
+(function(){
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const UUID_FIND_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ig;
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function nowText(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  function textOf(id){
+    return (document.getElementById(id)?.textContent || '').trim();
+  }
+  function currentUserRaw(){
+    const st = (typeof window.state !== 'undefined') ? window.state : {};
+    const cur = st.currentUser || window.currentUser || window.user || {};
+    const email = cur.email || cur.mail || textOf('profileEmail') || 'bhleem@namochemical.com';
+    const name = cur.name || cur.username || textOf('profileName') || '임흥배';
+
+    const users = []
+      .concat(Array.isArray(st.adminUsers) ? st.adminUsers : [])
+      .concat(Array.isArray(st.signableUsers) ? st.signableUsers : []);
+
+    const found = users.find(u =>
+      (email && (u.email === email || u.mail === email)) ||
+      (name && (u.name === name || u.username === name)) ||
+      (cur.id && (String(u.id) === String(cur.id) || String(u.user_id) === String(cur.id)))
+    ) || {};
+
+    return Object.assign({}, found, cur, { email, name });
+  }
+  function currentUserDisplay(){
+    const u = currentUserRaw();
+    const name = u.name || u.username || '임흥배';
+    const title = u.title || u.position || u.rank || '부장';
+    const dept = u.department || u.dept || u.team || '품질';
+    return {
+      name,
+      title,
+      dept,
+      email: u.email || u.mail || 'bhleem@namochemical.com',
+      label: name + (title ? ' ' + title : '') + (dept ? ' / ' + dept : '')
+    };
+  }
+
+  window.nmcCurrentWorkOrderUserName = function(){
+    return currentUserDisplay().label;
+  };
+  window.nmcCurrentWorkOrderUserDeptTitle = function(){
+    return currentUserDisplay().label;
+  };
+  window.nmcPrintFooterText = function(){
+    const u = currentUserDisplay();
+    return '출력자 : ' + u.label + ' (' + u.email + ') ｜ 출력시간 : ' + nowText();
+  };
+
+  window.getPrintUser = function(){
+    const u = currentUserDisplay();
+    return { name:u.name, title:u.title, department:u.dept, email:u.email };
+  };
+
+  window.appendPrintUserInfo = async function(target){
+    if(!target) return;
+    fixUuidDisplay(target);
+    target.querySelectorAll('.print-user-info').forEach(x=>x.remove());
+    const info = document.createElement('div');
+    info.className = 'print-user-info';
+    info.textContent = window.nmcPrintFooterText();
+    target.appendChild(info);
+  };
+
+  window.nmcApplyPrintFooter = function(target){
+    target = target || document.getElementById('printTarget') || document.body;
+    if(!target) return;
+    fixUuidDisplay(target);
+    let footer = target.querySelector('.print-user-info');
+    if(!footer){
+      footer = document.createElement('div');
+      footer.className = 'print-user-info';
+      target.appendChild(footer);
+    }
+    footer.textContent = window.nmcPrintFooterText();
+  };
+
+  function shouldFixInput(el){
+    if(!el) return false;
+    const v = String(el.value || '').trim();
+    if(!UUID_RE.test(v)) return false;
+    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+    const id = (el.id || '').toLowerCase();
+    const name = (el.name || '').toLowerCase();
+    const parentText = (el.closest('.field,.nmc-send-field,td,div')?.textContent || '').slice(0,80);
+    return /작성자|발송자|출력자|sender|writer|author|created|issued|발송/.test(aria + ' ' + id + ' ' + name + ' ' + parentText);
+  }
+
+  function fixUuidDisplay(root){
+    if(!root) return;
+    const label = currentUserDisplay().label;
+
+    root.querySelectorAll('input,textarea').forEach(el=>{
+      if(shouldFixInput(el)) el.value = label;
+    });
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        const value = node.nodeValue || '';
+        if(!UUID_FIND_RE.test(value)) return NodeFilter.FILTER_REJECT;
+        UUID_FIND_RE.lastIndex = 0;
+        const parentText = (node.parentElement?.closest('tr,.field,.nmc-send-field,div')?.textContent || '').slice(0,140);
+        if(/작성자|발송자|출력자|sender|writer|author|발송 정보|발송정보/i.test(parentText)){
+          return NodeFilter.FILTER_ACCEPT;
+        }
+        return NodeFilter.FILTER_REJECT;
+      }
+    });
+
+    const nodes = [];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node=>{
+      node.nodeValue = node.nodeValue.replace(UUID_FIND_RE, label);
+      UUID_FIND_RE.lastIndex = 0;
+    });
+
+    const senderInput = document.getElementById('nmcSenderName');
+    if(senderInput && UUID_RE.test(String(senderInput.value || '').trim())){
+      senderInput.value = label;
+    }
+  }
+
+  window.nmcFixAuthorSenderUuidDisplay = function(){
+    fixUuidDisplay(document);
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    fixUuidDisplay(document);
+  });
+  document.addEventListener('click', function(){
+    setTimeout(function(){ fixUuidDisplay(document); }, 80);
+  }, true);
+  window.addEventListener('beforeprint', function(){
+    window.nmcApplyPrintFooter(document.getElementById('printTarget') || document.body);
+  });
+
+  const mo = new MutationObserver(function(){
+    clearTimeout(window.__nmcAuthorSenderFixTimer);
+    window.__nmcAuthorSenderFixTimer = setTimeout(function(){ fixUuidDisplay(document); }, 120);
+  });
+  if(document.documentElement){
+    mo.observe(document.documentElement, { childList:true, subtree:true });
+  }
+})();
+</script>
+
 
 </body>
 </html>
