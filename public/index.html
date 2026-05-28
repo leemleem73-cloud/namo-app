@@ -5,62 +5,9 @@
 <title>Namochemical QMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js">
-</script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js">
-</script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
-</script>
-
-<script id="namo-date-input-value-fix-v2">
-(function(){
-  'use strict';
-  if(window.__namoDateInputValueFixV2) return;
-  window.__namoDateInputValueFixV2 = true;
-  function norm(v){
-    v = String(v == null ? '' : v).trim();
-    if(/^\d{4}-\d{2}-\d{2}T/.test(v)) return v.slice(0,10);
-    if(/^\d{4}-\d{2}-\d{2}\s/.test(v)) return v.slice(0,10);
-    return v;
-  }
-  try{
-    var d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-    if(d && d.set && d.get){
-      Object.defineProperty(HTMLInputElement.prototype, 'value', {
-        configurable:true,
-        enumerable:d.enumerable,
-        get:function(){ return d.get.call(this); },
-        set:function(v){
-          if(this && String(this.type).toLowerCase() === 'date') v = norm(v);
-          return d.set.call(this, v);
-        }
-      });
-    }
-  }catch(e){}
-  try{
-    var oldSet = Element.prototype.setAttribute;
-    Element.prototype.setAttribute = function(name, value){
-      if(this && this.tagName === 'INPUT' && String(this.type).toLowerCase() === 'date' && String(name).toLowerCase() === 'value'){
-        value = norm(value);
-      }
-      return oldSet.call(this, name, value);
-    };
-  }catch(e){}
-  window.namoNormalizeDateInputs = function(root){
-    root = root || document;
-    Array.prototype.forEach.call(root.querySelectorAll ? root.querySelectorAll('input[type="date"]') : [], function(el){
-      var v = String(el.value || '');
-      if(/^\d{4}-\d{2}-\d{2}T/.test(v) || /^\d{4}-\d{2}-\d{2}\s/.test(v)) el.value = v.slice(0,10);
-      var a = String(el.getAttribute('value') || '');
-      if(/^\d{4}-\d{2}-\d{2}T/.test(a) || /^\d{4}-\d{2}-\d{2}\s/.test(a)) el.setAttribute('value', a.slice(0,10));
-    });
-  };
-  document.addEventListener('DOMContentLoaded', function(){ window.namoNormalizeDateInputs(document); });
-  var mo = new MutationObserver(function(){ clearTimeout(window.__namoDateNormalizeTimer); window.__namoDateNormalizeTimer = setTimeout(function(){ window.namoNormalizeDateInputs(document); }, 50); });
-  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
-})();
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f0f2f5;--sf:#fff;--s2:#f8f9fb;--bd:#e4e7ed;--bd2:#d0d5de;
@@ -2425,32 +2372,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 
 </style>
-
-<style id="nmc-workorder-final-fixes-style">
-/* 작업지시서 수정/발송자/인쇄 하단정보 보정 */
-.print-user-info{
-  margin-top:8px!important;
-  padding-top:4px!important;
-  border-top:1px dashed #bbb!important;
-  font-size:9px!important;
-  color:#555!important;
-  text-align:right!important;
-  line-height:1.4!important;
-  position:static!important;
-  page-break-inside:avoid!important;
-  break-inside:avoid!important;
-}
-@media print{
-  #printTarget .print-user-info{
-    display:block!important;
-    visibility:visible!important;
-    position:static!important;
-    color:#555!important;
-    page-break-inside:avoid!important;
-    break-inside:avoid!important;
-  }
-}
-</style>
 </head>
 <body class="login-active">
 
@@ -3462,8 +3383,10 @@ function pickRecordDate(r){
 
 
 function generateNmDocNo(){
-  const kst=todayKST();
-  const [yyyy,mm,dd]=kst.split('-');
+  const d=new Date();
+  const yyyy=d.getFullYear();
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
   const key=`nmSerial_${yyyy}${mm}${dd}`;
   let seq=parseInt(localStorage.getItem(key)||'0',10)+1;
   localStorage.setItem(key,String(seq));
@@ -4165,11 +4088,7 @@ function syncOqcPreview(){
 
 /* ═══ WORKLOG LINKAGE ═══ */
 function updateWorklogLinkage(){
-  const lotEl=$('worklogFinishedLot');
-  const box=$('worklogLinkBox');
-  const rowsEl=$('worklogLinkRows');
-  if(!lotEl||!box||!rowsEl) return;
-  const lot=(lotEl.value||'').trim().toLowerCase();
+  const lot=($('worklogFinishedLot').value||'').trim().toLowerCase();const box=$('worklogLinkBox');
   if(!lot){box.style.display='none';return;}
   const iq=state.incoming.filter(r=>(r.lot||'').toLowerCase()===lot);
   const pq=state.process.filter(r=>(r.lot||'').toLowerCase()===lot);
@@ -4177,7 +4096,7 @@ function updateWorklogLinkage(){
   const all=[...iq.map(r=>({type:'IQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])})),...pq.map(r=>({type:'PQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])})),...oq.map(r=>({type:'OQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])}))];
   if(!all.length){box.style.display='none';return;}
   box.style.display='block';
-  rowsEl.innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
+  $('worklogLinkRows').innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
 }
 
 /* ═══ 성적서 페이지 ═══ */
@@ -4339,20 +4258,16 @@ async function printEl(el){
   await appendPrintUserInfo(clone);
   document.body.appendChild(clone);
 
-  const cleanupPrintTarget=()=>{
-    document.querySelectorAll('#printTarget').forEach(x=>{ x.remove(); });
-    window.removeEventListener('afterprint', cleanupPrintTarget);
-    clearTimeout(window.__namoPrintCleanupTimer);
-  };
-  window.addEventListener('afterprint', cleanupPrintTarget, {once:true});
-  clearTimeout(window.__namoPrintCleanupTimer);
-  window.__namoPrintCleanupTimer=setTimeout(cleanupPrintTarget, 30000);
-
   setTimeout(()=>{
-    try{ window.print(); } finally {
-      setTimeout(()=>{ if(!document.hidden) cleanupPrintTarget(); }, 1500);
-    }
+    window.print();
   },300);
+
+  window.onafterprint = ()=>{
+    document.querySelectorAll('#printTarget').forEach(x=>{
+      x.remove();
+    });
+    window.onafterprint = null;
+  };
 }
 
 /* ═══ LOAD DATA ═══ */
@@ -4615,11 +4530,11 @@ async function loadAll데이터(){
 /* ═══ RENDER TABLES ═══ */
 function renderIncomingTable(){
   const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
-  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(stableDocId(x.type,r))}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(stableDocId(x.type,r))}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(stableDocId(x.type,r))}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderProcessTable(){
   const tb=$('processTable');if(!state.process.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(stableDocId(x.type,r))}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderShipmentTable(){
   const tb=$('shipmentTable');if(!state.shipment.length){tb.innerHTML=eRow(11);return;}
@@ -4722,12 +4637,13 @@ function setDonutSegments(key,total,parts){
 function isTrainingDone(r){
   const raw=[r?.status,r?.approvalStatus,r?.approval_status,r?.state,r?.result,r?.signStatus,r?.sign_status].map(v=>String(v||'')).join(' ').toLowerCase();
   const signApprover = r?.signApprover || r?.sign_approver || r?.approver || {};
+  const signReviewer = r?.signReviewer || r?.sign_reviewer || r?.reviewer || {};
   const approvedBy = r?.approvedBy || r?.approved_by || '';
   const approvedAt = r?.approvedAt || r?.approved_at || '';
   if(/반려|reject|취소|cancel/.test(raw)) return false;
   if(/완료|승인|approved|complete|done|closed/.test(raw)) return true;
   if(approvedBy || approvedAt) return true;
-  if(signApprover && Object.keys(signApprover).length && (signApprover.name || signApprover.email || signApprover.date || signApprover.signedAt || signApprover.signDate)) return true;
+  if(signApprover && (signApprover.name || signApprover.email || signApprover.date || signApprover.signedAt)) return true;
   if(signReviewer && signApprover && (signReviewer.name || signReviewer.email) && (signApprover.name || signApprover.email)) return true;
   return false;
 }
@@ -4862,10 +4778,7 @@ function renderCharts(){
   let y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
   const allTrendRows=[...(Array.isArray(state.incoming)?state.incoming:[]),...(Array.isArray(state.process)?state.process:[]),...(Array.isArray(state.shipment)?state.shipment:[])];
   const availableYears=[...new Set(allTrendRows.map(r=>recordDateOf(r).slice(0,4)).filter(v=>/^\d{4}$/.test(v)))].map(Number).sort((a,b)=>b-a);
-  if(availableYears.length && !allTrendRows.some(r=>recordDateOf(r).startsWith(String(y)))){
-    y=availableYears[0];
-    if($('dashYear')) $('dashYear').value=String(y);
-  }
+  if(availableYears.length && !allTrendRows.some(r=>recordDateOf(r).startsWith(String(y)))) y=availableYears[0];
   const mode=window.qmesTrendMode||'month';
 
   const makeGradient=(ctx,color)=>{
@@ -5138,7 +5051,7 @@ function spcFlatValues(rows=spcRows()){
 function spcGetSpec(){const item=$('spcItem')?.value||'Dmax';const base=SPC_SPECS[item]||SPC_SPECS['Dmax'];return {...base,item,lsl:$('spcLsl')?.value===''?NaN:Number($('spcLsl')?.value),target:$('spcTarget')?.value===''?NaN:Number($('spcTarget')?.value),usl:$('spcUsl')?.value===''?NaN:Number($('spcUsl')?.value),unit:$('spcUnit')?.value||base.unit,criteria:Number($('spcCpkStd')?.value||1.33),n:Number($('spcSubgroup')?.value||5),A2:Number($('spcA2')?.value||0.577),D3:Number($('spcD3')?.value||0),D4:Number($('spcD4')?.value||2.115),d2:Number($('spcD2')?.value||2.326)};}
 function applySpcSpec(){const item=$('spcItem')?.value||'Dmax';const spec=SPC_SPECS[item]||SPC_SPECS['Dmax'];if($('spcLsl'))$('spcLsl').value=spec.lsl;if($('spcTarget'))$('spcTarget').value=spec.target;if($('spcUsl'))$('spcUsl').value=spec.usl;if($('spcUnit'))$('spcUnit').value=spec.unit;if($('spcProcess'))$('spcProcess').value=spec.spec;if($('spcReportNo')&&!$('spcReportNo').value)$('spcReportNo').value=spec.report;if($('spcSpecText'))$('spcSpecText').textContent=spec.spec;const n=Number($('spcSubgroup')?.value||5);const c=SPC_CONST[n]||SPC_CONST[5];if($('spcA2'))$('spcA2').value=c.A2;if($('spcD3'))$('spcD3').value=c.D3;if($('spcD4'))$('spcD4').value=c.D4;if($('spcD2'))$('spcD2').value=c.d2;spcRecalc(false);}
 function parseSpcValues(){const txt=($('spcValues')?.value||'').replace(/,/g,' ');return txt.split(/[\s\t\n\r]+/).map(x=>x.trim()).filter(Boolean).map(x=>Number(x)).filter(Number.isFinite);}
-function spcSetRowsFromFlat(values,lots=[]){const n=Number($('spcSubgroup')?.value||5);state.spcRows=[];for(let i=0;i<values.length;i+=n){const g=values.slice(i,i+n);if(g.length===n){state.spcRows.push({lot:lots[Math.floor(i/n)]||$('spcLot')?.value||'',values:g,remark:''});}}if($('spcK'))$('spcK').value=state.spcRows.length;renderSpcRawTable();spcRecalc(false);}
+function spcSetRowsFromFlat(values,lots=[]){const n=Number($('spcSubgroup')?.value||5);state.spcRows=[];for(let i=0;i<values.length;i+=n){const g=values.slice(i,i+n);if(g.length){state.spcRows.push({lot:lots[Math.floor(i/n)]||$('spcLot')?.value||'',values:g,remark:''});}}if($('spcK'))$('spcK').value=state.spcRows.length;renderSpcRawTable();spcRecalc(false);}
 function spcSpecOK(values,spec){if(spec.mode==='overflow')return values.every(v=>v===0||v>=spec.lsl);return values.every(v=>(!Number.isFinite(spec.lsl)||v>=spec.lsl)&&(!Number.isFinite(spec.usl)||v<=spec.usl));}
 function calcSpc(rows=spcRows(),spec=spcGetSpec()){
   const values=spcFlatValues(rows);const n=values.length;if(n<2)return null;
@@ -5322,9 +5235,7 @@ function buildLocalTraceRows(keyword){
     });
   });
   (state.incoming||[]).forEach(r=>{
-    const iqcLot=normLot(r.lot);
-    const duplicatedByWorklog=iqcLot&&rows.some(x=>x.source==='worklog'&&(normLot(x.lotNo)===iqcLot||normLot(x.finishedLot)===iqcLot));
-    if(!duplicatedByWorklog && (!kw || [r.lot,r.supplier,r.item].some(v=>includesKw(v,kw)))){
+    if(!kw || [r.lot,r.supplier,r.item].some(v=>includesKw(v,kw))){
       rows.push({workDate:r.date,finishedLot:r.lot,worker:'IQC',seq:'IQC',material:r.item||'입고검사',supName:r.supplier||'',lotNo:r.lot||'',inputQty:r.incomingQty||r.qty||'',inputTime:'',source:'iqc'});
     }
   });
@@ -6226,7 +6137,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   });
 })();
 
-
 </script>
 <script>
 /* ═══ 측정시스템 분석(MSA / Gauge R&R) 안정화 모듈 v24 ═══ */
@@ -6738,8 +6648,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     ['Man','Machine','Material','Method','Measurement','Environment'].forEach(k=>{if($id('ncFish'+k))$id('ncFish'+k).value=ext.fishbone?.[k]||'';});
     ncPhotos = Array.isArray(ext.photos) ? JSON.parse(JSON.stringify(ext.photos)) : [];
     ncCapaRows = Array.isArray(ext.capaRows) ? JSON.parse(JSON.stringify(ext.capaRows)) : [];
-    if(typeof renderNcPhotos==='function' && $id('ncPhotoGrid')) renderNcPhotos();
-    if(typeof renderNcCapaRows==='function' && $id('ncCapaBody')) renderNcCapaRows();
+    renderNcPhotos(); renderNcCapaRows();
   }
 
   const oldSaveNc = (typeof saveNc === 'function') ? saveNc : null;
@@ -6886,7 +6795,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(initEnterpriseNcr,150));
   else setTimeout(initEnterpriseNcr,150);
 })();
-
 
 </script>
 
@@ -7341,7 +7249,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200)); else setTimeout(init,200);
 })();
-
 </script>
 
 
@@ -8047,7 +7954,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   const recvNames  = selectedFieldText('nmcRecvDept','미선택');
   const refNames   = selectedFieldText('nmcRefDept','미선택');
-  const senderName = (window.nmcCurrentWorkOrderUserName ? window.nmcCurrentWorkOrderUserName() : (val('nmcSenderName') || '-'));
+  const senderName = val('nmcSenderName') || '-';
   const woNo       = val('nmcWoNo') || '-';
 
   const html = `<!doctype html>
@@ -8216,9 +8123,9 @@ body {
 <table class="send-table">
   <tbody>
     <tr>
-      <th>발송자</th><td>${esc(senderName)}</td>
-      <th>수신자</th><td>${esc(recvNames)}</td>
-      <th>참조자</th><td>${esc(refNames)}</td>
+      <th>발송부서</th><td>${esc(senderName)}</td>
+      <th>수신부서</th><td>${esc(recvNames)}</td>
+      <th>참조부서</th><td>${esc(refNames)}</td>
     </tr>
     <tr>
       <th>발송일시</th><td>${esc(val('nmcSendTime'))}</td>
@@ -8245,7 +8152,7 @@ body {
 
 <div class="footer">
   <span>Namochemical QMS · Production Work Order</span>
-  <span>${esc(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력자 : '+senderName+'    |    출력시간 : '+new Date().toLocaleString('ko-KR')))}</span>
+  <span>출력자: ${esc(senderName)} &nbsp;|&nbsp; 출력일시: ${new Date().toLocaleString('ko-KR')}</span>
 </div>
 
 
@@ -8339,33 +8246,7 @@ body {
     if(!nu.id&&!nu.email&&nu.name==='-') return {id:'login-user',name:'로그인 사용자',title:'',department:'',email:''};
     return nu;
   }
-  function stableDocId(type,r){
-    if(!r) return '';
-    var v = r.id || r.docNo || r.reportNo || r.no || r.documentNo || r.lotNo || r.lot || '';
-    if(!v){
-      v = [type,r.date||r.inspectDate||r.createdAt||'',r.product||r.item||r.supplier||r.customer||'',r.lot||r.lotNo||''].join('|');
-    }
-    v = String(v || '').trim();
-    if(!v || v==='-' || v==='undefined' || v==='null'){
-      v = 'AUTO-'+type+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-    }
-    if(!r.id) r.id = v;
-    return v;
-  }
-  function findDocById(type,arr,id){
-    id = String(id || '');
-    return (arr||[]).find(function(x){
-      var sid = String(stableDocId(type,x));
-      return sid===id ||
-        String(x.id||'')===id ||
-        String(x.docNo||'')===id ||
-        String(x.reportNo||'')===id ||
-        String(x.no||'')===id ||
-        String(x.lotNo||'')===id ||
-        String(x.lot||'')===id;
-    });
-  }
-  function docKey(type,r){return type+':'+stableDocId(type,r);}
+  function docKey(type,r){return type+':'+String((r&&r.id)||'');}
   function statusMap(){return read(STATUS_STORE,{});} 
   function saveStatusMap(m){write(STATUS_STORE,m||{});} 
   function statusOf(type,r){
@@ -8411,14 +8292,14 @@ body {
     try{if(typeof window.namoApplyApprovalSelfNotify==='function')window.namoApplyApprovalSelfNotify();}catch(e){}
   }
   async function persist(type,r){
-    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var rid=stableDocId(type,r); var idx=arr.findIndex(function(x){return String(stableDocId(type,x))===String(rid);});
+    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var idx=arr.findIndex(function(x){return String(x.id)===String(r.id);});
     if(idx>=0) arr[idx]=r;
     try{if(typeof window.api==='function'&&r.id){await window.api(meta.api+'/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(buildPayload(type,r))});}}catch(e){console.warn('[approval inbox] api save skipped',e);}
     try{if(type==='iqc'&&typeof window.loadIncoming==='function')await window.loadIncoming(); if(type==='pqc'&&typeof window.loadProcess==='function')await window.loadProcess(); if(type==='oqc'&&typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}
   }
   async function act(type,id,action){
-    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=findDocById(type,arr,id);
-    if(!r){console.error('[결재함] 문서 조회 실패',id,arr);alert('문서를 찾을 수 없습니다.');return;}
+    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
+    if(!r){alert('문서를 찾을 수 없습니다.');return;}
     var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
     // 작성자 보정: 결재자(me)로 작성자를 덮어쓰지 않고 최초 작성자 필드만 유지
     var writerCandidates=[];
@@ -8468,7 +8349,7 @@ body {
       if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
       return true;
     });
-    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
   }
   function ensurePage(){
     var side=qs('.sidebar');
@@ -8490,7 +8371,7 @@ body {
       var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
       if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
       var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
-      if(actBtn){e.preventDefault();e.stopImmediatePropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
       var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
       if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
       if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
@@ -8521,216 +8402,6 @@ body {
 })();
 <\/script>
 
-
-
-<script id="nmc-workorder-final-fixes-script">
-(function(){
-  'use strict';
-  if(window.__nmcWorkorderFinalFixes) return;
-  window.__nmcWorkorderFinalFixes = true;
-
-  function pad(n){ return String(n).padStart(2,'0'); }
-  function nowText(){
-    var d = new Date();
-    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
-  }
-  function stateObj(){
-    try{ if(typeof state !== 'undefined' && state) return state; }catch(e){}
-    return window.state || {};
-  }
-  function currentUser(){
-    var s = stateObj();
-    return s.currentUser || s.user || window.currentUser || window.user || {};
-  }
-  window.nmcCurrentWorkOrderUser = currentUser;
-  window.nmcCurrentWorkOrderUserName = function(){
-    var u = currentUser();
-    return u.name || u.username || u.displayName || u.fullName || u.email || '임흥배';
-  };
-  window.nmcCurrentWorkOrderUserDeptTitle = function(){
-    var u = currentUser();
-    var name = window.nmcCurrentWorkOrderUserName();
-    var dept = u.department || u.dept || '품질';
-    var title = u.title || u.position || u.rank || '부장';
-    return name + (title ? ' ' + title : '') + (dept ? ' / ' + dept : '');
-  };
-  window.nmcPrintFooterText = function(){
-    var u = currentUser();
-    var who = window.nmcCurrentWorkOrderUserDeptTitle();
-    var email = u.email || u.mail || 'hbleem@namochemical.com';
-    return '출력자 : ' + who + ' (' + email + ')    |    출력시간 : ' + nowText();
-  };
-  window.nmcApplyPrintFooter = function(target){
-    target = target || document.getElementById('printTarget');
-    if(!target) return;
-    var footer = target.querySelector('.print-user-info');
-    if(!footer){
-      footer = document.createElement('div');
-      footer.className = 'print-user-info';
-      target.appendChild(footer);
-    }
-    footer.textContent = window.nmcPrintFooterText();
-  };
-  window.addEventListener('beforeprint', function(){ window.nmcApplyPrintFooter(); });
-})();
-<\/script>
-
-
-<script id="nmc-final-author-sender-print-fix">
-/* 작성자/발송자 UUID 표시 및 인쇄 하단 출력자 정보 최종 보정
-   - 기존 HTML/기능은 유지하고, 표시값만 로그인 사용자 기준으로 보정합니다. */
-(function(){
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const UUID_FIND_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ig;
-
-  function pad(n){ return String(n).padStart(2,'0'); }
-  function nowText(){
-    const d = new Date();
-    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
-      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-  }
-  function textOf(id){
-    return (document.getElementById(id)?.textContent || '').trim();
-  }
-  function currentUserRaw(){
-    const st = (typeof window.state !== 'undefined') ? window.state : {};
-    const cur = st.currentUser || window.currentUser || window.user || {};
-    const email = cur.email || cur.mail || textOf('profileEmail') || 'bhleem@namochemical.com';
-    const name = cur.name || cur.username || textOf('profileName') || '임흥배';
-
-    const users = []
-      .concat(Array.isArray(st.adminUsers) ? st.adminUsers : [])
-      .concat(Array.isArray(st.signableUsers) ? st.signableUsers : []);
-
-    const found = users.find(u =>
-      (email && (u.email === email || u.mail === email)) ||
-      (name && (u.name === name || u.username === name)) ||
-      (cur.id && (String(u.id) === String(cur.id) || String(u.user_id) === String(cur.id)))
-    ) || {};
-
-    return Object.assign({}, found, cur, { email, name });
-  }
-  function currentUserDisplay(){
-    const u = currentUserRaw();
-    const name = u.name || u.username || '임흥배';
-    const title = u.title || u.position || u.rank || '부장';
-    const dept = u.department || u.dept || u.team || '품질';
-    return {
-      name,
-      title,
-      dept,
-      email: u.email || u.mail || 'bhleem@namochemical.com',
-      label: name + (title ? ' ' + title : '') + (dept ? ' / ' + dept : '')
-    };
-  }
-
-  window.nmcCurrentWorkOrderUserName = function(){
-    return currentUserDisplay().label;
-  };
-  window.nmcCurrentWorkOrderUserDeptTitle = function(){
-    return currentUserDisplay().label;
-  };
-  window.nmcPrintFooterText = function(){
-    const u = currentUserDisplay();
-    return '출력자 : ' + u.label + ' (' + u.email + ') ｜ 출력시간 : ' + nowText();
-  };
-
-  window.getPrintUser = function(){
-    const u = currentUserDisplay();
-    return { name:u.name, title:u.title, department:u.dept, email:u.email };
-  };
-
-  window.appendPrintUserInfo = async function(target){
-    if(!target) return;
-    fixUuidDisplay(target);
-    target.querySelectorAll('.print-user-info').forEach(x=>x.remove());
-    const info = document.createElement('div');
-    info.className = 'print-user-info';
-    info.textContent = window.nmcPrintFooterText();
-    target.appendChild(info);
-  };
-
-  window.nmcApplyPrintFooter = function(target){
-    target = target || document.getElementById('printTarget') || document.body;
-    if(!target) return;
-    fixUuidDisplay(target);
-    let footer = target.querySelector('.print-user-info');
-    if(!footer){
-      footer = document.createElement('div');
-      footer.className = 'print-user-info';
-      target.appendChild(footer);
-    }
-    footer.textContent = window.nmcPrintFooterText();
-  };
-
-  function shouldFixInput(el){
-    if(!el) return false;
-    const v = String(el.value || '').trim();
-    if(!UUID_RE.test(v)) return false;
-    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-    const id = (el.id || '').toLowerCase();
-    const name = (el.name || '').toLowerCase();
-    const parentText = (el.closest('.field,.nmc-send-field,td,div')?.textContent || '').slice(0,80);
-    return /작성자|발송자|출력자|sender|writer|author|created|issued|발송/.test(aria + ' ' + id + ' ' + name + ' ' + parentText);
-  }
-
-  function fixUuidDisplay(root){
-    if(!root) return;
-    const label = currentUserDisplay().label;
-
-    root.querySelectorAll('input,textarea').forEach(el=>{
-      if(shouldFixInput(el)) el.value = label;
-    });
-
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode(node){
-        const value = node.nodeValue || '';
-        if(!UUID_FIND_RE.test(value)) return NodeFilter.FILTER_REJECT;
-        UUID_FIND_RE.lastIndex = 0;
-        const parentText = (node.parentElement?.closest('tr,.field,.nmc-send-field,div')?.textContent || '').slice(0,140);
-        if(/작성자|발송자|출력자|sender|writer|author|발송 정보|발송정보/i.test(parentText)){
-          return NodeFilter.FILTER_ACCEPT;
-        }
-        return NodeFilter.FILTER_REJECT;
-      }
-    });
-
-    const nodes = [];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node=>{
-      node.nodeValue = node.nodeValue.replace(UUID_FIND_RE, label);
-      UUID_FIND_RE.lastIndex = 0;
-    });
-
-    const senderInput = document.getElementById('nmcSenderName');
-    if(senderInput && UUID_RE.test(String(senderInput.value || '').trim())){
-      senderInput.value = label;
-    }
-  }
-
-  window.nmcFixAuthorSenderUuidDisplay = function(){
-    fixUuidDisplay(document);
-  };
-
-  document.addEventListener('DOMContentLoaded', function(){
-    fixUuidDisplay(document);
-  });
-  document.addEventListener('click', function(){
-    setTimeout(function(){ fixUuidDisplay(document); }, 80);
-  }, true);
-  window.addEventListener('beforeprint', function(){
-    window.nmcApplyPrintFooter(document.getElementById('printTarget') || document.body);
-  });
-
-  const mo = new MutationObserver(function(){
-    clearTimeout(window.__nmcAuthorSenderFixTimer);
-    window.__nmcAuthorSenderFixTimer = setTimeout(function(){ fixUuidDisplay(document); }, 120);
-  });
-  if(document.documentElement){
-    mo.observe(document.documentElement, { childList:true, subtree:true });
-  }
-})();
-<\/script>
 
 
 </body>
@@ -8842,7 +8513,6 @@ body {
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
-
 </script>
 
 
@@ -9218,7 +8888,6 @@ body {
   });
   [300,900,1800,3500].forEach(ms => setTimeout(() => refreshAll(false), ms));
 })();
-
 </script>
 
 
@@ -9456,7 +9125,6 @@ body {
   window.addEventListener('load', () => [0,300,900,1800,3500].forEach(ms => setTimeout(() => refresh(ms===0), ms)));
   [300,900,1800,3500].forEach(ms => setTimeout(() => refresh(false), ms));
 })();
-
 </script>
 
 
@@ -9716,7 +9384,6 @@ body {
   window.addEventListener('load', () => [0,250,800,1600,3000].forEach(ms => setTimeout(() => refresh(ms===0), ms)));
   [300,900,1800,3500].forEach(ms => setTimeout(() => refresh(false), ms));
 })();
-
 </script>
 
 <script>
@@ -9969,7 +9636,6 @@ body {
   window.qmsRefreshSignatures = function(){ TYPES.forEach(t => { if($(`signGrid_${t}`)) build(t, null); }); };
   window.addEventListener('load', function(){ setTimeout(window.qmsRefreshSignatures, 500); });
 })();
-
 </script>
 
 
@@ -10308,7 +9974,6 @@ body {
     setTimeout(applyAll, 1800);
   });
 })();
-
 </script>
 
 
@@ -10411,37 +10076,6 @@ body {
     setValue('nmcProdCode',item.code); setValue('nmcProdLot',item.lot); setValue('nmcPlanQty',item.plan);
     setValue('nmcActualQty',item.actual); setValue('nmcInstruction',item.instruction); setValue('nmcSendNote',item.sendNote);
     setValue('nmcSendTime',raw.sendTime||raw.sentAt||item.date);
-
-    var senderEl=document.getElementById('nmcSenderName');
-    if(senderEl){
-      var senderName=(window.nmcCurrentWorkOrderUserName ? window.nmcCurrentWorkOrderUserName() : (item.sender || ''));
-      senderEl.value=senderName;
-      if(senderEl.tagName==='SELECT' && senderEl.value!==senderName){
-        Array.prototype.some.call(senderEl.options||[],function(o){
-          var t=(o.textContent||'').trim();
-          if(o.value===senderName || t.indexOf(senderName)>-1){ senderEl.value=o.value; return true; }
-          return false;
-        });
-      }
-    }
-
-    var tbody=document.querySelector('#nmcMaterialTable tbody');
-    var mats=item.materials||[];
-    if(tbody && mats.length){
-      tbody.innerHTML=mats.map(function(m,i){
-        return '<tr><td>'+(i+1)+'</td>'
-          +'<td><input class="nmc-input" placeholder="원료명 직접입력" value="'+text(m.name||m.materialName||m.rawName||m.rawMaterialName||'')+'"></td>'
-          +'<td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력" value="'+text(m.lot||m.materialLot||m.lotNo||m.rawLot||'')+'"></td>'
-          +'<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal" value="'+text(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+'"><span class="nmc-unit-box">kg</span></div></td>'
-          +'<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal" value="'+text(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+'"><span class="nmc-unit-box">kg</span></div></td>'
-          +'<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" readonly value="'+text(m.ratio||m.rate||m.percent||'0.00')+'"><span class="nmc-unit-box">%</span></div></td>'
-          +'<td><input class="nmc-input" placeholder="비고 직접입력" value="'+text(m.note||m.remark||m.memo||'')+'"></td>'
-          +'<td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>';
-      }).join('');
-      try{ if(typeof updateMaterialRows==='function') updateMaterialRows(); }catch(e){}
-      try{ if(typeof updateMaterialTotal==='function') updateMaterialTotal(); }catch(e){}
-    }
-
     setMode('작성');
     window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -10467,9 +10101,8 @@ body {
       +'<h4 style="margin:16px 0 8px">지시 사항</h4>'
       +'<div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4>'
-      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신자</th><td>'+text(item.receiver)+'</td><th>참조자</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
-      +'<div class="print-user-info">'+text(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력일시: '+new Date().toLocaleString('ko-KR')))+'</div>';
-    try{ if(window.nmcApplyPrintFooter) window.nmcApplyPrintFooter(target); }catch(e){}
+      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신</th><td>'+text(item.receiver)+'</td><th>참조</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
+      +'<div class="print-user-info">출력일시: '+text(new Date().toLocaleString('ko-KR'))+'</div>';
     window.print();
   }
   function deleteHistoryItem(id){
@@ -10509,7 +10142,6 @@ body {
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
 })();
-
 </script>
 
 
@@ -10686,7 +10318,6 @@ body {
   window.addEventListener('load',function(){setTimeout(applyAll,200);setTimeout(applyAll,800);setTimeout(applyAll,1800);});
   if(document.readyState!=='loading') setTimeout(applyAll,0); else document.addEventListener('DOMContentLoaded',applyAll);
 })();
-
 </script>
 
 <style id="nmc-workorder-inbox-patch-style">
@@ -10814,7 +10445,6 @@ body {
   function init(){ensureNav();ensurePages();bind();setTimeout(function(){ensureNav();ensurePages();},900);setTimeout(function(){ensureNav();ensurePages();},2200);} 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
-
 </script>
 
 
@@ -10853,7 +10483,7 @@ body {
   function setStatus(type,action){try{var info=docInfo(type),key=statusKey(info),u=me(),map=read(STATUS_STORE,{});map[key]={type:type,action:action,user:u.name,title:u.title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);pushNoti(info,action,targetFor(type,action));updateActionBars();toast(({submit:'검토 요청 알림이 등록되었습니다.',review:'검토 완료 후 승인자에게 알림이 등록되었습니다.',approve:'승인 완료 알림이 작성자에게 등록되었습니다.',reject:'반려 알림이 작성자에게 등록되었습니다.'}[action])||'처리되었습니다.');}catch(e){console.warn('[namo-report-notify] setStatus',e);}}
   function addActionBar(type){var grid=$id('signGrid_'+type);if(!grid||grid.querySelector('.namo-report-actbar'))return;var bar=document.createElement('div');bar.className='namo-report-actbar';bar.setAttribute('data-namo-report-actbar',type);bar.innerHTML='<span class="label">결재 처리</span><button type="button" class="namo-report-action review" data-report-action="review">검토</button><button type="button" class="namo-report-action approve" data-report-action="approve">승인</button><button type="button" class="namo-report-action reject" data-report-action="reject">반려</button><span class="namo-report-status">작성 저장 시 검토자에게 알림 자동 생성</span>';bar.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var btn=t.closest('[data-report-action]');if(!btn)return;e.preventDefault();setStatus(type,btn.getAttribute('data-report-action'));});grid.appendChild(bar);}
   function updateActionBars(){try{var map=read(STATUS_STORE,{});TYPES.forEach(function(type){addActionBar(type);var bar=qs('[data-namo-report-actbar="'+type+'"]');if(!bar)return;var info=docInfo(type),st=map[statusKey(info)],span=qs('.namo-report-status',bar);if(span){var label=st?({submit:'검토 요청',review:'검토 완료',approve:'승인 완료',reject:'반려'}[st.action]||st.action):'작성 저장 시 검토자에게 알림 자동 생성';span.className='namo-report-status '+(st?st.action:'');span.textContent=st?(label+' · '+st.user+' · '+st.time):'작성 저장 시 검토자에게 알림 자동 생성';}});}catch(e){console.warn('[namo-report-notify] updateActionBars',e);}}
-  function wrapSave(name,type){var old=window[name];if(typeof old!=='function'||old.__namoSaveWrappedUnified||old.__namoReportNotifyWrappedSafe)return;var fn=function(){var info=docInfo(type),ret;try{ret=old.apply(this,arguments);}catch(e){throw e;}var after=function(){try{pushNoti(info,'submit',targetFor(type,'submit'));var map=read(STATUS_STORE,{});map[statusKey(info)]={type:type,action:'submit',user:me().name,title:me().title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);updateActionBars();toast(info.label+' 저장 후 검토자에게 알림이 등록되었습니다.');}catch(e){console.warn('[namo-report-notify] save hook',e);}};if(ret&&typeof ret.then==='function')ret.then(after).catch(function(e){console.warn(e);});else setTimeout(after,0);return ret;};fn.__namoReportNotifyWrappedSafe=true;fn.__namoSaveWrappedUnified=true;window[name]=fn;}
+  function wrapSave(name,type){var old=window[name];if(typeof old!=='function'||old.__namoReportNotifyWrappedSafe)return;var fn=function(){var info=docInfo(type),ret;try{ret=old.apply(this,arguments);}catch(e){throw e;}var after=function(){try{pushNoti(info,'submit',targetFor(type,'submit'));var map=read(STATUS_STORE,{});map[statusKey(info)]={type:type,action:'submit',user:me().name,title:me().title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);updateActionBars();toast(info.label+' 저장 후 검토자에게 알림이 등록되었습니다.');}catch(e){console.warn('[namo-report-notify] save hook',e);}};if(ret&&typeof ret.then==='function')ret.then(after).catch(function(e){console.warn(e);});else setTimeout(after,0);return ret;};fn.__namoReportNotifyWrappedSafe=true;window[name]=fn;}
   function patchButtons(){[['incomingSave','iqc'],['processSave','pqc'],['shipmentSave','oqc']].forEach(function(p){var btn=$id(p[0]);if(!btn||btn.__namoDirectNotifyBoundSafe)return;btn.__namoDirectNotifyBoundSafe=true;btn.addEventListener('click',function(){setTimeout(function(){renderPanel(false);updateActionBars();},600);},true);});}
   function init(){try{ensureUI();renderPanel(false);updateActionBars();patchButtons();wrapSave('saveIqc','iqc');wrapSave('savePqc','pqc');wrapSave('saveOqc','oqc');}catch(e){console.warn('[namo-report-notify] init',e);}}
   document.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('.nav-item,.ltab,#loginBtn,#signupBtn'))setTimeout(init,300);},true);
@@ -10863,7 +10493,6 @@ body {
   setTimeout(init,500);setTimeout(init,1600);
   window.namoReportApprovalNotifyRefresh=init;
 })();
-
 </script>
 
 
@@ -10981,7 +10610,6 @@ body {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
   setTimeout(refresh,600);setTimeout(refresh,1600);setInterval(function(){ensureFormBar();patchRows();},3000);
 })();
-
 </script>
 
 <!-- 통합 알림 1개 처리 패치: 작업지시서/교육보고서/부적합보고서/CAPA 작성·검토·승인 -->
@@ -11096,7 +10724,6 @@ body {
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){render(false);}); else render(false);
   setInterval(render, 3000);
 })();
-
 </script>
 
 
@@ -11244,7 +10871,6 @@ body {
   setTimeout(boot, 1200);
   setTimeout(boot, 2600);
 })();
-
 </script>
 
 
@@ -11419,7 +11045,7 @@ body {
     var woNo=get('nmcWoNo') || ('NM-'+now.toISOString().slice(0,10).replace(/-/g,'')+'-TEMP');
     var recvEl=document.getElementById('nmcRecvDept'), refEl=document.getElementById('nmcRefDept');
     var senderOpt=q('#nmcSenderName option:checked')||q('#nmcSenderName option');
-    var senderText=(window.nmcCurrentWorkOrderUserName ? window.nmcCurrentWorkOrderUserName() : (get('nmcSenderName') || (senderOpt?(senderOpt.textContent||'').trim():'') || ((window.currentUser&&(window.currentUser.name||window.currentUser.email))||'')));
+    var senderText=get('nmcSenderName') || (senderOpt?(senderOpt.textContent||'').trim():'') || ((window.currentUser&&(window.currentUser.name||window.currentUser.email))||'');
     var sendTime=get('nmcSendTime') || now.toLocaleString('ko-KR');
     var mats=collectMaterialsSafe().filter(function(m){return m.name || m.lot || m.planQty || m.actualQty || m.note;});
     var item={
@@ -11427,7 +11053,7 @@ body {
       title:get('nmcProdName')||'작업지시서',productName:get('nmcProdName'),productCode:get('nmcProdCode'),prodLot:get('nmcProdLot'),productionLot:get('nmcWorkOrderNo')||get('nmcProdLot'),lot:get('nmcProdLot'),
       orderDate:get('nmcOrderDate'),planType:get('nmcPlanType'),planQty:get('nmcPlanQty'),actualQty:get('nmcActualQty'),reqDept:get('nmcReqDept'),worker:get('nmcWorker'),
       instruction:get('nmcInstruction'),sendNote:get('nmcSendNote'),memo:get('nmcSendNote'),sendTime:sendTime,sentAt:sendTime,createdAt:sendTime,date:get('nmcOrderDate')||sendTime,
-      status:status||'발송완료',senderText:senderText,sender:{name:senderText},writer:senderText,author:senderText,receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
+      status:status||'발송완료',senderText:senderText,sender:{name:senderText},receiver:selectedTextsSafe(recvEl).join(', '),receiverText:selectedTextsSafe(recvEl).join(', '),recvDept:selectedTextsSafe(recvEl).join(', '),receiverIds:selectedValuesSafe(recvEl),
       refDept:selectedTextsSafe(refEl).join(', '),refText:selectedTextsSafe(refEl).join(', '),refIds:selectedValuesSafe(refEl),materials:mats
     };
     ['nmc_workorder_sent_items','nmcWorkOrders','nmcSentWorkorders','workOrderHistory'].forEach(function(k){upsertStore(k,item);});
@@ -11521,7 +11147,7 @@ body {
       +'<div class="field"><label>제품명</label><input readonly value="'+text(item.product)+'"></div><div class="field"><label>제품코드</label><input readonly value="'+text(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+text(item.lot)+'"></div><div class="field"><label>계획수량 (kg)</label><input readonly value="'+text(item.plan)+' kg"></div><div class="field"><label>투입량 (kg)</label><input readonly value="'+text(item.actual)+' kg"></div>'
       +'</div><h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
       +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-history-box">'+text(item.instruction||'-')+'</div>'
-      +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신자</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조자</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>비고</label><textarea readonly>'+text(item.sendNote)+'</textarea></div></div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신</label><input readonly value="'+text(item.receiver)+'"></div><div class="field cfall"><label>참조</label><input readonly value="'+text(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+text(item.date)+'"></div><div class="field cfall"><label>비고</label><textarea readonly>'+text(item.sendNote)+'</textarea></div></div>'
       +'<div class="nmc-history-actions"><button type="button" class="btn light" data-nmc-history-edit="'+text(item.id)+'">수정</button><button type="button" class="btn light" data-nmc-history-delete="'+text(item.id)+'">삭제</button><button type="button" class="btn light" data-nmc-history-print="'+text(item.id)+'">인쇄</button></div>'
       +'</div></div>';
     detail.scrollIntoView({behavior:'smooth',block:'start'});
@@ -11561,9 +11187,8 @@ body {
       +'<h4 style="margin:16px 0 8px">지시 사항</h4>'
       +'<div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+text(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4>'
-      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신자</th><td>'+text(item.receiver)+'</td><th>참조자</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
-      +'<div class="print-user-info">'+text(window.nmcPrintFooterText ? window.nmcPrintFooterText() : ('출력일시: '+new Date().toLocaleString('ko-KR')))+'</div>';
-    try{ if(window.nmcApplyPrintFooter) window.nmcApplyPrintFooter(target); }catch(e){}
+      +'<table><tbody><tr><th>발송자</th><td>'+text(item.sender)+'</td><th>수신</th><td>'+text(item.receiver)+'</td><th>참조</th><td>'+text(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+text(item.date)+'</td><th>비고</th><td colspan="3">'+text(item.sendNote)+'</td></tr></tbody></table>'
+      +'<div class="print-user-info">출력일시: '+text(new Date().toLocaleString('ko-KR'))+'</div>';
     window.print();
   }
 
@@ -11603,7 +11228,6 @@ body {
   window.nmcSaveWorkOrderHistoryV4=saveCurrentWorkOrder;
   window.nmcRenderWorkOrderHistoryV4=renderHistory;
 })();
-
 </script>
 
 
@@ -11817,7 +11441,6 @@ body {
   else boot();
   [300,800,1600,3000].forEach(function(ms){ setTimeout(boot, ms); });
 })();
-
 </script>
 
 
@@ -12035,7 +11658,7 @@ body {
       var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
       if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
       var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
-      if(actBtn){e.preventDefault();e.stopImmediatePropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
       var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
       if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
       if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
@@ -12064,7 +11687,6 @@ body {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
 })();
-
 </script>
 
 
@@ -12134,7 +11756,7 @@ body {
   }
   function wrapSave(fnName,type){
     var old=window[fnName];
-    if(typeof old!=='function'||old.__namoSaveWrappedUnified||old.__namoInboxOnlyWrapped) return;
+    if(typeof old!=='function'||old.__namoInboxOnlyWrapped) return;
     var wrapped=function(){
       var info=docInfo(type);var target=selectedSignUser(type,'reviewer')||selectedSignUser(type,'approver')||currentUser();
       var ret=old.apply(this,arguments);
@@ -12143,16 +11765,11 @@ body {
       return ret;
     };
     wrapped.__namoInboxOnlyWrapped=true;
-    wrapped.__namoSaveWrappedUnified=true;
     window[fnName]=wrapped;
   }
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest&&e.target.closest('[data-appr-act]');
     if(!btn) return;
-    if(e.__namoApprActHandled) return;
-    e.__namoApprActHandled=true;
-    e.preventDefault();
-    e.stopImmediatePropagation();
     setTimeout(function(){
       var type=btn.getAttribute('data-type')||'';var action=btn.getAttribute('data-appr-act')||'';var info={type:type,docNo:btn.getAttribute('data-id')||'',lot:'',item:''};
       notifyStores(info,action,currentUser());
@@ -12167,7 +11784,6 @@ body {
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
-
 </script>
 
 
@@ -12364,7 +11980,7 @@ body {
       var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
       if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
       var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
-      if(actBtn){e.preventDefault();e.stopImmediatePropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      if(actBtn){e.preventDefault();e.stopPropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
       var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
       if(openBtn){e.preventDefault();e.stopPropagation();openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
       if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
@@ -12373,9 +11989,9 @@ body {
     document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')renderInbox();},true);
   }
   function wrapSave(fnName){
-    var old=window[fnName]; if(typeof old!=='function'||old.__namoSaveWrappedUnified||old.__namoApprovalFinalFixWrapped) return;
+    var old=window[fnName]; if(typeof old!=='function'||old.__namoApprovalFinalFixWrapped) return;
     var wrapped=function(){var ret=old.apply(this,arguments);var after=function(){refreshData().then(renderInbox);}; if(ret&&typeof ret.then==='function')ret.then(after).catch(after); else setTimeout(after,120); return ret;};
-    wrapped.__namoApprovalFinalFixWrapped=true; wrapped.__namoSaveWrappedUnified=true; window[fnName]=wrapped;
+    wrapped.__namoApprovalFinalFixWrapped=true; window[fnName]=wrapped;
   }
   function boot(){
     ensurePage(); bind();
@@ -12385,859 +12001,6 @@ body {
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
-})();
-
-</script>
-
-
-
-<!-- 작업지시서 최종 보정 패치: 발송자/수신자/참조자 형식 통일, UUID 제거, 상세 하단 버튼 제거 -->
-<style id="nmc-workorder-person-final-style">
-  #nmcWorkorderHistoryDetail .nmc-history-actions{display:none!important;}
-  #nmcWorkorderHistoryDetail button[data-nmc-history-edit],
-  #nmcWorkorderHistoryDetail button[data-nmc-history-delete],
-  #nmcWorkorderHistoryDetail button[data-nmc-history-print]{display:none!important;}
-  #printTarget .print-user-info{
-    display:block!important;
-    visibility:visible!important;
-    position:static!important;
-    margin-top:6px!important;
-    padding-top:4px!important;
-    border-top:1px dashed #bbb!important;
-    font-size:9px!important;
-    line-height:1.25!important;
-    color:#555!important;
-    text-align:right!important;
-    page-break-inside:avoid!important;
-    break-inside:avoid!important;
-  }
-</style>
-<script id="nmc-workorder-person-final-script">
-(function(){
-  'use strict';
-  if(window.__nmcWorkorderPersonFinalPatch) return;
-  window.__nmcWorkorderPersonFinalPatch = true;
-
-  var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  var UUID_RE_G = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ig;
-
-  function pad(n){ return String(n).padStart(2,'0'); }
-  function nowText(){
-    var d = new Date();
-    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
-  }
-  function stateObj(){
-    try{ if(typeof state !== 'undefined' && state) return state; }catch(e){}
-    return window.state || {};
-  }
-  function currentUser(){
-    var s = stateObj();
-    return s.currentUser || s.user || window.currentUser || window.user || {};
-  }
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function isUuid(v){ return UUID_RE.test(clean(v)); }
-  function hasEmail(v){ return /@/.test(clean(v)); }
-  function normalizeDept(v){
-    v = clean(v);
-    if(!v || isUuid(v) || hasEmail(v)) return '품질';
-    return v;
-  }
-  function normalizeTitle(v){
-    v = clean(v);
-    if(!v || isUuid(v) || hasEmail(v)) return '부장';
-    return v;
-  }
-  function normalizeName(v){
-    v = clean(v);
-    if(!v || isUuid(v)) return '';
-    if(hasEmail(v)) return '';
-    return v;
-  }
-  function candidateName(u){
-    if(!u || typeof u !== 'object') return '';
-    return normalizeName(u.name || u.username || u.displayName || u.fullName || u.koreanName || u.userName || u.employeeName);
-  }
-  function candidateDept(u){
-    if(!u || typeof u !== 'object') return '';
-    return normalizeDept(u.department || u.dept || u.team || u.division || u.group || u.part);
-  }
-  function candidateTitle(u){
-    if(!u || typeof u !== 'object') return '';
-    return normalizeTitle(u.title || u.position || u.rank || u.jobTitle || u.grade || u.role);
-  }
-  function currentPersonText(){
-    var u = currentUser();
-    var dept = candidateDept(u) || '품질';
-    var name = candidateName(u) || '임흥배';
-    var title = candidateTitle(u) || '부장';
-    return dept + ' ' + name + ' / ' + title;
-  }
-  function fromOptionText(txt){
-    txt = clean(txt);
-    if(!txt || isUuid(txt)) return '';
-    txt = txt.replace(/\s*\([^)]*@[^)]*\)\s*/g,'').replace(/\s+/g,' ').trim();
-    if(!txt || isUuid(txt) || hasEmail(txt)) return '';
-    if(txt.indexOf('/') >= 0 && /^\S+\s+/.test(txt)) return txt;
-    return '';
-  }
-  function formatPerson(input, fallback){
-    fallback = fallback || currentPersonText();
-    if(input && typeof input === 'object'){
-      var dept = candidateDept(input) || '품질';
-      var name = candidateName(input);
-      var title = candidateTitle(input) || '부장';
-      if(!name){
-        var rawName = clean(input.value || input.id || input.uuid || input.email || input.mail || input.userId || input.uid);
-        if(!isUuid(rawName) && !hasEmail(rawName)) name = rawName;
-      }
-      return name ? (dept + ' ' + name + ' / ' + title) : fallback;
-    }
-    var s = clean(input);
-    if(!s || isUuid(s) || hasEmail(s)) return fallback;
-    var opt = fromOptionText(s);
-    if(opt) return opt;
-    if(/^\S+\s+\S+\s*\/\s*\S+/.test(s)) return s;
-    if(/\//.test(s)){
-      var parts = s.split('/').map(function(x){return clean(x);}).filter(Boolean);
-      if(parts.length >= 2){
-        var left = parts[0].split(/\s+/);
-        var dept = left.length > 1 ? left[0] : '품질';
-        var name = left.length > 1 ? left.slice(1).join(' ') : left[0];
-        var title = parts[1] || '부장';
-        if(name && !isUuid(name) && !hasEmail(name)) return dept+' '+name+' / '+title;
-      }
-    }
-    return '품질 ' + s + ' / 부장';
-  }
-  function selectedPeople(id, fallback){
-    var el = document.getElementById(id);
-    if(!el || !el.options) return fallback || currentPersonText();
-    var arr = Array.prototype.slice.call(el.options).filter(function(o){return o.selected;}).map(function(o){
-      return formatPerson({
-        name:o.dataset.name || o.getAttribute('data-name') || fromOptionText(o.textContent) || o.textContent,
-        department:o.dataset.department || o.dataset.dept || o.getAttribute('data-department') || o.getAttribute('data-dept') || '품질',
-        title:o.dataset.title || o.dataset.position || o.getAttribute('data-title') || o.getAttribute('data-position') || '부장',
-        id:o.value
-      }, fallback || currentPersonText());
-    }).filter(Boolean);
-    return arr.length ? arr.join(', ') : (fallback || currentPersonText());
-  }
-  function replaceUuidText(root){
-    root = root || document;
-    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-    var nodes = [];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(function(n){
-      if(UUID_RE_G.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(UUID_RE_G, currentPersonText());
-      UUID_RE_G.lastIndex = 0;
-    });
-  }
-  function normalizePrintLabels(root){
-    root = root || document;
-    Array.prototype.slice.call(root.querySelectorAll('th,label,b')).forEach(function(el){
-      var t = clean(el.textContent);
-      if(t === '발송부서') el.textContent = '발송자';
-      if(t === '수신' || t === '수신부서') el.textContent = '수신자';
-      if(t === '참조' || t === '참조부서') el.textContent = '참조자';
-    });
-  }
-  function normalizeSendInfoDom(root){
-    root = root || document;
-    replaceUuidText(root);
-    normalizePrintLabels(root);
-  }
-
-  window.nmcFormatWorkOrderPerson = formatPerson;
-  window.nmcCurrentWorkOrderUser = currentUser;
-  window.nmcCurrentWorkOrderUserName = currentPersonText;
-  window.nmcCurrentWorkOrderUserDeptTitle = currentPersonText;
-  window.nmcPrintFooterText = function(){
-    var u = currentUser();
-    var email = clean(u.email || u.mail) || 'hbleem@namochemical.com';
-    return '출력자 : ' + currentPersonText() + ' (' + email + ')    |    출력시간 : ' + nowText();
-  };
-  window.nmcApplyPrintFooter = function(target){
-    target = target || document.getElementById('printTarget');
-    if(!target) return;
-    normalizeSendInfoDom(target);
-    var footer = target.querySelector('.print-user-info');
-    if(!footer){
-      footer = document.createElement('div');
-      footer.className = 'print-user-info';
-      target.appendChild(footer);
-    }
-    footer.textContent = window.nmcPrintFooterText();
-  };
-
-  document.addEventListener('click', function(e){
-    setTimeout(function(){
-      var detail = document.getElementById('nmcWorkorderHistoryDetail');
-      if(detail) normalizeSendInfoDom(detail);
-      var target = document.getElementById('printTarget');
-      if(target) normalizeSendInfoDom(target);
-    }, 80);
-  }, true);
-
-  if(window.MutationObserver){
-    var mo = new MutationObserver(function(muts){
-      muts.forEach(function(m){
-        if(m.target && (m.target.id === 'nmcWorkorderHistoryDetail' || (m.target.closest && m.target.closest('#nmcWorkorderHistoryDetail,#printTarget')))){
-          normalizeSendInfoDom(m.target.nodeType === 1 ? m.target : document);
-        }
-      });
-    });
-    try{ mo.observe(document.body, {childList:true, subtree:true, characterData:true}); }catch(e){}
-  }
-  window.addEventListener('beforeprint', function(){ window.nmcApplyPrintFooter(); });
-  window.addEventListener('DOMContentLoaded', function(){
-    normalizeSendInfoDom(document);
-  });
-})();
-
-</script>
-
-
-<script id="nmc-final-author-sender-print-fix">
-/* 작성자/발송자 UUID 표시 및 인쇄 하단 출력자 정보 최종 보정
-   - 기존 HTML/기능은 유지하고, 표시값만 로그인 사용자 기준으로 보정합니다. */
-(function(){
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const UUID_FIND_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ig;
-
-  function pad(n){ return String(n).padStart(2,'0'); }
-  function nowText(){
-    const d = new Date();
-    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
-      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-  }
-  function textOf(id){
-    return (document.getElementById(id)?.textContent || '').trim();
-  }
-  function currentUserRaw(){
-    const st = (typeof window.state !== 'undefined') ? window.state : {};
-    const cur = st.currentUser || window.currentUser || window.user || {};
-    const email = cur.email || cur.mail || textOf('profileEmail') || 'bhleem@namochemical.com';
-    const name = cur.name || cur.username || textOf('profileName') || '임흥배';
-
-    const users = []
-      .concat(Array.isArray(st.adminUsers) ? st.adminUsers : [])
-      .concat(Array.isArray(st.signableUsers) ? st.signableUsers : []);
-
-    const found = users.find(u =>
-      (email && (u.email === email || u.mail === email)) ||
-      (name && (u.name === name || u.username === name)) ||
-      (cur.id && (String(u.id) === String(cur.id) || String(u.user_id) === String(cur.id)))
-    ) || {};
-
-    return Object.assign({}, found, cur, { email, name });
-  }
-  function currentUserDisplay(){
-    const u = currentUserRaw();
-    const name = u.name || u.username || '임흥배';
-    const title = u.title || u.position || u.rank || '부장';
-    const dept = u.department || u.dept || u.team || '품질';
-    return {
-      name,
-      title,
-      dept,
-      email: u.email || u.mail || 'bhleem@namochemical.com',
-      label: name + (title ? ' ' + title : '') + (dept ? ' / ' + dept : '')
-    };
-  }
-
-  window.nmcCurrentWorkOrderUserName = function(){
-    return currentUserDisplay().label;
-  };
-  window.nmcCurrentWorkOrderUserDeptTitle = function(){
-    return currentUserDisplay().label;
-  };
-  window.nmcPrintFooterText = function(){
-    const u = currentUserDisplay();
-    return '출력자 : ' + u.label + ' (' + u.email + ') ｜ 출력시간 : ' + nowText();
-  };
-
-  window.getPrintUser = function(){
-    const u = currentUserDisplay();
-    return { name:u.name, title:u.title, department:u.dept, email:u.email };
-  };
-
-  window.appendPrintUserInfo = async function(target){
-    if(!target) return;
-    fixUuidDisplay(target);
-    target.querySelectorAll('.print-user-info').forEach(x=>x.remove());
-    const info = document.createElement('div');
-    info.className = 'print-user-info';
-    info.textContent = window.nmcPrintFooterText();
-    target.appendChild(info);
-  };
-
-  window.nmcApplyPrintFooter = function(target){
-    target = target || document.getElementById('printTarget') || document.body;
-    if(!target) return;
-    fixUuidDisplay(target);
-    let footer = target.querySelector('.print-user-info');
-    if(!footer){
-      footer = document.createElement('div');
-      footer.className = 'print-user-info';
-      target.appendChild(footer);
-    }
-    footer.textContent = window.nmcPrintFooterText();
-  };
-
-  function shouldFixInput(el){
-    if(!el) return false;
-    const v = String(el.value || '').trim();
-    if(!UUID_RE.test(v)) return false;
-    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-    const id = (el.id || '').toLowerCase();
-    const name = (el.name || '').toLowerCase();
-    const parentText = (el.closest('.field,.nmc-send-field,td,div')?.textContent || '').slice(0,80);
-    return /작성자|발송자|출력자|sender|writer|author|created|issued|발송/.test(aria + ' ' + id + ' ' + name + ' ' + parentText);
-  }
-
-  function fixUuidDisplay(root){
-    if(!root) return;
-    const label = currentUserDisplay().label;
-
-    root.querySelectorAll('input,textarea').forEach(el=>{
-      if(shouldFixInput(el)) el.value = label;
-    });
-
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode(node){
-        const value = node.nodeValue || '';
-        if(!UUID_FIND_RE.test(value)) return NodeFilter.FILTER_REJECT;
-        UUID_FIND_RE.lastIndex = 0;
-        const parentText = (node.parentElement?.closest('tr,.field,.nmc-send-field,div')?.textContent || '').slice(0,140);
-        if(/작성자|발송자|출력자|sender|writer|author|발송 정보|발송정보/i.test(parentText)){
-          return NodeFilter.FILTER_ACCEPT;
-        }
-        return NodeFilter.FILTER_REJECT;
-      }
-    });
-
-    const nodes = [];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node=>{
-      node.nodeValue = node.nodeValue.replace(UUID_FIND_RE, label);
-      UUID_FIND_RE.lastIndex = 0;
-    });
-
-    const senderInput = document.getElementById('nmcSenderName');
-    if(senderInput && UUID_RE.test(String(senderInput.value || '').trim())){
-      senderInput.value = label;
-    }
-  }
-
-  window.nmcFixAuthorSenderUuidDisplay = function(){
-    fixUuidDisplay(document);
-  };
-
-  document.addEventListener('DOMContentLoaded', function(){
-    fixUuidDisplay(document);
-  });
-  document.addEventListener('click', function(){
-    setTimeout(function(){ fixUuidDisplay(document); }, 80);
-  }, true);
-  window.addEventListener('beforeprint', function(){
-    window.nmcApplyPrintFooter(document.getElementById('printTarget') || document.body);
-  });
-
-  const mo = new MutationObserver(function(){
-    clearTimeout(window.__nmcAuthorSenderFixTimer);
-    window.__nmcAuthorSenderFixTimer = setTimeout(function(){ fixUuidDisplay(document); }, 120);
-  });
-  if(document.documentElement){
-    mo.observe(document.documentElement, { childList:true, subtree:true });
-  }
-})();
-
-</script>
-
-
-
-
-<script id="qms-senior-approval-guard-v3">
-(function(){
-  'use strict';
-  if(window.__qmsSeniorApprovalGuardV3) return;
-  window.__qmsSeniorApprovalGuardV3 = true;
-
-  var SENIOR_WORDS = ['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','관리자','admin','administrator','ceo','cto','coo','cfo'];
-  var ROLES = ['writer','reviewer','approver'];
-
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function isAdminLogin(){
-    try{
-      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      var u = s.currentUser || window.currentUser || window.loginUser || {};
-      var raw = [u.id,u.name,u.email,u.role,u.title,u.grade,u.level].map(function(v){ return clean(v).toLowerCase(); }).join(' ');
-      return raw.indexOf('admin') >= 0 || raw.indexOf('관리자') >= 0;
-    }catch(e){ return false; }
-  }
-  function enableAllOptions(sel){
-    if(!sel) return;
-    Array.prototype.forEach.call(sel.options || [], function(opt){ opt.disabled = false; opt.hidden = false; });
-    sel.disabled = false; sel.removeAttribute('disabled'); sel.readOnly = false;
-  }
-  function isSeniorText(text){
-    text = clean(text).toLowerCase();
-    if(!text) return false;
-    return SENIOR_WORDS.some(function(w){ return text.indexOf(String(w).toLowerCase()) >= 0; });
-  }
-  function optionText(opt){
-    if(!opt) return '';
-    return [opt.textContent, opt.value, opt.dataset && opt.dataset.title, opt.dataset && opt.dataset.position, opt.dataset && opt.dataset.role, opt.dataset && opt.dataset.department].join(' ');
-  }
-  function selectedName(sel){
-    if(!sel) return '';
-    var opt = sel.options && sel.options[sel.selectedIndex];
-    var txt = clean((opt && (opt.dataset.name || opt.textContent)) || sel.value || '');
-    return txt.replace(/\s*\/\s*.*$/,'').trim();
-  }
-  function typeFromId(id){
-    var m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(id || '');
-    return m ? m[1] : '';
-  }
-  function getSel(type, role){ return document.getElementById('sg_' + type + '_' + role); }
-  function filterSeniorOptions(sel){
-    if(!sel || !/(reviewer|approver)$/.test(sel.id || '')) return;
-    if(isAdminLogin()){ enableAllOptions(sel); return; }
-    Array.prototype.forEach.call(sel.options || [], function(opt){
-      if(!opt.value){ opt.disabled = false; return; }
-      var ok = isSeniorText(optionText(opt));
-      opt.disabled = !ok;
-      opt.hidden = !ok;
-    });
-    if(sel.value){
-      var cur = sel.options[sel.selectedIndex];
-      if(cur && cur.disabled){ sel.value = ''; }
-    }
-  }
-  function preventDuplicates(type){
-    if(!type) return;
-    if(isAdminLogin()){ ROLES.forEach(function(r){ enableAllOptions(getSel(type,r)); }); return; }
-    var writer = getSel(type,'writer');
-    var reviewer = getSel(type,'reviewer');
-    var approver = getSel(type,'approver');
-    var writerName = selectedName(writer);
-    var reviewerName = selectedName(reviewer);
-    [reviewer, approver].forEach(function(sel){
-      if(!sel) return;
-      Array.prototype.forEach.call(sel.options || [], function(opt){
-        if(!opt.value || opt.disabled) return;
-        var nm = clean((opt.dataset && opt.dataset.name) || opt.textContent || '').replace(/\s*\/\s*.*$/,'').trim();
-        if(writerName && nm && nm === writerName){ opt.disabled = true; opt.hidden = true; }
-      });
-      if(selectedName(sel) && writerName && selectedName(sel) === writerName){ sel.value = ''; }
-    });
-    if(reviewer && approver && reviewerName && selectedName(approver) === reviewerName){ approver.value = ''; }
-  }
-  function validate(type, quiet){
-    if(isAdminLogin()){ ROLES.forEach(function(r){ enableAllOptions(getSel(type,r)); }); return true; }
-    var writer = getSel(type,'writer');
-    var reviewer = getSel(type,'reviewer');
-    var approver = getSel(type,'approver');
-    if(!reviewer || !approver) return true;
-    filterSeniorOptions(reviewer); filterSeniorOptions(approver); preventDuplicates(type);
-    var wn = selectedName(writer), rn = selectedName(reviewer), an = selectedName(approver);
-    var ro = reviewer.options && reviewer.options[reviewer.selectedIndex];
-    var ao = approver.options && approver.options[approver.selectedIndex];
-    var msg = '';
-    if(ro && ro.value && !isSeniorText(optionText(ro))) msg = '검토자는 부장 이상만 가능합니다.';
-    else if(ao && ao.value && !isSeniorText(optionText(ao))) msg = '승인자는 부장 이상만 가능합니다.';
-    else if(wn && rn && wn === rn) msg = '작성자와 검토자는 동일할 수 없습니다.';
-    else if(wn && an && wn === an) msg = '작성자와 승인자는 동일할 수 없습니다.';
-    else if(rn && an && rn === an) msg = '검토자와 승인자는 동일할 수 없습니다.';
-    if(msg){ if(!quiet) alert(msg); return false; }
-    return true;
-  }
-  function applyAll(){
-    Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id^="sg_"]'), function(sel){
-      var type = typeFromId(sel.id);
-      if(/_(reviewer|approver)$/.test(sel.id)) filterSeniorOptions(sel);
-      if(type) preventDuplicates(type);
-    });
-  }
-  document.addEventListener('change', function(e){
-    var sel = e.target && e.target.closest && e.target.closest('select.sign-sel[id^="sg_"]');
-    if(!sel) return;
-    var type = typeFromId(sel.id);
-    setTimeout(function(){ validate(type, false); applyAll(); }, 0);
-  }, true);
-  document.addEventListener('click', function(e){
-    var btn = e.target && e.target.closest && e.target.closest('button');
-    if(!btn) return;
-    // 사이드 메뉴 클릭 제외
-    if (
-      btn.classList.contains('nav-item') ||
-      btn.closest('.sidebar') ||
-      btn.dataset.page
-    ) return;
-
-    // 실제 결재 버튼만 검사
-    var text = clean(btn.textContent || '');
-    if(!/(저장|검토|승인)$/.test(text)) return;
-
-    // 저장/검토/승인 시 현재 활성 화면의 결재란만 검사한다.
-    // 기존에는 IQC/PQC/OQC 전체 sign-sel을 순회하여 다른 화면의 미선택/중복값 때문에 저장이 막혔다.
-    var activePage = document.querySelector('.page.active');
-    var type = '';
-    if(activePage){
-      if(activePage.id === 'page-incoming') type = 'iqc';
-      else if(activePage.id === 'page-process') type = 'pqc';
-      else if(activePage.id === 'page-shipment') type = 'oqc';
-      else if(activePage.id === 'page-nc') type = 'nc';
-      else if(activePage.id === 'page-training') type = 'training';
-    }
-
-    // 활성 페이지를 판단할 수 없으면 클릭된 버튼 주변의 서명 select에서 type을 보조 추정한다.
-    if(!type){
-      var nearSel = btn.closest('.page') && btn.closest('.page').querySelector('select.sign-sel[id^="sg_"]');
-      type = nearSel ? typeFromId(nearSel.id) : '';
-    }
-
-    if(type && !validate(type, false)){
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return false;
-    }
-  }, true);
-  var mo = new MutationObserver(function(){ clearTimeout(window.__qmsSeniorApprovalGuardTimer); window.__qmsSeniorApprovalGuardTimer = setTimeout(applyAll, 80); });
-  if(document.documentElement) mo.observe(document.documentElement, { childList:true, subtree:true });
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyAll); else applyAll();
-})();
-
-
-/* ══════════════════════════════════
-   Critical Bug Consolidation Patch 20260528
-   - 결재 이벤트 단일 처리
-   - getSignPayload 최종 단일화
-   - 저장 래핑 공통 플래그
-══════════════════════════════════ */
-(function(){
-  if(window.__namoCriticalBugConsolidation20260528) return;
-  window.__namoCriticalBugConsolidation20260528 = true;
-
-  function sigData(type,role){
-    try{ return (typeof signature데이터==='function') ? signature데이터(type,role) : {}; }
-    catch(e){ return {}; }
-  }
-  function currentUserSafe(){
-    var s = (typeof state!=='undefined' && state) ? state : (window.state||{});
-    var u = s.currentUser || window.currentUser || window.loginUser || (Array.isArray(s.signableUsers)&&s.signableUsers[0]) || {};
-    var name = String(u.name || u.username || u.displayName || u.email || '').trim();
-    return {
-      id:String(u.id || u.user_id || u.email || name || 'login-user'),
-      name:name || '로그인 사용자',
-      title:String(u.title || u.position || u.roleName || u.role || ''),
-      department:String(u.department || u.dept || ''),
-      email:String(u.email || '')
-    };
-  }
-  function userFromSelect(type,role){
-    var s = (typeof state!=='undefined' && state) ? state : (window.state||{});
-    var sel = document.getElementById('sg_'+type+'_'+role);
-    var sig = sigData(type,role);
-    if(!sel || !sel.value){
-      if(role==='writer') return Object.assign(currentUserSafe(), sig);
-      return Object.assign({name:'',title:'',department:'',email:''}, sig);
-    }
-    var opt = sel.options && sel.options[sel.selectedIndex];
-    var list = Array.isArray(s.signableUsers) ? s.signableUsers : [];
-    var u = list.find(function(x){return String(x.id)===String(sel.value);});
-    if(!u && opt){
-      u = {
-        id:sel.value,
-        name:(opt.dataset&&opt.dataset.name)||String(opt.textContent||'').replace(/\s*\/\s*.*$/,'').trim(),
-        title:(opt.dataset&&opt.dataset.title)||'',
-        department:(opt.dataset&&opt.dataset.department)||'',
-        email:(opt.dataset&&opt.dataset.email)||''
-      };
-    }
-    if(!u) u = {id:sel.value,name:'',title:'',department:'',email:''};
-    return Object.assign({
-      id:u.id,
-      name:u.name || u.username || '',
-      title:u.title || u.position || '',
-      department:u.department || u.dept || '',
-      email:u.email || ''
-    }, sig);
-  }
-  window.getSignPayload = function(type){
-    return {
-      writer:userFromSelect(type,'writer'),
-      reviewer:userFromSelect(type,'reviewer'),
-      approver:userFromSelect(type,'approver')
-    };
-  };
-})();
-
-
-
-/* 관리자 로그인 교육보고서 결재 선택/수정 보강 v2 */
-(function(){
-  'use strict';
-  if(window.__namoAdminTrainingApprovalSelectFixV2) return;
-  window.__namoAdminTrainingApprovalSelectFixV2 = true;
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function isAdminLogin(){
-    try{
-      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      var u = s.currentUser || window.currentUser || window.loginUser || {};
-      var raw = [u.id,u.name,u.email,u.role,u.title,u.grade,u.level].map(function(v){ return clean(v).toLowerCase(); }).join(' ');
-      return raw.indexOf('admin') >= 0 || raw.indexOf('관리자') >= 0;
-    }catch(e){ return false; }
-  }
-  function listUsers(){
-    var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-    var keys = ['signableUsers','users','members','memberList','employees'];
-    for(var i=0;i<keys.length;i++) if(Array.isArray(s[keys[i]]) && s[keys[i]].length) return s[keys[i]];
-    for(var k in s) if(Array.isArray(s[k]) && /user|member|employee|회원/i.test(k) && s[k].length) return s[k];
-    return [];
-  }
-  function userId(u){ return clean(u.id || u.user_id || u.uid || u.email || u.name || u.username); }
-  function userName(u){ return clean(u.name || u.username || u.displayName || u.email || u.id); }
-  function userTitle(u){ return clean(u.title || u.position || u.grade || u.level || u.roleName || u.role); }
-  function applyAdminSelects(){
-    if(!isAdminLogin()) return;
-    var us = listUsers();
-    Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id^="sg_"]'), function(sel){
-      var keep = sel.value;
-      sel.disabled = false; sel.removeAttribute('disabled'); sel.readOnly = false;
-      Array.prototype.forEach.call(sel.options || [], function(opt){ opt.disabled = false; opt.hidden = false; });
-      if(us.length){
-        var label = sel.id.indexOf('_writer')>-1 ? '-- 작성자 선택 --' : (sel.id.indexOf('_reviewer')>-1 ? '-- 검토자 선택 --' : '-- 승인자 선택 --');
-        var html = '<option value="">'+label+'</option>' + us.map(function(u){
-          var id = userId(u), nm = userName(u), tt = userTitle(u), dep = clean(u.department || u.dept), em = clean(u.email);
-          var text = nm + (tt ? ' / '+tt : '');
-          return '<option value="'+id.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-name="'+nm.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-title="'+tt.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-department="'+dep.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-email="'+em.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</option>';
-        }).join('');
-        if(sel.getAttribute('data-admin-all-users-applied') !== '1' || sel.options.length !== us.length + 1){
-          sel.innerHTML = html;
-          sel.setAttribute('data-admin-all-users-applied','1');
-        }
-        if(keep && Array.prototype.some.call(sel.options, function(o){ return String(o.value) === String(keep); })) sel.value = keep;
-      }
-    });
-    if(typeof window.namoNormalizeDateInputs === 'function') window.namoNormalizeDateInputs(document);
-  }
-  var oldValidate = window.qmsValidateSignRoles;
-  window.qmsValidateSignRoles = function(type){
-    if(isAdminLogin()){ applyAdminSelects(); return true; }
-    return typeof oldValidate === 'function' ? oldValidate.apply(this, arguments) : true;
-  };
-  document.addEventListener('change', function(e){
-    if(e.target && e.target.matches && e.target.matches('select.sign-sel[id^="sg_"]') && isAdminLogin()) setTimeout(applyAdminSelects,0);
-  }, true);
-  document.addEventListener('DOMContentLoaded', applyAdminSelects);
-  setTimeout(applyAdminSelects, 100);
-  setTimeout(applyAdminSelects, 500);
-  var mo = new MutationObserver(function(){ clearTimeout(window.__namoAdminTrainingApprovalSelectFixTimer); window.__namoAdminTrainingApprovalSelectFixTimer = setTimeout(applyAdminSelects,80); });
-  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
-})();
-</script>
-
-<script id="namo-login-user-approval-rule-final-v20260528b">
-(function(){
-  'use strict';
-  if(window.__namoLoginUserApprovalRuleFinalV20260528B) return;
-  window.__namoLoginUserApprovalRuleFinalV20260528B = true;
-
-  var TYPES = ['iqc','pqc','oqc','nc','training'];
-  var ROLES = ['writer','reviewer','approver'];
-
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function escapeHtml(v){
-    return clean(v).replace(/[&<>"']/g,function(m){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
-    });
-  }
-  function appState(){ try{ return window.state || {}; }catch(e){ return {}; } }
-  function rawLoginUser(){
-    var s = appState();
-    return s.currentUser || window.currentUser || window.loginUser || window.userInfo || window.user || {};
-  }
-  function normalizeUser(u){
-    u = u || {};
-    var name = clean(u.name || u.username || u.displayName || '');
-    var email = clean(u.email || u.mail || '');
-    if(!name && email) name = email.split('@')[0];
-    return {
-      id: clean(u.id || u.user_id || u.uid || email || name || 'login-user'),
-      name: name || '로그인 사용자',
-      department: clean(u.department || u.dept || u.team || '품질'),
-      title: clean(u.title || u.position || u.rank || u.grade || u.level || u.roleName || u.role || ''),
-      email: email,
-      status: clean(u.status || 'APPROVED') || 'APPROVED'
-    };
-  }
-  function loginUser(){
-    var s = appState();
-    var base = normalizeUser(rawLoginUser());
-    var users = []
-      .concat(Array.isArray(s.signableUsers) ? s.signableUsers : [])
-      .concat(Array.isArray(s.adminUsers) ? s.adminUsers : [])
-      .concat(Array.isArray(window.signableUsers) ? window.signableUsers : []);
-    var found = users.find(function(u){
-      return (base.email && clean(u.email || u.mail) === base.email) ||
-             (base.id && clean(u.id || u.user_id || u.uid) === base.id) ||
-             (base.name && clean(u.name || u.username || u.displayName) === base.name);
-    });
-    return normalizeUser(Object.assign({}, found || {}, base));
-  }
-  function titleText(u){ return clean((u && (u.title || u.position || u.rank || u.grade || u.level || u.roleName || u.role)) || ''); }
-  function levelFromTitle(t){
-    t = clean(t).toLowerCase();
-    if(/(대표이사|대표|사장|회장|ceo|president)/i.test(t)) return 50;
-    if(/(부사장|전무|상무|이사|임원|director|executive)/i.test(t)) return 40;
-    if(/(부장|본부장|실장|센터장|공장장|팀장|manager|관리자|admin|administrator)/i.test(t)) return 30;
-    if(/(차장|과장|대리|주임|선임|책임|사원|staff|employee|assistant)/i.test(t)) return 10;
-    return 0;
-  }
-  function userLevel(u){ return levelFromTitle(titleText(u)); }
-  function sameUser(a,b){
-    if(!a || !b) return false;
-    return (!!a.id && !!b.id && clean(a.id) === clean(b.id)) ||
-           (!!a.email && !!b.email && clean(a.email) === clean(b.email)) ||
-           (!!a.name && !!b.name && clean(a.name) === clean(b.name));
-  }
-  function selectedUser(type,role){
-    var sel = document.getElementById('sg_' + type + '_' + role);
-    if(!sel || !sel.value) return null;
-    var opt = sel.options && sel.options[sel.selectedIndex];
-    return normalizeUser({
-      id: sel.value,
-      name: (opt && opt.dataset && opt.dataset.name) || (opt && opt.textContent || '').replace(/\s*\([^)]*\)\s*$/,'').replace(/\s*\/\s*.*$/,''),
-      title: opt && opt.dataset && opt.dataset.title,
-      department: opt && opt.dataset && opt.dataset.department,
-      email: opt && opt.dataset && opt.dataset.email
-    });
-  }
-  function writerUser(type){ return selectedUser(type,'writer') || loginUser(); }
-  function requiredLevel(writer, role){
-    var wl = userLevel(writer);
-    if(role === 'writer') return 0;
-
-    /* 1. 작성자 사원~과장: 검토=부장, 승인=부장 이상 */
-    if(wl < 30) return 30;
-
-    /* 2. 작성자 부장: 검토/승인=이사 이상 */
-    if(wl === 30) return 40;
-
-    /* 3. 작성자 이사 이상: 검토=이사 이상, 최종승인=대표이사 */
-    if(wl >= 40){
-      return role === 'approver' ? 50 : 40;
-    }
-    return 30;
-  }
-  function roleLabel(role){ return role === 'writer' ? '작성자' : (role === 'reviewer' ? '검토자' : '승인자'); }
-  function levelLabel(lv){
-    if(lv >= 50) return '대표이사';
-    if(lv >= 40) return '이사 이상';
-    if(lv >= 30) return '부장 이상';
-    return '로그인 당사자';
-  }
-  function buildLoginOnlyOption(u){
-    var label = u.name + ' (' + (u.title || u.department || '-') + ')';
-    return '<option value="' + escapeHtml(u.id) + '" data-name="' + escapeHtml(u.name) + '" data-title="' + escapeHtml(u.title) + '" data-department="' + escapeHtml(u.department) + '" data-email="' + escapeHtml(u.email) + '">' + escapeHtml(label) + '</option>';
-  }
-  function setSelectMessage(sel, msg){
-    if(!sel) return;
-    sel.innerHTML = '<option value="">' + escapeHtml(msg) + '</option>';
-    sel.value = '';
-    sel.disabled = true;
-    sel.dataset.userPicked = '0';
-  }
-  function setSelectLoginUser(type, role, u, disabled){
-    var sel = document.getElementById('sg_' + type + '_' + role);
-    if(!sel) return;
-    sel.innerHTML = buildLoginOnlyOption(u);
-    sel.value = u.id;
-    sel.disabled = !!disabled;
-    sel.dataset.userPicked = '1';
-    var sub = document.getElementById('sg_' + type + '_' + role + '_sub');
-    if(sub){
-      sub.textContent = u.department + ' / ' + (u.title || '-') + ' / 로그인 당사자';
-      sub.style.color = 'var(--pri)';
-      sub.style.fontWeight = '700';
-    }
-  }
-  function applyOne(type){
-    var me = loginUser();
-
-    /* 작성자는 항상 현재 로그인 당사자로 고정 */
-    setSelectLoginUser(type, 'writer', me, true);
-
-    var writer = writerUser(type);
-    ['reviewer','approver'].forEach(function(role){
-      var sel = document.getElementById('sg_' + type + '_' + role);
-      if(!sel) return;
-      var need = requiredLevel(writer, role);
-      var meLevel = userLevel(me);
-      var allowed = meLevel >= need && !sameUser(writer, me);
-
-      /* 작성자가 이사 이상이면 승인은 대표이사만 최종 승인 */
-      if(userLevel(writer) >= 40 && role === 'approver') allowed = meLevel >= 50 && !sameUser(writer, me);
-
-      if(allowed){
-        setSelectLoginUser(type, role, me, true);
-      }else{
-        setSelectMessage(sel, roleLabel(role) + ' 권한 필요: ' + levelLabel(need));
-        var sub = document.getElementById('sg_' + type + '_' + role + '_sub');
-        if(sub){
-          sub.textContent = '현재 로그인: ' + me.name + ' / ' + (me.title || '-') + ' · 필요 권한: ' + levelLabel(need);
-          sub.style.color = 'var(--wa)';
-          sub.style.fontWeight = '700';
-        }
-      }
-    });
-  }
-  function applyAll(){ TYPES.forEach(applyOne); }
-
-  function signUserFor(type, role){
-    var me = loginUser();
-    var writer = writerUser(type);
-    var need = requiredLevel(writer, role);
-    var base = {};
-    try{ if(typeof window['signature데이터'] === 'function') base = window['signature데이터'](type,role) || {}; }catch(e){}
-
-    if(role === 'writer') return Object.assign({id:me.id,name:me.name,title:me.title,department:me.department,email:me.email,status:'APPROVED'}, base);
-    if(userLevel(me) >= need && !sameUser(writer, me)) return Object.assign({id:me.id,name:me.name,title:me.title,department:me.department,email:me.email,status:'APPROVED'}, base);
-    return Object.assign({id:'',name:'',title:'',department:'',email:'',status:''}, base);
-  }
-  window.getSignPayload = function(type){
-    return {
-      writer: signUserFor(type,'writer'),
-      reviewer: signUserFor(type,'reviewer'),
-      approver: signUserFor(type,'approver')
-    };
-  };
-
-  window.qmsValidateSignRoles = function(type){
-    var me = loginUser();
-    var writer = writerUser(type);
-    var msg = '';
-    ['reviewer','approver'].some(function(role){
-      var need = requiredLevel(writer, role);
-      if(userLevel(me) < need){ msg = roleLabel(role) + '는 ' + levelLabel(need) + ' 로그인 당사자만 가능합니다.'; return true; }
-      if(sameUser(writer, me)){ msg = '작성자와 ' + roleLabel(role) + '는 동일할 수 없습니다.'; return true; }
-      return false;
-    });
-    if(msg){ alert(msg); return false; }
-    return true;
-  };
-
-  window.namoLoginUserSeniorApprovalApply = applyAll;
-  document.addEventListener('DOMContentLoaded', applyAll);
-  document.addEventListener('click', function(){ setTimeout(applyAll, 80); }, true);
-  document.addEventListener('change', function(e){ if(e.target && /^sg_/.test(e.target.id || '')) setTimeout(applyAll, 0); }, true);
-  [100,300,700,1200,2000,3500].forEach(function(ms){ setTimeout(applyAll, ms); });
-  var mo = new MutationObserver(function(){
-    clearTimeout(window.__namoLoginUserApprovalRuleFinalTimer);
-    window.__namoLoginUserApprovalRuleFinalTimer = setTimeout(applyAll, 80);
-  });
-  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
 })();
 </script>
 
