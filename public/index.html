@@ -12916,11 +12916,10 @@ window.__qmsSeniorApprovalGuardV3 = true;
     if(/저장|등록|작성|검토|승인|출력|인쇄/.test(text)) setTimeout(function(){ TYPES.forEach(applyType); }, 0);
   }, true);
 
-  var mo = new MutationObserver(function(){
-    clearTimeout(window.__qmsLoginBasedApprovalTimer);
-    window.__qmsLoginBasedApprovalTimer = setTimeout(function(){ TYPES.forEach(applyType); }, 120);
-  });
-  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
+  /* 로딩 무한 반복 방지: 전체 DOM MutationObserver 제거
+     - 기존 v1은 select 옵션을 다시 그릴 때 MutationObserver가 다시 실행되어
+       일부 브라우저에서 계속 로딩/멈춤 현상이 발생할 수 있음.
+     - 초기 지연 실행 + 저장/등록/검토/승인 버튼 클릭 시 재적용만 유지. */
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(window.applyAllSignPermissions, 200); });
   else setTimeout(window.applyAllSignPermissions, 200);
   [500, 1200, 2500, 4000].forEach(function(ms){ setTimeout(function(){ TYPES.forEach(applyType); }, ms); });
