@@ -12776,8 +12776,16 @@ body {
   document.addEventListener('click', function(e){
     var btn = e.target && e.target.closest && e.target.closest('button');
     if(!btn) return;
+    // 사이드 메뉴 클릭 제외
+    if (
+      btn.classList.contains('nav-item') ||
+      btn.closest('.sidebar') ||
+      btn.dataset.page
+    ) return;
+
+    // 실제 결재 버튼만 검사
     var text = clean(btn.textContent || '');
-    if(!/(저장|등록|작성|검토|승인)/.test(text)) return;
+    if(!/(저장|검토|승인)$/.test(text)) return;
     var bad = false;
     Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id$="_reviewer"],select.sign-sel[id$="_approver"]'), function(sel){
       if(bad) return;
