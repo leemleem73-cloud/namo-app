@@ -11544,117 +11544,233 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<!-- 받은 작업지시서: 확인->비고, 상세보기 옆 인쇄 추가 패치 -->
-<script>
-(function(){
-  function esc(v){return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
-  function pick(o, keys, def){
-    o=o||{};
-    for(var i=0;i<keys.length;i++){
-      if(o[keys[i]] != null && String(o[keys[i]]).trim() !== '') return o[keys[i]];
-    }
-    return def;
-  }
-  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-  function allOrders(){
-    var keys=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
-    var out=[];
-    keys.forEach(function(k){out=out.concat(readArr(k));});
-    var seen={};
-    return out.filter(function(x){
-      var id=String(pick(x,['uid','id','woNo','no','workNo'],''));
-      if(!id || seen[id]) return false;
-      seen[id]=1;
-      return true;
-    });
-  }
-  function findOrder(id){
-    id=String(id);
-    return allOrders().filter(function(x){return String(pick(x,['uid','id','woNo','no','workNo'],''))===id;})[0];
-  }
-  function normalizeOrder(x){
-    x=x||{};
-    return {
-      no:pick(x,['woNo','no','workNo','orderNo','id'],'-'),
-      status:pick(x,['status','state'],'-'),
-      product:pick(x,['productName','product','prodName','title'],'-'),
-      code:pick(x,['productCode','prodCode'],'-'),
-      lot:pick(x,['prodLot','lot','lotNo'],'-'),
-      plan:pick(x,['planQty','plannedQty','plan'],'-'),
-      actual:pick(x,['actualQty','actual','inputQty'],'-'),
-      sender:pick(x,['senderText','sender','writer','createdBy'],'-'),
-      receiver:pick(x,['receiverText','receiver','recv','to'],'-'),
-      ref:pick(x,['refText','reference','ref','cc'],'-'),
-      date:pick(x,['sendTime','createdAt','date','sentAt'],'-'),
-      instruction:pick(x,['instruction','workInstruction','note','content'],'-'),
-      sendNote:pick(x,['sendNote','remark','memo','comment'],'-'),
-      materials:Array.isArray(x.materials)?x.materials:[]
-    };
-  }
-  function patchHeaders(){
-    document.querySelectorAll('#page-workorder-inbox th, #page-workorder-reference th').forEach(function(th){
-      if(th.textContent.trim()==='확인') th.textContent='비고';
-    });
-  }
-    function patchActionCells(){
-    document.querySelectorAll('#page-workorder-inbox tbody tr, #page-workorder-reference tbody tr').forEach(function(tr){
-      var tds=tr.querySelectorAll('td');
-      if(!tds.length) return;
-      var last=tds[tds.length-1];
-      if(last.textContent.trim()==='확인') last.textContent='';
-    });
-  }
-  function patchTable(){patchHeaders();patchActionCells();}
-      var mo=new MutationObserver(function(){patchTable();});
-  function boot(){patchTable(); if(document.body) mo.observe(document.body,{childList:true,subtree:true});}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-  setTimeout(patchTable,300);setTimeout(patchTable,1000);setTimeout(patchTable,2000);
-})();
-</script>
 
-
-<!-- 받은 작업지시서: 상세보기 옆 인쇄 버튼 기능 추가 v20260528 -->
+<!-- 받은 작업지시서: 비고 헤더 정리 + 상세보기 삭제 + 인쇄 정상화 v20260528-final -->
 <script>
 (function(){
   'use strict';
-  function closest(el,sel){return el&&el.closest?el.closest(sel):null;}
-  function addPrintButtons(){
-    document.querySelectorAll('#page-workorder-inbox .nmc-row-actions, #page-workorder-reference .nmc-row-actions').forEach(function(box){
-      if(box.querySelector('[data-nmc-inbox-print]')) return;
-      var viewBtn=box.querySelector('[data-nmc-open-inbox]');
-      if(!viewBtn) return;
-      var btn=document.createElement('button');
-      btn.type='button';
-      btn.className='nmc-small-btn';
-      btn.textContent='인쇄';
-      btn.setAttribute('data-nmc-inbox-print', viewBtn.getAttribute('data-nmc-open-inbox')||'');
-      btn.setAttribute('data-nmc-inbox-type', viewBtn.getAttribute('data-nmc-inbox-type')||'inbox');
-      viewBtn.insertAdjacentElement('afterend', btn);
+
+  var STORAGE_KEYS = [
+    'nmc_workorder_sent_items',
+    'nmcWorkOrders',
+    'workOrders',
+    'workOrderHistory',
+    'nmcWorkorderHistory',
+    'nmcSentWorkorders'
+  ];
+
+  function q(sel, root){ return (root || document).querySelector(sel); }
+  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
     });
   }
-  function printWorkOrder(btn){
-    var uid=btn.getAttribute('data-nmc-inbox-print')||'';
-    var type=btn.getAttribute('data-nmc-inbox-type')||'inbox';
-    var open=document.querySelector('[data-nmc-open-inbox="'+CSS.escape(uid)+'"][data-nmc-inbox-type="'+CSS.escape(type)+'"]');
-    if(open) open.click();
-    setTimeout(function(){ window.print(); }, 350);
+  function pick(o, keys, def){
+    o = o || {};
+    for(var i=0;i<keys.length;i++){
+      var v = o[keys[i]];
+      if(v != null && String(v).trim() !== '') return v;
+    }
+    return def == null ? '' : def;
   }
-  document.addEventListener('click',function(e){
-    var btn=closest(e.target,'[data-nmc-inbox-print]');
+  function readArr(key){
+    try{
+      var v = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(v) ? v : [];
+    }catch(e){ return []; }
+  }
+  function idOf(o){
+    return String(pick(o, ['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo'], '')).trim();
+  }
+  function allOrders(){
+    var out = [];
+    STORAGE_KEYS.forEach(function(k){ out = out.concat(readArr(k)); });
+    [window.nmcWorkOrders, window.workOrders, window.workOrderHistory, window.nmcSentWorkorders].forEach(function(arr){
+      if(Array.isArray(arr)) out = out.concat(arr);
+    });
+
+    var map = {};
+    out.forEach(function(x){
+      if(!x || typeof x !== 'object') return;
+      var id = idOf(x);
+      if(!id) return;
+      map[id] = Object.assign({}, map[id] || {}, x);
+      if(Array.isArray(x.materials) && x.materials.length) map[id].materials = x.materials;
+    });
+    return Object.keys(map).map(function(k){ return map[k]; });
+  }
+  function findOrder(id){
+    id = String(id || '').trim();
+    var arr = allOrders();
+    for(var i=0;i<arr.length;i++){
+      if(idOf(arr[i]) === id) return arr[i];
+    }
+    return null;
+  }
+  function normalizeOrder(x){
+    x = x || {};
+    return {
+      no: pick(x, ['woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'], '-'),
+      status: pick(x, ['status','state'], '-'),
+      product: pick(x, ['productName','product','prodName','itemName','item','title','nmcProdName'], '-'),
+      code: pick(x, ['productCode','prodCode','code','nmcProdCode'], '-'),
+      lot: pick(x, ['prodLot','productionLot','lot','lotNo','nmcProdLot'], '-'),
+      plan: pick(x, ['planQty','plannedQty','plan','nmcPlanQty'], '-'),
+      actual: pick(x, ['actualQty','actual','inputQty','nmcActualQty'], '-'),
+      planType: pick(x, ['planType','nmcPlanType'], '-'),
+      orderDate: pick(x, ['orderDate','workDate','date','nmcOrderDate'], '-'),
+      reqDept: pick(x, ['reqDept','requestDept','dept','nmcReqDept'], '-'),
+      worker: pick(x, ['worker','operator','nmcWorker'], '-'),
+      sender: pick(x, ['senderText','senderName','sender','writer','createdBy'], '-'),
+      receiver: pick(x, ['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'], '-'),
+      ref: pick(x, ['refText','reference','refDept','ref','cc','refNames','refTargets'], '-'),
+      date: pick(x, ['sendTime','sentAt','createdAt','updatedAt','date'], '-'),
+      instruction: pick(x, ['instruction','workInstruction','nmcInstruction','note','content'], '-'),
+      sendNote: pick(x, ['sendNote','sendMemo','remark','memo','comment'], '-'),
+      materials: Array.isArray(x.materials) ? x.materials : []
+    };
+  }
+  function materialRows(materials){
+    if(!materials || !materials.length){
+      return '<tr><td colspan="7" style="text-align:center;color:#777">투입 원료 정보가 없습니다.</td></tr>';
+    }
+    return materials.map(function(m,i){
+      m = m || {};
+      return '<tr>'
+        + '<td style="text-align:center">'+(i+1)+'</td>'
+        + '<td>'+esc(pick(m,['name','materialName','rawName','rawMaterialName'],'-'))+'</td>'
+        + '<td>'+esc(pick(m,['lot','materialLot','lotNo','rawLot'],'-'))+'</td>'
+        + '<td style="text-align:right">'+esc(pick(m,['planQty','plannedQty','planInputQty','plannedInputQty'],'0'))+' kg</td>'
+        + '<td style="text-align:right">'+esc(pick(m,['actualQty','qty','inputQty','actualInputQty','realInputQty'],'0'))+' kg</td>'
+        + '<td style="text-align:right">'+esc(pick(m,['ratio','rate','percent'],'0'))+' %</td>'
+        + '<td>'+esc(pick(m,['note','remark','memo'],''))+'</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function patchHeaders(){
+    qa('#page-workorder-inbox th, #page-workorder-reference th').forEach(function(th){
+      if(th.textContent.trim() === '확인') th.textContent = '비고';
+    });
+  }
+
+  function patchActionCells(){
+    qa('#page-workorder-inbox tbody tr, #page-workorder-reference tbody tr').forEach(function(tr){
+      var tds = tr.querySelectorAll('td');
+      if(!tds.length) return;
+      var last = tds[tds.length - 1];
+      if(last.textContent.trim() === '확인') last.textContent = '';
+    });
+  }
+
+  function patchButtons(){
+    qa('#page-workorder-inbox .nmc-row-actions, #page-workorder-reference .nmc-row-actions').forEach(function(box){
+      var viewBtn = q('[data-nmc-open-inbox]', box);
+      if(!viewBtn) return;
+
+      var uid = viewBtn.getAttribute('data-nmc-open-inbox') || '';
+      var type = viewBtn.getAttribute('data-nmc-inbox-type') || 'inbox';
+
+      viewBtn.remove();
+
+      var printBtn = q('[data-nmc-inbox-print]', box);
+      if(!printBtn){
+        printBtn = document.createElement('button');
+        printBtn.type = 'button';
+        printBtn.className = 'nmc-small-btn';
+        printBtn.textContent = '인쇄';
+        printBtn.setAttribute('data-nmc-inbox-print', uid);
+        printBtn.setAttribute('data-nmc-inbox-type', type);
+
+        var delBtn = q('[data-nmc-row-delete], .sb.del, .nmc-small-btn.danger', box);
+        if(delBtn) box.insertBefore(printBtn, delBtn);
+        else box.appendChild(printBtn);
+      }else{
+        printBtn.setAttribute('data-nmc-inbox-print', uid);
+        printBtn.setAttribute('data-nmc-inbox-type', type);
+      }
+    });
+  }
+
+  function patchAll(){
+    patchHeaders();
+    patchActionCells();
+    patchButtons();
+  }
+
+  function makePrintTarget(item){
+    var n = normalizeOrder(item);
+    var old = document.getElementById('printTarget');
+    if(old) old.remove();
+
+    var loginName = '-';
+    try{
+      loginName = (window.currentUser && (window.currentUser.name || window.currentUser.email)) ||
+                  (window.state && window.state.currentUser && (window.state.currentUser.name || window.state.currentUser.email)) ||
+                  '임흥배';
+    }catch(e){ loginName = '임흥배'; }
+
+    var el = document.createElement('div');
+    el.id = 'printTarget';
+    el.innerHTML =
+      '<div class="rsheet">'
+      + '<div class="rhdr">'
+      +   '<div><h2>작업지시서</h2><div class="rbsub">Namochemical QMS</div></div>'
+      +   '<div><div class="rbsub">작업지시번호</div><div class="rbname">'+esc(n.no)+'</div></div>'
+      + '</div>'
+      + '<table><tbody>'
+      + '<tr><th>작업지시번호</th><td>'+esc(n.no)+'</td><th>상태</th><td>'+esc(n.status)+'</td><th>지시일자</th><td>'+esc(n.orderDate)+'</td></tr>'
+      + '<tr><th>제품명</th><td>'+esc(n.product)+'</td><th>제품코드</th><td>'+esc(n.code)+'</td><th>생산 LOT</th><td>'+esc(n.lot)+'</td></tr>'
+      + '<tr><th>계획수량</th><td>'+esc(n.plan)+' kg</td><th>실투입량</th><td>'+esc(n.actual)+' kg</td><th>계획구분</th><td>'+esc(n.planType)+'</td></tr>'
+      + '<tr><th>작성/발송자</th><td>'+esc(n.sender)+'</td><th>수신</th><td>'+esc(n.receiver)+'</td><th>참조</th><td>'+esc(n.ref)+'</td></tr>'
+      + '<tr><th>요청부서</th><td>'+esc(n.reqDept)+'</td><th>작업자</th><td>'+esc(n.worker)+'</td><th>발송일시</th><td>'+esc(n.date)+'</td></tr>'
+      + '</tbody></table>'
+      + '<h4 style="margin:16px 0 8px">작업 지시 사항</h4>'
+      + '<div style="border:1px solid #999;min-height:78px;padding:10px;white-space:pre-wrap;line-height:1.6">'+esc(n.instruction)+'</div>'
+      + '<h4 style="margin:16px 0 8px">발송 비고</h4>'
+      + '<div style="border:1px solid #bbb;min-height:48px;padding:10px;white-space:pre-wrap;line-height:1.6">'+esc(n.sendNote)+'</div>'
+      + '<h4 style="margin:16px 0 8px">투입 원료</h4>'
+      + '<table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT 번호</th><th>계획투입량</th><th>실투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'
+      + materialRows(n.materials)
+      + '</tbody></table>'
+      + '<div class="print-user-info">출력자: '+esc(loginName)+'<br>출력일시: '+esc(new Date().toLocaleString('ko-KR'))+'</div>'
+      + '</div>';
+    document.body.appendChild(el);
+  }
+
+  function printOrderById(id){
+    var item = findOrder(id);
+    if(!item){
+      alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');
+      return;
+    }
+    makePrintTarget(item);
+    setTimeout(function(){ window.print(); }, 80);
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('[data-nmc-inbox-print]') : null;
     if(!btn) return;
     e.preventDefault();
     e.stopPropagation();
-    printWorkOrder(btn);
-  },true);
-  var mo=new MutationObserver(addPrintButtons);
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    printOrderById(btn.getAttribute('data-nmc-inbox-print'));
+    return false;
+  }, true);
+
+  var observer = new MutationObserver(function(){ patchAll(); });
   function boot(){
-    addPrintButtons();
-    if(document.body) mo.observe(document.body,{childList:true,subtree:true});
+    patchAll();
+    if(document.body) observer.observe(document.body, {childList:true, subtree:true});
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-  [300,800,1600,3000].forEach(function(ms){setTimeout(addPrintButtons,ms);});
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  [300, 800, 1600, 3000].forEach(function(ms){ setTimeout(patchAll, ms); });
 })();
 </script>
+
 
 </body>
 </html>
