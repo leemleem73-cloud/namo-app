@@ -5,9 +5,12 @@
 <title>Namochemical QMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+</script>
 <style>
 :root{
   --bg:#f0f2f5;--sf:#fff;--s2:#f8f9fb;--bd:#e4e7ed;--bd2:#d0d5de;
@@ -3409,10 +3412,8 @@ function pickRecordDate(r){
 
 
 function generateNmDocNo(){
-  const d=new Date();
-  const yyyy=d.getFullYear();
-  const mm=String(d.getMonth()+1).padStart(2,'0');
-  const dd=String(d.getDate()).padStart(2,'0');
+  const kst=todayKST();
+  const [yyyy,mm,dd]=kst.split('-');
   const key=`nmSerial_${yyyy}${mm}${dd}`;
   let seq=parseInt(localStorage.getItem(key)||'0',10)+1;
   localStorage.setItem(key,String(seq));
@@ -4114,7 +4115,11 @@ function syncOqcPreview(){
 
 /* ═══ WORKLOG LINKAGE ═══ */
 function updateWorklogLinkage(){
-  const lot=($('worklogFinishedLot').value||'').trim().toLowerCase();const box=$('worklogLinkBox');
+  const lotEl=$('worklogFinishedLot');
+  const box=$('worklogLinkBox');
+  const rowsEl=$('worklogLinkRows');
+  if(!lotEl||!box||!rowsEl) return;
+  const lot=(lotEl.value||'').trim().toLowerCase();
   if(!lot){box.style.display='none';return;}
   const iq=state.incoming.filter(r=>(r.lot||'').toLowerCase()===lot);
   const pq=state.process.filter(r=>(r.lot||'').toLowerCase()===lot);
@@ -4122,7 +4127,7 @@ function updateWorklogLinkage(){
   const all=[...iq.map(r=>({type:'IQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])})),...pq.map(r=>({type:'PQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])})),...oq.map(r=>({type:'OQC',lot:r.lot,date:r.date,judge:calcJ(r.items||[])}))];
   if(!all.length){box.style.display='none';return;}
   box.style.display='block';
-  $('worklogLinkRows').innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
+  rowsEl.innerHTML=all.map(x=>`<div class="lkrow"><span class="lktype">${x.type}</span><span class="lklot">${esc(x.lot)}</span>${jBadge(x.judge)}<span style="margin-left:8px;color:var(--t3);font-size:12px;">${x.date||'-'}</span></div>`).join('');
 }
 
 /* ═══ 성적서 페이지 ═══ */
@@ -4284,16 +4289,20 @@ async function printEl(el){
   await appendPrintUserInfo(clone);
   document.body.appendChild(clone);
 
-  setTimeout(()=>{
-    window.print();
-  },300);
-
-  window.onafterprint = ()=>{
-    document.querySelectorAll('#printTarget').forEach(x=>{
-      x.remove();
-    });
-    window.onafterprint = null;
+  const cleanupPrintTarget=()=>{
+    document.querySelectorAll('#printTarget').forEach(x=>{ x.remove(); });
+    window.removeEventListener('afterprint', cleanupPrintTarget);
+    clearTimeout(window.__namoPrintCleanupTimer);
   };
+  window.addEventListener('afterprint', cleanupPrintTarget, {once:true});
+  clearTimeout(window.__namoPrintCleanupTimer);
+  window.__namoPrintCleanupTimer=setTimeout(cleanupPrintTarget, 30000);
+
+  setTimeout(()=>{
+    try{ window.print(); } finally {
+      setTimeout(()=>{ if(!document.hidden) cleanupPrintTarget(); }, 1500);
+    }
+  },300);
 }
 
 /* ═══ LOAD DATA ═══ */
@@ -4663,13 +4672,12 @@ function setDonutSegments(key,total,parts){
 function isTrainingDone(r){
   const raw=[r?.status,r?.approvalStatus,r?.approval_status,r?.state,r?.result,r?.signStatus,r?.sign_status].map(v=>String(v||'')).join(' ').toLowerCase();
   const signApprover = r?.signApprover || r?.sign_approver || r?.approver || {};
-  const signReviewer = r?.signReviewer || r?.sign_reviewer || r?.reviewer || {};
   const approvedBy = r?.approvedBy || r?.approved_by || '';
   const approvedAt = r?.approvedAt || r?.approved_at || '';
   if(/반려|reject|취소|cancel/.test(raw)) return false;
   if(/완료|승인|approved|complete|done|closed/.test(raw)) return true;
   if(approvedBy || approvedAt) return true;
-  if(signApprover && (signApprover.name || signApprover.email || signApprover.date || signApprover.signedAt)) return true;
+  if(signApprover && Object.keys(signApprover).length && (signApprover.name || signApprover.email || signApprover.date || signApprover.signedAt || signApprover.signDate)) return true;
   if(signReviewer && signApprover && (signReviewer.name || signReviewer.email) && (signApprover.name || signApprover.email)) return true;
   return false;
 }
@@ -4804,7 +4812,10 @@ function renderCharts(){
   let y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear());
   const allTrendRows=[...(Array.isArray(state.incoming)?state.incoming:[]),...(Array.isArray(state.process)?state.process:[]),...(Array.isArray(state.shipment)?state.shipment:[])];
   const availableYears=[...new Set(allTrendRows.map(r=>recordDateOf(r).slice(0,4)).filter(v=>/^\d{4}$/.test(v)))].map(Number).sort((a,b)=>b-a);
-  if(availableYears.length && !allTrendRows.some(r=>recordDateOf(r).startsWith(String(y)))) y=availableYears[0];
+  if(availableYears.length && !allTrendRows.some(r=>recordDateOf(r).startsWith(String(y)))){
+    y=availableYears[0];
+    if($('dashYear')) $('dashYear').value=String(y);
+  }
   const mode=window.qmesTrendMode||'month';
 
   const makeGradient=(ctx,color)=>{
@@ -5077,7 +5088,7 @@ function spcFlatValues(rows=spcRows()){
 function spcGetSpec(){const item=$('spcItem')?.value||'Dmax';const base=SPC_SPECS[item]||SPC_SPECS['Dmax'];return {...base,item,lsl:$('spcLsl')?.value===''?NaN:Number($('spcLsl')?.value),target:$('spcTarget')?.value===''?NaN:Number($('spcTarget')?.value),usl:$('spcUsl')?.value===''?NaN:Number($('spcUsl')?.value),unit:$('spcUnit')?.value||base.unit,criteria:Number($('spcCpkStd')?.value||1.33),n:Number($('spcSubgroup')?.value||5),A2:Number($('spcA2')?.value||0.577),D3:Number($('spcD3')?.value||0),D4:Number($('spcD4')?.value||2.115),d2:Number($('spcD2')?.value||2.326)};}
 function applySpcSpec(){const item=$('spcItem')?.value||'Dmax';const spec=SPC_SPECS[item]||SPC_SPECS['Dmax'];if($('spcLsl'))$('spcLsl').value=spec.lsl;if($('spcTarget'))$('spcTarget').value=spec.target;if($('spcUsl'))$('spcUsl').value=spec.usl;if($('spcUnit'))$('spcUnit').value=spec.unit;if($('spcProcess'))$('spcProcess').value=spec.spec;if($('spcReportNo')&&!$('spcReportNo').value)$('spcReportNo').value=spec.report;if($('spcSpecText'))$('spcSpecText').textContent=spec.spec;const n=Number($('spcSubgroup')?.value||5);const c=SPC_CONST[n]||SPC_CONST[5];if($('spcA2'))$('spcA2').value=c.A2;if($('spcD3'))$('spcD3').value=c.D3;if($('spcD4'))$('spcD4').value=c.D4;if($('spcD2'))$('spcD2').value=c.d2;spcRecalc(false);}
 function parseSpcValues(){const txt=($('spcValues')?.value||'').replace(/,/g,' ');return txt.split(/[\s\t\n\r]+/).map(x=>x.trim()).filter(Boolean).map(x=>Number(x)).filter(Number.isFinite);}
-function spcSetRowsFromFlat(values,lots=[]){const n=Number($('spcSubgroup')?.value||5);state.spcRows=[];for(let i=0;i<values.length;i+=n){const g=values.slice(i,i+n);if(g.length){state.spcRows.push({lot:lots[Math.floor(i/n)]||$('spcLot')?.value||'',values:g,remark:''});}}if($('spcK'))$('spcK').value=state.spcRows.length;renderSpcRawTable();spcRecalc(false);}
+function spcSetRowsFromFlat(values,lots=[]){const n=Number($('spcSubgroup')?.value||5);state.spcRows=[];for(let i=0;i<values.length;i+=n){const g=values.slice(i,i+n);if(g.length===n){state.spcRows.push({lot:lots[Math.floor(i/n)]||$('spcLot')?.value||'',values:g,remark:''});}}if($('spcK'))$('spcK').value=state.spcRows.length;renderSpcRawTable();spcRecalc(false);}
 function spcSpecOK(values,spec){if(spec.mode==='overflow')return values.every(v=>v===0||v>=spec.lsl);return values.every(v=>(!Number.isFinite(spec.lsl)||v>=spec.lsl)&&(!Number.isFinite(spec.usl)||v<=spec.usl));}
 function calcSpc(rows=spcRows(),spec=spcGetSpec()){
   const values=spcFlatValues(rows);const n=values.length;if(n<2)return null;
@@ -5261,7 +5272,9 @@ function buildLocalTraceRows(keyword){
     });
   });
   (state.incoming||[]).forEach(r=>{
-    if(!kw || [r.lot,r.supplier,r.item].some(v=>includesKw(v,kw))){
+    const iqcLot=normLot(r.lot);
+    const duplicatedByWorklog=iqcLot&&rows.some(x=>x.source==='worklog'&&(normLot(x.lotNo)===iqcLot||normLot(x.finishedLot)===iqcLot));
+    if(!duplicatedByWorklog && (!kw || [r.lot,r.supplier,r.item].some(v=>includesKw(v,kw)))){
       rows.push({workDate:r.date,finishedLot:r.lot,worker:'IQC',seq:'IQC',material:r.item||'입고검사',supName:r.supplier||'',lotNo:r.lot||'',inputQty:r.incomingQty||r.qty||'',inputTime:'',source:'iqc'});
     }
   });
@@ -6163,6 +6176,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   });
 })();
 
+
 </script>
 <script>
 /* ═══ 측정시스템 분석(MSA / Gauge R&R) 안정화 모듈 v24 ═══ */
@@ -6674,7 +6688,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     ['Man','Machine','Material','Method','Measurement','Environment'].forEach(k=>{if($id('ncFish'+k))$id('ncFish'+k).value=ext.fishbone?.[k]||'';});
     ncPhotos = Array.isArray(ext.photos) ? JSON.parse(JSON.stringify(ext.photos)) : [];
     ncCapaRows = Array.isArray(ext.capaRows) ? JSON.parse(JSON.stringify(ext.capaRows)) : [];
-    renderNcPhotos(); renderNcCapaRows();
+    if(typeof renderNcPhotos==='function' && $id('ncPhotoGrid')) renderNcPhotos();
+    if(typeof renderNcCapaRows==='function' && $id('ncCapaBody')) renderNcCapaRows();
   }
 
   const oldSaveNc = (typeof saveNc === 'function') ? saveNc : null;
@@ -6821,6 +6836,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(initEnterpriseNcr,150));
   else setTimeout(initEnterpriseNcr,150);
 })();
+
 
 </script>
 
@@ -7275,6 +7291,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200)); else setTimeout(init,200);
 })();
+
 </script>
 
 
@@ -8397,7 +8414,7 @@ body {
       var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
       if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
       var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
-      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      if(actBtn){e.preventDefault();e.stopImmediatePropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
       var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
       if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
       if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
@@ -8749,6 +8766,7 @@ body {
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
+
 </script>
 
 
@@ -9124,6 +9142,7 @@ body {
   });
   [300,900,1800,3500].forEach(ms => setTimeout(() => refreshAll(false), ms));
 })();
+
 </script>
 
 
@@ -9361,6 +9380,7 @@ body {
   window.addEventListener('load', () => [0,300,900,1800,3500].forEach(ms => setTimeout(() => refresh(ms===0), ms)));
   [300,900,1800,3500].forEach(ms => setTimeout(() => refresh(false), ms));
 })();
+
 </script>
 
 
@@ -9620,6 +9640,7 @@ body {
   window.addEventListener('load', () => [0,250,800,1600,3000].forEach(ms => setTimeout(() => refresh(ms===0), ms)));
   [300,900,1800,3500].forEach(ms => setTimeout(() => refresh(false), ms));
 })();
+
 </script>
 
 <script>
@@ -9872,6 +9893,7 @@ body {
   window.qmsRefreshSignatures = function(){ TYPES.forEach(t => { if($(`signGrid_${t}`)) build(t, null); }); };
   window.addEventListener('load', function(){ setTimeout(window.qmsRefreshSignatures, 500); });
 })();
+
 </script>
 
 
@@ -10210,6 +10232,7 @@ body {
     setTimeout(applyAll, 1800);
   });
 })();
+
 </script>
 
 
@@ -10410,6 +10433,7 @@ body {
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
 })();
+
 </script>
 
 
@@ -10586,6 +10610,7 @@ body {
   window.addEventListener('load',function(){setTimeout(applyAll,200);setTimeout(applyAll,800);setTimeout(applyAll,1800);});
   if(document.readyState!=='loading') setTimeout(applyAll,0); else document.addEventListener('DOMContentLoaded',applyAll);
 })();
+
 </script>
 
 <style id="nmc-workorder-inbox-patch-style">
@@ -10713,6 +10738,7 @@ body {
   function init(){ensureNav();ensurePages();bind();setTimeout(function(){ensureNav();ensurePages();},900);setTimeout(function(){ensureNav();ensurePages();},2200);} 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
+
 </script>
 
 
@@ -10751,7 +10777,7 @@ body {
   function setStatus(type,action){try{var info=docInfo(type),key=statusKey(info),u=me(),map=read(STATUS_STORE,{});map[key]={type:type,action:action,user:u.name,title:u.title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);pushNoti(info,action,targetFor(type,action));updateActionBars();toast(({submit:'검토 요청 알림이 등록되었습니다.',review:'검토 완료 후 승인자에게 알림이 등록되었습니다.',approve:'승인 완료 알림이 작성자에게 등록되었습니다.',reject:'반려 알림이 작성자에게 등록되었습니다.'}[action])||'처리되었습니다.');}catch(e){console.warn('[namo-report-notify] setStatus',e);}}
   function addActionBar(type){var grid=$id('signGrid_'+type);if(!grid||grid.querySelector('.namo-report-actbar'))return;var bar=document.createElement('div');bar.className='namo-report-actbar';bar.setAttribute('data-namo-report-actbar',type);bar.innerHTML='<span class="label">결재 처리</span><button type="button" class="namo-report-action review" data-report-action="review">검토</button><button type="button" class="namo-report-action approve" data-report-action="approve">승인</button><button type="button" class="namo-report-action reject" data-report-action="reject">반려</button><span class="namo-report-status">작성 저장 시 검토자에게 알림 자동 생성</span>';bar.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var btn=t.closest('[data-report-action]');if(!btn)return;e.preventDefault();setStatus(type,btn.getAttribute('data-report-action'));});grid.appendChild(bar);}
   function updateActionBars(){try{var map=read(STATUS_STORE,{});TYPES.forEach(function(type){addActionBar(type);var bar=qs('[data-namo-report-actbar="'+type+'"]');if(!bar)return;var info=docInfo(type),st=map[statusKey(info)],span=qs('.namo-report-status',bar);if(span){var label=st?({submit:'검토 요청',review:'검토 완료',approve:'승인 완료',reject:'반려'}[st.action]||st.action):'작성 저장 시 검토자에게 알림 자동 생성';span.className='namo-report-status '+(st?st.action:'');span.textContent=st?(label+' · '+st.user+' · '+st.time):'작성 저장 시 검토자에게 알림 자동 생성';}});}catch(e){console.warn('[namo-report-notify] updateActionBars',e);}}
-  function wrapSave(name,type){var old=window[name];if(typeof old!=='function'||old.__namoReportNotifyWrappedSafe)return;var fn=function(){var info=docInfo(type),ret;try{ret=old.apply(this,arguments);}catch(e){throw e;}var after=function(){try{pushNoti(info,'submit',targetFor(type,'submit'));var map=read(STATUS_STORE,{});map[statusKey(info)]={type:type,action:'submit',user:me().name,title:me().title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);updateActionBars();toast(info.label+' 저장 후 검토자에게 알림이 등록되었습니다.');}catch(e){console.warn('[namo-report-notify] save hook',e);}};if(ret&&typeof ret.then==='function')ret.then(after).catch(function(e){console.warn(e);});else setTimeout(after,0);return ret;};fn.__namoReportNotifyWrappedSafe=true;window[name]=fn;}
+  function wrapSave(name,type){var old=window[name];if(typeof old!=='function'||old.__namoSaveWrappedUnified||old.__namoReportNotifyWrappedSafe)return;var fn=function(){var info=docInfo(type),ret;try{ret=old.apply(this,arguments);}catch(e){throw e;}var after=function(){try{pushNoti(info,'submit',targetFor(type,'submit'));var map=read(STATUS_STORE,{});map[statusKey(info)]={type:type,action:'submit',user:me().name,title:me().title,time:now(),docNo:info.docNo,lot:info.lot,item:info.item};write(STATUS_STORE,map);updateActionBars();toast(info.label+' 저장 후 검토자에게 알림이 등록되었습니다.');}catch(e){console.warn('[namo-report-notify] save hook',e);}};if(ret&&typeof ret.then==='function')ret.then(after).catch(function(e){console.warn(e);});else setTimeout(after,0);return ret;};fn.__namoReportNotifyWrappedSafe=true;fn.__namoSaveWrappedUnified=true;window[name]=fn;}
   function patchButtons(){[['incomingSave','iqc'],['processSave','pqc'],['shipmentSave','oqc']].forEach(function(p){var btn=$id(p[0]);if(!btn||btn.__namoDirectNotifyBoundSafe)return;btn.__namoDirectNotifyBoundSafe=true;btn.addEventListener('click',function(){setTimeout(function(){renderPanel(false);updateActionBars();},600);},true);});}
   function init(){try{ensureUI();renderPanel(false);updateActionBars();patchButtons();wrapSave('saveIqc','iqc');wrapSave('savePqc','pqc');wrapSave('saveOqc','oqc');}catch(e){console.warn('[namo-report-notify] init',e);}}
   document.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('.nav-item,.ltab,#loginBtn,#signupBtn'))setTimeout(init,300);},true);
@@ -10761,6 +10787,7 @@ body {
   setTimeout(init,500);setTimeout(init,1600);
   window.namoReportApprovalNotifyRefresh=init;
 })();
+
 </script>
 
 
@@ -10878,6 +10905,7 @@ body {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
   setTimeout(refresh,600);setTimeout(refresh,1600);setInterval(function(){ensureFormBar();patchRows();},3000);
 })();
+
 </script>
 
 <!-- 통합 알림 1개 처리 패치: 작업지시서/교육보고서/부적합보고서/CAPA 작성·검토·승인 -->
@@ -10992,6 +11020,7 @@ body {
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){render(false);}); else render(false);
   setInterval(render, 3000);
 })();
+
 </script>
 
 
@@ -11139,6 +11168,7 @@ body {
   setTimeout(boot, 1200);
   setTimeout(boot, 2600);
 })();
+
 </script>
 
 
@@ -11497,6 +11527,7 @@ body {
   window.nmcSaveWorkOrderHistoryV4=saveCurrentWorkOrder;
   window.nmcRenderWorkOrderHistoryV4=renderHistory;
 })();
+
 </script>
 
 
@@ -11710,6 +11741,7 @@ body {
   else boot();
   [300,800,1600,3000].forEach(function(ms){ setTimeout(boot, ms); });
 })();
+
 </script>
 
 
@@ -11927,7 +11959,7 @@ body {
       var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
       if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
       var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
-      if(actBtn){act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      if(actBtn){e.preventDefault();e.stopImmediatePropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
       var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
       if(openBtn){openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
       if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
@@ -11956,6 +11988,7 @@ body {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
 })();
+
 </script>
 
 
@@ -12025,7 +12058,7 @@ body {
   }
   function wrapSave(fnName,type){
     var old=window[fnName];
-    if(typeof old!=='function'||old.__namoInboxOnlyWrapped) return;
+    if(typeof old!=='function'||old.__namoSaveWrappedUnified||old.__namoInboxOnlyWrapped) return;
     var wrapped=function(){
       var info=docInfo(type);var target=selectedSignUser(type,'reviewer')||selectedSignUser(type,'approver')||currentUser();
       var ret=old.apply(this,arguments);
@@ -12034,11 +12067,16 @@ body {
       return ret;
     };
     wrapped.__namoInboxOnlyWrapped=true;
+    wrapped.__namoSaveWrappedUnified=true;
     window[fnName]=wrapped;
   }
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest&&e.target.closest('[data-appr-act]');
     if(!btn) return;
+    if(e.__namoApprActHandled) return;
+    e.__namoApprActHandled=true;
+    e.preventDefault();
+    e.stopImmediatePropagation();
     setTimeout(function(){
       var type=btn.getAttribute('data-type')||'';var action=btn.getAttribute('data-appr-act')||'';var info={type:type,docNo:btn.getAttribute('data-id')||'',lot:'',item:''};
       notifyStores(info,action,currentUser());
@@ -12053,6 +12091,7 @@ body {
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
+
 </script>
 
 
@@ -12249,7 +12288,7 @@ body {
       var tab=e.target.closest&&e.target.closest('.approval-tab[data-approval-tab]');
       if(tab){currentTab=tab.getAttribute('data-approval-tab')||'all';qsa('.approval-tab').forEach(function(b){b.classList.remove('active');});tab.classList.add('active');renderInbox();return;}
       var actBtn=e.target.closest&&e.target.closest('[data-appr-act]');
-      if(actBtn){e.preventDefault();e.stopPropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
+      if(actBtn){e.preventDefault();e.stopImmediatePropagation();act(actBtn.getAttribute('data-type'),actBtn.getAttribute('data-id'),actBtn.getAttribute('data-appr-act'));return;}
       var openBtn=e.target.closest&&e.target.closest('[data-appr-open]');
       if(openBtn){e.preventDefault();e.stopPropagation();openDoc(openBtn.getAttribute('data-appr-open'),openBtn.getAttribute('data-id'));return;}
       if(e.target&&e.target.id==='approvalRefreshBtn'){refreshData().then(renderInbox);return;}
@@ -12258,9 +12297,9 @@ body {
     document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')renderInbox();},true);
   }
   function wrapSave(fnName){
-    var old=window[fnName]; if(typeof old!=='function'||old.__namoApprovalFinalFixWrapped) return;
+    var old=window[fnName]; if(typeof old!=='function'||old.__namoSaveWrappedUnified||old.__namoApprovalFinalFixWrapped) return;
     var wrapped=function(){var ret=old.apply(this,arguments);var after=function(){refreshData().then(renderInbox);}; if(ret&&typeof ret.then==='function')ret.then(after).catch(after); else setTimeout(after,120); return ret;};
-    wrapped.__namoApprovalFinalFixWrapped=true; window[fnName]=wrapped;
+    wrapped.__namoApprovalFinalFixWrapped=true; wrapped.__namoSaveWrappedUnified=true; window[fnName]=wrapped;
   }
   function boot(){
     ensurePage(); bind();
@@ -12271,6 +12310,7 @@ body {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.renderApprovalInbox=renderInbox;
 })();
+
 </script>
 
 
@@ -12477,6 +12517,7 @@ body {
     normalizeSendInfoDom(document);
   });
 })();
+
 </script>
 
 
@@ -12634,6 +12675,7 @@ body {
     mo.observe(document.documentElement, { childList:true, subtree:true });
   }
 })();
+
 </script>
 
 
@@ -12748,6 +12790,72 @@ body {
   if(document.documentElement) mo.observe(document.documentElement, { childList:true, subtree:true });
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyAll); else applyAll();
 })();
+
+
+/* ══════════════════════════════════
+   Critical Bug Consolidation Patch 20260528
+   - 결재 이벤트 단일 처리
+   - getSignPayload 최종 단일화
+   - 저장 래핑 공통 플래그
+══════════════════════════════════ */
+(function(){
+  if(window.__namoCriticalBugConsolidation20260528) return;
+  window.__namoCriticalBugConsolidation20260528 = true;
+
+  function sigData(type,role){
+    try{ return (typeof signature데이터==='function') ? signature데이터(type,role) : {}; }
+    catch(e){ return {}; }
+  }
+  function currentUserSafe(){
+    var s = (typeof state!=='undefined' && state) ? state : (window.state||{});
+    var u = s.currentUser || window.currentUser || window.loginUser || (Array.isArray(s.signableUsers)&&s.signableUsers[0]) || {};
+    var name = String(u.name || u.username || u.displayName || u.email || '').trim();
+    return {
+      id:String(u.id || u.user_id || u.email || name || 'login-user'),
+      name:name || '로그인 사용자',
+      title:String(u.title || u.position || u.roleName || u.role || ''),
+      department:String(u.department || u.dept || ''),
+      email:String(u.email || '')
+    };
+  }
+  function userFromSelect(type,role){
+    var s = (typeof state!=='undefined' && state) ? state : (window.state||{});
+    var sel = document.getElementById('sg_'+type+'_'+role);
+    var sig = sigData(type,role);
+    if(!sel || !sel.value){
+      if(role==='writer') return Object.assign(currentUserSafe(), sig);
+      return Object.assign({name:'',title:'',department:'',email:''}, sig);
+    }
+    var opt = sel.options && sel.options[sel.selectedIndex];
+    var list = Array.isArray(s.signableUsers) ? s.signableUsers : [];
+    var u = list.find(function(x){return String(x.id)===String(sel.value);});
+    if(!u && opt){
+      u = {
+        id:sel.value,
+        name:(opt.dataset&&opt.dataset.name)||String(opt.textContent||'').replace(/\s*\/\s*.*$/,'').trim(),
+        title:(opt.dataset&&opt.dataset.title)||'',
+        department:(opt.dataset&&opt.dataset.department)||'',
+        email:(opt.dataset&&opt.dataset.email)||''
+      };
+    }
+    if(!u) u = {id:sel.value,name:'',title:'',department:'',email:''};
+    return Object.assign({
+      id:u.id,
+      name:u.name || u.username || '',
+      title:u.title || u.position || '',
+      department:u.department || u.dept || '',
+      email:u.email || ''
+    }, sig);
+  }
+  window.getSignPayload = function(type){
+    return {
+      writer:userFromSelect(type,'writer'),
+      reviewer:userFromSelect(type,'reviewer'),
+      approver:userFromSelect(type,'approver')
+    };
+  };
+})();
+
 </script>
 </body>
 </html>
