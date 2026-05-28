@@ -12852,13 +12852,30 @@ body {
     // 실제 결재 버튼만 검사
     var text = clean(btn.textContent || '');
     if(!/(저장|검토|승인)$/.test(text)) return;
-    var bad = false;
-    Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id$="_reviewer"],select.sign-sel[id$="_approver"]'), function(sel){
-      if(bad) return;
-      var type = typeFromId(sel.id);
-      if(type && !validate(type, false)) bad = true;
-    });
-    if(bad){ e.preventDefault(); e.stopImmediatePropagation(); }
+
+    // 저장/검토/승인 시 현재 활성 화면의 결재란만 검사한다.
+    // 기존에는 IQC/PQC/OQC 전체 sign-sel을 순회하여 다른 화면의 미선택/중복값 때문에 저장이 막혔다.
+    var activePage = document.querySelector('.page.active');
+    var type = '';
+    if(activePage){
+      if(activePage.id === 'page-incoming') type = 'iqc';
+      else if(activePage.id === 'page-process') type = 'pqc';
+      else if(activePage.id === 'page-shipment') type = 'oqc';
+      else if(activePage.id === 'page-nc') type = 'nc';
+      else if(activePage.id === 'page-training') type = 'training';
+    }
+
+    // 활성 페이지를 판단할 수 없으면 클릭된 버튼 주변의 서명 select에서 type을 보조 추정한다.
+    if(!type){
+      var nearSel = btn.closest('.page') && btn.closest('.page').querySelector('select.sign-sel[id^="sg_"]');
+      type = nearSel ? typeFromId(nearSel.id) : '';
+    }
+
+    if(type && !validate(type, false)){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return false;
+    }
   }, true);
   var mo = new MutationObserver(function(){ clearTimeout(window.__qmsSeniorApprovalGuardTimer); window.__qmsSeniorApprovalGuardTimer = setTimeout(applyAll, 80); });
   if(document.documentElement) mo.observe(document.documentElement, { childList:true, subtree:true });
