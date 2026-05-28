@@ -4615,11 +4615,11 @@ async function loadAll데이터(){
 /* ═══ RENDER TABLES ═══ */
 function renderIncomingTable(){
   const tb=$('incomingTable');if(!state.incoming.length){tb.innerHTML=eRow(12);return;}
-  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.incoming.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.supplier||'')}</td><td>${esc(r.item||'')}</td><td>${r.incomingQty??''}</td><td>${r.checkQty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="${esc(stableDocId(x.type,r))}">수정</button><button class="sb del" data-action="deleteIncoming" data-id="${esc(stableDocId(x.type,r))}">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="${esc(stableDocId(x.type,r))}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderProcessTable(){
   const tb=$('processTable');if(!state.process.length){tb.innerHTML=eRow(11);return;}
-  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(r.id)}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
+  tb.innerHTML=state.process.map(r=>`<tr><td>${r.date||''}</td><td><strong>${esc(r.lot||'')}</strong></td><td>${esc(r.product||'')}</td><td>${esc(r.line||'')}</td><td>${r.qty??''}</td><td>${r.failQty??''}</td><td>${jBadge(calcJ(r.items||[]))}</td><td>${esc(r.signWriter?.name||'-')}</td><td>${esc(r.signReviewer?.name||'-')}</td><td>${esc(r.signApprover?.name||'-')}</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="${esc(stableDocId(x.type,r))}">수정</button><button class="sb del" data-action="deleteProcess" data-id="${esc(r.id)}">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="${esc(r.id)}">🏷라벨</button></div></td></tr>`).join('');
 }
 function renderShipmentTable(){
   const tb=$('shipmentTable');if(!state.shipment.length){tb.innerHTML=eRow(11);return;}
@@ -8339,7 +8339,33 @@ body {
     if(!nu.id&&!nu.email&&nu.name==='-') return {id:'login-user',name:'로그인 사용자',title:'',department:'',email:''};
     return nu;
   }
-  function docKey(type,r){return type+':'+String((r&&r.id)||'');}
+  function stableDocId(type,r){
+    if(!r) return '';
+    var v = r.id || r.docNo || r.reportNo || r.no || r.documentNo || r.lotNo || r.lot || '';
+    if(!v){
+      v = [type,r.date||r.inspectDate||r.createdAt||'',r.product||r.item||r.supplier||r.customer||'',r.lot||r.lotNo||''].join('|');
+    }
+    v = String(v || '').trim();
+    if(!v || v==='-' || v==='undefined' || v==='null'){
+      v = 'AUTO-'+type+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    }
+    if(!r.id) r.id = v;
+    return v;
+  }
+  function findDocById(type,arr,id){
+    id = String(id || '');
+    return (arr||[]).find(function(x){
+      var sid = String(stableDocId(type,x));
+      return sid===id ||
+        String(x.id||'')===id ||
+        String(x.docNo||'')===id ||
+        String(x.reportNo||'')===id ||
+        String(x.no||'')===id ||
+        String(x.lotNo||'')===id ||
+        String(x.lot||'')===id;
+    });
+  }
+  function docKey(type,r){return type+':'+stableDocId(type,r);}
   function statusMap(){return read(STATUS_STORE,{});} 
   function saveStatusMap(m){write(STATUS_STORE,m||{});} 
   function statusOf(type,r){
@@ -8385,14 +8411,14 @@ body {
     try{if(typeof window.namoApplyApprovalSelfNotify==='function')window.namoApplyApprovalSelfNotify();}catch(e){}
   }
   async function persist(type,r){
-    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var idx=arr.findIndex(function(x){return String(x.id)===String(r.id);});
+    var meta=TYPE_META[type]; var s=appState(); var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var rid=stableDocId(type,r); var idx=arr.findIndex(function(x){return String(stableDocId(type,x))===String(rid);});
     if(idx>=0) arr[idx]=r;
     try{if(typeof window.api==='function'&&r.id){await window.api(meta.api+'/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(buildPayload(type,r))});}}catch(e){console.warn('[approval inbox] api save skipped',e);}
     try{if(type==='iqc'&&typeof window.loadIncoming==='function')await window.loadIncoming(); if(type==='pqc'&&typeof window.loadProcess==='function')await window.loadProcess(); if(type==='oqc'&&typeof window.loadShipment==='function')await window.loadShipment();}catch(e){}
   }
   async function act(type,id,action){
-    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=arr.find(function(x){return String(x.id)===String(id);});
-    if(!r){alert('문서를 찾을 수 없습니다.');return;}
+    var s=appState(); var meta=TYPE_META[type]; var arr=Array.isArray(s[meta.arr])?s[meta.arr]:[]; var r=findDocById(type,arr,id);
+    if(!r){console.error('[결재함] 문서 조회 실패',id,arr);alert('문서를 찾을 수 없습니다.');return;}
     var me=currentUser(); var map=statusMap(); var old=map[docKey(type,r)]||{};
     // 작성자 보정: 결재자(me)로 작성자를 덮어쓰지 않고 최초 작성자 필드만 유지
     var writerCandidates=[];
@@ -8442,7 +8468,7 @@ body {
       if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
       return true;
     });
-    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(stableDocId(x.type,r))+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
   }
   function ensurePage(){
     var side=qs('.sidebar');
@@ -13011,5 +13037,167 @@ body {
   if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
 })();
 </script>
+
+<script id="namo-login-user-senior-approval-final-v20260528">
+(function(){
+  'use strict';
+  if(window.__namoLoginUserSeniorApprovalFinalV20260528) return;
+  window.__namoLoginUserSeniorApprovalFinalV20260528 = true;
+
+  function appState(){
+    try{ return window.state || {}; }catch(e){ return {}; }
+  }
+
+  function uniqByIdName(list){
+    var seen = {};
+    return (list || []).filter(function(u){
+      if(!u) return false;
+      var key = String(u.id || u.email || u.name || '').trim();
+      if(!key || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  function normalizeUser(u){
+    u = u || {};
+    var name = String(u.name || u.username || u.displayName || '').trim();
+    var email = String(u.email || u.mail || '').trim();
+    if(!name && email) name = email.split('@')[0];
+    return {
+      id: String(u.id || email || name || 'login-user').trim(),
+      name: name || '임흥배',
+      department: String(u.department || u.dept || u.team || '품질').trim(),
+      title: String(u.title || u.position || u.rank || u.roleName || '부장').trim(),
+      email: email || 'hbleem@namochemical.com',
+      status: String(u.status || 'APPROVED').trim() || 'APPROVED'
+    };
+  }
+
+  function loginUser(){
+    var s = appState();
+    var base = s.currentUser || window.currentUser || window.loginUser || window.userInfo || window.user || {};
+    var baseN = normalizeUser(base);
+
+    var users = []
+      .concat(Array.isArray(s.signableUsers) ? s.signableUsers : [])
+      .concat(Array.isArray(s.adminUsers) ? s.adminUsers : [])
+      .concat(Array.isArray(window.signableUsers) ? window.signableUsers : []);
+
+    var found = users.find(function(u){
+      return (baseN.email && String(u.email || u.mail || '') === baseN.email) ||
+             (baseN.id && String(u.id || '') === baseN.id) ||
+             (baseN.name && String(u.name || u.username || '') === baseN.name);
+    });
+
+    return normalizeUser(Object.assign({}, found || {}, baseN));
+  }
+
+  function isSenior(u){
+    return /(부장|팀장|실장|공장장|이사|상무|전무|부사장|대표|사장|회장|관리자|admin)/i.test(String((u && (u.title || u.position || u.rank || u.roleName || u.role)) || ''));
+  }
+
+  function ensureLoginUserInSignable(){
+    var s = appState();
+    var me = loginUser();
+    if(!Array.isArray(s.signableUsers)) s.signableUsers = [];
+    var exists = s.signableUsers.some(function(u){
+      return String(u.id || '') === me.id || String(u.email || u.mail || '') === me.email || String(u.name || u.username || '') === me.name;
+    });
+    if(!exists) s.signableUsers.unshift({
+      id: me.id,
+      name: me.name,
+      department: me.department,
+      title: me.title,
+      email: me.email,
+      status: 'APPROVED'
+    });
+    s.signableUsers = uniqByIdName(s.signableUsers);
+  }
+
+  function setSelectToUser(type,role){
+    var sel = document.getElementById('sg_' + type + '_' + role);
+    if(!sel) return;
+
+    var me = loginUser();
+    var allowed = role === 'writer' || isSenior(me);
+
+    if(!allowed){
+      sel.innerHTML = '<option value="">부장 이상 로그인 필요</option>';
+      sel.value = '';
+      sel.disabled = true;
+      return;
+    }
+
+    var label = me.name + ' (' + (me.title || me.department || '-') + ')';
+    sel.innerHTML = '<option value="' + escapeHtml(me.id) + '" data-name="' + escapeHtml(me.name) + '" data-title="' + escapeHtml(me.title) + '" data-department="' + escapeHtml(me.department) + '" data-email="' + escapeHtml(me.email) + '">' + escapeHtml(label) + '</option>';
+    sel.value = me.id;
+    sel.disabled = true;
+    sel.dataset.userPicked = '1';
+
+    var sub = document.getElementById('sg_' + type + '_' + role + '_sub');
+    if(sub){
+      sub.textContent = me.department + ' / ' + me.title + ' / 로그인 당사자';
+      sub.style.color = 'var(--pri)';
+      sub.style.fontWeight = '700';
+    }
+  }
+
+  function escapeHtml(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+
+  function applySeniorApproval(){
+    ensureLoginUserInSignable();
+    ['iqc','pqc','oqc','nc','training'].forEach(function(type){
+      setSelectToUser(type,'writer');
+      setSelectToUser(type,'reviewer');
+      setSelectToUser(type,'approver');
+    });
+  }
+
+  var prevGetSignPayload = window.getSignPayload;
+  window.getSignPayload = function(type){
+    var me = loginUser();
+    function sig(role){
+      var base = {};
+      try{
+        if(typeof window['signature데이터'] === 'function') base = window['signature데이터'](type,role) || {};
+      }catch(e){}
+      if(role !== 'writer' && !isSenior(me)){
+        return Object.assign({id:'',name:'-',title:'',department:'',email:''}, base);
+      }
+      return Object.assign({
+        id: me.id,
+        name: me.name,
+        title: me.title,
+        department: me.department,
+        email: me.email,
+        status: 'APPROVED'
+      }, base);
+    }
+    return {writer:sig('writer'), reviewer:sig('reviewer'), approver:sig('approver')};
+  };
+
+  window.namoLoginUserSeniorApprovalApply = applySeniorApproval;
+
+  document.addEventListener('DOMContentLoaded', applySeniorApproval);
+  document.addEventListener('click', function(){ setTimeout(applySeniorApproval, 80); }, true);
+  document.addEventListener('change', function(e){
+    if(e.target && /^sg_/.test(e.target.id || '')) setTimeout(applySeniorApproval, 0);
+  }, true);
+
+  [100,300,700,1200,2000,3500].forEach(function(ms){ setTimeout(applySeniorApproval, ms); });
+
+  var mo = new MutationObserver(function(){
+    clearTimeout(window.__namoLoginUserSeniorApprovalTimer);
+    window.__namoLoginUserSeniorApprovalTimer = setTimeout(applySeniorApproval, 80);
+  });
+  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
+})();
+</script>
+
 </body>
 </html>
