@@ -3914,7 +3914,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
+    `
 
 <!-- NMC Inbox Work Order Print Patch -->
 <style id="nmc-inbox-print-patch-style">
@@ -3984,9 +3984,9 @@ function printLabel(){
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.nmcPrintInboxWorkOrder=function(uid){printItem(getItem(uid))};
 })();
-</script>
+<\/script>
 
-</body></html>'
+</body></html>'`
   ].join('');
   w.document.open();
   w.document.write(html);
