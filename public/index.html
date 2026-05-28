@@ -11,6 +11,56 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
 </script>
+
+<script id="namo-date-input-value-fix-v2">
+(function(){
+  'use strict';
+  if(window.__namoDateInputValueFixV2) return;
+  window.__namoDateInputValueFixV2 = true;
+  function norm(v){
+    v = String(v == null ? '' : v).trim();
+    if(/^\d{4}-\d{2}-\d{2}T/.test(v)) return v.slice(0,10);
+    if(/^\d{4}-\d{2}-\d{2}\s/.test(v)) return v.slice(0,10);
+    return v;
+  }
+  try{
+    var d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    if(d && d.set && d.get){
+      Object.defineProperty(HTMLInputElement.prototype, 'value', {
+        configurable:true,
+        enumerable:d.enumerable,
+        get:function(){ return d.get.call(this); },
+        set:function(v){
+          if(this && String(this.type).toLowerCase() === 'date') v = norm(v);
+          return d.set.call(this, v);
+        }
+      });
+    }
+  }catch(e){}
+  try{
+    var oldSet = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function(name, value){
+      if(this && this.tagName === 'INPUT' && String(this.type).toLowerCase() === 'date' && String(name).toLowerCase() === 'value'){
+        value = norm(value);
+      }
+      return oldSet.call(this, name, value);
+    };
+  }catch(e){}
+  window.namoNormalizeDateInputs = function(root){
+    root = root || document;
+    Array.prototype.forEach.call(root.querySelectorAll ? root.querySelectorAll('input[type="date"]') : [], function(el){
+      var v = String(el.value || '');
+      if(/^\d{4}-\d{2}-\d{2}T/.test(v) || /^\d{4}-\d{2}-\d{2}\s/.test(v)) el.value = v.slice(0,10);
+      var a = String(el.getAttribute('value') || '');
+      if(/^\d{4}-\d{2}-\d{2}T/.test(a) || /^\d{4}-\d{2}-\d{2}\s/.test(a)) el.setAttribute('value', a.slice(0,10));
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function(){ window.namoNormalizeDateInputs(document); });
+  var mo = new MutationObserver(function(){ clearTimeout(window.__namoDateNormalizeTimer); window.__namoDateNormalizeTimer = setTimeout(function(){ window.namoNormalizeDateInputs(document); }, 50); });
+  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
+})();
+</script>
+
 <style>
 :root{
   --bg:#f0f2f5;--sf:#fff;--s2:#f8f9fb;--bd:#e4e7ed;--bd2:#d0d5de;
@@ -2404,51 +2454,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 </head>
 <body class="login-active">
 
-<script id="namo-date-input-normalizer-v1">
-(function(){
-  'use strict';
-  if(window.__namoDateInputNormalizerV1) return;
-  window.__namoDateInputNormalizerV1 = true;
-  function pad(n){ return String(n).padStart(2,'0'); }
-  function normalizeDateValue(v){
-    var s = String(v == null ? '' : v).trim();
-    if(!s) return s;
-    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
-      var d = new Date(s);
-      if(!isNaN(d.getTime())) return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-      return s.slice(0,10);
-    }
-    return s;
-  }
-  function isDateInput(el){ return el && el.tagName === 'INPUT' && String(el.type || '').toLowerCase() === 'date'; }
-  var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-  if(desc && desc.set && desc.get){
-    Object.defineProperty(HTMLInputElement.prototype, 'value', {
-      configurable:true,
-      enumerable:desc.enumerable,
-      get:function(){ return desc.get.call(this); },
-      set:function(v){ return desc.set.call(this, isDateInput(this) ? normalizeDateValue(v) : v); }
-    });
-  }
-  var oldSetAttribute = Element.prototype.setAttribute;
-  Element.prototype.setAttribute = function(name, value){
-    if(isDateInput(this) && String(name).toLowerCase() === 'value') value = normalizeDateValue(value);
-    return oldSetAttribute.call(this, name, value);
-  };
-  window.namoNormalizeDateInputs = function(root){
-    Array.prototype.forEach.call((root || document).querySelectorAll('input[type="date"]'), function(el){
-      if(el.value) el.value = normalizeDateValue(el.value);
-      var attr = el.getAttribute('value');
-      if(attr) el.setAttribute('value', normalizeDateValue(attr));
-    });
-  };
-  document.addEventListener('DOMContentLoaded', function(){ window.namoNormalizeDateInputs(document); });
-  document.addEventListener('change', function(e){ if(isDateInput(e.target)) e.target.value = normalizeDateValue(e.target.value); }, true);
-})();
-</script>
-
-
 <!-- ══════════════════════════════════
      LOGIN PAGE
 ══════════════════════════════════ -->
@@ -3986,61 +3991,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-<script id="namo-admin-training-approval-final-fix-v1">
-(function(){
-  'use strict';
-  if(window.__namoAdminTrainingApprovalFinalFixV1) return;
-  window.__namoAdminTrainingApprovalFinalFixV1 = true;
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function isAdmin(){
-    try{
-      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      var u = s.currentUser || window.currentUser || window.loginUser || {};
-      var raw = [u.id,u.name,u.email,u.role,u.title,u.grade,u.level].map(function(v){ return clean(v).toLowerCase(); }).join(' ');
-      return raw.indexOf('admin') >= 0 || raw.indexOf('관리자') >= 0;
-    }catch(e){ return false; }
-  }
-  function users(){
-    var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-    return Array.isArray(s.signableUsers) ? s.signableUsers : [];
-  }
-  function label(u){ return clean(u.name || u.username || u.displayName || u.email || u.id) + (clean(u.title || u.position || u.role) ? ' / ' + clean(u.title || u.position || u.role) : ''); }
-  function syncAdminSelect(sel){
-    if(!sel || !isAdmin()) return;
-    var cur = sel.value;
-    var list = users();
-    if(!list.length) return;
-    var firstText = sel.options && sel.options[0] && !sel.options[0].value ? sel.options[0].textContent : '-- 선택 --';
-    sel.innerHTML = '<option value="">' + firstText + '</option>' + list.map(function(u){
-      var id = clean(u.id || u.user_id || u.email || u.name);
-      return '<option value="' + id.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '" data-name="' + clean(u.name || u.username || u.displayName).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '" data-title="' + clean(u.title || u.position || u.role).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '" data-department="' + clean(u.department || u.dept).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '" data-email="' + clean(u.email).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '">' + label(u).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</option>';
-    }).join('');
-    if(cur && Array.prototype.some.call(sel.options, function(o){ return String(o.value) === String(cur); })) sel.value = cur;
-    sel.disabled = false;
-    Array.prototype.forEach.call(sel.options || [], function(o){ o.disabled = false; o.hidden = false; });
-  }
-  function apply(){
-    if(window.namoNormalizeDateInputs) window.namoNormalizeDateInputs(document);
-    if(!isAdmin()) return;
-    Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id^="sg_"][id$="_writer"],select.sign-sel[id^="sg_"][id$="_reviewer"],select.sign-sel[id^="sg_"][id$="_approver"]'), syncAdminSelect);
-  }
-  var oldBuild = window.buildSignGrid;
-  if(typeof oldBuild === 'function'){
-    window.buildSignGrid = function(){ var r = oldBuild.apply(this, arguments); setTimeout(apply, 0); return r; };
-  }
-  var oldValidate = window.qmsValidateSignRoles;
-  window.qmsValidateSignRoles = function(type){ if(isAdmin()) return true; return typeof oldValidate === 'function' ? oldValidate.apply(this, arguments) : true; };
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(apply, 0); setTimeout(apply, 300); });
-  document.addEventListener('click', function(){ setTimeout(apply, 80); }, true);
-  document.addEventListener('change', function(e){ if(e.target && e.target.matches && e.target.matches('input[type="date"]') && window.namoNormalizeDateInputs) window.namoNormalizeDateInputs(document); }, true);
-  var mo = new MutationObserver(function(){ clearTimeout(window.__namoAdminTrainingApprovalFinalFixTimer); window.__namoAdminTrainingApprovalFinalFixTimer = setTimeout(apply, 120); });
-  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
-  setTimeout(apply, 0); setTimeout(apply, 500); setTimeout(apply, 1500);
-})();
-</script>
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -9716,12 +9667,6 @@ body {
   };
   window.clearSign = type => { ROLES.forEach(r => { const sel=$(`sg_${type}_${r}`); if(sel) sel.value = ''; window.clearSignaturePad(type,r); }); };
   window.qmsValidateSignRoles = function(type){
-    try{
-      const s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      const me = s.currentUser || window.currentUser || window.loginUser || {};
-      const raw = [me.name, me.email, me.role, me.title, me.grade, me.level].map(v => String(v || '').toLowerCase()).join(' ');
-      if(raw.includes('admin') || raw.includes('관리자')) return true;
-    }catch(e){}
     if(!validateRole(type,'writer')){ alert('작성자는 로그인 본인만 가능합니다.'); return false; }
     if(!validateRole(type,'reviewer')){ alert('검토자는 부장 직책만 가능합니다.'); return false; }
     if(!validateRole(type,'approver')){ alert('승인자는 부장 이상 직책만 가능합니다.'); return false; }
@@ -12796,6 +12741,19 @@ body {
   var ROLES = ['writer','reviewer','approver'];
 
   function clean(v){ return String(v == null ? '' : v).trim(); }
+  function isAdminLogin(){
+    try{
+      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+      var u = s.currentUser || window.currentUser || window.loginUser || {};
+      var raw = [u.id,u.name,u.email,u.role,u.title,u.grade,u.level].map(function(v){ return clean(v).toLowerCase(); }).join(' ');
+      return raw.indexOf('admin') >= 0 || raw.indexOf('관리자') >= 0;
+    }catch(e){ return false; }
+  }
+  function enableAllOptions(sel){
+    if(!sel) return;
+    Array.prototype.forEach.call(sel.options || [], function(opt){ opt.disabled = false; opt.hidden = false; });
+    sel.disabled = false; sel.removeAttribute('disabled'); sel.readOnly = false;
+  }
   function isSeniorText(text){
     text = clean(text).toLowerCase();
     if(!text) return false;
@@ -12816,17 +12774,6 @@ body {
     return m ? m[1] : '';
   }
   function getSel(type, role){ return document.getElementById('sg_' + type + '_' + role); }
-  function isAdminLogin(){
-    try{
-      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
-      var u = s.currentUser || window.currentUser || window.loginUser || {};
-      var raw = [u.id, u.name, u.email, u.role, u.title, u.grade, u.level].map(function(v){ return clean(v).toLowerCase(); }).join(' ');
-      return raw.indexOf('admin') >= 0 || raw.indexOf('관리자') >= 0;
-    }catch(e){ return false; }
-  }
-  function enableAllOptions(sel){
-    Array.prototype.forEach.call((sel && sel.options) || [], function(opt){ opt.disabled = false; opt.hidden = false; });
-  }
   function filterSeniorOptions(sel){
     if(!sel || !/(reviewer|approver)$/.test(sel.id || '')) return;
     if(isAdminLogin()){ enableAllOptions(sel); return; }
@@ -12843,7 +12790,7 @@ body {
   }
   function preventDuplicates(type){
     if(!type) return;
-    if(isAdminLogin()) return;
+    if(isAdminLogin()){ ROLES.forEach(function(r){ enableAllOptions(getSel(type,r)); }); return; }
     var writer = getSel(type,'writer');
     var reviewer = getSel(type,'reviewer');
     var approver = getSel(type,'approver');
@@ -12861,11 +12808,11 @@ body {
     if(reviewer && approver && reviewerName && selectedName(approver) === reviewerName){ approver.value = ''; }
   }
   function validate(type, quiet){
+    if(isAdminLogin()){ ROLES.forEach(function(r){ enableAllOptions(getSel(type,r)); }); return true; }
     var writer = getSel(type,'writer');
     var reviewer = getSel(type,'reviewer');
     var approver = getSel(type,'approver');
     if(!reviewer || !approver) return true;
-    if(isAdminLogin()){ enableAllOptions(writer); enableAllOptions(reviewer); enableAllOptions(approver); return true; }
     filterSeniorOptions(reviewer); filterSeniorOptions(approver); preventDuplicates(type);
     var wn = selectedName(writer), rn = selectedName(reviewer), an = selectedName(approver);
     var ro = reviewer.options && reviewer.options[reviewer.selectedIndex];
@@ -12882,7 +12829,6 @@ body {
   function applyAll(){
     Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id^="sg_"]'), function(sel){
       var type = typeFromId(sel.id);
-      if(isAdminLogin()){ enableAllOptions(sel); return; }
       if(/_(reviewer|approver)$/.test(sel.id)) filterSeniorOptions(sel);
       if(type) preventDuplicates(type);
     });
@@ -12984,6 +12930,69 @@ body {
   };
 })();
 
+
+
+/* 관리자 로그인 교육보고서 결재 선택/수정 보강 v2 */
+(function(){
+  'use strict';
+  if(window.__namoAdminTrainingApprovalSelectFixV2) return;
+  window.__namoAdminTrainingApprovalSelectFixV2 = true;
+  function clean(v){ return String(v == null ? '' : v).trim(); }
+  function isAdminLogin(){
+    try{
+      var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+      var u = s.currentUser || window.currentUser || window.loginUser || {};
+      var raw = [u.id,u.name,u.email,u.role,u.title,u.grade,u.level].map(function(v){ return clean(v).toLowerCase(); }).join(' ');
+      return raw.indexOf('admin') >= 0 || raw.indexOf('관리자') >= 0;
+    }catch(e){ return false; }
+  }
+  function listUsers(){
+    var s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+    var keys = ['signableUsers','users','members','memberList','employees'];
+    for(var i=0;i<keys.length;i++) if(Array.isArray(s[keys[i]]) && s[keys[i]].length) return s[keys[i]];
+    for(var k in s) if(Array.isArray(s[k]) && /user|member|employee|회원/i.test(k) && s[k].length) return s[k];
+    return [];
+  }
+  function userId(u){ return clean(u.id || u.user_id || u.uid || u.email || u.name || u.username); }
+  function userName(u){ return clean(u.name || u.username || u.displayName || u.email || u.id); }
+  function userTitle(u){ return clean(u.title || u.position || u.grade || u.level || u.roleName || u.role); }
+  function applyAdminSelects(){
+    if(!isAdminLogin()) return;
+    var us = listUsers();
+    Array.prototype.forEach.call(document.querySelectorAll('select.sign-sel[id^="sg_"]'), function(sel){
+      var keep = sel.value;
+      sel.disabled = false; sel.removeAttribute('disabled'); sel.readOnly = false;
+      Array.prototype.forEach.call(sel.options || [], function(opt){ opt.disabled = false; opt.hidden = false; });
+      if(us.length){
+        var label = sel.id.indexOf('_writer')>-1 ? '-- 작성자 선택 --' : (sel.id.indexOf('_reviewer')>-1 ? '-- 검토자 선택 --' : '-- 승인자 선택 --');
+        var html = '<option value="">'+label+'</option>' + us.map(function(u){
+          var id = userId(u), nm = userName(u), tt = userTitle(u), dep = clean(u.department || u.dept), em = clean(u.email);
+          var text = nm + (tt ? ' / '+tt : '');
+          return '<option value="'+id.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-name="'+nm.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-title="'+tt.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-department="'+dep.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-email="'+em.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</option>';
+        }).join('');
+        if(sel.getAttribute('data-admin-all-users-applied') !== '1' || sel.options.length !== us.length + 1){
+          sel.innerHTML = html;
+          sel.setAttribute('data-admin-all-users-applied','1');
+        }
+        if(keep && Array.prototype.some.call(sel.options, function(o){ return String(o.value) === String(keep); })) sel.value = keep;
+      }
+    });
+    if(typeof window.namoNormalizeDateInputs === 'function') window.namoNormalizeDateInputs(document);
+  }
+  var oldValidate = window.qmsValidateSignRoles;
+  window.qmsValidateSignRoles = function(type){
+    if(isAdminLogin()){ applyAdminSelects(); return true; }
+    return typeof oldValidate === 'function' ? oldValidate.apply(this, arguments) : true;
+  };
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.matches && e.target.matches('select.sign-sel[id^="sg_"]') && isAdminLogin()) setTimeout(applyAdminSelects,0);
+  }, true);
+  document.addEventListener('DOMContentLoaded', applyAdminSelects);
+  setTimeout(applyAdminSelects, 100);
+  setTimeout(applyAdminSelects, 500);
+  var mo = new MutationObserver(function(){ clearTimeout(window.__namoAdminTrainingApprovalSelectFixTimer); window.__namoAdminTrainingApprovalSelectFixTimer = setTimeout(applyAdminSelects,80); });
+  if(document.documentElement) mo.observe(document.documentElement, {childList:true, subtree:true});
+})();
 </script>
 </body>
 </html>
