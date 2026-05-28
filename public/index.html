@@ -11608,6 +11608,53 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
     return null;
   }
+  function nmcIsUuidLike(v){
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v || '').trim());
+  }
+  function nmcUserText(u){
+    if(!u) return '';
+    if(typeof u === 'string') return nmcIsUuidLike(u) ? '' : u;
+    var name = u.name || u.userName || u.displayName || u.senderName || '';
+    var dept = u.department || u.dept || u.team || '';
+    var title = u.title || u.position || u.role || '';
+    var text = [dept, name].filter(Boolean).join(' ');
+    if(title) text += ' / ' + title;
+    if(text) return text;
+    var fallback = u.text || u.label || u.email || '';
+    return nmcIsUuidLike(fallback) ? '' : fallback;
+  }
+  function resolveWorkorderSenderName(x){
+    x = x || {};
+    if(typeof workorderWriterText === 'function'){
+      var wt = workorderWriterText(x);
+      if(wt && wt !== '-' && !nmcIsUuidLike(wt)) return wt;
+    }
+    var candidates = [
+      x.senderText,
+      x.senderName,
+      x.writerName,
+      x.authorName,
+      x.createdByName,
+      nmcUserText(x.sender),
+      nmcUserText(x.writer),
+      nmcUserText(x.createdBy),
+      x.writer,
+      x.author,
+      x.createdBy
+    ];
+    for(var i=0;i<candidates.length;i++){
+      var v = String(candidates[i] || '').trim();
+      if(v && v !== '-' && !nmcIsUuidLike(v)) return v;
+    }
+    try{
+      var cu = (typeof currentUser === 'function' ? currentUser() : null) ||
+               (window.state && window.state.currentUser) ||
+               window.loginUser || window.userInfo;
+      var cv = nmcUserText(cu);
+      if(cv) return cv;
+    }catch(e){}
+    return '-';
+  }
   function normalizeOrder(x){
     x = x || {};
     return {
@@ -11622,7 +11669,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       orderDate: pick(x, ['orderDate','workDate','date','nmcOrderDate'], '-'),
       reqDept: pick(x, ['reqDept','requestDept','dept','nmcReqDept'], '-'),
       worker: pick(x, ['worker','operator','nmcWorker'], '-'),
-      sender: pick(x, ['senderText','senderName','sender','writer','createdBy'], '-'),
+      sender: resolveWorkorderSenderName(x),
       receiver: pick(x, ['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'], '-'),
       ref: pick(x, ['refText','reference','refDept','ref','cc','refNames','refTargets'], '-'),
       date: pick(x, ['sendTime','sentAt','createdAt','updatedAt','date'], '-'),
