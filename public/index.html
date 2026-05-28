@@ -11612,5 +11612,49 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<!-- 받은 작업지시서: 상세보기 옆 인쇄 버튼 기능 추가 v20260528 -->
+<script>
+(function(){
+  'use strict';
+  function closest(el,sel){return el&&el.closest?el.closest(sel):null;}
+  function addPrintButtons(){
+    document.querySelectorAll('#page-workorder-inbox .nmc-row-actions, #page-workorder-reference .nmc-row-actions').forEach(function(box){
+      if(box.querySelector('[data-nmc-inbox-print]')) return;
+      var viewBtn=box.querySelector('[data-nmc-open-inbox]');
+      if(!viewBtn) return;
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='nmc-small-btn';
+      btn.textContent='인쇄';
+      btn.setAttribute('data-nmc-inbox-print', viewBtn.getAttribute('data-nmc-open-inbox')||'');
+      btn.setAttribute('data-nmc-inbox-type', viewBtn.getAttribute('data-nmc-inbox-type')||'inbox');
+      viewBtn.insertAdjacentElement('afterend', btn);
+    });
+  }
+  function printWorkOrder(btn){
+    var uid=btn.getAttribute('data-nmc-inbox-print')||'';
+    var type=btn.getAttribute('data-nmc-inbox-type')||'inbox';
+    var open=document.querySelector('[data-nmc-open-inbox="'+CSS.escape(uid)+'"][data-nmc-inbox-type="'+CSS.escape(type)+'"]');
+    if(open) open.click();
+    setTimeout(function(){ window.print(); }, 350);
+  }
+  document.addEventListener('click',function(e){
+    var btn=closest(e.target,'[data-nmc-inbox-print]');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    printWorkOrder(btn);
+  },true);
+  var mo=new MutationObserver(addPrintButtons);
+  function boot(){
+    addPrintButtons();
+    if(document.body) mo.observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [300,800,1600,3000].forEach(function(ms){setTimeout(addPrintButtons,ms);});
+})();
+</script>
+
 </body>
 </html>
