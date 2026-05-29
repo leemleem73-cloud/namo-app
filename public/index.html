@@ -3914,7 +3914,500 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- =====================================================================
+  NAMO QMS 작업지시서 수신/알림/생산관리 현황 연동 최종 보강 패치
+  적용 목적
+  1) 작업지시서 발송 시 수신 체크 당사자에게 정확히 표시
+  2) 수신자 기준 알림 배지/알림내역 생성
+  3) 발송된 작업지시서를 생산관리 목록/진행/현황 저장소에 동시 반영
+  4) 기존 기능/화면은 유지하고, 마지막 스크립트에서 누락 데이터만 보강
+===================================================================== -->
+<style id="namo-workorder-receiver-final-style">
+  #page-workorder-final #nmcRecvDept,
+  #page-workorder-final #nmcRefDept{
+    min-height:96px!important;
+  }
+  #page-workorder-final .nmc-send-help.namo-receiver-help{
+    color:#0b57d0!important;
+    font-weight:900!important;
+  }
+  .namo-workorder-noti-dot{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:18px;
+    height:18px;
+    padding:0 5px;
+    border-radius:99px;
+    background:#ef4444;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    margin-left:6px;
+  }
+</style>
+<script id="namo-workorder-receiver-notification-final">
+(function(){
+  'use strict';
+  if(window.__namoWorkorderReceiverNotificationFinal) return;
+  window.__namoWorkorderReceiverNotificationFinal = true;
+
+  var STORAGE_KEYS = [
+    'nmc_workorder_sent_items',
+    'nmcWorkOrders',
+    'workOrders',
+    'workOrderHistory',
+    'nmcWorkorderHistory',
+    'nmcSentWorkorders'
+  ];
+  var NOTI_KEY = 'nmc_workorder_notifications';
+
+  function $(id){ return document.getElementById(id); }
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function trim(v){ return String(v == null ? '' : v).trim(); }
+  function lower(v){ return trim(v).toLowerCase(); }
+  function uniq(arr){
+    var out = [], seen = Object.create(null);
+    (arr || []).forEach(function(v){
+      v = trim(v);
+      if(!v) return;
+      var k = lower(v);
+      if(seen[k]) return;
+      seen[k] = true;
+      out.push(v);
+    });
+    return out;
+  }
+  function readArr(key){
+    try{
+      var v = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(v) ? v : [];
+    }catch(e){ return []; }
+  }
+  function writeArr(key, arr){
+    try{ localStorage.setItem(key, JSON.stringify((arr || []).slice(0, 800))); }catch(e){}
+  }
+  function idOf(o){
+    o = o || {};
+    return trim(o.uid || o.id || o.woNo || o.no || o.workNo || o.workOrderNo || o.orderNo || o.nmcWoNo || o.docNo);
+  }
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+  function getState(){
+    try{ return (typeof state !== 'undefined' && state) ? state : (window.state || {}); }catch(e){ return window.state || {}; }
+  }
+  function rawCurrentUser(){
+    var s = getState();
+    return s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
+  }
+  function normalizeUser(u){
+    if(!u) return null;
+    if(typeof u === 'string') u = {name:u};
+    var email = trim(u.email || u.mail || u.userEmail || u.loginId);
+    var name = trim(u.name || u.username || u.displayName || u.userName || u.empName || u.employeeName || (email ? email.split('@')[0] : ''));
+    var id = trim(u.id || u.userId || u.empId || u.employeeId || u.memberId || email || name);
+    var dept = trim(u.department || u.dept || u.departmentName || u.deptName || u.team || u.org || u.division);
+    var title = trim(u.title || u.position || u.jobTitle || u.rank || u.roleTitle);
+    if(!id && !email && !name) return null;
+    var text = [dept, name, title].filter(Boolean).join(' ');
+    if(email && text.indexOf(email) < 0) text += (text ? ' ' : '') + '<' + email + '>';
+    return {id:id, email:email, name:name, department:dept, title:title, text:text || name || email || id, raw:u};
+  }
+  function userKeys(u){
+    u = normalizeUser(u);
+    if(!u) return [];
+    return uniq([
+      u.id,
+      u.email,
+      u.name,
+      u.text,
+      [u.department, u.name].filter(Boolean).join(' '),
+      [u.name, u.title].filter(Boolean).join(' '),
+      [u.department, u.name, u.title].filter(Boolean).join(' '),
+      u.email ? u.email.split('@')[0] : ''
+    ]);
+  }
+  function sameUserByKeys(a, b){
+    var ak = userKeys(a).map(lower);
+    var bk = userKeys(b).map(lower);
+    return ak.some(function(x){ return bk.indexOf(x) >= 0; });
+  }
+  function currentUser(){
+    return normalizeUser(rawCurrentUser()) || inferSenderUser() || {id:'login-user', name:'로그인 사용자', email:'', department:'', title:'', text:'로그인 사용자'};
+  }
+  function userOptionText(u){
+    u = normalizeUser(u) || {};
+    var t = [u.department, u.name, u.title].filter(Boolean).join(' ');
+    if(u.email) t += (t ? ' ' : '') + '<' + u.email + '>';
+    return t || u.name || u.email || u.id || '-';
+  }
+  function allUsers(){
+    var s = getState();
+    var list = [];
+    ['users','members','signableUsers','adminUsers','employeeUsers','employees'].forEach(function(k){
+      if(Array.isArray(s[k])) list = list.concat(s[k]);
+      if(Array.isArray(window[k])) list = list.concat(window[k]);
+    });
+    ['qms_users','users','namoUsers','adminUsers','signableUsers','members','employeeUsers'].forEach(function(k){
+      list = list.concat(readArr(k));
+    });
+    var me = rawCurrentUser();
+    if(me) list.push(me);
+
+    var map = new Map();
+    list.map(normalizeUser).filter(Boolean).forEach(function(u){
+      var key = lower(u.email || u.id || u.name || u.text);
+      if(!key) return;
+      if(!map.has(key)) map.set(key, u);
+    });
+    return Array.prototype.slice.call(map.values());
+  }
+  function setOptionDataset(opt, u){
+    u = normalizeUser(u) || {};
+    opt.value = u.email || u.id || u.name || u.text || '';
+    opt.dataset.id = u.id || '';
+    opt.dataset.email = u.email || '';
+    opt.dataset.name = u.name || '';
+    opt.dataset.department = u.department || '';
+    opt.dataset.title = u.title || '';
+    opt.dataset.keys = userKeys(u).join('|');
+    opt.textContent = userOptionText(u);
+  }
+  function populateSendTargetsFinal(){
+    var users = allUsers();
+    var me = currentUser();
+    var matched = users.find(function(u){ return sameUserByKeys(u, me); }) || me;
+    if(!users.length) users = [matched];
+
+    qsa('#nmcSenderName').forEach(function(sel){
+      if(sel.tagName !== 'SELECT') return;
+      sel.innerHTML = '';
+      var opt = document.createElement('option');
+      setOptionDataset(opt, matched);
+      opt.selected = true;
+      sel.appendChild(opt);
+    });
+    ['nmcRecvDept','nmcRefDept'].forEach(function(id){
+      qsa('#' + id).forEach(function(sel){
+        if(sel.tagName !== 'SELECT') return;
+        var selected = qsa('option:checked', sel).map(function(o){ return lower(o.dataset.email || o.value || o.dataset.name || o.textContent); });
+        sel.multiple = true;
+        sel.size = Math.max(4, Math.min(8, users.length || 4));
+        sel.innerHTML = '';
+        users.forEach(function(u){
+          var opt = document.createElement('option');
+          setOptionDataset(opt, u);
+          var keys = userKeys(u).map(lower);
+          opt.selected = keys.some(function(k){ return selected.indexOf(k) >= 0; });
+          sel.appendChild(opt);
+        });
+      });
+    });
+    qsa('#page-workorder-final .nmc-send-help').forEach(function(p){
+      if(p.textContent.indexOf('회원등록현황') >= 0){
+        p.classList.add('namo-receiver-help');
+        p.textContent = '수신 체크된 로그인 당사자에게 받은 작업지시서/알림/생산관리 현황이 표시됩니다.';
+      }
+    });
+  }
+  function inferSenderUser(){
+    var opt = qs('#nmcSenderName option:checked') || qs('#nmcSenderName option');
+    if(!opt) return null;
+    return normalizeUser({
+      id:opt.dataset.id || opt.value,
+      email:opt.dataset.email || '',
+      name:opt.dataset.name || opt.textContent,
+      department:opt.dataset.department || '',
+      title:opt.dataset.title || ''
+    });
+  }
+  function selectedUsers(id){
+    var el = $(id);
+    if(!el || el.tagName !== 'SELECT') return [];
+    return qsa('option:checked', el).map(function(o){
+      return normalizeUser({
+        id:o.dataset.id || o.value,
+        email:o.dataset.email || '',
+        name:o.dataset.name || o.textContent,
+        department:o.dataset.department || '',
+        title:o.dataset.title || '',
+        text:o.textContent
+      });
+    }).filter(Boolean);
+  }
+  function selectedText(id){
+    var list = selectedUsers(id);
+    return list.length ? list.map(userOptionText).join(', ') : '-';
+  }
+  function val(id){
+    var el = $(id);
+    return el ? trim(el.value) : '';
+  }
+  function materialRows(){
+    return qsa('#nmcMaterialTable tbody tr').map(function(tr, idx){
+      var td = tr.children || [];
+      function inp(cell, selector){ var el = selector ? qs(selector, tr) : (cell ? qs('input', cell) : null); return el ? trim(el.value) : ''; }
+      return {
+        no:idx + 1,
+        name:inp(td[1]),
+        lot:inp(td[2]),
+        planQty:inp(null, '.nmc-mat-plan-qty'),
+        actualQty:inp(null, '.nmc-mat-qty'),
+        ratio:inp(null, '.nmc-mat-ratio'),
+        note:inp(td[6])
+      };
+    }).filter(function(m){
+      return [m.name,m.lot,m.planQty,m.actualQty,m.ratio,m.note].some(function(v){
+        v = trim(v); return v && v !== '0' && v !== '0.00';
+      });
+    });
+  }
+  function comprehensiveKeysForUsers(users){
+    var out = [];
+    (users || []).forEach(function(u){ out = out.concat(userKeys(u)); });
+    return uniq(out);
+  }
+  function buildWorkorderPayload(){
+    var d = new Date();
+    var ymd = String(d.getFullYear()) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+    var woNo = val('nmcWoNo') || ('NM-' + ymd + '-LOCAL');
+    var sender = currentUser();
+    var receivers = selectedUsers('nmcRecvDept');
+    var refs = selectedUsers('nmcRefDept');
+    var payload = {
+      uid:'wo_' + woNo.replace(/[^A-Za-z0-9_-]/g,'') + '_' + Date.now(),
+      id:woNo,
+      woNo:woNo,
+      no:woNo,
+      workOrderNo:woNo,
+      orderNo:woNo,
+      nmcWoNo:woNo,
+      action:'send',
+      status:'발송완료',
+      title:val('nmcProdName') || '작업지시서',
+      productName:val('nmcProdName'),
+      product:val('nmcProdName'),
+      productCode:val('nmcProdCode'),
+      code:val('nmcProdCode'),
+      prodLot:val('nmcProdLot'),
+      lot:val('nmcProdLot'),
+      orderDate:val('nmcOrderDate'),
+      planType:val('nmcPlanType'),
+      planQty:val('nmcPlanQty'),
+      actualQty:val('nmcActualQty'),
+      reqDept:val('nmcReqDept'),
+      worker:val('nmcWorker'),
+      instruction:val('nmcInstruction'),
+      sendNote:val('nmcSendNote'),
+      sendTime:val('nmcSendTime') || new Date().toLocaleString('ko-KR'),
+      createdAt:new Date().toISOString(),
+      updatedAt:new Date().toISOString(),
+      sender:sender,
+      senderName:userOptionText(sender),
+      senderText:userOptionText(sender),
+      writerName:sender.name || sender.email || sender.id,
+      receivers:receivers,
+      refs:refs,
+      receiverText:selectedText('nmcRecvDept'),
+      refText:selectedText('nmcRefDept'),
+      receiverIds:comprehensiveKeysForUsers(receivers),
+      refIds:comprehensiveKeysForUsers(refs),
+      readBy:{},
+      refReadBy:{},
+      deletedBy:{},
+      deletedRefBy:{},
+      materials:materialRows(),
+      source:'workorder-final'
+    };
+    return payload;
+  }
+  function upsertEverywhere(item){
+    STORAGE_KEYS.forEach(function(key){
+      var arr = readArr(key);
+      var idx = arr.findIndex(function(x){ return idOf(x) === item.woNo || trim(x.woNo) === item.woNo || trim(x.no) === item.woNo; });
+      if(idx >= 0){
+        var old = arr[idx] || {};
+        arr[idx] = Object.assign({}, old, item, {
+          uid: old.uid || item.uid,
+          readBy: old.readBy || item.readBy || {},
+          refReadBy: old.refReadBy || item.refReadBy || {},
+          deletedBy: old.deletedBy || {},
+          deletedRefBy: old.deletedRefBy || {}
+        });
+      }else{
+        arr.unshift(item);
+      }
+      writeArr(key, arr);
+    });
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){
+      try{ window[k] = readArr(k); }catch(e){}
+    });
+  }
+  function addNotifications(item){
+    var list = readArr(NOTI_KEY);
+    var baseId = item.woNo || item.uid;
+    function addFor(u, type){
+      var keys = userKeys(u);
+      if(!keys.length) return;
+      var nid = baseId + ':' + type + ':' + lower(keys[0]);
+      if(list.some(function(n){ return n.id === nid; })) return;
+      list.unshift({
+        id:nid,
+        woUid:item.uid,
+        woNo:item.woNo,
+        type:type,
+        title:type === 'ref' ? '참조 작업지시서 도착' : '작업지시서 수신',
+        msg:(item.woNo || '작업지시서') + ' / ' + (item.productName || item.title || '-') + ' / 발송자: ' + (item.senderName || '-'),
+        userKeys:keys,
+        readBy:{},
+        createdAt:new Date().toISOString(),
+        time:new Date().toLocaleString('ko-KR')
+      });
+    }
+    (item.receivers || []).forEach(function(u){ addFor(u, 'inbox'); });
+    (item.refs || []).forEach(function(u){ addFor(u, 'ref'); });
+    writeArr(NOTI_KEY, list);
+  }
+  function myWorkorderItems(type){
+    var me = currentUser();
+    var mine = userKeys(me).map(lower);
+    var items = readArr('nmc_workorder_sent_items');
+    return items.filter(function(x){
+      var ids = type === 'ref' ? (x.refIds || []) : (x.receiverIds || []);
+      var users = type === 'ref' ? (x.refs || []) : (x.receivers || []);
+      var idHit = ids.map(lower).some(function(k){ return mine.indexOf(k) >= 0; });
+      var userHit = (users || []).some(function(u){ return sameUserByKeys(u, me); });
+      return idHit || userHit;
+    });
+  }
+  function updateBadgeFinal(){
+    var me = currentUser();
+    var mineKey = lower(userKeys(me)[0] || 'login-user');
+    var unreadOrders = myWorkorderItems('inbox').filter(function(x){ return !(x.readBy || {})[userKeys(me)[0] || me.id || me.email || me.name || 'login-user']; }).length;
+    unreadOrders += myWorkorderItems('ref').filter(function(x){ return !(x.refReadBy || {})[userKeys(me)[0] || me.id || me.email || me.name || 'login-user']; }).length;
+    var notis = readArr(NOTI_KEY).filter(function(n){
+      var hit = (n.userKeys || []).map(lower).some(function(k){ return userKeys(me).map(lower).indexOf(k) >= 0; });
+      return hit && !(n.readBy || {})[mineKey];
+    }).length;
+    var count = Math.max(unreadOrders, notis);
+    var b = $('nmcNotiBadge');
+    if(b){
+      b.textContent = String(count);
+      b.style.display = count > 0 ? 'flex' : 'none';
+    }
+    qsa('.nav-item[data-page="workorder-inbox"] span:last-child').forEach(function(span){
+      var old = qs('.namo-workorder-noti-dot', span);
+      if(count > 0){
+        if(!old){ old = document.createElement('em'); old.className='namo-workorder-noti-dot'; span.appendChild(old); }
+        old.textContent = String(count);
+      }else if(old){ old.remove(); }
+    });
+  }
+  function showMyNotificationList(){
+    var me = currentUser();
+    var myKeys = userKeys(me).map(lower);
+    var mineKey = lower(userKeys(me)[0] || 'login-user');
+    var list = readArr(NOTI_KEY).filter(function(n){
+      return (n.userKeys || []).map(lower).some(function(k){ return myKeys.indexOf(k) >= 0; });
+    }).slice(0, 12);
+    if(!list.length){ alert('알림 내역이 없습니다.'); return; }
+    alert('알림 내역\n\n' + list.map(function(n, i){ return (i+1) + '. [' + (n.time || n.createdAt || '-') + '] ' + n.title + '\n   ' + n.msg; }).join('\n\n'));
+    var all = readArr(NOTI_KEY);
+    all.forEach(function(n){
+      if((n.userKeys || []).map(lower).some(function(k){ return myKeys.indexOf(k) >= 0; })){
+        n.readBy = n.readBy || {};
+        n.readBy[mineKey] = new Date().toISOString();
+      }
+    });
+    writeArr(NOTI_KEY, all);
+    updateBadgeFinal();
+  }
+  function tryServerSync(item){
+    if(typeof window.api !== 'function' && typeof api !== 'function') return;
+    var apiFn = window.api || api;
+    try{
+      apiFn('/api/workorders', {method:'POST', body:JSON.stringify(item)}).then(function(r){
+        if(r && r.res && r.res.ok && r.data && r.data.success){
+          item.serverSyncedAt = new Date().toISOString();
+          upsertEverywhere(item);
+        }
+      }).catch(function(){});
+    }catch(e){}
+  }
+  function sendWorkorderFinal(){
+    populateSendTargetsFinal();
+    var item = buildWorkorderPayload();
+    if(!item.receiverIds.length){
+      alert('수신 부서를 먼저 체크하세요.');
+      return false;
+    }
+    upsertEverywhere(item);
+    addNotifications(item);
+    tryServerSync(item);
+    try{
+      if(typeof window.namoRenderProductionEnterprise === 'function') window.namoRenderProductionEnterprise();
+      if(typeof window.renderInboxPages === 'function') window.renderInboxPages();
+    }catch(e){}
+    updateBadgeFinal();
+    try{
+      if(typeof notify === 'function'){
+        notify('작업지시서 발송 완료', item.woNo + ' / 수신 ' + item.receivers.length + '명에게 발송 및 알림 등록 완료');
+      }
+    }catch(e){}
+    return true;
+  }
+  function installSendIntercepter(){
+    document.addEventListener('click', function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('[data-nmc-action="send"]') : null;
+      if(!btn) return;
+      setTimeout(sendWorkorderFinal, 60);
+      setTimeout(updateBadgeFinal, 160);
+      setTimeout(updateBadgeFinal, 800);
+    }, true);
+  }
+  function installNotificationClick(){
+    document.addEventListener('click', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('#nmcNotiBadge, .nmc-bell-badge') : null;
+      if(!b) return;
+      e.preventDefault();
+      e.stopPropagation();
+      showMyNotificationList();
+    }, true);
+  }
+  function installStorageSync(){
+    window.addEventListener('storage', function(e){
+      if(STORAGE_KEYS.indexOf(e.key) >= 0 || e.key === NOTI_KEY){
+        updateBadgeFinal();
+        try{ if(typeof window.namoRenderProductionEnterprise === 'function') window.namoRenderProductionEnterprise(); }catch(err){}
+      }
+    });
+  }
+  function boot(){
+    populateSendTargetsFinal();
+    updateBadgeFinal();
+    installSendIntercepter();
+    installNotificationClick();
+    installStorageSync();
+    [300,800,1600,3000].forEach(function(ms){
+      setTimeout(function(){ populateSendTargetsFinal(); updateBadgeFinal(); }, ms);
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.namoPopulateWorkorderReceiversFinal = populateSendTargetsFinal;
+  window.namoSendWorkorderFinal = sendWorkorderFinal;
+  window.namoUpdateWorkorderBadgeFinal = updateBadgeFinal;
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
