@@ -12456,5 +12456,165 @@ document.addEventListener('DOMContentLoaded',async()=>{
   else { setTimeout(patchMoon,500); setTimeout(patchMoon,1500); }
 })();
 </script>
+
+<!-- 참조 작업지시서 메뉴/목록 추가 패치 v20260601 -->
+<style id="nmc-reference-workorder-page-style">
+#page-workorder-reference .nmc-ref-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+#page-workorder-reference .nmc-ref-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:16px 18px;box-shadow:0 8px 22px rgba(15,23,42,.055)}
+#page-workorder-reference .nmc-ref-kpi .l{font-size:12px;font-weight:900;color:#64748b}
+#page-workorder-reference .nmc-ref-kpi .v{font-size:24px;font-weight:900;color:#0f172a;margin-top:4px;word-break:break-all}
+#page-workorder-reference .nmc-ref-empty{padding:34px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:16px;background:#f8fafc;line-height:1.7;font-weight:700}
+#page-workorder-reference .nmc-ref-click{color:#1d4ed8;font-weight:900;cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:0}
+#page-workorder-reference .nmc-ref-note{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155}
+#page-workorder-reference .nmc-ref-detail{margin-top:16px}
+#page-workorder-reference .nmc-ref-box{white-space:pre-wrap;border:1px solid #edf2f7;border-radius:10px;padding:12px;background:#fff;min-height:54px;color:#334155;line-height:1.6}
+#page-workorder-reference .nmc-ref-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #e5edf6}
+#page-workorder-reference .nmc-ref-badge{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900;background:#e0f2fe;color:#075985}
+@media(max-width:900px){#page-workorder-reference .nmc-ref-kpis{grid-template-columns:1fr 1fr}}
+@media print{#page-workorder-reference .ph,#page-workorder-reference .nmc-toolbar,#page-workorder-reference .nmc-ref-actions{display:none!important}}
+</style>
+<script id="nmc-reference-workorder-page-script">
+(function(){
+  'use strict';
+  if(window.__nmcReferenceWorkorderPageV1) return;
+  window.__nmcReferenceWorkorderPageV1=true;
+  var STORE_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function itemId(x){x=x||{};return String(x.woNo||x.orderNo||x.workOrderNo||x.workorderNo||x.no||x.number||x.id||x.uid||'').trim();}
+  function allOrders(){
+    var merged=[];
+    STORE_KEYS.forEach(function(k){merged=merged.concat(readArr(k));});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k])) merged=merged.concat(window[k]);});
+    var map={};
+    merged.forEach(function(x){if(!x||typeof x!=='object')return; var id=itemId(x)||JSON.stringify(x); map[id]=Object.assign({},map[id]||{},x);});
+    return Object.keys(map).map(function(k){return map[k];});
+  }
+  function currentUser(){
+    var s={}; try{s=(typeof state!=='undefined'&&state)?state:(window.state||{});}catch(e){s=window.state||{};}
+    var u=s.currentUser||s.user||window.currentUser||window.loginUser||window.userInfo||{};
+    var name=String(u.name||u.username||u.displayName||u.userName||u.empName||u.employeeName||'임흥배').trim();
+    var email=String(u.email||u.mail||'hbleem@namochemical.com').trim();
+    var id=String(u.id||u.userId||u.empId||email||name).trim();
+    var dept=String(u.department||u.dept||u.departmentName||u.deptName||u.team||'품질').trim();
+    return {id:id,name:name,email:email,department:dept};
+  }
+  function tokensForUser(u){
+    return [u.id,u.email,u.name,u.department+' '+u.name,u.name+' '+u.department].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
+  }
+  function arrText(v){
+    if(Array.isArray(v)) return v.map(arrText).join(', ');
+    if(v && typeof v==='object') return [v.department||v.dept,v.name||v.username||v.email||v.id,v.title||v.position].filter(Boolean).join(' ');
+    return String(v||'');
+  }
+  function refTextRaw(x){return arrText(x.refText||x.refDept||x.reference||x.references||x.cc||x.ccText||x.referenceUsers||x.refUsers||'');}
+  function refIdsRaw(x){return arrText(x.refIds||x.referenceIds||x.ccIds||x.refUserIds||x.referenceUsers||x.refUsers||'');}
+  function isReferenceForMe(x){
+    var u=currentUser(), keys=tokensForUser(u);
+    var hay=(refTextRaw(x)+' '+refIdsRaw(x)).toLowerCase();
+    if(!hay.trim()) return false;
+    return keys.some(function(k){return k && hay.indexOf(k)>=0;});
+  }
+  function statusLabel(v){v=String(v||'').trim(); if(!v) return '참조'; if(v==='sent') return '발송완료'; return v;}
+  function senderName(v,fallback){
+    if(v&&typeof v==='object') return v.name||v.username||v.displayName||v.email||v.id||fallback||'-';
+    return String(v||fallback||'-');
+  }
+  function norm(x,idx){x=x||{};return {
+    id:itemId(x)||('ref_'+idx),
+    no:x.woNo||x.orderNo||x.workOrderNo||x.workorderNo||x.no||x.number||itemId(x)||'-',
+    product:x.productName||x.product||x.itemName||x.title||x.name||'-',
+    code:x.productCode||x.code||'-',
+    lot:x.prodLot||x.productionLot||x.lot||x.lotNo||'-',
+    plan:x.planQty||x.plannedQty||x.planQuantity||x.qty||x.quantity||'-',
+    actual:x.actualQty||x.inputQty||x.realQty||x.actualInputQty||'-',
+    orderDate:x.orderDate||x.issueDate||x.date||'-',
+    date:x.sendTime||x.sentAt||x.createdAt||x.date||'-',
+    status:statusLabel(x.status||x.state),
+    sender:senderName(x.sender,x.senderText||x.writer||x.author||'-'),
+    receiver:x.receiverText||x.receiver||x.recvDept||x.receive||'-',
+    ref:refTextRaw(x)||'-',
+    instruction:x.instruction||x.instructions||x.orderInstruction||'',
+    sendNote:x.sendNote||x.memo||x.note||x.remark||'',
+    reqDept:x.reqDept||x.requestDept||'', worker:x.worker||'', planType:x.planType||'',
+    materials:Array.isArray(x.materials)?x.materials:(Array.isArray(x.inputs)?x.inputs:(Array.isArray(x.rawMaterials)?x.rawMaterials:(Array.isArray(x.materialList)?x.materialList:[]))), raw:x
+  };}
+  function referenceOrders(){return allOrders().filter(isReferenceForMe).map(norm).sort(function(a,b){return String(b.date).localeCompare(String(a.date));});}
+  function ensureNav(){
+    var exists=q('.nav-item[data-page="workorder-reference"]');
+    if(exists) return;
+    var recv=q('.nav-item[data-page="received-workorder"], .nav-item[data-page="receivedWorkorder"], .nav-item[data-page="workorder-received"]');
+    var write=q('.nav-item[data-page="workorder-final"]');
+    var btn=document.createElement('button');
+    btn.className='nav-item'; btn.setAttribute('data-page','workorder-reference'); btn.innerHTML='<span class="nav-icon">▣</span><span>참조 작업지시서</span>';
+    if(recv&&recv.parentNode) recv.insertAdjacentElement('afterend',btn);
+    else if(write&&write.parentNode) write.insertAdjacentElement('afterend',btn);
+    else {
+      var side=q('.sidebar'); if(side) side.appendChild(btn);
+    }
+  }
+  function pageHtml(){return '<section class="page" id="page-workorder-reference">'
+    +'<div class="ph"><div><div class="ph-title">참조 작업지시서</div><div class="ph-sub">발송정보의 참조 부서/참조자에 현재 로그인 사용자가 포함된 작업지시서를 조회합니다.</div></div><div class="ph-actions"><button type="button" class="btn light" data-nmc-ref-refresh="1">새로고침</button></div></div>'
+    +'<div class="card"><div class="ch"><h3>참조 수신 목록</h3><div class="ca"><span class="tag">조회 전용</span></div></div><div class="cb"><div id="nmcRefWorkorderList"></div><div id="nmcRefWorkorderDetail" class="nmc-ref-detail"></div></div></div>'
+    +'</section>';}
+  function ensurePage(){var main=q('main.content')||q('.content'); if(!main)return; if(!q('#page-workorder-reference')) main.insertAdjacentHTML('beforeend',pageHtml());}
+  function showPageLocal(pg){
+    if(typeof window.showPage==='function'){try{window.showPage(pg);return;}catch(e){}}
+    qa('.page').forEach(function(p){p.classList.toggle('active',p.id==='page-'+pg);});
+    qa('.nav-item[data-page]').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===pg);});
+  }
+  function renderList(){
+    ensurePage(); var list=q('#nmcRefWorkorderList'), detail=q('#nmcRefWorkorderDetail'); if(!list)return; if(detail) detail.innerHTML='';
+    var arr=referenceOrders(); var me=currentUser();
+    if(!arr.length){list.innerHTML='<div class="nmc-ref-empty">참조 받은 작업지시서가 없습니다.<br>작업지시서 작성 화면의 <b>참조 부서</b>에서 '+esc(me.name)+' 또는 해당 사용자를 선택한 뒤 발송하면 이곳에 표시됩니다.</div>';return;}
+    list.innerHTML='<div class="nmc-ref-kpis"><div class="nmc-ref-kpi"><div class="l">참조 전체</div><div class="v">'+arr.length+'</div></div><div class="nmc-ref-kpi"><div class="l">최근 작업지시번호</div><div class="v">'+esc(arr[0].no)+'</div></div><div class="nmc-ref-kpi"><div class="l">최근 제품</div><div class="v">'+esc(arr[0].product)+'</div></div><div class="nmc-ref-kpi"><div class="l">조회 사용자</div><div class="v">'+esc(me.name)+'</div></div></div>'
+      +'<div class="tw"><table><thead><tr><th>NO.</th><th>상태</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>발송자</th><th>발송일시</th><th>비고</th></tr></thead><tbody>'
+      +arr.map(function(x,i){return '<tr><td>'+(i+1)+'</td><td><span class="nmc-ref-badge">'+esc(x.status)+'</span></td><td><button type="button" class="nmc-ref-click" data-nmc-ref-open="'+esc(x.id)+'">'+esc(x.no)+'</button></td><td>'+esc(x.product)+'</td><td>'+esc(x.lot)+'</td><td>'+esc(x.plan)+'</td><td>'+esc(x.sender)+'</td><td>'+esc(x.date)+'</td><td><div class="nmc-ref-note">'+esc(x.sendNote||'-')+'</div></td></tr>';}).join('')
+      +'</tbody></table></div>';
+  }
+  function showDetail(id){
+    var detail=q('#nmcRefWorkorderDetail'); if(!detail)return; var item=referenceOrders().filter(function(x){return String(x.id)===String(id);})[0];
+    if(!item){detail.innerHTML='<div class="nmc-ref-empty">상세 데이터를 찾을 수 없습니다.</div>';return;}
+    var mats=(item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(m.name||m.materialName||m.rawName||m.rawMaterialName||'-')+'</td><td>'+esc(m.lot||m.materialLot||m.lotNo||m.rawLot||'-')+'</td><td>'+esc(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+' kg</td><td>'+esc(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+' kg</td><td>'+esc(m.ratio||m.rate||m.percent||'0.00')+' %</td><td>'+esc(m.note||m.remark||m.memo||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
+    detail.innerHTML='<div class="card"><div class="ch"><h3>참조 작업지시서 상세</h3><div class="ca"><span class="tag">조회 전용</span></div></div><div class="cb">'
+      +'<h4 style="margin:0 0 10px;color:#0f172a">1. 기본 정보</h4><div class="fg4"><div class="field"><label>작업지시번호</label><input readonly value="'+esc(item.no)+'"></div><div class="field"><label>지시일자</label><input readonly value="'+esc(item.orderDate)+'"></div><div class="field"><label>계획구분</label><input readonly value="'+esc(item.planType)+'"></div><div class="field"><label>상태</label><input readonly value="'+esc(item.status)+'"></div><div class="field"><label>요청부서</label><input readonly value="'+esc(item.reqDept)+'"></div><div class="field"><label>작업자</label><input readonly value="'+esc(item.worker)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+esc(item.sender)+'"></div></div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">2. 제품 정보</h4><div class="fg4"><div class="field"><label>제품명</label><input readonly value="'+esc(item.product)+'"></div><div class="field"><label>제품코드</label><input readonly value="'+esc(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+esc(item.lot)+'"></div><div class="field"><label>계획수량 (kg)</label><input readonly value="'+esc(item.plan)+' kg"></div><div class="field"><label>투입량 (kg)</label><input readonly value="'+esc(item.actual)+' kg"></div></div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-ref-box">'+esc(item.instruction||'-')+'</div>'
+      +'<h4 style="margin:18px 0 10px;color:#0f172a">5. 발송 정보</h4><div class="fg4"><div class="field cfall"><label>수신</label><input readonly value="'+esc(item.receiver)+'"></div><div class="field cfall"><label>참조</label><input readonly value="'+esc(item.ref)+'"></div><div class="field cfall"><label>발송일시</label><input readonly value="'+esc(item.date)+'"></div><div class="field cfall"><label>비고</label><textarea readonly>'+esc(item.sendNote)+'</textarea></div></div>'
+      +'<div class="nmc-ref-actions"><button type="button" class="btn light" data-nmc-ref-print="'+esc(item.id)+'">인쇄</button></div>'
+      +'</div></div>';
+    detail.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function printItem(id){
+    var item=referenceOrders().filter(function(x){return String(x.id)===String(id);})[0]; if(!item){alert('인쇄할 작업지시서를 찾을 수 없습니다.');return;}
+    var target=q('#printTarget'); if(!target){target=document.createElement('div');target.id='printTarget';document.body.appendChild(target);} target.className='rsheet';
+    var mats=(item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(m.name||m.materialName||m.rawName||m.rawMaterialName||'-')+'</td><td>'+esc(m.lot||m.materialLot||m.lotNo||m.rawLot||'-')+'</td><td>'+esc(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+' kg</td><td>'+esc(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+' kg</td><td>'+esc(m.ratio||m.rate||m.percent||'0.00')+' %</td><td>'+esc(m.note||m.remark||m.memo||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
+    target.innerHTML='<div class="rhdr"><div><h2>참조 작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order Reference Copy</div></div><div class="rbname">'+esc(item.no)+'</div></div>'
+      +'<table><tbody><tr><th>작업지시번호</th><td>'+esc(item.no)+'</td><th>지시일자</th><td>'+esc(item.orderDate)+'</td><th>계획구분</th><td>'+esc(item.planType)+'</td></tr><tr><th>요청부서</th><td>'+esc(item.reqDept)+'</td><th>상태</th><td>'+esc(item.status)+'</td><th>작업자</th><td>'+esc(item.worker)+'</td></tr><tr><th>제품명</th><td>'+esc(item.product)+'</td><th>제품코드</th><td>'+esc(item.code)+'</td><th>생산 LOT</th><td>'+esc(item.lot)+'</td></tr><tr><th>계획수량</th><td>'+esc(item.plan)+' kg</td><th>투입량</th><td>'+esc(item.actual)+' kg</td><th></th><td></td></tr></tbody></table>'
+      +'<h4 style="margin:16px 0 8px">투입 원료</h4><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT 번호</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table>'
+      +'<h4 style="margin:16px 0 8px">지시 사항</h4><div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+esc(item.instruction||'-')+'</div>'
+      +'<h4 style="margin:16px 0 8px">발송 정보</h4><table><tbody><tr><th>발송자</th><td>'+esc(item.sender)+'</td><th>수신</th><td>'+esc(item.receiver)+'</td><th>참조</th><td>'+esc(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+esc(item.date)+'</td><th>비고</th><td colspan="3">'+esc(item.sendNote)+'</td></tr></tbody></table>'
+      +'<div class="print-user-info">참조 조회자: '+esc(currentUser().name)+'<br>출력일시: '+esc(new Date().toLocaleString('ko-KR'))+'</div>';
+    window.print();
+  }
+  function bind(){
+    document.addEventListener('click',function(e){
+      var nav=e.target.closest&&e.target.closest('.nav-item[data-page="workorder-reference"]'); if(nav){e.preventDefault();e.stopPropagation();showPageLocal('workorder-reference');setTimeout(renderList,50);return false;}
+      var ref=e.target.closest&&e.target.closest('[data-nmc-ref-refresh]'); if(ref){e.preventDefault();renderList();return;}
+      var open=e.target.closest&&e.target.closest('[data-nmc-ref-open]'); if(open){e.preventDefault();showDetail(open.getAttribute('data-nmc-ref-open'));return;}
+      var pr=e.target.closest&&e.target.closest('[data-nmc-ref-print]'); if(pr){e.preventDefault();printItem(pr.getAttribute('data-nmc-ref-print'));return;}
+      var send=e.target.closest&&e.target.closest('#page-workorder-final [data-nmc-action="send"]'); if(send){setTimeout(renderList,250);}
+    },true);
+  }
+  function boot(){ensureNav();ensurePage();renderList();bind();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,300);}); else setTimeout(boot,300);
+  [1000,2500,5000].forEach(function(ms){setTimeout(function(){ensureNav();ensurePage();renderList();},ms);});
+  window.nmcRenderReferenceWorkorders=renderList;
+})();
+</script>
+
 </body>
 </html>
