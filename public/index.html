@@ -12614,5 +12614,120 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<!-- 생산관리 최종 구조 재배치 패치 v20260601-final-structure -->
+<style>
+/* 생산관리 최종 구조 그룹 헤더 */
+.sidebar .nav-sec.nmc-prod-group{
+  padding:10px 12px 5px!important;
+  color:#9cc4f5!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.7px!important;
+  text-transform:none!important;
+}
+.sidebar .nav-item.nmc-prod-child{
+  padding-left:28px!important;
+}
+.nmc-inv-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.nmc-inv-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:16px;box-shadow:0 8px 22px rgba(15,23,42,.055)}
+.nmc-inv-kpi .l{font-size:12px;font-weight:900;color:#64748b}.nmc-inv-kpi .v{font-size:26px;font-weight:900;color:#2563eb;margin-top:4px}
+.nmc-inv-empty{padding:28px;text-align:center;color:#64748b;background:#fff;border:1px solid #dbe3ee;border-radius:16px}
+@media(max-width:900px){.nmc-inv-kpis{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+  'use strict';
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var prodPages=['production','production-plan','workorder-final','workorder-list','workorder-inbox','workorder-reference','workorder-approval','production-progress','production-result','trace','inventory-raw','inventory-product','inventory-history','inventory-lot'];
+  function navBtn(page,icon,label){return '<button class="nav-item nmc-prod-child" data-page="'+page+'"><span class="nav-icon">'+icon+'</span><span>'+label+'</span></button>'}
+  function rebuildProductionNavFinal(){
+    var side=qs('.sidebar'); if(!side) return;
+    var prodSec=qsa('.nav-sec',side).filter(function(x){return x.textContent.trim()==='생산 관리'})[0];
+    if(!prodSec){
+      var first=side.firstElementChild;
+      if(first){first.insertAdjacentHTML('beforebegin','<div class="nav-sec">생산 관리</div>'); prodSec=side.firstElementChild;}
+      else {side.insertAdjacentHTML('afterbegin','<div class="nav-sec">생산 관리</div>'); prodSec=side.firstElementChild;}
+    }
+    qsa('.nmc-prod-group',side).forEach(function(x){x.remove()});
+    prodPages.forEach(function(pg){qsa('.nav-item[data-page="'+pg+'"]',side).forEach(function(x){x.remove()})});
+    var html=''
+      +'<div class="nav-sec nmc-prod-group">▼ 작업지시</div>'
+      +navBtn('workorder-final','✎','작업지시서 작성')
+      +navBtn('workorder-list','▤','작업지시서 목록')
+      +navBtn('workorder-inbox','▣','받은 작업지시서')
+      +navBtn('workorder-reference','▣','참조 작업지시서')
+      +navBtn('workorder-approval','☑','작업지시 승인현황')
+      +'<div class="nav-sec nmc-prod-group">▼ 생산실행</div>'
+      +navBtn('production-progress','◔','생산진행 현황')
+      +navBtn('trace','⌁','LOT 추적')
+      +navBtn('production-result','✓','생산실적')
+      +'<div class="nav-sec nmc-prod-group">▼ 계획관리</div>'
+      +navBtn('production-plan','▾','생산계획 관리')
+      +'<div class="nav-sec nmc-prod-group">▼ 재고관리</div>'
+      +navBtn('inventory-raw','◫','원료 재고')
+      +navBtn('inventory-product','▧','제품 재고')
+      +navBtn('inventory-history','↕','입출고 이력')
+      +navBtn('inventory-lot','⌕','LOT 재고조회');
+    prodSec.insertAdjacentHTML('afterend',html);
+  }
+  function workorders(){
+    var keys=['nmcWorkOrders','workOrders','namoWorkOrders','productionWorkOrders'];
+    for(var i=0;i<keys.length;i++){
+      try{var a=JSON.parse(localStorage.getItem(keys[i])||'[]'); if(Array.isArray(a)&&a.length) return a;}catch(e){}
+    }
+    return [];
+  }
+  function pageApproval(){return '<section class="page" id="page-workorder-approval"><div class="ph"><div><div class="ph-title">작업지시 승인현황</div><div class="ph-sub">작업지시서의 발송, 수신확인, 참조확인, 생산진행 상태를 한 화면에서 확인합니다.</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시 승인현황</div></div><div class="ph-actions"><button class="btn light" data-nmc-approval-refresh>새로고침</button></div></div><div class="nmc-inv-kpis"><div class="nmc-inv-kpi"><div class="l">전체</div><div class="v" data-ap-kpi="total">0</div></div><div class="nmc-inv-kpi"><div class="l">발송완료</div><div class="v" data-ap-kpi="sent">0</div></div><div class="nmc-inv-kpi"><div class="l">진행중</div><div class="v" data-ap-kpi="run">0</div></div><div class="nmc-inv-kpi"><div class="l">완료/종결</div><div class="v" data-ap-kpi="done">0</div></div></div><div class="tw"><table><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>작성자</th><th>수신</th><th>참조</th><th>발송/작성일</th></tr></thead><tbody id="nmcApprovalBody"></tbody></table></div></section>'}
+  function invPage(id,title,sub,cols){return '<section class="page" id="page-'+id+'"><div class="ph"><div><div class="ph-title">'+title+'</div><div class="ph-sub">'+sub+'</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 재고관리 <span class="sep">›</span> '+title+'</div></div></div><div class="nmc-inv-kpis"><div class="nmc-inv-kpi"><div class="l">전체 LOT</div><div class="v">0</div></div><div class="nmc-inv-kpi"><div class="l">입고</div><div class="v">0</div></div><div class="nmc-inv-kpi"><div class="l">출고/사용</div><div class="v">0</div></div><div class="nmc-inv-kpi"><div class="l">현재고</div><div class="v">0</div></div></div><div class="tw"><table><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>'}).join('')+'</tr></thead><tbody><tr><td colspan="'+cols.length+'" style="text-align:center;color:#64748b;padding:28px">아직 등록된 재고 데이터가 없습니다. 다음 단계에서 생산실적/입출고와 연동됩니다.</td></tr></tbody></table></div></section>'}
+  function ensurePages(){
+    var main=qs('main.content')||qs('.content'); if(!main) return;
+    if(!qs('#page-workorder-approval')) main.insertAdjacentHTML('beforeend',pageApproval());
+    if(!qs('#page-inventory-raw')) main.insertAdjacentHTML('beforeend',invPage('inventory-raw','원료 재고','원료 LOT별 입고량, 사용량, 잔량을 관리합니다.',['No.','원료 LOT','원료명','입고량','사용량','잔량','입고일','비고']));
+    if(!qs('#page-inventory-product')) main.insertAdjacentHTML('beforeend',invPage('inventory-product','제품 재고','제품 LOT별 생산량, 출고량, 현재고를 관리합니다.',['No.','제품 LOT','제품명','생산량','출고량','현재고','생산일','비고']));
+    if(!qs('#page-inventory-history')) main.insertAdjacentHTML('beforeend',invPage('inventory-history','입출고 이력','원료 입고, 생산 투입, 제품 생산, 제품 출고 이력을 추적합니다.',['No.','구분','품목/제품','LOT','입고','출고/사용','일시','담당자','비고']));
+    if(!qs('#page-inventory-lot')) main.insertAdjacentHTML('beforeend',invPage('inventory-lot','LOT 재고조회','LOT 번호 기준으로 원료·제품 재고와 입출고 이력을 조회합니다.',['No.','LOT','구분','품목/제품명','입고량','사용/출고량','현재고','위치','상태']));
+  }
+  function renderApproval(){
+    var body=qs('#nmcApprovalBody'); if(!body) return;
+    var arr=workorders();
+    var total=arr.length, sent=0, run=0, done=0;
+    body.innerHTML=arr.length?arr.map(function(x,i){
+      var st=x.status||x.state||x.progressStatus||'작성중';
+      if(/발송/.test(st)) sent++; if(/진행|시작|수신/.test(st)) run++; if(/완료|종결/.test(st)) done++;
+      var no=x.no||x.workOrderNo||x.orderNo||x.id||'-';
+      var prod=x.product||x.productName||x.itemName||'-';
+      var sender=x.sender||x.writer||x.createdByName||x.author||'-';
+      var recv=x.receiver||x.receiverNames||x.recvNames||x.toNames||x.receiveNames||'-';
+      var ref=x.ref||x.referenceNames||x.refNames||x.ccNames||'-';
+      var dt=x.sentAt||x.sendDate||x.createdAt||x.date||'-';
+      return '<tr><td>'+(i+1)+'</td><td>'+esc(no)+'</td><td>'+esc(st)+'</td><td>'+esc(prod)+'</td><td>'+esc(sender)+'</td><td>'+esc(recv)+'</td><td>'+esc(ref)+'</td><td>'+esc(dt)+'</td></tr>'
+    }).join(''):'<tr><td colspan="8" style="text-align:center;color:#64748b;padding:28px">등록된 작업지시서가 없습니다.</td></tr>';
+    var set=function(k,v){var e=qs('[data-ap-kpi="'+k+'"]'); if(e)e.textContent=v;}; set('total',total); set('sent',sent); set('run',run); set('done',done);
+  }
+  function showPageLocal(pg){
+    if(typeof window.showPage==='function'){try{window.showPage(pg);return true;}catch(e){}}
+    qsa('.page').forEach(function(p){p.classList.toggle('active',p.id==='page-'+pg)});
+    qsa('.nav-item[data-page]').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===pg)});
+    return true;
+  }
+  function bind(){
+    if(window.__nmcProdFinalStructureBound) return; window.__nmcProdFinalStructureBound=true;
+    document.addEventListener('click',function(e){
+      var nav=e.target.closest&&e.target.closest('.nav-item[data-page]'); if(!nav) return;
+      var pg=nav.getAttribute('data-page');
+      if(['workorder-approval','inventory-raw','inventory-product','inventory-history','inventory-lot'].indexOf(pg)>=0){e.preventDefault(); e.stopPropagation(); showPageLocal(pg); if(pg==='workorder-approval') setTimeout(renderApproval,20); return false;}
+      var refresh=e.target.closest&&e.target.closest('[data-nmc-approval-refresh]'); if(refresh){e.preventDefault(); renderApproval();}
+    },true);
+  }
+  function boot(){rebuildProductionNavFinal(); ensurePages(); renderApproval(); bind();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,350)}); else setTimeout(boot,350);
+  [800,1600,3000,5200,7000].forEach(function(ms){setTimeout(boot,ms)});
+  window.nmcRebuildProductionFinalStructure=boot;
+})();
+</script>
+
 </body>
 </html>
