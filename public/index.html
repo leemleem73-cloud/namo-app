@@ -1614,6 +1614,33 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #qmesTrendSlot .qmes-trend-wide .ch .tag{display:inline-flex!important}
 
 
+
+
+/* 로그인 화면: ID 저장 체크박스 */
+.lform .login-options{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  margin:-2px 0 2px;
+}
+.lform .remember-id{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+  font-weight:700;
+  color:var(--t3);
+  cursor:pointer;
+  user-select:none;
+}
+.lform .remember-id input[type="checkbox"]{
+  width:15px;
+  height:15px;
+  accent-color:var(--pri);
+  cursor:pointer;
+}
+.lform .remember-id span{line-height:1;}
+
 /* 로그인 화면: 회사 홈페이지 바로가기 버튼 */
 .lform .home-link{
   height:42px;
@@ -2513,8 +2540,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     </div>
     <div class="lpanel active" id="panelLogin">
       <div class="lform">
-        <input type="email" id="loginEmail" placeholder="이메일 주소"/>
-        <input type="password" id="loginPassword" placeholder="비밀번호"/>
+        <input type="email" id="loginEmail" placeholder="이메일 주소" autocomplete="username"/>
+        <input type="password" id="loginPassword" placeholder="비밀번호" autocomplete="current-password"/>
+        <div class="login-options">
+          <label class="remember-id" for="rememberLoginId">
+            <input type="checkbox" id="rememberLoginId"/>
+            <span>ID 저장</span>
+          </label>
+        </div>
         <div class="lerr" id="loginError"></div>
         <button type="button" class="btn pri" id="loginBtn" style="height:44px;font-size:14px;">로그인</button>
         <a href="https://namochemical.com" class="btn home-link" target="_blank" rel="noopener">회사홈페이지 바로가기</a>
@@ -3940,10 +3973,33 @@ function openLoginTab(t){
   toggle('panelLogin',t==='login');
   toggle('panelSignup',t==='signup');
 }
+
+const REMEMBER_LOGIN_ID_KEY='namo_qms_saved_login_id';
+function loadRememberedLoginId(){
+  const emailEl=$('loginEmail');
+  const chkEl=$('rememberLoginId');
+  if(!emailEl||!chkEl) return;
+  const saved=(localStorage.getItem(REMEMBER_LOGIN_ID_KEY)||'').trim();
+  if(saved){
+    emailEl.value=saved;
+    chkEl.checked=true;
+  }
+}
+function saveRememberedLoginId(email){
+  const chkEl=$('rememberLoginId');
+  if(!chkEl) return;
+  if(chkEl.checked && email){
+    localStorage.setItem(REMEMBER_LOGIN_ID_KEY,email);
+  }else{
+    localStorage.removeItem(REMEMBER_LOGIN_ID_KEY);
+  }
+}
+
 async function login(){
   $('loginError').textContent='';
   const email=$('loginEmail').value.trim(),pwd=$('loginPassword').value.trim();
   if(!email||!pwd){$('loginError').textContent='이메일과 비밀번호를 입력하세요.';return;}
+  saveRememberedLoginId(email);
   const{data}=await api('/api/auth/login',{method:'POST',body:JSON.stringify({email,password:pwd})});
   if(!data?.success){$('loginError').textContent=data?.message||'로그인에 실패했습니다.';return;}
   const token=data?.token || data?.accessToken || data?.access_token || data?.data?.token || data?.data?.accessToken || data?.data?.access_token;
@@ -5596,6 +5652,9 @@ function bindEvents(){
   clickSafe('loginBtn',login);
   clickSafe('signupBtn',signup);
   onSafe('loginPassword','keydown',e=>{if(e.key==='Enter')login();});
+  onSafe('loginEmail','keydown',e=>{if(e.key==='Enter')login();});
+  onSafe('rememberLoginId','change',()=>{const emailEl=$('loginEmail'); if(!$('rememberLoginId').checked) localStorage.removeItem(REMEMBER_LOGIN_ID_KEY); else if(emailEl&&emailEl.value.trim()) localStorage.setItem(REMEMBER_LOGIN_ID_KEY,emailEl.value.trim());});
+  loadRememberedLoginId();
   clickSafe('profileBtn',e=>{e.stopPropagation();const d=$('profileDropdown');if(d)d.classList.toggle('show');});
   const homeLogo=$('homeLogo');
   if(homeLogo){
