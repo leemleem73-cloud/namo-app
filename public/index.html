@@ -2371,13 +2371,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   text-decoration:underline;
 }
 
-
-
-/* 알림 벨 중복 즉시 숨김 - F5 깜빡임 방지 */
-#nmcTopBell,
-#namoReportBell {
-  display: none !important;
-}
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -12737,6 +12730,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 
+<!-- Bell dedup final patch: keep #namoUnifiedBell only -->
+<style id="namo-bell-hide-final">
+#nmcTopBell,
+#namoReportBell {
+  display: none !important;
+}
+</style>
 
 <script id="namo-bell-dedup-final">
 (function(){
@@ -12784,5 +12784,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 })();
 </script>
+
 </body>
 </html>
