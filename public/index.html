@@ -3917,7 +3917,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    `
+    '
 
 <!-- 원료 재고 화면 캡쳐 동일 구현 패치 v20260601 -->
 <style id="nmc-raw-inventory-capture-style">
@@ -3981,7 +3981,7 @@ function printLabel(){
 })();
 </script>
 
-</body></html>`
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
