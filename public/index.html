@@ -12729,5 +12729,61 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<!-- Bell dedup final patch: keep #namoUnifiedBell only -->
+<style id="namo-bell-hide-final">
+#nmcTopBell,
+#namoReportBell {
+  display: none !important;
+}
+</style>
+
+<script id="namo-bell-dedup-final">
+(function(){
+  'use strict';
+
+  var REMOVE = ['nmcTopBell','namoReportBell'];
+
+  try {
+    Object.defineProperty(window,'__nmcWorkOrderInboxPatch',{
+      value:true,
+      writable:false,
+      configurable:false
+    });
+  } catch(e) {
+    window.__nmcWorkOrderInboxPatch = true;
+  }
+
+  window.__namoReportApprovalNotifyV20260525Safe = true;
+
+  function removeDups(){
+    REMOVE.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.remove();
+    });
+  }
+
+  function boot(){
+    if(!document.body) return;
+    removeDups();
+
+    var obs = new MutationObserver(function(){
+      removeDups();
+    });
+
+    obs.observe(document.body, {
+      childList:true,
+      subtree:true
+    });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
 </body>
 </html>
