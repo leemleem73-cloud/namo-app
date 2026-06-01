@@ -2409,6 +2409,121 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 <!-- Supabase client for cross-PC QMS sync -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script id="namo-non-billing-error-cleanup-v2">
+/*
+  Non-billing console/error cleanup patch
+  - Keeps Supabase billing/quota/Services restricted errors visible
+  - Suppresses repeated non-critical logs/warnings and browser-extension async noise
+*/
+(function(){
+  'use strict';
+  if(window.__NAMO_NON_BILLING_ERROR_CLEANUP_V2__) return;
+  window.__NAMO_NON_BILLING_ERROR_CLEANUP_V2__ = true;
+
+  var rawWarn = console.warn ? console.warn.bind(console) : function(){};
+  var rawLog = console.log ? console.log.bind(console) : function(){};
+  var rawError = console.error ? console.error.bind(console) : function(){};
+
+  var KEEP_PATTERNS = [
+    /Services\s+restricted/i,
+    /used\s+up\s+its\s+quota/i,
+    /Resolve\s+billing\s+issues/i,
+    /billing/i,
+    /quota/i,
+    /payment/i,
+    /invoice/i,
+    /organization\s+has\s+used\s+up/i
+  ];
+
+  var HIDE_PATTERNS = [
+    /Supabase\s+URL\/?ANON\s+KEY/i,
+    /Supabase\s+URL\/?Anon\s+Key/i,
+    /Supabase\s+URL/i,
+    /Supabase\s+SDK/i,
+    /Supabase\s+library/i,
+    /Supabase\s+client/i,
+    /NAMO_SUPABASE/i,
+    /YOUR_SUPABASE/i,
+    /YOUR_PROJECT/i,
+    /YOUR_PROJECT_REF/i,
+    /Realtime/i,
+    /qms_shared_storage/i,
+    /work_orders\s*(저장|조회)?/i,
+    /notifications\s*(저장|조회)?/i,
+    /\[sign\]/i,
+    /서명\s*후보\s*로드/i,
+    /\[QMS Supabase Sync\]/i,
+    /\[NAMO_ALL_MENU_PC_SYNC_V1\]/i,
+    /\[namo-report-notify\]/i,
+    /\[approval final fix\]/i,
+    /\[approval inbox\]/i,
+    /\[workorder history save\]/i,
+    /\[training approval\]/i,
+    /공용\s*저장소/i,
+    /전체\s*메뉴\s*PC\s*동기화/i,
+    /로컬\s*데이터\s*전체\s*업로드/i,
+    /message\s+channel\s+closed/i,
+    /asynchronous\s+response/i,
+    /listener\s+indicated/i
+  ];
+
+  var onceCache = Object.create(null);
+  function stringify(args){
+    return Array.prototype.slice.call(args).map(function(v){
+      if(v == null) return String(v);
+      if(typeof v === 'string') return v;
+      if(v && v.message) return String(v.message);
+      try { return JSON.stringify(v); } catch(e) { return String(v); }
+    }).join(' ');
+  }
+  function test(list, msg){ return list.some(function(re){ return re.test(msg); }); }
+  function shouldKeep(msg){ return test(KEEP_PATTERNS, msg); }
+  function shouldHide(msg){ return test(HIDE_PATTERNS, msg) && !shouldKeep(msg); }
+
+  console.warn = function(){
+    var msg = stringify(arguments);
+    if(shouldHide(msg)) return;
+    rawWarn.apply(console, arguments);
+  };
+  console.log = function(){
+    var msg = stringify(arguments);
+    if(shouldHide(msg)) return;
+    rawLog.apply(console, arguments);
+  };
+  console.error = function(){
+    var msg = stringify(arguments);
+    if(shouldHide(msg)) return;
+    rawError.apply(console, arguments);
+  };
+
+  // Keep a visible one-time note for missing Supabase config without repeating noise.
+  window.NAMO_LOG_ONCE = window.NAMO_LOG_ONCE || function(key, fn){
+    if(onceCache[key]) return;
+    onceCache[key] = true;
+    try { fn(); } catch(e) {}
+  };
+
+  window.addEventListener('unhandledrejection', function(e){
+    var msg = '';
+    try { msg = String((e && e.reason && (e.reason.message || e.reason)) || ''); } catch(err) {}
+    if(shouldHide(msg)){
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+
+  window.addEventListener('error', function(e){
+    var msg = '';
+    try { msg = String((e && (e.message || e.error && e.error.message)) || ''); } catch(err) {}
+    if(shouldHide(msg)){
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+})();
+</script>
+
 </head>
 <body class="login-active">
 
@@ -4400,7 +4515,7 @@ async function loadSignableUsers(){
   window.signableUsers = state.signableUsers;
   window.adminUsers = state.adminUsers;
 
-  console.log(`[sign] 서명 후보 로드: ${state.signableUsers.length}명`);
+  if(window.NAMO_SIGN_DEBUG) console.log(`[sign] 서명 후보 로드: ${state.signableUsers.length}명`);
   rebuildAllSignGrids();
 }
 async function loadAdminUsers(){
