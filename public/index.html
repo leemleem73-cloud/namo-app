@@ -13160,6 +13160,78 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC_CUSTOMER_LOT_FULL_REPLACE_PATCH_END -->
 
+
+
+<!-- NMC_PRODUCTION_RESULT_LEGEND_READABILITY_V3_START -->
+<style id="nmc-production-result-legend-readability-v3">
+/* 생산실적현황: 고객사명 글씨 겹침/세로 줄바꿈 방지 */
+#page-production-result .nmc-pr-grid{
+  grid-template-columns:minmax(420px,1fr) minmax(520px,1.28fr) minmax(540px,1.12fr)!important;
+}
+#page-production-result .nmc-pr-product{
+  display:grid!important;
+  grid-template-columns:190px minmax(300px,1fr)!important;
+  gap:28px!important;
+  align-items:center!important;
+}
+#page-production-result .nmc-pr-donut{
+  width:170px!important;
+  height:170px!important;
+  flex:0 0 170px!important;
+}
+#page-production-result .nmc-pr-legend{
+  min-width:300px!important;
+  width:100%!important;
+  gap:12px!important;
+}
+#page-production-result .nmc-pr-legend-row{
+  display:grid!important;
+  grid-template-columns:14px minmax(120px,1fr) minmax(126px,max-content)!important;
+  column-gap:12px!important;
+  align-items:center!important;
+  min-height:25px!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+  white-space:nowrap!important;
+}
+#page-production-result .nmc-pr-legend-row span:nth-child(2){
+  display:block!important;
+  min-width:120px!important;
+  overflow:visible!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+  font-weight:800!important;
+  color:#1f2937!important;
+}
+#page-production-result .nmc-pr-legend-row b{
+  justify-self:end!important;
+  text-align:right!important;
+  min-width:126px!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  font-weight:900!important;
+  color:#0f172a!important;
+}
+#page-production-result .nmc-pr-dot{
+  width:12px!important;
+  height:12px!important;
+  flex:0 0 12px!important;
+}
+@media(max-width:1700px){
+  #page-production-result .nmc-pr-grid{grid-template-columns:1fr!important;}
+  #page-production-result .nmc-pr-product{grid-template-columns:190px minmax(340px,1fr)!important;}
+}
+@media(max-width:760px){
+  #page-production-result .nmc-pr-product{grid-template-columns:1fr!important;}
+  #page-production-result .nmc-pr-legend{min-width:0!important;}
+  #page-production-result .nmc-pr-legend-row{grid-template-columns:14px 1fr!important;row-gap:3px!important;white-space:normal!important;}
+  #page-production-result .nmc-pr-legend-row span:nth-child(2){white-space:nowrap!important;}
+  #page-production-result .nmc-pr-legend-row b{grid-column:2!important;justify-self:start!important;text-align:left!important;}
+}
+</style>
+<!-- NMC_PRODUCTION_RESULT_LEGEND_READABILITY_V3_END -->
+
 </body>
 </html>
 
