@@ -14116,5 +14116,158 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC_PRODUCTION_DASHBOARD_MENU_SAME_LEVEL_PATCH_END -->
 
+
+<!-- NMC_PRODUCTION_DASHBOARD_LAYOUT_PATCH_REQUESTED_20260602_START -->
+<style id="nmc-production-dashboard-layout-requested-20260602">
+/* 생산 대시보드 요청 반영
+   1) 왼쪽 고객사별 생산현황 표 숨김
+   2) 월별 생산량 그래프 대형화
+   3) 오른쪽 고객사 생산현황 카드형 재구성
+*/
+#page-production-result .nmc-pr-grid > .nmc-pr-card:first-child{
+  display:none!important;
+}
+
+#page-production-result .nmc-pr-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,2.15fr) minmax(390px,.85fr)!important;
+  gap:18px!important;
+  align-items:stretch!important;
+}
+
+#page-production-result .nmc-pr-grid > .nmc-pr-card:nth-child(2){
+  min-height:460px!important;
+}
+
+#page-production-result .nmc-pr-grid > .nmc-pr-card:nth-child(2) .nmc-pr-card-b{
+  padding:18px 20px 22px!important;
+}
+
+#page-production-result .nmc-pr-chart{
+  height:370px!important;
+  min-height:370px!important;
+  position:relative!important;
+}
+
+#page-production-result .nmc-pr-chart canvas{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+}
+
+#page-production-result .nmc-pr-product{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:20px!important;
+  min-height:390px!important;
+}
+
+#page-production-result .nmc-pr-donut{
+  width:235px!important;
+  height:235px!important;
+  flex:0 0 auto!important;
+  margin:4px auto 0!important;
+}
+
+#page-production-result .nmc-pr-donut:after{
+  inset:50px!important;
+}
+
+#page-production-result .nmc-pr-donut-center b{
+  font-size:34px!important;
+  letter-spacing:-1px!important;
+}
+
+#page-production-result .nmc-pr-donut-center span{
+  font-size:13px!important;
+  font-weight:900!important;
+  color:#475569!important;
+}
+
+#page-production-result .nmc-pr-legend{
+  width:100%!important;
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:10px!important;
+}
+
+#page-production-result .nmc-pr-legend-row{
+  width:100%!important;
+  min-height:50px!important;
+  padding:12px 14px!important;
+  border:1px solid #e2e8f0!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,#ffffff,#f8fafc)!important;
+  box-shadow:0 4px 12px rgba(15,23,42,.045)!important;
+  display:grid!important;
+  grid-template-columns:14px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  white-space:normal!important;
+}
+
+#page-production-result .nmc-pr-legend-row span:nth-child(2){
+  min-width:0!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  color:#0f172a!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+#page-production-result .nmc-pr-legend-row b{
+  grid-column:auto!important;
+  justify-self:end!important;
+  min-width:max-content!important;
+  text-align:right!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  color:#2563eb!important;
+  white-space:nowrap!important;
+}
+
+#page-production-result .nmc-pr-dot{
+  width:12px!important;
+  height:12px!important;
+  border-radius:5px!important;
+}
+
+@media(max-width:1200px){
+  #page-production-result .nmc-pr-grid{
+    grid-template-columns:1fr!important;
+  }
+  #page-production-result .nmc-pr-chart{
+    height:320px!important;
+    min-height:320px!important;
+  }
+  #page-production-result .nmc-pr-product{
+    min-height:0!important;
+  }
+}
+
+@media(max-width:760px){
+  #page-production-result .nmc-pr-donut{
+    width:200px!important;
+    height:200px!important;
+  }
+  #page-production-result .nmc-pr-donut:after{
+    inset:42px!important;
+  }
+  #page-production-result .nmc-pr-legend-row{
+    grid-template-columns:14px 1fr!important;
+  }
+  #page-production-result .nmc-pr-legend-row b{
+    grid-column:2!important;
+    justify-self:start!important;
+    text-align:left!important;
+  }
+}
+</style>
+<!-- NMC_PRODUCTION_DASHBOARD_LAYOUT_PATCH_REQUESTED_20260602_END -->
+
 </body>
 </html>
