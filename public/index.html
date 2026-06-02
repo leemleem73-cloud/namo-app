@@ -4072,7 +4072,166 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- NMC_ALL_PRODUCT_INPUT_SIZE_EQUAL_V3_START -->
+<style id="nmc-all-product-input-size-equal-v3">
+/* 작업지시서 > 제품 정보: 모든 입력란(제품명/제품코드/고객사명/계획수량/실투입량/생산LOT) 동일 규격 */
+#page-workorder-final .nmc-form-grid.five{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:14px 28px!important;
+  align-items:end!important;
+  --nmc-prod-gap:28px;
+  --nmc-prod-field-w:calc((100% - (4 * var(--nmc-prod-gap))) / 5);
+  --nmc-prod-input-h:42px;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-field{
+  min-width:0!important;
+  width:100%!important;
+  grid-column:span 1!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-input,
+#page-workorder-final .nmc-form-grid.five .nmc-select,
+#page-workorder-final .nmc-form-grid.five .nmc-input-wrap{
+  width:100%!important;
+  height:var(--nmc-prod-input-h)!important;
+  min-height:var(--nmc-prod-input-h)!important;
+  max-height:var(--nmc-prod-input-h)!important;
+  box-sizing:border-box!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-input,
+#page-workorder-final .nmc-form-grid.five .nmc-select{
+  border-radius:9px!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-input-wrap{
+  display:flex!important;
+  align-items:stretch!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-input-wrap .nmc-input{
+  height:var(--nmc-prod-input-h)!important;
+  min-height:var(--nmc-prod-input-h)!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-input-wrap .nmc-unit{
+  height:var(--nmc-prod-input-h)!important;
+  min-height:var(--nmc-prod-input-h)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+}
+#page-workorder-final #nmcCustomerName{
+  width:100%!important;
+  height:var(--nmc-prod-input-h)!important;
+  min-height:var(--nmc-prod-input-h)!important;
+}
+#page-workorder-final #nmcProdLotWrap,
+#page-workorder-final .nmc-prod-lot-field{
+  grid-column:1 / span 2!important;
+  width:calc(var(--nmc-prod-field-w) + 78px)!important;
+  max-width:calc(var(--nmc-prod-field-w) + 78px)!important;
+  min-width:0!important;
+  padding-right:0!important;
+  position:static!important;
+}
+#page-workorder-final #nmcProdLotWrap .nmc-input-wrap,
+#page-workorder-final .nmc-prod-lot-field .nmc-input-wrap{
+  display:grid!important;
+  grid-template-columns:var(--nmc-prod-field-w) 70px!important;
+  gap:8px!important;
+  width:calc(var(--nmc-prod-field-w) + 78px)!important;
+  height:var(--nmc-prod-input-h)!important;
+  align-items:stretch!important;
+  position:static!important;
+}
+#page-workorder-final #nmcProdLot{
+  width:var(--nmc-prod-field-w)!important;
+  max-width:var(--nmc-prod-field-w)!important;
+  height:var(--nmc-prod-input-h)!important;
+  min-height:var(--nmc-prod-input-h)!important;
+  flex:none!important;
+  display:block!important;
+  margin:0!important;
+}
+#page-workorder-final #nmcProdLotWrap .nmc-lot-btn,
+#page-workorder-final .nmc-prod-lot-field .nmc-lot-btn{
+  position:static!important;
+  width:70px!important;
+  min-width:70px!important;
+  height:var(--nmc-prod-input-h)!important;
+  min-height:var(--nmc-prod-input-h)!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:9px!important;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+}
+@media(max-width:1500px){
+  #page-workorder-final .nmc-form-grid.five{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    --nmc-prod-field-w:calc((100% - var(--nmc-prod-gap)) / 2);
+  }
+  #page-workorder-final #nmcProdLotWrap,
+  #page-workorder-final .nmc-prod-lot-field{grid-column:1 / span 2!important;}
+}
+@media(max-width:900px){
+  #page-workorder-final .nmc-form-grid.five{
+    grid-template-columns:1fr!important;
+    --nmc-prod-field-w:100%;
+  }
+  #page-workorder-final #nmcProdLotWrap,
+  #page-workorder-final .nmc-prod-lot-field{
+    grid-column:span 1!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  #page-workorder-final #nmcProdLotWrap .nmc-input-wrap,
+  #page-workorder-final .nmc-prod-lot-field .nmc-input-wrap{
+    grid-template-columns:1fr 70px!important;
+    width:100%!important;
+  }
+  #page-workorder-final #nmcProdLot{width:100%!important;max-width:none!important;}
+}
+</style>
+<script id="nmc-all-product-input-size-equal-v3-script">
+(function(){
+  function qs(s,r){return (r||document).querySelector(s)}
+  function normalizeProductInputSizes(){
+    var lot=qs('#page-workorder-final #nmcProdLot');
+    if(lot){
+      var field=lot.closest('.nmc-field');
+      if(field){
+        field.id='nmcProdLotWrap';
+        field.classList.add('nmc-prod-lot-field');
+        field.style.gridColumn='';
+        field.style.paddingRight='';
+        field.style.position='';
+        field.style.width='';
+      }
+    }
+    var cust=qs('#page-workorder-final #nmcCustomerName');
+    if(cust){
+      var cf=cust.closest('.nmc-field');
+      if(cf){
+        cf.classList.add('nmc-customer-field');
+        cf.style.gridColumn='';
+        cf.style.width='';
+      }
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',normalizeProductInputSizes);else normalizeProductInputSizes();
+  window.addEventListener('load',normalizeProductInputSizes);
+  [100,400,900,1600,3000].forEach(function(ms){setTimeout(normalizeProductInputSizes,ms)});
+  var mo=new MutationObserver(normalizeProductInputSizes);
+  if(document.body)mo.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<!-- NMC_ALL_PRODUCT_INPUT_SIZE_EQUAL_V3_END -->
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -13162,3 +13321,252 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 </body>
 </html>
+
+<!-- NMC_LOT_CUSTOMER_SIZE_EQUAL_FINAL_PATCH -->
+<style id="nmc-lot-customer-size-equal-final">
+/* 제품 정보 입력칸 크기 최종 일치화: 제품명/제품코드/고객사명/생산 LOT 모두 동일 폭/높이 */
+#page-workorder-final .nmc-form-grid.five{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:14px 28px!important;
+  align-items:end!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-field{
+  min-width:0!important;
+}
+#page-workorder-final .nmc-form-grid.five .nmc-input,
+#page-workorder-final .nmc-form-grid.five .nmc-select,
+#page-workorder-final #nmcCustomerName,
+#page-workorder-final #nmcProdLot{
+  width:100%!important;
+  height:48px!important;
+  min-height:48px!important;
+  box-sizing:border-box!important;
+  border-radius:9px!important;
+}
+#page-workorder-final #nmcProdLotWrap,
+#page-workorder-final .nmc-prod-lot-field{
+  grid-column:span 1!important;
+  position:relative!important;
+  padding-right:66px!important;
+}
+#page-workorder-final #nmcProdLotWrap .nmc-input-wrap,
+#page-workorder-final .nmc-prod-lot-field .nmc-input-wrap{
+  display:block!important;
+  width:100%!important;
+  position:static!important;
+}
+#page-workorder-final #nmcProdLotWrap #nmcProdLot,
+#page-workorder-final .nmc-prod-lot-field #nmcProdLot{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  flex:none!important;
+  margin:0!important;
+}
+#page-workorder-final #nmcProdLotWrap .nmc-lot-btn,
+#page-workorder-final .nmc-prod-lot-field .nmc-lot-btn{
+  position:absolute!important;
+  right:0!important;
+  bottom:0!important;
+  width:58px!important;
+  height:48px!important;
+  min-width:58px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:9px!important;
+  white-space:nowrap!important;
+}
+#page-workorder-final .nmc-customer-field{
+  grid-column:span 1!important;
+}
+#page-workorder-final .nmc-customer-field #nmcCustomerName{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+}
+</style>
+<script id="nmc-lot-customer-size-equal-final-script">
+(function(){
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function fixSize(){
+    var lot=qs('#page-workorder-final #nmcProdLot');
+    if(lot){
+      var field=lot.closest('.nmc-field');
+      if(field){
+        field.id='nmcProdLotWrap';
+        field.classList.add('nmc-prod-lot-field');
+        field.style.gridColumn='span 1';
+        field.style.paddingRight='66px';
+      }
+    }
+    var cust=qs('#page-workorder-final #nmcCustomerName');
+    if(cust){
+      var cf=cust.closest('.nmc-field');
+      if(cf){
+        cf.classList.add('nmc-customer-field');
+        cf.style.gridColumn='span 1';
+      }
+    }
+  }
+  document.addEventListener('DOMContentLoaded',fixSize);
+  window.addEventListener('load',fixSize);
+  setTimeout(fixSize,100);
+  setTimeout(fixSize,700);
+})();
+</script>
+<!-- NMC_LOT_CUSTOMER_SIZE_EQUAL_FINAL_PATCH_END -->
+
+<!-- NMC_PROD_RESULT_INPUT_UNIFORM_FINAL_PATCH_START -->
+<style>
+/* 작업지시서 제품 정보 입력란 전체 동일 규격 강제 */
+#page-workorder-final .nmc-product-grid,
+#page-workorder-final .nmc-product-info-grid,
+#page-workorder-final .nmc-prod-grid,
+#page-workorder-final [data-nmc-product-grid]{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:14px 18px!important;
+  align-items:end!important;
+}
+#page-workorder-final .nmc-field:has(#nmcProdName),
+#page-workorder-final .nmc-field:has(#nmcProdCode),
+#page-workorder-final .nmc-field:has(#nmcCustomerName),
+#page-workorder-final .nmc-field:has(#nmcPlanQty),
+#page-workorder-final .nmc-field:has(#nmcActualQty),
+#page-workorder-final .nmc-field:has(#nmcProdLot),
+#page-workorder-final #nmcProdLotWrap,
+#page-workorder-final .nmc-customer-field,
+#page-workorder-final .nmc-prod-lot-field{
+  grid-column:span 1!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  padding:0!important;
+  margin:0!important;
+}
+#page-workorder-final #nmcProdName,
+#page-workorder-final #nmcProdCode,
+#page-workorder-final #nmcCustomerName,
+#page-workorder-final #nmcPlanQty,
+#page-workorder-final #nmcActualQty,
+#page-workorder-final #nmcProdLot,
+#page-workorder-final .nmc-field:has(#nmcProdName) input,
+#page-workorder-final .nmc-field:has(#nmcProdCode) input,
+#page-workorder-final .nmc-field:has(#nmcCustomerName) input,
+#page-workorder-final .nmc-field:has(#nmcPlanQty) input,
+#page-workorder-final .nmc-field:has(#nmcActualQty) input,
+#page-workorder-final .nmc-field:has(#nmcProdLot) input{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:46px!important;
+  min-height:46px!important;
+  border-radius:10px!important;
+  box-sizing:border-box!important;
+}
+#page-workorder-final .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
+#page-workorder-final #nmcProdLotWrap .nmc-input-wrap{
+  display:grid!important;
+  grid-template-columns:1fr 64px!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+#page-workorder-final #nmcProdLotWrap .nmc-lot-btn,
+#page-workorder-final .nmc-field:has(#nmcProdLot) .nmc-lot-btn{
+  width:64px!important;
+  height:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  border-radius:10px!important;
+  white-space:nowrap!important;
+}
+@media(max-width:1500px){
+  #page-workorder-final .nmc-product-grid,
+  #page-workorder-final .nmc-product-info-grid,
+  #page-workorder-final .nmc-prod-grid,
+  #page-workorder-final [data-nmc-product-grid]{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
+@media(max-width:760px){
+  #page-workorder-final .nmc-product-grid,
+  #page-workorder-final .nmc-product-info-grid,
+  #page-workorder-final .nmc-prod-grid,
+  #page-workorder-final [data-nmc-product-grid]{grid-template-columns:1fr!important;}
+}
+</style>
+<script>
+(function(){
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function txt(el){return (el&&el.textContent||'').trim()}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function normalizeProductInputs(){
+    var page=qs('#page-workorder-final'); if(!page)return;
+    var ids=['nmcProdName','nmcProdCode','nmcCustomerName','nmcPlanQty','nmcActualQty','nmcProdLot'];
+    ids.forEach(function(id){
+      var input=qs('#'+id,page); if(!input)return;
+      var field=input.closest('.nmc-field')||input.parentElement;
+      if(field){field.style.gridColumn='span 1';field.style.width='100%';field.style.minWidth='0';field.style.maxWidth='none';field.style.padding='0';field.style.margin='0';}
+      input.style.width='100%';input.style.height='46px';input.style.minHeight='46px';input.style.maxWidth='none';input.style.boxSizing='border-box';
+    });
+    var lot=qs('#nmcProdLot',page); if(lot){
+      var lf=lot.closest('.nmc-field'); if(lf){lf.id='nmcProdLotWrap';lf.classList.add('nmc-prod-lot-field');lf.style.gridColumn='span 1';lf.style.width='100%';lf.style.padding='0';}
+      var wrap=lot.closest('.nmc-input-wrap'); if(wrap){wrap.style.display='grid';wrap.style.gridTemplateColumns='1fr 64px';wrap.style.gap='8px';wrap.style.width='100%';}
+      var btn=qs('.nmc-lot-btn',lf||page); if(btn){btn.style.width='64px';btn.style.height='46px';btn.style.padding='0';}
+    }
+    var cust=qs('#nmcCustomerName',page); if(cust){var cf=cust.closest('.nmc-field'); if(cf){cf.classList.add('nmc-customer-field');cf.style.gridColumn='span 1';}}
+  }
+  function patchProductionResult(){
+    var page=qs('#page-production-result'); if(!page)return;
+    qsa('table',page).forEach(function(table){
+      var heads=qsa('thead th',table).map(txt);
+      var actionIdx=heads.indexOf('작업');
+      if(actionIdx>-1){qsa('thead th',table)[actionIdx].textContent='비고';}
+      var noIdx=heads.indexOf('작업지시번호');
+      var lotIdx=heads.indexOf('생산 LOT');
+      qsa('tbody tr',table).forEach(function(tr){
+        var cells=qsa('td',tr); if(!cells.length)return;
+        if(actionIdx>-1 && cells[actionIdx]){
+          var td=cells[actionIdx];
+          if(!td.dataset.nmcRemarkPatched){
+            var key=(cells[noIdx]?txt(cells[noIdx]):'')+'|'+(cells[lotIdx]?txt(cells[lotIdx]):'');
+            td.dataset.nmcRemarkPatched='1';
+            td.innerHTML='<div style="display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap"><button class="btn light sm" type="button" data-nmc-pr-detail="1">상세</button><button class="btn light sm" type="button" data-nmc-pr-delete="'+esc(key)+'" style="color:#c52b2b;border-color:#f0b4b4">삭제</button></div>';
+          }
+        }
+      });
+    });
+    qsa('.nmc-pr-card h3',page).forEach(function(h){if(txt(h).indexOf('제품별 생산현황')>-1)h.textContent='▧ 고객사별 생산현황';});
+    var mainTable=qs('.nmc-pr-table',page);
+    var customers=[];
+    if(mainTable){
+      var hs=qsa('thead th',mainTable).map(txt); var ci=hs.indexOf('고객사');
+      qsa('tbody tr',mainTable).forEach(function(tr){var tds=qsa('td',tr); if(ci>-1&&tds[ci]){var c=txt(tds[ci]); if(c&&customers.indexOf(c)<0)customers.push(c);}});
+    }
+    if(!customers.length)customers=['현대자동차','삼성','SK','기타'];
+    qsa('.nmc-pr-legend > *',page).forEach(function(item,i){
+      if(i<customers.length){
+        var label=item.querySelector('span,b,strong,div:last-child')||item;
+        if(label)label.textContent=customers[i];
+      }
+    });
+  }
+  document.addEventListener('click',function(e){
+    var del=e.target.closest('[data-nmc-pr-delete]');
+    if(del){
+      e.preventDefault();
+      var tr=del.closest('tr');
+      if(tr && confirm('선택한 생산실적 행을 삭제하시겠습니까?')) tr.remove();
+    }
+  },true);
+  function run(){normalizeProductInputs();patchProductionResult();}
+  document.addEventListener('DOMContentLoaded',run);
+  window.addEventListener('load',run);
+  setInterval(run,800);
+  [100,300,700,1200,2000].forEach(function(t){setTimeout(run,t)});
+})();
+</script>
+<!-- NMC_PROD_RESULT_INPUT_UNIFORM_FINAL_PATCH_END -->
