@@ -2712,6 +2712,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     <aside class="sidebar">
       <div class="nav-sec">메인</div>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span><span>품질 대시보드</span></button>
+      <div class="nav-sec" data-nmc-prod-dash-sec="1">생산 대시보드</div>
+      <button class="nav-item" data-page="production-result" data-nmc-prod-dash-btn="1"><span class="nav-icon">⊞</span><span>생산대시보드</span></button>
       <div class="nav-sec">품질 검사</div>
       <button class="nav-item" data-page="incoming"><span class="nav-icon"></span><span>수입검사 (IQC)</span></button>
       <button class="nav-item" data-page="process"><span class="nav-icon"></span><span>공정검사 (PQC)</span></button>
@@ -4072,7 +4074,11 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -14041,101 +14047,78 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<!-- NMC_PRODUCTION_DASHBOARD_MENU_MOVE_PATCH_FIXED_START -->
+<!-- NMC_PRODUCTION_DASHBOARD_MENU_SAME_LEVEL_PATCH_START -->
 <script>
 (function(){
-  var scheduled=false;
-
-  function makeProdDashboardButton(){
-    var btn=document.createElement('button');
-    btn.className='nav-item';
-    btn.setAttribute('data-page','production-result');
-    btn.innerHTML='<span class="nav-icon">✓</span><span>생산대시보드</span>';
-    return btn;
-  }
-
-  function setLastSpanText(el, text){
+  var lock=false;
+  function lastSpanText(el, text){
     if(!el) return;
     var spans=el.querySelectorAll('span');
-    if(spans.length){ spans[spans.length-1].textContent=text; }
-    else { el.textContent=text; }
+    if(spans.length) spans[spans.length-1].textContent=text;
+    else el.textContent=text;
   }
-
-  function replaceTextInNode(root){
+  function makeBtn(){
+    var b=document.createElement('button');
+    b.className='nav-item';
+    b.setAttribute('data-page','production-result');
+    b.setAttribute('data-nmc-prod-dash-btn','1');
+    b.innerHTML='<span class="nav-icon">⊞</span><span>생산대시보드</span>';
+    return b;
+  }
+  function renameTexts(root){
     if(!root) return;
-    var walker=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-    var nodes=[];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(function(n){
+    var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+    var arr=[];
+    while(w.nextNode()) arr.push(w.currentNode);
+    arr.forEach(function(n){
       if(n.nodeValue && n.nodeValue.indexOf('생산실적')>-1){
         n.nodeValue=n.nodeValue.replace(/생산실적현황/g,'생산대시보드').replace(/생산실적/g,'생산대시보드');
       }
     });
   }
+  function patch(){
+    if(lock) return; lock=true;
+    try{
+      var side=document.querySelector('.sidebar');
+      if(!side) return;
+      renameTexts(document.body);
 
-  function patchProductionDashboardMenu(){
-    var sidebar=document.querySelector('.sidebar');
-    if(!sidebar) return;
+      // 잘못 들어간 별도 헤더/하위처럼 보이는 흔적 제거
+      Array.prototype.slice.call(side.querySelectorAll('.nav-sec[data-nmc-prod-dash-sec="1"]')).forEach(function(x){x.remove();});
+      Array.prototype.slice.call(side.querySelectorAll('.nav-sec')).forEach(function(x){
+        if(x.textContent.trim()==='생산 대시보드') x.remove();
+      });
 
-    var qualityBtn=sidebar.querySelector('.nav-item[data-page="dashboard"]');
-    if(!qualityBtn) return;
+      // 생산대시보드는 품질 대시보드와 같은 레벨: 메인 섹션의 독립 버튼으로 배치
+      var btns=Array.prototype.slice.call(side.querySelectorAll('.nav-item[data-page="production-result"]'));
+      var btn=side.querySelector('.nav-item[data-nmc-prod-dash-btn="1"]') || btns[0] || makeBtn();
+      btns.forEach(function(x){ if(x!==btn) x.remove(); });
+      btn.className='nav-item';
+      btn.setAttribute('data-page','production-result');
+      btn.setAttribute('data-nmc-prod-dash-btn','1');
+      var ic=btn.querySelector('.nav-icon');
+      if(ic) ic.textContent='⊞';
+      lastSpanText(btn,'생산대시보드');
 
-    var prodBtns=Array.prototype.slice.call(sidebar.querySelectorAll('.nav-item[data-page="production-result"]'));
-    var prodBtn=prodBtns[0] || makeProdDashboardButton();
-    prodBtns.slice(1).forEach(function(btn){ btn.remove(); });
-
-    prodBtn.setAttribute('data-page','production-result');
-    setLastSpanText(prodBtn,'생산대시보드');
-
-    if(qualityBtn.nextElementSibling !== prodBtn){
-      qualityBtn.insertAdjacentElement('afterend', prodBtn);
-    }
+      var qualityBtn=side.querySelector('.nav-item[data-page="dashboard"]');
+      var qualityInspectSec=Array.prototype.slice.call(side.querySelectorAll('.nav-sec')).filter(function(x){return x.textContent.trim()==='품질 검사';})[0];
+      if(qualityBtn){
+        if(qualityBtn.nextElementSibling!==btn) qualityBtn.insertAdjacentElement('afterend',btn);
+      }else if(qualityInspectSec){
+        side.insertBefore(btn,qualityInspectSec);
+      }else if(!btn.parentNode){
+        side.appendChild(btn);
+      }
+    }finally{ lock=false; }
   }
-
-  function patchProductionDashboardTexts(){
-    Array.prototype.slice.call(document.querySelectorAll('[data-page-target="production-result"]')).forEach(function(el){
-      if(el.tagName === 'BUTTON' || el.classList.contains('btn')) el.textContent='생산대시보드';
-    });
-
-    Array.prototype.slice.call(document.querySelectorAll('.mes-menu-name')).forEach(function(el){
-      if(el.textContent.trim()==='생산실적') el.textContent='생산대시보드';
-    });
-
-    var page=document.querySelector('#page-production-result');
-    if(page) replaceTextInNode(page);
-  }
-
-  function runPatch(){
-    scheduled=false;
-    patchProductionDashboardMenu();
-    patchProductionDashboardTexts();
-  }
-
-  function schedulePatch(){
-    if(scheduled) return;
-    scheduled=true;
-    setTimeout(runPatch,0);
-  }
-
-  document.addEventListener('DOMContentLoaded',schedulePatch);
-  window.addEventListener('load',function(){
-    schedulePatch();
-    setTimeout(schedulePatch,100);
-    setTimeout(schedulePatch,500);
-    setTimeout(schedulePatch,1200);
-  });
-  document.addEventListener('click',function(e){
-    if(e.target && e.target.closest && e.target.closest('[data-page],[data-page-target]')) setTimeout(schedulePatch,0);
-  },true);
-
-  if(typeof MutationObserver !== 'undefined'){
-    var observer=new MutationObserver(schedulePatch);
-    if(document.body){ observer.observe(document.body,{childList:true,subtree:true}); }
-    else document.addEventListener('DOMContentLoaded',function(){ observer.observe(document.body,{childList:true,subtree:true}); });
-  }
+  document.addEventListener('DOMContentLoaded',patch);
+  window.addEventListener('load',patch);
+  document.addEventListener('click',function(){setTimeout(patch,0);setTimeout(patch,80);},true);
+  setInterval(patch,800);
+  patch();
 })();
 </script>
-<!-- NMC_PRODUCTION_DASHBOARD_MENU_MOVE_PATCH_FIXED_END -->
+<!-- NMC_PRODUCTION_DASHBOARD_MENU_SAME_LEVEL_PATCH_END -->
 
 </body>
 </html>
