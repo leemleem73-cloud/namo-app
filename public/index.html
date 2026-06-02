@@ -2713,7 +2713,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <div class="nav-sec">메인</div>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span><span>품질 대시보드</span></button>
       <div class="nav-sec" data-nmc-prod-dash-sec="1">생산 대시보드</div>
-      <button class="nav-item" data-page="production-result" data-nmc-prod-dash-btn="1"><span class="nav-icon">⊞</span><span>생산대시보드</span></button>
+      <button class="nav-item" data-page="production-result" data-nmc-prod-dash-btn="1"><span class="nav-icon">⊞</span><span>생산 대시보드</span></button>
       <div class="nav-sec">품질 검사</div>
       <button class="nav-item" data-page="incoming"><span class="nav-icon"></span><span>수입검사 (IQC)</span></button>
       <button class="nav-item" data-page="process"><span class="nav-icon"></span><span>공정검사 (PQC)</span></button>
@@ -14058,7 +14058,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     b.className='nav-item';
     b.setAttribute('data-page','production-result');
     b.setAttribute('data-nmc-prod-dash-btn','1');
-    b.innerHTML='<span class="nav-icon">⊞</span><span>생산대시보드</span>';
+    b.innerHTML='<span class="nav-icon">⊞</span><span>생산 대시보드</span>';
     return b;
   }
   function renameTexts(root){
@@ -14068,7 +14068,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     while(w.nextNode()) arr.push(w.currentNode);
     arr.forEach(function(n){
       if(n.nodeValue && n.nodeValue.indexOf('생산실적')>-1){
-        n.nodeValue=n.nodeValue.replace(/생산실적현황/g,'생산대시보드').replace(/생산실적/g,'생산대시보드');
+        n.nodeValue=n.nodeValue.replace(/생산실적현황/g,'생산 대시보드').replace(/생산실적/g,'생산 대시보드');
       }
     });
   }
@@ -14085,7 +14085,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         if(x.textContent.trim()==='생산 대시보드') x.remove();
       });
 
-      // 생산대시보드는 품질 대시보드와 같은 레벨: 메인 섹션의 독립 버튼으로 배치
+      // 생산 대시보드는 품질 대시보드와 같은 레벨: 메인 섹션의 독립 버튼으로 배치
       var btns=Array.prototype.slice.call(side.querySelectorAll('.nav-item[data-page="production-result"]'));
       var btn=side.querySelector('.nav-item[data-nmc-prod-dash-btn="1"]') || btns[0] || makeBtn();
       btns.forEach(function(x){ if(x!==btn) x.remove(); });
@@ -14094,7 +14094,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       btn.setAttribute('data-nmc-prod-dash-btn','1');
       var ic=btn.querySelector('.nav-icon');
       if(ic) ic.textContent='⊞';
-      lastSpanText(btn,'생산대시보드');
+      lastSpanText(btn,'생산 대시보드');
 
       var qualityBtn=side.querySelector('.nav-item[data-page="dashboard"]');
       var qualityInspectSec=Array.prototype.slice.call(side.querySelectorAll('.nav-sec')).filter(function(x){return x.textContent.trim()==='품질 검사';})[0];
