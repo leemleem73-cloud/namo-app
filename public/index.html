@@ -3182,7 +3182,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <section class="page" id="page-trace">
         <div class="ph"><div><div class="ph-title">LOT 추적</div><div class="ph-sub">완제품 / 원료 LOT를 검색합니다.</div></div>
           <div class="ph-actions">
-            <input id="traceKeyword" placeholder="LOT 번호 또는 원료명 입력" style="height:36px;min-width:270px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:13px;background:var(--sf);outline:none;"/>
+            <input id="traceKeyword" placeholder="LOT 추적번호 입력" style="height:36px;min-width:270px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:13px;background:var(--sf);outline:none;"/>
             <button class="btn pri" id="traceSearch">조회</button>
           </div>
         </div>
@@ -5463,6 +5463,9 @@ function renderTraceTimeline(rows){
     `<span class="trace-step ${has.oqc?'on':''}">④ OQC 출하</span>`
   ].join('');
 }
+function reportLotAttr(v){
+  return esc(String(v||'')).replace(/"/g,'&quot;');
+}
 function renderTraceRows(rows){
   const tb=$('traceTable');
   if(!tb) return;
@@ -5472,23 +5475,48 @@ function renderTraceRows(rows){
   }
   tb.innerHTML=rows.map(x=>`<tr>
     <td>${esc(toKSTDate(x.workDate)||'')}</td>
-    <td><span class="trace-link" onclick="gotoTrace('${esc(String(x.finishedLot||'')).replace(/'/g,'&#39;')}')">${esc(x.finishedLot||'')}</span></td>
+    <td><span class="trace-link" data-report-type="oqc" data-report-lot="${reportLotAttr(x.finishedLot)}">${esc(x.finishedLot||'')}</span></td>
     <td>${esc(x.worker||'')}</td>
     <td>${esc(x.seq||'')}</td>
     <td>${esc(x.material||'')}</td>
     <td>${esc(x.supName||'')}</td>
-    <td><strong>${esc(x.lotNo||'')}</strong></td>
+    <td>${x.lotNo ? `<span class="trace-link" data-report-type="iqc" data-report-lot="${reportLotAttr(x.lotNo)}">${esc(x.lotNo||'')}</span>` : ''}</td>
     <td>${esc(x.inputQty||'')}</td>
     <td>${esc(x.inputTime||'')}</td>
   </tr>`).join('');
 }
+function clearTraceView(){
+  if($('traceKeyword')) $('traceKeyword').value='';
+  if($('traceSummary')) $('traceSummary').innerHTML='';
+  if($('traceTimeline')) $('traceTimeline').innerHTML='';
+  if($('traceTable')) $('traceTable').innerHTML=`<tr><td colspan="9" class="trace-empty">LOT 번호를 입력 후 조회하세요.</td></tr>`;
+}
+function goReportPageByLot(type, lot){
+  const norm = v => String(v||'').trim().toLowerCase();
+  const arr = type==='iqc' ? state.incoming : type==='pqc' ? state.process : state.shipment;
+  const row = (arr||[]).find(r => norm(r.lot) === norm(lot));
+  if(!row){
+    alert(type==='iqc' ? '수입검사 성적서를 찾을 수 없습니다.' : type==='oqc' ? '출하검사 성적서를 찾을 수 없습니다.' : '성적서를 찾을 수 없습니다.');
+    return;
+  }
+
+  $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="report"]')?.classList.add('active');
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  $('page-report')?.classList.add('active');
+
+  if($('reportType')) $('reportType').value=type;
+  populateReportSelect();
+  if($('reportSelect')) $('reportSelect').value=row.id;
+  loadStandaloneReport();
+}
+function openShipmentReportByLot(lot){ goReportPageByLot('oqc', lot); }
+function openIncomingReportByLot(lot){ goReportPageByLot('iqc', lot); }
+
 async function searchTrace(){
   const kw=($('traceKeyword')?.value||'').trim();
   if(!kw){
-    const rows=buildLocalTraceRows('');
-    renderTraceSummary(rows,'전체');
-    renderTraceTimeline(rows);
-    renderTraceRows(rows.slice(0,80));
+    clearTraceView();
     return;
   }
 
@@ -5857,6 +5885,16 @@ clickSafe2('printReportPage',()=>{
   if($('traceSearch'))$('traceSearch').onclick=searchTrace;if($('traceKeyword'))$('traceKeyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrace();});
   if($('dashRefresh'))$('dashRefresh').onclick=()=>{renderSummary();setTimeout(()=>{try{state.charts.trend&&state.charts.trend.resize();}catch(e){}},80);};
   if($('globalSearch')) $('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')gotoTrace($('globalSearch').value.trim());});
+  document.addEventListener('click', e=>{
+    const lotLink=e.target.closest && e.target.closest('.trace-link[data-report-type][data-report-lot]');
+    if(!lotLink) return;
+    e.preventDefault();
+    const type=lotLink.dataset.reportType;
+    const lot=lotLink.dataset.reportLot;
+    if(type==='oqc') openShipmentReportByLot(lot);
+    else if(type==='iqc') openIncomingReportByLot(lot);
+    else goReportPageByLot(type, lot);
+  });
   // 테이블 위임
   const tA={
     editIncoming,editProcess,editShipment,editSupplier,editWorklog,editUser,editNc,editInstrument,deleteInstrument,viewInstrumentPhoto,editSpc,deleteSpc,editTraining,printTraining,deleteTraining,
@@ -13836,20 +13874,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function fillTraceKeywordIfEmpty(){
-    var kw =
-      qs('#traceKeyword') ||
-      qs('#traceLotKeyword') ||
-      qs('#lotTraceKeyword') ||
-      qs('input[placeholder*="LOT"][placeholder*="검색"]');
-
-    if(!kw || val(kw)) return;
-
-    var finishedLot = val(qs('#page-workorder-final #nmcProdCode') || qs('#nmcProdCode'));
-    var prodLot = val(qs('#page-workorder-final #nmcProdLot') || qs('#nmcProdLot'));
-
-    if(finishedLot || prodLot){
-      setNativeValue(kw, finishedLot || prodLot);
-    }
+    // LOT 추적 화면은 자동 LOT 입력 없이 항상 빈 검색창으로 시작합니다.
+    return;
   }
 
   function boot(){
@@ -13966,6 +13992,50 @@ document.addEventListener('DOMContentLoaded',async()=>{
   setTimeout(boot, 500);
   setTimeout(boot, 1200);
   setInterval(removePlanManagementMenu, 1500);
+})();
+</script>
+
+<!-- =========================================================
+  PATCH: LOT 추적 기본값 제거 + 성적서 바로가기
+  적용일: 2026-06-02
+  내용:
+  - LOT 추적 화면 진입 시 검색창/결과 초기화
+  - 완제품 LOT 클릭 시 출하검사 성적서(OQC) 이동
+  - 원료 LOT 클릭 시 수입검사 성적서(IQC) 이동
+========================================================= -->
+<script>
+(function(){
+  'use strict';
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.from((root || document).querySelectorAll(sel)); }
+
+  function clearTraceOnMenuOpen(){
+    var page = qs('#page-trace');
+    if(!page || !page.classList.contains('active')) return;
+
+    var kw = qs('#traceKeyword');
+    if(kw) kw.value = '';
+
+    var summary = qs('#traceSummary');
+    if(summary) summary.innerHTML = '';
+
+    var timeline = qs('#traceTimeline');
+    if(timeline) timeline.innerHTML = '';
+
+    var table = qs('#traceTable');
+    if(table) table.innerHTML = '<tr><td colspan="9" class="trace-empty">LOT 번호를 입력 후 조회하세요.</td></tr>';
+  }
+
+  document.addEventListener('click', function(e){
+    var nav = e.target && e.target.closest && e.target.closest('[data-page="trace"],[data-page-target="trace"]');
+    if(!nav) return;
+    setTimeout(clearTraceOnMenuOpen, 50);
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(clearTraceOnMenuOpen, 300);
+  });
 })();
 </script>
 
