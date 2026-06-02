@@ -5516,13 +5516,37 @@ async function searchTrace(){
   renderTraceRows(rows);
 }
 function gotoTrace(kw){
+  kw=String(kw||'').trim();
   if(!kw)return;
+
+  // 완제품 LOT 클릭 시 LOT 추적 화면 이동 + 검색어 주입 + 강제 재조회
+  // 같은 LOT를 다시 클릭하거나 다른 LOT를 연속 클릭해도 기존 결과를 초기화한 뒤 재조회한다.
   $$('.nav-item[data-page]').forEach(b=>b.classList.remove('active'));
   document.querySelector('.nav-item[data-page="trace"]')?.classList.add('active');
   $$('.page').forEach(p=>p.classList.remove('active'));
   $('page-trace')?.classList.add('active');
-  if($('traceKeyword'))$('traceKeyword').value=kw;
-  searchTrace();
+
+  const input=$('traceKeyword')||$('traceFinishedLot')||$('traceFinishedInput');
+  if(input){
+    input.value='';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.value=kw;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+    try{input.focus();input.select&&input.select();}catch(e){}
+  }
+
+  if($('traceSummary'))$('traceSummary').innerHTML='';
+  if($('traceTimeline'))$('traceTimeline').innerHTML='';
+  if($('traceTable'))$('traceTable').innerHTML=`<tr><td colspan="9" class="trace-empty">조회 중입니다...</td></tr>`;
+
+  const run=()=>{
+    if(typeof searchTrace==='function'){
+      Promise.resolve(searchTrace()).catch(e=>console.warn('trace search failed',e));
+    }
+  };
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>setTimeout(run,0));
+  else setTimeout(run,0);
 }
 
 
