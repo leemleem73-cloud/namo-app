@@ -25183,6 +25183,334 @@ document.addEventListener('DOMContentLoaded',async()=>{
   #page-training .namo-final-grid.four,
   #page-training .namo-final-list-tools{grid-template-columns:1fr!important;}
 }
+
+
+/* =========================================================
+   Premium compact training report redesign v2026-06-05
+   Layout: low whitespace, full-width, executive QMS style
+========================================================= */
+body:has(#page-training.active){background:#e9eff6!important;}
+#page-training{
+  --tr-ink:#0b1220;
+  --tr-muted:#526175;
+  --tr-soft:#f5f8fc;
+  --tr-line:#d7e0ec;
+  --tr-blue:#174ea6;
+  --tr-blue2:#2563eb;
+  --tr-navy:#071b34;
+  --tr-green:#0f8a5f;
+  --tr-red:#d73535;
+  --tr-orange:#c96b16;
+}
+#page-training.active{display:block!important;}
+#page-training .namo-training-final{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:14px 16px 26px!important;
+}
+.content:has(#page-training.active){
+  padding:14px 18px!important;
+  background:linear-gradient(180deg,#eef4fb 0%,#e8eef6 100%)!important;
+}
+#page-training .namo-final-breadcrumb{
+  margin:0 0 8px!important;
+  color:#64748b!important;
+  font-size:12px!important;
+  font-weight:850!important;
+}
+#page-training .namo-final-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:25!important;
+  min-height:62px!important;
+  margin:0 0 12px!important;
+  padding:13px 16px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  border:1px solid rgba(15,35,65,.12)!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,#ffffff 0%,#f8fbff 58%,#eef5ff 100%)!important;
+  box-shadow:0 10px 26px rgba(15,23,42,.08)!important;
+}
+#page-training .namo-final-head:before{
+  content:''!important;
+  position:absolute!important;
+  left:0!important;top:0!important;bottom:0!important;
+  width:6px!important;
+  border-radius:16px 0 0 16px!important;
+  background:linear-gradient(180deg,#174ea6,#26a0da)!important;
+}
+#page-training .namo-final-head h1{
+  margin:0!important;
+  color:var(--tr-ink)!important;
+  font-size:22px!important;
+  line-height:1.12!important;
+  font-weight:950!important;
+  letter-spacing:-.7px!important;
+}
+#page-training .namo-final-head p{
+  margin:4px 0 0!important;
+  color:var(--tr-muted)!important;
+  font-size:12px!important;
+  font-weight:750!important;
+  line-height:1.35!important;
+}
+#page-training .namo-final-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  flex-wrap:nowrap!important;
+}
+#page-training .namo-final-actions .btn{
+  height:36px!important;
+  min-width:74px!important;
+  padding:0 14px!important;
+  border-radius:11px!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  box-shadow:none!important;
+}
+#page-training .namo-final-actions .btn.pri{
+  background:linear-gradient(135deg,#174ea6,#2563eb)!important;
+  box-shadow:0 8px 16px rgba(37,99,235,.18)!important;
+}
+#page-training .namo-final-actions .btn.ghost{
+  background:#fff!important;
+  color:#174ea6!important;
+  border:1.5px solid #2563eb!important;
+}
+#page-training .namo-final-actions .btn.light{
+  background:#fff!important;
+  border:1px solid #cbd7e6!important;
+  color:#334155!important;
+}
+#page-training .namo-final-card{
+  margin:0 0 12px!important;
+  padding:16px 18px!important;
+  border:1px solid rgba(15,35,65,.11)!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  box-shadow:0 8px 20px rgba(15,23,42,.055)!important;
+  overflow:hidden!important;
+}
+#page-training .namo-final-card h2{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:0 0 12px!important;
+  padding:0 0 10px!important;
+  border-bottom:1px solid #edf2f7!important;
+  color:#0f172a!important;
+  font-size:16px!important;
+  font-weight:950!important;
+  letter-spacing:-.3px!important;
+}
+#page-training .namo-final-card h2:before{
+  content:''!important;
+  width:5px!important;
+  height:20px!important;
+  border-radius:99px!important;
+  background:linear-gradient(180deg,#174ea6,#3b82f6)!important;
+  box-shadow:0 0 0 4px rgba(37,99,235,.10)!important;
+}
+#page-training .namo-final-grid{gap:12px 14px!important;}
+#page-training .namo-final-grid.four{grid-template-columns:repeat(4,minmax(190px,1fr))!important;}
+#page-training .namo-final-field{gap:5px!important;}
+#page-training .namo-final-field label{
+  color:#203047!important;
+  font-size:11px!important;
+  font-weight:950!important;
+  letter-spacing:-.1px!important;
+}
+#page-training .namo-final-field input,
+#page-training .namo-final-field select,
+#page-training .namo-final-field textarea,
+#page-training .namo-final-list-tools select{
+  border:1px solid #cfd9e8!important;
+  border-radius:11px!important;
+  background:linear-gradient(180deg,#fff,#fbfdff)!important;
+  color:#0f172a!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75)!important;
+}
+#page-training .namo-final-field input,
+#page-training .namo-final-field select,
+#page-training .namo-final-list-tools select{
+  height:38px!important;
+  padding:0 12px!important;
+}
+#page-training .namo-final-field textarea{
+  min-height:96px!important;
+  padding:11px 12px!important;
+  line-height:1.45!important;
+}
+#page-training .namo-final-field input:focus,
+#page-training .namo-final-field select:focus,
+#page-training .namo-final-field textarea:focus{
+  border-color:#2563eb!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;
+}
+#page-training .namo-final-people{
+  display:grid!important;
+  grid-template-columns:1.15fr 1fr .92fr!important;
+  gap:12px!important;
+}
+#page-training .namo-final-box{
+  border:1px solid #cad7e8!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 4px 12px rgba(15,23,42,.035)!important;
+}
+#page-training .namo-final-box.internal{border-top:4px solid #2563eb!important;}
+#page-training .namo-final-box.external{border-top:4px solid #f59e0b!important;}
+#page-training .namo-final-box.absent{border-top:4px solid #ef4444!important;}
+#page-training .namo-final-box-head{
+  height:36px!important;
+  padding:0 12px!important;
+  background:#f8fafc!important;
+  border-bottom:1px solid #e6edf6!important;
+}
+#page-training .namo-final-box-head strong{font-size:12px!important;color:#0f172a!important;font-weight:950!important;}
+#page-training .namo-final-box-head span{font-size:11px!important;font-weight:950!important;color:#2563eb!important;}
+#page-training .namo-final-box textarea{
+  height:108px!important;
+  padding:12px!important;
+  font-size:12px!important;
+  font-weight:750!important;
+  color:#334155!important;
+  line-height:1.5!important;
+}
+#page-training .namo-final-result{
+  display:grid!important;
+  grid-template-columns:1.15fr 1.15fr .9fr!important;
+  gap:14px!important;
+  align-items:start!important;
+}
+#page-training .namo-final-result .area textarea{min-height:108px!important;}
+#page-training .namo-final-photo-box{
+  min-height:108px!important;
+  padding:10px!important;
+  border:1px dashed #9ec5fe!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,#f8fbff,#f1f7ff)!important;
+}
+#page-training .namo-final-photo-box input[type=file]{height:30px!important;margin:0 0 7px!important;font-size:12px!important;}
+#page-training .namo-final-upload{
+  min-height:58px!important;
+  border-radius:11px!important;
+  color:#174ea6!important;
+  font-size:12px!important;
+  font-weight:950!important;
+}
+#page-training .namo-final-upload span{font-size:10px!important;}
+#page-training .namo-training-approval-card{background:linear-gradient(180deg,#fff,#fbfdff)!important;}
+#page-training .namo-approval-rule{
+  margin:-2px 0 10px!important;
+  padding:8px 10px!important;
+  border:1px solid #dbeafe!important;
+  border-radius:11px!important;
+  background:#eff6ff!important;
+  color:#1d4ed8!important;
+  font-size:12px!important;
+  font-weight:850!important;
+}
+#page-training .namo-training-approval-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+#page-training .namo-training-sign-card{
+  min-height:132px!important;
+  padding:12px!important;
+  border:1px solid #d9e3f0!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 4px 12px rgba(15,23,42,.035)!important;
+}
+#page-training .namo-training-sign-card[data-appr-role='writer']{border-left:4px solid #16a34a!important;}
+#page-training .namo-training-sign-card[data-appr-role='reviewer']{border-left:4px solid #2563eb!important;}
+#page-training .namo-training-sign-card[data-appr-role='approver']{border-left:4px solid #7c3aed!important;}
+#page-training .namo-training-sign-head{margin-bottom:8px!important;}
+#page-training .namo-training-sign-head strong{font-size:13px!important;font-weight:950!important;}
+#page-training .namo-rule-badge{height:22px!important;min-width:48px!important;font-size:10px!important;}
+#page-training .namo-training-sign-card select{height:34px!important;border-radius:9px!important;font-size:12px!important;}
+#page-training .namo-training-sign-sub{font-size:11px!important;margin-top:5px!important;}
+#page-training .namo-training-sign-box{height:42px!important;margin-top:8px!important;border-radius:10px!important;font-size:11px!important;}
+#page-training .namo-training-sign-box img{max-height:38px!important;}
+#page-training .namo-training-sign-actions{margin-top:8px!important;gap:5px!important;}
+#page-training .namo-training-sign-actions .btn{height:26px!important;padding:0 8px!important;font-size:11px!important;border-radius:8px!important;}
+#page-training .namo-training-sign-card p{display:none!important;}
+#page-training .namo-training-status-line{
+  margin-top:10px!important;
+  padding-top:10px!important;
+  font-size:12px!important;
+}
+#page-training .namo-training-status-line b{height:26px!important;padding:0 13px!important;font-size:12px!important;}
+#page-training #trainingListSimple{padding-bottom:14px!important;}
+#page-training .namo-final-list-tools{
+  display:grid!important;
+  grid-template-columns:minmax(260px,1fr) 140px 140px!important;
+  gap:8px!important;
+  margin-bottom:10px!important;
+}
+#page-training .namo-final-list-tools .training-search{
+  height:36px!important;
+  border:1px solid #cfd9e8!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  padding:0 10px!important;
+}
+#page-training .namo-final-list-tools .training-search input{font-size:13px!important;font-weight:800!important;}
+#page-training .namo-final-list-tools select{height:36px!important;font-size:12px!important;}
+#page-training .namo-final-table-wrap{
+  max-height:310px!important;
+  border-radius:14px!important;
+  border:1px solid #d8e3f0!important;
+  box-shadow:inset 0 1px 0 #fff!important;
+}
+#page-training .namo-final-table{min-width:1040px!important;}
+#page-training .namo-final-table th{
+  position:sticky!important;
+  top:0!important;
+  z-index:2!important;
+  height:38px!important;
+  background:#f4f7fb!important;
+  color:#334155!important;
+  font-size:11px!important;
+  padding:7px 8px!important;
+}
+#page-training .namo-final-table td{
+  padding:9px 8px!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+#page-training .training-status-chip{height:24px!important;min-width:56px!important;font-size:11px!important;}
+#page-training .namo-final-table .sb{height:24px!important;padding:0 7px!important;border-radius:7px!important;font-size:10px!important;}
+#page-training .namo-hidden-control{display:none!important;}
+@media(min-width:1500px){
+  #page-training .namo-final-card:nth-of-type(1){margin-bottom:10px!important;}
+  #page-training .namo-final-card:nth-of-type(2){margin-bottom:10px!important;}
+}
+@media(max-width:1280px){
+  #page-training .namo-final-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #page-training .namo-final-people,
+  #page-training .namo-final-result,
+  #page-training .namo-training-approval-grid{grid-template-columns:1fr!important;}
+}
+@media(max-width:760px){
+  .content:has(#page-training.active){padding:10px!important;}
+  #page-training .namo-training-final{padding:10px 0 20px!important;}
+  #page-training .namo-final-head{position:relative!important;display:block!important;}
+  #page-training .namo-final-actions{justify-content:flex-start!important;flex-wrap:wrap!important;margin-top:10px!important;}
+  #page-training .namo-final-grid.four,
+  #page-training .namo-final-list-tools{grid-template-columns:1fr!important;}
+}
+
 </style>
 
 <script id="namo-training-frame-final-fix-20260604">
