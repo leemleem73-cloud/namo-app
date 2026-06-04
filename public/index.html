@@ -4449,134 +4449,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-
-<!-- Final patch: 파란 세로줄 제거 + 작성자 로그인 당사자 성명/부서명/직책 표시 -->
-<style id="namo-training-writer-login-final-patch">
-/* 1) 섹션 제목의 파란 세로줄 완전 제거 */
-#page-training .namo-final-card h2,
-#page-training .namo-training-approval-card h2{
-  padding-left:0!important;
-  gap:0!important;
-}
-#page-training .namo-final-card h2:before,
-#page-training .namo-training-approval-card h2:before,
-#page-training .namo-final-card h2::before,
-#page-training .namo-training-approval-card h2::before{
-  content:none!important;
-  display:none!important;
-  width:0!important;
-  height:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-
-/* 제목은 밑줄형으로 정리 */
-#page-training .namo-final-card h2{
-  border-bottom:1px solid #e6edf5!important;
-  padding-bottom:10px!important;
-}
-
-/* 작성자 카드: 성명/부서명/직책 정보가 잘 보이도록 정리 */
-#page-training [data-appr-role="writer"] .namo-training-sign-head strong{
-  font-size:14px!important;
-  font-weight:950!important;
-}
-#page-training #trainingWriterSelect{
-  font-weight:900!important;
-  color:#0f172a!important;
-  background:#f8fbff!important;
-}
-#page-training #trainingWriterSub{
-  white-space:pre-line!important;
-  line-height:1.55!important;
-  font-size:12px!important;
-  font-weight:850!important;
-  color:#334155!important;
-  background:#f8fafc!important;
-  border:1px solid #e2e8f0!important;
-  border-radius:10px!important;
-  padding:9px 10px!important;
-  margin-top:8px!important;
-}
-</style>
-
-<script id="namo-training-login-writer-info-patch">
-(function(){
-  if(window.__namoTrainingLoginWriterInfoPatch) return;
-  window.__namoTrainingLoginWriterInfoPatch = true;
-
-  function $(id){ return document.getElementById(id); }
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function esc(v){ return clean(v).replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m];}); }
-
-  function getLoginUser(){
-    var s = window.state || {};
-    var u = s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
-    if(!u && Array.isArray(s.signableUsers) && s.signableUsers.length) u = s.signableUsers[0];
-    u = u || {};
-    var name = clean(u.name || u.username || u.displayName || u.fullName || u.email || '로그인 사용자');
-    var dept = clean(u.department || u.dept || u.departmentName || u.team || u.org || '');
-    var title = clean(u.title || u.position || u.rank || u.roleName || u.jobTitle || '');
-    var email = clean(u.email || '');
-    return {
-      id: clean(u.id || u.userId || email || name || 'login-user'),
-      name: name,
-      department: dept,
-      title: title,
-      email: email
-    };
-  }
-
-  function label(u){
-    var parts = [u.name, u.department || '-', u.title || '-'];
-    return parts.join(' / ');
-  }
-
-  function applyWriter(){
-    var u = getLoginUser();
-    var writerTitle = document.querySelector('#page-training [data-appr-role="writer"] .namo-training-sign-head strong');
-    if(writerTitle) writerTitle.textContent = '로그인 당사자';
-
-    var sel = $('trainingWriterSelect');
-    if(sel){
-      sel.innerHTML = '<option value="'+esc(u.id)+'">'+esc(label(u))+'</option>';
-      sel.value = u.id;
-      sel.disabled = true;
-    }
-
-    var sub = $('trainingWriterSub');
-    if(sub){
-      sub.textContent = '성명 : '+(u.name || '-')+'\n부서명 : '+(u.department || '-')+'\n직책 : '+(u.title || '-');
-    }
-
-    var help = document.querySelector('#page-training [data-appr-role="writer"] p');
-    if(help) help.textContent = '로그인 당사자 성명 / 부서명 / 직책이 자동 표시됩니다.';
-
-    try{
-      var raw = localStorage.getItem('namo_training_final_approval_v1');
-      var st = raw ? JSON.parse(raw) : {};
-      st.writer = Object.assign({}, st.writer || {}, u);
-      localStorage.setItem('namo_training_final_approval_v1', JSON.stringify(st));
-    }catch(e){}
-  }
-
-  function install(){
-    applyWriter();
-    setTimeout(applyWriter, 100);
-    setTimeout(applyWriter, 500);
-    setTimeout(applyWriter, 1200);
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
-  else install();
-
-  /* 기존 결재 스크립트가 3초마다 다시 그려도 최종 표시를 유지 */
-  setInterval(applyWriter, 1500);
-})();
-</script>
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -14320,134 +14193,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.nmc-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.nmc-detail-cell{border:1px solid #dbe3ee;border-radius:10px;padding:9px 11px;background:#f8fafc}.nmc-detail-cell b{display:block;font-size:10px;color:#64748b;margin-bottom:4px}.nmc-detail-cell span{font-size:13px;font-weight:900;color:#0f172a}'+
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
-      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
-
-<!-- Final patch: 파란 세로줄 제거 + 작성자 로그인 당사자 성명/부서명/직책 표시 -->
-<style id="namo-training-writer-login-final-patch">
-/* 1) 섹션 제목의 파란 세로줄 완전 제거 */
-#page-training .namo-final-card h2,
-#page-training .namo-training-approval-card h2{
-  padding-left:0!important;
-  gap:0!important;
-}
-#page-training .namo-final-card h2:before,
-#page-training .namo-training-approval-card h2:before,
-#page-training .namo-final-card h2::before,
-#page-training .namo-training-approval-card h2::before{
-  content:none!important;
-  display:none!important;
-  width:0!important;
-  height:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-
-/* 제목은 밑줄형으로 정리 */
-#page-training .namo-final-card h2{
-  border-bottom:1px solid #e6edf5!important;
-  padding-bottom:10px!important;
-}
-
-/* 작성자 카드: 성명/부서명/직책 정보가 잘 보이도록 정리 */
-#page-training [data-appr-role="writer"] .namo-training-sign-head strong{
-  font-size:14px!important;
-  font-weight:950!important;
-}
-#page-training #trainingWriterSelect{
-  font-weight:900!important;
-  color:#0f172a!important;
-  background:#f8fbff!important;
-}
-#page-training #trainingWriterSub{
-  white-space:pre-line!important;
-  line-height:1.55!important;
-  font-size:12px!important;
-  font-weight:850!important;
-  color:#334155!important;
-  background:#f8fafc!important;
-  border:1px solid #e2e8f0!important;
-  border-radius:10px!important;
-  padding:9px 10px!important;
-  margin-top:8px!important;
-}
-</style>
-
-<script id="namo-training-login-writer-info-patch">
-(function(){
-  if(window.__namoTrainingLoginWriterInfoPatch) return;
-  window.__namoTrainingLoginWriterInfoPatch = true;
-
-  function $(id){ return document.getElementById(id); }
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function esc(v){ return clean(v).replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m];}); }
-
-  function getLoginUser(){
-    var s = window.state || {};
-    var u = s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
-    if(!u && Array.isArray(s.signableUsers) && s.signableUsers.length) u = s.signableUsers[0];
-    u = u || {};
-    var name = clean(u.name || u.username || u.displayName || u.fullName || u.email || '로그인 사용자');
-    var dept = clean(u.department || u.dept || u.departmentName || u.team || u.org || '');
-    var title = clean(u.title || u.position || u.rank || u.roleName || u.jobTitle || '');
-    var email = clean(u.email || '');
-    return {
-      id: clean(u.id || u.userId || email || name || 'login-user'),
-      name: name,
-      department: dept,
-      title: title,
-      email: email
-    };
-  }
-
-  function label(u){
-    var parts = [u.name, u.department || '-', u.title || '-'];
-    return parts.join(' / ');
-  }
-
-  function applyWriter(){
-    var u = getLoginUser();
-    var writerTitle = document.querySelector('#page-training [data-appr-role="writer"] .namo-training-sign-head strong');
-    if(writerTitle) writerTitle.textContent = '로그인 당사자';
-
-    var sel = $('trainingWriterSelect');
-    if(sel){
-      sel.innerHTML = '<option value="'+esc(u.id)+'">'+esc(label(u))+'</option>';
-      sel.value = u.id;
-      sel.disabled = true;
-    }
-
-    var sub = $('trainingWriterSub');
-    if(sub){
-      sub.textContent = '성명 : '+(u.name || '-')+'\n부서명 : '+(u.department || '-')+'\n직책 : '+(u.title || '-');
-    }
-
-    var help = document.querySelector('#page-training [data-appr-role="writer"] p');
-    if(help) help.textContent = '로그인 당사자 성명 / 부서명 / 직책이 자동 표시됩니다.';
-
-    try{
-      var raw = localStorage.getItem('namo_training_final_approval_v1');
-      var st = raw ? JSON.parse(raw) : {};
-      st.writer = Object.assign({}, st.writer || {}, u);
-      localStorage.setItem('namo_training_final_approval_v1', JSON.stringify(st));
-    }catch(e){}
-  }
-
-  function install(){
-    applyWriter();
-    setTimeout(applyWriter, 100);
-    setTimeout(applyWriter, 500);
-    setTimeout(applyWriter, 1200);
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
-  else install();
-
-  /* 기존 결재 스크립트가 3초마다 다시 그려도 최종 표시를 유지 */
-  setInterval(applyWriter, 1500);
-})();
-</script>
-
-</body></html>';
+      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -24205,134 +23951,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.nmc-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.nmc-detail-cell{border:1px solid #dbe3ee;border-radius:10px;padding:9px 11px;background:#f8fafc}.nmc-detail-cell b{display:block;font-size:10px;color:#64748b;margin-bottom:4px}.nmc-detail-cell span{font-size:13px;font-weight:900;color:#0f172a}'+
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
-      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
-
-<!-- Final patch: 파란 세로줄 제거 + 작성자 로그인 당사자 성명/부서명/직책 표시 -->
-<style id="namo-training-writer-login-final-patch">
-/* 1) 섹션 제목의 파란 세로줄 완전 제거 */
-#page-training .namo-final-card h2,
-#page-training .namo-training-approval-card h2{
-  padding-left:0!important;
-  gap:0!important;
-}
-#page-training .namo-final-card h2:before,
-#page-training .namo-training-approval-card h2:before,
-#page-training .namo-final-card h2::before,
-#page-training .namo-training-approval-card h2::before{
-  content:none!important;
-  display:none!important;
-  width:0!important;
-  height:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-
-/* 제목은 밑줄형으로 정리 */
-#page-training .namo-final-card h2{
-  border-bottom:1px solid #e6edf5!important;
-  padding-bottom:10px!important;
-}
-
-/* 작성자 카드: 성명/부서명/직책 정보가 잘 보이도록 정리 */
-#page-training [data-appr-role="writer"] .namo-training-sign-head strong{
-  font-size:14px!important;
-  font-weight:950!important;
-}
-#page-training #trainingWriterSelect{
-  font-weight:900!important;
-  color:#0f172a!important;
-  background:#f8fbff!important;
-}
-#page-training #trainingWriterSub{
-  white-space:pre-line!important;
-  line-height:1.55!important;
-  font-size:12px!important;
-  font-weight:850!important;
-  color:#334155!important;
-  background:#f8fafc!important;
-  border:1px solid #e2e8f0!important;
-  border-radius:10px!important;
-  padding:9px 10px!important;
-  margin-top:8px!important;
-}
-</style>
-
-<script id="namo-training-login-writer-info-patch">
-(function(){
-  if(window.__namoTrainingLoginWriterInfoPatch) return;
-  window.__namoTrainingLoginWriterInfoPatch = true;
-
-  function $(id){ return document.getElementById(id); }
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function esc(v){ return clean(v).replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m];}); }
-
-  function getLoginUser(){
-    var s = window.state || {};
-    var u = s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
-    if(!u && Array.isArray(s.signableUsers) && s.signableUsers.length) u = s.signableUsers[0];
-    u = u || {};
-    var name = clean(u.name || u.username || u.displayName || u.fullName || u.email || '로그인 사용자');
-    var dept = clean(u.department || u.dept || u.departmentName || u.team || u.org || '');
-    var title = clean(u.title || u.position || u.rank || u.roleName || u.jobTitle || '');
-    var email = clean(u.email || '');
-    return {
-      id: clean(u.id || u.userId || email || name || 'login-user'),
-      name: name,
-      department: dept,
-      title: title,
-      email: email
-    };
-  }
-
-  function label(u){
-    var parts = [u.name, u.department || '-', u.title || '-'];
-    return parts.join(' / ');
-  }
-
-  function applyWriter(){
-    var u = getLoginUser();
-    var writerTitle = document.querySelector('#page-training [data-appr-role="writer"] .namo-training-sign-head strong');
-    if(writerTitle) writerTitle.textContent = '로그인 당사자';
-
-    var sel = $('trainingWriterSelect');
-    if(sel){
-      sel.innerHTML = '<option value="'+esc(u.id)+'">'+esc(label(u))+'</option>';
-      sel.value = u.id;
-      sel.disabled = true;
-    }
-
-    var sub = $('trainingWriterSub');
-    if(sub){
-      sub.textContent = '성명 : '+(u.name || '-')+'\n부서명 : '+(u.department || '-')+'\n직책 : '+(u.title || '-');
-    }
-
-    var help = document.querySelector('#page-training [data-appr-role="writer"] p');
-    if(help) help.textContent = '로그인 당사자 성명 / 부서명 / 직책이 자동 표시됩니다.';
-
-    try{
-      var raw = localStorage.getItem('namo_training_final_approval_v1');
-      var st = raw ? JSON.parse(raw) : {};
-      st.writer = Object.assign({}, st.writer || {}, u);
-      localStorage.setItem('namo_training_final_approval_v1', JSON.stringify(st));
-    }catch(e){}
-  }
-
-  function install(){
-    applyWriter();
-    setTimeout(applyWriter, 100);
-    setTimeout(applyWriter, 500);
-    setTimeout(applyWriter, 1200);
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
-  else install();
-
-  /* 기존 결재 스크립트가 3초마다 다시 그려도 최종 표시를 유지 */
-  setInterval(applyWriter, 1500);
-})();
-</script>
-
-</body></html>';
+      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -25564,334 +25183,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   #page-training .namo-final-grid.four,
   #page-training .namo-final-list-tools{grid-template-columns:1fr!important;}
 }
-
-
-/* =========================================================
-   Premium compact training report redesign v2026-06-05
-   Layout: low whitespace, full-width, executive QMS style
-========================================================= */
-body:has(#page-training.active){background:#e9eff6!important;}
-#page-training{
-  --tr-ink:#0b1220;
-  --tr-muted:#526175;
-  --tr-soft:#f5f8fc;
-  --tr-line:#d7e0ec;
-  --tr-blue:#174ea6;
-  --tr-blue2:#2563eb;
-  --tr-navy:#071b34;
-  --tr-green:#0f8a5f;
-  --tr-red:#d73535;
-  --tr-orange:#c96b16;
-}
-#page-training.active{display:block!important;}
-#page-training .namo-training-final{
-  width:100%!important;
-  max-width:none!important;
-  margin:0!important;
-  padding:14px 16px 26px!important;
-}
-.content:has(#page-training.active){
-  padding:14px 18px!important;
-  background:linear-gradient(180deg,#eef4fb 0%,#e8eef6 100%)!important;
-}
-#page-training .namo-final-breadcrumb{
-  margin:0 0 8px!important;
-  color:#64748b!important;
-  font-size:12px!important;
-  font-weight:850!important;
-}
-#page-training .namo-final-head{
-  position:sticky!important;
-  top:0!important;
-  z-index:25!important;
-  min-height:62px!important;
-  margin:0 0 12px!important;
-  padding:13px 16px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:16px!important;
-  border:1px solid rgba(15,35,65,.12)!important;
-  border-radius:16px!important;
-  background:linear-gradient(135deg,#ffffff 0%,#f8fbff 58%,#eef5ff 100%)!important;
-  box-shadow:0 10px 26px rgba(15,23,42,.08)!important;
-}
-#page-training .namo-final-head:before{
-  content:''!important;
-  position:absolute!important;
-  left:0!important;top:0!important;bottom:0!important;
-  width:6px!important;
-  border-radius:16px 0 0 16px!important;
-  background:linear-gradient(180deg,#174ea6,#26a0da)!important;
-}
-#page-training .namo-final-head h1{
-  margin:0!important;
-  color:var(--tr-ink)!important;
-  font-size:22px!important;
-  line-height:1.12!important;
-  font-weight:950!important;
-  letter-spacing:-.7px!important;
-}
-#page-training .namo-final-head p{
-  margin:4px 0 0!important;
-  color:var(--tr-muted)!important;
-  font-size:12px!important;
-  font-weight:750!important;
-  line-height:1.35!important;
-}
-#page-training .namo-final-actions{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  gap:8px!important;
-  flex-wrap:nowrap!important;
-}
-#page-training .namo-final-actions .btn{
-  height:36px!important;
-  min-width:74px!important;
-  padding:0 14px!important;
-  border-radius:11px!important;
-  font-size:12px!important;
-  font-weight:950!important;
-  box-shadow:none!important;
-}
-#page-training .namo-final-actions .btn.pri{
-  background:linear-gradient(135deg,#174ea6,#2563eb)!important;
-  box-shadow:0 8px 16px rgba(37,99,235,.18)!important;
-}
-#page-training .namo-final-actions .btn.ghost{
-  background:#fff!important;
-  color:#174ea6!important;
-  border:1.5px solid #2563eb!important;
-}
-#page-training .namo-final-actions .btn.light{
-  background:#fff!important;
-  border:1px solid #cbd7e6!important;
-  color:#334155!important;
-}
-#page-training .namo-final-card{
-  margin:0 0 12px!important;
-  padding:16px 18px!important;
-  border:1px solid rgba(15,35,65,.11)!important;
-  border-radius:18px!important;
-  background:#fff!important;
-  box-shadow:0 8px 20px rgba(15,23,42,.055)!important;
-  overflow:hidden!important;
-}
-#page-training .namo-final-card h2{
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-  margin:0 0 12px!important;
-  padding:0 0 10px!important;
-  border-bottom:1px solid #edf2f7!important;
-  color:#0f172a!important;
-  font-size:16px!important;
-  font-weight:950!important;
-  letter-spacing:-.3px!important;
-}
-#page-training .namo-final-card h2:before{
-  content:''!important;
-  width:5px!important;
-  height:20px!important;
-  border-radius:99px!important;
-  background:linear-gradient(180deg,#174ea6,#3b82f6)!important;
-  box-shadow:0 0 0 4px rgba(37,99,235,.10)!important;
-}
-#page-training .namo-final-grid{gap:12px 14px!important;}
-#page-training .namo-final-grid.four{grid-template-columns:repeat(4,minmax(190px,1fr))!important;}
-#page-training .namo-final-field{gap:5px!important;}
-#page-training .namo-final-field label{
-  color:#203047!important;
-  font-size:11px!important;
-  font-weight:950!important;
-  letter-spacing:-.1px!important;
-}
-#page-training .namo-final-field input,
-#page-training .namo-final-field select,
-#page-training .namo-final-field textarea,
-#page-training .namo-final-list-tools select{
-  border:1px solid #cfd9e8!important;
-  border-radius:11px!important;
-  background:linear-gradient(180deg,#fff,#fbfdff)!important;
-  color:#0f172a!important;
-  font-size:13px!important;
-  font-weight:800!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.75)!important;
-}
-#page-training .namo-final-field input,
-#page-training .namo-final-field select,
-#page-training .namo-final-list-tools select{
-  height:38px!important;
-  padding:0 12px!important;
-}
-#page-training .namo-final-field textarea{
-  min-height:96px!important;
-  padding:11px 12px!important;
-  line-height:1.45!important;
-}
-#page-training .namo-final-field input:focus,
-#page-training .namo-final-field select:focus,
-#page-training .namo-final-field textarea:focus{
-  border-color:#2563eb!important;
-  box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;
-}
-#page-training .namo-final-people{
-  display:grid!important;
-  grid-template-columns:1.15fr 1fr .92fr!important;
-  gap:12px!important;
-}
-#page-training .namo-final-box{
-  border:1px solid #cad7e8!important;
-  border-radius:15px!important;
-  background:#fff!important;
-  box-shadow:0 4px 12px rgba(15,23,42,.035)!important;
-}
-#page-training .namo-final-box.internal{border-top:4px solid #2563eb!important;}
-#page-training .namo-final-box.external{border-top:4px solid #f59e0b!important;}
-#page-training .namo-final-box.absent{border-top:4px solid #ef4444!important;}
-#page-training .namo-final-box-head{
-  height:36px!important;
-  padding:0 12px!important;
-  background:#f8fafc!important;
-  border-bottom:1px solid #e6edf6!important;
-}
-#page-training .namo-final-box-head strong{font-size:12px!important;color:#0f172a!important;font-weight:950!important;}
-#page-training .namo-final-box-head span{font-size:11px!important;font-weight:950!important;color:#2563eb!important;}
-#page-training .namo-final-box textarea{
-  height:108px!important;
-  padding:12px!important;
-  font-size:12px!important;
-  font-weight:750!important;
-  color:#334155!important;
-  line-height:1.5!important;
-}
-#page-training .namo-final-result{
-  display:grid!important;
-  grid-template-columns:1.15fr 1.15fr .9fr!important;
-  gap:14px!important;
-  align-items:start!important;
-}
-#page-training .namo-final-result .area textarea{min-height:108px!important;}
-#page-training .namo-final-photo-box{
-  min-height:108px!important;
-  padding:10px!important;
-  border:1px dashed #9ec5fe!important;
-  border-radius:14px!important;
-  background:linear-gradient(180deg,#f8fbff,#f1f7ff)!important;
-}
-#page-training .namo-final-photo-box input[type=file]{height:30px!important;margin:0 0 7px!important;font-size:12px!important;}
-#page-training .namo-final-upload{
-  min-height:58px!important;
-  border-radius:11px!important;
-  color:#174ea6!important;
-  font-size:12px!important;
-  font-weight:950!important;
-}
-#page-training .namo-final-upload span{font-size:10px!important;}
-#page-training .namo-training-approval-card{background:linear-gradient(180deg,#fff,#fbfdff)!important;}
-#page-training .namo-approval-rule{
-  margin:-2px 0 10px!important;
-  padding:8px 10px!important;
-  border:1px solid #dbeafe!important;
-  border-radius:11px!important;
-  background:#eff6ff!important;
-  color:#1d4ed8!important;
-  font-size:12px!important;
-  font-weight:850!important;
-}
-#page-training .namo-training-approval-grid{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:12px!important;
-}
-#page-training .namo-training-sign-card{
-  min-height:132px!important;
-  padding:12px!important;
-  border:1px solid #d9e3f0!important;
-  border-radius:15px!important;
-  background:#fff!important;
-  box-shadow:0 4px 12px rgba(15,23,42,.035)!important;
-}
-#page-training .namo-training-sign-card[data-appr-role='writer']{border-left:4px solid #16a34a!important;}
-#page-training .namo-training-sign-card[data-appr-role='reviewer']{border-left:4px solid #2563eb!important;}
-#page-training .namo-training-sign-card[data-appr-role='approver']{border-left:4px solid #7c3aed!important;}
-#page-training .namo-training-sign-head{margin-bottom:8px!important;}
-#page-training .namo-training-sign-head strong{font-size:13px!important;font-weight:950!important;}
-#page-training .namo-rule-badge{height:22px!important;min-width:48px!important;font-size:10px!important;}
-#page-training .namo-training-sign-card select{height:34px!important;border-radius:9px!important;font-size:12px!important;}
-#page-training .namo-training-sign-sub{font-size:11px!important;margin-top:5px!important;}
-#page-training .namo-training-sign-box{height:42px!important;margin-top:8px!important;border-radius:10px!important;font-size:11px!important;}
-#page-training .namo-training-sign-box img{max-height:38px!important;}
-#page-training .namo-training-sign-actions{margin-top:8px!important;gap:5px!important;}
-#page-training .namo-training-sign-actions .btn{height:26px!important;padding:0 8px!important;font-size:11px!important;border-radius:8px!important;}
-#page-training .namo-training-sign-card p{display:none!important;}
-#page-training .namo-training-status-line{
-  margin-top:10px!important;
-  padding-top:10px!important;
-  font-size:12px!important;
-}
-#page-training .namo-training-status-line b{height:26px!important;padding:0 13px!important;font-size:12px!important;}
-#page-training #trainingListSimple{padding-bottom:14px!important;}
-#page-training .namo-final-list-tools{
-  display:grid!important;
-  grid-template-columns:minmax(260px,1fr) 140px 140px!important;
-  gap:8px!important;
-  margin-bottom:10px!important;
-}
-#page-training .namo-final-list-tools .training-search{
-  height:36px!important;
-  border:1px solid #cfd9e8!important;
-  border-radius:11px!important;
-  background:#fff!important;
-  padding:0 10px!important;
-}
-#page-training .namo-final-list-tools .training-search input{font-size:13px!important;font-weight:800!important;}
-#page-training .namo-final-list-tools select{height:36px!important;font-size:12px!important;}
-#page-training .namo-final-table-wrap{
-  max-height:310px!important;
-  border-radius:14px!important;
-  border:1px solid #d8e3f0!important;
-  box-shadow:inset 0 1px 0 #fff!important;
-}
-#page-training .namo-final-table{min-width:1040px!important;}
-#page-training .namo-final-table th{
-  position:sticky!important;
-  top:0!important;
-  z-index:2!important;
-  height:38px!important;
-  background:#f4f7fb!important;
-  color:#334155!important;
-  font-size:11px!important;
-  padding:7px 8px!important;
-}
-#page-training .namo-final-table td{
-  padding:9px 8px!important;
-  font-size:12px!important;
-  line-height:1.35!important;
-}
-#page-training .training-status-chip{height:24px!important;min-width:56px!important;font-size:11px!important;}
-#page-training .namo-final-table .sb{height:24px!important;padding:0 7px!important;border-radius:7px!important;font-size:10px!important;}
-#page-training .namo-hidden-control{display:none!important;}
-@media(min-width:1500px){
-  #page-training .namo-final-card:nth-of-type(1){margin-bottom:10px!important;}
-  #page-training .namo-final-card:nth-of-type(2){margin-bottom:10px!important;}
-}
-@media(max-width:1280px){
-  #page-training .namo-final-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  #page-training .namo-final-people,
-  #page-training .namo-final-result,
-  #page-training .namo-training-approval-grid{grid-template-columns:1fr!important;}
-}
-@media(max-width:760px){
-  .content:has(#page-training.active){padding:10px!important;}
-  #page-training .namo-training-final{padding:10px 0 20px!important;}
-  #page-training .namo-final-head{position:relative!important;display:block!important;}
-  #page-training .namo-final-actions{justify-content:flex-start!important;flex-wrap:wrap!important;margin-top:10px!important;}
-  #page-training .namo-final-grid.four,
-  #page-training .namo-final-list-tools{grid-template-columns:1fr!important;}
-}
-
 </style>
 
 <script id="namo-training-frame-final-fix-20260604">
@@ -25961,130 +25252,217 @@ body:has(#page-training.active){background:#e9eff6!important;}
 
 
 
-<!-- Final patch: 파란 세로줄 제거 + 작성자 로그인 당사자 성명/부서명/직책 표시 -->
-<style id="namo-training-writer-login-final-patch">
-/* 1) 섹션 제목의 파란 세로줄 완전 제거 */
+<!-- Final safe patch: remove blue vertical section lines + writer is logged-in user's name/department/title -->
+<style id="namo-final-safe-training-patch">
+/* 파란 세로줄 완전 제거 */
 #page-training .namo-final-card h2,
-#page-training .namo-training-approval-card h2{
+#page-training .namo-training-approval-card h2,
+#page-training .namo-simple-card h2,
+#page-training .namo-qc-approval-card h2{
+  border-left:none!important;
   padding-left:0!important;
-  gap:0!important;
 }
 #page-training .namo-final-card h2:before,
-#page-training .namo-training-approval-card h2:before,
 #page-training .namo-final-card h2::before,
-#page-training .namo-training-approval-card h2::before{
+#page-training .namo-training-approval-card h2:before,
+#page-training .namo-training-approval-card h2::before,
+#page-training .namo-simple-card h2:before,
+#page-training .namo-simple-card h2::before,
+#page-training .namo-qc-approval-card h2:before,
+#page-training .namo-qc-approval-card h2::before{
   content:none!important;
   display:none!important;
   width:0!important;
   height:0!important;
   background:transparent!important;
-  box-shadow:none!important;
+  border:0!important;
+  margin:0!important;
+  padding:0!important;
 }
-
-/* 제목은 밑줄형으로 정리 */
-#page-training .namo-final-card h2{
-  border-bottom:1px solid #e6edf5!important;
-  padding-bottom:10px!important;
+#page-training .namo-final-card,
+#page-training .namo-training-approval-card{
+  border-left:none!important;
 }
-
-/* 작성자 카드: 성명/부서명/직책 정보가 잘 보이도록 정리 */
-#page-training [data-appr-role="writer"] .namo-training-sign-head strong{
-  font-size:14px!important;
-  font-weight:950!important;
+/* 작성자 카드: 로그인 당사자 성명/부서명/직책 표시 */
+#page-training .namo-training-sign-card[data-appr-role="writer"] select#trainingWriterSelect{
+  display:none!important;
 }
-#page-training #trainingWriterSelect{
+#page-training #trainingLoginWriterInfo{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin:8px 0 8px;
+}
+#page-training #trainingLoginWriterInfo .tw-info-item{
+  border:1px solid #dbe3ee;
+  background:#f8fafc;
+  border-radius:9px;
+  padding:8px 10px;
+  min-height:48px;
+}
+#page-training #trainingLoginWriterInfo .tw-info-label{
+  display:block;
+  font-size:10px;
+  font-weight:900;
+  color:#64748b;
+  margin-bottom:3px;
+}
+#page-training #trainingLoginWriterInfo .tw-info-value{
+  display:block;
+  font-size:13px;
+  font-weight:950;
+  color:#0f172a;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#page-training .namo-training-sign-card[data-appr-role="writer"] .namo-training-sign-sub{
   font-weight:900!important;
-  color:#0f172a!important;
-  background:#f8fbff!important;
-}
-#page-training #trainingWriterSub{
-  white-space:pre-line!important;
-  line-height:1.55!important;
-  font-size:12px!important;
-  font-weight:850!important;
   color:#334155!important;
-  background:#f8fafc!important;
-  border:1px solid #e2e8f0!important;
-  border-radius:10px!important;
-  padding:9px 10px!important;
-  margin-top:8px!important;
 }
 </style>
-
-<script id="namo-training-login-writer-info-patch">
+<script id="namo-final-safe-training-patch-js">
 (function(){
-  if(window.__namoTrainingLoginWriterInfoPatch) return;
-  window.__namoTrainingLoginWriterInfoPatch = true;
-
-  function $(id){ return document.getElementById(id); }
-  function clean(v){ return String(v == null ? '' : v).trim(); }
-  function esc(v){ return clean(v).replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m];}); }
-
+  'use strict';
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function clean(v){ return (v == null ? '' : String(v)).trim(); }
+  function first(obj, keys){
+    if(!obj) return '';
+    for(var i=0;i<keys.length;i++){
+      var v = obj[keys[i]];
+      if(clean(v)) return clean(v);
+    }
+    return '';
+  }
+  function getState(){
+    try{ if(window.state && typeof window.state === 'object') return window.state; }catch(e){}
+    try{ if(window.appState && typeof window.appState === 'object') return window.appState; }catch(e){}
+    return {};
+  }
   function getLoginUser(){
-    var s = window.state || {};
-    var u = s.currentUser || window.currentUser || window.loginUser || window.userInfo || null;
-    if(!u && Array.isArray(s.signableUsers) && s.signableUsers.length) u = s.signableUsers[0];
+    var st = getState();
+    var candidates = [st.currentUser, window.currentUser, window.loginUser, window.userInfo, window.me];
+    for(var i=0;i<candidates.length;i++){
+      if(candidates[i] && typeof candidates[i] === 'object') return candidates[i];
+    }
+    try{
+      var keys=['currentUser','loginUser','userInfo','namoCurrentUser','namoLoginUser'];
+      for(var k=0;k<keys.length;k++){
+        var raw=localStorage.getItem(keys[k]) || sessionStorage.getItem(keys[k]);
+        if(raw){
+          var parsed=JSON.parse(raw);
+          if(parsed && typeof parsed === 'object') return parsed;
+        }
+      }
+    }catch(e){}
+    return {};
+  }
+  function normalizeUser(u){
     u = u || {};
-    var name = clean(u.name || u.username || u.displayName || u.fullName || u.email || '로그인 사용자');
-    var dept = clean(u.department || u.dept || u.departmentName || u.team || u.org || '');
-    var title = clean(u.title || u.position || u.rank || u.roleName || u.jobTitle || '');
-    var email = clean(u.email || '');
-    return {
-      id: clean(u.id || u.userId || email || name || 'login-user'),
-      name: name,
-      department: dept,
-      title: title,
-      email: email
-    };
+    var name = first(u, ['name','username','userName','displayName','fullName','korName','employeeName','empName']);
+    var dept = first(u, ['department','dept','deptName','departmentName','team','teamName','org','division']);
+    var title = first(u, ['title','position','positionName','jobTitle','rank','rankName','roleName','duty']);
+    var email = first(u, ['email','mail','userEmail']);
+    if(!name){
+      var pbtn = qs('.pbtn');
+      name = clean(qs('.pname', pbtn)?.textContent) || clean(document.querySelector('.pname')?.textContent);
+    }
+    if(!email){ email = clean(document.querySelector('.pemail')?.textContent); }
+    if(!name && email) name = email.split('@')[0];
+    return { name:name || '-', department:dept || '-', title:title || '-', email:email || '' };
   }
-
-  function label(u){
-    var parts = [u.name, u.department || '-', u.title || '-'];
-    return parts.join(' / ');
+  function ensureInfoBox(){
+    var card = qs('#page-training .namo-training-sign-card[data-appr-role="writer"]');
+    if(!card) return null;
+    var box = qs('#trainingLoginWriterInfo', card);
+    if(!box){
+      box = document.createElement('div');
+      box.id = 'trainingLoginWriterInfo';
+      box.innerHTML = '<div class="tw-info-item"><span class="tw-info-label">당사자 성명</span><span class="tw-info-value" data-tw="name">-</span></div>'+
+        '<div class="tw-info-item"><span class="tw-info-label">부서명</span><span class="tw-info-value" data-tw="department">-</span></div>'+
+        '<div class="tw-info-item"><span class="tw-info-label">직책</span><span class="tw-info-value" data-tw="title">-</span></div>';
+      var sel = qs('#trainingWriterSelect', card);
+      if(sel && sel.parentNode){ sel.parentNode.insertBefore(box, sel.nextSibling); }
+      else{ card.insertBefore(box, card.children[1] || null); }
+    }
+    return box;
   }
-
-  function applyWriter(){
-    var u = getLoginUser();
-    var writerTitle = document.querySelector('#page-training [data-appr-role="writer"] .namo-training-sign-head strong');
-    if(writerTitle) writerTitle.textContent = '로그인 당사자';
-
-    var sel = $('trainingWriterSelect');
+  function apply(){
+    var u = normalizeUser(getLoginUser());
+    var box = ensureInfoBox();
+    if(!box) return;
+    var nameEl = qs('[data-tw="name"]', box);
+    var deptEl = qs('[data-tw="department"]', box);
+    var titleEl = qs('[data-tw="title"]', box);
+    if(nameEl) nameEl.textContent = u.name;
+    if(deptEl) deptEl.textContent = u.department;
+    if(titleEl) titleEl.textContent = u.title;
+    var sub = qs('#trainingWriterSub');
+    if(sub) sub.textContent = '당사자 성명: ' + u.name + ' / 부서명: ' + u.department + ' / 직책: ' + u.title;
+    var sel = qs('#trainingWriterSelect');
     if(sel){
-      sel.innerHTML = '<option value="'+esc(u.id)+'">'+esc(label(u))+'</option>';
-      sel.value = u.id;
+      var value = u.name + ' / ' + u.department + ' / ' + u.title;
+      sel.innerHTML = '<option value="login-user">' + value.replace(/[&<>\"]/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}) + '</option>';
+      sel.value = 'login-user';
       sel.disabled = true;
     }
-
-    var sub = $('trainingWriterSub');
-    if(sub){
-      sub.textContent = '성명 : '+(u.name || '-')+'\n부서명 : '+(u.department || '-')+'\n직책 : '+(u.title || '-');
-    }
-
-    var help = document.querySelector('#page-training [data-appr-role="writer"] p');
-    if(help) help.textContent = '로그인 당사자 성명 / 부서명 / 직책이 자동 표시됩니다.';
-
-    try{
-      var raw = localStorage.getItem('namo_training_final_approval_v1');
-      var st = raw ? JSON.parse(raw) : {};
-      st.writer = Object.assign({}, st.writer || {}, u);
-      localStorage.setItem('namo_training_final_approval_v1', JSON.stringify(st));
-    }catch(e){}
   }
-
-  function install(){
-    applyWriter();
-    setTimeout(applyWriter, 100);
-    setTimeout(applyWriter, 500);
-    setTimeout(applyWriter, 1200);
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
-  else install();
-
-  /* 기존 결재 스크립트가 3초마다 다시 그려도 최종 표시를 유지 */
-  setInterval(applyWriter, 1500);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
+  else apply();
+  window.addEventListener('load', apply);
+  setTimeout(apply, 500);
+  setTimeout(apply, 1500);
 })();
 </script>
 
+<!-- PATCH v2: remove blue vertical bars and lock writer to logged-in user info -->
+<style id="namo-training-final-clean-v2">
+#page-training .namo-final-card h2::before,
+#page-training .namo-training-approval-card h2::before,
+#page-training .training-section-title::before,
+#page-training .section-title::before{display:none!important;content:none!important;}
+#page-training .namo-final-card h2,
+#page-training .namo-training-approval-card h2,
+#page-training .training-section-title,
+#page-training .section-title{border-left:0!important;padding-left:0!important;background-image:none!important;}
+#page-training [style*="border-left"],
+#page-training [class*="section"]{--accent-border:transparent!important;}
+</style>
+<script id="namo-training-writer-login-info-v2">
+(function(){
+  function getMe(){
+    var s=window.state||{};
+    var u=s.currentUser||s.user||window.currentUser||{};
+    try{ var ls=JSON.parse(localStorage.getItem('namo_current_user')||localStorage.getItem('currentUser')||'{}'); u=Object.assign({},ls,u); }catch(e){}
+    return {
+      name:u.name||u.fullName||u.displayName||u.username||'로그인 사용자',
+      dept:u.department||u.dept||u.team||u.deptName||'',
+      title:u.title||u.position||u.jobTitle||u.rank||''
+    };
+  }
+  function text(me){ return [me.name,me.dept,me.title].filter(Boolean).join(' / ') || me.name; }
+  function apply(){
+    var me=getMe(), t=text(me);
+    ['trainingWriterName','trainingWriterInfo','trainingWriterDisplay','sg_training_writer_sub'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent=t;
+    });
+    var sel=document.getElementById('sg_training_writer');
+    if(sel){
+      var val='login-user';
+      var opt=Array.from(sel.options).find(function(o){return o.value===val;});
+      if(!opt){ opt=new Option(t,val); sel.insertBefore(opt,sel.firstChild); }
+      opt.text=t; sel.value=val; sel.disabled=true;
+    }
+    var cards=document.querySelectorAll('#page-training [data-appr-role="writer"], #page-training .namo-training-sign-card');
+    cards.forEach(function(card){
+      if(!/작성자/.test(card.textContent||'')) return;
+      var p=card.querySelector('p'); if(p) p.textContent='로그인 당사자 성명 / 부서명 / 직책이 자동 표시됩니다.';
+    });
+  }
+  document.addEventListener('DOMContentLoaded',apply);
+  setTimeout(apply,300); setTimeout(apply,1200);
+})();
+</script>
+<!-- /PATCH v2 -->
 </body>
 </html>
