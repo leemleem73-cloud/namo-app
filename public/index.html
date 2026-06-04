@@ -14346,5 +14346,91 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+
+<!-- PATCH 2026-06-04: 교육관리 서브메뉴 클릭/콘솔 오류 수정 -->
+<style id="namo-edu-clickable-menu-fix-style">
+  #page-training .namo-edu-side-item{cursor:pointer;user-select:none;}
+  #page-training .namo-edu-side-item:focus{outline:2px solid rgba(37,99,235,.25);outline-offset:2px;}
+  #page-training .namo-edu-side-item.active{background:linear-gradient(90deg,#2563eb,#06b6d4)!important;color:#fff!important;}
+  #page-training .namo-edu-placeholder{display:none;background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:24px;margin-top:0;}
+  #page-training .namo-edu-placeholder.show{display:block;}
+  #page-training .namo-edu-placeholder h2{font-size:22px;font-weight:900;color:#0f172a;margin-bottom:8px;}
+  #page-training .namo-edu-placeholder p{font-size:13px;color:#64748b;line-height:1.7;margin-bottom:16px;}
+  #page-training .namo-edu-placeholder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+  #page-training .namo-edu-placeholder-card{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;padding:16px;}
+  #page-training .namo-edu-placeholder-card b{display:block;font-size:14px;color:#0f172a;margin-bottom:6px;}
+  #page-training .namo-edu-placeholder-card span{font-size:12px;color:#64748b;line-height:1.5;}
+  @media(max-width:900px){#page-training .namo-edu-placeholder-grid{grid-template-columns:1fr;}}
+</style>
+<script id="namo-edu-clickable-menu-fix-script">
+(function(){
+  'use strict';
+  function qs(sel, root){return (root||document).querySelector(sel);}
+  function qsa(sel, root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  var info={
+    plan:{title:'교육계획',bc:'교육관리 › 교육계획',desc:'교육 예정 건을 등록하고 대상부서, 교육명, 교육일자, 강사 정보를 관리합니다.',cards:[['교육계획 등록','교육명, 구분, 강사, 일정, 대상부서를 등록합니다.'],['교육계획 목록','예정/진행/완료 상태별 교육계획을 조회합니다.'],['보고서 연동','교육 완료 후 교육보고서로 자동 연결됩니다.']]},
+    schedule:{title:'교육일정',bc:'교육관리 › 교육일정',desc:'월별·부서별 교육 일정을 한눈에 확인합니다.',cards:[['예정 교육','앞으로 진행할 교육 일정을 확인합니다.'],['진행 상태','교육일자 기준으로 예정/완료 여부를 표시합니다.'],['알림 대상','대상자에게 교육일정을 안내할 수 있습니다.']]},
+    request:{title:'교육신청 관리',bc:'교육관리 › 교육신청 관리',desc:'외부교육 예정자와 수료증 제출 상태를 관리합니다.',cards:[['외부교육 예정자','외부기관 교육 대상자를 별도 상태로 관리합니다.'],['수료증 등록','수료증 또는 이수증 첨부 시 완료 처리합니다.'],['개인 이력 반영','외부교육 완료 내역을 개인 교육이력에 연결합니다.']]},
+    report:{title:'교육보고서 상세',bc:'교육관리 › 교육이력 › 교육보고서',desc:'교육 실시 결과, 내부 참석자, 외부교육 예정자, 불참자, 첨부자료, 품질검사형 결재 흐름을 한 화면에서 관리합니다.'},
+    history:{title:'개인 교육이력',bc:'교육관리 › 개인 교육이력',desc:'직원별 사내교육, 외부교육, 수료증 이력을 조회합니다.',cards:[['사내교육 이력','내부 교육 참석 내역을 직원별로 확인합니다.'],['외부교육 이력','외부기관 교육 완료 내역과 증빙을 관리합니다.'],['수료증 관리','수료증 파일 첨부 및 제출 상태를 확인합니다.']]}
+  };
+  function ensurePlaceholder(main){
+    var el=qs('#namoEduPlaceholder', main);
+    if(el) return el;
+    el=document.createElement('section');
+    el.id='namoEduPlaceholder';
+    el.className='namo-edu-placeholder';
+    var top=qs('.namo-edu-top', main);
+    if(top && top.parentNode) top.parentNode.insertBefore(el, top.nextSibling); else main.appendChild(el);
+    return el;
+  }
+  function setReportVisible(main, visible){
+    qsa('.namo-edu-card,.namo-edu-report-list', main).forEach(function(el){el.style.display=visible?'':'none';});
+  }
+  function renderPlaceholder(main, key){
+    var d=info[key]||info.report;
+    var ph=ensurePlaceholder(main);
+    ph.innerHTML='<h2>'+d.title+'</h2><p>'+d.desc+'</p><div class="namo-edu-placeholder-grid">'+(d.cards||[]).map(function(c){return '<div class="namo-edu-placeholder-card"><b>'+c[0]+'</b><span>'+c[1]+'</span></div>';}).join('')+'</div>';
+    ph.classList.add('show');
+  }
+  function setHeader(main,key){
+    var d=info[key]||info.report;
+    var bc=qs('.namo-edu-breadcrumb', main); if(bc) bc.innerHTML=d.bc.replace(/›/g,'<span>›</span>');
+    var h=qs('.namo-edu-top h1', main); if(h) h.innerHTML=d.title+(key==='report'?' <span class="namo-edu-status" id="trainingHeaderStatus">완료</span>':'');
+    var p=qs('.namo-edu-top p', main); if(p) p.textContent=d.desc;
+  }
+  function activate(key){
+    var page=qs('#page-training'); if(!page) return;
+    var main=qs('.namo-edu-main', page); if(!main) return;
+    qsa('.namo-edu-side-item', page).forEach(function(btn){btn.classList.toggle('active', btn.getAttribute('data-edu-nav')===key);});
+    setHeader(main,key);
+    var ph=ensurePlaceholder(main);
+    if(key==='report'){
+      ph.classList.remove('show');
+      setReportVisible(main,true);
+      try{ if(typeof window.renderTrainingTable==='function') window.renderTrainingTable(); if(typeof window.renderTrainingPreview==='function') window.renderTrainingPreview(); }catch(e){}
+    }else{
+      setReportVisible(main,false);
+      renderPlaceholder(main,key);
+    }
+  }
+  function boot(){
+    var page=qs('#page-training'); if(!page) return;
+    var map=[['교육계획','plan'],['교육일정','schedule'],['교육신청 관리','request'],['교육보고서','report'],['개인 교육이력','history']];
+    qsa('.namo-edu-side-item', page).forEach(function(btn){
+      var text=(btn.textContent||'').replace(/\s+/g,' ').trim();
+      map.some(function(m){ if(text.indexOf(m[0])>-1){ btn.setAttribute('data-edu-nav',m[1]); return true; } return false; });
+      if(!btn.__namoEduClickBound){
+        btn.__namoEduClickBound=true;
+        btn.addEventListener('click',function(e){ e.preventDefault(); activate(btn.getAttribute('data-edu-nav')||'report'); });
+      }
+    });
+    activate('report');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+
 </body>
 </html>
