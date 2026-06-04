@@ -2932,9 +2932,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   <div class="layout">
     <aside class="sidebar">
       <div class="nav-sec">메인</div>
-      <button class="nav-item active" data-page="dashboard"><span class="nav-icon"></span><span>품질 대시보드</span></button>
+      <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span><span>품질 대시보드</span></button>
       <div class="nav-sec" data-nmc-prod-dash-sec="1">생산 대시보드</div>
-      <button class="nav-item" data-page="production-result" data-nmc-prod-dash-btn="1"><span class="nav-icon"></span><span>생산 대시보드</span></button>
+      <button class="nav-item" data-page="production-result" data-nmc-prod-dash-btn="1"><span class="nav-icon">⊞</span><span>생산 대시보드</span></button>
       <div class="nav-sec">품질 검사</div>
       <button class="nav-item" data-page="incoming"><span class="nav-icon"></span><span>수입검사 (IQC)</span></button>
       <button class="nav-item" data-page="process"><span class="nav-icon"></span><span>공정검사 (PQC)</span></button>
@@ -25375,6 +25375,271 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+
+<style id="namo-training-frame-final-fix-20260604">
+/* 교육보고서 전체 프레임 재정리: 기존 중복 패치 위에 최종 우선 적용 */
+#page-training{
+  background:#eef4fb!important;
+  min-height:100%!important;
+  padding:0!important;
+}
+#page-training .namo-training-final{
+  width:100%!important;
+  max-width:1500px!important;
+  margin:0 auto!important;
+  padding:22px 26px 38px!important;
+}
+#page-training .namo-final-breadcrumb{
+  margin:0 0 8px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  color:#64748b!important;
+}
+#page-training .namo-final-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:20!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  margin:0 0 18px!important;
+  padding:16px 18px!important;
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid #dbe3ee!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 28px rgba(15,23,42,.08)!important;
+  backdrop-filter:blur(12px)!important;
+}
+#page-training .namo-final-head h1{
+  margin:0!important;
+  font-size:26px!important;
+  font-weight:950!important;
+  letter-spacing:-.8px!important;
+  color:#0f172a!important;
+}
+#page-training .namo-final-head p{
+  display:block!important;
+  margin:5px 0 0!important;
+  color:#64748b!important;
+  font-size:13px!important;
+  font-weight:750!important;
+}
+#page-training .namo-final-actions{
+  display:flex!important;
+  gap:8px!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  flex-shrink:0!important;
+}
+#page-training .namo-final-actions .btn{
+  height:40px!important;
+  min-width:84px!important;
+  border-radius:12px!important;
+  padding:0 16px!important;
+  font-size:13px!important;
+  font-weight:900!important;
+}
+#page-training #trainingSave{display:inline-flex!important;background:#2563eb!important;color:#fff!important;border:1px solid #2563eb!important;}
+#page-training #trainingReset{display:inline-flex!important;background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important;}
+#page-training #trainingRequestApproval{display:inline-flex!important;background:#fff!important;color:#1d4ed8!important;border:1.5px solid #2563eb!important;}
+#page-training #trainingPrint{display:inline-flex!important;background:#0b57d0!important;color:#fff!important;border:1px solid #0b57d0!important;}
+#page-training .namo-hidden-control{display:none!important;}
+
+#page-training .namo-final-card{
+  background:#fff!important;
+  border:1px solid #dbe3ee!important;
+  border-radius:18px!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.055)!important;
+  padding:20px 22px!important;
+  margin:0 0 14px!important;
+  overflow:visible!important;
+}
+#page-training .namo-final-card h2{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  margin:0 0 16px!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+  font-weight:950!important;
+  letter-spacing:-.35px!important;
+  color:#0f172a!important;
+}
+#page-training .namo-final-card h2:before{
+  content:'';width:4px;height:20px;border-radius:9px;background:#2563eb;display:inline-block;flex:0 0 auto;
+}
+#page-training .namo-final-card h2 span{font-size:12px!important;color:#64748b!important;font-weight:850!important;}
+#page-training .namo-final-grid{display:grid!important;gap:16px 20px!important;}
+#page-training .namo-final-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+#page-training .namo-final-field{display:flex!important;flex-direction:column!important;gap:7px!important;min-width:0!important;}
+#page-training .namo-final-field label{font-size:12px!important;font-weight:900!important;color:#0f172a!important;}
+#page-training .namo-final-field label b{color:#ef4444!important;}
+#page-training .namo-final-field input,
+#page-training .namo-final-field select,
+#page-training .namo-final-field textarea,
+#page-training .namo-final-list-tools select{
+  width:100%!important;
+  border:1.5px solid #cfd9e8!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:14px!important;
+  font-weight:750!important;
+  outline:none!important;
+}
+#page-training .namo-final-field input,
+#page-training .namo-final-field select,
+#page-training .namo-final-list-tools select{height:42px!important;padding:0 13px!important;}
+#page-training .namo-final-field textarea{min-height:124px!important;padding:13px!important;resize:vertical!important;line-height:1.55!important;}
+#page-training .namo-final-field input:focus,
+#page-training .namo-final-field select:focus,
+#page-training .namo-final-field textarea:focus{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.11)!important;}
+
+#page-training .namo-final-people{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important;}
+#page-training .namo-final-box{border:1.5px solid #bfdbfe!important;border-radius:16px!important;background:#fff!important;overflow:hidden!important;}
+#page-training .namo-final-box.external{border-color:#fdba74!important;}
+#page-training .namo-final-box.absent{border-color:#fecaca!important;}
+#page-training .namo-final-box-head{height:44px!important;padding:0 14px!important;background:#f8fafc!important;border-bottom:1px solid #e5edf6!important;}
+#page-training .namo-final-box-head strong{font-size:13px!important;font-weight:950!important;color:#0f172a!important;}
+#page-training .namo-final-box-head span{font-size:12px!important;font-weight:950!important;}
+#page-training .namo-final-box textarea{width:100%!important;height:142px!important;border:none!important;outline:none!important;resize:vertical!important;padding:15px!important;font-size:13px!important;font-weight:750!important;line-height:1.6!important;color:#334155!important;}
+
+#page-training .namo-final-result{display:grid!important;grid-template-columns:1fr 1fr 1.05fr!important;gap:18px!important;align-items:stretch!important;}
+#page-training .namo-final-result .area textarea{min-height:132px!important;}
+#page-training .namo-final-photo-box{min-height:132px!important;border:1.5px dashed #93c5fd!important;border-radius:14px!important;background:#f8fbff!important;padding:12px!important;}
+#page-training .namo-final-photo-box input[type=file]{width:100%!important;margin-bottom:9px!important;}
+#page-training .namo-final-upload{min-height:72px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;border:1.5px dashed #bfdbfe!important;border-radius:12px!important;background:#fff!important;color:#2563eb!important;font-size:13px!important;font-weight:900!important;text-align:center!important;cursor:pointer!important;}
+#page-training .namo-final-upload span{margin-top:3px!important;color:#64748b!important;font-size:11px!important;font-weight:750!important;}
+
+#page-training .namo-training-approval-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important;}
+#page-training .namo-training-sign-card{min-height:174px!important;border:1.5px solid #dbe3ee!important;border-radius:16px!important;background:#fff!important;padding:16px!important;box-shadow:0 5px 14px rgba(15,23,42,.035)!important;}
+#page-training .namo-training-sign-card.done{border-color:#86efac!important;background:#f8fff9!important;}
+#page-training .namo-training-sign-card.active{border-color:#60a5fa!important;background:#f8fbff!important;}
+#page-training .namo-training-sign-card.locked{opacity:.9!important;background:#f8fafc!important;}
+#page-training .namo-training-sign-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:10px!important;}
+#page-training .namo-training-sign-head strong{font-size:14px!important;font-weight:950!important;color:#0f172a!important;}
+#page-training .namo-rule-badge{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:54px!important;height:24px!important;border-radius:999px!important;background:#e0f2fe!important;color:#075985!important;font-size:11px!important;font-weight:950!important;}
+#page-training .namo-rule-badge.done{background:#dcfce7!important;color:#166534!important;}
+#page-training .namo-rule-badge.lock{background:#f1f5f9!important;color:#64748b!important;}
+#page-training .namo-training-sign-card select{height:38px!important;width:100%!important;border:1.5px solid #d7e1ee!important;border-radius:10px!important;padding:0 10px!important;background:#fff!important;font-weight:800!important;}
+#page-training .namo-training-sign-sub{margin-top:7px!important;font-size:12px!important;color:#64748b!important;font-weight:800!important;}
+#page-training .namo-training-sign-box{height:58px!important;margin-top:10px!important;border:1px dashed #cbd5e1!important;border-radius:12px!important;background:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#94a3b8!important;font-size:12px!important;font-weight:800!important;overflow:hidden!important;}
+#page-training .namo-training-sign-box img{max-width:100%!important;max-height:54px!important;object-fit:contain!important;}
+#page-training .namo-training-sign-actions{display:flex!important;gap:6px!important;justify-content:flex-end!important;margin-top:10px!important;}
+#page-training .namo-training-sign-actions .btn{height:30px!important;border-radius:9px!important;padding:0 10px!important;font-size:12px!important;}
+#page-training .namo-training-sign-card p{margin:8px 0 0!important;color:#64748b!important;font-size:12px!important;font-weight:750!important;}
+#page-training .namo-training-status-line{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:10px!important;border-top:1px solid #e5edf6!important;margin-top:16px!important;padding-top:14px!important;font-size:13px!important;font-weight:900!important;color:#334155!important;}
+#page-training .namo-training-status-line b{display:inline-flex!important;align-items:center!important;height:30px!important;padding:0 16px!important;border-radius:999px!important;background:#e0f2fe!important;color:#075985!important;}
+
+#page-training .namo-final-list-tools{display:grid!important;grid-template-columns:minmax(280px,1fr) 150px 150px!important;gap:10px!important;margin-bottom:14px!important;}
+#page-training .namo-final-list-tools .training-search{height:42px!important;border:1.5px solid #cfd9e8!important;border-radius:12px!important;background:#fff!important;padding:0 13px!important;display:flex!important;align-items:center!important;gap:8px!important;}
+#page-training .namo-final-list-tools .training-search input{border:none!important;outline:none!important;width:100%!important;font-size:14px!important;font-weight:750!important;}
+#page-training .namo-final-table-wrap{border:1px solid #dbe3ee!important;border-radius:14px!important;overflow:auto!important;background:#fff!important;}
+#page-training .namo-final-table{width:100%!important;min-width:1080px!important;border-collapse:collapse!important;table-layout:fixed!important;}
+#page-training .namo-final-table th{height:44px!important;background:#f8fafc!important;color:#334155!important;font-size:12px!important;text-align:center!important;font-weight:950!important;text-transform:none!important;border-bottom:1px solid #e2e8f0!important;padding:9px 10px!important;}
+#page-training .namo-final-table td{padding:12px 10px!important;text-align:center!important;vertical-align:middle!important;border-bottom:1px solid #edf2f7!important;color:#334155!important;font-size:13px!important;word-break:keep-all!important;}
+#page-training .namo-final-table th:nth-child(1){width:90px!important;}
+#page-training .namo-final-table th:nth-child(2){width:300px!important;}
+#page-training .namo-final-table th:nth-child(3){width:110px!important;}
+#page-training .namo-final-table th:nth-child(4){width:95px!important;}
+#page-training .namo-final-table th:nth-child(5){width:160px!important;}
+#page-training .namo-final-table th:nth-child(6){width:110px!important;}
+#page-training .namo-final-table th:nth-child(7){width:110px!important;}
+#page-training .namo-final-table th:nth-child(8){width:160px!important;}
+#page-training .namo-final-table .training-title-cell{text-align:left!important;line-height:1.35!important;}
+#page-training .namo-final-table .training-title-cell b{display:block!important;font-size:13px!important;font-weight:950!important;color:#0f172a!important;}
+#page-training .namo-final-table .training-title-cell span{display:block!important;margin-top:4px!important;font-size:11px!important;font-weight:750!important;color:#64748b!important;}
+#page-training .training-no-link{border:none!important;background:transparent!important;color:#1d4ed8!important;font-weight:950!important;cursor:pointer!important;text-decoration:none!important;}
+#page-training .training-status-chip{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:64px!important;height:28px!important;border-radius:999px!important;font-size:12px!important;font-weight:950!important;background:#e0f2fe!important;color:#075985!important;}
+#page-training .training-status-chip.done{background:#dcfce7!important;color:#166534!important;}
+#page-training .training-status-chip.review{background:#fef3c7!important;color:#92400e!important;}
+#page-training .training-status-chip.draft{background:#f1f5f9!important;color:#64748b!important;}
+#page-training .training-status-chip.bad{background:#fee2e2!important;color:#991b1b!important;}
+#page-training .namo-final-table .ai{justify-content:center!important;gap:5px!important;}
+#page-training .namo-final-table .sb{height:28px!important;border-radius:8px!important;padding:0 9px!important;font-size:11px!important;font-weight:900!important;}
+#page-training .namo-final-table .sb.del{display:none!important;}
+@media(max-width:1300px){
+  #page-training .namo-final-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #page-training .namo-final-people,
+  #page-training .namo-final-result,
+  #page-training .namo-training-approval-grid{grid-template-columns:1fr!important;}
+  #page-training .namo-training-final{padding:18px 16px 30px!important;}
+}
+@media(max-width:760px){
+  #page-training .namo-final-head{position:relative!important;display:block!important;}
+  #page-training .namo-final-actions{justify-content:flex-start!important;margin-top:12px!important;}
+  #page-training .namo-final-grid.four,
+  #page-training .namo-final-list-tools{grid-template-columns:1fr!important;}
+}
+</style>
+
+<script id="namo-training-frame-final-fix-20260604">
+(function(){
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readReports(){
+    try{ if(typeof window.readTrainingReports==='function') return window.readTrainingReports()||[]; }catch(e){}
+    var keys=['trainingReports','namoTrainingReports','qms_training_reports'];
+    for(var i=0;i<keys.length;i++){
+      try{var a=JSON.parse(localStorage.getItem(keys[i])||'[]'); if(Array.isArray(a)) return a;}catch(e){}
+    }
+    return [];
+  }
+  function resultClass(s){
+    s=String(s||'작성중');
+    if(/승인완료|완료/.test(s)) return 'done';
+    if(/검토|승인대기|대기/.test(s)) return 'review';
+    if(/반려|미실시|불합격/.test(s)) return 'bad';
+    return 'draft';
+  }
+  function countLines(v){return String(v||'').split(/\n|,/).map(function(x){return x.trim();}).filter(Boolean).length;}
+  function created(r){return String(r.createdAt||r.created||r.date||'').slice(0,10)||'-';}
+  function statusOf(r){return r.approvalStatus||r.status||r.result||'작성중';}
+  function writerOf(r){return r.writer||r.signWriter?.name||r.author||r.createdBy||'-';}
+  function render(){
+    var tb=document.getElementById('trainingTable'); if(!tb) return;
+    var q=(document.getElementById('trainingSearch')?.value||'').toLowerCase().trim();
+    var type=document.getElementById('trainingTypeFilter')?.value||'';
+    var st=document.getElementById('trainingStatusFilter')?.value||'';
+    var list=readReports().filter(function(r){
+      var blob=[r.no,r.title,r.instructor,r.dept,r.type,r.writer,r.author,statusOf(r)].join(' ').toLowerCase();
+      return (!q||blob.indexOf(q)>-1) && (!type||String(r.type||'')===type) && (!st||String(statusOf(r))===st);
+    });
+    tb.innerHTML=list.length?list.map(function(r,idx){
+      var photos=Array.isArray(r.photos)?r.photos.length:0;
+      var attend=countLines(r.attendees)+countLines(r.external||r.trainingExternal);
+      var actions='<button class="sb lbl" data-action="printTraining" data-id="'+esc(r.id)+'" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="'+esc(r.id)+'" type="button">수정</button>';
+      return '<tr>'+
+        '<td>'+(idx+1)+'</td>'+
+        '<td><div class="training-title-cell"><button class="training-no-link" data-action="editTraining" data-id="'+esc(r.id)+'" type="button">'+esc(r.no||'-')+'</button><b>'+esc(r.title||'교육명 미입력')+'</b><span>'+esc(r.instructor||'강사 미입력')+' · '+photos+'장 · 참석 '+attend+'명</span></div></td>'+
+        '<td>'+esc(String(r.date||'').slice(0,10)||'-')+'</td>'+
+        '<td>'+esc(r.type||'-')+'</td>'+
+        '<td>'+esc(writerOf(r))+'</td>'+
+        '<td><span class="training-status-chip '+resultClass(statusOf(r))+'">'+esc(statusOf(r))+'</span></td>'+
+        '<td>'+esc(created(r))+'</td>'+
+        '<td><div class="ai">'+actions+'</div></td>'+
+      '</tr>';
+    }).join(''):'<tr><td colspan="8" style="padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important;">저장된 교육보고서가 없습니다.</td></tr>';
+  }
+  function install(){
+    var table=document.querySelector('#trainingListSimple table');
+    if(table){
+      table.classList.add('namo-final-table');
+      var head=table.querySelector('thead tr');
+      if(head) head.innerHTML='<th>No.</th><th>교육명 / 보고서번호</th><th>교육일자</th><th>교육구분</th><th>작성자</th><th>결재상태</th><th>작성일</th><th>작업</th>';
+    }
+    window.renderTrainingTable=render;
+    ['trainingSearch','trainingTypeFilter','trainingStatusFilter'].forEach(function(id){
+      var el=document.getElementById(id); if(el&&!el.__namoFinalFrame){el.__namoFinalFrame=true; el.addEventListener('input',render); el.addEventListener('change',render);}
+    });
+    try{render();}catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install); else install();
+  [300,900,1800].forEach(function(t){setTimeout(install,t);});
+})();
+</script>
 
 </body>
 </html>
