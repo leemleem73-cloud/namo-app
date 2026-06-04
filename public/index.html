@@ -2405,6 +2405,84 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #namoReportBell {
   display: none !important;
 }
+
+
+/* 교육보고서 단순 구조 교체 v2026-06 */
+.namo-hidden-control{display:none!important;}
+#page-training .namo-training-simple{max-width:1680px;margin:0 auto;padding:4px 2px 24px;}
+#page-training .namo-simple-breadcrumb{font-size:12px;font-weight:800;color:#64748b;margin:0 0 8px;}
+#page-training .namo-simple-breadcrumb span{color:#94a3b8;margin:0 7px;}
+#page-training .namo-simple-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px;}
+#page-training .namo-simple-head h1{font-size:26px;line-height:1.1;font-weight:950;color:#0f172a;letter-spacing:-.9px;margin:0;}
+#page-training .namo-simple-head p{font-size:13px;font-weight:700;color:#64748b;margin-top:7px;}
+#page-training .namo-simple-actions{display:flex;align-items:center;gap:10px;}
+#page-training .namo-simple-actions .btn{height:42px;min-width:96px;border-radius:10px;font-weight:900;}
+#page-training .namo-simple-card{background:#fff;border:1px solid #dbe3ee;border-radius:16px;box-shadow:0 8px 22px rgba(15,23,42,.045);padding:18px 22px;margin-bottom:10px;}
+#page-training .namo-simple-card h2{font-size:16px;font-weight:950;color:#0f172a;margin:0 0 13px;letter-spacing:-.25px;}
+#page-training .namo-simple-card h2 span{font-size:12px;font-weight:900;color:#64748b;margin-left:4px;}
+#page-training .namo-simple-grid{display:grid;gap:14px 28px;}
+#page-training .namo-simple-grid.four{grid-template-columns:repeat(4,minmax(0,1fr));}
+#page-training .namo-simple-field{display:flex;flex-direction:column;gap:7px;min-width:0;}
+#page-training .namo-simple-field label{font-size:12px;font-weight:900;color:#0f172a;letter-spacing:-.2px;}
+#page-training .namo-simple-field label b{color:#ef4444;}
+#page-training .namo-simple-field input,#page-training .namo-simple-field select,#page-training .namo-simple-field textarea{width:100%;border:1.5px solid #cfd9e8;border-radius:9px;background:#fff;color:#0f172a;font-size:14px;font-weight:700;outline:none;transition:.15s ease;}
+#page-training .namo-simple-field input,#page-training .namo-simple-field select{height:40px;padding:0 12px;}
+#page-training .namo-simple-field textarea{min-height:132px;padding:12px;resize:vertical;line-height:1.55;}
+#page-training .namo-simple-field input:focus,#page-training .namo-simple-field select:focus,#page-training .namo-simple-field textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+#page-training .namo-simple-people{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+#page-training .namo-simple-box{border:1.5px solid #dbe3ee;border-radius:12px;overflow:hidden;background:#fff;}
+#page-training .namo-simple-box.internal{border-color:#93c5fd;}#page-training .namo-simple-box.external{border-color:#fdba74;}#page-training .namo-simple-box.absent{border-color:#fecaca;}
+#page-training .namo-simple-box-head{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#f8fafc;border-bottom:1px solid #e5edf6;}
+#page-training .namo-simple-box-head strong{font-size:13px;font-weight:950;color:#0f172a;}#page-training .namo-simple-box-head span{font-size:13px;font-weight:950;color:#2563eb;}
+#page-training .namo-simple-box.external .namo-simple-box-head span{color:#f97316;}#page-training .namo-simple-box.absent .namo-simple-box-head span{color:#ef4444;}
+#page-training .namo-simple-box textarea{width:100%;height:132px;border:none;outline:none;resize:vertical;padding:14px;font-size:13px;font-weight:700;color:#334155;line-height:1.6;}
+#page-training .namo-simple-result{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:26px;align-items:start;}
+#page-training .namo-simple-photo-box{border:1.5px dashed #93c5fd;border-radius:10px;background:#f8fbff;padding:11px;min-height:132px;}
+#page-training .namo-simple-photo-box input[type=file]{display:block;margin-bottom:8px;font-size:12px;}
+#page-training .namo-simple-upload{height:62px;border:1px dashed #bfdbfe;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#2563eb;font-size:13px;font-weight:900;background:#fff;}
+#page-training .namo-simple-upload span{font-size:11px;font-weight:700;color:#64748b;margin-top:3px;}
+#page-training .training-photo-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px;}
+#page-training .training-photo-card{width:100%!important;border-radius:8px;padding:4px;}
+#page-training .training-photo-card img{height:62px!important;border-radius:6px;}
+#page-training .training-photo-card input{display:none;}
+#page-training .training-photo-del{width:19px;height:19px;font-size:11px;top:2px;right:2px;}
+#page-training .namo-simple-approval{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr) 54px minmax(0,1fr);align-items:center;gap:12px;}
+#page-training .namo-simple-approval-card{min-height:68px;border:1px solid #dbe3ee;border-radius:12px;background:#fbfdff;padding:13px 16px;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:5px 12px;}
+#page-training .namo-simple-approval-card span{font-size:12px;font-weight:950;color:#64748b;grid-column:1 / 2;}
+#page-training .namo-simple-approval-card strong{font-size:14px;font-weight:950;color:#0f172a;grid-column:1 / 2;}
+#page-training .namo-simple-approval-card em{grid-column:2 / 3;grid-row:1 / 3;align-self:center;min-width:46px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:#f1f5f9;color:#64748b;font-style:normal;font-size:11px;font-weight:950;}
+#page-training .namo-simple-approval-card:first-child em{background:#dcfce7;color:#166534;}
+#page-training .namo-simple-approval i{font-style:normal;text-align:center;color:#0f2f5f;font-size:30px;font-weight:900;}
+#page-training .namo-hidden-sign-grid{height:0;overflow:hidden;opacity:0;pointer-events:none;margin:0;padding:0;}
+#page-training .namo-simple-list-tools{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+#page-training .namo-simple-list-tools .training-search{flex:1;display:flex;align-items:center;gap:8px;height:40px;border:1.5px solid #cfd9e8;border-radius:10px;background:#fff;padding:0 12px;}
+#page-training .namo-simple-list-tools .training-search input{border:none;outline:none;flex:1;font-weight:700;}
+#page-training .namo-simple-list-tools select{height:40px;border:1.5px solid #cfd9e8;border-radius:10px;background:#fff;padding:0 12px;font-weight:800;color:#334155;}
+#page-training .namo-simple-table-wrap{border:1px solid #dbe3ee;border-radius:10px;overflow:auto;}
+#page-training .namo-simple-table{min-width:980px;}
+#page-training .namo-simple-table th{background:#f8fafc;color:#334155;text-transform:none;font-size:12px;font-weight:950;text-align:center;padding:9px 10px;}
+#page-training .namo-simple-table td{text-align:center;padding:9px 10px;font-size:13px;color:#334155;}
+#page-training .namo-simple-table td:nth-child(2){text-align:left;font-weight:850;color:#0f172a;}
+#page-training .sb.del{display:none!important;}
+@media(max-width:1300px){#page-training .namo-simple-grid.four{grid-template-columns:repeat(2,1fr)}#page-training .namo-simple-people,#page-training .namo-simple-result{grid-template-columns:1fr}#page-training .namo-simple-approval{grid-template-columns:1fr}#page-training .namo-simple-approval i{transform:rotate(90deg)}}
+@media(max-width:720px){#page-training .namo-simple-head{flex-direction:column}#page-training .namo-simple-grid.four{grid-template-columns:1fr}#page-training .namo-simple-actions{width:100%}#page-training .namo-simple-actions .btn{flex:1}}
+
+
+
+/* 교육보고서 최종 단순화 패치 v2026-06-04 */
+#page-training .namo-simple-head p{display:none!important;}
+#page-training .namo-simple-actions{gap:12px!important;}
+#page-training .namo-simple-actions .btn.light:not(.namo-hidden-control){min-width:86px!important;background:#fff!important;color:#1d4ed8!important;border:1.5px solid #93c5fd!important;}
+#page-training .namo-simple-actions #trainingPrint{min-width:86px!important;background:#0b57d0!important;color:#fff!important;border:1.5px solid #0b57d0!important;box-shadow:0 8px 16px rgba(11,87,208,.18)!important;}
+#page-training .namo-simple-card{margin-bottom:10px!important;}
+#page-training .namo-simple-approval{grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr) 60px minmax(0,1fr)!important;}
+#page-training .namo-simple-approval-card{background:#fff!important;border:1px solid #dbe3ee!important;box-shadow:0 4px 12px rgba(15,23,42,.035)!important;}
+#page-training .namo-simple-approval-card em{background:#f8fafc!important;border:1px solid #dbe3ee!important;color:#64748b!important;}
+#page-training .namo-simple-approval-card:first-child em{background:#dcfce7!important;border-color:#bbf7d0!important;color:#166534!important;}
+#page-training .namo-simple-approval i{font-size:34px!important;color:#0f2f5f!important;}
+#page-training .namo-hidden-control{display:none!important;}
+#page-training #trainingReset,#page-training #trainingCopyBtn,#page-training #trainingCsv,#page-training #trainingSave{display:none!important;}
+
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -3196,142 +3274,117 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       </section>
 
 
-      <!-- ■ 교육 보고서 : NAMO Enterprise Structure v2026 -->
+      <!-- ■ 교육 보고서 : Simple Structure v2026 -->
       <section class="page" id="page-training">
-        <div class="namo-edu-wrap">
-          <aside class="namo-edu-side">
-            <div class="namo-edu-side-title">교육관리</div>
-            <button class="namo-edu-side-item active" type="button"><span>①</span>교육계획</button>
-            <button class="namo-edu-side-item" type="button"><span>▣</span>교육일정</button>
-            <button class="namo-edu-side-item" type="button"><span>⇄</span>교육신청 관리</button>
-            <div class="namo-edu-side-group">② 교육이력</div>
-            <button class="namo-edu-side-item active report" type="button"><span>□</span>교육보고서</button>
-            <button class="namo-edu-side-item" type="button"><span>☷</span>개인 교육이력</button>
-          </aside>
+        <div class="namo-training-simple">
+          <div class="namo-simple-breadcrumb">교육관리 <span>›</span> 교육보고서</div>
+          <div class="namo-simple-head">
+            <div>
+              <h1>교육보고서 작성</h1>
+              <p>교육 1건 작성 → 작성/검토/승인 → 인쇄까지 한 화면에서 처리합니다.</p>
+            </div>
+            <div class="namo-simple-actions">
+              <button class="btn light" type="button" onclick="document.getElementById('trainingListSimple')?.scrollIntoView({behavior:'smooth',block:'start'});">목록</button>
+              <button class="btn pri" id="trainingPrint" type="button">인쇄</button>
+              <button class="btn light namo-hidden-control" id="trainingReset" type="button">초기화</button>
+              <button class="btn light namo-hidden-control" id="trainingCopyBtn" type="button">복사</button>
+              <button class="btn ghost namo-hidden-control" id="trainingCsv" type="button">CSV 다운로드</button>
+              <button class="btn pri namo-hidden-control" id="trainingSave" type="button">저장</button>
+            </div>
+          </div>
 
-          <main class="namo-edu-main">
-            <div class="namo-edu-breadcrumb">교육관리 <span>›</span> 교육이력 <span>›</span> 교육보고서</div>
-            <div class="namo-edu-top">
-              <div>
-                <h1>교육보고서 상세 <span class="namo-edu-status" id="trainingHeaderStatus">완료</span></h1>
-                <p>교육 실시 결과, 내부 참석자, 외부교육 예정자, 불참자, 첨부자료, 품질검사형 결재 흐름을 한 화면에서 관리합니다.</p>
+          <section class="namo-simple-card">
+            <h2>1. 교육정보</h2>
+            <div class="namo-simple-grid four">
+              <div class="namo-simple-field"><label>교육명 <b>*</b></label><input id="trainingTitle" placeholder="교육명을 입력하세요"></div>
+              <div class="namo-simple-field"><label>교육일자 <b>*</b></label><input type="date" id="trainingDate"></div>
+              <div class="namo-simple-field"><label>교육구분 <b>*</b></label><select id="trainingType"><option>사내교육</option><option>외부교육</option><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select></div>
+              <div class="namo-simple-field"><label>강사 <b>*</b></label><input id="trainingInstructor" placeholder="강사명 / 기관명"></div>
+              <div class="namo-simple-field"><label>교육시간 <b>*</b></label><input id="trainingHours" placeholder="예: 14:00~16:00 / 2시간"></div>
+              <div class="namo-simple-field"><label>교육장소 <b>*</b></label><input id="trainingPlace" placeholder="회의실(사내) / A실"></div>
+              <div class="namo-simple-field"><label>대상부서</label><input id="trainingDept" placeholder="생산팀, 품질팀, 연구소"></div>
+              <div class="namo-simple-field"><label>평가방법</label><input id="trainingEvalMethod" placeholder="서명 확인 / 질의응답 / 테스트"></div>
+              <input type="hidden" id="trainingNo" value="EDU-2026-001">
+              <select id="trainingResult" class="namo-hidden-control"><option>완료</option><option>예정</option><option>미실시</option></select>
+            </div>
+          </section>
+
+          <section class="namo-simple-card">
+            <h2>2. 교육대상</h2>
+            <div class="namo-simple-people">
+              <div class="namo-simple-box internal">
+                <div class="namo-simple-box-head"><strong>내부 교육 참석자</strong><span id="trainingInternalCount">0명</span></div>
+                <textarea id="trainingAttendees" placeholder="사내 참석자 입력&#10;예) 이길섭 / 연구소 / 연구원"></textarea>
               </div>
-              <div class="namo-edu-actions">
-                <button class="btn light" id="trainingReset" type="button">초기화</button>
-                <button class="btn light" id="trainingCopyBtn" type="button">복사</button>
-                <button class="btn ghost" id="trainingCsv" type="button">CSV 다운로드</button>
-                <button class="btn pri" id="trainingSave" type="button">저장</button>
-                <button class="btn pri" id="trainingPrint" type="button">PDF 다운로드</button>
+              <div class="namo-simple-box external">
+                <div class="namo-simple-box-head"><strong>외부 교육 예정자</strong><span id="trainingExternalCount">0명</span></div>
+                <textarea id="trainingExternal" placeholder="외부교육 예정자 입력&#10;예) 박지현 / 연구소 / 한국화학물질관리협회"></textarea>
+              </div>
+              <div class="namo-simple-box absent">
+                <div class="namo-simple-box-head"><strong>불참자</strong><span id="trainingAbsentCount">0명</span></div>
+                <textarea id="trainingAbsentees" placeholder="불참자 및 사유 입력"></textarea>
               </div>
             </div>
+          </section>
 
-            <section class="namo-edu-card namo-edu-basic">
-              <div class="namo-edu-card-title">교육 기본정보</div>
-              <div class="namo-edu-basic-grid">
-                <div class="namo-edu-field"><label>교육명</label><input id="trainingTitle" placeholder="예: 유해화학물질 안전교육"></div>
-                <div class="namo-edu-field"><label>교육번호</label><input id="trainingNo" placeholder="EDU-2026-001"></div>
-                <div class="namo-edu-field"><label>교육구분</label><select id="trainingType"><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select></div>
-                <div class="namo-edu-field"><label>강사</label><input id="trainingInstructor" placeholder="강사명 / 기관명"></div>
-                <div class="namo-edu-field"><label>교육일자</label><input type="date" id="trainingDate"></div>
-                <div class="namo-edu-field"><label>교육시간</label><input id="trainingHours" placeholder="예: 14:00~16:00 / 2시간"></div>
-                <div class="namo-edu-field"><label>교육장소</label><input id="trainingPlace" placeholder="회의실(사내) / A실"></div>
-                <div class="namo-edu-field"><label>대상부서</label><input id="trainingDept" placeholder="생산팀, 품질팀, 연구소"></div>
-                <div class="namo-edu-field"><label>평가방법</label><input id="trainingEvalMethod" placeholder="서명 확인 / 질의응답 / 테스트"></div>
-                <div class="namo-edu-field"><label>평가결과</label><select id="trainingResult"><option>완료</option><option>예정</option><option>미실시</option></select></div>
-              </div>
-              <div class="namo-edu-attend-rate">
-                <div class="namo-donut" id="trainingDonut" style="--rate:0%"><strong id="trainingRateText">0%</strong></div>
-                <div><b>참석률(내부교육)</b><span id="trainingRateSub">내부 참석 0명 / 대상 0명</span></div>
-              </div>
-            </section>
-
-            <section class="namo-edu-card">
-              <div class="namo-edu-card-title">참석자 현황</div>
-              <div class="namo-edu-three">
-                <div class="namo-person-box internal">
-                  <div class="namo-person-head"><b>내부 교육 참석자</b><span id="trainingInternalCount">0명</span></div>
-                  <textarea id="trainingAttendees" placeholder="사내에서 교육 참석한 인원을 줄바꿈으로 입력"></textarea>
-                </div>
-                <div class="namo-person-box external">
-                  <div class="namo-person-head"><b>외부 교육 예정자</b><span id="trainingExternalCount">0명</span></div>
-                  <textarea id="trainingExternal" placeholder="외부기관에서 별도 교육 받을 인원 입력"></textarea>
-                  <div class="namo-info-line">수료증 또는 이수증 등록 시 ‘외부교육 완료’로 자동 전환</div>
-                </div>
-                <div class="namo-person-box absent">
-                  <div class="namo-person-head"><b>불참자</b><span id="trainingAbsentCount">0명</span></div>
-                  <textarea id="trainingAbsentees" placeholder="불참자 및 사유 입력"></textarea>
+          <section class="namo-simple-card">
+            <h2>3. 교육결과</h2>
+            <div class="namo-simple-result">
+              <div class="namo-simple-field area"><label>교육내용 <b>*</b></label><textarea id="trainingContent" placeholder="교육 주요 내용을 입력하세요."></textarea></div>
+              <div class="namo-simple-field area"><label>개선사항 / 후속조치</label><textarea id="trainingRemark" placeholder="특이사항, 개선사항, 후속 조치 내용을 입력하세요."></textarea></div>
+              <div class="namo-simple-field photo"><label>교육사진</label>
+                <div class="training-photo-box namo-simple-photo-box">
+                  <input type="file" id="trainingPhotoFiles" accept="image/*" multiple>
+                  <div class="namo-simple-upload">사진을 드래그하거나 클릭하여 업로드<br><span>JPG, PNG 파일</span></div>
+                  <div class="training-photo-preview" id="trainingPhotoPreview"></div>
                 </div>
               </div>
-            </section>
-
-            <div class="namo-edu-layout">
-              <div class="namo-edu-left">
-                <section class="namo-edu-card">
-                  <div class="namo-edu-two">
-                    <div>
-                      <div class="namo-edu-card-title small">교육 내용 요약</div>
-                      <textarea id="trainingContent" class="namo-big-text" placeholder="교육 주요 내용을 입력하세요."></textarea>
-                    </div>
-                    <div>
-                      <div class="namo-edu-card-title small">교육 사진</div>
-                      <div class="training-photo-box namo-photo-box">
-                        <input type="file" id="trainingPhotoFiles" accept="image/*" multiple>
-                        <div class="training-upload-hero">사진 첨부<br><span>교육 현장 사진을 업로드하세요</span></div>
-                        <div class="training-photo-preview" id="trainingPhotoPreview"></div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="namo-edu-card">
-                  <div class="namo-edu-card-title small">외부교육 이력 (수료증/이수증)</div>
-                  <div class="namo-external-table-wrap">
-                    <table class="namo-external-table"><thead><tr><th>이름</th><th>부서</th><th>직급</th><th>외부교육기관</th><th>과정명</th><th>교육일자</th><th>수료증/이수증</th><th>상태</th></tr></thead><tbody id="trainingExternalRows"></tbody></table>
-                  </div>
-                  <div class="namo-info-line">※ 외부교육 대상자는 불참이 아니라 별도 교육 예정자로 관리합니다.</div>
-                </section>
-
-                <section class="namo-edu-card namo-list-card">
-                  <div class="namo-edu-card-title small">교육보고서 목록</div>
-                  <div class="training-toolbar namo-toolbar">
-                    <div class="training-search"><span>🔎</span><input id="trainingSearch" placeholder="교육명, 보고서번호, 강사, 부서 검색"></div>
-                    <select id="trainingTypeFilter"><option value="">전체 구분</option><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select>
-                    <select id="trainingStatusFilter"><option value="">전체 결과</option><option>완료</option><option>예정</option><option>미실시</option></select>
-                  </div>
-                  <div class="training-table-wrap"><table class="training-modern-table"><thead><tr><th>교육일자</th><th>보고서번호</th><th>구분</th><th>교육명</th><th>강사</th><th>대상부서</th><th>참석</th><th>상태</th><th>결재라인</th><th>작업</th></tr></thead><tbody id="trainingTable"></tbody></table></div>
-                </section>
-              </div>
-
-              <aside class="namo-edu-right">
-                <section class="namo-edu-card">
-                  <div class="namo-edu-card-title small">교육 결과 및 개선사항</div>
-                  <label class="namo-mini-label">개선사항 / 후속조치</label>
-                  <textarea id="trainingRemark" class="namo-result-text" placeholder="특이사항, 개선사항, 후속 조치"></textarea>
-                  <div class="namo-attach-row"><span>첨부자료</span><button class="btn light sm" id="trainingPreviewBtn" type="button">보고서 미리보기</button></div>
-                </section>
-
-                <section class="namo-edu-card">
-                  <div class="namo-edu-card-title small">결재 정보</div>
-                  <div class="namo-qc-flow" id="trainingQcFlow">
-                    <div class="namo-qc-node"><span>작성자</span><b id="trainingWriterText">-</b><em id="trainingWriterState">작성</em></div>
-                    <i></i>
-                    <div class="namo-qc-node"><span>검토자</span><b id="trainingReviewerText">-</b><em id="trainingReviewerState">검토대기</em></div>
-                    <i></i>
-                    <div class="namo-qc-node"><span>승인자</span><b id="trainingApproverText">-</b><em id="trainingApproverState">승인대기</em></div>
-                  </div>
-                  <div class="sign-warning" id="signWarn_training">등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
-                  <div class="sign-grid namo-sign-grid" id="signGrid_training"></div>
-                  <div class="namo-approval-note">품질검사 시스템과 동일한 작성 → 검토 → 승인 구조를 사용합니다.</div>
-                </section>
-              </aside>
             </div>
+          </section>
 
-            <section class="namo-edu-card" id="trainingPreviewCard">
-              <div class="namo-edu-card-title small">보고서 사전보기</div>
-              <div class="training-preview-sheet" id="trainingPreviewSheet"></div>
-            </section>
-            <input type="hidden" id="trainingEditId">
-          </main>
+          <section class="namo-simple-card">
+            <h2>4. 결재 <span>(품질검사 시스템)</span></h2>
+            <div class="namo-simple-approval" id="trainingQcFlow">
+              <div class="namo-simple-approval-card">
+                <span>작성자</span>
+                <strong id="trainingWriterText">임흥배 / 품질관리팀</strong>
+                <em id="trainingWriterState">작성</em>
+              </div>
+              <i>→</i>
+              <div class="namo-simple-approval-card">
+                <span>검토자</span>
+                <strong id="trainingReviewerText">이길섭 / 연구소</strong>
+                <em id="trainingReviewerState">대기</em>
+              </div>
+              <i>→</i>
+              <div class="namo-simple-approval-card">
+                <span>승인자</span>
+                <strong id="trainingApproverText">박병구 / 대표이사</strong>
+                <em id="trainingApproverState">대기</em>
+              </div>
+            </div>
+            <div class="sign-warning" id="signWarn_training">등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
+            <div class="sign-grid namo-sign-grid namo-hidden-sign-grid" id="signGrid_training"></div>
+          </section>
+
+          <section class="namo-simple-card" id="trainingListSimple">
+            <h2>5. 보고서 목록 <span>(최근 5건)</span></h2>
+            <div class="namo-simple-list-tools">
+              <div class="training-search"><span>🔎</span><input id="trainingSearch" placeholder="교육명, 보고서번호, 강사, 부서 검색"></div>
+              <select id="trainingTypeFilter"><option value="">전체 구분</option><option>사내교육</option><option>외부교육</option><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select>
+              <select id="trainingStatusFilter"><option value="">전체 결과</option><option>완료</option><option>예정</option><option>미실시</option></select>
+            </div>
+            <div class="training-table-wrap namo-simple-table-wrap"><table class="training-modern-table namo-simple-table"><thead><tr><th>No.</th><th>교육명</th><th>교육일자</th><th>교육구분</th><th>작성자</th><th>결재상태</th><th>작성일</th><th>작업</th></tr></thead><tbody id="trainingTable"></tbody></table></div>
+          </section>
+
+          <section class="namo-simple-card namo-hidden-control" id="trainingPreviewCard">
+            <h2>보고서 사전보기</h2>
+            <button class="btn light sm" id="trainingPreviewBtn" type="button">보고서 미리보기</button>
+            <div class="training-preview-sheet" id="trainingPreviewSheet"></div>
+          </section>
+          <div class="namo-hidden-control"><table><tbody id="trainingExternalRows"></tbody></table></div>
+          <div class="namo-hidden-control"><span id="trainingRateText">0%</span><span id="trainingRateSub"></span><div id="trainingDonut"></div></div>
+          <input type="hidden" id="trainingEditId">
         </div>
       </section>
 
@@ -5596,7 +5649,7 @@ function readTrainingForm(){
   const isEdit=!!($('trainingEditId')?.value);
   const oldWriter=old.writer || old.signWriter?.name || '';
   const oldSignWriter=old.signWriter || (oldWriter?{name:oldWriter,title:'',department:'',role:'writer'}:{});
-  return {id,date:$('trainingDate')?.value||'',no:$('trainingNo')?.value||'',type:$('trainingType')?.value||'',title:$('trainingTitle')?.value||'',place:$('trainingPlace')?.value||'',instructor:$('trainingInstructor')?.value||'',dept:$('trainingDept')?.value||'',hours:$('trainingHours')?.value||'',attendees:$('trainingAttendees')?.value||'',absentees:$('trainingAbsentees')?.value||'',content:$('trainingContent')?.value||'',evalMethod:$('trainingEvalMethod')?.value||'',result:$('trainingResult')?.value||'완료',remark:$('trainingRemark')?.value||'',photos:trainingPhotoDrafts.slice(),writer:isEdit?oldWriter:(sign.writer?.name&&sign.writer.name!=='-'?sign.writer.name:''),reviewer:sign.reviewer?.name&&sign.reviewer.name!=='-'?sign.reviewer.name:'',approver:sign.approver?.name&&sign.approver.name!=='-'?sign.approver.name:'',signWriter:isEdit?oldSignWriter:(sign.writer||{}),signReviewer:sign.reviewer||{},signApprover:sign.approver||{},deleted:false,isDeleted:false,_deleted:false,status:'ACTIVE',updatedAt:trainingNow()};
+  return {id,date:$('trainingDate')?.value||'',no:$('trainingNo')?.value||'',type:$('trainingType')?.value||'',title:$('trainingTitle')?.value||'',place:$('trainingPlace')?.value||'',instructor:$('trainingInstructor')?.value||'',dept:$('trainingDept')?.value||'',hours:$('trainingHours')?.value||'',attendees:$('trainingAttendees')?.value||'',absentees:$('trainingAbsentees')?.value||'',external:$('trainingExternal')?.value||'',content:$('trainingContent')?.value||'',evalMethod:$('trainingEvalMethod')?.value||'',result:$('trainingResult')?.value||'완료',remark:$('trainingRemark')?.value||'',photos:trainingPhotoDrafts.slice(),writer:isEdit?oldWriter:(sign.writer?.name&&sign.writer.name!=='-'?sign.writer.name:''),reviewer:sign.reviewer?.name&&sign.reviewer.name!=='-'?sign.reviewer.name:'',approver:sign.approver?.name&&sign.approver.name!=='-'?sign.approver.name:'',signWriter:isEdit?oldSignWriter:(sign.writer||{}),signReviewer:sign.reviewer||{},signApprover:sign.approver||{},deleted:false,isDeleted:false,_deleted:false,status:'ACTIVE',updatedAt:trainingNow()};
 }
 function ensureTrainingWriterLocked(record){
   if(!record || !record.id)return;
@@ -5643,7 +5696,7 @@ function ensureTrainingWriterLocked(record){
 
 function fillTrainingForm(r={}){
   const set=(id,v)=>{if($(id))$(id).value=v??'';};
-  set('trainingEditId',r.id||'');set('trainingDate',r.date||trainingToday());set('trainingNo',r.no||'');set('trainingType',r.type||'안전교육');set('trainingTitle',r.title||'');set('trainingPlace',r.place||'');set('trainingInstructor',r.instructor||'');set('trainingDept',r.dept||'');set('trainingHours',r.hours||'');set('trainingAttendees',r.attendees||'');set('trainingAbsentees',r.absentees||'');set('trainingContent',r.content||'');set('trainingEvalMethod',r.evalMethod||'');set('trainingResult',r.result||'완료');set('trainingRemark',r.remark||'');
+  set('trainingEditId',r.id||'');set('trainingDate',r.date||trainingToday());set('trainingNo',r.no||'');set('trainingType',r.type||'안전교육');set('trainingTitle',r.title||'');set('trainingPlace',r.place||'');set('trainingInstructor',r.instructor||'');set('trainingDept',r.dept||'');set('trainingHours',r.hours||'');set('trainingAttendees',r.attendees||'');set('trainingExternal',r.external||'');set('trainingAbsentees',r.absentees||'');set('trainingContent',r.content||'');set('trainingEvalMethod',r.evalMethod||'');set('trainingResult',r.result||'완료');set('trainingRemark',r.remark||'');
   trainingPhotoDrafts=Array.isArray(r.photos)?r.photos.slice():[];
 
   if(typeof restoreSign==='function' && (r.signWriter||r.signReviewer||r.signApprover))restoreSign('training',r);
@@ -5736,7 +5789,18 @@ async function deleteTraining(id){
   }
   renderTrainingTable();clearTrainingReport();
 }
-function renderTrainingTable(){const tb=$('trainingTable');if(!tb)return;const list=readTrainingReports();tb.innerHTML=list.length?list.map(r=>{const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;const st=(typeof statusBadge==='function'&&wfStatus)?'<br>'+statusBadge(wfStatus.status):'';const act=(typeof actions==='function')?actions('training',r):'';return `<tr><td>${esc(r.date||'-')}</td><td><button class="training-no-link" data-action="editTraining" data-id="${esc(r.id)}" type="button">${esc(r.no||'-')}</button></td><td>${esc(r.type||'-')}</td><td>${esc(r.title||'-')}</td><td>${esc(r.instructor||'-')}</td><td>${esc(r.dept||'-')}</td><td>${esc(trainingAttendCount(r.attendees))}</td><td>${Array.isArray(r.photos)?r.photos.length:0}장</td><td>${trainingBadge(r.result||'완료')}${st}</td><td>${esc(r.writer||r.signWriter?.name||'')}</td><td>${esc(r.reviewer||r.signReviewer?.name||'')}</td><td>${esc((String(r.approver||r.signApprover?.name||'').trim()==='로그인 사용자'||String(r.approver||r.signApprover?.name||'').trim()==='login-user')?'임흥배':(r.approver||r.signApprover?.name||''))}</td><td><div class="ai"><button class="sb lbl" data-action="printTraining" data-id="${esc(r.id)}" type="button">인쇄</button><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button>${act}</div></td></tr>`}).join(''):(typeof eRow==='function'?eRow(13,'교육 보고서가 없습니다.'):'<tr><td colspan="13" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');}
+function renderTrainingTable(){
+  const tb=$('trainingTable');
+  if(!tb)return;
+  const list=readTrainingReports().slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,5);
+  tb.innerHTML=list.length?list.map((r,i)=>{
+    const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;
+    const st=(typeof statusBadge==='function'&&wfStatus)?statusBadge(wfStatus.status):trainingBadge(r.result||'완료');
+    const writer=esc(r.writer||r.signWriter?.name||'');
+    const created=esc((r.updatedAt||r.createdAt||r.date||'').slice(0,16));
+    return `<tr><td>${i+1}</td><td>${esc(r.title||'-')}</td><td>${esc(r.date||'-')}</td><td>${esc(r.type||'-')}</td><td>${writer}</td><td>${st}</td><td>${created}</td><td><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">보기</button></td></tr>`;
+  }).join(''):(typeof eRow==='function'?eRow(8,'교육 보고서가 없습니다.'):'<tr><td colspan="8" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');
+}
 function downloadTrainingCsv(){const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];const rows=readTrainingReports().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):'',r.writer,r.reviewer,r.approver]);const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='교육보고서_'+trainingToday()+'.csv';a.click();URL.revokeObjectURL(a.href);}
 function bindTrainingEvents(){
   if($('trainingSave')&&!window.__namoWfSavePatched)$('trainingSave').onclick=withSaving('training',$('trainingSave'),saveTrainingReport);
@@ -5745,7 +5809,7 @@ function bindTrainingEvents(){
   if($('trainingPrint'))$('trainingPrint').onclick=()=>{renderTrainingPreview();printEl($('trainingPreviewSheet'));};
   if($('trainingPreviewBtn'))$('trainingPreviewBtn').onclick=()=>{renderTrainingPreview();$('trainingPreviewCard')?.scrollIntoView({behavior:'smooth',block:'start'});};
   if($('trainingPhotoFiles'))$('trainingPhotoFiles').addEventListener('change',e=>{Array.from(e.target.files||[]).forEach(f=>{if(!f.type||!f.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=ev=>{trainingPhotoDrafts.push({src:ev.target.result,caption:f.name.replace(/\.[^.]+$/,'')});renderTrainingPhotoCards();renderTrainingPreview();};reader.readAsDataURL(f);});e.target.value='';});
-  ['trainingDate','trainingNo','trainingType','trainingTitle','trainingPlace','trainingInstructor','trainingDept','trainingHours','trainingAttendees','trainingAbsentees','trainingContent','trainingEvalMethod','trainingResult','trainingRemark'].forEach(id=>{if($(id))$(id).addEventListener('input',renderTrainingPreview);if($(id))$(id).addEventListener('change',renderTrainingPreview);});
+  ['trainingDate','trainingNo','trainingType','trainingTitle','trainingPlace','trainingInstructor','trainingDept','trainingHours','trainingAttendees','trainingExternal','trainingAbsentees','trainingContent','trainingEvalMethod','trainingResult','trainingRemark'].forEach(id=>{if($(id))$(id).addEventListener('input',renderTrainingPreview);if($(id))$(id).addEventListener('change',renderTrainingPreview);});
   document.addEventListener('input',e=>{const cap=e.target.closest?.('[data-training-photo-caption]');if(cap){const i=Number(cap.dataset.trainingPhotoCaption);if(trainingPhotoDrafts[i])trainingPhotoDrafts[i].caption=cap.value;renderTrainingPreview();}});
   document.addEventListener('click',e=>{const del=e.target.closest?.('[data-training-photo-del]');if(del){trainingPhotoDrafts.splice(Number(del.dataset.trainingPhotoDel),1);renderTrainingPhotoCards();renderTrainingPreview();}});
   document.addEventListener('change',e=>{if(e.target&&/^sg_training_(writer|reviewer|approver)$/.test(e.target.id))renderTrainingPreview();});
@@ -6611,7 +6675,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           </div>
           <div class="ph-actions">
             <button class="btn light" type="button" id="capaReload">새로고침</button>
-            <button class="btn pri" type="button" id="capaPrint">PDF 출력</button>
+            <button class="btn pri" type="button" id="capaPrint">인쇄</button>
           </div>
         </div>
         <div id="capaRoot"></div>
