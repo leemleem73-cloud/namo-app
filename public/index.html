@@ -26200,5 +26200,49 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 })();
 </script>
+
+
+<!-- NAMO IQC requested full replacement patch 20260605
+     - IQC 초기화 버튼 삭제
+     - 작성자 로그인 사용자 고정 및 성명/부서/직책 표시
+     - IQC 미리보기 작성/검토/승인 성명/직책/부서 표시
+     - IQC 검사 항목 '측정값/확인'을 '비고'로 변경 -->
+<style id="namo-iqc-requested-patch-style-20260605">
+  #incomingReset{display:none!important;}
+  #signGrid_iqc .sign-sel[disabled]{background:#f8fafc!important;color:#0f172a!important;font-weight:800!important;opacity:1!important;}
+  #signGrid_iqc .sign-sub{font-size:11px!important;line-height:1.55!important;color:#475569!important;min-height:32px!important;}
+  #incomingReportPreview .rpsign-title{font-size:11px!important;line-height:1.45!important;white-space:pre-line!important;color:#444!important;}
+</style>
+<script id="namo-iqc-requested-full-replace-patch-20260605">
+(function(){
+  'use strict';
+  if(window.__namoIqcRequestedFullReplacePatch20260605) return;
+  window.__namoIqcRequestedFullReplacePatch20260605 = true;
+  function $(id){ return document.getElementById(id); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g,function(s){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];}); }
+  function stateObj(){ try{return window.state || state || null;}catch(e){return window.state || null;} }
+  function normalizeUser(u){ if(!u) u={}; var name=txt(u.name||u.username||u.userName||u.fullName||u.displayName||u.email||''); var email=txt(u.email||u.mail||''); return {id:txt(u.id||u.userId||u.uid||u.empId||email||name),name:name||(email?email.split('@')[0]:''),department:txt(u.department||u.dept||u.team||u.org||u.division||''),title:txt(u.title||u.position||u.rank||u.jobTitle||u.roleName||''),email:email}; }
+  function currentUser(){ var s=stateObj(); return normalizeUser(s&&s.currentUser?s.currentUser:{}); }
+  function allUsers(){ var s=stateObj()||{}, arr=[]; if(Array.isArray(s.signableUsers)) arr=arr.concat(s.signableUsers); if(Array.isArray(s.adminUsers)) arr=arr.concat(s.adminUsers); if(s.currentUser) arr.push(s.currentUser); var map={}; arr.forEach(function(u){u=normalizeUser(u); var key=txt(u.id||u.email||u.name); if(key&&!map[key]) map[key]=u;}); return Object.keys(map).map(function(k){return map[k];}); }
+  function findUserBySelectValue(v){ v=txt(v); if(!v) return null; var list=allUsers(); for(var i=0;i<list.length;i++){var u=list[i]; if(txt(u.id)===v || txt(u.email)===v || txt(u.name)===v) return u;} return null; }
+  function userLabel(u){ u=normalizeUser(u); return (u.name||u.email||'-')+' ('+[(u.department||'-'),(u.title||'-')].join(' / ')+')'; }
+  function detailLine(u){ u=normalizeUser(u); if(!u.name&&!u.department&&!u.title) return '-'; return ['성명: '+(u.name||'-'),'부서: '+(u.department||'-'),'직책: '+(u.title||'-')].join(' / '); }
+  function previewTitle(u){ u=normalizeUser(u); return ['직책: '+(u.title||'-'),'부서: '+(u.department||'-')].join('\n'); }
+  function setSelectToUser(sel,u){ if(!sel||!u) return; u=normalizeUser(u); var val=u.id||u.email||u.name; sel.innerHTML='<option value="'+esc(val)+'">'+esc(userLabel(u))+'</option>'; sel.value=val; }
+  function updateIqcRole(role,u){ var cap={writer:'Writer',reviewer:'Reviewer',approver:'Approver'}[role]; if(!cap) return; u=normalizeUser(u||{}); var name=$('rIqc'+cap), title=$('rIqc'+cap+'T'); if(name) name.textContent=u.name||'-'; if(title) title.textContent=(u.name||u.department||u.title)?previewTitle(u):''; }
+  function selectedRoleUser(role){ var sel=$('sg_iqc_'+role); if(!sel) return null; var u=findUserBySelectValue(sel.value); if(u) return u; var opt=sel.options&&sel.options[sel.selectedIndex]; return opt?normalizeUser({name:txt(opt.textContent).replace(/\s*\(.*/, '')}):null; }
+  function fixIqcHeaders(){ ['incomingItemsTable','incomingPreviewBody'].forEach(function(id){ document.querySelectorAll('#'+id).forEach(function(tb){ var table=tb.closest('table'); if(table&&table.tHead&&table.tHead.rows[0]&&table.tHead.rows[0].cells[3]) table.tHead.rows[0].cells[3].textContent='비고'; }); }); }
+  function applyIqcWriterFixed(){ var me=currentUser(), sel=$('sg_iqc_writer'), sub=$('sg_iqc_writer_sub'); if(sel&&me&&(me.name||me.email)){ setSelectToUser(sel,me); sel.disabled=true; sel.style.pointerEvents='none'; sel.setAttribute('data-login-fixed','true'); if(sub) sub.textContent=detailLine(me)+' · 작성자는 로그인 본인으로 고정'; updateIqcRole('writer',me); } }
+  function applyIqcPreviewPeople(){ ['writer','reviewer','approver'].forEach(function(role){ var u=selectedRoleUser(role), sub=$('sg_iqc_'+role+'_sub'); if(sub&&u&&u.name) sub.textContent=detailLine(u)+(role==='writer'?' · 작성자는 로그인 본인으로 고정':''); if(u&&u.name) updateIqcRole(role,u); }); }
+  function patchNow(){ var reset=$('incomingReset'); if(reset) reset.remove(); fixIqcHeaders(); applyIqcWriterFixed(); applyIqcPreviewPeople(); }
+  var oldOnSignChange=window.onSignChange; if(typeof oldOnSignChange==='function'&&!oldOnSignChange.__namoIqcPatched){ window.onSignChange=function(type,changedRole){ var ret=oldOnSignChange.apply(this,arguments); if(type==='iqc') setTimeout(patchNow,0); return ret; }; window.onSignChange.__namoIqcPatched=true; }
+  document.addEventListener('DOMContentLoaded',function(){ patchNow(); [100,300,700,1200,2200].forEach(function(ms){setTimeout(patchNow,ms);}); });
+  document.addEventListener('change',function(e){ if(e.target&&e.target.matches&&e.target.matches('#signGrid_iqc .sign-sel')) setTimeout(patchNow,0); },true);
+  document.addEventListener('input',function(e){ if(e.target&&e.target.closest&&e.target.closest('#incomingItemsTable')) setTimeout(fixIqcHeaders,0); },true);
+  setInterval(function(){ if(document.body&&$('page-incoming')) patchNow(); },2500);
+})();
+</script>
+
 </body>
 </html>
