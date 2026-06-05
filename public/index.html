@@ -4966,15 +4966,16 @@ async function loadShipment(){
   state.shipment=(data?.data||[]).map(r=>({
     id:r.id,
     date:pickRecordDate(r),          // ★ KST 변환/대체 날짜 자동 인식
-    customer:r.customer,
-    product:r.product,
-    lot:r.lot,
-    inspector:r.visual,
-    qty:r.qty,
-    failQty:r.fail,
-    judge:r.judge,
-    package:r.package,
-    items:Array.isArray(r.items_json)?r.items_json:[],
+    // OQC API/DB 컬럼명이 달라도 목록에 값이 비지 않도록 보정
+    customer:r.customer ?? r.customer_name ?? r.customerName ?? r.client ?? r.client_name ?? '',
+    product:r.product ?? r.product_name ?? r.productName ?? r.item ?? r.item_name ?? '',
+    lot:r.lot ?? r.lot_no ?? r.lotNo ?? r.batch_no ?? r.batchNo ?? '',
+    inspector:r.visual ?? r.inspector ?? r.writer ?? '',
+    qty:r.qty ?? r.inspection_qty ?? r.inspectionQty ?? r.check_qty ?? r.checkQty ?? '',
+    failQty:r.fail ?? r.failQty ?? r.fail_qty ?? r.defect_qty ?? r.defectQty ?? 0,
+    judge:r.judge ?? r.final_judge ?? r.finalJudge ?? '',
+    package:r.package ?? r.remark ?? r.remarks ?? r.note ?? '',
+    items:Array.isArray(r.items_json)?r.items_json:(Array.isArray(r.items)?r.items:(Array.isArray(tryJSON(r.items_json))?tryJSON(r.items_json):[])),
     signWriter:tryJSON(r.sign_writer),
     signReviewer:tryJSON(r.sign_reviewer),
     signApprover:tryJSON(r.sign_approver)
@@ -5518,7 +5519,15 @@ async function savePqc(){
 }
 async function saveOqc(){
   const sp=getSignPayload('oqc');
-  const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),lot:$('shipmentLot').value.trim(),visual:sp.writer.name,qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
+  const oqcCustomer=$('shipmentCustomer').value.trim(), oqcProduct=$('shipmentProduct').value.trim(), oqcLot=$('shipmentLot').value.trim(), oqcQty=$('shipmentQty').value, oqcFail=$('shipmentFailQty').value, oqcRemark=$('shipmentRemark').value.trim();
+  const missing=[];
+  if(!oqcCustomer)missing.push('고객사');
+  if(!oqcProduct)missing.push('제품명');
+  if(!oqcLot)missing.push('LOT');
+  if(!oqcQty || Number(oqcQty)<=0)missing.push('검사수량');
+  if(missing.length){alert('출하검사 저장 불가: '+missing.join(', ')+' 항목을 입력하세요.');return;}
+  // 서버/DB 컬럼명이 camelCase, snake_case, 기존 fail 컬럼 중 무엇이든 받아도 저장되도록 별칭을 함께 전송
+  const p={date:$('shipmentDate').value,customer:oqcCustomer,customerName:oqcCustomer,customer_name:oqcCustomer,client:oqcCustomer,client_name:oqcCustomer,product:oqcProduct,productName:oqcProduct,product_name:oqcProduct,item:oqcProduct,item_name:oqcProduct,lot:oqcLot,lotNo:oqcLot,lot_no:oqcLot,batchNo:oqcLot,batch_no:oqcLot,visual:sp.writer.name,inspector:sp.writer.name,writer:sp.writer.name,qty:oqcQty,inspectionQty:oqcQty,inspection_qty:oqcQty,checkQty:oqcQty,check_qty:oqcQty,failQty:oqcFail,fail:oqcFail,fail_qty:oqcFail,defectQty:oqcFail,defect_qty:oqcFail,package:oqcRemark,remark:oqcRemark,items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();}
@@ -11670,7 +11679,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function buildPayload(type,r){
     if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,writer:r.writer||r.inspector||'',inspector:r.inspector||r.writer||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
     if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,writer:r.writer||r.inspector||r.visual||r.solid||'',visual:r.visual||r.line||'',solid:r.solid||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,writer:r.writer||r.inspector||r.visual||'',visual:r.visual||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,customerName:r.customer,customer_name:r.customer,product:r.product,productName:r.product,product_name:r.product,lot:r.lot,lotNo:r.lot,lot_no:r.lot,writer:r.writer||r.inspector||r.visual||'',visual:r.visual||r.inspector||'',inspector:r.inspector||r.visual||'',qty:r.qty,inspectionQty:r.qty,inspection_qty:r.qty,failQty:r.failQty,fail:r.failQty,fail_qty:r.failQty,defectQty:r.failQty,defect_qty:r.failQty,package:r.package,remark:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
   }
   function pushNoti(type,r,action,target){
     var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
@@ -14742,15 +14751,16 @@ async function loadShipment(){
   state.shipment=(data?.data||[]).map(r=>({
     id:r.id,
     date:pickRecordDate(r),          // ★ KST 변환/대체 날짜 자동 인식
-    customer:r.customer,
-    product:r.product,
-    lot:r.lot,
-    inspector:r.visual,
-    qty:r.qty,
-    failQty:r.fail,
-    judge:r.judge,
-    package:r.package,
-    items:Array.isArray(r.items_json)?r.items_json:[],
+    // OQC API/DB 컬럼명이 달라도 목록에 값이 비지 않도록 보정
+    customer:r.customer ?? r.customer_name ?? r.customerName ?? r.client ?? r.client_name ?? '',
+    product:r.product ?? r.product_name ?? r.productName ?? r.item ?? r.item_name ?? '',
+    lot:r.lot ?? r.lot_no ?? r.lotNo ?? r.batch_no ?? r.batchNo ?? '',
+    inspector:r.visual ?? r.inspector ?? r.writer ?? '',
+    qty:r.qty ?? r.inspection_qty ?? r.inspectionQty ?? r.check_qty ?? r.checkQty ?? '',
+    failQty:r.fail ?? r.failQty ?? r.fail_qty ?? r.defect_qty ?? r.defectQty ?? 0,
+    judge:r.judge ?? r.final_judge ?? r.finalJudge ?? '',
+    package:r.package ?? r.remark ?? r.remarks ?? r.note ?? '',
+    items:Array.isArray(r.items_json)?r.items_json:(Array.isArray(r.items)?r.items:(Array.isArray(tryJSON(r.items_json))?tryJSON(r.items_json):[])),
     signWriter:tryJSON(r.sign_writer),
     signReviewer:tryJSON(r.sign_reviewer),
     signApprover:tryJSON(r.sign_approver)
@@ -15294,7 +15304,15 @@ async function savePqc(){
 }
 async function saveOqc(){
   const sp=getSignPayload('oqc');
-  const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),lot:$('shipmentLot').value.trim(),visual:sp.writer.name,qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
+  const oqcCustomer=$('shipmentCustomer').value.trim(), oqcProduct=$('shipmentProduct').value.trim(), oqcLot=$('shipmentLot').value.trim(), oqcQty=$('shipmentQty').value, oqcFail=$('shipmentFailQty').value, oqcRemark=$('shipmentRemark').value.trim();
+  const missing=[];
+  if(!oqcCustomer)missing.push('고객사');
+  if(!oqcProduct)missing.push('제품명');
+  if(!oqcLot)missing.push('LOT');
+  if(!oqcQty || Number(oqcQty)<=0)missing.push('검사수량');
+  if(missing.length){alert('출하검사 저장 불가: '+missing.join(', ')+' 항목을 입력하세요.');return;}
+  // 서버/DB 컬럼명이 camelCase, snake_case, 기존 fail 컬럼 중 무엇이든 받아도 저장되도록 별칭을 함께 전송
+  const p={date:$('shipmentDate').value,customer:oqcCustomer,customerName:oqcCustomer,customer_name:oqcCustomer,client:oqcCustomer,client_name:oqcCustomer,product:oqcProduct,productName:oqcProduct,product_name:oqcProduct,item:oqcProduct,item_name:oqcProduct,lot:oqcLot,lotNo:oqcLot,lot_no:oqcLot,batchNo:oqcLot,batch_no:oqcLot,visual:sp.writer.name,inspector:sp.writer.name,writer:sp.writer.name,qty:oqcQty,inspectionQty:oqcQty,inspection_qty:oqcQty,checkQty:oqcQty,check_qty:oqcQty,failQty:oqcFail,fail:oqcFail,fail_qty:oqcFail,defectQty:oqcFail,defect_qty:oqcFail,package:oqcRemark,remark:oqcRemark,items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();}
@@ -21446,7 +21464,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function buildPayload(type,r){
     if(type==='iqc') return {date:r.date,lot:r.lot,supplier:r.supplier,item:r.item,writer:r.writer||r.inspector||'',inspector:r.inspector||r.writer||'',incomingQty:r.incomingQty,checkQty:r.checkQty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
     if(type==='pqc') return {date:r.date,lot:r.lot,product:r.product,writer:r.writer||r.inspector||r.visual||r.solid||'',visual:r.visual||r.line||'',solid:r.solid||r.inspector||'',particle:r.shift,qty:r.qty,failQty:r.failQty,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
-    return {date:r.date,customer:r.customer,product:r.product,lot:r.lot,writer:r.writer||r.inspector||r.visual||'',visual:r.visual||r.inspector||'',qty:r.qty,failQty:r.failQty,package:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
+    return {date:r.date,customer:r.customer,customerName:r.customer,customer_name:r.customer,product:r.product,productName:r.product,product_name:r.product,lot:r.lot,lotNo:r.lot,lot_no:r.lot,writer:r.writer||r.inspector||r.visual||'',visual:r.visual||r.inspector||'',inspector:r.inspector||r.visual||'',qty:r.qty,inspectionQty:r.qty,inspection_qty:r.qty,failQty:r.failQty,fail:r.failQty,fail_qty:r.failQty,defectQty:r.failQty,defect_qty:r.failQty,package:r.package,remark:r.package,items:r.items||[],signWriter:r.signWriter,signReviewer:r.signReviewer,signApprover:r.signApprover,approvalStatus:r.approvalStatus||''};
   }
   function pushNoti(type,r,action,target){
     var me=currentUser(); var list=read(NOTI_STORE,[]); var key=type+'|'+String(r.id||'')+'|'+action;
