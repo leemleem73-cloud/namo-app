@@ -2626,6 +2626,22 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   #page-training .namo-simple-grid.four{grid-template-columns:1fr!important;}
 }
 
+
+
+/* 입고검사 목록 비고 컬럼 수정/삭제/라벨 버튼 중앙 정렬 패치 */
+#page-incoming .card.mt14 table tbody td:last-child .ai{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:4px!important;
+  flex-wrap:wrap!important;
+}
+#page-incoming .card.mt14 table thead th:last-child,
+#page-incoming .card.mt14 table tbody td:last-child{
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
