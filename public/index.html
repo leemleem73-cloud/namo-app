@@ -4454,7 +4454,129 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- =========================================================
+  PATCH: OQC 성적서 데이터 표시/기록 보강 v20260605
+  내용:
+  - 성적서 페이지 진입 시 OQC 데이터 강제 재조회
+  - 저장 후 성적서 선택목록/성적서 본문 자동 갱신
+  - 아직 저장 전이라도 출하검사 입력값으로 성적서 미리보기 표시
+========================================================= -->
+<script id="namo-oqc-report-data-fix-20260605">
+(function(){
+  'use strict';
+  if(window.__namoOqcReportDataFix20260605) return;
+  window.__namoOqcReportDataFix20260605 = true;
+
+  function id(x){ return document.getElementById(x); }
+  function val(x){ var el=id(x); return el ? String(el.value || '').trim() : ''; }
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+  function today(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+  function calc(items){ try{return typeof window.calcJ==='function'?window.calcJ(items):((items||[]).some(function(x){return x && x.judge==='불합격';})?'불합격':'합격');}catch(e){return '합격';} }
+  function badge(j){ try{return typeof window.jBadge==='function'?window.jBadge(j):('<span class="status '+(j==='불합격'?'fail':'pass')+'">'+esc(j||'합격')+'</span>');}catch(e){return esc(j||'합격');} }
+  function renderBCSafe(el,v){ try{ if(typeof window.renderBC==='function') window.renderBC(el,v); }catch(e){} }
+  function getOqcDraftRow(){
+    var has = val('shipmentCustomer') || val('shipmentProduct') || val('shipmentLot') || val('shipmentQty');
+    if(!has) return null;
+    var s = window.state || {};
+    return {
+      id: val('shipmentEditId') || '__oqc_current_draft__',
+      date: val('shipmentDate') || today(),
+      customer: val('shipmentCustomer'),
+      product: val('shipmentProduct'),
+      lot: val('shipmentLot'),
+      qty: val('shipmentQty') || '0',
+      failQty: val('shipmentFailQty') || '0',
+      package: val('shipmentRemark'),
+      items: Array.isArray(s.shipmentItemDrafts) ? s.shipmentItemDrafts : [],
+      signWriter: (typeof window.getSignData==='function') ? window.getSignData('oqc','writer') : null,
+      signReviewer: (typeof window.getSignData==='function') ? window.getSignData('oqc','reviewer') : null,
+      signApprover: (typeof window.getSignData==='function') ? window.getSignData('oqc','approver') : null
+    };
+  }
+  function renderOqcReportFromRow(row){
+    if(!row) return false;
+    var docNo='OQC-'+String(row.date||today()).replaceAll('-','')+'-0001';
+    var title=id('reportPageTitle'); if(title) title.textContent='출하검사 성적서 (OQC Report)';
+    var meta=id('reportMetaTable');
+    if(meta) meta.innerHTML='<tr><th>문서번호</th><td>'+esc(docNo)+'</td><th>일자</th><td>'+esc(row.date||'-')+'</td></tr>'+
+      '<tr><th>LOT</th><td>'+esc(row.lot||'-')+'</td><th>고객사</th><td>'+esc(row.customer||'-')+'</td></tr>'+
+      '<tr><th>제품명</th><td>'+esc(row.product||'-')+'</td><th>검사수량</th><td>'+esc(row.qty||'0')+'</td></tr>'+
+      '<tr><th>불량수량</th><td>'+esc(row.failQty||'0')+'</td><th>비고</th><td>'+esc(row.package||'-')+'</td></tr>';
+    var items=Array.isArray(row.items)?row.items:[];
+    var body=id('reportBodyTable');
+    if(body) body.innerHTML=items.length?items.map(function(x,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(x.item||'')+'</td><td>'+esc(x.spec||'')+'</td><td>'+esc(x.value||'-')+'</td><td>'+badge(x.judge||'합격')+'</td></tr>';}).join(''):'<tr><td colspan="5">항목 없음</td></tr>';
+    var final=id('reportFinalText'); if(final) final.textContent=calc(items);
+    ['Writer','Reviewer','Approver'].forEach(function(cap){ var el=id('rRpt'+cap); if(el) el.textContent='-'; var t=id('rRpt'+cap+'T'); if(t) t.textContent=''; });
+    function set(cap,data){ if(!data) return; var el=id('rRpt'+cap), t=id('rRpt'+cap+'T'); if(el) el.textContent=data.name||'-'; if(t) t.textContent=data.title||''; }
+    set('Writer',row.signWriter); set('Reviewer',row.signReviewer); set('Approver',row.signApprover);
+    setTimeout(function(){ renderBCSafe('bcRptLot',row.lot||'LOT'); renderBCSafe('bcRptDoc',docNo); },50);
+    return true;
+  }
+  function refreshReportSelectKeepOqc(){
+    var rt=id('reportType');
+    if(rt && rt.value!=='oqc') return;
+    var s=window.state || {};
+    if(typeof window.populateReportSelect==='function') window.populateReportSelect();
+    var sel=id('reportSelect');
+    if(sel && (!sel.options || sel.options.length<=1)){
+      var draft=getOqcDraftRow();
+      if(draft){
+        var o=document.createElement('option'); o.value=draft.id; o.textContent=(draft.date||'')+' | '+(draft.lot||'LOT 미입력')+' | '+(draft.customer||'고객사 미입력'); sel.appendChild(o); sel.value=draft.id;
+      }
+    }
+  }
+  async function reloadOqcReport(){
+    var rt=id('reportType'); if(rt && rt.value!=='oqc') return;
+    try{ if(typeof window.loadShipment==='function') await window.loadShipment(); }catch(e){}
+    refreshReportSelectKeepOqc();
+    var s=window.state || {}, sel=id('reportSelect'), row=null;
+    if(sel && sel.value && Array.isArray(s.shipment)) row=s.shipment.find(function(r){return String(r.id)===String(sel.value);});
+    if(!row && Array.isArray(s.shipment) && s.shipment.length) row=s.shipment[0];
+    if(!row) row=getOqcDraftRow();
+    if(row) renderOqcReportFromRow(row); else if(typeof window.loadStandaloneReport==='function') window.loadStandaloneReport();
+  }
+  var oldLoad=window.loadStandaloneReport;
+  if(typeof oldLoad==='function'){
+    window.loadStandaloneReport=function(){
+      var rt=id('reportType');
+      if(rt && rt.value==='oqc'){
+        var s=window.state || {}, sel=id('reportSelect'), row=null;
+        if(sel && sel.value && Array.isArray(s.shipment)) row=s.shipment.find(function(r){return String(r.id)===String(sel.value);});
+        if(!row && Array.isArray(s.shipment) && s.shipment.length) row=s.shipment[0];
+        if(!row) row=getOqcDraftRow();
+        if(row) return renderOqcReportFromRow(row);
+      }
+      return oldLoad.apply(this,arguments);
+    };
+  }
+  var oldSave=window.saveShipment;
+  if(typeof oldSave==='function'){
+    window.saveShipment=async function(){
+      var ret=oldSave.apply(this,arguments);
+      try{ if(ret && typeof ret.then==='function') await ret; }catch(e){ throw e; }
+      setTimeout(reloadOqcReport,300);
+      return ret;
+    };
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target && e.target.closest && e.target.closest('[data-page="reports"],[data-page="report"],[data-page="shipment"]');
+    if(nav) setTimeout(reloadOqcReport,400);
+  },true);
+  document.addEventListener('change',function(e){
+    if(e.target && (e.target.id==='reportType' || e.target.id==='reportSelect')) setTimeout(function(){ if((id('reportType')||{}).value==='oqc') window.loadStandaloneReport && window.loadStandaloneReport(); },100);
+  },true);
+  document.addEventListener('input',function(e){
+    if(e.target && /^shipment(Customer|Product|Lot|Qty|FailQty|Remark)$/.test(e.target.id||'')){
+      if((id('reportType')||{}).value==='oqc') setTimeout(function(){ renderOqcReportFromRow(getOqcDraftRow()); },80);
+    }
+  },true);
+  setTimeout(reloadOqcReport,1000);
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
