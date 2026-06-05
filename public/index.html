@@ -4449,7 +4449,48 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- NAMO Approval Inbox Column Rename/Remove Patch v20260605 -->
+<script id="namo-approval-inbox-columns-v20260605">
+(function(){
+  function fixApprovalInboxColumns(){
+    var tables=document.querySelectorAll('table.approval-table');
+    tables.forEach(function(tbl){
+      var heads=tbl.querySelectorAll('thead th');
+      if(heads.length>=10){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        heads[4].remove();
+        heads=tbl.querySelectorAll('thead th');
+        if(heads[8]) heads[8].textContent='결재상태';
+      }else if(heads.length>=9){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        if(heads[8]) heads[8].textContent='결재상태';
+      }
+      tbl.querySelectorAll('tbody tr').forEach(function(tr){
+        var cells=tr.children;
+        if(cells.length===10) cells[4].remove();
+        var empty=tr.querySelector('.approval-empty');
+        if(empty) empty.setAttribute('colspan','9');
+      });
+    });
+  }
+  var old=window.renderApprovalInbox;
+  if(typeof old==='function' && !old.__namoColumnPatch){
+    var wrapped=function(){var r=old.apply(this,arguments);setTimeout(fixApprovalInboxColumns,0);return r;};
+    wrapped.__namoColumnPatch=true;
+    window.renderApprovalInbox=wrapped;
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(fixApprovalInboxColumns,0);setTimeout(fixApprovalInboxColumns,500);});
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('.approval-tab,#approvalRefreshBtn,[data-page="approval-inbox"]'))setTimeout(fixApprovalInboxColumns,80);},true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')setTimeout(fixApprovalInboxColumns,0);},true);
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')setTimeout(fixApprovalInboxColumns,0);},true);
+  setInterval(fixApprovalInboxColumns,1500);
+})();
+</script>
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -11648,7 +11689,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
     out.sort(function(a,b){return String(b.record.date||'').localeCompare(String(a.record.date||''))||String(b.record.id||'').localeCompare(String(a.record.id||''));});
     return out;
   }
-  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function docNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['docNo','documentNo','document_no','reportNo','report_no','inspectionNo','inspection_no','certificateNo','certificate_no','no','lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    var id=clean(r.id); if(id&&!isUuid(id)) return id;
+    var d=clean(r.date||r.createdAt||r.created_at||r.inspectionDate||r.inspection_date).replace(/[^0-9]/g,'').slice(0,8);
+    return (String(type||'DOC').toUpperCase()+(d?'-'+d:''));
+  }
+  function lotNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    return docNo(type,r);
+  }
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
   function writerName(r){var sw=(r.signWriter&&r.signWriter.name)||'';var stable=String(r.writer||r.inspector||r.visual||r.solid||'').trim();return stable||sw||'-';}
   function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
@@ -11721,10 +11779,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     rows=rows.filter(function(x){
       if(currentTab!=='all'&&x.status!==currentTab) return false;
       if(typeFilter!=='all'&&x.type!==typeFilter) return false;
-      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
+      if(keyword){var hay=[x.meta.label,lotNo(x.type,x.record),docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
       return true;
     });
-    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(lotNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="9" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
   }
   function ensurePage(){
     var side=qs('.sidebar');
@@ -11737,7 +11795,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var content=qs('.content');
     if(content&&!$('page-approval-inbox')){
       var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
-      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>Lot No</th><th>제품명</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>결재상태</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
       var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
     }
   }
@@ -11945,7 +12003,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return 'pending';
   }
   function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
-  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function docNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['docNo','documentNo','document_no','reportNo','report_no','inspectionNo','inspection_no','certificateNo','certificate_no','no','lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    var id=clean(r.id); if(id&&!isUuid(id)) return id;
+    var d=clean(r.date||r.createdAt||r.created_at||r.inspectionDate||r.inspection_date).replace(/[^0-9]/g,'').slice(0,8);
+    return (String(type||'DOC').toUpperCase()+(d?'-'+d:''));
+  }
+  function lotNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    return docNo(type,r);
+  }
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
   function writerName(r){return displayUserName((r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'-');}
   function reviewerName(r){return displayUserName((r.signReviewer&&r.signReviewer.name)||r.reviewer||'-');}
@@ -11969,8 +12044,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
         var r={id:id,date:(cells[0]&&cells[0].textContent.trim())||'',lot:(cells[1]&&cells[1].textContent.trim())||'',supplier:'',item:'',product:'',customer:'',writer:'',reviewer:'',approver:''};
         if(type==='iqc'){
           r.supplier=(cells[2]&&cells[2].textContent.trim())||''; r.item=(cells[3]&&cells[3].textContent.trim())||''; r.writer=(cells[8]&&cells[8].textContent.trim())||'-'; r.reviewer=(cells[9]&&cells[9].textContent.trim())||'-'; r.approver=(cells[10]&&cells[10].textContent.trim())||'-';
-        }else{
+        }else if(type==='pqc'){
           r.product=(cells[2]&&cells[2].textContent.trim())||''; r.writer=(cells[7]&&cells[7].textContent.trim())||'-'; r.reviewer=(cells[8]&&cells[8].textContent.trim())||'-'; r.approver=(cells[9]&&cells[9].textContent.trim())||'-';
+        }else if(type==='oqc'){
+          r.customer=(cells[1]&&cells[1].textContent.trim())||''; r.product=(cells[2]&&cells[2].textContent.trim())||''; r.lot=(cells[3]&&cells[3].textContent.trim())||''; r.writer=(cells[7]&&cells[7].textContent.trim())||'-'; r.reviewer=(cells[8]&&cells[8].textContent.trim())||'-'; r.approver=(cells[9]&&cells[9].textContent.trim())||'-';
         }
         out.push({type:type,meta:meta,record:r,status:statusOf(type,r),source:'dom'});
       });
@@ -11996,7 +12073,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var content=qs('.content');
     if(content && !$('page-approval-inbox')){
       var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
-      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 승인 구조입니다. 작성된 검사 문서는 자동으로 결재함에 표시됩니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 승인 구조입니다. 작성된 검사 문서는 자동으로 결재함에 표시됩니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>Lot No</th><th>제품명</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>결재상태</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
       var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
     }
   }
@@ -12017,10 +12094,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     rows=rows.filter(function(x){
       if(currentTab!=='all' && x.status!==currentTab) return false;
       if(typeFilter!=='all' && x.type!==typeFilter) return false;
-      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0) return false;}
+      if(keyword){var hay=[x.meta.label,lotNo(x.type,x.record),docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0) return false;}
       return true;
     });
-    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status;return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status;return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(lotNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="9" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
   }
   async function persist(type,r){
     var meta=TYPE_META[type];
@@ -14193,7 +14270,48 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.nmc-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.nmc-detail-cell{border:1px solid #dbe3ee;border-radius:10px;padding:9px 11px;background:#f8fafc}.nmc-detail-cell b{display:block;font-size:10px;color:#64748b;margin-bottom:4px}.nmc-detail-cell span{font-size:13px;font-weight:900;color:#0f172a}'+
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
-      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
+      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
+
+<!-- NAMO Approval Inbox Column Rename/Remove Patch v20260605 -->
+<script id="namo-approval-inbox-columns-v20260605">
+(function(){
+  function fixApprovalInboxColumns(){
+    var tables=document.querySelectorAll('table.approval-table');
+    tables.forEach(function(tbl){
+      var heads=tbl.querySelectorAll('thead th');
+      if(heads.length>=10){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        heads[4].remove();
+        heads=tbl.querySelectorAll('thead th');
+        if(heads[8]) heads[8].textContent='결재상태';
+      }else if(heads.length>=9){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        if(heads[8]) heads[8].textContent='결재상태';
+      }
+      tbl.querySelectorAll('tbody tr').forEach(function(tr){
+        var cells=tr.children;
+        if(cells.length===10) cells[4].remove();
+        var empty=tr.querySelector('.approval-empty');
+        if(empty) empty.setAttribute('colspan','9');
+      });
+    });
+  }
+  var old=window.renderApprovalInbox;
+  if(typeof old==='function' && !old.__namoColumnPatch){
+    var wrapped=function(){var r=old.apply(this,arguments);setTimeout(fixApprovalInboxColumns,0);return r;};
+    wrapped.__namoColumnPatch=true;
+    window.renderApprovalInbox=wrapped;
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(fixApprovalInboxColumns,0);setTimeout(fixApprovalInboxColumns,500);});
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('.approval-tab,#approvalRefreshBtn,[data-page="approval-inbox"]'))setTimeout(fixApprovalInboxColumns,80);},true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')setTimeout(fixApprovalInboxColumns,0);},true);
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')setTimeout(fixApprovalInboxColumns,0);},true);
+  setInterval(fixApprovalInboxColumns,1500);
+})();
+</script>
+</body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -21406,7 +21524,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
     out.sort(function(a,b){return String(b.record.date||'').localeCompare(String(a.record.date||''))||String(b.record.id||'').localeCompare(String(a.record.id||''));});
     return out;
   }
-  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function docNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['docNo','documentNo','document_no','reportNo','report_no','inspectionNo','inspection_no','certificateNo','certificate_no','no','lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    var id=clean(r.id); if(id&&!isUuid(id)) return id;
+    var d=clean(r.date||r.createdAt||r.created_at||r.inspectionDate||r.inspection_date).replace(/[^0-9]/g,'').slice(0,8);
+    return (String(type||'DOC').toUpperCase()+(d?'-'+d:''));
+  }
+  function lotNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    return docNo(type,r);
+  }
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
   function writerName(r){var sw=(r.signWriter&&r.signWriter.name)||'';var stable=String(r.writer||r.inspector||r.visual||r.solid||'').trim();return stable||sw||'-';}
   function reviewerName(r){return (r.signReviewer&&r.signReviewer.name)||r.reviewer||'-';}
@@ -21479,10 +21614,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     rows=rows.filter(function(x){
       if(currentTab!=='all'&&x.status!==currentTab) return false;
       if(typeFilter!=='all'&&x.type!==typeFilter) return false;
-      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
+      if(keyword){var hay=[x.meta.label,lotNo(x.type,x.record),docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0)return false;}
       return true;
     });
-    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status; return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(lotNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="9" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
   }
   function ensurePage(){
     var side=qs('.sidebar');
@@ -21495,7 +21630,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var content=qs('.content');
     if(content&&!$('page-approval-inbox')){
       var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
-      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 대기업형 승인 구조입니다. 결재자는 이 화면에서 검토·승인·반려만 처리합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>Lot No</th><th>제품명</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>결재상태</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
       var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
     }
   }
@@ -21703,7 +21838,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return 'pending';
   }
   function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
-  function docNo(type,r){return r.docNo||r.reportNo||r.no||r.lot||r.id||'-';}
+  function docNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['docNo','documentNo','document_no','reportNo','report_no','inspectionNo','inspection_no','certificateNo','certificate_no','no','lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    var id=clean(r.id); if(id&&!isUuid(id)) return id;
+    var d=clean(r.date||r.createdAt||r.created_at||r.inspectionDate||r.inspection_date).replace(/[^0-9]/g,'').slice(0,8);
+    return (String(type||'DOC').toUpperCase()+(d?'-'+d:''));
+  }
+  function lotNo(type,r){
+    r=r||{};
+    function clean(v){v=String(v==null?'':v).trim();return v&&v!=='-'&&v.toLowerCase()!=='null'&&v.toLowerCase()!=='undefined'?v:'';}
+    function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
+    var keys=['lotNo','lot_no','lot','lotNumber','batchNo','batch_no','productLot','productionLot','prodLot'];
+    for(var i=0;i<keys.length;i++){var v=clean(r[keys[i]]); if(v&&!isUuid(v)) return v;}
+    return docNo(type,r);
+  }
   function itemName(type,r){return type==='iqc'?(r.item||r.supplier||'-'):type==='pqc'?(r.product||r.line||'-'):(r.product||r.customer||'-');}
   function writerName(r){return displayUserName((r.signWriter&&r.signWriter.name)||r.writer||r.inspector||r.visual||r.solid||'-');}
   function reviewerName(r){return displayUserName((r.signReviewer&&r.signReviewer.name)||r.reviewer||'-');}
@@ -21727,8 +21879,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
         var r={id:id,date:(cells[0]&&cells[0].textContent.trim())||'',lot:(cells[1]&&cells[1].textContent.trim())||'',supplier:'',item:'',product:'',customer:'',writer:'',reviewer:'',approver:''};
         if(type==='iqc'){
           r.supplier=(cells[2]&&cells[2].textContent.trim())||''; r.item=(cells[3]&&cells[3].textContent.trim())||''; r.writer=(cells[8]&&cells[8].textContent.trim())||'-'; r.reviewer=(cells[9]&&cells[9].textContent.trim())||'-'; r.approver=(cells[10]&&cells[10].textContent.trim())||'-';
-        }else{
+        }else if(type==='pqc'){
           r.product=(cells[2]&&cells[2].textContent.trim())||''; r.writer=(cells[7]&&cells[7].textContent.trim())||'-'; r.reviewer=(cells[8]&&cells[8].textContent.trim())||'-'; r.approver=(cells[9]&&cells[9].textContent.trim())||'-';
+        }else if(type==='oqc'){
+          r.customer=(cells[1]&&cells[1].textContent.trim())||''; r.product=(cells[2]&&cells[2].textContent.trim())||''; r.lot=(cells[3]&&cells[3].textContent.trim())||''; r.writer=(cells[7]&&cells[7].textContent.trim())||'-'; r.reviewer=(cells[8]&&cells[8].textContent.trim())||'-'; r.approver=(cells[9]&&cells[9].textContent.trim())||'-';
         }
         out.push({type:type,meta:meta,record:r,status:statusOf(type,r),source:'dom'});
       });
@@ -21754,7 +21908,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var content=qs('.content');
     if(content && !$('page-approval-inbox')){
       var sec=document.createElement('section'); sec.className='page'; sec.id='page-approval-inbox';
-      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 승인 구조입니다. 작성된 검사 문서는 자동으로 결재함에 표시됩니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>문서/LOT</th><th>품목/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>작업</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
+      sec.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">품질 검사 <span class="sep">›</span> 결재함</div><div class="ph-title">결재함</div><div class="ph-sub">IQC/PQC/OQC 문서의 대기, 검토중, 승인완료, 반려 상태를 통합 관리합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">Approval Inbox</div><div class="approval-inbox-sub">검사 화면과 결재 처리를 분리한 승인 구조입니다. 작성된 검사 문서는 자동으로 결재함에 표시됩니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong id="approvalKpi_all">0</strong></div><div class="approval-kpi"><span>대기</span><strong id="approvalKpi_pending">0</strong></div><div class="approval-kpi"><span>검토중</span><strong id="approvalKpi_reviewed">0</strong></div><div class="approval-kpi"><span>승인완료</span><strong id="approvalKpi_approved">0</strong></div><div class="approval-kpi"><span>반려</span><strong id="approvalKpi_rejected">0</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs"><button class="approval-tab active" data-approval-tab="all" data-label="전체" type="button">전체 0</button><button class="approval-tab" data-approval-tab="pending" data-label="대기" type="button">대기 0</button><button class="approval-tab" data-approval-tab="reviewed" data-label="검토중" type="button">검토중 0</button><button class="approval-tab" data-approval-tab="approved" data-label="승인완료" type="button">승인완료 0</button><button class="approval-tab" data-approval-tab="rejected" data-label="반려" type="button">반려 0</button></div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 검사</option><option value="iqc">수입검사(IQC)</option><option value="pqc">공정검사(PQC)</option><option value="oqc">출하검사(OQC)</option></select><input id="approvalSearch" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 문서 목록</h3><span class="tag">검사 → 결재함 → 승인</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>일자</th><th>검사종류</th><th>Lot No</th><th>제품명</th><th>작성자</th><th>검토자</th><th>승인자</th><th>상태</th><th>결재상태</th></tr></thead><tbody id="approvalInboxTable"></tbody></table></div></div></div>';
       var users=$('page-users'); if(users) content.insertBefore(sec,users); else content.appendChild(sec);
     }
   }
@@ -21775,10 +21929,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     rows=rows.filter(function(x){
       if(currentTab!=='all' && x.status!==currentTab) return false;
       if(typeFilter!=='all' && x.type!==typeFilter) return false;
-      if(keyword){var hay=[x.meta.label,docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0) return false;}
+      if(keyword){var hay=[x.meta.label,lotNo(x.type,x.record),docNo(x.type,x.record),itemName(x.type,x.record),x.record.lot,x.record.date,writerName(x.record),reviewerName(x.record),approverName(x.record)].join(' ').toLowerCase(); if(hay.indexOf(keyword)<0) return false;}
       return true;
     });
-    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status;return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(docNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="10" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
+    body.innerHTML=rows.length?rows.map(function(x){var r=x.record, st=x.status;return '<tr><td>'+esc(r.date||'-')+'</td><td>'+esc(x.meta.label)+'</td><td><button type="button" class="approval-doc-link" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">'+esc(lotNo(x.type,r))+'</button></td><td>'+esc(itemName(x.type,r))+'</td><td>'+esc(writerName(r))+'</td><td>'+esc(reviewerName(r))+'</td><td>'+esc(approverName(r))+'</td><td><span class="approval-chip '+st+'">'+statusLabel(st)+'</span></td><td><div class="approval-actions-cell"><button type="button" class="approval-action-btn open" data-appr-open="'+esc(x.type)+'" data-id="'+esc(r.id)+'">열기</button><button type="button" class="approval-action-btn review" data-appr-act="review" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>검토</button><button type="button" class="approval-action-btn approve" data-appr-act="approve" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>승인</button><button type="button" class="approval-action-btn reject" data-appr-act="reject" data-type="'+esc(x.type)+'" data-id="'+esc(r.id)+'" '+(st==='approved'||st==='rejected'?'disabled':'')+'>반려</button></div></td></tr>';}).join(''):'<tr><td colspan="9" class="approval-empty">표시할 결재 문서가 없습니다.</td></tr>';
   }
   async function persist(type,r){
     var meta=TYPE_META[type];
@@ -23951,7 +24105,48 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.nmc-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.nmc-detail-cell{border:1px solid #dbe3ee;border-radius:10px;padding:9px 11px;background:#f8fafc}.nmc-detail-cell b{display:block;font-size:10px;color:#64748b;margin-bottom:4px}.nmc-detail-cell span{font-size:13px;font-weight:900;color:#0f172a}'+
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
-      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
+      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
+
+<!-- NAMO Approval Inbox Column Rename/Remove Patch v20260605 -->
+<script id="namo-approval-inbox-columns-v20260605">
+(function(){
+  function fixApprovalInboxColumns(){
+    var tables=document.querySelectorAll('table.approval-table');
+    tables.forEach(function(tbl){
+      var heads=tbl.querySelectorAll('thead th');
+      if(heads.length>=10){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        heads[4].remove();
+        heads=tbl.querySelectorAll('thead th');
+        if(heads[8]) heads[8].textContent='결재상태';
+      }else if(heads.length>=9){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        if(heads[8]) heads[8].textContent='결재상태';
+      }
+      tbl.querySelectorAll('tbody tr').forEach(function(tr){
+        var cells=tr.children;
+        if(cells.length===10) cells[4].remove();
+        var empty=tr.querySelector('.approval-empty');
+        if(empty) empty.setAttribute('colspan','9');
+      });
+    });
+  }
+  var old=window.renderApprovalInbox;
+  if(typeof old==='function' && !old.__namoColumnPatch){
+    var wrapped=function(){var r=old.apply(this,arguments);setTimeout(fixApprovalInboxColumns,0);return r;};
+    wrapped.__namoColumnPatch=true;
+    window.renderApprovalInbox=wrapped;
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(fixApprovalInboxColumns,0);setTimeout(fixApprovalInboxColumns,500);});
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('.approval-tab,#approvalRefreshBtn,[data-page="approval-inbox"]'))setTimeout(fixApprovalInboxColumns,80);},true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')setTimeout(fixApprovalInboxColumns,0);},true);
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')setTimeout(fixApprovalInboxColumns,0);},true);
+  setInterval(fixApprovalInboxColumns,1500);
+})();
+</script>
+</body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -25464,5 +25659,46 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /PATCH v2 -->
+
+
+<!-- NAMO Approval Inbox Column Rename/Remove Patch v20260605 -->
+<script id="namo-approval-inbox-columns-v20260605">
+(function(){
+  function fixApprovalInboxColumns(){
+    var tables=document.querySelectorAll('table.approval-table');
+    tables.forEach(function(tbl){
+      var heads=tbl.querySelectorAll('thead th');
+      if(heads.length>=10){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        heads[4].remove();
+        heads=tbl.querySelectorAll('thead th');
+        if(heads[8]) heads[8].textContent='결재상태';
+      }else if(heads.length>=9){
+        heads[2].textContent='Lot No';
+        heads[3].textContent='제품명';
+        if(heads[8]) heads[8].textContent='결재상태';
+      }
+      tbl.querySelectorAll('tbody tr').forEach(function(tr){
+        var cells=tr.children;
+        if(cells.length===10) cells[4].remove();
+        var empty=tr.querySelector('.approval-empty');
+        if(empty) empty.setAttribute('colspan','9');
+      });
+    });
+  }
+  var old=window.renderApprovalInbox;
+  if(typeof old==='function' && !old.__namoColumnPatch){
+    var wrapped=function(){var r=old.apply(this,arguments);setTimeout(fixApprovalInboxColumns,0);return r;};
+    wrapped.__namoColumnPatch=true;
+    window.renderApprovalInbox=wrapped;
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(fixApprovalInboxColumns,0);setTimeout(fixApprovalInboxColumns,500);});
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('.approval-tab,#approvalRefreshBtn,[data-page="approval-inbox"]'))setTimeout(fixApprovalInboxColumns,80);},true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='approvalSearch')setTimeout(fixApprovalInboxColumns,0);},true);
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='approvalTypeFilter')setTimeout(fixApprovalInboxColumns,0);},true);
+  setInterval(fixApprovalInboxColumns,1500);
+})();
+</script>
 </body>
 </html>
