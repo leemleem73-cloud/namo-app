@@ -3180,7 +3180,7 @@ body .content{
         <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>수입검사(IQC)</span></div><div class="ph-title">입고검사 등록</div></div></div>
         <div class="wgrid">
           <div class="card">
-            <div class="ch"><h2>입고검사 등록</h2><div class="ca"><button class="btn light sm" id="incomingReset">초기화</button><button class="btn pri sm" id="incomingSave">저장</button></div></div>
+            <div class="ch"><h2>입고검사 등록</h2><div class="ca"><button class="btn pri sm" id="incomingSave">저장</button></div></div>
             <div class="cb">
               <div class="fg4">
                 <div class="field"><label>일자 *</label><input type="date" id="incomingDate"></div>
@@ -3199,7 +3199,7 @@ body .content{
                 </div>
               </div>
               <div class="sp"><div class="sph"><h3>검사항목 및 판정</h3><button class="btn light sm" id="addIncomingRow" type="button">+ 항목 추가</button></div>
-                <div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th style="width:44px">No.</th><th>항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th style="width:90px">판정</th><th style="width:50px">삭제</th></tr></thead><tbody id="incomingItemsTable"></tbody></table></div>
+                <div class="tw" style="border:none;border-radius:0;"><table><thead><tr><th style="width:44px">No.</th><th>항목</th><th>검사기준(SPEC)</th><th>비고</th><th style="width:90px">판정</th><th style="width:50px">삭제</th></tr></thead><tbody id="incomingItemsTable"></tbody></table></div>
               </div>
               <input type="hidden" id="incomingEditId">
             </div>
@@ -3213,7 +3213,7 @@ body .content{
                 </div>
                 </div>
                 <div class="tw"><table><tbody id="incomingMetaTable"></tbody></table></div>
-                <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody id="incomingPreviewBody"></tbody></table></div>
+                <div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>비고</th><th>판정</th></tr></thead><tbody id="incomingPreviewBody"></tbody></table></div>
                 <div class="rbox"><div class="rlbl">최종 판정</div><div class="big" id="incomingFinalJudgeText">합격</div></div>
                 <div class="rprint-sign">
                   <div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rIqcWriter">-</div><div class="rpsign-title" id="rIqcWriterT"></div><div class="rpsign-line"></div></div>
@@ -4303,13 +4303,13 @@ function onSignChange(type,changedRole){
     const sub=document.getElementById(`sg_${type}_${role}_sub`);
     if(!sel||!sub)return;
     const u=state.signableUsers.find(x=>x.id===sel.value)||null;
-    sub.textContent=u?`${u.department||''} ${u.title||''}`.trim():'';
+    sub.textContent=u?[`성명: ${u.name||'-'}`,`부서: ${u.department||'-'}`,`직책: ${u.title||'-'}`].join(' / '):'';
     const pfx=signPrefix(type);
     const cap=signRoleCap(role);
     const rn=document.getElementById(`r${pfx}${cap}`);
     const rt=document.getElementById(`r${pfx}${cap}T`);
     if(rn)rn.textContent=u?u.name:'-';
-    if(rt)rt.textContent=u?(u.title||''):'';
+    if(rt)rt.textContent=u?[u.title||'-',u.department||'-'].join(' / '):'';
     updateSignaturePreview(type,role);
   });
   if(type==='iqc')syncIqcPreview();
@@ -9872,8 +9872,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function userLabel(u){
     u = normalizeUser(u);
     if(!u) return '-';
-    const extra = txt(u.title || u.department || '-');
-    return `${txt(u.name || u.email || u.id)} (${extra || '-'})`;
+    const extra = [txt(u.department), txt(u.title)].filter(Boolean).join(' / ') || '-';
+    return `${txt(u.name || u.email || u.id)} (${extra})`;
   }
 
   function setSingleOption(sel, u, placeholder){
@@ -19657,8 +19657,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function userLabel(u){
     u = normalizeUser(u);
     if(!u) return '-';
-    const extra = txt(u.title || u.department || '-');
-    return `${txt(u.name || u.email || u.id)} (${extra || '-'})`;
+    const extra = [txt(u.department), txt(u.title)].filter(Boolean).join(' / ') || '-';
+    return `${txt(u.name || u.email || u.id)} (${extra})`;
   }
 
   function setSingleOption(sel, u, placeholder){
