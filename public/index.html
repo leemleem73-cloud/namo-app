@@ -14047,7 +14047,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<!-- NMC_PRODUCTION_DASHBOARD_MENU_SEPARATE_PATCH_START -->
+<!-- NMC_PRODUCTION_DASHBOARD_MENU_SAME_LEVEL_PATCH_START -->
 <script>
 (function(){
   var lock=false;
@@ -14056,13 +14056,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var spans=el.querySelectorAll('span');
     if(spans.length) spans[spans.length-1].textContent=text;
     else el.textContent=text;
-  }
-  function makeSec(){
-    var d=document.createElement('div');
-    d.className='nav-sec';
-    d.setAttribute('data-nmc-prod-dash-sec','1');
-    d.textContent='생산 대시보드';
-    return d;
   }
   function makeBtn(){
     var b=document.createElement('button');
@@ -14090,28 +14083,31 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(!side) return;
       renameTexts(document.body);
 
-      // 기존 위치(생산 관리 하단 등)에 남아 있는 생산대시보드 버튼은 전부 회수/중복 제거
+      // 잘못 들어간 별도 헤더/하위처럼 보이는 흔적 제거
+      Array.prototype.slice.call(side.querySelectorAll('.nav-sec[data-nmc-prod-dash-sec="1"]')).forEach(function(x){x.remove();});
+      Array.prototype.slice.call(side.querySelectorAll('.nav-sec')).forEach(function(x){
+        if(x.textContent.trim()==='생산 대시보드') x.remove();
+      });
+
+      // 생산대시보드는 품질 대시보드와 같은 레벨: 메인 섹션의 독립 버튼으로 배치
       var btns=Array.prototype.slice.call(side.querySelectorAll('.nav-item[data-page="production-result"]'));
       var btn=side.querySelector('.nav-item[data-nmc-prod-dash-btn="1"]') || btns[0] || makeBtn();
       btns.forEach(function(x){ if(x!==btn) x.remove(); });
+      btn.className='nav-item';
       btn.setAttribute('data-page','production-result');
       btn.setAttribute('data-nmc-prod-dash-btn','1');
-      btn.querySelector('.nav-icon') && (btn.querySelector('.nav-icon').textContent='⊞');
+      var ic=btn.querySelector('.nav-icon');
+      if(ic) ic.textContent='⊞';
       lastSpanText(btn,'생산대시보드');
-
-      // 품질 대시보드의 하위 항목처럼 보이지 않도록 별도 분류 헤더로 분리
-      Array.prototype.slice.call(side.querySelectorAll('.nav-sec[data-nmc-prod-dash-sec="1"]')).slice(1).forEach(function(x){x.remove();});
-      var sec=side.querySelector('.nav-sec[data-nmc-prod-dash-sec="1"]') || makeSec();
-      sec.textContent='생산 대시보드';
 
       var qualityBtn=side.querySelector('.nav-item[data-page="dashboard"]');
       var qualityInspectSec=Array.prototype.slice.call(side.querySelectorAll('.nav-sec')).filter(function(x){return x.textContent.trim()==='품질 검사';})[0];
       if(qualityBtn){
-        if(qualityBtn.nextElementSibling!==sec) qualityBtn.insertAdjacentElement('afterend',sec);
-        if(sec.nextElementSibling!==btn) sec.insertAdjacentElement('afterend',btn);
+        if(qualityBtn.nextElementSibling!==btn) qualityBtn.insertAdjacentElement('afterend',btn);
       }else if(qualityInspectSec){
-        side.insertBefore(sec,qualityInspectSec);
         side.insertBefore(btn,qualityInspectSec);
+      }else if(!btn.parentNode){
+        side.appendChild(btn);
       }
     }finally{ lock=false; }
   }
@@ -14122,7 +14118,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   patch();
 })();
 </script>
-<!-- NMC_PRODUCTION_DASHBOARD_MENU_SEPARATE_PATCH_END -->
+<!-- NMC_PRODUCTION_DASHBOARD_MENU_SAME_LEVEL_PATCH_END -->
 
 </body>
 </html>
