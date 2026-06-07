@@ -4482,9 +4482,15 @@ function printLabel(){
     '  },true);\n',
     '})();\n',
     '<\/scr'+'ipt>',
-    '
+    '</body></html>'
+  ].join('');
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>{w.focus();w.print();},300);
+}
 
-<script id="namo-login-writer-auto-all-pages-final">
+/* namo-login-writer-auto-all-pages-final */
 /* ════════════════════════════════════════════════════════════════
    로그인 당사자 작성자 자동 적용 최종 패치
    적용 범위: 입고검사(IQC), 공정검사(PQC), 출하검사(OQC), 부적합/교육 등
@@ -4638,15 +4644,7 @@ function printLabel(){
   window.addEventListener('load', scheduleApply);
   scheduleApply();
 })();
-</script>
 
-</body></html>'
-  ].join('');
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  setTimeout(()=>{w.focus();w.print();},300);
-}
 
 /* ═══ AUTH ═══ */
 function openLoginTab(t){
