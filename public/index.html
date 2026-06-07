@@ -15159,5 +15159,103 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<script>
+/* ══════════════════════════════════
+   F5 새로고침 화면 복원 패치
+   - 메뉴/카드 이동 시 마지막 화면 저장
+   - F5 후 마지막 작성/사용 화면으로 복원
+   - 로고/홈 이동 시 저장값 삭제 후 메인 화면 유지
+══════════════════════════════════ */
+(function(){
+  var LAST_PAGE_KEY = 'namo_qms_last_active_page';
+  var RESTORE_FLAG = 'namo_qms_restoring_page';
+
+  function qs(sel){ return document.querySelector(sel); }
+  function qsa(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+
+  function pageExists(pg){
+    return !!(pg && document.getElementById('page-' + pg));
+  }
+
+  function saveLastPage(pg){
+    if(!pageExists(pg)) return;
+    if(pg === 'dashboard') return;
+    try{ localStorage.setItem(LAST_PAGE_KEY, pg); }catch(e){}
+  }
+
+  function clearLastPage(){
+    try{ localStorage.removeItem(LAST_PAGE_KEY); }catch(e){}
+  }
+
+  function getLastPage(){
+    try{ return localStorage.getItem(LAST_PAGE_KEY) || ''; }catch(e){ return ''; }
+  }
+
+  function activatePage(pg){
+    if(!pageExists(pg)) return false;
+
+    qsa('.nav-item[data-page]').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.page === pg);
+    });
+
+    qsa('.page').forEach(function(page){
+      page.classList.remove('active');
+    });
+
+    var target = document.getElementById('page-' + pg);
+    if(target) target.classList.add('active');
+
+    var content = qs('.content');
+    if(content) content.scrollTo({top:0, behavior:'auto'});
+
+    setTimeout(function(){
+      try{
+        if(typeof refreshSignaturePads === 'function') refreshSignaturePads(target);
+        if(pg === 'users' && typeof loadAdminUsers === 'function') loadAdminUsers();
+        if(pg === 'report'){
+          if(typeof populateReportSelect === 'function') populateReportSelect();
+          if(typeof loadStandaloneReport === 'function') loadStandaloneReport();
+        }
+        if(pg === 'trace' && typeof searchTrace === 'function') searchTrace();
+      }catch(e){}
+    }, 120);
+
+    return true;
+  }
+
+  function restoreLastPage(){
+    var pg = getLastPage();
+    if(!pg || !pageExists(pg)) return;
+    window[RESTORE_FLAG] = true;
+    activatePage(pg);
+    setTimeout(function(){ window[RESTORE_FLAG] = false; }, 300);
+  }
+
+  document.addEventListener('click', function(e){
+    var el = e.target && e.target.closest ? e.target.closest('.nav-item[data-page], .sc[data-go], [data-page-target], [data-go]') : null;
+    if(!el) return;
+    var pg = el.dataset.page || el.dataset.go || el.dataset.pageTarget;
+    if(pg) saveLastPage(pg);
+  }, true);
+
+  var oldGoHome = window.goHome;
+  if(typeof oldGoHome === 'function'){
+    window.goHome = function(){
+      clearLastPage();
+      return oldGoHome.apply(this, arguments);
+    };
+  }
+
+  ['DOMContentLoaded','load'].forEach(function(ev){
+    window.addEventListener(ev, function(){
+      setTimeout(restoreLastPage, 450);
+      setTimeout(restoreLastPage, 1200);
+      setTimeout(restoreLastPage, 2500);
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
