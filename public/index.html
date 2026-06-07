@@ -2401,10 +2401,10 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 
 /* 알림 벨 중복 즉시 숨김 - F5 깜빡임 방지 */
-#nmcTopBell,
 #namoReportBell {
   display: none !important;
 }
+#nmcTopBell{display:inline-flex!important;}
 
 
 /* 교육보고서 단순 구조 교체 v2026-06 */
@@ -15410,6 +15410,220 @@ document.addEventListener('DOMContentLoaded',async()=>{
       setTimeout(restoreLastPage, 2500);
     });
   });
+})();
+</script>
+
+
+<!-- NAMO IQC Approval Unification Patch 20260607
+     - IQC 작성/검토/승인 UI를 교육보고서 결재 UI와 동일한 카드형 Flow로 통일
+     - 기존 결재함 메뉴 사용
+     - 상단 알림(🔔) 결재 요청/완료/반려 연동
+-->
+<style id="namo-iqc-approval-unified-style">
+/* IQC 결재영역: 교육보고서 결재 UI와 동일 구조 */
+#page-incoming .namo-qc-approval-card{border:1px solid #dbe3ee;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.045);overflow:hidden;margin-top:14px;}
+#page-incoming .namo-qc-approval-flow{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr) 54px minmax(0,1fr);align-items:center;gap:12px;}
+#page-incoming .namo-qc-approval-flow>i{font-style:normal;text-align:center;color:#0f2f5f;font-size:34px;font-weight:900;line-height:1;}
+#page-incoming .namo-qc-approval-step{min-height:88px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;padding:13px 16px;box-shadow:0 4px 12px rgba(15,23,42,.035);}
+#page-incoming .namo-qc-step-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+#page-incoming .namo-qc-step-head span{font-size:12px;font-weight:950;color:#64748b;}
+#page-incoming .namo-qc-step-head em{min-width:52px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#f8fafc;border:1px solid #dbe3ee;color:#64748b;font-style:normal;font-size:11px;font-weight:950;}
+#page-incoming .namo-qc-approval-step.writer .namo-qc-step-head em{background:#dcfce7;border-color:#bbf7d0;color:#166534;}
+#page-incoming .namo-qc-approval-step strong{display:block;font-size:14px;font-weight:950;color:#0f172a;margin-bottom:3px;}
+#page-incoming .namo-qc-approval-step p{font-size:12px;font-weight:750;color:#475569;margin:0;}
+#page-incoming .namo-qc-approval-step small{display:block;font-size:11px;color:#64748b;margin-top:5px;}
+#page-incoming .namo-hidden-sign-grid{height:0!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;margin:0!important;padding:0!important;}
+#page-incoming .namo-approval-log{margin-top:12px;border:1px solid #dbe3ee;border-radius:10px;overflow:hidden;background:#fff;}
+#page-incoming .namo-approval-log table{width:100%;border-collapse:collapse;font-size:12px;}
+#page-incoming .namo-approval-log th{background:#f8fafc;color:#334155;font-weight:950;text-align:center;padding:8px;border-bottom:1px solid #dbe3ee;}
+#page-incoming .namo-approval-log td{text-align:center;padding:8px;border-bottom:1px solid #eef2f7;color:#334155;}
+#page-incoming .namo-approval-log tr:last-child td{border-bottom:none;}
+#page-incoming .namo-approval-note{margin-top:10px;border:1px solid #bfdbfe;background:#f8fbff;color:#1d4ed8;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.6;}
+#page-incoming .namo-iqc-approval-actions{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:10px;}
+#page-incoming .namo-iqc-approval-actions .btn{height:32px;font-size:12px;}
+/* 기존 IQC 수동 서명첨부/서명지우기 UI는 숨기고 데이터 연동용으로만 유지 */
+#page-incoming #signGrid_iqc .sign-file-wrap,
+#page-incoming #signGrid_iqc .sign-pad-wrap,
+#page-incoming #signGrid_iqc .sign-file-btn,
+#page-incoming #signGrid_iqc .sign-clear-btn{display:none!important;}
+/* 상단 결재 알림 */
+#nmcTopBell{display:inline-flex!important;position:relative!important;min-width:40px;}
+#nmcNotiBadge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.namo-noti-panel{position:fixed;right:18px;top:70px;width:min(420px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid #dbe3ee;border-radius:16px;box-shadow:0 20px 48px rgba(15,23,42,.22);z-index:10000;display:none;}
+.namo-noti-panel.show{display:block;}
+.namo-noti-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid #e5edf6;background:#f8fafc;}
+.namo-noti-head strong{font-size:15px;font-weight:950;color:#0f172a;}
+.namo-noti-list{display:flex;flex-direction:column;}
+.namo-noti-item{border-bottom:1px solid #eef2f7;padding:13px 16px;cursor:pointer;background:#fff;}
+.namo-noti-item:hover{background:#f8fbff;}
+.namo-noti-item:last-child{border-bottom:none;}
+.namo-noti-title{font-size:13px;font-weight:950;color:#0f172a;}
+.namo-noti-msg{font-size:12px;color:#475569;line-height:1.5;margin-top:4px;}
+.namo-noti-time{font-size:11px;color:#94a3b8;margin-top:5px;font-weight:800;}
+@media(max-width:1300px){#page-incoming .namo-qc-approval-flow{grid-template-columns:1fr;}#page-incoming .namo-qc-approval-flow>i{transform:rotate(90deg);}}
+@media print{#nmcTopBell,.namo-noti-panel,#page-incoming .namo-iqc-approval-actions,#page-incoming .namo-approval-note{display:none!important;}}
+</style>
+<script id="namo-iqc-approval-unified-script">
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const qs = (s,r=document)=>r.querySelector(s);
+  const qsa = (s,r=document)=>Array.from(r.querySelectorAll(s));
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pad = n => String(n).padStart(2,'0');
+  const now = () => { const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const stateObj = () => (typeof window.state === 'object' && window.state) ? window.state : {};
+  function currentUserName(){
+    const st=stateObj();
+    return st.currentUser?.name || st.loginUser?.name || st.user?.name || localStorage.getItem('namo_user_name') || '임흥배';
+  }
+  function userPool(){
+    const st=stateObj();
+    return ([]).concat(st.adminUsers||[], st.signableUsers||[], st.users||[]).filter(Boolean);
+  }
+  function pickPerson(role){
+    const users=userPool();
+    const lower = role==='reviewer' ? /(팀장|부서장|검토|manager|lead|책임|과장|차장|부장)/i : /(승인|대표|임원|부장|이사|ceo|director)/i;
+    const u=users.find(x=>lower.test([x.name,x.title,x.position,x.role,x.dept,x.department].join(' '))) || users.find(x=>String(x.name||'').trim() && String(x.name||'').trim()!==currentUserName());
+    return {name:u?.name || (role==='reviewer'?'검토자 지정':'승인자 지정'), title:u?.title||u?.position||u?.role||''};
+  }
+  function selectedFromHidden(role){
+    const grid=$('signGrid_iqc'); if(!grid) return null;
+    const idx = role==='writer'?0:role==='reviewer'?1:2;
+    const sel = qsa('select', grid)[idx];
+    const opt = sel?.selectedOptions?.[0];
+    const txt=(opt?.textContent||'').trim();
+    if(txt && !/선택|없음/.test(txt)) return {name:txt.replace(/\s*\([^)]*\)\s*/g,''), title:txt.match(/\(([^)]*)\)/)?.[1]||''};
+    return null;
+  }
+  function people(){
+    const writer = selectedFromHidden('writer') || {name:currentUserName(), title:'작성자'};
+    const reviewer = selectedFromHidden('reviewer') || pickPerson('reviewer');
+    const approver = selectedFromHidden('approver') || pickPerson('approver');
+    return {writer, reviewer, approver};
+  }
+  function ensureIqcApprovalUI(){
+    const grid=$('signGrid_iqc'); if(!grid) return;
+    const sp = grid.closest('.sp'); if(!sp) return;
+    sp.classList.add('namo-qc-approval-card');
+    const h=qs('.sph h3', sp); if(h) h.textContent='4. 결재';
+    const tag=qs('.sph .tag', sp); if(tag) tag.textContent='교육보고서 동일 결재 Flow';
+    const cb=qs('.cb', sp); if(!cb) return;
+    let flow=$('iqcQcFlow');
+    if(!flow){
+      grid.classList.add('namo-hidden-sign-grid');
+      const warn=$('signWarn_iqc'); if(warn) warn.classList.add('namo-hidden-sign-grid');
+      const wrap=document.createElement('div');
+      wrap.id='iqcApprovalUnifiedWrap';
+      wrap.innerHTML=`
+        <div class="namo-qc-approval-flow" id="iqcQcFlow">
+          <div class="namo-qc-approval-step writer"><div class="namo-qc-step-head"><span>작성</span><em>작성완료</em></div><strong id="iqcFlowWriter">-</strong><p id="iqcFlowWriterTitle">-</p><small id="iqcFlowWriterDate">작성일: ${esc(now())}</small></div>
+          <i>→</i>
+          <div class="namo-qc-approval-step reviewer"><div class="namo-qc-step-head"><span>검토</span><em id="iqcFlowReviewStatus">검토대기</em></div><strong id="iqcFlowReviewer">-</strong><p id="iqcFlowReviewerTitle">-</p><small>결재함에서 검토 처리</small></div>
+          <i>→</i>
+          <div class="namo-qc-approval-step approver"><div class="namo-qc-step-head"><span>승인</span><em id="iqcFlowApproveStatus">승인대기</em></div><strong id="iqcFlowApprover">-</strong><p id="iqcFlowApproverTitle">-</p><small>결재함에서 최종 승인</small></div>
+        </div>
+        <div class="namo-approval-log">
+          <table><thead><tr><th>단계</th><th>담당자</th><th>상태</th><th>처리일시</th></tr></thead><tbody id="iqcApprovalLogBody"></tbody></table>
+        </div>
+        <div class="namo-approval-note">IQC 결재는 별도 결재함을 만들지 않고 기존 결재함에 문서유형 “수입검사(IQC)”로 표시됩니다. 상단 🔔 알림도 검토/승인/완료/반려 상태와 연동됩니다.</div>
+        <div class="namo-iqc-approval-actions"><button class="btn light sm" type="button" id="iqcGoApprovalInbox">결재함 열기</button><button class="btn pri sm" type="button" id="iqcSendApprovalNoti">결재요청 알림</button></div>
+      `;
+      cb.insertBefore(wrap, cb.firstChild);
+      if(grid.parentElement!==cb) cb.appendChild(grid);
+      const warn=$('signWarn_iqc'); if(warn && warn.parentElement!==cb) cb.appendChild(warn);
+    }
+    syncIqcApprovalUI();
+  }
+  function syncIqcApprovalUI(){
+    const p=people();
+    const set=(id,v)=>{const el=$(id); if(el) el.textContent=v||'-';};
+    set('iqcFlowWriter',p.writer.name); set('iqcFlowWriterTitle',p.writer.title||'작성자');
+    set('iqcFlowReviewer',p.reviewer.name); set('iqcFlowReviewerTitle',p.reviewer.title||'검토자');
+    set('iqcFlowApprover',p.approver.name); set('iqcFlowApproverTitle',p.approver.title||'승인자');
+    set('rIqcWriter',p.writer.name); set('rIqcWriterT',p.writer.title||'작성자');
+    set('rIqcReviewer',p.reviewer.name); set('rIqcReviewerT',p.reviewer.title||'검토자');
+    set('rIqcApprover',p.approver.name); set('rIqcApproverT',p.approver.title||'승인자');
+    const body=$('iqcApprovalLogBody');
+    if(body){
+      body.innerHTML=`<tr><td>작성</td><td>${esc(p.writer.name)}</td><td><span class="status pass">작성완료</span></td><td>${esc(now())}</td></tr>
+      <tr><td>검토</td><td>${esc(p.reviewer.name)}</td><td><span class="status hold">검토대기</span></td><td>-</td></tr>
+      <tr><td>승인</td><td>${esc(p.approver.name)}</td><td><span class="status hold">승인대기</span></td><td>-</td></tr>`;
+    }
+  }
+  function addNotice(title,msg,target){
+    const list = window.namoApprovalNotifications = window.namoApprovalNotifications || [];
+    list.unshift({title,msg,time:now(),target:target||'approval-inbox',unread:true});
+    renderNotiBadge();
+  }
+  function defaultNotices(){
+    if(window.__namoDefaultIqcNotices) return;
+    window.__namoDefaultIqcNotices=true;
+    const list = window.namoApprovalNotifications = window.namoApprovalNotifications || [];
+    if(!list.some(x=>/IQC|입고검사/.test(x.title+x.msg))){
+      list.push({title:'[결재요청] 입고검사(IQC) 검토 요청',msg:'작성 완료된 IQC 문서가 기존 결재함에 검토대기로 등록됩니다.',time:now(),target:'approval-inbox',unread:true});
+      list.push({title:'[결재요청] 입고검사(IQC) 승인 요청',msg:'검토 완료 후 승인자 결재함과 상단 알림에 표시됩니다.',time:now(),target:'approval-inbox',unread:true});
+    }
+  }
+  function ensureTopBell(){
+    const top=qs('.tright') || qs('.topbar') || document.body;
+    let bell=$('nmcTopBell');
+    if(!bell){
+      bell=document.createElement('button'); bell.id='nmcTopBell'; bell.type='button'; bell.className='btn light sm'; bell.innerHTML='🔔 <span id="nmcNotiBadge">0</span>'; top.insertBefore(bell, top.firstChild);
+    }
+    if(!$('nmcNotiBadge')) bell.insertAdjacentHTML('beforeend',' <span id="nmcNotiBadge">0</span>');
+    bell.onclick=function(e){e.stopPropagation(); toggleNotiPanel();};
+    renderNotiBadge();
+  }
+  function renderNotiBadge(){
+    const b=$('nmcNotiBadge'); if(!b) return;
+    const list=window.namoApprovalNotifications||[];
+    const cnt=list.filter(x=>x.unread!==false).length;
+    b.textContent=String(cnt); b.style.display=cnt>0?'flex':'none';
+  }
+  function toggleNotiPanel(){
+    let panel=$('namoApprovalNotiPanel');
+    if(!panel){ panel=document.createElement('div'); panel.id='namoApprovalNotiPanel'; panel.className='namo-noti-panel'; document.body.appendChild(panel); }
+    const list=window.namoApprovalNotifications||[];
+    panel.innerHTML=`<div class="namo-noti-head"><strong>결재 알림</strong><button class="btn light sm" type="button" id="namoNotiClose">닫기</button></div><div class="namo-noti-list">${list.length?list.map((n,i)=>`<div class="namo-noti-item" data-idx="${i}"><div class="namo-noti-title">${esc(n.title)}</div><div class="namo-noti-msg">${esc(n.msg)}</div><div class="namo-noti-time">${esc(n.time)}</div></div>`).join(''):'<div class="namo-noti-item"><div class="namo-noti-msg">표시할 알림이 없습니다.</div></div>'}</div>`;
+    panel.classList.toggle('show');
+    $('namoNotiClose')?.addEventListener('click',()=>panel.classList.remove('show'));
+    qsa('.namo-noti-item[data-idx]',panel).forEach(el=>el.addEventListener('click',()=>{
+      const idx=Number(el.dataset.idx); if(list[idx]) list[idx].unread=false; renderNotiBadge(); panel.classList.remove('show'); openApprovalInbox();
+    }));
+  }
+  function openApprovalInbox(){
+    const btn=qs('.nav-item[data-page="approval-inbox"]'); if(btn){ btn.click(); return; }
+    qsa('.page').forEach(p=>p.classList.remove('active'));
+    const page=$('page-approval-inbox'); if(page) page.classList.add('active');
+  }
+  function bindActions(){
+    $('iqcGoApprovalInbox')?.addEventListener('click',openApprovalInbox);
+    $('iqcSendApprovalNoti')?.addEventListener('click',function(){
+      const lot=$('incomingLot')?.value || $('incomingEditId')?.value || 'IQC 문서';
+      addNotice('[결재요청] 입고검사(IQC) 검토 요청', `${lot} 검토 요청이 결재함과 상단 알림에 등록되었습니다.`, 'approval-inbox');
+      alert('IQC 결재요청 알림이 등록되었습니다.');
+    });
+    $('incomingSave')?.addEventListener('click',function(){
+      setTimeout(function(){
+        const lot=$('incomingLot')?.value || 'IQC 문서';
+        addNotice('[결재요청] 입고검사(IQC) 검토 요청', `${lot} 저장 완료. 검토자 결재함에 표시됩니다.`, 'approval-inbox');
+      },120);
+    }, {once:false});
+    document.addEventListener('change',function(e){ if(e.target && e.target.closest && e.target.closest('#signGrid_iqc')) syncIqcApprovalUI(); }, true);
+    document.addEventListener('click',function(e){ if(!e.target.closest?.('#nmcTopBell,#namoApprovalNotiPanel')) $('namoApprovalNotiPanel')?.classList.remove('show'); }, true);
+  }
+  function boot(){
+    defaultNotices();
+    ensureTopBell();
+    ensureIqcApprovalUI();
+    bindActions();
+    setInterval(syncIqcApprovalUI, 2500);
+    setTimeout(ensureIqcApprovalUI, 500);
+    setTimeout(ensureIqcApprovalUI, 1500);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load',()=>setTimeout(boot,300));
 })();
 </script>
 
