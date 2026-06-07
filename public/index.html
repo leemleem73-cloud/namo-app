@@ -3013,11 +3013,43 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="field"><label>검사수량 *</label><input type="number" id="incomingCheckQty" placeholder="0"></div>
                 <div class="field"><label>불량수량</label><input type="number" id="incomingFailQty" placeholder="0"></div>
               </div>
-              <div class="sp mt14">
-                <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
-                <div class="cb" style="padding:12px 14px;">
-                  <div class="sign-warning" id="signWarn_iqc">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록하면 작성자/검토자/승인자를 선택할 수 있습니다.</div>
-                  <div class="sign-grid" id="signGrid_iqc"></div>
+              <div class="sp mt14 namo-iqc-flow-card" id="iqcApprovalStaticCard">
+                <div class="sph"><h3>4. 결재 <span style="font-size:12px;color:var(--t3);font-weight:800;">(수입검사 작성·검토·승인 구조)</span></h3><span class="tag" style="font-size:10px;">교육보고서 동일 디자인</span></div>
+                <div class="cb" style="padding:16px 18px;">
+                  <div class="namo-qc-approval-flow" id="iqcQcFlow">
+                    <div class="namo-qc-approval-step writer">
+                      <div class="namo-qc-step-head"><span>작성</span><em>작성</em></div>
+                      <div class="namo-qc-step-label">작성자</div>
+                      <strong id="iqcFlowWriter">임흥배 / 품질 부장</strong>
+                      <small id="iqcFlowWriterDate">2024-06-04 10:30</small>
+                    </div>
+                    <i>→</i>
+                    <div class="namo-qc-approval-step reviewer">
+                      <div class="namo-qc-step-head"><span>검토</span><em id="iqcFlowReviewStatus">대기</em></div>
+                      <div class="namo-qc-step-label">검토자</div>
+                      <strong id="iqcFlowReviewer">임흥배 / 품질 부장</strong>
+                      <small id="iqcFlowReviewerTitle">검토 대기</small>
+                    </div>
+                    <i>→</i>
+                    <div class="namo-qc-approval-step approver">
+                      <div class="namo-qc-step-head"><span>승인</span><em id="iqcFlowApproveStatus">대기</em></div>
+                      <div class="namo-qc-step-label">승인자</div>
+                      <strong id="iqcFlowApprover">임흥배 / 품질 부장</strong>
+                      <small id="iqcFlowApproverTitle">승인 대기</small>
+                    </div>
+                  </div>
+                  <div class="namo-approval-log" id="iqcApprovalLog">
+                    <table><thead><tr><th>단계</th><th>담당자</th><th>상태</th><th>처리일시</th></tr></thead><tbody id="iqcApprovalLogBody">
+                      <tr><td>작성</td><td>임흥배 / 품질 부장</td><td><span class="status pass">작성완료</span></td><td>2024-06-04 10:30</td></tr>
+                      <tr><td>검토</td><td>임흥배 / 품질 부장</td><td><span class="status hold">검토대기</span></td><td>-</td></tr>
+                      <tr><td>승인</td><td>임흥배 / 품질 부장</td><td><span class="status hold">승인대기</span></td><td>-</td></tr>
+                    </tbody></table>
+                  </div>
+                  <div class="namo-approval-note">IQC 결재는 기존 결재함에 문서유형 “수입검사(IQC)”로 표시되며, 상단 🔔 알림과 연동됩니다.</div>
+                  <div class="namo-iqc-hidden-sign-source">
+                    <div class="sign-warning" id="signWarn_iqc">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록하면 작성자/검토자/승인자를 선택할 수 있습니다.</div>
+                    <div class="sign-grid" id="signGrid_iqc"></div>
+                  </div>
                 </div>
               </div>
               <div class="sp"><div class="sph"><h3>검사항목 및 판정</h3><button class="btn light sm" id="addIncomingRow" type="button">+ 항목 추가</button></div>
@@ -15624,6 +15656,90 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.addEventListener('load',()=>setTimeout(boot,300));
+})();
+</script>
+
+
+
+<!-- NAMO IQC 실제 화면 재반영 + 사이드바 F5 흔들림 방지 패치 20260607 -->
+<style id="namo-iqc-actual-final-style">
+/* IQC 결재영역을 교육보고서 작성→검토→승인 카드형 디자인으로 고정 */
+#page-incoming .namo-iqc-flow-card{border:1px solid #dbe3ee!important;border-radius:18px!important;background:#fff!important;box-shadow:0 8px 22px rgba(15,23,42,.055)!important;overflow:hidden!important;}
+#page-incoming .namo-iqc-flow-card>.sph{padding:14px 18px!important;background:#fff!important;border-bottom:1px solid #dbe3ee!important;}
+#page-incoming .namo-iqc-flow-card>.sph h3{font-size:15px!important;font-weight:950!important;color:#0f172a!important;}
+#page-incoming .namo-qc-approval-flow{display:grid!important;grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr) 56px minmax(0,1fr)!important;align-items:center!important;gap:16px!important;}
+#page-incoming .namo-qc-approval-flow>i{font-style:normal!important;text-align:center!important;color:#0f2f5f!important;font-size:34px!important;font-weight:950!important;line-height:1!important;}
+#page-incoming .namo-qc-approval-step{min-height:122px!important;border:1.5px solid #dbe3ee!important;border-radius:14px!important;background:#fff!important;padding:16px 18px!important;box-shadow:0 4px 12px rgba(15,23,42,.035)!important;}
+#page-incoming .namo-qc-step-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:12px!important;}
+#page-incoming .namo-qc-step-head span{font-size:14px!important;font-weight:850!important;color:#64748b!important;}
+#page-incoming .namo-qc-step-head em{min-width:48px!important;height:28px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;background:#f1f5f9!important;color:#64748b!important;font-style:normal!important;font-size:12px!important;font-weight:950!important;}
+#page-incoming .namo-qc-approval-step.writer .namo-qc-step-head em{background:#dcfce7!important;color:#166534!important;}
+#page-incoming .namo-qc-step-label{font-size:13px!important;font-weight:950!important;color:#0f172a!important;margin-bottom:3px!important;}
+#page-incoming .namo-qc-approval-step strong{display:block!important;font-size:15px!important;font-weight:950!important;color:#0f172a!important;line-height:1.35!important;margin:0 0 6px!important;}
+#page-incoming .namo-qc-approval-step small{display:block!important;font-size:13px!important;color:#64748b!important;font-weight:750!important;line-height:1.35!important;}
+#page-incoming .namo-approval-log{margin-top:14px!important;border:1px solid #dbe3ee!important;border-radius:12px!important;overflow:hidden!important;background:#fff!important;}
+#page-incoming .namo-approval-log table{width:100%!important;border-collapse:collapse!important;font-size:12px!important;}
+#page-incoming .namo-approval-log th{background:#f8fafc!important;color:#334155!important;font-weight:950!important;text-align:center!important;padding:8px!important;border-bottom:1px solid #dbe3ee!important;}
+#page-incoming .namo-approval-log td{text-align:center!important;padding:8px!important;border-bottom:1px solid #eef2f7!important;color:#334155!important;}
+#page-incoming .namo-approval-note{margin-top:12px!important;border:1px solid #bfdbfe!important;background:#f8fbff!important;color:#1d4ed8!important;border-radius:12px!important;padding:10px 12px!important;font-size:12px!important;font-weight:800!important;line-height:1.6!important;}
+#page-incoming .namo-iqc-hidden-sign-source{height:0!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;margin:0!important;padding:0!important;}
+#page-incoming #signGrid_iqc,#page-incoming #signWarn_iqc{height:0!important;max-height:0!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;margin:0!important;padding:0!important;}
+#page-incoming #signGrid_iqc .sign-box,#page-incoming #signGrid_iqc .sign-file-wrap,#page-incoming #signGrid_iqc .sign-pad-wrap{display:none!important;}
+/* F5 새로고침 시 왼쪽 사이드바 글씨 상하 흔들림 방지 */
+.sidebar{contain:layout paint!important;}
+.sidebar .nav-sec{height:30px!important;line-height:15px!important;display:flex!important;align-items:flex-end!important;padding:10px 12px 5px!important;margin:0!important;white-space:nowrap!important;}
+.sidebar .nav-item{height:38px!important;min-height:38px!important;max-height:38px!important;line-height:38px!important;display:flex!important;align-items:center!important;gap:10px!important;padding-top:0!important;padding-bottom:0!important;margin:0 0 4px 0!important;transform:none!important;transition:background-color 150ms cubic-bezier(.4,0,.2,1),border-color 150ms cubic-bezier(.4,0,.2,1),color 150ms cubic-bezier(.4,0,.2,1)!important;}
+.sidebar .nav-icon{width:18px!important;min-width:18px!important;height:18px!important;line-height:18px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 18px!important;}
+.sidebar .nav-item span:last-child{display:block!important;line-height:18px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+@media(max-width:1300px){#page-incoming .namo-qc-approval-flow{grid-template-columns:1fr!important;}#page-incoming .namo-qc-approval-flow>i{transform:rotate(90deg)!important;margin:2px 0!important;}}
+@media print{#page-incoming .namo-approval-note{display:none!important;}}
+</style>
+<script id="namo-iqc-actual-final-script">
+(function(){
+  function $(id){return document.getElementById(id);}
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function pad(n){return String(n).padStart(2,'0');}
+  function now(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());}
+  function cleanName(v){return String(v||'').replace(/\s*\([^)]*\)\s*/g,'').trim();}
+  function currentUser(){
+    try{var st=window.state||{};return (st.currentUser&&st.currentUser.name)||(st.loginUser&&st.loginUser.name)||(st.user&&st.user.name)||localStorage.getItem('namo_user_name')||'임흥배';}catch(e){return '임흥배';}
+  }
+  function titleOf(name,fallback){
+    try{var st=window.state||{}, arr=[].concat(st.adminUsers||[],st.signableUsers||[],st.users||[]);var u=arr.find(function(x){return x&&x.name===name;});return (u&&(u.title||u.position||u.role||u.dept||u.department))||fallback||'';}catch(e){return fallback||'';}
+  }
+  function hiddenSelected(idx){
+    var grid=$('signGrid_iqc'); if(!grid)return '';
+    var sel=qsa('select',grid)[idx]; var txt=(sel&&sel.selectedOptions&&sel.selectedOptions[0]&&sel.selectedOptions[0].textContent)||'';
+    return /선택|없음/.test(txt)?'':cleanName(txt);
+  }
+  function people(){
+    var writer=hiddenSelected(0)||currentUser();
+    var reviewer=hiddenSelected(1)||'임흥배';
+    var approver=hiddenSelected(2)||'임흥배';
+    return {writer:{name:writer,title:titleOf(writer,'품질 부장')},reviewer:{name:reviewer,title:titleOf(reviewer,'품질 부장')},approver:{name:approver,title:titleOf(approver,'품질 부장')}};
+  }
+  function set(id,v){var el=$(id);if(el)el.textContent=v||'-';}
+  function sync(){
+    if(!$('iqcQcFlow'))return;
+    var p=people(), wt=p.writer.name+' / '+(p.writer.title||'품질 부장'), rt=p.reviewer.name+' / '+(p.reviewer.title||'품질 부장'), at=p.approver.name+' / '+(p.approver.title||'품질 부장');
+    set('iqcFlowWriter',wt); set('iqcFlowReviewer',rt); set('iqcFlowApprover',at);
+    if(!$('iqcFlowWriterDate').dataset.fixed){$('iqcFlowWriterDate').textContent=now();$('iqcFlowWriterDate').dataset.fixed='1';}
+    set('rIqcWriter',p.writer.name); set('rIqcWriterT',p.writer.title||'품질 부장');
+    set('rIqcReviewer',p.reviewer.name); set('rIqcReviewerT',p.reviewer.title||'품질 부장');
+    set('rIqcApprover',p.approver.name); set('rIqcApproverT',p.approver.title||'품질 부장');
+    var body=$('iqcApprovalLogBody');
+    if(body)body.innerHTML='<tr><td>작성</td><td>'+wt+'</td><td><span class="status pass">작성완료</span></td><td>'+($('iqcFlowWriterDate').textContent||now())+'</td></tr><tr><td>검토</td><td>'+rt+'</td><td><span class="status hold">검토대기</span></td><td>-</td></tr><tr><td>승인</td><td>'+at+'</td><td><span class="status hold">승인대기</span></td><td>-</td></tr>';
+  }
+  function forceHideOld(){
+    var grid=$('signGrid_iqc'); if(grid){grid.classList.add('namo-hidden-sign-grid');}
+    var warn=$('signWarn_iqc'); if(warn){warn.classList.add('namo-hidden-sign-grid');}
+  }
+  function boot(){forceHideOld();sync();setTimeout(sync,300);setTimeout(sync,900);setTimeout(sync,1800);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.addEventListener('load',boot);
+  document.addEventListener('change',function(e){if(e.target&&e.target.closest&&e.target.closest('#signGrid_iqc'))setTimeout(sync,0);},true);
+  setInterval(sync,2500);
 })();
 </script>
 
