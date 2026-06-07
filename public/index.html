@@ -4482,7 +4482,165 @@ function printLabel(){
     '  },true);\n',
     '})();\n',
     '<\/scr'+'ipt>',
-    '</body></html>'
+    '
+
+<script id="namo-login-writer-auto-all-pages-final">
+/* ════════════════════════════════════════════════════════════════
+   로그인 당사자 작성자 자동 적용 최종 패치
+   적용 범위: 입고검사(IQC), 공정검사(PQC), 출하검사(OQC), 부적합/교육 등
+   - 신규 작성 화면 진입/로그인/초기화/페이지 이동 시 작성자 = 현재 로그인 사용자
+   - 초기화 버튼을 누르지 않아도 작성자 셀렉트에 본인 성명/직책 자동 표시
+   - 다른 계정 로그인 시 해당 계정의 성명/직책으로 자동 변경
+   - 기존 저장 문서 수정 모드(__qmsEditSignRecord)는 저장된 작성자를 우선 보존
+════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  var TYPES = ['iqc','pqc','oqc','nc','training'];
+  var ROLES = ['writer','reviewer','approver'];
+
+  function $(id){ return document.getElementById(id); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(s){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];});
+  }
+  function appState(){ return window.state || window.appState || {}; }
+  function rawCurrentUser(){
+    var s = appState();
+    return s.currentUser || s.user || window.currentUser || window.loginUser || window.userInfo || null;
+  }
+  function normalizeUser(u){
+    if(!u) return null;
+    var email = txt(u.email || u.mail || '');
+    var name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || u.label || email || u.id || '');
+    var id = txt(u.id || u.userId || u.uid || email || name);
+    if(!name && !id) return null;
+    return {
+      id:id || name,
+      name:name || id,
+      department:txt(u.department || u.dept || u.team || u.org || ''),
+      title:txt(u.title || u.position || u.rank || u.jobTitle || u.roleName || ''),
+      email:email,
+      role:txt(u.role || u.userRole || '')
+    };
+  }
+  function me(){ return normalizeUser(rawCurrentUser()); }
+  function keyOf(u){ return txt(u && (u.id || u.email || u.name)); }
+  function label(u){ return (u.name || '-') + ' / ' + (u.title || u.department || '-'); }
+  function isEditMode(type){
+    return !!(window.__qmsEditSignRecord && window.__qmsEditSignRecord[type]);
+  }
+  function isAdminUser(u){
+    var s = txt((u&&u.id)+' '+(u&&u.name)+' '+(u&&u.email)+' '+(u&&u.role)+' '+(u&&u.title)).toLowerCase();
+    return s.indexOf('admin') >= 0 || s.indexOf('관리자') >= 0;
+  }
+  function ensureTypeList(){
+    document.querySelectorAll('[id^="signGrid_"]').forEach(function(el){
+      var t = el.id.replace(/^signGrid_/,'');
+      if(t && TYPES.indexOf(t) < 0) TYPES.push(t);
+    });
+  }
+  function ensureWriterOption(type, user){
+    var sel = $('sg_' + type + '_writer');
+    if(!sel || !user) return false;
+    var key = keyOf(user);
+    var found = null;
+    Array.from(sel.options || []).forEach(function(o){
+      if(!found && (txt(o.value) === key || txt(o.dataset && o.dataset.email) === user.email || txt(o.dataset && o.dataset.name) === user.name)) found = o;
+    });
+    if(!found){
+      found = document.createElement('option');
+      found.value = key;
+      sel.insertBefore(found, sel.options && sel.options.length ? sel.options[0].nextSibling : null);
+    }
+    found.textContent = label(user);
+    found.dataset.name = user.name || '';
+    found.dataset.title = user.title || '';
+    found.dataset.department = user.department || '';
+    found.dataset.email = user.email || '';
+    found.dataset.role = user.role || '';
+    sel.value = found.value;
+    sel.disabled = true;
+    sel.setAttribute('data-namo-login-writer-fixed','1');
+    return true;
+  }
+  function refreshWriterSub(type, user){
+    var sub = $('sg_' + type + '_writer_sub');
+    if(sub && user){
+      sub.textContent = txt((user.department || '') + ' ' + (user.title || '')) || user.email || '-';
+    }
+  }
+  function applyOne(type){
+    var user = me();
+    if(!user || isEditMode(type)) return;
+    var grid = $('signGrid_' + type);
+    if(!grid) return;
+
+    if(!$('sg_' + type + '_writer') && typeof window.buildSignGrid === 'function'){
+      try{ window.buildSignGrid(type); }catch(e){}
+    }
+    if(ensureWriterOption(type, user)){
+      refreshWriterSub(type, user);
+      try{
+        if(typeof window.restoreSignaturePad === 'function') window.restoreSignaturePad(type,'writer',window.signature데이터 ? window.signature데이터(type,'writer') : {});
+      }catch(e){}
+      var sel = $('sg_' + type + '_writer');
+      if(sel){
+        sel.dispatchEvent(new Event('change',{bubbles:true}));
+        sel.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+    }
+  }
+  function applyAll(){
+    ensureTypeList();
+    TYPES.forEach(applyOne);
+  }
+  function scheduleApply(){
+    [0,80,250,600,1200].forEach(function(ms){ setTimeout(applyAll, ms); });
+  }
+
+  var oldRefresh = window.qmsRefreshSignatures;
+  window.qmsRefreshSignatures = function(){
+    var r;
+    if(typeof oldRefresh === 'function') r = oldRefresh.apply(this, arguments);
+    scheduleApply();
+    return r;
+  };
+  var oldBuild = window.buildSignGrid;
+  if(typeof oldBuild === 'function'){
+    window.buildSignGrid = function(type){
+      var r = oldBuild.apply(this, arguments);
+      setTimeout(function(){ applyOne(type); },0);
+      return r;
+    };
+  }
+  var oldClear = window.clearSign;
+  if(typeof oldClear === 'function'){
+    window.clearSign = function(type){
+      var r = oldClear.apply(this, arguments);
+      setTimeout(function(){ applyOne(type); },0);
+      return r;
+    };
+  }
+
+  var lastKey = '';
+  setInterval(function(){
+    var u = me();
+    var k = keyOf(u);
+    if(k && k !== lastKey){ lastKey = k; scheduleApply(); }
+  }, 700);
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(t && t.closest && t.closest('.nav-item,[data-go],[data-page],#loginBtn,#signupBtn,.btn.light,.btn.pri')) scheduleApply();
+  }, true);
+  document.addEventListener('DOMContentLoaded', scheduleApply);
+  window.addEventListener('load', scheduleApply);
+  scheduleApply();
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
