@@ -2696,74 +2696,75 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:900px){#page-training .namo-modern-grid.four,#page-training .namo-training-main-grid{grid-template-columns:1fr;}#page-training .namo-card-title-row{align-items:flex-start;flex-direction:column;}#page-training .namo-main-content-area textarea{font-size:17px!important;min-height:210px!important;}}
 
 
-/* 교육보고서 UI 최종 교체 v20260608-2: 글자축소/개선사항삭제/저장버튼/바정렬 */
-#page-training .namo-simple-actions{
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-}
-#page-training .namo-simple-actions .btn{
-  height:38px!important;
-  min-width:82px!important;
-  padding:0 16px!important;
-  border-radius:10px!important;
-  font-size:13px!important;
-  font-weight:850!important;
+
+/* 교육보고서 최종 요청 반영 v20260608-2
+   - 저장 버튼 표시
+   - 개선사항/후속조치 UI 삭제
+   - 교육 주요 내용 글자 크기 정상화
+   - 교육 주요 내용/사진 영역 비율 정리 */
+#page-training .namo-simple-actions #trainingSave{
+  display:inline-flex!important;
+  min-width:86px!important;
+  background:#0b57d0!important;
+  color:#fff!important;
+  border:1.5px solid #0b57d0!important;
+  box-shadow:0 8px 16px rgba(11,87,208,.18)!important;
 }
 #page-training .namo-simple-actions #trainingReset{
   display:inline-flex!important;
-  order:1!important;
-  background:#fff!important;
-  color:#1d4ed8!important;
-  border:1.5px solid #93c5fd!important;
 }
-#page-training .namo-simple-actions #trainingSave{
-  display:inline-flex!important;
-  order:2!important;
-  min-width:82px!important;
-  background:#0b57d0!important;
-  color:#fff!important;
-  border:1.5px solid #0b57d0!important;
-  box-shadow:0 6px 14px rgba(11,87,208,.16)!important;
-}
-#page-training .namo-simple-actions #trainingPrint{
-  display:inline-flex!important;
-  order:3!important;
-  min-width:82px!important;
-  background:#0b57d0!important;
-  color:#fff!important;
-  border:1.5px solid #0b57d0!important;
-}
-#page-training .namo-simple-actions #trainingCopyBtn,
-#page-training .namo-simple-actions #trainingCsv{display:none!important;}
-#page-training .namo-training-main-grid{
+#page-training .namo-training-main-grid,
+#page-training .namo-training-main-grid-clean{
   display:grid!important;
-  grid-template-columns:minmax(0,1.38fr) minmax(320px,.62fr)!important;
+  grid-template-columns:minmax(0,2.25fr) minmax(360px,.75fr)!important;
   gap:16px!important;
   align-items:stretch!important;
 }
-#page-training .namo-main-content-area{grid-column:auto!important;}
-#page-training #trainingContent{
-  min-height:220px!important;
-  font-size:15px!important;
-  line-height:1.55!important;
-  font-weight:650!important;
+#page-training .namo-main-content-area textarea{
+  min-height:190px!important;
+  height:190px!important;
+  font-size:14px!important;
+  line-height:1.62!important;
+  font-weight:700!important;
   color:#0f172a!important;
   padding:14px 16px!important;
   border-color:#3b82f6!important;
   background:#fff!important;
 }
-#page-training #trainingContent::placeholder{
-  font-size:15px!important;
-  line-height:1.55!important;
-  font-weight:650!important;
-  color:#6b7280!important;
+#page-training .namo-main-content-area textarea::placeholder{
+  font-size:14px!important;
+  line-height:1.62!important;
+  font-weight:600!important;
+  color:#64748b!important;
 }
-#page-training .namo-remark-area,
-#page-training #trainingRemark,
-#page-training #trainingRemarkCount{display:none!important;}
+#page-training .namo-remark-area{display:none!important;}
+#page-training .namo-photo-area .namo-modern-photo-box{
+  min-height:190px!important;
+  height:190px!important;
+  display:flex!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+#page-training .namo-photo-area .namo-simple-upload{
+  min-width:138px!important;
+  height:100%!important;
+}
+#page-training .namo-photo-area .training-photo-preview{
+  flex:1!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(92px,1fr))!important;
+  gap:10px!important;
+  margin-top:0!important;
+  align-content:start!important;
+  overflow:auto!important;
+}
+#page-training .namo-photo-area .training-photo-card img{height:86px!important;}
 @media(max-width:1100px){
-  #page-training .namo-training-main-grid{grid-template-columns:1fr!important;}
+  #page-training .namo-training-main-grid,
+  #page-training .namo-training-main-grid-clean{grid-template-columns:1fr!important;}
+  #page-training .namo-main-content-area textarea,
+  #page-training .namo-photo-area .namo-modern-photo-box{height:auto!important;min-height:170px!important;}
 }
 
 </style>
@@ -3568,10 +3569,10 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
             <div class="namo-simple-actions">
               <button class="btn light" id="trainingReset" type="button">초기화</button>
-              <button class="btn pri" id="trainingSave" type="button">저장</button>
               <button class="btn pri" id="trainingPrint" type="button">인쇄</button>
               <button class="btn light namo-hidden-control" id="trainingCopyBtn" type="button">복사</button>
               <button class="btn ghost namo-hidden-control" id="trainingCsv" type="button">CSV 다운로드</button>
+              <button class="btn pri" id="trainingSave" type="button">저장</button>
             </div>
           </div>
 
@@ -3621,10 +3622,15 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
           <section class="namo-simple-card namo-training-main-card">
             <h2>3. 교육 주요 내용</h2>
-            <div class="namo-training-main-grid">
-              <div class="namo-simple-field namo-main-content-area"><label>교육 주요 내용 <b>*</b></label><textarea id="trainingContent" placeholder="교육 주요 내용을 입력하세요.&#10;예)&#10;• 화학물질관리법 개정사항&#10;• MSDS 확인 및 관리 방법&#10;• 유해화학물질 취급 절차&#10;• 개인보호구(PPE) 착용 기준"></textarea><div class="namo-char-note"><span id="trainingContentCount">0</span> / 2000</div></div>
-              <textarea id="trainingRemark" class="namo-hidden-control" aria-hidden="true"></textarea><span id="trainingRemarkCount" class="namo-hidden-control">0</span>
-              <div class="namo-simple-field namo-photo-area"><label>교육사진</label>
+            <div class="namo-training-main-grid namo-training-main-grid-clean">
+              <div class="namo-simple-field namo-main-content-area">
+                <label>교육 주요 내용 <b>*</b></label>
+                <textarea id="trainingContent" placeholder="교육 주요 내용을 입력하세요.&#10;예)&#10;• 화학물질관리법 개정사항&#10;• MSDS 확인 및 관리 방법&#10;• 유해화학물질 취급 절차&#10;• 개인보호구(PPE) 착용 기준"></textarea>
+                <div class="namo-char-note"><span id="trainingContentCount">0</span> / 2000</div>
+              </div>
+              <textarea id="trainingRemark" class="namo-hidden-control"></textarea><span id="trainingRemarkCount" class="namo-hidden-control">0</span>
+              <div class="namo-simple-field namo-photo-area">
+                <label>교육사진</label>
                 <div class="training-photo-box namo-simple-photo-box namo-modern-photo-box">
                   <input type="file" id="trainingPhotoFiles" accept="image/*" multiple>
                   <div class="namo-simple-upload">📷 사진 추가<br><span>JPG, PNG 파일 / 최대 5장</span></div>
