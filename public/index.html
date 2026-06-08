@@ -3500,41 +3500,15 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
           </section>
 
-          <section class="namo-simple-card namo-qc-approval-card">
-            <h2>4. 결재 <span>(수입검사 작성·검토·승인 구조)</span></h2>
-            <div class="namo-qc-approval-flow" id="trainingQcFlow">
-              <div class="namo-qc-approval-step writer">
-                <div class="namo-qc-step-head">
-                  <span>작성</span>
-                  <em id="trainingWriterState">작성</em>
-                </div>
-                <strong>작성자</strong>
-                <p id="trainingWriterText">임흥배 / 품질관리팀</p>
-                <small>2024-06-04 10:30</small>
-              </div>
-              <i aria-hidden="true">→</i>
-              <div class="namo-qc-approval-step reviewer">
-                <div class="namo-qc-step-head">
-                  <span>검토</span>
-                  <em id="trainingReviewerState">대기</em>
-                </div>
-                <strong>검토자</strong>
-                <p id="trainingReviewerText">이길섭 / 연구소</p>
-                <small>검토 대기</small>
-              </div>
-              <i aria-hidden="true">→</i>
-              <div class="namo-qc-approval-step approver">
-                <div class="namo-qc-step-head">
-                  <span>승인</span>
-                  <em id="trainingApproverState">대기</em>
-                </div>
-                <strong>승인자</strong>
-                <p id="trainingApproverText">박병구 / 대표이사</p>
-                <small>승인 대기</small>
+          <section class="namo-simple-card namo-qc-approval-card namo-standard-approval-card">
+            <h2>4. 결재 <span>(작성·검토·승인)</span></h2>
+            <div class="sp mt14 namo-standard-approval-box">
+              <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
+              <div class="cb" style="padding:12px 14px;">
+                <div class="sign-warning" id="signWarn_training">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
+                <div class="sign-grid" id="signGrid_training"></div>
               </div>
             </div>
-            <div class="sign-warning" id="signWarn_training">등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>
-            <div class="sign-grid namo-sign-grid namo-hidden-sign-grid" id="signGrid_training"></div>
           </section>
 
           <section class="namo-simple-card" id="trainingListSimple">
@@ -15126,5 +15100,72 @@ document.addEventListener('DOMContentLoaded',async()=>{
   [300,900,1800,3200].forEach(function(ms){setTimeout(boot,ms);});
 })();
 </script>
+
+
+<!-- Namo QMS Unified Approval Structure Patch: all approval documents use the same 작성/검토/승인 UI -->
+<style id="namo-unified-approval-style">
+  .namo-standard-approval-card .sp,
+  .namo-qc-approval-card .sp{margin-top:0!important;}
+  #page-training .namo-qc-approval-flow,
+  #page-training .namo-qc-approval-flow > i,
+  #page-training .namo-qc-approval-step,
+  #page-training .training-approval-flow,
+  #page-training .training-approval-log,
+  #page-training .training-approval-step,
+  #page-training .training-approval-card{display:none!important;}
+  #page-training .namo-qc-approval-card h2 span{font-size:13px!important;color:var(--t3)!important;font-weight:700!important;}
+  #page-training #signGrid_training{display:grid!important;visibility:visible!important;opacity:1!important;}
+  #page-training #signGrid_training.namo-hidden-sign-grid{display:grid!important;}
+  .sign-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;}
+  .sign-box{border:1.5px solid var(--bd2)!important;border-radius:var(--r2)!important;overflow:hidden!important;background:#fff!important;}
+  .sign-box-hdr{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:7px 11px!important;background:var(--s2)!important;border-bottom:1px solid var(--bd)!important;}
+  .sign-box-role{font-size:11px!important;font-weight:800!important;color:var(--t3)!important;text-transform:uppercase!important;letter-spacing:.3px!important;}
+  .sign-box-body{padding:10px 11px!important;}
+  .sign-file-wrap{display:block!important;margin-top:8px!important;border:1.5px dashed var(--bd2)!important;border-radius:var(--r2)!important;background:#fff!important;padding:8px!important;}
+  .sign-file-preview{height:94px!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+  .sign-file-empty{color:var(--t3)!important;font-size:12px!important;font-weight:600!important;}
+  @media(max-width:900px){.sign-grid{grid-template-columns:1fr!important;}}
+</style>
+<script id="namo-unified-approval-script">
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function normalizeTrainingApproval(){
+    var card=document.querySelector('#page-training .namo-qc-approval-card');
+    if(!card) return;
+    card.classList.add('namo-standard-approval-card');
+    var h=card.querySelector('h2');
+    if(h) h.innerHTML='4. 결재 <span>(작성·검토·승인)</span>';
+    var oldFlow=byId('trainingQcFlow');
+    if(oldFlow) oldFlow.remove();
+    var warn=byId('signWarn_training');
+    var grid=byId('signGrid_training');
+    if(!grid){
+      grid=document.createElement('div');
+      grid.className='sign-grid';
+      grid.id='signGrid_training';
+    }
+    grid.classList.remove('namo-hidden-sign-grid');
+    grid.classList.add('sign-grid');
+    var sp=grid.closest('.sp');
+    if(!sp){
+      sp=document.createElement('div');
+      sp.className='sp mt14 namo-standard-approval-box';
+      sp.innerHTML='<div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div><div class="cb" style="padding:12px 14px;"></div>';
+      var cb=sp.querySelector('.cb');
+      if(warn) cb.appendChild(warn); else cb.insertAdjacentHTML('beforeend','<div class="sign-warning" id="signWarn_training">⚠️ 등록된 회원이 없습니다. 먼저 회원을 등록해주세요.</div>');
+      cb.appendChild(grid);
+      card.appendChild(sp);
+    }
+    document.querySelectorAll('#signGrid_training > .namo-approval-actions,#signGrid_training > .namo-report-actbar,#signGrid_training > .namo-training-approval-bar').forEach(function(el){el.remove();});
+    if(typeof window.qmsRefreshSignatures==='function'){
+      try{window.qmsRefreshSignatures();}catch(e){}
+    }
+  }
+  function boot(){normalizeTrainingApproval();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [100,300,800,1600,3200].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+
 </body>
 </html>
