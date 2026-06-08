@@ -4257,7 +4257,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
+    `
 
 <!-- 교육보고서 목록 8컬럼 최종 강제 수정 v20260608-3 -->
 <style id="namo-training-list-force-style-v20260608-3">
@@ -4338,7 +4338,7 @@ function printLabel(){
 })();
 </script>
 
-</body></html>'
+</body></html>`
   ].join('');
   w.document.open();
   w.document.write(html);
