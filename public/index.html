@@ -6117,8 +6117,7 @@ function renderTrainingTable(){
     const approver=pickName(r.approver,r.signApprover?.name,wfStatus?.approverName);
     const dept=personText(r.dept||r.department||r.targetDept);
     const target=personText(r.attendees||r.targetPerson||r.target||'');
-    const deptTarget=target==='-'?dept:`${dept}<br><small>${esc(target).replace(/
-/g,'<br>')}</small>`;
+    const deptTarget=target==='-'?dept:`${dept}<br><small>${esc(target).replace(/\n/g,'<br>')}</small>`;
     const remark=personText(r.remark||r.period||r.trainingPeriod);
     return `<tr>
       <td class="c-no">${i+1}</td>
