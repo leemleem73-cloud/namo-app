@@ -4338,6 +4338,128 @@ function printLabel(){
 })();
 <\/script>
 
+
+<!-- 교육보고서 목록/결재란 최종 수정 v20260608-approval-list-final -->
+<style id="namo-training-list-approval-final-style">
+#page-training .training-report-list-table{table-layout:fixed!important;width:100%!important;min-width:980px!important;}
+#page-training .training-report-list-table th,
+#page-training .training-report-list-table td{vertical-align:middle!important;text-align:center!important;}
+#page-training .training-report-list-table th:nth-child(1),#page-training .training-report-list-table td.c-no{width:70px!important;}
+#page-training .training-report-list-table th:nth-child(2),#page-training .training-report-list-table td.c-date{width:140px!important;white-space:nowrap!important;font-weight:900!important;color:#1f334d!important;}
+#page-training .training-report-list-table th:nth-child(3),#page-training .training-report-list-table td.c-title{width:300px!important;font-weight:900!important;line-height:1.45!important;}
+#page-training .training-report-list-table th:nth-child(4),#page-training .training-report-list-table td.c-target{width:160px!important;line-height:1.45!important;}
+#page-training .training-report-list-table th:nth-child(5),
+#page-training .training-report-list-table th:nth-child(6),
+#page-training .training-report-list-table th:nth-child(7),
+#page-training .training-report-list-table td.c-person{width:125px!important;white-space:nowrap!important;}
+#page-training .training-report-list-table th:nth-child(8),#page-training .training-report-list-table td.c-remark{width:150px!important;}
+#page-training .training-report-list-table .training-no-link{border:0;background:transparent;color:#2563eb;font-weight:900;cursor:pointer;text-align:center;padding:0;white-space:normal;}
+#page-training .training-report-list-table .training-no-link:hover{text-decoration:underline;text-underline-offset:3px;}
+#page-training .training-report-list-table .ai{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;flex-wrap:nowrap!important;}
+#page-training .training-report-list-table .sb.edit{display:inline-flex!important;align-items:center!important;justify-content:center!important;background:var(--pris)!important;color:var(--pri)!important;}
+#page-training .training-report-list-table .sb.del{display:inline-flex!important;align-items:center!important;justify-content:center!important;background:var(--ers)!important;color:var(--er)!important;}
+</style>
+<script id="namo-training-list-approval-final-script">
+(function(){
+  'use strict';
+  function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
+  function id(v){ return document.getElementById(v); }
+  function txt(v,d){ v=String(v==null?'':v).trim(); return v || (d||'-'); }
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function isBadName(v){ var t=String(v==null?'':v).trim().toLowerCase(); return !t || t==='-' || t==='login-user' || t==='로그인 사용자' || t==='undefined' || t==='null'; }
+  function dateKey(r){ return String((r&&(r.date||r.trainingDate||r.createdAt||r.updatedAt))||''); }
+  function onlyDate(v){
+    v=String(v==null?'':v).trim();
+    if(!v) return '-';
+    var m=v.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return m[1]+'-'+m[2]+'-'+m[3];
+    var d=new Date(v); if(!isNaN(d.getTime())) return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return v;
+  }
+  function appState(){ try{return window.state||state||{};}catch(e){return window.state||{};} }
+  function currentUserName(){
+    var s=appState(); var u=s.currentUser||window.currentUser||{};
+    return txt(u.name||u.username||u.userName||u.fullName||u.displayName||'', '임흥배');
+  }
+  function getReports(){
+    try{ if(typeof window.readTrainingReports==='function') return (window.readTrainingReports()||[]).filter(Boolean); }catch(e){}
+    try{ var s=appState(); if(Array.isArray(s.trainingReports)) return s.trainingReports.filter(Boolean); }catch(e){}
+    try{ var a=JSON.parse(localStorage.getItem('namo_qms_training_reports_v2')||'[]'); if(Array.isArray(a)) return a.filter(Boolean); }catch(e){}
+    return [];
+  }
+  function roleName(r,role){
+    var signKey = role==='writer'?'signWriter':(role==='reviewer'?'signReviewer':'signApprover');
+    var direct = role==='writer'?'writer':(role==='reviewer'?'reviewer':'approver');
+    var name = txt((r&&r[signKey]&&r[signKey].name)||r&&r[direct]||'','');
+    if(role==='writer') return isBadName(name)?'-':name.split('/')[0].trim();
+    var writer = txt((r&&r.signWriter&&r.signWriter.name)||r&&r.writer||'','');
+    if(isBadName(name) || name===writer) name = currentUserName();
+    return txt(String(name).split('/')[0].trim(), currentUserName());
+  }
+  function oldOrderNoMap(all){
+    var asc=all.slice().sort(function(a,b){
+      var da=new Date(dateKey(a)||0).getTime(); var db=new Date(dateKey(b)||0).getTime();
+      if(isNaN(da)) da=0; if(isNaN(db)) db=0;
+      if(da!==db) return da-db;
+      return String(a.id||a.no||'').localeCompare(String(b.id||b.no||''));
+    });
+    var map={}; asc.forEach(function(r,i){ map[String(r.id||r.no||r.reportNo||i)] = i+1; });
+    return map;
+  }
+  function reportKey(r,i){ return String(r.id||r.no||r.reportNo||i); }
+  function render(){
+    var tb=id('trainingTable'); if(!tb) return;
+    var all=getReports().filter(function(r){
+      var st=String((r&&r.status)||'').toUpperCase();
+      return !(r&& (r.deleted||r.isDeleted||r._deleted||st==='DELETED'||st==='TRASH'||st==='REMOVED'));
+    });
+    var noMap=oldOrderNoMap(all);
+    var list=all.slice().sort(function(a,b){
+      var da=new Date(dateKey(a)||0).getTime(); var db=new Date(dateKey(b)||0).getTime();
+      if(isNaN(da)) da=0; if(isNaN(db)) db=0;
+      return db-da;
+    }).slice(0,5);
+    tb.innerHTML=list.length?list.map(function(r,i){
+      var key=reportKey(r,i);
+      var rid=esc(r.id||r.no||r.reportNo||key);
+      var title=txt(r.title||r.trainingTitle||r.name||'-');
+      var dept=txt(r.dept||r.department||r.targetDept||r.trainingDept||'-');
+      var writer=roleName(r,'writer');
+      var reviewer=roleName(r,'reviewer');
+      var approver=roleName(r,'approver');
+      return '<tr>'+ 
+        '<td class="c-no">'+esc(noMap[key]||'')+'</td>'+ 
+        '<td class="c-date">'+esc(onlyDate(r.date||r.trainingDate||r.createdAt))+'</td>'+ 
+        '<td class="c-title"><button class="training-no-link" data-action="editTraining" data-id="'+rid+'" type="button">'+esc(title)+'</button></td>'+ 
+        '<td class="c-target">'+esc(dept)+'</td>'+ 
+        '<td class="c-person">'+esc(writer)+'</td>'+ 
+        '<td class="c-person">'+esc(reviewer)+'</td>'+ 
+        '<td class="c-person">'+esc(approver)+'</td>'+ 
+        '<td class="c-remark"><div class="ai"><button class="sb edit" data-action="editTraining" data-id="'+rid+'" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="'+rid+'" type="button">삭제</button></div></td>'+ 
+      '</tr>';
+    }).join(''):'<tr><td colspan="8" style="text-align:center;padding:34px;color:#94a3b8;font-weight:900;">교육 보고서가 없습니다.</td></tr>';
+  }
+  function setHeader(){
+    var thead=document.querySelector('#page-training .training-report-list-table thead tr');
+    if(thead) thead.innerHTML='<th>No</th><th>교육일자</th><th>교육명</th><th>교육부서</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th>';
+  }
+  function setApprovalDefaults(){
+    var cur=currentUserName();
+    ['reviewer','approver'].forEach(function(role){
+      var sel=id('sg_training_'+role); if(!sel) return;
+      var opts=Array.prototype.slice.call(sel.options||[]);
+      var found=opts.find(function(o){ return String(o.textContent||'').indexOf(cur)>=0 || String(o.dataset&&o.dataset.name||'')===cur; });
+      if(found && (!sel.value || String(sel.options[sel.selectedIndex]&&sel.options[sel.selectedIndex].textContent||'').indexOf('박지현')>=0)){
+        sel.value=found.value;
+        try{ sel.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){}
+      }
+    });
+  }
+  window.renderTrainingTable=render;
+  ready(function(){ setHeader(); setApprovalDefaults(); render(); });
+  [100,300,800,1600,3000].forEach(function(ms){ setTimeout(function(){try{setHeader();setApprovalDefaults();render();}catch(e){}},ms); });
+})();
+</script>
+
 </body></html>`
   ].join('');
   w.document.open();
@@ -15272,250 +15394,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function boot(){normalizeTrainingApproval();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   [100,300,800,1600,3200].forEach(function(ms){setTimeout(boot,ms);});
-})();
-</script>
-
-
-<!-- NAMO Training Report List Final Fix: No/date/dept/approval/actions -->
-<style id="namo-training-report-list-final-style">
-#page-training .training-report-list-table{
-  width:100%!important;
-  table-layout:fixed!important;
-  border-collapse:collapse!important;
-}
-#page-training .training-report-list-table th,
-#page-training .training-report-list-table td{
-  text-align:center!important;
-  vertical-align:middle!important;
-  white-space:nowrap!important;
-}
-#page-training .training-report-list-table th{
-  height:48px!important;
-  background:#f8fafc!important;
-  color:#475569!important;
-  font-size:13px!important;
-  font-weight:900!important;
-  letter-spacing:0!important;
-  text-transform:none!important;
-}
-#page-training .training-report-list-table td{
-  height:58px!important;
-  font-size:14px!important;
-  color:#334155!important;
-}
-#page-training .training-report-list-table th:nth-child(1),
-#page-training .training-report-list-table td:nth-child(1){width:70px!important;}
-#page-training .training-report-list-table th:nth-child(2),
-#page-training .training-report-list-table td:nth-child(2){width:140px!important;}
-#page-training .training-report-list-table th:nth-child(3),
-#page-training .training-report-list-table td:nth-child(3){width:220px!important;}
-#page-training .training-report-list-table th:nth-child(4),
-#page-training .training-report-list-table td:nth-child(4){width:180px!important;}
-#page-training .training-report-list-table th:nth-child(5),
-#page-training .training-report-list-table td:nth-child(5),
-#page-training .training-report-list-table th:nth-child(6),
-#page-training .training-report-list-table td:nth-child(6),
-#page-training .training-report-list-table th:nth-child(7),
-#page-training .training-report-list-table td:nth-child(7){width:130px!important;}
-#page-training .training-report-list-table th:nth-child(8),
-#page-training .training-report-list-table td:nth-child(8){width:150px!important;}
-#page-training .training-report-list-table .training-no-link{
-  border:none!important;
-  background:transparent!important;
-  color:#2563eb!important;
-  font-weight:900!important;
-  cursor:pointer!important;
-  padding:0!important;
-}
-#page-training .training-report-list-table .training-no-link:hover{
-  text-decoration:underline!important;
-  text-underline-offset:2px!important;
-}
-#page-training .training-report-list-table .training-actions{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:6px!important;
-}
-#page-training .training-report-list-table .sb{
-  height:32px!important;
-  min-width:54px!important;
-  border-radius:8px!important;
-  font-size:13px!important;
-  font-weight:900!important;
-}
-#page-training .training-report-list-table .sb.edit{
-  background:#e8effd!important;
-  color:#1a56db!important;
-}
-#page-training .training-report-list-table .sb.del{
-  background:#fde9e9!important;
-  color:#c52b2b!important;
-}
-</style>
-<script id="namo-training-report-list-final-fix">
-(function(){
-  'use strict';
-  if(window.__namoTrainingReportListFinalFix) return;
-  window.__namoTrainingReportListFinalFix = true;
-
-  function $(id){ return document.getElementById(id); }
-  function txt(v){ return String(v == null ? '' : v).trim(); }
-  function esc(v){
-    return txt(v).replace(/[&<>"']/g,function(s){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];
-    });
-  }
-  function onlyDate(v){
-    var s = txt(v);
-    if(!s) return '-';
-    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if(m) return m[1] + '-' + m[2] + '-' + m[3];
-    var d = new Date(s);
-    if(!isNaN(d.getTime())){
-      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    }
-    return s;
-  }
-  function timeValue(r){
-    var d = new Date(r && (r.date || r.trainingDate || r.createdAt || r.updatedAt || 0));
-    var t = d.getTime();
-    return isNaN(t) ? 0 : t;
-  }
-  function getReports(){
-    try{
-      if(typeof window.readTrainingReports === 'function'){
-        var a = window.readTrainingReports() || [];
-        if(Array.isArray(a)) return a.slice();
-      }
-    }catch(e){}
-    try{
-      var b = JSON.parse(localStorage.getItem('trainingReports') || '[]');
-      if(Array.isArray(b)) return b.slice();
-    }catch(e){}
-    try{
-      if(window.state && Array.isArray(window.state.trainingReports)) return window.state.trainingReports.slice();
-    }catch(e){}
-    return [];
-  }
-  function cleanName(v){
-    var s = txt(v);
-    if(!s || s === '-') return '-';
-    s = s.replace(/\((작성|검토|승인)\)/g,'');
-    s = s.replace(/\b(작성|검토|승인)\b/g,'');
-    s = s.split('/')[0];
-    s = s.split('›')[0];
-    s = s.replace(/\s+/g,' ').trim();
-    return s || '-';
-  }
-  function wfRecord(r){
-    try{
-      if(typeof window.getWf === 'function' && typeof window.docId === 'function'){
-        return window.getWf('training', window.docId('training', r), r) || null;
-      }
-    }catch(e){}
-    return null;
-  }
-  function approvalName(r, role){
-    r = r || {};
-    var signKey = role === 'writer' ? 'signWriter' : role === 'reviewer' ? 'signReviewer' : 'signApprover';
-    var wf = wfRecord(r) || {};
-    var wfKey = role + 'Name';
-    var candidates = [
-      r[signKey] && r[signKey].name,
-      r[signKey] && r[signKey].displayText,
-      wf[wfKey],
-      r[role],
-      r[role + 'Name'],
-      role === 'writer' ? r.createdBy : ''
-    ];
-    for(var i=0;i<candidates.length;i++){
-      var n = cleanName(candidates[i]);
-      if(n && n !== '-') return n;
-    }
-    return '-';
-  }
-  function deptText(r){
-    return cleanName(r && (r.dept || r.department || r.targetDept || r.trainingDept || r.targetDepartment));
-  }
-  function titleText(r){
-    return txt(r && (r.title || r.name || r.trainingTitle || r.educationName || r.no || r.reportNo)) || '-';
-  }
-  function matchesFilters(r){
-    var qEl = $('trainingSearch');
-    var typeEl = $('trainingTypeFilter');
-    var statusEl = $('trainingStatusFilter');
-    var q = txt(qEl && qEl.value).toLowerCase();
-    var type = txt(typeEl && typeEl.value);
-    var status = txt(statusEl && statusEl.value);
-    if(type && txt(r.type || r.category || r.trainingType) !== type) return false;
-    if(status && txt(r.result || r.status || '완료') !== status) return false;
-    if(q){
-      var hay = [
-        r.no, r.reportNo, r.title, r.name, r.trainingTitle, r.educationName,
-        r.instructor, r.dept, r.department, r.targetDept, r.trainingDept,
-        r.writer, r.reviewer, r.approver
-      ].map(txt).join(' ').toLowerCase();
-      if(hay.indexOf(q) < 0) return false;
-    }
-    return true;
-  }
-  function setHeader(){
-    var tr = document.querySelector('#page-training .training-report-list-table thead tr');
-    if(tr) tr.innerHTML = '<th>No</th><th>교육일자</th><th>교육명</th><th>교육부서</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th>';
-  }
-
-  window.renderTrainingTable = function(){
-    setHeader();
-    var tb = $('trainingTable');
-    if(!tb) return;
-
-    var all = getReports().slice().sort(function(a,b){
-      var ta = timeValue(a), tbv = timeValue(b);
-      if(ta !== tbv) return ta - tbv;
-      return txt(a.id || a.no).localeCompare(txt(b.id || b.no));
-    });
-
-    var noMap = {};
-    all.forEach(function(r, idx){
-      noMap[txt(r.id || r.no || r.reportNo || idx)] = idx + 1;
-    });
-
-    var list = all.filter(matchesFilters).sort(function(a,b){
-      var ta = timeValue(a), tbv = timeValue(b);
-      if(ta !== tbv) return tbv - ta;
-      return txt(b.id || b.no).localeCompare(txt(a.id || a.no));
-    }).slice(0,5);
-
-    tb.innerHTML = list.length ? list.map(function(r, i){
-      var key = txt(r.id || r.no || r.reportNo || i);
-      var id = esc(r.id || r.no || key);
-      return '<tr>' +
-        '<td>' + esc(noMap[key] || '-') + '</td>' +
-        '<td>' + esc(onlyDate(r.date || r.trainingDate || r.createdAt)) + '</td>' +
-        '<td><button class="training-no-link" data-action="editTraining" data-id="' + id + '" type="button">' + esc(titleText(r)) + '</button></td>' +
-        '<td>' + esc(deptText(r)) + '</td>' +
-        '<td>' + esc(approvalName(r, 'writer')) + '</td>' +
-        '<td>' + esc(approvalName(r, 'reviewer')) + '</td>' +
-        '<td>' + esc(approvalName(r, 'approver')) + '</td>' +
-        '<td><div class="training-actions"><button class="sb edit" data-action="editTraining" data-id="' + id + '" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="' + id + '" type="button">삭제</button></div></td>' +
-      '</tr>';
-    }).join('') : '<tr><td colspan="8" style="text-align:center;padding:34px;color:#94a3b8;font-weight:900;">교육 보고서가 없습니다.</td></tr>';
-  };
-
-  function boot(){
-    try{ setHeader(); window.renderTrainingTable(); }catch(e){}
-  }
-  ['trainingSearch','trainingTypeFilter','trainingStatusFilter'].forEach(function(id){
-    var el = $(id);
-    if(!el || el.__namoTrainingListBound) return;
-    el.__namoTrainingListBound = true;
-    el.addEventListener('input', boot);
-    el.addEventListener('change', boot);
-  });
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-  [100,500,1200,2500].forEach(function(ms){ setTimeout(boot, ms); });
 })();
 </script>
 
