@@ -2657,6 +2657,12 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   vertical-align:middle!important;
 }
 
+
+/* 교육보고서 목록 F5 초기 깜빡임 방지 + 결재상태/수정/삭제 한 줄 표시 */
+body:not(.namo-training-ready) #trainingTable .c-remark .ai{visibility:hidden!important;}
+#trainingTable .training-status-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+#trainingTable .training-status-actions .training-appr-state,
+#trainingTable .training-status-actions .training-status-chip{margin-right:2px;}
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -15719,7 +15725,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         '<td class="c-person">'+esc(r.writer||'-')+'</td>'+
         '<td class="c-person">임흥배</td>'+
         '<td class="c-person">임흥배</td>'+
-        '<td class="c-remark"><div class="ai"><button class="sb edit" data-action="editTraining" data-id="'+esc(id)+'" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="'+esc(id)+'" type="button">삭제</button></div></td>'+
+        '<td class="c-remark"><div class="training-status-actions"><span class="training-appr-state '+esc(approvalStatus(r))+'">'+esc(statusLabel(approvalStatus(r)))+'</span><button class="sb edit" data-action="editTraining" data-id="'+esc(id)+'" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="'+esc(id)+'" type="button">삭제</button></div></td>'+
       '</tr>';
     }).join(''):'<tr><td colspan="8" style="text-align:center;padding:34px;color:#94a3b8;font-weight:900;">교육 보고서가 없습니다.</td></tr>';
   }
@@ -15813,7 +15819,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function boot(){
     try{setApprovalSelects();}catch(e){}
-    try{renderTrainingTableFinal();}catch(e){}
+    try{renderTrainingTableFinal();document.body&&document.body.classList.add('namo-training-ready');}catch(e){}
     try{ensureApprovalPage();}catch(e){}
     try{if($('page-approval-inbox')&&$('page-approval-inbox').classList.contains('active'))renderApprovalInboxFinal();}catch(e){}
   }
