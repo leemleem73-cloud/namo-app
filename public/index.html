@@ -16367,6 +16367,72 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+
+<!-- NMC_UNIFIED_APPROVAL_WORKORDER_GHOST_REMOVE_V4_START -->
+<script id="nmc-unified-approval-workorder-ghost-remove-v4">
+(function(){
+  'use strict';
+  var WO_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','namoWorkOrders','productionWorkOrders','prodWorkOrders','worklog','namoWorklog'];
+  var STATUS_STORE='namo_unified_approval_inbox_status_v20260527';
+  function read(k,fb){try{var v=localStorage.getItem(k);return v?JSON.parse(v):fb}catch(e){return fb}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v||[]))}catch(e){}}
+  function val(o,ks){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&String(v).trim()!==''&&String(v).trim()!=='-')return String(v).trim()}return ''}
+  function id(o){return val(o,['id','no','woNo','workOrderNo','orderNo','nmcWoNo','docNo','lot','prodLot','productionLot','nmcProdLot','lotNo','batchNo'])}
+  function isGhost(o){
+    if(!o||typeof o!=='object')return true;
+    var st=String(o.status||o.state||'').toUpperCase();
+    if(o.deleted||o.isDeleted||o._deleted||st==='DELETED'||st==='TRASH'||st==='REMOVED')return true;
+    var title=val(o,['title','name','subject']);
+    var hasId=id(o);
+    var hasProduct=val(o,['product','prodName','productName','item','itemName','nmcProdName']);
+    var hasQty=val(o,['plan','planQty','plannedQty','nmcPlanQty','qty','quantity','orderQty']);
+    var hasMaterial=Array.isArray(o.materials)&&o.materials.length>0;
+    var hasReceiver=val(o,['receiver','receivers','recv','recvNames','recvTargets','receiverNames','toNames','receiveNames']);
+    /* 결재함에만 생긴 빈 행: 제목이 작업지시서이고, 번호/제품/LOT/수량/수신자가 모두 없음 */
+    if(!hasId&&!hasProduct&&!hasQty&&!hasMaterial&&!hasReceiver)return true;
+    if(title==='작업지시서'&&!hasProduct&&!hasQty&&!hasMaterial&&!hasReceiver&&(!hasId||/^workorder-\d+$/i.test(hasId)))return true;
+    return false;
+  }
+  function cleanArray(a){
+    var seen={},out=[];
+    (Array.isArray(a)?a:[]).forEach(function(o,i){
+      if(isGhost(o))return;
+      var k=id(o)||('idx-'+i);
+      if(seen[k])return;
+      seen[k]=1; out.push(o);
+    });
+    return out;
+  }
+  function cleanStorage(){
+    WO_KEYS.forEach(function(k){
+      var a=read(k,null);
+      if(Array.isArray(a)){var b=cleanArray(a); if(b.length!==a.length)write(k,b);}
+    });
+    try{
+      var m=JSON.parse(localStorage.getItem(STATUS_STORE)||'{}'), changed=false;
+      Object.keys(m).forEach(function(k){if(/^workorder:workorder-\d+$/i.test(k)){delete m[k];changed=true;}});
+      if(changed)localStorage.setItem(STATUS_STORE,JSON.stringify(m));
+    }catch(e){}
+  }
+  function cleanRuntime(){
+    var s=(typeof state==='object'&&state)||window.state||{};
+    WO_KEYS.concat(['workorders','workOrders','nmcWorkOrders']).forEach(function(k){
+      try{if(Array.isArray(window[k]))window[k]=cleanArray(window[k]);}catch(e){}
+      try{if(s&&Array.isArray(s[k]))s[k]=cleanArray(s[k]);}catch(e){}
+    });
+  }
+  function refresh(){
+    cleanStorage(); cleanRuntime();
+    try{if(typeof window.namoRenderUnifiedApprovalInbox==='function')window.namoRenderUnifiedApprovalInbox();}catch(e){}
+    try{if(typeof window.renderApprovalInbox==='function')window.renderApprovalInbox();}catch(e){}
+    try{if(typeof window.namoRenderProductionEnterprise==='function')window.namoRenderProductionEnterprise();}catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
+  [300,900,1800,3500].forEach(function(t){setTimeout(refresh,t)});
+})();
+</script>
+<!-- NMC_UNIFIED_APPROVAL_WORKORDER_GHOST_REMOVE_V4_END -->
 </body>
 </html>
 
