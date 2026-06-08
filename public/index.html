@@ -16369,3 +16369,69 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 </body>
 </html>
+
+<!-- NAMO HOTFIX 20260608: 결재함은 교육보고서 전용이 아니라 전체 통합 결재 목록으로만 표시 -->
+<script>
+(function(){
+  'use strict';
+  function $(id){return document.getElementById(id)}
+  function qa(s,root){return Array.prototype.slice.call((root||document).querySelectorAll(s))}
+  function q(s,root){return (root||document).querySelector(s)}
+  function showUnifiedApproval(){
+    try{
+      var page=$('page-approval-inbox');
+      if(!page){
+        var content=q('.content');
+        if(content){page=document.createElement('section');page.className='page';page.id='page-approval-inbox';content.appendChild(page)}
+      }
+      qa('.nav-item[data-page]').forEach(function(b){b.classList.remove('active')});
+      qa('.nav-item[data-page="approval-inbox"]').forEach(function(b){b.classList.add('active')});
+      qa('.page').forEach(function(p){p.classList.remove('active')});
+      if(page)page.classList.add('active');
+      if(typeof window.namoRenderUnifiedApprovalInbox==='function'){
+        window.renderApprovalInbox=window.namoRenderUnifiedApprovalInbox;
+        window.renderApprovalInboxFinal=window.namoRenderUnifiedApprovalInbox;
+        window.namoRenderUnifiedApprovalInbox();
+      }else if(typeof window.renderApprovalInbox==='function'){
+        window.renderApprovalInbox();
+      }
+      fixLabels();
+    }catch(e){console.warn('[unified approval hotfix]',e)}
+  }
+  function fixLabels(){
+    var page=$('page-approval-inbox'); if(!page)return;
+    var bc=q('.ph-bc',page); if(bc)bc.innerHTML='결재함 <span class="sep">›</span> 전체 문서';
+    var sub=q('.ph-sub',page); if(sub)sub.textContent='검토대기 · 승인대기 · 완료 · 반려 상태의 모든 문서를 통합 결재 목록에서 처리합니다.';
+    var title=q('.approval-inbox-title',page); if(title)title.textContent='결재함';
+    var hero=q('.approval-inbox-sub',page); if(hero)hero.innerHTML='수입검사 · 공정검사 · 출하검사 · 성적서 · 부적합 보고서 · CAPA · 교육보고서 · 작업지시서를 모두 통합 조회합니다.';
+    var h3=q('.approval-board-head h3',page); if(h3)h3.textContent='결재 목록';
+    qa('.approval-board-head .tag',page).forEach(function(t){t.textContent='전체 문서 작성 · 검토 · 승인'});
+  }
+  function replaceApprovalNav(){
+    qa('.nav-item[data-page="approval-inbox"]').forEach(function(old){
+      if(old.__unifiedOnlyNav)return;
+      var btn=old.cloneNode(true);
+      btn.__unifiedOnlyNav=true;
+      btn.setAttribute('data-page','approval-inbox');
+      btn.innerHTML='<span class="nav-icon">☑</span><span>결재함</span>';
+      btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();showUnifiedApproval();},true);
+      old.parentNode.replaceChild(btn,old);
+    });
+  }
+  function install(){
+    if(typeof window.namoRenderUnifiedApprovalInbox==='function'){
+      window.renderApprovalInbox=window.namoRenderUnifiedApprovalInbox;
+      window.renderApprovalInboxFinal=window.namoRenderUnifiedApprovalInbox;
+    }
+    replaceApprovalNav();
+    if($('page-approval-inbox')&&$('page-approval-inbox').classList.contains('active'))showUnifiedApproval();
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest&&e.target.closest('.nav-item[data-page="approval-inbox"]');
+    if(nav){e.preventDefault();e.stopPropagation();showUnifiedApproval();}
+  },false);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+  [100,300,700,1200,2000,3500,6000,9000].forEach(function(t){setTimeout(install,t)});
+  window.namoShowUnifiedApprovalInbox=showUnifiedApproval;
+})();
+</script>
