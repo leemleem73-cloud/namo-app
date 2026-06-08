@@ -2457,6 +2457,21 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #page-training .namo-simple-list-tools{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
 #page-training .namo-simple-list-tools .training-search{flex:1;display:flex;align-items:center;gap:8px;height:40px;border:1.5px solid #cfd9e8;border-radius:10px;background:#fff;padding:0 12px;}
 #page-training .namo-simple-list-tools .training-search input{border:none;outline:none;flex:1;font-weight:700;}
+
+/* 교육보고서 목록 컬럼 정리: No / 교육일자 / 교육명 / 교육부서(대상자) / 작성 / 검토 / 승인 / 비고 */
+#page-training .training-report-list-table{table-layout:fixed!important;width:100%!important;}
+#page-training .training-report-list-table th,#page-training .training-report-list-table td{vertical-align:top!important;}
+#page-training .training-report-list-table th:nth-child(1),#page-training .training-report-list-table td.c-no{width:54px!important;text-align:center!important;}
+#page-training .training-report-list-table th:nth-child(2),#page-training .training-report-list-table td.c-date{width:120px!important;white-space:nowrap!important;}
+#page-training .training-report-list-table th:nth-child(3),#page-training .training-report-list-table td.c-title{width:260px!important;font-weight:900!important;line-height:1.45!important;}
+#page-training .training-report-list-table th:nth-child(4),#page-training .training-report-list-table td.c-target{width:250px!important;line-height:1.5!important;}
+#page-training .training-report-list-table td.c-target small{display:block;margin-top:3px;color:#64748b;font-size:12px;font-weight:700;line-height:1.45;}
+#page-training .training-report-list-table th:nth-child(5),#page-training .training-report-list-table th:nth-child(6),#page-training .training-report-list-table th:nth-child(7),#page-training .training-report-list-table td.c-person{width:92px!important;text-align:center!important;white-space:nowrap!important;}
+#page-training .training-report-list-table th:nth-child(8),#page-training .training-report-list-table td.c-remark{width:220px!important;line-height:1.45!important;font-weight:800!important;}
+#page-training .training-report-list-table td.c-remark .ai{justify-content:flex-start!important;}
+#page-training .training-report-list-table .training-no-link{border:none;background:transparent;color:#2563eb;font-weight:900;cursor:pointer;line-height:1.45;text-align:left;padding:0;white-space:normal;}
+#page-training .training-report-list-table .training-no-link:hover{text-decoration:underline;text-underline-offset:3px;}
+
 #page-training .namo-simple-list-tools select{height:40px;border:1.5px solid #cfd9e8;border-radius:10px;background:#fff;padding:0 12px;font-weight:800;color:#334155;}
 #page-training .namo-simple-table-wrap{border:1px solid #dbe3ee;border-radius:10px;overflow:auto;}
 #page-training .namo-simple-table{min-width:980px;}
@@ -3518,7 +3533,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <select id="trainingTypeFilter"><option value="">전체 구분</option><option>사내교육</option><option>외부교육</option><option>안전교육</option><option>품질교육</option><option>직무교육</option><option>법정교육</option><option>기타</option></select>
               <select id="trainingStatusFilter"><option value="">전체 결과</option><option>완료</option><option>예정</option><option>미실시</option></select>
             </div>
-            <div class="training-table-wrap namo-simple-table-wrap"><table class="training-modern-table namo-simple-table"><thead><tr><th>No.</th><th>교육명</th><th>교육일자</th><th>교육구분</th><th>작성자</th><th>결재상태</th><th>작성일</th><th>작업</th></tr></thead><tbody id="trainingTable"></tbody></table></div>
+            <div class="training-table-wrap namo-simple-table-wrap"><table class="training-modern-table namo-simple-table training-report-list-table"><thead><tr><th>No</th><th>교육일자</th><th>교육명</th><th>교육부서(대상자)</th><th>작성</th><th>검토</th><th>승인</th><th>비고</th></tr></thead><tbody id="trainingTable"></tbody></table></div>
           </section>
 
           <section class="namo-simple-card namo-hidden-control" id="trainingPreviewCard">
@@ -6092,13 +6107,29 @@ async function deleteTraining(id){
 function renderTrainingTable(){
   const tb=$('trainingTable');
   if(!tb)return;
-  const list=readTrainingReports().slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,5);
+  const list=readTrainingReports().slice().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,5);
+  const personText=(v)=>String(v||'').trim()||'-';
+  const pickName=(...vals)=>personText(vals.find(v=>String(v||'').trim()));
   tb.innerHTML=list.length?list.map((r,i)=>{
     const wfStatus=(typeof getWf==='function'&&typeof docId==='function')?getWf('training',docId('training',r),r):null;
-    const st=(typeof statusBadge==='function'&&wfStatus)?statusBadge(wfStatus.status):trainingBadge(r.result||'완료');
-    const writer=esc(r.writer||r.signWriter?.name||'');
-    const created=esc((r.updatedAt||r.createdAt||r.date||'').slice(0,16));
-    return `<tr><td>${i+1}</td><td>${esc(r.title||'-')}</td><td>${esc(r.date||'-')}</td><td>${esc(r.type||'-')}</td><td>${writer}</td><td>${st}</td><td>${created}</td><td><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">보기</button></td></tr>`;
+    const writer=pickName(r.writer,r.signWriter?.name,r.createdBy);
+    const reviewer=pickName(r.reviewer,r.signReviewer?.name,wfStatus?.reviewerName);
+    const approver=pickName(r.approver,r.signApprover?.name,wfStatus?.approverName);
+    const dept=personText(r.dept||r.department||r.targetDept);
+    const target=personText(r.attendees||r.targetPerson||r.target||'');
+    const deptTarget=target==='-'?dept:`${dept}<br><small>${esc(target).replace(/
+/g,'<br>')}</small>`;
+    const remark=personText(r.remark||r.period||r.trainingPeriod);
+    return `<tr>
+      <td class="c-no">${i+1}</td>
+      <td class="c-date">${esc(r.date||'-')}</td>
+      <td class="c-title"><button class="training-no-link" data-action="editTraining" data-id="${esc(r.id)}" type="button">${esc(r.title||'-')}</button></td>
+      <td class="c-target">${deptTarget}</td>
+      <td class="c-person">${esc(writer)}</td>
+      <td class="c-person">${esc(reviewer)}</td>
+      <td class="c-person">${esc(approver)}</td>
+      <td class="c-remark"><div>${esc(remark)}</div><div class="ai mt8"><button class="sb edit" data-action="editTraining" data-id="${esc(r.id)}" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="${esc(r.id)}" type="button">삭제</button></div></td>
+    </tr>`;
   }).join(''):(typeof eRow==='function'?eRow(8,'교육 보고서가 없습니다.'):'<tr><td colspan="8" style="text-align:center;padding:22px;">교육 보고서가 없습니다.</td></tr>');
 }
 function downloadTrainingCsv(){const headers=['교육일자','보고서번호','구분','교육명','장소','강사','대상부서','교육시간','참석자','불참자','교육내용','평가방법','평가결과','비고','교육사진수','교육사진설명','작성자','검토자','승인자'];const rows=readTrainingReports().map(r=>[r.date,r.no,r.type,r.title,r.place,r.instructor,r.dept,r.hours,r.attendees,r.absentees,r.content,r.evalMethod,r.result,r.remark,Array.isArray(r.photos)?r.photos.length:0,Array.isArray(r.photos)?r.photos.map(p=>p.caption||'').join('; '):'',r.writer,r.reviewer,r.approver]);const body=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+body],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='교육보고서_'+trainingToday()+'.csv';a.click();URL.revokeObjectURL(a.href);}
@@ -14142,7 +14173,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.nmc-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.nmc-detail-cell{border:1px solid #dbe3ee;border-radius:10px;padding:9px 11px;background:#f8fafc}.nmc-detail-cell b{display:block;font-size:10px;color:#64748b;margin-bottom:4px}.nmc-detail-cell span{font-size:13px;font-weight:900;color:#0f172a}'+
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
-      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
+      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>'+
+      '</body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -15159,195 +15191,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   function boot(){normalizeTrainingApproval();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  [100,300,800,1600,3200].forEach(function(ms){setTimeout(boot,ms);});
-})();
-</script>
-
-
-
-<!-- NAMO 교육보고서 목록/결재권한 최종 통합 교체 v20260608 -->
-<style id="namo-training-final-list-and-approval-style">
-#page-training .namo-simple-table{min-width:1040px!important;}
-#page-training .namo-simple-table th,
-#page-training .namo-simple-table td{text-align:left!important;vertical-align:top!important;}
-#page-training .namo-simple-table th:nth-child(1),#page-training .namo-simple-table td:nth-child(1){width:120px!important;white-space:nowrap!important;}
-#page-training .namo-simple-table th:nth-child(2),#page-training .namo-simple-table td:nth-child(2){width:180px!important;}
-#page-training .namo-simple-table th:nth-child(3),#page-training .namo-simple-table td:nth-child(3){width:140px!important;}
-#page-training .namo-simple-table th:nth-child(4),#page-training .namo-simple-table td:nth-child(4),
-#page-training .namo-simple-table th:nth-child(5),#page-training .namo-simple-table td:nth-child(5),
-#page-training .namo-simple-table th:nth-child(6),#page-training .namo-simple-table td:nth-child(6){width:140px!important;}
-#page-training .namo-simple-table th:nth-child(7),#page-training .namo-simple-table td:nth-child(7){min-width:220px!important;}
-#page-training .namo-training-remark-cell{display:flex!important;flex-direction:column!important;gap:7px!important;align-items:flex-start!important;}
-#page-training .namo-training-remark-text{font-weight:750!important;color:#334155!important;line-height:1.45!important;word-break:break-word!important;}
-#page-training .namo-training-row-actions{display:flex!important;gap:6px!important;align-items:center!important;justify-content:flex-start!important;}
-#page-training .namo-training-row-actions .sb{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:26px!important;padding:0 10px!important;border-radius:7px!important;font-size:11px!important;font-weight:900!important;}
-#page-training .namo-training-row-actions .sb.del{display:inline-flex!important;background:var(--ers)!important;color:var(--er)!important;}
-#page-training .namo-training-row-actions .sb.edit{display:inline-flex!important;background:var(--pris)!important;color:var(--pri)!important;}
-#page-training .namo-training-row-actions .sb.del:hover{background:var(--er)!important;color:#fff!important;}
-#page-training .namo-training-row-actions .sb.edit:hover{background:var(--pri)!important;color:#fff!important;}
-#page-training #trainingTypeFilter,
-#page-training #trainingStatusFilter{display:none!important;}
-#page-training .namo-simple-list-tools .training-search input::placeholder{color:#64748b!important;}
-#page-training .namo-training-approval-rule-note{margin-top:8px;font-size:11px;font-weight:800;color:#64748b;line-height:1.5;}
-</style>
-<script id="namo-training-final-list-and-approval-js">
-(function(){
-  if(window.__NAMO_TRAINING_FINAL_LIST_APPROVAL_20260608__) return;
-  window.__NAMO_TRAINING_FINAL_LIST_APPROVAL_20260608__=true;
-  function byId(id){return document.getElementById(id);}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim();}
-  function dateOnly(v){
-    v=clean(v);
-    if(!v) return '-';
-    var m=v.match(/^(\d{4}-\d{2}-\d{2})/);
-    return m?m[1]:v;
-  }
-  function personLabel(r,role){
-    r=r||{};
-    var cap=role.charAt(0).toUpperCase()+role.slice(1);
-    var obj=r['sign'+cap]||r[role+'Sign']||{};
-    var arr=[];
-    if(obj && typeof obj==='object'){
-      if(obj.name) arr.push(obj.name);
-      if(obj.department) arr.push(obj.department);
-      if(obj.dept) arr.push(obj.dept);
-      if(obj.title) arr.push(obj.title);
-      if(obj.position) arr.push(obj.position);
-    }
-    var direct=r[role]||r[role+'Name']||'';
-    var label=arr.length?arr.join(' / '):direct;
-    return clean(label)||'-';
-  }
-  function personName(v){
-    v=clean(v);
-    if(!v||v==='-') return '-';
-    return clean(v.split('/')[0])||v;
-  }
-  function titleFromLabel(label){
-    label=clean(label);
-    var parts=label.split('/').map(clean).filter(Boolean);
-    var tail=parts.length?parts[parts.length-1]:label;
-    return tail;
-  }
-  function rankTitle(label){
-    var t=titleFromLabel(label);
-    var order=[
-      ['대표이사',10],['대표',10],['사장',10],['부사장',9],['전무',8],['상무',8],['이사',7],
-      ['부장',6],['차장',5],['과장',4],['대리',3],['주임',2],['사원',1],['연구원',1]
-    ];
-    for(var i=0;i<order.length;i++){ if(t.indexOf(order[i][0])>-1) return order[i][1]; }
-    return 0;
-  }
-  function optionLabel(opt){return clean((opt&&opt.textContent)||'');}
-  function setSelectMinimum(sel,minRank){
-    if(!sel || !sel.options) return;
-    var firstValid=-1;
-    Array.prototype.forEach.call(sel.options,function(opt,idx){
-      var label=optionLabel(opt);
-      var isBlank=!label || label==='-' || opt.value==='';
-      var ok=isBlank || rankTitle(label)>=minRank;
-      opt.hidden=!ok;
-      opt.disabled=!ok;
-      if(ok && !isBlank && firstValid<0) firstValid=idx;
-    });
-    if(sel.selectedIndex>=0){
-      var cur=sel.options[sel.selectedIndex];
-      if(cur && cur.disabled && firstValid>=0) sel.selectedIndex=firstValid;
-    }else if(firstValid>=0){
-      sel.selectedIndex=firstValid;
-    }
-  }
-  function syncTrainingApprovalRule(){
-    var writer=byId('sg_training_writer');
-    var reviewer=byId('sg_training_reviewer');
-    var approver=byId('sg_training_approver');
-    if(!writer || !reviewer || !approver) return;
-    var wLabel=writer.options && writer.selectedIndex>=0 ? optionLabel(writer.options[writer.selectedIndex]) : '';
-    var writerRank=rankTitle(wLabel);
-    var reviewerMin=writerRank>=6 ? 7 : 6;
-    var approverMin=7;
-    setSelectMinimum(reviewer,reviewerMin);
-    setSelectMinimum(approver,approverMin);
-    var box=document.querySelector('#signGrid_training');
-    if(box && !document.getElementById('namoTrainingApprovalRuleNote')){
-      var note=document.createElement('div');
-      note.id='namoTrainingApprovalRuleNote';
-      note.className='namo-training-approval-rule-note';
-      box.insertAdjacentElement('afterend',note);
-    }
-    var noteEl=document.getElementById('namoTrainingApprovalRuleNote');
-    if(noteEl){
-      noteEl.textContent = writerRank>=6 ? '결재 규칙: 작성자가 부장 이상이면 검토자는 이사 이상, 승인자는 이사 이상입니다.' : '결재 규칙: 작성은 누구나 가능, 검토자는 부장 이상, 승인자는 이사 이상입니다.';
-    }
-  }
-  function getTrainingList(){
-    try{ if(typeof window.readTrainingReports==='function') return window.readTrainingReports()||[]; }catch(e){}
-    try{ if(window.state && Array.isArray(window.state.trainingReports)) return window.state.trainingReports; }catch(e){}
-    try{ return JSON.parse(localStorage.getItem('namo_qms_training_reports_v2')||'[]')||[]; }catch(e){ return []; }
-  }
-  function filteredTrainingList(list){
-    var q=clean((byId('trainingSearch')||{}).value).toLowerCase();
-    if(!q) return list;
-    return list.filter(function(r){
-      var w=personLabel(r,'writer'), rv=personLabel(r,'reviewer'), ap=personLabel(r,'approver');
-      var hay=[r.date,r.title,r.dept,r.remark,w,rv,ap].map(function(x){return clean(x).toLowerCase();}).join(' ');
-      return hay.indexOf(q)>-1;
-    });
-  }
-  function renderTrainingHeader(){
-    var tb=byId('trainingTable');
-    if(!tb) return;
-    var table=tb.closest('table');
-    if(table && table.tHead){
-      table.tHead.innerHTML='<tr><th>일자</th><th>교육명</th><th>대상부서</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr>';
-    }
-    var search=byId('trainingSearch');
-    if(search) search.placeholder='교육명, 대상부서, 작성자, 검토자, 승인자 검색';
-  }
-  window.renderTrainingTable=function(){
-    var tb=byId('trainingTable');
-    if(!tb) return;
-    renderTrainingHeader();
-    var list=getTrainingList().slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));}).slice(0,5);
-    list=filteredTrainingList(list);
-    tb.innerHTML=list.length?list.map(function(r){
-      var id=esc(r.id||r.no||r.reportNo||'');
-      var writer=personName(personLabel(r,'writer'));
-      var reviewer=personName(personLabel(r,'reviewer'));
-      var approver=personName(personLabel(r,'approver'));
-      var remark=clean(r.remark||r.note||r.memo||'');
-      return '<tr data-id="'+id+'">'+
-        '<td>'+esc(dateOnly(r.date||r.trainingDate||r.educationDate))+'</td>'+
-        '<td><button class="training-no-link" data-action="editTraining" data-id="'+id+'" type="button">'+esc(r.title||r.educationName||'-')+'</button></td>'+
-        '<td>'+esc(r.dept||r.targetDept||'-')+'</td>'+
-        '<td>'+esc(writer)+'</td>'+
-        '<td>'+esc(reviewer)+'</td>'+
-        '<td>'+esc(approver)+'</td>'+
-        '<td><div class="namo-training-remark-cell"><div class="namo-training-remark-text">'+esc(remark||'-')+'</div><div class="namo-training-row-actions"><button class="sb edit" data-action="editTraining" data-id="'+id+'" type="button">수정</button><button class="sb del" data-action="deleteTraining" data-id="'+id+'" type="button">삭제</button></div></div></td>'+
-      '</tr>';
-    }).join(''):'<tr><td colspan="7" style="text-align:center!important;padding:30px;color:#94a3b8;font-weight:900;">교육보고서가 없습니다.</td></tr>';
-  };
-  function boot(){
-    renderTrainingHeader();
-    syncTrainingApprovalRule();
-    try{ window.renderTrainingTable(); }catch(e){}
-  }
-  document.addEventListener('change',function(e){
-    if(e.target && /^sg_training_(writer|reviewer|approver)$/.test(e.target.id||'')) setTimeout(function(){syncTrainingApprovalRule();try{ if(typeof window.renderTrainingPreview==='function') window.renderTrainingPreview(); }catch(err){} try{window.renderTrainingTable();}catch(err){}},0);
-  },true);
-  document.addEventListener('input',function(e){
-    if(e.target && e.target.id==='trainingSearch') try{window.renderTrainingTable();}catch(err){}
-  },true);
-  document.addEventListener('click',function(e){
-    var btn=e.target.closest && e.target.closest('[data-action]');
-    if(!btn) return;
-    var act=btn.getAttribute('data-action');
-    var id=btn.getAttribute('data-id');
-    if(act==='editTraining' && typeof window.editTraining==='function'){ e.preventDefault(); window.editTraining(id); }
-    if(act==='deleteTraining' && typeof window.deleteTraining==='function'){ e.preventDefault(); window.deleteTraining(id); }
-  },true);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   [100,300,800,1600,3200].forEach(function(ms){setTimeout(boot,ms);});
 })();
 </script>
