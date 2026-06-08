@@ -3632,8 +3632,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="namo-simple-field namo-photo-area">
                 <label>교육사진</label>
                 <div class="training-photo-box namo-simple-photo-box namo-modern-photo-box">
-                  <input type="file" id="trainingPhotoFiles" accept="image/*" multiple>
-                  <div class="namo-simple-upload">📷 사진 추가<br><span>JPG, PNG 파일 / 최대 5장</span></div>
+                  <input type="file" id="trainingPhotoFiles" class="training-photo-native-input" accept="image/jpeg,image/png" multiple>
+                  <div class="namo-simple-upload" id="trainingPhotoAddBtn" role="button" tabindex="0" aria-label="교육사진 추가">📷 사진 추가<br><span>JPG, PNG 파일 / 최대 5장</span></div>
                   <div class="training-photo-preview" id="trainingPhotoPreview"></div>
                 </div>
               </div>
@@ -16219,5 +16219,95 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+
+<!-- 교육사진 첨부 안정화 패치 vFinal -->
+<script>
+(function(){
+  if(window.__namoTrainingPhotoFinalPatch) return;
+  window.__namoTrainingPhotoFinalPatch = true;
+
+  function byId(id){ return document.getElementById(id); }
+  function isTrainingPageTarget(el){ return !!(el && el.closest && el.closest('#page-training')); }
+  function ensurePhotoArray(){
+    if(!Array.isArray(window.trainingPhotoDrafts)) window.trainingPhotoDrafts = [];
+    return window.trainingPhotoDrafts;
+  }
+  function refreshTrainingPhotoUi(){
+    try{ if(typeof window.renderTrainingPhotoCards === 'function') window.renderTrainingPhotoCards(); }catch(e){}
+    try{ if(typeof window.renderTrainingPreview === 'function') window.renderTrainingPreview(); }catch(e){}
+  }
+  function fileToDataUrl(file){
+    return new Promise(function(resolve,reject){
+      var reader = new FileReader();
+      reader.onload = function(ev){ resolve(ev && ev.target ? ev.target.result : ''); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  async function addTrainingPhotos(files){
+    var list = Array.prototype.slice.call(files || []).filter(function(file){
+      return file && (/^image\/(jpeg|png)$/i.test(file.type) || /\.(jpe?g|png)$/i.test(file.name || ''));
+    });
+    if(!list.length){
+      alert('JPG 또는 PNG 파일만 첨부할 수 있습니다.');
+      return;
+    }
+    var photos = ensurePhotoArray();
+    var remain = Math.max(0, 5 - photos.length);
+    if(remain <= 0){
+      alert('교육사진은 최대 5장까지 첨부할 수 있습니다.');
+      return;
+    }
+    if(list.length > remain){
+      alert('교육사진은 최대 5장까지 첨부할 수 있어 ' + remain + '장만 추가합니다.');
+      list = list.slice(0, remain);
+    }
+    for(var i=0;i<list.length;i++){
+      var f = list[i];
+      try{
+        var src = await fileToDataUrl(f);
+        photos.push({src:src, caption:String(f.name || '').replace(/\.[^.]+$/,'')});
+      }catch(e){
+        console.error('교육사진 읽기 실패:', f && f.name, e);
+      }
+    }
+    refreshTrainingPhotoUi();
+  }
+  function openTrainingPhotoPicker(){
+    var input = byId('trainingPhotoFiles');
+    if(!input){
+      alert('교육사진 첨부 입력창을 찾지 못했습니다. 페이지를 새로고침한 뒤 다시 시도하세요.');
+      return;
+    }
+    input.click();
+  }
+
+  document.addEventListener('click', function(e){
+    var trigger = e.target && e.target.closest && e.target.closest('#trainingPhotoAddBtn, #page-training .namo-simple-upload, #page-training .training-upload-hero');
+    if(trigger){
+      e.preventDefault();
+      e.stopPropagation();
+      openTrainingPhotoPicker();
+    }
+  }, true);
+
+  document.addEventListener('keydown', function(e){
+    var trigger = e.target && e.target.closest && e.target.closest('#trainingPhotoAddBtn, #page-training .namo-simple-upload');
+    if(trigger && (e.key === 'Enter' || e.key === ' ')){
+      e.preventDefault();
+      openTrainingPhotoPicker();
+    }
+  }, true);
+
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.id === 'trainingPhotoFiles'){
+      e.preventDefault();
+      e.stopPropagation();
+      addTrainingPhotos(e.target.files).finally(function(){ e.target.value = ''; });
+    }
+  }, true);
+})();
+</script>
 </body>
 </html>
