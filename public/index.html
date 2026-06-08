@@ -5239,15 +5239,21 @@ function setDonutSegments(key,total,parts){
 
 function isTrainingDone(r){
   const raw=[r?.status,r?.approvalStatus,r?.approval_status,r?.state,r?.result,r?.signStatus,r?.sign_status].map(v=>String(v||'')).join(' ').toLowerCase();
-  const signApprover = r?.signApprover || r?.sign_approver || r?.approver || {};
-  const signReviewer = r?.signReviewer || r?.sign_reviewer || r?.reviewer || {};
+  const signApprover = r?.signApprover || r?.sign_approver || {};
   const approvedBy = r?.approvedBy || r?.approved_by || '';
   const approvedAt = r?.approvedAt || r?.approved_at || '';
+  const approverStatus = String(signApprover.status || signApprover.approvalStatus || '').toLowerCase();
+  const approverDate = signApprover.signDate || signApprover.signedAt || signApprover.approvedAt || signApprover.date || '';
+
+  // 결재대기/검토중 문구에는 '결재'가 포함되므로 완료로 오판하지 않도록 먼저 제외합니다.
   if(/반려|reject|취소|cancel/.test(raw)) return false;
-  if(/완료|승인|approved|complete|done|closed/.test(raw)) return true;
+  if(/결재대기|검토대기|승인대기|대기|pending|requested|request|reviewed|review|검토중|검토완료/.test(raw)) return false;
+
+  // 승인자 이름이 지정된 것만으로 완료 처리하지 않고, 실제 승인 상태/승인일/완료 결과가 있을 때만 완료입니다.
+  if(/승인완료|최종승인|approved|complete|completed|done|closed/.test(raw)) return true;
+  if(raw.split(/\s+/).indexOf('완료') >= 0) return true;
   if(approvedBy || approvedAt) return true;
-  if(signApprover && (signApprover.name || signApprover.email || signApprover.date || signApprover.signedAt)) return true;
-  if(signReviewer && signApprover && (signReviewer.name || signReviewer.email) && (signApprover.name || signApprover.email)) return true;
+  if(/approved|approve|완료|승인완료/.test(approverStatus) && approverDate) return true;
   return false;
 }
 function isTrainingProgress(r){
@@ -11997,11 +12003,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var m=map[docKey(type,r)]||map[altKey(type,r)]||{};
     var raw=String(m.status||r.approvalStatus||r.approval_status||r.signStatus||r.sign_status||'').toLowerCase();
     if(['rejected','reject','반려'].indexOf(raw)>=0) return 'rejected';
-    if(['approved','approve','완료','승인완료'].indexOf(raw)>=0) return 'approved';
-    if(['reviewed','review','검토중','검토완료'].indexOf(raw)>=0) return 'reviewed';
-    if(['pending','requested','request','대기','결재대기'].indexOf(raw)>=0) return 'pending';
-    if(hasName(r.signApprover)||hasName(r.approver)) return 'approved';
-    if(hasName(r.signReviewer)||hasName(r.reviewer)) return 'reviewed';
+    if(['pending','requested','request','대기','결재대기','검토대기'].indexOf(raw)>=0) return 'pending';
+    if(['reviewed','review','검토중','검토완료','승인대기'].indexOf(raw)>=0) return 'reviewed';
+    if(['approved','approve','완료','승인완료','최종승인'].indexOf(raw)>=0) return 'approved';
+    // 승인자/검토자 이름 지정만으로는 결재 완료가 아니므로 기본값은 대기입니다.
     return 'pending';
   }
   function statusLabel(st){return {pending:'대기',reviewed:'검토중',approved:'승인완료',rejected:'반려'}[st]||'대기';}
@@ -15535,11 +15540,32 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function statusMap(){return readStore(STATUS_STORE,{});}
   function saveStatusMap(m){writeStore(STATUS_STORE,m||{});}
   function approvalStatus(r){
-    var map=statusMap(), m=map[keyFor(r)]||{};
-    var raw=String(m.status||r.approvalStatus||r.approval_status||r.signStatus||'pending').toLowerCase();
-    if(['approved','approve','완료','승인완료'].indexOf(raw)>=0)return 'approved';
-    if(['reviewed','review','검토완료','승인대기'].indexOf(raw)>=0)return 'reviewed';
-    if(['rejected','reject','반려'].indexOf(raw)>=0)return 'rejected';
+    var map=statusMap(), k=keyFor(r), m=map[k]||{};
+    var recRaw=String(r.approvalStatus||r.approval_status||r.signStatus||r.sign_status||r.status||r.state||r.result||'').toLowerCase();
+    var mapRaw=String(m.status||'').toLowerCase();
+
+    function norm(raw){
+      raw=String(raw||'').toLowerCase();
+      if(!raw) return '';
+      if(/반려|reject|rejected/.test(raw)) return 'rejected';
+      // 결재대기/검토대기/대기는 '승인' 또는 '결재'라는 단어가 있어도 완료가 아닙니다.
+      if(/결재대기|검토대기|대기|pending|requested|request/.test(raw)) return 'pending';
+      if(/승인대기|검토완료|reviewed|review/.test(raw)) return 'reviewed';
+      if(/승인완료|최종승인|approved|complete|completed/.test(raw)) return 'approved';
+      if(raw.split(/\s+/).indexOf('완료')>=0) return 'approved';
+      return '';
+    }
+
+    var recSt=norm(recRaw);
+    var mapSt=norm(mapRaw);
+
+    // 현재 보고서 데이터가 대기/검토/반려를 명시하면 이전 localStorage의 완료값보다 우선합니다.
+    if(recSt && recSt!=='approved'){
+      if(mapSt!==recSt){m.status=recSt;map[k]=m;saveStatusMap(map);}
+      return recSt;
+    }
+    if(mapSt) return mapSt;
+    if(recSt) return recSt;
     return 'pending';
   }
   function statusLabel(st){return {pending:'검토대기',reviewed:'승인대기',approved:'완료',rejected:'반려'}[st]||'검토대기';}
