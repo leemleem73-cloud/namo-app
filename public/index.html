@@ -4465,46 +4465,6 @@ function printLabel(){
 
 
 <!-- PATCH 20260610: approval inbox default=완료, remove 전체 tab, fix writer/reviewer/approver mapping only. -->
-
-<!-- WORKORDER LIST EDIT-COMPLETED DATE COLUMN PATCH v1 -->
-<script id="namo-workorder-edit-completed-date-v1">
-(function(){
-  'use strict';
-  var STORAGE_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
-  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-  function idOf(o){o=o||{};var ks=['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo'];for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&String(v).trim()!=='')return String(v).trim()}return ''}
-  function allItems(){var map={};STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(x){var id=idOf(x);if(!id)return;map[id]=Object.assign({},map[id]||{},x)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(x){var id=idOf(x);if(id)map[id]=Object.assign({},map[id]||{},x)})});return map}
-  function parseMs(v){var t=Date.parse(v||'');return isNaN(t)?0:t}
-  function fmt(v){if(!v)return '-';var d=new Date(v);var p=function(n){return String(n).padStart(2,'0')};if(!isNaN(d.getTime()))return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());return String(v).replace('T',' ').replace(/\.\d+Z?$/,'').replace(/Z$/,'').slice(0,16)||'-'}
-  function rowId(tr){var btn=q('[data-namo-wo-open],[data-nmc-wo-edit-final]',tr);return tr.getAttribute('data-nmc-wo-id')||(btn&&(btn.getAttribute('data-namo-wo-open')||btn.getAttribute('data-nmc-wo-edit-final')))||''}
-  function patchList(){
-    var page=q('#page-workorder-list'); if(!page)return;
-    var head=q('thead tr',page); if(head&&!qa('th',head).some(function(th){return th.textContent.trim()==='수정완료일자'})){
-      var ths=qa('th',head), last=ths[ths.length-1]; if(last)last.insertAdjacentHTML('beforebegin','<th>수정완료일자</th>');
-    }
-    var map=allItems();
-    var rows=qa('tbody tr',page).filter(function(tr){return !q('.namo-prod-empty',tr)});
-    rows.forEach(function(tr){
-      var id=rowId(tr), item=map[id]||{}, date=item.modifiedCompletedAt||item.editCompletedAt||item.editDoneAt||item.modifiedAt||item.lastModifiedAt||'';
-      tr.setAttribute('data-nmc-edit-sort',String(parseMs(date||item.updatedAt||item.sentAt||item.date||item.orderDate||'')));
-      var tds=qa('td',tr); if(tds.length<2)return;
-      if(tds.length===10)tds[tds.length-1].insertAdjacentHTML('beforebegin','<td class="nmc-edit-done-date">'+esc(fmt(date))+'</td>');
-      else if(tds.length>=11){var cell=tds[tds.length-2]; if(cell)cell.innerHTML=esc(fmt(date));}
-    });
-    var tb=q('tbody',page);
-    if(tb&&rows.length){
-      rows.sort(function(a,b){return Number(b.getAttribute('data-nmc-edit-sort')||0)-Number(a.getAttribute('data-nmc-edit-sort')||0)});
-      rows.forEach(function(tr,i){var first=q('td',tr); if(first)first.textContent=String(i+1); tb.appendChild(tr)});
-    }
-  }
-  function boot(){patchList();var obs=new MutationObserver(function(){setTimeout(patchList,60)});if(document.body)obs.observe(document.body,{childList:true,subtree:true});[100,400,900,1800,3500].forEach(function(t){setTimeout(patchList,t)})}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-})();
-</script>
-
 </body></html>`
   ].join('');
   w.document.open();
@@ -12357,26 +12317,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function updateStatus(id,status){STORAGE_KEYS.forEach(function(k){var a=readArr(k),changed=false; a.forEach(function(r){if(idOf(r)===String(id)){r.status=status;r.updatedAt=new Date().toLocaleString('ko-KR');changed=true;}}); if(changed)writeArr(k,a);}); ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(r){if(idOf(r)===String(id))r.status=status;});}); renderAll();}
   function kpis(){var a=allOrders();return {all:a.length,draft:a.filter(x=>cls(x.status)==='draft').length,sent:a.filter(x=>cls(x.status)==='sent').length,run:a.filter(x=>cls(x.status)==='run').length,done:a.filter(x=>['done','close'].indexOf(cls(x.status))>-1).length};}
   function kpiHtml(){var k=kpis();return '<div class="namo-prod-kpis"><div class="namo-prod-kpi"><div class="l">전체</div><div class="v">'+k.all+'</div></div><div class="namo-prod-kpi"><div class="l">작성중</div><div class="v">'+k.draft+'</div></div><div class="namo-prod-kpi"><div class="l">발송완료</div><div class="v">'+k.sent+'</div></div><div class="namo-prod-kpi"><div class="l">생산진행</div><div class="v">'+k.run+'</div></div><div class="namo-prod-kpi"><div class="l">생산완료/종결</div><div class="v">'+k.done+'</div></div></div>'}
-  function formatEditDoneDate(x){
-    var v = x && (x.modifiedCompletedAt || x.editCompletedAt || x.editDoneAt || x.modifiedAt || x.lastModifiedAt || '');
-    if(!v) return '';
-    var d = new Date(v);
-    var p = function(n){ return String(n).padStart(2,'0'); };
-    if(!isNaN(d.getTime())) return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
-    v = String(v).replace('T',' ').replace(/\.\d+Z?$/,'').replace(/Z$/,'');
-    return v.slice(0,16);
-  }
-  function editDoneMs(x){
-    var v = x && (x.modifiedCompletedAt || x.editCompletedAt || x.editDoneAt || x.modifiedAt || x.lastModifiedAt || x.updatedAt || x.sentAt || x.date || x.orderDate || '');
-    var t = Date.parse(v);
-    return isNaN(t) ? 0 : t;
-  }
-  function tableRows(mode){var a=allOrders(); if(mode==='progress')a=a.filter(x=>['sent','read','run','done','close'].indexOf(cls(x.status))>-1); if(mode==='result')a=a.filter(x=>['done','close'].indexOf(cls(x.status))>-1); a=a.slice().sort(function(a,b){return editDoneMs(b)-editDoneMs(a);}); if(!a.length)return '<tr><td colspan="'+(mode==='list'?11:10)+'" class="namo-prod-empty">표시할 작업지시서가 없습니다.</td></tr>'; return a.map(function(x,i){var p=pct(x.status);var actions='<div class="namo-prod-actions"><button class="namo-mini-btn" data-namo-wo-open="'+esc(x.id)+'">상세</button>';
+  function tableRows(mode){var a=allOrders(); if(mode==='progress')a=a.filter(x=>['sent','read','run','done','close'].indexOf(cls(x.status))>-1); if(mode==='result')a=a.filter(x=>['done','close'].indexOf(cls(x.status))>-1); if(!a.length)return '<tr><td colspan="10" class="namo-prod-empty">표시할 작업지시서가 없습니다.</td></tr>'; return a.map(function(x,i){var p=pct(x.status);var actions='<div class="namo-prod-actions"><button class="namo-mini-btn" data-namo-wo-open="'+esc(x.id)+'">상세</button>';
       if(mode==='progress'){if(cls(x.status)==='sent')actions+='<button class="namo-mini-btn primary" data-namo-wo-status="수신확인" data-id="'+esc(x.id)+'">수신확인</button>'; if(['sent','read'].indexOf(cls(x.status))>-1)actions+='<button class="namo-mini-btn primary" data-namo-wo-status="생산진행" data-id="'+esc(x.id)+'">생산시작</button>'; if(cls(x.status)==='run')actions+='<button class="namo-mini-btn primary" data-namo-wo-status="생산완료" data-id="'+esc(x.id)+'">생산완료</button>'; if(cls(x.status)==='done')actions+='<button class="namo-mini-btn" data-namo-wo-status="종결" data-id="'+esc(x.id)+'">종결</button>';}
-      actions+='</div>'; var common='<tr><td>'+(i+1)+'</td><td class="nmc-inbox-title">'+esc(x.no)+'</td><td>'+badge(x.status)+'</td><td>'+esc(x.product||'-')+'</td><td>'+esc(x.lot||'-')+'</td><td>'+esc(x.plan||'-')+'</td><td><div class="namo-progress"><div class="bar"><span style="width:'+p+'%"></span></div><b>'+p+'%</b></div></td><td>'+esc(x.receiver||'-')+'</td><td>'+esc(x.date||x.orderDate||'-')+'</td>';
-      if(mode==='list') common+='<td>'+esc(formatEditDoneDate(x)||'-')+'</td>';
-      return common+'<td>'+actions+'</td></tr>';}).join('')}
-  function pageList(){return '<section class="page" id="page-workorder-list"><div class="ph"><div><div class="ph-title">작업지시서 목록</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시서 목록</div><div class="ph-sub">작성중부터 종결까지 전체 작업지시서를 관리합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">+ 작업지시서 작성</button></div></div><div class="namo-prod-hero"><h2>Work Order List</h2><p>전자결재 없이 발송정보를 기준으로 작업지시 발행, 수신확인, 생산진행, 생산완료 상태를 관리합니다.</p></div>'+kpiHtml()+'<div class="namo-prod-table-wrap"><table class="namo-prod-table"><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th>수정완료일자</th><th>작업</th></tr></thead><tbody id="namoWoListBody"></tbody></table></div><div id="namoWoDetail" class="nmc-workorder-detail"></div></section>'}
+      actions+='</div>'; return '<tr><td>'+(i+1)+'</td><td class="nmc-inbox-title">'+esc(x.no)+'</td><td>'+badge(x.status)+'</td><td>'+esc(x.product||'-')+'</td><td>'+esc(x.lot||'-')+'</td><td>'+esc(x.plan||'-')+'</td><td><div class="namo-progress"><div class="bar"><span style="width:'+p+'%"></span></div><b>'+p+'%</b></div></td><td>'+esc(x.receiver||'-')+'</td><td>'+esc(x.date||x.orderDate||'-')+'</td><td>'+actions+'</td></tr>';}).join('')}
+  function pageList(){return '<section class="page" id="page-workorder-list"><div class="ph"><div><div class="ph-title">작업지시서 목록</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시서 목록</div><div class="ph-sub">작성중부터 종결까지 전체 작업지시서를 관리합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">+ 작업지시서 작성</button></div></div><div class="namo-prod-hero"><h2>Work Order List</h2><p>전자결재 없이 발송정보를 기준으로 작업지시 발행, 수신확인, 생산진행, 생산완료 상태를 관리합니다.</p></div>'+kpiHtml()+'<div class="namo-prod-table-wrap"><table class="namo-prod-table"><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th>작업</th></tr></thead><tbody id="namoWoListBody"></tbody></table></div><div id="namoWoDetail" class="nmc-workorder-detail"></div></section>'}
   function pageProgress(){return '<section class="page" id="page-production-progress"><div class="ph"><div><div class="ph-title">생산진행 현황</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산진행 현황</div><div class="ph-sub">발송된 작업지시서를 기준으로 수신확인, 생산시작, 생산완료를 처리합니다.</div></div></div><div class="namo-flow"><div class="namo-flow-step"><div class="namo-flow-no">1</div><div><div class="namo-flow-t">발송완료</div><div class="namo-flow-s">작업지시 발행</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">2</div><div><div class="namo-flow-t">수신확인</div><div class="namo-flow-s">생산 담당 확인</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">3</div><div><div class="namo-flow-t">생산진행</div><div class="namo-flow-s">작업 시작</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">4</div><div><div class="namo-flow-t">생산완료</div><div class="namo-flow-s">작업 종료</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">5</div><div><div class="namo-flow-t">종결</div><div class="namo-flow-s">마감 처리</div></div></div></div>'+kpiHtml()+'<div class="namo-prod-table-wrap"><table class="namo-prod-table"><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송일</th><th>작업</th></tr></thead><tbody id="namoWoProgressBody"></tbody></table></div><div id="namoWoProgressDetail" class="nmc-workorder-detail"></div></section>'}
   function pageResult(){return '<section class="page" id="page-production-result"><div class="ph"><div><div class="ph-title">생산실적</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산실적</div><div class="ph-sub">생산완료/종결된 작업지시서를 실적 기준으로 조회합니다.</div></div></div>'+kpiHtml()+'<div class="namo-prod-table-wrap"><table class="namo-prod-table"><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>완료/작성일</th><th>작업</th></tr></thead><tbody id="namoWoResultBody"></tbody></table></div><div id="namoWoResultDetail" class="nmc-workorder-detail"></div></section>'}
   function ensurePages(){var c=q('.content'); if(!c)return; if(!q('#page-workorder-list'))c.insertAdjacentHTML('beforeend',pageList()); if(!q('#page-production-progress'))c.insertAdjacentHTML('beforeend',pageProgress()); if(!q('#page-production-result'))c.insertAdjacentHTML('beforeend',pageResult()); var title=q('#page-workorder-final .ph-title'); if(title)title.textContent='작업지시서 작성'; var bc=q('#page-workorder-final .ph-bc'); if(bc)bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시서 작성';}
@@ -14446,47 +14390,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
       '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>'+
-      '
-<!-- WORKORDER LIST EDIT-COMPLETED DATE COLUMN PATCH v1 -->
-<script id="namo-workorder-edit-completed-date-v1">
-(function(){
-  'use strict';
-  var STORAGE_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
-  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-  function idOf(o){o=o||{};var ks=['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo'];for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&String(v).trim()!=='')return String(v).trim()}return ''}
-  function allItems(){var map={};STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(x){var id=idOf(x);if(!id)return;map[id]=Object.assign({},map[id]||{},x)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(x){var id=idOf(x);if(id)map[id]=Object.assign({},map[id]||{},x)})});return map}
-  function parseMs(v){var t=Date.parse(v||'');return isNaN(t)?0:t}
-  function fmt(v){if(!v)return '-';var d=new Date(v);var p=function(n){return String(n).padStart(2,'0')};if(!isNaN(d.getTime()))return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());return String(v).replace('T',' ').replace(/\.\d+Z?$/,'').replace(/Z$/,'').slice(0,16)||'-'}
-  function rowId(tr){var btn=q('[data-namo-wo-open],[data-nmc-wo-edit-final]',tr);return tr.getAttribute('data-nmc-wo-id')||(btn&&(btn.getAttribute('data-namo-wo-open')||btn.getAttribute('data-nmc-wo-edit-final')))||''}
-  function patchList(){
-    var page=q('#page-workorder-list'); if(!page)return;
-    var head=q('thead tr',page); if(head&&!qa('th',head).some(function(th){return th.textContent.trim()==='수정완료일자'})){
-      var ths=qa('th',head), last=ths[ths.length-1]; if(last)last.insertAdjacentHTML('beforebegin','<th>수정완료일자</th>');
-    }
-    var map=allItems();
-    var rows=qa('tbody tr',page).filter(function(tr){return !q('.namo-prod-empty',tr)});
-    rows.forEach(function(tr){
-      var id=rowId(tr), item=map[id]||{}, date=item.modifiedCompletedAt||item.editCompletedAt||item.editDoneAt||item.modifiedAt||item.lastModifiedAt||'';
-      tr.setAttribute('data-nmc-edit-sort',String(parseMs(date||item.updatedAt||item.sentAt||item.date||item.orderDate||'')));
-      var tds=qa('td',tr); if(tds.length<2)return;
-      if(tds.length===10)tds[tds.length-1].insertAdjacentHTML('beforebegin','<td class="nmc-edit-done-date">'+esc(fmt(date))+'</td>');
-      else if(tds.length>=11){var cell=tds[tds.length-2]; if(cell)cell.innerHTML=esc(fmt(date));}
-    });
-    var tb=q('tbody',page);
-    if(tb&&rows.length){
-      rows.sort(function(a,b){return Number(b.getAttribute('data-nmc-edit-sort')||0)-Number(a.getAttribute('data-nmc-edit-sort')||0)});
-      rows.forEach(function(tr,i){var first=q('td',tr); if(first)first.textContent=String(i+1); tb.appendChild(tr)});
-    }
-  }
-  function boot(){patchList();var obs=new MutationObserver(function(){setTimeout(patchList,60)});if(document.body)obs.observe(document.body,{childList:true,subtree:true});[100,400,900,1800,3500].forEach(function(t){setTimeout(patchList,t)})}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-})();
-</script>
-
-</body></html>';
+      '</body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -16609,46 +16513,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 
 </script>
-
-<!-- WORKORDER LIST EDIT-COMPLETED DATE COLUMN PATCH v1 -->
-<script id="namo-workorder-edit-completed-date-v1">
-(function(){
-  'use strict';
-  var STORAGE_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
-  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-  function idOf(o){o=o||{};var ks=['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo'];for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&String(v).trim()!=='')return String(v).trim()}return ''}
-  function allItems(){var map={};STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(x){var id=idOf(x);if(!id)return;map[id]=Object.assign({},map[id]||{},x)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(x){var id=idOf(x);if(id)map[id]=Object.assign({},map[id]||{},x)})});return map}
-  function parseMs(v){var t=Date.parse(v||'');return isNaN(t)?0:t}
-  function fmt(v){if(!v)return '-';var d=new Date(v);var p=function(n){return String(n).padStart(2,'0')};if(!isNaN(d.getTime()))return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());return String(v).replace('T',' ').replace(/\.\d+Z?$/,'').replace(/Z$/,'').slice(0,16)||'-'}
-  function rowId(tr){var btn=q('[data-namo-wo-open],[data-nmc-wo-edit-final]',tr);return tr.getAttribute('data-nmc-wo-id')||(btn&&(btn.getAttribute('data-namo-wo-open')||btn.getAttribute('data-nmc-wo-edit-final')))||''}
-  function patchList(){
-    var page=q('#page-workorder-list'); if(!page)return;
-    var head=q('thead tr',page); if(head&&!qa('th',head).some(function(th){return th.textContent.trim()==='수정완료일자'})){
-      var ths=qa('th',head), last=ths[ths.length-1]; if(last)last.insertAdjacentHTML('beforebegin','<th>수정완료일자</th>');
-    }
-    var map=allItems();
-    var rows=qa('tbody tr',page).filter(function(tr){return !q('.namo-prod-empty',tr)});
-    rows.forEach(function(tr){
-      var id=rowId(tr), item=map[id]||{}, date=item.modifiedCompletedAt||item.editCompletedAt||item.editDoneAt||item.modifiedAt||item.lastModifiedAt||'';
-      tr.setAttribute('data-nmc-edit-sort',String(parseMs(date||item.updatedAt||item.sentAt||item.date||item.orderDate||'')));
-      var tds=qa('td',tr); if(tds.length<2)return;
-      if(tds.length===10)tds[tds.length-1].insertAdjacentHTML('beforebegin','<td class="nmc-edit-done-date">'+esc(fmt(date))+'</td>');
-      else if(tds.length>=11){var cell=tds[tds.length-2]; if(cell)cell.innerHTML=esc(fmt(date));}
-    });
-    var tb=q('tbody',page);
-    if(tb&&rows.length){
-      rows.sort(function(a,b){return Number(b.getAttribute('data-nmc-edit-sort')||0)-Number(a.getAttribute('data-nmc-edit-sort')||0)});
-      rows.forEach(function(tr,i){var first=q('td',tr); if(first)first.textContent=String(i+1); tb.appendChild(tr)});
-    }
-  }
-  function boot(){patchList();var obs=new MutationObserver(function(){setTimeout(patchList,60)});if(document.body)obs.observe(document.body,{childList:true,subtree:true});[100,400,900,1800,3500].forEach(function(t){setTimeout(patchList,t)})}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-})();
-</script>
-
 </body>
 </html>
 
@@ -16876,7 +16740,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function currentItem(){var old=editOriginal||findOrder(editId)||{};var oldN=normalize(old);var now=new Date();var woNo=val('nmcWoNo')||oldN.no||editId;var sendTime=val('nmcSendTime')||oldN.date||now.toLocaleString('ko-KR');var receiver=selectedTexts('nmcRecvDept').join(', ')||oldN.receiver;var ref=selectedTexts('nmcRefDept').join(', ')||oldN.ref;var base=Object.assign({},old);return Object.assign(base,{uid:base.uid||oldN.id||woNo,id:base.id||oldN.id||woNo,no:woNo,woNo:woNo,orderNo:woNo,workOrderNo:woNo,title:val('nmcProdName')||'작업지시서',productName:val('nmcProdName'),product:val('nmcProdName'),productCode:val('nmcProdCode'),prodCode:val('nmcProdCode'),prodLot:val('nmcProdLot'),productionLot:val('nmcProdLot'),lot:val('nmcProdLot'),orderDate:val('nmcOrderDate'),planType:val('nmcPlanType'),planQty:val('nmcPlanQty'),plannedQty:val('nmcPlanQty'),actualQty:val('nmcActualQty'),actual:val('nmcActualQty'),reqDept:val('nmcReqDept'),worker:val('nmcWorker'),instruction:val('nmcInstruction'),workInstruction:val('nmcInstruction'),sendNote:val('nmcSendNote'),memo:val('nmcSendNote'),sendTime:sendTime,sentAt:sendTime,updatedAt:now.toISOString(),date:val('nmcOrderDate')||sendTime,status:base.status||oldN.status||'발송완료',receiver:receiver,receiverText:receiver,recvDept:receiver,receiverIds:selectedValues('nmcRecvDept'),refText:ref,refDept:ref,refIds:selectedValues('nmcRefDept'),materials:collectMaterials()})}
   function upsertEverywhere(item){var oldId=String(editId||idOf(item)||'');var newId=idOf(item);var touched=false;STORAGE_KEYS.forEach(function(k){var arr=readArr(k),found=false;arr=arr.map(function(r){var rid=idOf(r);if((oldId&&rid===oldId)||(newId&&rid===newId)){found=true;touched=true;return Object.assign({},r,item,{uid:r.uid||item.uid,id:r.id||item.id})}return r});if(!found&&(k==='nmc_workorder_sent_items'||k==='nmcWorkOrders'||k==='nmcSentWorkorders'||k==='workOrderHistory')){arr.unshift(item);touched=true}writeArr(k,arr)});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k])){var found=false;window[k]=window[k].map(function(r){var rid=idOf(r);if((oldId&&rid===oldId)||(newId&&rid===newId)){found=true;return Object.assign({},r,item)}return r});if(!found)window[k].unshift(item)}});return touched}
   function refreshLists(){try{if(typeof window.namoRenderProductionEnterprise==='function')window.namoRenderProductionEnterprise()}catch(e){}try{if(typeof window.renderInboxPages==='function')window.renderInboxPages()}catch(e){}try{if(typeof window.namoRenderWorkorderHistoryV4==='function')window.namoRenderWorkorderHistoryV4()}catch(e){}setTimeout(function(){enhanceListButtons()},80)}
-  function saveEdit(){var page=q('#page-workorder-final');var id=(page&&page.dataset.nmcEditId)||editId;if(!id){alert('수정 중인 작업지시서가 없습니다. 목록에서 수정 버튼을 다시 눌러주세요.');return}var item=currentItem();var d=new Date(),p=function(n){return String(n).padStart(2,'0')};var doneAt=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());item.modifiedCompletedAt=doneAt;item.editCompletedAt=doneAt;item.updatedAt=d.toISOString();upsertEverywhere(item);editId='';editOriginal=null;setEditMode(false,'');refreshLists();alert('작업지시서 수정 내용이 저장되었습니다.');showPage('workorder-list')}
+  function saveEdit(){var page=q('#page-workorder-final');var id=(page&&page.dataset.nmcEditId)||editId;if(!id){alert('수정 중인 작업지시서가 없습니다. 목록에서 수정 버튼을 다시 눌러주세요.');return}var item=currentItem();upsertEverywhere(item);editId='';editOriginal=null;setEditMode(false,'');refreshLists();alert('작업지시서 수정 내용이 저장되었습니다.');showPage('workorder-list')}
   function cancelEdit(){editId='';editOriginal=null;setEditMode(false,'')}
   function enhanceListButtons(){qa('#page-workorder-list .namo-prod-actions').forEach(function(box){var open=q('[data-namo-wo-open]',box);if(!open)return;var id=open.getAttribute('data-namo-wo-open');if(!q('[data-nmc-wo-edit-final]',box)){open.insertAdjacentHTML('afterend','<button type="button" class="namo-mini-btn primary" data-nmc-wo-edit-final="'+id+'">수정</button>')}qa('.namo-mini-btn.del,.sb.del,[data-nmc-history-delete]',box).forEach(function(b){b.remove()})});qa('#page-workorder-list .sb.del,#page-workorder-list [data-nmc-history-delete]').forEach(function(b){b.remove()})}
   document.addEventListener('click',function(e){var edit=e.target.closest&&e.target.closest('[data-nmc-wo-edit-final]');if(edit){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();loadToEdit(edit.getAttribute('data-nmc-wo-edit-final'));return false}var save=e.target.closest&&e.target.closest('#nmcEditSaveBtn');if(save){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();saveEdit();return false}var cancel=e.target.closest&&e.target.closest('#nmcEditCancelBtn');if(cancel){e.preventDefault();cancelEdit();return false}var reset=e.target.closest&&e.target.closest('#page-workorder-final [data-nmc-action="reset"]');if(reset){setTimeout(function(){cancelEdit()},50)}},true);
@@ -16885,3 +16749,52 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- WORKORDER EDIT SAVE FINAL PATCH END -->
+
+<!-- WORKORDER LIST EDIT-COMPLETED DATE COLUMN PATCH v1 FIXED -->
+<script id="namo-workorder-edit-completed-date-v1-fixed">
+(function(){
+  'use strict';
+  if(window.__NMC_WO_EDIT_DONE_DATE_V1_FIXED__) return;
+  window.__NMC_WO_EDIT_DONE_DATE_V1_FIXED__=true;
+  var STORAGE_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function idOf(o){o=o||{};var ks=['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','lot'];for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&String(v).trim()!=='')return String(v).trim()}return ''}
+  function allItems(){var map={};STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(x){var id=idOf(x);if(id)map[id]=Object.assign({},map[id]||{},x)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(x){var id=idOf(x);if(id)map[id]=Object.assign({},map[id]||{},x)})});return map}
+  function parseMs(v){if(!v)return 0;var t=Date.parse(v);if(!isNaN(t))return t;var s=String(v).replace(/년|월/g,'-').replace(/일/g,' ').replace(/오전/g,'AM').replace(/오후/g,'PM');t=Date.parse(s);return isNaN(t)?0:t}
+  function fmt(v){if(!v)return '-';var d=new Date(v);var p=function(n){return String(n).padStart(2,'0')};if(!isNaN(d.getTime()))return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());return String(v).replace('T',' ').replace(/\.\d+Z?$/,'').replace(/Z$/,'').slice(0,16)||'-'}
+  function rowId(tr){var btn=q('[data-namo-wo-open],[data-nmc-wo-edit-final]',tr);return tr.getAttribute('data-nmc-wo-id')||(btn&&(btn.getAttribute('data-namo-wo-open')||btn.getAttribute('data-nmc-wo-edit-final')))||''}
+  function dateOf(item){item=item||{};return item.modifiedCompletedAt||item.editCompletedAt||item.editDoneAt||item.modifiedAt||item.lastModifiedAt||item.updatedAt||item.sentAt||item.sendTime||item.date||item.orderDate||''}
+  function patchList(){
+    var page=q('#page-workorder-list'); if(!page)return;
+    var head=q('thead tr',page);
+    if(head&&!qa('th',head).some(function(th){return th.textContent.trim()==='수정완료일자'})){
+      var ths=qa('th',head), last=ths[ths.length-1]; if(last)last.insertAdjacentHTML('beforebegin','<th>수정완료일자</th>');
+    }
+    var map=allItems();
+    var rows=qa('tbody tr',page).filter(function(tr){return !q('.namo-prod-empty',tr)});
+    rows.forEach(function(tr){
+      var id=rowId(tr), item=map[id]||{}, date=dateOf(item);
+      tr.setAttribute('data-nmc-edit-sort',String(parseMs(date)));
+      var tds=qa('td',tr); if(tds.length<2)return;
+      var html='<td class="nmc-edit-done-date">'+esc(fmt(date))+'</td>';
+      if(!qa('td',tr).some(function(td){return td.classList.contains('nmc-edit-done-date')})){
+        var last=tds[tds.length-1]; if(last)last.insertAdjacentHTML('beforebegin',html);
+      }else{
+        var cell=q('td.nmc-edit-done-date',tr); if(cell)cell.innerHTML=esc(fmt(date));
+      }
+    });
+    var tb=q('tbody',page);
+    if(tb&&rows.length){
+      rows.sort(function(a,b){return Number(b.getAttribute('data-nmc-edit-sort')||0)-Number(a.getAttribute('data-nmc-edit-sort')||0)});
+      rows.forEach(function(tr,i){var first=q('td',tr); if(first)first.textContent=String(i+1); tb.appendChild(tr)});
+    }
+  }
+  function boot(){patchList();var obs=new MutationObserver(function(){setTimeout(patchList,80)});if(document.body)obs.observe(document.body,{childList:true,subtree:true});[100,300,700,1200,2500,5000].forEach(function(t){setTimeout(patchList,t)})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<!-- WORKORDER LIST EDIT-COMPLETED DATE COLUMN PATCH v1 FIXED END -->
+
