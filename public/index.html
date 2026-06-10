@@ -4382,7 +4382,304 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- WORKORDER SAVE RESET ISSUE DELETE PATCH v20260610-final START -->
+<style>
+  #page-workorder-final .ph-actions{display:flex!important;gap:8px!important;align-items:center!important;justify-content:flex-end!important;}
+  .namo-mini-btn.danger,
+  .btn.danger,
+  .sb.del{
+    background:#fde9e9!important;
+    color:#c52b2b!important;
+    border:1px solid #f3b8b8!important;
+  }
+  .namo-mini-btn.danger:hover,
+  .btn.danger:hover,
+  .sb.del:hover{
+    background:#c52b2b!important;
+    color:#fff!important;
+  }
+</style>
+<script>
+(function(){
+  'use strict';
+  if(window.__nmcWorkOrderSaveIssueDeletePatchFinal) return;
+  window.__nmcWorkOrderSaveIssueDeletePatchFinal = true;
+
+  var WO_KEYS = [
+    'nmc_workorder_sent_items',
+    'nmcWorkOrders',
+    'nmcSentWorkorders',
+    'workOrderHistory',
+    'nmcWorkorderHistory',
+    'workOrders',
+    'worklogs',
+    'nmcWorklogs',
+    'lotTrace',
+    'nmcLotTrace',
+    'productionWorkOrders',
+    'prodWorkOrders',
+    'nmcProdWorkOrders'
+  ];
+
+  function q(sel, root){ return (root || document).querySelector(sel); }
+  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+  function readArr(key){
+    try{ var v = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(v) ? v : []; }
+    catch(e){ return []; }
+  }
+  function writeArr(key, arr){
+    try{ localStorage.setItem(key, JSON.stringify(arr || [])); }catch(e){}
+  }
+  function idOf(r){
+    r = r || {};
+    return txt(r.uid || r.id || r.no || r.woNo || r.workNo || r.workOrderNo || r.orderNo || r.nmcWoNo || r.docNo || r.sourceWorkOrderNo || r.workOrderId || r.productionLot || r.prodLot || r.lot || '');
+  }
+  function pick(o, keys, fallback){
+    o = o || {};
+    for(var i=0;i<keys.length;i++){
+      var v = o[keys[i]];
+      if(v != null && txt(v) !== '') return v;
+    }
+    return fallback == null ? '' : fallback;
+  }
+  function currentWoNo(){
+    return txt((q('#nmcWoNo') || q('#nmcWorkOrderNo') || q('#nmcOrderNo') || {}).value || '');
+  }
+  function fieldValue(id){ var el = q('#' + id); return el ? el.value : ''; }
+  function selectedText(id){
+    var el = q('#' + id); if(!el) return '';
+    if(el.tagName === 'SELECT'){
+      return qa('option:checked', el).map(function(o){return txt(o.textContent || o.value);}).filter(Boolean).join(', ');
+    }
+    return txt(el.value);
+  }
+  function collectWorkOrderForm(){
+    var page = q('#page-workorder-final');
+    var data = {
+      uid: currentWoNo() || ('WO-' + Date.now()),
+      id: currentWoNo() || ('WO-' + Date.now()),
+      no: currentWoNo(),
+      woNo: currentWoNo(),
+      workOrderNo: currentWoNo(),
+      orderNo: currentWoNo(),
+      nmcWoNo: currentWoNo(),
+      orderDate: fieldValue('nmcOrderDate'),
+      planType: fieldValue('nmcPlanType'),
+      priority: selectedText('nmcPriority') || selectedText('nmcPrioritySelect'),
+      reqDept: fieldValue('nmcReqDept'),
+      requestDept: fieldValue('nmcReqDept'),
+      worker: fieldValue('nmcWorker'),
+      customerName: fieldValue('nmcCustomerName') || fieldValue('nmcCustomer'),
+      customer: fieldValue('nmcCustomerName') || fieldValue('nmcCustomer'),
+      productName: fieldValue('nmcProdName'),
+      prodName: fieldValue('nmcProdName'),
+      product: fieldValue('nmcProdName'),
+      productCode: fieldValue('nmcProdCode'),
+      prodCode: fieldValue('nmcProdCode'),
+      finishLot: fieldValue('nmcFinishLot'),
+      prodLot: fieldValue('nmcProdLot') || currentWoNo(),
+      productionLot: fieldValue('nmcProdLot') || currentWoNo(),
+      lot: fieldValue('nmcProdLot') || currentWoNo(),
+      planQty: fieldValue('nmcPlanQty'),
+      plannedQty: fieldValue('nmcPlanQty'),
+      actualQty: fieldValue('nmcActualQty') || fieldValue('nmcRealQty'),
+      inputQty: fieldValue('nmcActualQty') || fieldValue('nmcRealQty'),
+      instruction: fieldValue('nmcInstruction'),
+      workInstruction: fieldValue('nmcInstruction'),
+      sendNote: fieldValue('nmcSendNote'),
+      memo: fieldValue('nmcSendNote'),
+      receiver: selectedText('nmcRecvDept'),
+      receiverText: selectedText('nmcRecvDept'),
+      recvDept: selectedText('nmcRecvDept'),
+      ref: selectedText('nmcRefDept'),
+      refText: selectedText('nmcRefDept'),
+      sender: fieldValue('nmcSenderName') || fieldValue('nmcSenderDept'),
+      senderName: fieldValue('nmcSenderName') || fieldValue('nmcSenderDept'),
+      status: '작성중',
+      savedAt: new Date().toISOString(),
+      updatedAt: new Date().toLocaleString('ko-KR')
+    };
+    var remarkEl = page && qa('input,textarea', page).filter(function(el){
+      var ph = txt(el.getAttribute('placeholder'));
+      return ph.indexOf('비고를 입력') > -1;
+    })[0];
+    if(remarkEl) data.remark = remarkEl.value;
+    data.materials = qa('#nmcMaterialTable tbody tr').map(function(tr){
+      var inputs = qa('input,select,textarea', tr);
+      var cells = qa('td', tr);
+      return {
+        name: inputs[0] ? inputs[0].value : txt(cells[1] && cells[1].textContent),
+        materialName: inputs[0] ? inputs[0].value : txt(cells[1] && cells[1].textContent),
+        lot: inputs[1] ? inputs[1].value : txt(cells[2] && cells[2].textContent),
+        materialLot: inputs[1] ? inputs[1].value : txt(cells[2] && cells[2].textContent),
+        planQty: inputs[2] ? inputs[2].value : txt(cells[3] && cells[3].textContent),
+        actualQty: inputs[3] ? inputs[3].value : txt(cells[4] && cells[4].textContent),
+        ratio: inputs[4] ? inputs[4].value : txt(cells[5] && cells[5].textContent),
+        note: inputs[5] ? inputs[5].value : txt(cells[6] && cells[6].textContent)
+      };
+    }).filter(function(m){ return txt(m.name || m.lot || m.planQty || m.actualQty || m.note) !== ''; });
+    return data;
+  }
+  function upsertKey(key, item){
+    var arr = readArr(key);
+    var id = idOf(item);
+    var found = false;
+    arr = arr.map(function(r){
+      if(id && idOf(r) === id){ found = true; return Object.assign({}, r, item); }
+      return r;
+    });
+    if(!found) arr.unshift(item);
+    writeArr(key, arr);
+  }
+  function saveWorkOrder(status){
+    var item = collectWorkOrderForm();
+    if(status) item.status = status;
+    if(status === '발송완료'){
+      item.sendTime = new Date().toLocaleString('ko-KR');
+      item.sentAt = new Date().toISOString();
+      item.date = item.sendTime;
+    }
+    localStorage.setItem('nmc_workorder_draft', JSON.stringify(item));
+    localStorage.setItem('nmcWorkorderDraft', JSON.stringify(item));
+    ['nmcWorkOrders','workOrders','workOrderHistory'].forEach(function(k){ upsertKey(k, item); });
+    if(status === '발송완료') ['nmc_workorder_sent_items','nmcSentWorkorders'].forEach(function(k){ upsertKey(k, item); });
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){
+      if(Array.isArray(window[k])){
+        var id = idOf(item), found = false;
+        window[k] = window[k].map(function(r){ if(id && idOf(r) === id){ found = true; return Object.assign({}, r, item); } return r; });
+        if(!found && (k !== 'nmcSentWorkorders' || status === '발송완료')) window[k].unshift(item);
+      }
+    });
+    try{ if(typeof window.namoRenderProductionEnterprise === 'function') window.namoRenderProductionEnterprise(); }catch(e){}
+    try{ if(typeof renderWorkOrderList === 'function') renderWorkOrderList(); }catch(e){}
+    return item;
+  }
+  window.nmcSaveWorkOrderDraftFinal = function(){ return saveWorkOrder('작성중'); };
+
+  function resetWorkOrderForm(){
+    var resetBtn = q('#page-workorder-final [data-nmc-action="reset"]');
+    if(resetBtn && !resetBtn.hasAttribute('data-nmc-top-reset')){ resetBtn.click(); return; }
+    qa('#page-workorder-final input,#page-workorder-final textarea').forEach(function(el){ if(!el.readOnly) el.value = ''; });
+    qa('#page-workorder-final select').forEach(function(el){ el.selectedIndex = 0; });
+    try{ localStorage.removeItem('nmc_workorder_draft'); localStorage.removeItem('nmcWorkorderDraft'); }catch(e){}
+  }
+
+  function printIssuedWorkOrder(item){
+    var id = idOf(item) || currentWoNo();
+    if(id){
+      var fake = document.createElement('button');
+      fake.setAttribute('data-nmc-list-print', id);
+      fake.setAttribute('data-nmc-wo-id', id);
+      document.body.appendChild(fake);
+      fake.click();
+      setTimeout(function(){ try{ fake.remove(); }catch(e){} }, 300);
+      return;
+    }
+    window.print();
+  }
+
+  function issueAndPrint(){
+    var item = saveWorkOrder('발송완료');
+    var sendBtn = q('#page-workorder-final [data-nmc-action="send"]');
+    if(sendBtn){
+      try{ sendBtn.click(); }catch(e){}
+    }
+    setTimeout(function(){ printIssuedWorkOrder(item); }, 450);
+  }
+
+  function patchTopButtons(){
+    var page = q('#page-workorder-final'); if(!page) return;
+    var actions = q('.ph-actions', page); if(!actions) return;
+    if(actions.getAttribute('data-nmc-final-top-buttons') === '1') return;
+    actions.setAttribute('data-nmc-final-top-buttons', '1');
+    actions.innerHTML = ''+
+      '<button type="button" class="btn ghost" id="nmcWorkOrderSaveBtn">저장</button>'+
+      '<button type="button" class="btn light" id="nmcWorkOrderResetBtn" data-nmc-top-reset="1">초기화</button>'+
+      '<button type="button" class="btn pri" id="nmcWorkOrderIssueBtn">작업지시서 발행</button>';
+  }
+
+  function deleteWorkOrderFinal(id){
+    id = txt(id);
+    if(!id){ alert('삭제할 작업지시서 번호를 찾을 수 없습니다.'); return false; }
+    if(!confirm('작업지시서를 삭제하시겠습니까?\n생산진행현황 및 LOT 추적 데이터도 함께 삭제됩니다.')) return false;
+    WO_KEYS.forEach(function(k){
+      var arr = readArr(k), changed = false;
+      if(!arr.length) return;
+      arr = arr.filter(function(r){ var keep = idOf(r) !== id; if(!keep) changed = true; return keep; });
+      if(changed) writeArr(k, arr);
+    });
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','worklogs','nmcWorklogs','lotTrace','nmcLotTrace','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'].forEach(function(k){
+      if(Array.isArray(window[k])) window[k] = window[k].filter(function(r){ return idOf(r) !== id; });
+    });
+    qa('tr[data-nmc-wo-id="'+CSS.escape(id)+'"]').forEach(function(tr){ try{ tr.remove(); }catch(e){} });
+    try{ if(typeof window.namoRenderProductionEnterprise === 'function') window.namoRenderProductionEnterprise(); }catch(e){}
+    try{ if(typeof renderWorkOrderList === 'function') renderWorkOrderList(); }catch(e){}
+    try{ if(typeof renderLotTrace === 'function') renderLotTrace(); }catch(e){}
+    setTimeout(patchListDeleteButtons, 120);
+    alert('삭제되었습니다.');
+    return false;
+  }
+  window.deleteWorkOrderFinal = deleteWorkOrderFinal;
+
+  function patchListDeleteButtons(){
+    var page = q('#page-workorder-list'); if(!page) return;
+    qa('tbody tr', page).forEach(function(tr){
+      if(q('.namo-prod-empty', tr)) return;
+      var tds = qa('td', tr); if(tds.length < 2) return;
+      var id = txt(tr.getAttribute('data-nmc-wo-id')) || txt((tds[1] || {}).textContent);
+      var any = q('[data-nmc-list-print],[data-nmc-inbox-print],[data-nmc-list-edit],[data-nmc-wo-edit-final],[data-namo-wo-open]', tr);
+      if(any) id = txt(any.getAttribute('data-nmc-list-print') || any.getAttribute('data-nmc-inbox-print') || any.getAttribute('data-nmc-list-edit') || any.getAttribute('data-nmc-wo-edit-final') || any.getAttribute('data-namo-wo-open') || id);
+      if(!id) return;
+      tr.setAttribute('data-nmc-wo-id', id);
+      var last = tds[tds.length - 1]; if(!last) return;
+      var printBtn = q('[data-nmc-list-print],[data-nmc-inbox-print]', last);
+      var editBtn = q('[data-nmc-list-edit],[data-nmc-wo-edit-final]', last);
+      if(!printBtn) last.insertAdjacentHTML('beforeend',' <button type="button" class="namo-mini-btn" data-nmc-list-print="'+esc(id)+'">인쇄</button>');
+      if(!editBtn) last.insertAdjacentHTML('beforeend',' <button type="button" class="namo-mini-btn primary" data-nmc-list-edit="'+esc(id)+'">수정</button>');
+      if(!q('[data-nmc-list-delete],[data-nmc-wo-delete-final]', last)){
+        last.insertAdjacentHTML('beforeend',' <button type="button" class="namo-mini-btn danger" data-nmc-list-delete="'+esc(id)+'" data-nmc-wo-delete-final="'+esc(id)+'">삭제</button>');
+      }
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    var save = t.closest('#nmcWorkOrderSaveBtn');
+    if(save){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); saveWorkOrder('작성중'); alert('저장되었습니다.'); return false; }
+    var reset = t.closest('#nmcWorkOrderResetBtn');
+    if(reset){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); if(confirm('입력 내용을 초기화하시겠습니까?')) resetWorkOrderForm(); return false; }
+    var issue = t.closest('#nmcWorkOrderIssueBtn');
+    if(issue){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); if(confirm('작업지시서를 발행하시겠습니까?')) issueAndPrint(); return false; }
+    var del = t.closest('[data-nmc-list-delete],[data-nmc-wo-delete-final]');
+    if(del){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); return deleteWorkOrderFinal(del.getAttribute('data-nmc-list-delete') || del.getAttribute('data-nmc-wo-delete-final') || del.closest('tr') && del.closest('tr').getAttribute('data-nmc-wo-id')); }
+  }, true);
+
+  function boot(){
+    patchTopButtons();
+    patchListDeleteButtons();
+    var obs = new MutationObserver(function(){
+      clearTimeout(window.__nmcWoFinalPatchTimer);
+      window.__nmcWoFinalPatchTimer = setTimeout(function(){ patchTopButtons(); patchListDeleteButtons(); }, 80);
+    });
+    if(document.body) obs.observe(document.body, {childList:true, subtree:true});
+    [100,300,700,1200,2000,3500].forEach(function(t){ setTimeout(function(){ patchTopButtons(); patchListDeleteButtons(); }, t); });
+    setInterval(function(){ patchTopButtons(); patchListDeleteButtons(); }, 1000);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<!-- WORKORDER SAVE RESET ISSUE DELETE PATCH v20260610-final END -->
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
