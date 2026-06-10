@@ -12748,7 +12748,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
         noCell.innerHTML = '<button type="button" class="nmc-wo-no-btn" data-namo-wo-open="'+esc(id)+'">'+esc(noText)+'</button>';
       }
 
-      var wanted = '<div class="namo-prod-actions"><button type="button" class="namo-mini-btn del" data-nmc-wo-list-delete="'+esc(id)+'">삭제</button></div>';
+      var wanted = '<div class="namo-prod-actions">' +
+        '<button type="button" class="namo-mini-btn" data-nmc-inbox-print="'+esc(id)+'">인쇄</button>' +
+        '<button type="button" class="namo-mini-btn" data-namo-wo-open="'+esc(id)+'">수정</button>' +
+        '<button type="button" class="namo-mini-btn del" data-nmc-wo-list-delete="'+esc(id)+'">삭제</button>' +
+      '</div>';
       if(actionCell.innerHTML.trim() !== wanted){
         actionCell.innerHTML = wanted;
       }
