@@ -16496,7 +16496,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function upsertEverywhere(item){var oldId=String(editId||'');var newId=idOf(item);STORAGE_KEYS.forEach(function(k){var arr=readArr(k),found=false;arr=arr.map(function(r){var rid=idOf(r);if((oldId&&rid===oldId)||(newId&&rid===newId)){found=true;return Object.assign({},r,item,{uid:r.uid||item.uid,id:r.id||item.id})}return r});if(!found&&(k==='nmc_workorder_sent_items'||k==='nmcWorkOrders'||k==='nmcSentWorkorders'||k==='workOrderHistory'))arr.unshift(item);writeArr(k,arr)});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k])){var found=false;window[k]=window[k].map(function(r){var rid=idOf(r);if((oldId&&rid===oldId)||(newId&&rid===newId)){found=true;return Object.assign({},r,item)}return r});if(!found)window[k].unshift(item)}})}
   function saveEdit(){if(!editId && q('#page-workorder-final'))editId=q('#page-workorder-final').dataset.nmcEditId||'';if(!editId){alert('수정 중인 작업지시서가 없습니다. 목록에서 수정 버튼을 다시 눌러주세요.');return}var item=currentItem();upsertEverywhere(item);editId='';editOriginal=null;setEditMode(false,'');try{if(typeof window.namoRenderProductionEnterprise==='function')window.namoRenderProductionEnterprise()}catch(e){}setTimeout(function(){patchList()},120);alert('작업지시서 수정본이 저장되었습니다. 목록에서 인쇄할 수 있습니다.');showPage('workorder-list')}
   function cancelEdit(){editId='';editOriginal=null;setEditMode(false,'')}
-  function patchList(){var page=q('#page-workorder-list');if(!page)return;qa('tbody tr',page).forEach(function(tr){if(q('.namo-prod-empty',tr))return;var cells=qa('td',tr);if(cells.length<10)return;var action=cells[cells.length-1];var id='';var oldOpen=q('[data-namo-wo-open]',tr);if(oldOpen)id=oldOpen.getAttribute('data-namo-wo-open')||'';if(!id){var txt=(cells[1]&&cells[1].textContent||'').trim();id=txt}if(!id)return;tr.setAttribute('data-nmc-wo-id',id);var noCell=cells[1], noText=(noCell.textContent||id).trim();if(noCell&&!q('.nmc-wo-no-btn',noCell))noCell.innerHTML='<button type="button" class="nmc-wo-no-btn" data-namo-wo-open="'+esc(id)+'">'+esc(noText)+'</button>';action.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn" data-nmc-inbox-print="'+esc(id)+'">인쇄</button><button type="button" class="namo-mini-btn primary" data-nmc-wo-edit-final="'+esc(id)+'">수정</button></div>'})}
+  function patchList(){var page=q('#page-workorder-list');if(!page)return;qa('tbody tr',page).forEach(function(tr){if(q('.namo-prod-empty',tr))return;var cells=qa('td',tr);if(cells.length<10)return;var action=cells[cells.length-1];var id='';var oldOpen=q('[data-namo-wo-open]',tr);if(oldOpen)id=oldOpen.getAttribute('data-namo-wo-open')||'';if(!id){var txt=(cells[1]&&cells[1].textContent||'').trim();id=txt}if(!id)return;tr.setAttribute('data-nmc-wo-id',id);var noCell=cells[1], noText=(noCell.textContent||id).trim();if(noCell&&!q('.nmc-wo-no-btn',noCell))noCell.innerHTML='<button type="button" class="nmc-wo-no-btn" data-namo-wo-open="'+esc(id)+'">'+esc(noText)+'</button>';action.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button><button type="button" class="namo-mini-btn primary" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button><button type="button" class="namo-mini-btn danger" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button></div>' '})}
   document.addEventListener('click',function(e){var p=e.target.closest&&e.target.closest('#page-workorder-list [data-nmc-inbox-print],#namoWoDetail [data-nmc-inbox-print]');if(p){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();printOrderById(p.getAttribute('data-nmc-inbox-print'));return false}var edit=e.target.closest&&e.target.closest('#page-workorder-list [data-nmc-wo-edit-final]');if(edit){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();loadToEdit(edit.getAttribute('data-nmc-wo-edit-final'));return false}var open=e.target.closest&&e.target.closest('#page-workorder-list [data-namo-wo-open]');if(open){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(open.getAttribute('data-namo-wo-open'));return false}var save=e.target.closest&&e.target.closest('#nmcEditSaveBtn');if(save){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();saveEdit();return false}var cancel=e.target.closest&&e.target.closest('#nmcEditCancelBtn');if(cancel){e.preventDefault();e.stopPropagation();cancelEdit();return false}},true);
   function boot(){ensureEditSaveButtons();patchList();var obs=new MutationObserver(function(){clearTimeout(window.__nmcWoListPatchTimer);window.__nmcWoListPatchTimer=setTimeout(function(){ensureEditSaveButtons();patchList()},80)});if(document.body)obs.observe(document.body,{childList:true,subtree:true});[100,300,700,1200,2500,5000].forEach(function(t){setTimeout(function(){ensureEditSaveButtons();patchList()},t)})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
@@ -16550,7 +16550,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function upsert(item){var oldId=String(editId||'');var newId=idOf(item);KEYS.forEach(function(k){var arr=read(k),found=false;arr=arr.map(function(r){var rid=idOf(r);if((oldId&&rid===oldId)||(newId&&rid===newId)){found=true;return Object.assign({},r,item,{uid:r.uid||item.uid,id:r.id||item.id})}return r});if(!found&&(k==='nmc_workorder_sent_items'||k==='nmcWorkOrders'||k==='nmcSentWorkorders'||k==='workOrderHistory'))arr.unshift(item);write(k,arr)});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k])){var found=false;window[k]=window[k].map(function(r){var rid=idOf(r);if((oldId&&rid===oldId)||(newId&&rid===newId)){found=true;return Object.assign({},r,item)}return r});if(!found)window[k].unshift(item)}})}
   function saveEdit(){if(!editId){var p=q('#page-workorder-final');editId=p?p.dataset.nmcEditId:''}if(!editId){alert('수정 중인 작업지시서가 없습니다. 목록에서 수정 버튼을 다시 눌러주세요.');return}var item=currentItem();upsert(item);editId='';editOriginal=null;setEditMode(false,'');try{if(typeof window.namoRenderProductionEnterprise==='function')window.namoRenderProductionEnterprise()}catch(e){}setTimeout(patchList,250);alert('작업지시서 수정본이 저장되었습니다. 목록에서 인쇄할 수 있습니다.');showPage('workorder-list')}
   function cancelEdit(){editId='';editOriginal=null;setEditMode(false,'');showPage('workorder-list')}
-  function patchList(){var page=q('#page-workorder-list');if(!page)return;qa('tbody tr',page).forEach(function(tr){if(q('.namo-prod-empty',tr))return;var cells=qa('td',tr);if(cells.length<2)return;var action=cells[cells.length-1];var id=tr.getAttribute('data-nmc-wo-id')||'';var old=q('[data-namo-wo-open], [data-nmc-inbox-print], [data-nmc-wo-edit-final]',tr);if(!id&&old)id=old.getAttribute('data-namo-wo-open')||old.getAttribute('data-nmc-inbox-print')||old.getAttribute('data-nmc-wo-edit-final')||'';if(!id)id=(cells[1].textContent||'').trim();if(!id)return;tr.setAttribute('data-nmc-wo-id',id);var noCell=cells[1];var noText=(noCell.textContent||id).trim();noCell.innerHTML='<button type="button" class="nmc-wo-no-btn" data-namo-wo-open="'+esc(id)+'">'+esc(noText)+'</button>';action.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn" data-nmc-inbox-print="'+esc(id)+'">인쇄</button><button type="button" class="namo-mini-btn primary" data-nmc-wo-edit-final="'+esc(id)+'">수정</button></div>'})}
+  function patchList(){var page=q('#page-workorder-list');if(!page)return;qa('tbody tr',page).forEach(function(tr){if(q('.namo-prod-empty',tr))return;var cells=qa('td',tr);if(cells.length<2)return;var action=cells[cells.length-1];var id=tr.getAttribute('data-nmc-wo-id')||'';var old=q('[data-namo-wo-open], [data-nmc-inbox-print], [data-nmc-wo-edit-final]',tr);if(!id&&old)id=old.getAttribute('data-namo-wo-open')||old.getAttribute('data-nmc-inbox-print')||old.getAttribute('data-nmc-wo-edit-final')||'';if(!id)id=(cells[1].textContent||'').trim();if(!id)return;tr.setAttribute('data-nmc-wo-id',id);var noCell=cells[1];var noText=(noCell.textContent||id).trim();noCell.innerHTML='<button type="button" class="nmc-wo-no-btn" data-namo-wo-open="'+esc(id)+'">'+esc(noText)+'</button>';action.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button><button type="button" class="namo-mini-btn primary" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button><button type="button" class="namo-mini-btn danger" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button></div>' '})}
   document.addEventListener('click',function(e){var print=e.target.closest&&e.target.closest('#page-workorder-list [data-nmc-inbox-print],#namoWoDetail [data-nmc-inbox-print]');if(print){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();printOrderById(print.getAttribute('data-nmc-inbox-print'));return false}var edit=e.target.closest&&e.target.closest('#page-workorder-list [data-nmc-wo-edit-final]');if(edit){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();goEdit(edit.getAttribute('data-nmc-wo-edit-final'));return false}var open=e.target.closest&&e.target.closest('#page-workorder-list [data-namo-wo-open]');if(open){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(open.getAttribute('data-namo-wo-open'));return false}var save=e.target.closest&&e.target.closest('#nmcEditSaveBtn');if(save){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();saveEdit();return false}var cancel=e.target.closest&&e.target.closest('#nmcEditCancelBtn');if(cancel){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();cancelEdit();return false}},true);
   function boot(){ensureEditSaveButtons();patchList();var obs=new MutationObserver(function(){clearTimeout(window.__nmcWoFinalV3Timer);window.__nmcWoFinalV3Timer=setTimeout(function(){ensureEditSaveButtons();patchList()},80)});if(document.body)obs.observe(document.body,{childList:true,subtree:true});[100,300,800,1500,3000,5000].forEach(function(t){setTimeout(function(){ensureEditSaveButtons();patchList()},t)})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
@@ -16743,7 +16743,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       tr.setAttribute('data-nmc-wo-id',id);
       var noCell=cells[1]; var noText=(noCell.textContent||id).trim();
       noCell.innerHTML='<button type="button" class="nmc-wo-no-btn" data-nmc-force-open="'+esc(id)+'" onclick="return window.nmcForceWorkorderOpen(this)">'+esc(noText)+'</button>';
-      action.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn" data-nmc-force-print="'+esc(id)+'" onclick="return window.nmcForceWorkorderPrint(this)">인쇄</button><button type="button" class="namo-mini-btn primary" data-nmc-force-edit="'+esc(id)+'" onclick="return window.nmcForceWorkorderEdit(this)">수정</button></div>';
+      action.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button><button type="button" class="namo-mini-btn primary" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button><button type="button" class="namo-mini-btn danger" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button></div>';
     });
   }
   function openDetail(id){
@@ -16898,6 +16898,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         qa('button,a',last).forEach(function(b){var label=txt(b.textContent);if(label.indexOf('인쇄')>-1)b.setAttribute('data-nmc-list-print',id);if(label.indexOf('수정')>-1||label.indexOf('편집')>-1)b.setAttribute('data-nmc-list-edit',id);});
         if(!q('[data-nmc-list-print]',last))last.insertAdjacentHTML('beforeend',' <button type="button" class="btn light sm" data-nmc-list-print="'+esc(id)+'">인쇄</button>');
         if(!q('[data-nmc-list-edit]',last))last.insertAdjacentHTML('beforeend',' <button type="button" class="btn pri sm" data-nmc-list-edit="'+esc(id)+'">수정</button>');
+        if(!q('[data-nmc-list-delete],[data-nmc-wo-delete-final]',last))last.insertAdjacentHTML('beforeend',' <button type="button" class="btn danger sm namo-mini-btn danger" data-nmc-list-delete="'+esc(id)+'" data-nmc-wo-delete-final="'+esc(id)+'">삭제</button>');
       }
     });
   }
@@ -17208,5 +17209,123 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- WORKORDER SAVE RESET ISSUE DELETE PATCH v20260610-final END -->
+
+<script id="nmc-wo-delete-visible-final-v20260610-2">
+(function(){
+  'use strict';
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(v){return String(v==null?'':v).trim();}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function idFromRow(tr){
+    var tds=qa('td',tr);
+    var any=q('[data-nmc-list-print],[data-nmc-inbox-print],[data-nmc-list-edit],[data-nmc-wo-edit-final],[data-nmc-force-edit],[data-nmc-force-print],[data-namo-wo-open]',tr);
+    return txt((any&&(any.getAttribute('data-nmc-list-print')||any.getAttribute('data-nmc-inbox-print')||any.getAttribute('data-nmc-list-edit')||any.getAttribute('data-nmc-wo-edit-final')||any.getAttribute('data-nmc-force-edit')||any.getAttribute('data-nmc-force-print')||any.getAttribute('data-namo-wo-open'))) || tr.getAttribute('data-nmc-wo-id') || (tds[1]&&tds[1].textContent) || '');
+  }
+  function patch(){
+    var page=q('#page-workorder-list'); if(!page) return;
+    qa('tbody tr',page).forEach(function(tr){
+      if(q('.namo-prod-empty',tr)) return;
+      var tds=qa('td',tr); if(tds.length<2) return;
+      var id=idFromRow(tr); if(!id) return;
+      tr.setAttribute('data-nmc-wo-id',id);
+      var last=tds[tds.length-1]; if(!last) return;
+      last.innerHTML='<div class="namo-prod-actions"><button type="button" class="namo-mini-btn btn light sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button><button type="button" class="namo-mini-btn primary btn pri sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button><button type="button" class="namo-mini-btn danger btn danger sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button></div>';
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',patch); else patch();
+  var obs=new MutationObserver(function(){ clearTimeout(window.__nmcDeleteVisibleTimer); window.__nmcDeleteVisibleTimer=setTimeout(patch,30); });
+  if(document.body) obs.observe(document.body,{childList:true,subtree:true});
+  setInterval(patch,200);
+})();
+</script>
+
+
+<script id="nmc-wo-safe-buttons-functional-v20260610">
+(function(){
+  'use strict';
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function q(s,r){ return (r || document).querySelector(s); }
+  function qa(s,r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(v){ return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function getId(el){
+    var tr = el && el.closest ? el.closest('tr') : null;
+    var tds = tr ? qa('td', tr) : [];
+    return txt((el && el.getAttribute('data-nmc-safe-id')) || (tr && tr.getAttribute('data-nmc-wo-id')) || (tds[1] && tds[1].textContent) || '');
+  }
+  function renderSafeButtons(){
+    var page = q('#page-workorder-list');
+    if(!page) return;
+    qa('tbody tr', page).forEach(function(tr){
+      if(q('.namo-prod-empty', tr)) return;
+      var tds = qa('td', tr);
+      if(tds.length < 2) return;
+      var id = txt(tr.getAttribute('data-nmc-wo-id')) || txt(tds[1].textContent);
+      var any = q('[data-nmc-safe-id],[data-nmc-list-print],[data-nmc-inbox-print],[data-nmc-list-edit],[data-nmc-wo-edit-final],[data-nmc-force-print],[data-nmc-force-edit],[data-namo-wo-open]', tr);
+      if(any){
+        id = txt(any.getAttribute('data-nmc-safe-id') || any.getAttribute('data-nmc-list-print') || any.getAttribute('data-nmc-inbox-print') || any.getAttribute('data-nmc-list-edit') || any.getAttribute('data-nmc-wo-edit-final') || any.getAttribute('data-nmc-force-print') || any.getAttribute('data-nmc-force-edit') || any.getAttribute('data-namo-wo-open') || id);
+      }
+      if(!id) return;
+      tr.setAttribute('data-nmc-wo-id', id);
+      var last = tds[tds.length - 1];
+      if(!last) return;
+      last.innerHTML = '<div class="namo-prod-actions">'
+        + '<button type="button" class="namo-mini-btn btn light sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button>'
+        + '<button type="button" class="namo-mini-btn primary btn pri sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button>'
+        + '<button type="button" class="namo-mini-btn danger btn danger sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button>'
+        + '</div>';
+    });
+  }
+  window.nmcWoSafePrint = function(el){
+    var id = typeof el === 'string' ? el : getId(el);
+    try{
+      if(typeof window.nmcForceWorkorderPrint === 'function') return window.nmcForceWorkorderPrint(id), false;
+      if(typeof window.printOrderById === 'function') return window.printOrderById(id), false;
+      if(typeof window.printWorkOrder === 'function') return window.printWorkOrder(id), false;
+    }catch(e){ console.error(e); }
+    window.print();
+    return false;
+  };
+  window.nmcWoSafeEdit = function(el){
+    var id = typeof el === 'string' ? el : getId(el);
+    try{
+      if(typeof window.nmcForceWorkorderEdit === 'function') return window.nmcForceWorkorderEdit(id), false;
+      if(typeof window.loadToEdit === 'function') return window.loadToEdit(id), false;
+      if(typeof window.goEdit === 'function') return window.goEdit(id), false;
+    }catch(e){ console.error(e); }
+    alert('수정 화면을 열 수 없습니다. 작업지시서 번호: ' + id);
+    return false;
+  };
+  window.nmcWoSafeDelete = function(el){
+    var id = typeof el === 'string' ? el : getId(el);
+    if(!id){ alert('삭제할 작업지시서를 찾을 수 없습니다.'); return false; }
+    if(!confirm('작업지시서를 삭제하시겠습니까?\n생산진행현황 및 LOT 추적 데이터도 함께 삭제됩니다.')) return false;
+    var keys = ['nmc_workorder_sent_items','nmcWorkOrders','nmcSentWorkorders','workOrderHistory','workOrders','worklogs','nmcWorklogs','lotTrace','nmcLotTrace'];
+    keys.forEach(function(k){
+      try{
+        var arr = JSON.parse(localStorage.getItem(k) || '[]');
+        if(!Array.isArray(arr)) return;
+        arr = arr.filter(function(r){
+          var rid = txt(r && (r.id || r.uid || r.no || r.woNo || r.orderNo || r.workOrderNo || r.work_order_no || r.sourceWorkOrderNo || r.workOrderId || r.lot || r.lotNo));
+          var all = JSON.stringify(r || {});
+          return rid !== id && all.indexOf(id) === -1;
+        });
+        localStorage.setItem(k, JSON.stringify(arr));
+      }catch(e){}
+    });
+    qa('#page-workorder-list tbody tr').forEach(function(tr){ if(txt(tr.getAttribute('data-nmc-wo-id')) === id || txt((qa('td',tr)[1]||{}).textContent) === id) tr.remove(); });
+    try{ if(typeof window.renderWorkOrderList === 'function') window.renderWorkOrderList(); }catch(e){}
+    try{ if(typeof window.namoRenderProductionEnterprise === 'function') window.namoRenderProductionEnterprise(); }catch(e){}
+    setTimeout(renderSafeButtons, 80);
+    alert('삭제되었습니다.');
+    return false;
+  };
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderSafeButtons); else renderSafeButtons();
+  var obs = new MutationObserver(function(){ clearTimeout(window.__nmcWoSafeBtnTimer); window.__nmcWoSafeBtnTimer = setTimeout(renderSafeButtons, 20); });
+  if(document.body) obs.observe(document.body, {childList:true, subtree:true});
+  setInterval(renderSafeButtons, 100);
+})();
+</script>
+
 </body>
 </html>
