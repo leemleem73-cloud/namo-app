@@ -4463,6 +4463,148 @@ function printLabel(){
 })();
 <\/script>
 
+
+
+<!-- NAMO HOTFIX 20260610-2: 결재함 공통 정규화 레이어 - 작성/검토/승인 역할 완전 분리 -->
+<style id="namo-approval-unified-normalizer-20260610-2-style">
+.approval-person.empty{color:#94a3b8!important;font-weight:800!important}
+.approval-person{font-weight:950!important;color:#0f172a!important;white-space:normal!important;word-break:keep-all!important}
+.approval-role-note.final{background:#dcfce7!important;color:#166534!important;border-color:#bbf7d0!important}
+.approval-normalize-note{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:#f0fdf4;color:#166534;font-size:11px;font-weight:950;border:1px solid #bbf7d0}
+</style>
+<script id="namo-approval-unified-normalizer-20260610-2-script">
+(function(){
+  'use strict';
+  var STORE_STATUS='namo_unified_approval_inbox_status_v20260527';
+  var STORE_NOTI='namo_approval_notifications_v1';
+  var ORDER=['iqc','pqc','oqc','nc','capa','workorder','training','certificate'];
+  var CFG={
+    iqc:{label:'수입검사(IQC)',arr:'incoming',keys:['namo_qms_incoming','incoming','iqc','iqcReports','incomingInspections']},
+    pqc:{label:'공정검사(PQC)',arr:'process',keys:['namo_qms_process','process','pqc','pqcReports','processInspections']},
+    oqc:{label:'출하검사(OQC)',arr:'shipment',keys:['namo_qms_shipment','shipment','oqc','oqcReports','outgoingInspections']},
+    nc:{label:'부적합 보고서',arr:'nonconform',keys:['namo_qms_nonconform','nonconform','ncReports','ncrReports']},
+    capa:{label:'시정/예방조치(CAPA)',arr:'nonconform',keys:['namo_qms_capa','capaReports','namo_qms_nonconform','nonconform','ncReports']},
+    workorder:{label:'작업지시서',arr:'workorders',keys:['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','worklog','namoWorklog','productionWorkOrders','prodWorkOrders']},
+    training:{label:'교육보고서',arr:'trainingReports',keys:['namo_qms_training_reports','namo_qms_training_reports_v2','trainingReports']},
+    certificate:{label:'성적서',arr:'spcReports',keys:['namo_qms_spc_reports','namo_qms_reports','certificates','reports']}
+  };
+  function $(id){return document.getElementById(id)}
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function read(k,fb){try{var v=localStorage.getItem(k);return v?JSON.parse(v):fb}catch(e){return fb}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function appState(){try{if(window.state&&typeof window.state==='object')return window.state}catch(e){} return {}}
+  function arrFromStore(k){var v=read(k,[]); if(Array.isArray(v))return v; if(v&&Array.isArray(v.rows))return v.rows; if(v&&Array.isArray(v.items))return v.items; return []}
+  function pick(o,keys,fb){o=o||{}; for(var i=0;i<keys.length;i++){var v=o[keys[i]]; if(v!=null&&String(v).trim()!=='')return v} return fb||''}
+  function rawName(v){
+    if(v&&typeof v==='object') v=v.name||v.userName||v.fullName||v.displayName||v.label||v.value||'';
+    return String(v==null?'':v).replace(/<[^>]*>/g,'').replace(/\s*\((작성|검토|승인|검사자|본인|부장|대표이사|이사).*?\)\s*/g,'').replace(/\s*\/\s*.*$/,'').trim();
+  }
+  function good(v){var n=rawName(v); if(!n||n==='-'||n==='--'||n==='선택'||n==='로그인 사용자'||n==='현재 로그인 사용자'||/^login[-_ ]?user$/i.test(n)||/^current user$/i.test(n))return ''; return n}
+  function dateOf(r){return pick(r,['date','inspectionDate','trainingDate','training_date','reportDate','createdAt','created_at','orderDate','sentAt','sendTime','issueDate','workDate','doneDate','updatedAt'],'')}
+  function onlyDate(v){var s=String(v||'').trim(); if(!s)return '-'; var m=s.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/); if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0'); var d=new Date(s); if(!isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); return s.slice(0,10)||'-'}
+  function ms(r){var d=new Date(dateOf(r)||0).getTime(); return isNaN(d)?0:d}
+  function idOf(type,r,i){var id=pick(r,['id','uid','uuid','no','docNo','reportNo','report_no','ncNo','ncrNo','capaNo','woNo','workOrderNo','orderNo','nmcWoNo','lot','prodLot','productLot','batchNo'],''); return String(id||type+'-'+i)}
+  function keyOf(type,r,i){return type+':'+idOf(type,r,i)}
+  function mapFor(type,r,i){var m=read(STORE_STATUS,{}), id=idOf(type,r,i); return m[keyOf(type,r,i)]||m[type+':'+id]||m[id]||{}}
+  function firstGood(list){for(var i=0;i<list.length;i++){var n=good(list[i]); if(n)return n} return ''}
+  function normalizeApprovalRecord(type,r,i){
+    r=r||{}; var m=mapFor(type,r,i);
+    var writerCandidates=[
+      r.signWriter&&r.signWriter.name,r.drafter,r.drafterName,r.writerName,r.writer,r.authorName,r.author,r.createdByName,r.createdBy,
+      r.preparedByName,r.preparedBy,r.creatorName,r.creator,r.requesterName,r.requester,r.senderName,r.senderText,r.sender&&r.sender.name,
+      r.inspectorName,r.inspector,r.visualName,r.visual,r.solidName,r.solid,r.ownerName,r.owner,m.writerName,m.writer,m.createdBy
+    ];
+    if(type==='iqc')writerCandidates=[r.signWriter&&r.signWriter.name,r.inspectorName,r.inspector,r.writerName,r.writer,r.createdByName,r.createdBy,r.authorName,r.author,m.writerName,m.writer].concat(writerCandidates);
+    if(type==='pqc')writerCandidates=[r.signWriter&&r.signWriter.name,r.solidName,r.solid,r.inspectorName,r.inspector,r.writerName,r.writer,r.createdByName,r.createdBy,m.writerName,m.writer].concat(writerCandidates);
+    if(type==='oqc')writerCandidates=[r.signWriter&&r.signWriter.name,r.visualName,r.visual,r.inspectorName,r.inspector,r.writerName,r.writer,r.createdByName,r.createdBy,m.writerName,m.writer].concat(writerCandidates);
+    if(type==='nc'||type==='capa')writerCandidates=[r.signWriter&&r.signWriter.name,r.writerName,r.writer,r.ownerName,r.owner,r.createdByName,r.createdBy,r.deptOwner,m.writerName,m.writer].concat(writerCandidates);
+    if(type==='workorder')writerCandidates=[r.signWriter&&r.signWriter.name,r.writerName,r.writer,r.senderName,r.senderText,r.sender&&r.sender.name,r.createdByName,r.createdBy,r.managerName,r.manager,m.writerName,m.writer].concat(writerCandidates);
+    if(type==='training')writerCandidates=[r.signWriter&&r.signWriter.name,r.writerName,r.writer,r.instructorName,r.createdByName,r.createdBy,m.writerName,m.writer].concat(writerCandidates);
+
+    var reviewerCandidates=[
+      m.reviewerName,m.reviewedBy,r.signReviewer&&r.signReviewer.name,r.reviewerName,r.reviewer,r.reviewBy,r.reviewedBy,
+      r.checkerName,r.checker,r.checkedBy,r.reviewManagerName,r.reviewManager
+    ];
+    var approverCandidates=[
+      m.approverName,m.approvedBy,r.signApprover&&r.signApprover.name,r.approverName,r.approver,r.approvalBy,r.approvedBy,
+      r.finalApproverName,r.finalApprover,r.signerName,r.signer,r.approvalManagerName,r.approvalManager
+    ];
+    var writer=firstGood(writerCandidates), reviewer=firstGood(reviewerCandidates), approver=firstGood(approverCandidates);
+
+    /* 중요: 검사자/작성자 필드가 검토자 후보로 들어가던 과거 버그 차단 */
+    if(reviewer&&writer&&reviewer===writer){
+      var strictReviewer=firstGood([m.reviewerName,m.reviewedBy,r.signReviewer&&r.signReviewer.name,r.reviewerName,r.reviewer,r.reviewBy,r.reviewedBy]);
+      reviewer = strictReviewer&&strictReviewer!==writer ? strictReviewer : '';
+    }
+    if(approver&&writer&&approver===writer){
+      var strictApprover=firstGood([m.approverName,m.approvedBy,r.signApprover&&r.signApprover.name,r.approverName,r.approver,r.approvalBy,r.approvedBy,r.finalApproverName,r.finalApprover]);
+      approver = strictApprover&&strictApprover!==writer ? strictApprover : '';
+    }
+    return {writer:writer||'-',reviewer:reviewer||'-',approver:approver||'-'};
+  }
+  function roleName(type,r,role,i){var n=normalizeApprovalRecord(type,r,i); return n[role]||'-'}
+  window.namoNormalizeApprovalRecord=normalizeApprovalRecord;
+  window.namoApprovalRoleName=roleName;
+  function normStatus(raw){raw=String(raw||'').toLowerCase(); if(/반려|reject|rejected/.test(raw))return'rejected'; if(/승인대기|검토완료|검토승인|reviewed|review complete/.test(raw))return'reviewed'; if(/검토대기|결재대기|대기|pending|requested|request|draft|작성완료|작성중/.test(raw))return'pending'; if(/승인완료|최종승인|approved|complete|completed|완료|처리완료|합격|pass/.test(raw))return'approved'; return''}
+  function statusOf(type,r,i){var m=mapFor(type,r,i), s=normStatus(m.status); if(s)return s; var raw=[r.approvalStatus,r.approval_status,r.signStatus,r.sign_status,r.approval_state,r.status,r.state,r.progressStatus,r.result,r.judge].join(' '); s=normStatus(raw); if(s)return s; if(roleName(type,r,'approver',i)!=='-')return'approved'; if(roleName(type,r,'reviewer',i)!=='-')return'reviewed'; return 'pending'}
+  function statusLabel(s){return {pending:'검토대기',reviewed:'승인대기',approved:'완료',rejected:'반려'}[s]||'검토대기'}
+  function titleOf(type,r){r=r||{}; if(type==='iqc')return pick(r,['reportNo','docNo','lot','item'],'수입검사'); if(type==='pqc')return pick(r,['reportNo','docNo','lot','product'],'공정검사'); if(type==='oqc')return pick(r,['reportNo','docNo','lot','product'],'출하검사'); if(type==='nc')return pick(r,['ncNo','ncrNo','docNo','title','lot'],'부적합 보고서'); if(type==='capa')return pick(r,['capaNo','ncNo','ncrNo','docNo','title','lot'],'시정/예방조치'); if(type==='workorder')return pick(r,['woNo','workOrderNo','orderNo','nmcWoNo','docNo','productName','product'],'작업지시서'); if(type==='training')return pick(r,['title','trainingTitle','name','subject'],'교육보고서'); return pick(r,['reportNo','docNo','title','product','item'],'성적서')}
+  function itemOf(type,r){r=r||{}; if(type==='iqc')return [pick(r,['item','itemName','materialName'],''),pick(r,['supplier','supplierName','vendor'],'')].filter(Boolean).join(' / ')||'-'; if(type==='pqc')return [pick(r,['product','productName','item'],''),pick(r,['line','process','equipment'],'')].filter(Boolean).join(' / ')||'-'; if(type==='oqc')return [pick(r,['product','productName','item'],''),pick(r,['customer','customerName'],'')].filter(Boolean).join(' / ')||'-'; if(type==='training')return pick(r,['dept','department','targetDept','trainingDept'],'-'); if(type==='workorder')return [pick(r,['productName','product','prodName','itemName','nmcProdName'],''),pick(r,['productCode','prodCode','code','nmcProdCode'],'')].filter(Boolean).join(' / ')||'-'; if(type==='nc'||type==='capa')return [pick(r,['product','productName','item','itemName'],''),pick(r,['process','source','dept','department'],'')].filter(Boolean).join(' / ')||'-'; return pick(r,['product','productName','item','lot'],'-')}
+  function lotOf(r){return pick(r,['lot','prodLot','productLot','materialLot','batchNo','lotNo','productionLot','nmcProdLot'],'-')}
+  function isDeleted(r){var st=String(r&&r.status||'').toUpperCase(); return !!(r&&(r.deleted||r.isDeleted||r._deleted||st==='DELETED'||st==='TRASH'||st==='REMOVED'))}
+  function isCapaRow(r){var txt=[r.capaNo,r.capa,r.capaRows,r.actionPlan,r.correctiveAction,r.preventiveAction,r.effectiveness,r.verifyResult,r.capaStatus].join(' '); return /\S/.test(txt)}
+  function rowsFor(type){var c=CFG[type], s=appState(), out=[]; if(c&&c.arr&&Array.isArray(s[c.arr]))out=out.concat(s[c.arr]); if(type==='workorder'){['worklog','workorders','workOrders','nmcWorkOrders'].forEach(function(k){if(Array.isArray(s[k]))out=out.concat(s[k])})} (c.keys||[]).forEach(function(k){out=out.concat(arrFromStore(k))}); var seen={}; return out.filter(function(r,i){if(!r||isDeleted(r))return false; if(type==='nc'&&isCapaRow(r))return false; if(type==='capa'&&!isCapaRow(r))return false; var id=idOf(type,r,i), sig=type+'|'+id+'|'+onlyDate(dateOf(r))+'|'+titleOf(type,r); if(seen[sig])return false; seen[sig]=1; return true})}
+  function allRows(){var out=[]; ORDER.forEach(function(type){rowsFor(type).forEach(function(r,i){out.push({type:type,label:CFG[type].label,record:r,id:idOf(type,r,i),key:keyOf(type,r,i),status:statusOf(type,r,i),index:i})})}); return out.sort(function(a,b){return ms(b.record)-ms(a.record)||String(b.id).localeCompare(String(a.id))})}
+  function chip(s){return '<span class="approval-state-chip '+esc(s)+'">'+esc(statusLabel(s))+'</span>'}
+  function typeChip(t){return '<span class="approval-type-chip '+esc(t)+'">'+esc(CFG[t].label)+'</span>'}
+  function actionHtml(row){var id=esc(row.id), type=esc(row.type); if(row.status==='pending')return '<button class="sb edit" data-namo-unified-role-act="review" data-type="'+type+'" data-id="'+id+'" type="button">검토승인</button><button class="sb del" data-namo-unified-role-act="reject" data-type="'+type+'" data-id="'+id+'" type="button">반려</button>'; if(row.status==='reviewed')return '<button class="sb edit" data-namo-unified-role-act="approve" data-type="'+type+'" data-id="'+id+'" type="button">최종승인</button><button class="sb del" data-namo-unified-role-act="reject" data-type="'+type+'" data-id="'+id+'" type="button">반려</button>'; return '<span class="tag">처리완료</span>'}
+  function ensurePage(){var content=q('.content'), page=$('page-approval-inbox'); if(!page&&content){page=document.createElement('section');page.className='page';page.id='page-approval-inbox';content.appendChild(page)} return page}
+  function countType(rows,type){return rows.filter(function(r){return r.type===type}).length}
+  function render(){
+    var page=ensurePage(); if(!page)return;
+    var rows=allRows(); var st=page.dataset.approvalTab||'all', ty=page.dataset.approvalType||'all', search=(page.dataset.approvalSearch||'').toLowerCase();
+    var counts={all:rows.length,pending:0,reviewed:0,approved:0,rejected:0}; rows.forEach(function(r){counts[r.status]=(counts[r.status]||0)+1});
+    var filtered=rows.filter(function(row){var r=row.record; var n=normalizeApprovalRecord(row.type,r,row.index); var hay=[row.label,titleOf(row.type,r),itemOf(row.type,r),lotOf(r),n.writer,n.reviewer,n.approver].join(' ').toLowerCase(); return (st==='all'||row.status===st)&&(ty==='all'||row.type===ty)&&(!search||hay.indexOf(search)>=0)});
+    page.innerHTML='<div class="approval-inbox-wrap"><div class="ph"><div><div class="ph-bc">결재함 <span class="sep">›</span> 전체 문서</div><div class="ph-title">결재함</div><div class="ph-sub">모든 문서의 작성자 · 검토자 · 승인자를 공통 규칙으로 정규화하여 표시합니다.</div><div class="approval-linked-summary">'+ORDER.map(function(t){return '<span class="tag">'+esc(CFG[t].label)+' '+countType(rows,t)+'</span>'}).join('')+'</div></div><div class="ph-actions"><span class="approval-normalize-note">공통 정규화 적용</span><button class="btn light" type="button" id="approvalRefreshBtn">새로고침</button></div></div><div class="approval-inbox-hero"><div class="approval-inbox-title">결재함</div><div class="approval-inbox-sub"><strong>작성 → 검토 → 승인</strong> 역할별 이름을 섞지 않고 표시합니다.</div><div class="approval-kpi-grid"><div class="approval-kpi"><span>전체</span><strong>'+counts.all+'</strong></div><div class="approval-kpi"><span>검토대기</span><strong>'+counts.pending+'</strong></div><div class="approval-kpi"><span>승인대기</span><strong>'+counts.reviewed+'</strong></div><div class="approval-kpi"><span>완료</span><strong>'+counts.approved+'</strong></div><div class="approval-kpi"><span>반려</span><strong>'+counts.rejected+'</strong></div></div></div><div class="approval-toolbar"><div class="approval-tabs">'+['all','pending','reviewed','approved','rejected'].map(function(k){return '<button class="approval-tab '+(st===k?'active':'')+'" data-namo-unified-role-tab="'+k+'" type="button">'+(k==='all'?'전체':statusLabel(k))+' '+counts[k]+'</button>'}).join('')+'</div><div class="approval-filter"><select id="approvalTypeFilter"><option value="all">전체 문서</option>'+ORDER.map(function(k){return '<option value="'+k+'" '+(ty===k?'selected':'')+'>'+esc(CFG[k].label)+'</option>'}).join('')+'</select><input id="approvalSearch" value="'+esc(page.dataset.approvalSearch||'')+'" placeholder="LOT, 문서번호, 품목, 작성자 검색"></div></div><div class="approval-board"><div class="approval-board-head"><h3>결재 목록</h3><span class="tag">작성/검토/승인 공통 정규화</span></div><div class="approval-table-wrap"><table class="approval-table"><thead><tr><th>상태</th><th>일자</th><th>문서구분</th><th>문서/제목</th><th>품목/부서/업체</th><th>LOT</th><th>작성자</th><th>검토자</th><th>승인자</th><th>처리</th></tr></thead><tbody>'+(filtered.length?filtered.map(function(row){var r=row.record, n=normalizeApprovalRecord(row.type,r,row.index); return '<tr><td>'+chip(row.status)+'</td><td>'+esc(onlyDate(dateOf(r)))+'</td><td class="approval-kind">'+typeChip(row.type)+'</td><td class="doc-title"><button class="approval-doc-link" data-namo-unified-role-open="'+esc(row.id)+'" data-type="'+esc(row.type)+'" type="button">'+esc(titleOf(row.type,r))+'</button></td><td>'+esc(itemOf(row.type,r))+'</td><td>'+esc(lotOf(r))+'</td><td class="approval-person '+(n.writer==='-'?'empty':'')+'">'+esc(n.writer)+'</td><td class="approval-person '+(n.reviewer==='-'?'empty':'')+'">'+esc(n.reviewer)+'</td><td class="approval-person '+(n.approver==='-'?'empty':'')+'">'+esc(n.approver)+'</td><td><div class="ai">'+actionHtml(row)+'</div></td></tr>'}).join(''):'<tr><td colspan="10" class="approval-empty">결재 대상 문서가 없습니다.</td></tr>')+'</tbody></table></div></div></div>';
+    var rf=$('approvalRefreshBtn'); if(rf)rf.onclick=render;
+    var sf=$('approvalTypeFilter'); if(sf)sf.onchange=function(){page.dataset.approvalType=this.value||'all';render()};
+    var ss=$('approvalSearch'); if(ss)ss.oninput=function(){page.dataset.approvalSearch=this.value||''; clearTimeout(ss.__t); ss.__t=setTimeout(render,120)};
+  }
+  function currentName(){var s=appState(); return good(s.currentUser&&s.currentUser.name)||good(s.user&&s.user.name)||good(localStorage.getItem('namo_current_user_name'))||'임흥배'}
+  function currentTitle(){var s=appState(); return good(s.currentUser&&s.currentUser.title)||good(s.currentUser&&s.currentUser.position)||''}
+  function eachTargetRecord(type,id,fn){var s=appState(), c=CFG[type], targets=[]; if(c&&Array.isArray(s[c.arr]))targets.push({key:c.arr,arr:s[c.arr],state:true}); if(type==='workorder'){['worklog','workorders','workOrders','nmcWorkOrders'].forEach(function(k){if(Array.isArray(s[k]))targets.push({key:k,arr:s[k],state:true})})} (c.keys||[]).forEach(function(k){var a=arrFromStore(k); if(a.length)targets.push({key:k,arr:a,store:true})}); targets.forEach(function(t){t.arr.forEach(function(r,i){if(idOf(type,r,i)===String(id))fn(r,i,t)}); if(t.store)write(t.key,t.arr)})}
+  function stamp(r,role,st){var now=new Date().toISOString(), name=currentName(), title=currentTitle(); if(role==='reviewer'){r.signReviewer=Object.assign({},r.signReviewer||{},{name:name,title:title,status:'APPROVED',signDate:now,signedAt:now}); r.reviewer=name; r.reviewerName=name; r.reviewedBy=name; r.reviewedAt=now;} if(role==='approver'){r.signApprover=Object.assign({},r.signApprover||{},{name:name,title:title,status:'APPROVED',signDate:now,signedAt:now}); r.approver=name; r.approverName=name; r.approvedBy=name; r.approvedAt=now;} r.approvalStatus=st; r.signStatus=st;}
+  function updateStateRecord(type,id,st){eachTargetRecord(type,id,function(r){if(st==='reviewed'){stamp(r,'reviewer','reviewed')} else if(st==='approved'){if(roleName(type,r,'reviewer',0)==='-')stamp(r,'reviewer','reviewed'); stamp(r,'approver','approved')} else if(st==='rejected'){if(roleName(type,r,'reviewer',0)==='-')stamp(r,'reviewer','reviewed'); r.approvalStatus='rejected'; r.signStatus='rejected'; r.rejectedBy=currentName(); r.rejectedAt=new Date().toISOString()}})}
+  function saveStatus(type,id,st){var map=read(STORE_STATUS,{}), k=type+':'+id, old=map[k]||{}, now=new Date().toISOString(), name=currentName(); var next=Object.assign({},old,{status:st,updatedAt:now,updatedBy:name}); if(st==='reviewed'){next.reviewerName=name;next.reviewedBy=name;next.reviewedAt=now} if(st==='approved'){next.reviewerName=good(old.reviewerName)||name;next.reviewedBy=good(old.reviewedBy)||next.reviewerName;next.approverName=name;next.approvedBy=name;next.approvedAt=now} if(st==='rejected'){next.reviewerName=good(old.reviewerName)||name;next.rejectedBy=name;next.rejectedAt=now} map[k]=next; write(STORE_STATUS,map); updateStateRecord(type,id,st)}
+  function notify(type,id,st){var list=read(STORE_NOTI,[]), label=CFG[type]?CFG[type].label:type; list.unshift({id:'normalizeFinal|'+type+'|'+id+'|'+Date.now(),type:type,action:st,title:label+' '+statusLabel(st),message:label+' 문서가 '+statusLabel(st)+' 처리되었습니다.',createdAt:new Date().toISOString(),read:false,targetName:currentName()}); write(STORE_NOTI,list.slice(0,300)); try{if(typeof window.renderNotifications==='function')window.renderNotifications()}catch(e){}}
+  function show(){var page=ensurePage(); qa('.nav-item[data-page]').forEach(function(b){b.classList.remove('active')}); qa('.nav-item[data-page="approval-inbox"]').forEach(function(b){b.classList.add('active')}); qa('.page').forEach(function(p){p.classList.remove('active')}); if(page)page.classList.add('active'); render()}
+  function refreshInspectionTables(){
+    var s=appState();
+    if(typeof window.jBadge!=='function'||typeof window.calcJ!=='function'||typeof window.eRow!=='function')return;
+    if($('incomingTable')&&Array.isArray(s.incoming)){$('incomingTable').innerHTML=s.incoming.length?s.incoming.map(function(r,i){var n=normalizeApprovalRecord('iqc',r,i);return '<tr><td>'+(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+(r.incomingQty==null?'':r.incomingQty)+'</td><td>'+(r.checkQty==null?'':r.checkQty)+'</td><td>'+(r.failQty==null?'':r.failQty)+'</td><td>'+window.jBadge(window.calcJ(r.items||[]))+'</td><td>'+esc(n.writer)+'</td><td>'+esc(n.reviewer)+'</td><td>'+esc(n.approver)+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join(''):window.eRow(12)}
+    if($('processTable')&&Array.isArray(s.process)){$('processTable').innerHTML=s.process.length?s.process.map(function(r,i){var n=normalizeApprovalRecord('pqc',r,i);return '<tr><td>'+(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.product||'')+'</td><td>'+esc(r.line||'')+'</td><td>'+(r.qty==null?'':r.qty)+'</td><td>'+(r.failQty==null?'':r.failQty)+'</td><td>'+window.jBadge(window.calcJ(r.items||[]))+'</td><td>'+esc(n.writer)+'</td><td>'+esc(n.reviewer)+'</td><td>'+esc(n.approver)+'</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join(''):window.eRow(11)}
+    if($('shipmentTable')&&Array.isArray(s.shipment)){$('shipmentTable').innerHTML=s.shipment.length?s.shipment.map(function(r,i){var n=normalizeApprovalRecord('oqc',r,i);return '<tr><td>'+(r.date||'')+'</td><td>'+esc(r.customer||'')+'</td><td>'+esc(r.product||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+(r.qty==null?'':r.qty)+'</td><td>'+(r.failQty==null?'':r.failQty)+'</td><td>'+window.jBadge(window.calcJ(r.items||[]))+'</td><td>'+esc(n.writer)+'</td><td>'+esc(n.reviewer)+'</td><td>'+esc(n.approver)+'</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join(''):window.eRow(11)}
+    if($('nonconformTable')&&Array.isArray(s.nonconform)&&typeof window.ncStatusBadge==='function'){$('nonconformTable').innerHTML=s.nonconform.length?s.nonconform.map(function(r,i){var n=normalizeApprovalRecord(isCapaRow(r)?'capa':'nc',r,i);return '<tr><td>'+(r.ncDate||'')+'</td><td><strong>'+esc(r.ncNo||'-')+'</strong></td><td>'+esc(r.ncType||'-')+'</td><td>'+esc(r.dept||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td>'+esc(r.item||'-')+'</td><td>'+(r.qty==null?0:r.qty)+'</td><td>'+esc(r.owner||'-')+'</td><td>'+window.ncStatusBadge(r.status)+'</td><td>'+esc(n.writer)+'</td><td>'+esc(n.reviewer)+'</td><td>'+esc(n.approver)+'</td><td><div class="ai"><button class="sb edit" data-action="editNc" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteNc" data-id="'+esc(r.id)+'">삭제</button></div></td></tr>'}).join(''):window.eRow(13)}
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest&&e.target.closest('.nav-item[data-page="approval-inbox"]'); if(nav){e.preventDefault(); e.stopImmediatePropagation(); show(); return false;}
+    var tab=e.target.closest&&e.target.closest('[data-namo-unified-role-tab]'); if(tab){e.preventDefault(); e.stopImmediatePropagation(); var p=$('page-approval-inbox'); if(p)p.dataset.approvalTab=tab.dataset.namoUnifiedRoleTab||'all'; render(); return false;}
+    var act=e.target.closest&&e.target.closest('[data-namo-unified-role-act]'); if(act){e.preventDefault(); e.stopImmediatePropagation(); var st=act.dataset.namoUnifiedRoleAct==='review'?'reviewed':act.dataset.namoUnifiedRoleAct==='approve'?'approved':'rejected'; saveStatus(act.dataset.type,act.dataset.id,st); notify(act.dataset.type,act.dataset.id,st); render(); try{refreshInspectionTables()}catch(x){} return false;}
+  },true);
+  ['renderIncomingTable','renderProcessTable','renderShipmentTable','renderNcTable'].forEach(function(fn){var old=window[fn]; if(typeof old==='function'&&!old.__namoNormalized){var wrap=function(){try{old.apply(this,arguments)}catch(e){} setTimeout(refreshInspectionTables,0)}; wrap.__namoNormalized=true; window[fn]=wrap;}});
+  window.namoRenderUnifiedApprovalInbox=render;
+  window.renderApprovalInbox=render;
+  window.renderApprovalInboxFinal=render;
+  window.namoShowUnifiedApprovalInbox=show;
+  window.namoRefreshApprovalRoleTables=refreshInspectionTables;
+  function boot(){ensurePage(); try{refreshInspectionTables()}catch(e){} if($('page-approval-inbox')&&$('page-approval-inbox').classList.contains('active'))render()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [50,150,300,700,1200,2000,3500,6000,9000].forEach(function(t){setTimeout(boot,t)});
+})();
+</script>
+
 </body></html>`
   ].join('');
   w.document.open();
@@ -16764,7 +16906,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function sigCell(type,r,role,i){return esc(roleName(type,r,role,i))}
   function refreshInspectionTables(){
     var s=appState();
-    if(typeof window.jBadge!=='function'||typeof window.calcJ!=='function'||typeof window.eRow!=='function')return;
+    if(typeof window.jBadge!=='function'||typeof window.calcJ!=='function'||typeof window.eRow!==='function')return;
     if($('incomingTable')&&Array.isArray(s.incoming)){$('incomingTable').innerHTML=s.incoming.length?s.incoming.map(function(r,i){return '<tr><td>'+(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+(r.incomingQty==null?'':r.incomingQty)+'</td><td>'+(r.checkQty==null?'':r.checkQty)+'</td><td>'+(r.failQty==null?'':r.failQty)+'</td><td>'+window.jBadge(window.calcJ(r.items||[]))+'</td><td>'+sigCell('iqc',r,'writer',i)+'</td><td>'+sigCell('iqc',r,'reviewer',i)+'</td><td>'+sigCell('iqc',r,'approver',i)+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join(''):window.eRow(12)}
     if($('processTable')&&Array.isArray(s.process)){$('processTable').innerHTML=s.process.length?s.process.map(function(r,i){return '<tr><td>'+(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.product||'')+'</td><td>'+esc(r.line||'')+'</td><td>'+(r.qty==null?'':r.qty)+'</td><td>'+(r.failQty==null?'':r.failQty)+'</td><td>'+window.jBadge(window.calcJ(r.items||[]))+'</td><td>'+sigCell('pqc',r,'writer',i)+'</td><td>'+sigCell('pqc',r,'reviewer',i)+'</td><td>'+sigCell('pqc',r,'approver',i)+'</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join(''):window.eRow(11)}
     if($('shipmentTable')&&Array.isArray(s.shipment)){$('shipmentTable').innerHTML=s.shipment.length?s.shipment.map(function(r,i){return '<tr><td>'+(r.date||'')+'</td><td>'+esc(r.customer||'')+'</td><td>'+esc(r.product||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+(r.qty==null?'':r.qty)+'</td><td>'+(r.failQty==null?'':r.failQty)+'</td><td>'+window.jBadge(window.calcJ(r.items||[]))+'</td><td>'+sigCell('oqc',r,'writer',i)+'</td><td>'+sigCell('oqc',r,'reviewer',i)+'</td><td>'+sigCell('oqc',r,'approver',i)+'</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join(''):window.eRow(11)}
