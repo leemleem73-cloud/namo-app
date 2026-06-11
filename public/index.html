@@ -2767,6 +2767,25 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   #page-training .namo-photo-area .namo-modern-photo-box{height:auto!important;min-height:170px!important;}
 }
 
+
+
+/* ══════════════════════════════════
+   Hyundai-style LOT Traceability UI
+   기존 API / DB 구조 유지, LOT 추적 화면만 재구성
+══════════════════════════════════ */
+#page-trace{--trace-blue:#0057d9;--trace-navy:#071d3a;--trace-line:#dbe6f3;--trace-soft:#f5f9ff;--trace-green:#16a34a;--trace-orange:#f97316;--trace-purple:#6d28d9;}
+.trace-hmc-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px;padding:22px 24px;border-radius:24px;background:linear-gradient(135deg,#071d3a 0%,#0a3a78 52%,#0ea5e9 100%);color:#fff;box-shadow:0 18px 38px rgba(15,23,42,.20);position:relative;overflow:hidden}
+.trace-hmc-hero:before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 20% 35%,rgba(96,165,250,.36),transparent 30%),radial-gradient(circle at 86% 20%,rgba(34,197,94,.18),transparent 28%),linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);pointer-events:none}
+.trace-hmc-hero>*{position:relative}.trace-hmc-eyebrow{font-size:11px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;color:#bfdbfe}.trace-hmc-title{font-size:30px;font-weight:900;letter-spacing:-.8px;margin-top:4px}.trace-hmc-sub{font-size:13px;color:#dbeafe;margin-top:6px;line-height:1.6}.trace-hmc-search{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:min(760px,100%)}
+.trace-mode-group{display:flex;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.20);border-radius:14px;padding:5px}.trace-mode{height:38px;border:none;border-radius:10px;background:transparent;color:#dbeafe;padding:0 16px;font-size:12px;font-weight:900;cursor:pointer}.trace-mode b{font-weight:900;color:inherit}.trace-mode.active{background:#fff;color:#0057d9;box-shadow:0 6px 16px rgba(0,0,0,.16)}
+.trace-search-row{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.trace-select,.trace-input{height:38px;border:1px solid rgba(255,255,255,.22);border-radius:12px;background:#fff;color:#0f172a;padding:0 12px;font-size:13px;outline:none}.trace-select{min-width:132px}.trace-input{min-width:260px}.trace-hmc-summary{grid-template-columns:1.55fr repeat(4,1fr)!important;gap:12px;margin-bottom:16px}.trace-kpi{border:1px solid var(--trace-line)!important;border-radius:18px!important;padding:16px!important;box-shadow:0 8px 22px rgba(15,23,42,.055)!important;position:relative;overflow:hidden}.trace-kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0057d9,#0ea5e9)}.trace-kpi .l{font-size:11px!important;color:#64748b!important;letter-spacing:.2px}.trace-kpi .v{font-size:22px!important;color:#0f172a!important}.trace-kpi .s{font-size:11px;color:#64748b;margin-top:6px}.trace-kpi.good:before{background:linear-gradient(90deg,#16a34a,#86efac)}.trace-kpi.warn:before{background:linear-gradient(90deg,#f97316,#fdba74)}.trace-kpi.purple:before{background:linear-gradient(90deg,#6d28d9,#a78bfa)}
+.trace-main-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:16px}.trace-left-stack,.trace-right-stack{display:flex;flex-direction:column;gap:16px}.trace-card{background:#fff;border:1px solid var(--trace-line);border-radius:22px;box-shadow:0 10px 24px rgba(15,23,42,.055);overflow:hidden}.trace-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid #e2e8f0;background:linear-gradient(180deg,#fff,#f8fbff)}.trace-card-head h3{font-size:15px;font-weight:900;color:#0f172a}.trace-card-head p{font-size:12px;color:#64748b;margin-top:2px}.trace-standard-badge,.trace-count-badge{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:#eff6ff;color:#0057d9;font-size:11px;font-weight:900;white-space:nowrap}
+.trace-flow{display:grid!important;grid-template-columns:repeat(8,1fr);gap:10px;padding:18px;margin:0!important}.trace-flow-step{position:relative;border:1px solid #dbe6f3;border-radius:16px;background:#fff;min-height:112px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}.trace-flow-step:not(:last-child):after{content:'›';position:absolute;right:-12px;top:50%;transform:translateY(-50%);font-size:32px;font-weight:900;color:#334155;z-index:3}.trace-flow-step .ico{width:36px;height:36px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;background:#eff6ff;color:#0057d9;font-size:18px;font-weight:900}.trace-flow-step .t{font-size:12px;font-weight:900;color:#0f172a}.trace-flow-step .d{font-size:11px;color:#64748b;margin-top:5px;line-height:1.25}.trace-flow-step.on{border-color:#93c5fd;background:linear-gradient(180deg,#fff,#f5f9ff);box-shadow:0 8px 18px rgba(37,99,235,.09)}.trace-flow-step.on .ico{background:#0057d9;color:#fff}.trace-flow-step.done .ico{background:#16a34a;color:#fff}.trace-flow-step.warn .ico{background:#f97316;color:#fff}
+.trace-table-wrap{border:none!important;border-radius:0!important;max-height:360px}.trace-table th{text-transform:none!important;letter-spacing:0!important;color:#334155!important}.trace-table td{height:44px}.trace-link{color:#0057d9!important;font-weight:900!important;text-decoration:none!important;border-bottom:1px solid rgba(0,87,217,.28)}.trace-empty{padding:28px!important;text-align:center!important;color:#94a3b8!important}.trace-badge{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:24px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:900}.trace-badge.pass{background:#dcfce7;color:#166534}.trace-badge.wait{background:#f1f5f9;color:#64748b}.trace-badge.fail{background:#fee2e2;color:#991b1b}.trace-badge.info{background:#dbeafe;color:#1d4ed8}.trace-badge.warn{background:#ffedd5;color:#9a3412}
+.trace-inspection-panel{padding:14px 16px;display:flex;flex-direction:column;gap:10px}.trace-inspection-row{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;background:#fff}.trace-inspection-row .name{font-size:13px;font-weight:900;color:#0f172a}.trace-inspection-row .meta{font-size:12px;color:#64748b}.trace-mini-panel{padding:14px 16px}.trace-mini-table{width:100%;border-collapse:collapse}.trace-mini-table td{padding:8px 0;border-bottom:1px solid #edf2f7;font-size:12px;color:#334155}.trace-mini-table tr:last-child td{border-bottom:none}.trace-mini-table td:last-child{text-align:right;font-weight:900;color:#0f172a}.trace-ncr-list{display:flex;flex-direction:column;gap:8px}.trace-ncr-item{display:flex;justify-content:space-between;gap:10px;border:1px solid #e2e8f0;border-radius:12px;padding:9px 10px;font-size:12px}.trace-ncr-item b{color:#0057d9}.trace-muted{color:#94a3b8!important;text-align:center!important;padding:18px 0!important}.trace-mat-tree-root{font-weight:900;color:#0f172a}.trace-mat-name{font-weight:800;color:#334155}.trace-total-row td{background:#f8fafc;font-weight:900;color:#0f172a!important}
+@media(max-width:1500px){.trace-flow{grid-template-columns:repeat(4,1fr)}.trace-flow-step:nth-child(4):after{display:none}.trace-hmc-hero{flex-direction:column}.trace-hmc-search{align-items:stretch}.trace-search-row{justify-content:flex-start}}
+@media(max-width:1100px){.trace-main-grid{grid-template-columns:1fr}.trace-hmc-summary{grid-template-columns:1fr 1fr!important}}
+@media(max-width:760px){.trace-hmc-summary,.trace-flow{grid-template-columns:1fr!important}.trace-flow-step:after{display:none!important}.trace-search-row>*{width:100%;min-width:0}.trace-mode-group{flex-direction:column}.trace-mode{width:100%}}
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -3542,17 +3561,79 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
       </section>
 
-      <!-- ■ LOT 추적 -->
+      <!-- ■ LOT 추적 : Hyundai-style Traceability UI -->
       <section class="page" id="page-trace">
-        <div class="ph"><div><div class="ph-title">LOT 추적</div><div class="ph-sub">완제품 / 원료 LOT를 검색합니다.</div></div>
-          <div class="ph-actions">
-            <input id="traceKeyword" placeholder="LOT 추적번호 입력" style="height:36px;min-width:270px;border:1.5px solid var(--bd);border-radius:var(--r2);padding:0 14px;font-size:13px;background:var(--sf);outline:none;"/>
-            <button class="btn pri" id="traceSearch">조회</button>
+        <div class="trace-hmc-hero">
+          <div>
+            <div class="trace-hmc-eyebrow">Traceability Control Tower</div>
+            <div class="trace-hmc-title">LOT 추적</div>
+            <div class="trace-hmc-sub">완제품에서 원료까지, 원료에서 완제품까지 양방향 추적 흐름을 한 화면에서 확인합니다.</div>
+          </div>
+          <div class="trace-hmc-search">
+            <div class="trace-mode-group" id="traceModeGroup">
+              <button type="button" class="trace-mode active" data-trace-mode="backward">Backward Trace <b>완제품 → 원료</b></button>
+              <button type="button" class="trace-mode" data-trace-mode="forward">Forward Trace <b>원료 → 완제품</b></button>
+            </div>
+            <div class="trace-search-row">
+              <select id="traceType" class="trace-select">
+                <option value="finished">완제품 LOT</option>
+                <option value="material">원료 LOT</option>
+                <option value="all">전체</option>
+              </select>
+              <input id="traceKeyword" class="trace-input" placeholder="예: DBA1501 또는 2025102001"/>
+              <button class="btn pri" id="traceSearch">조회</button>
+              <button class="btn light" type="button" onclick="window.print()">상세 인쇄</button>
+            </div>
           </div>
         </div>
-        <div class="trace-summary" id="traceSummary"></div><div class="trace-timeline" id="traceTimeline"></div><div class="card"><div class="ch"><h3>LOT 추적 결과</h3></div>
-          <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>작업일자</th><th>완제품 LOT</th><th>작업자</th><th>순번</th><th>원료명</th><th>업체명</th><th>원료 LOT</th><th>투입량</th><th>투입시간</th></tr></thead><tbody id="traceTable"></tbody></table>
+
+        <div id="traceSummary" class="trace-summary trace-hmc-summary"></div>
+
+        <div class="trace-main-grid">
+          <div class="trace-left-stack">
+            <div class="trace-card trace-flow-card">
+              <div class="trace-card-head">
+                <div>
+                  <h3>LOT Trace Flow</h3>
+                  <p>고객사 감사 대응용 표준 흐름도</p>
+                </div>
+                <span class="trace-standard-badge">IATF · ISO Trace</span>
+              </div>
+              <div id="traceTimeline" class="trace-timeline trace-flow"></div>
+            </div>
+
+            <div class="trace-card">
+              <div class="trace-card-head">
+                <div>
+                  <h3>원료 LOT 사용 현황</h3>
+                  <p>완제품 LOT 기준 원료 투입 관계</p>
+                </div>
+                <span id="traceMatCount" class="trace-count-badge">0건</span>
+              </div>
+              <div class="tw trace-table-wrap">
+                <table class="trace-table">
+                  <thead>
+                    <tr><th>원료명</th><th>원료 LOT</th><th>업체명</th><th>투입량</th><th>투입시간</th><th>IQC</th></tr>
+                  </thead>
+                  <tbody id="traceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="trace-right-stack">
+            <div class="trace-card">
+              <div class="trace-card-head"><div><h3>검사 이력</h3><p>IQC / PQC / OQC 연결 상태</p></div></div>
+              <div id="traceInspectionPanel" class="trace-inspection-panel"></div>
+            </div>
+            <div class="trace-card">
+              <div class="trace-card-head"><div><h3>작업지시 및 생산 정보</h3><p>생산 이력과 작업자 정보</p></div></div>
+              <div id="traceWorkPanel" class="trace-mini-panel"></div>
+            </div>
+            <div class="trace-card">
+              <div class="trace-card-head"><div><h3>출하 / 품질 이력</h3><p>OQC, 출하, NCR/CAPA 연결</p></div></div>
+              <div id="traceShipPanel" class="trace-mini-panel"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -17337,5 +17418,133 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_END -->
+<script>
+/* Hyundai-style LOT Traceability UI override - front only */
+(function(){
+  var traceMode='backward';
+  function byId(id){return document.getElementById(id)}
+  function safeEsc(v){return (typeof esc==='function')?esc(v):String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function d(v){return (typeof toKSTDate==='function')?toKSTDate(v):(v||'')}
+  function lotNorm(v){return String(v||'').trim().toLowerCase()}
+  function passBadge(ok,label){return '<span class="trace-badge '+(ok?'pass':'wait')+'">'+(label||(ok?'적합':'대기'))+'</span>'}
+  function lotLink(type,lot){return lot?'<span class="trace-link" data-report-type="'+type+'" data-report-lot="'+safeEsc(String(lot)).replace(/"/g,'&quot;')+'">'+safeEsc(lot)+'</span>':''}
+  function numQty(v){var n=parseFloat(String(v||'').replace(/,/g,''));return Number.isFinite(n)?n:0}
+  function unique(arr,key){var m=new Map();(arr||[]).forEach(function(x){var k=key(x);if(k&&!m.has(k))m.set(k,x)});return Array.from(m.values())}
+  function findRowsByLot(list, lot){var n=lotNorm(lot);return (list||[]).filter(function(r){return lotNorm(r.lot)===n || lotNorm(r.finishedLot)===n || lotNorm(r.lotNo)===n})}
+  function inferStatus(rows,type,finishedLots,materialLots){
+    var src=(type||'').toLowerCase();
+    if(src==='iqc') return (rows||[]).some(function(r){return r.source==='iqc'}) || (window.state&&Array.isArray(state.incoming)&&materialLots.some(function(l){return findRowsByLot(state.incoming,l).length}))
+    if(src==='pqc') return (rows||[]).some(function(r){return r.source==='pqc'}) || (window.state&&Array.isArray(state.process)&&finishedLots.some(function(l){return findRowsByLot(state.process,l).length}))
+    if(src==='oqc') return (rows||[]).some(function(r){return r.source==='oqc'}) || (window.state&&Array.isArray(state.shipment)&&finishedLots.some(function(l){return findRowsByLot(state.shipment,l).length}))
+    return false;
+  }
+  window.renderTraceSummary=function(rows,kw){
+    rows=rows||[]; var area=byId('traceSummary'); if(!area)return;
+    var finished=Array.from(new Set(rows.map(function(r){return r.finishedLot}).filter(Boolean)));
+    var mats=Array.from(new Set(rows.map(function(r){return r.lotNo}).filter(Boolean)));
+    var iqc=inferStatus(rows,'iqc',finished,mats), pqc=inferStatus(rows,'pqc',finished,mats), oqc=inferStatus(rows,'oqc',finished,mats);
+    var totalQty=rows.reduce(function(s,r){return s+numQty(r.inputQty)},0);
+    var mainLot=kw||finished[0]||mats[0]||'전체';
+    area.innerHTML=''
+      +'<div class="trace-kpi"><div class="l">검색 LOT</div><div class="v">'+safeEsc(mainLot)+'</div><div class="s">'+(traceMode==='backward'?'Backward 완제품→원료':'Forward 원료→완제품')+'</div></div>'
+      +'<div class="trace-kpi good"><div class="l">완제품 LOT</div><div class="v">'+finished.length+'</div><div class="s">생산 이력 연결</div></div>'
+      +'<div class="trace-kpi purple"><div class="l">원료 LOT</div><div class="v">'+mats.length+'</div><div class="s">투입 원료 추적</div></div>'
+      +'<div class="trace-kpi '+(iqc&&pqc&&oqc?'good':'warn')+'"><div class="l">검사 이력</div><div class="v">IQC '+(iqc?'O':'-')+' / PQC '+(pqc?'O':'-')+' / OQC '+(oqc?'O':'-')+'</div><div class="s">검사 연결 상태</div></div>'
+      +'<div class="trace-kpi"><div class="l">총 투입량</div><div class="v">'+(totalQty?totalQty.toLocaleString():'-')+'</div><div class="s">조회 행 '+rows.length+'건</div></div>';
+  };
+  window.renderTraceTimeline=function(rows){
+    rows=rows||[]; var area=byId('traceTimeline'); if(!area)return;
+    var finished=Array.from(new Set(rows.map(function(r){return r.finishedLot}).filter(Boolean)));
+    var mats=Array.from(new Set(rows.map(function(r){return r.lotNo}).filter(Boolean)));
+    var hasWork=rows.some(function(r){return r.source==='worklog'||r.source==='server'||r.seq});
+    var steps=[
+      ['원료 입고','입고 LOT '+mats.length+'건','▣',mats.length>0],
+      ['IQC 검사',inferStatus(rows,'iqc',finished,mats)?'적합':'대기','✓',inferStatus(rows,'iqc',finished,mats)],
+      ['생산 투입',mats.length+'건 투입','⇩',mats.length>0],
+      ['작업지시',finished[0]?'WO-'+String(finished[0]).slice(0,8):'연결 대기','▤',hasWork],
+      ['생산',finished[0]||'완제품 LOT','▥',finished.length>0],
+      ['PQC 검사',inferStatus(rows,'pqc',finished,mats)?'적합':'대기','✓',inferStatus(rows,'pqc',finished,mats)],
+      ['OQC 검사',inferStatus(rows,'oqc',finished,mats)?'적합':'대기','✓',inferStatus(rows,'oqc',finished,mats)],
+      ['출하',inferStatus(rows,'oqc',finished,mats)?'출하 연결':'미출하','⇨',inferStatus(rows,'oqc',finished,mats)]
+    ];
+    area.innerHTML=steps.map(function(s){return '<div class="trace-flow-step '+(s[3]?'on':'')+'"><div class="ico">'+s[2]+'</div><div class="t">'+s[0]+'</div><div class="d">'+safeEsc(s[1])+'</div></div>'}).join('');
+  };
+  window.renderTraceRows=function(rows){
+    rows=rows||[]; var tb=byId('traceTable'); if(!tb)return;
+    var matCount=byId('traceMatCount'); if(matCount) matCount.textContent=rows.length+'건';
+    if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="trace-empty">조회 결과가 없습니다.</td></tr>'; renderTraceSidePanels([]); return;}
+    var matRows=rows.filter(function(x){return x.material || x.lotNo});
+    tb.innerHTML=matRows.map(function(x){
+      var iqcOk=(window.state&&Array.isArray(state.incoming)&&findRowsByLot(state.incoming,x.lotNo).length)||x.source==='iqc';
+      return '<tr>'
+        +'<td><span class="trace-mat-name">'+safeEsc(x.material||'-')+'</span></td>'
+        +'<td>'+lotLink('iqc',x.lotNo)+'</td>'
+        +'<td>'+safeEsc(x.supName||'-')+'</td>'
+        +'<td>'+safeEsc(x.inputQty||'-')+'</td>'
+        +'<td>'+safeEsc(x.inputTime||'-')+'</td>'
+        +'<td>'+passBadge(!!iqcOk)+'</td>'
+        +'</tr>';
+    }).join('')+'<tr class="trace-total-row"><td colspan="3">합계 투입량</td><td colspan="3">'+(matRows.reduce(function(s,r){return s+numQty(r.inputQty)},0)||'-')+'</td></tr>';
+    renderTraceSidePanels(rows);
+  };
+  function renderTraceSidePanels(rows){
+    var finished=Array.from(new Set((rows||[]).map(function(r){return r.finishedLot}).filter(Boolean)));
+    var mats=Array.from(new Set((rows||[]).map(function(r){return r.lotNo}).filter(Boolean)));
+    var work=(rows||[]).find(function(r){return r.source==='worklog'||r.source==='server'}) || rows[0] || {};
+    var iqc=inferStatus(rows,'iqc',finished,mats), pqc=inferStatus(rows,'pqc',finished,mats), oqc=inferStatus(rows,'oqc',finished,mats);
+    var insp=byId('traceInspectionPanel');
+    if(insp) insp.innerHTML=[['IQC',iqc,mats.length+'개 원료 LOT'],['PQC',pqc,finished[0]||'완제품 LOT'],['OQC',oqc,finished[0]||'출하검사']].map(function(x){return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+safeEsc(x[2])+'</div><div>'+passBadge(x[1])+'</div></div>'}).join('');
+    var wp=byId('traceWorkPanel');
+    if(wp) wp.innerHTML=rows&&rows.length?'<table class="trace-mini-table">'
+      +'<tr><td>완제품 LOT</td><td>'+lotLink('oqc',finished[0]||work.finishedLot||'')+'</td></tr>'
+      +'<tr><td>작업일자</td><td>'+safeEsc(d(work.workDate)||'-')+'</td></tr>'
+      +'<tr><td>작업자</td><td>'+safeEsc(work.worker||'-')+'</td></tr>'
+      +'<tr><td>투입 원료 수</td><td>'+mats.length+'건</td></tr>'
+      +'<tr><td>작업지시</td><td>'+(finished[0]?'WO-'+safeEsc(String(finished[0]).replace(/[^a-zA-Z0-9]/g,'').slice(0,10)):'-')+'</td></tr>'
+      +'</table>':'<div class="trace-muted">LOT 조회 후 표시됩니다.</div>';
+    var np=byId('traceShipPanel');
+    if(np){
+      var ncrs=(window.state&&Array.isArray(state.nonconform))?state.nonconform.filter(function(n){var l=lotNorm(n.lot);return finished.some(function(f){return lotNorm(f)===l})||mats.some(function(m){return lotNorm(m)===l})}):[];
+      np.innerHTML=rows&&rows.length?'<table class="trace-mini-table">'
+        +'<tr><td>출하 상태</td><td>'+(oqc?'<span class="trace-badge pass">출하 연결</span>':'<span class="trace-badge wait">미연결</span>')+'</td></tr>'
+        +'<tr><td>관련 NCR/CAPA</td><td>'+ncrs.length+'건</td></tr>'
+        +'</table>'+(ncrs.length?'<div class="trace-ncr-list">'+ncrs.slice(0,3).map(function(n){return '<div class="trace-ncr-item"><span><b>'+safeEsc(n.type||'NCR')+'</b> '+safeEsc(n.issue||n.item||'품질 이력')+'</span><span>'+safeEsc(n.status||n.capaStatus||'OPEN')+'</span></div>'}).join('')+'</div>':'<div class="trace-muted">관련 이력이 없습니다.</div>'):'<div class="trace-muted">LOT 조회 후 표시됩니다.</div>';
+    }
+  }
+  window.clearTraceView=function(){
+    if(byId('traceKeyword')) byId('traceKeyword').value='';
+    if(byId('traceSummary')) byId('traceSummary').innerHTML='';
+    if(byId('traceTimeline')) byId('traceTimeline').innerHTML='';
+    if(byId('traceTable')) byId('traceTable').innerHTML='<tr><td colspan="6" class="trace-empty">LOT 번호를 입력 후 조회하세요.</td></tr>';
+    if(byId('traceMatCount')) byId('traceMatCount').textContent='0건';
+    renderTraceSidePanels([]);
+  };
+  window.searchTrace=async function(){
+    var kw=(byId('traceKeyword')&&byId('traceKeyword').value||'').trim();
+    if(!kw){clearTraceView();return;}
+    var rows=[];
+    try{
+      if(typeof api==='function'){
+        var out=await api('/api/trace?keyword='+encodeURIComponent(kw));
+        var res=out.res,data=out.data;
+        if(res&&res.ok&&Array.isArray(data&&data.data)&&data.data.length){
+          rows=data.data.map(function(x,i){return {workDate:x.workDate||x.work_date||x.date||'',finishedLot:x.finishedLot||x.finished_lot||x.lot||'',worker:x.worker||'',seq:x.seq||i+1,material:x.material||x.item||'',supName:x.supName||x.supplier||'',lotNo:x.lotNo||x.materialLot||x.lot_no||'',inputQty:x.inputQty||x.qty||'',inputTime:x.inputTime||x.time||'',source:x.source||'server'}});
+        }
+      }
+    }catch(e){console.warn('trace api fallback',e)}
+    if(!rows.length && typeof buildLocalTraceRows==='function') rows=buildLocalTraceRows(kw);
+    renderTraceSummary(rows,kw);renderTraceTimeline(rows);renderTraceRows(rows);
+  };
+  function bindTraceHmc(){
+    var g=byId('traceModeGroup');
+    if(g&&!g.__bound){g.__bound=true;g.addEventListener('click',function(e){var b=e.target.closest('[data-trace-mode]');if(!b)return;traceMode=b.getAttribute('data-trace-mode')||'backward';g.querySelectorAll('.trace-mode').forEach(function(x){x.classList.toggle('active',x===b)});var sel=byId('traceType'); if(sel)sel.value=traceMode==='forward'?'material':'finished'; if(byId('traceKeyword')&&byId('traceKeyword').value.trim()) searchTrace();});}
+    var btn=byId('traceSearch'); if(btn)btn.onclick=window.searchTrace;
+    var input=byId('traceKeyword'); if(input&&!input.__hmcBound){input.__hmcBound=true;input.addEventListener('keydown',function(e){if(e.key==='Enter')window.searchTrace();});}
+    if(byId('traceTable')&&!byId('traceTable').innerHTML.trim()) clearTraceView();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindTraceHmc);else bindTraceHmc();
+  setTimeout(bindTraceHmc,120);setTimeout(bindTraceHmc,600);
+})();
+</script>
 </body>
 </html>
