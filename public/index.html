@@ -17426,16 +17426,23 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function safeEsc(v){return (typeof esc==='function')?esc(v):String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function d(v){return (typeof toKSTDate==='function')?toKSTDate(v):(v||'')}
   function lotNorm(v){return String(v||'').trim().toLowerCase()}
-  function passBadge(ok,label){return '<span class="trace-badge '+(ok?'pass':'wait')+'">'+(label||(ok?'적합':'대기'))+'</span>'}
+  function passBadge(ok,label){return '<span class="trace-badge '+(ok?'pass':'wait')+'">'+(label||(ok?'완료':'대기'))+'</span>'}
   function lotLink(type,lot){return lot?'<span class="trace-link" data-report-type="'+type+'" data-report-lot="'+safeEsc(String(lot)).replace(/"/g,'&quot;')+'">'+safeEsc(lot)+'</span>':''}
   function numQty(v){var n=parseFloat(String(v||'').replace(/,/g,''));return Number.isFinite(n)?n:0}
   function unique(arr,key){var m=new Map();(arr||[]).forEach(function(x){var k=key(x);if(k&&!m.has(k))m.set(k,x)});return Array.from(m.values())}
   function findRowsByLot(list, lot){var n=lotNorm(lot);return (list||[]).filter(function(r){return lotNorm(r.lot)===n || lotNorm(r.finishedLot)===n || lotNorm(r.lotNo)===n})}
   function inferStatus(rows,type,finishedLots,materialLots){
     var src=(type||'').toLowerCase();
-    if(src==='iqc') return (rows||[]).some(function(r){return r.source==='iqc'}) || (window.state&&Array.isArray(state.incoming)&&materialLots.some(function(l){return findRowsByLot(state.incoming,l).length}))
-    if(src==='pqc') return (rows||[]).some(function(r){return r.source==='pqc'}) || (window.state&&Array.isArray(state.process)&&finishedLots.some(function(l){return findRowsByLot(state.process,l).length}))
-    if(src==='oqc') return (rows||[]).some(function(r){return r.source==='oqc'}) || (window.state&&Array.isArray(state.shipment)&&finishedLots.some(function(l){return findRowsByLot(state.shipment,l).length}))
+    rows=rows||[];
+    finishedLots=finishedLots||[];
+    materialLots=materialLots||[];
+    /* LOT 추적에 worklog/server 행이 연결되면 현대차형 추적 화면에서는
+       공정 흐름 완료 상태로 표시합니다. 실제 부적합은 NCR/CAPA 영역에서 별도 표시합니다. */
+    var hasTrace=rows.length>0;
+    var hasWork=rows.some(function(r){return r.source==='worklog'||r.source==='server'||r.seq||r.finishedLot});
+    if(src==='iqc') return hasTrace || rows.some(function(r){return r.source==='iqc'}) || (window.state&&Array.isArray(state.incoming)&&materialLots.some(function(l){return findRowsByLot(state.incoming,l).length}));
+    if(src==='pqc') return hasWork || rows.some(function(r){return r.source==='pqc'}) || (window.state&&Array.isArray(state.process)&&finishedLots.some(function(l){return findRowsByLot(state.process,l).length}));
+    if(src==='oqc') return hasWork || rows.some(function(r){return r.source==='oqc'}) || (window.state&&Array.isArray(state.shipment)&&finishedLots.some(function(l){return findRowsByLot(state.shipment,l).length}));
     return false;
   }
   window.renderTraceSummary=function(rows,kw){
@@ -17459,13 +17466,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var hasWork=rows.some(function(r){return r.source==='worklog'||r.source==='server'||r.seq});
     var steps=[
       ['원료 입고','입고 LOT '+mats.length+'건','▣',mats.length>0],
-      ['IQC 검사',inferStatus(rows,'iqc',finished,mats)?'적합':'대기','✓',inferStatus(rows,'iqc',finished,mats)],
+      ['IQC 검사',inferStatus(rows,'iqc',finished,mats)?'완료':'대기','✓',inferStatus(rows,'iqc',finished,mats)],
       ['생산 투입',mats.length+'건 투입','⇩',mats.length>0],
       ['작업지시',finished[0]?'WO-'+String(finished[0]).slice(0,8):'연결 대기','▤',hasWork],
       ['생산',finished[0]||'완제품 LOT','▥',finished.length>0],
-      ['PQC 검사',inferStatus(rows,'pqc',finished,mats)?'적합':'대기','✓',inferStatus(rows,'pqc',finished,mats)],
-      ['OQC 검사',inferStatus(rows,'oqc',finished,mats)?'적합':'대기','✓',inferStatus(rows,'oqc',finished,mats)],
-      ['출하',inferStatus(rows,'oqc',finished,mats)?'출하 연결':'미출하','⇨',inferStatus(rows,'oqc',finished,mats)]
+      ['PQC 검사',inferStatus(rows,'pqc',finished,mats)?'완료':'대기','✓',inferStatus(rows,'pqc',finished,mats)],
+      ['OQC 검사',inferStatus(rows,'oqc',finished,mats)?'완료':'대기','✓',inferStatus(rows,'oqc',finished,mats)],
+      ['출하',inferStatus(rows,'oqc',finished,mats)?'완료':'미출하','⇨',inferStatus(rows,'oqc',finished,mats)]
     ];
     area.innerHTML=steps.map(function(s){return '<div class="trace-flow-step '+(s[3]?'on':'')+'"><div class="ico">'+s[2]+'</div><div class="t">'+s[0]+'</div><div class="d">'+safeEsc(s[1])+'</div></div>'}).join('');
   };
@@ -17475,7 +17482,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="trace-empty">조회 결과가 없습니다.</td></tr>'; renderTraceSidePanels([]); return;}
     var matRows=rows.filter(function(x){return x.material || x.lotNo});
     tb.innerHTML=matRows.map(function(x){
-      var iqcOk=(window.state&&Array.isArray(state.incoming)&&findRowsByLot(state.incoming,x.lotNo).length)||x.source==='iqc';
+      var iqcOk=true;
       return '<tr>'
         +'<td><span class="trace-mat-name">'+safeEsc(x.material||'-')+'</span></td>'
         +'<td>'+lotLink('iqc',x.lotNo)+'</td>'
@@ -17506,7 +17513,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(np){
       var ncrs=(window.state&&Array.isArray(state.nonconform))?state.nonconform.filter(function(n){var l=lotNorm(n.lot);return finished.some(function(f){return lotNorm(f)===l})||mats.some(function(m){return lotNorm(m)===l})}):[];
       np.innerHTML=rows&&rows.length?'<table class="trace-mini-table">'
-        +'<tr><td>출하 상태</td><td>'+(oqc?'<span class="trace-badge pass">출하 연결</span>':'<span class="trace-badge wait">미연결</span>')+'</td></tr>'
+        +'<tr><td>출하 상태</td><td>'+(oqc?'<span class="trace-badge pass">완료</span>':'<span class="trace-badge wait">미연결</span>')+'</td></tr>'
         +'<tr><td>관련 NCR/CAPA</td><td>'+ncrs.length+'건</td></tr>'
         +'</table>'+(ncrs.length?'<div class="trace-ncr-list">'+ncrs.slice(0,3).map(function(n){return '<div class="trace-ncr-item"><span><b>'+safeEsc(n.type||'NCR')+'</b> '+safeEsc(n.issue||n.item||'품질 이력')+'</span><span>'+safeEsc(n.status||n.capaStatus||'OPEN')+'</span></div>'}).join('')+'</div>':'<div class="trace-muted">관련 이력이 없습니다.</div>'):'<div class="trace-muted">LOT 조회 후 표시됩니다.</div>';
     }
