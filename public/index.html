@@ -4382,7 +4382,120 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_START -->
+<style id="nmc-workorder-production-date-lot-full-patch-style">
+/* 작업지시서: 지시일자 -> 생산일자, 생산 LOT = NM-YYMMDD, 동기화 버튼 삭제 */
+#page-workorder-final #nmcLotGen,
+#page-production #nmcLotGen,
+#page-workorder-final .nmc-lot-btn,
+#page-production .nmc-lot-btn{display:none!important;visibility:hidden!important;width:0!important;min-width:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;}
+#page-workorder-final .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
+#page-production .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
+#page-workorder-final #nmcProdLotWrap .nmc-input-wrap,
+#page-production #nmcProdLotWrap .nmc-input-wrap{display:block!important;grid-template-columns:1fr!important;gap:0!important;}
+#page-workorder-final #nmcPlanQty,
+#page-workorder-final #nmcActualQty,
+#page-production #nmcPlanQty,
+#page-production #nmcActualQty{background:#f3f4f6!important;color:#4b5563!important;cursor:not-allowed!important;}
+</style>
+<script id="nmc-workorder-production-date-lot-full-patch-script">
+(function(){
+  'use strict';
+  function qsa(sel, root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  function pad2(n){return String(n).padStart(2,'0');}
+  function today(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+  function toLot(dateValue){
+    var v=String(dateValue||'').trim();
+    var m=v.match(/^(\d{4})[-./]?(\d{2})[-./]?(\d{2})/);
+    if(!m) return '';
+    return 'NM-'+m[1].slice(2)+m[2]+m[3];
+  }
+  function numeric(v){return Number(String(v||'0').replace(/,/g,'').replace(/[^0-9.\-]/g,''))||0;}
+  function setInputValue(input, value){
+    if(!input) return;
+    if(input.value !== value){
+      input.value = value;
+      try{input.dispatchEvent(new Event('input',{bubbles:false}));}catch(e){}
+    }
+  }
+  function patchLabels(root){
+    qsa('#page-workorder-final label, #page-production label, #page-workorder-final b, #page-production b, #page-workorder-final th, #page-production th', root).forEach(function(el){
+      if((el.textContent||'').trim().replace(/\s+/g,'') === '지시일자*') el.innerHTML='생산일자<span class="req">*</span>';
+      else if((el.textContent||'').trim() === '지시일자') el.textContent='생산일자';
+    });
+  }
+  function patchDateAndLot(root){
+    qsa('#nmcLotGen,.nmc-lot-btn', root).forEach(function(btn){btn.remove();});
+    qsa('#nmcOrderDate', root).forEach(function(dateInput){
+      if(!dateInput.value) dateInput.value=today();
+      var scope=dateInput.closest('#page-workorder-final,#page-production')||document;
+      var lotInputs=qsa('#nmcProdLot', scope);
+      var lot=toLot(dateInput.value);
+      lotInputs.forEach(function(lotInput){
+        lotInput.readOnly=true;
+        lotInput.placeholder='생산일자 기준 자동생성 (NM-YYMMDD)';
+        if(lot) lotInput.value=lot;
+      });
+    });
+  }
+  function patchQtyReadonly(root){
+    qsa('#nmcPlanQty,#nmcActualQty', root).forEach(function(inp){
+      inp.readOnly=true;
+      inp.classList.remove('nmc-lot-source');
+      inp.title='투입 원료 입력값 기준 자동 계산';
+    });
+  }
+  function updateMaterialTotals(root){
+    var scopes=[];
+    qsa('#page-workorder-final,#page-production', root).forEach(function(s){scopes.push(s);});
+    if(!scopes.length) scopes=[document];
+    scopes.forEach(function(scope){
+      var rows=qsa('#nmcMaterialTable tbody tr', scope);
+      if(!rows.length) return;
+      var planTotal=0, actualTotal=0;
+      rows.forEach(function(tr){
+        planTotal += numeric((tr.querySelector('.nmc-mat-plan-qty')||{}).value);
+        actualTotal += numeric((tr.querySelector('.nmc-mat-qty')||{}).value);
+      });
+      qsa('#nmcPlanQty', scope).forEach(function(inp){setInputValue(inp, planTotal ? planTotal.toFixed(2) : '0');});
+      qsa('#nmcActualQty', scope).forEach(function(inp){setInputValue(inp, actualTotal ? actualTotal.toFixed(2) : '0');});
+      qsa('#nmcMaterialTotalPlanQty', scope).forEach(function(el){el.textContent=planTotal.toFixed(2)+' kg';});
+      qsa('#nmcMaterialTotalQty,#nmcMatTotal', scope).forEach(function(el){el.textContent=actualTotal.toFixed(2)+' kg';});
+    });
+  }
+  function apply(root){
+    root=root||document;
+    patchLabels(root);
+    patchDateAndLot(root);
+    patchQtyReadonly(root);
+    updateMaterialTotals(root);
+  }
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.id==='nmcOrderDate') setTimeout(function(){apply(document);},0);
+    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) setTimeout(function(){apply(document);},0);
+  }, true);
+  document.addEventListener('input', function(e){
+    if(e.target && e.target.id==='nmcOrderDate') setTimeout(function(){apply(document);},0);
+    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) setTimeout(function(){apply(document);},0);
+    if(e.target && e.target.classList && e.target.classList.contains('nmc-lot-source')) setTimeout(function(){apply(document);},0);
+  }, true);
+  document.addEventListener('click', function(e){
+    if(e.target && (e.target.closest('[data-nmc-action="reset"]') || e.target.closest('#nmcMaterialAdd') || e.target.closest('[data-nmc-del-row]') || e.target.closest('#nmcLotGen'))){
+      setTimeout(function(){apply(document);},0);
+      setTimeout(function(){apply(document);},80);
+    }
+  }, true);
+  var mo=new MutationObserver(function(){clearTimeout(window.__nmcProdLotPatchTimer);window.__nmcProdLotPatchTimer=setTimeout(function(){apply(document);},60);});
+  if(document.documentElement) mo.observe(document.documentElement,{childList:true,subtree:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){apply(document);}); else apply(document);
+  [80,250,600,1200,2500].forEach(function(t){setTimeout(function(){apply(document);},t);});
+})();
+</script>
+<!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_END -->
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -8221,7 +8334,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <h3>1. 기본 정보</h3>
         <div class="nmc-form-grid">
           <div class="nmc-field"><label>작업지시서 번호<span class="req">*</span></label><input class="nmc-input" id="nmcWoNo" readonly placeholder="NM-YYYYMMDD-0001 자동생성"></div>
-          <div class="nmc-field"><label>지시일자<span class="req">*</span></label><input class="nmc-input" type="date" id="nmcOrderDate"></div>
+          <div class="nmc-field"><label>생산일자<span class="req">*</span></label><input class="nmc-input" type="date" id="nmcOrderDate"></div>
           <div class="nmc-field"><label>계획 구분<span class="req">*</span></label><select class="nmc-select" id="nmcPlanType"><option>일간</option><option>주간</option><option>월간</option></select></div>
           <div class="nmc-field"><label>우선순위</label><select class="nmc-select"><option>보통</option><option>높음</option><option>낮음</option></select></div>
           <div class="nmc-field"><label>요청 부서<span class="req">*</span></label><input class="nmc-input" id="nmcReqDept" placeholder="요청 부서 직접 입력"></div>
@@ -8235,9 +8348,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div class="nmc-form-grid five">
           <div class="nmc-field"><label>제품명<span class="req">*</span></label><input class="nmc-input nmc-lot-source" id="nmcProdName" placeholder="제품명 직접 입력"></div>
           <div class="nmc-field"><label>완제품 LOT</label><input class="nmc-input nmc-lot-source" id="nmcProdCode" placeholder="완제품 LOT 직접 입력"></div>
-          <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit nmc-lot-source" id="nmcPlanQty" placeholder="0"><span class="nmc-unit">kg</span></span></div>
-          <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit nmc-lot-source" id="nmcActualQty" placeholder="0"><span class="nmc-unit">kg</span></span></div>
-          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" readonly placeholder="작업지시서 번호와 동일 자동연동"><button class="nmc-lot-btn" id="nmcLotGen">↻ 동기화</button></span></div>
+          <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcPlanQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
+          <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcActualQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
+          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" readonly placeholder="생산일자 기준 자동생성 (NM-YYMMDD)"></span></div>
         </div>
       </div>
       <div class="nmc-workorder-card">
@@ -10637,7 +10750,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderOne(type){var page=$(type==='ref'?'page-workorder-reference':'page-workorder-inbox'); if(!page) return; var u=currentUser(); var list=myItems(type); page.dataset.nmcVisibleUids=list.map(function(x){return x.uid;}).join(','); var body=$(type==='ref'?'nmcRefWorkorderBody':'nmcInboxWorkorderBody'); if(body) body.innerHTML=list.length?list.map(function(item,i){return rowHtml(item,i,type,u);}).join(''):'<tr><td colspan="8" class="nmc-inbox-empty">확인할 작업지시서가 없습니다.</td></tr>'; var unread=list.filter(function(x){var m=type==='ref'?(x.refReadBy||{}):(x.readBy||{}); return !m[String(u.id||u.email||u.name||'login-user')];}).length; var k={total:list.length,unread:unread,read:list.length-unread,sent:list.length}; Object.keys(k).forEach(function(n){var el=qs('[data-nmc-kpi="'+n+'"]',page); if(el) el.textContent=String(k[n]);});}
   function renderInboxPages(){renderOne('inbox'); renderOne('ref'); updateTopBadge();}
   function updateTopBadge(){var u=currentUser(); var unread=myItems('inbox').filter(function(x){var key=String(u.id||u.email||u.name||'login-user'); return !(x.readBy||{})[key];}).length + myItems('ref').filter(function(x){var key=String(u.id||u.email||u.name||'login-user'); return !(x.refReadBy||{})[key];}).length; var b=$('nmcNotiBadge'); if(b){b.textContent=String(unread); b.style.display=unread>0?'flex':'none';}}
-  function showDetail(uid,type){var list=readItems(); var item=list.find(function(x){return x.uid===uid;}); if(!item) return; var page=$(type==='ref'?'page-workorder-reference':'page-workorder-inbox'); if(page){page.dataset.nmcSelectedUid=uid; page.dataset.nmcSelectedType=type;} var u=currentUser(); var key=String(u.id||u.email||u.name||'login-user'); if(type==='ref'){item.refReadBy=item.refReadBy||{}; item.refReadBy[key]=new Date().toISOString();}else{item.readBy=item.readBy||{}; item.readBy[key]=new Date().toISOString();} writeItems(list); renderInboxPages(); var detail=$(type==='ref'?'nmcRefWorkorderDetail':'nmcInboxWorkorderDetail'); if(!detail) return; detail.classList.add('show'); detail.innerHTML='<div class="nmc-detail-head"><h3>전체 작업지시서</h3><span class="nmc-detail-sub">작업지시번호 클릭/상세보기 공통 화면</span></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(item.woNo||'-')+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(item.status||'발송완료')+'</span></div><div class="nmc-detail-cell"><b>작성자/발송자</b><span>'+esc(workorderWriterText(item))+'</span></div><div class="nmc-detail-cell"><b>발송일시</b><span>'+esc(item.sendTime||item.createdAt||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(item.productName||item.title||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(item.productCode||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(item.prodLot||'-')+'</span></div><div class="nmc-detail-cell"><b>지시일자</b><span>'+esc(item.orderDate||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(kg)</b><span>'+esc(item.planQty||'-')+' kg</span></div><div class="nmc-detail-cell"><b>실투입량</b><span>'+esc(item.actualQty||'-')+' kg</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(workorderTargetText(item,'inbox'))+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(workorderTargetText(item,'ref'))+'</span></div></div><b style="display:block;margin:12px 0 6px;color:#0f172a">작업 지시 사항</b><div class="nmc-detail-box">'+esc(item.instruction||'-')+'</div><b style="display:block;margin:12px 0 6px;color:#0f172a">발송 비고</b><div class="nmc-detail-box">'+esc(item.sendNote||'')+'</div>'+(function(){var mats=Array.isArray(item.materials)?item.materials:[]; var rows=mats.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(m.name||m.materialName||m.rawName||'-')+'</td><td>'+esc(m.lot||m.materialLot||m.lotNo||'-')+'</td><td>'+esc(m.planQty||m.plannedQty||'0')+' kg</td><td>'+esc(m.actualQty||m.qty||m.inputQty||'0')+' kg</td><td>'+esc(m.ratio||'0.00')+' %</td><td>'+esc(m.note||m.remark||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>'; return '<b style="display:block;margin:12px 0 6px;color:#0f172a">투입 원료</b><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table></div>';})()+''; detail.scrollIntoView({behavior:'smooth',block:'start'});}
+  function showDetail(uid,type){var list=readItems(); var item=list.find(function(x){return x.uid===uid;}); if(!item) return; var page=$(type==='ref'?'page-workorder-reference':'page-workorder-inbox'); if(page){page.dataset.nmcSelectedUid=uid; page.dataset.nmcSelectedType=type;} var u=currentUser(); var key=String(u.id||u.email||u.name||'login-user'); if(type==='ref'){item.refReadBy=item.refReadBy||{}; item.refReadBy[key]=new Date().toISOString();}else{item.readBy=item.readBy||{}; item.readBy[key]=new Date().toISOString();} writeItems(list); renderInboxPages(); var detail=$(type==='ref'?'nmcRefWorkorderDetail':'nmcInboxWorkorderDetail'); if(!detail) return; detail.classList.add('show'); detail.innerHTML='<div class="nmc-detail-head"><h3>전체 작업지시서</h3><span class="nmc-detail-sub">작업지시번호 클릭/상세보기 공통 화면</span></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(item.woNo||'-')+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(item.status||'발송완료')+'</span></div><div class="nmc-detail-cell"><b>작성자/발송자</b><span>'+esc(workorderWriterText(item))+'</span></div><div class="nmc-detail-cell"><b>발송일시</b><span>'+esc(item.sendTime||item.createdAt||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(item.productName||item.title||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(item.productCode||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(item.prodLot||'-')+'</span></div><div class="nmc-detail-cell"><b>생산일자</b><span>'+esc(item.orderDate||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(kg)</b><span>'+esc(item.planQty||'-')+' kg</span></div><div class="nmc-detail-cell"><b>실투입량</b><span>'+esc(item.actualQty||'-')+' kg</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(workorderTargetText(item,'inbox'))+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(workorderTargetText(item,'ref'))+'</span></div></div><b style="display:block;margin:12px 0 6px;color:#0f172a">작업 지시 사항</b><div class="nmc-detail-box">'+esc(item.instruction||'-')+'</div><b style="display:block;margin:12px 0 6px;color:#0f172a">발송 비고</b><div class="nmc-detail-box">'+esc(item.sendNote||'')+'</div>'+(function(){var mats=Array.isArray(item.materials)?item.materials:[]; var rows=mats.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(m.name||m.materialName||m.rawName||'-')+'</td><td>'+esc(m.lot||m.materialLot||m.lotNo||'-')+'</td><td>'+esc(m.planQty||m.plannedQty||'0')+' kg</td><td>'+esc(m.actualQty||m.qty||m.inputQty||'0')+' kg</td><td>'+esc(m.ratio||'0.00')+' %</td><td>'+esc(m.note||m.remark||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>'; return '<b style="display:block;margin:12px 0 6px;color:#0f172a">투입 원료</b><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table></div>';})()+''; detail.scrollIntoView({behavior:'smooth',block:'start'});}
   function showPage(pg){qsa('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active',b.dataset.page===pg);}); qsa('.page').forEach(function(p){p.classList.remove('active');}); var page=$('page-'+pg); if(page) page.classList.add('active'); renderInboxPages(); var content=qs('.content'); if(content) content.scrollTo({top:0,behavior:'smooth'});}
   function deleteSelectedWorkOrder(type){var page=$(type==='ref'?'page-workorder-reference':'page-workorder-inbox'); if(!page) return; var uid=page.dataset.nmcSelectedUid||''; if(!uid){alert('삭제할 작업지시서를 먼저 상세보기로 선택하세요.'); return;} if(!confirm('선택한 작업지시서를 삭제하시겠습니까?')) return; var list=readItems(); var item=list.find(function(x){return x.uid===uid;}); if(!item) return; var u=currentUser(); var key=String(u.id||u.email||u.name||'login-user'); if(type==='ref'){item.deletedRefBy=item.deletedRefBy||{}; item.deletedRefBy[key]=new Date().toISOString();}else{item.deletedBy=item.deletedBy||{}; item.deletedBy[key]=new Date().toISOString();} writeItems(list); delete page.dataset.nmcSelectedUid; var detail=$(type==='ref'?'nmcRefWorkorderDetail':'nmcInboxWorkorderDetail'); if(detail){detail.classList.remove('show'); detail.innerHTML='';} renderInboxPages();}
   function bind(){document.addEventListener('click',function(e){var nav=e.target.closest('.nav-item[data-page]'); if(nav && (nav.dataset.page==='workorder-inbox'||nav.dataset.page==='workorder-reference')){e.preventDefault();e.stopPropagation();ensurePages();showPage(nav.dataset.page);return;} var target=e.target.closest('[data-page-target]'); if(target && (target.dataset.pageTarget==='workorder-inbox'||target.dataset.pageTarget==='workorder-reference')){e.preventDefault();showPage(target.dataset.pageTarget);return;} var rowDel=e.target.closest('[data-nmc-row-delete]'); if(rowDel){e.preventDefault();showDetail(rowDel.getAttribute('data-nmc-row-delete'),rowDel.getAttribute('data-nmc-inbox-type')||'inbox');deleteSelectedWorkOrder(rowDel.getAttribute('data-nmc-inbox-type')||'inbox');return;} var del=e.target.closest('[data-nmc-inbox-delete]'); if(del){e.preventDefault();var pg=del.closest('.page'); deleteSelectedWorkOrder(pg&&pg.id==='page-workorder-reference'?'ref':'inbox');return;} var open=e.target.closest('[data-nmc-open-inbox]'); if(open){e.preventDefault();showDetail(open.getAttribute('data-nmc-open-inbox'),open.getAttribute('data-nmc-inbox-type')||'inbox');return;} var send=e.target.closest('[data-nmc-action="send"]'); if(send){setTimeout(saveSentWorkOrder,0);}},true);}
@@ -11341,7 +11454,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var mats=(item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+text(m.name||m.materialName||m.rawName||m.rawMaterialName||'-')+'</td><td>'+text(m.lot||m.materialLot||m.lotNo||m.rawLot||'-')+'</td><td>'+text(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+' kg</td><td>'+text(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+' kg</td><td>'+text(m.ratio||m.rate||m.percent||'0.00')+' %</td><td>'+text(m.note||m.remark||m.memo||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
     detail.innerHTML='<div class="card"><div class="ch"><h3>작업지시서 상세</h3></div><div class="cb">'
       +'<h4 style="margin:0 0 10px;color:#0f172a">1. 기본 정보</h4><div class="fg4">'
-      +'<div class="field"><label>작업지시번호</label><input readonly value="'+text(item.no)+'"></div><div class="field"><label>지시일자</label><input readonly value="'+text(item.orderDate)+'"></div><div class="field"><label>계획구분</label><input readonly value="'+text(item.planType)+'"></div><div class="field"><label>상태</label><input readonly value="'+text(item.status)+'"></div><div class="field"><label>요청부서</label><input readonly value="'+text(item.reqDept)+'"></div><div class="field"><label>작업자</label><input readonly value="'+text(item.worker)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+text(item.sender)+'"></div>'
+      +'<div class="field"><label>작업지시번호</label><input readonly value="'+text(item.no)+'"></div><div class="field"><label>생산일자</label><input readonly value="'+text(item.orderDate)+'"></div><div class="field"><label>계획구분</label><input readonly value="'+text(item.planType)+'"></div><div class="field"><label>상태</label><input readonly value="'+text(item.status)+'"></div><div class="field"><label>요청부서</label><input readonly value="'+text(item.reqDept)+'"></div><div class="field"><label>작업자</label><input readonly value="'+text(item.worker)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+text(item.sender)+'"></div>'
       +'</div><h4 style="margin:18px 0 10px;color:#0f172a">2. 제품 정보</h4><div class="fg4">'
       +'<div class="field"><label>제품명</label><input readonly value="'+text(item.product)+'"></div><div class="field"><label>완제품 LOT</label><input readonly value="'+text(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+text(item.lot)+'"></div><div class="field"><label>계획수량 (kg)</label><input readonly value="'+text(item.plan)+' kg"></div><div class="field"><label>투입량 (kg)</label><input readonly value="'+text(item.actual)+' kg"></div>'
       +'</div><h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
@@ -11376,7 +11489,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     target.innerHTML=''
       +'<div class="rhdr"><div><h2>작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order</div></div><div class="rbname">'+text(item.no)+'</div></div>'
       +'<table><tbody>'
-      +'<tr><th>작업지시번호</th><td>'+text(item.no)+'</td><th>지시일자</th><td>'+text(item.orderDate)+'</td><th>계획구분</th><td>'+text(item.planType)+'</td></tr>'
+      +'<tr><th>작업지시번호</th><td>'+text(item.no)+'</td><th>생산일자</th><td>'+text(item.orderDate)+'</td><th>계획구분</th><td>'+text(item.planType)+'</td></tr>'
       +'<tr><th>요청부서</th><td>'+text(item.reqDept)+'</td><th>상태</th><td>'+text(item.status)+'</td><th>작업자</th><td>'+text(item.worker)+'</td></tr>'
       +'<tr><th>제품명</th><td>'+text(item.product)+'</td><th>제품코드</th><td>'+text(item.code)+'</td><th>생산 LOT</th><td>'+text(item.lot)+'</td></tr>'
       +'<tr><th>계획수량 (kg)</th><td>'+text(item.plan)+' kg</td><th>실투입량</th><td>'+text(item.actual)+' kg</td><th></th><td></td></tr>'
@@ -12482,7 +12595,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       +   '<div><div class="rbsub">작업지시번호</div><div class="rbname">'+esc(n.no)+'</div></div>'
       + '</div>'
       + '<table><tbody>'
-      + '<tr><th>작업지시번호</th><td>'+esc(n.no)+'</td><th>상태</th><td>'+esc(n.status)+'</td><th>지시일자</th><td>'+esc(n.orderDate)+'</td></tr>'
+      + '<tr><th>작업지시번호</th><td>'+esc(n.no)+'</td><th>상태</th><td>'+esc(n.status)+'</td><th>생산일자</th><td>'+esc(n.orderDate)+'</td></tr>'
       + '<tr><th>제품명</th><td>'+esc(n.product)+'</td><th>제품코드</th><td>'+esc(n.code)+'</td><th>생산 LOT</th><td>'+esc(n.lot)+'</td></tr>'
       + '<tr><th>계획수량 (kg)</th><td>'+esc(n.plan)+' kg</td><th>실투입량</th><td>'+esc(n.actual)+' kg</td><th>계획구분</th><td>'+esc(n.planType)+'</td></tr>'
       + '<tr><th>작성/발송자</th><td>'+esc(n.sender)+'</td><th>수신</th><td>'+esc(n.receiver)+'</td><th>참조</th><td>'+esc(n.ref)+'</td></tr>'
@@ -13295,7 +13408,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!item){detail.innerHTML='<div class="nmc-ref-empty">상세 데이터를 찾을 수 없습니다.</div>';return;}
     var mats=(item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(m.name||m.materialName||m.rawName||m.rawMaterialName||'-')+'</td><td>'+esc(m.lot||m.materialLot||m.lotNo||m.rawLot||'-')+'</td><td>'+esc(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+' kg</td><td>'+esc(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+' kg</td><td>'+esc(m.ratio||m.rate||m.percent||'0.00')+' %</td><td>'+esc(m.note||m.remark||m.memo||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
     detail.innerHTML='<div class="card"><div class="ch"><h3>참조 작업지시서 상세</h3><div class="ca"><span class="tag">조회 전용</span></div></div><div class="cb">'
-      +'<h4 style="margin:0 0 10px;color:#0f172a">1. 기본 정보</h4><div class="fg4"><div class="field"><label>작업지시번호</label><input readonly value="'+esc(item.no)+'"></div><div class="field"><label>지시일자</label><input readonly value="'+esc(item.orderDate)+'"></div><div class="field"><label>계획구분</label><input readonly value="'+esc(item.planType)+'"></div><div class="field"><label>상태</label><input readonly value="'+esc(item.status)+'"></div><div class="field"><label>요청부서</label><input readonly value="'+esc(item.reqDept)+'"></div><div class="field"><label>작업자</label><input readonly value="'+esc(item.worker)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+esc(item.sender)+'"></div></div>'
+      +'<h4 style="margin:0 0 10px;color:#0f172a">1. 기본 정보</h4><div class="fg4"><div class="field"><label>작업지시번호</label><input readonly value="'+esc(item.no)+'"></div><div class="field"><label>생산일자</label><input readonly value="'+esc(item.orderDate)+'"></div><div class="field"><label>계획구분</label><input readonly value="'+esc(item.planType)+'"></div><div class="field"><label>상태</label><input readonly value="'+esc(item.status)+'"></div><div class="field"><label>요청부서</label><input readonly value="'+esc(item.reqDept)+'"></div><div class="field"><label>작업자</label><input readonly value="'+esc(item.worker)+'"></div><div class="field"><label>작성자/발송자</label><input readonly value="'+esc(item.sender)+'"></div></div>'
       +'<h4 style="margin:18px 0 10px;color:#0f172a">2. 제품 정보</h4><div class="fg4"><div class="field"><label>제품명</label><input readonly value="'+esc(item.product)+'"></div><div class="field"><label>완제품 LOT</label><input readonly value="'+esc(item.code)+'"></div><div class="field"><label>생산 LOT</label><input readonly value="'+esc(item.lot)+'"></div><div class="field"><label>계획수량 (kg)</label><input readonly value="'+esc(item.plan)+' kg"></div><div class="field"><label>투입량 (kg)</label><input readonly value="'+esc(item.actual)+' kg"></div></div>'
       +'<h4 style="margin:18px 0 10px;color:#0f172a">3. 투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div>'
       +'<h4 style="margin:18px 0 10px;color:#0f172a">4. 지시 사항</h4><div class="nmc-ref-box">'+esc(item.instruction||'-')+'</div>'
@@ -13309,7 +13422,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var target=q('#printTarget'); if(!target){target=document.createElement('div');target.id='printTarget';document.body.appendChild(target);} target.className='rsheet';
     var mats=(item.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(m.name||m.materialName||m.rawName||m.rawMaterialName||'-')+'</td><td>'+esc(m.lot||m.materialLot||m.lotNo||m.rawLot||'-')+'</td><td>'+esc(m.planQty||m.plannedQty||m.planInputQty||m.plannedInputQty||'0')+' kg</td><td>'+esc(m.actualQty||m.qty||m.inputQty||m.actualInputQty||m.realInputQty||'0')+' kg</td><td>'+esc(m.ratio||m.rate||m.percent||'0.00')+' %</td><td>'+esc(m.note||m.remark||m.memo||'')+'</td></tr>';}).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b">저장된 투입 원료 정보가 없습니다.</td></tr>';
     target.innerHTML='<div class="rhdr"><div><h2>참조 작업지시서</h2><div class="rbsub">NAMO Chemical Production Work Order Reference Copy</div></div><div class="rbname">'+esc(item.no)+'</div></div>'
-      +'<table><tbody><tr><th>작업지시번호</th><td>'+esc(item.no)+'</td><th>지시일자</th><td>'+esc(item.orderDate)+'</td><th>계획구분</th><td>'+esc(item.planType)+'</td></tr><tr><th>요청부서</th><td>'+esc(item.reqDept)+'</td><th>상태</th><td>'+esc(item.status)+'</td><th>작업자</th><td>'+esc(item.worker)+'</td></tr><tr><th>제품명</th><td>'+esc(item.product)+'</td><th>제품코드</th><td>'+esc(item.code)+'</td><th>생산 LOT</th><td>'+esc(item.lot)+'</td></tr><tr><th>계획수량 (kg)</th><td>'+esc(item.plan)+' kg</td><th>투입량</th><td>'+esc(item.actual)+' kg</td><th></th><td></td></tr></tbody></table>'
+      +'<table><tbody><tr><th>작업지시번호</th><td>'+esc(item.no)+'</td><th>생산일자</th><td>'+esc(item.orderDate)+'</td><th>계획구분</th><td>'+esc(item.planType)+'</td></tr><tr><th>요청부서</th><td>'+esc(item.reqDept)+'</td><th>상태</th><td>'+esc(item.status)+'</td><th>작업자</th><td>'+esc(item.worker)+'</td></tr><tr><th>제품명</th><td>'+esc(item.product)+'</td><th>제품코드</th><td>'+esc(item.code)+'</td><th>생산 LOT</th><td>'+esc(item.lot)+'</td></tr><tr><th>계획수량 (kg)</th><td>'+esc(item.plan)+' kg</td><th>투입량</th><td>'+esc(item.actual)+' kg</td><th></th><td></td></tr></tbody></table>'
       +'<h4 style="margin:16px 0 8px">투입 원료</h4><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT 번호</th><th>계획투입량 (kg)</th><th>투입량 (kg)</th><th>비율 (%)</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table>'
       +'<h4 style="margin:16px 0 8px">지시 사항</h4><div style="border:1px solid #999;min-height:80px;padding:10px;white-space:pre-wrap;line-height:1.6">'+esc(item.instruction||'-')+'</div>'
       +'<h4 style="margin:16px 0 8px">발송 정보</h4><table><tbody><tr><th>발송자</th><td>'+esc(item.sender)+'</td><th>수신</th><td>'+esc(item.receiver)+'</td><th>참조</th><td>'+esc(item.ref)+'</td></tr><tr><th>발송일시</th><td>'+esc(item.date)+'</td><th>비고</th><td colspan="3">'+esc(item.sendNote)+'</td></tr></tbody></table>'
