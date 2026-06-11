@@ -4382,7 +4382,146 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<script id="nmc-workorder-detail-bottom-actions-final-20260611">
+(function(){
+  'use strict';
+  if(window.__nmcWorkorderDetailBottomActionsFinal20260611) return;
+  window.__nmcWorkorderDetailBottomActionsFinal20260611 = true;
+
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function q(s,r){ return (r || document).querySelector(s); }
+  function qa(s,r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(v){ return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function hasText(el, word){ return txt(el && el.textContent).indexOf(word) > -1; }
+
+  function detailRoot(){
+    var heads = qa('h2,h3,h4,.ph-title,.ch h3,.nmc-wo-detail-head-print h3');
+    for(var i=0;i<heads.length;i++){
+      if(hasText(heads[i], '작업지시서 상세')){
+        return heads[i].closest('.card') || heads[i].closest('[id]') || heads[i].parentElement;
+      }
+    }
+    return q('#page-workorder-list .nmc-wo-detail-card') || q('#page-workorder-list .card:nth-of-type(2)');
+  }
+
+  function idFromDetail(root){
+    root = root || detailRoot();
+    if(!root) return '';
+    var marked = q('[data-nmc-safe-id],[data-nmc-list-print],[data-nmc-inbox-print],[data-nmc-list-edit],[data-nmc-wo-edit-final]', root);
+    if(marked){
+      var id = txt(marked.getAttribute('data-nmc-safe-id') || marked.getAttribute('data-nmc-list-print') || marked.getAttribute('data-nmc-inbox-print') || marked.getAttribute('data-nmc-list-edit') || marked.getAttribute('data-nmc-wo-edit-final'));
+      if(id) return id;
+    }
+    var cells = qa('.nmc-detail-cell,.field,.cell,td,div', root);
+    for(var i=0;i<cells.length;i++){
+      var label = q('b,label,th', cells[i]);
+      if(label && hasText(label,'작업지시번호')){
+        var val = q('span,input,textarea,td', cells[i]);
+        var v = val ? (val.value || val.textContent) : cells[i].textContent.replace(label.textContent,'');
+        v = txt(v);
+        if(v) return v;
+      }
+    }
+    var m = txt(root.textContent).match(/NM[-–][0-9]{8,}-[0-9]+/i);
+    return m ? m[0] : '';
+  }
+
+  function removeOldDetailButtons(root){
+    if(!root) return;
+    qa('button,a', root).forEach(function(btn){
+      if(btn.closest('.nmc-wo-detail-bottom-actions')) return;
+      var t = txt(btn.textContent);
+      var attrs = txt(btn.getAttribute('data-nmc-inbox-print') || btn.getAttribute('data-nmc-list-print') || btn.getAttribute('data-nmc-list-edit') || btn.getAttribute('data-nmc-wo-edit-final') || btn.getAttribute('data-nmc-force-print') || btn.getAttribute('data-nmc-force-edit'));
+      if(t === '인쇄' || t === '수정' || t === '삭제' || attrs){
+        btn.remove();
+      }
+    });
+    qa('.namo-prod-actions', root).forEach(function(box){
+      if(!box.closest('.nmc-wo-detail-bottom-actions')) box.remove();
+    });
+  }
+
+  function findRemarkAnchor(root){
+    var candidates = qa('.field,.nmc-detail-cell,.cell,textarea,input,div', root);
+    var last = null;
+    candidates.forEach(function(el){
+      var label = q('label,b', el);
+      var t = txt((label && label.textContent) || el.textContent);
+      if(t === '비고' || t.indexOf('발송 비고') > -1 || t.indexOf('비고') > -1) last = el;
+    });
+    return last || root;
+  }
+
+  function ensureBottomActions(){
+    var root = detailRoot();
+    if(!root || !hasText(root, '작업지시서 상세')) return;
+    var id = idFromDetail(root);
+    removeOldDetailButtons(root);
+    var old = q('.nmc-wo-detail-bottom-actions', root);
+    var html = '<div class="nmc-wo-detail-bottom-actions" data-nmc-wo-detail-actions="1">'
+      + '<button type="button" class="nmc-wo-detail-action nmc-wo-print" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button>'
+      + '<button type="button" class="nmc-wo-detail-action nmc-wo-edit" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button>'
+      + '<button type="button" class="nmc-wo-detail-action nmc-wo-delete" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button>'
+      + '</div>';
+    if(old){ old.outerHTML = html; return; }
+    var anchor = findRemarkAnchor(root);
+    if(anchor && anchor !== root){ anchor.insertAdjacentHTML('afterend', html); }
+    else { root.insertAdjacentHTML('beforeend', html); }
+  }
+
+  function patchListRemarkColumn(){
+    var page = q('#page-workorder-list'); if(!page) return;
+    var tables = qa('table', page);
+    tables.forEach(function(table){
+      var heads = qa('thead th', table);
+      if(heads.length < 2) return;
+      var lastHead = heads[heads.length-1];
+      if(/^(작업|확인|비고)$/ .test(txt(lastHead.textContent))) lastHead.textContent = '비고';
+      qa('tbody tr', table).forEach(function(tr){
+        if(q('.namo-prod-empty', tr)) return;
+        var cells = qa('td', tr); if(cells.length < 2) return;
+        var id = txt(tr.getAttribute('data-nmc-wo-id')) || txt((cells[1]||{}).textContent);
+        var existing = q('[data-nmc-safe-id],[data-namo-wo-open],[data-nmc-list-print],[data-nmc-inbox-print]', tr);
+        if(existing) id = txt(existing.getAttribute('data-nmc-safe-id') || existing.getAttribute('data-namo-wo-open') || existing.getAttribute('data-nmc-list-print') || existing.getAttribute('data-nmc-inbox-print') || id);
+        if(!id) return;
+        tr.setAttribute('data-nmc-wo-id', id);
+        var last = cells[cells.length-1];
+        if(!last) return;
+        last.innerHTML = '<div class="namo-prod-actions nmc-list-remark-actions">'
+          + '<button type="button" class="namo-mini-btn btn light sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button>'
+          + '<button type="button" class="namo-mini-btn primary btn pri sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button>'
+          + '<button type="button" class="namo-mini-btn danger btn danger sm" data-nmc-safe-id="'+esc(id)+'" onclick="return window.nmcWoSafeDelete(this)">삭제</button>'
+          + '</div>';
+      });
+    });
+  }
+
+  function patchAll(){ patchListRemarkColumn(); ensureBottomActions(); }
+
+  var css = document.createElement('style');
+  css.id = 'nmc-workorder-detail-bottom-actions-final-style-20260611';
+  css.textContent = '\n'
+    + '#page-workorder-list .nmc-wo-detail-head-print button{display:none!important;}\n'
+    + '#page-workorder-list .nmc-wo-detail-bottom-actions{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:12px!important;margin-top:16px!important;padding-top:14px!important;border-top:1px solid #e5edf6!important;}\n'
+    + '#page-workorder-list .nmc-wo-detail-action{height:42px!important;min-width:92px!important;border-radius:10px!important;padding:0 18px!important;font-size:13px!important;font-weight:900!important;cursor:pointer!important;transition:150ms ease!important;}\n'
+    + '#page-workorder-list .nmc-wo-print{background:#fff!important;color:#1a56db!important;border:1.5px solid #1a56db!important;}\n'
+    + '#page-workorder-list .nmc-wo-edit{background:#1a56db!important;color:#fff!important;border:1.5px solid #1a56db!important;}\n'
+    + '#page-workorder-list .nmc-wo-delete{background:#fff!important;color:#dc2626!important;border:1.5px solid #ef4444!important;}\n'
+    + '#page-workorder-list .nmc-wo-print:hover{background:#e8effd!important;}\n'
+    + '#page-workorder-list .nmc-wo-edit:hover{background:#1648c4!important;}\n'
+    + '#page-workorder-list .nmc-wo-delete:hover{background:#fee2e2!important;}\n';
+  document.head.appendChild(css);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchAll); else patchAll();
+  var obs = new MutationObserver(function(){ clearTimeout(window.__nmcWoDetailBottomActionsTimer); window.__nmcWoDetailBottomActionsTimer = setTimeout(patchAll, 40); });
+  if(document.body) obs.observe(document.body, {childList:true, subtree:true});
+  setInterval(patchAll, 250);
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
