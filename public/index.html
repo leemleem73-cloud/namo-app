@@ -4463,7 +4463,140 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -14390,7 +14523,140 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
       '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>'+
-      '</body></html>';
+      '
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
+
+</body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
@@ -16150,7 +16416,140 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function ensureDetailBox(){var box=q('#namoWoDetail')||q('#page-workorder-list .nmc-workorder-detail');if(!box){var page=q('#page-workorder-list .namo-prod-table-wrap')||q('#page-workorder-list .tw')||q('#page-workorder-list');if(page){page.insertAdjacentHTML('afterend','<div id="namoWoDetail" class="nmc-workorder-detail"></div>');box=q('#namoWoDetail')}}return box}
   function detailHtml(item){var n=normalize(item);var mats=n.materials.length?'<div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="nmc-detail-cell"><span>등록된 투입 원료 정보가 없습니다.</span></div>';return '<div class="nmc-wo-detail-head-print"><h3>작업지시서 상세</h3><button type="button" class="nmc-wo-print-btn" data-nmc-inbox-print="'+esc(n.id)+'">인쇄</button></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="nmc-detail-cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="nmc-detail-cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="nmc-detail-cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="nmc-detail-cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="nmc-detail-section-title">작업 지시사항</div><div class="nmc-detail-cell"><span>'+esc(n.instruction||'-')+'</span></div><div class="nmc-detail-section-title">발송 비고</div><div class="nmc-detail-cell"><span>'+esc(n.sendNote||'-')+'</span></div><div class="nmc-detail-section-title">투입 원료</div>'+mats}
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시서 데이터를 찾을 수 없습니다.');return}var box=ensureDetailBox();if(!box)return;box.innerHTML=detailHtml(item);box.classList.add('show');box.scrollIntoView({behavior:'smooth',block:'start'})}
-  function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return}var n=normalize(item);var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}body{font-family:Inter,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5}h1{font-size:23px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #cbd5e1;border-radius:8px;padding:8px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #cbd5e1;border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px;text-align:center}th{background:#f8fafc}.foot{margin-top:18px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #cbd5e1;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+(n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>')+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},150)}<\/scr'+'ipt></body></html>';var w=window.open('','_blank','width=900,height=1000');if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return}w.document.open();w.document.write(html);w.document.close()}
+  function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return}var n=normalize(item);var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}body{font-family:Inter,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5}h1{font-size:23px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #cbd5e1;border-radius:8px;padding:8px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #cbd5e1;border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px;text-align:center}th{background:#f8fafc}.foot{margin-top:18px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #cbd5e1;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+(n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>')+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},150)}<\/scr'+'ipt>
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
+
+</body></html>';var w=window.open('','_blank','width=900,height=1000');if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return}w.document.open();w.document.write(html);w.document.close()}
   window.printOrderById=printOrderById;
   function ensureEditSaveButtons(){var box=q('#page-workorder-final .nmc-send-actions')||q('#page-workorder-final .ph-actions');if(!box)return;if(!q('#nmcEditCancelBtn'))box.insertAdjacentHTML('afterbegin','<button class="nmc-btn" id="nmcEditCancelBtn" type="button">수정 취소</button>');if(!q('#nmcEditSaveBtn'))box.insertAdjacentHTML('afterbegin','<button class="nmc-btn primary" id="nmcEditSaveBtn" type="button">수정본 저장</button>')}
   function setEditMode(on,id){ensureEditSaveButtons();var page=q('#page-workorder-final');if(page){page.dataset.nmcEditMode=on?'1':'0';page.dataset.nmcEditId=on?(id||editId||''):''}var send=q('#page-workorder-final [data-nmc-action="send"]');if(send)send.textContent=on?'수정본 발송/인쇄 가능':'선택 대상에게 발송';var title=q('#page-workorder-final .ph-title');if(title)title.textContent=on?'작업지시서 수정':'작업지시서 작성'}
@@ -16200,7 +16599,140 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function showPage(page){var id='page-'+page;qa('.page').forEach(function(p){p.classList.toggle('active',p.id===id)});qa('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-page')===page)});var content=q('.content');if(content)content.scrollTo({top:0,behavior:'smooth'});setTimeout(function(){var p=q('#'+id);if(p){p.classList.add('active');p.style.display='block'}},30)}
   function detailHtml(item){var n=norm(item);var rows=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<div class="nmc-wo-detail-head-print"><h3>작업지시서 상세</h3><button type="button" class="nmc-wo-print-btn" data-nmc-inbox-print="'+esc(n.id)+'">인쇄</button></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="nmc-detail-cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="nmc-detail-cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="nmc-detail-cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="nmc-detail-section-title">작업 지시사항</div><div class="nmc-detail-cell"><span>'+esc(n.instruction||'-')+'</span></div><div class="nmc-detail-section-title">발송 비고</div><div class="nmc-detail-cell"><span>'+esc(n.sendNote||'-')+'</span></div><div class="nmc-detail-section-title">투입 원료</div><div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table></div>'}
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시서 데이터를 찾을 수 없습니다.');return}var page=q('#page-workorder-list');var host=q('#namoWoDetail',page)||q('.nmc-workorder-detail',page)||q('.cb',page)||page;if(!host)return;if(host.id==='namoWoDetail'||host.classList.contains('nmc-workorder-detail')){host.innerHTML=detailHtml(item);host.classList.add('show')}else{var box=q('#namoWoDetail',host);if(!box){host.insertAdjacentHTML('beforeend','<div id="namoWoDetail" class="nmc-workorder-detail show"></div>');box=q('#namoWoDetail',host)}box.innerHTML=detailHtml(item);box.classList.add('show')}setTimeout(function(){(q('#namoWoDetail')||host).scrollIntoView({behavior:'smooth',block:'start'})},50)}
-  function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>'}
+  function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
+
+</body></html>'}
   function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return}var old=q('#nmcWoPrintFrame');if(old)old.remove();var f=document.createElement('iframe');f.id='nmcWoPrintFrame';f.className='nmc-wo-print-frame';document.body.appendChild(f);var doc=f.contentWindow.document;doc.open();doc.write(printHtml(item));doc.close();setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){alert('인쇄창을 열 수 없습니다. 브라우저 인쇄 권한을 확인하세요.')}},500)}
   window.printOrderById=printOrderById;
   function fillMaterials(mats){var tbody=q('#nmcMaterialTable tbody');if(!tbody)return;tbody.innerHTML='';(mats&&mats.length?mats:[{}]).forEach(function(m,i){var tr=document.createElement('tr');tr.innerHTML='<td>'+(i+1)+'</td><td><input value="'+esc(pick(m,['name','material','materialName','rawName'],''))+'"></td><td><input value="'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'"></td><td><input value="'+esc(pick(m,['planQty','plannedQty'],''))+'"></td><td><input value="'+esc(pick(m,['actualQty','qty','inputQty'],''))+'"></td><td><input class="nmc-ratio-input" value="'+esc(pick(m,['ratio','rate','percent'],''))+'"></td><td><input value="'+esc(pick(m,['note','remark','memo'],''))+'"></td><td></td>';tbody.appendChild(tr)})}
@@ -16381,7 +16913,140 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function printHtml(item){
     var n=norm(item);
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
-    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>';
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
+
+</body></html>';
   }
   function forcePrint(id){
     var item=findOrder(id); if(!item){ alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.'); return false; }
@@ -16534,7 +17199,140 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var item=itemFromElement(el);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return;}
     var n=norm(item);
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
-    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt></body></html>';
+    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt>
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
+
+</body></html>';
     var w=window.open('','_blank','width=900,height=700');if(!w){alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.');return;}w.document.open();w.document.write(html);w.document.close();
   }
   function goPage(pg){
@@ -18208,6 +19006,139 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /WORKORDER DELETE COLUMN HARD FIX v20260611-4 -->
+
+
+
+<!-- WORKORDER LIST REMARK + DELETE FINAL FIX v20260612
+     요구사항: 발송/작성일 오른쪽은 비고, 그 오른쪽 끝에 삭제 버튼 표시 -->
+<style id="nmc-workorder-remark-delete-final-fix-style-v20260612">
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final,
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{
+  display:table-cell!important;
+  visibility:visible!important;
+  opacity:1!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-remark-head-final,
+#page-workorder-list .nmc-remark-cell-final{text-align:center!important;}
+#page-workorder-list .nmc-delete-head-final,
+#page-workorder-list .nmc-delete-cell-final{text-align:center!important;width:86px!important;min-width:86px!important;}
+#page-workorder-list .nmc-workorder-remark-text{
+  display:inline-block!important;
+  max-width:180px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#334155!important;
+  font-weight:700!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:30px!important;
+  min-width:54px!important;
+  padding:0 10px!important;
+  border:1px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .nmc-workorder-delete-btn-final:hover{background:#fff1f1!important;}
+</style>
+<script id="nmc-workorder-remark-delete-final-fix-script-v20260612">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__) return;
+  window.__NMC_WORKORDER_REMARK_DELETE_FINAL_FIX_20260612__ = true;
+
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+    'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+    'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+  ];
+  var timer=null, lock=false;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function tx(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function idOf(o){return tx(pick(o,['uid','id','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo'],'')).trim()}
+  function rowId(tr){
+    if(!tr) return '';
+    var ds=tx(tr.getAttribute('data-nmc-wo-id')); if(ds) return ds;
+    var b=q('[data-nmc-final-delete],[data-nmc-workorder-delete-final],[data-namo-wo-open],[data-namo-wo-delete],[data-nmc-safe-id]',tr);
+    if(b){
+      var id=tx(b.getAttribute('data-nmc-workorder-delete-final')||b.getAttribute('data-nmc-final-delete')||b.getAttribute('data-namo-wo-open')||b.getAttribute('data-namo-wo-delete')||b.getAttribute('data-nmc-safe-id'));
+      if(id) return id;
+    }
+    var cells=qa('td',tr);
+    return tx(cells[1]&&cells[1].textContent);
+  }
+  function allRecords(){
+    var map={};
+    STORE_KEYS.forEach(function(k){readArr(k).forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});});
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){
+      try{if(Array.isArray(window[k])) window[k].forEach(function(r){var id=idOf(r); if(id) map[id]=Object.assign({},map[id]||{},r);});}catch(e){}
+    });
+    return map;
+  }
+  function remarkOf(r){return pick(r,['sendNote','sendMemo','remark','memo','comment','note'],'-') || '-'}
+  function matchRecord(r,id){if(!r)return false; if(idOf(r)===id)return true; try{return JSON.stringify(r).indexOf(id)>-1}catch(e){return false}}
+  function deleteEverywhere(id){
+    id=tx(id); if(!id){alert('삭제할 작업지시서 번호를 찾을 수 없습니다.');return;}
+    if(!confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n'+id)) return;
+    if(typeof window.nmcWorkorderDeleteEverywhereFinal==='function'){
+      window.nmcWorkorderDeleteEverywhereFinal(id);
+    }else{
+      STORE_KEYS.forEach(function(k){var a=readArr(k); if(a.length) writeArr(k,a.filter(function(r){return !matchRecord(r,id)}));});
+      ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(k){try{if(Array.isArray(window[k])) window[k]=window[k].filter(function(r){return !matchRecord(r,id)});}catch(e){}});
+      qa('#page-workorder-list tbody tr').forEach(function(tr){if(rowId(tr)===id)tr.remove();});
+    }
+    setTimeout(force,120);
+  }
+  function force(){
+    if(lock) return; lock=true;
+    try{
+      var page=q('#page-workorder-list'); if(!page) return;
+      var table=q('.namo-prod-table',page)||q('table',page); if(!table) return;
+      var head=q('thead tr',table); var body=q('tbody',table); if(!head||!body) return;
+      head.innerHTML='<th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>발송/작성일</th><th class="nmc-remark-head-final">비고</th><th class="nmc-delete-head-final">삭제</th>';
+      var recs=allRecords();
+      qa('tbody tr',table).forEach(function(tr){
+        if(q('.namo-prod-empty',tr)) { var td=q('td',tr); if(td) td.colSpan=11; return; }
+        var id=rowId(tr); if(!id) return;
+        tr.setAttribute('data-nmc-wo-id',id);
+        var cells=qa('td',tr);
+        var keep=cells.slice(0,9).map(function(td){td.style.removeProperty('display'); td.classList.remove('nmc-final-delete-cell','nmc-delete-cell-final','nmc-remark-cell-final'); return td.outerHTML;}).join('');
+        var note=remarkOf(recs[id]||{});
+        tr.innerHTML=keep+'<td class="nmc-remark-cell-final"><span class="nmc-workorder-remark-text" title="'+esc(note)+'">'+esc(note)+'</span></td><td class="nmc-delete-cell-final"><button type="button" class="nmc-workorder-delete-btn-final" data-nmc-workorder-delete-final="'+esc(id)+'">삭제</button></td>';
+      });
+    }finally{lock=false;}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(force,160)}
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#page-workorder-list [data-nmc-workorder-delete-final]'):null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    deleteEverywhere(btn.getAttribute('data-nmc-workorder-delete-final')||rowId(btn.closest('tr')));
+    return false;
+  },true);
+  function boot(){force(); try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});}catch(e){} [200,500,900,1500,3000,6000,9000].forEach(function(ms){setTimeout(force,ms)});}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<!-- /WORKORDER LIST REMARK + DELETE FINAL FIX v20260612 -->
 
 </body>
 </html>
