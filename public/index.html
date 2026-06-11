@@ -4382,120 +4382,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-
-<!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_START -->
-<style id="nmc-workorder-production-date-lot-full-patch-style">
-/* 작업지시서: 지시일자 -> 생산일자, 생산 LOT = NM-YYMMDD, 동기화 버튼 삭제 */
-#page-workorder-final #nmcLotGen,
-#page-production #nmcLotGen,
-#page-workorder-final .nmc-lot-btn,
-#page-production .nmc-lot-btn{display:none!important;visibility:hidden!important;width:0!important;min-width:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;}
-#page-workorder-final .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
-#page-production .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
-#page-workorder-final #nmcProdLotWrap .nmc-input-wrap,
-#page-production #nmcProdLotWrap .nmc-input-wrap{display:block!important;grid-template-columns:1fr!important;gap:0!important;}
-#page-workorder-final #nmcPlanQty,
-#page-workorder-final #nmcActualQty,
-#page-production #nmcPlanQty,
-#page-production #nmcActualQty{background:#f3f4f6!important;color:#4b5563!important;cursor:not-allowed!important;}
-</style>
-<script id="nmc-workorder-production-date-lot-full-patch-script">
-(function(){
-  'use strict';
-  function qsa(sel, root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
-  function pad2(n){return String(n).padStart(2,'0');}
-  function today(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
-  function toLot(dateValue){
-    var v=String(dateValue||'').trim();
-    var m=v.match(/^(\d{4})[-./]?(\d{2})[-./]?(\d{2})/);
-    if(!m) return '';
-    return 'NM-'+m[1].slice(2)+m[2]+m[3];
-  }
-  function numeric(v){return Number(String(v||'0').replace(/,/g,'').replace(/[^0-9.\-]/g,''))||0;}
-  function setInputValue(input, value){
-    if(!input) return;
-    if(input.value !== value){
-      input.value = value;
-      try{input.dispatchEvent(new Event('input',{bubbles:false}));}catch(e){}
-    }
-  }
-  function patchLabels(root){
-    qsa('#page-workorder-final label, #page-production label, #page-workorder-final b, #page-production b, #page-workorder-final th, #page-production th', root).forEach(function(el){
-      if((el.textContent||'').trim().replace(/\s+/g,'') === '지시일자*') el.innerHTML='생산일자<span class="req">*</span>';
-      else if((el.textContent||'').trim() === '지시일자') el.textContent='생산일자';
-    });
-  }
-  function patchDateAndLot(root){
-    qsa('#nmcLotGen,.nmc-lot-btn', root).forEach(function(btn){btn.remove();});
-    qsa('#nmcOrderDate', root).forEach(function(dateInput){
-      if(!dateInput.value) dateInput.value=today();
-      var scope=dateInput.closest('#page-workorder-final,#page-production')||document;
-      var lotInputs=qsa('#nmcProdLot', scope);
-      var lot=toLot(dateInput.value);
-      lotInputs.forEach(function(lotInput){
-        lotInput.readOnly=true;
-        lotInput.placeholder='생산일자 기준 자동생성 (NM-YYMMDD)';
-        if(lot) lotInput.value=lot;
-      });
-    });
-  }
-  function patchQtyReadonly(root){
-    qsa('#nmcPlanQty,#nmcActualQty', root).forEach(function(inp){
-      inp.readOnly=true;
-      inp.classList.remove('nmc-lot-source');
-      inp.title='투입 원료 입력값 기준 자동 계산';
-    });
-  }
-  function updateMaterialTotals(root){
-    var scopes=[];
-    qsa('#page-workorder-final,#page-production', root).forEach(function(s){scopes.push(s);});
-    if(!scopes.length) scopes=[document];
-    scopes.forEach(function(scope){
-      var rows=qsa('#nmcMaterialTable tbody tr', scope);
-      if(!rows.length) return;
-      var planTotal=0, actualTotal=0;
-      rows.forEach(function(tr){
-        planTotal += numeric((tr.querySelector('.nmc-mat-plan-qty')||{}).value);
-        actualTotal += numeric((tr.querySelector('.nmc-mat-qty')||{}).value);
-      });
-      qsa('#nmcPlanQty', scope).forEach(function(inp){setInputValue(inp, planTotal ? planTotal.toFixed(2) : '0');});
-      qsa('#nmcActualQty', scope).forEach(function(inp){setInputValue(inp, actualTotal ? actualTotal.toFixed(2) : '0');});
-      qsa('#nmcMaterialTotalPlanQty', scope).forEach(function(el){el.textContent=planTotal.toFixed(2)+' kg';});
-      qsa('#nmcMaterialTotalQty,#nmcMatTotal', scope).forEach(function(el){el.textContent=actualTotal.toFixed(2)+' kg';});
-    });
-  }
-  function apply(root){
-    root=root||document;
-    patchLabels(root);
-    patchDateAndLot(root);
-    patchQtyReadonly(root);
-    updateMaterialTotals(root);
-  }
-  document.addEventListener('change', function(e){
-    if(e.target && e.target.id==='nmcOrderDate') setTimeout(function(){apply(document);},0);
-    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) setTimeout(function(){apply(document);},0);
-  }, true);
-  document.addEventListener('input', function(e){
-    if(e.target && e.target.id==='nmcOrderDate') setTimeout(function(){apply(document);},0);
-    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) setTimeout(function(){apply(document);},0);
-    if(e.target && e.target.classList && e.target.classList.contains('nmc-lot-source')) setTimeout(function(){apply(document);},0);
-  }, true);
-  document.addEventListener('click', function(e){
-    if(e.target && (e.target.closest('[data-nmc-action="reset"]') || e.target.closest('#nmcMaterialAdd') || e.target.closest('[data-nmc-del-row]') || e.target.closest('#nmcLotGen'))){
-      setTimeout(function(){apply(document);},0);
-      setTimeout(function(){apply(document);},80);
-    }
-  }, true);
-  var mo=new MutationObserver(function(){clearTimeout(window.__nmcProdLotPatchTimer);window.__nmcProdLotPatchTimer=setTimeout(function(){apply(document);},60);});
-  if(document.documentElement) mo.observe(document.documentElement,{childList:true,subtree:true});
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){apply(document);}); else apply(document);
-  [80,250,600,1200,2500].forEach(function(t){setTimeout(function(){apply(document);},t);});
-})();
-</script>
-<!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_END -->
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -17338,5 +17225,117 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();[100,500,1200,2500].forEach(function(t){setTimeout(boot,t)});
 })();
 </script>
+
+
+<!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_START -->
+<style id="nmc-workorder-production-date-lot-full-patch-style">
+/* 작업지시서: 지시일자 -> 생산일자, 생산 LOT = NM-YYMMDD, 동기화 버튼 삭제 */
+#page-workorder-final #nmcLotGen,
+#page-production #nmcLotGen,
+#page-workorder-final .nmc-lot-btn,
+#page-production .nmc-lot-btn{display:none!important;visibility:hidden!important;width:0!important;min-width:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;}
+#page-workorder-final .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
+#page-production .nmc-field:has(#nmcProdLot) .nmc-input-wrap,
+#page-workorder-final #nmcProdLotWrap .nmc-input-wrap,
+#page-production #nmcProdLotWrap .nmc-input-wrap{display:block!important;grid-template-columns:1fr!important;gap:0!important;}
+#page-workorder-final #nmcPlanQty,
+#page-workorder-final #nmcActualQty,
+#page-production #nmcPlanQty,
+#page-production #nmcActualQty{background:#f3f4f6!important;color:#4b5563!important;cursor:not-allowed!important;}
+</style>
+<script id="nmc-workorder-production-date-lot-full-patch-script">
+(function(){
+  'use strict';
+  function qsa(sel, root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  function pad2(n){return String(n).padStart(2,'0');}
+  function today(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+  function toLot(dateValue){
+    var v=String(dateValue||'').trim();
+    var m=v.match(/^(\d{4})[-./]?(\d{2})[-./]?(\d{2})/);
+    if(!m) return '';
+    return 'NM-'+m[1].slice(2)+m[2]+m[3];
+  }
+  function numeric(v){return Number(String(v||'0').replace(/,/g,'').replace(/[^0-9.\-]/g,''))||0;}
+  function setInputValue(input, value){
+    if(!input) return;
+    if(input.value !== value){
+      input.value = value;
+      try{input.dispatchEvent(new Event('input',{bubbles:false}));}catch(e){}
+    }
+  }
+  function patchLabels(root){
+    qsa('#page-workorder-final label, #page-production label, #page-workorder-final b, #page-production b, #page-workorder-final th, #page-production th', root).forEach(function(el){
+      if((el.textContent||'').trim().replace(/\s+/g,'') === '지시일자*') el.innerHTML='생산일자<span class="req">*</span>';
+      else if((el.textContent||'').trim() === '지시일자') el.textContent='생산일자';
+    });
+  }
+  function patchDateAndLot(root){
+    qsa('#nmcLotGen,.nmc-lot-btn', root).forEach(function(btn){btn.remove();});
+    qsa('#nmcOrderDate', root).forEach(function(dateInput){
+      if(!dateInput.value) dateInput.value=today();
+      var scope=dateInput.closest('#page-workorder-final,#page-production')||document;
+      var lotInputs=qsa('#nmcProdLot', scope);
+      var lot=toLot(dateInput.value);
+      lotInputs.forEach(function(lotInput){
+        lotInput.readOnly=true;
+        lotInput.placeholder='생산일자 기준 자동생성 (NM-YYMMDD)';
+        if(lot) lotInput.value=lot;
+      });
+    });
+  }
+  function patchQtyReadonly(root){
+    qsa('#nmcPlanQty,#nmcActualQty', root).forEach(function(inp){
+      inp.readOnly=true;
+      inp.classList.remove('nmc-lot-source');
+      inp.title='투입 원료 입력값 기준 자동 계산';
+    });
+  }
+  function updateMaterialTotals(root){
+    var scopes=[];
+    qsa('#page-workorder-final,#page-production', root).forEach(function(s){scopes.push(s);});
+    if(!scopes.length) scopes=[document];
+    scopes.forEach(function(scope){
+      var rows=qsa('#nmcMaterialTable tbody tr', scope);
+      if(!rows.length) return;
+      var planTotal=0, actualTotal=0;
+      rows.forEach(function(tr){
+        planTotal += numeric((tr.querySelector('.nmc-mat-plan-qty')||{}).value);
+        actualTotal += numeric((tr.querySelector('.nmc-mat-qty')||{}).value);
+      });
+      qsa('#nmcPlanQty', scope).forEach(function(inp){setInputValue(inp, planTotal ? planTotal.toFixed(2) : '0');});
+      qsa('#nmcActualQty', scope).forEach(function(inp){setInputValue(inp, actualTotal ? actualTotal.toFixed(2) : '0');});
+      qsa('#nmcMaterialTotalPlanQty', scope).forEach(function(el){el.textContent=planTotal.toFixed(2)+' kg';});
+      qsa('#nmcMaterialTotalQty,#nmcMatTotal', scope).forEach(function(el){el.textContent=actualTotal.toFixed(2)+' kg';});
+    });
+  }
+  function apply(root){
+    root=root||document;
+    patchLabels(root);
+    patchDateAndLot(root);
+    patchQtyReadonly(root);
+    updateMaterialTotals(root);
+  }
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.id==='nmcOrderDate') setTimeout(function(){apply(document);},0);
+    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) setTimeout(function(){apply(document);},0);
+  }, true);
+  document.addEventListener('input', function(e){
+    if(e.target && e.target.id==='nmcOrderDate') setTimeout(function(){apply(document);},0);
+    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))) setTimeout(function(){apply(document);},0);
+    if(e.target && e.target.classList && e.target.classList.contains('nmc-lot-source')) setTimeout(function(){apply(document);},0);
+  }, true);
+  document.addEventListener('click', function(e){
+    if(e.target && (e.target.closest('[data-nmc-action="reset"]') || e.target.closest('#nmcMaterialAdd') || e.target.closest('[data-nmc-del-row]') || e.target.closest('#nmcLotGen'))){
+      setTimeout(function(){apply(document);},0);
+      setTimeout(function(){apply(document);},80);
+    }
+  }, true);
+  var mo=new MutationObserver(function(){clearTimeout(window.__nmcProdLotPatchTimer);window.__nmcProdLotPatchTimer=setTimeout(function(){apply(document);},60);});
+  if(document.documentElement) mo.observe(document.documentElement,{childList:true,subtree:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){apply(document);}); else apply(document);
+  [80,250,600,1200,2500].forEach(function(t){setTimeout(function(){apply(document);},t);});
+})();
+</script>
+<!-- NMC_WORKORDER_PRODUCTION_DATE_LOT_FULL_PATCH_END -->
 </body>
 </html>
