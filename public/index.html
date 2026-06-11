@@ -17760,3 +17760,185 @@ document.addEventListener('DOMContentLoaded',async()=>{
 <!-- /WORKORDER NO APPROVAL / CLEAN LIST PATCH v20260611 -->
 </body>
 </html>
+
+<!-- WORKORDER LIST RIGHT DELETE FINAL PATCH v20260611 -->
+<style id="nmc-workorder-right-delete-final-style">
+/* 작업지시서 목록: 마지막 비고 버튼을 삭제 버튼으로 변경, 중간 비고/하단 삭제 제거 */
+#page-workorder-list .nmc-final-delete-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  height:30px!important;
+  min-width:58px!important;
+  padding:0 12px!important;
+  border:1.5px solid #ef4444!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#dc2626!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+#page-workorder-list .nmc-final-delete-btn:hover{background:#fee2e2!important;}
+#page-workorder-list .namo-prod-actions{justify-content:center!important;}
+#page-workorder-list .namo-prod-actions button:not(.nmc-final-delete-btn){display:none!important;}
+#page-workorder-list .nmc-wo-detail-action.nmc-wo-delete,
+#page-workorder-list .nmc-wo-detail-bottom-actions .nmc-wo-delete,
+#page-workorder-list .nmc-workorder-detail .nmc-wo-delete,
+#page-workorder-list .ph-actions [data-nmc-list-delete],
+#page-workorder-list .ph-actions [data-nmc-wo-delete-final],
+#page-workorder-list > .btn.danger,
+#page-workorder-list > button[class*="danger"]{display:none!important;}
+</style>
+<script id="nmc-workorder-right-delete-final-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_RIGHT_DELETE_FINAL__) return;
+  window.__NMC_WORKORDER_RIGHT_DELETE_FINAL__ = true;
+
+  var STORE_KEYS = [
+    'nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory',
+    'nmcWorkorderHistory','nmcSentWorkorders','workorders','workOrderList'
+  ];
+  var DELETED_KEY = 'nmc_deleted_workorder_ids_final';
+  var patchTimer = null;
+  var isPatching = false;
+
+  function q(sel, root){ return (root || document).querySelector(sel); }
+  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function readArr(key){ try{ var v = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
+  function writeArr(key, arr){ try{ localStorage.setItem(key, JSON.stringify(arr || [])); }catch(e){} }
+  function readDeleted(){ try{ var v = JSON.parse(localStorage.getItem(DELETED_KEY) || '[]'); return Array.isArray(v) ? v.map(String) : []; }catch(e){ return []; } }
+  function writeDeleted(arr){ try{ localStorage.setItem(DELETED_KEY, JSON.stringify(Array.from(new Set((arr || []).map(String).filter(Boolean))).slice(0,1000))); }catch(e){} }
+  function idsOf(o){
+    o = o || {};
+    var keys = ['uid','id','woNo','no','workNo','workOrderNo','workorderNo','orderNo','nmcWoNo','docNo','lot','prodLot','productionLot','nmcProdLot'];
+    var out = [];
+    keys.forEach(function(k){ if(o[k] != null && txt(o[k]) !== '') out.push(txt(o[k])); });
+    return Array.from(new Set(out));
+  }
+  function rowId(tr){
+    if(!tr) return '';
+    var attrs = ['data-nmc-wo-id','data-id','data-wo-id'];
+    for(var i=0;i<attrs.length;i++){ var v = tr.getAttribute(attrs[i]); if(txt(v)) return txt(v); }
+    var btn = q('[data-nmc-final-delete],[data-nmc-list-delete],[data-nmc-wo-delete-final],[data-nmc-wo-list-delete],[data-nmc-safe-id],[data-namo-wo-open],[data-nmc-inbox-print],[data-nmc-wo-edit-final]', tr);
+    if(btn){
+      var names = ['data-nmc-final-delete','data-nmc-list-delete','data-nmc-wo-delete-final','data-nmc-wo-list-delete','data-nmc-safe-id','data-namo-wo-open','data-nmc-inbox-print','data-nmc-wo-edit-final'];
+      for(var j=0;j<names.length;j++){ var b = btn.getAttribute(names[j]); if(txt(b)) return txt(b); }
+    }
+    var cells = qa('td', tr);
+    return cells[1] ? txt(cells[1].textContent) : '';
+  }
+  function collectDeleteSet(id){
+    var set = new Set([txt(id)]);
+    STORE_KEYS.forEach(function(key){
+      readArr(key).forEach(function(item){
+        var ids = idsOf(item);
+        if(ids.indexOf(txt(id)) > -1) ids.forEach(function(v){ set.add(v); });
+      });
+    });
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(key){
+      if(Array.isArray(window[key])) window[key].forEach(function(item){
+        var ids = idsOf(item);
+        if(ids.indexOf(txt(id)) > -1) ids.forEach(function(v){ set.add(v); });
+      });
+    });
+    return set;
+  }
+  function removeFromAllStores(id){
+    var delSet = collectDeleteSet(id);
+    var deleted = readDeleted();
+    delSet.forEach(function(v){ if(v) deleted.push(v); });
+    writeDeleted(deleted);
+
+    STORE_KEYS.forEach(function(key){
+      var arr = readArr(key);
+      if(!arr.length) return;
+      var next = arr.filter(function(item){ return !idsOf(item).some(function(v){ return delSet.has(v); }); });
+      if(next.length !== arr.length) writeArr(key, next);
+    });
+    ['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','workorders','workOrderList'].forEach(function(key){
+      if(Array.isArray(window[key])) window[key] = window[key].filter(function(item){ return !idsOf(item).some(function(v){ return delSet.has(v); }); });
+    });
+
+    qa('#namoWoDetail,#namoWoProgressDetail,#namoWoResultDetail').forEach(function(el){ el.innerHTML=''; el.classList.remove('show'); });
+    try{ if(typeof window.namoRenderProductionEnterprise === 'function') window.namoRenderProductionEnterprise(); }catch(e){}
+    schedulePatch();
+  }
+  function isDeletedId(id){ return readDeleted().indexOf(txt(id)) > -1; }
+  function headerIndexToRemove(table){
+    var ths = qa('thead th', table);
+    var idx = [];
+    ths.forEach(function(th, i){ if(txt(th.textContent) === '비고' && i !== ths.length - 1) idx.push(i); });
+    return idx;
+  }
+  function removeIndexes(row, indexes){
+    indexes.slice().reverse().forEach(function(i){ if(row.children[i]) row.children[i].remove(); });
+  }
+  function patchWorkorderList(){
+    var page = q('#page-workorder-list');
+    if(!page) return;
+    qa('#page-workorder-list .ph-actions [data-nmc-list-delete],#page-workorder-list .ph-actions [data-nmc-wo-delete-final],#page-workorder-list .nmc-wo-detail-action.nmc-wo-delete,#page-workorder-list .nmc-workorder-detail .nmc-wo-delete').forEach(function(el){ el.remove(); });
+
+    var table = q('.namo-prod-table', page) || q('table', page);
+    if(!table) return;
+    var removeIdx = headerIndexToRemove(table);
+    if(removeIdx.length) removeIndexes(q('thead tr', table), removeIdx);
+    var ths = qa('thead th', table);
+    if(ths.length){
+      ths.forEach(function(th){ if(['작업','확인'].indexOf(txt(th.textContent)) > -1) th.textContent = '삭제'; });
+      ths[ths.length - 1].textContent = '삭제';
+    }
+
+    qa('tbody tr', table).forEach(function(tr){
+      if(q('.namo-prod-empty', tr)) return;
+      if(removeIdx.length) removeIndexes(tr, removeIdx);
+      var cells = qa('td', tr);
+      if(!cells.length) return;
+      var id = rowId(tr);
+      if(!id) return;
+      tr.setAttribute('data-nmc-wo-id', id);
+      if(isDeletedId(id)){ tr.remove(); return; }
+      var noCell = cells[1];
+      if(noCell){
+        var noText = txt(noCell.textContent) || id;
+        noCell.innerHTML = '<button type="button" class="nmc-wo-no-btn" data-namo-wo-open="'+esc(id)+'">'+esc(noText)+'</button>';
+      }
+      var action = tr.children[tr.children.length - 1];
+      if(action){
+        action.innerHTML = '<div class="namo-prod-actions"><button type="button" class="nmc-final-delete-btn" data-nmc-final-delete="'+esc(id)+'">🗑 삭제</button></div>';
+      }
+    });
+  }
+  function schedulePatch(){
+    clearTimeout(patchTimer);
+    patchTimer = setTimeout(function(){ if(isPatching) return; isPatching = true; try{ patchWorkorderList(); }finally{ isPatching = false; } }, 40);
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('#page-workorder-list [data-nmc-final-delete]') : null;
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    var id = btn.getAttribute('data-nmc-final-delete') || (btn.closest('tr') && rowId(btn.closest('tr')));
+    if(!id){ alert('삭제할 작업지시서 번호를 찾을 수 없습니다.'); return false; }
+    if(confirm('해당 작업지시서를 모두 삭제하시겠습니까?\n' + id)) removeFromAllStores(id);
+    return false;
+  }, true);
+
+  function boot(){
+    schedulePatch();
+    if(document.body){
+      var obs = new MutationObserver(schedulePatch);
+      obs.observe(document.body, {childList:true, subtree:true});
+    }
+    [100,300,700,1200,2500,5000].forEach(function(ms){ setTimeout(schedulePatch, ms); });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<!-- WORKORDER LIST RIGHT DELETE FINAL PATCH END -->
