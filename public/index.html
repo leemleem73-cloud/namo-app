@@ -4382,129 +4382,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '<script id="nmc-workorder-list-final-click-fix-20260611">
-(function(){
-  'use strict';
-  if (window.__nmcWorkorderListFinalClickFix20260611) return;
-  window.__nmcWorkorderListFinalClickFix20260611 = true;
-
-  function txt(v){ return String(v == null ? '' : v).trim(); }
-  function q(s,r){ return (r || document).querySelector(s); }
-  function qa(s,r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
-  function esc(v){
-    return String(v == null ? '' : v).replace(/[&<>'"]/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];
-    });
-  }
-  function getRow(el){ return el && el.closest ? el.closest('tr') : null; }
-  function getId(el){
-    var tr = getRow(el);
-    var tds = tr ? qa('td', tr) : [];
-    var attrs = [
-      'data-nmc-safe-open','data-nmc-safe-id','data-nmc-list-open','data-nmc-force-open','data-namo-wo-open','data-nmc-final-open',
-      'data-nmc-list-print','data-nmc-force-print','data-nmc-inbox-print',
-      'data-nmc-list-edit','data-nmc-force-edit','data-nmc-wo-edit-final',
-      'data-nmc-list-delete','data-nmc-wo-delete-final'
-    ];
-    for(var i=0;i<attrs.length;i++){
-      if(el && el.getAttribute){
-        var v = txt(el.getAttribute(attrs[i]));
-        if(v) return v;
-      }
-    }
-    var trId = tr ? txt(tr.getAttribute('data-nmc-wo-id')) : '';
-    if(trId) return trId;
-    return txt((tds[1] && tds[1].textContent) || (el && el.textContent) || '');
-  }
-  function callByNames(names, id, el){
-    for(var i=0;i<names.length;i++){
-      var fn = window[names[i]];
-      if(typeof fn === 'function'){
-        try{ fn(id); return true; }catch(e1){
-          try{ fn(el); return true; }catch(e2){ console.error(e1, e2); }
-        }
-      }
-    }
-    return false;
-  }
-  function openById(id, el){
-    if(!id){ alert('작업지시서 번호를 찾을 수 없습니다.'); return false; }
-    if(callByNames(['nmcWoListSafeFixOpen','nmcForceWorkorderOpen','nmcWorkorderOpenDetailFinal','openDetail'], id, el)) return false;
-    var target = q('[data-nmc-list-open="'+CSS.escape(id)+'"],[data-nmc-force-open="'+CSS.escape(id)+'"],[data-namo-wo-open="'+CSS.escape(id)+'"]');
-    if(target && target !== el){ target.click(); return false; }
-    alert('작업지시서 상세 화면을 열 수 없습니다. 작업지시번호: ' + id);
-    return false;
-  }
-  function printById(id, el){
-    if(!id){ alert('인쇄할 작업지시서 번호를 찾을 수 없습니다.'); return false; }
-    if(callByNames(['nmcForceWorkorderPrint','printOrderById','printWorkOrder'], id, el)) return false;
-    var target = q('[data-nmc-list-print="'+CSS.escape(id)+'"],[data-nmc-force-print="'+CSS.escape(id)+'"],[data-nmc-inbox-print="'+CSS.escape(id)+'"]');
-    if(target && target !== el){ target.click(); return false; }
-    alert('인쇄 기능을 찾을 수 없습니다. 작업지시번호: ' + id);
-    return false;
-  }
-  function editById(id, el){
-    if(!id){ alert('수정할 작업지시서 번호를 찾을 수 없습니다.'); return false; }
-    if(callByNames(['nmcForceWorkorderEdit','nmcWorkorderGoEditFinal','loadToEdit','goEdit'], id, el)) return false;
-    var target = q('[data-nmc-list-edit="'+CSS.escape(id)+'"],[data-nmc-force-edit="'+CSS.escape(id)+'"],[data-nmc-wo-edit-final="'+CSS.escape(id)+'"]');
-    if(target && target !== el){ target.click(); return false; }
-    alert('수정 화면을 열 수 없습니다. 작업지시번호: ' + id);
-    return false;
-  }
-
-  window.nmcWorkorderListOpenFinal = function(el){ return openById(typeof el === 'string' ? el : getId(el), el); };
-  window.nmcWoSafePrint = function(el){ return printById(typeof el === 'string' ? el : getId(el), el); };
-  window.nmcWoSafeEdit = function(el){ return editById(typeof el === 'string' ? el : getId(el), el); };
-
-  function patchList(){
-    var page = q('#page-workorder-list');
-    if(!page) return;
-    qa('tbody tr', page).forEach(function(tr){
-      if(q('.namo-prod-empty', tr)) return;
-      var tds = qa('td', tr);
-      if(tds.length < 2) return;
-      var rawId = txt(tr.getAttribute('data-nmc-wo-id')) || txt(tds[1].textContent);
-      rawId = rawId.replace(/^(상세|열기|보기)\s*/,'');
-      if(!rawId) return;
-      tr.setAttribute('data-nmc-wo-id', rawId);
-      var noCell = tds[1];
-      if(noCell && !q('[data-nmc-safe-open]', noCell)){
-        noCell.innerHTML = '<button type="button" class="sb lbl nmc-wo-no-btn" data-nmc-safe-open="'+esc(rawId)+'" onclick="return window.nmcWorkorderListOpenFinal(this)" style="background:transparent;color:#2563eb;font-weight:900;padding:0;border:none;text-decoration:underline;text-underline-offset:3px;cursor:pointer">'+esc(rawId)+'</button>';
-      }
-      var last = tds[tds.length - 1];
-      if(last){
-        last.innerHTML = '<div class="namo-prod-actions" style="display:flex;gap:6px;justify-content:flex-end;align-items:center;white-space:nowrap">'
-          + '<button type="button" class="namo-mini-btn btn light sm" data-nmc-safe-id="'+esc(rawId)+'" onclick="return window.nmcWoSafePrint(this)">인쇄</button>'
-          + '<button type="button" class="namo-mini-btn primary btn pri sm" data-nmc-safe-id="'+esc(rawId)+'" onclick="return window.nmcWoSafeEdit(this)">수정</button>'
-          + '</div>';
-      }
-    });
-  }
-
-  document.addEventListener('click', function(e){
-    var t = e.target;
-    if(!t || !t.closest) return;
-    var open = t.closest('#page-workorder-list [data-nmc-safe-open],#page-workorder-list .nmc-wo-no-btn,#page-workorder-list [data-nmc-list-open],#page-workorder-list [data-nmc-force-open],#page-workorder-list [data-namo-wo-open]');
-    if(open){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); return openById(getId(open), open); }
-    var print = t.closest('#page-workorder-list [data-nmc-safe-id]');
-    if(print && txt(print.textContent).indexOf('인쇄') > -1){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); return printById(getId(print), print); }
-    var edit = t.closest('#page-workorder-list [data-nmc-safe-id]');
-    if(edit && txt(edit.textContent).indexOf('수정') > -1){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); return editById(getId(edit), edit); }
-  }, true);
-
-  function boot(){
-    patchList();
-    [80,200,500,1000,2000].forEach(function(ms){ setTimeout(patchList, ms); });
-    var obs = new MutationObserver(function(){ clearTimeout(window.__nmcWoFinalPatchTimer); window.__nmcWoFinalPatchTimer = setTimeout(patchList, 60); });
-    if(document.body) obs.observe(document.body, {childList:true, subtree:true});
-    setInterval(patchList, 700);
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-})();
-</script>
-
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -17446,6 +17324,105 @@ document.addEventListener('DOMContentLoaded',async()=>{
   var obs = new MutationObserver(function(){ clearTimeout(window.__nmcWoSafeBtnTimer); window.__nmcWoSafeBtnTimer = setTimeout(renderSafeButtons, 20); });
   if(document.body) obs.observe(document.body, {childList:true, subtree:true});
   setInterval(renderSafeButtons, 100);
+})();
+</script>
+
+
+<script id="nmc-workorder-list-click-hotfix-20260611-2">
+(function(){
+  'use strict';
+  if (window.__nmcWorkorderListClickHotfix202606112) return;
+  window.__nmcWorkorderListClickHotfix202606112 = true;
+
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function qa(s,r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function css(v){ try { return CSS.escape(v); } catch(e){ return String(v).replace(/"/g,'\\"'); } }
+  function getRow(el){ return el && el.closest ? el.closest('tr') : null; }
+  function getId(el){
+    if (typeof el === 'string') return txt(el);
+    var tr = getRow(el);
+    var tds = tr ? qa('td', tr) : [];
+    var a = tr ? tr.querySelector('[data-nmc-safe-id],[data-nmc-force-open],[data-namo-wo-open],[data-nmc-force-print],[data-nmc-force-edit]') : null;
+    return txt(
+      (el && (
+        el.getAttribute('data-nmc-safe-id') ||
+        el.getAttribute('data-nmc-force-open') ||
+        el.getAttribute('data-namo-wo-open') ||
+        el.getAttribute('data-nmc-force-print') ||
+        el.getAttribute('data-nmc-force-edit')
+      )) ||
+      (a && (
+        a.getAttribute('data-nmc-safe-id') ||
+        a.getAttribute('data-nmc-force-open') ||
+        a.getAttribute('data-namo-wo-open') ||
+        a.getAttribute('data-nmc-force-print') ||
+        a.getAttribute('data-nmc-force-edit')
+      )) ||
+      (tr && tr.getAttribute('data-nmc-wo-id')) ||
+      (tds[1] && tds[1].textContent) ||
+      (tds[0] && tds[0].textContent)
+    );
+  }
+
+  function showPage(pageId){
+    try{
+      if (typeof window.showPage === 'function') { window.showPage(pageId); return true; }
+      var page = document.getElementById('page-' + pageId) || document.getElementById(pageId);
+      if (!page) return false;
+      qa('.page').forEach(function(p){ p.classList.remove('active'); });
+      page.classList.add('active');
+      qa('.nav-item').forEach(function(n){ n.classList.toggle('active', n.getAttribute('data-page') === pageId); });
+      return true;
+    }catch(e){ return false; }
+  }
+
+  function callFirst(names, id){
+    for (var i=0;i<names.length;i++){
+      var fn = window[names[i]];
+      if (typeof fn === 'function') {
+        try { fn(id); return true; } catch(e){ console.error(e); }
+      }
+    }
+    return false;
+  }
+
+  window.nmcForceWorkorderOpen = function(el){
+    var id = getId(el);
+    if (!id) { alert('작업지시서 번호를 찾을 수 없습니다.'); return false; }
+    if (callFirst(['nmcWorkorderOpenDetailFinal','openDetail','openWorkOrderDetail','viewWorkOrder','nmcOpenWorkOrderDetail'], id)) return false;
+    var target = document.querySelector('[data-namo-wo-open="' + css(id) + '"],[data-nmc-open-inbox="' + css(id) + '"]');
+    if (target && target !== el) { try { target.click(); return false; } catch(e){} }
+    alert('상세 화면을 열 수 없습니다. 작업지시서 번호: ' + id);
+    return false;
+  };
+
+  window.nmcWoSafePrint = function(el){
+    var id = getId(el);
+    if (!id) { alert('인쇄할 작업지시서 번호를 찾을 수 없습니다.'); return false; }
+    if (callFirst(['nmcForceWorkorderPrint','printOrderById','printWorkOrder','nmcPrintWorkOrder'], id)) return false;
+    window.nmcForceWorkorderOpen(id);
+    setTimeout(function(){ window.print(); }, 300);
+    return false;
+  };
+
+  window.nmcWoSafeEdit = function(el){
+    var id = getId(el);
+    if (!id) { alert('수정할 작업지시서 번호를 찾을 수 없습니다.'); return false; }
+    if (callFirst(['nmcForceWorkorderEdit','loadToEdit','goEdit','editWorkOrder','nmcEditWorkOrder'], id)) return false;
+    showPage('workorder-final');
+    if (callFirst(['loadToEdit','goEdit','editWorkOrder','nmcEditWorkOrder'], id)) return false;
+    alert('수정 화면을 열 수 없습니다. 작업지시서 번호: ' + id);
+    return false;
+  };
+
+  document.addEventListener('click', function(e){
+    var el = e.target.closest && e.target.closest('#page-workorder-list .nmc-wo-no-btn,#page-workorder-list [data-nmc-force-open],#page-workorder-list [data-namo-wo-open]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    return window.nmcForceWorkorderOpen(el);
+  }, true);
 })();
 </script>
 
