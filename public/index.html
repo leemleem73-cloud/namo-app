@@ -16198,7 +16198,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function showPage(page){var id='page-'+page;qa('.page').forEach(function(p){p.classList.toggle('active',p.id===id)});qa('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-page')===page)});var content=q('.content');if(content)content.scrollTo({top:0,behavior:'smooth'});setTimeout(function(){var p=q('#'+id);if(p){p.classList.add('active');p.style.display='block'}},30)}
   function detailHtml(item){var n=norm(item);var rows=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<div class="nmc-wo-detail-head-print"><h3>작업지시서 상세</h3><button type="button" class="nmc-wo-print-btn" data-nmc-inbox-print="'+esc(n.id)+'">인쇄</button></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="nmc-detail-cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="nmc-detail-cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="nmc-detail-cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="nmc-detail-section-title">작업 지시사항</div><div class="nmc-detail-cell"><span>'+esc(n.instruction||'-')+'</span></div><div class="nmc-detail-section-title">발송 비고</div><div class="nmc-detail-cell"><span>'+esc(n.sendNote||'-')+'</span></div><div class="nmc-detail-section-title">투입 원료</div><div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table></div>'}
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시서 데이터를 찾을 수 없습니다.');return}var page=q('#page-workorder-list');var host=q('#namoWoDetail',page)||q('.nmc-workorder-detail',page)||q('.cb',page)||page;if(!host)return;if(host.id==='namoWoDetail'||host.classList.contains('nmc-workorder-detail')){host.innerHTML=detailHtml(item);host.classList.add('show')}else{var box=q('#namoWoDetail',host);if(!box){host.insertAdjacentHTML('beforeend','<div id="namoWoDetail" class="nmc-workorder-detail show"></div>');box=q('#namoWoDetail',host)}box.innerHTML=detailHtml(item);box.classList.add('show')}setTimeout(function(){(q('#namoWoDetail')||host).scrollIntoView({behavior:'smooth',block:'start'})},50)}
-  function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.sign{display:grid;grid-template-columns:repeat(3,1fr);margin-top:18px;border:1px solid #333}.sign div{text-align:center;padding:10px;border-right:1px solid #333;min-height:60px}.sign div:last-child{border-right:0}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="sign"><div><b>작성</b><br><br></div><div><b>검토</b><br><br></div><div><b>승인</b><br><br></div></div><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>'}
+  function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>'}
   function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return}var old=q('#nmcWoPrintFrame');if(old)old.remove();var f=document.createElement('iframe');f.id='nmcWoPrintFrame';f.className='nmc-wo-print-frame';document.body.appendChild(f);var doc=f.contentWindow.document;doc.open();doc.write(printHtml(item));doc.close();setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){alert('인쇄창을 열 수 없습니다. 브라우저 인쇄 권한을 확인하세요.')}},500)}
   window.printOrderById=printOrderById;
   function fillMaterials(mats){var tbody=q('#nmcMaterialTable tbody');if(!tbody)return;tbody.innerHTML='';(mats&&mats.length?mats:[{}]).forEach(function(m,i){var tr=document.createElement('tr');tr.innerHTML='<td>'+(i+1)+'</td><td><input value="'+esc(pick(m,['name','material','materialName','rawName'],''))+'"></td><td><input value="'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'"></td><td><input value="'+esc(pick(m,['planQty','plannedQty'],''))+'"></td><td><input value="'+esc(pick(m,['actualQty','qty','inputQty'],''))+'"></td><td><input class="nmc-ratio-input" value="'+esc(pick(m,['ratio','rate','percent'],''))+'"></td><td><input value="'+esc(pick(m,['note','remark','memo'],''))+'"></td><td></td>';tbody.appendChild(tr)})}
@@ -16379,7 +16379,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function printHtml(item){
     var n=norm(item);
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
-    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.sign{display:grid;grid-template-columns:repeat(3,1fr);margin-top:18px;border:1px solid #333}.sign div{text-align:center;padding:10px;border-right:1px solid #333;min-height:60px}.sign div:last-child{border-right:0}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="sign"><div><b>작성</b><br><br></div><div><b>검토</b><br><br></div><div><b>승인</b><br><br></div></div><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>';
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>';
   }
   function forcePrint(id){
     var item=findOrder(id); if(!item){ alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.'); return false; }
@@ -16532,7 +16532,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var item=itemFromElement(el);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return;}
     var n=norm(item);
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
-    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.sign{display:grid;grid-template-columns:repeat(3,1fr);margin-top:18px;border:1px solid #333}.sign div{text-align:center;padding:10px;border-right:1px solid #333;min-height:60px}.sign div:last-child{border-right:0}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="sign"><div><b>작성</b><br><br></div><div><b>검토</b><br><br></div><div><b>승인</b><br><br></div></div><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt></body></html>';
+    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시서_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시서</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt></body></html>';
     var w=window.open('','_blank','width=900,height=700');if(!w){alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.');return;}w.document.open();w.document.write(html);w.document.close();
   }
   function goPage(pg){
@@ -17553,5 +17553,210 @@ document.addEventListener('DOMContentLoaded',async()=>{
   setTimeout(bindTraceHmc,120);setTimeout(bindTraceHmc,600);
 })();
 </script>
+
+
+<!-- WORKORDER NO APPROVAL / CLEAN LIST PATCH v20260611
+     요청사항만 반영: 작업지시서 목록 우측 비고/인쇄/수정/삭제 제거 + 작성/검토/승인 구조 제거
+     다른 메뉴와 기존 데이터 흐름은 유지합니다. -->
+<style id="nmc-workorder-no-approval-clean-style-v20260611">
+/* 1) 작업지시서 목록: 우측 비고/인쇄/수정/삭제 영역 숨김 */
+#page-workorder-list table thead th:last-child,
+#page-workorder-list table tbody td:last-child{
+  display:none!important;
+}
+#page-workorder-list .ph-actions .btn.light,
+#page-workorder-list .ph-actions .btn.ghost,
+#page-workorder-list .ph-actions .btn.pri,
+#page-workorder-list .namo-prod-actions,
+#page-workorder-list .ai,
+#page-workorder-list [data-nmc-inbox-print],
+#page-workorder-list [data-nmc-wo-list-delete],
+#page-workorder-list [data-nmc-history-delete],
+#page-workorder-list [data-namo-wo-open],
+#page-workorder-list .nmc-wo-print-btn,
+#page-workorder-list .nmc-wo-delete-final,
+#page-workorder-list .namo-mini-btn.del,
+#page-workorder-list .sb.edit,
+#page-workorder-list .sb.del{
+  display:none!important;
+}
+/* 상세/하단에 중복 출력되는 인쇄·수정·삭제 버튼 제거 */
+#page-workorder-list .nmc-wo-detail-bottom-actions,
+#page-workorder-list .nmc-wo-detail-head-print,
+#page-workorder-list .nmc-workorder-detail .nmc-wo-print-btn{
+  display:none!important;
+}
+
+/* 2) 작업지시서 작성/검토/승인 구조 제거 */
+#page-workorder-final [id*="signGrid"],
+#page-workorder-final [id*="SignGrid"],
+#page-workorder-final .sign-grid,
+#page-workorder-final .rprint-sign,
+#page-workorder-final .namo-standard-approval-box,
+#page-workorder-final .namo-qc-approval-card,
+#page-workorder-final .namo-simple-approval,
+#page-workorder-final .namo-approval-actions,
+#page-workorder-final [class*="approval"],
+#page-workorder-final [class*="Approval"],
+#page-workorder-final [data-wf],
+#page-workorder-final [data-train-appr]{
+  display:none!important;
+}
+
+/* 3) 작업지시 승인현황 메뉴/페이지 제거 */
+#page-workorder-approval,
+.sidebar .nav-item[data-page="workorder-approval"],
+.sidebar .nav-item[data-page-target="workorder-approval"]{
+  display:none!important;
+}
+
+/* 4) 인쇄 HTML에 남아 있을 수 있는 작성/검토/승인 서명란 제거 */
+.sign:has(b),
+.rprint-sign:has(.rpsign-role){
+  display:none!important;
+}
+</style>
+<script id="nmc-workorder-no-approval-clean-script-v20260611">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_NO_APPROVAL_CLEAN_V20260611__) return;
+  window.__NMC_WORKORDER_NO_APPROVAL_CLEAN_V20260611__ = true;
+
+  var WORKORDER_KEYS = [
+    'nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory',
+    'nmcWorkorderHistory','nmcSentWorkorders','workorderList','workOrderList'
+  ];
+  var REMOVE_FIELDS = [
+    'writer','reviewer','approver','writerId','reviewerId','approverId',
+    'signWriter','signReviewer','signApprover','approvalStatus','approvalStep',
+    'approvalHistory','approvalLine','approvalFlow','approvalState','workflow',
+    'workflowId','workflowStatus','wfStatus','wfStep','wfHistory'
+  ];
+
+  function qs(sel,root){return (root||document).querySelector(sel)}
+  function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
+  function txt(v){return String(v||'').replace(/\s+/g,' ').trim()}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
+  function cleanObj(o){
+    if(!o || typeof o!=='object') return o;
+    REMOVE_FIELDS.forEach(function(k){try{delete o[k]}catch(e){}});
+    return o;
+  }
+  function cleanStores(){
+    WORKORDER_KEYS.forEach(function(k){
+      var arr=readArr(k); if(!arr.length) return;
+      var changed=false;
+      arr.forEach(function(o){
+        if(!o || typeof o!=='object') return;
+        REMOVE_FIELDS.forEach(function(f){if(Object.prototype.hasOwnProperty.call(o,f)){delete o[f]; changed=true;}});
+      });
+      if(changed) writeArr(k,arr);
+    });
+  }
+
+  function hideByButtonText(root){
+    qa('button,a',root).forEach(function(el){
+      var t=txt(el.textContent);
+      if(!t) return;
+      if(/^(인쇄|수정|삭제)$/.test(t) && el.closest('#page-workorder-list')){
+        el.style.setProperty('display','none','important');
+      }
+      if(/작업지시\s*승인현황|승인현황/.test(t) && (el.closest('.sidebar') || el.closest('.nav-item'))){
+        (el.closest('.nav-item')||el).style.setProperty('display','none','important');
+      }
+    });
+  }
+
+  function removeWorkorderApprovalBlocks(root){
+    root=root||document;
+    var page=qs('#page-workorder-final',root) || qs('#page-workorder-final');
+    if(page){
+      qa('h3,h4,label,div,section,table',page).forEach(function(el){
+        var t=txt(el.textContent);
+        if(/^(작성\s*\/\s*검토\s*\/\s*승인|작성\s*검토\s*승인|결재선|전자결재|검토자|승인자)$/.test(t) || /작성\s*\/\s*검토\s*\/\s*승인/.test(t)){
+          var box=el.closest('.nmc-workorder-card,.card,.sp,.sign-grid,.rprint-sign,.field') || el;
+          box.style.setProperty('display','none','important');
+        }
+      });
+    }
+    qa('#page-workorder-approval',root).forEach(function(el){el.remove();});
+    qa('.sidebar .nav-item',root).forEach(function(el){
+      if(/작업지시\s*승인현황|승인현황/.test(txt(el.textContent))) el.style.setProperty('display','none','important');
+    });
+  }
+
+  function cleanListTables(root){
+    root=root||document;
+    var page=qs('#page-workorder-list',root) || qs('#page-workorder-list');
+    if(!page) return;
+    hideByButtonText(page);
+    qa('table',page).forEach(function(table){
+      var heads=qa('thead th',table);
+      var removeIdx=[];
+      heads.forEach(function(th,i){
+        var t=txt(th.textContent);
+        if(/^(비고|관리|작업|인쇄|수정|삭제)$/.test(t) || /인쇄|수정|삭제/.test(t)) removeIdx.push(i);
+      });
+      if(!removeIdx.length && heads.length) removeIdx.push(heads.length-1);
+      qa('tr',table).forEach(function(tr){
+        qa('th,td',tr).forEach(function(cell,i){
+          if(removeIdx.indexOf(i)>-1) cell.style.setProperty('display','none','important');
+        });
+      });
+    });
+  }
+
+  function patchAll(){
+    cleanStores();
+    cleanListTables(document);
+    removeWorkorderApprovalBlocks(document);
+    hideByButtonText(document);
+  }
+
+  // 저장/발송 직전 작업지시 데이터에 결재 관련 필드가 다시 들어가지 않도록 정리
+  var rawSetItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function(k,v){
+    try{
+      if(WORKORDER_KEYS.indexOf(String(k))>-1){
+        var arr=JSON.parse(String(v));
+        if(Array.isArray(arr)){
+          arr.forEach(cleanObj);
+          v=JSON.stringify(arr);
+        }
+      }
+    }catch(e){}
+    return rawSetItem.call(this,k,v);
+  };
+
+  // window.open으로 생성되는 작업지시서 인쇄물에 서명란이 남아 있으면 출력 직전 제거
+  var rawOpen = window.open;
+  window.open = function(){
+    var w = rawOpen.apply(window,arguments);
+    try{
+      if(w && w.document){
+        var rawWrite = w.document.write.bind(w.document);
+        w.document.write = function(html){
+          try{
+            html = String(html||'')
+              .replace(/<div class="sign"><div><b>작성<\/b><br><br><\/div><div><b>검토<\/b><br><br><\/div><div><b>승인<\/b><br><br><\/div><\/div>/g,'')
+              .replace(/\.sign\{display:grid;grid-template-columns:repeat\(3,1fr\);margin-top:18px;border:1px solid #333\}\.sign div\{text-align:center;padding:10px;border-right:1px solid #333;min-height:60px\}\.sign div:last-child\{border-right:0\}/g,'');
+          }catch(e){}
+          return rawWrite(html);
+        };
+      }
+    }catch(e){}
+    return w;
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(patchAll,100)});
+  else setTimeout(patchAll,100);
+  [300,700,1200,2500,5000].forEach(function(t){setTimeout(patchAll,t)});
+  try{
+    new MutationObserver(function(){setTimeout(patchAll,30)}).observe(document.documentElement,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- /WORKORDER NO APPROVAL / CLEAN LIST PATCH v20260611 -->
 </body>
 </html>
