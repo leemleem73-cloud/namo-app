@@ -4463,9 +4463,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-
-</body></html>'
+    '\n</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
