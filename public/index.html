@@ -4459,7 +4459,113 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '\n</body></html>'
+    '\n
+<style>
+/* LOT 추적 최종 수정 패치 */
+#page-trace #traceSearch{display:none!important;}
+#page-trace .trace-hmc-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+#page-trace .trace-finished-card{display:block!important;}
+#page-trace .trace-table-wrap{max-height:420px!important;}
+#page-trace .trace-work-link{color:#0057d9!important;font-weight:900!important;text-decoration:none!important;border-bottom:1px solid rgba(0,87,217,.28);cursor:pointer;}
+#page-trace .trace-inspection-row{cursor:pointer;}
+#page-trace .trace-inspection-row:hover{border-color:#93c5fd;background:#f8fbff;}
+@media(max-width:1100px){#page-trace .trace-hmc-summary{grid-template-columns:1fr!important;}}
+</style>
+<script>
+/* LOT 추적 최종 수정: KPI 정리, 원자재/완제품 조회 분리, 검사/작업표준서 링크 연동 */
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function esc2(v){return (typeof esc==='function')?esc(v):String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function clean(v){return String(v||'').trim().toLowerCase();}
+  function uniq(arr){var m=[];var s={};(arr||[]).forEach(function(v){v=String(v||'').trim();var k=clean(v);if(v&&!s[k]){s[k]=1;m.push(v);}});return m;}
+  function numQty(v){var n=parseFloat(String(v||'').replace(/,/g,''));return isFinite(n)?n:0;}
+  function dateOnly2(v){return (typeof dateOnly==='function')?dateOnly(v):String(v||'').slice(0,10);}
+  function badge2(ok,text){return '<span class="trace-badge '+(ok?'pass':'wait')+'">'+esc2(text||(ok?'완료':'대기'))+'</span>';}
+  function lotLink2(type,lot,label){lot=String(lot||'');return lot?'<span class="trace-link" data-report-type="'+esc2(type)+'" data-report-lot="'+esc2(lot)+'">'+esc2(label||lot)+'</span>':'-';}
+  function workLink(orderNo, lot){var key=orderNo||lot||'';return key?'<span class="trace-work-link" data-workstandard-lot="'+esc2(lot||key)+'" data-workstandard-order="'+esc2(orderNo||'')+'">'+esc2(key)+'</span>':'-';}
+  function rowsHas(rows,src){return (rows||[]).some(function(r){return r&&r.source===src;});}
+  function initTraceDom(){
+    var btn=byId('traceSearch'); if(btn) btn.remove();
+    var sel=byId('traceType');
+    if(sel){
+      Array.prototype.forEach.call(sel.options,function(o){
+        if(o.value==='finished') o.textContent='완제품 Lot 조회';
+        if(o.value==='material') o.textContent='원자재 Lot 조회';
+        if(o.value==='all') o.remove();
+      });
+    }
+    var head=document.querySelector('#page-trace .trace-left-stack .trace-card:nth-of-type(2) .trace-card-head h3');
+    if(head) head.textContent='원자재 Lot 조회';
+    var p=document.querySelector('#page-trace .trace-left-stack .trace-card:nth-of-type(2) .trace-card-head p');
+    if(p) p.textContent='완제품 LOT 기준 원자재 투입 관계';
+    var ths=document.querySelectorAll('#page-trace .trace-table thead th');
+    if(ths&&ths.length>=2){ths[0].textContent='원자재명';ths[1].textContent='원자재 Lot';}
+    var left=document.querySelector('#page-trace .trace-left-stack');
+    if(left && !byId('traceFinishedTable')){
+      var card=document.createElement('div');
+      card.className='trace-card trace-finished-card';
+      card.innerHTML='<div class="trace-card-head"><div><h3>완제품 Lot 조회</h3><p>완제품 LOT, 검사성적서, 작업표준서 연결</p></div><span id="traceFinishedCount" class="trace-count-badge">0건</span></div><div class="tw trace-table-wrap"><table class="trace-table"><thead><tr><th>완제품 Lot</th><th>작업지시서</th><th>작업일자</th><th>작업자</th><th>PQC</th><th>OQC</th></tr></thead><tbody id="traceFinishedTable"><tr><td colspan="6" class="trace-empty">LOT 번호를 입력 후 조회하세요.</td></tr></tbody></table></div>';
+      var matCard=document.querySelector('#page-trace .trace-left-stack .trace-card:nth-of-type(2)');
+      if(matCard && matCard.parentNode) matCard.parentNode.insertBefore(card, matCard.nextSibling); else left.appendChild(card);
+    }
+  }
+  window.renderTraceSummary=function(rows,kw){
+    rows=rows||[];var area=byId('traceSummary');if(!area)return;
+    var finished=uniq(rows.map(function(r){return r.finishedLot;}));
+    var mats=uniq(rows.map(function(r){return r.lotNo;}));
+    var qty=rows.reduce(function(s,r){return s+numQty(r.inputQty);},0);
+    area.innerHTML=''
+      +'<div class="trace-kpi good"><div class="l">완제품 Lot 조회</div><div class="v">'+finished.length+'</div><div class="s">'+(finished.length?finished.map(esc2).join(', '):'완제품 LOT 없음')+'</div></div>'
+      +'<div class="trace-kpi purple"><div class="l">원자재 Lot 조회</div><div class="v">'+mats.length+'</div><div class="s">원자재 투입 LOT 추적</div></div>'
+      +'<div class="trace-kpi"><div class="l">총 투입량</div><div class="v">'+(qty?qty.toLocaleString():'-')+'</div><div class="s">조회 '+rows.length+'건</div></div>';
+  };
+  window.renderTraceRows=function(rows){
+    rows=rows||[]; initTraceDom();
+    var tb=byId('traceTable'); var ftb=byId('traceFinishedTable');
+    var materialRows=rows.filter(function(x){return x && (x.source==='material'||x.source==='iqc'||x.lotNo||x.material);});
+    var finishedLots=uniq(rows.map(function(r){return r.finishedLot;}));
+    var finishedRows=finishedLots.map(function(lot){return rows.find(function(r){return clean(r.finishedLot)===clean(lot) && (r.source==='workorder'||r.source==='worklog'||r.source==='oqc'||r.source==='pqc');}) || rows.find(function(r){return clean(r.finishedLot)===clean(lot);}) || {finishedLot:lot};});
+    var mc=byId('traceMatCount'); if(mc) mc.textContent=materialRows.length+'건';
+    var fc=byId('traceFinishedCount'); if(fc) fc.textContent=finishedRows.length+'건';
+    if(tb){
+      if(!materialRows.length) tb.innerHTML='<tr><td colspan="6" class="trace-empty">조회 결과가 없습니다.</td></tr>';
+      else tb.innerHTML=materialRows.map(function(x){var iqc=rowsHas(rows,'iqc')||x.source==='iqc'||x.source==='material';return '<tr><td><span class="trace-mat-name">'+esc2(x.material||'-')+'</span><div class="trace-muted" style="padding:2px 0!important;text-align:left!important;">'+esc2(x.source||'')+'</div></td><td>'+lotLink2('iqc',x.lotNo||x.finishedLot)+'</td><td>'+esc2(x.supName||'-')+'</td><td>'+esc2(x.inputQty||'-')+'</td><td>'+esc2(dateOnly2(x.workDate)||x.inputTime||'-')+'</td><td>'+badge2(iqc,iqc?'연결':'대기')+'</td></tr>';}).join('')+'<tr class="trace-total-row"><td colspan="3">합계 투입량</td><td colspan="3">'+(materialRows.reduce(function(s,r){return s+numQty(r.inputQty)},0)||'-')+'</td></tr>';
+    }
+    if(ftb){
+      if(!finishedRows.length) ftb.innerHTML='<tr><td colspan="6" class="trace-empty">조회 결과가 없습니다.</td></tr>';
+      else ftb.innerHTML=finishedRows.map(function(w){var lot=w.finishedLot||w.lotNo||'';var pqc=rows.some(function(r){return r.source==='pqc'&&clean(r.finishedLot||r.lotNo)===clean(lot);});var oqc=rows.some(function(r){return r.source==='oqc'&&clean(r.finishedLot||r.lotNo)===clean(lot);});return '<tr><td>'+lotLink2('oqc',lot)+'</td><td>'+workLink(w.orderNo||lot,lot)+'</td><td>'+esc2(dateOnly2(w.workDate)||'-')+'</td><td>'+esc2(w.worker||'-')+'</td><td>'+badge2(pqc,pqc?'연결':'대기')+'</td><td>'+badge2(oqc,oqc?'연결':'대기')+'</td></tr>';}).join('');
+    }
+    renderTraceSidePanelsFinal(rows);
+  };
+  function renderTraceSidePanelsFinal(rows){
+    rows=rows||[];var finished=uniq(rows.map(function(r){return r.finishedLot;}));var mats=uniq(rows.map(function(r){return r.lotNo;}));var work=rows.find(function(r){return r.source==='workorder'||r.source==='worklog';})||rows[0]||{};
+    var iqc=rowsHas(rows,'iqc')||mats.length>0, pqc=rowsHas(rows,'pqc'), oqc=rowsHas(rows,'oqc');
+    var insp=byId('traceInspectionPanel');
+    if(insp) insp.innerHTML=[['IQC','iqc',iqc,'원자재/입고 검사',mats[0]||''],['PQC','pqc',pqc,'공정검사',finished[0]||''],['OQC','oqc',oqc,'출하검사',finished[0]||'']].map(function(x){return '<div class="trace-inspection-row" data-report-type="'+x[1]+'" data-report-lot="'+esc2(x[4])+'"><div class="name">'+x[0]+'</div><div class="meta">'+esc2(x[3])+'</div><div>'+badge2(x[2],x[2]?'연결':'대기')+'</div></div>';}).join('');
+    var wp=byId('traceWorkPanel');
+    if(wp) wp.innerHTML=rows.length?'<table class="trace-mini-table"><tr><td>완제품 LOT</td><td>'+lotLink2('oqc',finished[0]||work.finishedLot||'')+'</td></tr><tr><td>작업지시서/작업표준서</td><td>'+workLink(work.orderNo||finished[0],finished[0]||work.finishedLot||'')+'</td></tr><tr><td>작업일자</td><td>'+esc2(dateOnly2(work.workDate)||'-')+'</td></tr><tr><td>작업자</td><td>'+esc2(work.worker||'-')+'</td></tr><tr><td>투입 원자재 수</td><td>'+mats.length+'건</td></tr></table>':'<div class="trace-muted">LOT 조회 후 표시됩니다.</div>';
+    var sp=byId('traceShipPanel');
+    if(sp) sp.innerHTML=rows.length?'<table class="trace-mini-table"><tr><td>출하검사성적서</td><td>'+lotLink2('oqc',finished[0]||work.finishedLot||'', oqc?'OQC 연결':'출하검사 이동')+'</td></tr><tr><td>출하/OQC 상태</td><td>'+badge2(oqc,oqc?'연결':'대기')+'</td></tr></table>':'<div class="trace-muted">LOT 조회 후 표시됩니다.</div>';
+  }
+  window.openWorkStandardByLot=function(lot,orderNo){
+    var key=String(lot||orderNo||'').trim();
+    if(!key){alert('연결할 LOT/작업지시서 번호가 없습니다.');return;}
+    var target=document.querySelector('[data-page="workorder-final"],[data-page="workorder"],[data-page="production-order"]');
+    if(target){target.click();setTimeout(function(){['nmcOrderNo','nmcProdLot','worklogFinishedLot','workorderLot','workorderNo'].forEach(function(id){var el=byId(id);if(el){el.value=key;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}});},80);return;}
+    alert('작업표준서/작업지시서 화면을 찾을 수 없습니다. LOT: '+key);
+  };
+  document.addEventListener('click',function(e){
+    var work=e.target.closest&&e.target.closest('[data-workstandard-lot]');
+    if(work){e.preventDefault();e.stopPropagation();window.openWorkStandardByLot(work.dataset.workstandardLot,work.dataset.workstandardOrder);return;}
+    var insp=e.target.closest&&e.target.closest('.trace-inspection-row[data-report-type][data-report-lot]');
+    if(insp && insp.dataset.reportLot){e.preventDefault(); if(typeof goReportPageByLot==='function')goReportPageByLot(insp.dataset.reportType,insp.dataset.reportLot);}
+  },true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initTraceDom);else initTraceDom();
+  [200,800,1600].forEach(function(t){setTimeout(initTraceDom,t);});
+})();
+</script>
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
