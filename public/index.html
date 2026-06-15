@@ -4343,7 +4343,105 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '<!-- NMC PRODUCTION MENU UNIFICATION PATCH 20260616 START -->
+<style id="nmc-production-menu-unify-style-20260616">
+/* 생산현황/생산실적현황 메뉴 1개 통합 */
+.sidebar .nav-item[data-page="production-progress"],
+.sidebar .nav-item[data-page-target="production-progress"],
+.sidebar .nav-item[data-page="production"],
+.sidebar .nav-item[data-page="production-plan"]{
+  display:none!important;
+}
+</style>
+<script id="nmc-production-menu-unify-script-20260616">
+(function(){
+  'use strict';
+  if(window.__NMC_PRODUCTION_MENU_UNIFY_20260616__) return;
+  window.__NMC_PRODUCTION_MENU_UNIFY_20260616__ = true;
+
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(v){return String(v==null?'':v).trim();}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+  function makeProductionStatusNav(){
+    var side=q('.sidebar'); if(!side) return;
+    var sec=qa('.nav-sec',side).filter(function(x){return txt(x.textContent)==='생산 관리' || txt(x.textContent)==='생산관리';})[0];
+    if(!sec) return;
+
+    /* 기존 생산 현황/실적/계획/대시보드 계열 메뉴 제거 */
+    ['production','production-plan','production-progress','production-result'].forEach(function(pg){
+      qa('.nav-item[data-page="'+pg+'"]',side).forEach(function(b){b.remove();});
+    });
+
+    var first=sec.nextElementSibling;
+    if(!q('.nav-item[data-page="production-result"]',side)){
+      sec.insertAdjacentHTML('afterend','<button class="nav-item" data-page="production-result"><span class="nav-icon">▦</span><span>생산현황</span></button>');
+    }
+
+    /* 작업지시서 작성/목록/LOT 추적은 유지하되, 생산현황 아래로 자연스럽게 배치 */
+    var prod=q('.nav-item[data-page="production-result"]',side);
+    var order=['workorder-final','workorder-list','trace'];
+    for(var i=order.length-1;i>=0;i--){
+      var b=q('.nav-item[data-page="'+order[i]+'"]',side);
+      if(b && prod && prod.parentNode) prod.parentNode.insertBefore(b, prod.nextSibling);
+    }
+  }
+
+  function renameProductionPage(){
+    var page=q('#page-production-result');
+    if(!page) return;
+    var title=q('.ph-title',page); if(title) title.textContent='생산현황';
+    var bc=q('.ph-bc',page); if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산관리 <span class="sep">›</span> 생산현황';
+    var sub=q('.ph-sub',page); if(sub) sub.textContent='LOT별 생산량, 수율, 고객사별 생산현황, 월별 생산추이를 한 화면에서 조회합니다.';
+    qa('h3',page).forEach(function(h){
+      var t=txt(h.textContent);
+      if(t==='생산실적 목록') h.textContent='생산현황 목록';
+      if(t.indexOf('생산실적')>-1) h.textContent=t.replace(/생산실적/g,'생산현황');
+    });
+  }
+
+  function redirectOldProductionPages(){
+    /* 사용자가 기존 생산진행/생산실적 메뉴를 눌러도 통합 생산현황으로 이동 */
+    document.addEventListener('click',function(e){
+      var el=e.target.closest&&e.target.closest('[data-page="production-progress"],[data-page="production"],[data-page="production-plan"],[data-page-target="production-progress"],[data-page-target="production"],[data-page-target="production-plan"]');
+      if(!el) return;
+      e.preventDefault(); e.stopPropagation();
+      var prod=q('.nav-item[data-page="production-result"]');
+      if(prod) prod.click();
+      else if(typeof window.showPage==='function') window.showPage('production-result');
+    },true);
+  }
+
+  function apply(){
+    makeProductionStatusNav();
+    renameProductionPage();
+    qa('.nav-item[data-page="production-result"] span:last-child').forEach(function(s){s.textContent='생산현황';});
+    qa('[data-page-target="production-result"]').forEach(function(b){if(txt(b.textContent).indexOf('생산실적')>-1)b.textContent='생산현황';});
+  }
+
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProductionUnified){
+    window.showPage=function(pg){
+      if(pg==='production-progress'||pg==='production'||pg==='production-plan') pg='production-result';
+      var r=oldShow.apply(this,arguments);
+      setTimeout(apply,0);
+      return r;
+    };
+    window.showPage.__nmcProductionUnified=true;
+  }
+
+  redirectOldProductionPages();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply); else apply();
+  [100,300,700,1500,3000].forEach(function(ms){setTimeout(apply,ms);});
+  try{
+    new MutationObserver(function(){apply();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION MENU UNIFICATION PATCH 20260616 END -->
+
+</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
