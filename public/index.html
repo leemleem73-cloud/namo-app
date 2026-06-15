@@ -4436,111 +4436,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-
-<!-- =========================================================
-  NMC FULL UI COMPACT + LOT TRACE SCREEN REPLACEMENT
-  요청 반영: 나모케미칼 현재 웹 크기 맞춤 / LOT 추적 조회 캡처형 단순화
-========================================================= -->
-<style id="nmc-full-compact-ui-and-lot-trace-replacement">
-:root{
-  --bg:#edf2f7!important;--sf:#fff!important;--s2:#f7f9fc!important;--bd:#d9e2ec!important;--bd2:#cbd5e1!important;
-  --t1:#0f172a!important;--t2:#334155!important;--t3:#64748b!important;
-  --pri:#0b5fa5!important;--prih:#084b82!important;--pris:#eaf4ff!important;--prit:rgba(11,95,165,.13)!important;
-  --ok:#16a34a!important;--oks:#dcfce7!important;--er:#dc2626!important;--ers:#fee2e2!important;
-  --wa:#f97316!important;--was:#ffedd5!important;--inf:#0369a1!important;--infs:#e0f2fe!important;
-  --sw:120px!important;--th:44px!important;--r1:4px!important;--r2:6px!important;--r3:8px!important;--r4:10px!important;--r5:12px!important;
-  --sh1:0 1px 2px rgba(15,23,42,.06)!important;--sh3:0 6px 14px rgba(15,23,42,.08)!important;--sh4:0 12px 26px rgba(15,23,42,.12)!important;
-}
-html,body{font-size:12px!important;background:#edf2f7!important;overflow:hidden!important;}
-.topbar{height:44px!important;background:#fff!important;border-bottom:1px solid #d9e2ec!important;box-shadow:0 1px 2px rgba(15,23,42,.04)!important;}
-.tlogo{width:120px!important;padding:0 7px!important;gap:5px!important;border-right:1px solid #d9e2ec!important;}
-.tlogo img{height:24px!important;max-width:105px!important;object-fit:contain!important;}.tlogo-n{font-size:11px!important}.tlogo-s{font-size:8px!important}.dtxt{font-size:11px!important}.tright{padding:0 8px!important;gap:5px!important}.pbtn{height:30px!important;padding:3px 8px!important;border-radius:7px!important}.pavatar{width:22px!important;height:22px!important;font-size:10px!important}.pname{font-size:11px!important}.pemail{font-size:9px!important}.sbox{height:30px!important;width:180px!important;border-radius:7px!important}
-.layout{height:calc(100vh - 44px)!important}.sidebar{width:120px!important;padding:7px 5px!important;background:#071426!important;border-right:0!important;box-shadow:5px 0 14px rgba(15,23,42,.08)!important}.sidebar .nav-sec{font-size:9px!important;color:#93b7e6!important;letter-spacing:0!important;padding:9px 6px 4px!important;text-transform:none!important}.sidebar .nav-item{height:30px!important;padding:0 7px!important;gap:5px!important;border-radius:6px!important;margin-bottom:2px!important;font-size:11px!important;color:#dbeafe!important;line-height:1.1!important;background:transparent!important;border:0!important}.sidebar .nav-item:hover{background:rgba(96,165,250,.14)!important;color:#fff!important}.sidebar .nav-item.active{background:#0ea5e9!important;color:#fff!important;box-shadow:none!important;font-weight:800!important}.sidebar .nav-icon{width:14px!important;font-size:11px!important;opacity:.95!important}.content{padding:10px!important;background:#edf2f7!important}.ph{margin-bottom:8px!important;gap:8px!important}.ph-title{font-size:15px!important}.ph-sub,.ph-bc{font-size:10px!important}.card,.sc,.qmes-panel,.mes-prod-card,.mes-recent-card,.srm-section,.nc-panel{border-radius:8px!important;box-shadow:0 2px 8px rgba(15,23,42,.05)!important;border-color:#d9e2ec!important}.ch,.qmes-panel-h,.mes-prod-card-head,.mes-recent-head,.sph{padding:8px 10px!important;min-height:34px!important}.ch h2,.ch h3,.qmes-panel-h h3{font-size:12px!important}.cb,.qmes-panel-b{padding:10px!important}.btn{height:30px!important;padding:0 10px!important;font-size:11px!important;border-radius:6px!important}.btn.sm{height:25px!important;padding:0 8px!important;font-size:10px!important}.field{gap:2px!important}.field label{font-size:10px!important;letter-spacing:0!important;text-transform:none!important}.field input,.field select,.field textarea,.toolbar select,.toolbar input{height:31px!important;border-radius:6px!important;font-size:12px!important;padding:0 9px!important}.field textarea{height:auto!important;padding:7px 9px!important}.tw{border-radius:7px!important}table{font-size:11px!important}thead th{font-size:10px!important;padding:7px 8px!important;letter-spacing:0!important;text-transform:none!important}tbody td{padding:7px 8px!important}.status,.badge,.tag{font-size:10px!important;padding:2px 6px!important}.qmes-hero{border-radius:10px!important;padding:10px 12px!important;box-shadow:0 4px 12px rgba(15,23,42,.10)!important}.qmes-hero-grid.donut{gap:8px!important}.qmes-donut-card{min-height:102px!important;padding:9px!important;border-radius:8px!important}.qmes-kpi-title{font-size:11px!important}.qmes-kpi-total{font-size:10px!important;padding:2px 6px!important}.qmes-kpi-body{grid-template-columns:62px 1fr!important;gap:8px!important}.qmes-donut{width:62px!important;height:62px!important}.qmes-donut:after{inset:13px!important}.qmes-donut .num{font-size:20px!important}.qmes-donut .unit{display:none!important}.qmes-kpi-row{font-size:10px!important;gap:5px!important}.qmes-kpi-dot{width:8px!important;height:8px!important}.qmes-main-grid{gap:10px!important;grid-template-columns:minmax(0,2.6fr) minmax(260px,.8fr)!important}.qmes-trend-wide .cwrap,#qmesTrendSlot .qmes-trend-wide .cwrap{height:230px!important;min-height:230px!important}.qmes-module-grid,#qmesCockpit .qmes-module-grid{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:6px!important}.qmes-module,#qmesCockpit .qmes-module{min-height:92px!important;padding:9px 6px!important;border-radius:8px!important}.qmes-module .icon,#qmesCockpit .qmes-module .icon{width:28px!important;height:28px!important;border-radius:9px!important;font-size:15px!important;margin:0 auto 6px!important}.qmes-module .name{font-size:11px!important}.qmes-module .desc{font-size:9.5px!important;line-height:1.35!important}.qmes-chip{height:18px!important;font-size:9px!important;padding:0 5px!important}.nitem{padding:7px 0!important;font-size:11px!important}.ntxt{font-size:11px!important}.ndate{font-size:10px!important}.footer{padding:6px 10px!important;font-size:10px!important}
-.nav-item[data-page="trace"],[data-page-target="trace"]{display:flex!important;visibility:visible!important}#page-trace{display:none!important;visibility:visible!important}#page-trace.active{display:block!important;visibility:visible!important}
-#page-trace .nmc-lot-page{max-width:980px;margin:0 auto;background:#fff;border:1px solid #cfd8e3;border-radius:4px;overflow:hidden;box-shadow:0 2px 8px rgba(15,23,42,.06)}
-#page-trace .nmc-lot-section{border-bottom:1px solid #d9e2ec;background:#fff}#page-trace .nmc-lot-section:last-child{border-bottom:0}#page-trace .nmc-lot-head{height:34px;background:#2f73a9;color:#fff;display:flex;align-items:center;gap:8px;padding:0 13px;font-size:14px;font-weight:900}#page-trace .nmc-lot-head small{font-size:11px;font-weight:700;color:#dbeafe;margin-left:8px}#page-trace .nmc-lot-filter{padding:13px 13px 12px}#page-trace .nmc-lot-tabs{display:flex;gap:32px;border-bottom:2px solid #cbd5e1;margin-bottom:12px;padding-left:16px}#page-trace .nmc-lot-tab{height:34px;border:0;background:transparent;color:#64748b;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}#page-trace .nmc-lot-tab.active{color:#0065b3;border-bottom-color:#0065b3}#page-trace .nmc-lot-form{display:grid;grid-template-columns:120px 120px 120px auto auto;gap:9px;align-items:end}#page-trace .nmc-lot-field label{display:block;font-size:11px;color:#334155;margin-bottom:4px}#page-trace .nmc-lot-input,#page-trace .nmc-lot-select{width:100%;height:40px;border:1px solid #cfd8e3;border-radius:6px;background:#fff;padding:0 13px;font-size:17px;color:#1f2937;outline:none}#page-trace .nmc-lot-select{font-size:15px}#page-trace .nmc-lot-btn{height:32px;min-width:84px;border:1px solid #b8c2ce;border-radius:8px;background:#fff;color:#111827;font-size:14px;font-weight:700;cursor:pointer}#page-trace .nmc-lot-btn.primary{min-width:92px}#page-trace .nmc-lot-btn:hover{background:#f8fafc;border-color:#7d8da1}#page-trace .nmc-flow-wrap{padding:12px 10px 5px;background:#f8fafc;overflow-x:auto}#page-trace .nmc-flow{min-width:760px;display:flex;align-items:center;gap:11px}#page-trace .nmc-flow-card{width:124px;min-height:82px;border:1px solid #6fc28c;border-radius:5px;background:#d9f1df;color:#14532d;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px 5px;font-size:11px;line-height:1.25}#page-trace .nmc-flow-card b{font-size:12px;color:#14532d;margin:2px 0}#page-trace .nmc-flow-card span{font-size:11px;color:#166534}#page-trace .nmc-flow-arrow{font-size:30px;font-weight:700;color:#9ca3af;line-height:1}#page-trace .nmc-scrollbar{height:14px;margin:5px 0 0;display:flex;align-items:center;gap:8px;color:#888}#page-trace .nmc-scroll-track{height:13px;flex:1;background:#8e8e8e;border-radius:99px}#page-trace .nmc-detail{padding:11px 14px 15px;background:#fff}#page-trace .nmc-detail-title{font-size:12px;font-weight:900;color:#334155;padding-bottom:10px;border-bottom:1px solid #e5e7eb;margin-bottom:9px}#page-trace .nmc-timeline{display:flex;flex-direction:column;gap:8px}#page-trace .nmc-event{display:grid;grid-template-columns:18px 1fr;column-gap:8px;position:relative}#page-trace .nmc-event:before{content:'';position:absolute;left:8px;top:18px;bottom:-10px;width:2px;background:#cbd5e1}#page-trace .nmc-event:last-child:before{display:none}#page-trace .nmc-dot{width:17px;height:17px;border-radius:50%;border:3px solid #16a34a;background:#fff;margin-top:3px;z-index:1}#page-trace .nmc-dot.blue{border-color:#0b74bd}#page-trace .nmc-dot.orange{border-color:#f97316}#page-trace .nmc-event h4{font-size:14px;font-weight:900;color:#172033;display:flex;align-items:center;gap:6px}#page-trace .nmc-chip{display:inline-flex;align-items:center;height:18px;border-radius:99px;padding:0 8px;font-size:10px;font-weight:900;background:#dbeafe;color:#0369a1}#page-trace .nmc-chip.pass,#page-trace .nmc-chip.ship{background:#dcfce7;color:#166534}#page-trace .nmc-chip.proc{background:#fef3c7;color:#92400e}#page-trace .nmc-meta{font-size:12px;color:#64748b;margin:1px 0 6px}#page-trace .nmc-info{display:grid;grid-template-columns:1fr 1fr;gap:3px 28px;border:1px solid #d6dee9;background:#f8fbff;border-radius:3px;padding:9px 12px;max-width:760px}#page-trace .nmc-info-row{display:grid;grid-template-columns:96px 1fr;font-size:12px;line-height:1.55}#page-trace .nmc-info-row span:first-child{color:#64748b}#page-trace .nmc-info-row b{font-weight:800;color:#111827}#page-trace .nmc-summary{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #d9e2ec;background:#fff}#page-trace .nmc-sum{padding:12px 14px;border-right:1px solid #d9e2ec}#page-trace .nmc-sum:last-child{border-right:0}#page-trace .nmc-sum .l{font-size:11px;color:#64748b;font-weight:700}#page-trace .nmc-sum .v{font-size:19px;color:#0b74bd;font-weight:900;line-height:1.1;margin-top:4px}#page-trace .nmc-sum .s{font-size:11px;color:#94a3b8;margin-top:3px}#page-trace .nmc-empty{padding:32px;text-align:center;color:#64748b;font-weight:700}#page-trace .trace-summary,#page-trace .trace-timeline,#page-trace .trace-link,#page-trace .trace-lot-result-grid,#page-trace .trace-premium-shell,#page-trace .lot-clean-shell{display:none!important}
-@media(max-width:1100px){:root{--sw:114px!important}.sidebar{width:114px!important}.tlogo{width:114px!important}.qmes-module-grid,#qmesCockpit .qmes-module-grid{grid-template-columns:repeat(4,1fr)!important}.qmes-main-grid{grid-template-columns:1fr!important}}
-@media(max-width:760px){:root{--sw:0px!important}.sidebar{display:none!important}.tlogo{width:112px!important}.content{padding:8px!important}#page-trace .nmc-lot-page{max-width:none}#page-trace .nmc-lot-form{grid-template-columns:1fr 1fr}#page-trace .nmc-info{grid-template-columns:1fr}#page-trace .nmc-summary{grid-template-columns:1fr 1fr}.qmes-hero-grid.donut{grid-template-columns:1fr!important}.qmes-module-grid,#qmesCockpit .qmes-module-grid{grid-template-columns:1fr!important}}
-</style>
-<script id="nmc-full-compact-ui-and-lot-trace-replacement-script">
-(function(){
-  'use strict';
-  if(window.__NMC_FULL_COMPACT_LOT_REPLACEMENT__) return;
-  window.__NMC_FULL_COMPACT_LOT_REPLACEMENT__=true;
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  var sample={
-    lot:'RM-2026-0512-001', shortLot:'RM-2026-0512', material:'에폭시 수지 A형', supplier:'한국화학(주)', supplierLot:'KCH-20260510-88', qtyIn:'500 kg', iqcNo:'IQC-0512-003', workNo:'WO-2026-0518', product:'NC-EX100A', inputQty:'480 kg', line:'1호 라인', pqcNo:'PQC-0519-007', finishedLot:'FG-2026-0521', customer:'삼성전자(주)', shipQty:'950 EA', oqcNo:'OQC-0521-002', days:'9일'
-  };
-  function ensureTraceMenu(){
-    qsa('style#nmc-remove-lot-trace-final').forEach(function(x){x.disabled=true;x.textContent=''});
-    var side=qs('.sidebar'); if(!side) return;
-    qsa('.nav-item[data-page="trace"]',side).forEach(function(el){el.style.display='flex';el.style.visibility='visible'});
-    var nav=qs('.nav-item[data-page="trace"]',side);
-    if(!nav){
-      nav=document.createElement('button'); nav.className='nav-item'; nav.setAttribute('data-page','trace'); nav.innerHTML='<span class="nav-icon">⛓</span><span>LOT 추적 조회</span>';
-      var stock=Array.prototype.filter.call(side.querySelectorAll('.nav-sec'),function(x){return /재고|관리/.test(x.textContent||'')})[0];
-      if(stock){var after=stock; while(after.nextElementSibling && after.nextElementSibling.classList.contains('nav-item')) after=after.nextElementSibling; after.insertAdjacentElement('afterend',nav);} else side.appendChild(nav);
-    }
-    if(!nav.__nmcTraceClick){nav.__nmcTraceClick=true;nav.addEventListener('click',function(e){e.preventDefault();showPage('trace')},true)}
-  }
-  function showPage(name){
-    qsa('.page').forEach(function(p){p.classList.remove('active')});
-    var page=qs('#page-'+name); if(page) page.classList.add('active');
-    qsa('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===name)});
-    if(name==='trace') setTimeout(renderLotTrace,0);
-  }
-  function ensureTracePage(){
-    var content=qs('.content')||qs('.layout')||document.body; var page=qs('#page-trace');
-    if(!page){page=document.createElement('div');page.id='page-trace';page.className='page';content.appendChild(page)}
-    page.style.visibility='visible';
-    return page;
-  }
-  function buildTraceHTML(){return '<div class="nmc-lot-page">'+
-    '<div class="nmc-lot-section"><div class="nmc-lot-head">⛓ 추적 조건</div><div class="nmc-lot-filter"><div class="nmc-lot-tabs"><button class="nmc-lot-tab active" data-lot-mode="raw">원자재 LOT 추적</button><button class="nmc-lot-tab" data-lot-mode="product">제품 LOT 추적</button></div><div class="nmc-lot-form"><div class="nmc-lot-field"><label>LOT 번호</label><input id="nmcLotNo" class="nmc-lot-input" value="RM-2026-C"></div><div class="nmc-lot-field"><label id="nmcLotNameLabel">원자재명</label><input id="nmcLotName" class="nmc-lot-input" placeholder="전체"></div><div class="nmc-lot-field"><label>공급업체</label><select id="nmcLotSupplier" class="nmc-lot-select"><option>전체</option><option>한국화학(주)</option><option>삼성전자(주)</option></select></div><button class="nmc-lot-btn" id="nmcLotReset">초기화</button><button class="nmc-lot-btn primary" id="nmcLotSearch">⌕ 조회</button></div></div></div>'+
-    '<div class="nmc-lot-section"><div class="nmc-lot-head">↕ LOT 추적 결과 <small id="nmcLotResultLabel">LOT: RM-2026-0512-001</small></div><div id="nmcLotResultBody"></div></div>'+ 
-    '</div>'}
-  function renderLotTrace(){
-    var page=ensureTracePage();
-    if(!page.querySelector('.nmc-lot-page')) page.innerHTML=buildTraceHTML();
-    bindTrace(page); renderTraceData();
-  }
-  function currentMode(){var a=qs('#page-trace .nmc-lot-tab.active');return a?a.getAttribute('data-lot-mode'):'raw'}
-  function bindTrace(page){
-    qsa('.nmc-lot-tab',page).forEach(function(btn){if(btn.__bind)return;btn.__bind=true;btn.addEventListener('click',function(){qsa('.nmc-lot-tab',page).forEach(function(b){b.classList.remove('active')});btn.classList.add('active');var raw=currentMode()==='raw';var nameLabel=qs('#nmcLotNameLabel'); if(nameLabel) nameLabel.textContent=raw?'원자재명':'제품명';var inp=qs('#nmcLotNo'); if(inp) inp.value=raw?'RM-2026-C':'FG-2026';renderTraceData();})});
-    var s=qs('#nmcLotSearch',page); if(s&&!s.__bind){s.__bind=true;s.addEventListener('click',renderTraceData)}
-    var r=qs('#nmcLotReset',page); if(r&&!r.__bind){r.__bind=true;r.addEventListener('click',function(){var raw=currentMode()==='raw';qs('#nmcLotNo').value=raw?'RM-2026-C':'FG-2026';qs('#nmcLotName').value='';qs('#nmcLotSupplier').value='전체';renderTraceData()})}
-    ['nmcLotNo','nmcLotName'].forEach(function(id){var el=qs('#'+id,page);if(el&&!el.__bind){el.__bind=true;el.addEventListener('keydown',function(e){if(e.key==='Enter')renderTraceData()})}})
-  }
-  function renderTraceData(){
-    var body=qs('#nmcLotResultBody'); if(!body) return;
-    var raw=currentMode()==='raw'; var lotIn=qs('#nmcLotNo'); var q=(lotIn&&lotIn.value)||'';
-    var d=Object.assign({},sample);
-    if(!raw){d.lot=d.finishedLot;d.shortLot=d.finishedLot;}
-    var hasResult=/RM|FG|2026|0512|0521|C/i.test(q||'');
-    var label=qs('#nmcLotResultLabel'); if(label) label.textContent=hasResult?'LOT: '+d.lot:'조회 대기';
-    if(!hasResult){body.innerHTML='<div class="nmc-empty">조회된 LOT 이력이 없습니다.</div>';return;}
-    body.innerHTML='<div class="nmc-flow-wrap"><div class="nmc-flow">'+
-      flow('① 원자재 입고',d.shortLot,d.supplier,'05/12')+'<div class="nmc-flow-arrow">›</div>'+flow('② 수입검사 IQC',d.iqcNo,'합격','05/13')+'<div class="nmc-flow-arrow">›</div>'+flow('③ 공정 투입',d.workNo,d.line,'05/18')+'<div class="nmc-flow-arrow">›</div>'+flow('④ 공정검사 PQC',d.pqcNo,'합격','05/19')+
-      '</div><div class="nmc-scrollbar"><span>◀</span><div class="nmc-scroll-track"></div><span>▶</span></div></div>'+detailHTML(d);
-  }
-  function flow(t,a,b,c){return '<div class="nmc-flow-card"><span>'+esc(t)+'</span><b>'+esc(a)+'</b><span>'+esc(b)+'</span><span>'+esc(c)+'</span></div>'}
-  function eventHTML(dot,title,chip,chipClass,date,manager,rows){return '<div class="nmc-event"><div class="nmc-dot '+dot+'"></div><div><h4>'+esc(title)+' <span class="nmc-chip '+chipClass+'">'+esc(chip)+'</span></h4><div class="nmc-meta">'+esc(date)+' &nbsp; | &nbsp; 담당자: '+esc(manager)+'</div><div class="nmc-info">'+rows.map(function(r){return '<div class="nmc-info-row"><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>'}).join('')+'</div></div></div>'}
-  function detailHTML(d){return '<div class="nmc-detail"><div class="nmc-detail-title">상세 이력</div><div class="nmc-timeline">'+
-    eventHTML('blue','원자재 입고','입고','', '2026-05-12','김민준', [['원자재명',d.material],['공급업체',d.supplier],['입고수량',d.qtyIn],['공급사 LOT',d.supplierLot]])+
-    eventHTML('','수입검사 (IQC) — 합격','합격','pass','2026-05-13','이수연', [['검사번호',d.iqcNo],['검사항목','점도, 외관, 순도'],['판정','합격'],['검사자','이수연']])+
-    eventHTML('orange','공정 투입 — 1호 라인','공정','proc','2026-05-18','박태양', [['작업지시번호',d.workNo],['투입수량',d.inputQty],['생산 제품',d.product],['라인',d.line]])+
-    eventHTML('','완제품 출하 — 출하 완료','출하','ship','2026-05-21','최지훈', [['완제품 LOT',d.finishedLot],['출하수량',d.shipQty],['거래처',d.customer],['출하검사',d.oqcNo+' (합격)']])+
-    '</div></div><div class="nmc-summary"><div class="nmc-sum"><div class="l">총 이력 단계</div><div class="v">4</div><div class="s">입고 → 출하</div></div><div class="nmc-sum"><div class="l">입고 수량</div><div class="v">'+esc(d.qtyIn)+'</div><div class="s">'+esc(d.supplier)+'</div></div><div class="nmc-sum"><div class="l">완제품 생산</div><div class="v">'+esc(d.shipQty)+'</div><div class="s">'+esc(d.product)+'</div></div><div class="nmc-sum"><div class="l">소요 기간</div><div class="v">'+esc(d.days)+'</div><div class="s">05/12 → 05/21</div></div></div>'}
-  function boot(){ensureTraceMenu();ensureTracePage(); if(qs('#page-trace.active')) renderLotTrace();}
-  document.addEventListener('DOMContentLoaded',boot); window.addEventListener('load',boot); document.addEventListener('click',function(e){var n=e.target&&e.target.closest&&e.target.closest('[data-page="trace"],[data-page-target="trace"]');if(n)setTimeout(renderLotTrace,0)},true);
-  setTimeout(boot,100);setTimeout(boot,600);setTimeout(boot,1500);setInterval(function(){ensureTraceMenu(); if(qs('#page-trace.active')&&!qs('#page-trace .nmc-lot-page')) renderLotTrace();},1200);
-})();
-</script>
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -20099,6 +19995,109 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_PRODUCTION_PROGRESS_DASHBOARD_SYNC_AND_EDIT_DELETE_PATCH_20260615_END -->
+
+
+<!-- =========================================================
+  NMC FULL UI COMPACT + LOT TRACE SCREEN REPLACEMENT
+  요청 반영: 나모케미칼 현재 웹 크기 맞춤 / LOT 추적 조회 캡처형 단순화
+========================================================= -->
+<style id="nmc-full-compact-ui-and-lot-trace-replacement">
+:root{
+  --bg:#edf2f7!important;--sf:#fff!important;--s2:#f7f9fc!important;--bd:#d9e2ec!important;--bd2:#cbd5e1!important;
+  --t1:#0f172a!important;--t2:#334155!important;--t3:#64748b!important;
+  --pri:#0b5fa5!important;--prih:#084b82!important;--pris:#eaf4ff!important;--prit:rgba(11,95,165,.13)!important;
+  --ok:#16a34a!important;--oks:#dcfce7!important;--er:#dc2626!important;--ers:#fee2e2!important;
+  --wa:#f97316!important;--was:#ffedd5!important;--inf:#0369a1!important;--infs:#e0f2fe!important;
+  --sw:120px!important;--th:44px!important;--r1:4px!important;--r2:6px!important;--r3:8px!important;--r4:10px!important;--r5:12px!important;
+  --sh1:0 1px 2px rgba(15,23,42,.06)!important;--sh3:0 6px 14px rgba(15,23,42,.08)!important;--sh4:0 12px 26px rgba(15,23,42,.12)!important;
+}
+html,body{font-size:12px!important;background:#edf2f7!important;overflow:hidden!important;}
+.topbar{height:44px!important;background:#fff!important;border-bottom:1px solid #d9e2ec!important;box-shadow:0 1px 2px rgba(15,23,42,.04)!important;}
+.tlogo{width:120px!important;padding:0 7px!important;gap:5px!important;border-right:1px solid #d9e2ec!important;}
+.tlogo img{height:24px!important;max-width:105px!important;object-fit:contain!important;}.tlogo-n{font-size:11px!important}.tlogo-s{font-size:8px!important}.dtxt{font-size:11px!important}.tright{padding:0 8px!important;gap:5px!important}.pbtn{height:30px!important;padding:3px 8px!important;border-radius:7px!important}.pavatar{width:22px!important;height:22px!important;font-size:10px!important}.pname{font-size:11px!important}.pemail{font-size:9px!important}.sbox{height:30px!important;width:180px!important;border-radius:7px!important}
+.layout{height:calc(100vh - 44px)!important}.sidebar{width:120px!important;padding:7px 5px!important;background:#071426!important;border-right:0!important;box-shadow:5px 0 14px rgba(15,23,42,.08)!important}.sidebar .nav-sec{font-size:9px!important;color:#93b7e6!important;letter-spacing:0!important;padding:9px 6px 4px!important;text-transform:none!important}.sidebar .nav-item{height:30px!important;padding:0 7px!important;gap:5px!important;border-radius:6px!important;margin-bottom:2px!important;font-size:11px!important;color:#dbeafe!important;line-height:1.1!important;background:transparent!important;border:0!important}.sidebar .nav-item:hover{background:rgba(96,165,250,.14)!important;color:#fff!important}.sidebar .nav-item.active{background:#0ea5e9!important;color:#fff!important;box-shadow:none!important;font-weight:800!important}.sidebar .nav-icon{width:14px!important;font-size:11px!important;opacity:.95!important}.content{padding:10px!important;background:#edf2f7!important}.ph{margin-bottom:8px!important;gap:8px!important}.ph-title{font-size:15px!important}.ph-sub,.ph-bc{font-size:10px!important}.card,.sc,.qmes-panel,.mes-prod-card,.mes-recent-card,.srm-section,.nc-panel{border-radius:8px!important;box-shadow:0 2px 8px rgba(15,23,42,.05)!important;border-color:#d9e2ec!important}.ch,.qmes-panel-h,.mes-prod-card-head,.mes-recent-head,.sph{padding:8px 10px!important;min-height:34px!important}.ch h2,.ch h3,.qmes-panel-h h3{font-size:12px!important}.cb,.qmes-panel-b{padding:10px!important}.btn{height:30px!important;padding:0 10px!important;font-size:11px!important;border-radius:6px!important}.btn.sm{height:25px!important;padding:0 8px!important;font-size:10px!important}.field{gap:2px!important}.field label{font-size:10px!important;letter-spacing:0!important;text-transform:none!important}.field input,.field select,.field textarea,.toolbar select,.toolbar input{height:31px!important;border-radius:6px!important;font-size:12px!important;padding:0 9px!important}.field textarea{height:auto!important;padding:7px 9px!important}.tw{border-radius:7px!important}table{font-size:11px!important}thead th{font-size:10px!important;padding:7px 8px!important;letter-spacing:0!important;text-transform:none!important}tbody td{padding:7px 8px!important}.status,.badge,.tag{font-size:10px!important;padding:2px 6px!important}.qmes-hero{border-radius:10px!important;padding:10px 12px!important;box-shadow:0 4px 12px rgba(15,23,42,.10)!important}.qmes-hero-grid.donut{gap:8px!important}.qmes-donut-card{min-height:102px!important;padding:9px!important;border-radius:8px!important}.qmes-kpi-title{font-size:11px!important}.qmes-kpi-total{font-size:10px!important;padding:2px 6px!important}.qmes-kpi-body{grid-template-columns:62px 1fr!important;gap:8px!important}.qmes-donut{width:62px!important;height:62px!important}.qmes-donut:after{inset:13px!important}.qmes-donut .num{font-size:20px!important}.qmes-donut .unit{display:none!important}.qmes-kpi-row{font-size:10px!important;gap:5px!important}.qmes-kpi-dot{width:8px!important;height:8px!important}.qmes-main-grid{gap:10px!important;grid-template-columns:minmax(0,2.6fr) minmax(260px,.8fr)!important}.qmes-trend-wide .cwrap,#qmesTrendSlot .qmes-trend-wide .cwrap{height:230px!important;min-height:230px!important}.qmes-module-grid,#qmesCockpit .qmes-module-grid{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:6px!important}.qmes-module,#qmesCockpit .qmes-module{min-height:92px!important;padding:9px 6px!important;border-radius:8px!important}.qmes-module .icon,#qmesCockpit .qmes-module .icon{width:28px!important;height:28px!important;border-radius:9px!important;font-size:15px!important;margin:0 auto 6px!important}.qmes-module .name{font-size:11px!important}.qmes-module .desc{font-size:9.5px!important;line-height:1.35!important}.qmes-chip{height:18px!important;font-size:9px!important;padding:0 5px!important}.nitem{padding:7px 0!important;font-size:11px!important}.ntxt{font-size:11px!important}.ndate{font-size:10px!important}.footer{padding:6px 10px!important;font-size:10px!important}
+.nav-item[data-page="trace"],[data-page-target="trace"]{display:flex!important;visibility:visible!important}#page-trace{display:none!important;visibility:visible!important}#page-trace.active{display:block!important;visibility:visible!important}
+#page-trace .nmc-lot-page{max-width:980px;margin:0 auto;background:#fff;border:1px solid #cfd8e3;border-radius:4px;overflow:hidden;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+#page-trace .nmc-lot-section{border-bottom:1px solid #d9e2ec;background:#fff}#page-trace .nmc-lot-section:last-child{border-bottom:0}#page-trace .nmc-lot-head{height:34px;background:#2f73a9;color:#fff;display:flex;align-items:center;gap:8px;padding:0 13px;font-size:14px;font-weight:900}#page-trace .nmc-lot-head small{font-size:11px;font-weight:700;color:#dbeafe;margin-left:8px}#page-trace .nmc-lot-filter{padding:13px 13px 12px}#page-trace .nmc-lot-tabs{display:flex;gap:32px;border-bottom:2px solid #cbd5e1;margin-bottom:12px;padding-left:16px}#page-trace .nmc-lot-tab{height:34px;border:0;background:transparent;color:#64748b;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}#page-trace .nmc-lot-tab.active{color:#0065b3;border-bottom-color:#0065b3}#page-trace .nmc-lot-form{display:grid;grid-template-columns:120px 120px 120px auto auto;gap:9px;align-items:end}#page-trace .nmc-lot-field label{display:block;font-size:11px;color:#334155;margin-bottom:4px}#page-trace .nmc-lot-input,#page-trace .nmc-lot-select{width:100%;height:40px;border:1px solid #cfd8e3;border-radius:6px;background:#fff;padding:0 13px;font-size:17px;color:#1f2937;outline:none}#page-trace .nmc-lot-select{font-size:15px}#page-trace .nmc-lot-btn{height:32px;min-width:84px;border:1px solid #b8c2ce;border-radius:8px;background:#fff;color:#111827;font-size:14px;font-weight:700;cursor:pointer}#page-trace .nmc-lot-btn.primary{min-width:92px}#page-trace .nmc-lot-btn:hover{background:#f8fafc;border-color:#7d8da1}#page-trace .nmc-flow-wrap{padding:12px 10px 5px;background:#f8fafc;overflow-x:auto}#page-trace .nmc-flow{min-width:760px;display:flex;align-items:center;gap:11px}#page-trace .nmc-flow-card{width:124px;min-height:82px;border:1px solid #6fc28c;border-radius:5px;background:#d9f1df;color:#14532d;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px 5px;font-size:11px;line-height:1.25}#page-trace .nmc-flow-card b{font-size:12px;color:#14532d;margin:2px 0}#page-trace .nmc-flow-card span{font-size:11px;color:#166534}#page-trace .nmc-flow-arrow{font-size:30px;font-weight:700;color:#9ca3af;line-height:1}#page-trace .nmc-scrollbar{height:14px;margin:5px 0 0;display:flex;align-items:center;gap:8px;color:#888}#page-trace .nmc-scroll-track{height:13px;flex:1;background:#8e8e8e;border-radius:99px}#page-trace .nmc-detail{padding:11px 14px 15px;background:#fff}#page-trace .nmc-detail-title{font-size:12px;font-weight:900;color:#334155;padding-bottom:10px;border-bottom:1px solid #e5e7eb;margin-bottom:9px}#page-trace .nmc-timeline{display:flex;flex-direction:column;gap:8px}#page-trace .nmc-event{display:grid;grid-template-columns:18px 1fr;column-gap:8px;position:relative}#page-trace .nmc-event:before{content:'';position:absolute;left:8px;top:18px;bottom:-10px;width:2px;background:#cbd5e1}#page-trace .nmc-event:last-child:before{display:none}#page-trace .nmc-dot{width:17px;height:17px;border-radius:50%;border:3px solid #16a34a;background:#fff;margin-top:3px;z-index:1}#page-trace .nmc-dot.blue{border-color:#0b74bd}#page-trace .nmc-dot.orange{border-color:#f97316}#page-trace .nmc-event h4{font-size:14px;font-weight:900;color:#172033;display:flex;align-items:center;gap:6px}#page-trace .nmc-chip{display:inline-flex;align-items:center;height:18px;border-radius:99px;padding:0 8px;font-size:10px;font-weight:900;background:#dbeafe;color:#0369a1}#page-trace .nmc-chip.pass,#page-trace .nmc-chip.ship{background:#dcfce7;color:#166534}#page-trace .nmc-chip.proc{background:#fef3c7;color:#92400e}#page-trace .nmc-meta{font-size:12px;color:#64748b;margin:1px 0 6px}#page-trace .nmc-info{display:grid;grid-template-columns:1fr 1fr;gap:3px 28px;border:1px solid #d6dee9;background:#f8fbff;border-radius:3px;padding:9px 12px;max-width:760px}#page-trace .nmc-info-row{display:grid;grid-template-columns:96px 1fr;font-size:12px;line-height:1.55}#page-trace .nmc-info-row span:first-child{color:#64748b}#page-trace .nmc-info-row b{font-weight:800;color:#111827}#page-trace .nmc-summary{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #d9e2ec;background:#fff}#page-trace .nmc-sum{padding:12px 14px;border-right:1px solid #d9e2ec}#page-trace .nmc-sum:last-child{border-right:0}#page-trace .nmc-sum .l{font-size:11px;color:#64748b;font-weight:700}#page-trace .nmc-sum .v{font-size:19px;color:#0b74bd;font-weight:900;line-height:1.1;margin-top:4px}#page-trace .nmc-sum .s{font-size:11px;color:#94a3b8;margin-top:3px}#page-trace .nmc-empty{padding:32px;text-align:center;color:#64748b;font-weight:700}#page-trace .trace-summary,#page-trace .trace-timeline,#page-trace .trace-link,#page-trace .trace-lot-result-grid,#page-trace .trace-premium-shell,#page-trace .lot-clean-shell{display:none!important}
+@media(max-width:1100px){:root{--sw:114px!important}.sidebar{width:114px!important}.tlogo{width:114px!important}.qmes-module-grid,#qmesCockpit .qmes-module-grid{grid-template-columns:repeat(4,1fr)!important}.qmes-main-grid{grid-template-columns:1fr!important}}
+@media(max-width:760px){:root{--sw:0px!important}.sidebar{display:none!important}.tlogo{width:112px!important}.content{padding:8px!important}#page-trace .nmc-lot-page{max-width:none}#page-trace .nmc-lot-form{grid-template-columns:1fr 1fr}#page-trace .nmc-info{grid-template-columns:1fr}#page-trace .nmc-summary{grid-template-columns:1fr 1fr}.qmes-hero-grid.donut{grid-template-columns:1fr!important}.qmes-module-grid,#qmesCockpit .qmes-module-grid{grid-template-columns:1fr!important}}
+</style>
+<script id="nmc-full-compact-ui-and-lot-trace-replacement-script">
+(function(){
+  'use strict';
+  if(window.__NMC_FULL_COMPACT_LOT_REPLACEMENT__) return;
+  window.__NMC_FULL_COMPACT_LOT_REPLACEMENT__=true;
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  var sample={
+    lot:'RM-2026-0512-001', shortLot:'RM-2026-0512', material:'에폭시 수지 A형', supplier:'한국화학(주)', supplierLot:'KCH-20260510-88', qtyIn:'500 kg', iqcNo:'IQC-0512-003', workNo:'WO-2026-0518', product:'NC-EX100A', inputQty:'480 kg', line:'1호 라인', pqcNo:'PQC-0519-007', finishedLot:'FG-2026-0521', customer:'삼성전자(주)', shipQty:'950 EA', oqcNo:'OQC-0521-002', days:'9일'
+  };
+  function ensureTraceMenu(){
+    qsa('style#nmc-remove-lot-trace-final').forEach(function(x){x.disabled=true;x.textContent=''});
+    var side=qs('.sidebar'); if(!side) return;
+    qsa('.nav-item[data-page="trace"]',side).forEach(function(el){el.style.display='flex';el.style.visibility='visible'});
+    var nav=qs('.nav-item[data-page="trace"]',side);
+    if(!nav){
+      nav=document.createElement('button'); nav.className='nav-item'; nav.setAttribute('data-page','trace'); nav.innerHTML='<span class="nav-icon">⛓</span><span>LOT 추적 조회</span>';
+      var stock=Array.prototype.filter.call(side.querySelectorAll('.nav-sec'),function(x){return /재고|관리/.test(x.textContent||'')})[0];
+      if(stock){var after=stock; while(after.nextElementSibling && after.nextElementSibling.classList.contains('nav-item')) after=after.nextElementSibling; after.insertAdjacentElement('afterend',nav);} else side.appendChild(nav);
+    }
+    if(!nav.__nmcTraceClick){nav.__nmcTraceClick=true;nav.addEventListener('click',function(e){e.preventDefault();showPage('trace')},true)}
+  }
+  function showPage(name){
+    qsa('.page').forEach(function(p){p.classList.remove('active')});
+    var page=qs('#page-'+name); if(page) page.classList.add('active');
+    qsa('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===name)});
+    if(name==='trace') setTimeout(renderLotTrace,0);
+  }
+  function ensureTracePage(){
+    var content=qs('.content')||qs('.layout')||document.body; var page=qs('#page-trace');
+    if(!page){page=document.createElement('div');page.id='page-trace';page.className='page';content.appendChild(page)}
+    page.style.visibility='visible';
+    return page;
+  }
+  function buildTraceHTML(){return '<div class="nmc-lot-page">'+
+    '<div class="nmc-lot-section"><div class="nmc-lot-head">⛓ 추적 조건</div><div class="nmc-lot-filter"><div class="nmc-lot-tabs"><button class="nmc-lot-tab active" data-lot-mode="raw">원자재 LOT 추적</button><button class="nmc-lot-tab" data-lot-mode="product">제품 LOT 추적</button></div><div class="nmc-lot-form"><div class="nmc-lot-field"><label>LOT 번호</label><input id="nmcLotNo" class="nmc-lot-input" value="RM-2026-C"></div><div class="nmc-lot-field"><label id="nmcLotNameLabel">원자재명</label><input id="nmcLotName" class="nmc-lot-input" placeholder="전체"></div><div class="nmc-lot-field"><label>공급업체</label><select id="nmcLotSupplier" class="nmc-lot-select"><option>전체</option><option>한국화학(주)</option><option>삼성전자(주)</option></select></div><button class="nmc-lot-btn" id="nmcLotReset">초기화</button><button class="nmc-lot-btn primary" id="nmcLotSearch">⌕ 조회</button></div></div></div>'+
+    '<div class="nmc-lot-section"><div class="nmc-lot-head">↕ LOT 추적 결과 <small id="nmcLotResultLabel">LOT: RM-2026-0512-001</small></div><div id="nmcLotResultBody"></div></div>'+ 
+    '</div>'}
+  function renderLotTrace(){
+    var page=ensureTracePage();
+    if(!page.querySelector('.nmc-lot-page')) page.innerHTML=buildTraceHTML();
+    bindTrace(page); renderTraceData();
+  }
+  function currentMode(){var a=qs('#page-trace .nmc-lot-tab.active');return a?a.getAttribute('data-lot-mode'):'raw'}
+  function bindTrace(page){
+    qsa('.nmc-lot-tab',page).forEach(function(btn){if(btn.__bind)return;btn.__bind=true;btn.addEventListener('click',function(){qsa('.nmc-lot-tab',page).forEach(function(b){b.classList.remove('active')});btn.classList.add('active');var raw=currentMode()==='raw';var nameLabel=qs('#nmcLotNameLabel'); if(nameLabel) nameLabel.textContent=raw?'원자재명':'제품명';var inp=qs('#nmcLotNo'); if(inp) inp.value=raw?'RM-2026-C':'FG-2026';renderTraceData();})});
+    var s=qs('#nmcLotSearch',page); if(s&&!s.__bind){s.__bind=true;s.addEventListener('click',renderTraceData)}
+    var r=qs('#nmcLotReset',page); if(r&&!r.__bind){r.__bind=true;r.addEventListener('click',function(){var raw=currentMode()==='raw';qs('#nmcLotNo').value=raw?'RM-2026-C':'FG-2026';qs('#nmcLotName').value='';qs('#nmcLotSupplier').value='전체';renderTraceData()})}
+    ['nmcLotNo','nmcLotName'].forEach(function(id){var el=qs('#'+id,page);if(el&&!el.__bind){el.__bind=true;el.addEventListener('keydown',function(e){if(e.key==='Enter')renderTraceData()})}})
+  }
+  function renderTraceData(){
+    var body=qs('#nmcLotResultBody'); if(!body) return;
+    var raw=currentMode()==='raw'; var lotIn=qs('#nmcLotNo'); var q=(lotIn&&lotIn.value)||'';
+    var d=Object.assign({},sample);
+    if(!raw){d.lot=d.finishedLot;d.shortLot=d.finishedLot;}
+    var hasResult=/RM|FG|2026|0512|0521|C/i.test(q||'');
+    var label=qs('#nmcLotResultLabel'); if(label) label.textContent=hasResult?'LOT: '+d.lot:'조회 대기';
+    if(!hasResult){body.innerHTML='<div class="nmc-empty">조회된 LOT 이력이 없습니다.</div>';return;}
+    body.innerHTML='<div class="nmc-flow-wrap"><div class="nmc-flow">'+
+      flow('① 원자재 입고',d.shortLot,d.supplier,'05/12')+'<div class="nmc-flow-arrow">›</div>'+flow('② 수입검사 IQC',d.iqcNo,'합격','05/13')+'<div class="nmc-flow-arrow">›</div>'+flow('③ 공정 투입',d.workNo,d.line,'05/18')+'<div class="nmc-flow-arrow">›</div>'+flow('④ 공정검사 PQC',d.pqcNo,'합격','05/19')+
+      '</div><div class="nmc-scrollbar"><span>◀</span><div class="nmc-scroll-track"></div><span>▶</span></div></div>'+detailHTML(d);
+  }
+  function flow(t,a,b,c){return '<div class="nmc-flow-card"><span>'+esc(t)+'</span><b>'+esc(a)+'</b><span>'+esc(b)+'</span><span>'+esc(c)+'</span></div>'}
+  function eventHTML(dot,title,chip,chipClass,date,manager,rows){return '<div class="nmc-event"><div class="nmc-dot '+dot+'"></div><div><h4>'+esc(title)+' <span class="nmc-chip '+chipClass+'">'+esc(chip)+'</span></h4><div class="nmc-meta">'+esc(date)+' &nbsp; | &nbsp; 담당자: '+esc(manager)+'</div><div class="nmc-info">'+rows.map(function(r){return '<div class="nmc-info-row"><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>'}).join('')+'</div></div></div>'}
+  function detailHTML(d){return '<div class="nmc-detail"><div class="nmc-detail-title">상세 이력</div><div class="nmc-timeline">'+
+    eventHTML('blue','원자재 입고','입고','', '2026-05-12','김민준', [['원자재명',d.material],['공급업체',d.supplier],['입고수량',d.qtyIn],['공급사 LOT',d.supplierLot]])+
+    eventHTML('','수입검사 (IQC) — 합격','합격','pass','2026-05-13','이수연', [['검사번호',d.iqcNo],['검사항목','점도, 외관, 순도'],['판정','합격'],['검사자','이수연']])+
+    eventHTML('orange','공정 투입 — 1호 라인','공정','proc','2026-05-18','박태양', [['작업지시번호',d.workNo],['투입수량',d.inputQty],['생산 제품',d.product],['라인',d.line]])+
+    eventHTML('','완제품 출하 — 출하 완료','출하','ship','2026-05-21','최지훈', [['완제품 LOT',d.finishedLot],['출하수량',d.shipQty],['거래처',d.customer],['출하검사',d.oqcNo+' (합격)']])+
+    '</div></div><div class="nmc-summary"><div class="nmc-sum"><div class="l">총 이력 단계</div><div class="v">4</div><div class="s">입고 → 출하</div></div><div class="nmc-sum"><div class="l">입고 수량</div><div class="v">'+esc(d.qtyIn)+'</div><div class="s">'+esc(d.supplier)+'</div></div><div class="nmc-sum"><div class="l">완제품 생산</div><div class="v">'+esc(d.shipQty)+'</div><div class="s">'+esc(d.product)+'</div></div><div class="nmc-sum"><div class="l">소요 기간</div><div class="v">'+esc(d.days)+'</div><div class="s">05/12 → 05/21</div></div></div>'}
+  function boot(){ensureTraceMenu();ensureTracePage(); if(qs('#page-trace.active')) renderLotTrace();}
+  document.addEventListener('DOMContentLoaded',boot); window.addEventListener('load',boot); document.addEventListener('click',function(e){var n=e.target&&e.target.closest&&e.target.closest('[data-page="trace"],[data-page-target="trace"]');if(n)setTimeout(renderLotTrace,0)},true);
+  setTimeout(boot,100);setTimeout(boot,600);setTimeout(boot,1500);setInterval(function(){ensureTraceMenu(); if(qs('#page-trace.active')&&!qs('#page-trace .nmc-lot-page')) renderLotTrace();},1200);
+})();
+</script>
 
 </body>
 </html>
