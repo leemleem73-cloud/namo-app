@@ -3054,8 +3054,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     <aside class="sidebar">
       <div class="nav-sec">메인</div>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span><span>품질 대시보드</span></button>
-      <div class="nav-sec" data-nmc-prod-dash-sec="1">생산 대시보드</div>
-      <button class="nav-item" data-page="production-result" data-nmc-prod-dash-btn="1"><span class="nav-icon">⊞</span><span>생산 대시보드</span></button>
       <div class="nav-sec">품질 검사</div>
       <button class="nav-item" data-page="incoming"><span class="nav-icon"></span><span>수입검사 (IQC)</span></button>
       <button class="nav-item" data-page="process"><span class="nav-icon"></span><span>공정검사 (PQC)</span></button>
@@ -4345,80 +4343,8 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
 
-<!-- NMC_REMOVE_PRODUCTION_DASHBOARD_FULL_REPLACE_START -->
-<style id="nmc-remove-production-dashboard-full-replace-style">
-  /* 생산 대시보드 전체 삭제 */
-  .nav-sec[data-nmc-prod-dash-sec="1"],
-  .nav-item[data-page="production-result"],
-  .nav-item[data-nmc-prod-dash-btn="1"],
-  [data-page-target="production-result"],
-  #page-production-result {
-    display: none !important;
-  }
-</style>
-<script id="nmc-remove-production-dashboard-full-replace-script">
-(function(){
-  'use strict';
-
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function removeProductionDashboard(){
-    qa('.nav-item[data-page="production-result"], .nav-item[data-nmc-prod-dash-btn="1"], [data-page-target="production-result"], #page-production-result').forEach(function(el){
-      if(el && el.parentNode) el.parentNode.removeChild(el);
-    });
-
-    qa('.nav-sec[data-nmc-prod-dash-sec="1"], .nav-sec').forEach(function(el){
-      var txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
-      if(txt === '생산 대시보드'){
-        if(el.parentNode) el.parentNode.removeChild(el);
-      }
-    });
-
-    if(!qs('.page.active')){
-      var fallback = qs('#page-dashboard') || qs('#page-production-progress') || qs('#page-workorder-final') || qs('.page');
-      if(fallback) fallback.classList.add('active');
-    }
-  }
-
-  function safeShowPage(pageName){
-    if(pageName === 'production-result') pageName = 'dashboard';
-    if(typeof window.__nmcOriginalShowPageWithoutProductionDashboard === 'function'){
-      return window.__nmcOriginalShowPageWithoutProductionDashboard.apply(this, [pageName]);
-    }
-  }
-
-  function patchShowPage(){
-    if(typeof window.showPage === 'function' && !window.showPage.__nmcProductionDashboardRemoved){
-      window.__nmcOriginalShowPageWithoutProductionDashboard = window.showPage;
-      window.showPage = function(pageName){
-        if(pageName === 'production-result') pageName = 'dashboard';
-        var result = window.__nmcOriginalShowPageWithoutProductionDashboard.apply(this, arguments[0] === 'production-result' ? ['dashboard'] : arguments);
-        setTimeout(removeProductionDashboard, 0);
-        setTimeout(removeProductionDashboard, 120);
-        return result;
-      };
-      window.showPage.__nmcProductionDashboardRemoved = true;
-    }
-  }
-
-  function run(){
-    patchShowPage();
-    removeProductionDashboard();
-  }
-
-  document.addEventListener('DOMContentLoaded', run);
-  window.addEventListener('load', run);
-  document.addEventListener('click', function(){ setTimeout(run, 0); setTimeout(run, 120); }, true);
-  setInterval(run, 400);
-  run();
-})();
-</script>
-<!-- NMC_REMOVE_PRODUCTION_DASHBOARD_FULL_REPLACE_END -->
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -14378,7 +14304,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(table) table.innerHTML = '<tr><td colspan="9" class="trace-empty">LOT 번호를 입력 후 조회하세요.</td></tr>';
   }
 
-  document.addEventListener('click', function(e){, true);
 
   document.addEventListener('DOMContentLoaded', function(){
     setTimeout(clearTraceOnMenuOpen, 300);
@@ -18948,60 +18873,151 @@ document.addEventListener('DOMContentLoaded',async()=>{
 <!-- NMC_PRODUCTION_PROGRESS_DASHBOARD_SYNC_AND_EDIT_DELETE_PATCH_20260615_END -->
 
 
-<!-- NMC_MOVE_PRODUCTION_PROGRESS_UNDER_DASHBOARD_START -->
-<script id="nmc-move-production-progress-under-dashboard-v20260615">
+
+<!-- NMC_REMOVE_PRODUCTION_DASHBOARD_FINAL_START -->
+<style id="nmc-remove-production-dashboard-final-css-v20260615">
+  .sidebar .nav-sec[data-nmc-prod-dash-sec="1"],
+  .sidebar .nav-item[data-nmc-prod-dash-btn="1"],
+  .sidebar .nav-item[data-page="production-result"],
+  .sidebar .nav-item[data-page-target="production-result"],
+  [data-page-target="production-result"],
+  [data-nmc-prod-dash-btn="1"],
+  #page-production-result,
+  #page-production-dashboard,
+  #productionDashboard,
+  .production-dashboard,
+  .mes-prod-kpi-grid,
+  .mes-prod-kpi,
+  .mes-prod-chart,
+  .mes-prod-dashboard,
+  .mes-recent-card,
+  .mes-prod-card:has(.mes-prod-kpi-grid),
+  .mes-prod-card:has(canvas),
+  .mes-prod-card:has(.mes-recent-table),
+  .mes-recent-table,
+  .mes-recent-table-wrap{
+    display:none!important;
+  }
+</style>
+<script id="nmc-remove-production-dashboard-final-script-v20260615">
 (function(){
   'use strict';
-  if(window.__NMC_MOVE_PRODUCTION_PROGRESS_UNDER_DASHBOARD_V20260615__) return;
-  window.__NMC_MOVE_PRODUCTION_PROGRESS_UNDER_DASHBOARD_V20260615__ = true;
+  if(window.__NMC_REMOVE_PRODUCTION_DASHBOARD_FINAL_V20260615__) return;
+  window.__NMC_REMOVE_PRODUCTION_DASHBOARD_FINAL_V20260615__ = true;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-  function lastSpanText(el, text){
-    if(!el) return;
-    var spans = el.querySelectorAll('span');
-    if(spans.length) spans[spans.length - 1].textContent = text;
-    else el.textContent = text;
-  }
-  function makeProgressBtn(){
-    var b = document.createElement('button');
-    b.className = 'nav-item';
-    b.setAttribute('data-page', 'production-progress');
-    b.setAttribute('data-nmc-prod-progress-under-dashboard', '1');
-    b.innerHTML = '<span class="nav-icon">◔</span><span>생산진행현황</span>';
-    return b;
-  }
-  function patch(){
+  function text(el){ return String((el && el.textContent) || '').replace(/\s+/g,' ').trim(); }
+  function isDashboardLabel(t){ return /생산\s*대시보드|생산\s*dashboard/i.test(String(t||'')); }
+  function isProgressLabel(t){ return /생산\s*진행\s*현황|생산진행현황/i.test(String(t||'')); }
+
+  function removeDashboardMenu(){
     var side = qs('.sidebar');
     if(!side) return;
+    qa('.nav-item', side).forEach(function(btn){
+      var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
+      var t = text(btn);
+      if(pg === 'production-result' || pg === 'production-dashboard' || isDashboardLabel(t)){
+        btn.remove();
+      }
+    });
+    qa('.nav-sec', side).forEach(function(sec){
+      if(isDashboardLabel(text(sec))) sec.remove();
+    });
+  }
 
-    var dash = qs('.nav-item[data-nmc-prod-dash-btn="1"]', side) || qs('.nav-item[data-page="production-result"]', side);
-    if(!dash) return;
+  function ensureProgressMenu(){
+    var side = qs('.sidebar');
+    if(!side) return;
+    var progress = qs('.nav-item[data-page="production-progress"]', side) || qa('.nav-item', side).find(function(b){ return isProgressLabel(text(b)); });
+    if(!progress){
+      progress = document.createElement('button');
+      progress.className = 'nav-item';
+      progress.setAttribute('data-page','production-progress');
+      progress.innerHTML = '<span class="nav-icon">◔</span><span>생산진행현황</span>';
+    }
+    progress.setAttribute('data-page','production-progress');
+    progress.removeAttribute('data-page-target');
+    var spans = progress.querySelectorAll('span');
+    if(spans.length){ spans[spans.length-1].textContent = '생산진행현황'; }
+    var icon = qs('.nav-icon', progress); if(icon) icon.textContent = '◔';
 
-    var progressButtons = qa('.nav-item[data-page="production-progress"]', side);
-    var progress = qs('.nav-item[data-nmc-prod-progress-under-dashboard="1"]', side) || progressButtons[0] || makeProgressBtn();
-    progressButtons.forEach(function(btn){ if(btn !== progress) btn.remove(); });
-
-    progress.className = 'nav-item';
-    progress.setAttribute('data-page', 'production-progress');
-    progress.setAttribute('data-nmc-prod-progress-under-dashboard', '1');
-    var icon = qs('.nav-icon', progress);
-    if(icon) icon.textContent = '◔';
-    lastSpanText(progress, '생산진행현황');
-
-    if(dash.nextElementSibling !== progress){
-      dash.insertAdjacentElement('afterend', progress);
+    var prodSec = qa('.nav-sec', side).find(function(sec){ return /생산\s*관리|생산관리/.test(text(sec)); });
+    if(prodSec && prodSec.nextElementSibling !== progress){
+      prodSec.insertAdjacentElement('afterend', progress);
+    }else if(!progress.parentNode){
+      side.insertBefore(progress, side.firstChild);
     }
   }
 
-  document.addEventListener('DOMContentLoaded', patch);
-  window.addEventListener('load', patch);
-  document.addEventListener('click', function(){ setTimeout(patch, 0); setTimeout(patch, 120); }, true);
-  setInterval(patch, 700);
-  patch();
+  function removeDashboardPage(){
+    qa('#page-production-result,#page-production-dashboard,#productionDashboard,.production-dashboard').forEach(function(el){ el.remove(); });
+    qa('section.page, .page').forEach(function(p){
+      var id = p.id || '';
+      var t = text(p).slice(0,300);
+      if(id === 'page-production-result' || id === 'page-production-dashboard' || isDashboardLabel(t)){
+        p.remove();
+      }
+    });
+  }
+
+  function activateProgress(){
+    var active = qs('#page-production-result.active,#page-production-dashboard.active,.production-dashboard.active');
+    var noActive = !qs('.page.active');
+    if(active || noActive){
+      qa('.page.active').forEach(function(p){ p.classList.remove('active'); });
+      var target = qs('#page-production-progress') || qs('[data-page-id="production-progress"]');
+      if(target) target.classList.add('active');
+      qa('.nav-item.active').forEach(function(n){ n.classList.remove('active'); });
+      var nav = qs('.sidebar .nav-item[data-page="production-progress"]');
+      if(nav) nav.classList.add('active');
+      if(typeof window.renderProgress === 'function') setTimeout(window.renderProgress, 80);
+    }
+  }
+
+  function patchRouting(){
+    if(window.__NMC_REMOVE_PROD_DASH_ROUTING_PATCHED__) return;
+    window.__NMC_REMOVE_PROD_DASH_ROUTING_PATCHED__ = true;
+    var old = window.showPage;
+    if(typeof old === 'function'){
+      window.showPage = function(pg){
+        if(pg === 'production-result' || pg === 'production-dashboard' || pg === 'production') pg = 'production-progress';
+        var ret = old.apply(this, arguments.length ? [pg] : arguments);
+        setTimeout(boot, 80);
+        return ret;
+      };
+    }
+  }
+
+  function boot(){
+    removeDashboardMenu();
+    ensureProgressMenu();
+    removeDashboardPage();
+    activateProgress();
+    patchRouting();
+  }
+
+  document.addEventListener('click', function(e){
+    var el = e.target && e.target.closest && e.target.closest('[data-page="production-result"],[data-page-target="production-result"],[data-nmc-prod-dash-btn="1"]');
+    if(el){
+      e.preventDefault();
+      e.stopPropagation();
+      var nav = qs('.sidebar .nav-item[data-page="production-progress"]');
+      if(nav) nav.click();
+      else activateProgress();
+      return false;
+    }
+    setTimeout(boot, 120);
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', boot);
+  window.addEventListener('load', boot);
+  [100,400,900,1600,2800].forEach(function(t){ setTimeout(boot, t); });
+  setInterval(boot, 1200);
+  boot();
 })();
 </script>
-<!-- NMC_MOVE_PRODUCTION_PROGRESS_UNDER_DASHBOARD_END -->
+<!-- NMC_REMOVE_PRODUCTION_DASHBOARD_FINAL_END -->
 </body>
 </html>
 
