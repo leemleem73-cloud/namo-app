@@ -2952,6 +2952,13 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 })();
 </script>
 
+
+<style id="lot-trace-removed-final">
+/* LOT 추적 전체 삭제 패치: 메뉴/페이지/동적 주입 차단 */
+.nav-item[data-page="trace"],
+[data-page-target="trace"],
+#page-trace{display:none!important;visibility:hidden!important;}
+</style>
 </head>
 <body class="login-active">
 
@@ -3149,7 +3156,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <button class="nav-item" data-page="report"><span class="nav-icon"></span><span>성적서</span></button>
       <button class="nav-item" data-page="nonconform"><span class="nav-icon"></span><span>부적합 보고서</span></button>
       <div class="nav-sec">생산 관리</div>
-      <button class="nav-item" data-page="trace"><span class="nav-icon"></span><span>LOT 추적</span></button>
       <div class="nav-sec">측정기 관리</div>
       <button class="nav-item" data-page="instruments"><span class="nav-icon"></span><span>측정기 관리</span></button>
       <div class="nav-sec">공정능력 관리</div>
@@ -3608,77 +3614,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
       </section>
 
-      <!-- ■ LOT 추적 : Premium Search Focus UI -->
-      <section class="page" id="page-trace">
-        <div class="trace-premium-shell">
-          <div class="trace-premium-hero">
-            <div>
-              <div class="trace-hmc-eyebrow">Traceability Control Tower</div>
-              <div class="trace-hmc-title">LOT 추적</div>
-              <div class="trace-hmc-sub">원자재 Lot와 완제품 LOT를 빠르게 조회하고, 완제품 LOT 기준 연결 이력을 확인합니다.</div>
-            </div>
-            <div class="trace-hero-metrics">
-              <div><b id="traceMatCountHero">-</b><span>원자재 조회</span></div>
-              <div><b id="traceFinishedCountHero">-</b><span>완제품 조회</span></div>
-            </div>
-          </div>
+      
+      <!-- LOT 추적 메뉴 및 화면 삭제됨 -->
 
-          <div class="trace-premium-grid">
-            <div class="trace-premium-card material">
-              <div class="trace-premium-card-head">
-                <div>
-                  <span class="trace-section-label">Material Lot</span>
-                  <h3>원자재 Lot 조회</h3>
-                  <p>원자재 Lot 번호를 입력하면 해당 원자재 투입 관계만 표시합니다.</p>
-                </div>
-                <span id="traceMatCount" class="trace-count-badge">0건</span>
-              </div>
-              <div class="trace-premium-searchbar">
-                <input id="traceMaterialLotFilter" class="trace-inline-input" placeholder="원자재 Lot 번호 입력" autocomplete="off" />
-                <button class="btn pri sm" type="button" id="traceMaterialLotBtn">조회</button>
-              </div>
-              <div class="tw trace-table-wrap trace-premium-table-wrap">
-                <table class="trace-table">
-                  <thead>
-                    <tr><th>원자재명</th><th>원자재 Lot</th><th>업체명</th><th>투입량</th><th>투입시간</th><th>IQC</th></tr>
-                  </thead>
-                  <tbody id="traceTable">
-                    <tr><td colspan="6" class="trace-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="trace-premium-card finished">
-              <div class="trace-premium-card-head">
-                <div>
-                  <span class="trace-section-label">Finished Lot</span>
-                  <h3>완제품 LOT 조회</h3>
-                  <p>출하검사 목록과 동일한 기준으로 출하일자, 고객사, 제품명, 완제품 LOT를 표시합니다.</p>
-                </div>
-                <span id="traceFinishedCount" class="trace-count-badge">0건</span>
-              </div>
-              <div class="trace-premium-searchbar">
-                <input id="traceFinishedLotFilter" class="trace-inline-input" placeholder="완제품 LOT 번호 입력" autocomplete="off" />
-                <button class="btn pri sm" type="button" id="traceFinishedLotBtn">조회</button>
-              </div>
-              <div class="tw trace-table-wrap trace-premium-table-wrap">
-                <table class="trace-table">
-                  <thead>
-                    <tr><th>출하일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th></tr>
-                  </thead>
-                  <tbody id="traceFinishedTable">
-                    <tr><td colspan="4" class="trace-empty">완제품 LOT 번호를 입력 후 조회하세요.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- ■ 교육 보고서 : Simple Structure v2026 -->
       <section class="page" id="page-training">
         <div class="namo-training-simple">
           <div class="namo-simple-breadcrumb">교육관리 <span>›</span> 교육보고서</div>
@@ -7776,7 +7714,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const sec=document.createElement('section'); sec.className='page'; sec.id='page-production';
     sec.innerHTML=`
       <div class="ph">
-        <div><div class="ph-title">생산관리</div><div class="ph-sub">생산작업일지와 LOT 추적을 중심으로 MES 구조를 제공합니다.</div></div>
+        <div><div class="ph-title">생산관리</div><div class="ph-sub">작업지시서, 생산진행, 생산실적을 중심으로 MES 구조를 제공합니다.</div></div>
         <div class="ph-actions"><button class="btn light" data-qmes-go="dashboard">대시보드</button><button class="btn pri" data-qmes-go="worklog">기존 기능 열기</button></div>
       </div>
       <div class="mes-prod-kpi-grid">
@@ -8414,7 +8352,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return `
       <section class="page" id="page-production">
         <div class="ph">
-          <div><div class="ph-title">생산관리</div><div class="ph-sub">작업지시서, 생산진행, 생산실적, LOT 추적을 관리합니다.</div></div>
+          <div><div class="ph-title">생산관리</div><div class="ph-sub">작업지시서, 생산진행, 생산실적을 관리합니다.</div></div>
           <div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">작업지시서 작성</button><button class="btn ghost" data-page-target="production-result">생산실적</button></div>
         </div>
         <div class="card"><div class="cb" style="padding:0">${productionPlanPage().replace('<section class="page" id="page-production-plan">','<div>').replace('</section>','</div>')}</div></div>
@@ -12362,12 +12300,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function pageProgress(){return '<section class="page" id="page-production-progress"><div class="ph"><div><div class="ph-title">생산진행 현황</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산진행 현황</div><div class="ph-sub">발송된 작업지시서를 기준으로 수신확인, 생산시작, 생산완료를 처리합니다.</div></div></div><div class="namo-flow"><div class="namo-flow-step"><div class="namo-flow-no">1</div><div><div class="namo-flow-t">발송완료</div><div class="namo-flow-s">작업지시 발행</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">2</div><div><div class="namo-flow-t">수신확인</div><div class="namo-flow-s">생산 담당 확인</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">3</div><div><div class="namo-flow-t">생산진행</div><div class="namo-flow-s">작업 시작</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">4</div><div><div class="namo-flow-t">생산완료</div><div class="namo-flow-s">작업 종료</div></div></div><div class="namo-flow-step"><div class="namo-flow-no">5</div><div><div class="namo-flow-t">종결</div><div class="namo-flow-s">마감 처리</div></div></div></div>'+kpiHtml()+'<div class="namo-prod-table-wrap"><table class="namo-prod-table"><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>작업일</th><th>비고</th></tr></thead><tbody id="namoWoProgressBody"></tbody></table></div><div id="namoWoProgressDetail" class="nmc-workorder-detail"></div></section>'}
   function pageResult(){return '<section class="page" id="page-production-result"><div class="ph"><div><div class="ph-title">생산실적</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산실적</div><div class="ph-sub">생산완료/종결된 작업지시서를 실적 기준으로 조회합니다.</div></div></div>'+kpiHtml()+'<div class="namo-prod-table-wrap"><table class="namo-prod-table"><thead><tr><th>No.</th><th>작업지시번호</th><th>상태</th><th>제품명</th><th>생산 LOT</th><th>계획수량 (kg)</th><th>진행률</th><th>수신</th><th>완료/작성일</th><th>작업</th></tr></thead><tbody id="namoWoResultBody"></tbody></table></div><div id="namoWoResultDetail" class="nmc-workorder-detail"></div></section>'}
   function ensurePages(){var c=q('.content'); if(!c)return; if(!q('#page-workorder-list'))c.insertAdjacentHTML('beforeend',pageList()); if(!q('#page-production-progress'))c.insertAdjacentHTML('beforeend',pageProgress()); if(!q('#page-production-result'))c.insertAdjacentHTML('beforeend',pageResult()); var title=q('#page-workorder-final .ph-title'); if(title)title.textContent='작업지시서 작성'; var bc=q('#page-workorder-final .ph-bc'); if(bc)bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시서 작성';}
-  function rebuildNav(){var side=q('.sidebar'); if(!side)return; var sec=qa('.nav-sec',side).filter(function(x){return x.textContent.trim()==='생산 관리'})[0]; if(!sec)return; ['production','production-plan','workorder-final','workorder-list','workorder-inbox','workorder-reference','production-progress','production-result','trace'].forEach(function(pg){qa('.nav-item[data-page="'+pg+'"]',side).forEach(function(b){b.remove()})}); sec.insertAdjacentHTML('afterend','<button class="nav-item" data-page="workorder-final"><span class="nav-icon">✎</span><span>작업지시서 작성</span></button><button class="nav-item" data-page="workorder-list"><span class="nav-icon">▤</span><span>작업지시서 목록</span></button><button class="nav-item" data-page="workorder-inbox"><span class="nav-icon">▣</span><span>받은 작업지시서</span></button><button class="nav-item" data-page="workorder-reference"><span class="nav-icon">▣</span><span>참조 작업지시서</span></button><button class="nav-item" data-page="production-progress"><span class="nav-icon">◔</span><span>생산진행 현황</span></button><button class="nav-item" data-page="trace"><span class="nav-icon">⌁</span><span>LOT 추적</span></button><button class="nav-item" data-page="production-result"><span class="nav-icon">✓</span><span>생산실적</span></button>');}
+  function rebuildNav(){var side=q('.sidebar'); if(!side)return; var sec=qa('.nav-sec',side).filter(function(x){return x.textContent.trim()==='생산 관리'})[0]; if(!sec)return; ['production','production-plan','workorder-final','workorder-list','workorder-inbox','workorder-reference','production-progress','production-result'].forEach(function(pg){qa('.nav-item[data-page="'+pg+'"]',side).forEach(function(b){b.remove()})}); sec.insertAdjacentHTML('afterend','<button class="nav-item" data-page="workorder-final"><span class="nav-icon">✎</span><span>작업지시서 작성</span></button><button class="nav-item" data-page="workorder-list"><span class="nav-icon">▤</span><span>작업지시서 목록</span></button><button class="nav-item" data-page="workorder-inbox"><span class="nav-icon">▣</span><span>받은 작업지시서</span></button><button class="nav-item" data-page="workorder-reference"><span class="nav-icon">▣</span><span>참조 작업지시서</span></button><button class="nav-item" data-page="production-progress"><span class="nav-icon">◔</span><span>생산진행 현황</span></button><button class="nav-item" data-page="production-result"><span class="nav-icon">✓</span><span>생산실적</span></button>');}
   function showPage(pg){qa('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active',b.dataset.page===pg)}); qa('.page').forEach(function(p){p.classList.remove('active')}); var el=q('#page-'+pg); if(el){el.classList.add('active'); var content=q('.content'); if(content)content.scrollTo({top:0,behavior:'smooth'});} renderAll();}
   function detailHtml(x){var mats=(x.materials||[]).map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],'-'))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],'-'))+'</td><td>'+esc(pick(m,['planQty','plannedQty','planInputQty'],'0'))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','actualInputQty'],'0'))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],'0'))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join('')||'<tr><td colspan="7" class="namo-prod-empty">투입 원료 정보가 없습니다.</td></tr>'; return '<h3>작업지시서 상세</h3><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(x.no)+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(x.status)+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(x.product||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(x.lot||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량 (kg)</b><span>'+esc(x.plan||'-')+'</span></div><div class="nmc-detail-cell"><b>실투입량</b><span>'+esc(x.actual||'-')+'</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(x.receiver||'-')+'</span></div><div class="nmc-detail-cell"><b>발송일시</b><span>'+esc(x.date||'-')+'</span></div></div><h4 style="margin:14px 0 8px">투입 원료</h4><div class="tw"><table><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT</th><th>계획투입량</th><th>실투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div><h4 style="margin:14px 0 8px">지시사항</h4><div class="nmc-detail-box">'+esc(x.instruction||'-')+'</div><h4 style="margin:14px 0 8px">발송정보</h4><div class="nmc-detail-box">발송자: '+esc(x.sender||'-')+'\n수신: '+esc(x.receiver||'-')+'\n참조: '+esc(x.ref||'-')+'\n비고: '+esc(x.sendNote||'-')+'</div>';}
   function showDetail(id){var x=allOrders().filter(function(o){return String(o.id)===String(id)})[0]; if(!x)return; ['namoWoDetail','namoWoProgressDetail','namoWoResultDetail'].forEach(function(did){var d=q('#'+did); if(d){d.innerHTML=detailHtml(x);d.classList.add('show');d.scrollIntoView({behavior:'smooth',block:'start'});}})}
   function renderAll(){var b=q('#namoWoListBody'); if(b)b.innerHTML=tableRows('list'); b=q('#namoWoProgressBody'); if(b)b.innerHTML=tableRows('progress'); b=q('#namoWoResultBody'); if(b)b.innerHTML=tableRows('result'); qa('#page-workorder-list .namo-prod-kpis,#page-production-progress .namo-prod-kpis,#page-production-result .namo-prod-kpis').forEach(function(old){old.outerHTML=kpiHtml()});}
-    function bind(){document.addEventListener('click',function(e){var nav=e.target.closest&&e.target.closest('.nav-item[data-page], [data-page-target]'); if(nav){var pg=nav.dataset.page||nav.dataset.pageTarget; if(['production-plan','workorder-final','workorder-list','workorder-inbox','production-progress','trace','production-result','worklog'].indexOf(pg)>-1){e.preventDefault(); e.stopPropagation(); showPage(pg); return;}}
+    function bind(){document.addEventListener('click',function(e){var nav=e.target.closest&&e.target.closest('.nav-item[data-page], [data-page-target]'); if(nav){var pg=nav.dataset.page||nav.dataset.pageTarget; if(['production-plan','workorder-final','workorder-list','workorder-inbox','production-progress','production-result','worklog'].indexOf(pg)>-1){e.preventDefault(); e.stopPropagation(); showPage(pg); return;}}
     var st=e.target.closest&&e.target.closest('[data-namo-wo-status]'); if(st){e.preventDefault(); updateStatus(st.getAttribute('data-id'),st.getAttribute('data-namo-wo-status')); return;}
     var op=e.target.closest&&e.target.closest('[data-namo-wo-open]'); if(op){e.preventDefault(); showDetail(op.getAttribute('data-namo-wo-open')); return;}
     var del=e.target.closest&&e.target.closest('[data-namo-wo-delete]'); if(del){e.preventDefault(); deleteOrder(del.getAttribute('data-namo-wo-delete')); return;}
@@ -13481,7 +13419,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function qs(s,r){return (r||document).querySelector(s)}
   function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
   function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-  var prodPages=['production','production-plan','workorder-final','workorder-list','workorder-inbox','workorder-reference','workorder-approval','production-progress','production-result','trace','inventory-raw','inventory-product','inventory-history','inventory-lot'];
+  var prodPages=['production','production-plan','workorder-final','workorder-list','workorder-inbox','workorder-reference','workorder-approval','production-progress','production-result','inventory-raw','inventory-product','inventory-history','inventory-lot'];
   function navBtn(page,icon,label){return '<button class="nav-item nmc-prod-child" data-page="'+page+'"><span class="nav-icon">'+icon+'</span><span>'+label+'</span></button>'}
   function rebuildProductionNavFinal(){
     var side=qs('.sidebar'); if(!side) return;
@@ -13502,7 +13440,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       +navBtn('workorder-approval','☑','작업지시 승인현황')
       +'<div class="nav-sec nmc-prod-group">▼ 생산실행</div>'
       +navBtn('production-progress','◔','생산진행 현황')
-      +navBtn('trace','⌁','LOT 추적')
+      
       +navBtn('production-result','✓','생산실적')
       +'<div class="nav-sec nmc-prod-group">▼ 재고관리</div>'
       +navBtn('inventory-raw','◫','원료 재고')
