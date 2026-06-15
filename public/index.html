@@ -18799,128 +18799,149 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC_PRODUCTION_PROGRESS_DASHBOARD_SYNC_AND_EDIT_DELETE_PATCH_20260615_END -->
 
-
-
-
-
-
-
-
-
-
-
-
-<!-- NMC_MOVE_PRODUCTION_STATUS_MENU_UNDER_QUALITY_KEEP_ALL_CONTENT_START -->
-<style id="nmc-move-prod-status-menu-under-quality-keep-content-style">
-  /* 메뉴 위치만 변경합니다. 아래 생산실적/생산진행현황 화면 내용, KPI, 차트, 목록은 숨기거나 삭제하지 않습니다. */
-  .sidebar .nav-item[data-nmc-prod-status-under-quality="1"]{
+<!-- NMC_FORCE_PRODUCTION_RESULT_UNDER_QUALITY_DASHBOARD_START -->
+<style id="nmc-force-production-result-under-quality-dashboard-style">
+  .sidebar .nav-item[data-nmc-prod-result-quality-fixed="1"]{
     display:flex!important;
   }
-  #page-production-progress,
-  #page-production-progress .nmc-pr-wrap,
-  #page-production-progress .nmc-pr-kpis,
-  #page-production-progress .nmc-pr-grid,
-  #page-production-progress .nmc-pr-card,
-  #page-production-progress .nmc-pr-table-wrap,
-  #page-production-progress .nmc-pr-table{
-    visibility:visible!important;
+  .sidebar .nav-item[data-nmc-prod-result-quality-fixed="1"].active{
+    background:linear-gradient(90deg,#2563eb,#06b6d4)!important;
+    color:#fff!important;
+    font-weight:800!important;
   }
+  .sidebar .nav-sec[data-nmc-prod-result-hidden-sec="1"]{display:none!important;}
 </style>
-<script id="nmc-move-prod-status-menu-under-quality-keep-content-script">
+<script id="nmc-force-production-result-under-quality-dashboard-script">
 (function(){
   'use strict';
-  if(window.__NMC_MOVE_PROD_STATUS_MENU_UNDER_QUALITY_KEEP_CONTENT__) return;
-  window.__NMC_MOVE_PROD_STATUS_MENU_UNDER_QUALITY_KEEP_CONTENT__ = true;
+  if(window.__NMC_FORCE_PRODUCTION_RESULT_UNDER_QUALITY_DASHBOARD__) return;
+  window.__NMC_FORCE_PRODUCTION_RESULT_UNDER_QUALITY_DASHBOARD__ = true;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-  function label(el){ return String((el && el.textContent) || '').replace(/\s+/g,'').trim(); }
-  function setText(btn, txt){
-    var spans = btn.querySelectorAll('span');
-    if(spans.length) spans[spans.length - 1].textContent = txt;
-    else btn.textContent = txt;
+  function compactText(el){ return String((el && el.textContent) || '').replace(/\s+/g,'').trim(); }
+  function isProdResultButton(btn){
+    if(!btn || !btn.matches || !btn.matches('.nav-item')) return false;
+    var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
+    var t = compactText(btn);
+    return pg === 'production-result' || t === '생산실적' || t === '생산실적현황' || t === '생산대시보드';
   }
-  function makeBtn(){
-    var b = document.createElement('button');
-    b.className = 'nav-item';
-    b.setAttribute('data-page','production-progress');
-    b.setAttribute('data-nmc-prod-status-under-quality','1');
-    b.innerHTML = '<span class="nav-icon">◉</span><span>생산실적현황</span>';
-    return b;
-  }
-  function normalize(btn){
+  function setLabel(btn){
     btn.className = 'nav-item';
-    btn.setAttribute('data-page','production-progress');
-    btn.setAttribute('data-nmc-prod-status-under-quality','1');
+    btn.setAttribute('data-page','production-result');
+    btn.setAttribute('data-nmc-prod-result-quality-fixed','1');
     btn.removeAttribute('data-page-target');
-    btn.removeAttribute('data-nmc-prod-result-under-quality');
     btn.removeAttribute('data-nmc-prod-dash-btn');
     var icon = qs('.nav-icon', btn);
-    if(!icon){
-      icon = document.createElement('span');
-      icon.className = 'nav-icon';
-      btn.insertBefore(icon, btn.firstChild || null);
-    }
+    if(!icon){ icon = document.createElement('span'); icon.className = 'nav-icon'; btn.insertBefore(icon, btn.firstChild); }
     icon.textContent = '◉';
-    setText(btn, '생산실적현황');
+    var spans = btn.querySelectorAll('span');
+    if(spans.length){ spans[spans.length - 1].textContent = '생산실적현황'; }
+    else{ btn.textContent = '생산실적현황'; }
     btn.style.display = '';
   }
-  function moveMenuOnly(){
+  function makeButton(){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.innerHTML = '<span class="nav-icon">◉</span><span>생산실적현황</span>';
+    setLabel(btn);
+    return btn;
+  }
+  function ensureResultPage(){
+    var page = qs('#page-production-result');
+    if(page) return page;
+    var content = qs('.content');
+    if(!content) return null;
+    page = document.createElement('section');
+    page.className = 'page';
+    page.id = 'page-production-result';
+    content.appendChild(page);
+    return page;
+  }
+  function renderResultLater(){
+    ensureResultPage();
+    setTimeout(function(){
+      if(typeof window.renderNmcProductionResultDashboard === 'function'){
+        try{ window.renderNmcProductionResultDashboard(); }catch(e){}
+      }
+    }, 80);
+  }
+  function forceMove(){
     var side = qs('.sidebar');
     if(!side) return;
 
-    var keep = qs('.sidebar .nav-item[data-nmc-prod-status-under-quality="1"]')
-            || qs('.sidebar .nav-item[data-page="production-progress"]')
-            || qa('.sidebar .nav-item').find(function(b){ return label(b)==='생산진행현황' || label(b)==='생산실적현황'; })
-            || makeBtn();
-    normalize(keep);
+    var quality = qs('.sidebar .nav-item[data-page="dashboard"]') || qa('.sidebar .nav-item').find(function(btn){ return compactText(btn) === '품질대시보드'; });
+    var fixed = qs('.sidebar .nav-item[data-nmc-prod-result-quality-fixed="1"]');
 
-    /* 생산실적/생산대시보드 중복 메뉴만 제거합니다. 화면 데이터는 절대 제거하지 않습니다. */
     qa('.sidebar .nav-item').forEach(function(btn){
-      if(btn === keep) return;
-      var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
-      var t = label(btn);
-      if(pg === 'production-result' || t === '생산실적' || t === '생산대시보드' || t === '생산실적현황') btn.remove();
-    });
-    qa('.sidebar .nav-sec').forEach(function(sec){
-      if(label(sec) === '생산대시보드') sec.remove();
+      if(isProdResultButton(btn) && btn !== fixed){ btn.remove(); }
     });
 
-    var quality = qs('.sidebar .nav-item[data-page="dashboard"]')
-               || qa('.sidebar .nav-item').find(function(btn){ return label(btn)==='품질대시보드'; });
+    if(!fixed || !fixed.parentNode){ fixed = makeButton(); }
+    setLabel(fixed);
+
+    if(qs('#page-production-result.active')) fixed.classList.add('active');
+    else fixed.classList.remove('active');
+
     if(quality){
-      if(quality.nextElementSibling !== keep) quality.insertAdjacentElement('afterend', keep);
-    }else if(!keep.parentNode){
-      side.insertBefore(keep, side.firstChild || null);
+      if(quality.nextElementSibling !== fixed){ side.insertBefore(fixed, quality.nextSibling); }
+    }else{
+      if(side.firstChild !== fixed){ side.insertBefore(fixed, side.firstChild || null); }
+    }
+
+    qa('.sidebar .nav-sec').forEach(function(sec){
+      var t = compactText(sec);
+      if(t === '생산대시보드'){
+        sec.setAttribute('data-nmc-prod-result-hidden-sec','1');
+        sec.remove();
+      }
+    });
+  }
+  function patchShowPage(){
+    if(window.__NMC_FORCE_PROD_RESULT_SHOWPAGE_PATCHED__) return;
+    window.__NMC_FORCE_PROD_RESULT_SHOWPAGE_PATCHED__ = true;
+    var old = window.showPage;
+    if(typeof old === 'function'){
+      window.showPage = function(pg){
+        var ret = old.apply(this, arguments);
+        if(pg === 'production-result') renderResultLater();
+        scheduleForce();
+        return ret;
+      };
     }
   }
-  function patchClick(){
-    if(window.__NMC_MOVE_PROD_STATUS_CLICK_PATCHED__) return;
-    window.__NMC_MOVE_PROD_STATUS_CLICK_PATCHED__ = true;
-    document.addEventListener('click', function(e){
-      var btn = e.target && e.target.closest && e.target.closest('.sidebar .nav-item[data-nmc-prod-status-under-quality="1"]');
-      if(btn){
-        btn.setAttribute('data-page','production-progress');
-        setTimeout(function(){
-          try{ if(typeof window.renderProgress === 'function') window.renderProgress(); }catch(err){}
-        }, 100);
-      }
-      setTimeout(moveMenuOnly, 0);
-      setTimeout(moveMenuOnly, 150);
-    }, true);
+  var timer = null;
+  function scheduleForce(){
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(function(){ timer = null; forceMove(); }, 30);
   }
-  function boot(){ moveMenuOnly(); patchClick(); }
-  document.addEventListener('DOMContentLoaded', boot);
+  function boot(){
+    ensureResultPage();
+    forceMove();
+    patchShowPage();
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('.sidebar .nav-item[data-nmc-prod-result-quality-fixed="1"],.sidebar .nav-item[data-page="production-result"],.sidebar .nav-item[data-page-target="production-result"]');
+    if(btn){ renderResultLater(); }
+    scheduleForce();
+    setTimeout(forceMove, 120);
+    setTimeout(forceMove, 500);
+  }, true);
+
+  if(window.MutationObserver){
+    var mo = new MutationObserver(scheduleForce);
+    function observeSide(){ var side = qs('.sidebar'); if(side) mo.observe(side, {childList:true, subtree:true, attributes:true, attributeFilter:['class','data-page','data-page-target']}); }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeSide); else observeSide();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.addEventListener('load', boot);
-  [0,100,300,700,1500,3000,6000].forEach(function(ms){ setTimeout(boot, ms); });
-  setInterval(moveMenuOnly, 500);
-  try{
-    new MutationObserver(function(){ moveMenuOnly(); }).observe(document.documentElement, {childList:true, subtree:true});
-  }catch(e){}
-  boot();
+  [0,100,300,700,1200,1800,2600,4000,6500,9000].forEach(function(ms){ setTimeout(boot, ms); });
+  setInterval(forceMove, 500);
 })();
 </script>
-<!-- NMC_MOVE_PRODUCTION_STATUS_MENU_UNDER_QUALITY_KEEP_ALL_CONTENT_END -->
+<!-- NMC_FORCE_PRODUCTION_RESULT_UNDER_QUALITY_DASHBOARD_END -->
 
 </body>
 </html>
