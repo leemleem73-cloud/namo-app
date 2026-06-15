@@ -3629,12 +3629,12 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div>
                   <span class="trace-section-label">Material Lot</span>
                   <h3>원자재 Lot 조회</h3>
-                  <p>원자재 Lot 번호를 입력하면 해당 원자재 투입 관계만 표시합니다.</p>
+                  <p>원자재 Lot 번호 또는 입고일자로 해당 원자재 투입 관계를 표시합니다.</p>
                 </div>
                 <span id="traceMatCount" class="trace-count-badge">0건</span>
               </div>
               <div class="trace-premium-searchbar">
-                <input id="traceMaterialLotFilter" class="trace-inline-input" placeholder="원자재 Lot 번호 입력" autocomplete="off" />
+                <input id="traceMaterialLotFilter" class="trace-inline-input" placeholder="원자재 Lot 번호 또는 입고일자 입력" autocomplete="off" />
                 <button class="btn pri sm" type="button" id="traceMaterialLotBtn">조회</button>
               </div>
               <div class="tw trace-table-wrap trace-premium-table-wrap">
@@ -3643,7 +3643,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                     <tr><th>원자재명</th><th>원자재 Lot</th><th>업체명</th><th>투입량</th><th>투입시간</th><th>IQC</th></tr>
                   </thead>
                   <tbody id="traceTable">
-                    <tr><td colspan="6" class="trace-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr>
+                    <tr><td colspan="6" class="trace-empty">원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -3654,12 +3654,12 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div>
                   <span class="trace-section-label">Finished Lot</span>
                   <h3>완제품 LOT 조회</h3>
-                  <p>출하검사 목록과 동일한 기준으로 출하일자, 고객사, 제품명, 완제품 LOT를 표시합니다.</p>
+                  <p>완제품 LOT 또는 출하일자로 출하일자, 고객사, 제품명, 완제품 LOT를 표시합니다.</p>
                 </div>
                 <span id="traceFinishedCount" class="trace-count-badge">0건</span>
               </div>
               <div class="trace-premium-searchbar">
-                <input id="traceFinishedLotFilter" class="trace-inline-input" placeholder="완제품 LOT 번호 입력" autocomplete="off" />
+                <input id="traceFinishedLotFilter" class="trace-inline-input" placeholder="완제품 LOT 또는 출하일자 입력" autocomplete="off" />
                 <button class="btn pri sm" type="button" id="traceFinishedLotBtn">조회</button>
               </div>
               <div class="tw trace-table-wrap trace-premium-table-wrap">
@@ -3668,7 +3668,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                     <tr><th>출하일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th></tr>
                   </thead>
                   <tbody id="traceFinishedTable">
-                    <tr><td colspan="4" class="trace-empty">완제품 LOT 번호를 입력 후 조회하세요.</td></tr>
+                    <tr><td colspan="4" class="trace-empty">완제품 LOT 또는 출하일자를 입력 후 조회하세요.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -18910,7 +18910,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var tb = byId('traceTable'), cnt = byId('traceMatCount');
     if(!tb) return;
     if(!norm(kw)){
-      tb.innerHTML = '<tr><td colspan="6" class="trace-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr>';
+      tb.innerHTML = '<tr><td colspan="6" class="trace-empty">원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.</td></tr>';
       if(cnt) cnt.textContent = '0건';
       return;
     }
@@ -18935,7 +18935,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var tb = byId('traceFinishedTable'), cnt = byId('traceFinishedCount');
     if(!tb) return;
     if(!norm(kw)){
-      tb.innerHTML = '<tr><td colspan="4" class="trace-empty">완제품 LOT 번호를 입력 후 조회하세요.</td></tr>';
+      tb.innerHTML = '<tr><td colspan="4" class="trace-empty">완제품 LOT 또는 출하일자를 입력 후 조회하세요.</td></tr>';
       if(cnt) cnt.textContent = '0건';
       return;
     }
@@ -19114,8 +19114,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function calcKpis(){var rows=allRows();var mats=uniqVals(rows.filter(function(r){return r.source==='material'||r.source==='iqc'||(!r.finishedLot&&r.lotNo);}).map(function(r){return r.lotNo;}));var fins=uniqVals(rows.map(function(r){return r.finishedLot || (r.source==='oqc'?r.lotNo:'');}));var total=rows.reduce(function(s,r){return s+qty(r.inputQty);},0);var a=byId('lotKpiMaterial'),b=byId('lotKpiFinished'),c=byId('lotKpiQty');if(a)a.textContent=mats.length||'-';if(b)b.textContent=fins.length||'-';if(c)c.textContent=total?total.toLocaleString():'-';}
   function layout(){var page=byId('page-trace');if(!page) return;page.innerHTML='<div class="lot-clean-shell">'+
     '<div class="lot-clean-hero"><div><div class="lot-eyebrow">Traceability Control Tower</div><div class="lot-title">LOT 추적</div><div class="lot-sub">원자재 Lot와 완제품 LOT를 조회하고 선택한 Lot 기준으로 원자재 → 생산 → 완제품 연결 관계를 확인합니다.</div></div><div class="lot-kpis"><div class="lot-kpi"><b id="lotKpiMaterial">-</b><span>원자재 LOT 수</span></div><div class="lot-kpi"><b id="lotKpiFinished">-</b><span>완제품 LOT 수</span></div><div class="lot-kpi"><b id="lotKpiQty">-</b><span>총 투입량</span></div></div></div>'+ 
-    '<div class="lot-query-grid"><div class="lot-card material"><div class="lot-card-head"><div><span class="lot-section-label">Material Lot</span><h3>원자재 LOT 조회</h3><p>원자재 Lot 번호를 입력하면 투입 이력과 연결된 완제품 LOT를 확인합니다.</p></div><span id="lotMaterialCount" class="lot-count">0건</span></div><div class="lot-searchbar"><input id="lotMaterialInput" placeholder="원자재 Lot 번호 입력" autocomplete="off"><button type="button" id="lotMaterialBtn">조회</button></div><div class="lot-table-wrap"><table class="lot-table"><thead><tr><th>원자재명</th><th>원자재 Lot</th><th>업체명</th><th>투입량</th><th>투입일자</th><th>연결</th></tr></thead><tbody id="lotMaterialTbody"><tr><td colspan="6" class="lot-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr></tbody></table></div></div>'+ 
-    '<div class="lot-card finished"><div class="lot-card-head"><div><span class="lot-section-label">Finished Lot</span><h3>완제품 LOT 조회</h3><p>출하검사 목록과 동일하게 출하일자, 고객사, 제품명, 완제품 LOT 기준으로 표시합니다.</p></div><span id="lotFinishedCount" class="lot-count">0건</span></div><div class="lot-searchbar"><input id="lotFinishedInput" placeholder="완제품 LOT 번호 입력" autocomplete="off"><button type="button" id="lotFinishedBtn">조회</button></div><div class="lot-table-wrap"><table class="lot-table"><thead><tr><th>출하일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th></tr></thead><tbody id="lotFinishedTbody"><tr><td colspan="4" class="lot-empty">완제품 LOT 번호를 입력 후 조회하세요.</td></tr></tbody></table></div></div></div>'+ 
+    '<div class="lot-query-grid"><div class="lot-card material"><div class="lot-card-head"><div><span class="lot-section-label">Material Lot</span><h3>원자재 LOT 조회</h3><p>원자재 Lot 번호 또는 입고일자로 투입 이력과 연결된 완제품 LOT를 확인합니다.</p></div><span id="lotMaterialCount" class="lot-count">0건</span></div><div class="lot-searchbar"><input id="lotMaterialInput" placeholder="원자재 Lot 번호 또는 입고일자 입력" autocomplete="off"><button type="button" id="lotMaterialBtn">조회</button></div><div class="lot-table-wrap"><table class="lot-table"><thead><tr><th>원자재명</th><th>원자재 Lot</th><th>업체명</th><th>투입량</th><th>투입일자</th><th>연결</th></tr></thead><tbody id="lotMaterialTbody"><tr><td colspan="6" class="lot-empty">원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.</td></tr></tbody></table></div></div>'+ 
+    '<div class="lot-card finished"><div class="lot-card-head"><div><span class="lot-section-label">Finished Lot</span><h3>완제품 LOT 조회</h3><p>완제품 LOT 또는 출하일자로 출하일자, 고객사, 제품명, 완제품 LOT를 표시합니다.</p></div><span id="lotFinishedCount" class="lot-count">0건</span></div><div class="lot-searchbar"><input id="lotFinishedInput" placeholder="완제품 LOT 또는 출하일자 입력" autocomplete="off"><button type="button" id="lotFinishedBtn">조회</button></div><div class="lot-table-wrap"><table class="lot-table"><thead><tr><th>출하일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th></tr></thead><tbody id="lotFinishedTbody"><tr><td colspan="4" class="lot-empty">완제품 LOT 또는 출하일자를 입력 후 조회하세요.</td></tr></tbody></table></div></div></div>'+ 
     '<div class="lot-detail-card"><div class="lot-detail-head"><div><h3>LOT 연결 상세</h3><p>조회 결과의 완제품 LOT를 선택하면 연결 관계가 표시됩니다.</p></div><span id="lotDetailBadge" class="lot-count">대기</span></div><div id="lotDetailBody" class="lot-detail-body"><div class="lot-empty" style="height:auto!important;padding:22px!important;">원자재 또는 완제품 LOT를 조회한 뒤 결과를 선택하세요.</div></div></div>'+ 
     '</div>';bind();calcKpis();}
   function renderDetail(rows,title){var body=byId('lotDetailBody'), badgeEl=byId('lotDetailBadge');if(!body)return;rows=rows||[];if(badgeEl)badgeEl.textContent=rows.length?rows.length+'건 연결':'대기';if(!rows.length){body.innerHTML='<div class="lot-empty" style="height:auto!important;padding:22px!important;">연결된 LOT 정보가 없습니다.</div>';return;}var mats=uniqVals(rows.filter(function(r){return r.source==='material'||r.source==='iqc'||(!r.finishedLot&&r.lotNo);}).map(function(r){return r.lotNo;}));var fin=uniqVals(rows.map(function(r){return r.finishedLot || (r.source==='oqc'?r.lotNo:'');}));var wo=uniqVals(rows.map(function(r){return r.orderNo;}));var prod=(rows.find(function(r){return productName(r)!=='슬러리';})||rows[0]);var total=rows.reduce(function(s,r){return s+qty(r.inputQty);},0);body.innerHTML='<div class="lot-chain">'+
@@ -19123,8 +19123,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     '<div class="lot-chain-step"><div class="l">원자재</div><div class="v">'+(mats.length?mats.map(function(x){return link('iqc',x);}).join('<br>'):'-')+'</div><div class="s">'+mats.length+'건</div></div><div class="lot-chain-arrow">›</div>'+ 
     '<div class="lot-chain-step"><div class="l">생산/작업지시</div><div class="v">'+(wo.length?wo.map(function(x){return link('workorder',x);}).join('<br>'):'-')+'</div><div class="s">제품: '+esc(productName(prod))+'</div></div><div class="lot-chain-arrow">›</div>'+ 
     '<div class="lot-chain-step"><div class="l">완제품</div><div class="v">'+(fin.length?fin.map(function(x){return link('oqc',x);}).join('<br>'):'-')+'</div><div class="s">총 투입량 '+(total?total.toLocaleString():'-')+'</div></div></div>';}
-  function renderMaterial(){var kw=byId('lotMaterialInput')?byId('lotMaterialInput').value.trim():'';var tb=byId('lotMaterialTbody'), cnt=byId('lotMaterialCount');if(!tb)return;if(!kw){if(cnt)cnt.textContent='0건';tb.innerHTML='<tr><td colspan="6" class="lot-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr>';return;}var rows=materialRows(kw);if(cnt)cnt.textContent=rows.length+'건';if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="lot-empty">조회 결과가 없습니다.</td></tr>';renderDetail([],kw);return;}tb.innerHTML=rows.map(function(r){return '<tr data-lot="'+esc(r.lotNo)+'"><td><b>'+esc(r.material||'-')+'</b><div class="lot-muted">'+esc(r.source||'material')+'</div></td><td>'+link('iqc',r.lotNo)+'</td><td>'+esc(r.supName||r.customer||'-')+'</td><td>'+esc(r.inputQty||'-')+'</td><td>'+esc(dateOnly(r.workDate)||r.inputTime||'-')+'</td><td>'+badge(r.judge||'연결','pass')+'</td></tr>';}).join('')+'<tr class="lot-total"><td colspan="3">합계 투입량</td><td colspan="3">'+(rows.reduce(function(s,r){return s+qty(r.inputQty);},0)||'-')+'</td></tr>';renderDetail(searchRows(kw),kw);}
-  function renderFinished(){var kw=byId('lotFinishedInput')?byId('lotFinishedInput').value.trim():'';var tb=byId('lotFinishedTbody'), cnt=byId('lotFinishedCount');if(!tb)return;if(!kw){if(cnt)cnt.textContent='0건';tb.innerHTML='<tr><td colspan="4" class="lot-empty">완제품 LOT 번호를 입력 후 조회하세요.</td></tr>';return;}var rows=finishedRows(kw);if(cnt)cnt.textContent=rows.length+'건';if(!rows.length){tb.innerHTML='<tr><td colspan="4" class="lot-empty">조회 결과가 없습니다.</td></tr>';renderDetail([],kw);return;}tb.innerHTML=rows.map(function(r){var lot=(r.source==='oqc'&&r.lotNo)?r.lotNo:(r.finishedLot || r.lotNo);return '<tr data-lot="'+esc(lot)+'"><td>'+esc(dateOnly(r.workDate||r.date)||'-')+'</td><td>'+esc(customerName(r))+'</td><td>'+esc(productName(r))+'</td><td>'+link('oqc',lot)+'</td></tr>';}).join('');renderDetail(searchRows(kw).concat(rows),kw);}
+  function renderMaterial(){var kw=byId('lotMaterialInput')?byId('lotMaterialInput').value.trim():'';var tb=byId('lotMaterialTbody'), cnt=byId('lotMaterialCount');if(!tb)return;if(!kw){if(cnt)cnt.textContent='0건';tb.innerHTML='<tr><td colspan="6" class="lot-empty">원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.</td></tr>';return;}var rows=materialRows(kw);if(cnt)cnt.textContent=rows.length+'건';if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="lot-empty">조회 결과가 없습니다.</td></tr>';renderDetail([],kw);return;}tb.innerHTML=rows.map(function(r){return '<tr data-lot="'+esc(r.lotNo)+'"><td><b>'+esc(r.material||'-')+'</b><div class="lot-muted">'+esc(r.source||'material')+'</div></td><td>'+link('iqc',r.lotNo)+'</td><td>'+esc(r.supName||r.customer||'-')+'</td><td>'+esc(r.inputQty||'-')+'</td><td>'+esc(dateOnly(r.workDate)||r.inputTime||'-')+'</td><td>'+badge(r.judge||'연결','pass')+'</td></tr>';}).join('')+'<tr class="lot-total"><td colspan="3">합계 투입량</td><td colspan="3">'+(rows.reduce(function(s,r){return s+qty(r.inputQty);},0)||'-')+'</td></tr>';renderDetail(searchRows(kw),kw);}
+  function renderFinished(){var kw=byId('lotFinishedInput')?byId('lotFinishedInput').value.trim():'';var tb=byId('lotFinishedTbody'), cnt=byId('lotFinishedCount');if(!tb)return;if(!kw){if(cnt)cnt.textContent='0건';tb.innerHTML='<tr><td colspan="4" class="lot-empty">완제품 LOT 또는 출하일자를 입력 후 조회하세요.</td></tr>';return;}var rows=finishedRows(kw);if(cnt)cnt.textContent=rows.length+'건';if(!rows.length){tb.innerHTML='<tr><td colspan="4" class="lot-empty">조회 결과가 없습니다.</td></tr>';renderDetail([],kw);return;}tb.innerHTML=rows.map(function(r){var lot=(r.source==='oqc'&&r.lotNo)?r.lotNo:(r.finishedLot || r.lotNo);return '<tr data-lot="'+esc(lot)+'"><td>'+esc(dateOnly(r.workDate||r.date)||'-')+'</td><td>'+esc(customerName(r))+'</td><td>'+esc(productName(r))+'</td><td>'+link('oqc',lot)+'</td></tr>';}).join('');renderDetail(searchRows(kw).concat(rows),kw);}
   function bind(){var mi=byId('lotMaterialInput'), mb=byId('lotMaterialBtn'), fi=byId('lotFinishedInput'), fb=byId('lotFinishedBtn');if(mi&&!mi.__lotBind){mi.__lotBind=true;mi.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();renderMaterial();}});}if(mb&&!mb.__lotBind){mb.__lotBind=true;mb.addEventListener('click',renderMaterial);}if(fi&&!fi.__lotBind){fi.__lotBind=true;fi.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();renderFinished();}});}if(fb&&!fb.__lotBind){fb.__lotBind=true;fb.addEventListener('click',renderFinished);}}
   function init(){var page=byId('page-trace');if(!page)return;if(!byId('lotMaterialInput')) layout();else{bind();calcKpis();}}
   window.renderTraceRows=function(rows){cacheRows=uniqRows((rows||[]).concat(cacheRows||[]),function(r){return [r.source,r.finishedLot,r.lotNo,r.material,r.orderNo,r.workDate,r.inputQty].join('|');});calcKpis();};
@@ -19166,7 +19166,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var cnt=byId('lotFinishedCount')||byId('traceFinishedCount');
     if(!tb) return;
     var kw=input?input.value:'';
-    if(!norm(kw)){tb.innerHTML='<tr><td colspan="4" class="lot-empty trace-empty">완제품 LOT 번호를 입력 후 조회하세요.</td></tr>'; if(cnt)cnt.textContent='0건'; return;}
+    if(!norm(kw)){tb.innerHTML='<tr><td colspan="4" class="lot-empty trace-empty">완제품 LOT 또는 출하일자를 입력 후 조회하세요.</td></tr>'; if(cnt)cnt.textContent='0건'; return;}
     var rows=getShipments().filter(function(r){return has(r.lot,kw)||has(r.customer,kw)||has(r.product,kw)||has(r.date,kw);});
     rows.sort(function(a,b){return text(dateOnly(b.date)).localeCompare(text(dateOnly(a.date)));});
     if(cnt)cnt.textContent=rows.length+'건';
@@ -19298,7 +19298,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var cnt=byId('lotMaterialCount')||byId('traceMatCount');
     if(!tb) return;
     var kw=input?input.value.trim():'';
-    if(!clean(kw)){tb.innerHTML='<tr><td colspan="6" class="lot-empty trace-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr>'; if(cnt)cnt.textContent='0건'; return;}
+    if(!clean(kw)){tb.innerHTML='<tr><td colspan="6" class="lot-empty trace-empty">원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.</td></tr>'; if(cnt)cnt.textContent='0건'; return;}
     var rows=buildDeepRows(kw).filter(function(r){return has(r.lotNo,kw)||has(r.material,kw)||has(r.supName,kw);});
     if(cnt)cnt.textContent=rows.length+'건';
     if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="lot-empty trace-empty">조회 결과가 없습니다.</td></tr>'; renderDeepDetail([],kw); return;}
@@ -19445,7 +19445,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var kw=input ? input.value.trim() : '';
     if(!norm(kw)){
       if(cnt) cnt.textContent='0건';
-      tb.innerHTML='<tr><td colspan="7" class="lot-empty trace-empty">원자재 Lot 번호를 입력 후 조회하세요.</td></tr>';
+      tb.innerHTML='<tr><td colspan="7" class="lot-empty trace-empty">원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.</td></tr>';
       return;
     }
     var rows=buildRows(kw);
@@ -19687,6 +19687,25 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC LOT MONTH QUERY OVERRIDE V4 20260615 END -->
 
+
+<script id="nmc-lot-placeholder-label-final-20260615">
+(function(){
+  function setText(){
+    var m=document.getElementById('lotMaterialInput')||document.getElementById('traceMaterialLotFilter');
+    var f=document.getElementById('lotFinishedInput')||document.getElementById('traceFinishedLotFilter');
+    if(m) m.setAttribute('placeholder','원자재 Lot 번호 또는 입고일자 입력');
+    if(f) f.setAttribute('placeholder','완제품 LOT 또는 출하일자 입력');
+    document.querySelectorAll('.lot-empty,.trace-empty').forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t.indexOf('원자재')>-1 && t.indexOf('입력')>-1) el.textContent='원자재 Lot 번호 또는 입고일자를 입력 후 조회하세요.';
+      if(t.indexOf('완제품')>-1 && t.indexOf('입력')>-1) el.textContent='완제품 LOT 또는 출하일자를 입력 후 조회하세요.';
+    });
+  }
+  document.addEventListener('DOMContentLoaded',setText);
+  document.addEventListener('click',function(){setTimeout(setText,0);},true);
+  setInterval(setText,800);
+})();
+</script>
 </body>
 </html>
 
