@@ -19494,6 +19494,283 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC FINAL LOT MATERIAL QUERY FIX 20260615 END -->
+
+<!-- NMC LOT TRACE MONTH SEARCH OVERRIDE 20260615 START -->
+<script id="nmc-lot-trace-month-search-override-20260615">
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_MONTH_SEARCH_OVERRIDE_20260615__) return;
+  window.__NMC_LOT_TRACE_MONTH_SEARCH_OVERRIDE_20260615__ = true;
+
+  function byId(id){ return document.getElementById(id); }
+  function text(v){ return String(v == null ? '' : v); }
+  function esc(v){
+    return text(v).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function norm(v){
+    return text(v).trim().toUpperCase().replace(/[^A-Z0-9가-힣]/g, '');
+  }
+  function dateOnly(v){
+    var s = text(v);
+    var m = s.match(/(\d{4})[-.\/년\s]*(\d{1,2})[-.\/월\s]*(\d{1,2})/);
+    if(m) return m[1] + '-' + String(m[2]).padStart(2,'0') + '-' + String(m[3]).padStart(2,'0');
+    return s.slice(0,10);
+  }
+  function monthKey(v){
+    var s = text(v);
+    var m = s.match(/(\d{4})[-.\/년\s]*(\d{1,2})/);
+    return m ? (m[1] + '-' + String(m[2]).padStart(2,'0')) : '';
+  }
+  function qty(v){
+    var n = parseFloat(text(v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
+    return isFinite(n) ? n : 0;
+  }
+  function getArrayFromLocalStorage(pattern){
+    var out = [];
+    try{
+      for(var i=0; i<localStorage.length; i++){
+        var k = localStorage.key(i) || '';
+        if(!pattern.test(k)) continue;
+        var raw = localStorage.getItem(k) || '';
+        if(raw.charAt(0) !== '[') continue;
+        var arr = JSON.parse(raw);
+        if(Array.isArray(arr)) out = out.concat(arr);
+      }
+    }catch(e){}
+    return out;
+  }
+  function concatState(keys){
+    var out = [];
+    keys.forEach(function(k){
+      try{ if(window.state && Array.isArray(window.state[k])) out = out.concat(window.state[k]); }catch(e){}
+      try{ if(Array.isArray(window[k])) out = out.concat(window[k]); }catch(e){}
+    });
+    return out;
+  }
+  function pick(o, keys){
+    for(var i=0; i<keys.length; i++){
+      var v = o && o[keys[i]];
+      if(v != null && text(v).trim() !== '') return v;
+    }
+    return '';
+  }
+  function lotLink(type, lot){
+    lot = text(lot).trim();
+    return lot ? '<span class="lot-link trace-link" data-report-type="'+esc(type)+'" data-report-lot="'+esc(lot)+'">'+esc(lot)+'</span>' : '-';
+  }
+  function setCount(ids, n){
+    ids.forEach(function(id){ var el = byId(id); if(el) el.textContent = n + '건'; });
+  }
+  function matchesKeyword(row, kw, dateFields, fields){
+    if(!kw) return true;
+    var mk = monthKey(kw);
+    if(mk){
+      for(var i=0; i<dateFields.length; i++){
+        if(monthKey(row[dateFields[i]]) === mk) return true;
+      }
+    }
+    var nk = norm(kw);
+    for(var j=0; j<fields.length; j++){
+      if(norm(row[fields[j]]).indexOf(nk) > -1) return true;
+    }
+    return false;
+  }
+  function unique(rows, keyFn){
+    var seen = {}, out = [];
+    rows.forEach(function(r){
+      var k = keyFn(r);
+      if(seen[k]) return;
+      seen[k] = 1;
+      out.push(r);
+    });
+    return out;
+  }
+
+  function materialRows(){
+    var rows = [];
+    var source = []
+      .concat(concatState(['incoming','iqc','materials','materialLots','receiving','receipts','rawMaterials','workorders','workOrders','production','worklog','worklogs']))
+      .concat(getArrayFromLocalStorage(/iqc|incoming|입고|material|raw|원자재|workorder|worklog|production|작업|생산/i));
+
+    source.forEach(function(r){
+      if(!r || typeof r !== 'object') return;
+
+      var lot = pick(r, ['materialLot','rawLot','rawMaterialLot','lotNo','lot','material_lot','inputLot','rmLot']);
+      var material = pick(r, ['material','materialName','rawMaterial','rawMaterialName','item','itemName','product','productName']);
+      var supplier = pick(r, ['supplier','supplierName','vendor','vendorName','company','customer','customerName']);
+      var receiptDate = dateOnly(pick(r, ['receiptDate','incomingDate','inDate','date','inspectionDate','createdAt']));
+      var productionDate = dateOnly(pick(r, ['productionDate','workDate','manufactureDate','mfgDate','prodDate']));
+      var inputQty = pick(r, ['inputQty','qty','quantity','amount','usage','useQty','weight']);
+      var remark = pick(r, ['remark','remarks','note','memo','comment']);
+      if(!lot) return;
+
+      rows.push({
+        lot: lot,
+        material: material || '-',
+        supplier: supplier || '-',
+        receiptDate: receiptDate || '-',
+        productionDate: productionDate || '',
+        inputQty: inputQty,
+        remark: remark || '-'
+      });
+    });
+
+    return unique(rows, function(r){
+      return [r.lot,r.material,r.supplier,r.receiptDate,r.productionDate,r.inputQty].join('|');
+    });
+  }
+
+  function finishedRows(){
+    var rows = [];
+    var source = []
+      .concat(concatState(['shipment','shipments','oqc','outgoing','finished','finishedLots','production','worklog','worklogs']))
+      .concat(getArrayFromLocalStorage(/shipment|oqc|출하|finished|완제품|production|worklog|생산/i));
+
+    source.forEach(function(r){
+      if(!r || typeof r !== 'object') return;
+
+      var lot = pick(r, ['finishedLot','finished_lot','productLot','prodLot','productionLot','shipmentLot','oqcLot','lotNo','lot']);
+      var customer = pick(r, ['customer','customerName','client','clientName','buyer','supplier','supplierName']);
+      var product = pick(r, ['product','productName','item','itemName','finishedProduct','prodName']);
+      var date = dateOnly(pick(r, ['shipmentDate','date','inspectionDate','productionDate','workDate','createdAt']));
+      if(!lot) return;
+
+      rows.push({
+        date: date || '-',
+        customer: customer || '-',
+        product: product || '-',
+        lot: lot
+      });
+    });
+
+    return unique(rows, function(r){
+      return [r.date,r.customer,r.product,r.lot].join('|');
+    });
+  }
+
+  function renderMaterial(){
+    var input = byId('lotMaterialInput') || byId('traceMaterialLotFilter');
+    var tbody = byId('lotMaterialTbody') || byId('traceTable');
+    if(!tbody) return;
+
+    var kw = input ? input.value.trim() : '';
+    var rows = materialRows().filter(function(r){
+      return matchesKeyword(r, kw, ['receiptDate','productionDate'], ['lot','material','supplier','receiptDate','productionDate','remark']);
+    });
+
+    rows.sort(function(a,b){
+      return text(b.receiptDate).localeCompare(text(a.receiptDate)) || text(b.productionDate).localeCompare(text(a.productionDate));
+    });
+
+    setCount(['lotMaterialCount','traceMatCount','traceMaterialCount'], rows.length);
+
+    if(!rows.length){
+      tbody.innerHTML = '<tr><td colspan="7" class="lot-empty trace-empty">조회 결과가 없습니다.</td></tr>';
+      return;
+    }
+
+    var total = rows.reduce(function(s,r){ return s + qty(r.inputQty); }, 0);
+    tbody.innerHTML = rows.map(function(r){
+      return '<tr>'
+        + '<td><b>'+esc(r.material || '-')+'</b></td>'
+        + '<td>'+lotLink('iqc', r.lot)+'</td>'
+        + '<td>'+esc(r.supplier || '-')+'</td>'
+        + '<td>'+esc(r.receiptDate || '-')+'</td>'
+        + '<td>'+esc(r.productionDate || '-')+'</td>'
+        + '<td>'+esc(r.inputQty || '-')+'</td>'
+        + '<td>'+esc(r.remark || '-')+'</td>'
+        + '</tr>';
+    }).join('') + '<tr class="lot-total"><td colspan="5">합계 투입량</td><td colspan="2">'+(total ? total.toLocaleString() : '-')+'</td></tr>';
+  }
+
+  function renderFinished(){
+    var input = byId('lotFinishedInput') || byId('traceFinishedLotFilter');
+    var tbody = byId('lotFinishedTbody') || byId('traceFinishedTable');
+    if(!tbody) return;
+
+    var kw = input ? input.value.trim() : '';
+    var rows = finishedRows().filter(function(r){
+      return matchesKeyword(r, kw, ['date'], ['lot','customer','product','date']);
+    });
+
+    rows.sort(function(a,b){ return text(b.date).localeCompare(text(a.date)); });
+
+    setCount(['lotFinishedCount','traceFinishedCount'], rows.length);
+
+    if(!rows.length){
+      tbody.innerHTML = '<tr><td colspan="4" class="lot-empty trace-empty">조회 결과가 없습니다.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map(function(r){
+      return '<tr>'
+        + '<td>'+esc(r.date || '-')+'</td>'
+        + '<td>'+esc(r.customer || '-')+'</td>'
+        + '<td>'+esc(r.product || '-')+'</td>'
+        + '<td>'+lotLink('oqc', r.lot)+'</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function renderAll(){
+    renderMaterial();
+    renderFinished();
+  }
+
+  function bind(){
+    [
+      ['lotMaterialInput','traceMaterialLotFilter'],
+      ['lotFinishedInput','traceFinishedLotFilter']
+    ].forEach(function(pair){
+      pair.forEach(function(id){
+        var el = byId(id);
+        if(!el || el.__nmcMonthSearchOverride) return;
+        el.__nmcMonthSearchOverride = true;
+        el.addEventListener('keydown', function(e){
+          if(e.key === 'Enter'){
+            e.preventDefault();
+            setTimeout(renderAll, 160);
+          }
+        }, true);
+        el.addEventListener('input', function(){
+          setTimeout(renderAll, 180);
+        }, true);
+      });
+    });
+
+    ['lotMaterialBtn','traceMaterialLotBtn','lotFinishedBtn','traceFinishedLotBtn'].forEach(function(id){
+      var btn = byId(id);
+      if(!btn || btn.__nmcMonthSearchOverride) return;
+      btn.__nmcMonthSearchOverride = true;
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        setTimeout(renderAll, 180);
+      }, true);
+    });
+
+    window.nmcRenderLotTraceMonthSearch = renderAll;
+    window.nmcRenderRawMaterialLot = renderMaterial;
+    window.nmcRenderFinishedLotMonth = renderFinished;
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+  setTimeout(bind, 300);
+  setTimeout(bind, 1000);
+  setTimeout(bind, 2500);
+
+  try{
+    var mo = new MutationObserver(function(){
+      clearTimeout(window.__nmcLotTraceMonthSearchTimer);
+      window.__nmcLotTraceMonthSearchTimer = setTimeout(bind, 100);
+    });
+    if(document.body) mo.observe(document.body, {childList:true, subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC LOT TRACE MONTH SEARCH OVERRIDE 20260615 END -->
+
 </body>
 </html>
 
