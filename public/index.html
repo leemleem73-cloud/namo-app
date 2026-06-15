@@ -6179,79 +6179,8 @@ clickSafe2('printReportPage',()=>{
     printEl($('reportPrintTarget'));
   },300);
 });  if($('dashRefresh'))$('dashRefresh').onclick=()=>{renderSummary();setTimeout(()=>{try{state.charts.trend&&state.charts.trend.resize();}catch(e){}},80);};  document.addEventListener('click', e=>{    });
-    applySignPermissions(type);
-  };
-  window.applySignPermissions = applySignPermissions;
-  window.applyAllSignPermissions = function(){
-    const active=document.activeElement;
-    TYPES.forEach(type=>{
-      const before={};
-      ROLES.forEach(role=>{const sel=qs(`sg_${type}_${role}`);before[role]=sel?{value:sel.value,userPicked:sel.dataset.userPicked}:null;});
-      applySignPermissions(type);
-      ROLES.forEach(role=>{
-        const sel=qs(`sg_${type}_${role}`), b=before[role];
-        if(!sel||!b||!b.value)return;
-        const exists=Array.from(sel.options).some(o=>String(o.value)===String(b.value));
-        if(exists && (b.userPicked==='1'||active===sel)){
-          sel.value=b.value;
-          sel.dataset.userPicked='1';
-        }
-      });
-      ROLES.forEach(role=>notify(type,role));
-    });
-  };
 
-  /* v23: 로그인 직후 currentUser 세팅 타이밍 보정. 관리자 판별 후 잠김 해제 재적용 */
-  [100,300,700,1200,2000,3500].forEach(ms => setTimeout(() => {
-    if(typeof window.applyAllSignPermissions === 'function') window.applyAllSignPermissions();
-  }, ms));
 
-  document.addEventListener('click', function(e){
-    const attach = e.target.closest && e.target.closest('[data-sign-file-btn]');
-    if(attach){
-      const [type, role] = attach.getAttribute('data-sign-file-btn').split(':');
-      if(!canEditRole(type, role)) return false;
-      qs(`sg_${type}_${role}_file`)?.click();
-      return;
-    }
-    const clear = e.target.closest && e.target.closest('[data-sign-clear]');
-    if(clear){
-      const [type, role] = clear.getAttribute('data-sign-clear').split(':');
-      window.clearSignaturePad(type, role);
-    }
-  });
-  document.addEventListener('change', function(e){
-    const fileInput = e.target.closest && e.target.closest('[data-sign-file]');
-    if(fileInput && fileInput.files && fileInput.files[0]){
-      const [type, role] = fileInput.getAttribute('data-sign-file').split(':');
-      if(!canEditRole(type, role)){
-        fileInput.value = '';
-        return false;
-      }
-      const reader = new FileReader();
-      reader.onload = function(){
-        const s = getStore(type, role);
-        s.signImage = String(reader.result || '');
-        s.signDate = nowText();
-        window.updateSignaturePreview(type, role);
-        applySignPermissions(type);
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-      return;
-    }
-    const sel = e.target.closest && e.target.closest('.sign-sel');
-    if(sel){
-      sel.dataset.userPicked = '1';
-      const m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id || '');
-      if(m){ applySignPermissions(m[1]); }
-    }
-  });
-  window.addEventListener('load', function(){
-    setTimeout(window.applyAllSignPermissions, 500);
-    setTimeout(window.applyAllSignPermissions, 1500);
-    setTimeout(() => { window.__qmsSignBooting = false; window.applyAllSignPermissions(); }, 2200);
-  });
-})();
 
 </script>
 <script>
