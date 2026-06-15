@@ -19840,121 +19840,163 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC LOT TRACE DATE/CERT LINK FINAL PATCH v7 20260615 END -->
 
-<!-- NMC MANUAL INSPECTION PRINT PATCH 20260615 START -->
-<style id="nmc-manual-inspection-print-style">
-.manual-write-cell{height:34px;min-width:96px;background:#fff!important;}
-.manual-write-line{display:block;width:100%;height:22px;border-bottom:1px solid #999;}
-.manual-report-note{margin-top:10px;padding:9px 12px;border:1px dashed #999;border-radius:8px;background:#fff;font-size:12px;color:#444;line-height:1.6;}
-@media print{
-  #manualInspectionPrintBtn{display:none!important;}
-  .manual-report-note{border-color:#aaa!important;color:#333!important;}
-  #reportBodyTable tr.manual-row td{height:32px!important;}
-}
+
+
+<!-- NMC MANUAL INSPECTION PRINT PATCH 20260615 FINAL START -->
+<style>
+.nmc-manual-line{display:block;width:100%;height:18px;border-bottom:1px solid #777;min-width:70px;}
+.nmc-manual-cell{height:34px;vertical-align:bottom!important;}
+.nmc-manual-note{margin-top:12px;padding:9px 12px;border:1px dashed #999;border-radius:8px;font-size:11px;color:#555;line-height:1.5;}
+@media print{.nmc-manual-note{display:block!important;visibility:visible!important;color:#555!important;}}
 </style>
-<script id="nmc-manual-inspection-print-patch-20260615">
+<script>
 (function(){
   'use strict';
-  if(window.__nmcManualInspectionPrintPatch20260615) return;
-  window.__nmcManualInspectionPrintPatch20260615 = true;
+  if(window.__nmcManualInspectionPrintFinal) return;
+  window.__nmcManualInspectionPrintFinal = true;
 
-  function $(id){return document.getElementById(id);}
-  function esc(v){return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function today(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-  function typeLabel(type){return type==='iqc'?'수입검사':type==='pqc'?'공정검사':'출하검사';}
-  function typeTitle(type){return type==='iqc'?'수입검사 성적서 수기작성본 (IQC Manual Report)':type==='pqc'?'공정검사 성적서 수기작성본 (PQC Manual Report)':'출하검사 성적서 수기작성본 (OQC Manual Report)';}
-  function docPrefix(type){return type==='iqc'?'IQC':type==='pqc'?'PQC':'OQC';}
+  function byId(id){return document.getElementById(id);}
+  function safeEsc(v){
+    return String(v == null ? '' : v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});
+  }
+  function line(){return '<span class="nmc-manual-line"></span>';}
+  function getToday(){
+    try{ if(typeof window.todayKST==='function') return window.todayKST(); }catch(e){}
+    var d=new Date();
+    var p=function(n){return String(n).padStart(2,'0');};
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  }
+  function titleOf(type){
+    return type==='incoming' ? '입고검사 성적서 (IQC Report)' :
+           type==='process' ? '공정검사 성적서 (PQC Report)' :
+           type==='shipment' ? '출하검사 성적서 (OQC Report)' :
+           type==='iqc' ? '입고검사 성적서 (IQC Report)' :
+           type==='pqc' ? '공정검사 성적서 (PQC Report)' : '출하검사 성적서 (OQC Report)';
+  }
+  function prefixOf(type){
+    return (type==='incoming'||type==='iqc') ? 'IQC' : (type==='process'||type==='pqc') ? 'PQC' : 'OQC';
+  }
+  function defaultItems(type){
+    try{
+      if((type==='incoming'||type==='iqc') && typeof window.defIqc==='function') return window.defIqc();
+      if((type==='process'||type==='pqc') && typeof window.defPqc==='function') return window.defPqc();
+      if((type==='shipment'||type==='oqc') && typeof window.defOqc==='function') return window.defOqc();
+    }catch(e){}
+    if(type==='incoming'||type==='iqc') return [{item:'외관',spec:'이물질, 파손 없을 것'},{item:'CoA',spec:'누락 없을 것'}];
+    return [{item:'외관',spec:'이상 없을 것'},{item:'점도',spec:'1,500±300cp'},{item:'고형분',spec:'20.0±1.0wt.%'},{item:'Dmax',spec:'≤ 10.0 μm'},{item:'접착력',spec:'≥ 400 gf/12.7 mm'},{item:'절연저항',spec:'≥ 200 MΩ'},{item:'전해액 팽윤성',spec:'< 120%'},{item:'수분',spec:'< 2,000ppm'}];
+  }
+  function currentItems(type){
+    var s=window.state||{};
+    var arr=null;
+    if(type==='incoming') arr=s.incomingItemDrafts;
+    else if(type==='process') arr=s.processItemDrafts;
+    else if(type==='shipment') arr=s.shipmentItemDrafts;
+    if(Array.isArray(arr) && arr.length) return arr;
+    if(type==='iqc'||type==='pqc'||type==='oqc'){
+      var row=getSelectedReportRow(type);
+      if(row && Array.isArray(row.items) && row.items.length) return row.items;
+    }
+    return defaultItems(type);
+  }
+  function getSelectedReportRow(type){
+    var s=window.state||{};
+    var arr=type==='iqc'?s.incoming:type==='pqc'?s.process:s.shipment;
+    if(!Array.isArray(arr)) return null;
+    var sel=byId('reportSelect');
+    var id=sel && sel.value;
+    return (id ? arr.find(function(r){return String(r.id)===String(id);}) : arr[0]) || null;
+  }
   function metaRows(type){
-    var d=today(), doc=docPrefix(type)+'-'+d.replaceAll('-','')+'-____';
-    if(type==='iqc'){
-      return '<tr><th>문서번호</th><td>'+doc+'</td><th>일자</th><td>'+d+'</td></tr>'+
-             '<tr><th>LOT</th><td></td><th>협력업체</th><td></td></tr>'+
-             '<tr><th>품목</th><td></td><th>입고수량</th><td></td></tr>'+
-             '<tr><th>검사자</th><td></td><th>비고</th><td></td></tr>';
+    var d=getToday();
+    var doc=prefixOf(type)+'-'+String(d).replaceAll('-','')+'-____';
+    if(type==='incoming'||type==='iqc'){
+      return '<tr><th>문서번호</th><td>'+safeEsc(doc)+'</td><th>일자</th><td>'+safeEsc(d)+'</td></tr>'+
+             '<tr><th>LOT</th><td>'+line()+'</td><th>협력업체</th><td>'+line()+'</td></tr>'+
+             '<tr><th>품목</th><td>'+line()+'</td><th>입고수량</th><td>'+line()+'</td></tr>'+
+             '<tr><th>검사수량</th><td>'+line()+'</td><th>불량수량</th><td>'+line()+'</td></tr>';
     }
-    if(type==='pqc'){
-      return '<tr><th>문서번호</th><td>'+doc+'</td><th>일자</th><td>'+d+'</td></tr>'+
-             '<tr><th>LOT</th><td></td><th>설비명</th><td></td></tr>'+
-             '<tr><th>제품명</th><td></td><th>검사수량</th><td></td></tr>'+
-             '<tr><th>검사자</th><td></td><th>비고</th><td></td></tr>';
+    if(type==='process'||type==='pqc'){
+      return '<tr><th>문서번호</th><td>'+safeEsc(doc)+'</td><th>일자</th><td>'+safeEsc(d)+'</td></tr>'+
+             '<tr><th>LOT</th><td>'+line()+'</td><th>설비명</th><td>'+line()+'</td></tr>'+
+             '<tr><th>제품명</th><td>'+line()+'</td><th>작업조</th><td>'+line()+'</td></tr>'+
+             '<tr><th>검사수량</th><td>'+line()+'</td><th>불량수량</th><td>'+line()+'</td></tr>';
     }
-    return '<tr><th>문서번호</th><td>'+doc+'</td><th>일자</th><td>'+d+'</td></tr>'+
-           '<tr><th>완제품 LOT</th><td></td><th>고객사</th><td></td></tr>'+
-           '<tr><th>제품명</th><td></td><th>검사수량</th><td></td></tr>'+
-           '<tr><th>검사자</th><td></td><th>비고</th><td></td></tr>';
+    return '<tr><th>문서번호</th><td>'+safeEsc(doc)+'</td><th>일자</th><td>'+safeEsc(d)+'</td></tr>'+
+           '<tr><th>완제품 LOT</th><td>'+line()+'</td><th>고객사</th><td>'+line()+'</td></tr>'+
+           '<tr><th>제품명</th><td>'+line()+'</td><th>검사수량</th><td>'+line()+'</td></tr>'+
+           '<tr><th>불량수량</th><td>'+line()+'</td><th>비고</th><td>'+line()+'</td></tr>';
   }
-  function clearReportSigns(){
-    ['Writer','Reviewer','Approver'].forEach(function(role){
-      var n=$('rRpt'+role), t=$('rRpt'+role+'T');
-      if(n)n.textContent='';
-      if(t)t.textContent='';
-      var col=n&&n.closest&&n.closest('.rpsign-col');
-      if(col){
-        var img=col.querySelector('.rpsign-img'); if(img){img.removeAttribute('src');img.style.display='none';}
-        var de=col.querySelector('.rpsign-date'); if(de)de.textContent='';
-      }
-    });
+  function makeRows(items){
+    var list=(Array.isArray(items)&&items.length?items:[]).slice(0);
+    while(list.length<10) list.push({item:'',spec:''});
+    return list.map(function(r,i){
+      return '<tr><td>'+(i+1)+'</td><td>'+safeEsc(r.item||'')+'</td><td>'+safeEsc(r.spec||'')+'</td><td class="nmc-manual-cell">'+line()+'</td><td class="nmc-manual-cell">'+line()+'</td></tr>';
+    }).join('');
   }
-  function renderManualReport(){
-    var type=($('reportType')&&$('reportType').value)||'iqc';
-    if($('reportPageTitle')) $('reportPageTitle').textContent=typeTitle(type);
-    if($('reportMetaTable')) $('reportMetaTable').innerHTML=metaRows(type);
-    var rows=[];
-    for(var i=1;i<=12;i++){
-      rows.push('<tr class="manual-row"><td>'+i+'</td><td class="manual-write-cell"><span class="manual-write-line"></span></td><td class="manual-write-cell"><span class="manual-write-line"></span></td><td class="manual-write-cell"><span class="manual-write-line"></span></td><td class="manual-write-cell"><span class="manual-write-line"></span></td></tr>');
+  function makeSign(){
+    return '<div class="rprint-sign">'+
+      '<div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name"></div><div class="rpsign-title"></div><div class="rpsign-line"></div></div>'+
+      '<div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name"></div><div class="rpsign-title"></div><div class="rpsign-line"></div></div>'+
+      '<div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name"></div><div class="rpsign-title"></div><div class="rpsign-line"></div></div>'+
+      '</div>';
+  }
+  function buildManualSheet(type){
+    var wrap=document.createElement('div');
+    wrap.className='rsheet nmc-manual-inspection-sheet';
+    wrap.innerHTML =
+      '<div class="rhdr"><div><h2>'+safeEsc(titleOf(type))+'</h2><div class="rbsub">Manual Writing Form</div></div><div><div class="rbname">Namochemical</div><div class="rbsub">Quality Management System</div></div></div>'+
+      '<table><tbody>'+metaRows(type)+'</tbody></table>'+
+      '<div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody>'+makeRows(currentItems(type))+'</tbody></table></div>'+
+      '<div class="rbox"><div class="rlbl">최종 판정</div><div class="big" style="color:#111;">'+line()+'</div></div>'+
+      makeSign()+
+      '<div class="nmc-manual-note">수기작성용 출력본입니다. 검사 후 측정값, 판정, 서명을 현장에서 직접 기입하십시오.</div>';
+    return wrap;
+  }
+  function printManual(type){
+    var sheet=buildManualSheet(type);
+    if(typeof window.printEl==='function') window.printEl(sheet);
+    else{
+      var old=byId('printTarget'); if(old) old.remove();
+      sheet.id='printTarget'; document.body.appendChild(sheet); setTimeout(function(){window.print();},200);
     }
-    if($('reportBodyTable')) $('reportBodyTable').innerHTML=rows.join('');
-    if($('reportFinalText')) $('reportFinalText').textContent='□ 합격    □ 불합격    □ 보류';
-    clearReportSigns();
-    var target=$('reportPrintTarget');
-    if(target && !target.querySelector('.manual-report-note')){
-      var note=document.createElement('div');
-      note.className='manual-report-note';
-      note.innerHTML='수기작성용 출력본입니다. 검사 후 측정값, 판정, 작성자/검토자/승인자 서명을 수기로 기입하십시오.';
-      target.appendChild(note);
-    }else if(target){
-      var old=target.querySelector('.manual-report-note');
-      if(old) old.style.display='block';
-    }
-    try{ if(typeof window.renderBC==='function'){ window.renderBC('bcRptLot',typeLabel(type)); window.renderBC('bcRptDoc',docPrefix(type)+'-MANUAL'); } }catch(e){}
   }
-  function printManualReport(){
-    renderManualReport();
-    setTimeout(function(){
-      var target=$('reportPrintTarget');
-      if(typeof window.printEl==='function' && target) window.printEl(target);
-      else window.print();
-    },200);
-  }
-  function ensureButton(){
-    var printBtn=$('printReportPage');
-    if(!printBtn || $('manualInspectionPrintBtn')) return;
+  function addButton(afterId, btnId, type, cls){
+    var after=byId(afterId);
+    if(!after || byId(btnId)) return;
     var btn=document.createElement('button');
-    btn.className='btn ghost';
-    btn.id='manualInspectionPrintBtn';
+    btn.className=cls || after.className || 'btn ghost sm';
+    btn.id=btnId;
     btn.type='button';
     btn.textContent='✍ 수기작성 출력';
-    printBtn.insertAdjacentElement('afterend',btn);
-    btn.addEventListener('click',function(e){e.preventDefault(); printManualReport();},true);
+    after.insertAdjacentElement('afterend',btn);
+    btn.addEventListener('click',function(e){e.preventDefault(); e.stopPropagation(); printManual(type);},true);
   }
-  function hideManualNoteOnNormalLoad(){
-    var oldLoad=window.loadStandaloneReport;
-    if(typeof oldLoad==='function' && !oldLoad.__nmcManualWrapped){
-      window.loadStandaloneReport=function(){
-        var ret=oldLoad.apply(this,arguments);
-        var note=document.querySelector('#reportPrintTarget .manual-report-note');
-        if(note) note.style.display='none';
-        return ret;
-      };
-      window.loadStandaloneReport.__nmcManualWrapped=true;
+  function reportType(){
+    var v=byId('reportType')&&byId('reportType').value;
+    return v==='pqc'?'pqc':v==='oqc'?'oqc':'iqc';
+  }
+  function boot(){
+    addButton('printIncomingReport','printIncomingManualReport','incoming','btn ghost sm');
+    addButton('printProcessReport','printProcessManualReport','process','btn ghost sm');
+    addButton('printShipmentReport','printShipmentManualReport','shipment','btn ghost sm');
+    var pr=byId('printReportPage');
+    if(pr && !byId('manualInspectionPrintBtn')){
+      var btn=document.createElement('button');
+      btn.className='btn ghost';
+      btn.id='manualInspectionPrintBtn';
+      btn.type='button';
+      btn.textContent='✍ 수기작성 출력';
+      pr.insertAdjacentElement('afterend',btn);
+      btn.addEventListener('click',function(e){e.preventDefault(); e.stopPropagation(); printManual(reportType());},true);
     }
   }
-  function boot(){ensureButton();hideManualNoteOnNormalLoad();}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   setTimeout(boot,300); setTimeout(boot,1000); setTimeout(boot,2500);
-  try{new MutationObserver(function(){clearTimeout(window.__nmcManualInspectionPrintTimer);window.__nmcManualInspectionPrintTimer=setTimeout(boot,100);}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+  try{new MutationObserver(function(){clearTimeout(window.__nmcManualInspectionPrintFinalTimer);window.__nmcManualInspectionPrintFinalTimer=setTimeout(boot,120);}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 })();
 </script>
-<!-- NMC MANUAL INSPECTION PRINT PATCH 20260615 END -->
+<!-- NMC MANUAL INSPECTION PRINT PATCH 20260615 FINAL END -->
+
 </body>
 </html>
 
