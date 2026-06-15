@@ -4733,6 +4733,60 @@ function printLabel(){
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
 
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
+
 </body></html>'
   ].join('');
   w.document.open();
@@ -14893,6 +14947,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
 
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
+
 </body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
@@ -16886,6 +16994,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
 
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
+
 </body></html>';var w=window.open('','_blank','width=900,height=1000');if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return}w.document.open();w.document.write(html);w.document.close()}
   window.printOrderById=printOrderById;
   function ensureEditSaveButtons(){var box=q('#page-workorder-final .nmc-send-actions')||q('#page-workorder-final .ph-actions');if(!box)return;if(!q('#nmcEditCancelBtn'))box.insertAdjacentHTML('afterbegin','<button class="nmc-btn" id="nmcEditCancelBtn" type="button">수정 취소</button>');if(!q('#nmcEditSaveBtn'))box.insertAdjacentHTML('afterbegin','<button class="nmc-btn primary" id="nmcEditSaveBtn" type="button">수정본 저장</button>')}
@@ -17168,6 +17330,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
+
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
 
 </body></html>'}
   function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시서 데이터를 찾을 수 없습니다.');return}var old=q('#nmcWoPrintFrame');if(old)old.remove();var f=document.createElement('iframe');f.id='nmcWoPrintFrame';f.className='nmc-wo-print-frame';document.body.appendChild(f);var doc=f.contentWindow.document;doc.open();doc.write(printHtml(item));doc.close();setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){alert('인쇄창을 열 수 없습니다. 브라우저 인쇄 권한을 확인하세요.')}},500)}
@@ -17583,6 +17799,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
 
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
+
 </body></html>';
   }
   function forcePrint(id){
@@ -17968,6 +18238,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
+
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
 
 </body></html>';
     var w=window.open('','_blank','width=900,height=700');if(!w){alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.');return;}w.document.open();w.document.write(html);w.document.close();
@@ -21626,6 +21950,60 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /NMC WORKORDER EDIT PREFILL FIX 20260615 -->
+
+
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 -->
+<script id="nmc-production-progress-dashboard-rename-patch">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(el,v){if(el && el.textContent!==v) el.textContent=v;}
+  function renameNav(){
+    qa('.nav-item[data-page="production-progress"], [data-page-target="production-progress"]').forEach(function(btn){
+      var spans=qa('span',btn);
+      var label=spans.length ? spans[spans.length-1] : btn;
+      txt(label,'생산 대시보드');
+      btn.setAttribute('title','생산 대시보드');
+    });
+  }
+  function normalizePage(){
+    var p=q('#page-production-progress');
+    if(!p) return;
+    txt(q('.ph-title',p),'생산 대시보드');
+    var bc=q('.ph-bc',p);
+    if(bc) bc.innerHTML='홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산 대시보드';
+    txt(q('.ph-sub',p),'생산 대시보드와 동일한 기준으로 LOT별 생산량, 수율, 고객사별 생산현황을 조회합니다.');
+    qa('h1,h2,h3,h4,div,span',p).forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(t==='생산진행 현황') el.textContent='생산 대시보드';
+      if(t==='생산진행 목록') el.textContent='생산 대시보드 목록';
+    });
+  }
+  function run(){renameNav(); normalizePage();}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcProdDashRenamePatched){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this,arguments);
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,80);
+      return ret;
+    };
+    window.showPage.__nmcProdDashRenamePatched=true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest && e.target.closest('.nav-item[data-page], [data-page-target]');
+    if(nav){
+      var pg=nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || '';
+      if(pg==='production-progress' || pg==='production-result') setTimeout(run,120);
+    }
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  [100,400,900,1600,2600].forEach(function(t){setTimeout(run,t);});
+  try{
+    new MutationObserver(function(){run();}).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC PRODUCTION PROGRESS AS DASHBOARD FINAL PATCH 20260615 END -->
 
 </body>
 </html>
