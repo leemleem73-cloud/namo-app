@@ -14092,7 +14092,218 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.nmc-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.nmc-detail-cell{border:1px solid #dbe3ee;border-radius:10px;padding:9px 11px;background:#f8fafc}.nmc-detail-cell b{display:block;font-size:10px;color:#64748b;margin-bottom:4px}.nmc-detail-cell span{font-size:13px;font-weight:900;color:#0f172a}'+
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
-      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
+      '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
+
+<!-- NAMO WORKORDER SEND INFO RESTORE PATCH 20260617
+     작업지시서 작성 하단 발송정보 수신/참조 목록 복구
+     - 회원등록현황(state/adminUsers/signableUsers/localStorage/window 배열) 우선 사용
+     - 목록이 비어도 기본 부서 선택값을 표시하여 "회원등록현황 목록이 없습니다" 방지
+     - 기존 저장/발송 로직은 select 값을 그대로 사용하므로 기능 유지 -->
+<script id="namo-workorder-send-info-restore-20260617">
+(function(){
+  'use strict';
+  if(window.__namoWorkorderSendInfoRestore20260617) return;
+  window.__namoWorkorderSendInfoRestore20260617 = true;
+
+  function $(id){ return document.getElementById(id); }
+  function qa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function trim(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){ return trim(v).replace(/[&<>\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function parseJson(v, fb){ try{ var r = JSON.parse(v); return r == null ? fb : r; }catch(e){ return fb; } }
+  function stateObj(){ try{ return (typeof state !== 'undefined' && state) ? state : (window.state || {}); }catch(e){ return window.state || {}; } }
+
+  function normalizeUser(u){
+    if(!u || typeof u !== 'object') return null;
+    var name = trim(u.name || u.username || u.displayName || u.userName || u.empName || u.employeeName || u.fullName || u.korName || '');
+    var email = trim(u.email || u.mail || u.userEmail || '');
+    var dept = trim(u.department || u.dept || u.departmentName || u.deptName || u.team || u.org || u.organization || '');
+    var title = trim(u.title || u.position || u.jobTitle || u.rank || u.roleName || '');
+    var id = trim(u.id || u.userId || u.uid || u.empId || u.employeeId || email || name || '');
+    if(!name && email) name = email.split('@')[0];
+    if(!id && !name && !email && !dept) return null;
+    return { id:id || email || name || dept, name:name || email || dept || '사용자', email:email, department:dept || '-', title:title };
+  }
+
+  function pushUsersFromObject(obj, out, depth){
+    if(!obj || depth > 3) return;
+    if(Array.isArray(obj)){
+      obj.forEach(function(x){
+        var u = normalizeUser(x);
+        if(u) out.push(u);
+        else if(x && typeof x === 'object') pushUsersFromObject(x, out, depth + 1);
+      });
+      return;
+    }
+    if(typeof obj === 'object'){
+      var u = normalizeUser(obj);
+      if(u && (u.name !== '사용자' || u.email || u.department !== '-')) out.push(u);
+      ['adminUsers','signableUsers','users','members','memberList','userList','employees','employeeList','nmcUsers','accounts','profiles'].forEach(function(k){
+        if(obj[k]) pushUsersFromObject(obj[k], out, depth + 1);
+      });
+    }
+  }
+
+  function usersFromTables(){
+    var out = [];
+    qa('#userTable tr').forEach(function(tr){
+      var td = qa('td', tr);
+      if(td.length < 2) return;
+      var name = trim(td[0].textContent);
+      var email = trim(td[1].textContent);
+      var dept = trim(td[2] && td[2].textContent);
+      var title = trim(td[3] && td[3].textContent).replace('검토/승인 가능','').trim();
+      var u = normalizeUser({name:name,email:email,department:dept,title:title});
+      if(u) out.push(u);
+    });
+    return out;
+  }
+
+  function collectUsers(){
+    var out = [];
+    var s = stateObj();
+    pushUsersFromObject(s, out, 0);
+    ['currentUser','loginUser','userInfo','user','signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList','nmcUsers'].forEach(function(k){
+      try{ pushUsersFromObject(window[k], out, 0); }catch(e){}
+    });
+    out = out.concat(usersFromTables());
+    try{
+      for(var i=0; i<localStorage.length; i++){
+        var key = localStorage.key(i) || '';
+        if(!/(user|member|employee|sign|admin|profile|account|회원)/i.test(key)) continue;
+        var raw = localStorage.getItem(key) || '';
+        if(raw.charAt(0) !== '[' && raw.charAt(0) !== '{') continue;
+        pushUsersFromObject(parseJson(raw, null), out, 0);
+      }
+    }catch(e){}
+
+    var map = {};
+    out.forEach(function(u){
+      u = normalizeUser(u);
+      if(!u) return;
+      var key = trim(u.email || u.id || (u.department + '|' + u.name));
+      if(!key) return;
+      map[key] = Object.assign(map[key] || {}, u);
+    });
+    var list = Object.keys(map).map(function(k){ return map[k]; }).filter(function(u){ return trim(u.name) || trim(u.department); });
+    list.sort(function(a,b){ return trim(a.department).localeCompare(trim(b.department),'ko') || trim(a.name).localeCompare(trim(b.name),'ko'); });
+    return list;
+  }
+
+  function currentUser(){
+    var s = stateObj();
+    var candidates = [s.currentUser, s.user, window.currentUser, window.loginUser, window.userInfo, window.user];
+    for(var i=0; i<candidates.length; i++){
+      var u = normalizeUser(candidates[i]);
+      if(u) return u;
+    }
+    try{
+      var email = trim(localStorage.getItem('namo_current_user_email') || localStorage.getItem('currentUserEmail') || '');
+      var name = trim(localStorage.getItem('namo_current_user_name') || localStorage.getItem('currentUserName') || '');
+      var u2 = normalizeUser({name:name,email:email});
+      if(u2) return u2;
+    }catch(e){}
+    return normalizeUser({id:'login-user', name:'임흥배', email:'hbleem@namochemical.com', department:'-', title:''});
+  }
+
+  function fallbackUsers(){
+    var me = currentUser();
+    return [
+      me,
+      {id:'dept-production', name:'생산부 전체', department:'생산부', title:'수신그룹', email:''},
+      {id:'dept-quality', name:'품질부 전체', department:'품질부', title:'수신그룹', email:''},
+      {id:'dept-management', name:'관리부 전체', department:'관리부', title:'참조그룹', email:''}
+    ].map(normalizeUser).filter(Boolean);
+  }
+
+  function optionText(u){
+    var left = trim(u.department && u.department !== '-' ? u.department : '');
+    var mid = trim(u.name || '사용자');
+    var right = trim(u.title ? ' / ' + u.title : '');
+    return (left ? left + ' ' : '') + mid + right;
+  }
+
+  function fillSelect(sel, list, onlyCurrent){
+    if(!sel) return;
+    var selected = {};
+    Array.prototype.slice.call(sel.selectedOptions || []).forEach(function(o){ selected[String(o.value)] = true; });
+    if(!list.length) list = fallbackUsers();
+    if(onlyCurrent) list = [currentUser()];
+    sel.innerHTML = '';
+    list.forEach(function(u){
+      var opt = document.createElement('option');
+      opt.value = trim(u.id || u.email || u.name || optionText(u));
+      opt.textContent = optionText(u);
+      opt.dataset.name = trim(u.name);
+      opt.dataset.department = trim(u.department);
+      opt.dataset.title = trim(u.title);
+      opt.dataset.email = trim(u.email);
+      if(selected[opt.value]) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    if(onlyCurrent && sel.options.length) sel.options[0].selected = true;
+  }
+
+  function removeEmptyMessage(){
+    qa('#page-workorder-final .nmc-recipient-check-empty').forEach(function(el){
+      if((el.textContent || '').indexOf('목록이 없습니다') > -1) el.remove();
+    });
+  }
+
+  function renderCheckboxFallback(sel){
+    if(!sel || !sel.parentNode) return;
+    var wrap = sel.nextElementSibling;
+    if(!wrap || !wrap.classList || !wrap.classList.contains('nmc-recipient-check-list')){
+      wrap = document.createElement('div');
+      wrap.className = 'nmc-recipient-check-list';
+      sel.parentNode.insertBefore(wrap, sel.nextSibling);
+    }
+    var options = Array.prototype.slice.call(sel.options || []);
+    if(!options.length) return;
+    wrap.innerHTML = options.map(function(o, i){
+      var id = sel.id + '_restore_chk_' + i;
+      return '<label class="nmc-recipient-check-item" for="'+esc(id)+'"><input type="checkbox" id="'+esc(id)+'" data-target-select="'+esc(sel.id)+'" data-value="'+esc(o.value)+'"'+(o.selected?' checked':'')+'><span>'+esc(o.textContent || o.value)+'</span></label>';
+    }).join('');
+  }
+
+  function restoreSendInfo(){
+    var recv = $('nmcRecvDept');
+    var ref = $('nmcRefDept');
+    var sender = $('nmcSenderName');
+    if(!recv && !ref && !sender) return;
+    var users = collectUsers();
+    if(!users.length) users = fallbackUsers();
+    fillSelect(sender, users, true);
+    fillSelect(recv, users, false);
+    fillSelect(ref, users, false);
+    [recv, ref].forEach(function(sel){ if(sel){ sel.multiple = true; sel.size = 1; renderCheckboxFallback(sel); } });
+    var sendTime = $('nmcSendTime');
+    if(sendTime && !sendTime.value) sendTime.value = new Date().toLocaleString('ko-KR');
+    removeEmptyMessage();
+    if(typeof window.renderNmcRecipientCheckboxes === 'function'){
+      try{ window.renderNmcRecipientCheckboxes(); removeEmptyMessage(); }catch(e){}
+    }
+  }
+
+  document.addEventListener('change', function(e){
+    var cb = e.target && e.target.matches && e.target.matches('.nmc-recipient-check-item input[type="checkbox"]') ? e.target : null;
+    if(!cb) return;
+    var sel = $(cb.getAttribute('data-target-select'));
+    if(!sel) return;
+    var value = cb.getAttribute('data-value');
+    Array.prototype.slice.call(sel.options || []).forEach(function(o){ if(String(o.value) === String(value)) o.selected = cb.checked; });
+  }, true);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restoreSendInfo); else restoreSendInfo();
+  [200,700,1400,2600,5000].forEach(function(ms){ setTimeout(restoreSendInfo, ms); });
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-page="workorder-final"],#page-workorder-final')) setTimeout(restoreSendInfo, 120);
+  }, true);
+})();
+</script>
+<!-- /NAMO WORKORDER SEND INFO RESTORE PATCH 20260617 -->
+
+</body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
     w.document.open(); w.document.write(html); w.document.close();
