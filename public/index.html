@@ -14303,6 +14303,734 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- /NAMO WORKORDER SEND INFO RESTORE PATCH 20260617 -->
 
+
+<!-- NAMO_WORKORDER_ENTERPRISE_UI_FULL_REPLACEMENT_PATCH_20260617_START -->
+<style id="namo-workorder-enterprise-ui-20260617">
+/* =========================================================
+   Namochemical QMS - Work Order Enterprise UI Patch
+   목적: 기존 데이터/기능/저장 로직은 유지하고 작업지시서 메뉴/작성 화면만
+        대기업 MES형 구조로 고급화합니다.
+   ========================================================= */
+
+/* 1) 좌측 작업지시 메뉴: 대기업형 명칭/간격/활성 상태 */
+.sidebar .nav-item[data-page="workorder-final"],
+.sidebar .nav-item[data-page="workorder-list"],
+.sidebar .nav-item[data-page="workorder-inbox"],
+.sidebar .nav-item[data-page="workorder-reference"]{
+  height:42px!important;
+  margin:5px 0!important;
+  border-radius:13px!important;
+  padding:0 14px!important;
+  font-size:13.5px!important;
+  font-weight:850!important;
+  letter-spacing:-.25px!important;
+}
+.sidebar .nav-item[data-page="workorder-final"] .nav-icon,
+.sidebar .nav-item[data-page="workorder-list"] .nav-icon,
+.sidebar .nav-item[data-page="workorder-inbox"] .nav-icon,
+.sidebar .nav-item[data-page="workorder-reference"] .nav-icon{
+  width:20px!important;
+  height:20px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  opacity:.98!important;
+  font-size:15px!important;
+}
+.sidebar .nav-item[data-page="workorder-final"].active,
+.sidebar .nav-item[data-page="workorder-list"].active,
+.sidebar .nav-item[data-page="workorder-inbox"].active,
+.sidebar .nav-item[data-page="workorder-reference"].active{
+  background:linear-gradient(90deg,#2563eb 0%,#0ea5e9 100%)!important;
+  color:#fff!important;
+  box-shadow:0 10px 22px rgba(37,99,235,.26)!important;
+  border-color:rgba(255,255,255,.16)!important;
+}
+.sidebar .nav-item[data-page="workorder-final"]:hover,
+.sidebar .nav-item[data-page="workorder-list"]:hover,
+.sidebar .nav-item[data-page="workorder-inbox"]:hover,
+.sidebar .nav-item[data-page="workorder-reference"]:hover{
+  transform:translateX(2px);
+}
+
+/* 2) 작업지시 등록 화면: 전체 레이아웃 */
+#page-workorder-final{
+  --wo-navy:#071426;
+  --wo-navy2:#0f2a4a;
+  --wo-blue:#2563eb;
+  --wo-sky:#0ea5e9;
+  --wo-cyan:#06b6d4;
+  --wo-green:#16a34a;
+  --wo-orange:#f59e0b;
+  --wo-red:#ef4444;
+  --wo-bg:#eef4f9;
+  --wo-card:#ffffff;
+  --wo-line:#dbe6f2;
+  --wo-soft:#f8fbff;
+  --wo-text:#0f172a;
+  --wo-muted:#64748b;
+  padding-bottom:22px!important;
+}
+#page-workorder-final .ph{
+  align-items:center!important;
+  margin-bottom:16px!important;
+}
+#page-workorder-final .ph-title{
+  font-size:24px!important;
+  font-weight:950!important;
+  color:#0f172a!important;
+  letter-spacing:-.8px!important;
+}
+#page-workorder-final .ph-title::after{
+  content:'';
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#16a34a;
+  margin-left:10px;
+  box-shadow:0 0 0 6px rgba(22,163,74,.10);
+  vertical-align:middle;
+}
+#page-workorder-final .ph-bc{
+  margin-top:6px!important;
+  font-size:12px!important;
+  color:#64748b!important;
+  font-weight:750!important;
+}
+#page-workorder-final .ph-actions .btn{
+  height:40px!important;
+  border-radius:12px!important;
+  font-weight:900!important;
+  padding:0 18px!important;
+}
+
+/* 3) 상단 프리미엄 헤더/진행 단계 */
+#page-workorder-final .nmc-wo-enterprise-hero{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 18% 20%,rgba(14,165,233,.30),transparent 32%),
+    radial-gradient(circle at 90% 8%,rgba(34,197,94,.18),transparent 26%),
+    linear-gradient(135deg,#071426 0%,#0d2240 58%,#0e7490 100%);
+  color:#fff;
+  padding:24px 26px;
+  margin-bottom:18px;
+  box-shadow:0 18px 42px rgba(15,23,42,.20);
+}
+#page-workorder-final .nmc-wo-enterprise-hero:after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.065),transparent);
+  pointer-events:none;
+}
+#page-workorder-final .nmc-wo-enterprise-hero > *{position:relative;z-index:1}
+#page-workorder-final .nmc-wo-hero-top{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+#page-workorder-final .nmc-wo-hero-title{
+  font-size:26px;
+  line-height:1.1;
+  font-weight:950;
+  letter-spacing:-.8px;
+}
+#page-workorder-final .nmc-wo-hero-sub{
+  margin-top:8px;
+  color:#bfdbfe;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.55;
+}
+#page-workorder-final .nmc-wo-hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+}
+#page-workorder-final .nmc-wo-hero-badge{
+  height:30px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:0 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  color:#e0f2fe;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+#page-workorder-final .nmc-wo-process{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  margin-top:20px;
+}
+#page-workorder-final .nmc-wo-step{
+  min-height:86px;
+  border-radius:16px;
+  background:rgba(255,255,255,.105);
+  border:1px solid rgba(255,255,255,.16);
+  padding:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+#page-workorder-final .nmc-wo-step-no{
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  color:#1d4ed8;
+  font-size:13px;
+  font-weight:950;
+  margin-bottom:9px;
+}
+#page-workorder-final .nmc-wo-step-title{
+  font-size:13px;
+  font-weight:950;
+  color:#fff;
+}
+#page-workorder-final .nmc-wo-step-desc{
+  font-size:11.5px;
+  color:#cbd5e1;
+  margin-top:3px;
+  line-height:1.35;
+}
+
+/* 4) 작성 탭은 내부 구조용으로 유지하되 고급스러운 보조 탭처럼 표시 */
+#page-workorder-final .nmc-tabs{
+  display:flex!important;
+  gap:8px!important;
+  padding:6px!important;
+  margin:0 0 16px!important;
+  border:1px solid #dbe6f2!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.78)!important;
+  box-shadow:0 8px 20px rgba(15,23,42,.045)!important;
+  backdrop-filter:blur(10px)!important;
+}
+#page-workorder-final .nmc-tab{
+  height:38px!important;
+  border-radius:12px!important;
+  border:none!important;
+  padding:0 18px!important;
+  font-size:13px!important;
+  font-weight:950!important;
+  color:#64748b!important;
+  background:transparent!important;
+}
+#page-workorder-final .nmc-tab.active{
+  background:#2563eb!important;
+  color:#fff!important;
+  box-shadow:0 8px 18px rgba(37,99,235,.22)!important;
+}
+
+/* 5) 카드형 섹션 고급화 */
+#page-workorder-final .nmc-workorder-card{
+  border:1px solid var(--wo-line)!important;
+  border-radius:22px!important;
+  background:var(--wo-card)!important;
+  box-shadow:0 12px 30px rgba(15,23,42,.065)!important;
+  padding:24px 26px!important;
+  margin-bottom:18px!important;
+  overflow:hidden!important;
+  position:relative!important;
+}
+#page-workorder-final .nmc-workorder-card:before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:4px;
+  background:linear-gradient(90deg,#2563eb,#06b6d4);
+}
+#page-workorder-final .nmc-workorder-card h3{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  color:#0f172a!important;
+  font-size:18px!important;
+  font-weight:950!important;
+  letter-spacing:-.45px!important;
+  margin:0 0 18px!important;
+}
+#page-workorder-final .nmc-workorder-card h3::before{
+  content:'';
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  display:inline-flex;
+  background:#eff6ff;
+  box-shadow:inset 0 0 0 1px #dbeafe;
+}
+#page-workorder-final .nmc-workorder-card:nth-of-type(2) h3::before{background:#eff6ff}
+#page-workorder-final .nmc-workorder-card:nth-of-type(3) h3::before{background:#ecfeff}
+#page-workorder-final .nmc-workorder-card:nth-of-type(4) h3::before{background:#f0fdf4}
+#page-workorder-final .nmc-workorder-card:nth-of-type(5) h3::before{background:#fff7ed}
+#page-workorder-final .nmc-workorder-card:nth-of-type(6) h3::before{background:#f8fafc}
+
+/* 6) 폼 그리드/입력창 */
+#page-workorder-final .nmc-form-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:18px 24px!important;
+  align-items:end!important;
+}
+#page-workorder-final .nmc-form-grid.five{
+  grid-template-columns:1.05fr 1.05fr 1fr 1fr 1fr!important;
+}
+#page-workorder-final .nmc-field,
+#page-workorder-final .nmc-send-field{
+  gap:8px!important;
+}
+#page-workorder-final .nmc-field label,
+#page-workorder-final .nmc-send-field label{
+  color:#1e293b!important;
+  font-size:12.5px!important;
+  font-weight:950!important;
+  letter-spacing:-.15px!important;
+  text-transform:none!important;
+}
+#page-workorder-final .req{
+  color:#ef4444!important;
+  font-weight:950!important;
+}
+#page-workorder-final .nmc-input,
+#page-workorder-final .nmc-select,
+#page-workorder-final .nmc-textarea,
+#page-workorder-final .nmc-send-input,
+#page-workorder-final .nmc-send-select,
+#page-workorder-final .nmc-send-textarea{
+  border:1.5px solid #d5e0ee!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  min-height:46px!important;
+  font-size:14px!important;
+  font-weight:750!important;
+  padding:0 15px!important;
+  box-shadow:0 1px 0 rgba(15,23,42,.02)!important;
+  outline:none!important;
+}
+#page-workorder-final .nmc-input:focus,
+#page-workorder-final .nmc-select:focus,
+#page-workorder-final .nmc-textarea:focus,
+#page-workorder-final .nmc-send-input:focus,
+#page-workorder-final .nmc-send-select:focus,
+#page-workorder-final .nmc-send-textarea:focus{
+  border-color:#2563eb!important;
+  box-shadow:0 0 0 4px rgba(37,99,235,.12)!important;
+}
+#page-workorder-final input[readonly]{
+  background:#f8fafc!important;
+  color:#334155!important;
+}
+#page-workorder-final #nmcWoNo,
+#page-workorder-final #nmcProdLot{
+  background:#fff!important;
+  color:#0f172a!important;
+  cursor:text!important;
+}
+#page-workorder-final .nmc-input-wrap{
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+}
+#page-workorder-final .nmc-input-wrap .with-unit,
+#page-workorder-final .nmc-input-wrap input{
+  min-width:0!important;
+}
+#page-workorder-final .nmc-unit{
+  min-height:46px!important;
+  min-width:42px!important;
+  border:1.5px solid #d5e0ee!important;
+  border-left:0!important;
+  border-radius:0 13px 13px 0!important;
+  background:#f8fafc!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  color:#475569!important;
+}
+#page-workorder-final .nmc-input.with-unit{
+  border-top-right-radius:0!important;
+  border-bottom-right-radius:0!important;
+}
+
+/* 7) 투입 원료 테이블 */
+#page-workorder-final .nmc-material-final-wrap,
+#page-workorder-final .nmc-subtable{
+  border:1px solid #dbe6f2!important;
+  border-radius:18px!important;
+  overflow:auto!important;
+  background:#fff!important;
+}
+#page-workorder-final #nmcMaterialTable{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+#page-workorder-final #nmcMaterialTable th{
+  height:48px!important;
+  background:#f8fbff!important;
+  color:#334155!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  text-align:center!important;
+  border-bottom:1px solid #dbe6f2!important;
+}
+#page-workorder-final #nmcMaterialTable td{
+  height:66px!important;
+  border-bottom:1px solid #eef3f8!important;
+  color:#334155!important;
+  text-align:center!important;
+}
+#page-workorder-final #nmcMaterialTable tbody tr:hover td{
+  background:#fbfdff!important;
+}
+#page-workorder-final #nmcMaterialTable tfoot td{
+  background:#f3f8ff!important;
+  color:#0f172a!important;
+  font-weight:950!important;
+}
+#page-workorder-final .nmc-add-btn,
+#page-workorder-final .nmc-small-btn{
+  border:1px solid #bfdbfe!important;
+  background:#eff6ff!important;
+  color:#1d4ed8!important;
+  border-radius:11px!important;
+  font-weight:950!important;
+  min-height:34px!important;
+  padding:0 12px!important;
+}
+#page-workorder-final .nmc-small-btn:hover,
+#page-workorder-final .nmc-add-btn:hover{
+  background:#2563eb!important;
+  color:#fff!important;
+}
+#page-workorder-final .nmc-material-info{
+  border:1px solid #bfdbfe!important;
+  background:linear-gradient(180deg,#f8fbff,#eff6ff)!important;
+  border-radius:16px!important;
+  color:#334155!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  line-height:1.65!important;
+  padding:16px 18px!important;
+}
+
+/* 8) 지시 사항/발송 정보 */
+#page-workorder-final .nmc-instruction-box,
+#page-workorder-final #nmcInstruction{
+  min-height:160px!important;
+  padding:16px 18px!important;
+  line-height:1.65!important;
+}
+#page-workorder-final .nmc-send-card{
+  border-color:#dbe6f2!important;
+}
+#page-workorder-final .nmc-send-grid{
+  display:grid!important;
+  grid-template-columns:1fr 1fr 1fr 1fr!important;
+  gap:22px 24px!important;
+  align-items:start!important;
+}
+#page-workorder-final .nmc-send-help{
+  color:#64748b!important;
+  font-size:12px!important;
+  font-weight:750!important;
+  line-height:1.45!important;
+  margin-top:2px!important;
+}
+#page-workorder-final #nmcRecvDept.nmc-send-select,
+#page-workorder-final #nmcRefDept.nmc-send-select{
+  height:56px!important;
+  min-height:56px!important;
+  overflow-y:auto!important;
+  padding:13px 16px!important;
+}
+#page-workorder-final #nmcRecvDept.nmc-send-select:focus,
+#page-workorder-final #nmcRefDept.nmc-send-select:focus{
+  height:auto!important;
+  min-height:126px!important;
+}
+#page-workorder-final .nmc-send-note{
+  grid-column:1 / -1!important;
+}
+#page-workorder-final .nmc-send-textarea{
+  min-height:120px!important;
+  padding:16px 18px!important;
+  line-height:1.65!important;
+}
+#page-workorder-final .nmc-actions,
+#page-workorder-final .nmc-send-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  margin-top:22px!important;
+  padding-top:18px!important;
+  border-top:1px solid #e5edf6!important;
+}
+#page-workorder-final .nmc-btn.primary,
+#page-workorder-final .btn.pri,
+#page-workorder-final [data-nmc-action="send"]{
+  min-height:46px!important;
+  border-radius:13px!important;
+  background:linear-gradient(90deg,#2563eb,#0ea5e9)!important;
+  color:#fff!important;
+  box-shadow:0 10px 20px rgba(37,99,235,.24)!important;
+  font-size:14px!important;
+  font-weight:950!important;
+  padding:0 22px!important;
+  border:none!important;
+}
+
+/* 9) 알림/상태 */
+#page-workorder-final .nmc-notice{
+  border:1px solid #bfdbfe!important;
+  border-radius:14px!important;
+  background:#f8fbff!important;
+  color:#1e3a8a!important;
+  font-weight:800!important;
+  padding:14px 16px!important;
+}
+#page-workorder-final .nmc-enterprise-status{
+  margin-left:auto;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  background:#dcfce7;
+  color:#166534;
+  font-size:12px;
+  font-weight:950;
+}
+#page-workorder-final .nmc-enterprise-status:before{
+  content:'';
+  width:7px;height:7px;border-radius:50%;
+  background:#16a34a;
+}
+
+/* 10) 반응형 */
+@media(max-width:1500px){
+  #page-workorder-final .nmc-form-grid,
+  #page-workorder-final .nmc-form-grid.five,
+  #page-workorder-final .nmc-send-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #page-workorder-final .nmc-wo-process{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:860px){
+  #page-workorder-final .nmc-form-grid,
+  #page-workorder-final .nmc-form-grid.five,
+  #page-workorder-final .nmc-send-grid,
+  #page-workorder-final .nmc-wo-process{
+    grid-template-columns:1fr!important;
+  }
+  #page-workorder-final .nmc-workorder-card{
+    padding:18px!important;
+  }
+  #page-workorder-final .nmc-wo-enterprise-hero{
+    padding:20px!important;
+  }
+}
+
+/* 인쇄시 기존 출력 구조 방해 금지 */
+@media print{
+  #page-workorder-final .nmc-wo-enterprise-hero,
+  #page-workorder-final .nmc-tabs{
+    display:none!important;
+  }
+}
+</style>
+
+<script id="namo-workorder-enterprise-ui-20260617">
+(function(){
+  'use strict';
+  if(window.__NAMO_WORKORDER_ENTERPRISE_UI_20260617__) return;
+  window.__NAMO_WORKORDER_ENTERPRISE_UI_20260617__ = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function setText(el, text){
+    if(!el) return;
+    var span = el.querySelector('span:last-child');
+    if(span) span.textContent = text;
+    else el.textContent = text;
+  }
+  function setIcon(el, icon){
+    if(!el) return;
+    var i = el.querySelector('.nav-icon');
+    if(i) i.textContent = icon;
+  }
+
+  function polishSidebar(){
+    var write = qs('.sidebar .nav-item[data-page="workorder-final"]');
+    var list  = qs('.sidebar .nav-item[data-page="workorder-list"]');
+    var inbox = qs('.sidebar .nav-item[data-page="workorder-inbox"]');
+    var ref   = qs('.sidebar .nav-item[data-page="workorder-reference"]');
+
+    setText(write, '작업지시 등록'); setIcon(write, '📝');
+    setText(list,  '작업지시 현황'); setIcon(list,  '📋');
+    setText(inbox, '수신함');       setIcon(inbox, '📥');
+    setText(ref,   '참조함');       setIcon(ref,   '👥');
+
+    qsa('.sidebar .nav-item').forEach(function(btn){
+      var txt = (btn.textContent || '').trim();
+      if(txt === '작업지시서 작성') { setText(btn,'작업지시 등록'); setIcon(btn,'📝'); }
+      if(txt === '작업지시서 목록') { setText(btn,'작업지시 현황'); setIcon(btn,'📋'); }
+      if(txt === '받은 작업지시서') { setText(btn,'수신함'); setIcon(btn,'📥'); }
+      if(txt === '참조 작업지시서') { setText(btn,'참조함'); setIcon(btn,'👥'); }
+    });
+
+    qsa('.sidebar .nav-item[data-page="production"]').forEach(function(btn){
+      var label = (btn.querySelector('span:last-child') || btn).textContent.trim();
+      if(!label || label === '›' || label === '>') btn.style.display = 'none';
+    });
+  }
+
+  function unlockManualInputs(){
+    ['nmcWoNo','nmcProdLot'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.removeAttribute('readonly');
+      el.readOnly = false;
+      el.style.cursor = 'text';
+      if(id === 'nmcWoNo' && !el.getAttribute('placeholder')) el.setAttribute('placeholder','작업지시서 번호 직접 입력');
+      if(id === 'nmcProdLot' && !el.getAttribute('placeholder')) el.setAttribute('placeholder','생산 LOT 번호 직접 입력');
+    });
+  }
+
+  function getValue(id){
+    var el = document.getElementById(id);
+    return el && el.value ? el.value : '-';
+  }
+
+  function updateHeroText(){
+    var hero = qs('#page-workorder-final .nmc-wo-enterprise-hero');
+    if(!hero) return;
+    var wo = getValue('nmcWoNo');
+    var lot = getValue('nmcProdLot');
+    var prod = getValue('nmcProdName');
+    var target = qs('.nmc-wo-current-summary', hero);
+    if(target){
+      target.textContent = '작업지시 ' + wo + ' · 생산 LOT ' + lot + ' · 제품 ' + prod;
+    }
+  }
+
+  function injectWorkorderHero(){
+    var page = document.getElementById('page-workorder-final');
+    if(!page) return;
+
+    var title = qs('.ph-title', page);
+    if(title && title.textContent.trim() !== '작업지시 등록') title.textContent = '작업지시 등록';
+
+    var bc = qs('.ph-bc', page);
+    if(bc) bc.innerHTML = '홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시 <span class="sep">›</span> 등록';
+
+    if(!qs('.nmc-enterprise-status', page)){
+      var ph = qs('.ph', page);
+      if(ph){
+        var status = document.createElement('div');
+        status.className = 'nmc-enterprise-status';
+        status.textContent = '작성 대기';
+        var actions = qs('.ph-actions', page);
+        if(actions) actions.insertBefore(status, actions.firstChild);
+      }
+    }
+
+    if(!qs('.nmc-wo-enterprise-hero', page)){
+      var ph = qs('.ph', page);
+      var hero = document.createElement('div');
+      hero.className = 'nmc-wo-enterprise-hero';
+      hero.innerHTML =
+        '<div class="nmc-wo-hero-top">' +
+          '<div>' +
+            '<div class="nmc-wo-hero-title">Work Order Control Center</div>' +
+            '<div class="nmc-wo-hero-sub nmc-wo-current-summary">작업지시 - · 생산 LOT - · 제품 -</div>' +
+          '</div>' +
+          '<div class="nmc-wo-hero-badges">' +
+            '<span class="nmc-wo-hero-badge">MES/QMS</span>' +
+            '<span class="nmc-wo-hero-badge">Manual LOT</span>' +
+            '<span class="nmc-wo-hero-badge">Trace Ready</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="nmc-wo-process">' +
+          '<div class="nmc-wo-step"><div class="nmc-wo-step-no">01</div><div class="nmc-wo-step-title">기본정보</div><div class="nmc-wo-step-desc">지시번호 · 생산일자 · 요청부서</div></div>' +
+          '<div class="nmc-wo-step"><div class="nmc-wo-step-no">02</div><div class="nmc-wo-step-title">제품정보</div><div class="nmc-wo-step-desc">제품명 · 완제품 LOT · 생산 LOT</div></div>' +
+          '<div class="nmc-wo-step"><div class="nmc-wo-step-no">03</div><div class="nmc-wo-step-title">원료/BOM</div><div class="nmc-wo-step-desc">원료 LOT · 투입량 · 비율</div></div>' +
+          '<div class="nmc-wo-step"><div class="nmc-wo-step-no">04</div><div class="nmc-wo-step-title">지시사항</div><div class="nmc-wo-step-desc">생산 조건 · 작업 주의사항</div></div>' +
+          '<div class="nmc-wo-step"><div class="nmc-wo-step-no">05</div><div class="nmc-wo-step-title">발송정보</div><div class="nmc-wo-step-desc">수신 · 참조 · 발송 기록</div></div>' +
+        '</div>';
+      if(ph) ph.insertAdjacentElement('afterend', hero);
+    }
+
+    qsa('#page-workorder-final .nmc-workorder-card h3').forEach(function(h){
+      h.innerHTML = h.innerHTML
+        .replace('1. 기본 정보','기본 정보')
+        .replace('2. 제품 정보','제품 정보')
+        .replace('3. 투입 원료','원료 / BOM')
+        .replace('4. 지시 사항','지시 사항')
+        .replace('5. 발송 정보','발송 정보');
+    });
+
+    unlockManualInputs();
+    updateHeroText();
+  }
+
+  function bindHeroUpdates(){
+    document.addEventListener('input', function(e){
+      if(e.target && ['nmcWoNo','nmcProdLot','nmcProdName'].indexOf(e.target.id) >= 0){
+        setTimeout(updateHeroText, 0);
+      }
+    }, true);
+    document.addEventListener('change', function(e){
+      if(e.target && ['nmcWoNo','nmcProdLot','nmcProdName'].indexOf(e.target.id) >= 0){
+        setTimeout(updateHeroText, 0);
+      }
+    }, true);
+  }
+
+  function apply(){
+    polishSidebar();
+    injectWorkorderHero();
+    unlockManualInputs();
+  }
+
+  bindHeroUpdates();
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', apply);
+  }else{
+    apply();
+  }
+  [120,400,900,1600,2800].forEach(function(ms){ setTimeout(apply, ms); });
+
+  var mo = new MutationObserver(function(){
+    window.clearTimeout(window.__namoWoEntUiTimer);
+    window.__namoWoEntUiTimer = window.setTimeout(apply, 80);
+  });
+  mo.observe(document.documentElement, {childList:true, subtree:true});
+})();
+</script>
+<!-- NAMO_WORKORDER_ENTERPRISE_UI_FULL_REPLACEMENT_PATCH_20260617_END -->
+
 </body></html>';
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
