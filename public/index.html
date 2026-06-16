@@ -18826,27 +18826,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var t = compactText(btn);
     return pg === 'production-result' || t === '생산실적' || t === '생산실적현황' || t === '생산대시보드';
   }
-  function setLabel(btn){
-    btn.className = 'nav-item';
-    btn.setAttribute('data-page','production-result');
-    btn.setAttribute('data-nmc-prod-result-quality-fixed','1');
-    btn.removeAttribute('data-page-target');
-    btn.removeAttribute('data-nmc-prod-dash-btn');
-    var icon = qs('.nav-icon', btn);
-    if(!icon){ icon = document.createElement('span'); icon.className = 'nav-icon'; btn.insertBefore(icon, btn.firstChild); }
-    icon.textContent = '◉';
-    var spans = btn.querySelectorAll('span');
-    if(spans.length){ spans[spans.length - 1].textContent = '생산실적현황'; }
-    else{ btn.textContent = '생산실적현황'; }
-    btn.style.display = '';
-  }
-  function makeButton(){
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.innerHTML = '<span class="nav-icon">◉</span><span>생산실적현황</span>';
-    setLabel(btn);
-    return btn;
-  }
+  
   function ensureResultPage(){
     var page = qs('#page-production-result');
     if(page) return page;
