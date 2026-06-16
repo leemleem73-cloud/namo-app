@@ -357,12 +357,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   justify-content:space-between;
   gap:8px;
   margin-top:6px;
-}
-.sign-date{
-  font-size:10px;
-  color:var(--t3);
-  min-height:14px;
-}
 .sign-clear-btn{
   height:24px;
   padding:0 8px;
@@ -539,40 +533,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media print{.training-photo-box,.training-photo-del{display:none!important}.training-preview-photos{grid-template-columns:repeat(2,1fr)}.training-preview-photo img{height:120px}}
 
 
-/* 교육보고서 사진 표시 보강 */
-#page-training .training-photo-preview{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:12px;
-}
-#page-training .training-photo-card{
-  width:100%;
-}
-#page-training .training-photo-card img{
-  width:100%;
-  height:120px;
-  object-fit:cover;
-}
-#page-training .training-preview-photos{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-  gap:12px;
-}
-#page-training .training-preview-photo img{
-  width:100%;
-  height:150px;
-  object-fit:cover;
-}
-@media print{
-  #page-training .training-preview-photos{
-    grid-template-columns:repeat(2,1fr)!important;
-  }
-  #page-training .training-preview-photo img{
-    height:120px!important;
-  }
-}
-
-
 /* 교육보고서 전자결재/사진/목록 보강 */
 #page-training .training-photo-preview{
   display:grid;
@@ -667,31 +627,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     height:120px!important;
   }
 }
-
-
-/* 교육보고서 성적서형 결재 보강 */
-.training-status{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:58px;
-  padding:3px 9px;
-  border-radius:99px;
-  font-size:11px;
-  font-weight:800;
-}
-.training-status.draft{background:var(--was);color:var(--wa);}
-.training-status.review{background:var(--infs);color:var(--inf);}
-.training-status.done{background:var(--oks);color:var(--ok);}
-.training-approval-log{
-  margin-top:12px;
-  border:1px solid var(--bd);
-  border-radius:var(--r2);
-  overflow:hidden;
-}
-.training-approval-log table{width:100%;border-collapse:collapse;font-size:12px;}
-.training-approval-log th{background:var(--s2);color:var(--t3);padding:8px;border-bottom:1px solid var(--bd);}
-.training-approval-log td{padding:8px;border-bottom:1px solid var(--bd);text-align:center;}
 
 
 
@@ -1233,7 +1168,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .qmes-donut-sub{font-size:12px;color:#bfdbfe;margin-top:4px}
 .qmes-donut-card.iqc{--c:#3b82f6}.qmes-donut-card.pqc{--c:#22c55e}.qmes-donut-card.oqc{--c:#f97316}.qmes-donut-card.nc{--c:#8b5cf6}.qmes-donut-card.tr{--c:#06b6d4}
 @media(max-width:1400px){.qmes-hero-grid.donut{grid-template-columns:repeat(3,1fr)!important}}
-@media(max-width:760px){.qmes-hero-grid.donut{grid-template-columns:1fr!important}.qmes-donut-card{min-height:142px}.qmes-donut{width:84px;height:84px}}
 
 
 .dlower{display:grid!important;grid-template-columns:1.4fr .9fr!important;gap:18px!important;margin-top:18px!important}
@@ -1291,12 +1225,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   min-height:0!important;
 }
 #qmesNoticeSlot .cb{padding:8px 18px 14px!important}
-#qmesNoticeSlot .nitem{padding:12px 0!important;font-size:14px!important}
-#qmesNoticeSlot .ndate{font-size:12px!important}
 #qmesNoticeSlot .ntxt{line-height:1.6!important;font-size:14px!important;font-weight:600!important}
 #page-dashboard > .dlower:empty{display:none!important}
-#page-dashboard > .dlower{margin-top:0!important}
-#qmesCockpit .qmes-panel{margin:0!important}
 #qmesCockpit .qmes-module-grid{
   grid-template-columns:repeat(4,minmax(0,1fr));
   gap:12px;
@@ -1673,15 +1603,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 #page-workorder-final #nmcMaterialTable th{height:46px!important;background:#f8fafc!important;color:#0f172a!important;font-size:13px!important;font-weight:900!important;text-align:center!important;border-bottom:1px solid #dfe7f1!important;padding:10px!important;}
 #page-workorder-final #nmcMaterialTable td{height:62px!important;padding:10px 12px!important;border-bottom:1px solid #eef2f7!important;text-align:center!important;vertical-align:middle!important;color:#0f172a!important;}
 #page-workorder-final #nmcMaterialTable input{width:100%!important;height:40px!important;border:1.5px solid #d9e3f0!important;border-radius:9px!important;background:#fff!important;padding:0 12px!important;font-size:13px!important;color:#0f172a!important;outline:none!important;}
-#page-workorder-final #nmcMaterialTable input:focus{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;}
-#page-workorder-final .nmc-input-unit-wrap{display:flex!important;align-items:center!important;width:100%!important;}
 #page-workorder-final .nmc-input-unit-wrap input{border-top-right-radius:0!important;border-bottom-right-radius:0!important;}
-#page-workorder-final .nmc-unit-box{height:40px!important;min-width:48px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:1.5px solid #d9e3f0!important;border-left:none!important;border-radius:0 9px 9px 0!important;background:#f8fafc!important;color:#0f172a!important;font-size:13px!important;font-weight:800!important;}
-#page-workorder-final .nmc-ratio-input{background:#f3f4f6!important;color:#4b5563!important;}
 #page-workorder-final #nmcMaterialTable tfoot td{height:54px!important;background:#f8fbff!important;font-weight:900!important;color:#0f172a!important;border-bottom:none!important;}
-#page-workorder-final #nmcMaterialTotalQty,#page-workorder-final #nmcMaterialTotalRatio{color:#0b57d0!important;font-size:15px!important;font-weight:900!important;}
-#page-workorder-final .nmc-material-info{margin-top:14px!important;border:1px solid #bfdbfe!important;border-radius:12px!important;background:#f8fbff!important;padding:16px 18px!important;color:#334155!important;font-size:13px!important;line-height:1.7!important;}
-#page-workorder-final .nmc-material-info b{color:#1d4ed8!important;margin-right:8px!important;}
 
 
 
