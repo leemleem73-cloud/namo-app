@@ -19144,20 +19144,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
       }
     });
 
-    /* 4) 메인 > 품질 대시보드 바로 아래에 생산진행 현황 추가 */
-    var quality = qa('.nav-item', side).filter(function(btn){ return txt(btn)==='품질 대시보드'; })[0];
-    var progress = document.createElement('button');
-    progress.type = 'button';
-    progress.className = 'nav-item';
-    progress.setAttribute('data-page','production-progress');
-    progress.setAttribute('data-nmc-main-production-progress','1');
-    progress.innerHTML = '<span class="nav-icon">◔</span><span>생산진행 현황</span>';
-    if(quality && quality.parentNode === side){
-      quality.insertAdjacentElement('afterend', progress);
-    }else{
-      mainSec.insertAdjacentElement('afterend', progress);
-    }
-
     removeEmptySection(mainSec);
   }
 
