@@ -19101,5 +19101,226 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- /NMC WORKORDER LIST PRODUCTION DATE DISPLAY HOTFIX v20260616 -->
 
+
+<!-- NAMO IQC 목록 검토자/승인자 이름 연동 FINAL PATCH 20260616 -->
+<script id="namo-iqc-list-approval-name-sync-final-20260616">
+(function(){
+  'use strict';
+  var STATUS_STORE='namo_unified_approval_inbox_status_v20260527';
+  function $(id){return document.getElementById(id);} 
+  function txt(v){return String(v==null?'':v).trim();}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
+  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function bad(v){v=txt(v);return !v||v==='-'||v==='로그인 사용자'||v==='login-user'||v==='알 수 없음'||v==='사용자';}
+  function profileName(){var e=$('profileName')||document.querySelector('.pname');var v=e?txt(e.textContent):'';return bad(v)?'':v;}
+  function profileEmail(){var e=$('profileEmail')||document.querySelector('.pemail');return e?txt(e.textContent):'';}
+  function currentUser(){var s=appState(),u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||{};var email=txt(u.email||u.userEmail||profileEmail());var name=txt(u.name||u.username||u.displayName||u.fullName||u.id||'');if(bad(name))name=profileName()||(email?email.split('@')[0]:'로그인 사용자');return {id:txt(u.id||u.userId||u.uid||email||name),name:name,title:txt(u.title||u.position||u.roleName||u.role||u.grade),department:txt(u.department||u.dept||u.team),email:email};}
+  function hasName(u){return !!(u&&!bad(u.name||u));}
+  function personName(u){if(!u)return ''; if(typeof u==='string')return bad(u)?'':txt(u); return bad(u.name)?'':txt(u.name);}
+  function docKey(r){return 'iqc:'+txt(r&&r.id);} 
+  function altKey(r){return 'iqc:'+txt((r&&(r.docNo||r.reportNo||r.no||r.lot||r.item))||'');}
+  function statusInfo(r){var m=read(STATUS_STORE,{});return m[docKey(r)]||m[altKey(r)]||{};}
+  function nameFallback(r,role){
+    var st=statusInfo(r);
+    if(role==='writer') return personName(r.signWriter)||txt(r.writer||r.inspector)||'-';
+    if(role==='reviewer') return personName(r.signReviewer)||txt(r.reviewer)||txt(st.reviewedBy||st.reviewerName)||'-';
+    if(role==='approver') return personName(r.signApprover)||txt(r.approver)||txt(st.approvedBy||st.approverName)||'-';
+    return '-';
+  }
+  function ensureRecordNames(r){
+    if(!r)return r;
+    var st=statusInfo(r);
+    var rn=nameFallback(r,'reviewer'), an=nameFallback(r,'approver');
+    if(!hasName(r.signReviewer)&&!bad(rn)) r.signReviewer={name:rn,status:'APPROVED',signDate:st.reviewedAt||st.time||''};
+    if(!hasName(r.signApprover)&&!bad(an)) r.signApprover={name:an,status:'APPROVED',signDate:st.approvedAt||st.time||''};
+    if(!bad(rn)) r.reviewer=rn;
+    if(!bad(an)) r.approver=an;
+    return r;
+  }
+  function badge(r){try{return (typeof window.jBadge==='function')?window.jBadge(window.calcJ?r.items&&window.calcJ(r.items||[]):''):(window.jBadge?jBadge(calcJ(r.items||[])):'');}catch(e){try{return jBadge(calcJ(r.items||[]));}catch(_){return esc(r.finalJudge||r.judge||'');}}}
+  function eRow(cols){try{return window.eRow?window.eRow(cols):'<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;">데이터가 없습니다.</td></tr>';}catch(e){return '<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;">데이터가 없습니다.</td></tr>';}}
+
+  window.renderIncomingTable=function(){
+    var s=appState(), tb=$('incomingTable'); if(!tb)return;
+    var arr=Array.isArray(s.incoming)?s.incoming:[];
+    if(!arr.length){tb.innerHTML=eRow(12);return;}
+    tb.innerHTML=arr.map(function(raw){var r=ensureRecordNames(raw);return '<tr>'+
+      '<td>'+esc(r.date||'')+'</td>'+
+      '<td><strong>'+esc(r.lot||'')+'</strong></td>'+
+      '<td>'+esc(r.supplier||'')+'</td>'+
+      '<td>'+esc(r.item||'')+'</td>'+
+      '<td>'+esc(r.incomingQty!=null?r.incomingQty:'')+'</td>'+
+      '<td>'+esc(r.checkQty!=null?r.checkQty:'')+'</td>'+
+      '<td>'+esc(r.failQty!=null?r.failQty:'')+'</td>'+
+      '<td>'+badge(r)+'</td>'+
+      '<td>'+esc(nameFallback(r,'writer'))+'</td>'+
+      '<td>'+esc(nameFallback(r,'reviewer'))+'</td>'+
+      '<td>'+esc(nameFallback(r,'approver'))+'</td>'+
+      '<td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td>'+
+      '</tr>';}).join('');
+  };
+
+  function syncClickedApproval(btn){
+    if(!btn||btn.getAttribute('data-type')!=='iqc')return;
+    var id=btn.getAttribute('data-id'), action=btn.getAttribute('data-appr-act');
+    var s=appState(), arr=Array.isArray(s.incoming)?s.incoming:[], r=arr.find(function(x){return String(x.id)===String(id);});
+    if(!r)return;
+    var me=currentUser(), now=(new Date()).toISOString().slice(0,16).replace('T',' ');
+    if(action==='review'){
+      r.signReviewer={id:me.id,name:me.name,title:me.title,department:me.department,email:me.email,status:'APPROVED',signDate:now};
+      r.reviewer=me.name; r.approvalStatus='reviewed';
+    }
+    if(action==='approve'){
+      if(!hasName(r.signReviewer)){r.signReviewer={id:me.id,name:me.name,title:me.title,department:me.department,email:me.email,status:'APPROVED',signDate:now}; r.reviewer=me.name;}
+      r.signApprover={id:me.id,name:me.name,title:me.title,department:me.department,email:me.email,status:'APPROVED',signDate:now};
+      r.approver=me.name; r.approvalStatus='approved';
+    }
+    ensureRecordNames(r);
+    try{window.renderIncomingTable();}catch(e){}
+    try{if(typeof window.api==='function')window.api('/api/iqc/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify(Object.assign({},r,{sign_reviewer:r.signReviewer,sign_approver:r.signApprover,approval_status:r.approvalStatus}))});}catch(e){}
+  }
+
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('[data-appr-act][data-type="iqc"]');
+    if(btn){setTimeout(function(){syncClickedApproval(btn);},350);setTimeout(function(){try{window.renderIncomingTable();}catch(e){}},900);}
+  },true);
+
+  var oldLoad=window.loadIncoming;
+  if(typeof oldLoad==='function'&&!oldLoad.__namoIqcNameSyncWrapped){
+    var wrapped=function(){var ret=oldLoad.apply(this,arguments);var done=function(){var s=appState();if(Array.isArray(s.incoming))s.incoming.forEach(ensureRecordNames);try{window.renderIncomingTable();}catch(e){}};if(ret&&typeof ret.then==='function')return ret.then(function(v){done();return v;});setTimeout(done,0);return ret;};
+    wrapped.__namoIqcNameSyncWrapped=true;window.loadIncoming=wrapped;
+  }
+  function boot(){var s=appState();if(Array.isArray(s.incoming))s.incoming.forEach(ensureRecordNames);try{window.renderIncomingTable();}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [300,900,1800,3500].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+<!-- /NAMO IQC 목록 검토자/승인자 이름 연동 FINAL PATCH 20260616 -->
+
 </body>
 </html>
+
+<!-- NAMO IQC 작성/검토/승인 UI 복구 + 성적서 미리보기 자동 반영 PATCH 20260616 -->
+<style id="namo-iqc-approval-preview-restore-style">
+  #page-incoming #signGrid_iqc{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:12px!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+  #page-incoming #signGrid_iqc .sign-box{display:block!important;visibility:visible!important;opacity:1!important;}
+  #page-incoming #incomingReportPreview .rprint-sign{
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+    margin-top:16px!important;
+    border:1.5px solid #888!important;
+  }
+  #page-incoming #incomingReportPreview .rpsign-col{text-align:center!important;padding:9px 7px!important;border-right:1px solid #aaa!important;}
+  #page-incoming #incomingReportPreview .rpsign-col:last-child{border-right:none!important;}
+  #page-incoming #incomingReportPreview .rpsign-role{font-size:10px!important;font-weight:800!important;color:#444!important;border-bottom:1px solid #ccc!important;padding-bottom:5px!important;margin-bottom:7px!important;}
+  #page-incoming #incomingReportPreview .rpsign-name{font-size:14px!important;font-weight:700!important;color:#111!important;min-height:20px!important;}
+  #page-incoming #incomingReportPreview .rpsign-title{font-size:11px!important;color:#666!important;margin-top:2px!important;min-height:16px!important;}
+  #page-incoming #incomingReportPreview .rpsign-line{width:75%!important;height:1px!important;background:#999!important;margin:9px auto 3px!important;}
+  @media(max-width:900px){#page-incoming #signGrid_iqc{grid-template-columns:1fr!important;}}
+</style>
+<script id="namo-iqc-approval-preview-restore-script">
+(function(){
+  'use strict';
+  var ROLES=['writer','reviewer','approver'];
+  var ROLE_KO={writer:'작성자 (본인)',reviewer:'검토자 (부장)',approver:'승인자 (부장 이상)'};
+  function $(id){return document.getElementById(id);}
+  function txt(v){return String(v==null?'':v).trim();}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function state(){try{return window.state||state||{};}catch(e){return window.state||{};}}
+  function norm(u){
+    if(!u)return null;
+    if(typeof u==='string')u={name:u,id:u};
+    var name=txt(u.name||u.username||u.userName||u.displayName||u.fullName||u.id||u.email||'');
+    if(!name||name==='-')return null;
+    return {id:txt(u.id||u.userId||u.uid||u.email||name),name:name,title:txt(u.title||u.position||u.rank||u.jobTitle||u.roleName||''),department:txt(u.department||u.dept||u.team||''),email:txt(u.email||'')};
+  }
+  function currentUser(){return norm((state()&&state().currentUser)||window.currentUser||null);}
+  function users(){
+    var s=state(), out=[], seen={};
+    function add(u){u=norm(u);if(!u)return;var k=u.id||u.email||u.name;if(seen[k])return;seen[k]=1;out.push(u);}
+    add(currentUser());
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+      if(Array.isArray(s[k]))s[k].forEach(add);
+      if(Array.isArray(window[k]))window[k].forEach(add);
+    });
+    return out;
+  }
+  function label(u){u=norm(u);return u?(u.name+' / '+(u.title||u.department||'-')):'- / -';}
+  function option(u){u=norm(u);return '<option value="'+esc(u&&u.id||'')+'" data-name="'+esc(u&&u.name||'')+'" data-title="'+esc(u&&u.title||'')+'" data-department="'+esc(u&&u.department||'')+'">'+esc(label(u))+'</option>';}
+  function selected(role){
+    var sel=$('sg_iqc_'+role), u=null, o;
+    if(sel&&sel.value){
+      o=sel.options[sel.selectedIndex];
+      u=norm({id:sel.value,name:(o&&o.dataset&&o.dataset.name)||txt(o&&o.textContent).replace(/\s*\/\s*.*$/,''),title:o&&o.dataset&&o.dataset.title,department:o&&o.dataset&&o.dataset.department});
+    }
+    if(role==='writer'&&!u)u=currentUser();
+    return u;
+  }
+  function ensureFormUI(){
+    var grid=$('signGrid_iqc');
+    if(!grid)return;
+    grid.style.display='grid';
+    grid.style.visibility='visible';
+    grid.style.opacity='1';
+    if(grid.children.length<3){
+      var me=currentUser();
+      var list=users();
+      grid.innerHTML=ROLES.map(function(role){
+        var opts= role==='writer' ? option(me) : '<option value="">- / -</option>'+list.map(option).join('');
+        return '<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">'+esc(ROLE_KO[role])+'</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body"><select class="sign-sel" id="sg_iqc_'+role+'">'+opts+'</select><div class="sign-sub" id="sg_iqc_'+role+'_sub">선택 시 성적서 미리보기에 자동 반영</div><div class="sign-file-wrap"><div class="sign-file-preview"><span class="sign-file-empty">서명 이미지 없음</span></div></div></div></div>';
+      }).join('');
+    }
+    var w=$('sg_iqc_writer');
+    if(w&&(!w.value||txt(w.options[w.selectedIndex]&&w.options[w.selectedIndex].textContent).indexOf('- / -')>=0)){
+      var me=currentUser();
+      if(me){w.innerHTML=option(me);w.value=me.id||me.name;}
+    }
+  }
+  function ensurePreviewSign(){
+    var sheet=$('incomingReportPreview');
+    if(!sheet)return;
+    var sign=sheet.querySelector('.rprint-sign');
+    if(!sign){
+      sign=document.createElement('div');
+      sign.className='rprint-sign';
+      sign.innerHTML='<div class="rpsign-col"><div class="rpsign-role">작성자</div><div class="rpsign-name" id="rIqcWriter">-</div><div class="rpsign-title" id="rIqcWriterT"></div><div class="rpsign-line"></div></div><div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rIqcReviewer">-</div><div class="rpsign-title" id="rIqcReviewerT"></div><div class="rpsign-line"></div></div><div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rIqcApprover">-</div><div class="rpsign-title" id="rIqcApproverT"></div><div class="rpsign-line"></div></div>';
+      var bc=sheet.querySelector('.bcsec');
+      if(bc)sheet.insertBefore(sign,bc);else sheet.appendChild(sign);
+    }
+    sign.style.display='grid';
+  }
+  function setPerson(role,u){
+    var id=role==='writer'?'rIqcWriter':role==='reviewer'?'rIqcReviewer':'rIqcApprover';
+    var tid=id+'T';
+    var n=$(id), t=$(tid);
+    if(n)n.textContent=(u&&u.name)||'-';
+    if(t)t.textContent=(u&&[u.department,u.title].filter(Boolean).join(' / '))||'';
+  }
+  function syncPreview(){
+    ensurePreviewSign();
+    setPerson('writer',selected('writer')||currentUser());
+    setPerson('reviewer',selected('reviewer'));
+    setPerson('approver',selected('approver'));
+  }
+  function boot(){
+    ensureFormUI();
+    syncPreview();
+  }
+  window.namoSyncIqcApprovalPreview=syncPreview;
+  document.addEventListener('change',function(e){
+    if(e.target&&/^sg_iqc_(writer|reviewer|approver)$/.test(e.target.id||''))setTimeout(syncPreview,0);
+  },true);
+  document.addEventListener('input',function(e){
+    if(e.target&&/^sg_iqc_(writer|reviewer|approver)$/.test(e.target.id||''))setTimeout(syncPreview,0);
+  },true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [200,600,1200,2200,3500].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
