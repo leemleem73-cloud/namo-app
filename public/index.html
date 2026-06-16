@@ -4343,56 +4343,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-
-<!-- NMC LOT TRACE MENU LINK PATCH 20260616 -->
-<script>
-(function(){
-  'use strict';
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function showTracePage(){
-    if(typeof window.gotoTrace==='function'){
-      try{window.gotoTrace('');}catch(e){}
-    }
-    qsa('.page').forEach(function(p){p.classList.toggle('active',p.id==='page-trace')});
-    qsa('.nav-item[data-page]').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')==='trace')});
-    if(typeof window.clearTraceView==='function'){
-      try{window.clearTraceView();}catch(e){}
-    }
-  }
-  function ensureLotTraceMenu(){
-    var side=qs('.sidebar'); if(!side) return;
-    qsa('.nav-item[data-page="trace"]').forEach(function(x,i){ if(i>0) x.remove(); });
-    var trace=qs('.nav-item[data-page="trace"]',side);
-    if(!trace){
-      trace=document.createElement('button');
-      trace.type='button';
-      trace.className='nav-item nmc-prod-child';
-      trace.setAttribute('data-page','trace');
-      trace.innerHTML='<span class="nav-icon">⛓</span><span>LOT 추적조회</span>';
-    }
-    var lot=qs('.nav-item[data-page="inventory-lot"]',side);
-    if(lot && lot.nextSibling!==trace) lot.insertAdjacentElement('afterend',trace);
-    else if(!trace.parentNode) side.appendChild(trace);
-  }
-  function bindTraceMenu(){
-    if(window.__nmcLotTraceMenuBound) return;
-    window.__nmcLotTraceMenuBound=true;
-    document.addEventListener('click',function(e){
-      var nav=e.target.closest&&e.target.closest('.nav-item[data-page="trace"]');
-      if(nav){e.preventDefault();e.stopPropagation();showTracePage();return false;}
-    },true);
-  }
-  function boot(){ensureLotTraceMenu();bindTraceMenu();}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,250)}); else setTimeout(boot,250);
-  [600,1200,2500,4500,7000,10000].forEach(function(ms){setTimeout(boot,ms)});
-  window.nmcEnsureLotTraceMenu=boot;
-})();
-</script>
-<!-- NMC LOT TRACE MENU LINK PATCH END -->
-
-</body></html>'
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -19106,5 +19057,48 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC LOT TRACE FINAL CONSOLIDATED PATCH 20260615 END -->
 
+
+<!-- NMC LOT TRACE MENU LINK PATCH 20260616 FIXED -->
+<script>
+(function(){
+  'use strict';
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function showTracePage(){
+    if(typeof window.gotoTrace==='function'){try{window.gotoTrace('');}catch(e){}}
+    qsa('.page').forEach(function(p){p.classList.toggle('active',p.id==='page-trace')});
+    qsa('.nav-item[data-page]').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')==='trace')});
+    if(typeof window.clearTraceView==='function'){try{window.clearTraceView();}catch(e){}}
+  }
+  function ensureLotTraceMenu(){
+    var side=qs('.sidebar'); if(!side) return;
+    qsa('.nav-item[data-page="trace"]',side).forEach(function(x,i){ if(i>0) x.remove(); });
+    var trace=qs('.nav-item[data-page="trace"]',side);
+    if(!trace){
+      trace=document.createElement('button');
+      trace.type='button';
+      trace.className='nav-item nmc-prod-child';
+      trace.setAttribute('data-page','trace');
+      trace.innerHTML='<span class="nav-icon">⛓</span><span>LOT 추적조회</span>';
+    }
+    var lot=qs('.nav-item[data-page="inventory-lot"]',side);
+    if(lot && lot.nextSibling!==trace) lot.insertAdjacentElement('afterend',trace);
+    else if(!trace.parentNode) side.appendChild(trace);
+  }
+  function bindTraceMenu(){
+    if(window.__nmcLotTraceMenuBound) return;
+    window.__nmcLotTraceMenuBound=true;
+    document.addEventListener('click',function(e){
+      var nav=e.target.closest&&e.target.closest('.nav-item[data-page="trace"]');
+      if(nav){e.preventDefault();e.stopPropagation();showTracePage();return false;}
+    },true);
+  }
+  function boot(){ensureLotTraceMenu();bindTraceMenu();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,250)}); else setTimeout(boot,250);
+  [600,1200,2500,4500,7000,10000].forEach(function(ms){setTimeout(boot,ms)});
+  window.nmcEnsureLotTraceMenu=boot;
+})();
+</script>
+<!-- NMC LOT TRACE MENU LINK PATCH END -->
 </body>
 </html>
