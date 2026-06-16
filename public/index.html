@@ -19178,5 +19178,177 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC LOT TRACE SCREENSHOT UI FULL REPLACEMENT 20260616 END -->
+
+
+<!-- NMC LOT TRACE MENU SEPARATION FULL REPLACE PATCH 20260616 START -->
+<style id="nmc-lot-trace-menu-separation-style-20260616">
+/* LOT 재고조회와 LOT 추적조회 분리 */
+.sidebar .nav-item[data-page="lot-trace"]{
+  color:#dbeafe!important;
+}
+.sidebar .nav-item[data-page="lot-trace"].active,
+.sidebar .nav-item[data-page="trace"].active[data-nmc-lot-trace-menu="1"]{
+  background:linear-gradient(90deg,#0b57d0,#06b6d4)!important;
+  color:#fff!important;
+  font-weight:900!important;
+  box-shadow:0 8px 18px rgba(11,87,208,.24)!important;
+}
+#page-trace .lotx-bc span:first-child{color:#667085!important;}
+#page-trace .lotx-title:after{
+  content:' · 재고관리 독립 메뉴';
+  font-size:13px;
+  color:#667085;
+  font-weight:800;
+  letter-spacing:0;
+  margin-left:8px;
+}
+#page-trace .lotx-search-card:before{
+  content:'LOT 재고조회는 현재고 중심, LOT 추적조회는 원자재 → 생산 → 완제품 → 출하 → 고객사 이력 중심으로 분리되었습니다.';
+  display:block;
+  padding:12px 18px;
+  background:#f8fbff;
+  border-bottom:1px solid #e4eaf2;
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:850;
+}
+</style>
+<script id="nmc-lot-trace-menu-separation-script-20260616">
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_MENU_SEPARATION_20260616__) return;
+  window.__NMC_LOT_TRACE_MENU_SEPARATION_20260616__ = true;
+
+  function qs(sel,root){return (root||document).querySelector(sel);}
+  function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  function txt(v){return String(v==null?'':v).trim();}
+
+  function makeButton(){
+    var btn=document.createElement('button');
+    btn.className='nav-item';
+    btn.setAttribute('data-page','lot-trace');
+    btn.setAttribute('data-nmc-lot-trace-menu','1');
+    btn.innerHTML='<span class="nav-icon">⌕</span><span>LOT 추적조회</span>';
+    return btn;
+  }
+
+  function ensureMenu(){
+    var side=qs('.sidebar');
+    if(!side) return;
+    qsa('.nav-item[data-page="trace"]',side).forEach(function(el){
+      if(!el.hasAttribute('data-nmc-lot-trace-menu')) el.style.display='none';
+    });
+    var existing=qs('.nav-item[data-page="lot-trace"]',side);
+    if(!existing){
+      var anchor=qs('.nav-item[data-page="inventory-lot"]',side)
+        || qs('.nav-item[data-page="inventory-history"]',side)
+        || qs('.nav-item[data-page="inventory-product"]',side)
+        || qs('.nav-item[data-page="inventory-raw"]',side);
+      var btn=makeButton();
+      if(anchor) anchor.insertAdjacentElement('afterend',btn);
+      else side.appendChild(btn);
+    }
+    var inv=qs('.nav-item[data-page="inventory-lot"] span:last-child',side);
+    if(inv && txt(inv.textContent)!=='LOT 재고조회') inv.textContent='LOT 재고조회';
+  }
+
+  function normalizeTracePage(){
+    var page=qs('#page-trace');
+    if(!page) return;
+    var bc=qs('#page-trace .lotx-bc');
+    if(bc){
+      bc.innerHTML='<span>재고관리</span><span>›</span><span>LOT 추적조회</span>';
+    }
+    var sub=qs('#page-trace .lotx-sub');
+    if(sub){
+      sub.textContent='원자재 LOT 또는 완제품 LOT 기준으로 작업지시, 생산, 검사, 출하, 고객사 이력을 한 화면에서 추적합니다.';
+    }
+    var labels=qsa('#page-trace .lotx-mode-tab');
+    labels.forEach(function(b){
+      if((b.textContent||'').indexOf('원자재')>-1) b.innerHTML='① 원자재 LOT 기준';
+      if((b.textContent||'').indexOf('완제품')>-1) b.innerHTML='② 완제품 LOT 기준';
+    });
+  }
+
+  function activateLotTrace(clearKeyword){
+    ensureMenu();
+    if(typeof window.searchTrace==='function'){
+      try{ window.searchTrace(); }catch(e){}
+    }
+    var page=qs('#page-trace');
+    if(!page && typeof window.gotoTrace==='function'){
+      try{ window.gotoTrace(''); }catch(e){}
+      page=qs('#page-trace');
+    }
+    qsa('.page').forEach(function(p){p.classList.remove('active');});
+    if(page) page.classList.add('active');
+    qsa('.nav-item.active').forEach(function(n){n.classList.remove('active');});
+    var nav=qs('.nav-item[data-page="lot-trace"]');
+    if(nav) nav.classList.add('active');
+    normalizeTracePage();
+    if(clearKeyword!==false){
+      var kw=qs('#lotxKeyword')||qs('#traceKeyword');
+      if(kw) kw.value='';
+      if(typeof window.clearTraceView==='function'){
+        try{ window.clearTraceView(); }catch(e){}
+      }
+    }
+  }
+
+  document.addEventListener('click',function(e){
+    var btn=e.target && e.target.closest && e.target.closest('.nav-item[data-page="lot-trace"]');
+    if(btn){
+      e.preventDefault();
+      e.stopPropagation();
+      activateLotTrace(true);
+      return false;
+    }
+    var lotLink=e.target && e.target.closest && e.target.closest('[data-report-lot],[data-lotx-go]');
+    if(lotLink){
+      setTimeout(function(){
+        var nav=qs('.nav-item[data-page="lot-trace"]');
+        if(nav){
+          qsa('.nav-item.active').forEach(function(n){n.classList.remove('active');});
+          nav.classList.add('active');
+        }
+        normalizeTracePage();
+      },120);
+    }
+  },true);
+
+  var oldGoto=window.gotoTrace;
+  window.gotoLotTrace=function(lot){
+    activateLotTrace(false);
+    var kw=qs('#lotxKeyword')||qs('#traceKeyword');
+    if(kw) kw.value=txt(lot);
+    if(typeof window.searchTrace==='function'){
+      try{ window.searchTrace(); }catch(e){}
+    }
+  };
+  window.gotoTrace=function(lot){
+    if(typeof oldGoto==='function'){
+      try{ oldGoto(lot); }catch(e){}
+    }
+    setTimeout(function(){
+      activateLotTrace(false);
+      var kw=qs('#lotxKeyword')||qs('#traceKeyword');
+      if(kw && txt(lot)) kw.value=txt(lot);
+      if(typeof window.searchTrace==='function'){
+        try{ window.searchTrace(); }catch(e){}
+      }
+    },80);
+  };
+
+  function boot(){
+    ensureMenu();
+    normalizeTracePage();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.addEventListener('load',boot);
+  [100,300,700,1200,2000,3500,6000].forEach(function(ms){setTimeout(boot,ms);});
+  try{new MutationObserver(function(){clearTimeout(window.__nmcLotTraceMenuTimer);window.__nmcLotTraceMenuTimer=setTimeout(boot,80);}).observe(document.body,{childList:true,subtree:true});}catch(e){}
+})();
+</script>
+<!-- NMC LOT TRACE MENU SEPARATION FULL REPLACE PATCH 20260616 END -->
 </body>
 </html>
