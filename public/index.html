@@ -4343,122 +4343,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    `
-
-<!-- NMC_FINAL_MENU_ONLY_PATCH_20260616_START -->
-<style id="nmc-final-menu-only-patch-style">
-  /* 최종 요청: 생산진행 현황 페이지 상단 제목 영역 숨김 */
-  #page-production-progress .ph,
-  #page-production-result .ph{
-    display:none!important;
-  }
-</style>
-<script id="nmc-final-menu-only-patch-script">
-(function(){
-  'use strict';
-  if(window.__NMC_FINAL_MENU_ONLY_PATCH_20260616__) return;
-  window.__NMC_FINAL_MENU_ONLY_PATCH_20260616__ = true;
-
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-  function compact(el){ return String((el && el.textContent) || '').replace(/\s+/g,'').trim(); }
-  function removeBtn(btn){ if(btn && btn.parentNode) btn.parentNode.removeChild(btn); }
-
-  function isProductionDashboardOrResult(btn){
-    if(!btn || !btn.matches || !btn.matches('.nav-item')) return false;
-    var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
-    var t = compact(btn);
-    return pg === 'production-result' ||
-           t === '생산대시보드' ||
-           t === '생산실적현황' ||
-           t === '생산실적';
-  }
-
-  function ensureMainProgressMenu(){
-    var side = qs('.sidebar');
-    if(!side) return;
-
-    /* 1) 메인에 있던 생산대시보드/생산실적현황 메뉴 삭제 */
-    qa('.sidebar .nav-item').forEach(function(btn){
-      if(isProductionDashboardOrResult(btn)) removeBtn(btn);
-    });
-
-    /* 2) 기존 아래쪽 생산진행 현황 메뉴는 제거 후 메인으로 재배치 */
-    qa('.sidebar .nav-item[data-page="production-progress"], .sidebar .nav-item[data-page-target="production-progress"]').forEach(function(btn){
-      removeBtn(btn);
-    });
-
-    /* 3) 품질 대시보드 바로 아래에 생산진행 현황 추가 */
-    var quality = qs('.sidebar .nav-item[data-page="dashboard"]') || qa('.sidebar .nav-item').find(function(btn){ return compact(btn) === '품질대시보드'; });
-    var progress = document.createElement('button');
-    progress.type = 'button';
-    progress.className = 'nav-item';
-    progress.setAttribute('data-page','production-progress');
-    progress.setAttribute('data-nmc-main-production-progress','1');
-    progress.innerHTML = '<span class="nav-icon">◔</span><span>생산진행 현황</span>';
-
-    if(quality && quality.parentNode){
-      quality.parentNode.insertBefore(progress, quality.nextSibling);
-    }else{
-      side.insertBefore(progress, side.firstChild || null);
-    }
-
-    /* 4) 비어 있는 생산현황 섹션명 제거 */
-    qa('.sidebar .nav-sec').forEach(function(sec){
-      if(compact(sec) === '생산현황') removeBtn(sec);
-      if(compact(sec) === '생산대시보드') removeBtn(sec);
-    });
-
-    /* 5) 현재 페이지 active 표시 유지 */
-    var activePage = qs('#page-production-progress.active');
-    if(activePage){
-      qa('.sidebar .nav-item').forEach(function(btn){ btn.classList.toggle('active', btn.getAttribute('data-page') === 'production-progress'); });
-    }
-  }
-
-  function patchShowPage(){
-    if(window.__NMC_FINAL_MENU_SHOWPAGE_PATCHED__) return;
-    window.__NMC_FINAL_MENU_SHOWPAGE_PATCHED__ = true;
-    var old = window.showPage;
-    if(typeof old === 'function'){
-      window.showPage = function(pg){
-        var ret = old.apply(this, arguments);
-        setTimeout(ensureMainProgressMenu, 20);
-        setTimeout(ensureMainProgressMenu, 120);
-        return ret;
-      };
-    }
-  }
-
-  document.addEventListener('click', function(e){
-    var btn = e.target && e.target.closest && e.target.closest('.sidebar .nav-item[data-nmc-main-production-progress="1"]');
-    if(btn){
-      setTimeout(function(){
-        if(typeof window.renderNmcProductionResultDashboard === 'function'){
-          try{}catch(e){}
-        }
-      }, 80);
-    }
-    setTimeout(ensureMainProgressMenu, 30);
-    setTimeout(ensureMainProgressMenu, 200);
-  }, true);
-
-  if(window.MutationObserver){
-    var observer = new MutationObserver(function(){ setTimeout(ensureMainProgressMenu, 20); });
-    function observe(){ var side = qs('.sidebar'); if(side) observer.observe(side, {childList:true, subtree:true}); }
-    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observe); else observe();
-  }
-
-  function boot(){ patchShowPage(); ensureMainProgressMenu(); }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  window.addEventListener('load', boot);
-  [50,150,300,700,1200,2000,3500,6000,9000].forEach(function(ms){ setTimeout(boot, ms); });
-  setInterval(ensureMainProgressMenu, 200);
-})();
-</script>
-<!-- NMC_FINAL_MENU_ONLY_PATCH_20260616_END -->
-
-</body></html>`
+    '</body></html>'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -19215,5 +19100,106 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC LOT TRACE MENU LINK PATCH END -->
+
+
+<!-- NMC FINAL MENU PATCH 20260616: menu only -->
+<style id="nmc-final-menu-patch-style">
+  /* 생산진행 현황 페이지 상단 제목 영역 숨김 */
+  #page-production-progress > .ph{display:none!important;}
+  /* 기존 생산실적현황 화면이 남아 있어도 상단 제목은 숨김 */
+  #page-production-result > .ph{display:none!important;}
+</style>
+<script id="nmc-final-menu-patch-script">
+(function(){
+  'use strict';
+
+  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function q(sel, root){ return (root || document).querySelector(sel); }
+  function txt(el){ return (el && el.textContent || '').replace(/\s+/g,' ').trim(); }
+
+  function isMainSection(el){ return el && el.classList && el.classList.contains('nav-sec') && txt(el)==='메인'; }
+  function isProductionSection(el){ return el && el.classList && el.classList.contains('nav-sec') && (txt(el)==='생산현황' || txt(el)==='생산 현황'); }
+
+  function removeEmptySection(sec){
+    if(!sec) return;
+    var n = sec.nextElementSibling;
+    while(n && !n.classList.contains('nav-sec')){
+      var next = n.nextElementSibling;
+      if(n.classList.contains('nav-item') && txt(n)==='') n.remove();
+      n = next;
+    }
+  }
+
+  function ensureMenu(){
+    var side = q('.sidebar');
+    if(!side) return;
+
+    var mainSec = qa('.nav-sec', side).filter(isMainSection)[0];
+    if(!mainSec) return;
+
+    /* 1) 메인 생산대시보드 / 생산실적현황 메뉴 삭제 */
+    qa('.nav-item', side).forEach(function(btn){
+      var label = txt(btn);
+      var pg = btn.getAttribute('data-page') || '';
+      if(label === '생산대시보드' || label === '생산대시 보드' || label === '생산실적현황'){
+        btn.remove();
+        return;
+      }
+      if(pg === 'production' && /생산/.test(label)){
+        btn.remove();
+      }
+    });
+
+    /* 2) 아래 생산현황/생산관리에 있던 생산진행 현황 제거 */
+    qa('.nav-item[data-page="production-progress"]', side).forEach(function(btn){ btn.remove(); });
+
+    /* 3) 생산현황 섹션이 비면 삭제 */
+    qa('.nav-sec', side).forEach(function(sec){
+      if(isProductionSection(sec)){
+        var n = sec.nextElementSibling, hasItem = false;
+        while(n && !n.classList.contains('nav-sec')){
+          if(n.classList.contains('nav-item') && txt(n)) hasItem = true;
+          n = n.nextElementSibling;
+        }
+        if(!hasItem) sec.remove();
+      }
+    });
+
+    /* 4) 메인 > 품질 대시보드 바로 아래에 생산진행 현황 추가 */
+    var quality = qa('.nav-item', side).filter(function(btn){ return txt(btn)==='품질 대시보드'; })[0];
+    var progress = document.createElement('button');
+    progress.type = 'button';
+    progress.className = 'nav-item';
+    progress.setAttribute('data-page','production-progress');
+    progress.setAttribute('data-nmc-main-production-progress','1');
+    progress.innerHTML = '<span class="nav-icon">◔</span><span>생산진행 현황</span>';
+    if(quality && quality.parentNode === side){
+      quality.insertAdjacentElement('afterend', progress);
+    }else{
+      mainSec.insertAdjacentElement('afterend', progress);
+    }
+
+    removeEmptySection(mainSec);
+  }
+
+  function boot(){ ensureMenu(); }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.addEventListener('load', boot);
+  [50,150,300,700,1200,2000,3500,6000,9000].forEach(function(ms){ setTimeout(boot, ms); });
+  setInterval(boot, 400);
+
+  if(window.MutationObserver){
+    var ob = new MutationObserver(function(){ setTimeout(boot, 20); });
+    function observe(){ var side = q('.sidebar'); if(side) ob.observe(side, {childList:true, subtree:true}); }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observe);
+    else observe();
+  }
+})();
+</script>
+<!-- NMC FINAL MENU PATCH END -->
+
 </body>
 </html>
