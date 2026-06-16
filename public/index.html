@@ -7994,7 +7994,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="nmc-workorder-card">
         <h3>1. 기본 정보</h3>
         <div class="nmc-form-grid">
-          <div class="nmc-field"><label>작업지시서 번호<span class="req">*</span></label><input class="nmc-input" id="nmcWoNo" readonly placeholder="NM-YYYYMMDD-0001 자동생성"></div>
+          <div class="nmc-field"><label>작업지시서 번호<span class="req">*</span></label><input class="nmc-input" id="nmcWoNo" placeholder="작업지시서 번호 직접 입력"></div>
           <div class="nmc-field"><label>생산일자<span class="req">*</span></label><input class="nmc-input" type="date" id="nmcOrderDate"></div>
           <div class="nmc-field"><label>계획 구분<span class="req">*</span></label><select class="nmc-select" id="nmcPlanType"><option>일간</option><option>주간</option><option>월간</option></select></div>
           <div class="nmc-field"><label>우선순위</label><select class="nmc-select"><option>보통</option><option>높음</option><option>낮음</option></select></div>
@@ -8011,7 +8011,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-field"><label>완제품 LOT</label><input class="nmc-input nmc-lot-source" id="nmcProdCode" placeholder="완제품 LOT 직접 입력"></div>
           <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcPlanQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
           <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcActualQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
-          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" readonly placeholder="생산일자 기준 자동생성 (NM-YYMMDD)"></span></div>
+          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" placeholder="생산 LOT 번호 직접 입력"></span></div>
         </div>
       </div>
       <div class="nmc-workorder-card">
