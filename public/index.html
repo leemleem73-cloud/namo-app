@@ -4343,7 +4343,9 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '</body></html>'
+    '
+<!-- moved trailing patches before body close -->
+'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -19198,9 +19200,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- /NAMO IQC 목록 검토자/승인자 이름 연동 FINAL PATCH 20260616 -->
 
-</body>
-</html>
-
 <!-- NAMO IQC 작성/검토/승인 UI 복구 + 성적서 미리보기 자동 반영 PATCH 20260616 -->
 <style id="namo-iqc-approval-preview-restore-style">
   #page-incoming #signGrid_iqc{
@@ -19324,3 +19323,222 @@ document.addEventListener('DOMContentLoaded',async()=>{
   [200,600,1200,2200,3500].forEach(function(ms){setTimeout(boot,ms);});
 })();
 </script>
+
+<!-- NAMO FULL REPLACE FINAL PATCH 20260616: IQC/PQC/OQC 작성-검토-승인 로그인 성명/직책 자동 연동 -->
+<style id="namo-qc-login-approval-final-style">
+  #signGrid_iqc,#signGrid_pqc,#signGrid_oqc{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;visibility:visible!important;opacity:1!important;}
+  #incomingReportPreview .rprint-sign,#processReportPreview .rprint-sign,#shipmentReportPreview .rprint-sign{display:grid!important;grid-template-columns:repeat(3,1fr)!important;margin-top:16px!important;border:1.5px solid #888!important;}
+  #incomingReportPreview .rpsign-col,#processReportPreview .rpsign-col,#shipmentReportPreview .rpsign-col{text-align:center!important;padding:9px 7px!important;border-right:1px solid #aaa!important;}
+  #incomingReportPreview .rpsign-col:last-child,#processReportPreview .rpsign-col:last-child,#shipmentReportPreview .rpsign-col:last-child{border-right:none!important;}
+  #incomingReportPreview .rpsign-role,#processReportPreview .rpsign-role,#shipmentReportPreview .rpsign-role{font-size:10px!important;font-weight:800!important;color:#444!important;text-transform:uppercase!important;border-bottom:1px solid #ccc!important;padding-bottom:5px!important;margin-bottom:7px!important;}
+  #incomingReportPreview .rpsign-name,#processReportPreview .rpsign-name,#shipmentReportPreview .rpsign-name{font-size:14px!important;font-weight:800!important;color:#111!important;min-height:20px!important;}
+  #incomingReportPreview .rpsign-title,#processReportPreview .rpsign-title,#shipmentReportPreview .rpsign-title{font-size:11px!important;color:#555!important;margin-top:2px!important;min-height:16px!important;}
+  @media(max-width:900px){#signGrid_iqc,#signGrid_pqc,#signGrid_oqc{grid-template-columns:1fr!important;}}
+</style>
+<script id="namo-qc-login-approval-final-script">
+(function(){
+  'use strict';
+  var TYPES=['iqc','pqc','oqc'];
+  var CFG={
+    iqc:{arr:'incoming',table:'incomingTable',api:'/api/iqc',editId:'incomingEditId',saveNames:['saveIqc','saveIncoming'],sync:'syncIqcPreview',preview:'incomingReportPreview',pfx:'Iqc',cols:12,fields:['date','lot','supplier','item','incomingQty','checkQty','failQty']},
+    pqc:{arr:'process',table:'processTable',api:'/api/pqc',editId:'processEditId',saveNames:['savePqc','saveProcess'],sync:'syncPqcPreview',preview:'processReportPreview',pfx:'Pqc',cols:11,fields:['date','lot','product','line','qty','failQty']},
+    oqc:{arr:'shipment',table:'shipmentTable',api:'/api/oqc',editId:'shipmentEditId',saveNames:['saveOqc','saveShipment'],sync:'syncOqcPreview',preview:'shipmentReportPreview',pfx:'Oqc',cols:11,fields:['date','customer','product','lot','qty','failQty']}
+  };
+  function $(id){return document.getElementById(id)}
+  function qs(s,r){return (r||document).querySelector(s)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function clean(v){v=String(v==null?'':v).trim();return (!v||v==='-'||v==='undefined'||v==='null')?'':v}
+  function appState(){try{return window.state||state||{}}catch(e){return window.state||{}}}
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
+  function norm(u){
+    if(!u)return null; if(typeof u==='string')u={name:u,id:u};
+    var name=clean(u.name||u.username||u.userName||u.displayName||u.fullName||u.employeeName||u.korName||u.id||u.email);
+    if(!name)return null;
+    return {id:clean(u.id||u.userId||u.uid||u.email||name)||name,name:name,title:clean(u.title||u.position||u.rank||u.jobTitle||u.roleName||''),department:clean(u.department||u.dept||u.team||''),email:clean(u.email||'')};
+  }
+  function currentUser(){
+    var s=appState(); var u=s.currentUser||window.currentUser||window.loginUser||window.userInfo||null;
+    if(!u&&Array.isArray(s.signableUsers)&&s.signableUsers.length)u=s.signableUsers[0];
+    return norm(u)||{id:'login-user',name:'로그인 사용자',title:'',department:'',email:''};
+  }
+  function allUsers(){
+    var s=appState(), out=[], seen={};
+    function add(u){u=norm(u); if(!u)return; var k=u.id||u.email||u.name; if(seen[k])return; seen[k]=1; out.push(u)}
+    add(currentUser());
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+      if(Array.isArray(s[k]))s[k].forEach(add); if(Array.isArray(window[k]))window[k].forEach(add);
+    });
+    return out;
+  }
+  function userLabel(u){u=norm(u); if(!u)return '-'; var t=clean(u.title||u.department); return u.name+(t?' / '+t:'')}
+  function option(u){u=norm(u)||{};return '<option value="'+esc(u.id||'')+'" data-name="'+esc(u.name||'')+'" data-title="'+esc(u.title||'')+'" data-department="'+esc(u.department||'')+'" data-email="'+esc(u.email||'')+'">'+esc(userLabel(u)||'-')+'</option>'}
+  function noneObj(){return {id:'',name:'-',title:'',department:'',email:''}}
+  function sameUser(a,b){a=norm(a);b=norm(b);return !!(a&&b&&((a.id&&b.id&&String(a.id)===String(b.id))||(a.email&&b.email&&a.email===b.email)||(a.name&&b.name&&a.name===b.name)))}
+  function selectedUser(type,role){
+    var sel=$('sg_'+type+'_'+role), opt, raw, u;
+    if(sel&&sel.value){
+      opt=sel.options&&sel.options[sel.selectedIndex]; raw=clean((opt&&opt.dataset&&opt.dataset.name)||String(opt&&opt.textContent||'').replace(/\s*\/\s*.*$/,''));
+      u=allUsers().find(function(x){return String(x.id)===String(sel.value)||String(x.email||'')===String(sel.value)||x.name===raw});
+      return norm(u||{id:sel.value,name:raw,title:opt&&opt.dataset&&opt.dataset.title,department:opt&&opt.dataset&&opt.dataset.department,email:opt&&opt.dataset&&opt.dataset.email});
+    }
+    return role==='writer'?currentUser():null;
+  }
+  function signObj(u){u=norm(u);return u?{id:u.id,name:u.name,title:u.title||'',department:u.department||'',email:u.email||'',status:'APPROVED'}:noneObj()}
+  function ensureSignGrid(type){
+    var grid=$('signGrid_'+type); if(!grid)return;
+    grid.style.display='grid'; grid.style.visibility='visible'; grid.style.opacity='1';
+    var me=currentUser(), users=allUsers();
+    ['writer','reviewer','approver'].forEach(function(role){
+      var sel=$('sg_'+type+'_'+role);
+      if(!sel){
+        if(grid.children.length<3){
+          grid.innerHTML=['writer','reviewer','approver'].map(function(r){var label=r==='writer'?'작성자':r==='reviewer'?'검토자':'승인자';return '<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">'+label+'</span><span class="sign-box-badge any">로그인 연동</span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+type+'_'+r+'"></select><div class="sign-sub" id="sg_'+type+'_'+r+'_sub"></div></div></div>'}).join('');
+        }
+      }
+    });
+    var w=$('sg_'+type+'_writer'), r=$('sg_'+type+'_reviewer'), a=$('sg_'+type+'_approver');
+    if(w){w.innerHTML=option(me); w.value=me.id; w.disabled=true; var sub=$('sg_'+type+'_writer_sub'); if(sub)sub.textContent='작성자는 로그인 당사자 성명/직책으로 자동 기록';}
+    [r,a].forEach(function(sel){
+      if(!sel)return;
+      var old=sel.value; var hadOld=!!old;
+      sel.innerHTML='<option value="">-</option>'+users.map(option).join('');
+      if(hadOld&&Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(old)}))sel.value=old;
+      else sel.value='';
+      var sub=$((sel.id||'')+'_sub'); if(sub)sub.textContent='검토/승인 처리 시 로그인 당사자 성명/직책 자동 기록';
+    });
+  }
+  function ensurePreview(type){
+    var c=CFG[type], sheet=$(c.preview); if(!sheet)return;
+    var sign=sheet.querySelector('.rprint-sign');
+    if(!sign){
+      sign=document.createElement('div'); sign.className='rprint-sign';
+      sign.innerHTML='<div class="rpsign-col"><div class="rpsign-role">작성</div><div class="rpsign-name" id="r'+c.pfx+'Writer">-</div><div class="rpsign-title" id="r'+c.pfx+'WriterT"></div><div class="rpsign-line"></div></div><div class="rpsign-col"><div class="rpsign-role">검토</div><div class="rpsign-name" id="r'+c.pfx+'Reviewer">-</div><div class="rpsign-title" id="r'+c.pfx+'ReviewerT"></div><div class="rpsign-line"></div></div><div class="rpsign-col"><div class="rpsign-role">승인</div><div class="rpsign-name" id="r'+c.pfx+'Approver">-</div><div class="rpsign-title" id="r'+c.pfx+'ApproverT"></div><div class="rpsign-line"></div></div>';
+      var bc=sheet.querySelector('.bcsec'); if(bc)sheet.insertBefore(sign,bc); else sheet.appendChild(sign);
+    }
+  }
+  function putPreview(type,role,u){
+    var c=CFG[type], cap=role.charAt(0).toUpperCase()+role.slice(1), n=$('r'+c.pfx+cap), t=$('r'+c.pfx+cap+'T');
+    u=norm(u); if(n)n.textContent=u?u.name:'-'; if(t)t.textContent=u?(u.title||u.department||''):'';
+  }
+  function syncPreview(type){ensurePreview(type);putPreview(type,'writer',selectedUser(type,'writer'));putPreview(type,'reviewer',selectedUser(type,'reviewer'));putPreview(type,'approver',selectedUser(type,'approver'));}
+  function signPayload(type){return {writer:signObj(selectedUser(type,'writer')),reviewer:signObj(selectedUser(type,'reviewer')),approver:signObj(selectedUser(type,'approver'))}}
+  window.getSignPayload=function(type){return signPayload(type)};
+  function hasEdit(type){var id=$(CFG[type].editId); return !!(id&&clean(id.value))}
+  function forceNewDocumentDefaults(type){
+    ensureSignGrid(type);
+    var me=currentUser(); var w=$('sg_'+type+'_writer'); if(w){w.innerHTML=option(me);w.value=me.id;}
+    if(!hasEdit(type)){['reviewer','approver'].forEach(function(role){var sel=$('sg_'+type+'_'+role); if(sel)sel.value='';});}
+    syncPreview(type);
+  }
+  function personFromRecord(r,role){
+    r=r||{}; var obj=r['sign'+(role==='writer'?'Writer':role==='reviewer'?'Reviewer':'Approver')];
+    if(obj&&clean(obj.name))return norm(obj);
+    var name=clean(r[role+'Name']||r[role]||(role==='writer'?(r.inspector||r.solid||r.visual):''));
+    var title=clean(r[role+'Title']||'');
+    return name?norm({name:name,title:title}):null;
+  }
+  function tableName(r,role){return userLabel(personFromRecord(r,role))}
+  function judge(r){try{return (typeof window.jBadge==='function')?window.jBadge((typeof window.calcJ==='function')?window.calcJ(r.items||[]):r.finalJudge||''):(r.finalJudge||'')}catch(e){return esc(r.finalJudge||'')}}
+  function eRow(cols){return (typeof window.eRow==='function')?window.eRow(cols):'<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;">데이터가 없습니다.</td></tr>'}
+  window.renderIncomingTable=function(){var tb=$('incomingTable'), s=appState(), arr=Array.isArray(s.incoming)?s.incoming:[]; if(!tb)return; if(!arr.length){tb.innerHTML=eRow(12);return} tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+esc(r.incomingQty!=null?r.incomingQty:'')+'</td><td>'+esc(r.checkQty!=null?r.checkQty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(tableName(r,'writer'))+'</td><td>'+esc(tableName(r,'reviewer'))+'</td><td>'+esc(tableName(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('')};
+  window.renderProcessTable=function(){var tb=$('processTable'), s=appState(), arr=Array.isArray(s.process)?s.process:[]; if(!tb)return; if(!arr.length){tb.innerHTML=eRow(11);return} tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.product||'')+'</td><td>'+esc(r.line||r.visual||'')+'</td><td>'+esc(r.qty!=null?r.qty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(tableName(r,'writer'))+'</td><td>'+esc(tableName(r,'reviewer'))+'</td><td>'+esc(tableName(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('')};
+  window.renderShipmentTable=function(){var tb=$('shipmentTable'), s=appState(), arr=Array.isArray(s.shipment)?s.shipment:[]; if(!tb)return; if(!arr.length){tb.innerHTML=eRow(11);return} tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td>'+esc(r.customer||'')+'</td><td>'+esc(r.product||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.qty!=null?r.qty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(tableName(r,'writer'))+'</td><td>'+esc(tableName(r,'reviewer'))+'</td><td>'+esc(tableName(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('')};
+  function findRecord(type,id){var s=appState(), arr=Array.isArray(s[CFG[type].arr])?s[CFG[type].arr]:[]; return arr.find(function(r){return String(r.id||r.lot||'')===String(id)})}
+  function saveApi(type,r){try{if(typeof window.api==='function'&&r&&r.id)window.api(CFG[type].api+'/'+encodeURIComponent(r.id),{method:'PUT',body:JSON.stringify(r)});}catch(e){}}
+  function stamp(type,id,action){
+    if(TYPES.indexOf(type)<0)return; var r=findRecord(type,id); if(!r)return; var me=currentUser(), so=signObj(me); so.signDate=now();
+    if(action==='review'||action==='reviewed'){r.signReviewer=so;r.reviewerName=me.name;r.reviewerTitle=me.title;r.reviewer=me.name;r.reviewedBy=me.name;r.reviewedAt=so.signDate;r.approvalStatus='reviewed';r.signStatus='reviewed'}
+    if(action==='approve'||action==='approved'){r.signApprover=so;r.approverName=me.name;r.approverTitle=me.title;r.approver=me.name;r.approvedBy=me.name;r.approvedAt=so.signDate;r.approvalStatus='approved';r.signStatus='approved'}
+    if(action==='reject'||action==='rejected'){r.rejectedBy=me.name;r.rejectedAt=so.signDate;r.approvalStatus='rejected';r.signStatus='rejected'}
+    saveApi(type,r); refreshAll();
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('[data-appr-act],[data-approval-rolefix-act]'); if(!b)return;
+    var type=b.getAttribute('data-type')||b.dataset.type, id=b.getAttribute('data-id')||b.dataset.id, action=b.getAttribute('data-appr-act')||b.getAttribute('data-approval-rolefix-act');
+    setTimeout(function(){stamp(type,id,action)},80); setTimeout(function(){stamp(type,id,action)},450);
+  },true);
+  function wrapSave(name,type){var old=window[name]; if(typeof old!=='function'||old.__namoLoginApprovalFinal)return; var fn=function(){forceNewDocumentDefaults(type); var ret=old.apply(this,arguments); var after=function(){refreshAll();}; if(ret&&typeof ret.then==='function')return ret.then(function(v){after();return v}); setTimeout(after,0); return ret}; fn.__namoLoginApprovalFinal=true; window[name]=fn;}
+  TYPES.forEach(function(type){CFG[type].saveNames.forEach(function(n){wrapSave(n,type)})});
+  function refreshAll(){TYPES.forEach(function(t){ensureSignGrid(t);ensurePreview(t);syncPreview(t)}); try{window.renderIncomingTable()}catch(e){} try{window.renderProcessTable()}catch(e){} try{window.renderShipmentTable()}catch(e){} try{if(typeof window.renderApprovalInbox==='function')window.renderApprovalInbox()}catch(e){} try{if(typeof window.namoRenderUnifiedApprovalInbox==='function')window.namoRenderUnifiedApprovalInbox()}catch(e){}}
+  document.addEventListener('change',function(e){var id=e.target&&e.target.id||''; if(/^sg_(iqc|pqc|oqc)_(writer|reviewer|approver)$/.test(id)){var type=id.split('_')[1];syncPreview(type)}},true);
+  function boot(){refreshAll();TYPES.forEach(function(t){wrapSave(CFG[t].saveNames[0],t);wrapSave(CFG[t].saveNames[1],t)})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [200,700,1500,3000,6000].forEach(function(ms){setTimeout(boot,ms)});
+})();
+</script>
+<!-- /NAMO FULL REPLACE FINAL PATCH 20260616 -->
+
+
+
+<!-- NAMO IQC/PQC/OQC LIST RESTORE PATCH 20260616 -->
+<style id="namo-inspection-list-restore-style">
+#page-incoming .card.mt14,
+#page-process .card.mt14,
+#page-shipment .card.mt14{display:block!important;visibility:visible!important;opacity:1!important;}
+#page-incoming #incomingTable,
+#page-process #processTable,
+#page-shipment #shipmentTable{display:table-row-group!important;visibility:visible!important;}
+</style>
+<script id="namo-inspection-list-restore-script">
+(function(){
+  'use strict';
+  function $(id){return document.getElementById(id)}
+  function txt(v){return String(v==null?'':v).trim()}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function state(){return window.state||{}}
+  function eRow(c){return '<tr><td colspan="'+c+'" style="text-align:center;color:#94a3b8;padding:18px;">데이터가 없습니다.</td></tr>'}
+  function person(r,role){
+    r=r||{}; var cap=role==='writer'?'Writer':role==='reviewer'?'Reviewer':'Approver';
+    var o=r['sign'+cap]||{};
+    var name=txt(o.name||r[role+'Name']||r[role]||(role==='writer'?(r.inspector||r.createdBy):''));
+    var title=txt(o.title||r[role+'Title']||'');
+    if(!name||name==='-') return '-';
+    return title ? name+' / '+title : name;
+  }
+  function judge(r){
+    try{ if(typeof window.jBadge==='function') return window.jBadge(typeof window.calcJ==='function'?window.calcJ(r.items||[]):r.finalJudge||r.judge||''); }catch(e){}
+    return esc(r.finalJudge||r.judge||'');
+  }
+  function ensureIncomingDom(){
+    var page=$('page-incoming'); if(!page)return;
+    if($('incomingTable'))return;
+    var card=document.createElement('div'); card.className='card mt14';
+    card.innerHTML='<div class="ch"><h3>입고검사 목록</h3></div><div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>일자</th><th>LOT</th><th>협력업체</th><th>품목</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr></thead><tbody id="incomingTable"></tbody></table></div>';
+    page.appendChild(card);
+  }
+  function ensureProcessDom(){
+    var page=$('page-process'); if(!page||$('processTable'))return;
+    var card=document.createElement('div'); card.className='card mt14';
+    card.innerHTML='<div class="ch"><h3>공정검사 목록</h3></div><div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>일자</th><th>LOT</th><th>제품명</th><th>공정/라인</th><th>검사수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr></thead><tbody id="processTable"></tbody></table></div>';
+    page.appendChild(card);
+  }
+  function ensureShipmentDom(){
+    var page=$('page-shipment'); if(!page||$('shipmentTable'))return;
+    var card=document.createElement('div'); card.className='card mt14';
+    card.innerHTML='<div class="ch"><h3>출하검사 목록</h3></div><div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>일자</th><th>고객사</th><th>제품명</th><th>LOT</th><th>출하수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr></thead><tbody id="shipmentTable"></tbody></table></div>';
+    page.appendChild(card);
+  }
+  window.renderIncomingTable=function(){
+    ensureIncomingDom(); var tb=$('incomingTable'), arr=Array.isArray(state().incoming)?state().incoming:[]; if(!tb)return;
+    if(!arr.length){tb.innerHTML=eRow(12);return}
+    tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+esc(r.incomingQty!=null?r.incomingQty:'')+'</td><td>'+esc(r.checkQty!=null?r.checkQty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('');
+  };
+  window.renderProcessTable=function(){
+    ensureProcessDom(); var tb=$('processTable'), arr=Array.isArray(state().process)?state().process:[]; if(!tb)return;
+    if(!arr.length){tb.innerHTML=eRow(11);return}
+    tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.product||'')+'</td><td>'+esc(r.line||r.process||r.visual||'')+'</td><td>'+esc(r.qty!=null?r.qty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('');
+  };
+  window.renderShipmentTable=function(){
+    ensureShipmentDom(); var tb=$('shipmentTable'), arr=Array.isArray(state().shipment)?state().shipment:[]; if(!tb)return;
+    if(!arr.length){tb.innerHTML=eRow(11);return}
+    tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td>'+esc(r.customer||'')+'</td><td>'+esc(r.product||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.qty!=null?r.qty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('');
+  };
+  function refresh(){try{window.renderIncomingTable()}catch(e){} try{window.renderProcessTable()}catch(e){} try{window.renderShipmentTable()}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
+  [200,700,1500,3000,6000].forEach(function(ms){setTimeout(refresh,ms)});
+  document.addEventListener('click',function(){setTimeout(refresh,250);},true);
+})();
+</script>
+<!-- /NAMO IQC/PQC/OQC LIST RESTORE PATCH 20260616 -->
+
+</body></html>
