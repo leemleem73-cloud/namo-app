@@ -18975,5 +18975,131 @@ document.addEventListener('DOMContentLoaded',async()=>{
 <!-- Removed obsolete menu patch: NMC FINAL MENU PATCH 20260616 menu only -->
 
 
+
+
+<!-- NMC WORKORDER LIST PRODUCTION DATE DISPLAY HOTFIX v20260616
+     목적: 작업지시서 목록의 생산일자 칸이 비어도 생산 LOT(NM-YYMMDD / NM-YYYYMMDD 등)에서 날짜를 자동 산출해 표시합니다. -->
+<style id="nmc-workorder-prod-date-hotfix-v20260616-style">
+#page-workorder-list .namo-prod-table tbody td:nth-child(2){
+  min-width:112px!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+  font-weight:800!important;
+  color:#0f172a!important;
+}
+</style>
+<script id="nmc-workorder-prod-date-hotfix-v20260616-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_PROD_DATE_HOTFIX_20260616__) return;
+  window.__NMC_WORKORDER_PROD_DATE_HOTFIX_20260616__ = true;
+
+  function text(v){ return String(v == null ? '' : v).trim(); }
+  function pad2(v){ return String(v).padStart(2,'0'); }
+  function validDate(y,m,d){
+    y=Number(y); m=Number(m); d=Number(d);
+    if(!y || m<1 || m>12 || d<1 || d>31) return '';
+    return y + '-' + pad2(m) + '-' + pad2(d);
+  }
+  function dateFromText(v){
+    var s = text(v);
+    if(!s || s === '-') return '';
+
+    // 2026-05-29 / 2026.05.29 / 2026년 05월 29일
+    var m = s.match(/(20\d{2})\s*[-./년]?\s*(\d{1,2})\s*[-./월]?\s*(\d{1,2})/);
+    if(m) return validDate(m[1], m[2], m[3]);
+
+    // NM-20260611-0076, 20260611
+    m = s.match(/(20\d{2})(\d{2})(\d{2})/);
+    if(m) return validDate(m[1], m[2], m[3]);
+
+    // NM-260529, 260529
+    m = s.match(/(?:^|[^0-9])(\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);
+    if(m){
+      var yy = Number(m[1]);
+      var yyyy = (yy >= 70 ? 1900 : 2000) + yy;
+      return validDate(yyyy, m[2], m[3]);
+    }
+    return '';
+  }
+  function findByLot(lot){
+    lot = text(lot);
+    if(!lot) return '';
+    var keys = [
+      'nmc_workorder_sent_items','nmc_workorder_received_items','nmc_workorder_ref_items',
+      'nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders',
+      'workorders','workOrderList','nmcWorkorderList','nmc_workorder_list'
+    ];
+    var fields = ['orderDate','workDate','productionDate','prodDate','nmcOrderDate','nmcProdDate','date','sendTime','sentAt','createdAt'];
+    for(var i=0;i<keys.length;i++){
+      var arr=[];
+      try{ arr = JSON.parse(localStorage.getItem(keys[i]) || '[]'); }catch(e){ arr=[]; }
+      if(!Array.isArray(arr)) continue;
+      for(var j=0;j<arr.length;j++){
+        var r = arr[j] || {};
+        var rlot = text(r.prodLot || r.nmcProdLot || r.lot || r.lotNo || r.productionLot || r.finishedLot || '');
+        if(rlot && rlot === lot){
+          for(var k=0;k<fields.length;k++){
+            var d = dateFromText(r[fields[k]]);
+            if(d) return d;
+          }
+        }
+      }
+    }
+    return '';
+  }
+  function patchRows(){
+    var page = document.getElementById('page-workorder-list');
+    if(!page) return;
+    var table = page.querySelector('.namo-prod-table');
+    if(!table || !table.tBodies || !table.tBodies[0]) return;
+
+    var head = table.tHead && table.tHead.rows[0];
+    if(head && head.cells.length >= 10){
+      head.cells[1].textContent = '생산일자';
+      head.cells[9].textContent = '비고';
+    }
+
+    Array.prototype.forEach.call(table.tBodies[0].rows, function(tr){
+      if(!tr.cells || tr.cells.length < 6) return;
+      var dateCell = tr.cells[1];
+      var lotCell = tr.cells[5];
+      if(!dateCell || !lotCell) return;
+
+      var current = text(dateCell.textContent).replace(/\u00a0/g,'');
+      if(current && current !== '-') return;
+
+      var lot = text(lotCell.textContent);
+      var d = findByLot(lot) || dateFromText(lot) || dateFromText(tr.textContent);
+      if(d){
+        dateCell.textContent = d;
+        dateCell.classList.add('nmc-wo-prod-date-fixed');
+      }
+    });
+  }
+  function schedule(){ clearTimeout(schedule.t); schedule.t = setTimeout(patchRows, 30); }
+
+  var oldRender = window.namoRenderProductionEnterprise;
+  if(typeof oldRender === 'function' && !oldRender.__nmcProdDateHotfixWrapped){
+    var wrapped = function(){
+      var ret = oldRender.apply(this, arguments);
+      setTimeout(patchRows, 0);
+      setTimeout(patchRows, 80);
+      return ret;
+    };
+    wrapped.__nmcProdDateHotfixWrapped = true;
+    window.namoRenderProductionEnterprise = wrapped;
+  }
+
+  document.addEventListener('click', function(){ setTimeout(patchRows, 60); }, true);
+  document.addEventListener('change', function(){ setTimeout(patchRows, 60); }, true);
+  try{ new MutationObserver(schedule).observe(document.documentElement, {childList:true, subtree:true, characterData:true}); }catch(e){}
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchRows); else patchRows();
+  [50,150,300,700,1200,2000,3500,6000,10000].forEach(function(ms){ setTimeout(patchRows, ms); });
+})();
+</script>
+<!-- /NMC WORKORDER LIST PRODUCTION DATE DISPLAY HOTFIX v20260616 -->
+
 </body>
 </html>
