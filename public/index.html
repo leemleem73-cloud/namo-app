@@ -4343,7 +4343,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
+    `
 
 <!-- NMC_FINAL_MENU_ONLY_PATCH_20260616_START -->
 <style id="nmc-final-menu-only-patch-style">
@@ -4458,7 +4458,7 @@ function printLabel(){
 </script>
 <!-- NMC_FINAL_MENU_ONLY_PATCH_20260616_END -->
 
-</body></html>'
+</body></html>`
   ].join('');
   w.document.open();
   w.document.write(html);
