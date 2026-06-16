@@ -4343,9 +4343,7 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style></head><body>',
     g.outerHTML,
-    '
-<!-- moved trailing patches before body close -->
-'
+    '<!-- moved trailing patches before body close -->'
   ].join('');
   w.document.open();
   w.document.write(html);
@@ -19199,6 +19197,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /NAMO IQC 목록 검토자/승인자 이름 연동 FINAL PATCH 20260616 -->
+
+</body>
+</html>
 
 <!-- NAMO IQC 작성/검토/승인 UI 복구 + 성적서 미리보기 자동 반영 PATCH 20260616 -->
 <style id="namo-iqc-approval-preview-restore-style">
