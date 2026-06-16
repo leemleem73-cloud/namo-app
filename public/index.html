@@ -19486,7 +19486,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function $(id){return document.getElementById(id)}
   function txt(v){return String(v==null?'':v).trim()}
   function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function state(){return window.state||{}}
+  function getQmsState(){var s={};try{s=eval('state')||{};}catch(e){s=window.state||{};}return s;}
   function eRow(c){return '<tr><td colspan="'+c+'" style="text-align:center;color:#94a3b8;padding:18px;">데이터가 없습니다.</td></tr>'}
   function person(r,role){
     r=r||{}; var cap=role==='writer'?'Writer':role==='reviewer'?'Reviewer':'Approver';
@@ -19520,17 +19520,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
     page.appendChild(card);
   }
   window.renderIncomingTable=function(){
-    ensureIncomingDom(); var tb=$('incomingTable'), arr=Array.isArray(state().incoming)?state().incoming:[]; if(!tb)return;
+    ensureIncomingDom(); var tb=$('incomingTable'), arr=Array.isArray(getQmsState().incoming)?getQmsState().incoming:[]; if(!tb)return;
     if(!arr.length){tb.innerHTML=eRow(12);return}
     tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+esc(r.incomingQty!=null?r.incomingQty:'')+'</td><td>'+esc(r.checkQty!=null?r.checkQty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('');
   };
   window.renderProcessTable=function(){
-    ensureProcessDom(); var tb=$('processTable'), arr=Array.isArray(state().process)?state().process:[]; if(!tb)return;
+    ensureProcessDom(); var tb=$('processTable'), arr=Array.isArray(getQmsState().process)?getQmsState().process:[]; if(!tb)return;
     if(!arr.length){tb.innerHTML=eRow(11);return}
     tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.product||'')+'</td><td>'+esc(r.line||r.process||r.visual||'')+'</td><td>'+esc(r.qty!=null?r.qty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('');
   };
   window.renderShipmentTable=function(){
-    ensureShipmentDom(); var tb=$('shipmentTable'), arr=Array.isArray(state().shipment)?state().shipment:[]; if(!tb)return;
+    ensureShipmentDom(); var tb=$('shipmentTable'), arr=Array.isArray(getQmsState().shipment)?getQmsState().shipment:[]; if(!tb)return;
     if(!arr.length){tb.innerHTML=eRow(11);return}
     tb.innerHTML=arr.map(function(r){return '<tr><td>'+esc(r.date||'')+'</td><td>'+esc(r.customer||'')+'</td><td>'+esc(r.product||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.qty!=null?r.qty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>'}).join('');
   };
