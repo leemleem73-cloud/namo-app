@@ -2885,6 +2885,15 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
   .sidebar .nav-item[data-page="workorder-reference"],
   .sidebar .nav-item[data-page="production"]{display:none!important;}
 </style>
+
+<style id="namo-wo-premium-hide-style">
+/* final work-order structure: prevent old structure flash */
+body:not(.namo-wo-ready) #page-workorder-list{visibility:hidden!important;}
+.nav-item[data-page="production-result"],
+button[data-page-target="production-result"],
+[data-qmes-go="worklog"]{display:none!important;}
+#page-workorder-list .namo-prod-table{min-width:1180px;}
+</style>
 </head>
 <body class="login-active">
 
@@ -19360,6 +19369,168 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<!-- NAMO final work-order list premium UI patch: remove production result / remove progress column / add remark and actions -->
+<style id="namo-wo-premium-style">
+#page-workorder-list .namo-prod-hero{
+  background:linear-gradient(135deg,#06152b 0%,#0b2d55 52%,#0e7490 100%)!important;
+  border:1px solid rgba(14,116,144,.25)!important;
+  border-radius:22px!important;
+  padding:26px 28px!important;
+  box-shadow:0 18px 36px rgba(15,23,42,.18)!important;
+  position:relative!important;
+  overflow:hidden!important;
+}
+#page-workorder-list .namo-prod-hero:before{
+  content:'';position:absolute;inset:-40%;
+  background:radial-gradient(circle at 18% 20%,rgba(59,130,246,.35),transparent 30%),radial-gradient(circle at 85% 12%,rgba(34,211,238,.22),transparent 28%);
+  pointer-events:none;
+}
+#page-workorder-list .namo-prod-hero h2,#page-workorder-list .namo-prod-hero p{position:relative;z-index:1}
+#page-workorder-list .namo-prod-hero h2{font-size:26px!important;font-weight:900!important;letter-spacing:-.7px!important;color:#fff!important}
+#page-workorder-list .namo-prod-hero p{font-size:13px!important;color:#dbeafe!important;margin-top:8px!important}
+#page-workorder-list .namo-prod-kpis{gap:14px!important;margin:16px 0 18px!important}
+#page-workorder-list .namo-prod-kpi,
+#page-workorder-list .namo-prod-toolbar,
+#page-workorder-list .namo-prod-table-wrap{
+  border:1px solid #dbe5f0!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 26px rgba(15,23,42,.065)!important;
+  background:#fff!important;
+}
+#page-workorder-list .namo-prod-toolbar{padding:15px 18px!important;margin-bottom:12px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;}
+#page-workorder-list .namo-prod-toolbar b{font-size:16px!important;font-weight:900!important;color:#0f172a!important}
+#page-workorder-list .namo-prod-table-wrap{overflow:auto!important;}
+#page-workorder-list .namo-prod-table{border-collapse:separate!important;border-spacing:0!important;width:100%!important;table-layout:auto!important;}
+#page-workorder-list .namo-prod-table thead th{
+  background:linear-gradient(180deg,#f8fbff,#eef4fb)!important;
+  color:#334155!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  text-transform:none!important;
+  padding:14px 16px!important;
+  border-bottom:1px solid #dbe5f0!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .namo-prod-table tbody td{
+  padding:15px 16px!important;
+  border-bottom:1px solid #eef2f7!important;
+  color:#334155!important;
+  vertical-align:middle!important;
+  background:#fff!important;
+}
+#page-workorder-list .namo-prod-table tbody tr:hover td{background:#f8fbff!important;}
+#page-workorder-list .namo-prod-table tbody tr:last-child td{border-bottom:none!important;}
+.namo-remark-pill{display:inline-flex;align-items:center;min-height:26px;padding:4px 10px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:12px;font-weight:800;white-space:nowrap;}
+.namo-remark-pill.wait{background:#eff6ff;color:#1d4ed8}.namo-remark-pill.run{background:#ecfdf5;color:#047857}.namo-remark-pill.done{background:#f0fdf4;color:#166534}.namo-remark-pill.warn{background:#fff7ed;color:#c2410c}
+.namo-wo-actions{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.namo-wo-btn{height:28px;padding:0 10px;border-radius:9px;border:1px solid #dbe5f0;background:#fff;color:#334155;font-size:12px;font-weight:900;cursor:pointer;transition:.15s ease;}
+.namo-wo-btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(15,23,42,.08)}
+.namo-wo-btn.detail{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.namo-wo-btn.edit{background:#ecfdf5;color:#047857;border-color:#bbf7d0}.namo-wo-btn.delete{background:#fff1f2;color:#be123c;border-color:#fecdd3}
+body.namo-wo-ready #page-production-result{display:none!important;}
+@media(max-width:900px){#page-workorder-list .namo-prod-toolbar{align-items:flex-start!important;flex-direction:column!important}}
+</style>
+<script id="namo-wo-premium-script">
+(function(){
+  'use strict';
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function txt(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim()}
+  function esc(s){return String(s==null?'':s).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+  function idx(heads,re){for(var i=0;i<heads.length;i++){if(re.test(heads[i]))return i;}return -1}
+  function remarkFromStatus(status){
+    var s=String(status||'');
+    if(/생산완료|종결|완료/.test(s))return {text:'생산완료 확인',cls:'done'};
+    if(/생산진행|진행중|생산중/.test(s))return {text:'생산 진행 중',cls:'run'};
+    if(/지연|보류|취소|반려/.test(s))return {text:'확인 필요',cls:'warn'};
+    if(/발송완료|수신확인|작성중|대기/.test(s))return {text:'수신 및 생산 대기',cls:'wait'};
+    return {text:'-',cls:''};
+  }
+  function removeProductionResult(){
+    qa('.nav-item[data-page="production-result"],button[data-page-target="production-result"],[data-qmes-go="worklog"]').forEach(function(el){el.remove();});
+    var p=q('#page-production-result'); if(p)p.remove();
+    qa('.nav-item span,.mes-menu-name').forEach(function(sp){
+      if(txt(sp)==='생산실적'){
+        var item=sp.closest('.nav-item,.mes-menu-tile,button');
+        if(item)item.remove();
+      }
+    });
+  }
+  function normalizeProductionMenu(){
+    var sec=qa('.nav-sec').filter(function(x){return txt(x)==='생산 관리'})[0];
+    if(!sec)return;
+    removeProductionResult();
+    var existing=qa('.nav-item',sec.parentNode).filter(function(x){return ['workorder-list','workorder-final','workorder-inbox','workorder-reference','production-progress'].indexOf(x.getAttribute('data-page'))>-1});
+    var order=['workorder-list','workorder-final','workorder-inbox','workorder-reference','production-progress'];
+    var label={
+      'workorder-list':['▤','작업지시 현황'],
+      'workorder-final':['✎','작업지시 등록'],
+      'workorder-inbox':['▣','수신함'],
+      'workorder-reference':['▣','참조함'],
+      'production-progress':['◔','생산진행 현황']
+    };
+    existing.forEach(function(x){x.remove();});
+    var html=order.map(function(pg){var v=label[pg];return '<button class="nav-item" data-page="'+pg+'"><span class="nav-icon">'+v[0]+'</span><span>'+v[1]+'</span></button>';}).join('');
+    sec.insertAdjacentHTML('afterend',html);
+  }
+  function patchWorkOrderTable(){
+    var table=q('#page-workorder-list table'); if(!table)return;
+    var ths=qa('thead th',table); if(!ths.length)return;
+    var heads=ths.map(txt);
+    var pidx=idx(heads,/진행률|진행\s*구조/);
+    var recvIdx=idx(heads,/^수신$/);
+    var memoIdx=idx(heads,/^비고$/);
+    if(pidx>-1){ths[pidx].remove();}
+    ths=qa('thead th',table); heads=ths.map(txt); recvIdx=idx(heads,/^수신$/); memoIdx=idx(heads,/^비고$/);
+    if(memoIdx<0 && recvIdx>-1){ths[recvIdx].insertAdjacentHTML('afterend','<th>비고</th>');}
+    ths=qa('thead th',table); heads=ths.map(txt); memoIdx=idx(heads,/^비고$/);
+    var manageIdx=idx(heads,/관리|작업/);
+    if(manageIdx<0){(memoIdx>-1?ths[memoIdx]:ths[ths.length-1]).insertAdjacentHTML('afterend','<th>관리</th>');}
+    qa('tbody tr',table).forEach(function(tr){
+      var cells=qa('td',tr); if(!cells.length)return;
+      var originalHeads=heads;
+      if(pidx>-1 && cells[pidx])cells[pidx].remove();
+      cells=qa('td',tr);
+      ths=qa('thead th',table); heads=ths.map(txt); recvIdx=idx(heads,/^수신$/); memoIdx=idx(heads,/^비고$/); manageIdx=idx(heads,/관리|작업/);
+      if(cells.length < ths.length){while(cells.length < ths.length){tr.insertAdjacentHTML('beforeend','<td></td>'); cells=qa('td',tr);}}
+      var statusText=txt(cells[idx(heads,/^상태$/)]);
+      var memo=remarkFromStatus(statusText);
+      var lastContent=txt(cells[cells.length-1]);
+      if(memoIdx>-1){
+        var current=txt(cells[memoIdx]);
+        if(!current || /상세|수정|삭제|취소|수신확인|생산/.test(current)){
+          cells[memoIdx].innerHTML='<span class="namo-remark-pill '+memo.cls+'">'+esc(memo.text)+'</span>';
+        }
+      }
+      if(manageIdx>-1){
+        cells[manageIdx].innerHTML='<div class="namo-wo-actions"><button type="button" class="namo-wo-btn detail">상세</button><button type="button" class="namo-wo-btn edit">수정</button><button type="button" class="namo-wo-btn delete">삭제</button></div>';
+      }
+    });
+  }
+  function bindActions(){
+    if(document.body.dataset.namoWoActions==='1')return;
+    document.body.dataset.namoWoActions='1';
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('.namo-wo-btn'); if(!b)return;
+      var tr=b.closest('tr');
+      if(b.classList.contains('delete')){if(confirm('선택한 작업지시를 목록에서 삭제 처리하시겠습니까?')){if(tr)tr.remove();}return;}
+      if(b.classList.contains('edit')){var go=q('[data-page="workorder-final"]'); if(go)go.click(); return;}
+      if(b.classList.contains('detail')){var old=tr&&tr.querySelector('[data-namo-wo-open]'); if(old){old.click();return;} alert('작업지시 상세 정보는 기존 상세 화면과 연결 예정입니다.');}
+    });
+  }
+  function patch(){
+    removeProductionResult();
+    normalizeProductionMenu();
+    patchWorkOrderTable();
+    bindActions();
+    document.body.classList.add('namo-wo-ready');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patch);else patch();
+  window.addEventListener('load',function(){patch();setTimeout(patch,100);setTimeout(patch,600);});
+  var mo=new MutationObserver(function(){clearTimeout(window.__namoWoPatchTimer);window.__namoWoPatchTimer=setTimeout(patch,60);});
+  if(document.documentElement)mo.observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>
 
@@ -19898,4 +20069,166 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_WORKORDER_STATUS_FINAL_FIX_20260617_END -->
+
+<!-- NAMO final work-order list premium UI patch: remove production result / remove progress column / add remark and actions -->
+<style id="namo-wo-premium-style">
+#page-workorder-list .namo-prod-hero{
+  background:linear-gradient(135deg,#06152b 0%,#0b2d55 52%,#0e7490 100%)!important;
+  border:1px solid rgba(14,116,144,.25)!important;
+  border-radius:22px!important;
+  padding:26px 28px!important;
+  box-shadow:0 18px 36px rgba(15,23,42,.18)!important;
+  position:relative!important;
+  overflow:hidden!important;
+}
+#page-workorder-list .namo-prod-hero:before{
+  content:'';position:absolute;inset:-40%;
+  background:radial-gradient(circle at 18% 20%,rgba(59,130,246,.35),transparent 30%),radial-gradient(circle at 85% 12%,rgba(34,211,238,.22),transparent 28%);
+  pointer-events:none;
+}
+#page-workorder-list .namo-prod-hero h2,#page-workorder-list .namo-prod-hero p{position:relative;z-index:1}
+#page-workorder-list .namo-prod-hero h2{font-size:26px!important;font-weight:900!important;letter-spacing:-.7px!important;color:#fff!important}
+#page-workorder-list .namo-prod-hero p{font-size:13px!important;color:#dbeafe!important;margin-top:8px!important}
+#page-workorder-list .namo-prod-kpis{gap:14px!important;margin:16px 0 18px!important}
+#page-workorder-list .namo-prod-kpi,
+#page-workorder-list .namo-prod-toolbar,
+#page-workorder-list .namo-prod-table-wrap{
+  border:1px solid #dbe5f0!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 26px rgba(15,23,42,.065)!important;
+  background:#fff!important;
+}
+#page-workorder-list .namo-prod-toolbar{padding:15px 18px!important;margin-bottom:12px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;}
+#page-workorder-list .namo-prod-toolbar b{font-size:16px!important;font-weight:900!important;color:#0f172a!important}
+#page-workorder-list .namo-prod-table-wrap{overflow:auto!important;}
+#page-workorder-list .namo-prod-table{border-collapse:separate!important;border-spacing:0!important;width:100%!important;table-layout:auto!important;}
+#page-workorder-list .namo-prod-table thead th{
+  background:linear-gradient(180deg,#f8fbff,#eef4fb)!important;
+  color:#334155!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  text-transform:none!important;
+  padding:14px 16px!important;
+  border-bottom:1px solid #dbe5f0!important;
+  white-space:nowrap!important;
+}
+#page-workorder-list .namo-prod-table tbody td{
+  padding:15px 16px!important;
+  border-bottom:1px solid #eef2f7!important;
+  color:#334155!important;
+  vertical-align:middle!important;
+  background:#fff!important;
+}
+#page-workorder-list .namo-prod-table tbody tr:hover td{background:#f8fbff!important;}
+#page-workorder-list .namo-prod-table tbody tr:last-child td{border-bottom:none!important;}
+.namo-remark-pill{display:inline-flex;align-items:center;min-height:26px;padding:4px 10px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:12px;font-weight:800;white-space:nowrap;}
+.namo-remark-pill.wait{background:#eff6ff;color:#1d4ed8}.namo-remark-pill.run{background:#ecfdf5;color:#047857}.namo-remark-pill.done{background:#f0fdf4;color:#166534}.namo-remark-pill.warn{background:#fff7ed;color:#c2410c}
+.namo-wo-actions{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.namo-wo-btn{height:28px;padding:0 10px;border-radius:9px;border:1px solid #dbe5f0;background:#fff;color:#334155;font-size:12px;font-weight:900;cursor:pointer;transition:.15s ease;}
+.namo-wo-btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(15,23,42,.08)}
+.namo-wo-btn.detail{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.namo-wo-btn.edit{background:#ecfdf5;color:#047857;border-color:#bbf7d0}.namo-wo-btn.delete{background:#fff1f2;color:#be123c;border-color:#fecdd3}
+body.namo-wo-ready #page-production-result{display:none!important;}
+@media(max-width:900px){#page-workorder-list .namo-prod-toolbar{align-items:flex-start!important;flex-direction:column!important}}
+</style>
+<script id="namo-wo-premium-script">
+(function(){
+  'use strict';
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function txt(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim()}
+  function esc(s){return String(s==null?'':s).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+  function idx(heads,re){for(var i=0;i<heads.length;i++){if(re.test(heads[i]))return i;}return -1}
+  function remarkFromStatus(status){
+    var s=String(status||'');
+    if(/생산완료|종결|완료/.test(s))return {text:'생산완료 확인',cls:'done'};
+    if(/생산진행|진행중|생산중/.test(s))return {text:'생산 진행 중',cls:'run'};
+    if(/지연|보류|취소|반려/.test(s))return {text:'확인 필요',cls:'warn'};
+    if(/발송완료|수신확인|작성중|대기/.test(s))return {text:'수신 및 생산 대기',cls:'wait'};
+    return {text:'-',cls:''};
+  }
+  function removeProductionResult(){
+    qa('.nav-item[data-page="production-result"],button[data-page-target="production-result"],[data-qmes-go="worklog"]').forEach(function(el){el.remove();});
+    var p=q('#page-production-result'); if(p)p.remove();
+    qa('.nav-item span,.mes-menu-name').forEach(function(sp){
+      if(txt(sp)==='생산실적'){
+        var item=sp.closest('.nav-item,.mes-menu-tile,button');
+        if(item)item.remove();
+      }
+    });
+  }
+  function normalizeProductionMenu(){
+    var sec=qa('.nav-sec').filter(function(x){return txt(x)==='생산 관리'})[0];
+    if(!sec)return;
+    removeProductionResult();
+    var existing=qa('.nav-item',sec.parentNode).filter(function(x){return ['workorder-list','workorder-final','workorder-inbox','workorder-reference','production-progress'].indexOf(x.getAttribute('data-page'))>-1});
+    var order=['workorder-list','workorder-final','workorder-inbox','workorder-reference','production-progress'];
+    var label={
+      'workorder-list':['▤','작업지시 현황'],
+      'workorder-final':['✎','작업지시 등록'],
+      'workorder-inbox':['▣','수신함'],
+      'workorder-reference':['▣','참조함'],
+      'production-progress':['◔','생산진행 현황']
+    };
+    existing.forEach(function(x){x.remove();});
+    var html=order.map(function(pg){var v=label[pg];return '<button class="nav-item" data-page="'+pg+'"><span class="nav-icon">'+v[0]+'</span><span>'+v[1]+'</span></button>';}).join('');
+    sec.insertAdjacentHTML('afterend',html);
+  }
+  function patchWorkOrderTable(){
+    var table=q('#page-workorder-list table'); if(!table)return;
+    var ths=qa('thead th',table); if(!ths.length)return;
+    var heads=ths.map(txt);
+    var pidx=idx(heads,/진행률|진행\s*구조/);
+    var recvIdx=idx(heads,/^수신$/);
+    var memoIdx=idx(heads,/^비고$/);
+    if(pidx>-1){ths[pidx].remove();}
+    ths=qa('thead th',table); heads=ths.map(txt); recvIdx=idx(heads,/^수신$/); memoIdx=idx(heads,/^비고$/);
+    if(memoIdx<0 && recvIdx>-1){ths[recvIdx].insertAdjacentHTML('afterend','<th>비고</th>');}
+    ths=qa('thead th',table); heads=ths.map(txt); memoIdx=idx(heads,/^비고$/);
+    var manageIdx=idx(heads,/관리|작업/);
+    if(manageIdx<0){(memoIdx>-1?ths[memoIdx]:ths[ths.length-1]).insertAdjacentHTML('afterend','<th>관리</th>');}
+    qa('tbody tr',table).forEach(function(tr){
+      var cells=qa('td',tr); if(!cells.length)return;
+      var originalHeads=heads;
+      if(pidx>-1 && cells[pidx])cells[pidx].remove();
+      cells=qa('td',tr);
+      ths=qa('thead th',table); heads=ths.map(txt); recvIdx=idx(heads,/^수신$/); memoIdx=idx(heads,/^비고$/); manageIdx=idx(heads,/관리|작업/);
+      if(cells.length < ths.length){while(cells.length < ths.length){tr.insertAdjacentHTML('beforeend','<td></td>'); cells=qa('td',tr);}}
+      var statusText=txt(cells[idx(heads,/^상태$/)]);
+      var memo=remarkFromStatus(statusText);
+      var lastContent=txt(cells[cells.length-1]);
+      if(memoIdx>-1){
+        var current=txt(cells[memoIdx]);
+        if(!current || /상세|수정|삭제|취소|수신확인|생산/.test(current)){
+          cells[memoIdx].innerHTML='<span class="namo-remark-pill '+memo.cls+'">'+esc(memo.text)+'</span>';
+        }
+      }
+      if(manageIdx>-1){
+        cells[manageIdx].innerHTML='<div class="namo-wo-actions"><button type="button" class="namo-wo-btn detail">상세</button><button type="button" class="namo-wo-btn edit">수정</button><button type="button" class="namo-wo-btn delete">삭제</button></div>';
+      }
+    });
+  }
+  function bindActions(){
+    if(document.body.dataset.namoWoActions==='1')return;
+    document.body.dataset.namoWoActions='1';
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('.namo-wo-btn'); if(!b)return;
+      var tr=b.closest('tr');
+      if(b.classList.contains('delete')){if(confirm('선택한 작업지시를 목록에서 삭제 처리하시겠습니까?')){if(tr)tr.remove();}return;}
+      if(b.classList.contains('edit')){var go=q('[data-page="workorder-final"]'); if(go)go.click(); return;}
+      if(b.classList.contains('detail')){var old=tr&&tr.querySelector('[data-namo-wo-open]'); if(old){old.click();return;} alert('작업지시 상세 정보는 기존 상세 화면과 연결 예정입니다.');}
+    });
+  }
+  function patch(){
+    removeProductionResult();
+    normalizeProductionMenu();
+    patchWorkOrderTable();
+    bindActions();
+    document.body.classList.add('namo-wo-ready');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patch);else patch();
+  window.addEventListener('load',function(){patch();setTimeout(patch,100);setTimeout(patch,600);});
+  var mo=new MutationObserver(function(){clearTimeout(window.__namoWoPatchTimer);window.__namoWoPatchTimer=setTimeout(patch,60);});
+  if(document.documentElement)mo.observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body></html>
