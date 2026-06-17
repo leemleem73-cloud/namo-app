@@ -11476,44 +11476,67 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 
-
-
 <!-- =========================================================
-  Namochemical QMS Final Patch
-  IQC/PQC/OQC 작성·검토·승인 서명 권한 통합
-  - 원본 덮어쓰기 금지: 이 파일은 새 HTML 전체본입니다.
-  - 수입검사(IQC), 공정검사(PQC), 출하검사(OQC) 동일 적용
-  - 작성자: 현재 로그인 사용자 자동 지정 및 고정
-  - 작성자/검토자/승인자: 선택된 본인만 서명 첨부/지우기 가능
+  Namochemical QMS Safe Final Patch 20260617
+  - 원본 덮어쓰기 금지: 새 HTML 전체본
+  - IQC/PQC/OQC 하단 결재 처리 모드 제거
+  - 상단 작성/검토/승인/반려 알림 버튼 유지
+  - 작성자: 로그인 본인 자동 표시 및 고정
+  - 성적서 미리보기 하단 작성자/검토자/승인자 성명 연동
+  - 무한 로딩 방지: 기존 렌더 함수 후킹/재귀 호출 없음
 ========================================================= -->
-<script id="namo-iqc-pqc-oqc-sign-unified-full-final-20260617">
+<style id="namo-safe-final-report-approval-cleanup-20260617">
+/* 하단 결재 처리 바만 제거: 상단 .namo-appr-box 알림 버튼은 유지 */
+.namo-report-actbar,
+[data-namo-report-actbar],
+.namo-report-action-bar,
+[data-report-action-bar]{
+  display:none!important;
+  visibility:hidden!important;
+  height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  overflow:hidden!important;
+}
+</style>
+<script id="namo-safe-final-sign-report-sync-20260617">
 (function(){
   'use strict';
+  if(window.__namoSafeFinalSignReportSync20260617) return;
+  window.__namoSafeFinalSignReportSync20260617 = true;
 
   var TYPES = ['iqc','pqc','oqc'];
   var ROLES = ['writer','reviewer','approver'];
-  var ROLE_KO = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  var ROLE_TEXT = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
+  var TYPE_CAP = {iqc:'Iqc', pqc:'Pqc', oqc:'Oqc'};
+  var ROLE_CAP = {writer:'Writer', reviewer:'Reviewer', approver:'Approver'};
+  var running = false;
 
-  function $(id){ return document.getElementById(id); }
   function txt(v){ return String(v == null ? '' : v).trim(); }
-  function lower(v){ return txt(v).toLowerCase(); }
+  function low(v){ return txt(v).toLowerCase(); }
+  function byId(id){ return document.getElementById(id); }
 
   function currentUser(){
     var s = window.state || {};
     var u = s.currentUser || window.currentUser || window.loginUser || null;
-
     if(!u && Array.isArray(s.users)){
-      u = s.users.find(function(x){ return x && (x.current || x.isCurrent || x.login); }) || null;
+      u = s.users.filter(Boolean).find(function(x){ return x.current || x.isCurrent || x.login || x.loggedIn; }) || null;
     }
     if(!u && Array.isArray(s.signableUsers)){
       var saved = localStorage.getItem('currentUserId') || localStorage.getItem('loginUserId') || localStorage.getItem('userId') || '';
       if(saved){
-        u = s.signableUsers.find(function(x){
-          return txt(x.id) === txt(saved) || lower(x.email) === lower(saved) || txt(x.name) === txt(saved);
+        u = s.signableUsers.filter(Boolean).find(function(x){
+          return txt(x.id) === txt(saved) || low(x.email) === low(saved) || txt(x.name) === txt(saved);
         }) || null;
       }
     }
-
+    if(!u){
+      var pn = document.querySelector('.pname');
+      var pe = document.querySelector('.pemail');
+      if(pn && txt(pn.textContent)) u = {name:txt(pn.textContent), email:pe ? txt(pe.textContent) : ''};
+    }
     if(!u) return null;
     return {
       id: txt(u.id || u.user_id || u.uid || u.email || u.name),
@@ -11526,20 +11549,20 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function sameUser(a, b){
     if(!a || !b) return false;
-    var av = typeof a === 'object' ? [a.id, a.email, a.name] : [a];
-    var bv = typeof b === 'object' ? [b.id, b.email, b.name] : [b];
-    return av.some(function(x){
-      x = lower(x);
-      return !!x && bv.some(function(y){ return x === lower(y); });
-    });
+    var av = [a.id, a.email, a.name].map(low).filter(Boolean);
+    var bv = [b.id, b.email, b.name].map(low).filter(Boolean);
+    return av.some(function(x){ return bv.indexOf(x) >= 0; });
   }
 
-  function selectedUserFromSelect(sel){
+  function selectedUser(sel){
     if(!sel) return null;
-    var opt = sel.options[sel.selectedIndex] || null;
+    var opt = sel.options && sel.options[sel.selectedIndex];
+    var raw = txt(opt && (opt.dataset.name || opt.textContent)) || txt(sel.value);
+    var name = raw.split('/')[0].replace(/\(.*?\)/g,'').trim();
+    if(!name || name === '-') return null;
     return {
-      id: txt(sel.value),
-      name: txt(opt && (opt.dataset.name || opt.textContent.split('(')[0])),
+      id: txt(sel.value || name),
+      name: name,
       email: txt(opt && opt.dataset.email),
       department: txt(opt && opt.dataset.department),
       title: txt(opt && opt.dataset.title)
@@ -11548,30 +11571,39 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function userLabel(u){
     var sub = txt(u.title || u.department || u.email || '-');
-    return (u.name || '-') + ' (' + sub + ')';
+    return (u.name || '-') + ' / ' + sub;
   }
 
-  function ensureWriterOption(sel, u){
-    var key = txt(u.id || u.email || u.name);
-    var opts = Array.prototype.slice.call(sel.options || []);
-    var opt = opts.find(function(o){
-      return txt(o.value) === key || lower(o.dataset.email) === lower(u.email) || txt(o.dataset.name) === txt(u.name);
+  function ensureWriter(type){
+    var me = currentUser();
+    var sel = byId('sg_' + type + '_writer');
+    if(!me || !me.name || !sel) return;
+
+    var key = txt(me.id || me.email || me.name);
+    var opt = Array.prototype.slice.call(sel.options || []).find(function(o){
+      return txt(o.value) === key || low(o.dataset.email) === low(me.email) || txt(o.dataset.name) === txt(me.name);
     });
     if(!opt){
       opt = document.createElement('option');
       opt.value = key;
       sel.insertBefore(opt, sel.options[1] || null);
     }
-    opt.textContent = userLabel(u);
-    opt.dataset.name = u.name;
-    opt.dataset.email = u.email;
-    opt.dataset.department = u.department;
-    opt.dataset.title = u.title;
-    return opt;
+    opt.textContent = userLabel(me);
+    opt.dataset.name = me.name;
+    opt.dataset.email = me.email;
+    opt.dataset.department = me.department;
+    opt.dataset.title = me.title;
+
+    if(sel.value !== opt.value) sel.value = opt.value;
+    sel.disabled = true;
+    sel.style.pointerEvents = 'none';
+
+    var sub = byId('sg_' + type + '_writer_sub');
+    if(sub) sub.textContent = '작성자는 로그인 본인 · 서명 첨부/수정 가능';
   }
 
-  function signEls(type, role){
-    var file = $('sg_' + type + '_' + role + '_file');
+  function signElements(type, role){
+    var file = byId('sg_' + type + '_' + role + '_file');
     var btn = document.querySelector('[data-qms-rule-file-btn="' + type + ':' + role + '"]') ||
               document.querySelector('[data-final-sign-file-btn="' + type + ':' + role + '"]') ||
               document.querySelector('[data-sign-file-btn="' + type + ':' + role + '"]');
@@ -11585,148 +11617,124 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return {file:file, btn:btn, clear:clear, wrap:wrap};
   }
 
-  function setSignEnabled(type, role, enabled){
-    var e = signEls(type, role);
-    [e.file, e.btn, e.clear].forEach(function(el){
+  function setSignPermission(type, role){
+    var me = currentUser();
+    var sel = byId('sg_' + type + '_' + role);
+    var enabled = false;
+    if(role === 'writer') enabled = !!(me && me.name);
+    else enabled = !!(me && sameUser(me, selectedUser(sel)));
+
+    var els = signElements(type, role);
+    [els.file, els.btn, els.clear].forEach(function(el){
       if(!el) return;
       el.disabled = !enabled;
       el.style.pointerEvents = enabled ? '' : 'none';
       el.style.opacity = enabled ? '' : '.45';
-      el.title = enabled ? '' : '선택된 ' + (ROLE_KO[role] || role) + ' 본인만 서명할 수 있습니다.';
+      el.title = enabled ? '' : '선택된 ' + (ROLE_TEXT[role] || role) + ' 본인만 서명할 수 있습니다.';
     });
-    if(e.wrap){
-      e.wrap.style.pointerEvents = enabled ? '' : 'none';
-      e.wrap.style.opacity = enabled ? '1' : '.58';
-      e.wrap.style.filter = enabled ? '' : 'grayscale(.25)';
+    if(els.wrap){
+      els.wrap.style.pointerEvents = enabled ? '' : 'none';
+      els.wrap.style.opacity = enabled ? '1' : '.58';
     }
-  }
 
-  function syncSub(type, role, msg){
-    var sub = $('sg_' + type + '_' + role + '_sub');
-    if(sub) sub.textContent = msg || '';
-  }
-
-  function applyTypeRole(type, role){
-    var me = currentUser();
-    var sel = $('sg_' + type + '_' + role);
-    if(!sel) return;
-
-    if(role === 'writer' && me && me.name){
-      var opt = ensureWriterOption(sel, me);
-      if(sel.value !== opt.value){
-        sel.value = opt.value;
-        sel.dispatchEvent(new Event('change', {bubbles:true}));
-        sel.dispatchEvent(new Event('input', {bubbles:true}));
+    if(role !== 'writer'){
+      var sub = byId('sg_' + type + '_' + role + '_sub');
+      if(sub){
+        if(!sel || !txt(sel.value)) sub.textContent = '-';
+        else sub.textContent = enabled ? (ROLE_TEXT[role] + ' 본인 · 서명 첨부/수정 가능') : ('선택된 ' + ROLE_TEXT[role] + ' 본인만 서명 가능');
       }
-      sel.disabled = true;
-      sel.style.pointerEvents = 'none';
-      syncSub(type, role, '작성자는 로그인 본인 · 서명 첨부/수정 가능');
-      setSignEnabled(type, role, true);
-      return;
-    }
-
-    var selected = selectedUserFromSelect(sel);
-    var canSign = !!(me && selected && sameUser(me, selected));
-    setSignEnabled(type, role, canSign);
-
-    if(!txt(sel.value)){
-      syncSub(type, role, '-');
-    }else if(canSign){
-      syncSub(type, role, (ROLE_KO[role] || role) + ' 본인 · 서명 첨부/수정 가능');
-    }else{
-      syncSub(type, role, '선택된 ' + (ROLE_KO[role] || role) + ' 본인만 서명 가능');
     }
   }
 
-  function finalApply(){
-    TYPES.forEach(function(type){
-      ROLES.forEach(function(role){
-        try{ applyTypeRole(type, role); }catch(e){ console.warn('[namo-sign-unified]', type, role, e); }
-      });
+  function nameFromSelect(type, role){
+    var sel = byId('sg_' + type + '_' + role);
+    var u = selectedUser(sel);
+    return u && u.name ? u.name : '';
+  }
+
+  function titleFromSelect(type, role){
+    var sel = byId('sg_' + type + '_' + role);
+    if(!sel) return '';
+    var opt = sel.options && sel.options[sel.selectedIndex];
+    return txt(opt && (opt.dataset.title || opt.dataset.department));
+  }
+
+  function setTextTargets(type, role){
+    var name = nameFromSelect(type, role);
+    var title = titleFromSelect(type, role);
+    var tc = TYPE_CAP[type], rc = ROLE_CAP[role];
+
+    var nameTargets = [
+      byId('r' + tc + rc),
+      byId('rp_' + type + '_' + role + '_name'),
+      byId('rpt_' + type + '_' + role + '_name'),
+      document.querySelector('[data-report-sign-name="' + type + ':' + role + '"]'),
+      document.querySelector('[data-rp-sign-name="' + type + ':' + role + '"]')
+    ].filter(Boolean);
+
+    var titleTargets = [
+      byId('r' + tc + rc + 'T'),
+      byId('rp_' + type + '_' + role + '_title'),
+      byId('rpt_' + type + '_' + role + '_title'),
+      document.querySelector('[data-report-sign-title="' + type + ':' + role + '"]'),
+      document.querySelector('[data-rp-sign-title="' + type + ':' + role + '"]')
+    ].filter(Boolean);
+
+    nameTargets.forEach(function(el){ el.textContent = name || '-'; });
+    titleTargets.forEach(function(el){ el.textContent = title || ''; });
+  }
+
+  function removeLowerBars(){
+    document.querySelectorAll('.namo-report-actbar,[data-namo-report-actbar],.namo-report-action-bar,[data-report-action-bar]').forEach(function(el){
+      if(el && el.parentNode) el.parentNode.removeChild(el);
     });
   }
 
-  function runAfter(fn){
-    return function(){
-      var r = fn && fn.apply(this, arguments);
-      [0, 80, 250, 700].forEach(function(ms){ setTimeout(finalApply, ms); });
-      return r;
-    };
+  function applyAll(){
+    if(running) return;
+    running = true;
+    try{
+      removeLowerBars();
+      TYPES.forEach(function(type){
+        ensureWriter(type);
+        ROLES.forEach(function(role){
+          setSignPermission(type, role);
+          setTextTargets(type, role);
+        });
+      });
+    }catch(e){
+      console.warn('[namo-safe-final-sign-report-sync]', e);
+    }finally{
+      running = false;
+    }
   }
 
-  ['buildSignGrid','rebuildAllSignGrids','renderIqc','renderPqc','renderOqc','renderReport'].forEach(function(name){
-    if(typeof window[name] === 'function' && !window[name].__namoUnifiedWrapped){
-      var wrapped = runAfter(window[name]);
-      wrapped.__namoUnifiedWrapped = true;
-      window[name] = wrapped;
-    }
-  });
-
-  var oldPerm = window.applyAllSignPermissions;
-  window.applyAllSignPermissions = function(){
-    if(typeof oldPerm === 'function'){
-      try{ oldPerm.apply(this, arguments); }catch(e){}
-    }
-    finalApply();
-  };
+  function schedule(){
+    clearTimeout(schedule.t);
+    schedule.t = setTimeout(applyAll, 80);
+  }
 
   document.addEventListener('change', function(e){
-    if(e.target && /^sg_(iqc|pqc|oqc)_(writer|reviewer|approver)$/.test(e.target.id || '')){
-      setTimeout(finalApply, 0);
-      setTimeout(finalApply, 200);
-    }
+    if(e.target && /^sg_(iqc|pqc|oqc)_(writer|reviewer|approver)$/.test(e.target.id || '')) schedule();
   }, true);
-
+  document.addEventListener('input', schedule, true);
   document.addEventListener('click', function(e){
-    if(e.target && e.target.closest && e.target.closest('.nav-item,[data-page],button,.btn,.sb')){
-      setTimeout(finalApply, 120);
-      setTimeout(finalApply, 500);
-    }
+    if(e.target && e.target.closest && e.target.closest('.nav-item,[data-page],button,.btn,.sb')) schedule();
   }, true);
 
-  function boot(){ [0, 200, 700, 1500, 3000].forEach(function(ms){ setTimeout(finalApply, ms); }); }
+  if(window.MutationObserver){
+    var mo = new MutationObserver(schedule);
+    if(document.body) mo.observe(document.body, {childList:true, subtree:true});
+    else document.addEventListener('DOMContentLoaded', function(){ mo.observe(document.body, {childList:true, subtree:true}); });
+  }
+
+  function boot(){ [0,200,700,1500,3000].forEach(function(ms){ setTimeout(applyAll, ms); }); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
   window.addEventListener('load', boot);
 
-  window.namoIqcPqcOqcSignUnifiedFinal = finalApply;
+  window.namoSafeFinalSignReportSync20260617 = applyAll;
 })();
 </script>
 
-
-
-<!-- Namo QMS final patch: remove duplicated report approval action mode, keep top alert buttons -->
-<style id="namo-remove-report-action-mode-final-20260617">
-/* IQC/PQC/OQC 하단 결재 처리 모드 제거. 상단 해당자 알림 버튼 줄은 유지. */
-.namo-report-actbar,
-[data-namo-report-actbar]{
-  display:none!important;
-  visibility:hidden!important;
-  height:0!important;
-  min-height:0!important;
-  padding:0!important;
-  margin:0!important;
-  border:0!important;
-  overflow:hidden!important;
-}
-</style>
-<script id="namo-remove-report-action-mode-final-20260617">
-(function(){
-  'use strict';
-  function removeReportActionBars(){
-    document.querySelectorAll('.namo-report-actbar,[data-namo-report-actbar]').forEach(function(el){
-      if(el && el.parentNode) el.parentNode.removeChild(el);
-    });
-  }
-  document.addEventListener('DOMContentLoaded', function(){[0,200,800,1600].forEach(function(ms){setTimeout(removeReportActionBars,ms);});});
-  window.addEventListener('load', function(){[0,300,1000,2500].forEach(function(ms){setTimeout(removeReportActionBars,ms);});});
-  document.addEventListener('click', function(e){
-    if(e.target && e.target.closest && e.target.closest('.nav-item,button,.btn,.sb')){
-      setTimeout(removeReportActionBars,100);
-      setTimeout(removeReportActionBars,500);
-    }
-  }, true);
-  window.namoRemoveReportActionModeFinal = removeReportActionBars;
-})();
-</script>
 </body></html>
