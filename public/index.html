@@ -12078,14 +12078,35 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<!-- NAMO final UI patch: 검토/승인/반려 버튼만 표시, 원본 비파괴 추가본 -->
-<style id="namo-approval-buttons-only-final-v2">
-/* IQC/PQC/OQC/NC 공통: 중복 결재행은 숨기고, 실제 결재 처리 버튼 3개만 표시 */
+<!-- Approval buttons only patch v3: no infinite observer / loading-safe -->
+<style id="namo-approval-buttons-only-v3-style">
+/* IQC/PQC/OQC 서명란 하단: 검토/승인/반려 버튼만 표시 */
 .namo-approval-actions{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  margin-top:10px!important;
+  padding:0!important;
+  border:none!important;
+  background:transparent!important;
+}
+.namo-approval-actions .namo-appr-status{
   display:none!important;
 }
+.namo-appr-btn{
+  height:32px!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+  font-weight:900!important;
+}
+.namo-appr-btn.review{order:1!important;}
+.namo-appr-btn.approve{order:2!important;}
+.namo-appr-btn.reject{order:3!important;}
+
+/* IQC/PQC/OQC 별도 결재 처리 줄: 문구 숨기고 버튼만 표시 */
 .namo-report-actbar{
-  grid-column:1/-1!important;
   display:flex!important;
   align-items:center!important;
   gap:8px!important;
@@ -12111,7 +12132,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 .namo-report-action.approve{order:2!important;}
 .namo-report-action.reject{order:3!important;}
 
-/* 교육보고서: 결재요청/문구는 숨기고 검토/승인/반려만 표시 */
+/* 교육보고서: 결재요청/문구 숨기고 검토/승인/반려만 표시 */
 .namo-training-approval-bar{
   display:flex!important;
   align-items:center!important;
@@ -12140,39 +12161,20 @@ document.addEventListener('DOMContentLoaded',async()=>{
 [data-train-appr="approve"]{order:2!important;}
 [data-train-appr="reject"]{order:3!important;}
 </style>
-<script id="namo-approval-buttons-only-final-v2-script">
+<script id="namo-approval-buttons-only-v3-script">
 (function(){
   'use strict';
-  function normalizeApprovalButtons(){
+  function run(){
     try{
-      document.querySelectorAll('.namo-report-actbar').forEach(function(bar){
-        bar.querySelectorAll('.label,.namo-report-status').forEach(function(el){ el.style.display='none'; });
-        bar.querySelectorAll('[data-report-action]').forEach(function(btn){
-          var act = btn.getAttribute('data-report-action');
-          if(act === 'review') btn.textContent = '검토';
-          if(act === 'approve') btn.textContent = '승인';
-          if(act === 'reject') btn.textContent = '반려';
-        });
-      });
-      document.querySelectorAll('.namo-approval-actions').forEach(function(el){ el.style.display='none'; });
-      document.querySelectorAll('.namo-training-approval-bar').forEach(function(bar){
-        bar.querySelectorAll('.label,.namo-training-approval-note,[data-train-appr="request"]').forEach(function(el){ el.style.display='none'; });
-        bar.querySelectorAll('[data-train-appr]').forEach(function(btn){
-          var act = btn.getAttribute('data-train-appr');
-          if(act === 'review') btn.textContent = '검토';
-          if(act === 'approve') btn.textContent = '승인';
-          if(act === 'reject') btn.textContent = '반려';
-        });
-      });
-      document.querySelectorAll('[data-training-approval-request]').forEach(function(el){ el.style.display='none'; });
+      document.querySelectorAll('[data-namo-act="review"],[data-report-action="review"],[data-train-appr="review"]').forEach(function(b){ if(b.textContent !== '검토') b.textContent='검토'; });
+      document.querySelectorAll('[data-namo-act="approve"],[data-report-action="approve"],[data-train-appr="approve"]').forEach(function(b){ if(b.textContent !== '승인') b.textContent='승인'; });
+      document.querySelectorAll('[data-namo-act="reject"],[data-report-action="reject"],[data-train-appr="reject"]').forEach(function(b){ if(b.textContent !== '반려') b.textContent='반려'; });
     }catch(e){}
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', normalizeApprovalButtons);
-  else normalizeApprovalButtons();
-  window.addEventListener('load', normalizeApprovalButtons);
-  [100,300,700,1200,2500,5000].forEach(function(ms){ setTimeout(normalizeApprovalButtons, ms); });
-  var mo = new MutationObserver(function(){ normalizeApprovalButtons(); });
-  try{ mo.observe(document.documentElement, {childList:true, subtree:true}); }catch(e){}
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, {once:true});
+  else run();
+  window.addEventListener('load', run, {once:true});
+  [200,600,1200,2500,5000].forEach(function(ms){ setTimeout(run, ms); });
 })();
 </script>
 
