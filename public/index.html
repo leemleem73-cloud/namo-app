@@ -13407,7 +13407,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var heads=qsa('thead th',table).map(function(th){return th.textContent.trim()});
     if(heads.indexOf('고객사명')>-1 || heads.indexOf('고객사')>-1){table.dataset.nmcCustomerHeader='1';return;}
     var ths=qsa('thead th',table);
-    var idx=heads.indexOf('제품명');
+    var idx=heads.indexOf('공정명');
     if(idx>-1 && ths[idx]){
       ths[idx].insertAdjacentHTML('beforebegin','<th>고객사명</th>');
       table.classList.add('nmc-customer-linked');
