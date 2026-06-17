@@ -19838,3 +19838,125 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 
 </body></html>
+
+<!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
+<style id="nmc-remove-workorder-status-only-final-css-v20260617">
+  /* 작업지시현황 구조만 삭제: 작업지시 등록/수신함/참조함은 유지 */
+  .sidebar .nav-item[data-page="workorder-list"],
+  .sidebar .nav-item[data-page-target="workorder-list"],
+  [data-page="workorder-list"],
+  [data-page-target="workorder-list"],
+  #page-workorder-list{
+    display:none!important;
+  }
+</style>
+<script id="nmc-remove-workorder-status-only-final-script-v20260617">
+(function(){
+  'use strict';
+  if(window.__NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_V20260617__) return;
+  window.__NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_V20260617__ = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function text(el){ return String((el && el.textContent) || '').replace(/\s+/g,' ').trim(); }
+  function isWorkorderStatusLabel(t){ return /작업\s*지시\s*현황|작업지시현황/i.test(String(t || '')); }
+
+  function removeStatusNav(){
+    qa('.sidebar .nav-item, .nav-item').forEach(function(btn){
+      var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
+      if(pg === 'workorder-list' || isWorkorderStatusLabel(text(btn))){
+        btn.remove();
+      }
+    });
+    qa('[data-page-target="workorder-list"]').forEach(function(el){ el.remove(); });
+  }
+
+  function hideStatusPage(){
+    qa('#page-workorder-list').forEach(function(page){
+      page.classList.remove('active');
+      page.style.display = 'none';
+      page.setAttribute('hidden','hidden');
+    });
+  }
+
+  function goSafePage(){
+    var activeStatus = qs('#page-workorder-list.active');
+    var noActive = !qs('.page.active');
+    if(activeStatus || noActive){
+      qa('.page.active').forEach(function(p){ p.classList.remove('active'); });
+      var target = qs('#page-workorder-final') || qs('#page-workorder-inbox') || qs('#page-dashboard');
+      if(target){
+        target.removeAttribute('hidden');
+        target.style.display = '';
+        target.classList.add('active');
+      }
+      qa('.nav-item.active').forEach(function(n){ n.classList.remove('active'); });
+      var nav = qs('.sidebar .nav-item[data-page="workorder-final"]') || qs('.sidebar .nav-item[data-page="workorder-inbox"]') || qs('.sidebar .nav-item[data-page="dashboard"]');
+      if(nav) nav.classList.add('active');
+    }
+  }
+
+  function patchShowPage(){
+    if(window.__NMC_REMOVE_WORKORDER_STATUS_SHOWPAGE_PATCHED__) return;
+    window.__NMC_REMOVE_WORKORDER_STATUS_SHOWPAGE_PATCHED__ = true;
+    var old = window.showPage;
+    if(typeof old === 'function'){
+      window.showPage = function(pg){
+        if(pg === 'workorder-list') pg = 'workorder-final';
+        var ret = old.apply(this, arguments.length ? [pg] : arguments);
+        setTimeout(boot, 30);
+        return ret;
+      };
+    }
+  }
+
+  function patchRebuildNav(){
+    if(window.__NMC_REMOVE_WORKORDER_STATUS_REBUILDNAV_PATCHED__) return;
+    window.__NMC_REMOVE_WORKORDER_STATUS_REBUILDNAV_PATCHED__ = true;
+    var old = window.rebuildNav;
+    if(typeof old === 'function'){
+      window.rebuildNav = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(boot, 30);
+        return ret;
+      };
+    }
+  }
+
+  function patchClicks(){
+    if(window.__NMC_REMOVE_WORKORDER_STATUS_CLICK_PATCHED__) return;
+    window.__NMC_REMOVE_WORKORDER_STATUS_CLICK_PATCHED__ = true;
+    document.addEventListener('click', function(e){
+      var t = e.target && e.target.closest && e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');
+      if(t){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.showPage === 'function') window.showPage('workorder-final');
+        else goSafePage();
+        setTimeout(boot, 30);
+        return false;
+      }
+    }, true);
+  }
+
+  function boot(){
+    removeStatusNav();
+    hideStatusPage();
+    goSafePage();
+    patchShowPage();
+    patchRebuildNav();
+    patchClicks();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 80); });
+  }else{
+    setTimeout(boot, 80);
+  }
+  [250,700,1500,3000,5000].forEach(function(t){ setTimeout(boot, t); });
+  try{
+    new MutationObserver(function(){ boot(); }).observe(document.documentElement, {childList:true, subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
