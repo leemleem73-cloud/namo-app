@@ -2879,26 +2879,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
 @media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
-
-<!-- NMC_ANTI_FLICKER_START -->
-<script>document.documentElement.classList.add('nmc-booting');</script>
-<style id="nmc-anti-flicker-style">
-html.nmc-booting .shell{visibility:hidden!important;}
-html.nmc-booting #loginPage{visibility:visible!important;}
-html.nmc-booting body:not(.login-active)::before{
-  content:'화면 구성 중...';
-  position:fixed;inset:0;z-index:999999;
-  display:flex;align-items:center;justify-content:center;
-  background:#eef3f8;color:#0f172a;font-size:14px;font-weight:900;
-}
-body.nmc-route-lock .content{opacity:0!important;}
-body.nmc-route-lock::after{
-  content:'화면 전환 중...';position:fixed;inset:64px 0 0 248px;z-index:999998;
-  display:flex;align-items:center;justify-content:center;background:#eef3f8;color:#334155;font-weight:900;
-}
-@media(max-width:900px){body.nmc-route-lock::after{left:0;}}
-</style>
-<!-- NMC_ANTI_FLICKER_END -->
 </head>
 <body class="login-active">
 
@@ -14132,7 +14112,56 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
       '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>'+
-      '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt></body></html>';
+      '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
+
+<!-- NMC_WORKORDER_STATUS_CLEAN_RESET_START -->
+<style id="nmc-workorder-clean-reset-style">
+#page-workorder-list .nmcw-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin:16px 0 18px}
+#page-workorder-list .nmcw-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 8px 22px rgba(15,23,42,.055);padding:18px 20px;position:relative;overflow:hidden}
+#page-workorder-list .nmcw-kpi:before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+#page-workorder-list .nmcw-kpi .l{font-size:12px;font-weight:900;color:#64748b}.nmcw-kpi .v{font-size:30px;font-weight:900;color:#0f172a;margin-top:6px}.nmcw-kpi .s{font-size:11px;color:#64748b;margin-top:6px}
+#page-workorder-list .nmcw-hero{background:linear-gradient(135deg,#071426,#10284b 55%,#0e7490);border-radius:22px;color:#fff;padding:22px 24px;box-shadow:0 14px 34px rgba(15,23,42,.18)}
+#page-workorder-list .nmcw-hero h2{font-size:24px;font-weight:900;margin:0 0 6px}.nmcw-hero p{color:#bfdbfe;font-size:13px;line-height:1.6;margin:0}
+#page-workorder-list .nmcw-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:14px 16px;margin-bottom:14px;box-shadow:0 8px 22px rgba(15,23,42,.055)}
+#page-workorder-list .nmcw-toolbar b{font-size:16px;color:#0f172a}.nmcw-filter{display:flex;gap:8px;flex-wrap:wrap}.nmcw-filter input,.nmcw-filter select{height:36px;border:1.5px solid #dbe3ee;border-radius:10px;padding:0 12px;background:#fff;font-size:13px;outline:none}
+#page-workorder-list .nmcw-table-wrap{background:#fff;border:1px solid #dbe3ee;border-radius:20px;overflow:auto;box-shadow:0 10px 26px rgba(15,23,42,.06)}
+#page-workorder-list .nmcw-table{width:100%;border-collapse:collapse;min-width:1220px}.nmcw-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:none;padding:13px 12px;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}.nmcw-table td{padding:13px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;text-align:center;vertical-align:middle}.nmcw-table tr:hover td{background:#fbfdff}
+.nmcw-status{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900}.nmcw-status.wait{background:#fef3c7;color:#92400e}.nmcw-status.run{background:#ede9fe;color:#6d28d9}.nmcw-status.done{background:#dcfce7;color:#166534}.nmcw-status.delay{background:#fee2e2;color:#991b1b}.nmcw-status.hold{background:#f1f5f9;color:#475569}
+.nmcw-progress{display:flex;align-items:center;gap:9px;justify-content:center;min-width:118px}.nmcw-progress .bar{width:78px;height:8px;background:#e5edf6;border-radius:999px;overflow:hidden}.nmcw-progress .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#60a5fa)}.nmcw-progress b{font-size:12px;color:#2563eb}.nmcw-empty{padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important}
+.sidebar .nav-item[data-page="workorder-list"]{display:flex!important}
+@media(max-width:1300px){#page-workorder-list .nmcw-kpi-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){#page-workorder-list .nmcw-kpi-grid{grid-template-columns:1fr}.nmcw-filter{width:100%}.nmcw-filter input,.nmcw-filter select{width:100%}}
+</style>
+<script id="nmc-workorder-clean-reset-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_CLEAN_RESET__) return; window.__NMC_WORKORDER_CLEAN_RESET__=true;
+  var KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','productionWorkOrders'];
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function arr(k){try{var v=localStorage.getItem(k); if(v){var a=JSON.parse(v); return Array.isArray(a)?a:[]}}catch(e){} return Array.isArray(window[k])?window[k]:[]}
+  function pick(o,names,d){for(var i=0;i<names.length;i++){var v=o&&o[names[i]]; if(v!==undefined&&v!==null&&String(v)!=='')return v}return d||''}
+  function num(v){var n=parseFloat(String(v||'').replace(/,/g,''));return isNaN(n)?0:n}
+  function fmt(n){n=num(n); return n? n.toLocaleString('ko-KR')+' kg':'-'}
+  function idOf(o){return pick(o,['woNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid'],'')}
+  function statusOf(o,pct,due){var s=String(pick(o,['status','state','progressStatus'],'대기')); if(/완료|종결|done|complete/i.test(s))return ['완료','done']; if(/보류|hold/i.test(s))return ['보류','hold']; if(/진행|시작|run/i.test(s))return ['진행중','run']; var today=new Date().toISOString().slice(0,10); if(due && due<today && pct<100)return ['지연','delay']; return ['대기','wait']}
+  function rows(){var map={}; KEYS.forEach(function(k){arr(k).forEach(function(o){var id=idOf(o); if(id)map[id]=o})}); return Object.keys(map).map(function(id){var o=map[id]; var plan=num(pick(o,['plan','planQty','plannedQty','nmcPlanQty','qty','quantity','orderQty'],'')); var actual=num(pick(o,['actual','actualQty','inputQty','nmcActualQty','resultQty'],'')); var pct=plan?Math.min(100,Math.round(actual/plan*100)):0; var due=String(pick(o,['dueDate','endDate','finishDate','completeDue','nmcDueDate'],'')).slice(0,10); var st=statusOf(o,pct,due); return {id:id,product:pick(o,['product','prodName','productName','item','itemName','nmcProdName'],'-'),customer:pick(o,['customer','customerName','client','clientName','vendor','buyer','nmcCustomer','nmcCustomerName'],'-'),plan:plan,actual:actual,pct:pct,status:st[0],cls:st[1],start:String(pick(o,['startDate','orderDate','workDate','date','createdAt','sendTime'],'')).slice(0,10),due:due,worker:pick(o,['worker','operator','manager','prodManager','nmcWorker'],'-')};}).sort(function(a,b){return String(b.start||'').localeCompare(String(a.start||''))})}
+  function filtered(){var a=rows(); var st=q('#nmcwStatus')&&q('#nmcwStatus').value; var kw=(q('#nmcwKeyword')&&q('#nmcwKeyword').value||'').toLowerCase(); var dt=q('#nmcwDate')&&q('#nmcwDate').value; return a.filter(function(x){if(st&&x.cls!==st)return false; if(dt&&x.start!==dt)return false; if(kw && !(x.id+' '+x.product+' '+x.customer+' '+x.worker).toLowerCase().includes(kw))return false; return true})}
+  function kpis(a){var total=a.length, run=a.filter(x=>x.cls==='run').length, done=a.filter(x=>x.cls==='done').length, delay=a.filter(x=>x.cls==='delay').length, wait=a.filter(x=>x.cls==='wait').length; return '<div class="nmcw-kpi-grid"><div class="nmcw-kpi"><div class="l">전체 작업지시</div><div class="v">'+total+'</div><div class="s">등록/발송 포함</div></div><div class="nmcw-kpi"><div class="l">대기</div><div class="v">'+wait+'</div><div class="s">작업 전</div></div><div class="nmcw-kpi"><div class="l">진행중</div><div class="v">'+run+'</div><div class="s">생산 진행</div></div><div class="nmcw-kpi"><div class="l">완료</div><div class="v">'+done+'</div><div class="s">생산 완료</div></div><div class="nmcw-kpi"><div class="l">지연</div><div class="v">'+delay+'</div><div class="s">예정일 초과</div></div></div>'}
+  function tbody(a){if(!a.length)return '<tr><td colspan="10" class="nmcw-empty">작업지시 데이터가 없습니다. 먼저 작업지시 등록 화면에서 저장/발송하세요.</td></tr>'; return a.map(function(x){return '<tr><td><b style="color:#1d4ed8">'+esc(x.id)+'</b></td><td>'+esc(x.product)+'</td><td>'+esc(x.customer)+'</td><td>'+fmt(x.plan)+'</td><td>'+fmt(x.actual)+'</td><td><div class="nmcw-progress"><div class="bar"><span style="width:'+x.pct+'%"></span></div><b>'+x.pct+'%</b></div></td><td><span class="nmcw-status '+x.cls+'">'+x.status+'</span></td><td>'+esc(x.start||'-')+'</td><td>'+esc(x.due||'-')+'</td><td>'+esc(x.worker)+'</td></tr>'}).join('')}
+  function page(){var a=filtered();return '<div class="ph"><div><div class="ph-title">작업지시 현황</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시 현황</div><div class="ph-sub">작업지시번호, 제품명, 고객사, 계획수량, 실적수량, 진행률, 상태, 시작일, 예정완료일, 담당자 기준입니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">+ 작업지시 등록</button></div></div><div class="nmcw-hero"><h2>Work Order Monitoring</h2><p>나모케미칼 MES 작업지시 진행상태를 한 화면에서 확인합니다.</p></div>'+kpis(rows())+'<div class="nmcw-toolbar"><b>작업지시 목록</b><div class="nmcw-filter"><input id="nmcwDate" type="date" value="'+esc(q('#nmcwDate')&&q('#nmcwDate').value||'')+'"><select id="nmcwStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option><option value="hold">보류</option></select><input id="nmcwKeyword" type="search" placeholder="WO번호/제품명/고객사/담당자" value="'+esc(q('#nmcwKeyword')&&q('#nmcwKeyword').value||'')+'"></div></div><div class="nmcw-table-wrap"><table class="nmcw-table"><thead><tr><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th><th>시작일</th><th>예정완료일</th><th>담당자</th></tr></thead><tbody>'+tbody(a)+'</tbody></table></div>'}
+  function ensureNav(){var side=q('.sidebar'); if(!side)return; var btn=q('.sidebar .nav-item[data-page="workorder-list"]'); if(!btn){var anchor=q('.sidebar .nav-item[data-page="workorder-final"]')||q('.sidebar .nav-item[data-page="production"]'); btn=document.createElement('button'); btn.className='nav-item'; btn.dataset.page='workorder-list'; btn.innerHTML='<span class="nav-icon">▤</span><span>작업지시 현황</span>'; if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(btn,anchor.nextSibling); else side.appendChild(btn);} btn.style.display='flex';}
+  function render(){var main=q('.content')||document.body; var sec=q('#page-workorder-list'); if(!sec){sec=document.createElement('section');sec.className='page';sec.id='page-workorder-list';main.appendChild(sec)} sec.innerHTML=page(); var s=q('#nmcwStatus'); if(s&&window.__nmcwLastStatus)s.value=window.__nmcwLastStatus; }
+  function open(){ensureNav();render(); qa('.page.active').forEach(function(p){p.classList.remove('active')}); var p=q('#page-workorder-list'); if(p)p.classList.add('active'); qa('.sidebar .nav-item.active').forEach(function(b){b.classList.remove('active')}); var b=q('.sidebar .nav-item[data-page="workorder-list"]'); if(b)b.classList.add('active')}
+  document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]'); if(t){e.preventDefault();e.stopPropagation();open();}},true);
+  document.addEventListener('input',function(e){if(e.target&&['nmcwDate','nmcwStatus','nmcwKeyword'].indexOf(e.target.id)>-1){window.__nmcwLastStatus=(q('#nmcwStatus')||{}).value||''; render();}},true);
+  document.addEventListener('change',function(e){if(e.target&&['nmcwDate','nmcwStatus','nmcwKeyword'].indexOf(e.target.id)>-1){window.__nmcwLastStatus=(q('#nmcwStatus')||{}).value||''; render();}},true);
+  function boot(){ensureNav();render()} if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot(); window.addEventListener('load',boot); setTimeout(boot,800);
+})();
+</script>
+<!-- NMC_WORKORDER_STATUS_CLEAN_RESET_END -->
+
+</body></html>';
 
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
@@ -19374,6 +19403,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+</body>
+</html>
+
 <!-- NAMO IQC 작성/검토/승인 UI 복구 + 성적서 미리보기 자동 반영 PATCH 20260616 -->
 <style id="namo-iqc-approval-preview-restore-style">
   #page-incoming #signGrid_iqc{
@@ -19752,142 +19784,171 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-
-<!-- REMOVED conflicting block: NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_START -->
-
-
-
-<!-- REMOVED conflicting block: NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
-
-
-
-<!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_START -->
-<style id="nmc-workorder-status-dashboard-final-style">
-/* 작업지시 현황 항목 기준 전체 화면 고도화 */
-#page-workorder-list .nmc-wo-hero-final{background:linear-gradient(135deg,#071426 0%,#10284b 54%,#0e7490 100%);color:#fff;border-radius:24px;padding:24px 26px;margin-bottom:16px;box-shadow:0 16px 34px rgba(15,23,42,.18);position:relative;overflow:hidden}
-#page-workorder-list .nmc-wo-hero-final:before{content:'';position:absolute;inset:-25%;background:radial-gradient(circle at 12% 28%,rgba(96,165,250,.26),transparent 32%),radial-gradient(circle at 82% 16%,rgba(34,197,94,.18),transparent 30%);pointer-events:none}
-#page-workorder-list .nmc-wo-hero-final>*{position:relative}.nmc-wo-hero-final h2{margin:0;font-size:25px;font-weight:900;letter-spacing:-.6px}.nmc-wo-hero-final p{margin:6px 0 0;color:#c7ddff;font-size:13px;line-height:1.65}.nmc-wo-hero-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nmc-wo-hero-badge{height:28px;display:inline-flex;align-items:center;padding:0 11px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#e0f2fe;font-size:12px;font-weight:900}
-#page-workorder-list .nmc-wo-kpi-final{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}.nmc-wo-kpi-card{background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:17px 18px;box-shadow:0 8px 22px rgba(15,23,42,.055);position:relative;overflow:hidden}.nmc-wo-kpi-card:before{content:'';position:absolute;left:0;top:0;right:0;height:4px;background:var(--kpi-color,#2563eb)}.nmc-wo-kpi-card .l{font-size:12px;font-weight:900;color:#64748b}.nmc-wo-kpi-card .v{font-size:31px;font-weight:900;color:#0f172a;letter-spacing:-1px;line-height:1;margin-top:8px}.nmc-wo-kpi-card .s{font-size:11px;color:#64748b;margin-top:8px}.nmc-wo-kpi-card.all{--kpi-color:#2563eb}.nmc-wo-kpi-card.wait{--kpi-color:#f59e0b}.nmc-wo-kpi-card.run{--kpi-color:#7c3aed}.nmc-wo-kpi-card.done{--kpi-color:#16a34a}.nmc-wo-kpi-card.delay{--kpi-color:#ef4444}
-#page-workorder-list .nmc-wo-toolbar-final{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:14px 16px;margin-bottom:14px;box-shadow:0 8px 22px rgba(15,23,42,.045)}.nmc-wo-toolbar-title{font-size:16px;font-weight:900;color:#0f172a}.nmc-wo-filter-final{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.nmc-wo-filter-final input,.nmc-wo-filter-final select{height:36px;border:1.5px solid #dbe3ee;border-radius:10px;background:#fff;color:#0f172a;font-size:13px;font-weight:700;padding:0 12px;outline:none}.nmc-wo-filter-final input:focus,.nmc-wo-filter-final select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-#page-workorder-list .nmc-wo-table-final-wrap{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 10px 26px rgba(15,23,42,.06);overflow:auto}.nmc-wo-table-final{width:100%;border-collapse:collapse;min-width:1380px}.nmc-wo-table-final th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:none;padding:13px 12px;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}.nmc-wo-table-final td{padding:13px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;text-align:center;vertical-align:middle}.nmc-wo-table-final tr:hover td{background:#fbfdff}.nmc-wo-no-final{border:none;background:transparent;color:#1d4ed8;font-weight:900;cursor:pointer;padding:0;text-decoration:none}.nmc-wo-no-final:hover{text-decoration:underline;text-underline-offset:3px}.nmc-wo-status-final{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900}.nmc-wo-status-final.wait{background:#fef3c7;color:#92400e}.nmc-wo-status-final.run{background:#ede9fe;color:#6d28d9}.nmc-wo-status-final.done{background:#dcfce7;color:#166534}.nmc-wo-status-final.delay{background:#fee2e2;color:#991b1b}.nmc-wo-status-final.hold{background:#f1f5f9;color:#475569}.nmc-wo-progress-final{display:flex;align-items:center;gap:9px;justify-content:center;min-width:128px}.nmc-wo-progress-final .bar{width:82px;height:8px;background:#e5edf6;border-radius:999px;overflow:hidden}.nmc-wo-progress-final .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#60a5fa)}.nmc-wo-progress-final b{font-size:12px;color:#2563eb}.nmc-wo-actions-final{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.nmc-wo-btn-final{height:28px;border:1px solid #dbe3ee;background:#fff;border-radius:8px;padding:0 10px;font-size:12px;font-weight:900;color:#334155;cursor:pointer}.nmc-wo-btn-final:hover{background:#eff6ff;border-color:#2563eb;color:#2563eb}.nmc-wo-btn-final.primary{background:#2563eb;color:#fff;border-color:#2563eb}.nmc-wo-empty-final{padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important}.nmc-wo-warn-row td{background:#fffafa}.nmc-wo-detail-final{display:none;margin-top:16px;background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 10px 26px rgba(15,23,42,.06);padding:20px}.nmc-wo-detail-final.show{display:block}.nmc-wo-detail-grid-final{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.nmc-wo-detail-cell-final{border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;padding:11px 12px}.nmc-wo-detail-cell-final b{display:block;font-size:11px;color:#64748b;margin-bottom:4px}.nmc-wo-detail-cell-final span{font-size:13px;font-weight:900;color:#0f172a;white-space:pre-wrap}.nmc-wo-detail-box-final{border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:12px;white-space:pre-wrap;line-height:1.6;color:#334155;margin-top:8px}.nmc-wo-recommend-final{margin-top:12px;border:1px solid #bfdbfe;background:#f8fbff;border-radius:14px;padding:13px 15px;color:#334155;font-size:12px;line-height:1.7}.nmc-wo-recommend-final b{color:#1d4ed8}
-@media(max-width:1400px){#page-workorder-list .nmc-wo-kpi-final{grid-template-columns:repeat(3,minmax(0,1fr))}.nmc-wo-detail-grid-final{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){#page-workorder-list .nmc-wo-kpi-final,.nmc-wo-detail-grid-final{grid-template-columns:1fr}.nmc-wo-toolbar-final{align-items:flex-start}.nmc-wo-filter-final{width:100%}.nmc-wo-filter-final input,.nmc-wo-filter-final select{flex:1;min-width:140px}}
-</style>
-<script id="nmc-workorder-status-dashboard-final-script">
-(function(){
-  'use strict';
-  var STORAGE_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
-  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
-  function idOf(o){return String(pick(o,['id','uid','no','woNo','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','lot'],''))}
-  function num(v){var n=parseFloat(String(v||'').replace(/[^0-9.-]/g,''));return isNaN(n)?0:n}
-  function fmt(v){var n=num(v);return n?n.toLocaleString('ko-KR'):''}
-  function onlyDate(v){v=String(v||'').trim();var m=v.match(/\d{4}[-./]\d{1,2}[-./]\d{1,2}/);if(m){var a=m[0].replace(/[./]/g,'-').split('-');return a[0]+'-'+String(a[1]).padStart(2,'0')+'-'+String(a[2]).padStart(2,'0')}m=v.match(/(?:^|[^0-9])(20\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);if(m)return m[1]+'-'+m[2]+'-'+m[3];m=v.match(/(?:^|[^0-9])(\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);if(m)return '20'+m[1]+'-'+m[2]+'-'+m[3];return v||''}
-  function addDays(d,days){var x=new Date(d);if(isNaN(x.getTime()))return '';x.setDate(x.getDate()+days);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
-  function statusClass(st){st=String(st||''); if(st.indexOf('지연')>-1||st.indexOf('delay')>-1)return 'delay'; if(st.indexOf('보류')>-1||st.indexOf('hold')>-1)return 'hold'; if(st.indexOf('완료')>-1||st.indexOf('종결')>-1||st.indexOf('done')>-1)return 'done'; if(st.indexOf('진행')>-1||st.indexOf('시작')>-1||st.indexOf('run')>-1)return 'run'; return 'wait'}
-  function statusText(st){var c=statusClass(st);return {wait:'대기',run:'진행중',done:'완료',delay:'지연',hold:'보류'}[c]||'대기'}
-  function normalize(o){o=o||{};var no=pick(o,['woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],idOf(o)||'-');var lot=pick(o,['prodLot','productionLot','lot','lotNo','nmcProdLot'],no);var start=onlyDate(pick(o,['startDate','workStartDate','orderDate','workDate','planDate','plannedDate','date','createdAt','sentAt','nmcOrderDate'],''))||onlyDate(lot)||onlyDate(no);var due=onlyDate(pick(o,['dueDate','endDate','planEndDate','plannedEndDate','finishDueDate','targetDate','nmcDueDate'],''))||addDays(start,1);var plan=num(pick(o,['planQty','plannedQty','plan','nmcPlanQty','targetQty'],''));var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','productionQty'],''));var pct=plan>0?Math.min(100,Math.round(actual/plan*100)):({wait:0,run:50,done:100,delay:30,hold:0}[statusClass(pick(o,['status','state'],''))]||0);var rawStatus=pick(o,['status','state'],'대기');var sc=statusClass(rawStatus);if(sc!=='done'&&due){var now=new Date();var dd=new Date(due+'T23:59:59');if(!isNaN(dd.getTime())&&now>dd)sc='delay'}return {raw:o,id:idOf(o)||no,no:no,product:pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],'-'),customer:pick(o,['customer','customerName','client','clientName','vendor','buyer','nmcCustomer','nmcCustomerName'],'-'),plan:plan,actual:actual,pct:pct,status:statusText(sc),sc:sc,start:start||'-',due:due||'-',worker:pick(o,['worker','operator','manager','prodManager','managerName','senderName','writerName','createdByName','reqDept'],'-'),lot:lot,code:pick(o,['productCode','prodCode','code','nmcProdCode'],'-'),receiver:pick(o,['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'],'-'),ref:pick(o,['refText','reference','refDept','ref','cc','refNames','refTargets'],'-'),note:pick(o,['sendNote','sendMemo','remark','memo','comment','instruction','workInstruction','nmcInstruction'],''),materials:Array.isArray(o.materials)?o.materials:[]}}
-  function allOrders(){var m=new Map();STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(o){var n=normalize(o);if(n.id&&n.id!=='-')m.set(n.id,n)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(o){var n=normalize(o);if(n.id&&n.id!=='-')m.set(n.id,n)})});return Array.from(m.values()).sort(function(a,b){return String(b.start||'').localeCompare(String(a.start||''))})}
-  function filtered(){var a=allOrders();var date=q('#nmcWoFinalDate')&&q('#nmcWoFinalDate').value;var st=q('#nmcWoFinalStatus')&&q('#nmcWoFinalStatus').value;var kw=(q('#nmcWoFinalKeyword')&&q('#nmcWoFinalKeyword').value||'').trim().toLowerCase();return a.filter(function(x){if(date&&x.start!==date)return false;if(st&&x.sc!==st)return false;if(kw&&[x.no,x.product,x.customer,x.worker,x.lot].join(' ').toLowerCase().indexOf(kw)<0)return false;return true})}
-  function kpis(){var a=allOrders();return {all:a.length,wait:a.filter(function(x){return x.sc==='wait'}).length,run:a.filter(function(x){return x.sc==='run'}).length,done:a.filter(function(x){return x.sc==='done'}).length,delay:a.filter(function(x){return x.sc==='delay'}).length}}
-  function renderKpi(){var k=kpis();return '<div class="nmc-wo-kpi-final"><div class="nmc-wo-kpi-card all"><div class="l">작업지시 전체</div><div class="v">'+k.all+'</div><div class="s">등록된 WO 전체</div></div><div class="nmc-wo-kpi-card wait"><div class="l">대기</div><div class="v">'+k.wait+'</div><div class="s">작업 시작 전</div></div><div class="nmc-wo-kpi-card run"><div class="l">진행중</div><div class="v">'+k.run+'</div><div class="s">생산 진행 WO</div></div><div class="nmc-wo-kpi-card done"><div class="l">완료</div><div class="v">'+k.done+'</div><div class="s">생산 완료/종결</div></div><div class="nmc-wo-kpi-card delay"><div class="l">지연</div><div class="v">'+k.delay+'</div><div class="s">예정일 초과</div></div></div>'}
-  function tableRows(){var a=filtered();if(!a.length)return '<tr><td colspan="11" class="nmc-wo-empty-final">작업지시 데이터가 없습니다. 먼저 작업지시 등록 화면에서 WO를 발행하세요.</td></tr>';return a.map(function(x,i){var rowCls=x.sc==='delay'?' class="nmc-wo-warn-row"':'';var plan=fmt(x.plan), actual=fmt(x.actual);return '<tr'+rowCls+' data-nmc-wo-id="'+esc(x.id)+'"><td><button type="button" class="nmc-wo-no-final" data-nmc-wo-final-open="'+esc(x.id)+'">'+esc(x.no)+'</button></td><td>'+esc(x.product)+'</td><td>'+esc(x.customer)+'</td><td>'+esc(plan||'-')+'</td><td>'+esc(actual||'-')+'</td><td><div class="nmc-wo-progress-final"><div class="bar"><span style="width:'+x.pct+'%"></span></div><b>'+x.pct+'%</b></div></td><td><span class="nmc-wo-status-final '+x.sc+'">'+esc(x.status)+'</span></td><td>'+esc(x.start||'-')+'</td><td>'+esc(x.due||'-')+'</td><td>'+esc(x.worker||'-')+'</td><td><div class="nmc-wo-actions-final"><button type="button" class="nmc-wo-btn-final" data-nmc-wo-final-open="'+esc(x.id)+'">상세</button><button type="button" class="nmc-wo-btn-final" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafePrint?window.nmcWoSafePrint(this):true">인쇄</button><button type="button" class="nmc-wo-btn-final primary" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafeEdit?window.nmcWoSafeEdit(this):true">수정</button></div></td></tr>'}).join('')}
-  function pageHtml(){return '<div class="ph"><div><div class="ph-title">작업지시 현황</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시 현황</div><div class="ph-sub">작업지시번호, 제품명, 고객사, 계획/실적, 진행률, 상태, 일정, 담당자를 기준으로 WO를 실시간 관리합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">+ 작업지시 등록</button></div></div><div class="nmc-wo-hero-final"><h2>Work Order Monitoring</h2><p>나모케미칼 MES 작업지시 현황 화면입니다. 대기·진행중·완료·지연·보류 상태를 한 화면에서 확인하고, 생산 LOT/실적/담당자 기준으로 추적합니다.</p><div class="nmc-wo-hero-badges"><span class="nmc-wo-hero-badge">WO Monitoring</span><span class="nmc-wo-hero-badge">LOT 연계</span><span class="nmc-wo-hero-badge">진행률 자동계산</span><span class="nmc-wo-hero-badge">지연 자동감지</span></div></div><div id="nmcWoKpiHost">'+renderKpi()+'</div><div class="nmc-wo-toolbar-final"><div class="nmc-wo-toolbar-title">작업지시 목록</div><div class="nmc-wo-filter-final"><input id="nmcWoFinalDate" type="date" title="시작일"><select id="nmcWoFinalStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option><option value="hold">보류</option></select><input id="nmcWoFinalKeyword" type="search" placeholder="WO번호/제품명/고객사/담당자"><button class="btn light sm" id="nmcWoFinalExcel" type="button">엑셀 다운로드</button></div></div><div class="nmc-wo-table-final-wrap"><table class="nmc-wo-table-final"><thead><tr><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th><th>시작일</th><th>예정완료일</th><th>담당자</th><th>작업</th></tr></thead><tbody id="nmcWoFinalBody">'+tableRows()+'</tbody></table></div><div id="nmcWoFinalDetail" class="nmc-wo-detail-final"></div><div class="nmc-wo-recommend-final"><b>운영 기준:</b> 실제 삭제 대신 수정이력/Audit Trail 저장을 권장합니다. 작업지시 저장 시 WO번호, 제품명, 고객사, 계획수량, 시작일, 예정완료일, 담당자를 필수값으로 관리하면 MES 추적성이 좋아집니다.</div>'}
-  function ensurePage(){var c=q('.content');if(!c)return;var p=q('#page-workorder-list');if(!p){p=document.createElement('section');p.className='page';p.id='page-workorder-list';c.appendChild(p)}if(!p.dataset.nmcWoFinalApplied){p.innerHTML=pageHtml();p.dataset.nmcWoFinalApplied='1'}}
-  function refresh(){var p=q('#page-workorder-list');if(!p)return;var k=q('#nmcWoKpiHost',p);if(k)k.innerHTML=renderKpi();var b=q('#nmcWoFinalBody',p);if(b)b.innerHTML=tableRows()}
-  function openDetail(id){var x=allOrders().filter(function(o){return String(o.id)===String(id)})[0];if(!x)return;var host=q('#nmcWoFinalDetail');if(!host)return;var mats=x.materials.length?x.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],'-'))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],'-'))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],'-'))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],'-'))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6" class="nmc-wo-empty-final">등록된 투입 원료 정보가 없습니다.</td></tr>';host.innerHTML='<h3 style="margin:0;font-size:18px;font-weight:900;color:#0f172a">작업지시 상세</h3><div class="nmc-wo-detail-grid-final"><div class="nmc-wo-detail-cell-final"><b>작업지시번호</b><span>'+esc(x.no)+'</span></div><div class="nmc-wo-detail-cell-final"><b>상태</b><span>'+esc(x.status)+'</span></div><div class="nmc-wo-detail-cell-final"><b>제품명</b><span>'+esc(x.product)+'</span></div><div class="nmc-wo-detail-cell-final"><b>고객사</b><span>'+esc(x.customer)+'</span></div><div class="nmc-wo-detail-cell-final"><b>계획수량</b><span>'+esc(fmt(x.plan)||'-')+'</span></div><div class="nmc-wo-detail-cell-final"><b>실적수량</b><span>'+esc(fmt(x.actual)||'-')+'</span></div><div class="nmc-wo-detail-cell-final"><b>시작일</b><span>'+esc(x.start)+'</span></div><div class="nmc-wo-detail-cell-final"><b>예정완료일</b><span>'+esc(x.due)+'</span></div><div class="nmc-wo-detail-cell-final"><b>담당자</b><span>'+esc(x.worker)+'</span></div><div class="nmc-wo-detail-cell-final"><b>생산 LOT</b><span>'+esc(x.lot)+'</span></div><div class="nmc-wo-detail-cell-final"><b>제품코드</b><span>'+esc(x.code)+'</span></div><div class="nmc-wo-detail-cell-final"><b>수신/참조</b><span>'+esc(x.receiver)+' / '+esc(x.ref)+'</span></div></div><h4 style="margin:16px 0 8px">투입 원료</h4><div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div><h4 style="margin:16px 0 8px">비고/지시사항</h4><div class="nmc-wo-detail-box-final">'+esc(x.note||'-')+'</div>';host.classList.add('show');host.scrollIntoView({behavior:'smooth',block:'start'})}
-  function excel(){var rows=[['작업지시번호','제품명','고객사','계획수량','실적수량','진행률','상태','시작일','예정완료일','담당자']];filtered().forEach(function(x){rows.push([x.no,x.product,x.customer,x.plan,x.actual,x.pct+'%',x.status,x.start,x.due,x.worker])});if(window.XLSX){var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'작업지시 현황');XLSX.writeFile(wb,'작업지시_현황.xlsx')}else{var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='작업지시_현황.csv';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000)}}
-  function boot(){ensurePage();refresh()}
-  document.addEventListener('click',function(e){var nav=e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');if(nav){setTimeout(boot,60)}var open=e.target.closest&&e.target.closest('[data-nmc-wo-final-open]');if(open){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(open.getAttribute('data-nmc-wo-final-open'));return false}var ex=e.target.closest&&e.target.closest('#nmcWoFinalExcel');if(ex){e.preventDefault();excel();return false}},true);
-  document.addEventListener('input',function(e){if(e.target&&e.target.id==='nmcWoFinalKeyword')refresh()},true);
-  document.addEventListener('change',function(e){if(e.target&&/^(nmcWoFinalDate|nmcWoFinalStatus)$/.test(e.target.id))refresh()},true);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  [250,800,1600,3000].forEach(function(t){setTimeout(boot,t)});
-  try{new MutationObserver(function(){var p=q('#page-workorder-list');if(p&&!p.dataset.nmcWoFinalApplied)boot()}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
-  window.nmcRenderWorkOrderStatusDashboard=refresh;
-})();
-</script>
-<!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
-
-<!-- NMC_ANTI_FLICKER_RELEASE_START -->
-<script>
-(function(){
-  function ready(){document.documentElement.classList.remove('nmc-booting');document.body&&document.body.classList.remove('nmc-route-lock')}
-  function routeLock(){
-    if(!document.body||document.body.classList.contains('login-active'))return;
-    document.body.classList.add('nmc-route-lock');
-    clearTimeout(window.__nmcRouteLockTimer);
-    window.__nmcRouteLockTimer=setTimeout(function(){document.body.classList.remove('nmc-route-lock')},520);
-  }
-  document.addEventListener('click',function(e){
-    var t=e.target&&e.target.closest&&e.target.closest('[data-page],[data-page-target]');
-    if(t) routeLock();
-  },true);
-  if(document.readyState==='complete')setTimeout(ready,650);
-  else window.addEventListener('load',function(){setTimeout(ready,650)});
-  setTimeout(ready,2600);
-})();
-</script>
-<!-- NMC_ANTI_FLICKER_RELEASE_END -->
-
-
-
-<!-- NMC_WORKORDER_STATUS_RESTORE_FORCE_V2_START -->
-<style id="nmc-workorder-status-restore-force-v2">
+<!-- NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_START -->
+<style id="nmc-remove-workorder-status-menu-css-v20260617-final">
   .sidebar .nav-item[data-page="workorder-list"],
-  .sidebar .nav-item[data-page-target="workorder-list"]{display:flex!important;}
-  #page-workorder-list{display:none;}
-  #page-workorder-list.active{display:block!important;}
+  .sidebar .nav-item[data-page-target="workorder-list"]{display:none!important;}
+  #page-workorder-list{display:none!important;}
 </style>
-<script id="nmc-workorder-status-restore-force-v2-script">
+<script id="nmc-syntax-and-workorder-safe-fix-20260617">
 (function(){
   'use strict';
-  if(window.__NMC_WORKORDER_STATUS_RESTORE_FORCE_V2__) return;
-  window.__NMC_WORKORDER_STATUS_RESTORE_FORCE_V2__=true;
+  if(window.__NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617__) return;
+  window.__NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617__ = true;
   function q(s,r){return (r||document).querySelector(s)}
   function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function ensureNav(){
-    var side=q('.sidebar'); if(!side) return;
-    var exists=q('.sidebar .nav-item[data-page="workorder-list"]');
-    if(exists){ exists.style.display='flex'; return; }
-    var anchor=q('.sidebar .nav-item[data-page="workorder-final"]');
-    var btn=document.createElement('button');
-    btn.className='nav-item'; btn.setAttribute('data-page','workorder-list');
-    btn.innerHTML='<span class="nav-icon">▤</span><span>작업지시 현황</span>';
-    if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling);
-    else side.appendChild(btn);
-  }
-  function showList(){
-    if(typeof window.nmcRenderWorkOrderStatusDashboard==='function') window.nmcRenderWorkOrderStatusDashboard();
-    var p=q('#page-workorder-list'); if(!p) return;
-    qa('.page.active').forEach(function(x){x.classList.remove('active');x.style.display='none'});
-    p.classList.add('active'); p.style.display='block';
-    qa('.sidebar .nav-item.active').forEach(function(x){x.classList.remove('active')});
-    qa('.sidebar .nav-item[data-page="workorder-list"]').forEach(function(x){x.classList.add('active');x.style.display='flex'});
-  }
-  function patchShowPage(){
-    var old=window.showPage;
-    if(typeof old==='function' && !old.__nmcWoRestoreV2){
-      var f=function(pg){
-        if(pg==='workorder-list'){ setTimeout(showList,0); return; }
-        return old.apply(this,arguments);
-      };
-      f.__nmcWoRestoreV2=true;
-      window.showPage=f;
+  function text(el){return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim()}
+  function removeWorkorderStatus(){
+    qa('.sidebar .nav-item').forEach(function(btn){
+      var pg=btn.getAttribute('data-page')||btn.getAttribute('data-page-target')||'';
+      if(pg==='workorder-list'||/작업\s*지시\s*현황|작업지시현황/i.test(text(btn))) btn.remove();
+    });
+    qa('#page-workorder-list').forEach(function(p){p.classList.remove('active');p.style.display='none';});
+    if(q('#page-workorder-list.active')||!q('.page.active')){
+      var fb=q('#page-workorder-final')||q('#page-inbox')||q('#page-dashboard')||q('.page');
+      if(fb){qa('.page.active').forEach(function(p){p.classList.remove('active')});fb.classList.add('active');fb.style.display='';}
     }
+  }
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function'){
+    window.showPage=function(pg){
+      if(pg==='workorder-list') pg='workorder-final';
+      var ret=oldShow.apply(this,[pg]);
+      setTimeout(removeWorkorderStatus,30);
+      return ret;
+    };
   }
   document.addEventListener('click',function(e){
     var t=e.target&&e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');
-    if(t){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();showList();return false;}
+    if(t){e.preventDefault();e.stopPropagation();if(window.showPage)window.showPage('workorder-final');setTimeout(removeWorkorderStatus,30);return false;}
   },true);
-  function boot(){ensureNav();patchShowPage();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  [100,400,900,1800,3200].forEach(function(t){setTimeout(boot,t)});
+  function boot(){removeWorkorderStatus()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,50)});else setTimeout(boot,50);
+  [200,600,1200,2500,5000].forEach(function(t){setTimeout(boot,t)});
+  try{new MutationObserver(function(){setTimeout(boot,20)}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 })();
 </script>
-<!-- NMC_WORKORDER_STATUS_RESTORE_FORCE_V2_END -->
+<!-- NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
+</body></html>
 
-</body>
-</html>
+<!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
+<style id="nmc-remove-workorder-status-only-final-css-v20260617">
+  /* 작업지시현황 구조만 삭제: 작업지시 등록/수신함/참조함은 유지 */
+  .sidebar .nav-item[data-page="workorder-list"],
+  .sidebar .nav-item[data-page-target="workorder-list"],
+  [data-page="workorder-list"],
+  [data-page-target="workorder-list"],
+  #page-workorder-list{
+    display:none!important;
+  }
+</style>
+<script id="nmc-remove-workorder-status-only-final-script-v20260617">
+(function(){
+  'use strict';
+  if(window.__NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_V20260617__) return;
+  window.__NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_V20260617__ = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function text(el){ return String((el && el.textContent) || '').replace(/\s+/g,' ').trim(); }
+  function isWorkorderStatusLabel(t){ return /작업\s*지시\s*현황|작업지시현황/i.test(String(t || '')); }
+
+  function removeStatusNav(){
+    qa('.sidebar .nav-item, .nav-item').forEach(function(btn){
+      var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
+      if(pg === 'workorder-list' || isWorkorderStatusLabel(text(btn))){
+        btn.remove();
+      }
+    });
+    qa('[data-page-target="workorder-list"]').forEach(function(el){ el.remove(); });
+  }
+
+  function hideStatusPage(){
+    qa('#page-workorder-list').forEach(function(page){
+      page.classList.remove('active');
+      page.style.display = 'none';
+      page.setAttribute('hidden','hidden');
+    });
+  }
+
+  function goSafePage(){
+    var activeStatus = qs('#page-workorder-list.active');
+    var noActive = !qs('.page.active');
+    if(activeStatus || noActive){
+      qa('.page.active').forEach(function(p){ p.classList.remove('active'); });
+      var target = qs('#page-workorder-final') || qs('#page-workorder-inbox') || qs('#page-dashboard');
+      if(target){
+        target.removeAttribute('hidden');
+        target.style.display = '';
+        target.classList.add('active');
+      }
+      qa('.nav-item.active').forEach(function(n){ n.classList.remove('active'); });
+      var nav = qs('.sidebar .nav-item[data-page="workorder-final"]') || qs('.sidebar .nav-item[data-page="workorder-inbox"]') || qs('.sidebar .nav-item[data-page="dashboard"]');
+      if(nav) nav.classList.add('active');
+    }
+  }
+
+  function patchShowPage(){
+    if(window.__NMC_REMOVE_WORKORDER_STATUS_SHOWPAGE_PATCHED__) return;
+    window.__NMC_REMOVE_WORKORDER_STATUS_SHOWPAGE_PATCHED__ = true;
+    var old = window.showPage;
+    if(typeof old === 'function'){
+      window.showPage = function(pg){
+        if(pg === 'workorder-list') pg = 'workorder-final';
+        var ret = old.apply(this, arguments.length ? [pg] : arguments);
+        setTimeout(boot, 30);
+        return ret;
+      };
+    }
+  }
+
+  function patchRebuildNav(){
+    if(window.__NMC_REMOVE_WORKORDER_STATUS_REBUILDNAV_PATCHED__) return;
+    window.__NMC_REMOVE_WORKORDER_STATUS_REBUILDNAV_PATCHED__ = true;
+    var old = window.rebuildNav;
+    if(typeof old === 'function'){
+      window.rebuildNav = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(boot, 30);
+        return ret;
+      };
+    }
+  }
+
+  function patchClicks(){
+    if(window.__NMC_REMOVE_WORKORDER_STATUS_CLICK_PATCHED__) return;
+    window.__NMC_REMOVE_WORKORDER_STATUS_CLICK_PATCHED__ = true;
+    document.addEventListener('click', function(e){
+      var t = e.target && e.target.closest && e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');
+      if(t){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.showPage === 'function') window.showPage('workorder-final');
+        else goSafePage();
+        setTimeout(boot, 30);
+        return false;
+      }
+    }, true);
+  }
+
+  function boot(){
+    removeStatusNav();
+    hideStatusPage();
+    goSafePage();
+    patchShowPage();
+    patchRebuildNav();
+    patchClicks();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 80); });
+  }else{
+    setTimeout(boot, 80);
+  }
+  [250,700,1500,3000,5000].forEach(function(t){ setTimeout(boot, t); });
+  try{
+    new MutationObserver(function(){ boot(); }).observe(document.documentElement, {childList:true, subtree:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
