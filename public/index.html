@@ -19752,173 +19752,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<!-- NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_START -->
-<style id="nmc-remove-workorder-status-menu-css-v20260617-final">
-  .sidebar .nav-item[data-page="workorder-list"],
-  .sidebar .nav-item[data-page-target="workorder-list"]{display:none!important;}
-  #page-workorder-list{display:none!important;}
-</style>
-<script id="nmc-syntax-and-workorder-safe-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617__) return;
-  window.__NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617__ = true;
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function text(el){return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim()}
-  function removeWorkorderStatus(){
-    qa('.sidebar .nav-item').forEach(function(btn){
-      var pg=btn.getAttribute('data-page')||btn.getAttribute('data-page-target')||'';
-      if(pg==='workorder-list'||/작업\s*지시\s*현황|작업지시현황/i.test(text(btn))) btn.remove();
-    });
-    qa('#page-workorder-list').forEach(function(p){p.classList.remove('active');p.style.display='none';});
-    if(q('#page-workorder-list.active')||!q('.page.active')){
-      var fb=q('#page-workorder-final')||q('#page-inbox')||q('#page-dashboard')||q('.page');
-      if(fb){qa('.page.active').forEach(function(p){p.classList.remove('active')});fb.classList.add('active');fb.style.display='';}
-    }
-  }
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function'){
-    window.showPage=function(pg){
-      if(pg==='workorder-list') pg='workorder-final';
-      var ret=oldShow.apply(this,[pg]);
-      setTimeout(removeWorkorderStatus,30);
-      return ret;
-    };
-  }
-  document.addEventListener('click',function(e){
-    var t=e.target&&e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');
-    if(t){e.preventDefault();e.stopPropagation();if(window.showPage)window.showPage('workorder-final');setTimeout(removeWorkorderStatus,30);return false;}
-  },true);
-  function boot(){removeWorkorderStatus()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,50)});else setTimeout(boot,50);
-  [200,600,1200,2500,5000].forEach(function(t){setTimeout(boot,t)});
-  try{new MutationObserver(function(){setTimeout(boot,20)}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
-})();
-</script>
-<!-- NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
 
-<!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
-<style id="nmc-remove-workorder-status-only-final-css-v20260617">
-  /* 작업지시현황 구조만 삭제: 작업지시 등록/수신함/참조함은 유지 */
-  .sidebar .nav-item[data-page="workorder-list"],
-  .sidebar .nav-item[data-page-target="workorder-list"],
-  [data-page="workorder-list"],
-  [data-page-target="workorder-list"],
-  #page-workorder-list{
-    display:none!important;
-  }
-</style>
-<script id="nmc-remove-workorder-status-only-final-script-v20260617">
-(function(){
-  'use strict';
-  if(window.__NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_V20260617__) return;
-  window.__NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_V20260617__ = true;
+<!-- REMOVED conflicting block: NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_START -->
 
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-  function text(el){ return String((el && el.textContent) || '').replace(/\s+/g,' ').trim(); }
-  function isWorkorderStatusLabel(t){ return /작업\s*지시\s*현황|작업지시현황/i.test(String(t || '')); }
 
-  function removeStatusNav(){
-    qa('.sidebar .nav-item, .nav-item').forEach(function(btn){
-      var pg = btn.getAttribute('data-page') || btn.getAttribute('data-page-target') || '';
-      if(pg === 'workorder-list' || isWorkorderStatusLabel(text(btn))){
-        btn.remove();
-      }
-    });
-    qa('[data-page-target="workorder-list"]').forEach(function(el){ el.remove(); });
-  }
 
-  function hideStatusPage(){
-    qa('#page-workorder-list').forEach(function(page){
-      page.classList.remove('active');
-      page.style.display = 'none';
-      page.setAttribute('hidden','hidden');
-    });
-  }
+<!-- REMOVED conflicting block: NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
 
-  function goSafePage(){
-    var activeStatus = qs('#page-workorder-list.active');
-    var noActive = !qs('.page.active');
-    if(activeStatus || noActive){
-      qa('.page.active').forEach(function(p){ p.classList.remove('active'); });
-      var target = qs('#page-workorder-final') || qs('#page-workorder-inbox') || qs('#page-dashboard');
-      if(target){
-        target.removeAttribute('hidden');
-        target.style.display = '';
-        target.classList.add('active');
-      }
-      qa('.nav-item.active').forEach(function(n){ n.classList.remove('active'); });
-      var nav = qs('.sidebar .nav-item[data-page="workorder-final"]') || qs('.sidebar .nav-item[data-page="workorder-inbox"]') || qs('.sidebar .nav-item[data-page="dashboard"]');
-      if(nav) nav.classList.add('active');
-    }
-  }
-
-  function patchShowPage(){
-    if(window.__NMC_REMOVE_WORKORDER_STATUS_SHOWPAGE_PATCHED__) return;
-    window.__NMC_REMOVE_WORKORDER_STATUS_SHOWPAGE_PATCHED__ = true;
-    var old = window.showPage;
-    if(typeof old === 'function'){
-      window.showPage = function(pg){
-        if(pg === 'workorder-list') pg = 'workorder-final';
-        var ret = old.apply(this, arguments.length ? [pg] : arguments);
-        setTimeout(boot, 30);
-        return ret;
-      };
-    }
-  }
-
-  function patchRebuildNav(){
-    if(window.__NMC_REMOVE_WORKORDER_STATUS_REBUILDNAV_PATCHED__) return;
-    window.__NMC_REMOVE_WORKORDER_STATUS_REBUILDNAV_PATCHED__ = true;
-    var old = window.rebuildNav;
-    if(typeof old === 'function'){
-      window.rebuildNav = function(){
-        var ret = old.apply(this, arguments);
-        setTimeout(boot, 30);
-        return ret;
-      };
-    }
-  }
-
-  function patchClicks(){
-    if(window.__NMC_REMOVE_WORKORDER_STATUS_CLICK_PATCHED__) return;
-    window.__NMC_REMOVE_WORKORDER_STATUS_CLICK_PATCHED__ = true;
-    document.addEventListener('click', function(e){
-      var t = e.target && e.target.closest && e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');
-      if(t){
-        e.preventDefault();
-        e.stopPropagation();
-        if(typeof window.showPage === 'function') window.showPage('workorder-final');
-        else goSafePage();
-        setTimeout(boot, 30);
-        return false;
-      }
-    }, true);
-  }
-
-  function boot(){
-    removeStatusNav();
-    hideStatusPage();
-    goSafePage();
-    patchShowPage();
-    patchRebuildNav();
-    patchClicks();
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 80); });
-  }else{
-    setTimeout(boot, 80);
-  }
-  [250,700,1500,3000,5000].forEach(function(t){ setTimeout(boot, t); });
-  try{
-    new MutationObserver(function(){ boot(); }).observe(document.documentElement, {childList:true, subtree:true});
-  }catch(e){}
-})();
-</script>
-<!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
 
 
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_START -->
@@ -19991,6 +19831,63 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_ANTI_FLICKER_RELEASE_END -->
+
+
+
+<!-- NMC_WORKORDER_STATUS_RESTORE_FORCE_V2_START -->
+<style id="nmc-workorder-status-restore-force-v2">
+  .sidebar .nav-item[data-page="workorder-list"],
+  .sidebar .nav-item[data-page-target="workorder-list"]{display:flex!important;}
+  #page-workorder-list{display:none;}
+  #page-workorder-list.active{display:block!important;}
+</style>
+<script id="nmc-workorder-status-restore-force-v2-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_STATUS_RESTORE_FORCE_V2__) return;
+  window.__NMC_WORKORDER_STATUS_RESTORE_FORCE_V2__=true;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function ensureNav(){
+    var side=q('.sidebar'); if(!side) return;
+    var exists=q('.sidebar .nav-item[data-page="workorder-list"]');
+    if(exists){ exists.style.display='flex'; return; }
+    var anchor=q('.sidebar .nav-item[data-page="workorder-final"]');
+    var btn=document.createElement('button');
+    btn.className='nav-item'; btn.setAttribute('data-page','workorder-list');
+    btn.innerHTML='<span class="nav-icon">▤</span><span>작업지시 현황</span>';
+    if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    else side.appendChild(btn);
+  }
+  function showList(){
+    if(typeof window.nmcRenderWorkOrderStatusDashboard==='function') window.nmcRenderWorkOrderStatusDashboard();
+    var p=q('#page-workorder-list'); if(!p) return;
+    qa('.page.active').forEach(function(x){x.classList.remove('active');x.style.display='none'});
+    p.classList.add('active'); p.style.display='block';
+    qa('.sidebar .nav-item.active').forEach(function(x){x.classList.remove('active')});
+    qa('.sidebar .nav-item[data-page="workorder-list"]').forEach(function(x){x.classList.add('active');x.style.display='flex'});
+  }
+  function patchShowPage(){
+    var old=window.showPage;
+    if(typeof old==='function' && !old.__nmcWoRestoreV2){
+      var f=function(pg){
+        if(pg==='workorder-list'){ setTimeout(showList,0); return; }
+        return old.apply(this,arguments);
+      };
+      f.__nmcWoRestoreV2=true;
+      window.showPage=f;
+    }
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');
+    if(t){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();showList();return false;}
+  },true);
+  function boot(){ensureNav();patchShowPage();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [100,400,900,1800,3200].forEach(function(t){setTimeout(boot,t)});
+})();
+</script>
+<!-- NMC_WORKORDER_STATUS_RESTORE_FORCE_V2_END -->
 
 </body>
 </html>
