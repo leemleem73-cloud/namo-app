@@ -2747,110 +2747,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 #page-trace .trace-hero-metrics{width:100%;display:grid;grid-template-columns:1fr 1fr}#page-trace .trace-hero-metrics>div{text-align:left;min-width:0}#page-trace .trace-premium-searchbar{padding:14px;flex-direction:column}#page-trace .trace-premium-searchbar .btn,#page-trace .trace-premium-searchbar .trace-inline-input{width:100%}#page-trace .trace-premium-card-head{padding:18px 16px}}
 
-
-
-/* =========================================================
-   NMC FULL REPLACE EARLY CSS v20260617-01
-   목적: 생산실적 메뉴 삭제, 작업지시 현황 컬럼 재정렬, 깜박임 방지
-   원본 파일은 보존하고 새 파일에서만 적용됩니다.
-========================================================= */
-.nav-item[data-page="production-result"],
-button[data-page="production-result"],
-button[data-page-target="production-result"],
-.mes-menu-tile[data-page-target="production-result"],
-.mes-menu-tile[data-go="production-result"]{
-  display:none!important;
-}
-#page-production-result .ph-title{
-  font-size:0!important;
-}
-#page-production-result .ph-title:after{
-  content:'생산현황';
-  font-size:20px;
-  font-weight:900;
-}
-#page-production-result .ph-bc{
-  font-size:0!important;
-}
-#page-production-result .ph-bc:after{
-  content:'홈 › 생산관리 › 생산현황';
-  font-size:12px;
-  color:#6b7688;
-  font-weight:600;
-}
-#page-workorder-list table th[data-nmc-hide-progress],
-#page-workorder-list table td[data-nmc-hide-progress]{
-  display:none!important;
-}
-#page-workorder-list .nmc-workorder-actions{
-  display:flex!important;
-  gap:6px!important;
-  justify-content:center!important;
-  align-items:center!important;
-  flex-wrap:nowrap!important;
-}
-#page-workorder-list .nmc-act-btn{
-  height:28px!important;
-  min-width:44px!important;
-  border:1px solid #dbe3ee!important;
-  border-radius:8px!important;
-  background:#fff!important;
-  color:#334155!important;
-  font-size:11px!important;
-  font-weight:900!important;
-  cursor:pointer!important;
-  padding:0 9px!important;
-  box-shadow:0 1px 2px rgba(15,23,42,.04)!important;
-}
-#page-workorder-list .nmc-act-btn:hover{background:#f8fafc!important;border-color:#93c5fd!important;color:#1d4ed8!important;}
-#page-workorder-list .nmc-act-btn.edit{background:#eff6ff!important;color:#1d4ed8!important;border-color:#bfdbfe!important;}
-#page-workorder-list .nmc-act-btn.cancel{background:#fff7ed!important;color:#c2410c!important;border-color:#fed7aa!important;}
-#page-workorder-list .nmc-premium-wo-table{
-  border-collapse:separate!important;
-  border-spacing:0!important;
-  border:1px solid #dbe3ee!important;
-  border-radius:18px!important;
-  overflow:hidden!important;
-  background:#fff!important;
-  box-shadow:0 14px 32px rgba(15,23,42,.07)!important;
-}
-#page-workorder-list .nmc-premium-wo-table thead th{
-  background:linear-gradient(180deg,#f8fafc,#eef4fb)!important;
-  color:#334155!important;
-  font-size:12px!important;
-  font-weight:900!important;
-  text-transform:none!important;
-  letter-spacing:-.2px!important;
-  padding:14px 16px!important;
-  border-bottom:1px solid #dbe3ee!important;
-}
-#page-workorder-list .nmc-premium-wo-table tbody td{
-  padding:14px 16px!important;
-  border-bottom:1px solid #edf2f7!important;
-  color:#334155!important;
-  font-size:13px!important;
-  vertical-align:middle!important;
-}
-#page-workorder-list .nmc-premium-wo-table tbody tr:hover td{background:#fbfdff!important;}
-#page-workorder-list .nmc-wo-remark-cell{
-  color:#475569!important;
-  font-weight:700!important;
-  max-width:220px!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-#page-workorder-list .nmc-wo-management-th,
-#page-workorder-list .nmc-wo-management-td{
-  text-align:center!important;
-  width:170px!important;
-  white-space:nowrap!important;
-}
-/* 과거 패치가 마지막 컬럼을 숨겨도 관리 컬럼은 복구 */
-#page-workorder-list table thead th.nmc-wo-management-th,
-#page-workorder-list table tbody td.nmc-wo-management-td{
-  display:table-cell!important;
-}
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -19635,6 +19531,188 @@ body.namo-wo-ready #page-production-result{display:none!important;}
   if(document.documentElement)mo.observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
+
+
+<!-- =========================================================
+  NAMOCHEMICAL PATCH 20260617-REMOVE-PRODUCTION-ALL
+  원본 보존 / 덮어쓰기 금지 / 생산 관련 UI 전체 제거
+  적용 범위:
+  - 생산 관리 / 생산실행 / 작업지시 / 생산현황 / 생산실적 / 수신함 / 참조함 / 재고관리 등 생산 관련 메뉴 제거
+  - 기존 JS가 다시 메뉴를 생성해도 MutationObserver로 즉시 제거
+  - 생산 관련 페이지 접근 차단 후 대시보드로 복귀
+========================================================= -->
+<style id="namo-remove-production-all-style-20260617">
+  .sidebar .nav-sec.namo-production-removed,
+  .sidebar .nav-item.namo-production-removed,
+  .nav-item[data-page="production"],
+  .nav-item[data-page="production-plan"],
+  .nav-item[data-page="production-progress"],
+  .nav-item[data-page="production-result"],
+  .nav-item[data-page="worklog"],
+  .nav-item[data-page="workorder-final"],
+  .nav-item[data-page="workorder-list"],
+  .nav-item[data-page="workorder-inbox"],
+  .nav-item[data-page="workorder-reference"],
+  .nav-item[data-page="workorder-approval"],
+  .nav-item[data-page="material-inventory"],
+  .nav-item[data-page="product-inventory"],
+  .nav-item[data-page="shipment-inventory"],
+  button[data-page-target="production"],
+  button[data-page-target="production-plan"],
+  button[data-page-target="production-progress"],
+  button[data-page-target="production-result"],
+  button[data-page-target="worklog"],
+  button[data-page-target="workorder-final"],
+  button[data-page-target="workorder-list"],
+  button[data-page-target="workorder-inbox"],
+  button[data-page-target="workorder-reference"],
+  button[data-page-target="workorder-approval"],
+  [data-qmes-go="worklog"],
+  [data-qmes-go="production"],
+  #page-production,
+  #page-production-plan,
+  #page-production-progress,
+  #page-production-result,
+  #page-worklog,
+  #page-workorder-final,
+  #page-workorder-list,
+  #page-workorder-inbox,
+  #page-workorder-reference,
+  #page-workorder-approval,
+  #page-material-inventory,
+  #page-product-inventory,
+  #page-shipment-inventory {
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+</style>
+<script id="namo-remove-production-all-script-20260617">
+(function(){
+  'use strict';
+  if (window.__NAMO_REMOVE_PRODUCTION_ALL_20260617__) return;
+  window.__NAMO_REMOVE_PRODUCTION_ALL_20260617__ = true;
+
+  var PRODUCTION_PAGE_KEYS = [
+    'production','production-plan','production-progress','production-result','worklog',
+    'workorder-final','workorder-list','workorder-inbox','workorder-reference','workorder-approval',
+    'material-inventory','product-inventory','shipment-inventory'
+  ];
+  var PRODUCTION_WORDS = [
+    '생산 관리','생산관리','생산실행','생산 실행','생산현황','생산 현황','생산실적','생산 실적',
+    '생산진행','생산 진행','작업지시','작업 지시','수신함','참조함','재고관리','재고 관리',
+    '원료재고','제품재고','출하재고','Work Order','MES MENU','작업오더'
+  ];
+  var PAGE_SET = Object.create(null);
+  PRODUCTION_PAGE_KEYS.forEach(function(k){ PAGE_SET[k] = true; });
+
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function text(el){ return (el && el.textContent || '').replace(/\s+/g,' ').trim(); }
+  function isProdText(t){ return PRODUCTION_WORDS.some(function(w){ return t.indexOf(w) !== -1; }); }
+  function isProdPageKey(k){ return !!(k && PAGE_SET[String(k)]); }
+  function removeEl(el){ if(el && el.parentNode){ el.classList && el.classList.add('namo-production-removed'); el.remove(); } }
+
+  function removeProductionNavGroups(){
+    var side = document.querySelector('.sidebar');
+    if(!side) return;
+
+    qsa('.nav-item', side).forEach(function(item){
+      var pg = item.getAttribute('data-page') || item.getAttribute('data-page-target') || '';
+      var t = text(item);
+      if(isProdPageKey(pg) || isProdText(t)) removeEl(item);
+    });
+
+    var secs = qsa('.nav-sec', side);
+    secs.forEach(function(sec){
+      var t = text(sec);
+      if(!isProdText(t)) return;
+      var n = sec.nextElementSibling;
+      while(n && !n.classList.contains('nav-sec')){
+        var next = n.nextElementSibling;
+        removeEl(n);
+        n = next;
+      }
+      removeEl(sec);
+    });
+  }
+
+  function removeProductionPages(){
+    PRODUCTION_PAGE_KEYS.forEach(function(k){
+      qsa('#page-' + CSS.escape(k)).forEach(removeEl);
+    });
+    qsa('.page').forEach(function(pg){
+      var t = text(pg).slice(0, 500);
+      var id = (pg.id || '').replace(/^page-/, '');
+      if(isProdPageKey(id) || isProdText(t)) removeEl(pg);
+    });
+  }
+
+  function removeProductionButtons(){
+    qsa('[data-page-target],[data-qmes-go]').forEach(function(el){
+      var k = el.getAttribute('data-page-target') || el.getAttribute('data-qmes-go') || '';
+      if(isProdPageKey(k) || k === 'worklog' || isProdText(text(el))) removeEl(el);
+    });
+  }
+
+  function ensureSafeActivePage(){
+    var active = document.querySelector('.page.active');
+    if(active){
+      var id = (active.id || '').replace(/^page-/, '');
+      if(!isProdPageKey(id) && !isProdText(text(active).slice(0,300))) return;
+    }
+    var dash = document.getElementById('page-dashboard') || document.querySelector('.page:not([id*="production"]):not([id*="workorder"]):not([id*="worklog"])');
+    if(dash){
+      qsa('.page.active').forEach(function(p){p.classList.remove('active');});
+      dash.style.display = '';
+      dash.classList.add('active');
+      qsa('.nav-item.active').forEach(function(b){b.classList.remove('active');});
+      var dnav = document.querySelector('.nav-item[data-page="dashboard"]');
+      if(dnav) dnav.classList.add('active');
+    }
+  }
+
+  function scrub(){
+    removeProductionNavGroups();
+    removeProductionPages();
+    removeProductionButtons();
+    ensureSafeActivePage();
+  }
+
+  document.addEventListener('click', function(e){
+    var target = e.target && e.target.closest && e.target.closest('[data-page],[data-page-target],[data-qmes-go]');
+    if(!target) return;
+    var key = target.getAttribute('data-page') || target.getAttribute('data-page-target') || target.getAttribute('data-qmes-go') || '';
+    if(isProdPageKey(key) || key === 'worklog' || isProdText(text(target))){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      scrub();
+      return false;
+    }
+  }, true);
+
+  function startObserver(){
+    var scheduled = false;
+    var mo = new MutationObserver(function(){
+      if(scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(function(){ scheduled = false; scrub(); });
+    });
+    mo.observe(document.documentElement, {childList:true, subtree:true});
+    scrub();
+    setTimeout(scrub, 50);
+    setTimeout(scrub, 250);
+    setTimeout(scrub, 800);
+    setTimeout(scrub, 1500);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', startObserver);
+  }else{
+    startObserver();
+  }
+})();
+</script>
+
 </body>
 </html>
 
@@ -20333,165 +20411,6 @@ body.namo-wo-ready #page-production-result{display:none!important;}
   window.addEventListener('load',function(){patch();setTimeout(patch,100);setTimeout(patch,600);});
   var mo=new MutationObserver(function(){clearTimeout(window.__namoWoPatchTimer);window.__namoWoPatchTimer=setTimeout(patch,60);});
   if(document.documentElement)mo.observe(document.documentElement,{childList:true,subtree:true});
-})();
-</script>
-
-
-<!-- =========================================================
-     NMC FULL REPLACE MASTER OVERRIDE v20260617-01
-     원본 보존 / 전체 HTML 신규본 전용
-     반영: 생산실적 메뉴 삭제, 작업지시 현황 진행률 제거, 비고/관리 추가, UI 고급화
-========================================================= -->
-<script id="nmc-full-replace-master-override-v20260617-01">
-(function(){
-  'use strict';
-  var RUNS = 0;
-  function qsa(sel, root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
-  function txt(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim();}
-  function hasText(el, re){return re.test(txt(el));}
-  function fireClick(el){ if(!el) return; try{ el.click(); }catch(e){} }
-  function removeOrHide(el){ if(!el) return; el.setAttribute('data-nmc-removed','1'); el.style.setProperty('display','none','important'); }
-
-  function removeProductionResultMenus(){
-    qsa('[data-page="production-result"],[data-page-target="production-result"],[data-go="production-result"]').forEach(removeOrHide);
-    qsa('button,.nav-item,.mes-menu-tile,a').forEach(function(el){
-      if(hasText(el,/^생산실적$|생산실적\s*$/) || (hasText(el,/생산실적/) && (el.classList.contains('nav-item') || el.classList.contains('mes-menu-tile')))) removeOrHide(el);
-    });
-    qsa('.ph-title').forEach(function(el){ if(txt(el)==='생산실적' || txt(el)==='생산실적현황') el.textContent='생산현황'; });
-    qsa('.ph-sub').forEach(function(el){ if(/생산완료\/종결|LOT별 생산량/.test(txt(el))) el.textContent='생산현황, 생산 LOT, 생산량, 수율, 고객사별 현황을 통합 조회합니다.'; });
-    qsa('.ph-bc').forEach(function(el){ if(/생산실적/.test(txt(el))) el.innerHTML='홈 <span class="sep">›</span> 생산관리 <span class="sep">›</span> 생산현황'; });
-  }
-
-  function statusClass(v){
-    v=String(v||'').trim();
-    if(/완료|종결|출고/.test(v)) return 'done';
-    if(/진행|생산/.test(v)) return 'run';
-    if(/보류|대기|작성/.test(v)) return 'wait';
-    if(/취소|삭제|반려|지연/.test(v)) return 'warn';
-    return 'wait';
-  }
-  function enhanceStatusCells(table){
-    var ths=qsa('thead th',table).map(txt);
-    var sidx=ths.findIndex(function(h){return /^상태$/.test(h);});
-    if(sidx<0) return;
-    qsa('tbody tr',table).forEach(function(tr){
-      var td=qsa('td',tr)[sidx]; if(!td || td.querySelector('.mes-status-pill')) return;
-      var v=txt(td); if(!v) return;
-      td.innerHTML='<span class="mes-status-pill '+statusClass(v)+'">'+v+'</span>';
-    });
-  }
-  function detailForRow(tr){
-    var btn=tr.querySelector('.nmc-wo-no-btn,button,[data-action="detail"]');
-    if(btn) fireClick(btn); else tr.dispatchEvent(new MouseEvent('click',{bubbles:true}));
-  }
-  function editForRow(tr){
-    var btn=tr.querySelector('[data-action="edit"],.sb.edit,.btn.edit');
-    if(btn) fireClick(btn); else alert('수정 기능은 기존 작업지시 상세 화면에서 처리하도록 연결 예정입니다.');
-  }
-  function cancelForRow(tr){
-    var no = txt(qsa('td',tr)[0]||tr);
-    if(!confirm('해당 작업지시를 취소 처리하시겠습니까?\n실제 삭제가 아니라 취소 상태로 관리하는 것을 권장합니다.')) return;
-    tr.setAttribute('data-nmc-cancelled','1');
-    tr.style.opacity='.58';
-  }
-
-  function normalizeWorkorderTable(table){
-    if(!table || table.getAttribute('data-nmc-full-replace-ready')==='1'){
-      // 이미 처리됐더라도 새 행이 들어왔을 수 있으므로 행만 보강
-    }
-    var ths=qsa('thead th',table);
-    if(!ths.length) return;
-    var heads=ths.map(txt);
-    var looksWorkorder=heads.some(function(h){return /생산일자|생산\s*LOT|고객사명|계획수량|작업지시/.test(h);});
-    if(!looksWorkorder) return;
-    table.classList.add('nmc-premium-wo-table');
-
-    // 과거 패치 스타일 제거: 마지막 컬럼 숨김, 비고/인쇄/수정/삭제 숨김 등
-    ['nmc-workorder-no-approval-clean-style-v20260611','nmc-workorder-list-sync-safe-style'].forEach(function(id){var el=document.getElementById(id); if(el) el.remove();});
-
-    // 진행률/진행구조 컬럼 제거가 아니라 hide marker로 처리(행 수 변화에도 안전)
-    ths=qsa('thead th',table); heads=ths.map(txt);
-    var pidx=heads.findIndex(function(h){return /진행률|진행\s*구조/.test(h);});
-    if(pidx>-1){
-      ths[pidx].setAttribute('data-nmc-hide-progress','1');
-      qsa('tbody tr',table).forEach(function(tr){var td=qsa('td',tr)[pidx]; if(td) td.setAttribute('data-nmc-hide-progress','1');});
-    }
-
-    // 수신 뒤에 비고 없으면 추가
-    ths=qsa('thead th',table); heads=ths.map(txt);
-    var recvIdx=heads.findIndex(function(h){return /^수신$/.test(h);});
-    var memoIdx=heads.findIndex(function(h){return /^비고$/.test(h);});
-    if(recvIdx>-1 && memoIdx<0){
-      var th=document.createElement('th'); th.textContent='비고'; th.className='nmc-wo-remark-th';
-      ths[recvIdx].after(th);
-      qsa('tbody tr',table).forEach(function(tr){
-        var cells=qsa('td',tr); var td=document.createElement('td'); td.className='nmc-wo-remark-cell'; td.textContent='-';
-        if(cells[recvIdx]) cells[recvIdx].after(td); else tr.appendChild(td);
-      });
-    }
-
-    // 관리 컬럼 없으면 추가
-    ths=qsa('thead th',table); heads=ths.map(txt);
-    var manageIdx=heads.findIndex(function(h){return /^관리$|^작업$/.test(h);});
-    if(manageIdx<0){
-      var mth=document.createElement('th'); mth.textContent='관리'; mth.className='nmc-wo-management-th';
-      var theadRow=table.querySelector('thead tr'); if(theadRow) theadRow.appendChild(mth);
-    }else{
-      ths[manageIdx].textContent='관리'; ths[manageIdx].classList.add('nmc-wo-management-th'); ths[manageIdx].style.setProperty('display','table-cell','important');
-    }
-
-    qsa('tbody tr',table).forEach(function(tr){
-      if(tr.querySelector('.nmc-wo-empty')) return;
-      var cells=qsa('td',tr);
-      // 진행률 hide marker 재적용
-      var currentHeads=qsa('thead th',table).map(txt);
-      var pi=currentHeads.findIndex(function(h){return /진행률|진행\s*구조/.test(h);});
-      if(pi>-1 && cells[pi]) cells[pi].setAttribute('data-nmc-hide-progress','1');
-      // 관리 셀 없으면 추가, 있으면 교체
-      var mgIdx=currentHeads.findIndex(function(h){return /^관리$|^작업$/.test(h);});
-      var td = (mgIdx>-1 && cells[mgIdx]) ? cells[mgIdx] : null;
-      if(!td){ td=document.createElement('td'); tr.appendChild(td); }
-      td.className='nmc-wo-management-td';
-      td.style.setProperty('display','table-cell','important');
-      if(!td.querySelector('.nmc-workorder-actions')){
-        td.innerHTML='<div class="nmc-workorder-actions"><button type="button" class="nmc-act-btn detail">상세</button><button type="button" class="nmc-act-btn edit">수정</button><button type="button" class="nmc-act-btn cancel">취소</button></div>';
-        td.querySelector('.detail').addEventListener('click',function(e){e.stopPropagation(); detailForRow(tr);});
-        td.querySelector('.edit').addEventListener('click',function(e){e.stopPropagation(); editForRow(tr);});
-        td.querySelector('.cancel').addEventListener('click',function(e){e.stopPropagation(); cancelForRow(tr);});
-      }
-      // 비고 셀 고급화
-      var hh=qsa('thead th',table).map(txt); var mi=hh.findIndex(function(h){return /^비고$/.test(h);});
-      if(mi>-1){ var memo=qsa('td',tr)[mi]; if(memo) memo.classList.add('nmc-wo-remark-cell'); }
-    });
-    enhanceStatusCells(table);
-    table.setAttribute('data-nmc-full-replace-ready','1');
-  }
-
-  function normalizeWorkorderList(){
-    qsa('#page-workorder-list table').forEach(normalizeWorkorderTable);
-    qsa('#page-workorder-list .ph-title').forEach(function(el){el.textContent='작업지시 현황';});
-    qsa('#page-workorder-list .ph-sub').forEach(function(el){el.textContent='작성중부터 종결까지 전체 작업지시를 확인하고 상세/수정/취소 처리합니다.';});
-  }
-
-  function redirectIfHiddenPage(){
-    var active=document.querySelector('.page.active');
-    if(active && active.id==='page-production-result'){
-      var target=document.querySelector('[data-page="production"],[data-page-target="production"],[data-page="workorder-list"]');
-      if(target) fireClick(target);
-    }
-  }
-
-  function applyAll(){
-    RUNS++;
-    removeProductionResultMenus();
-    normalizeWorkorderList();
-    redirectIfHiddenPage();
-  }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyAll); else applyAll();
-  [0,50,120,250,500,1000,1800,3000].forEach(function(ms){setTimeout(applyAll,ms);});
-  var mo=new MutationObserver(function(){ clearTimeout(window.__nmcFullReplaceTimer); window.__nmcFullReplaceTimer=setTimeout(applyAll,40); });
-  mo.observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 </body></html>
