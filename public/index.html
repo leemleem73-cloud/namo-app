@@ -7955,7 +7955,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <div class="nmc-toolbar">
           <div class="nmc-filter-row">
             <label>계획일자</label><input type="date" value="2026-05-01"><span>~</span><input type="date" value="2026-05-21">
-            <label>제품명</label><span class="nmc-search"><input placeholder="제품명을 선택하세요."><span>⌕</span></span>
+            <label>공정명</label><span class="nmc-search"><input placeholder="공정명을 선택하세요."><span>⌕</span></span>
             <label>상태</label><select><option>전체</option><option>진행 중</option><option>완료</option><option>취소</option></select>
           </div>
           <div class="nmc-plan-kpis">
@@ -7967,7 +7967,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         </div>
         <div class="nmc-table-card">
           <table class="nmc-table">
-            <thead><tr><th>No.</th><th>계획일자</th><th>계획번호</th><th>제품명</th><th>계획수량 (kg)</th><th>실투입량 (kg)</th><th>상태</th><th>생산 LOT</th><th>요청부서</th><th>등록자</th><th>등록일시</th><th></th></tr></thead>
+            <thead><tr><th>No.</th><th>계획일자</th><th>계획번호</th><th>공정명</th><th>계획수량 (kg)</th><th>실투입량 (kg)</th><th>상태</th><th>생산 LOT</th><th>요청부서</th><th>등록자</th><th>등록일시</th><th></th></tr></thead>
             <tbody>
               <tr><td colspan="12" class="nmc-empty" style="padding:32px;text-align:center;color:#94a3b8;font-weight:800">등록된 생산계획 데이터가 없습니다.</td></tr>
             </tbody>
@@ -8007,7 +8007,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       <div class="nmc-workorder-card">
         <h3>2. 제품 정보</h3>
         <div class="nmc-form-grid five">
-          <div class="nmc-field"><label>제품명<span class="req">*</span></label><input class="nmc-input nmc-lot-source" id="nmcProdName" placeholder="제품명 직접 입력"></div>
+          <div class="nmc-field"><label>공정명<span class="req">*</span></label><input class="nmc-input nmc-lot-source" id="nmcProdName" placeholder="공정명 직접 입력"></div>
           <div class="nmc-field"><label>완제품 LOT</label><input class="nmc-input nmc-lot-source" id="nmcProdCode" placeholder="완제품 LOT 직접 입력"></div>
           <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcPlanQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
           <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcActualQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
