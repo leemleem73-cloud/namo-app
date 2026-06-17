@@ -14222,6 +14222,89 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC_REMOVE_PRODUCTION_PROGRESS_STRUCTURE_ONLY_END -->
 
+
+
+<!-- NMC_BOTTOM_SCRIPT_LEAK_CLEAN_FIX_START -->
+<style id="nmc-bottom-script-leak-clean-css-v20260617">
+  /* 하단에 JS 코드가 텍스트로 노출되는 경우 즉시 숨김 */
+  .nmc-script-leak-hidden{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}
+</style>
+<script id="nmc-bottom-script-leak-clean-script-v20260617">
+(function(){
+  'use strict';
+  if(window.__NMC_BOTTOM_SCRIPT_LEAK_CLEAN_FIX_V20260617__) return;
+  window.__NMC_BOTTOM_SCRIPT_LEAK_CLEAN_FIX_V20260617__ = true;
+
+  function isLeakText(v){
+    v = String(v || '');
+    return (
+      v.indexOf('window.open') > -1 ||
+      v.indexOf('document.write') > -1 ||
+      v.indexOf('document.close') > -1 ||
+      v.indexOf('printHtml') > -1 ||
+      v.indexOf('w.document') > -1 ||
+      v.indexOf('MutationObserver') > -1 && v.indexOf('enhanceAll') > -1
+    ) && (
+      v.indexOf("var w=") > -1 ||
+      v.indexOf("w.document") > -1 ||
+      v.indexOf("document.addEventListener") > -1 ||
+      v.indexOf("function boot") > -1 ||
+      v.length > 80
+    );
+  }
+
+  function cleanTextLeaks(root){
+    root = root || document.body;
+    if(!root) return;
+    var walker;
+    try{ walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null); }catch(e){ return; }
+    var nodes = [];
+    while(walker.nextNode()){
+      var n = walker.currentNode;
+      if(n && isLeakText(n.nodeValue)) nodes.push(n);
+    }
+    nodes.forEach(function(n){
+      try{
+        if(n.parentNode && n.parentNode !== document.head){
+          n.parentNode.removeChild(n);
+        }
+      }catch(e){}
+    });
+  }
+
+  function cleanElementLeaks(root){
+    root = root || document.body;
+    if(!root || !root.querySelectorAll) return;
+    Array.prototype.slice.call(root.querySelectorAll('body > div, body > p, body > span, body > pre, body > code, .footer, footer')).forEach(function(el){
+      try{
+        var t = (el.textContent || '').replace(/\s+/g,' ').trim();
+        if(isLeakText(t)){
+          el.textContent = '';
+          el.classList.add('nmc-script-leak-hidden');
+        }
+      }catch(e){}
+    });
+  }
+
+  function clean(){
+    cleanTextLeaks(document.body);
+    cleanElementLeaks(document.body);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(clean, 20); });
+  }else{
+    setTimeout(clean, 20);
+  }
+  [80,200,500,1000,2000,4000].forEach(function(t){ setTimeout(clean, t); });
+  document.addEventListener('click', function(){ setTimeout(clean, 10); setTimeout(clean, 80); setTimeout(clean, 250); }, true);
+  try{
+    new MutationObserver(function(){ setTimeout(clean, 10); }).observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+  }catch(e){}
+})();
+</script>
+<!-- NMC_BOTTOM_SCRIPT_LEAK_CLEAN_FIX_END -->
+
 </body></html>';
 
     var w=window.open('','_blank','width=900,height=1000');
