@@ -2868,88 +2868,16 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 <!-- LOT inquiry, IQC/PQC/OQC linkage status, and certificate shortcut implementations removed. -->
 
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head>
@@ -4429,88 +4357,16 @@ function printLabel(){
     '@media print{@page{margin:8mm}}',
     '</style>
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head><body>',
@@ -14239,12 +14095,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var h3=q('h3',box);
     if(!h3 || h3.textContent.trim().indexOf('작업지시 상세')===-1) return;
     box.dataset.nmcPrintReady='1';
-
     var wrap=document.createElement('div');
     wrap.className='nmc-wo-detail-head-print';
     h3.parentNode.insertBefore(wrap,h3);
     wrap.appendChild(h3);
-
     var btn=document.createElement('button');
     btn.type='button';
     btn.className='nmc-wo-print-btn';
@@ -14253,23 +14107,19 @@ document.addEventListener('DOMContentLoaded',async()=>{
     wrap.appendChild(btn);
   }
 
-  function enhanceAll(){
-    qa('.nmc-workorder-detail.show').forEach(enhanceDetail);
-  }
+  function enhanceAll(){qa('.nmc-workorder-detail.show').forEach(enhanceDetail);}
 
   function printDetail(box){
     if(!box) return;
     var clone=box.cloneNode(true);
     qa('.nmc-wo-print-btn',clone).forEach(function(b){b.remove();});
-
     var no='';
-    var cells=qa('.nmc-detail-cell',clone);
-    cells.forEach(function(c){
+    qa('.nmc-detail-cell',clone).forEach(function(c){
       var b=q('b',c), s=q('span',c);
       if(b && s && b.textContent.indexOf('작업지시번호')>-1) no=s.textContent.trim();
     });
-
     var title=no ? '작업지시_'+no : '작업지시';
+
     var printHtml='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>'+
       '@page{size:A4 portrait;margin:12mm}body{font-family:Inter,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5}'+
       'h3{font-size:20px;color:#0b57d0;margin:0 0 14px;font-weight:900}h4{font-size:14px;margin:16px 0 8px;color:#0f172a}'+
@@ -14278,92 +14128,20 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
       '</style>
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>'+
-      '<script>window.onload=function(){setTimeout(function(){window.print();},150)}<\/script>
+      '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\/scr'+'ipt>
 <script id="namo-workorder-history-wrapper-20260617">
 (function(){
   if(typeof window.nmcSaveWorkOrderHistory !== 'function'){
@@ -14371,64 +14149,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -14437,128 +14164,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
@@ -14578,21 +14192,20 @@ document.addEventListener('DOMContentLoaded',async()=>{
       printDetail(btn.closest('.nmc-workorder-detail'));
       return;
     }
-    if(e.target && e.target.closest && e.target.closest('[data-namo-wo-open]')){
-      setTimeout(enhanceAll,120);
-    }
+    if(e.target && e.target.closest && e.target.closest('[data-namo-wo-open]')) setTimeout(enhanceAll,120);
   },true);
 
   var mo=new MutationObserver(function(){enhanceAll();});
   function boot(){
     enhanceAll();
-    var root=q('.content')||document.body;
-    if(root) mo.observe(root,{childList:true,subtree:true});
+    var c=q('.content')||document.body;
+    if(c) mo.observe(c,{childList:true,subtree:true});
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
   else boot();
 })();
 </script>
+
 <!-- NAMO WORKORDER SEND INFO RESTORE PATCH 20260617
      작업지시 등록 하단 발송정보 수신/참조 목록 복구
      - 회원등록현황(state/adminUsers/signableUsers/localStorage/window 배열) 우선 사용
@@ -14801,221 +14414,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- /NAMO WORKORDER SEND INFO RESTORE PATCH 20260617 -->
-
-
-<script id="namo-workorder-history-wrapper-20260617">
-(function(){
-  if(typeof window.nmcSaveWorkOrderHistory !== 'function'){
-    window.nmcSaveWorkOrderHistory = function(status){
-      try{
-        var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
-        if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
-      }catch(e){}
-    };
-  }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
-})();
-</script>
-
-
-<script id="namo-workorder-progress-structure-20260617">
-(function(){
-  'use strict';
-  if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
-})();
-</script>
-
-</body></html>';
-    var w=window.open('','_blank','width=900,height=1000');
-    if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
-    w.document.open(); w.document.write(html); w.document.close();
-  }
-  document.addEventListener('click',function(e){
-    var btn=e.target && e.target.closest && e.target.closest('[data-nmc-wo-detail-print]');
-    if(btn){e.preventDefault(); printDetail(btn.closest('.nmc-workorder-detail')); return;}
-    if(e.target && e.target.closest && e.target.closest('[data-namo-wo-open]')) setTimeout(enhanceAll,120);
-  },true);
-  var mo=new MutationObserver(function(){enhanceAll();});
-  function boot(){enhanceAll(); var c=q('.content')||document.body; mo.observe(c,{childList:true,subtree:true});}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
-})();
-</script>
 
 <!-- =========================================================
   PATCH: 제품코드 -> 완제품 LOT / LOT 추적 조회 연동
@@ -16686,88 +16084,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시 데이터를 찾을 수 없습니다.');return}var box=ensureDetailBox();if(!box)return;box.innerHTML=detailHtml(item);box.classList.add('show');box.scrollIntoView({behavior:'smooth',block:'start'})}
   function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시 데이터를 찾을 수 없습니다.');return}var n=normalize(item);var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}body{font-family:Inter,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5}h1{font-size:23px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #cbd5e1;border-radius:8px;padding:8px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #cbd5e1;border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px;text-align:center}th{background:#f8fafc}.foot{margin-top:18px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #cbd5e1;padding-top:8px}</style>
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+(n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>')+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},150)}<\/scr'+'ipt>
@@ -16778,64 +16104,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -16844,128 +16119,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
@@ -17021,88 +16183,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시 데이터를 찾을 수 없습니다.');return}var page=q('#page-workorder-list');var host=q('#namoWoDetail',page)||q('.nmc-workorder-detail',page)||q('.cb',page)||page;if(!host)return;if(host.id==='namoWoDetail'||host.classList.contains('nmc-workorder-detail')){host.innerHTML=detailHtml(item);host.classList.add('show')}else{var box=q('#namoWoDetail',host);if(!box){host.insertAdjacentHTML('beforeend','<div id="namoWoDetail" class="nmc-workorder-detail show"></div>');box=q('#namoWoDetail',host)}box.innerHTML=detailHtml(item);box.classList.add('show')}setTimeout(function(){(q('#namoWoDetail')||host).scrollIntoView({behavior:'smooth',block:'start'})},50)}
   function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style>
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>
@@ -17113,64 +16203,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -17179,128 +16218,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
@@ -17487,88 +16413,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
     return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style>
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>
@@ -17579,64 +16433,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -17645,128 +16448,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
@@ -17925,88 +16615,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
     var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style>
 <style id="namo-workorder-progress-structure-style-20260617">
-/* 작업지시 현황 진행 구조 타임라인 */
-.namo-wo-progress-steps{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:460px;
-}
-.namo-wo-step{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  white-space:nowrap;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:900;
-}
-.namo-wo-dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #cbd5e1;
-  background:#fff;
-  color:#94a3b8;
-  font-size:10px;
-  line-height:1;
-}
-.namo-wo-step.done{color:#166534;}
-.namo-wo-step.done .namo-wo-dot{
-  background:#16a34a;
-  border-color:#16a34a;
-  color:#fff;
-}
-.namo-wo-step.active{color:#2563eb;}
-.namo-wo-step.active .namo-wo-dot{
-  background:#2563eb;
-  border-color:#2563eb;
-  color:#fff;
-  box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
-.namo-wo-line{
-  width:22px;
-  height:2px;
-  background:#dbe3ee;
-  flex:0 0 auto;
-}
-.namo-wo-line.done{background:#16a34a;}
-.namo-wo-progress-cell{
-  min-width:520px;
-}
-.namo-wo-progress-percent{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.namo-wo-progress-bar{
-  width:160px;
-  height:7px;
-  border-radius:999px;
-  background:#e5edf6;
-  overflow:hidden;
-}
-.namo-wo-progress-bar span{
-  display:block;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#06b6d4);
-}
-.namo-wo-progress-text{
-  font-size:11px;
-  font-weight:900;
-  color:#2563eb;
-}
-@media(max-width:1200px){
-  .namo-wo-progress-cell{min-width:420px;}
-  .namo-wo-progress-steps{min-width:390px;gap:4px;}
-  .namo-wo-step{font-size:10px;}
-  .namo-wo-line{width:14px;}
-}
+.namo-wo-progress-steps{display:flex;align-items:center;gap:6px;min-width:460px}
+.namo-wo-step{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#94a3b8;font-size:11px;font-weight:900}
+.namo-wo-dot{width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #cbd5e1;background:#fff;color:#94a3b8;font-size:10px;line-height:1}
+.namo-wo-step.done{color:#166534}.namo-wo-step.done .namo-wo-dot{background:#16a34a;border-color:#16a34a;color:#fff}
+.namo-wo-step.active{color:#2563eb}.namo-wo-step.active .namo-wo-dot{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.namo-wo-line{width:22px;height:2px;background:#dbe3ee;flex:0 0 auto}.namo-wo-line.done{background:#16a34a}
+.namo-wo-progress-cell{min-width:520px}.namo-wo-progress-percent{margin-top:7px;display:flex;align-items:center;gap:8px}
+.namo-wo-progress-bar{width:160px;height:7px;border-radius:999px;background:#e5edf6;overflow:hidden}.namo-wo-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
+@media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
 
 </head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt>
@@ -18017,64 +16635,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -18083,128 +16650,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
@@ -21308,64 +19762,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -21374,128 +19777,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
@@ -21851,64 +20141,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       try{
         var fn = window.nmcSaveWorkorderHistory || window.saveWorkOrderHistory || window.saveWorkorderHistory;
         if(typeof fn === 'function') return fn(status);
-        var arr = [];
-        try{ arr = JSON.parse(localStorage.getItem('nmcWorkOrderHistory') || '[]'); }catch(e){}
-        arr.push({status: status || '발송완료', date: new Date().toLocaleString('ko-KR')});
-        localStorage.setItem('nmcWorkOrderHistory', JSON.stringify(arr));
+        var arr=[];
+        try{arr=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]');}catch(e){}
+        arr.push({status:status||'발송완료',date:new Date().toLocaleString('ko-KR')});
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(arr));
       }catch(e){}
     };
   }
-})();
-</script>
-
-
-<script id="namo-production-progress-status-fix-20260617">
-(function(){
-  'use strict';
-  if(window.__namoProductionProgressStatusFix20260617) return;
-  window.__namoProductionProgressStatusFix20260617 = true;
-
-  function toNum(v){
-    var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n)?n:0;
-  }
-  function calc(actual, plan){
-    actual=toNum(actual); plan=toNum(plan);
-    if(plan<=0) return actual>0?100:0;
-    return Math.max(0, Math.min(100, actual/plan*100));
-  }
-  function status(p){
-    p=toNum(p);
-    if(p>=99.5) return '생산완료';
-    if(p>0) return '생산중';
-    return '대기';
-  }
-  function patchTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
-      var planIdx=heads.findIndex(function(h){return /계획수량/.test(h);});
-      var actualIdx=heads.findIndex(function(h){return /실제생산량|실생산량|실투입량|생산량/.test(h);});
-      var rateIdx=heads.findIndex(function(h){return /수율|진행률/.test(h);});
-      var statusIdx=heads.findIndex(function(h){return /^상태$/.test(h);});
-      if(planIdx<0 || actualIdx<0) return;
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds=tr.children;
-        if(tds.length<=Math.max(planIdx,actualIdx)) return;
-        var p=calc(tds[actualIdx].textContent, tds[planIdx].textContent);
-        var st=status(p);
-        if(rateIdx>=0 && tds[rateIdx]) tds[rateIdx].textContent=(Math.round(p*100)/100)+'%';
-        if(statusIdx>=0 && tds[statusIdx]){
-          tds[statusIdx].innerHTML='<span class="mes-status-pill '+(st==='생산완료'?'done':st==='생산중'?'run':'wait')+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-  function apply(){patchTables();}
-  document.addEventListener('DOMContentLoaded',apply);
-  window.addEventListener('load',apply);
-  document.addEventListener('click',function(){setTimeout(apply,120);},true);
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
 })();
 </script>
 
@@ -21917,128 +20156,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 (function(){
   'use strict';
   if(window.__namoWorkorderProgressStructure20260617) return;
-  window.__namoWorkorderProgressStructure20260617 = true;
-
-  function toNum(v){
-    var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
-    return isFinite(n) ? n : 0;
-  }
-
-  function normalizeStatus(s){
-    s = String(s || '').trim();
-    if(/종결|완료\/종결/.test(s)) return '종결';
-    if(/품질|검사/.test(s)) return '품질검사';
-    if(/생산완료|완료/.test(s)) return '생산완료';
-    if(/생산중|진행/.test(s)) return '생산중';
-    if(/생산대기|대기/.test(s)) return '생산대기';
-    if(/수신/.test(s)) return '수신확인';
-    if(/발송/.test(s)) return '발송완료';
-    if(/작성/.test(s)) return '작성중';
-    return s || '작성중';
-  }
-
-  function statusFromRateAndStatus(rate, rawStatus){
-    var st = normalizeStatus(rawStatus);
-    rate = toNum(rate);
-
-    // 생산량이 진행된 경우 상태를 업무 흐름 기준으로 보정
-    if(rate >= 99.5 && !/품질검사|종결/.test(st)) return '생산완료';
-    if(rate > 0 && !/생산완료|품질검사|종결/.test(st)) return '생산중';
-    return st;
-  }
-
-  function stepIndex(status){
-    var steps = ['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];
-    var idx = steps.indexOf(status);
-    return idx < 0 ? 0 : idx;
-  }
-
-  function buildSteps(status, rate){
-    var steps = [
-      ['작성중','작성'],
-      ['발송완료','발송'],
-      ['수신확인','수신'],
-      ['생산대기','대기'],
-      ['생산중','생산중'],
-      ['생산완료','완료'],
-      ['품질검사','검사'],
-      ['종결','종결']
-    ];
-    var idx = stepIndex(status);
-    var html = '<div class="namo-wo-progress-steps">';
-    steps.forEach(function(step, i){
-      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
-      var mark = i < idx ? '✓' : (i === idx ? '●' : '');
-      html += '<span class="namo-wo-step '+cls+'"><span class="namo-wo-dot">'+mark+'</span>'+step[1]+'</span>';
-      if(i < steps.length - 1){
-        html += '<span class="namo-wo-line '+(i < idx ? 'done' : '')+'"></span>';
-      }
-    });
-    html += '</div>';
-    html += '<div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+Math.max(0,Math.min(100,toNum(rate)))+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(toNum(rate)*100)/100)+'%</span></div>';
-    return html;
-  }
-
-  function findIdx(heads, patterns){
-    for(var i=0;i<heads.length;i++){
-      for(var j=0;j<patterns.length;j++){
-        if(patterns[j].test(heads[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  function patchWorkOrderTables(){
-    document.querySelectorAll('table').forEach(function(table){
-      var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent.trim(); });
-      if(!heads.length) return;
-
-      var hasWorkOrder = heads.some(function(h){ return /작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h); });
-      var progressIdx = findIdx(heads, [/진행률/]);
-      var statusIdx = findIdx(heads, [/^상태$/]);
-      if(!hasWorkOrder || progressIdx < 0) return;
-
-      var th = table.querySelectorAll('thead th')[progressIdx];
-      if(th && th.textContent.trim() !== '진행 구조') th.textContent = '진행 구조';
-
-      table.querySelectorAll('tbody tr').forEach(function(tr){
-        var tds = tr.children;
-        if(tds.length <= progressIdx) return;
-        var rawRate = tds[progressIdx].textContent || '';
-        var rawStatus = statusIdx >= 0 && tds[statusIdx] ? tds[statusIdx].textContent : '';
-        var rate = toNum(rawRate);
-        var st = statusFromRateAndStatus(rate, rawStatus);
-
-        tds[progressIdx].classList.add('namo-wo-progress-cell');
-        if(tds[progressIdx].dataset.namoProgressPatched === '1') return;
-        tds[progressIdx].dataset.namoProgressPatched = '1';
-        tds[progressIdx].innerHTML = buildSteps(st, rate);
-
-        if(statusIdx >= 0 && tds[statusIdx]){
-          var cls = st === '생산완료' || st === '종결' ? 'done' : (st === '생산중' ? 'run' : 'wait');
-          tds[statusIdx].innerHTML = '<span class="mes-status-pill '+cls+'">'+st+'</span>';
-        }
-      });
-    });
-  }
-
-  function apply(){
-    patchWorkOrderTables();
-  }
-
-  document.addEventListener('DOMContentLoaded', apply);
-  window.addEventListener('load', apply);
-  document.addEventListener('click', function(){ setTimeout(apply, 150); }, true);
-  setTimeout(apply, 300);
-  setTimeout(apply, 1000);
-
-  var mo = new MutationObserver(function(){ apply(); });
-  function bootObserver(){
-    var root = document.querySelector('.content') || document.body;
-    if(root) mo.observe(root, {childList:true, subtree:true});
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootObserver);
-  else bootObserver();
+  window.__namoWorkorderProgressStructure20260617=true;
+  function toNum(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+  function norm(s){s=String(s||'').trim();if(/종결/.test(s))return'종결';if(/품질|검사/.test(s))return'품질검사';if(/생산완료|완료/.test(s))return'생산완료';if(/생산중|진행/.test(s))return'생산중';if(/생산대기|대기/.test(s))return'생산대기';if(/수신/.test(s))return'수신확인';if(/발송/.test(s))return'발송완료';if(/작성/.test(s))return'작성중';return s||'작성중'}
+  function status(rate,raw){var st=norm(raw),r=toNum(rate);if(r>=99.5&&!/품질검사|종결/.test(st))return'생산완료';if(r>0&&!/생산완료|품질검사|종결/.test(st))return'생산중';return st}
+  function idx(st){var a=['작성중','발송완료','수신확인','생산대기','생산중','생산완료','품질검사','종결'];var i=a.indexOf(st);return i<0?0:i}
+  function build(st,rate){var steps=[['작성중','작성'],['발송완료','발송'],['수신확인','수신'],['생산대기','대기'],['생산중','생산중'],['생산완료','완료'],['품질검사','검사'],['종결','종결']],cur=idx(st),r=Math.max(0,Math.min(100,toNum(rate))),h='<div class="namo-wo-progress-steps">';steps.forEach(function(x,i){var c=i<cur?'done':(i===cur?'active':''),m=i<cur?'✓':(i===cur?'●':'');h+='<span class="namo-wo-step '+c+'"><span class="namo-wo-dot">'+m+'</span>'+x[1]+'</span>';if(i<steps.length-1)h+='<span class="namo-wo-line '+(i<cur?'done':'')+'"></span>'});h+='</div><div class="namo-wo-progress-percent"><span class="namo-wo-progress-bar"><span style="width:'+r+'%"></span></span><span class="namo-wo-progress-text">'+(Math.round(r*100)/100)+'%</span></div>';return h}
+  function find(heads,re){for(var i=0;i<heads.length;i++)if(re.test(heads[i]))return i;return-1}
+  function patch(){document.querySelectorAll('table').forEach(function(t){var heads=Array.prototype.map.call(t.querySelectorAll('thead th'),function(th){return th.textContent.trim()});if(!heads.length)return;var p=find(heads,/진행률/),s=find(heads,/^상태$/);if(p<0)return;var relevant=heads.some(function(h){return/작업지시|생산일자|생산\s*LOT|고객사|계획수량/.test(h)});if(!relevant)return;var th=t.querySelectorAll('thead th')[p];if(th)th.textContent='진행 구조';t.querySelectorAll('tbody tr').forEach(function(tr){var td=tr.children;if(td.length<=p||td[p].dataset.namoProgressPatched==='1')return;var rate=toNum(td[p].textContent),st=status(rate,s>=0&&td[s]?td[s].textContent:'');td[p].classList.add('namo-wo-progress-cell');td[p].dataset.namoProgressPatched='1';td[p].innerHTML=build(st,rate);if(s>=0&&td[s]){var cls=st==='생산완료'||st==='종결'?'done':(st==='생산중'?'run':'wait');td[s].innerHTML='<span class="mes-status-pill '+cls+'">'+st+'</span>'}})})}
+  document.addEventListener('DOMContentLoaded',patch);window.addEventListener('load',patch);document.addEventListener('click',function(){setTimeout(patch,150)},true);setTimeout(patch,300);setTimeout(patch,1000);var mo=new MutationObserver(patch);function boot(){var r=document.querySelector('.content')||document.body;if(r)mo.observe(r,{childList:true,subtree:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
