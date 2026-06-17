@@ -7904,17 +7904,35 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function insertProductionNav(){
-    const side = qs('.sidebar'); if(!side) return;
-    let prodSec = qsa('.nav-sec', side).find(x => x.textContent.trim()==='생산 관리');
-    if(!prodSec){
-      prodSec = qsa('.nav-sec', side).find(x => x.textContent.trim()==='생산 관리');
+    const side = qs('.sidebar');
+    if(!side){
+      console.warn('[insertProductionNav] .sidebar가 없어 생산 메뉴 삽입을 건너뜁니다.');
+      return;
     }
-    if(!qs('.nav-item[data-page="production-plan"]', side)){
+
+    let prodSec = qsa('.nav-sec', side).find(x => (x.textContent || '').trim() === '생산 관리');
+    if(!prodSec){
+      const anchor = qs('.nav-item[data-page="trace"]', side) || qs('.nav-item[data-page="approval-inbox"]', side) || side.firstElementChild;
+      const secHtml = '<div class="nav-sec">생산 관리</div>';
+      if(anchor && typeof anchor.insertAdjacentHTML === 'function'){
+        anchor.insertAdjacentHTML('beforebegin', secHtml);
+      }else{
+        side.insertAdjacentHTML('afterbegin', secHtml);
+      }
+      prodSec = qsa('.nav-sec', side).find(x => (x.textContent || '').trim() === '생산 관리');
+    }
+
+    if(!prodSec || typeof prodSec.insertAdjacentHTML !== 'function'){
+      console.warn('[insertProductionNav] 생산 관리 섹션을 찾지 못해 메뉴 삽입을 건너뜁니다.');
+      return;
+    }
+
+    if(!qs('.nav-item[data-page="workorder-final"]', side)){
       prodSec.insertAdjacentHTML('afterend', `
-        
         <button class="nav-item" data-page="workorder-final"><span class="nav-icon">›</span><span>작업지시</span></button>
       `);
     }
+
     /* 작업지시 아래 빈 '›' 하위 메뉴는 표시하지 않음 */
     qsa('.nav-item[data-page="production"]', side).forEach(btn=>{
       const label = btn.querySelector('span:last-child')?.textContent.trim() || '';
