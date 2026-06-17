@@ -2879,6 +2879,26 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
 @media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
+
+<!-- NMC_ANTI_FLICKER_START -->
+<script>document.documentElement.classList.add('nmc-booting');</script>
+<style id="nmc-anti-flicker-style">
+html.nmc-booting .shell{visibility:hidden!important;}
+html.nmc-booting #loginPage{visibility:visible!important;}
+html.nmc-booting body:not(.login-active)::before{
+  content:'화면 구성 중...';
+  position:fixed;inset:0;z-index:999999;
+  display:flex;align-items:center;justify-content:center;
+  background:#eef3f8;color:#0f172a;font-size:14px;font-weight:900;
+}
+body.nmc-route-lock .content{opacity:0!important;}
+body.nmc-route-lock::after{
+  content:'화면 전환 중...';position:fixed;inset:64px 0 0 248px;z-index:999998;
+  display:flex;align-items:center;justify-content:center;background:#eef3f8;color:#334155;font-weight:900;
+}
+@media(max-width:900px){body.nmc-route-lock::after{left:0;}}
+</style>
+<!-- NMC_ANTI_FLICKER_END -->
 </head>
 <body class="login-active">
 
@@ -19354,9 +19374,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
-</body>
-</html>
-
 <!-- NAMO IQC 작성/검토/승인 UI 복구 + 성적서 미리보기 자동 반영 PATCH 20260616 -->
 <style id="namo-iqc-approval-preview-restore-style">
   #page-incoming #signGrid_iqc{
@@ -19780,7 +19797,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
-</body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
 <style id="nmc-remove-workorder-status-only-final-css-v20260617">
@@ -19954,3 +19970,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
+
+<!-- NMC_ANTI_FLICKER_RELEASE_START -->
+<script>
+(function(){
+  function ready(){document.documentElement.classList.remove('nmc-booting');document.body&&document.body.classList.remove('nmc-route-lock')}
+  function routeLock(){
+    if(!document.body||document.body.classList.contains('login-active'))return;
+    document.body.classList.add('nmc-route-lock');
+    clearTimeout(window.__nmcRouteLockTimer);
+    window.__nmcRouteLockTimer=setTimeout(function(){document.body.classList.remove('nmc-route-lock')},520);
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest&&e.target.closest('[data-page],[data-page-target]');
+    if(t) routeLock();
+  },true);
+  if(document.readyState==='complete')setTimeout(ready,650);
+  else window.addEventListener('load',function(){setTimeout(ready,650)});
+  setTimeout(ready,2600);
+})();
+</script>
+<!-- NMC_ANTI_FLICKER_RELEASE_END -->
+
+</body>
+</html>
