@@ -12522,4 +12522,179 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+
+<!-- =========================================================
+  Namochemical QMS Final Override v20260617-2
+  - 작성/검토/승인: 이메일 표시 금지, 이름 / 직책 표시
+  - 관리자: 작성/검토/승인 모두 회원 전체 표시
+  - 검토/승인/반려 버튼 중복 제거
+  - F5 새로고침 시 현재 페이지 복원
+========================================================= -->
+<style id="namo-final-v20260617-2-style">
+  .namo-approval-actions .namo-appr-status,
+  .namo-report-actbar .label,
+  .namo-report-actbar .namo-report-status,
+  .namo-training-approval-bar .label,
+  .namo-training-approval-note,
+  [data-train-appr="request"]{display:none!important;}
+</style>
+<script id="namo-final-v20260617-2-script">
+(function(){
+  'use strict';
+  if(window.__namoFinalOverride20260617_2) return;
+  window.__namoFinalOverride20260617_2 = true;
+
+  var TYPES=['iqc','pqc','oqc','nc','training'];
+  var ROLES=['writer','reviewer','approver'];
+  var ROLE_LABEL={writer:'작성자',reviewer:'검토자',approver:'승인자'};
+  var SENIOR=['부장','이사','상무','전무','임원','대표이사','대표','사장','회장','본부장','실장','센터장','ceo','cto','coo','cfo','chief'];
+  var PAGE_KEY='namo_qms_current_page';
+
+  function $(id){return document.getElementById(id);}
+  function txt(v){return String(v==null?'':v).trim();}
+  function low(v){return txt(v).toLowerCase();}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function st(){try{return window.state||state||{};}catch(e){return window.state||{};}}
+  function pick(o,keys){for(var i=0;i<keys.length;i++){var k=keys[i]; if(o&&o[k]!=null&&txt(o[k])!=='') return txt(o[k]);} return '';}
+  function norm(u){
+    if(!u) return null;
+    var email=pick(u,['email','mail','userEmail','user_email']);
+    var name=pick(u,['name','username','userName','user_name','fullName','full_name','displayName','display_name','employeeName','employee_name']);
+    var title=pick(u,['title','position','jobTitle','job_title','rank','grade','duty','roleTitle','role_title','직책','직급']);
+    var department=pick(u,['department','dept','team','org','departmentName','department_name','deptName','dept_name','division','부서']);
+    var id=pick(u,['id','userId','user_id','uid','memberId','member_id','employeeId','employee_id','empId','emp_id'])||email||name;
+    if(!name && email) name=email.split('@')[0];
+    if(!id && name) id=name;
+    if(!id&&!name) return null;
+    return {id:id,name:name||id,title:title,department:department,email:email,role:pick(u,['role','userRole','user_role','auth','authority','permission']),status:pick(u,['status','approvalStatus','approval_status','state'])||'APPROVED',isAdmin:!!(u.isAdmin||u.admin||u.is_admin)};
+  }
+  function same(a,b){a=norm(a);b=norm(b); if(!a||!b) return false; return (a.id&&b.id&&txt(a.id)===txt(b.id))||(a.email&&b.email&&low(a.email)===low(b.email))||(a.name&&b.name&&txt(a.name)===txt(b.name));}
+  function addUnique(arr,u){u=norm(u); if(!u) return; if(!arr.some(function(x){return same(x,u);})){arr.push(u);} }
+  function currentUser(){
+    var s=st(), list=[s.currentUser,s.loginUser,s.user,window.currentUser,window.loginUser,window.userInfo,window.user];
+    for(var i=0;i<list.length;i++){var u=norm(list[i]); if(u) return enrich(u);}
+    if(Array.isArray(s.signableUsers)&&s.signableUsers.length) return norm(s.signableUsers[0]);
+    return null;
+  }
+  function allUsers(){
+    var s=st(), arr=[];
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+      if(Array.isArray(s[k])) s[k].forEach(function(u){addUnique(arr,u);});
+      if(Array.isArray(window[k])) window[k].forEach(function(u){addUnique(arr,u);});
+    });
+    addUnique(arr,currentUser());
+    return arr.filter(function(u){return u&&u.name&&txt(u.name)!=='-';});
+  }
+  function enrich(u){u=norm(u); if(!u) return null; allUsers().forEach(function(x){if(same(x,u)){if(!u.title&&x.title)u.title=x.title;if(!u.department&&x.department)u.department=x.department;if(!u.role&&x.role)u.role=x.role;if(!u.email&&x.email)u.email=x.email;}}); return u;}
+  function approved(u){var v=low(norm(u).status); return !v||['approved','active','y','yes','승인','사용','사용중'].indexOf(v)>=0;}
+  function isSenior(u){u=norm(u); var s=(txt(u.title)+' '+txt(u.role)).toLowerCase(); return SENIOR.some(function(w){return s.indexOf(String(w).toLowerCase())>=0;});}
+  function isAdminUser(u){
+    u=enrich(u)||{};
+    var s=[u.role,u.title,u.email,u.name].map(low).join(' ');
+    var nav=$('usersNavBtn');
+    var navVisible=nav && getComputedStyle(nav).display!=='none';
+    return !!u.isAdmin || s.indexOf('admin')>=0 || s.indexOf('관리자')>=0 || navVisible;
+  }
+  function label(u){u=norm(u)||{}; return txt(u.name||'-')+' / '+txt(u.title||u.department||'-');}
+  function opt(u){u=norm(u)||{}; var val=u.id||u.email||u.name; return '<option value="'+esc(val)+'" data-id="'+esc(u.id)+'" data-name="'+esc(u.name)+'" data-title="'+esc(u.title)+'" data-department="'+esc(u.department)+'" data-email="'+esc(u.email)+'" data-role="'+esc(u.role)+'">'+esc(label(u))+'</option>';}
+  function selected(type,role){var sel=$('sg_'+type+'_'+role); if(!sel||!sel.value||sel.value==='-') return null; var o=sel.options[sel.selectedIndex]; return enrich({id:o.dataset.id||sel.value,name:o.dataset.name,title:o.dataset.title,department:o.dataset.department,email:o.dataset.email,role:o.dataset.role});}
+  function candidates(type,role){
+    var me=currentUser();
+    var users=allUsers().filter(approved);
+    if(isAdminUser(me)) return users;
+    if(role==='writer') return me?[enrich(me)]:[];
+    return users.filter(function(u){return isSenior(u)&&!same(u,selected(type,'writer')||me);});
+  }
+  function fileHtml(type,role){return '<div class="sign-file-wrap" data-sign-file-wrap="'+esc(type+':'+role)+'"><div class="sign-file-preview" id="sg_'+esc(type)+'_'+esc(role)+'_preview"><span class="sign-file-empty">서명 이미지 없음</span></div><div class="sign-file-tools"><span class="sign-date" id="sg_'+esc(type)+'_'+esc(role)+'_date"></span><div><input type="file" class="sign-file-input" id="sg_'+esc(type)+'_'+esc(role)+'_file" accept="image/*"><button type="button" class="sign-file-btn" data-namo-final-sign-file="'+esc(type+':'+role)+'">서명 첨부</button> <button type="button" class="sign-clear-btn" data-namo-final-sign-clear="'+esc(type+':'+role)+'">서명 지우기</button></div></div></div>';}
+  function roleHtml(type,role){return '<div class="sign-box" data-role="'+esc(role)+'"><div class="sign-box-hdr"><span class="sign-box-role">'+esc(ROLE_LABEL[role])+'</span><span class="sign-box-badge any">회원 DB</span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+esc(type)+'_'+esc(role)+'"><option value="">-- '+esc(ROLE_LABEL[role])+' 선택 --</option></select><div class="sign-sub" id="sg_'+esc(type)+'_'+esc(role)+'_sub"></div>'+fileHtml(type,role)+'</div></div>';}
+  function setOptions(type,role,keep){
+    var sel=$('sg_'+type+'_'+role); if(!sel) return;
+    var list=candidates(type,role), me=currentUser(), admin=isAdminUser(me);
+    var html='<option value="">-- '+esc(ROLE_LABEL[role])+' 선택 --</option>'+list.map(opt).join('');
+    if(!admin && role!=='writer' && list.length===0) html+='<option value="-">-</option>';
+    sel.innerHTML=html;
+    if(keep && Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(keep);})){sel.value=keep;}
+    else if(!admin && role==='writer' && me){var mv=me.id||me.email||me.name; if(!Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(mv);})) sel.add(new Option(label(me),mv)); sel.value=mv;}
+    else if(!admin && role!=='writer' && list.length===0){sel.value='-';}
+    else if(admin && role==='writer' && me){var own=list.find(function(u){return same(u,me);}); if(own) sel.value=own.id||own.email||own.name;}
+    sel.disabled=!admin && role==='writer';
+  }
+  function signStore(type,role){window.__namoFinalSignStore=window.__namoFinalSignStore||{}; var k=type+':'+role; window.__namoFinalSignStore[k]=window.__namoFinalSignStore[k]||{signImage:'',signDate:''}; return window.__namoFinalSignStore[k];}
+  function prefix(type){return type==='iqc'?'Iqc':type==='pqc'?'Pqc':type==='oqc'?'Oqc':type==='nc'?'Nc':type==='training'?'Training':'';}
+  function cap(role){return role.charAt(0).toUpperCase()+role.slice(1);}
+  function sync(type,role){
+    var u=selected(type,role), sub=$('sg_'+type+'_'+role+'_sub');
+    if(sub) sub.textContent=u?[u.department,u.title].map(txt).filter(Boolean).join(' / '):'';
+    var stg=signStore(type,role), prev=$('sg_'+type+'_'+role+'_preview'), dt=$('sg_'+type+'_'+role+'_date');
+    if(prev) prev.innerHTML=stg.signImage?'<img src="'+stg.signImage+'" alt="서명 이미지">':'<span class="sign-file-empty">서명 이미지 없음</span>';
+    if(dt) dt.textContent=stg.signDate||'';
+    var p=prefix(type), c=cap(role), rn=p?$('r'+p+c):null, rt=p?$('r'+p+c+'T'):null;
+    if(rn) rn.textContent=u&&u.name?u.name:'-';
+    if(rt) rt.textContent=u&&u.title?u.title:'';
+  }
+  function rebuild(type){
+    var grid=$('signGrid_'+type); if(!grid) return;
+    var old={}; ROLES.forEach(function(r){var sel=$('sg_'+type+'_'+r); old[r]=sel?sel.value:'';});
+    grid.innerHTML=ROLES.map(function(r){return roleHtml(type,r);}).join('');
+    var warn=$('signWarn_'+type); if(warn) warn.style.display=allUsers().length?'none':'block';
+    ROLES.forEach(function(r){setOptions(type,r,old[r]); sync(type,r);});
+    dedupeButtons(grid,type);
+  }
+  function refresh(){TYPES.forEach(rebuild); dedupeAllButtons();}
+
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  document.addEventListener('change',function(e){
+    var id=e.target&&e.target.id||'';
+    var m=id.match(/^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)$/);
+    if(m){ if(m[2]==='writer') rebuild(m[1]); else sync(m[1],m[2]); return; }
+    if(e.target&&e.target.classList&&e.target.classList.contains('sign-file-input')){
+      var mm=id.match(/^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)_file$/); if(!mm||!e.target.files||!e.target.files[0]) return;
+      var rd=new FileReader(); rd.onload=function(){var s=signStore(mm[1],mm[2]); s.signImage=String(rd.result||''); s.signDate=now(); sync(mm[1],mm[2]);}; rd.readAsDataURL(e.target.files[0]);
+    }
+  },true);
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('[data-namo-final-sign-file]');
+    if(b){e.preventDefault(); var a=b.getAttribute('data-namo-final-sign-file').split(':'); var f=$('sg_'+a[0]+'_'+a[1]+'_file'); if(f) f.click(); return;}
+    var c=e.target&&e.target.closest&&e.target.closest('[data-namo-final-sign-clear]');
+    if(c){e.preventDefault(); var x=c.getAttribute('data-namo-final-sign-clear').split(':'), s=signStore(x[0],x[1]); s.signImage=''; s.signDate=''; sync(x[0],x[1]); return;}
+  },true);
+
+  function dedupeButtons(grid,type){
+    grid=grid||document;
+    var bars=Array.prototype.slice.call(grid.querySelectorAll('.namo-approval-actions,.namo-report-actbar,.namo-training-approval-bar'));
+    if(!bars.length) return;
+    var keep=null;
+    if(type==='training') keep=bars.find(function(b){return b.classList.contains('namo-training-approval-bar');})||bars[0];
+    else keep=bars.find(function(b){return b.classList.contains('namo-report-actbar');})||bars[0];
+    bars.forEach(function(b){if(b!==keep) b.remove();});
+    keep.querySelectorAll('[data-train-appr="request"]').forEach(function(b){b.remove();});
+    keep.querySelectorAll('[data-namo-act="review"],[data-report-action="review"],[data-train-appr="review"]').forEach(function(b){b.textContent='검토';});
+    keep.querySelectorAll('[data-namo-act="approve"],[data-report-action="approve"],[data-train-appr="approve"]').forEach(function(b){b.textContent='승인';});
+    keep.querySelectorAll('[data-namo-act="reject"],[data-report-action="reject"],[data-train-appr="reject"]').forEach(function(b){b.textContent='반려';});
+  }
+  function dedupeAllButtons(){TYPES.forEach(function(t){var g=$('signGrid_'+t); if(g) dedupeButtons(g,t);});}
+
+  var oldShow=window.showPage;
+  window.showPage=function(pg){
+    if(pg) localStorage.setItem(PAGE_KEY,pg);
+    if(typeof oldShow==='function') oldShow.apply(this,arguments);
+    else {document.querySelectorAll('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active',b.dataset.page===pg);}); document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');}); var page=$('page-'+pg); if(page) page.classList.add('active');}
+    setTimeout(function(){refresh();},0);
+  };
+  document.addEventListener('click',function(e){var nav=e.target&&e.target.closest&&e.target.closest('.nav-item[data-page],[data-page-target]'); if(!nav) return; var pg=nav.dataset.page||nav.dataset.pageTarget; if(pg) localStorage.setItem(PAGE_KEY,pg);},true);
+  function restorePage(){var pg=localStorage.getItem(PAGE_KEY); if(pg&&$('page-'+pg)){window.showPage(pg);} else if(!$('page-dashboard')?.classList.contains('active')){window.showPage('dashboard');}}
+
+  window.buildSignGrid=function(type){rebuild(type);};
+  window.rebuildAllSignGrids=refresh;
+  window.qmsRefreshSignatures=refresh;
+  window.applyAllSignPermissions=refresh;
+
+  function boot(){refresh(); dedupeAllButtons(); restorePage();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
+  window.addEventListener('load',boot,{once:true});
+  [200,700,1500,3000,6000].forEach(function(ms){setTimeout(boot,ms);});
+  setInterval(function(){dedupeAllButtons();},1200);
+})();
+</script>
 </body></html>
