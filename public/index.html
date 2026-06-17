@@ -16121,6 +16121,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(cancel){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); return cancelEdit(); }
   },true);
 
+  function ensureEditButtons(){
+    /* 작업지시현황 구조 삭제 후 남은 예전 패치 호출 방지용 안전 함수 */
+    return true;
+  }
   function boot(){
     ensureEditButtons(); patchList();
     var obs=new MutationObserver(function(){ clearTimeout(window.__nmcForceWoPatchTimer); window.__nmcForceWoPatchTimer=setTimeout(function(){ ensureEditButtons(); patchList(); },60); });
