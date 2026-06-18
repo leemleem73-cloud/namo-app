@@ -19865,3 +19865,102 @@ document.addEventListener('click',function(e){
 </script>
 <!-- /NAMO SIGN MEMBERS STABLE FINAL v4 -->
 
+
+<!-- NAMO IQC YEAR FILTER FINAL OVERRIDE 20260618 START -->
+<style id="namo-iqc-year-filter-final-style-20260618">
+#iqcYearFilterFixed{cursor:pointer!important;}
+#iqcYearCount{min-width:96px;text-align:center;}
+</style>
+<script id="namo-iqc-year-filter-final-override-20260618">
+(function(){
+  'use strict';
+  if(window.__NAMO_IQC_YEAR_FILTER_FINAL_20260618__) return;
+  window.__NAMO_IQC_YEAR_FILTER_FINAL_20260618__=true;
+  function $(id){return document.getElementById(id)}
+  function getState(){try{return eval('state')||{};}catch(e){return window.state||{};}}
+  function htmlEsc(v){
+    if(typeof window.esc==='function'){try{return window.esc(v);}catch(e){}}
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+  }
+  function emptyRow(cols){
+    if(typeof window.eRow==='function'){try{return window.eRow(cols);}catch(e){}}
+    return '<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;padding:24px;">데이터가 없습니다.</td></tr>';
+  }
+  function dateKey(r){
+    var v=String((r&&r.date)||'').trim().replace(/[.\/]/g,'-');
+    var m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if(!m) return {year:'',time:0};
+    var t=new Date(Number(m[1]),Number(m[2])-1,Number(m[3])).getTime()||0;
+    return {year:m[1],time:t};
+  }
+  function person(r,role){
+    var obj=r&&r['sign'+role.charAt(0).toUpperCase()+role.slice(1)];
+    var name=(obj&&obj.name)||r&&r[role]||'';
+    var title=(obj&&obj.title)||r&&r[role+'Title']||'';
+    name=String(name||'').trim(); title=String(title||'').trim();
+    if(!name||name==='-') return '-';
+    return title ? name+' / '+title : name;
+  }
+  function judge(r){
+    try{
+      if(typeof window.jBadge==='function'){
+        var j=(typeof window.calcJ==='function')?window.calcJ((r&&r.items)||[]):((r&&r.finalJudge)||(r&&r.judge)||'');
+        return window.jBadge(j);
+      }
+    }catch(e){}
+    return htmlEsc((r&&r.finalJudge)||(r&&r.judge)||'');
+  }
+  function buildYearSelect(arr){
+    var sel=$('iqcYearFilterFixed');
+    if(!sel) return;
+    var current=sel.value||String(new Date().getFullYear());
+    var years={};
+    arr.forEach(function(r){var y=dateKey(r).year;if(y)years[y]=true;});
+    var list=Object.keys(years).sort(function(a,b){return Number(b)-Number(a)});
+    var html='<option value="all">전체</option>'+list.map(function(y){return '<option value="'+htmlEsc(y)+'">'+htmlEsc(y)+'년</option>';}).join('');
+    if(sel.getAttribute('data-namo-years')!==list.join(',')){
+      sel.innerHTML=html;
+      sel.setAttribute('data-namo-years',list.join(','));
+      if(current && (current==='all' || years[current])) sel.value=current;
+      else if(years[String(new Date().getFullYear())]) sel.value=String(new Date().getFullYear());
+      else sel.value='all';
+    }
+  }
+  function renderIncomingTableFinal(){
+    var tb=$('incomingTable');
+    if(!tb) return;
+    var s=getState();
+    var arr=Array.isArray(s.incoming)?s.incoming.slice():[];
+    buildYearSelect(arr);
+    var sel=$('iqcYearFilterFixed');
+    var selected=(sel&&sel.value)||'all';
+    var list=arr.filter(function(r){return selected==='all' || dateKey(r).year===selected;})
+      .sort(function(a,b){return dateKey(b).time-dateKey(a).time;});
+    var tag=$('iqcYearCount');
+    if(tag) tag.textContent=(selected==='all'?'전체':selected+'년')+' '+list.length+'건 / 최신순';
+    if(!list.length){tb.innerHTML=emptyRow(12);return;}
+    tb.innerHTML=list.map(function(r){return '<tr>'+ 
+      '<td>'+htmlEsc(r.date||'')+'</td>'+ 
+      '<td><strong>'+htmlEsc(r.lot||'')+'</strong></td>'+ 
+      '<td>'+htmlEsc(r.supplier||'')+'</td>'+ 
+      '<td>'+htmlEsc(r.item||'')+'</td>'+ 
+      '<td>'+htmlEsc(r.incomingQty!=null?r.incomingQty:'')+'</td>'+ 
+      '<td>'+htmlEsc(r.checkQty!=null?r.checkQty:'')+'</td>'+ 
+      '<td>'+htmlEsc(r.failQty!=null?r.failQty:'')+'</td>'+ 
+      '<td>'+judge(r)+'</td>'+ 
+      '<td>'+htmlEsc(person(r,'writer'))+'</td>'+ 
+      '<td>'+htmlEsc(person(r,'reviewer'))+'</td>'+ 
+      '<td>'+htmlEsc(person(r,'approver'))+'</td>'+ 
+      '<td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+htmlEsc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+htmlEsc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+htmlEsc(r.id)+'">🏷라벨</button></div></td>'+ 
+      '</tr>';}).join('');
+  }
+  window.renderIncomingTable=renderIncomingTableFinal;
+  document.addEventListener('change',function(e){if(e&&e.target&&e.target.id==='iqcYearFilterFixed')renderIncomingTableFinal();},true);
+  document.addEventListener('click',function(e){if(e&&e.target&&e.target.closest&&e.target.closest('[data-page-target="incoming"],[data-page="incoming"],#incomingSave,#incomingReset'))setTimeout(renderIncomingTableFinal,250);},true);
+  function boot(){try{renderIncomingTableFinal();}catch(e){console.warn('IQC year filter render failed',e);}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.addEventListener('load',boot);
+  [100,300,700,1500,3000,6500].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+<!-- NAMO IQC YEAR FILTER FINAL OVERRIDE 20260618 END -->
