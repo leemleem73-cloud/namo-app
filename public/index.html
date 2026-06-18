@@ -19502,6 +19502,149 @@ document.addEventListener('DOMContentLoaded',async()=>{
   });
 })();
 </script>
+<style id="namo-pqc-oqc-year-filter-final-style-20260618">
+#processYearFilterFixed,#shipmentYearFilterFixed{cursor:pointer!important;height:36px!important;border:1.5px solid var(--bd)!important;border-radius:var(--r2)!important;padding:0 12px!important;font-size:13px!important;background:var(--sf)!important;outline:none!important;}
+#processYearCount,#shipmentYearCount{min-width:96px;text-align:center;}
+.namo-year-filter-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+</style>
+<script id="namo-pqc-oqc-year-filter-final-override-20260618">
+(function(){
+  'use strict';
+  if(window.__NAMO_PQC_OQC_YEAR_FILTER_FINAL_20260618__) return;
+  window.__NAMO_PQC_OQC_YEAR_FILTER_FINAL_20260618__=true;
+  function $(id){return document.getElementById(id)}
+  function getState(){try{return eval('state')||{};}catch(e){return window.state||{};}}
+  function htmlEsc(v){
+    if(typeof window.esc==='function'){try{return window.esc(v);}catch(e){}}
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+  }
+  function emptyRow(cols){
+    if(typeof window.eRow==='function'){try{return window.eRow(cols);}catch(e){}}
+    return '<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;padding:24px;">데이터가 없습니다.</td></tr>';
+  }
+  function dateKey(r){
+    var v=String((r&&r.date)||'').trim().replace(/[.\/]/g,'-');
+    var m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if(!m) return {year:'',time:0};
+    var t=new Date(Number(m[1]),Number(m[2])-1,Number(m[3])).getTime()||0;
+    return {year:m[1],time:t};
+  }
+  function person(r,role){
+    var key='sign'+role.charAt(0).toUpperCase()+role.slice(1);
+    var obj=r&&r[key];
+    var name=(obj&&obj.name)||r&&r[role]||'';
+    var title=(obj&&obj.title)||r&&r[role+'Title']||'';
+    name=String(name||'').trim(); title=String(title||'').trim();
+    if(!name||name==='-') return '-';
+    return title ? name+' / '+title : name;
+  }
+  function judge(r){
+    try{
+      if(typeof window.jBadge==='function'){
+        var j=(typeof window.calcJ==='function')?window.calcJ((r&&r.items)||[]):((r&&r.finalJudge)||(r&&r.judge)||'');
+        return window.jBadge(j);
+      }
+    }catch(e){}
+    return htmlEsc((r&&r.finalJudge)||(r&&r.judge)||'');
+  }
+  function ensureFilter(pageId, tableId, selectId, countId){
+    if($(selectId)) return;
+    var table=$(tableId); if(!table) return;
+    var card=table.closest ? table.closest('.card') : null;
+    var ch=card ? card.querySelector('.ch') : null;
+    if(!ch) return;
+    var box=document.createElement('div');
+    box.className='ca namo-year-filter-box';
+    box.innerHTML='<select id="'+selectId+'"><option value="all">전체</option></select><span class="tag" id="'+countId+'">최신순</span>';
+    ch.appendChild(box);
+  }
+  function buildYearSelect(arr,selectId){
+    var sel=$(selectId); if(!sel) return;
+    var current=sel.value||String(new Date().getFullYear());
+    var years={};
+    arr.forEach(function(r){var y=dateKey(r).year;if(y)years[y]=true;});
+    var list=Object.keys(years).sort(function(a,b){return Number(b)-Number(a)});
+    var html='<option value="all">전체</option>'+list.map(function(y){return '<option value="'+htmlEsc(y)+'">'+htmlEsc(y)+'년</option>';}).join('');
+    if(sel.getAttribute('data-namo-years')!==list.join(',')){
+      sel.innerHTML=html;
+      sel.setAttribute('data-namo-years',list.join(','));
+      if(current && (current==='all' || years[current])) sel.value=current;
+      else if(years[String(new Date().getFullYear())]) sel.value=String(new Date().getFullYear());
+      else sel.value='all';
+    }
+  }
+  function filtered(arr,selectId){
+    buildYearSelect(arr,selectId);
+    var sel=$(selectId), selected=(sel&&sel.value)||'all';
+    return arr.filter(function(r){return selected==='all'||dateKey(r).year===selected;})
+      .sort(function(a,b){return dateKey(b).time-dateKey(a).time;});
+  }
+  function setCount(countId,selectId,len){
+    var tag=$(countId), sel=$(selectId), selected=(sel&&sel.value)||'all';
+    if(tag) tag.textContent=(selected==='all'?'전체':selected+'년')+' '+len+'건 / 최신순';
+  }
+  function renderProcessTableFinal(){
+    ensureFilter('page-process','processTable','processYearFilterFixed','processYearCount');
+    var tb=$('processTable'); if(!tb) return;
+    var s=getState(); var arr=Array.isArray(s.process)?s.process.slice():[];
+    var list=filtered(arr,'processYearFilterFixed');
+    setCount('processYearCount','processYearFilterFixed',list.length);
+    if(!list.length){tb.innerHTML=emptyRow(11);return;}
+    tb.innerHTML=list.map(function(r){return '<tr>'+ 
+      '<td>'+htmlEsc(r.date||'')+'</td>'+
+      '<td><strong>'+htmlEsc(r.lot||'')+'</strong></td>'+
+      '<td>'+htmlEsc(r.product||'')+'</td>'+
+      '<td>'+htmlEsc(r.line||r.process||r.visual||'')+'</td>'+
+      '<td>'+htmlEsc(r.qty!=null?r.qty:'')+'</td>'+
+      '<td>'+htmlEsc(r.failQty!=null?r.failQty:'')+'</td>'+
+      '<td>'+judge(r)+'</td>'+
+      '<td>'+htmlEsc(person(r,'writer'))+'</td>'+
+      '<td>'+htmlEsc(person(r,'reviewer'))+'</td>'+
+      '<td>'+htmlEsc(person(r,'approver'))+'</td>'+
+      '<td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+htmlEsc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+htmlEsc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+htmlEsc(r.id)+'">🏷라벨</button></div></td>'+
+      '</tr>';}).join('');
+  }
+  function renderShipmentTableFinal(){
+    ensureFilter('page-shipment','shipmentTable','shipmentYearFilterFixed','shipmentYearCount');
+    var tb=$('shipmentTable'); if(!tb) return;
+    var s=getState(); var arr=Array.isArray(s.shipment)?s.shipment.slice():[];
+    var list=filtered(arr,'shipmentYearFilterFixed');
+    setCount('shipmentYearCount','shipmentYearFilterFixed',list.length);
+    if(!list.length){tb.innerHTML=emptyRow(11);return;}
+    tb.innerHTML=list.map(function(r){return '<tr>'+
+      '<td>'+htmlEsc(r.date||'')+'</td>'+
+      '<td>'+htmlEsc(r.customer||'')+'</td>'+
+      '<td>'+htmlEsc(r.product||'')+'</td>'+
+      '<td><strong>'+htmlEsc(r.lot||'')+'</strong></td>'+
+      '<td>'+htmlEsc(r.qty!=null?r.qty:'')+'</td>'+
+      '<td>'+htmlEsc(r.failQty!=null?r.failQty:'')+'</td>'+
+      '<td>'+judge(r)+'</td>'+
+      '<td>'+htmlEsc(person(r,'writer'))+'</td>'+
+      '<td>'+htmlEsc(person(r,'reviewer'))+'</td>'+
+      '<td>'+htmlEsc(person(r,'approver'))+'</td>'+
+      '<td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+htmlEsc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+htmlEsc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+htmlEsc(r.id)+'">🏷라벨</button></div></td>'+
+      '</tr>';}).join('');
+  }
+  window.renderProcessTable=renderProcessTableFinal;
+  window.renderShipmentTable=renderShipmentTableFinal;
+  document.addEventListener('change',function(e){
+    if(!e||!e.target) return;
+    if(e.target.id==='processYearFilterFixed') renderProcessTableFinal();
+    if(e.target.id==='shipmentYearFilterFixed') renderShipmentTableFinal();
+  },true);
+  document.addEventListener('click',function(e){
+    var t=e&&e.target;
+    if(t&&t.closest&&t.closest('[data-page-target="process"],[data-page="process"],#processSave,#processReset')) setTimeout(renderProcessTableFinal,250);
+    if(t&&t.closest&&t.closest('[data-page-target="shipment"],[data-page="shipment"],#shipmentSave,#shipmentReset')) setTimeout(renderShipmentTableFinal,250);
+  },true);
+  function boot(){try{renderProcessTableFinal();}catch(e){console.warn('PQC year filter render failed',e);}try{renderShipmentTableFinal();}catch(e){console.warn('OQC year filter render failed',e);}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.addEventListener('load',boot);
+  [100,300,700,1500,3000,6500].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+<!-- NAMO PQC/OQC YEAR FILTER FINAL OVERRIDE 20260618 END -->
+
 </body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
