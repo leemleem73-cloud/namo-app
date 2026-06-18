@@ -14240,7 +14240,298 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
       '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>'+
-      '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\\/scr'+'ipt></body></html>';
+      '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},150)}<\\/scr'+'ipt>
+
+<!-- NAMO FINAL PATCH 20260618: 관리자 결재선 + 입고검사 최신순 + 2025~2030 년도필터 -->
+<script id="namo-final-admin-sign-iqc-year-sort-20260618">
+(function(){
+  'use strict';
+  if(window.__namoFinalAdminSignIqcYearSort20260618) return;
+  window.__namoFinalAdminSignIqcYearSort20260618 = true;
+
+  /* =========================================================
+     1) 작성 / 검토 / 승인 관리자 전체 회원 선택 고정
+     - 기존 스크립트가 select를 다시 그리며 깜박이는 현상을 마지막에 재고정
+  ========================================================= */
+  var SIGN_TYPES = ['iqc','pqc','oqc','nc','training'];
+  var SIGN_ROLES = ['writer','reviewer','approver'];
+  var signBusy = false;
+
+  function nTxt(v){ return String(v == null ? '' : v).trim(); }
+
+  function nCurrentUser(){
+    try{
+      return (window.state && window.state.currentUser) ||
+             window.currentUser ||
+             window.loggedInUser ||
+             null;
+    }catch(e){ return null; }
+  }
+
+  function nIsAdmin(u){
+    if(!u) return false;
+    var s = [
+      u.role, u.permission, u.auth, u.authority,
+      u.grade, u.name, u.username, u.userName, u.email
+    ].map(nTxt).join(' ').toLowerCase();
+
+    return !!(
+      u.isAdmin === true ||
+      u.admin === true ||
+      u.is_admin === true ||
+      s.indexOf('admin') >= 0 ||
+      s.indexOf('관리자') >= 0
+    );
+  }
+
+  function nAllUsers(){
+    var s = window.state || {};
+    var arr = []
+      .concat(s.users || [])
+      .concat(s.userList || [])
+      .concat(s.members || [])
+      .concat(s.memberList || [])
+      .concat(s.signableUsers || [])
+      .concat(s.adminUsers || [])
+      .concat(window.users || [])
+      .concat(window.userList || [])
+      .concat(window.members || [])
+      .concat(window.memberList || [])
+      .concat(window.signableUsers || [])
+      .concat(window.adminUsers || [])
+      .concat(nCurrentUser() ? [nCurrentUser()] : []);
+
+    var map = new Map();
+    arr.forEach(function(u){
+      if(!u) return;
+      var name = nTxt(u.name || u.username || u.userName || u.displayName || u.fullName || u.email);
+      if(!name || name === '-') return;
+      var id = nTxt(u.id || u.userId || u.email || name);
+      if(!map.has(id)){
+        map.set(id, {
+          id: id,
+          name: name,
+          title: nTxt(u.title || u.position || u.roleName || u.jobTitle || u.rank || ''),
+          department: nTxt(u.department || u.dept || u.team || ''),
+          email: nTxt(u.email || '')
+        });
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  function nEsc(v){
+    return nTxt(v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function nRoleLabel(role){
+    return role === 'writer' ? '작성자' : role === 'reviewer' ? '검토자' : '승인자';
+  }
+
+  function nApplyAdminSignSelects(){
+    if(signBusy) return;
+    var user = nCurrentUser();
+    if(!nIsAdmin(user)) return;
+
+    var users = nAllUsers();
+    if(!users.length) return;
+
+    signBusy = true;
+    try{
+      SIGN_TYPES.forEach(function(type){
+        SIGN_ROLES.forEach(function(role){
+          var sel = document.getElementById('sg_' + type + '_' + role);
+          if(!sel) return;
+
+          var oldValue = sel.value;
+          var html = '<option value="">-- ' + nRoleLabel(role) + ' 선택 --</option>';
+          users.forEach(function(u){
+            var value = u.id || u.email || u.name;
+            var text = u.name +
+              (u.department ? ' / ' + u.department : '') +
+              (u.title ? ' / ' + u.title : '');
+            html += '<option value="' + nEsc(value) + '"' +
+              ' data-name="' + nEsc(u.name) + '"' +
+              ' data-title="' + nEsc(u.title) + '"' +
+              ' data-department="' + nEsc(u.department) + '"' +
+              ' data-email="' + nEsc(u.email) + '">' + nEsc(text) + '</option>';
+          });
+
+          if(sel.innerHTML !== html) sel.innerHTML = html;
+          if(oldValue && Array.from(sel.options).some(function(o){ return o.value === oldValue; })){
+            sel.value = oldValue;
+          }
+          sel.disabled = false;
+
+          var sub = document.getElementById('sg_' + type + '_' + role + '_sub');
+          if(sub){
+            sub.textContent = '관리자: 전체 회원 선택 가능';
+            sub.style.color = 'var(--pri)';
+          }
+        });
+      });
+    }finally{
+      signBusy = false;
+    }
+  }
+
+  function nRunSignFix(){
+    [0, 120, 500, 1200, 2500, 4000].forEach(function(ms){
+      setTimeout(nApplyAdminSignSelects, ms);
+    });
+  }
+
+  ['rebuildAllSignGrids','applyAllSignPermissions'].forEach(function(fn){
+    if(typeof window[fn] === 'function' && !window[fn].__namoFinalWrapped){
+      var original = window[fn];
+      var wrapped = function(){
+        var result = original.apply(this, arguments);
+        nRunSignFix();
+        return result;
+      };
+      wrapped.__namoFinalWrapped = true;
+      window[fn] = wrapped;
+    }
+  });
+
+  /* =========================================================
+     2) 입고검사 목록 최신 날짜순 정렬 + 2025~2030 년도 필터
+     - 테이블 행 기준으로도 마지막에 정렬하므로 기존 데이터 구조가 달라도 작동
+  ========================================================= */
+  var IQC_YEARS = [2030, 2029, 2028, 2027, 2026, 2025];
+  var iqcBusy = false;
+
+  function nParseDate(v){
+    v = nTxt(v);
+    if(!v) return 0;
+    var normalized = v.replace(/\./g,'-').replace(/\//g,'-');
+    var d = new Date(normalized);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+
+  function nGetIncomingTbody(){
+    return document.getElementById('incomingTable') ||
+           document.querySelector('#page-iqc tbody') ||
+           document.querySelector('#page-incoming tbody');
+  }
+
+  function nEnsureIqcYearFilter(){
+    var tbody = nGetIncomingTbody();
+    if(!tbody || document.getElementById('iqcYearFilter')) return;
+
+    var card = tbody.closest('.card') || tbody.closest('.tw') || tbody.parentElement;
+    if(!card) return;
+    var header = card.querySelector('.ch') || (card.parentElement && card.parentElement.querySelector('.ch'));
+    if(!header) return;
+
+    var box = document.createElement('div');
+    box.className = 'ca namo-iqc-year-tools';
+
+    var html = '<select id="iqcYearFilter" class="btn light sm" style="height:30px;padding:0 10px;min-width:104px;">';
+    html += '<option value="all">전체년도</option>';
+    IQC_YEARS.forEach(function(y){ html += '<option value="' + y + '">' + y + '년</option>'; });
+    html += '</select>';
+    html += '<button type="button" id="iqcSortDescBtn" class="btn light sm">최신순</button>';
+
+    box.innerHTML = html;
+    header.appendChild(box);
+
+    document.getElementById('iqcYearFilter').addEventListener('change', nSortAndFilterIqcRows);
+    document.getElementById('iqcSortDescBtn').addEventListener('click', nSortAndFilterIqcRows);
+  }
+
+  function nSortStateIncomingArray(){
+    var s = window.state || {};
+    var keys = ['incoming','incomingList','iqc','iqcList','iqcRecords','incomingRecords'];
+    keys.forEach(function(k){
+      if(Array.isArray(s[k])){
+        s[k].sort(function(a,b){
+          var da = nParseDate(a.date || a.inDate || a.inspectionDate || a.createdAt || a.regDate || a.receivedDate);
+          var db = nParseDate(b.date || b.inDate || b.inspectionDate || b.createdAt || b.regDate || b.receivedDate);
+          return db - da;
+        });
+      }
+    });
+  }
+
+  function nSortAndFilterIqcRows(){
+    if(iqcBusy) return;
+    iqcBusy = true;
+    try{
+      nEnsureIqcYearFilter();
+      nSortStateIncomingArray();
+
+      var tbody = nGetIncomingTbody();
+      if(!tbody) return;
+      var sel = document.getElementById('iqcYearFilter');
+      var year = sel ? sel.value : 'all';
+
+      var rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort(function(a,b){
+        var da = nParseDate(a.children[0] && a.children[0].textContent);
+        var db = nParseDate(b.children[0] && b.children[0].textContent);
+        return db - da;
+      });
+
+      rows.forEach(function(tr){
+        var dateText = nTxt(tr.children[0] && tr.children[0].textContent);
+        var rowYear = dateText.slice(0,4);
+        tr.style.display = (year === 'all' || rowYear === year) ? '' : 'none';
+        tbody.appendChild(tr);
+      });
+    }finally{
+      iqcBusy = false;
+    }
+  }
+
+  function nRunIqcFix(){
+    [0, 150, 600, 1500, 3000].forEach(function(ms){
+      setTimeout(nSortAndFilterIqcRows, ms);
+    });
+  }
+
+  ['renderIncomingTable','renderIQCTable','renderIqcTable','renderIncomingList'].forEach(function(fn){
+    if(typeof window[fn] === 'function' && !window[fn].__namoIqcYearWrapped){
+      var original = window[fn];
+      var wrapped = function(){
+        var result = original.apply(this, arguments);
+        nRunIqcFix();
+        return result;
+      };
+      wrapped.__namoIqcYearWrapped = true;
+      window[fn] = wrapped;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function(){
+    nRunSignFix();
+    nRunIqcFix();
+  });
+  window.addEventListener('load', function(){
+    nRunSignFix();
+    nRunIqcFix();
+  });
+
+  var obs = new MutationObserver(function(){
+    if(!signBusy) setTimeout(nApplyAdminSignSelects, 80);
+    if(!iqcBusy) setTimeout(nSortAndFilterIqcRows, 120);
+  });
+  if(document.body){
+    obs.observe(document.body, {childList:true, subtree:true});
+  }else{
+    document.addEventListener('DOMContentLoaded', function(){
+      obs.observe(document.body, {childList:true, subtree:true});
+    });
+  }
+})();
+</script>
+<!-- /NAMO FINAL PATCH 20260618 -->
+
+</body></html>';
 
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
