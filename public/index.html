@@ -2747,6 +2747,41 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 #page-trace .trace-hero-metrics{width:100%;display:grid;grid-template-columns:1fr 1fr}#page-trace .trace-hero-metrics>div{text-align:left;min-width:0}#page-trace .trace-premium-searchbar{padding:14px;flex-direction:column}#page-trace .trace-premium-searchbar .btn,#page-trace .trace-premium-searchbar .trace-inline-input{width:100%}#page-trace .trace-premium-card-head{padding:18px 16px}}
 
+
+
+/* ══════════════════════════════════
+   Inspection Standard Pages Patch
+   수입/공정/출하 검사 기준서 화면
+══════════════════════════════════ */
+.std-doc-wrap{display:grid;grid-template-columns:280px minmax(0,1fr);gap:18px;align-items:start;}
+.std-doc-side{position:sticky;top:0;background:#fff;border:1px solid var(--bd);border-radius:var(--r4);box-shadow:var(--sh1);padding:16px;}
+.std-doc-badge{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:var(--pris);color:var(--pri);font-size:11px;font-weight:900;margin-bottom:10px;}
+.std-doc-title{font-size:22px;font-weight:900;color:#0f172a;letter-spacing:-.5px;line-height:1.25;}
+.std-doc-sub{font-size:12px;color:var(--t3);line-height:1.6;margin-top:8px;}
+.std-doc-meta{margin-top:14px;border-top:1px solid var(--bd);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
+.std-doc-meta-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;}
+.std-doc-meta-row span:first-child{color:var(--t3);font-weight:800;}
+.std-doc-meta-row span:last-child{color:#0f172a;font-weight:900;text-align:right;}
+.std-doc-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.std-doc-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r4);box-shadow:var(--sh1);overflow:hidden;margin-bottom:14px;}
+.std-doc-card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bd);background:linear-gradient(180deg,#fff,#f8fafc);}
+.std-doc-card-h h3{font-size:15px;font-weight:900;color:#0f172a;}
+.std-doc-card-b{padding:18px;}
+.std-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.std-flow-step{border:1px solid #dbe3ee;border-radius:14px;background:#f8fafc;padding:14px;min-height:106px;position:relative;}
+.std-flow-step .no{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;font-size:12px;font-weight:900;margin-bottom:9px;}
+.std-flow-step b{display:block;font-size:13px;color:#0f172a;}
+.std-flow-step p{font-size:11.5px;color:#64748b;line-height:1.5;margin-top:5px;}
+.std-table{width:100%;border-collapse:collapse;font-size:13px;}
+.std-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:uppercase;padding:11px 12px;border:1px solid #e2e8f0;text-align:left;}
+.std-table td{padding:12px;border:1px solid #e2e8f0;color:#334155;vertical-align:top;line-height:1.55;}
+.std-table td b{color:#0f172a;}
+.std-note{border:1px solid #bfdbfe;border-radius:14px;background:#f8fbff;color:#1e3a8a;padding:14px 16px;font-size:13px;line-height:1.7;}
+.std-two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:1100px){.std-doc-wrap{grid-template-columns:1fr}.std-doc-side{position:relative}.std-flow{grid-template-columns:repeat(2,1fr)}.std-two{grid-template-columns:1fr}}
+@media(max-width:700px){.std-flow{grid-template-columns:1fr}}
+@media print{.std-doc-side .std-doc-actions,.ph-actions,.sidebar,.topbar,.footer{display:none!important}.std-doc-wrap{grid-template-columns:1fr!important}.std-doc-card{break-inside:avoid;page-break-inside:avoid}}
+
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -3068,11 +3103,14 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
       <div class="nav-sec">메인</div>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span><span>품질 대시보드</span></button>
       <div class="nav-sec">품질 검사</div>
-      <button class="nav-item" data-page="incoming"><span class="nav-icon"></span><span>수입검사 (IQC)</span></button>
-      <button class="nav-item" data-page="process"><span class="nav-icon"></span><span>공정검사 (PQC)</span></button>
-      <button class="nav-item" data-page="shipment"><span class="nav-icon"></span><span>출하검사 (OQC)</span></button>
-      <button class="nav-item" data-page="report"><span class="nav-icon"></span><span>성적서</span></button>
-      <button class="nav-item" data-page="nonconform"><span class="nav-icon"></span><span>부적합 보고서</span></button>
+      <button class="nav-item" data-page="iqc-standard"><span class="nav-icon">📘</span><span>수입검사 기준서</span></button>
+      <button class="nav-item" data-page="incoming"><span class="nav-icon">📥</span><span>수입검사 (IQC)</span></button>
+      <button class="nav-item" data-page="pqc-standard"><span class="nav-icon">📘</span><span>공정검사 기준서</span></button>
+      <button class="nav-item" data-page="process"><span class="nav-icon">⚙</span><span>공정검사 (PQC)</span></button>
+      <button class="nav-item" data-page="oqc-standard"><span class="nav-icon">📘</span><span>출하검사 기준서</span></button>
+      <button class="nav-item" data-page="shipment"><span class="nav-icon">🚚</span><span>출하검사 (OQC)</span></button>
+      <button class="nav-item" data-page="report"><span class="nav-icon">📄</span><span>성적서</span></button>
+      <button class="nav-item" data-page="nonconform"><span class="nav-icon">⚠️</span><span>부적합 보고서</span></button>
       <div class="nav-sec">생산 관리</div>
       <div class="nav-sec">측정기 관리</div>
       <button class="nav-item" data-page="instruments"><span class="nav-icon"></span><span>측정기 관리</span></button>
@@ -3110,6 +3148,33 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
           </div>
         </div>
+      </section>
+
+
+
+      <!-- ■ IQC STANDARD -->
+      <section class="page" id="page-iqc-standard">
+        <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>품질 검사</span><span class="sep">›</span><span>수입검사 기준서</span></div><div class="ph-title">수입검사 기준서</div><div class="ph-sub">원재료 입고 시 COA, 외관, 포장상태, 라벨 및 수량 적합성을 확인합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" onclick="window.print()">인쇄</button><button class="btn pri" type="button" data-page-target="incoming">수입검사 등록</button></div></div>
+        <div class="std-doc-wrap">
+          <aside class="std-doc-side"><span class="std-doc-badge">IQC STANDARD</span><div class="std-doc-title">수입검사 기준서</div><div class="std-doc-sub">입고 원재료의 품질 적합성 확인 및 부적합 원재료 투입 방지를 위한 기준서입니다.</div><div class="std-doc-meta"><div class="std-doc-meta-row"><span>문서번호</span><span>NMC-QMS-IQC-STD-01</span></div><div class="std-doc-meta-row"><span>개정번호</span><span>Rev.0</span></div><div class="std-doc-meta-row"><span>적용범위</span><span>원재료·부자재</span></div><div class="std-doc-meta-row"><span>기록위치</span><span>QMES 수입검사</span></div></div><div class="std-doc-actions"><button class="btn pri" type="button" data-page-target="incoming">수입검사(IQC) 열기</button><button class="btn light" type="button" onclick="window.print()">기준서 인쇄</button></div></aside>
+          <div>
+            <div class="std-doc-card"><div class="std-doc-card-h"><h3>검사 흐름</h3><span class="tag">FLOW</span></div><div class="std-doc-card-b"><div class="std-flow"><div class="std-flow-step"><div class="no">1</div><b>원재료 입고</b><p>PO, 납품서, 품명, 수량 확인</p></div><div class="std-flow-step"><div class="no">2</div><b>LOT 정보 확인</b><p>LOT No., 협력업체, 입고수량 확인</p></div><div class="std-flow-step"><div class="no">3</div><b>COA 확인</b><p>COA 제출 및 구매 SPEC 일치 여부 확인</p></div><div class="std-flow-step"><div class="no">4</div><b>외관/라벨 검사</b><p>파손, 변형, 누액, 오염, 라벨 확인</p></div><div class="std-flow-step"><div class="no">5</div><b>QMES 기록/판정</b><p>검사결과 등록 후 합격·부적합 판정</p></div></div></div></div>
+            <div class="std-doc-card"><div class="std-doc-card-h"><h3>검사항목 및 판정기준</h3><span class="tag">CRITERIA</span></div><div class="std-doc-card-b"><table class="std-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록</th></tr></thead><tbody><tr><td><b>COA</b></td><td>공급사 COA 확인</td><td>LOT No., 품명, 제조일자, 시험항목 및 결과가 구매규격과 일치할 것</td><td>QMES COA 항목</td></tr><tr><td><b>외관</b></td><td>육안검사</td><td>파손, 변형, 누액, 오염이 없을 것</td><td>QMES 외관 항목</td></tr><tr><td><b>포장상태</b></td><td>용기 및 외포장 확인</td><td>밀봉 상태 양호, 캡 풀림 및 포장 훼손이 없을 것</td><td>검사항목 추가 가능</td></tr><tr><td><b>라벨</b></td><td>라벨 및 바코드 확인</td><td>품명, LOT No., 제조일자, 수량이 발주정보와 일치할 것</td><td>검사항목 추가 가능</td></tr><tr><td><b>수량/중량</b></td><td>납품서 및 계량 확인</td><td>구매계약 또는 구매사양서 기준 허용오차 이내일 것</td><td>검사항목 추가 가능</td></tr></tbody></table></div></div>
+            <div class="std-doc-card"><div class="std-doc-card-h"><h3>부적합 처리</h3><span class="tag">NCR</span></div><div class="std-doc-card-b"><div class="std-note">부적합 발생 시 해당 LOT는 즉시 식별 및 격리하고, QMES 부적합 보고서에 등록합니다. 필요 시 공급업체 통보, 재검사, 반품, 교환 또는 CAPA를 진행합니다.</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ■ PQC STANDARD -->
+      <section class="page" id="page-pqc-standard">
+        <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>품질 검사</span><span class="sep">›</span><span>공정검사 기준서</span></div><div class="ph-title">공정검사 기준서</div><div class="ph-sub">제조공정 중 핵심 품질특성(CTQ)을 확인하고 이상 발생 시 조치합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" onclick="window.print()">인쇄</button><button class="btn pri" type="button" data-page-target="process">공정검사 등록</button></div></div>
+        <div class="std-doc-wrap"><aside class="std-doc-side"><span class="std-doc-badge">PQC STANDARD</span><div class="std-doc-title">공정검사 기준서</div><div class="std-doc-sub">공정 중 품질 편차를 조기에 발견하고 LOT 품질 안정성을 확보하기 위한 기준서입니다.</div><div class="std-doc-meta"><div class="std-doc-meta-row"><span>문서번호</span><span>NMC-QMS-PQC-STD-01</span></div><div class="std-doc-meta-row"><span>개정번호</span><span>Rev.0</span></div><div class="std-doc-meta-row"><span>적용범위</span><span>제조공정 전반</span></div><div class="std-doc-meta-row"><span>기록위치</span><span>QMES 공정검사</span></div></div><div class="std-doc-actions"><button class="btn pri" type="button" data-page-target="process">공정검사(PQC) 열기</button><button class="btn light" type="button" onclick="window.print()">기준서 인쇄</button></div></aside><div><div class="std-doc-card"><div class="std-doc-card-h"><h3>검사 흐름</h3><span class="tag">FLOW</span></div><div class="std-doc-card-b"><div class="std-flow"><div class="std-flow-step"><div class="no">1</div><b>LOT 확인</b><p>생산 LOT 및 품목 확인</p></div><div class="std-flow-step"><div class="no">2</div><b>시료 채취</b><p>지정 위치와 기준량에 따라 채취</p></div><div class="std-flow-step"><div class="no">3</div><b>공정검사</b><p>점도, 고형분, Dmax, 수분 등 확인</p></div><div class="std-flow-step"><div class="no">4</div><b>결과 기록</b><p>QMES 공정검사에 측정값 입력</p></div><div class="std-flow-step"><div class="no">5</div><b>판정/조치</b><p>합격, 보류, 부적합 및 CAPA 연계</p></div></div></div></div><div class="std-doc-card"><div class="std-doc-card-h"><h3>주요 검사항목</h3><span class="tag">CTQ</span></div><div class="std-doc-card-b"><table class="std-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 응집, 변색 등 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도</b></td><td>점도계 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>고형분</b></td><td>건조/측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>Dmax</b></td><td>입도 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>수분</b></td><td>수분측정기</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr></tbody></table></div></div></div></div>
+      </section>
+
+      <!-- ■ OQC STANDARD -->
+      <section class="page" id="page-oqc-standard">
+        <div class="ph"><div><div class="ph-bc"><span>대시보드</span><span class="sep">›</span><span>품질 검사</span><span class="sep">›</span><span>출하검사 기준서</span></div><div class="ph-title">출하검사 기준서</div><div class="ph-sub">고객 출하 전 완제품의 품질, 포장 및 라벨 적합성을 최종 확인합니다.</div></div><div class="ph-actions"><button class="btn light" type="button" onclick="window.print()">인쇄</button><button class="btn pri" type="button" data-page-target="shipment">출하검사 등록</button></div></div>
+        <div class="std-doc-wrap"><aside class="std-doc-side"><span class="std-doc-badge">OQC STANDARD</span><div class="std-doc-title">출하검사 기준서</div><div class="std-doc-sub">출하 전 최종 품질보증 및 고객 불만 예방을 위한 기준서입니다.</div><div class="std-doc-meta"><div class="std-doc-meta-row"><span>문서번호</span><span>NMC-QMS-OQC-STD-01</span></div><div class="std-doc-meta-row"><span>개정번호</span><span>Rev.0</span></div><div class="std-doc-meta-row"><span>적용범위</span><span>완제품 출하</span></div><div class="std-doc-meta-row"><span>기록위치</span><span>QMES 출하검사</span></div></div><div class="std-doc-actions"><button class="btn pri" type="button" data-page-target="shipment">출하검사(OQC) 열기</button><button class="btn light" type="button" onclick="window.print()">기준서 인쇄</button></div></aside><div><div class="std-doc-card"><div class="std-doc-card-h"><h3>검사 흐름</h3><span class="tag">FLOW</span></div><div class="std-doc-card-b"><div class="std-flow"><div class="std-flow-step"><div class="no">1</div><b>출하요청</b><p>출하 LOT 및 고객 요구사항 확인</p></div><div class="std-flow-step"><div class="no">2</div><b>시료채취</b><p>출하 LOT 대표 시료 채취</p></div><div class="std-flow-step"><div class="no">3</div><b>출하검사</b><p>제품 SPEC 및 포장 상태 확인</p></div><div class="std-flow-step"><div class="no">4</div><b>성적서 발행</b><p>QMES 성적서 작성 및 승인</p></div><div class="std-flow-step"><div class="no">5</div><b>출하승인</b><p>합격 LOT 출하 승인</p></div></div></div></div><div class="std-doc-card"><div class="std-doc-card-h"><h3>주요 검사항목</h3><span class="tag">FINAL CHECK</span></div><div class="std-doc-card-b"><table class="std-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 변색, 누액, 용기 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도/고형분/Dmax/수분</b></td><td>시험장비 측정</td><td>제품별 출하 SPEC 이내</td><td>성적서 연계</td></tr><tr><td><b>포장상태</b></td><td>용기 및 외포장 확인</td><td>밀봉, 파손, 오염 이상 없을 것</td><td>필수</td></tr><tr><td><b>라벨</b></td><td>라벨 및 LOT 확인</td><td>품명, LOT, 수량, 고객정보 일치</td><td>필수</td></tr><tr><td><b>출하승인</b></td><td>전자결재 확인</td><td>작성/검토/승인 완료 후 출하</td><td>필수</td></tr></tbody></table></div></div></div></div>
       </section>
 
       <!-- ■ IQC -->
@@ -19952,5 +20017,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
   try{new MutationObserver(function(){var p=q('#page-workorder-list');if(p&&!p.dataset.nmcWoFinalApplied)boot()}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
   window.nmcRenderWorkOrderStatusDashboard=refresh;
 })();
+
+
+/* 검사 기준서 화면 내 바로가기 버튼 */
+document.addEventListener('click',function(e){
+  var target=e.target.closest('[data-page-target]');
+  if(!target)return;
+  var pg=target.getAttribute('data-page-target');
+  var nav=document.querySelector('.nav-item[data-page="'+pg+'"]');
+  if(nav){e.preventDefault();nav.click();}
+},true);
 </script>
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
