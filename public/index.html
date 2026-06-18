@@ -20029,3 +20029,134 @@ document.addEventListener('click',function(e){
 },true);
 </script>
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
+
+<!-- NAMO IQC YEAR FILTER PATCH 20260618 -->
+<style id="namo-iqc-year-filter-style-20260618">
+#page-incoming .namo-iqc-year-filter{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-left:auto;
+}
+#page-incoming .namo-iqc-year-filter .year-label{
+  font-size:12px;
+  font-weight:800;
+  color:#64748b;
+  margin-right:2px;
+}
+#page-incoming .namo-iqc-year-filter .year-btn{
+  height:30px;
+  min-width:58px;
+  padding:0 12px;
+  border:1px solid #dbe3ee;
+  border-radius:999px;
+  background:#fff;
+  color:#475569;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.15s ease;
+}
+#page-incoming .namo-iqc-year-filter .year-btn:hover{
+  border-color:#2563eb;
+  background:#eff6ff;
+  color:#1d4ed8;
+}
+#page-incoming .namo-iqc-year-filter .year-btn.active{
+  border-color:#2563eb;
+  background:#2563eb;
+  color:#fff;
+  box-shadow:0 6px 14px rgba(37,99,235,.18);
+}
+#page-incoming .namo-iqc-year-filter .year-count{
+  font-size:11px;
+  font-weight:800;
+  color:#64748b;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:999px;
+  padding:5px 9px;
+}
+#page-incoming .namo-iqc-year-empty td{
+  text-align:center!important;
+  color:#94a3b8!important;
+  padding:24px!important;
+  font-weight:700;
+}
+@media(max-width:900px){
+  #page-incoming .namo-iqc-year-filter{width:100%;margin-left:0;margin-top:8px;}
+}
+</style>
+<script id="namo-iqc-year-filter-script-20260618">
+(function(){
+  'use strict';
+  var STORE_KEY='namo_iqc_selected_year_v20260618';
+  var YEARS=['all','2025','2026','2027'];
+  function $(id){return document.getElementById(id);}
+  function txt(v){return String(v==null?'':v).trim();}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function getState(){try{return window.state||eval('state')||{};}catch(e){return window.state||{};}}
+  function getSelectedYear(){var y='all';try{y=localStorage.getItem(STORE_KEY)||'all';}catch(e){} return YEARS.indexOf(y)>=0?y:'all';}
+  function setSelectedYear(y){if(YEARS.indexOf(y)<0)y='all';try{localStorage.setItem(STORE_KEY,y);}catch(e){}}
+  function eRow(cols,msg){return '<tr class="namo-iqc-year-empty"><td colspan="'+cols+'">'+esc(msg||'조회된 입고검사 내역이 없습니다.')+'</td></tr>';}
+  function person(r,role){
+    r=r||{}; var cap=role==='writer'?'Writer':role==='reviewer'?'Reviewer':'Approver';
+    var o=r['sign'+cap]||{};
+    var name=txt(o.name||r[role+'Name']||r[role]||(role==='writer'?(r.inspector||r.createdBy):''));
+    var title=txt(o.title||r[role+'Title']||'');
+    if(!name||name==='-') return '-';
+    return title ? name+' / '+title : name;
+  }
+  function judge(r){
+    try{ if(typeof window.jBadge==='function') return window.jBadge(typeof window.calcJ==='function'?window.calcJ(r.items||[]):r.finalJudge||r.judge||''); }catch(e){}
+    return esc(r.finalJudge||r.judge||'');
+  }
+  function ensureIncomingDom(){
+    var page=$('page-incoming'); if(!page)return;
+    if($('incomingTable'))return;
+    var card=document.createElement('div'); card.className='card mt14';
+    card.innerHTML='<div class="ch"><h3>입고검사 목록</h3></div><div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>일자</th><th>LOT</th><th>협력업체</th><th>품목</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr></thead><tbody id="incomingTable"></tbody></table></div>';
+    page.appendChild(card);
+  }
+  function ensureYearFilter(total,shown){
+    var tb=$('incomingTable'); if(!tb)return;
+    var card=tb.closest('.card'); if(!card)return;
+    var head=card.querySelector('.ch'); if(!head)return;
+    var box=head.querySelector('.namo-iqc-year-filter');
+    if(!box){
+      box=document.createElement('div'); box.className='namo-iqc-year-filter';
+      box.innerHTML='<span class="year-label">연도</span>'+YEARS.map(function(y){return '<button type="button" class="year-btn" data-iqc-year="'+y+'">'+(y==='all'?'전체':y+'년')+'</button>';}).join('')+'<span class="year-count"></span>';
+      head.appendChild(box);
+    }
+    var sel=getSelectedYear();
+    Array.prototype.forEach.call(box.querySelectorAll('.year-btn'),function(b){b.classList.toggle('active',b.getAttribute('data-iqc-year')===sel);});
+    var c=box.querySelector('.year-count'); if(c)c.textContent=(sel==='all'?'전체':'선택')+' '+shown+'건 / 총 '+total+'건';
+  }
+  function rowHtml(r){
+    return '<tr><td>'+esc(r.date||'')+'</td><td><strong>'+esc(r.lot||'')+'</strong></td><td>'+esc(r.supplier||'')+'</td><td>'+esc(r.item||'')+'</td><td>'+esc(r.incomingQty!=null?r.incomingQty:'')+'</td><td>'+esc(r.checkQty!=null?r.checkQty:'')+'</td><td>'+esc(r.failQty!=null?r.failQty:'')+'</td><td>'+judge(r)+'</td><td>'+esc(person(r,'writer'))+'</td><td>'+esc(person(r,'reviewer'))+'</td><td>'+esc(person(r,'approver'))+'</td><td><div class="ai"><button class="sb edit" data-action="editIncoming" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteIncoming" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelIncoming" data-id="'+esc(r.id)+'">🏷라벨</button></div></td></tr>';
+  }
+  window.renderIncomingTable=function(){
+    ensureIncomingDom();
+    var tb=$('incomingTable'), s=getState(), arr=Array.isArray(s.incoming)?s.incoming.slice():[]; if(!tb)return;
+    var sel=getSelectedYear();
+    arr.sort(function(a,b){return txt(b.date).localeCompare(txt(a.date));});
+    var filtered=sel==='all'?arr:arr.filter(function(r){return txt(r.date).slice(0,4)===sel;});
+    ensureYearFilter(arr.length,filtered.length);
+    if(!filtered.length){tb.innerHTML=eRow(12, sel==='all'?'조회된 입고검사 내역이 없습니다.':sel+'년 입고검사 내역이 없습니다.');return;}
+    tb.innerHTML=filtered.map(rowHtml).join('');
+  };
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('[data-iqc-year]');
+    if(!b)return;
+    e.preventDefault();
+    setSelectedYear(b.getAttribute('data-iqc-year'));
+    try{window.renderIncomingTable();}catch(err){}
+  },true);
+  function boot(){try{window.renderIncomingTable();}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [200,700,1500,3000,6000].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+<!-- /NAMO IQC YEAR FILTER PATCH 20260618 -->
+
