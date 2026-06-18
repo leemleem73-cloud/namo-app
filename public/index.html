@@ -8094,7 +8094,19 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!prodSec){
       prodSec = qsa('.nav-sec', side).find(x => x.textContent.trim()==='생산 관리');
     }
-    if(!qs('.nav-item[data-page="production-plan"]', side)){
+    if(!prodSec){
+      const lastSec = qsa('.nav-sec', side).pop();
+      if(lastSec){
+        lastSec.insertAdjacentHTML('afterend','<div class="nav-sec">생산 관리</div>');
+        prodSec = qs('.nav-sec', side);
+        const secs = qsa('.nav-sec', side);
+        prodSec = secs.find(x => x.textContent.trim()==='생산 관리') || secs[secs.length-1];
+      }else{
+        side.insertAdjacentHTML('afterbegin','<div class="nav-sec">생산 관리</div>');
+        prodSec = qs('.nav-sec', side);
+      }
+    }
+    if(prodSec && !qs('.nav-item[data-page="production-plan"]', side) && !qs('.nav-item[data-page="workorder-final"]', side)){
       prodSec.insertAdjacentHTML('afterend', `
         
         <button class="nav-item" data-page="workorder-final"><span class="nav-icon">›</span><span>작업지시</span></button>
@@ -19428,6 +19440,68 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
+
+<script id="namo-qms-nonoverwrite-runtime-safety-20260618">
+(function(){
+  'use strict';
+  function byId(id){ return document.getElementById(id); }
+  function qsa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+
+  if(typeof window.ensureEditButtons !== 'function'){
+    window.ensureEditButtons=function(){
+      try{
+        qsa('button,a').forEach(function(el){
+          var t=(el.textContent||'').trim();
+          if((t==='상세'||t==='보기'||t==='열기') && !el.dataset.namoSafeDetail){ el.dataset.namoSafeDetail='1'; }
+        });
+      }catch(e){}
+    };
+  }
+
+  if(typeof window.nmcSaveWorkOrderHistory !== 'function'){
+    window.nmcSaveWorkOrderHistory=function(status){
+      try{
+        if(typeof window.nmcSaveWorkOrderHistoryV4==='function') return window.nmcSaveWorkOrderHistoryV4(status);
+        if(typeof window.saveCurrentWorkOrder==='function') return window.saveCurrentWorkOrder(status);
+        var list=[];
+        try{ list=JSON.parse(localStorage.getItem('nmcWorkOrderHistory')||'[]')||[]; }catch(e){ list=[]; }
+        var get=function(id){ var x=byId(id); return x ? x.value : ''; };
+        var rec={
+          id:'WO-SAFE-'+Date.now(),
+          status:status||'저장완료',
+          no:get('nmcWoNo'), date:get('nmcOrderDate'), product:get('nmcProdName'), lot:get('nmcProdLot')||get('nmcProdCode'),
+          plan:get('nmcPlanQty'), worker:get('nmcWorker')||get('nmcSenderName'), instruction:get('nmcInstruction'),
+          sendNote:get('nmcSendNote'), savedAt:new Date().toISOString()
+        };
+        list.unshift(rec);
+        localStorage.setItem('nmcWorkOrderHistory',JSON.stringify(list.slice(0,500)));
+        return rec;
+      }catch(e){ console.warn('[Namo QMS] nmcSaveWorkOrderHistory safe fallback failed',e); return null; }
+    };
+  }
+
+  if(typeof window.insertProductionNav !== 'function'){
+    window.insertProductionNav=function(){
+      try{
+        var side=document.querySelector('.sidebar'); if(!side) return;
+        if(!side.querySelector('.nav-sec[data-namo-prod-sec]') && !qsa('.nav-sec',side).some(function(x){return (x.textContent||'').trim()==='생산 관리';})){
+          side.insertAdjacentHTML('beforeend','<div class="nav-sec" data-namo-prod-sec="1">생산 관리</div>');
+        }
+        var sec=qsa('.nav-sec',side).find(function(x){return (x.textContent||'').trim()==='생산 관리';}) || qsa('.nav-sec',side).pop();
+        if(sec && !side.querySelector('.nav-item[data-page="workorder-final"]')){
+          sec.insertAdjacentHTML('afterend','<button class="nav-item" data-page="workorder-final" type="button"><span class="nav-icon">›</span><span>작업지시</span></button>');
+        }
+      }catch(e){ console.warn('[Namo QMS] insertProductionNav safe fallback failed',e); }
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    try{ window.ensureEditButtons(); }catch(e){}
+    try{ if(typeof window.insertProductionNav==='function') window.insertProductionNav(); }catch(e){}
+  });
+})();
+</script>
 </body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
