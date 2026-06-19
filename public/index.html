@@ -14304,7 +14304,133 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '.tw{border:1px solid #dbe3ee;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#334155;font-size:10px;font-weight:900;padding:8px;border-bottom:1px solid #dbe3ee;text-align:center}td{padding:8px;border-bottom:1px solid #edf2f7;text-align:center;color:#334155}.nmc-detail-box{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:10px 12px;white-space:pre-wrap;min-height:38px}'+
       '.print-foot{margin-top:18px;text-align:right;color:#64748b;font-size:10px;border-top:1px dashed #cbd5e1;padding-top:8px}@media print{body{margin:0}}'+
       '</style></head><body>'+clone.innerHTML+'<div class="print-foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>'+
-      '</body></html>';
+      '
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 START -->
+<script>
+/* NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619
+   목적: IQC에는 존재하지만 생산투입/작업지시/완제품/OQC 연결이 없는 원재료 LOT 조회 시,
+   빈 표 대신 '미연결' 상태를 명확히 표시합니다. 데이터는 임의 생성하지 않습니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__) return;
+  window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__ = true;
+
+  function id(x){ return document.getElementById(x); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function hasResultRow(tbody){
+    if(!tbody) return false;
+    return Array.prototype.some.call(tbody.querySelectorAll('tr'),function(tr){
+      return !tr.querySelector('.trace-empty') && !tr.classList.contains('trace-total-row');
+    });
+  }
+  function badge(kind,label){
+    var cls = kind === 'pass' ? 'pass' : (kind === 'warn' ? 'warn' : 'wait');
+    return '<span class="trace-badge '+cls+'">'+esc(label)+'</span>';
+  }
+  function applyUnlinkedNotice(){
+    var kw = txt(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+
+    var materialHasRows = hasResultRow(id('traceTable'));
+    var finishedHasRows = hasResultRow(id('traceFinishedTable'));
+    if(!materialHasRows || finishedHasRows) return;
+
+    var finishedBody = id('traceFinishedTable');
+    if(finishedBody){
+      finishedBody.innerHTML = '<tr><td colspan="6" class="trace-empty" style="text-align:center;color:#64748b;padding:26px;line-height:1.7">'
+        + '<b style="color:#0f172a">완제품 LOT 연결 없음</b><br>'
+        + '원재료 LOT <b>'+esc(kw)+'</b>는 IQC/입고검사에는 존재하지만, 아직 생산투입 · 작업지시 · 완제품 LOT · OQC 출하검사와 연결된 기록이 없습니다.'
+        + '</td></tr>';
+    }
+    var finishedCount = id('traceFinishedCount');
+    if(finishedCount) finishedCount.textContent = '0건 · 미연결';
+
+    var inspection = id('traceInspectionPanel');
+    if(inspection){
+      inspection.innerHTML = [
+        ['IQC','원료/입고 검사','pass','PASS'],
+        ['PQC','공정검사 · 생산실적 연결 필요','wait','미연결'],
+        ['OQC','출하검사 · 완제품 LOT 연결 필요','wait','미연결']
+      ].map(function(x){
+        return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+x[1]+'</div><div>'+badge(x[2],x[3])+'</div></div>';
+      }).join('');
+    }
+
+    var work = id('traceWorkPanel');
+    if(work){
+      work.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>원재료 LOT</td><td><b>'+esc(kw)+'</b></td></tr>'
+        + '<tr><td>작업지시번호</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>생산일자</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>제품명</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>다음 조치</td><td>작업지시/생산실적의 투입 원료 LOT에 '+esc(kw)+'를 등록해야 순추적됩니다.</td></tr>'
+        + '</table>';
+    }
+
+    var ship = id('traceShipPanel');
+    if(ship){
+      ship.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>출하이력</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>NCR</td><td>0건</td></tr>'
+        + '<tr><td>CAPA</td><td>0건</td></tr>'
+        + '<tr><td>연결 기준</td><td>원재료 LOT → 생산투입 → 완제품 LOT → OQC</td></tr>'
+        + '</table>';
+    }
+
+    var flow = id('traceTimeline');
+    if(flow){
+      var steps = [
+        ['입고','원재료 LOT','done','✓'],
+        ['투입','생산 투입 미연결','wait','•'],
+        ['작업지시','WO 미연결','wait','•'],
+        ['생산','완제품 LOT 미연결','wait','•'],
+        ['IQC','입고검사 PASS','done','✓'],
+        ['PQC','공정검사 미연결','wait','•'],
+        ['OQC','출하검사 미연결','wait','•'],
+        ['출하','고객 출하 미연결','wait','•']
+      ];
+      flow.innerHTML = steps.map(function(s){
+        return '<div class="trace-flow-step '+s[2]+'"><div class="ico">'+s[3]+'</div><div class="t">'+esc(s[0])+'</div><div class="d">'+esc(s[1])+'</div></div>';
+      }).join('');
+    }
+  }
+
+  function bind(){
+    var old = window.searchTrace;
+    if(typeof old === 'function' && !old.__nmcUnlinkedWrapped){
+      var wrapped = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(applyUnlinkedNotice, 30);
+        setTimeout(applyUnlinkedNotice, 180);
+        return ret;
+      };
+      wrapped.__nmcUnlinkedWrapped = true;
+      window.searchTrace = wrapped;
+    }
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcUnlinkedNotice){
+      btn.__nmcUnlinkedNotice = true;
+      btn.addEventListener('click',function(){ setTimeout(applyUnlinkedNotice,220); },true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcUnlinkedNotice){
+      input.__nmcUnlinkedNotice = true;
+      input.addEventListener('keydown',function(e){ if(e.key === 'Enter') setTimeout(applyUnlinkedNotice,220); },true);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  [200,700,1500,3000].forEach(function(ms){ setTimeout(bind,ms); });
+})();
+
+</script>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 END -->
+</body></html>';
 
     var w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return;}
@@ -15984,7 +16110,133 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function ensureDetailBox(){var box=q('#namoWoDetail')||q('#page-workorder-list .nmc-workorder-detail');if(!box){var page=q('#page-workorder-list .namo-prod-table-wrap')||q('#page-workorder-list .tw')||q('#page-workorder-list');if(page){page.insertAdjacentHTML('afterend','<div id="namoWoDetail" class="nmc-workorder-detail"></div>');box=q('#namoWoDetail')}}return box}
   function detailHtml(item){var n=normalize(item);var mats=n.materials.length?'<div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="nmc-detail-cell"><span>등록된 투입 원료 정보가 없습니다.</span></div>';return '<div class="nmc-wo-detail-head-print"><h3>작업지시 상세</h3><button type="button" class="nmc-wo-print-btn" data-nmc-inbox-print="'+esc(n.id)+'">인쇄</button></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="nmc-detail-cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="nmc-detail-cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="nmc-detail-cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="nmc-detail-cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="nmc-detail-section-title">작업 지시사항</div><div class="nmc-detail-cell"><span>'+esc(n.instruction||'-')+'</span></div><div class="nmc-detail-section-title">발송 비고</div><div class="nmc-detail-cell"><span>'+esc(n.sendNote||'-')+'</span></div><div class="nmc-detail-section-title">투입 원료</div>'+mats}
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시 데이터를 찾을 수 없습니다.');return}var box=ensureDetailBox();if(!box)return;box.innerHTML=detailHtml(item);box.classList.add('show');box.scrollIntoView({behavior:'smooth',block:'start'})}
-  function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시 데이터를 찾을 수 없습니다.');return}var n=normalize(item);var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}body{font-family:Inter,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5}h1{font-size:23px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #cbd5e1;border-radius:8px;padding:8px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #cbd5e1;border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px;text-align:center}th{background:#f8fafc}.foot{margin-top:18px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #cbd5e1;padding-top:8px}</style></head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+(n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>')+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},150)}<\/scr'+'ipt></body></html>';var w=window.open('','_blank','width=900,height=1000');if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return}w.document.open();w.document.write(html);w.document.close()}
+  function printOrderById(id){var item=findOrder(id);if(!item){alert('인쇄할 작업지시 데이터를 찾을 수 없습니다.');return}var n=normalize(item);var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}body{font-family:Inter,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5}h1{font-size:23px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #cbd5e1;border-radius:8px;padding:8px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #cbd5e1;border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px;text-align:center}th{background:#f8fafc}.foot{margin-top:18px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #cbd5e1;padding-top:8px}</style></head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(onlyDate(n.date||n.orderDate))+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(onlyDate(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||''))+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+(n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>')+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},150)}<\/scr'+'ipt>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 START -->
+<script>
+/* NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619
+   목적: IQC에는 존재하지만 생산투입/작업지시/완제품/OQC 연결이 없는 원재료 LOT 조회 시,
+   빈 표 대신 '미연결' 상태를 명확히 표시합니다. 데이터는 임의 생성하지 않습니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__) return;
+  window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__ = true;
+
+  function id(x){ return document.getElementById(x); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function hasResultRow(tbody){
+    if(!tbody) return false;
+    return Array.prototype.some.call(tbody.querySelectorAll('tr'),function(tr){
+      return !tr.querySelector('.trace-empty') && !tr.classList.contains('trace-total-row');
+    });
+  }
+  function badge(kind,label){
+    var cls = kind === 'pass' ? 'pass' : (kind === 'warn' ? 'warn' : 'wait');
+    return '<span class="trace-badge '+cls+'">'+esc(label)+'</span>';
+  }
+  function applyUnlinkedNotice(){
+    var kw = txt(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+
+    var materialHasRows = hasResultRow(id('traceTable'));
+    var finishedHasRows = hasResultRow(id('traceFinishedTable'));
+    if(!materialHasRows || finishedHasRows) return;
+
+    var finishedBody = id('traceFinishedTable');
+    if(finishedBody){
+      finishedBody.innerHTML = '<tr><td colspan="6" class="trace-empty" style="text-align:center;color:#64748b;padding:26px;line-height:1.7">'
+        + '<b style="color:#0f172a">완제품 LOT 연결 없음</b><br>'
+        + '원재료 LOT <b>'+esc(kw)+'</b>는 IQC/입고검사에는 존재하지만, 아직 생산투입 · 작업지시 · 완제품 LOT · OQC 출하검사와 연결된 기록이 없습니다.'
+        + '</td></tr>';
+    }
+    var finishedCount = id('traceFinishedCount');
+    if(finishedCount) finishedCount.textContent = '0건 · 미연결';
+
+    var inspection = id('traceInspectionPanel');
+    if(inspection){
+      inspection.innerHTML = [
+        ['IQC','원료/입고 검사','pass','PASS'],
+        ['PQC','공정검사 · 생산실적 연결 필요','wait','미연결'],
+        ['OQC','출하검사 · 완제품 LOT 연결 필요','wait','미연결']
+      ].map(function(x){
+        return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+x[1]+'</div><div>'+badge(x[2],x[3])+'</div></div>';
+      }).join('');
+    }
+
+    var work = id('traceWorkPanel');
+    if(work){
+      work.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>원재료 LOT</td><td><b>'+esc(kw)+'</b></td></tr>'
+        + '<tr><td>작업지시번호</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>생산일자</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>제품명</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>다음 조치</td><td>작업지시/생산실적의 투입 원료 LOT에 '+esc(kw)+'를 등록해야 순추적됩니다.</td></tr>'
+        + '</table>';
+    }
+
+    var ship = id('traceShipPanel');
+    if(ship){
+      ship.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>출하이력</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>NCR</td><td>0건</td></tr>'
+        + '<tr><td>CAPA</td><td>0건</td></tr>'
+        + '<tr><td>연결 기준</td><td>원재료 LOT → 생산투입 → 완제품 LOT → OQC</td></tr>'
+        + '</table>';
+    }
+
+    var flow = id('traceTimeline');
+    if(flow){
+      var steps = [
+        ['입고','원재료 LOT','done','✓'],
+        ['투입','생산 투입 미연결','wait','•'],
+        ['작업지시','WO 미연결','wait','•'],
+        ['생산','완제품 LOT 미연결','wait','•'],
+        ['IQC','입고검사 PASS','done','✓'],
+        ['PQC','공정검사 미연결','wait','•'],
+        ['OQC','출하검사 미연결','wait','•'],
+        ['출하','고객 출하 미연결','wait','•']
+      ];
+      flow.innerHTML = steps.map(function(s){
+        return '<div class="trace-flow-step '+s[2]+'"><div class="ico">'+s[3]+'</div><div class="t">'+esc(s[0])+'</div><div class="d">'+esc(s[1])+'</div></div>';
+      }).join('');
+    }
+  }
+
+  function bind(){
+    var old = window.searchTrace;
+    if(typeof old === 'function' && !old.__nmcUnlinkedWrapped){
+      var wrapped = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(applyUnlinkedNotice, 30);
+        setTimeout(applyUnlinkedNotice, 180);
+        return ret;
+      };
+      wrapped.__nmcUnlinkedWrapped = true;
+      window.searchTrace = wrapped;
+    }
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcUnlinkedNotice){
+      btn.__nmcUnlinkedNotice = true;
+      btn.addEventListener('click',function(){ setTimeout(applyUnlinkedNotice,220); },true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcUnlinkedNotice){
+      input.__nmcUnlinkedNotice = true;
+      input.addEventListener('keydown',function(e){ if(e.key === 'Enter') setTimeout(applyUnlinkedNotice,220); },true);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  [200,700,1500,3000].forEach(function(ms){ setTimeout(bind,ms); });
+})();
+
+</script>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 END -->
+</body></html>';var w=window.open('','_blank','width=900,height=1000');if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return}w.document.open();w.document.write(html);w.document.close()}
   window.printOrderById=printOrderById;
   function ensureEditSaveButtons(){var box=q('#page-workorder-final .nmc-send-actions')||q('#page-workorder-final .ph-actions');if(!box)return;if(!q('#nmcEditCancelBtn'))box.insertAdjacentHTML('afterbegin','<button class="nmc-btn" id="nmcEditCancelBtn" type="button">수정 취소</button>');if(!q('#nmcEditSaveBtn'))box.insertAdjacentHTML('afterbegin','<button class="nmc-btn primary" id="nmcEditSaveBtn" type="button">수정본 저장</button>')}
   function setEditMode(on,id){ensureEditSaveButtons();var page=q('#page-workorder-final');if(page){page.dataset.nmcEditMode=on?'1':'0';page.dataset.nmcEditId=on?(id||editId||''):''}var send=q('#page-workorder-final [data-nmc-action="send"]');if(send)send.textContent=on?'수정본 발송/인쇄 가능':'선택 대상에게 발송';var title=q('#page-workorder-final .ph-title');if(title)title.textContent=on?'작업지시 수정':'작업지시 등록'}
@@ -16036,7 +16288,133 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function showPage(page){var id='page-'+page;qa('.page').forEach(function(p){p.classList.toggle('active',p.id===id)});qa('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-page')===page)});var content=q('.content');if(content)content.scrollTo({top:0,behavior:'smooth'});setTimeout(function(){var p=q('#'+id);if(p){p.classList.add('active');p.style.display='block'}},30)}
   function detailHtml(item){var n=norm(item);var rows=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<div class="nmc-wo-detail-head-print"><h3>작업지시 상세</h3><button type="button" class="nmc-wo-print-btn" data-nmc-inbox-print="'+esc(n.id)+'">인쇄</button></div><div class="nmc-detail-grid"><div class="nmc-detail-cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="nmc-detail-cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="nmc-detail-cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="nmc-detail-cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="nmc-detail-cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="nmc-detail-cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="nmc-detail-cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="nmc-detail-cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="nmc-detail-cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="nmc-detail-cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="nmc-detail-cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div></div><div class="nmc-detail-section-title">작업 지시사항</div><div class="nmc-detail-cell"><span>'+esc(n.instruction||'-')+'</span></div><div class="nmc-detail-section-title">발송 비고</div><div class="nmc-detail-cell"><span>'+esc(n.sendNote||'-')+'</span></div><div class="nmc-detail-section-title">투입 원료</div><div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table></div>'}
   function openDetail(id){var item=findOrder(id);if(!item){alert('작업지시 데이터를 찾을 수 없습니다.');return}var page=q('#page-workorder-list');var host=q('#namoWoDetail',page)||q('.nmc-workorder-detail',page)||q('.cb',page)||page;if(!host)return;if(host.id==='namoWoDetail'||host.classList.contains('nmc-workorder-detail')){host.innerHTML=detailHtml(item);host.classList.add('show')}else{var box=q('#namoWoDetail',host);if(!box){host.insertAdjacentHTML('beforeend','<div id="namoWoDetail" class="nmc-workorder-detail show"></div>');box=q('#namoWoDetail',host)}box.innerHTML=detailHtml(item);box.classList.add('show')}setTimeout(function(){(q('#namoWoDetail')||host).scrollIntoView({behavior:'smooth',block:'start'})},50)}
-  function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div></body></html>';
+  function printHtml(item){var n=norm(item);var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no)+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status)+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||n.orderDate||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div><div class="cell"><b>수정완료일자</b><span>'+esc(item.modifiedCompletedAt||item.editCompletedAt||item.updatedAt||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 START -->
+<script>
+/* NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619
+   목적: IQC에는 존재하지만 생산투입/작업지시/완제품/OQC 연결이 없는 원재료 LOT 조회 시,
+   빈 표 대신 '미연결' 상태를 명확히 표시합니다. 데이터는 임의 생성하지 않습니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__) return;
+  window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__ = true;
+
+  function id(x){ return document.getElementById(x); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function hasResultRow(tbody){
+    if(!tbody) return false;
+    return Array.prototype.some.call(tbody.querySelectorAll('tr'),function(tr){
+      return !tr.querySelector('.trace-empty') && !tr.classList.contains('trace-total-row');
+    });
+  }
+  function badge(kind,label){
+    var cls = kind === 'pass' ? 'pass' : (kind === 'warn' ? 'warn' : 'wait');
+    return '<span class="trace-badge '+cls+'">'+esc(label)+'</span>';
+  }
+  function applyUnlinkedNotice(){
+    var kw = txt(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+
+    var materialHasRows = hasResultRow(id('traceTable'));
+    var finishedHasRows = hasResultRow(id('traceFinishedTable'));
+    if(!materialHasRows || finishedHasRows) return;
+
+    var finishedBody = id('traceFinishedTable');
+    if(finishedBody){
+      finishedBody.innerHTML = '<tr><td colspan="6" class="trace-empty" style="text-align:center;color:#64748b;padding:26px;line-height:1.7">'
+        + '<b style="color:#0f172a">완제품 LOT 연결 없음</b><br>'
+        + '원재료 LOT <b>'+esc(kw)+'</b>는 IQC/입고검사에는 존재하지만, 아직 생산투입 · 작업지시 · 완제품 LOT · OQC 출하검사와 연결된 기록이 없습니다.'
+        + '</td></tr>';
+    }
+    var finishedCount = id('traceFinishedCount');
+    if(finishedCount) finishedCount.textContent = '0건 · 미연결';
+
+    var inspection = id('traceInspectionPanel');
+    if(inspection){
+      inspection.innerHTML = [
+        ['IQC','원료/입고 검사','pass','PASS'],
+        ['PQC','공정검사 · 생산실적 연결 필요','wait','미연결'],
+        ['OQC','출하검사 · 완제품 LOT 연결 필요','wait','미연결']
+      ].map(function(x){
+        return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+x[1]+'</div><div>'+badge(x[2],x[3])+'</div></div>';
+      }).join('');
+    }
+
+    var work = id('traceWorkPanel');
+    if(work){
+      work.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>원재료 LOT</td><td><b>'+esc(kw)+'</b></td></tr>'
+        + '<tr><td>작업지시번호</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>생산일자</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>제품명</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>다음 조치</td><td>작업지시/생산실적의 투입 원료 LOT에 '+esc(kw)+'를 등록해야 순추적됩니다.</td></tr>'
+        + '</table>';
+    }
+
+    var ship = id('traceShipPanel');
+    if(ship){
+      ship.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>출하이력</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>NCR</td><td>0건</td></tr>'
+        + '<tr><td>CAPA</td><td>0건</td></tr>'
+        + '<tr><td>연결 기준</td><td>원재료 LOT → 생산투입 → 완제품 LOT → OQC</td></tr>'
+        + '</table>';
+    }
+
+    var flow = id('traceTimeline');
+    if(flow){
+      var steps = [
+        ['입고','원재료 LOT','done','✓'],
+        ['투입','생산 투입 미연결','wait','•'],
+        ['작업지시','WO 미연결','wait','•'],
+        ['생산','완제품 LOT 미연결','wait','•'],
+        ['IQC','입고검사 PASS','done','✓'],
+        ['PQC','공정검사 미연결','wait','•'],
+        ['OQC','출하검사 미연결','wait','•'],
+        ['출하','고객 출하 미연결','wait','•']
+      ];
+      flow.innerHTML = steps.map(function(s){
+        return '<div class="trace-flow-step '+s[2]+'"><div class="ico">'+s[3]+'</div><div class="t">'+esc(s[0])+'</div><div class="d">'+esc(s[1])+'</div></div>';
+      }).join('');
+    }
+  }
+
+  function bind(){
+    var old = window.searchTrace;
+    if(typeof old === 'function' && !old.__nmcUnlinkedWrapped){
+      var wrapped = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(applyUnlinkedNotice, 30);
+        setTimeout(applyUnlinkedNotice, 180);
+        return ret;
+      };
+      wrapped.__nmcUnlinkedWrapped = true;
+      window.searchTrace = wrapped;
+    }
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcUnlinkedNotice){
+      btn.__nmcUnlinkedNotice = true;
+      btn.addEventListener('click',function(){ setTimeout(applyUnlinkedNotice,220); },true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcUnlinkedNotice){
+      input.__nmcUnlinkedNotice = true;
+      input.addEventListener('keydown',function(e){ if(e.key === 'Enter') setTimeout(applyUnlinkedNotice,220); },true);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  [200,700,1500,3000].forEach(function(ms){ setTimeout(bind,ms); });
+})();
+
+</script>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 END -->
+</body></html>';
   }
   function forcePrint(id){
     var item=findOrder(id); if(!item){ alert('인쇄할 작업지시 데이터를 찾을 수 없습니다.'); return false; }
@@ -16192,7 +16570,133 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var item=itemFromElement(el);if(!item){alert('인쇄할 작업지시 데이터를 찾을 수 없습니다.');return;}
     var n=norm(item);
     var mat=n.materials.length?n.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],''))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],''))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],''))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],''))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>';}).join(''):'<tr><td colspan="6">등록된 투입 원료 정보가 없습니다.</td></tr>';
-    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt></body></html>';
+    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>작업지시_'+esc(n.no)+'</title><style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,Malgun Gothic,sans-serif;color:#0f172a;background:#fff;font-size:12px;line-height:1.5;margin:0}h1{font-size:24px;text-align:center;margin:0 0 16px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{border:1px solid #94a3b8;border-radius:8px;padding:8px;min-height:50px}.cell b{display:block;font-size:10px;color:#475569;margin-bottom:4px}.cell span{font-size:13px;font-weight:800;white-space:pre-wrap}.sec{font-size:14px;font-weight:900;margin:16px 0 7px}.box{border:1px solid #94a3b8;border-radius:8px;padding:10px;min-height:42px;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:7px;text-align:center}th{background:#f1f5f9}.foot{margin-top:16px;text-align:right;font-size:10px;color:#64748b;border-top:1px dashed #94a3b8;padding-top:8px}</style></head><body><h1>작업지시</h1><div class="meta"><div class="cell"><b>작업지시번호</b><span>'+esc(n.no||'-')+'</span></div><div class="cell"><b>상태</b><span>'+esc(n.status||'-')+'</span></div><div class="cell"><b>고객사명</b><span>'+esc(n.customer||'-')+'</span></div><div class="cell"><b>제품명</b><span>'+esc(n.product||'-')+'</span></div><div class="cell"><b>제품코드</b><span>'+esc(n.code||'-')+'</span></div><div class="cell"><b>생산 LOT</b><span>'+esc(n.lot||'-')+'</span></div><div class="cell"><b>계획수량(KG)</b><span>'+esc(n.plan||'-')+'</span></div><div class="cell"><b>발송/작성일</b><span>'+esc(n.date||'-')+'</span></div><div class="cell"><b>작성/담당</b><span>'+esc(n.worker||n.reqDept||'-')+'</span></div><div class="cell"><b>수신</b><span>'+esc(n.receiver||'-')+'</span></div><div class="cell"><b>참조</b><span>'+esc(n.ref||'-')+'</span></div></div><div class="sec">작업 지시사항</div><div class="box">'+esc(n.instruction||'-')+'</div><div class="sec">발송 비고</div><div class="box">'+esc(n.sendNote||'-')+'</div><div class="sec">투입 원료</div><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mat+'</tbody></table><div class="foot">Namochemical QMS · '+esc(new Date().toLocaleString('ko-KR'))+'</div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},200)};</scr'+'ipt>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 START -->
+<script>
+/* NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619
+   목적: IQC에는 존재하지만 생산투입/작업지시/완제품/OQC 연결이 없는 원재료 LOT 조회 시,
+   빈 표 대신 '미연결' 상태를 명확히 표시합니다. 데이터는 임의 생성하지 않습니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__) return;
+  window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__ = true;
+
+  function id(x){ return document.getElementById(x); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function hasResultRow(tbody){
+    if(!tbody) return false;
+    return Array.prototype.some.call(tbody.querySelectorAll('tr'),function(tr){
+      return !tr.querySelector('.trace-empty') && !tr.classList.contains('trace-total-row');
+    });
+  }
+  function badge(kind,label){
+    var cls = kind === 'pass' ? 'pass' : (kind === 'warn' ? 'warn' : 'wait');
+    return '<span class="trace-badge '+cls+'">'+esc(label)+'</span>';
+  }
+  function applyUnlinkedNotice(){
+    var kw = txt(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+
+    var materialHasRows = hasResultRow(id('traceTable'));
+    var finishedHasRows = hasResultRow(id('traceFinishedTable'));
+    if(!materialHasRows || finishedHasRows) return;
+
+    var finishedBody = id('traceFinishedTable');
+    if(finishedBody){
+      finishedBody.innerHTML = '<tr><td colspan="6" class="trace-empty" style="text-align:center;color:#64748b;padding:26px;line-height:1.7">'
+        + '<b style="color:#0f172a">완제품 LOT 연결 없음</b><br>'
+        + '원재료 LOT <b>'+esc(kw)+'</b>는 IQC/입고검사에는 존재하지만, 아직 생산투입 · 작업지시 · 완제품 LOT · OQC 출하검사와 연결된 기록이 없습니다.'
+        + '</td></tr>';
+    }
+    var finishedCount = id('traceFinishedCount');
+    if(finishedCount) finishedCount.textContent = '0건 · 미연결';
+
+    var inspection = id('traceInspectionPanel');
+    if(inspection){
+      inspection.innerHTML = [
+        ['IQC','원료/입고 검사','pass','PASS'],
+        ['PQC','공정검사 · 생산실적 연결 필요','wait','미연결'],
+        ['OQC','출하검사 · 완제품 LOT 연결 필요','wait','미연결']
+      ].map(function(x){
+        return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+x[1]+'</div><div>'+badge(x[2],x[3])+'</div></div>';
+      }).join('');
+    }
+
+    var work = id('traceWorkPanel');
+    if(work){
+      work.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>원재료 LOT</td><td><b>'+esc(kw)+'</b></td></tr>'
+        + '<tr><td>작업지시번호</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>생산일자</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>제품명</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>다음 조치</td><td>작업지시/생산실적의 투입 원료 LOT에 '+esc(kw)+'를 등록해야 순추적됩니다.</td></tr>'
+        + '</table>';
+    }
+
+    var ship = id('traceShipPanel');
+    if(ship){
+      ship.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>출하이력</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>NCR</td><td>0건</td></tr>'
+        + '<tr><td>CAPA</td><td>0건</td></tr>'
+        + '<tr><td>연결 기준</td><td>원재료 LOT → 생산투입 → 완제품 LOT → OQC</td></tr>'
+        + '</table>';
+    }
+
+    var flow = id('traceTimeline');
+    if(flow){
+      var steps = [
+        ['입고','원재료 LOT','done','✓'],
+        ['투입','생산 투입 미연결','wait','•'],
+        ['작업지시','WO 미연결','wait','•'],
+        ['생산','완제품 LOT 미연결','wait','•'],
+        ['IQC','입고검사 PASS','done','✓'],
+        ['PQC','공정검사 미연결','wait','•'],
+        ['OQC','출하검사 미연결','wait','•'],
+        ['출하','고객 출하 미연결','wait','•']
+      ];
+      flow.innerHTML = steps.map(function(s){
+        return '<div class="trace-flow-step '+s[2]+'"><div class="ico">'+s[3]+'</div><div class="t">'+esc(s[0])+'</div><div class="d">'+esc(s[1])+'</div></div>';
+      }).join('');
+    }
+  }
+
+  function bind(){
+    var old = window.searchTrace;
+    if(typeof old === 'function' && !old.__nmcUnlinkedWrapped){
+      var wrapped = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(applyUnlinkedNotice, 30);
+        setTimeout(applyUnlinkedNotice, 180);
+        return ret;
+      };
+      wrapped.__nmcUnlinkedWrapped = true;
+      window.searchTrace = wrapped;
+    }
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcUnlinkedNotice){
+      btn.__nmcUnlinkedNotice = true;
+      btn.addEventListener('click',function(){ setTimeout(applyUnlinkedNotice,220); },true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcUnlinkedNotice){
+      input.__nmcUnlinkedNotice = true;
+      input.addEventListener('keydown',function(e){ if(e.key === 'Enter') setTimeout(applyUnlinkedNotice,220); },true);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  [200,700,1500,3000].forEach(function(ms){ setTimeout(bind,ms); });
+})();
+
+</script>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 END -->
+</body></html>';
     var w=window.open('','_blank','width=900,height=700');if(!w){alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.');return;}w.document.open();w.document.write(html);w.document.close();
   }
   function goPage(pg){
@@ -19284,6 +19788,132 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 
+
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 START -->
+<script>
+/* NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619
+   목적: IQC에는 존재하지만 생산투입/작업지시/완제품/OQC 연결이 없는 원재료 LOT 조회 시,
+   빈 표 대신 '미연결' 상태를 명확히 표시합니다. 데이터는 임의 생성하지 않습니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__) return;
+  window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__ = true;
+
+  function id(x){ return document.getElementById(x); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function hasResultRow(tbody){
+    if(!tbody) return false;
+    return Array.prototype.some.call(tbody.querySelectorAll('tr'),function(tr){
+      return !tr.querySelector('.trace-empty') && !tr.classList.contains('trace-total-row');
+    });
+  }
+  function badge(kind,label){
+    var cls = kind === 'pass' ? 'pass' : (kind === 'warn' ? 'warn' : 'wait');
+    return '<span class="trace-badge '+cls+'">'+esc(label)+'</span>';
+  }
+  function applyUnlinkedNotice(){
+    var kw = txt(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+
+    var materialHasRows = hasResultRow(id('traceTable'));
+    var finishedHasRows = hasResultRow(id('traceFinishedTable'));
+    if(!materialHasRows || finishedHasRows) return;
+
+    var finishedBody = id('traceFinishedTable');
+    if(finishedBody){
+      finishedBody.innerHTML = '<tr><td colspan="6" class="trace-empty" style="text-align:center;color:#64748b;padding:26px;line-height:1.7">'
+        + '<b style="color:#0f172a">완제품 LOT 연결 없음</b><br>'
+        + '원재료 LOT <b>'+esc(kw)+'</b>는 IQC/입고검사에는 존재하지만, 아직 생산투입 · 작업지시 · 완제품 LOT · OQC 출하검사와 연결된 기록이 없습니다.'
+        + '</td></tr>';
+    }
+    var finishedCount = id('traceFinishedCount');
+    if(finishedCount) finishedCount.textContent = '0건 · 미연결';
+
+    var inspection = id('traceInspectionPanel');
+    if(inspection){
+      inspection.innerHTML = [
+        ['IQC','원료/입고 검사','pass','PASS'],
+        ['PQC','공정검사 · 생산실적 연결 필요','wait','미연결'],
+        ['OQC','출하검사 · 완제품 LOT 연결 필요','wait','미연결']
+      ].map(function(x){
+        return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+x[1]+'</div><div>'+badge(x[2],x[3])+'</div></div>';
+      }).join('');
+    }
+
+    var work = id('traceWorkPanel');
+    if(work){
+      work.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>원재료 LOT</td><td><b>'+esc(kw)+'</b></td></tr>'
+        + '<tr><td>작업지시번호</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>생산일자</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>제품명</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>다음 조치</td><td>작업지시/생산실적의 투입 원료 LOT에 '+esc(kw)+'를 등록해야 순추적됩니다.</td></tr>'
+        + '</table>';
+    }
+
+    var ship = id('traceShipPanel');
+    if(ship){
+      ship.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>출하이력</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>NCR</td><td>0건</td></tr>'
+        + '<tr><td>CAPA</td><td>0건</td></tr>'
+        + '<tr><td>연결 기준</td><td>원재료 LOT → 생산투입 → 완제품 LOT → OQC</td></tr>'
+        + '</table>';
+    }
+
+    var flow = id('traceTimeline');
+    if(flow){
+      var steps = [
+        ['입고','원재료 LOT','done','✓'],
+        ['투입','생산 투입 미연결','wait','•'],
+        ['작업지시','WO 미연결','wait','•'],
+        ['생산','완제품 LOT 미연결','wait','•'],
+        ['IQC','입고검사 PASS','done','✓'],
+        ['PQC','공정검사 미연결','wait','•'],
+        ['OQC','출하검사 미연결','wait','•'],
+        ['출하','고객 출하 미연결','wait','•']
+      ];
+      flow.innerHTML = steps.map(function(s){
+        return '<div class="trace-flow-step '+s[2]+'"><div class="ico">'+s[3]+'</div><div class="t">'+esc(s[0])+'</div><div class="d">'+esc(s[1])+'</div></div>';
+      }).join('');
+    }
+  }
+
+  function bind(){
+    var old = window.searchTrace;
+    if(typeof old === 'function' && !old.__nmcUnlinkedWrapped){
+      var wrapped = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(applyUnlinkedNotice, 30);
+        setTimeout(applyUnlinkedNotice, 180);
+        return ret;
+      };
+      wrapped.__nmcUnlinkedWrapped = true;
+      window.searchTrace = wrapped;
+    }
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcUnlinkedNotice){
+      btn.__nmcUnlinkedNotice = true;
+      btn.addEventListener('click',function(){ setTimeout(applyUnlinkedNotice,220); },true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcUnlinkedNotice){
+      input.__nmcUnlinkedNotice = true;
+      input.addEventListener('keydown',function(e){ if(e.key === 'Enter') setTimeout(applyUnlinkedNotice,220); },true);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  [200,700,1500,3000].forEach(function(ms){ setTimeout(bind,ms); });
+})();
+
+</script>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 END -->
 </body>
 </html>
 
@@ -19793,6 +20423,132 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 </script>
 <!-- NMC LOT TRACE IQC DIRECT LINK HOTFIX 20260619 END -->
+
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 START -->
+<script>
+/* NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619
+   목적: IQC에는 존재하지만 생산투입/작업지시/완제품/OQC 연결이 없는 원재료 LOT 조회 시,
+   빈 표 대신 '미연결' 상태를 명확히 표시합니다. 데이터는 임의 생성하지 않습니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__) return;
+  window.__NMC_LOT_TRACE_UNLINKED_STATUS_HOTFIX_20260619__ = true;
+
+  function id(x){ return document.getElementById(x); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function hasResultRow(tbody){
+    if(!tbody) return false;
+    return Array.prototype.some.call(tbody.querySelectorAll('tr'),function(tr){
+      return !tr.querySelector('.trace-empty') && !tr.classList.contains('trace-total-row');
+    });
+  }
+  function badge(kind,label){
+    var cls = kind === 'pass' ? 'pass' : (kind === 'warn' ? 'warn' : 'wait');
+    return '<span class="trace-badge '+cls+'">'+esc(label)+'</span>';
+  }
+  function applyUnlinkedNotice(){
+    var kw = txt(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+
+    var materialHasRows = hasResultRow(id('traceTable'));
+    var finishedHasRows = hasResultRow(id('traceFinishedTable'));
+    if(!materialHasRows || finishedHasRows) return;
+
+    var finishedBody = id('traceFinishedTable');
+    if(finishedBody){
+      finishedBody.innerHTML = '<tr><td colspan="6" class="trace-empty" style="text-align:center;color:#64748b;padding:26px;line-height:1.7">'
+        + '<b style="color:#0f172a">완제품 LOT 연결 없음</b><br>'
+        + '원재료 LOT <b>'+esc(kw)+'</b>는 IQC/입고검사에는 존재하지만, 아직 생산투입 · 작업지시 · 완제품 LOT · OQC 출하검사와 연결된 기록이 없습니다.'
+        + '</td></tr>';
+    }
+    var finishedCount = id('traceFinishedCount');
+    if(finishedCount) finishedCount.textContent = '0건 · 미연결';
+
+    var inspection = id('traceInspectionPanel');
+    if(inspection){
+      inspection.innerHTML = [
+        ['IQC','원료/입고 검사','pass','PASS'],
+        ['PQC','공정검사 · 생산실적 연결 필요','wait','미연결'],
+        ['OQC','출하검사 · 완제품 LOT 연결 필요','wait','미연결']
+      ].map(function(x){
+        return '<div class="trace-inspection-row"><div class="name">'+x[0]+'</div><div class="meta">'+x[1]+'</div><div>'+badge(x[2],x[3])+'</div></div>';
+      }).join('');
+    }
+
+    var work = id('traceWorkPanel');
+    if(work){
+      work.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>원재료 LOT</td><td><b>'+esc(kw)+'</b></td></tr>'
+        + '<tr><td>작업지시번호</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>생산일자</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>제품명</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>다음 조치</td><td>작업지시/생산실적의 투입 원료 LOT에 '+esc(kw)+'를 등록해야 순추적됩니다.</td></tr>'
+        + '</table>';
+    }
+
+    var ship = id('traceShipPanel');
+    if(ship){
+      ship.innerHTML = '<table class="trace-mini-table">'
+        + '<tr><td>출하이력</td><td>'+badge('wait','미연결')+'</td></tr>'
+        + '<tr><td>NCR</td><td>0건</td></tr>'
+        + '<tr><td>CAPA</td><td>0건</td></tr>'
+        + '<tr><td>연결 기준</td><td>원재료 LOT → 생산투입 → 완제품 LOT → OQC</td></tr>'
+        + '</table>';
+    }
+
+    var flow = id('traceTimeline');
+    if(flow){
+      var steps = [
+        ['입고','원재료 LOT','done','✓'],
+        ['투입','생산 투입 미연결','wait','•'],
+        ['작업지시','WO 미연결','wait','•'],
+        ['생산','완제품 LOT 미연결','wait','•'],
+        ['IQC','입고검사 PASS','done','✓'],
+        ['PQC','공정검사 미연결','wait','•'],
+        ['OQC','출하검사 미연결','wait','•'],
+        ['출하','고객 출하 미연결','wait','•']
+      ];
+      flow.innerHTML = steps.map(function(s){
+        return '<div class="trace-flow-step '+s[2]+'"><div class="ico">'+s[3]+'</div><div class="t">'+esc(s[0])+'</div><div class="d">'+esc(s[1])+'</div></div>';
+      }).join('');
+    }
+  }
+
+  function bind(){
+    var old = window.searchTrace;
+    if(typeof old === 'function' && !old.__nmcUnlinkedWrapped){
+      var wrapped = function(){
+        var ret = old.apply(this, arguments);
+        setTimeout(applyUnlinkedNotice, 30);
+        setTimeout(applyUnlinkedNotice, 180);
+        return ret;
+      };
+      wrapped.__nmcUnlinkedWrapped = true;
+      window.searchTrace = wrapped;
+    }
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcUnlinkedNotice){
+      btn.__nmcUnlinkedNotice = true;
+      btn.addEventListener('click',function(){ setTimeout(applyUnlinkedNotice,220); },true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcUnlinkedNotice){
+      input.__nmcUnlinkedNotice = true;
+      input.addEventListener('keydown',function(e){ if(e.key === 'Enter') setTimeout(applyUnlinkedNotice,220); },true);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+  [200,700,1500,3000].forEach(function(ms){ setTimeout(bind,ms); });
+})();
+
+</script>
+<!-- NMC LOT TRACE UNLINKED STATUS HOTFIX 20260619 END -->
 </body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
