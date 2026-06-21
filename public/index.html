@@ -20666,7 +20666,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if(field){
         var label = field.querySelector('label');
         if(label && /생산\s*LOT/.test(label.textContent || '')){
-          label.innerHTML = '생산 LOT 수기 작성<span class="req">*</span>';
+          label.innerHTML = '생산 LOT <span class="req">*</span>';
         }
       }
     });
