@@ -8236,7 +8236,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-field"><label>완제품 LOT</label><input class="nmc-input nmc-lot-source" id="nmcProdCode" placeholder="완제품 LOT 직접 입력"></div>
           <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcPlanQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
           <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcActualQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
-          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" placeholder="생산 LOT 번호 직접 입력"></span></div>
+          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT 수기 작성<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" placeholder="생산 LOT 번호 직접 입력"></span></div>
         </div>
       </div>
       <div class="nmc-workorder-card">
@@ -8352,21 +8352,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const shouldCreate = force || !existing || nmcIsLegacyWorkOrderNo(existing);
     const newNo = shouldCreate ? `NM-${nmcDateCode()}-${nmcSeq('WO')}` : existing;
     qsa('#nmcWoNo').forEach(inp=>{ inp.value=newNo; });
-    syncProdLotWithWorkOrderNo(false);
+    // 생산 LOT는 작업자가 수기로 작성하도록 작업지시번호/생산일자와 자동 연동하지 않습니다.
+    prepareManualProdLot();
+  }
+
+  function prepareManualProdLot(){
+    qsa('#nmcProdLot').forEach(function(inp){
+      inp.readOnly = false;
+      inp.removeAttribute('readonly');
+      inp.placeholder = '생산 LOT 번호 직접 입력';
+    });
   }
 
   function syncProdLotWithWorkOrderNo(showNotify){
-    const wo = nmcVisibleField('nmcWoNo')?.value || qsa('#nmcWoNo')[0]?.value || '';
-    if(!wo) return;
-    qsa('#nmcProdLot').forEach(inp=>{ inp.value = wo; });
-    if(showNotify) notify('생산 LOT 동기화',`${wo} 번호로 작업지시 번호와 생산 LOT가 동일하게 연동되었습니다.`);
+    // 생산 LOT는 수기 입력 항목입니다. 작업지시번호/생산일자와 자동 동기화하지 않습니다.
+    prepareManualProdLot();
   }
 
   function generateProdLot(force){
-    if(!nmcVisibleField('nmcWoNo')?.value && !qsa('#nmcWoNo')[0]?.value){
-      generateWorkOrderNo(true);
-    }
-    syncProdLotWithWorkOrderNo(!!force);
+    // 생산 LOT 자동생성 기능 비활성화: 수기 입력 유지
+    prepareManualProdLot();
+    if(force) notify('생산 LOT 수기 작성','생산 LOT는 자동생성하지 않고 직접 입력합니다.');
   }
 
   function nmcScopeFrom(el){
@@ -14514,12 +14520,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   function syncFinishedLotToTraceLot(){
-    var code = qs('#page-workorder-final #nmcProdCode') || qs('#nmcProdCode');
+    // 생산 LOT는 수기 입력 항목입니다. 완제품 LOT/제품코드 값과 자동 동기화하지 않습니다.
     var prodLot = qs('#page-workorder-final #nmcProdLot') || qs('#nmcProdLot');
-    var finishedLot = val(code);
-
-    if(code && prodLot && finishedLot && val(prodLot) !== finishedLot){
-      setNativeValue(prodLot, finishedLot);
+    if(prodLot){
+      prodLot.readOnly = false;
+      prodLot.removeAttribute('readonly');
+      prodLot.placeholder = '생산 LOT 번호 직접 입력';
     }
   }
 
@@ -20644,6 +20650,56 @@ document.addEventListener('DOMContentLoaded',async()=>{
 <!-- NMC WORKORDER APPROVAL CLEANUP + PREFILTER PATCH v12 END -->
 
 <!-- NMC APPROVAL DELETE BUTTON PATCH v13: no overwrite -->
+
+
+<!-- 생산 LOT 수기 작성 최종 고정 패치: 생산일자/작업지시번호/완제품 LOT 자동 연동 차단 -->
+<script id="nmc-prod-lot-manual-final-patch">
+(function(){
+  'use strict';
+  function qsa(sel, root){ return Array.from((root || document).querySelectorAll(sel)); }
+  function applyManualProdLot(root){
+    qsa('#nmcProdLot', root).forEach(function(input){
+      input.readOnly = false;
+      input.removeAttribute('readonly');
+      input.placeholder = '생산 LOT 번호 직접 입력';
+      var field = input.closest('.nmc-field,.field,div');
+      if(field){
+        var label = field.querySelector('label');
+        if(label && /생산\s*LOT/.test(label.textContent || '')){
+          label.innerHTML = '생산 LOT 수기 작성<span class="req">*</span>';
+        }
+      }
+    });
+    qsa('#nmcLotGen,.nmc-lot-btn,[data-action="generate-prod-lot"]', root).forEach(function(btn){
+      btn.style.display = 'none';
+      btn.disabled = true;
+    });
+  }
+
+  window.syncProdLotWithWorkOrderNo = function(){ applyManualProdLot(document); };
+  window.generateProdLot = function(){ applyManualProdLot(document); alert('생산 LOT는 자동생성하지 않고 직접 입력합니다.'); };
+
+  document.addEventListener('DOMContentLoaded', function(){ applyManualProdLot(document); });
+  document.addEventListener('input', function(e){
+    if(e.target && (e.target.id === 'nmcOrderDate' || e.target.id === 'nmcWoNo' || e.target.id === 'nmcProdCode')){
+      setTimeout(function(){ applyManualProdLot(document); }, 0);
+    }
+  }, true);
+  document.addEventListener('change', function(e){
+    if(e.target && (e.target.id === 'nmcOrderDate' || e.target.id === 'nmcWoNo' || e.target.id === 'nmcProdCode')){
+      setTimeout(function(){ applyManualProdLot(document); }, 0);
+    }
+  }, true);
+  new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      m.addedNodes && Array.from(m.addedNodes).forEach(function(n){
+        if(n && n.nodeType === 1) applyManualProdLot(n);
+      });
+    });
+  }).observe(document.documentElement, {childList:true, subtree:true});
+  applyManualProdLot(document);
+})();
+</script>
 </body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
