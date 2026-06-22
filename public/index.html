@@ -21249,3 +21249,234 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NAMO IQC YEAR FILTER FINAL OVERRIDE 20260618 END -->
+<!-- NMC_SHIPMENT_LOT_AND_WORKLOG_TRACE_PATCH_20260622_START -->
+<style id="nmc-shipment-lot-worklog-trace-css-20260622">
+  .nmc-ship-lot-pill,
+  .nmc-worklog-link-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:22px;
+    padding:2px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:900;
+    line-height:1.2;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .nmc-ship-lot-pill{background:#e0f2fe;color:#075985;border:1px solid #bae6fd;}
+  .nmc-ship-lot-pill.empty{background:#fff7ed;color:#9a3412;border-color:#fed7aa;}
+  .nmc-worklog-link-pill{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+  .nmc-worklog-link-pill.empty{background:#f1f5f9;color:#64748b;border-color:#e2e8f0;cursor:default;}
+</style>
+<script id="nmc-shipment-lot-worklog-trace-js-20260622">
+(function(){
+  'use strict';
+  if(window.__NMC_SHIPMENT_LOT_WORKLOG_TRACE_20260622__) return;
+  window.__NMC_SHIPMENT_LOT_WORKLOG_TRACE_20260622__ = true;
+
+  var SHIP_KEY = 'nmcShipmentLotLinks';
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function norm(v){ return txt(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g, ''); }
+  function esc(v){ return txt(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function dateOnly(v){
+    var s = txt(v);
+    var m = s.match(/(20\d{2})[-.\/년\s]*(\d{1,2})[-.\/월\s]*(\d{1,2})/);
+    if(m) return m[1] + '-' + String(m[2]).padStart(2,'0') + '-' + String(m[3]).padStart(2,'0');
+    m = s.match(/(20\d{2})(\d{2})(\d{2})/);
+    if(m) return m[1] + '-' + m[2] + '-' + m[3];
+    return s.slice(0,10);
+  }
+  function ymd(v){ return dateOnly(v || new Date().toISOString().slice(0,10)).replace(/[^0-9]/g,'').slice(0,8); }
+  function arr(a){ return Array.isArray(a) ? a : []; }
+  function st(){ return window.state || {}; }
+  function readLinks(){
+    try{ return JSON.parse(localStorage.getItem(SHIP_KEY) || '{}') || {}; }catch(e){ return {}; }
+  }
+  function writeLinks(o){ try{ localStorage.setItem(SHIP_KEY, JSON.stringify(o || {})); }catch(e){} }
+
+  function allShipmentLike(){
+    var s = st();
+    var out = [];
+    out = out.concat(arr(s.shipment), arr(s.shipments), arr(s.oqc), arr(s.outgoing));
+    try{
+      Object.keys(localStorage).forEach(function(k){
+        if(!/shipment|oqc|outgoing|출하/i.test(k)) return;
+        var v = JSON.parse(localStorage.getItem(k) || 'null');
+        if(Array.isArray(v)) out = out.concat(v);
+        else if(v && typeof v === 'object') out.push(v);
+      });
+    }catch(e){}
+    return out;
+  }
+  function allWorklogs(){
+    var s = st();
+    var out = [].concat(arr(s.worklog), arr(s.worklogs), arr(s.productionLogs));
+    try{
+      Object.keys(localStorage).forEach(function(k){
+        if(!/worklog|productionLog|작업일지/i.test(k)) return;
+        var v = JSON.parse(localStorage.getItem(k) || 'null');
+        if(Array.isArray(v)) out = out.concat(v);
+        else if(v && typeof v === 'object') out.push(v);
+      });
+    }catch(e){}
+    return out;
+  }
+  function getFinishedLot(o){
+    return txt(o && (o.finishedLot || o.finished_lot || o.worklogFinishedLot || o.prodLot || o.productionLot || o.productLot || o.lot || o.lotNo || o.oqcLot));
+  }
+  function getWorklogByFinishedLot(lot){
+    var n = norm(lot);
+    if(!n) return null;
+    return allWorklogs().find(function(r){ return norm(getFinishedLot(r)) === n; }) || null;
+  }
+  function getShipmentLotByFinishedLot(lot, rowDate){
+    var n = norm(lot);
+    if(!n) return '';
+    var links = readLinks();
+    if(links[n]) return links[n].shipmentLot || links[n].shipLot || '';
+    var rec = allShipmentLike().find(function(r){
+      var shipFinished = [r.finishedLot, r.finished_lot, r.prodLot, r.productionLot, r.productLot, r.lot, r.lotNo, r.oqcLot].some(function(v){ return norm(v) === n; });
+      if(shipFinished) return true;
+      var items = arr(r.items || r.lots || r.shipmentItems);
+      return items.some(function(it){ return norm(getFinishedLot(it)) === n; });
+    });
+    if(rec) return txt(rec.shipmentLot || rec.shipLot || rec.outLot || rec.deliveryLot || rec.releaseLot || rec.shipmentNo || rec.no || rec.id);
+    return 'SH-' + ymd(rowDate) + '-001';
+  }
+  function saveShipmentLot(finishedLot, shipmentLot){
+    var n = norm(finishedLot);
+    if(!n) return;
+    var links = readLinks();
+    links[n] = { finishedLot: txt(finishedLot), shipmentLot: txt(shipmentLot), updatedAt: new Date().toISOString() };
+    writeLinks(links);
+  }
+
+  function activatePage(pg){
+    if(typeof window.activate === 'function'){ try{ window.activate(pg); return; }catch(e){} }
+    if(typeof window.showPage === 'function'){ try{ window.showPage(pg); }catch(e){} }
+    qsa('.nav-item[data-page]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-page') === pg); });
+    qsa('.page').forEach(function(p){ p.classList.toggle('active', p.id === 'page-' + pg); if(p.id === 'page-' + pg) p.style.display = ''; });
+  }
+  function openWorklogByFinishedLot(lot){
+    var r = getWorklogByFinishedLot(lot);
+    if(!r){
+      alert('해당 완제품 LOT와 연결된 작업일지를 찾을 수 없습니다.\n완제품 LOT: ' + txt(lot));
+      return false;
+    }
+    activatePage('worklog');
+    setTimeout(function(){
+      if(typeof window.editWorklog === 'function') window.editWorklog(r.id);
+      else if(typeof editWorklog === 'function') editWorklog(r.id);
+      var el = document.getElementById('worklogFinishedLot');
+      if(el) el.scrollIntoView({block:'center', behavior:'smooth'});
+    }, 80);
+    return true;
+  }
+
+  function ensureFinishedTableColumns(){
+    var table = qs('#traceFinishedTable') && qs('#traceFinishedTable').closest('table');
+    if(!table) return;
+    var hr = qs('thead tr', table);
+    if(!hr) return;
+    var heads = qsa('th', hr).map(function(th){ return txt(th.textContent); });
+    if(heads.indexOf('출하 LOT') < 0) hr.insertAdjacentHTML('beforeend', '<th>출하 LOT</th>');
+    if(heads.indexOf('작업일지') < 0) hr.insertAdjacentHTML('beforeend', '<th>작업일지</th>');
+  }
+  function findLotInRow(tr){
+    var a = qs('[data-report-lot], .trace-link, .lot-link, a', tr);
+    var lot = txt(a && (a.getAttribute('data-report-lot') || a.dataset.finishedLot || a.textContent));
+    if(lot) return lot;
+    var cells = qsa('td', tr).map(function(td){ return txt(td.textContent); });
+    return cells.find(function(c){ return /^(DBE|SH-|NM-|RM-|[A-Z]{2,}\d{3,})/i.test(c); }) || '';
+  }
+  function enhanceFinishedTable(){
+    var tb = qs('#traceFinishedTable');
+    if(!tb) return;
+    ensureFinishedTableColumns();
+    qsa('tr', tb).forEach(function(tr){
+      if(tr.__nmcShipWorkEnhanced) return;
+      if(/조회 결과|입력 후 조회|조회 대기/.test(txt(tr.textContent))) return;
+      var lot = findLotInRow(tr);
+      if(!lot) return;
+      tr.__nmcShipWorkEnhanced = true;
+      qsa('[data-report-lot], .trace-link, .lot-link, a', tr).forEach(function(a){
+        var cur = txt(a.getAttribute('data-report-lot') || a.textContent);
+        if(norm(cur) === norm(lot)){
+          a.setAttribute('data-nmc-open-worklog-lot', lot);
+          a.setAttribute('data-report-type', 'worklog');
+          a.title = '작업일지로 이동';
+        }
+      });
+      var rowDate = txt((qsa('td', tr)[2] || {}).textContent || (qsa('td', tr)[0] || {}).textContent);
+      var shipLot = getShipmentLotByFinishedLot(lot, rowDate);
+      var hasWork = !!getWorklogByFinishedLot(lot);
+      tr.insertAdjacentHTML('beforeend',
+        '<td><span class="nmc-ship-lot-pill" data-nmc-set-ship-lot="'+esc(lot)+'" title="출하 LOT 확인/수정">'+esc(shipLot || '출하LOT등록')+'</span></td>' +
+        '<td><span class="nmc-worklog-link-pill '+(hasWork?'':'empty')+'" '+(hasWork?'data-nmc-open-worklog-lot="'+esc(lot)+'"':'')+' title="작업일지로 이동">'+(hasWork?'작업일지':'미연결')+'</span></td>'
+      );
+    });
+  }
+
+  var pending = 0;
+  function scheduleEnhance(){
+    clearTimeout(pending);
+    pending = setTimeout(enhanceFinishedTable, 80);
+  }
+
+  var oldSearch = window.searchTrace;
+  if(typeof oldSearch === 'function'){
+    window.searchTrace = function(){
+      var ret = oldSearch.apply(this, arguments);
+      setTimeout(scheduleEnhance, 120);
+      setTimeout(scheduleEnhance, 500);
+      return ret;
+    };
+  }
+
+  document.addEventListener('click', function(e){
+    var setShip = e.target.closest && e.target.closest('[data-nmc-set-ship-lot]');
+    if(setShip){
+      e.preventDefault(); e.stopPropagation();
+      var finishedLot = setShip.getAttribute('data-nmc-set-ship-lot');
+      var old = txt(setShip.textContent);
+      if(old === '출하LOT등록') old = '';
+      var next = prompt('출하 LOT를 입력하세요. 예: SH-' + ymd(new Date().toISOString().slice(0,10)) + '-001', old || '');
+      if(next === null) return false;
+      saveShipmentLot(finishedLot, next);
+      setShip.textContent = next || '출하LOT등록';
+      setShip.classList.toggle('empty', !next);
+      if(typeof window.searchTrace === 'function') setTimeout(function(){ try{ window.searchTrace(); }catch(err){} }, 80);
+      return false;
+    }
+
+    var wl = e.target.closest && e.target.closest('[data-nmc-open-worklog-lot]');
+    if(wl){
+      e.preventDefault(); e.stopPropagation();
+      openWorklogByFinishedLot(wl.getAttribute('data-nmc-open-worklog-lot'));
+      return false;
+    }
+
+    var trace = e.target.closest && e.target.closest('#traceFinishedTable .trace-link[data-report-lot], #traceFinishedTable .lot-link[data-report-lot], #traceFinishedTable a[data-report-lot]');
+    if(trace){
+      var lot = trace.getAttribute('data-report-lot') || trace.textContent;
+      e.preventDefault(); e.stopPropagation();
+      openWorklogByFinishedLot(lot);
+      return false;
+    }
+  }, true);
+
+  function boot(){ scheduleEnhance(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [300,900,1800,3500,7000].forEach(function(ms){ setTimeout(boot, ms); });
+  try{ new MutationObserver(scheduleEnhance).observe(document.documentElement, {childList:true, subtree:true}); }catch(e){}
+
+  window.nmcOpenWorklogByFinishedLot = openWorklogByFinishedLot;
+  window.nmcSaveShipmentLotLink = saveShipmentLot;
+})();
+</script>
+<!-- NMC_SHIPMENT_LOT_AND_WORKLOG_TRACE_PATCH_20260622_END -->
