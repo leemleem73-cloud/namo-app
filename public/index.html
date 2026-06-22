@@ -22180,6 +22180,129 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC FINAL LOT TRACE EXACT MATCH PATCH 20260622 END -->
 
+
+
+<!-- NMC LOT TRACE TABLE + EXACT MATCH DEFAULT PATCH 20260622 START -->
+<script>
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_TABLE_EXACT_DEFAULT_20260622__) return;
+  window.__NMC_LOT_TRACE_TABLE_EXACT_DEFAULT_20260622__ = true;
+
+  function id(v){ return document.getElementById(v); }
+  function qs(s,r){ return (r||document).querySelector(s); }
+  function qsa(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+  function text(v){ return String(v == null ? '' : v).trim(); }
+  function norm(v){ return text(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,''); }
+
+  function ensureTraceLabels(){
+    var page = id('page-trace');
+    if(!page) return;
+
+    var rawTable = id('traceTable') && id('traceTable').closest('table');
+    if(rawTable){
+      var rawHead = qs('thead', rawTable) || rawTable.createTHead();
+      rawHead.innerHTML = '<tr><th>원자재명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량</th><th>비고</th></tr>';
+    }
+
+    var finishedTable = id('traceFinishedTable') && id('traceFinishedTable').closest('table');
+    if(finishedTable){
+      var finishedHead = qs('thead', finishedTable) || finishedTable.createTHead();
+      finishedHead.innerHTML = '<tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량(Kg)</th><th>비고</th></tr>';
+    }
+
+    var search = qs('.nmc-lot-search', page) || (id('traceKeyword') && id('traceKeyword').parentElement);
+    if(search && !id('traceExactMatch')){
+      var label = document.createElement('label');
+      label.id = 'traceExactWrap';
+      label.style.cssText = 'display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
+      label.title = '기본 체크 상태라 LOT가 정확히 일치하는 것만 조회됩니다.';
+      label.innerHTML = '<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
+      search.appendChild(label);
+    }
+    var exact = id('traceExactMatch');
+    if(exact) exact.checked = exact.checked !== false;
+
+    var hint = id('traceExactHint');
+    if(search && !hint){
+      hint = document.createElement('div');
+      hint.id = 'traceExactHint';
+      hint.style.cssText = 'flex-basis:100%;font-size:12px;font-weight:700;color:#64748b;margin-top:4px;';
+      hint.textContent = '기본 체크 상태라 LOT가 정확히 일치하는 것만 조회됩니다.';
+      search.appendChild(hint);
+    }
+  }
+
+  function exactOn(){
+    var cb = id('traceExactMatch');
+    return !cb || cb.checked;
+  }
+  function isLotCellIndex(tableBody, cellIndex){
+    if(!tableBody) return false;
+    if(tableBody.id === 'traceTable') return cellIndex === 1;
+    if(tableBody.id === 'traceFinishedTable') return cellIndex === 1;
+    return false;
+  }
+  function rowMatchesExactLot(tr, keyword){
+    var k = norm(keyword);
+    if(!k) return true;
+    var tbody = tr && tr.parentElement;
+    var cells = qsa('td', tr);
+    for(var i=0;i<cells.length;i++){
+      if(!isLotCellIndex(tbody, i)) continue;
+      var lot = norm(cells[i].getAttribute('data-report-lot') || cells[i].textContent);
+      if(lot === k) return true;
+    }
+    return false;
+  }
+  function applyExactRowFilter(){
+    ensureTraceLabels();
+    if(!exactOn()) return;
+    var kw = text(id('traceKeyword') && id('traceKeyword').value);
+    if(!kw) return;
+    ['traceTable','traceFinishedTable'].forEach(function(tid){
+      var tb = id(tid);
+      if(!tb) return;
+      var rows = qsa('tr', tb).filter(function(tr){ return !/trace-empty|trace-total-row/.test(tr.className || ''); });
+      rows.forEach(function(tr){
+        tr.style.display = rowMatchesExactLot(tr, kw) ? '' : 'none';
+      });
+      var visible = rows.filter(function(tr){ return tr.style.display !== 'none'; }).length;
+      var cnt = tid === 'traceTable' ? id('traceMatCount') : id('traceFinishedCount');
+      if(cnt) cnt.textContent = visible + '건';
+    });
+  }
+
+  function bind(){
+    ensureTraceLabels();
+    var btn = id('traceSearch');
+    if(btn && !btn.__nmcExactDefaultPatch){
+      btn.__nmcExactDefaultPatch = true;
+      btn.addEventListener('click', function(){ setTimeout(applyExactRowFilter, 80); }, true);
+    }
+    var input = id('traceKeyword');
+    if(input && !input.__nmcExactDefaultPatch){
+      input.__nmcExactDefaultPatch = true;
+      input.addEventListener('keydown', function(e){ if(e.key === 'Enter') setTimeout(applyExactRowFilter, 80); }, true);
+      input.addEventListener('input', function(){ setTimeout(ensureTraceLabels, 0); }, true);
+    }
+    var cb = id('traceExactMatch');
+    if(cb && !cb.__nmcExactDefaultPatch){
+      cb.__nmcExactDefaultPatch = true;
+      cb.addEventListener('change', function(){
+        qsa('#traceTable tr,#traceFinishedTable tr').forEach(function(tr){ tr.style.display=''; });
+        setTimeout(applyExactRowFilter, 0);
+      });
+    }
+  }
+
+  var observer = new MutationObserver(function(){ bind(); });
+  if(document.body) observer.observe(document.body, {childList:true, subtree:true});
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+  [300,900,1800,3500].forEach(function(ms){ setTimeout(bind, ms); });
+})();
+</script>
+<!-- NMC LOT TRACE TABLE + EXACT MATCH DEFAULT PATCH 20260622 END -->
 </body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
