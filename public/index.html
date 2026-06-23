@@ -16076,7 +16076,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!page){ var cont=qs('.content')||qs('main')||document.body; page=document.createElement('div'); page.id='page-trace'; page.className='page'; cont.appendChild(page); }
     if(page.__nmcExactScreenReady) return;
     page.__nmcExactScreenReady=true;
-    page.innerHTML='<div class="nmc-lot-page"><div class="nmc-lot-title-row"><div><div class="nmc-lot-title-main">LOT 추적 조회</div><div class="nmc-lot-title-sub">원재료 LOT 및 완제품 LOT 양방향 추적 조회</div></div></div><div class="nmc-lot-search-card"><div class="nmc-lot-search-top"><div class="nmc-lot-label">조회 구분</div><select id="traceType" class="nmc-lot-select"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><div class="nmc-lot-label">조회 키워드</div><input id="traceKeyword" class="nmc-lot-input" placeholder="LOT 번호, 제품명, 원재료명, 작업지시번호 입력"><button id="traceSearch" class="nmc-lot-btn primary" type="button">⌕ 조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div><div class="nmc-lot-option-row"><label id="traceExactWrap" class="nmc-lot-exact-wrap"><input id="traceExactMatch" type="checkbox" checked> 전부일치</label><div class="nmc-lot-guide"><div><b>기본 체크 상태라 LOT가 정확히 일치하는 것만 조회됩니다.</b></div><div>체크 해제 시 부분 일치(포함) 결과도 함께 조회됩니다.</div></div></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>원재료 LOT 추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량 (kg)</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>완제품 LOT 추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량 (Kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-info"><span>ℹ</span><span>전부일치 체크 시 입력하신 LOT와 정확히 일치하는 자료만 표시됩니다.</span></div></div>';
+    page.innerHTML='<div class="nmc-lot-page"><div class="nmc-lot-title-row"><div><div class="nmc-lot-title-main">LOT 추적 조회</div><div class="nmc-lot-title-sub">원재료 LOT 및 완제품 LOT 양방향 추적 조회</div></div></div><div class="nmc-lot-search-card"><div class="nmc-lot-search-top"><div class="nmc-lot-label">조회 구분</div><select id="traceType" class="nmc-lot-select"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><div class="nmc-lot-label">조회 키워드</div><input id="traceKeyword" class="nmc-lot-input" placeholder="LOT 번호, 제품명, 원재료명, 작업지시번호 입력"><button id="traceSearch" class="nmc-lot-btn primary" type="button">⌕ 조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>원재료 LOT 추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량 (kg)</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>완제품 LOT 추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량 (Kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-info"><span>ℹ</span><span>정확검색 체크 시 입력하신 LOT와 정확히 일치하는 자료만 표시됩니다.</span></div></div>';
     clearTraceView();
   }
   window.clearTraceView=function(){ ensureUI(); var input=byId('traceKeyword'); if(input) input.value=''; renderMaterials([]); renderFinished([]); var tb=byId('traceTable'); if(tb) tb.innerHTML=empty(6,'LOT 번호를 입력 후 조회하세요.'); var fb=byId('traceFinishedTable'); if(fb) fb.innerHTML=empty(6,'LOT 번호를 입력 후 조회하세요.'); };
@@ -20074,11 +20074,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
       fhead.innerHTML='<tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량(Kg)</th><th>비고</th></tr>';
     }
     var search=qs('.nmc-lot-search',page) || (id('traceKeyword') && id('traceKeyword').parentElement);
-    if(search && !id('traceExactMatch')){
+    if(false && search && !id('traceExactMatch')){
       var label=document.createElement('label');
       label.id='traceExactWrap';
       label.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
-      label.innerHTML='<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
+      label.innerHTML='';
       search.appendChild(label);
     }
   }
@@ -20101,10 +20101,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderSummary(rawList,finList,kw){
     var el=id('traceSummary'); if(!el) return;
     var total=rawList.reduce(function(s,r){return s+numberText(r.inputQty);},0);
-    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">전부일치 기준</div></div>'+
+    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">정확검색 기준</div></div>'+
       '<div class="trace-kpi info"><div class="l">완제품 LOT</div><div class="v">'+finList.length+'</div><div class="s">출하검사 연동</div></div>'+
       '<div class="trace-kpi"><div class="l">합계 투입량</div><div class="v">'+(total?total.toLocaleString():'-')+'</div><div class="s">kg 기준</div></div>'+
-      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'전부일치':'포함검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
+      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'정확검색':'부분검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
   }
   function renderTimeline(rawList,finList){
     var el=id('traceTimeline'); if(!el) return;
@@ -20115,7 +20115,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var insp=id('traceInspectionPanel');
     if(insp) insp.innerHTML='<div class="trace-inspection-row"><div class="name">IQC</div><div class="meta">수입검사 LOT</div><div>'+badgeText(rawList.length?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">WO</div><div class="meta">작업지시 원료투입</div><div>'+badgeText(rawList.some(function(r){return r.inputQty && r.inputQty !== '-';})?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">OQC</div><div class="meta">완제품 출하검사</div><div>'+badgeText(finList.some(function(r){return r.hasOqc;})?'연결':'대기')+'</div></div>';
     var wp=id('traceWorkPanel');
-    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'전부일치':'포함검색')+'</td></tr></table>';
+    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'정확검색':'부분검색')+'</td></tr></table>';
     var sp=id('traceShipPanel');
     if(sp) sp.innerHTML='<table class="trace-mini-table"><tr><td>출하검사 연결</td><td>'+finList.filter(function(r){return r.hasOqc;}).length+'건</td></tr><tr><td>비고</td><td>수입검사 + 작업지시 + 출하검사 기준</td></tr></table>';
   }
@@ -22177,11 +22177,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
       fhead.innerHTML='<tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량(Kg)</th><th>비고</th></tr>';
     }
     var search=qs('.nmc-lot-search',page) || (id('traceKeyword') && id('traceKeyword').parentElement);
-    if(search && !id('traceExactMatch')){
+    if(false && search && !id('traceExactMatch')){
       var label=document.createElement('label');
       label.id='traceExactWrap';
       label.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
-      label.innerHTML='<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
+      label.innerHTML='';
       search.appendChild(label);
     }
   }
@@ -22204,10 +22204,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderSummary(rawList,finList,kw){
     var el=id('traceSummary'); if(!el) return;
     var total=rawList.reduce(function(s,r){return s+numberText(r.inputQty);},0);
-    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">전부일치 기준</div></div>'+
+    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">정확검색 기준</div></div>'+
       '<div class="trace-kpi info"><div class="l">완제품 LOT</div><div class="v">'+finList.length+'</div><div class="s">출하검사 연동</div></div>'+
       '<div class="trace-kpi"><div class="l">합계 투입량</div><div class="v">'+(total?total.toLocaleString():'-')+'</div><div class="s">kg 기준</div></div>'+
-      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'전부일치':'포함검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
+      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'정확검색':'부분검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
   }
   function renderTimeline(rawList,finList){
     var el=id('traceTimeline'); if(!el) return;
@@ -22218,7 +22218,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var insp=id('traceInspectionPanel');
     if(insp) insp.innerHTML='<div class="trace-inspection-row"><div class="name">IQC</div><div class="meta">수입검사 LOT</div><div>'+badgeText(rawList.length?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">WO</div><div class="meta">작업지시 원료투입</div><div>'+badgeText(rawList.some(function(r){return r.inputQty && r.inputQty !== '-';})?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">OQC</div><div class="meta">완제품 출하검사</div><div>'+badgeText(finList.some(function(r){return r.hasOqc;})?'연결':'대기')+'</div></div>';
     var wp=id('traceWorkPanel');
-    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'전부일치':'포함검색')+'</td></tr></table>';
+    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'정확검색':'부분검색')+'</td></tr></table>';
     var sp=id('traceShipPanel');
     if(sp) sp.innerHTML='<table class="trace-mini-table"><tr><td>출하검사 연결</td><td>'+finList.filter(function(r){return r.hasOqc;}).length+'건</td></tr><tr><td>비고</td><td>수입검사 + 작업지시 + 출하검사 기준</td></tr></table>';
   }
@@ -22414,11 +22414,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var finTable=id('traceFinishedTable') && id('traceFinishedTable').closest('table');
     if(finTable){ (qs('thead',finTable)||finTable.createTHead()).innerHTML='<tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량(Kg)</th><th>비고</th></tr>'; }
     var search=qs('.nmc-lot-search',page) || (id('traceKeyword') && id('traceKeyword').parentElement);
-    if(search && !id('traceExactMatch')){
+    if(false && search && !id('traceExactMatch')){
       var label=document.createElement('label');
       label.id='traceExactWrap';
       label.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
-      label.innerHTML='<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
+      label.innerHTML='';
       search.appendChild(label);
     }
   }
@@ -22441,10 +22441,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderSummary(rawList,finList,kw){
     var el=id('traceSummary'); if(!el) return;
     var total=rawList.reduce(function(s,r){return s+num(r.inputQty);},0);
-    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">전부일치 기준</div></div>'+
+    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">정확검색 기준</div></div>'+
       '<div class="trace-kpi info"><div class="l">완제품 LOT</div><div class="v">'+finList.length+'</div><div class="s">출하검사 연동</div></div>'+
       '<div class="trace-kpi"><div class="l">합계 투입량</div><div class="v">'+(total?total.toLocaleString():'-')+'</div><div class="s">kg 기준</div></div>'+
-      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(exact()?'전부일치':'포함검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
+      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(exact()?'정확검색':'부분검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
   }
   function renderTimeline(rawList,finList){
     var el=id('traceTimeline'); if(!el) return;
@@ -22455,7 +22455,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var insp=id('traceInspectionPanel');
     if(insp) insp.innerHTML='<div class="trace-inspection-row"><div class="name">IQC</div><div class="meta">수입검사 LOT</div><div>'+badge(rawList.length,'연결')+'</div></div><div class="trace-inspection-row"><div class="name">WO</div><div class="meta">작업지시 원료투입</div><div>'+badge(rawList.some(function(r){return r.inputQty && r.inputQty!=='-';}),'연결')+'</div></div><div class="trace-inspection-row"><div class="name">OQC</div><div class="meta">완제품 출하검사</div><div>'+badge(finList.some(function(r){return r.hasOqc;}),'연결')+'</div></div>';
     var wp=id('traceWorkPanel');
-    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(exact()?'전부일치':'포함검색')+'</td></tr></table>';
+    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(exact()?'정확검색':'부분검색')+'</td></tr></table>';
     var sp=id('traceShipPanel');
     if(sp) sp.innerHTML='<table class="trace-mini-table"><tr><td>출하검사 연결</td><td>'+finList.filter(function(r){return r.hasOqc;}).length+'건</td></tr><tr><td>비고</td><td>수입검사 + 작업지시 + 출하검사 기준</td></tr></table>';
   }
@@ -22669,7 +22669,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(page.__nmcLotTraceV4Ready && !force) return;
     page.__nmcLotTraceV4Ready=true;
     page.__nmcExactScreenReady=true;
-    page.innerHTML='<div class="nmc-lot-page"><div class="nmc-lot-title-row"><div><div class="nmc-lot-title-main">LOT 추적 조회</div><div class="nmc-lot-title-sub">원재료 LOT 및 완제품 LOT 양방향 추적 조회</div></div></div><div class="nmc-lot-search-card"><div class="nmc-lot-search-top"><div class="nmc-lot-label">조회 구분</div><select id="traceType" class="nmc-lot-select"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><div class="nmc-lot-label">조회 키워드</div><input id="traceKeyword" class="nmc-lot-input" placeholder="LOT 번호, 제품명, 원재료명, 작업지시번호 입력"><button id="traceSearch" class="nmc-lot-btn primary" type="button">⌕ 조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div><div class="nmc-lot-option-row"><label id="traceExactWrap" class="nmc-lot-exact-wrap"><input id="traceExactMatch" type="checkbox" checked> 전부일치</label><div class="nmc-lot-guide"><div><b>기본 체크 상태라 LOT가 정확히 일치하는 것만 조회됩니다.</b></div><div>체크 해제 시 부분 일치(포함) 결과도 함께 조회됩니다.</div></div></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>원재료 LOT 역추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>완제품 LOT 순추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량 (Kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-info"><span>ℹ</span><span>원재료 협력사명은 수입검사(IQC)에 등록된 협력업체명 기준으로 표시됩니다.</span></div></div>';
+    page.innerHTML='<div class="nmc-lot-page"><div class="nmc-lot-title-row"><div><div class="nmc-lot-title-main">LOT 추적 조회</div><div class="nmc-lot-title-sub">원재료 LOT 및 완제품 LOT 양방향 추적 조회</div></div></div><div class="nmc-lot-search-card"><div class="nmc-lot-search-top"><div class="nmc-lot-label">조회 구분</div><select id="traceType" class="nmc-lot-select"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><div class="nmc-lot-label">조회 키워드</div><input id="traceKeyword" class="nmc-lot-input" placeholder="LOT 번호, 제품명, 원재료명, 작업지시번호 입력"><button id="traceSearch" class="nmc-lot-btn primary" type="button">⌕ 조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>원재료 LOT 역추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>완제품 LOT 순추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량 (Kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-info"><span>ℹ</span><span>원재료 협력사명은 수입검사(IQC)에 등록된 협력업체명 기준으로 표시됩니다.</span></div></div>';
   }
   function renderMaterials(rows){
     var tb=byId('traceTable'), c=byId('traceMatCount'); if(c) c.textContent=rows.length+'건'; if(!tb) return;
