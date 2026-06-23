@@ -13004,29 +13004,30 @@ document.addEventListener('click',function(e){
 
     var meIsAdmin=isAdminUser(me);
 
-    // 작성자 select 먼저 안정화 (작성자는 전체 회원 중 선택, 로그인 본인이 기본값)
+    // 작성자 select 안정화: 작성자는 로그인 본인만 표시/고정
     var writerSel=ensureBox(grid,type,'writer');
-    var writerHash=optHash(allList);
+    var writerList=me ? [me] : (allList.length ? [allList[0]] : []);
+    var writerHash=optHash(writerList);
     if(writerSel){
-      var oldWriterVal=writerSel.value;
-      var needsWriter=writerSel.dataset.namoRankHash!==writerHash || writerSel.options.length<Math.max(1,allList.length) ;
+      var needsWriter=writerSel.dataset.namoRankHash!==writerHash || writerSel.options.length!==Math.max(1,writerList.length);
       if(needsWriter){
-        writerSel.innerHTML='<option value="">선택</option>'+allList.map(opt).join('');
+        writerSel.innerHTML=writerList.length ? writerList.map(opt).join('') : '<option value="">로그인 사용자 없음</option>';
         writerSel.dataset.namoRankHash=writerHash;
       }
-      writerSel.disabled=false;
-      var wantWriter=oldWriterVal;
-      if(!wantWriter && me) wantWriter=me.id||me.email||me.name;
-      if(wantWriter && Array.prototype.some.call(writerSel.options,function(o){return String(o.value)===String(wantWriter);})){
-        writerSel.value=wantWriter;
+      if(writerList.length){
+        writerSel.value=writerList[0].id||writerList[0].email||writerList[0].name;
       }
+      // 본인이 아닌 사람으로 작성자 변경 불가
+      writerSel.disabled=true;
+      writerSel.style.pointerEvents='none';
+      writerSel.style.opacity='1';
       var wsub=$('sg_'+type+'_writer_sub');
-      if(wsub)wsub.textContent='로그인 본인이 기본 작성자로 지정됩니다.';
+      if(wsub)wsub.textContent='작성자는 로그인 본인으로 고정됩니다.';
       var wbadge=$('sg_'+type+'_writer_badge');
-      if(wbadge)wbadge.textContent='전체회원';
+      if(wbadge)wbadge.textContent='본인고정';
     }
 
-    var writerUser=selectedFrom(writerSel,allList) || me;
+    var writerUser=writerList[0] || selectedFrom(writerSel,allList) || me;
     var writerLevel=userLevel(writerUser);
 
     ['reviewer','approver'].forEach(function(role){
