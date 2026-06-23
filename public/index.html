@@ -12826,12 +12826,13 @@ document.addEventListener('click',function(e){
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
 
 <!-- NAMO SIGN MEMBERS RANK-FILTERED FINAL v5
-     작성자 직급에 따라 검토자/승인자 선택 가능 회원을 제한합니다.
-     - 작성자: 사원~과장  -> 검토/승인 후보 = 부장 이상
-     - 작성자: 부장        -> 검토/승인 후보 = 이사 이상
-     - 작성자: 이사/상무   -> 검토 후보 = 이사 이상, 승인 후보 = 전무 이상
-     - 작성자: 전무 이상   -> 검토/승인 생략(후보 없음, '-' 고정)
-     - 관리자(admin) 로그인 시에는 전체 회원이 후보로 표시됩니다(예외 운영용).
+     - 작성자: 항상 로그인 본인으로 고정(신규 작성/수정 모두 동일). 본인 외 다른 사람으로 변경 불가.
+     - 검토자/승인자: 작성자(=로그인 본인)의 직급에 따라 선택 가능한 후보가 자동으로 좁혀짐.
+       · 작성자 사원~과장  -> 검토/승인 후보 = 부장 이상
+       · 작성자 부장        -> 검토/승인 후보 = 이사 이상
+       · 작성자 이사/상무   -> 검토 후보 = 이사 이상, 승인 후보 = 전무 이상
+       · 작성자 전무 이상   -> 검토/승인 생략(후보 없음, "대상 없음" 표시)
+     - 관리자(admin) 로그인 시에는 검토/승인 후보에 예외적으로 전체 회원이 표시됩니다(운영 예외용).
 -->
 <style id="namo-sign-rank-filter-v5-style">
   #signGrid_iqc,#signGrid_pqc,#signGrid_oqc,#signGrid_nc,#signGrid_training{
@@ -12901,12 +12902,13 @@ document.addEventListener('click',function(e){
   // 작성자 레벨에 따라 검토/승인에 필요한 최소 레벨을 계산
   function requiredLevel(writerLevel, role){
     if(role==='writer') return LEVEL.STAFF;
-    if(writerLevel<=LEVEL.STAFF) return LEVEL.MANAGER;      // 사원~과장 -> 부장 이상
-    if(writerLevel===LEVEL.MANAGER) return LEVEL.DIRECTOR;  // 부장 -> 이사 이상
+    if(writerLevel>=LEVEL.EXEC) return Infinity;             // 전무 이상 -> 검토/승인 생략
+    if(writerLevel<=LEVEL.STAFF) return LEVEL.MANAGER;       // 사원~과장 -> 부장 이상
+    if(writerLevel===LEVEL.MANAGER) return LEVEL.DIRECTOR;   // 부장 -> 이사 이상
     if(writerLevel===LEVEL.DIRECTOR){                        // 이사/상무
       return role==='approver' ? LEVEL.EXEC : LEVEL.DIRECTOR;
     }
-    return LEVEL.CEO; // 전무 이상 작성 -> 검토/승인 생략(후보 없음)
+    return Infinity;
   }
 
   var applying=false, pending=false;
@@ -13004,29 +13006,27 @@ document.addEventListener('click',function(e){
 
     var meIsAdmin=isAdminUser(me);
 
-    // 작성자 select 먼저 안정화 (작성자는 전체 회원 중 선택, 로그인 본인이 기본값)
+    // 작성자 select: 로그인 본인 1명만 표시하고 항상 잠금(신규/수정 모드 공통)
     var writerSel=ensureBox(grid,type,'writer');
-    var writerHash=optHash(allList);
+    var meKey=me?(me.id||me.email||me.name):'';
+    var writerHash='WRITER_LOCKED:'+meKey;
     if(writerSel){
-      var oldWriterVal=writerSel.value;
-      var needsWriter=writerSel.dataset.namoRankHash!==writerHash || writerSel.options.length<Math.max(1,allList.length) ;
+      var needsWriter=writerSel.dataset.namoRankHash!==writerHash;
       if(needsWriter){
-        writerSel.innerHTML='<option value="">선택</option>'+allList.map(opt).join('');
+        writerSel.innerHTML = me ? opt(me) : '<option value="">로그인 필요</option>';
         writerSel.dataset.namoRankHash=writerHash;
       }
-      writerSel.disabled=false;
-      var wantWriter=oldWriterVal;
-      if(!wantWriter && me) wantWriter=me.id||me.email||me.name;
-      if(wantWriter && Array.prototype.some.call(writerSel.options,function(o){return String(o.value)===String(wantWriter);})){
-        writerSel.value=wantWriter;
-      }
+      if(me) writerSel.value=me.id||me.email||me.name;
+      writerSel.disabled=true; // 항상 잠금: 작성자는 로그인 본인 고정, 변경 불가
+      writerSel.style.pointerEvents='none';
+      writerSel.style.opacity='1';
       var wsub=$('sg_'+type+'_writer_sub');
-      if(wsub)wsub.textContent='로그인 본인이 기본 작성자로 지정됩니다.';
+      if(wsub)wsub.textContent='작성자는 로그인 본인으로 고정됩니다.';
       var wbadge=$('sg_'+type+'_writer_badge');
-      if(wbadge)wbadge.textContent='전체회원';
+      if(wbadge)wbadge.textContent='본인고정';
     }
 
-    var writerUser=selectedFrom(writerSel,allList) || me;
+    var writerUser=me;
     var writerLevel=userLevel(writerUser);
 
     ['reviewer','approver'].forEach(function(role){
@@ -13035,7 +13035,7 @@ document.addEventListener('click',function(e){
       var candidates;
       if(meIsAdmin){
         candidates=allList; // 관리자는 예외적으로 전체 회원 허용
-      } else if(writerLevel>=LEVEL.EXEC && reqLevel>=LEVEL.CEO){
+      } else if(reqLevel===Infinity){
         candidates=[]; // 전무 이상 작성 -> 후보 없음
       } else {
         candidates=allList.filter(function(u){return userLevel(u)>=reqLevel;});
@@ -13060,7 +13060,7 @@ document.addEventListener('click',function(e){
 
       var sub=$('sg_'+type+'_'+role+'_sub');
       if(sub){
-        var reqText = reqLevel===LEVEL.MANAGER?'부장 이상' : reqLevel===LEVEL.DIRECTOR?'이사 이상' : reqLevel===LEVEL.EXEC?'전무 이상' : reqLevel>=LEVEL.CEO?'대표이사':'';
+        var reqText = reqLevel===LEVEL.MANAGER?'부장 이상' : reqLevel===LEVEL.DIRECTOR?'이사 이상' : reqLevel===LEVEL.EXEC?'전무 이상' : reqLevel===Infinity?'대상 없음' : reqLevel>=LEVEL.CEO?'대표이사':'';
         sub.textContent = candidates.length
           ? ('작성자 직급 기준 '+reqText+' 선택 가능 ('+candidates.length+'명)')
           : (writerLevel>=LEVEL.EXEC ? '전무 이상 작성: '+ROLE_LABEL[role]+' 생략' : reqText+' 회원이 없습니다.');
@@ -13090,14 +13090,23 @@ document.addEventListener('click',function(e){
   window.buildSignGrid=function(type){stabilizeType(type);return $('signGrid_'+type);};
 
   // 작성자를 바꾸면 검토/승인 후보 목록이 재계산되어야 함
+  // 작성자는 항상 로그인 본인으로 고정되므로, 검토자/승인자 변경 시에는 미리보기만 동기화
   document.addEventListener('change',function(e){
-    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_writer$/.test(e.target.id||'')){
-      var type=e.target.id.split('_')[1];
-      stabilizeType(type);
-    } else if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver)$/.test(e.target.id||'')){
+    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver)$/.test(e.target.id||'')){
       syncPreview(e.target.id.split('_')[1]);
     }
   },true);
+
+  // 로그인 사용자가 바뀌면(다른 계정 로그인) 작성자 고정값과 검토/승인 후보를 다시 계산
+  var lastUserKey='';
+  setInterval(function(){
+    var me=currentUser();
+    var key=me?(me.id||me.email||me.name):'';
+    if(key!==lastUserKey){
+      lastUserKey=key;
+      stabilizeAll();
+    }
+  },800);
 
   document.addEventListener('click',function(e){
     if(e.target&&e.target.closest&&e.target.closest('[data-page],#incomingReset,#processReset,#shipmentReset,#ncReset,#trainingReset'))setTimeout(stabilizeAll,80);
