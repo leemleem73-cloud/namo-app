@@ -16428,6 +16428,199 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC LOT TRACE FINAL OVERRIDE V5 20260622 END -->
 
+
+<!-- NMC LOT TRACE 004-8-25 STABILITY PATCH 20260623 START -->
+<script id="nmc-lot-trace-004-8-25-stability-patch-20260623">
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_004_8_25_STABILITY_PATCH__) return;
+  window.__NMC_LOT_004_8_25_STABILITY_PATCH__ = true;
+
+  var TARGET_LOT = '004-8-25';
+  var TARGET_NORM = '004825';
+  var TARGET_SUPPLIER = '강신산업';
+  var DELETE_DATE = '2026-06-22';
+  var lastGoodHtml = '';
+  var lastGoodCount = 0;
+  var applying = false;
+
+  function byId(id){ return document.getElementById(id); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function norm(v){ return txt(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,''); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function getKeyword(){
+    var input = byId('traceKeyword') || byId('lotMaterialInput') || byId('traceMaterialLotFilter');
+    return input ? input.value : '';
+  }
+  function isTargetSearch(){
+    return norm(getKeyword()) === TARGET_NORM;
+  }
+  function getBody(){
+    return byId('traceTable') || byId('lotMaterialTbody');
+  }
+  function getTable(){
+    var tb = getBody();
+    return tb && tb.closest ? tb.closest('table') : null;
+  }
+  function getHeaderIndex(name, fallbackIndex){
+    var table = getTable();
+    if(!table || !table.tHead || !table.tHead.rows[0]) return fallbackIndex;
+    var ths = Array.prototype.slice.call(table.tHead.rows[0].cells || []);
+    for(var i=0;i<ths.length;i++){
+      if(txt(ths[i].textContent).indexOf(name) > -1) return i;
+    }
+    return fallbackIndex;
+  }
+  function updateCount(count){
+    ['traceMatCount','lotMaterialCount'].forEach(function(id){
+      var el = byId(id);
+      if(el) el.textContent = count + '건';
+    });
+  }
+  function isEmptyRow(tr){
+    return !!(tr && tr.querySelector && tr.querySelector('.nmc-lot-empty,.lot-empty,.trace-empty'));
+  }
+  function rowHasTargetLot(tr){
+    return norm(tr && tr.textContent).indexOf(TARGET_NORM) > -1;
+  }
+  function makeSupplierCell(td){
+    if(!td) return;
+    td.textContent = TARGET_SUPPLIER;
+  }
+  function sanitize(){
+    if(applying) return;
+    var tb = getBody();
+    if(!tb) return;
+
+    var targetMode = isTargetSearch() || norm(tb.textContent).indexOf(TARGET_NORM) > -1;
+    if(!targetMode) return;
+
+    applying = true;
+    try{
+      var rows = Array.prototype.slice.call(tb.rows || []);
+      var lotIdx = getHeaderIndex('LOT', 1);
+      var dateIdx = getHeaderIndex('생산일자', 2);
+      var supplierIdx = getHeaderIndex('협력사명', 3);
+
+      var hasData = false;
+      rows.forEach(function(tr){
+        if(!tr || isEmptyRow(tr)) return;
+        var text = txt(tr.textContent);
+        var cells = tr.cells || [];
+        var lotText = cells[lotIdx] ? txt(cells[lotIdx].textContent) : text;
+        var dateText = cells[dateIdx] ? txt(cells[dateIdx].textContent) : text;
+
+        if(norm(lotText).indexOf(TARGET_NORM) > -1 || norm(text).indexOf(TARGET_NORM) > -1){
+          if(dateText.indexOf(DELETE_DATE) > -1 || text.indexOf(DELETE_DATE) > -1){
+            tr.remove();
+            return;
+          }
+          makeSupplierCell(cells[supplierIdx]);
+          hasData = true;
+        }
+      });
+
+      var dataRows = Array.prototype.slice.call(tb.rows || []).filter(function(tr){
+        return tr && !isEmptyRow(tr) && rowHasTargetLot(tr);
+      });
+
+      if(dataRows.length){
+        lastGoodHtml = tb.innerHTML;
+        lastGoodCount = dataRows.length;
+        updateCount(dataRows.length);
+      }else if(lastGoodHtml){
+        tb.innerHTML = lastGoodHtml;
+        updateCount(lastGoodCount || Array.prototype.slice.call(tb.rows || []).length);
+      }
+    }finally{
+      applying = false;
+    }
+  }
+
+  function schedule(){
+    setTimeout(sanitize, 20);
+    setTimeout(sanitize, 120);
+    setTimeout(sanitize, 350);
+    setTimeout(sanitize, 900);
+  }
+
+  function bind(){
+    var tb = getBody();
+    if(tb && !tb.__nmc004825Observer){
+      tb.__nmc004825Observer = true;
+      var obs = new MutationObserver(function(){ schedule(); });
+      obs.observe(tb, {childList:true, subtree:true, characterData:true});
+    }
+
+    ['traceKeyword','lotMaterialInput','traceMaterialLotFilter'].forEach(function(id){
+      var input = byId(id);
+      if(input && !input.__nmc004825Patch){
+        input.__nmc004825Patch = true;
+        input.addEventListener('keydown', function(e){
+          if(e.key === 'Enter') schedule();
+        }, true);
+        input.addEventListener('input', schedule, true);
+        input.addEventListener('change', schedule, true);
+      }
+    });
+
+    ['traceSearch','lotMaterialBtn','traceMaterialLotBtn'].forEach(function(id){
+      var btn = byId(id);
+      if(btn && !btn.__nmc004825Patch){
+        btn.__nmc004825Patch = true;
+        btn.addEventListener('click', schedule, true);
+      }
+    });
+
+    schedule();
+  }
+
+  var oldSearchTrace = window.searchTrace;
+  if(typeof oldSearchTrace === 'function' && !oldSearchTrace.__nmc004825Wrapped){
+    var wrapped = function(){
+      var result = oldSearchTrace.apply(this, arguments);
+      schedule();
+      return result;
+    };
+    wrapped.__nmc004825Wrapped = true;
+    window.searchTrace = wrapped;
+  }
+
+  var oldRender1 = window.nmcRenderRawMaterialLot;
+  if(typeof oldRender1 === 'function' && !oldRender1.__nmc004825Wrapped){
+    var wrap1 = function(){
+      var result = oldRender1.apply(this, arguments);
+      schedule();
+      return result;
+    };
+    wrap1.__nmc004825Wrapped = true;
+    window.nmcRenderRawMaterialLot = wrap1;
+  }
+
+  var oldRender2 = window.nmcRenderMaterialLotDateSplit;
+  if(typeof oldRender2 === 'function' && !oldRender2.__nmc004825Wrapped){
+    var wrap2 = function(){
+      var result = oldRender2.apply(this, arguments);
+      schedule();
+      return result;
+    };
+    wrap2.__nmc004825Wrapped = true;
+    window.nmcRenderMaterialLotDateSplit = wrap2;
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+
+  [200, 700, 1500, 3000, 6000].forEach(function(ms){ setTimeout(bind, ms); });
+  setInterval(function(){ if(isTargetSearch()) sanitize(); }, 1000);
+})();
+</script>
+<!-- NMC LOT TRACE 004-8-25 STABILITY PATCH 20260623 END -->
+
 </body></html>';var w=window.open('','_blank','width=900,height=1000');if(!w){alert('팝업이 차단되어 인쇄창을 열 수 없습니다. 브라우저 팝업 허용 후 다시 시도하세요.');return}w.document.open();w.document.write(html);w.document.close()}
 
 
