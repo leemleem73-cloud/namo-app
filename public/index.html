@@ -23629,3 +23629,73 @@ document.addEventListener('click',function(e){
 
 <!-- Removed obsolete raw material trace patch: input qty/total columns were reintroduced here. -->
 
+
+<!-- NMC LOT TRACE COLUMN HOTFIX v20260623 START -->
+<script id="nmc-lot-trace-column-hotfix-v20260623">
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_COLUMN_HOTFIX_20260623__) return;
+  window.__NMC_LOT_TRACE_COLUMN_HOTFIX_20260623__=true;
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function txt(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function isDate(v){return /^(19|20)\d{2}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(txt(v))}
+  function isQty(v){return /^-?$|^\d+(\.\d+)?$/.test(txt(v).replace(/,/g,''))}
+  function cleanCellText(td){
+    var c=td.cloneNode(true);
+    qsa('.trace-muted,.nmc-lotlink-badge',c).forEach(function(x){x.remove()});
+    return txt(c.textContent);
+  }
+  function fixRawTraceTable(){
+    var tb=qs('#traceTable');
+    if(!tb) return;
+    var table=tb.closest('table');
+    if(table){
+      var thead=qs('thead',table)||table.createTHead();
+      thead.innerHTML='<tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량(kg)</th><th>비고</th></tr>';
+    }
+    qsa('tr',tb).forEach(function(tr){
+      var t=qsa('td',tr);
+      if(!t.length || /trace-empty|trace-total-row/.test(tr.className)) return;
+      var material=t[0] ? t[0].innerHTML : '-';
+      var lot=t[1] ? t[1].innerHTML : '-';
+      var vals=t.map(cleanCellText);
+      var date='-', supplier='-', qty='-', note='-';
+      for(var i=2;i<vals.length;i++){ if(isDate(vals[i])){date=vals[i];break;} }
+      for(var j=2;j<vals.length;j++){
+        var v=vals[j];
+        if(!v || v==='-' || isDate(v) || /^PASS|WAIT|완료|대기|연결$/i.test(v) || isQty(v)) continue;
+        if(/현대자동차|삼성|SK|기타/.test(v)) continue; /* 고객사명은 원재료 협력사명으로 쓰지 않음 */
+        supplier=v; break;
+      }
+      for(var k=2;k<vals.length;k++){ if(isQty(vals[k]) && vals[k] !== '-'){qty=vals[k];break;} }
+      var last=vals[vals.length-1]||'';
+      if(last && last!=='-' && !isDate(last) && !isQty(last) && !/PASS|WAIT|완료|대기|연결|현대자동차|삼성|SK|기타/.test(last) && last!==supplier) note=last;
+      tr.innerHTML='<td>'+material+'</td><td>'+lot+'</td><td>'+esc(date)+'</td><td>'+esc(supplier)+'</td><td>'+esc(qty)+'</td><td>'+esc(note)+'</td>';
+    });
+    var total=qsa('tr.trace-total-row td',tb);
+    if(total.length){
+      var amount=txt(total[total.length-1].textContent)||txt(total[1]&&total[1].textContent)||'-';
+      var tr=total[0].parentElement;
+      tr.innerHTML='<td colspan="4">합계 투입량</td><td>'+esc(amount)+'</td><td>-</td>';
+    }
+  }
+  var oldSearch=window.searchTrace;
+  window.searchTrace=function(){
+    var ret;
+    try{ if(typeof oldSearch==='function') ret=oldSearch.apply(this,arguments); }
+    finally{ setTimeout(fixRawTraceTable,0); setTimeout(fixRawTraceTable,80); }
+    return ret;
+  };
+  document.addEventListener('click',function(e){
+    if(e.target && (e.target.id==='traceSearch' || (e.target.closest&&e.target.closest('#traceSearch')))) setTimeout(fixRawTraceTable,120);
+  },true);
+  var mo=new MutationObserver(function(){
+    if(qs('#traceTable')) setTimeout(fixRawTraceTable,30);
+  });
+  if(document.body) mo.observe(document.body,{childList:true,subtree:true});
+  [100,500,1200,2500].forEach(function(ms){setTimeout(fixRawTraceTable,ms)});
+})();
+</script>
+<!-- NMC LOT TRACE COLUMN HOTFIX v20260623 END -->
