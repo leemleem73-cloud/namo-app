@@ -16076,7 +16076,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!page){ var cont=qs('.content')||qs('main')||document.body; page=document.createElement('div'); page.id='page-trace'; page.className='page'; cont.appendChild(page); }
     if(page.__nmcExactScreenReady) return;
     page.__nmcExactScreenReady=true;
-    page.innerHTML='<div class="nmc-lot-page"><div class="nmc-lot-title-row"><div><div class="nmc-lot-title-main">LOT 추적 조회</div><div class="nmc-lot-title-sub">원재료 LOT 및 완제품 LOT 양방향 추적 조회</div></div></div><div class="nmc-lot-search-card"><div class="nmc-lot-search-top"><div class="nmc-lot-label">조회 구분</div><select id="traceType" class="nmc-lot-select"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><div class="nmc-lot-label">조회 키워드</div><input id="traceKeyword" class="nmc-lot-input" placeholder="LOT 번호, 제품명, 원재료명, 작업지시번호 입력"><button id="traceSearch" class="nmc-lot-btn primary" type="button">⌕ 조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>원재료 LOT 추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량 (kg)</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>완제품 LOT 추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량 (Kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-info"><span>ℹ</span><span>정확검색 체크 시 입력하신 LOT와 정확히 일치하는 자료만 표시됩니다.</span></div></div>';
+    page.innerHTML='<div class="nmc-lot-page"><div class="nmc-lot-title-row"><div><div class="nmc-lot-title-main">LOT 추적 조회</div><div class="nmc-lot-title-sub">원재료 LOT 및 완제품 LOT 양방향 추적 조회</div></div></div><div class="nmc-lot-search-card"><div class="nmc-lot-search-top"><div class="nmc-lot-label">조회 구분</div><select id="traceType" class="nmc-lot-select"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><div class="nmc-lot-label">조회 키워드</div><input id="traceKeyword" class="nmc-lot-input" placeholder="LOT 번호, 제품명, 원재료명, 작업지시번호 입력"><button id="traceSearch" class="nmc-lot-btn primary" type="button">⌕ 조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>원재료 LOT 추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량 (kg)</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title"><span class="ico">⬡</span>완제품 LOT 추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>출하일자</th><th>출하수량 (Kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div>'+foot()+'</div><div class="nmc-lot-info"><span>ℹ</span><span>전부일치 체크 시 입력하신 LOT와 정확히 일치하는 자료만 표시됩니다.</span></div></div>';
     clearTraceView();
   }
   window.clearTraceView=function(){ ensureUI(); var input=byId('traceKeyword'); if(input) input.value=''; renderMaterials([]); renderFinished([]); var tb=byId('traceTable'); if(tb) tb.innerHTML=empty(6,'LOT 번호를 입력 후 조회하세요.'); var fb=byId('traceFinishedTable'); if(fb) fb.innerHTML=empty(6,'LOT 번호를 입력 후 조회하세요.'); };
@@ -20078,7 +20078,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       var label=document.createElement('label');
       label.id='traceExactWrap';
       label.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
-      label.innerHTML='';
+      label.innerHTML='<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
       search.appendChild(label);
     }
   }
@@ -20101,10 +20101,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderSummary(rawList,finList,kw){
     var el=id('traceSummary'); if(!el) return;
     var total=rawList.reduce(function(s,r){return s+numberText(r.inputQty);},0);
-    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">정확검색 기준</div></div>'+
+    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">전부일치 기준</div></div>'+
       '<div class="trace-kpi info"><div class="l">완제품 LOT</div><div class="v">'+finList.length+'</div><div class="s">출하검사 연동</div></div>'+
       '<div class="trace-kpi"><div class="l">합계 투입량</div><div class="v">'+(total?total.toLocaleString():'-')+'</div><div class="s">kg 기준</div></div>'+
-      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'정확검색':'부분검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
+      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'전부일치':'포함검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
   }
   function renderTimeline(rawList,finList){
     var el=id('traceTimeline'); if(!el) return;
@@ -20115,7 +20115,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var insp=id('traceInspectionPanel');
     if(insp) insp.innerHTML='<div class="trace-inspection-row"><div class="name">IQC</div><div class="meta">수입검사 LOT</div><div>'+badgeText(rawList.length?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">WO</div><div class="meta">작업지시 원료투입</div><div>'+badgeText(rawList.some(function(r){return r.inputQty && r.inputQty !== '-';})?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">OQC</div><div class="meta">완제품 출하검사</div><div>'+badgeText(finList.some(function(r){return r.hasOqc;})?'연결':'대기')+'</div></div>';
     var wp=id('traceWorkPanel');
-    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'정확검색':'부분검색')+'</td></tr></table>';
+    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'전부일치':'포함검색')+'</td></tr></table>';
     var sp=id('traceShipPanel');
     if(sp) sp.innerHTML='<table class="trace-mini-table"><tr><td>출하검사 연결</td><td>'+finList.filter(function(r){return r.hasOqc;}).length+'건</td></tr><tr><td>비고</td><td>수입검사 + 작업지시 + 출하검사 기준</td></tr></table>';
   }
@@ -22181,7 +22181,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       var label=document.createElement('label');
       label.id='traceExactWrap';
       label.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
-      label.innerHTML='';
+      label.innerHTML='<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
       search.appendChild(label);
     }
   }
@@ -22204,10 +22204,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderSummary(rawList,finList,kw){
     var el=id('traceSummary'); if(!el) return;
     var total=rawList.reduce(function(s,r){return s+numberText(r.inputQty);},0);
-    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">정확검색 기준</div></div>'+
+    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">전부일치 기준</div></div>'+
       '<div class="trace-kpi info"><div class="l">완제품 LOT</div><div class="v">'+finList.length+'</div><div class="s">출하검사 연동</div></div>'+
       '<div class="trace-kpi"><div class="l">합계 투입량</div><div class="v">'+(total?total.toLocaleString():'-')+'</div><div class="s">kg 기준</div></div>'+
-      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'정확검색':'부분검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
+      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(isExactEnabled()?'전부일치':'포함검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
   }
   function renderTimeline(rawList,finList){
     var el=id('traceTimeline'); if(!el) return;
@@ -22218,7 +22218,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var insp=id('traceInspectionPanel');
     if(insp) insp.innerHTML='<div class="trace-inspection-row"><div class="name">IQC</div><div class="meta">수입검사 LOT</div><div>'+badgeText(rawList.length?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">WO</div><div class="meta">작업지시 원료투입</div><div>'+badgeText(rawList.some(function(r){return r.inputQty && r.inputQty !== '-';})?'연결':'대기')+'</div></div><div class="trace-inspection-row"><div class="name">OQC</div><div class="meta">완제품 출하검사</div><div>'+badgeText(finList.some(function(r){return r.hasOqc;})?'연결':'대기')+'</div></div>';
     var wp=id('traceWorkPanel');
-    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'정확검색':'부분검색')+'</td></tr></table>';
+    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(isExactEnabled()?'전부일치':'포함검색')+'</td></tr></table>';
     var sp=id('traceShipPanel');
     if(sp) sp.innerHTML='<table class="trace-mini-table"><tr><td>출하검사 연결</td><td>'+finList.filter(function(r){return r.hasOqc;}).length+'건</td></tr><tr><td>비고</td><td>수입검사 + 작업지시 + 출하검사 기준</td></tr></table>';
   }
@@ -22418,7 +22418,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       var label=document.createElement('label');
       label.id='traceExactWrap';
       label.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;font-size:12px;font-weight:800;color:#334155;white-space:nowrap;';
-      label.innerHTML='';
+      label.innerHTML='<input id="traceExactMatch" type="checkbox" checked style="width:15px;height:15px;accent-color:#2563eb;"> 전부일치';
       search.appendChild(label);
     }
   }
@@ -22441,10 +22441,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function renderSummary(rawList,finList,kw){
     var el=id('traceSummary'); if(!el) return;
     var total=rawList.reduce(function(s,r){return s+num(r.inputQty);},0);
-    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">정확검색 기준</div></div>'+
+    el.innerHTML='<div class="trace-kpi purple"><div class="l">원재료 LOT</div><div class="v">'+rawList.length+'</div><div class="s">전부일치 기준</div></div>'+
       '<div class="trace-kpi info"><div class="l">완제품 LOT</div><div class="v">'+finList.length+'</div><div class="s">출하검사 연동</div></div>'+
       '<div class="trace-kpi"><div class="l">합계 투입량</div><div class="v">'+(total?total.toLocaleString():'-')+'</div><div class="s">kg 기준</div></div>'+
-      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(exact()?'정확검색':'부분검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
+      '<div class="trace-kpi good"><div class="l">검색방식</div><div class="v">'+(exact()?'전부일치':'포함검색')+'</div><div class="s">'+esc(kw||'전체')+'</div></div>';
   }
   function renderTimeline(rawList,finList){
     var el=id('traceTimeline'); if(!el) return;
@@ -22455,7 +22455,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     var insp=id('traceInspectionPanel');
     if(insp) insp.innerHTML='<div class="trace-inspection-row"><div class="name">IQC</div><div class="meta">수입검사 LOT</div><div>'+badge(rawList.length,'연결')+'</div></div><div class="trace-inspection-row"><div class="name">WO</div><div class="meta">작업지시 원료투입</div><div>'+badge(rawList.some(function(r){return r.inputQty && r.inputQty!=='-';}),'연결')+'</div></div><div class="trace-inspection-row"><div class="name">OQC</div><div class="meta">완제품 출하검사</div><div>'+badge(finList.some(function(r){return r.hasOqc;}),'연결')+'</div></div>';
     var wp=id('traceWorkPanel');
-    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(exact()?'정확검색':'부분검색')+'</td></tr></table>';
+    if(wp) wp.innerHTML='<table class="trace-mini-table"><tr><td>원재료 LOT 행</td><td>'+rawList.length+'건</td></tr><tr><td>완제품 LOT 행</td><td>'+finList.length+'건</td></tr><tr><td>매칭 방식</td><td>'+(exact()?'전부일치':'포함검색')+'</td></tr></table>';
     var sp=id('traceShipPanel');
     if(sp) sp.innerHTML='<table class="trace-mini-table"><tr><td>출하검사 연결</td><td>'+finList.filter(function(r){return r.hasOqc;}).length+'건</td></tr><tr><td>비고</td><td>수입검사 + 작업지시 + 출하검사 기준</td></tr></table>';
   }
@@ -22838,6 +22838,101 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC LOT TRACE FINAL OVERRIDE V5 20260622 END -->
 
+
+
+<!-- NMC PRODUCTION RECENT LOT LINK PATCH v20260623 START -->
+<style id="nmc-production-recent-lot-link-v20260623-style">
+.nmc-recent-lotlink-btn{height:26px;border:1px solid #2563eb;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:900;padding:0 9px;cursor:pointer;margin-left:4px;white-space:nowrap}
+.nmc-recent-lotlink-btn:hover{background:#dbeafe}
+.nmc-lotlink-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px}
+.nmc-lotlink-modal.show{display:flex}
+.nmc-lotlink-card{width:min(720px,calc(100vw - 32px));background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.25);overflow:hidden}
+.nmc-lotlink-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5edf6;background:#f8fbff}
+.nmc-lotlink-head h3{margin:0;font-size:17px;font-weight:900;color:#0f172a}.nmc-lotlink-close{width:32px;height:32px;border:none;border-radius:8px;background:#fff;color:#64748b;font-size:18px;cursor:pointer}
+.nmc-lotlink-body{padding:18px 20px}.nmc-lotlink-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.nmc-lotlink-field{display:flex;flex-direction:column;gap:6px}.nmc-lotlink-field label{font-size:12px;font-weight:900;color:#334155}.nmc-lotlink-field input{height:40px;border:1.5px solid #cfd9e8;border-radius:10px;padding:0 12px;font-size:13px;font-weight:700;color:#0f172a;outline:none}.nmc-lotlink-field input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.nmc-lotlink-help{margin-top:12px;padding:11px 12px;border:1px solid #bfdbfe;border-radius:12px;background:#f8fbff;color:#334155;font-size:12px;line-height:1.6}.nmc-lotlink-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #e5edf6}.nmc-lotlink-foot button{height:36px;border-radius:9px;padding:0 14px;font-size:13px;font-weight:900;cursor:pointer}.nmc-lotlink-cancel{border:1px solid #cfd9e8;background:#fff;color:#334155}.nmc-lotlink-save{border:none;background:#2563eb;color:#fff}.nmc-lotlink-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:99px;background:#ecfdf5;color:#047857;font-size:11px;font-weight:900;border:1px solid #a7f3d0;margin-left:6px}
+@media(max-width:760px){.nmc-lotlink-grid{grid-template-columns:1fr}}
+</style>
+<script id="nmc-production-recent-lot-link-v20260623-script">
+(function(){
+  'use strict';
+  if(window.__NMC_PRODUCTION_RECENT_LOT_LINK_20260623__) return;
+  window.__NMC_PRODUCTION_RECENT_LOT_LINK_20260623__=true;
+  var STORE='nmc_lot_links_20260619_v9';
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function txt(v){return String(v==null?'':v).trim()}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function norm(v){return txt(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'')}
+  function readJson(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}}
+  function writeJson(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function readLinks(){return readJson(STORE,[])}
+  function writeLinks(v){writeJson(STORE,v||[])}
+  function rowSig(o){return [o.finishedLot,o.materialLot,o.productionDate,o.product].map(norm).join('|')}
+  function saveLink(o){
+    o={finishedLot:txt(o.finishedLot),materialLot:txt(o.materialLot),materialName:txt(o.materialName),supplier:txt(o.supplier),inputQty:txt(o.inputQty),productionDate:txt(o.productionDate),product:txt(o.product),worklogId:txt(o.worklogId),workOrder:txt(o.workOrder),productionLot:txt(o.productionLot),qty:txt(o.inputQty),date:txt(o.productionDate),customer:txt(o.supplier)};
+    var list=readLinks(); var sig=rowSig(o), done=false;
+    list=list.map(function(x){if(rowSig(x)===sig || (norm(x.finishedLot)===norm(o.finishedLot)&&norm(x.materialLot)===norm(o.materialLot))){done=true;return Object.assign({},x,o,{updatedAt:new Date().toISOString()})}return x});
+    if(!done) list.push(Object.assign({},o,{createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}));
+    writeLinks(list); updateWorklog(o); return o;
+  }
+  function updateArrayRows(arr,o){
+    if(!Array.isArray(arr)) return false; var changed=false;
+    arr.forEach(function(r){
+      if(!r||typeof r!=='object') return;
+      var hit=(o.worklogId && txt(r.id)===o.worklogId) || (o.finishedLot && norm(r.finishedLot||r.lot||r.productLot)===norm(o.finishedLot));
+      if(!hit) return;
+      r.finishedLot=o.finishedLot;
+      r.materialLot=o.materialLot; r.rawLot=o.materialLot; r.inputLot=o.materialLot;
+      if(!Array.isArray(r.materials)) r.materials=[];
+      var found=false;
+      r.materials.forEach(function(m){if(norm(m.lotNo||m.materialLot||m.rawLot||m.lot)===norm(o.materialLot)){found=true;Object.assign(m,{name:o.materialName,material:o.materialName,materialName:o.materialName,lotNo:o.materialLot,materialLot:o.materialLot,rawLot:o.materialLot,supplier:o.supplier,inputQty:o.inputQty,qty:o.inputQty})}});
+      if(!found) r.materials.push({name:o.materialName,material:o.materialName,materialName:o.materialName,lotNo:o.materialLot,materialLot:o.materialLot,rawLot:o.materialLot,supplier:o.supplier,inputQty:o.inputQty,qty:o.inputQty});
+      changed=true;
+    });
+    return changed;
+  }
+  function updateWorklog(o){
+    try{if(window.state){['worklog','worklogs','productionLogs','productionResults'].forEach(function(k){updateArrayRows(window.state[k],o)})}}catch(e){}
+    try{['worklog','worklogs','nmcWorklogs','productionLogs','productionResults','nmcProductionLogs','qms_worklog'].forEach(function(k){var v=readJson(k,null); if(Array.isArray(v)&&updateArrayRows(v,o)) writeJson(k,v); else if(v&&typeof v==='object'){var changed=false; Object.keys(v).forEach(function(x){if(Array.isArray(v[x])&&updateArrayRows(v[x],o)) changed=true}); if(changed) writeJson(k,v);}})}catch(e){}
+  }
+  function existingForLot(lot){var n=norm(lot);return readLinks().filter(function(x){return norm(x.finishedLot)===n})}
+  function ensureModal(){
+    var m=qs('#nmcLotlinkModal'); if(m) return m;
+    document.body.insertAdjacentHTML('beforeend','<div id="nmcLotlinkModal" class="nmc-lotlink-modal"><div class="nmc-lotlink-card"><div class="nmc-lotlink-head"><h3>생산실적 LOT 연결</h3><button class="nmc-lotlink-close" type="button">×</button></div><div class="nmc-lotlink-body"><div class="nmc-lotlink-grid"><div class="nmc-lotlink-field"><label>완제품 LOT</label><input id="nmcLLFinished" readonly></div><div class="nmc-lotlink-field"><label>생산일자</label><input id="nmcLLDate"></div><div class="nmc-lotlink-field"><label>원재료명</label><input id="nmcLLMatName" placeholder="예: 원료명"></div><div class="nmc-lotlink-field"><label>원재료 LOT</label><input id="nmcLLMatLot" placeholder="예: IQC에 등록된 LOT"></div><div class="nmc-lotlink-field"><label>협력사명</label><input id="nmcLLSupplier" placeholder="협력사명"></div><div class="nmc-lotlink-field"><label>투입량(kg)</label><input id="nmcLLQty" placeholder="예: 25.0"></div></div><div class="nmc-lotlink-help">저장하면 생산실적과 LOT 추적 조회에 원재료 LOT가 연결됩니다. 같은 완제품 LOT에 원재료가 여러 개면 [LOT연결]을 반복해서 추가하세요.</div></div><div class="nmc-lotlink-foot"><button class="nmc-lotlink-cancel" type="button">취소</button><button class="nmc-lotlink-save" type="button">저장</button></div></div></div>');
+    m=qs('#nmcLotlinkModal');
+    qsa('.nmc-lotlink-close,.nmc-lotlink-cancel',m).forEach(function(b){b.addEventListener('click',function(){m.classList.remove('show')})});
+    qs('.nmc-lotlink-save',m).addEventListener('click',function(){
+      var o=m.__ctx||{};
+      o.finishedLot=qs('#nmcLLFinished').value; o.productionDate=qs('#nmcLLDate').value; o.materialName=qs('#nmcLLMatName').value; o.materialLot=qs('#nmcLLMatLot').value; o.supplier=qs('#nmcLLSupplier').value; o.inputQty=qs('#nmcLLQty').value;
+      if(!txt(o.finishedLot)){alert('완제품 LOT가 없습니다.');return}
+      if(!txt(o.materialLot)){alert('원재료 LOT를 입력해 주세요.');return}
+      saveLink(o); m.classList.remove('show'); setTimeout(function(){patchProductionRecent(); refreshTraceIfSameLot(o.finishedLot)},100); alert('LOT 연결을 저장했습니다. LOT 추적 조회에서 다시 조회해 주세요.');
+    });
+    return m;
+  }
+  function openModal(ctx){var m=ensureModal(); m.__ctx=ctx||{}; var ex=existingForLot(ctx.finishedLot)[0]||{}; qs('#nmcLLFinished').value=ctx.finishedLot||''; qs('#nmcLLDate').value=ctx.productionDate||ex.productionDate||''; qs('#nmcLLMatName').value=ex.materialName||''; qs('#nmcLLMatLot').value=ex.materialLot||''; qs('#nmcLLSupplier').value=ex.supplier||''; qs('#nmcLLQty').value=ex.inputQty||''; m.classList.add('show'); setTimeout(function(){(qs('#nmcLLMatLot')||{}).focus&&qs('#nmcLLMatLot').focus()},50)}
+  function patchProductionRecent(){
+    var tb=qs('#productionRecentTable'); if(!tb) return;
+    qsa('tr',tb).forEach(function(tr){
+      if(tr.__nmcRecentLotPatched) return; var t=qsa('td',tr); if(t.length<8) return;
+      var action=t[7]; if(!action || /등록된 생산/.test(txt(tr.textContent))) return;
+      tr.__nmcRecentLotPatched=true;
+      var finished=txt(t[1].textContent).replace(/^[-\s]+$/,''); var date=txt(t[0].textContent); var product=''; var prodQty=txt(t[4].textContent); var idBtn=qs('[data-production-action]',action); var id=idBtn?idBtn.getAttribute('data-id'):'';
+      var count=existingForLot(finished).length;
+      var btn=document.createElement('button'); btn.type='button'; btn.className='nmc-recent-lotlink-btn'; btn.textContent=count?'LOT연결('+count+')':'LOT연결'; btn.setAttribute('data-nmc-recent-lotlink','1'); btn.setAttribute('data-finished-lot',finished); btn.setAttribute('data-date',date); btn.setAttribute('data-id',id); btn.setAttribute('data-qty',prodQty); btn.setAttribute('data-product',product);
+      var ai=qs('.ai',action)||action; ai.appendChild(btn);
+      if(count && t[6]) t[6].insertAdjacentHTML('beforeend',' <span class="nmc-lotlink-badge">원료LOT '+count+'</span>');
+    });
+  }
+  function refreshTraceIfSameLot(lot){
+    var inp=qs('#traceKeyword'); if(inp && norm(inp.value)===norm(lot)){var b=qs('#traceSearch'); if(b) b.click();}
+  }
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-nmc-recent-lotlink]'); if(!b) return; e.preventDefault(); e.stopPropagation(); openModal({finishedLot:b.getAttribute('data-finished-lot'),productionDate:b.getAttribute('data-date'),worklogId:b.getAttribute('data-id'),inputQty:b.getAttribute('data-qty'),product:b.getAttribute('data-product')});},true);
+  var obs=new MutationObserver(function(){setTimeout(patchProductionRecent,80)}); if(document.body) obs.observe(document.body,{childList:true,subtree:true});
+  [200,800,1500,3000].forEach(function(ms){setTimeout(patchProductionRecent,ms)});
+})();
+</script>
+<!-- NMC PRODUCTION RECENT LOT LINK PATCH v20260623 END -->
 </body></html>
 
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START -->
