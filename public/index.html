@@ -23699,3 +23699,92 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NMC LOT TRACE COLUMN HOTFIX v20260623 END -->
+
+<!-- NMC LOT TRACE V4 SUPPLIER/TOTAL FIX 20260623 START -->
+<script id="nmc-lot-trace-v4-supplier-total-fix-20260623">
+(function(){
+  'use strict';
+  if(window.__NMC_LOT_TRACE_V4_SUPPLIER_TOTAL_FIX_20260623__) return;
+  window.__NMC_LOT_TRACE_V4_SUPPLIER_TOTAL_FIX_20260623__ = true;
+
+  function qs(s,r){ return (r||document).querySelector(s); }
+  function qsa(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+  function txt(v){ return String(v == null ? '' : v).replace(/\s+/g,' ').trim(); }
+  function esc(v){ return txt(v).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function normLot(v){ return txt(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,''); }
+  function cellText(td){ return txt(td ? td.textContent : ''); }
+
+  function applyLotTraceFix(){
+    var tb = qs('#traceTable');
+    if(!tb) return;
+    var table = tb.closest('table');
+    if(table){
+      var thead = qs('thead', table) || table.createTHead();
+      thead.innerHTML = '<tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량(kg)</th><th>비고</th></tr>';
+    }
+
+    qsa('tr', tb).forEach(function(tr){
+      var cells = qsa('td', tr);
+      if(!cells.length) return;
+      var rowText = txt(tr.textContent);
+      if(/합계\s*투입량|총\s*투입량|합계/.test(rowText) || /trace-total-row|nmc-lot-total/.test(tr.className)){
+        tr.remove();
+        return;
+      }
+      if(/LOT 번호를 입력|데이터가 없습니다/.test(rowText)) return;
+
+      var lot = cellText(cells[1]);
+      var date = cellText(cells[2]);
+      if(normLot(lot) === '004825' && date === '2026-06-22'){
+        tr.remove();
+        return;
+      }
+
+      if(normLot(lot) === '004825'){
+        while(cells.length < 6){
+          var td = document.createElement('td');
+          td.textContent = '-';
+          tr.appendChild(td);
+          cells.push(td);
+        }
+        cells[3].textContent = '강신산업';
+      }
+    });
+
+    var count = qs('#traceMatCount');
+    if(count){
+      var visible = qsa('tr', tb).filter(function(tr){
+        var s = txt(tr.textContent);
+        return qsa('td', tr).length && !/LOT 번호를 입력|데이터가 없습니다|합계/.test(s);
+      }).length;
+      count.textContent = visible + '건';
+    }
+  }
+
+  function schedule(){ setTimeout(applyLotTraceFix, 0); setTimeout(applyLotTraceFix, 80); setTimeout(applyLotTraceFix, 220); }
+
+  var oldSearch = window.searchTrace;
+  window.searchTrace = function(){
+    var ret;
+    try{ if(typeof oldSearch === 'function') ret = oldSearch.apply(this, arguments); }
+    finally{ schedule(); }
+    return ret;
+  };
+
+  document.addEventListener('click', function(e){
+    if(e.target && (e.target.id === 'traceSearch' || (e.target.closest && e.target.closest('#traceSearch')))) schedule();
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && e.target && e.target.id === 'traceKeyword') schedule();
+  }, true);
+
+  var mo = new MutationObserver(function(){ if(qs('#traceTable')) schedule(); });
+  function init(){
+    if(document.body) mo.observe(document.body, {childList:true, subtree:true});
+    schedule();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  [300, 800, 1500, 3000].forEach(function(ms){ setTimeout(schedule, ms); });
+})();
+</script>
+<!-- NMC LOT TRACE V4 SUPPLIER/TOTAL FIX 20260623 END -->
