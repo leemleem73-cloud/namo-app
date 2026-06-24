@@ -13236,26 +13236,27 @@ document.addEventListener('click',function(e){
 
 
 
-<!-- NAMO SIGN MEMBERS LOGIN-WRITER FIX FINAL v6
-     - v5 보강: state.currentUser가 비어 있어도 상단 프로필/세션/회원목록에서 로그인 본인을 추정해 작성자 칸에 이름 표시.
-     - 작성자 select는 항상 로그인 본인 1명으로 고정.
-     - 전무 이상 작성자는 검토/승인 후보 없음 처리(Infinity)로 대표이사 후보 노출 방지.
+<!-- NAMO SIGN MEMBERS RANK FILTER FINAL v7
+     - 작성자: 일반/임원은 로그인 본인 성명 고정, 관리자(admin)는 전체 회원 선택 가능.
+     - 사원~부장: 검토/승인 선택 불가(잠김).
+     - 이사 이상: 검토/승인 선택 가능(이사 이상 후보).
+     - 관리자(admin): 작성/검토/승인 전체 회원 선택 가능.
 -->
-<script id="namo-sign-login-writer-fix-v6-script">
+<script id="namo-sign-rank-filter-v7-final">
 (function(){
   'use strict';
   var TYPES=['iqc','pqc','oqc','nc','training'];
   var ROLE_LABEL={writer:'작성자',reviewer:'검토자',approver:'승인자'};
-  var LEVEL={STAFF:1, MANAGER:2, DIRECTOR:3, EXEC:4, CEO:9};
+  var LEVEL={STAFF:1,MANAGER:2,DIRECTOR:3,EXEC:4,CEO:9};
   var EXEC_WORDS=['전무','대표이사','대표','사장','회장'];
   var DIRECTOR_WORDS=['이사','상무'].concat(EXEC_WORDS);
   var MANAGER_WORDS=['부장','본부장','실장','센터장'].concat(DIRECTOR_WORDS);
   var applying=false;
 
   function $(id){return document.getElementById(id);}
-  function txt(v){v=String(v==null?'':v).trim();return (!v||v==='undefined'||v==='null'||v==='-')?'':v;}
+  function txt(v){v=String(v==null?'':v).trim();return(!v||v==='undefined'||v==='null'||v==='-')?'':v;}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function appState(){try{return window.state || state || {};}catch(e){try{return window.state || {};}catch(_){return {};}}}
+  function appState(){try{return window.state||state||{};}catch(e){try{return window.state||{};}catch(_){return {};}}}
   function parseJson(v){try{return JSON.parse(v||'');}catch(e){return null;}}
   function norm(u){
     if(!u)return null;
@@ -13282,9 +13283,9 @@ document.addEventListener('click',function(e){
     ));
   }
   function addUser(out,seen,u){
-    u=norm(u); if(!u)return;
+    u=norm(u);if(!u)return;
     var k=(u.email||u.id||u.name).toLowerCase();
-    if(seen[k])return; seen[k]=1; out.push(u);
+    if(seen[k])return;seen[k]=1;out.push(u);
   }
   function titleText(u){u=norm(u)||{};return String((u.title||'')+' '+(u.role||'')+' '+(u.department||'')).toLowerCase();}
   function hasAny(u,words){var t=titleText(u);return words.some(function(w){return t.indexOf(String(w).toLowerCase())>-1;});}
@@ -13298,19 +13299,17 @@ document.addEventListener('click',function(e){
     if(hasAny(u,MANAGER_WORDS))return LEVEL.MANAGER;
     return LEVEL.STAFF;
   }
-  function requiredLevel(writerLevel,role){
-    if(role==='writer')return LEVEL.STAFF;
-    if(writerLevel>=LEVEL.EXEC)return Infinity;
-    if(writerLevel<=LEVEL.STAFF)return LEVEL.MANAGER;
-    if(writerLevel===LEVEL.MANAGER)return LEVEL.DIRECTOR;
-    if(writerLevel===LEVEL.DIRECTOR)return role==='approver'?LEVEL.EXEC:LEVEL.DIRECTOR;
-    return Infinity;
+  function canSelectReviewApprove(writerLevel){return writerLevel>=LEVEL.DIRECTOR;}
+  function reviewApprovePool(allList,writerLevel,meAdmin){
+    if(meAdmin)return allList;
+    if(!canSelectReviewApprove(writerLevel))return [];
+    return allList.filter(function(u){return userLevel(u)>=LEVEL.DIRECTOR;});
   }
   function label(u){u=norm(u);if(!u)return '-';var tail=[u.department,u.title].filter(Boolean).join(' / ');return u.name+(tail?' / '+tail:'');}
   function opt(u){u=norm(u)||{};return '<option value="'+esc(u.id||u.email||u.name)+'" data-name="'+esc(u.name||'')+'" data-department="'+esc(u.department||'')+'" data-title="'+esc(u.title||'')+'" data-email="'+esc(u.email||'')+'">'+esc(label(u))+'</option>';}
   function optHash(users){return users.map(function(u){u=norm(u)||{};return (u.id||u.email||u.name)+'|'+u.name+'|'+u.department+'|'+u.title;}).join('||');}
   function allUsers(){
-    var s=appState(), out=[], seen={};
+    var s=appState(),out=[],seen={};
     ['currentUser','user','loginUser','userInfo'].forEach(function(k){addUser(out,seen,s[k]||window[k]);});
     ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList','nmcUsers'].forEach(function(k){
       if(Array.isArray(s[k]))s[k].forEach(function(u){addUser(out,seen,u);});
@@ -13333,109 +13332,142 @@ document.addEventListener('click',function(e){
     var u=norm(raw);
     var pname=txt((document.querySelector('.pname')||{}).textContent||'');
     var pemail=txt((document.querySelector('.pemail')||{}).textContent||'');
-    if(!u && (pname||pemail))u=norm({name:pname,email:pemail,id:pemail||pname});
-    if(u && (!u.name || u.name==='로그인 사용자') && pname)u.name=pname;
-    if(u && !u.email && pemail)u.email=pemail;
+    if(!u&&(pname||pemail))u=norm({name:pname,email:pemail,id:pemail||pname});
+    if(u&&(!u.name||u.name==='로그인 사용자')&&pname)u.name=pname;
+    if(u&&!u.email&&pemail)u.email=pemail;
     if(u)return u;
     try{
       var keys=['qms_current_user','qmsCurrentUser','currentUser','loginUser','userInfo','profile','authUser'];
       for(var i=0;i<keys.length;i++){
         var p=parseJson(localStorage.getItem(keys[i])||sessionStorage.getItem(keys[i]));
-        u=norm(p); if(u)return u;
+        u=norm(p);if(u)return u;
       }
     }catch(e){}
     return null;
   }
   function currentUser(){
-    var users=allUsers();
-    var guess=profileUserGuess();
-    if(guess){
-      var found=users.find(function(u){return same(u,guess);});
-      return norm(found||guess);
-    }
-    if(users.length===1)return users[0];
-    return null;
+    var users=allUsers(),guess=profileUserGuess();
+    if(guess){var found=users.find(function(u){return same(u,guess);});return norm(found||guess);}
+    return users.length===1?users[0]:null;
   }
   function selectedFrom(sel,users){
     if(!sel||!sel.value)return null;
-    var o=sel.options[sel.selectedIndex], ds=(o&&o.dataset)||{};
+    var o=sel.options[sel.selectedIndex],ds=(o&&o.dataset)||{};
     var ref={id:sel.value,name:txt(ds.name||String(o&&o.textContent||'').replace(/\s*\/\s*.*$/,'')),department:ds.department,title:ds.title,email:ds.email};
     return norm(users.find(function(u){return same(u,ref);})||ref);
   }
   function ensureBox(grid,type,role){
-    var sel=$('sg_'+type+'_'+role); if(sel)return sel;
-    var box=document.createElement('div'); box.className='sign-box';
+    var sel=$('sg_'+type+'_'+role);if(sel)return sel;
+    var box=document.createElement('div');box.className='sign-box';
     box.innerHTML='<div class="sign-box-hdr"><span class="sign-box-role">'+esc(ROLE_LABEL[role])+'</span><span class="sign-box-badge any" id="sg_'+esc(type)+'_'+esc(role)+'_badge"></span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+esc(type)+'_'+esc(role)+'"></select><div class="sign-sub" id="sg_'+esc(type)+'_'+esc(role)+'_sub"></div></div>';
-    grid.appendChild(box); return $('sg_'+type+'_'+role);
+    grid.appendChild(box);return $('sg_'+type+'_'+role);
   }
   function syncPreview(type){
-    var cfg={iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc',training:'Training'}[type]; if(!cfg)return;
+    var cfg={iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc',training:'Training'}[type];if(!cfg)return;
     var users=allUsers();
     ['writer','reviewer','approver'].forEach(function(role){
-      var sel=$('sg_'+type+'_'+role), u=selectedFrom(sel,users), cap=role.charAt(0).toUpperCase()+role.slice(1);
-      var n=$('r'+cfg+cap), t=$('r'+cfg+cap+'T');
+      var sel=$('sg_'+type+'_'+role),u=selectedFrom(sel,users),cap=role.charAt(0).toUpperCase()+role.slice(1);
+      var n=$('r'+cfg+cap),t=$('r'+cfg+cap+'T');
       if(n)n.textContent=u?u.name:'-';
       if(t)t.textContent=u?[u.department,u.title].filter(Boolean).join(' / '):'';
     });
   }
   function stabilizeType(type){
-    var grid=$('signGrid_'+type); if(!grid)return;
-    grid.style.display='grid'; grid.style.visibility='visible'; grid.style.opacity='1';
-    var users=allUsers(), me=currentUser();
-    if(me){ var seenFix={}; users.forEach(function(u){u=norm(u); if(u)seenFix[(u.email||u.id||u.name).toLowerCase()]=1;}); addUser(users,seenFix,me); }
+    var grid=$('signGrid_'+type);if(!grid)return;
+    grid.style.display='grid';grid.style.visibility='visible';grid.style.opacity='1';
+
+    var users=allUsers(),me=currentUser(),meAdmin=isAdminUser(me),wLevel=userLevel(me);
+    if(me){var seenFix={};users.forEach(function(u){u=norm(u);if(u)seenFix[(u.email||u.id||u.name).toLowerCase()]=1;});addUser(users,seenFix,me);}
 
     var writerSel=ensureBox(grid,type,'writer');
     if(writerSel){
-      if(me){
-        writerSel.innerHTML=opt(me);
-        writerSel.value=me.id||me.email||me.name;
-        writerSel.dataset.namoRankHash='V6_WRITER:'+writerSel.value+'|'+me.name+'|'+me.department+'|'+me.title;
+      if(meAdmin){
+        var wHash='ADMIN_WRITER:'+optHash(users);
+        if(writerSel.dataset.namoRankHash!==wHash){
+          writerSel.innerHTML='<option value="">-- 작성자 선택 --</option>'+users.map(opt).join('');
+          writerSel.dataset.namoRankHash=wHash;
+        }
+        writerSel.disabled=false;
+        writerSel.style.pointerEvents='auto';
+        var wsub=$('sg_'+type+'_writer_sub');if(wsub)wsub.textContent='관리자: 전체 회원 중 작성자 선택 가능';
+        var wbadge=$('sg_'+type+'_writer_badge');if(wbadge)wbadge.textContent='관리자';
       }else{
-        writerSel.innerHTML='<option value="">로그인 사용자 확인 필요</option>';
+        if(me){
+          writerSel.innerHTML=opt(me);
+          writerSel.value=me.id||me.email||me.name;
+          writerSel.dataset.namoRankHash='WRITER_SELF:'+writerSel.value+'|'+me.name+'|'+me.department+'|'+me.title;
+        }else{
+          writerSel.innerHTML='<option value="">로그인 사용자 확인 필요</option>';
+        }
+        writerSel.disabled=true;
+        writerSel.style.pointerEvents='none';
+        var wsub2=$('sg_'+type+'_writer_sub');if(wsub2)wsub2.textContent=me?'작성자는 로그인 본인으로 고정됩니다.':'로그인 정보를 찾을 수 없습니다.';
+        var wbadge2=$('sg_'+type+'_writer_badge');if(wbadge2)wbadge2.textContent='본인고정';
       }
-      writerSel.disabled=true;
-      var wsub=$('sg_'+type+'_writer_sub'); if(wsub)wsub.textContent=me?'작성자는 로그인 본인으로 고정됩니다.':'로그인 사용자 정보를 찾지 못했습니다. 상단 프로필/로그인 정보를 확인하세요.';
-      var wbadge=$('sg_'+type+'_writer_badge'); if(wbadge)wbadge.textContent=me?'본인고정':'확인필요';
     }
 
-    var wLevel=userLevel(me), meAdmin=isAdminUser(me);
     ['reviewer','approver'].forEach(function(role){
-      var sel=ensureBox(grid,type,role); if(!sel)return;
-      var req=requiredLevel(wLevel,role), candidates=[];
-      if(meAdmin)candidates=users;
-      else if(req===Infinity)candidates=[];
-      else candidates=users.filter(function(u){return userLevel(u)>=req;});
-
-      var old=sel.value, hash='V6:'+req+':'+optHash(candidates);
-      if(sel.dataset.namoRankHash!==hash || sel.options.length!==candidates.length+1){
-        sel.innerHTML='<option value="">'+(candidates.length?'선택':'대상 없음')+'</option>'+candidates.map(opt).join('');
+      var sel=ensureBox(grid,type,role);if(!sel)return;
+      var candidates=reviewApprovePool(users,wLevel,meAdmin);
+      var old=sel.value,hash='V7:'+role+':'+optHash(candidates);
+      if(sel.dataset.namoRankHash!==hash||sel.options.length!==candidates.length+1){
+        sel.innerHTML='<option value="">'+(candidates.length?'선택':'선택 권한 없음')+'</option>'+candidates.map(opt).join('');
         sel.dataset.namoRankHash=hash;
       }
-      sel.disabled=!candidates.length;
-      if(candidates.length && old && Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(old);})){sel.value=old;}
-      else if(!candidates.length){sel.value='';}
-      var reqText=req===LEVEL.MANAGER?'부장 이상':req===LEVEL.DIRECTOR?'이사 이상':req===LEVEL.EXEC?'전무 이상':req===Infinity?'대상 없음':'대표이사';
+
+      var locked=!meAdmin&&!canSelectReviewApprove(wLevel);
+      sel.disabled=locked||!candidates.length;
+      sel.style.pointerEvents=(locked||!candidates.length)?'none':'auto';
+      sel.style.opacity='1';
+
+      if(candidates.length&&old&&Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(old);})){
+        sel.value=old;
+      }else if(sel.disabled){
+        sel.value='';
+      }
+
       var sub=$('sg_'+type+'_'+role+'_sub');
-      if(sub)sub.textContent=candidates.length?('작성자 직급 기준 '+reqText+' 선택 가능 ('+candidates.length+'명)'):(req===Infinity?'전무 이상 작성: '+ROLE_LABEL[role]+' 생략':reqText+' 회원이 없습니다.');
-      var badge=$('sg_'+type+'_'+role+'_badge'); if(badge)badge.textContent=meAdmin?'관리자 전체':'직급제한';
+      if(sub){
+        if(meAdmin)sub.textContent='관리자: 전체 회원 중 선택 가능';
+        else if(locked)sub.textContent='이사 이상 로그인 시 '+ROLE_LABEL[role]+' 지정 가능 (현재 잠김)';
+        else sub.textContent=candidates.length?'이사 이상 회원 중 선택 가능 ('+candidates.length+'명)':'이사 이상 회원이 없습니다.';
+      }
+      var badge=$('sg_'+type+'_'+role+'_badge');
+      if(badge)badge.textContent=meAdmin?'관리자 전체':(locked?'잠김':'이사이상');
+
+      var box=sel.closest&&sel.closest('.sign-box');
+      if(box){box.style.display='block';box.style.visibility='visible';box.style.opacity='1';}
     });
 
     var warn=grid.parentElement&&grid.parentElement.querySelector('.sign-warning');
     if(warn&&me)warn.style.display='none';
     syncPreview(type);
   }
-  function stabilizeAll(){if(applying)return;applying=true;try{TYPES.forEach(stabilizeType);}catch(e){console.warn('[namo sign login writer fix v6]',e);}finally{applying=false;}}
-  window.namoSignWriterFixV6=stabilizeAll;
+
+  function stabilizeAll(){
+    if(applying)return;applying=true;
+    try{TYPES.forEach(stabilizeType);}catch(e){console.warn('[namo sign v7 final]',e);}
+    finally{applying=false;}
+  }
+
+  window.namoSignRankFilterV7=stabilizeAll;
   window.namoStableSignMembers=stabilizeAll;
   window.applyAllSignPermissions=stabilizeAll;
   window.rebuildAllSignGrids=stabilizeAll;
   window.qmsRefreshSignatures=stabilizeAll;
   window.buildSignGrid=function(type){stabilizeType(type);return $('signGrid_'+type);};
-  document.addEventListener('change',function(e){if(e.target&&/^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver)$/.test(e.target.id||'')){syncPreview(e.target.id.split('_')[1]);}},true);
+
+  document.addEventListener('change',function(e){
+    if(e.target&&/^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver|writer)$/.test(e.target.id||'')){
+      syncPreview(e.target.id.split('_')[1]);
+    }
+  },true);
   document.addEventListener('click',function(){setTimeout(stabilizeAll,80);},true);
   setInterval(stabilizeAll,800);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',stabilizeAll);else stabilizeAll();
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',stabilizeAll);
+  else stabilizeAll();
   window.addEventListener('load',function(){stabilizeAll();setTimeout(stabilizeAll,250);setTimeout(stabilizeAll,1000);setTimeout(stabilizeAll,3000);});
 })();
 </script>
-<!-- /NAMO SIGN MEMBERS LOGIN-WRITER FIX FINAL v6 -->
+<!-- /NAMO SIGN MEMBERS RANK FILTER FINAL v7 -->
