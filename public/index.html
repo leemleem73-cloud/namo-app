@@ -2937,6 +2937,20 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .namo-wo-progress-text{font-size:11px;font-weight:900;color:#2563eb}
 @media(max-width:1200px){.namo-wo-progress-cell{min-width:420px}.namo-wo-progress-steps{min-width:390px;gap:4px}.namo-wo-step{font-size:10px}.namo-wo-line{width:14px}}
 </style>
+
+<style>
+.std-dms-panel-b{
+    padding:14px 16px 28px 16px !important;
+    height:auto !important;
+    overflow:visible !important;
+    min-height:220px !important;
+}
+.tw{
+    overflow-x:auto !important;
+    overflow-y:visible !important;
+}
+</style>
+
 </head>
 <body class="login-active">
 
@@ -3199,7 +3213,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             <details class="std-dms-panel" open><summary>검사 절차</summary><div class="std-dms-panel-b"><div class="std-dms-flow"><div class="std-dms-step"><b><span>1</span>원재료 입고</b><p>PO·납품서·품명·수량 확인</p></div><div class="std-dms-step"><b><span>2</span>COA 확인</b><p>LOT·품명·시험결과와 구매 SPEC 일치 확인</p></div><div class="std-dms-step"><b><span>3</span>외관검사</b><p>파손·변형·누액·오염 및 라벨상태 확인</p></div><div class="std-dms-step"><b><span>4</span>QMES 기록</b><p>검사결과 및 판정 등록</p></div><div class="std-dms-step"><b><span>5</span>입고/격리</b><p>합격품 입고 또는 부적합품 격리</p></div></div></div></details>
             <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안검사 / 한도견본</td><td>파손, 변형, 누액, 오염이 없을 것</td><td>전수 / LOT별 1회</td></tr><tr><td><b>라벨</b></td><td>육안 및 바코드 확인</td><td>자재명, LOT No., 제조일자, 공급사명 확인</td><td>전수 / LOT별 1회</td></tr><tr><td><b>COA</b></td><td>공급사 COA 확인</td><td>COA와 구매 SPEC이 일치할 것</td><td>전수 / LOT별 1회</td></tr><tr><td><b>중량</b></td><td>저울 또는 납품서 확인</td><td>구매계약 또는 사양서 허용오차 이내</td><td>전수 / LOT별 1회</td></tr></tbody></table></div></details>
             <details class="std-dms-panel"><summary>부적합 처리 / 조치 기준</summary><div class="std-dms-panel-b"><div class="std-dms-note">부적합 발생 시 부적합 라벨 부착 후 지정 격리구역으로 이동하고, 공급사 통보·재시험 요청·반품·교환·개선대책 요구를 QMES 부적합 보고서 및 CAPA와 연계합니다.</div></div></details>
-            <details class="std-dms-panel"><summary>외관 한도 기준</summary><div class="std-dms-panel-b"><div class="std-dms-limit-grid"><div class="std-dms-limit"><b>PVDF</b><div class="std-dms-ok">OK: 균일한 미세분말, 이물 없음</div><div class="std-dms-ng">NG: 색변, 덩어리, 흑점 발생</div></div><div class="std-dms-limit"><b>SBR</b><div class="std-dms-ok">OK: 투명~반투명, 균일한 액상</div><div class="std-dms-ng">NG: 기포, 층분리, 흠집</div></div><div class="std-dms-limit"><b>Boehmite</b><div class="std-dms-ok">OK: 백색 균일 분말, 이물 없음</div><div class="std-dms-ng">NG: 색변, 덩어리, 이물 혼입</div></div><div class="std-dms-limit"><b>ET3004(BYK180)</b><div class="std-dms-ok">OK: 연황색 투명, 균일한 액상</div><div class="std-dms-ng">NG: 탁함, 침전물, 기포 발생</div></div><div class="std-dms-limit"><b>NMP</b><div class="std-dms-ok">OK: 무색 투명 액상</div><div class="std-dms-ng">NG: 탁함, 수분혼입 의심</div></div><div class="std-dms-limit"><b>PAI</b><div class="std-dms-ok">OK: 투명, 연황색, 무침전 균일</div><div class="std-dms-ng">NG: 탁함, 층분리, 침전, 겔</div></div></div><div class="std-dms-note mt12">본 기준은 외관 판정 기준이며 물성 시험을 대체하지 않습니다.</div></div></details>
+            <details class="std-dms-panel"><summary>외관 한도 기준</summary><div class="std-dms-panel-b"><div class="std-dms-limit-grid"><div class="std-dms-limit"><b>PVDF</b><div class="std-dms-ok">OK: 균일한 미세분말, 이물 없음</div><div class="std-dms-ng">NG: 색변, 덩어리, 흑점 발생</div></div><div class="std-dms-limit"><b>SBR</b><div class="std-dms-ok">OK: 투명~반투명, 균일한 액상</div><div class="std-dms-ng">NG: 기포, 층분리, 흠집</div></div><div class="std-dms-limit"><b>Boehmite</b><div class="std-dms-ok">OK: 백색 균일 분말, 이물 없음</div><div class="std-dms-ng">NG: 색변, 덩어리, 흑점발생</div></div><div class="std-dms-limit"><b>ET3004(BYK180)</b><div class="std-dms-ok">OK: 연황색 투명, 균일한 액상</div><div class="std-dms-ng">NG: 탁함, 침전물, 기포 발생</div></div><div class="std-dms-limit"><b>NMP</b><div class="std-dms-ok">OK: 무색 투명 액상</div><div class="std-dms-ng">NG: 탁함, 수분혼입 의심</div></div><div class="std-dms-limit"><b>PAI</b><div class="std-dms-ok">OK: 투명, 연황색, 무침전 균일</div><div class="std-dms-ng">NG: 탁함, 층분리, 침전, 겔</div></div></div><div class="std-dms-note mt12">본 기준은 외관 판정 기준이며 물성 시험을 대체하지 않습니다.</div></div></details>
           </div>
         </div>
       </section>
@@ -3226,8 +3240,8 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
             </div>
           </aside>
           <div class="std-dms-body">
-            <details class="std-dms-panel" open><summary>검사 절차</summary><div class="std-dms-panel-b"><div class="std-dms-flow"><div class="std-dms-step"><b><span>1</span>LOT 확인</b><p>생산 LOT 및 품목 확인</p></div><div class="std-dms-step"><b><span>2</span>시료채취</b><p>지정 위치와 기준량에 따라 채취</p></div><div class="std-dms-step"><b><span>3</span>공정검사</b><p>점도, 고형분, Dmax, 수분 등 확인</p></div><div class="std-dms-step"><b><span>4</span>QMES 기록</b><p>측정값과 판정 입력</p></div><div class="std-dms-step"><b><span>5</span>판정/조치</b><p>합격, 보류, 부적합 및 CAPA 연계</p></div></div></div></details>
-            <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 응집, 변색 등 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도</b></td><td>점도계 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>고형분</b></td><td>건조/측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>Dmax</b></td><td>입도 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>수분</b></td><td>수분측정기</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr></tbody></table></div></details>
+            <details class="std-dms-panel" open><summary>검사 절차</summary><div class="std-dms-panel-b"><div class="std-dms-flow"><div class="std-dms-step"><b><span>1</span>LOT 확인</b><p>생산 LOT 및 품목 확인</p></div><div class="std-dms-step"><b><span>2</span>시료채취</b><p>지정 위치와 기준량에 따라 채취</p></div><div class="std-dms-step"><b><span>3</span>공정검사</b><p>점도, 고형분, Dmax, 접착력, 전해액 안정성, 수분 등 확인</p></div><div class="std-dms-step"><b><span>4</span>QMES 기록</b><p>측정값과 판정 입력</p></div><div class="std-dms-step"><b><span>5</span>판정/조치</b><p>합격, 보류, 부적합 및 CAPA 연계</p></div></div></div></details>
+            <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 응집, 변색 등 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도</b></td><td>점도계 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>고형분</b></td><td>건조/측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>Dmax</b></td><td>입도 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>접착력</b></td><td>접착력 시험</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>전해액 안정성</b></td><td>안정성 시험</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>수분</b></td><td>수분측정기</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr></tbody></table></div></details>
             <details class="std-dms-panel"><summary>부적합 처리 / 조치 기준</summary><div class="std-dms-panel-b"><div class="std-dms-note">공정검사 결과가 SPEC을 벗어나면 해당 LOT를 보류하고 원인 확인, 재검사, 공정조건 조정, 부적합 보고서 및 CAPA를 진행합니다.</div></div></details>
           </div>
         </div>
@@ -3256,7 +3270,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           </aside>
           <div class="std-dms-body">
             <details class="std-dms-panel" open><summary>검사 절차</summary><div class="std-dms-panel-b"><div class="std-dms-flow"><div class="std-dms-step"><b><span>1</span>출하요청</b><p>출하 LOT 및 고객 요구사항 확인</p></div><div class="std-dms-step"><b><span>2</span>시료채취</b><p>출하 LOT 대표 시료 채취</p></div><div class="std-dms-step"><b><span>3</span>출하검사</b><p>제품 SPEC 및 포장 상태 확인</p></div><div class="std-dms-step"><b><span>4</span>성적서 발행</b><p>QMES 성적서 작성 및 승인</p></div><div class="std-dms-step"><b><span>5</span>출하승인</b><p>합격 LOT 출하 승인</p></div></div></div></details>
-            <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 변색, 누액, 용기 이상 없을 것</td><td>필수</td></tr><tr><td><b>물성</b></td><td>시험장비 측정</td><td>점도, 고형분, Dmax, 수분 등 출하 SPEC 이내</td><td>성적서 연계</td></tr><tr><td><b>포장상태</b></td><td>용기 및 외포장 확인</td><td>밀봉, 파손, 오염 이상 없을 것</td><td>필수</td></tr><tr><td><b>라벨</b></td><td>라벨 및 LOT 확인</td><td>품명, LOT, 수량, 고객정보 일치</td><td>필수</td></tr><tr><td><b>출하승인</b></td><td>전자결재 확인</td><td>작성/검토/승인 완료 후 출하</td><td>필수</td></tr></tbody></table></div></details>
+            <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 변색, 누액, 용기 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도</b></td><td>점도계 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>고형분</b></td><td>건조/측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>Dmax</b></td><td>입도 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>접착력</b></td><td>접착력 시험</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>전해액 안정성</b></td><td>안정성 시험</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>절연저항</b></td><td>절연저항 측정</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>수분</b></td><td>수분측정기</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr><tr><td><b>포장상태</b></td><td>용기 및 외포장 확인</td><td>밀봉, 파손, 오염 이상 없을 것</td><td>필수</td></tr><tr><td><b>라벨</b></td><td>라벨 및 LOT 확인</td><td>품명, LOT, 수량, 고객정보 일치</td><td>필수</td></tr><tr><td><b>출하승인</b></td><td>전자결재 확인</td><td>작성/검토/승인 완료 후 출하</td><td>필수</td></tr></tbody></table></div></details>
             <details class="std-dms-panel"><summary>부적합 처리 / 조치 기준</summary><div class="std-dms-panel-b"><div class="std-dms-note">출하검사 부적합 시 출하 보류 및 격리 후 원인 확인, 재검사, 고객 요구사항 검토, 부적합 보고서 및 CAPA를 진행합니다.</div></div></details>
           </div>
         </div>
@@ -3622,7 +3636,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="fg4">
                 <div class="field"><label>측정일자</label><input type="date" id="spcDate"></div>
                 <div class="field"><label>측정자</label><input id="spcProduct" placeholder="이름"></div>
-                <div class="field"><label>측정항목</label><select id="spcItem"><option value="Dmax">Dmax</option><option value="점도">점도</option><option value="고형분">고형분</option><option value="수분">수분</option><option value="접착력">접착력</option><option value="절연저항">절연저항</option><option value="절연액 팽윤성">절연액 팽윤성</option><option value="팽윤성">팽윤성</option></select></div>
+                <div class="field"><label>측정항목</label><select id="spcItem"><option value="Dmax">Dmax</option><option value="점도">점도</option><option value="고형분">고형분</option><option value="수분">수분</option><option value="접착력">접착력</option><option value="절연저항">절연저항</option><option value="전해액 안정성">전해액 안정성</option><option value="팽윤성">팽윤성</option></select></div>
                 <div class="field"><label>기준 표시</label><input id="spcProcess" placeholder="예: ≤ 10.0 μm"></div>
                 <div class="field"><label>LSL (하한)</label><input type="number" step="any" id="spcLsl" placeholder="-"></div>
                 <div class="field"><label>TARGET</label><input type="number" step="any" id="spcTarget" placeholder="-"></div>
@@ -4832,8 +4846,8 @@ function setDefaultDates(){['incomingDate','processDate','shipmentDate','worklog
 
 /* ═══ DEFAULT ITEMS ═══ */
 function defIqc(){return[{item:'외관',spec:'이물질, 파손 없을 것',value:'',judge:'합격'},{item:'CoA',spec:'누락 없을 것',value:'',judge:'합격'}];}
-function defPqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
-function defOqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'포장',spec:'파손 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'전해액 팽윤성',spec:'< 120%',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
+function defPqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'전해액 안정성',spec:'안정성 이상 없을 것',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
+function defOqc(){return[{item:'외관',spec:'이상 없을 것',value:'',judge:'합격'},{item:'포장',spec:'파손 없을 것',value:'',judge:'합격'},{item:'점도',spec:'1,500±300cp',value:'',judge:'합격'},{item:'고형분',spec:'20.0±1.0wt.%',value:'',judge:'합격'},{item:'Dmax',spec:'≤ 10.0 μm',value:'',judge:'합격'},{item:'접착력',spec:'≥ 400 gf/12.7 mm',value:'',judge:'합격'},{item:'전해액 안정성',spec:'안정성 이상 없을 것',value:'',judge:'합격'},{item:'절연저항',spec:'≥ 200 MΩ',value:'',judge:'합격'},{item:'수분',spec:'< 2,000ppm',value:'',judge:'합격'}];}
 
 /* ═══ ITEM EDITOR ═══ */
 function renderItems(tbId,rows,type){$(tbId).innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td><input value="${esc(r.item||'')}" data-type="${type}" data-idx="${i}" data-key="item"></td><td><input value="${esc(r.spec||'')}" data-type="${type}" data-idx="${i}" data-key="spec"></td><td><input value="${esc(r.value||'')}" data-type="${type}" data-idx="${i}" data-key="value"></td><td><select data-type="${type}" data-idx="${i}" data-key="judge"><option value="합격" ${r.judge==='합격'?'selected':''}>합격</option><option value="불합격" ${r.judge==='불합격'?'selected':''}>불합격</option><option value="보류" ${r.judge==='보류'?'selected':''}>보류</option></select></td><td><button type="button" class="sb del" data-type="${type}" data-idx="${i}" data-action="removeItem">삭제</button></td></tr>`).join('');}
@@ -5850,7 +5864,7 @@ const SPC_SPECS={
   'Dmax':{lsl:'', target:'', usl:10.0, unit:'μm', spec:'≤ 10.0 μm', mode:'upper', report:'DMAX-2026-001', oneSided:'upper', capabilityLabel:'Cpu'},
   '접착력':{lsl:400, target:'', usl:'', unit:'gf/12.7mm', spec:'≥ 400 gf/12.7mm', mode:'lower', report:'ADH-2026-001', oneSided:'lower', capabilityLabel:'Cpl', convert:'adhesion'},
   '절연저항':{lsl:200, target:'', usl:'', unit:'MΩ / OVER FLOW', spec:'≥ 200 MΩ 또는 OVER FLOW', mode:'overflow', report:'IR-2026-001', oneSided:'lower', capabilityLabel:'Pass/Fail'},
-  '절연액 팽윤성':{lsl:'', target:'', usl:120, unit:'%', spec:'≤ 120 %', mode:'upper', report:'SWELL-2026-001', oneSided:'upper', capabilityLabel:'Cpu'},
+  '전해액 안정성':{lsl:'', target:'', usl:120, unit:'%', spec:'≤ 120 %', mode:'upper', report:'SWELL-2026-001', oneSided:'upper', capabilityLabel:'Cpu'},
   '팽윤성':{lsl:'', target:'', usl:120, unit:'%', spec:'≤ 120 %', mode:'upper', report:'SWELL-2026-001', oneSided:'upper', capabilityLabel:'Cpu'}
 };
 const SPC_CONST={2:{A2:1.88,D3:0,D4:3.267,d2:1.128},3:{A2:1.023,D3:0,D4:2.574,d2:1.693},4:{A2:0.729,D3:0,D4:2.282,d2:2.059},5:{A2:0.577,D3:0,D4:2.115,d2:2.326},6:{A2:0.483,D3:0,D4:2.004,d2:2.534},7:{A2:0.419,D3:0.076,D4:1.924,d2:2.704},8:{A2:0.373,D3:0.136,D4:1.864,d2:2.847},9:{A2:0.337,D3:0.184,D4:1.816,d2:2.970},10:{A2:0.308,D3:0.223,D4:1.777,d2:3.078}};
@@ -5976,7 +5990,7 @@ function renderSpcRawTable(rebuild=true){const head=$('spcRawHead'),tb=$('spcRaw
 function bindSpcRawEvents(){const tb=$('spcRawTable');if(!tb||tb.dataset.bound)return;tb.dataset.bound='1';tb.addEventListener('input',e=>{const t=e.target;if(t.dataset.spcVal!==undefined){const i=Number(t.dataset.spcIdx),j=Number(t.dataset.spcVal);if(!state.spcRows[i])return;state.spcRows[i].values[j]=Number(t.value);spcRecalc(false);}else if(t.dataset.spcLot!==undefined){const i=Number(t.dataset.spcLot);if(state.spcRows[i])state.spcRows[i].lot=t.value;}else if(t.dataset.spcRemark!==undefined){const i=Number(t.dataset.spcRemark);if(state.spcRows[i])state.spcRows[i].remark=t.value;}});tb.addEventListener('click',e=>{const edit=e.target.closest('[data-spc-edit]');if(edit){const i=Number(edit.dataset.spcEdit);const tr=edit.closest('tr');if(tr){tr.scrollIntoView({behavior:'smooth',block:'center'});tr.querySelector('input[data-spc-lot], input[data-spc-idx]')?.focus();tr.style.outline='2px solid var(--pri)';tr.style.outlineOffset='-2px';setTimeout(()=>{tr.style.outline='';tr.style.outlineOffset='';},1200);}return;}const b=e.target.closest('[data-spc-del]');if(b){state.spcRows.splice(Number(b.dataset.spcDel),1);spcRecalc(false);}});}
 function addSpcRow(){const n=Number($('spcSubgroup')?.value||5);state.spcRows=state.spcRows||[];state.spcRows.push({lot:$('spcLot')?.value||'',values:Array(n).fill(''),remark:''});renderSpcRawTable();}
 function deleteSelectedSpcRows(){const checks=Array.from(document.querySelectorAll('[data-spc-check]:checked')).map(x=>Number(x.dataset.spcCheck)).sort((a,b)=>b-a);checks.forEach(i=>state.spcRows.splice(i,1));spcRecalc(false);}
-function spcInferItemFromFileName(name){const s=String(name||'').toLowerCase();const pairs=[['점도','점도'],['고형분','고형분'],['수분','수분'],['dmax','Dmax'],['입도','Dmax'],['접착','접착력'],['절연저항','절연저항'],['절연액','절연액 팽윤성'],['팽윤','절연액 팽윤성'],['swelling','절연액 팽윤성']];for(const [key,item] of pairs){if(s.includes(key.toLowerCase()))return item;}return '';}
+function spcInferItemFromFileName(name){const s=String(name||'').toLowerCase();const pairs=[['점도','점도'],['고형분','고형분'],['수분','수분'],['dmax','Dmax'],['입도','Dmax'],['접착','접착력'],['절연저항','절연저항'],['절연액','전해액 안정성'],['팽윤','전해액 안정성'],['swelling','전해액 안정성']];for(const [key,item] of pairs){if(s.includes(key.toLowerCase()))return item;}return '';}
 function cellNum(v){if(v===null||v===undefined||v==='')return NaN;if(typeof v==='number')return Number.isFinite(v)?v:NaN;const s=String(v).replace(/,/g,'').trim();if(/^over\s*flow$/i.test(s))return 0;const m=s.match(/[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?/);return m?Number(m[0]):NaN;}
 function extractSpcRowsFromRows(rows,item){
   const lower=item==='접착력';let header=-1;
@@ -10377,7 +10391,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   var STORE='namo_approval_notifications_v1';
   var running=false;
   function $id(id){return document.getElementById(id);} 
-  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function appState(){try{return window.state || state || {};}catch(e){try{return window.state || {};}catch(_){return {};}}}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function me(){
     var s=appState();
@@ -11222,7 +11236,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if((type==='shipment'||type==='oqc') && typeof window.defOqc==='function') return window.defOqc();
     }catch(e){}
     if(type==='incoming'||type==='iqc') return [{item:'외관',spec:'이물질, 파손 없을 것'},{item:'CoA',spec:'누락 없을 것'}];
-    return [{item:'외관',spec:'이상 없을 것'},{item:'점도',spec:'1,500±300cp'},{item:'고형분',spec:'20.0±1.0wt.%'},{item:'Dmax',spec:'≤ 10.0 μm'},{item:'접착력',spec:'≥ 400 gf/12.7 mm'},{item:'절연저항',spec:'≥ 200 MΩ'},{item:'전해액 팽윤성',spec:'< 120%'},{item:'수분',spec:'< 2,000ppm'}];
+    return [{item:'외관',spec:'이상 없을 것'},{item:'점도',spec:'1,500±300cp'},{item:'고형분',spec:'20.0±1.0wt.%'},{item:'Dmax',spec:'≤ 10.0 μm'},{item:'접착력',spec:'≥ 400 gf/12.7 mm'},{item:'절연저항',spec:'≥ 200 MΩ'},{item:'전해액 안정성',spec:'< 120%'},{item:'수분',spec:'< 2,000ppm'}];
   }
   function currentItems(type){
     var s=window.state||{};
@@ -11547,7 +11561,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function txt(v){return String(v==null?'':v).trim();}
   function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function read(k,fb){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fb));}catch(e){return fb;}}
-  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function appState(){try{return window.state || state || {};}catch(e){try{return window.state || {};}catch(_){return {};}}}
   function bad(v){v=txt(v);return !v||v==='-'||v==='로그인 사용자'||v==='login-user'||v==='알 수 없음'||v==='사용자';}
   function profileName(){var e=$('profileName')||document.querySelector('.pname');var v=e?txt(e.textContent):'';return bad(v)?'':v;}
   function profileEmail(){var e=$('profileEmail')||document.querySelector('.pemail');return e?txt(e.textContent):'';}
@@ -11751,6 +11765,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
 </script>
 <!-- NMC_PRODUCTION_STRUCTURE_CONFLICT_FIX_20260623_END -->
 
+
+<!-- NMC_INSPECTION_ITEM_PATCH_20260624
+공정검사: 접착력, 전해액 안정성 추가 / CTQ는 점도, 고형분, Dmax만 유지 / 수분은 필요 시 유지
+출하검사: 접착력, 전해액 안정성, 절연저항 추가 / CTQ는 점도, 고형분, Dmax만 유지 / 수분은 필요 시 유지
+-->
 </body>
 </html>
 
@@ -12826,12 +12845,13 @@ document.addEventListener('click',function(e){
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
 
 <!-- NAMO SIGN MEMBERS RANK-FILTERED FINAL v5
-     작성자 직급에 따라 검토자/승인자 선택 가능 회원을 제한합니다.
-     - 작성자: 사원~과장  -> 검토/승인 후보 = 부장 이상
-     - 작성자: 부장        -> 검토/승인 후보 = 이사 이상
-     - 작성자: 이사/상무   -> 검토 후보 = 이사 이상, 승인 후보 = 전무 이상
-     - 작성자: 전무 이상   -> 검토/승인 생략(후보 없음, '-' 고정)
-     - 관리자(admin) 로그인 시에는 전체 회원이 후보로 표시됩니다(예외 운영용).
+     - 작성자: 항상 로그인 본인으로 고정(신규 작성/수정 모두 동일). 본인 외 다른 사람으로 변경 불가.
+     - 검토자/승인자: 작성자(=로그인 본인)의 직급에 따라 선택 가능한 후보가 자동으로 좁혀짐.
+       · 작성자 사원~과장  -> 검토/승인 후보 = 부장 이상
+       · 작성자 부장        -> 검토/승인 후보 = 이사 이상
+       · 작성자 이사/상무   -> 검토 후보 = 이사 이상, 승인 후보 = 전무 이상
+       · 작성자 전무 이상   -> 검토/승인 생략(후보 없음, "대상 없음" 표시)
+     - 관리자(admin) 로그인 시에는 검토/승인 후보에 예외적으로 전체 회원이 표시됩니다(운영 예외용).
 -->
 <style id="namo-sign-rank-filter-v5-style">
   #signGrid_iqc,#signGrid_pqc,#signGrid_oqc,#signGrid_nc,#signGrid_training{
@@ -12901,12 +12921,13 @@ document.addEventListener('click',function(e){
   // 작성자 레벨에 따라 검토/승인에 필요한 최소 레벨을 계산
   function requiredLevel(writerLevel, role){
     if(role==='writer') return LEVEL.STAFF;
-    if(writerLevel<=LEVEL.STAFF) return LEVEL.MANAGER;      // 사원~과장 -> 부장 이상
-    if(writerLevel===LEVEL.MANAGER) return LEVEL.DIRECTOR;  // 부장 -> 이사 이상
+    if(writerLevel>=LEVEL.EXEC) return Infinity;             // 전무 이상 -> 검토/승인 생략
+    if(writerLevel<=LEVEL.STAFF) return LEVEL.MANAGER;       // 사원~과장 -> 부장 이상
+    if(writerLevel===LEVEL.MANAGER) return LEVEL.DIRECTOR;   // 부장 -> 이사 이상
     if(writerLevel===LEVEL.DIRECTOR){                        // 이사/상무
       return role==='approver' ? LEVEL.EXEC : LEVEL.DIRECTOR;
     }
-    return LEVEL.CEO; // 전무 이상 작성 -> 검토/승인 생략(후보 없음)
+    return Infinity;
   }
 
   var applying=false, pending=false;
@@ -12927,7 +12948,7 @@ document.addEventListener('click',function(e){
       role:clean(u.role||'')
     };
   }
-  function appState(){try{return window.state||{};}catch(e){return {};}}
+  function appState(){try{return window.state || state || {};}catch(e){try{return window.state || {};}catch(_){return {};}}}
   function same(a,b){a=norm(a);b=norm(b);return !!(a&&b&&((a.id&&b.id&&String(a.id)===String(b.id))||(a.email&&b.email&&String(a.email).toLowerCase()===String(b.email).toLowerCase())||(a.name&&b.name&&a.name===b.name)));}
   function addUser(out,seen,u){u=norm(u);if(!u)return;var k=(u.email||u.id||u.name).toLowerCase();if(seen[k])return;seen[k]=1;out.push(u);}
   function readJsonArray(v){try{var x=JSON.parse(v||'');return Array.isArray(x)?x:[];}catch(e){return [];}}
@@ -13004,21 +13025,18 @@ document.addEventListener('click',function(e){
 
     var meIsAdmin=isAdminUser(me);
 
-    // 작성자 select 안정화: 작성자는 로그인 본인만 표시/고정
+    // 작성자 select: 로그인 본인 1명만 표시하고 항상 잠금(신규/수정 모드 공통)
     var writerSel=ensureBox(grid,type,'writer');
-    var writerList=me ? [me] : (allList.length ? [allList[0]] : []);
-    var writerHash=optHash(writerList);
+    var meKey=me?(me.id||me.email||me.name):'';
+    var writerHash='WRITER_LOCKED:'+meKey;
     if(writerSel){
-      var needsWriter=writerSel.dataset.namoRankHash!==writerHash || writerSel.options.length!==Math.max(1,writerList.length);
+      var needsWriter=writerSel.dataset.namoRankHash!==writerHash;
       if(needsWriter){
-        writerSel.innerHTML=writerList.length ? writerList.map(opt).join('') : '<option value="">로그인 사용자 없음</option>';
+        writerSel.innerHTML = me ? opt(me) : '<option value="">로그인 필요</option>';
         writerSel.dataset.namoRankHash=writerHash;
       }
-      if(writerList.length){
-        writerSel.value=writerList[0].id||writerList[0].email||writerList[0].name;
-      }
-      // 본인이 아닌 사람으로 작성자 변경 불가
-      writerSel.disabled=true;
+      if(me) writerSel.value=me.id||me.email||me.name;
+      writerSel.disabled=true; // 항상 잠금: 작성자는 로그인 본인 고정, 변경 불가
       writerSel.style.pointerEvents='none';
       writerSel.style.opacity='1';
       var wsub=$('sg_'+type+'_writer_sub');
@@ -13027,7 +13045,7 @@ document.addEventListener('click',function(e){
       if(wbadge)wbadge.textContent='본인고정';
     }
 
-    var writerUser=writerList[0] || selectedFrom(writerSel,allList) || me;
+    var writerUser=me;
     var writerLevel=userLevel(writerUser);
 
     ['reviewer','approver'].forEach(function(role){
@@ -13036,7 +13054,7 @@ document.addEventListener('click',function(e){
       var candidates;
       if(meIsAdmin){
         candidates=allList; // 관리자는 예외적으로 전체 회원 허용
-      } else if(writerLevel>=LEVEL.EXEC && reqLevel>=LEVEL.CEO){
+      } else if(reqLevel===Infinity){
         candidates=[]; // 전무 이상 작성 -> 후보 없음
       } else {
         candidates=allList.filter(function(u){return userLevel(u)>=reqLevel;});
@@ -13061,7 +13079,7 @@ document.addEventListener('click',function(e){
 
       var sub=$('sg_'+type+'_'+role+'_sub');
       if(sub){
-        var reqText = reqLevel===LEVEL.MANAGER?'부장 이상' : reqLevel===LEVEL.DIRECTOR?'이사 이상' : reqLevel===LEVEL.EXEC?'전무 이상' : reqLevel>=LEVEL.CEO?'대표이사':'';
+        var reqText = reqLevel===LEVEL.MANAGER?'부장 이상' : reqLevel===LEVEL.DIRECTOR?'이사 이상' : reqLevel===LEVEL.EXEC?'전무 이상' : reqLevel===Infinity?'대상 없음' : reqLevel>=LEVEL.CEO?'대표이사':'';
         sub.textContent = candidates.length
           ? ('작성자 직급 기준 '+reqText+' 선택 가능 ('+candidates.length+'명)')
           : (writerLevel>=LEVEL.EXEC ? '전무 이상 작성: '+ROLE_LABEL[role]+' 생략' : reqText+' 회원이 없습니다.');
@@ -13091,14 +13109,23 @@ document.addEventListener('click',function(e){
   window.buildSignGrid=function(type){stabilizeType(type);return $('signGrid_'+type);};
 
   // 작성자를 바꾸면 검토/승인 후보 목록이 재계산되어야 함
+  // 작성자는 항상 로그인 본인으로 고정되므로, 검토자/승인자 변경 시에는 미리보기만 동기화
   document.addEventListener('change',function(e){
-    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_writer$/.test(e.target.id||'')){
-      var type=e.target.id.split('_')[1];
-      stabilizeType(type);
-    } else if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver)$/.test(e.target.id||'')){
+    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver)$/.test(e.target.id||'')){
       syncPreview(e.target.id.split('_')[1]);
     }
   },true);
+
+  // 로그인 사용자가 바뀌면(다른 계정 로그인) 작성자 고정값과 검토/승인 후보를 다시 계산
+  var lastUserKey='';
+  setInterval(function(){
+    var me=currentUser();
+    var key=me?(me.id||me.email||me.name):'';
+    if(key!==lastUserKey){
+      lastUserKey=key;
+      stabilizeAll();
+    }
+  },800);
 
   document.addEventListener('click',function(e){
     if(e.target&&e.target.closest&&e.target.closest('[data-page],#incomingReset,#processReset,#shipmentReset,#ncReset,#trainingReset'))setTimeout(stabilizeAll,80);
@@ -13227,3 +13254,239 @@ document.addEventListener('click',function(e){
 
 
 
+
+<!-- NAMO SIGN MEMBERS RANK FILTER FINAL v7
+     - 작성자: 일반/임원은 로그인 본인 성명 고정, 관리자(admin)는 전체 회원 선택 가능.
+     - 사원~부장: 검토/승인 선택 불가(잠김).
+     - 이사 이상: 검토/승인 선택 가능(이사 이상 후보).
+     - 관리자(admin): 작성/검토/승인 전체 회원 선택 가능.
+-->
+<script id="namo-sign-rank-filter-v7-final">
+(function(){
+  'use strict';
+  var TYPES=['iqc','pqc','oqc','nc','training'];
+  var ROLE_LABEL={writer:'작성자',reviewer:'검토자',approver:'승인자'};
+  var LEVEL={STAFF:1,MANAGER:2,DIRECTOR:3,EXEC:4,CEO:9};
+  var EXEC_WORDS=['전무','대표이사','대표','사장','회장'];
+  var DIRECTOR_WORDS=['이사','상무'].concat(EXEC_WORDS);
+  var MANAGER_WORDS=['부장','본부장','실장','센터장'].concat(DIRECTOR_WORDS);
+  var applying=false;
+
+  function $(id){return document.getElementById(id);}
+  function txt(v){v=String(v==null?'':v).trim();return(!v||v==='undefined'||v==='null'||v==='-')?'':v;}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function appState(){try{return window.state||state||{};}catch(e){try{return window.state||{};}catch(_){return {};}}}
+  function parseJson(v){try{return JSON.parse(v||'');}catch(e){return null;}}
+  function norm(u){
+    if(!u)return null;
+    if(typeof u==='string')u={name:u,id:u};
+    var name=txt(u.name||u.username||u.userName||u.displayName||u.fullName||u.employeeName||u.korName||u.senderName||u.id||u.email||u.mail);
+    var email=txt(u.email||u.mail||u.userEmail);
+    if(!name&&email)name=email.split('@')[0];
+    if(!name)return null;
+    return {
+      id:txt(u.id||u.userId||u.uid||email||name)||name,
+      name:name,
+      department:txt(u.department||u.dept||u.deptName||u.team||u.teamName||u.division||u.org||''),
+      title:txt(u.title||u.position||u.positionName||u.rank||u.jobTitle||u.roleName||u.duty||u.grade||''),
+      email:email,
+      role:txt(u.role||u.auth||u.authority||'')
+    };
+  }
+  function same(a,b){
+    a=norm(a);b=norm(b);
+    return !!(a&&b&&(
+      (a.email&&b.email&&a.email.toLowerCase()===b.email.toLowerCase())||
+      (a.id&&b.id&&String(a.id)===String(b.id))||
+      (a.name&&b.name&&a.name===b.name)
+    ));
+  }
+  function addUser(out,seen,u){
+    u=norm(u);if(!u)return;
+    var k=(u.email||u.id||u.name).toLowerCase();
+    if(seen[k])return;seen[k]=1;out.push(u);
+  }
+  function titleText(u){u=norm(u)||{};return String((u.title||'')+' '+(u.role||'')+' '+(u.department||'')).toLowerCase();}
+  function hasAny(u,words){var t=titleText(u);return words.some(function(w){return t.indexOf(String(w).toLowerCase())>-1;});}
+  function isAdminUser(u){var t=titleText(u);return t.indexOf('admin')>-1||t.indexOf('관리자')>-1||!!(u&&(u.isAdmin||u.admin||u.is_admin));}
+  function userLevel(u){
+    if(!u)return 0;
+    if(isAdminUser(u))return LEVEL.CEO;
+    if(/대표이사|대표|사장|회장|ceo/i.test(titleText(u)))return LEVEL.CEO;
+    if(hasAny(u,EXEC_WORDS))return LEVEL.EXEC;
+    if(hasAny(u,DIRECTOR_WORDS))return LEVEL.DIRECTOR;
+    if(hasAny(u,MANAGER_WORDS))return LEVEL.MANAGER;
+    return LEVEL.STAFF;
+  }
+  function canSelectReviewApprove(writerLevel){return writerLevel>=LEVEL.DIRECTOR;}
+  function reviewApprovePool(allList,writerLevel,meAdmin){
+    if(meAdmin)return allList;
+    if(!canSelectReviewApprove(writerLevel))return [];
+    return allList.filter(function(u){return userLevel(u)>=LEVEL.DIRECTOR;});
+  }
+  function label(u){u=norm(u);if(!u)return '-';var tail=[u.department,u.title].filter(Boolean).join(' / ');return u.name+(tail?' / '+tail:'');}
+  function opt(u){u=norm(u)||{};return '<option value="'+esc(u.id||u.email||u.name)+'" data-name="'+esc(u.name||'')+'" data-department="'+esc(u.department||'')+'" data-title="'+esc(u.title||'')+'" data-email="'+esc(u.email||'')+'">'+esc(label(u))+'</option>';}
+  function optHash(users){return users.map(function(u){u=norm(u)||{};return (u.id||u.email||u.name)+'|'+u.name+'|'+u.department+'|'+u.title;}).join('||');}
+  function allUsers(){
+    var s=appState(),out=[],seen={};
+    ['currentUser','user','loginUser','userInfo'].forEach(function(k){addUser(out,seen,s[k]||window[k]);});
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList','nmcUsers'].forEach(function(k){
+      if(Array.isArray(s[k]))s[k].forEach(function(u){addUser(out,seen,u);});
+      if(Array.isArray(window[k]))window[k].forEach(function(u){addUser(out,seen,u);});
+    });
+    try{
+      for(var i=0;i<localStorage.length;i++){
+        var key=localStorage.key(i)||'';
+        if(!/(user|member|employee|signable|admin|profile|login|current)/i.test(key))continue;
+        var parsed=parseJson(localStorage.getItem(key));
+        if(Array.isArray(parsed))parsed.forEach(function(u){addUser(out,seen,u);});
+        else if(parsed&&typeof parsed==='object')addUser(out,seen,parsed);
+      }
+    }catch(e){}
+    return out;
+  }
+  function profileUserGuess(){
+    var s=appState();
+    var raw=s.currentUser||s.user||window.currentUser||window.loginUser||window.userInfo||null;
+    var u=norm(raw);
+    var pname=txt((document.querySelector('.pname')||{}).textContent||'');
+    var pemail=txt((document.querySelector('.pemail')||{}).textContent||'');
+    if(!u&&(pname||pemail))u=norm({name:pname,email:pemail,id:pemail||pname});
+    if(u&&(!u.name||u.name==='로그인 사용자')&&pname)u.name=pname;
+    if(u&&!u.email&&pemail)u.email=pemail;
+    if(u)return u;
+    try{
+      var keys=['qms_current_user','qmsCurrentUser','currentUser','loginUser','userInfo','profile','authUser'];
+      for(var i=0;i<keys.length;i++){
+        var p=parseJson(localStorage.getItem(keys[i])||sessionStorage.getItem(keys[i]));
+        u=norm(p);if(u)return u;
+      }
+    }catch(e){}
+    return null;
+  }
+  function currentUser(){
+    var users=allUsers(),guess=profileUserGuess();
+    if(guess){var found=users.find(function(u){return same(u,guess);});return norm(found||guess);}
+    return users.length===1?users[0]:null;
+  }
+  function selectedFrom(sel,users){
+    if(!sel||!sel.value)return null;
+    var o=sel.options[sel.selectedIndex],ds=(o&&o.dataset)||{};
+    var ref={id:sel.value,name:txt(ds.name||String(o&&o.textContent||'').replace(/\s*\/\s*.*$/,'')),department:ds.department,title:ds.title,email:ds.email};
+    return norm(users.find(function(u){return same(u,ref);})||ref);
+  }
+  function ensureBox(grid,type,role){
+    var sel=$('sg_'+type+'_'+role);if(sel)return sel;
+    var box=document.createElement('div');box.className='sign-box';
+    box.innerHTML='<div class="sign-box-hdr"><span class="sign-box-role">'+esc(ROLE_LABEL[role])+'</span><span class="sign-box-badge any" id="sg_'+esc(type)+'_'+esc(role)+'_badge"></span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+esc(type)+'_'+esc(role)+'"></select><div class="sign-sub" id="sg_'+esc(type)+'_'+esc(role)+'_sub"></div></div>';
+    grid.appendChild(box);return $('sg_'+type+'_'+role);
+  }
+  function syncPreview(type){
+    var cfg={iqc:'Iqc',pqc:'Pqc',oqc:'Oqc',nc:'Nc',training:'Training'}[type];if(!cfg)return;
+    var users=allUsers();
+    ['writer','reviewer','approver'].forEach(function(role){
+      var sel=$('sg_'+type+'_'+role),u=selectedFrom(sel,users),cap=role.charAt(0).toUpperCase()+role.slice(1);
+      var n=$('r'+cfg+cap),t=$('r'+cfg+cap+'T');
+      if(n)n.textContent=u?u.name:'-';
+      if(t)t.textContent=u?[u.department,u.title].filter(Boolean).join(' / '):'';
+    });
+  }
+  function stabilizeType(type){
+    var grid=$('signGrid_'+type);if(!grid)return;
+    grid.style.display='grid';grid.style.visibility='visible';grid.style.opacity='1';
+
+    var users=allUsers(),me=currentUser(),meAdmin=isAdminUser(me),wLevel=userLevel(me);
+    if(me){var seenFix={};users.forEach(function(u){u=norm(u);if(u)seenFix[(u.email||u.id||u.name).toLowerCase()]=1;});addUser(users,seenFix,me);}
+
+    var writerSel=ensureBox(grid,type,'writer');
+    if(writerSel){
+      if(meAdmin){
+        var wHash='ADMIN_WRITER:'+optHash(users);
+        if(writerSel.dataset.namoRankHash!==wHash){
+          writerSel.innerHTML='<option value="">-- 작성자 선택 --</option>'+users.map(opt).join('');
+          writerSel.dataset.namoRankHash=wHash;
+        }
+        writerSel.disabled=false;
+        writerSel.style.pointerEvents='auto';
+        var wsub=$('sg_'+type+'_writer_sub');if(wsub)wsub.textContent='관리자: 전체 회원 중 작성자 선택 가능';
+        var wbadge=$('sg_'+type+'_writer_badge');if(wbadge)wbadge.textContent='관리자';
+      }else{
+        if(me){
+          writerSel.innerHTML=opt(me);
+          writerSel.value=me.id||me.email||me.name;
+          writerSel.dataset.namoRankHash='WRITER_SELF:'+writerSel.value+'|'+me.name+'|'+me.department+'|'+me.title;
+        }else{
+          writerSel.innerHTML='<option value="">로그인 사용자 확인 필요</option>';
+        }
+        writerSel.disabled=true;
+        writerSel.style.pointerEvents='none';
+        var wsub2=$('sg_'+type+'_writer_sub');if(wsub2)wsub2.textContent=me?'작성자는 로그인 본인으로 고정됩니다.':'로그인 정보를 찾을 수 없습니다.';
+        var wbadge2=$('sg_'+type+'_writer_badge');if(wbadge2)wbadge2.textContent='본인고정';
+      }
+    }
+
+    ['reviewer','approver'].forEach(function(role){
+      var sel=ensureBox(grid,type,role);if(!sel)return;
+      var candidates=reviewApprovePool(users,wLevel,meAdmin);
+      var old=sel.value,hash='V7:'+role+':'+optHash(candidates);
+      if(sel.dataset.namoRankHash!==hash||sel.options.length!==candidates.length+1){
+        sel.innerHTML='<option value="">'+(candidates.length?'선택':'선택 권한 없음')+'</option>'+candidates.map(opt).join('');
+        sel.dataset.namoRankHash=hash;
+      }
+
+      var locked=!meAdmin&&!canSelectReviewApprove(wLevel);
+      sel.disabled=locked||!candidates.length;
+      sel.style.pointerEvents=(locked||!candidates.length)?'none':'auto';
+      sel.style.opacity='1';
+
+      if(candidates.length&&old&&Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(old);})){
+        sel.value=old;
+      }else if(sel.disabled){
+        sel.value='';
+      }
+
+      var sub=$('sg_'+type+'_'+role+'_sub');
+      if(sub){
+        if(meAdmin)sub.textContent='관리자: 전체 회원 중 선택 가능';
+        else if(locked)sub.textContent='이사 이상 로그인 시 '+ROLE_LABEL[role]+' 지정 가능 (현재 잠김)';
+        else sub.textContent=candidates.length?'이사 이상 회원 중 선택 가능 ('+candidates.length+'명)':'이사 이상 회원이 없습니다.';
+      }
+      var badge=$('sg_'+type+'_'+role+'_badge');
+      if(badge)badge.textContent=meAdmin?'관리자 전체':(locked?'잠김':'이사이상');
+
+      var box=sel.closest&&sel.closest('.sign-box');
+      if(box){box.style.display='block';box.style.visibility='visible';box.style.opacity='1';}
+    });
+
+    var warn=grid.parentElement&&grid.parentElement.querySelector('.sign-warning');
+    if(warn&&me)warn.style.display='none';
+    syncPreview(type);
+  }
+
+  function stabilizeAll(){
+    if(applying)return;applying=true;
+    try{TYPES.forEach(stabilizeType);}catch(e){console.warn('[namo sign v7 final]',e);}
+    finally{applying=false;}
+  }
+
+  window.namoSignRankFilterV7=stabilizeAll;
+  window.namoStableSignMembers=stabilizeAll;
+  window.applyAllSignPermissions=stabilizeAll;
+  window.rebuildAllSignGrids=stabilizeAll;
+  window.qmsRefreshSignatures=stabilizeAll;
+  window.buildSignGrid=function(type){stabilizeType(type);return $('signGrid_'+type);};
+
+  document.addEventListener('change',function(e){
+    if(e.target&&/^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver|writer)$/.test(e.target.id||'')){
+      syncPreview(e.target.id.split('_')[1]);
+    }
+  },true);
+  document.addEventListener('click',function(){setTimeout(stabilizeAll,80);},true);
+  setInterval(stabilizeAll,800);
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',stabilizeAll);
+  else stabilizeAll();
+  window.addEventListener('load',function(){stabilizeAll();setTimeout(stabilizeAll,250);setTimeout(stabilizeAll,1000);setTimeout(stabilizeAll,3000);});
+})();
+</script>
+<!-- /NAMO SIGN MEMBERS RANK FILTER FINAL v7 -->
