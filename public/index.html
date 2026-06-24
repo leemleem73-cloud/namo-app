@@ -13813,3 +13813,246 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- /NAMO approval role-lock final replacement patch v20260624 -->
+
+<!-- NAMO member-linked approval line patch v20260624-2 -->
+<style id="namo-member-linked-approval-style-v20260624">
+  .sign-box[data-namo-member-lock="locked"]{opacity:.72;background:#f8fafc!important;}
+  .sign-box[data-namo-member-lock="active"]{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.10)!important;background:#fff!important;}
+  .sign-sel.namo-member-locked{background:#f3f4f6!important;color:#334155!important;cursor:not-allowed!important;}
+</style>
+<script id="namo-member-linked-approval-script-v20260624">
+(function(){
+  'use strict';
+  if(window.__NAMO_MEMBER_LINKED_APPROVAL_20260624__) return;
+  window.__NAMO_MEMBER_LINKED_APPROVAL_20260624__ = true;
+
+  var STORE = 'namo_unified_approvals_v1';
+  var TYPES = ['iqc','pqc','oqc','nc','training'];
+  var STATUS_LABEL = {review_pending:'검토 대기',approve_pending:'승인 대기',approved:'승인 완료',rejected:'반려'};
+  var LEVEL = {STAFF:1, MANAGER:2, DIRECTOR:3, CEO:9};
+
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function text(v){return String(v == null ? '' : v).trim();}
+  function now(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function esc(v){return text(v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function state(){try{return window.state || state || {};}catch(e){return window.state || {};}}
+  function load(){try{var a=JSON.parse(localStorage.getItem(STORE)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+  function save(a){try{localStorage.setItem(STORE,JSON.stringify(a));}catch(e){}}
+  function makeId(){return 'APV-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,5).toUpperCase();}
+
+  function norm(u){
+    if(!u) return null;
+    if(typeof u === 'string') u = {name:u, id:u};
+    var name=text(u.name||u.username||u.userName||u.fullName||u.displayName||u.label||u.email||u.id);
+    var email=text(u.email||u.mail||'');
+    var id=text(u.id||u.userId||u.uid||email||name);
+    if(!id && !name) return null;
+    return {id:id||name,name:name||id,email:email,department:text(u.department||u.dept||u.team||u.org||''),title:text(u.title||u.position||u.rank||u.jobTitle||u.roleTitle||''),role:text(u.role||u.userRole||'')};
+  }
+  function keyOf(u){u=norm(u);return u?text(u.id||u.email||u.name):'';}
+  function same(a,b){a=norm(a);b=norm(b);if(!a||!b)return false;return (a.id&&b.id&&a.id===b.id)||(a.email&&b.email&&a.email===b.email)||(a.name&&b.name&&a.name===b.name);}
+  function add(arr,u){u=norm(u);if(!u)return;var k=keyOf(u);if(!arr.some(function(x){return keyOf(x)===k || (u.email&&x.email===u.email) || (u.name&&x.name===u.name);})){arr.push(u);}}
+  function allMembers(){
+    var s=state(), out=[];
+    ['currentUser','loginUser','userInfo'].forEach(function(k){add(out,s[k]||window[k]);});
+    ['adminUsers','signableUsers','users','members','memberList','userList','employees','employeeList','nmcUsers'].forEach(function(k){
+      if(Array.isArray(s[k])) s[k].forEach(function(u){add(out,u);});
+      if(Array.isArray(window[k])) window[k].forEach(function(u){add(out,u);});
+    });
+    try{
+      Object.keys(localStorage).forEach(function(k){
+        if(!/user|member|employee|signable|admin/i.test(k)) return;
+        var v=JSON.parse(localStorage.getItem(k)||'null');
+        if(Array.isArray(v)) v.forEach(function(u){add(out,u);});
+      });
+    }catch(e){}
+    return out.filter(function(u){return u && u.name && u.name !== '-';});
+  }
+  function currentUser(){
+    var s=state();
+    var u=norm(s.currentUser||window.currentUser||window.loginUser||window.userInfo);
+    var pname=text((qs('.pname')||{}).textContent||localStorage.getItem('namoCurrentUserName')||localStorage.getItem('currentUserName')||'');
+    if(!u && pname) u=norm({id:pname,name:pname});
+    if(u){
+      var hit=allMembers().find(function(x){return same(x,u);});
+      if(hit) u=Object.assign({},u,hit);
+    }
+    return u;
+  }
+  function titleText(u){u=norm(u)||{};return (u.title+' '+u.position+' '+u.roleTitle+' '+u.role+' '+u.department).toLowerCase();}
+  function level(u){
+    var t=titleText(u);
+    if(/대표이사|대표|ceo|사장|회장/.test(t)) return LEVEL.CEO;
+    if(/이사|상무|전무|임원|cto|coo|cfo|chief/.test(t)) return LEVEL.DIRECTOR;
+    if(/부장|본부장|실장|센터장/.test(t)) return LEVEL.MANAGER;
+    return LEVEL.STAFF;
+  }
+  function label(u){u=norm(u);return u ? (u.name+' / '+(u.title||u.department||'-')) : '-';}
+  function parsePerson(v){
+    if(!v) return null; if(typeof v==='object') return norm(v);
+    var s=text(v).replace(/\s*\([^)]*\)\s*/g,'').replace(/\s*\/\s*.*/,'').trim();
+    if(!s || s==='-') return null;
+    return allMembers().find(function(u){return u.name===s || s.indexOf(u.name)>-1 || u.name.indexOf(s)>-1 || u.id===s || u.email===s;}) || norm({id:s,name:s});
+  }
+  function currentPage(){return qs('.page.active') || qs('[id^="page-"].active') || document.body;}
+  function pageId(page){return (page&&page.id)||'page-unknown';}
+  function pageTitle(page){var t=(qs('.ph-title',page)||qs('h1',page)||qs('h2',page)||{}).textContent || document.title || '문서'; return text(t).replace(/\s+/g,' ');}
+  function docKey(page){return pageId(page)+'|'+pageTitle(page);}
+  function latestDoc(page){var k=docKey(page);return load().filter(function(d){return d.docKey===k;}).sort(function(a,b){return String(b.createdAt||'').localeCompare(String(a.createdAt||''));})[0]||null;}
+  function typeFromPage(page){
+    var id=pageId(page);
+    if(id.indexOf('incoming')>-1) return 'iqc';
+    if(id.indexOf('process')>-1) return 'pqc';
+    if(id.indexOf('shipment')>-1) return 'oqc';
+    if(id.indexOf('nonconform')>-1 || id.indexOf('nc')>-1) return 'nc';
+    if(id.indexOf('training')>-1) return 'training';
+    var sel=qs('select[id^="sg_"][id$="_writer"]',page);
+    if(sel){var m=/^sg_([^_]+)_writer$/.exec(sel.id); if(m) return m[1];}
+    return '';
+  }
+  function writerFromUi(page){
+    var type=typeFromPage(page), sel=type?qs('#sg_'+type+'_writer',page):qs('select[id$="_writer"]',page);
+    if(sel && sel.options && sel.selectedIndex>=0) return parsePerson(sel.options[sel.selectedIndex].textContent) || currentUser();
+    return currentUser();
+  }
+  function chooseAssignees(writer){
+    writer=norm(writer)||currentUser();
+    var users=allMembers().filter(function(u){return !same(u,writer);});
+    var managers=users.filter(function(u){return level(u)>=LEVEL.MANAGER && level(u)<LEVEL.DIRECTOR;});
+    var directors=users.filter(function(u){return level(u)>=LEVEL.DIRECTOR && level(u)<LEVEL.CEO;});
+    var ceos=users.filter(function(u){return level(u)>=LEVEL.CEO;});
+    var wl=level(writer), reviewer=null, approver=null;
+
+    if(wl<=LEVEL.STAFF){
+      reviewer=managers[0] || directors[0] || ceos[0] || null;
+      approver=ceos[0] || directors[0] || users.find(function(u){return level(u)>=LEVEL.MANAGER && !same(u,reviewer);}) || reviewer || null;
+    }else if(wl===LEVEL.MANAGER){
+      reviewer=directors[0] || ceos[0] || null;
+      approver=ceos[0] || directors.find(function(u){return !same(u,reviewer);}) || reviewer || null;
+    }else if(wl===LEVEL.DIRECTOR){
+      reviewer=directors.find(function(u){return !same(u,writer);}) || ceos[0] || null;
+      approver=ceos[0] || reviewer || null;
+    }else{
+      reviewer=null;
+      approver=writer;
+    }
+    return {reviewer:reviewer, approver:approver};
+  }
+  function setSelect(type,role,u,msg,active){
+    var sel=qs('#sg_'+type+'_'+role); if(!sel) return;
+    var opt=document.createElement('option'); u=norm(u);
+    opt.value=u?keyOf(u):''; opt.textContent=u?label(u):'-';
+    sel.innerHTML=''; sel.appendChild(opt); sel.value=opt.value; sel.disabled=true; sel.classList.add('namo-member-locked'); sel.style.pointerEvents='none';
+    var sub=qs('#sg_'+type+'_'+role+'_sub'); if(sub) sub.textContent=msg||'';
+    var box=sel.closest('.sign-box'); if(box) box.dataset.namoMemberLock=active?'active':'locked';
+    var file=qs('#sg_'+type+'_'+role+'_file');
+    var btns=qsa('[data-sign-file-btn="'+type+':'+role+'"],[data-sign-clear="'+type+':'+role+'"],[data-qms-final-file-btn="'+type+':'+role+'"],[data-qms-final-clear="'+type+':'+role+'"],[data-qms-rule-file-btn="'+type+':'+role+'"],[data-qms-rule-clear="'+type+':'+role+'"]');
+    [file].concat(btns).forEach(function(x){if(!x)return; x.disabled=!active && role!=='writer'; x.style.pointerEvents=(active||role==='writer')?'':'none'; x.style.opacity=(active||role==='writer')?'':'.45';});
+  }
+  function applySignLocks(){
+    TYPES.forEach(function(type){
+      var writer=currentUser();
+      var page=qs('#page-'+type)||qs('#page-'+({iqc:'incoming',pqc:'process',oqc:'shipment'}[type]||type))||currentPage();
+      var doc=latestDoc(page);
+      if(doc && doc.writer) writer=parsePerson(doc.writer)||writer;
+      setSelect(type,'writer',writer,'작성자는 로그인 본인으로 고정됩니다.',false);
+      if(!doc){
+        setSelect(type,'reviewer',null,'작성중: 결재요청 전에는 검토자 표시가 - 로 잠깁니다.',false);
+        setSelect(type,'approver',null,'작성중: 결재요청 전에는 승인자 표시가 - 로 잠깁니다.',false);
+        return;
+      }
+      var rev=parsePerson(doc.reviewer), app=parsePerson(doc.approver), me=currentUser();
+      setSelect(type,'reviewer',rev, doc.status==='review_pending'&&same(me,rev)?'현재 로그인 계정 · 검토 승인/반려만 가능':'검토 담당자: '+(rev?label(rev):'-'), doc.status==='review_pending'&&same(me,rev));
+      setSelect(type,'approver',app, doc.status==='approve_pending'&&same(me,app)?'현재 로그인 계정 · 최종 승인/반려만 가능':'승인 담당자: '+(app?label(app):'-'), doc.status==='approve_pending'&&same(me,app));
+    });
+  }
+  function createApproval(page){
+    page=page||currentPage();
+    var writer=writerFromUi(page)||currentUser();
+    if(!writer){alert('로그인 사용자 정보를 확인할 수 없습니다.'); return;}
+    var line=chooseAssignees(writer);
+    if(!line.reviewer && level(writer)<LEVEL.CEO){alert('관리자 회원현황에서 검토자(부장 이상)를 찾을 수 없습니다. 회원의 직급/직책을 확인해 주세요.'); return;}
+    if(!line.approver){alert('관리자 회원현황에서 승인자(대표/임원)를 찾을 수 없습니다. 회원의 직급/직책을 확인해 주세요.'); return;}
+    var arr=load(), key=docKey(page), old=arr.filter(function(x){return x.docKey===key && x.status!=='approved';})[0];
+    var doc=old || {id:makeId(), docKey:key, createdAt:now(), history:[]};
+    doc.pageId=pageId(page); doc.title=pageTitle(page); doc.type=doc.title;
+    doc.writer=label(writer); doc.reviewer=label(line.reviewer); doc.approver=label(line.approver);
+    doc.status='review_pending'; doc.updatedAt=now();
+    doc.history=doc.history||[];
+    doc.history.push({at:now(),user:writer.name,action:'결재요청',memo:'관리자 회원현황 연동: 검토자 '+label(line.reviewer)+', 승인자 '+label(line.approver)+' 자동 지정'});
+    arr=arr.filter(function(x){return x.id!==doc.id;}); arr.unshift(doc); save(arr);
+    applyAllSoon();
+    alert('결재요청이 등록되었습니다.\n검토자: '+label(line.reviewer)+'\n승인자: '+label(line.approver));
+  }
+  function canAssigned(doc,action){
+    var me=currentUser(); if(!doc||!me) return false;
+    if(action==='review') return doc.status==='review_pending' && same(me,parsePerson(doc.reviewer));
+    if(action==='approve') return doc.status==='approve_pending' && same(me,parsePerson(doc.approver));
+    if(action==='reject') return (doc.status==='review_pending' && same(me,parsePerson(doc.reviewer))) || (doc.status==='approve_pending' && same(me,parsePerson(doc.approver)));
+    return false;
+  }
+  function actDoc(id,action){
+    var arr=load(), doc=arr.find(function(x){return x.id===id;}); if(!doc) return;
+    if(!canAssigned(doc,action)){alert('지정된 '+(doc.status==='review_pending'?'검토자':'승인자')+'만 처리할 수 있습니다.'); return;}
+    var me=currentUser(), memo='';
+    if(action==='reject') memo=prompt('반려 사유를 입력하세요.','')||'';
+    if(action==='review'){doc.status='approve_pending'; doc.reviewer=label(me); doc.history=doc.history||[]; doc.history.push({at:now(),user:me.name,action:'검토완료',memo:'승인자 결재함 이관'});}
+    if(action==='approve'){doc.status='approved'; doc.approver=label(me); doc.history=doc.history||[]; doc.history.push({at:now(),user:me.name,action:'승인완료',memo:'최종 승인'});}
+    if(action==='reject'){doc.status='rejected'; doc.rejectedBy=label(me); doc.history=doc.history||[]; doc.history.push({at:now(),user:me.name,action:'반려',memo:memo});}
+    doc.updatedAt=now(); save(arr); applyAllSoon();
+  }
+  function activeDoc(){return latestDoc(currentPage());}
+  function refreshInbox(){
+    setTimeout(function(){
+      var r=qs('#namoApprovalRefresh'); if(r) r.click();
+      if(typeof window.namoApplyApprovalRoleLockFinal==='function') try{window.namoApplyApprovalRoleLockFinal();}catch(e){}
+    },80);
+  }
+  function applyButtons(){
+    qsa('[data-namo-apv-review],[data-namo-apv-approve],[data-namo-apv-reject]').forEach(function(btn){
+      var id=btn.getAttribute('data-namo-apv-review')||btn.getAttribute('data-namo-apv-approve')||btn.getAttribute('data-namo-apv-reject');
+      var action=btn.hasAttribute('data-namo-apv-review')?'review':btn.hasAttribute('data-namo-apv-approve')?'approve':'reject';
+      var doc=load().find(function(x){return x.id===id;});
+      btn.disabled=!canAssigned(doc,action);
+      btn.title=btn.disabled?'관리자 회원현황에서 지정된 담당자만 처리할 수 있습니다.':'지정 담당자 권한으로 처리 가능';
+    });
+    qsa('.namo-inline-approval-box').forEach(function(box){
+      var page=box.closest('.page')||currentPage(), doc=latestDoc(page);
+      var req=qs('[data-namo-inline-request]',box), rev=qs('[data-namo-inline-review]',box), app=qs('[data-namo-inline-approve]',box), rej=qs('[data-namo-inline-reject]',box), log=qs('.namo-inline-approval-log',box);
+      if(req) req.disabled=!!doc;
+      if(rev) rev.disabled=!canAssigned(doc,'review');
+      if(app) app.disabled=!canAssigned(doc,'approve');
+      if(rej) rej.disabled=!canAssigned(doc,'reject');
+      if(log){
+        if(!doc) log.textContent='아직 결재요청 전입니다. 작성자만 결재요청 가능하며, 검토/승인은 - 로 잠깁니다.';
+        else log.textContent='현재 상태: '+(STATUS_LABEL[doc.status]||doc.status)+' / 작성자: '+(doc.writer||'-')+' / 검토자: '+(doc.reviewer||'-')+' / 승인자: '+(doc.approver||'-')+'\n'+(doc.history||[]).slice(-3).map(function(h){return '['+h.at+'] '+h.user+' - '+h.action+(h.memo?' ('+h.memo+')':'')}).join('\n');
+      }
+    });
+  }
+  function applyAll(){applySignLocks(); applyButtons(); refreshInbox();}
+  function applyAllSoon(){setTimeout(applyAll,0); setTimeout(applyAll,250); setTimeout(applyAll,900);}
+
+  window.addEventListener('click',function(e){
+    var req=e.target && e.target.closest && e.target.closest('[data-namo-inline-request]');
+    if(req){e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); createApproval(req.closest('.page')||currentPage()); return false;}
+    var b=e.target && e.target.closest && e.target.closest('[data-namo-apv-review],[data-namo-apv-approve],[data-namo-apv-reject],[data-namo-inline-review],[data-namo-inline-approve],[data-namo-inline-reject]');
+    if(b){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      var id=b.getAttribute('data-namo-apv-review')||b.getAttribute('data-namo-apv-approve')||b.getAttribute('data-namo-apv-reject');
+      var action=b.hasAttribute('data-namo-apv-review')||b.hasAttribute('data-namo-inline-review')?'review':b.hasAttribute('data-namo-apv-approve')||b.hasAttribute('data-namo-inline-approve')?'approve':'reject';
+      if(!id){var d=activeDoc(); id=d&&d.id;}
+      if(id) actDoc(id,action);
+      return false;
+    }
+  },true);
+
+  window.namoApplyMemberLinkedApproval = applyAll;
+  window.namoChooseApprovalAssigneesFromMembers = chooseAssignees;
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyAllSoon); else applyAllSoon();
+  window.addEventListener('load',applyAllSoon);
+  setInterval(applyAll,1000);
+})();
+</script>
+<!-- /NAMO member-linked approval line patch v20260624-2 -->
+
