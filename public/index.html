@@ -13490,3 +13490,191 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- /NAMO SIGN MEMBERS RANK FILTER FINAL v7 -->
+
+
+<!-- =========================================================
+ NAMO QMS Unified Approval Inbox Patch v1
+ - 원본 HTML 덮어쓰기 금지: 추가 패치 방식
+ - 작성/검토/승인 공통 결재함 + 화면 내 바로 검토/승인
+ - localStorage 기반, 기존 기능 삭제 없음
+========================================================= -->
+<style id="namo-unified-inbox-style-v1">
+  .namo-approval-top-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+  .namo-approval-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:18px;box-shadow:0 8px 22px rgba(15,23,42,.055)}
+  .namo-approval-kpi b{display:block;font-size:26px;font-weight:900;color:#0f172a;line-height:1}
+  .namo-approval-kpi span{display:block;margin-top:8px;font-size:12px;font-weight:800;color:#64748b}
+  .namo-approval-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .namo-approval-tab{height:34px;border:1px solid #dbe3ee;background:#fff;border-radius:999px;padding:0 14px;font-size:12px;font-weight:900;color:#64748b;cursor:pointer}
+  .namo-approval-tab.active{background:#2563eb;color:#fff;border-color:#2563eb;box-shadow:0 8px 16px rgba(37,99,235,.16)}
+  .namo-approval-table-wrap{background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:auto}
+  .namo-approval-table{width:100%;border-collapse:collapse;min-width:980px}
+  .namo-approval-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-align:left;padding:12px 14px;border-bottom:1px solid #e2e8f0;white-space:nowrap;text-transform:none}
+  .namo-approval-table td{padding:12px 14px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;vertical-align:middle}
+  .namo-approval-table tr:last-child td{border-bottom:none}
+  .namo-apv-badge{display:inline-flex;align-items:center;justify-content:center;min-width:76px;height:26px;border-radius:999px;font-size:11px;font-weight:900;padding:0 10px}
+  .namo-apv-badge.draft{background:#f1f5f9;color:#64748b}.namo-apv-badge.review_pending{background:#e0f2fe;color:#075985}.namo-apv-badge.approve_pending{background:#fef3c7;color:#92400e}.namo-apv-badge.approved{background:#dcfce7;color:#166534}.namo-apv-badge.rejected{background:#fee2e2;color:#991b1b}
+  .namo-approval-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .namo-approval-actions button,.namo-inline-approval-actions button{height:28px;border:none;border-radius:8px;padding:0 10px;font-size:11px;font-weight:900;cursor:pointer}
+  .namo-apv-open{background:#e0f2fe;color:#075985}.namo-apv-review{background:#dbeafe;color:#1d4ed8}.namo-apv-approve{background:#dcfce7;color:#166534}.namo-apv-reject{background:#fee2e2;color:#991b1b}.namo-apv-request{background:#2563eb!important;color:#fff!important}.namo-apv-light{background:#f1f5f9;color:#475569}
+  .namo-inline-approval-box{margin-top:12px;border:1.5px solid #bfdbfe;border-radius:14px;background:#f8fbff;padding:12px 14px}
+  .namo-inline-approval-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .namo-inline-approval-title{font-size:13px;font-weight:900;color:#0f172a}
+  .namo-inline-approval-help{font-size:12px;font-weight:700;color:#64748b;line-height:1.5}
+  .namo-inline-approval-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .namo-inline-approval-log{margin-top:10px;font-size:11px;color:#64748b;line-height:1.5;white-space:pre-wrap}
+  .namo-apv-muted{color:#94a3b8;font-size:12px}
+  @media(max-width:900px){.namo-approval-top-kpi{grid-template-columns:1fr 1fr}.namo-approval-tabs{gap:6px}}
+  @media(max-width:600px){.namo-approval-top-kpi{grid-template-columns:1fr}}
+</style>
+<script id="namo-unified-inbox-script-v1">
+(function(){
+  if(window.__NAMO_UNIFIED_INBOX_PATCH_V1__) return;
+  window.__NAMO_UNIFIED_INBOX_PATCH_V1__=true;
+  var STORE='namo_unified_approvals_v1';
+  var STATUS_LABEL={draft:'작성중',review_pending:'검토 대기',approve_pending:'승인 대기',approved:'승인 완료',rejected:'반려'};
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+  function now(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+  function load(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch(e){return []}}
+  function save(a){localStorage.setItem(STORE,JSON.stringify(a)); renderInbox(); updateBadges();}
+  function currentUser(){
+    var n=(qs('.pname')||{}).textContent || (qs('#currentUserName')||{}).textContent || '';
+    if(!n) n=(localStorage.getItem('namoCurrentUserName')||localStorage.getItem('currentUserName')||'');
+    return String(n||'').trim();
+  }
+  function currentPage(){return qs('.page.active') || qs('[id^="page-"].active') || document.body}
+  function pageId(page){return (page&&page.id)||'page-unknown'}
+  function pageTitle(page){
+    var t=(qs('.ph-title',page)||qs('h1',page)||qs('h2',page)||{}).textContent||document.title||'문서';
+    return String(t).trim().replace(/\s+/g,' ');
+  }
+  function signValue(page,role){
+    var sels=qsa('select[id*="'+role+'"], select[id*="'+role[0]+'"]',page).filter(function(x){return /sg_|sign/i.test(x.id||x.name||'')});
+    if(role==='writer') sels=qsa('select[id*="writer"],select[id*="작성"],select[id*="sg_"]',page);
+    if(role==='reviewer') sels=qsa('select[id*="reviewer"],select[id*="review"],select[id*="검토"]',page);
+    if(role==='approver') sels=qsa('select[id*="approver"],select[id*="approve"],select[id*="승인"]',page);
+    var el=sels[0];
+    if(!el){
+      var box=qsa('.sign-box',page).filter(function(b){return (b.textContent||'').indexOf(role==='writer'?'작성':role==='reviewer'?'검토':'승인')>-1})[0];
+      el=box&&qs('select',box);
+    }
+    if(!el) return '';
+    return (el.options&&el.selectedIndex>=0?el.options[el.selectedIndex].text:el.value||'').trim();
+  }
+  function makeId(){return 'APV-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,5).toUpperCase()}
+  function findByDoc(docKey){return load().filter(function(x){return x.docKey===docKey}).sort(function(a,b){return String(b.createdAt).localeCompare(String(a.createdAt))})[0]}
+  function activeDocKey(page){return pageId(page)+'|'+pageTitle(page)}
+  function requestApproval(page){
+    page=page||currentPage();
+    var arr=load(), key=activeDocKey(page), old=findByDoc(key);
+    var doc=old||{id:makeId(),docKey:key,createdAt:now(),history:[]};
+    doc.pageId=pageId(page); doc.title=pageTitle(page); doc.type=doc.title;
+    doc.writer=signValue(page,'writer')||currentUser()||'-';
+    doc.reviewer=signValue(page,'reviewer')||'-';
+    doc.approver=signValue(page,'approver')||'-';
+    doc.status='review_pending'; doc.updatedAt=now();
+    doc.history=doc.history||[]; doc.history.push({at:now(),user:currentUser()||doc.writer,action:'결재요청',memo:'검토자 결재함 등록'});
+    arr=arr.filter(function(x){return x.id!==doc.id}); arr.unshift(doc); save(arr);
+    alert('결재요청이 등록되었습니다. 검토자 결재함에서 확인할 수 있습니다.');
+    updateInlineBoxes();
+  }
+  function act(id,action){
+    var arr=load(), doc=arr.find(function(x){return x.id===id}); if(!doc) return;
+    var user=currentUser()||'-';
+    if(action==='review') { doc.status='approve_pending'; doc.history=doc.history||[]; doc.history.push({at:now(),user:user,action:'검토완료',memo:'승인자 결재함 이관'}); }
+    if(action==='approve'){ doc.status='approved'; doc.history=doc.history||[]; doc.history.push({at:now(),user:user,action:'승인완료',memo:'최종 승인'}); }
+    if(action==='reject') { var memo=prompt('반려 사유를 입력하세요.',''); doc.status='rejected'; doc.history=doc.history||[]; doc.history.push({at:now(),user:user,action:'반려',memo:memo||''}); }
+    doc.updatedAt=now(); save(arr); updateInlineBoxes();
+  }
+  function canReview(doc){var u=currentUser(); return !doc.reviewer || doc.reviewer==='-' || !u || String(doc.reviewer).indexOf(u)>-1 || String(u).indexOf(doc.reviewer)>-1}
+  function canApprove(doc){var u=currentUser(); return !doc.approver || doc.approver==='-' || !u || String(doc.approver).indexOf(u)>-1 || String(u).indexOf(doc.approver)>-1}
+  function openDoc(doc){
+    var btn=qs('.nav-item[data-page="'+String(doc.pageId||'').replace(/^page-/,'')+'"]') || qs('.nav-item[data-page="'+esc(doc.pageId||'')+'"]');
+    if(btn){btn.click(); setTimeout(updateInlineBoxes,120); return;}
+    var page=qs('#'+CSS.escape(doc.pageId||''));
+    if(page){qsa('.page').forEach(function(p){p.classList.remove('active')}); page.classList.add('active'); updateInlineBoxes();}
+  }
+  function renderInbox(){
+    var page=qs('#page-approval-inbox'); if(!page) return;
+    var filter=page.getAttribute('data-filter')||'pending';
+    var arr=load();
+    var rows=arr.filter(function(d){
+      if(filter==='all') return true;
+      if(filter==='pending') return d.status==='review_pending'||d.status==='approve_pending';
+      return d.status===filter;
+    });
+    var k={review:arr.filter(function(x){return x.status==='review_pending'}).length, approve:arr.filter(function(x){return x.status==='approve_pending'}).length, done:arr.filter(function(x){return x.status==='approved'}).length, reject:arr.filter(function(x){return x.status==='rejected'}).length};
+    page.innerHTML='\
+      <div class="ph"><div><div class="ph-bc">메인 <span class="sep">/</span> 통합 결재함</div><div class="ph-title">통합 결재함</div><div class="ph-sub">작성/검토/승인이 있는 모든 문서를 한 곳에서 검토·승인합니다.</div></div><div class="ph-actions"><button class="btn light sm" type="button" id="namoApprovalRefresh">새로고침</button></div></div>\
+      <div class="namo-approval-top-kpi"><div class="namo-approval-kpi"><b>'+k.review+'</b><span>검토 대기</span></div><div class="namo-approval-kpi"><b>'+k.approve+'</b><span>승인 대기</span></div><div class="namo-approval-kpi"><b>'+k.done+'</b><span>승인 완료</span></div><div class="namo-approval-kpi"><b>'+k.reject+'</b><span>반려</span></div></div>\
+      <div class="namo-approval-tabs">'+tab('pending','대기 문서',filter)+tab('review_pending','검토 대기',filter)+tab('approve_pending','승인 대기',filter)+tab('approved','완료',filter)+tab('rejected','반려',filter)+tab('all','전체',filter)+'</div>\
+      <div class="namo-approval-table-wrap"><table class="namo-approval-table"><thead><tr><th>문서명</th><th>상태</th><th>작성자</th><th>검토자</th><th>승인자</th><th>요청/처리일</th><th>처리</th></tr></thead><tbody id="namoApprovalRows"></tbody></table></div>';
+    var body=qs('#namoApprovalRows',page);
+    body.innerHTML=rows.length?rows.map(function(d){return '<tr><td><b>'+esc(d.title)+'</b><div class="namo-apv-muted">'+esc(d.id)+'</div></td><td><span class="namo-apv-badge '+esc(d.status)+'">'+esc(STATUS_LABEL[d.status]||d.status)+'</span></td><td>'+esc(d.writer)+'</td><td>'+esc(d.reviewer)+'</td><td>'+esc(d.approver)+'</td><td>'+esc(d.updatedAt||d.createdAt||'')+'</td><td><div class="namo-approval-actions"><button class="namo-apv-open" data-namo-apv-open="'+esc(d.id)+'">열기</button>'+((d.status==='review_pending')?'<button class="namo-apv-review" data-namo-apv-review="'+esc(d.id)+'">검토</button>':'')+((d.status==='approve_pending')?'<button class="namo-apv-approve" data-namo-apv-approve="'+esc(d.id)+'">승인</button>':'')+((d.status==='review_pending'||d.status==='approve_pending')?'<button class="namo-apv-reject" data-namo-apv-reject="'+esc(d.id)+'">반려</button>':'')+'</div></td></tr>'}).join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:34px">결재 문서가 없습니다.</td></tr>';
+  }
+  function tab(v,l,f){return '<button class="namo-approval-tab '+(v===f?'active':'')+'" type="button" data-namo-apv-filter="'+v+'">'+l+'</button>'}
+  function ensurePage(){
+    var content=qs('.content')||qs('main')||document.body;
+    if(!qs('#page-approval-inbox')){var p=document.createElement('div');p.className='page';p.id='page-approval-inbox';p.setAttribute('data-filter','pending');content.appendChild(p)}
+  }
+  function ensureNav(){
+    var side=qs('.sidebar'); if(!side || qs('.nav-item[data-page="approval-inbox"]')) return;
+    var btn=document.createElement('button'); btn.className='nav-item'; btn.type='button'; btn.setAttribute('data-page','approval-inbox'); btn.innerHTML='<span class="nav-icon">📥</span><span>통합 결재함</span><span id="namoApprovalBadge" class="tag" style="margin-left:auto;display:none">0</span>';
+    var dash=qs('.nav-item[data-page="dashboard"]',side);
+    if(dash&&dash.nextSibling) side.insertBefore(btn,dash.nextSibling); else side.insertBefore(btn,side.firstChild);
+  }
+  function updateBadges(){
+    var c=load().filter(function(x){return x.status==='review_pending'||x.status==='approve_pending'}).length;
+    var b=qs('#namoApprovalBadge'); if(b){b.textContent=c; b.style.display=c?'inline-flex':'none'}
+  }
+  function ensureInlineBoxes(){
+    qsa('.sign-grid').forEach(function(grid){
+      if(grid.closest('#page-approval-inbox')) return;
+      if(grid.parentElement&&grid.parentElement.querySelector(':scope > .namo-inline-approval-box')) return;
+      var box=document.createElement('div'); box.className='namo-inline-approval-box';
+      box.innerHTML='<div class="namo-inline-approval-head"><div><div class="namo-inline-approval-title">통합 결재 연동</div><div class="namo-inline-approval-help">작성자는 결재요청, 검토자/승인자는 이 화면 또는 통합 결재함에서 바로 처리합니다.</div></div><div class="namo-inline-approval-actions"><button class="namo-apv-request" type="button" data-namo-inline-request>결재요청</button><button class="namo-apv-light" type="button" data-namo-inline-inbox>결재함</button><button class="namo-apv-review" type="button" data-namo-inline-review>검토</button><button class="namo-apv-approve" type="button" data-namo-inline-approve>승인</button><button class="namo-apv-reject" type="button" data-namo-inline-reject>반려</button></div></div><div class="namo-inline-approval-log"></div>';
+      grid.insertAdjacentElement('afterend',box);
+    });
+    updateInlineBoxes();
+  }
+  function updateInlineBoxes(){
+    qsa('.namo-inline-approval-box').forEach(function(box){
+      var page=box.closest('.page')||currentPage(), doc=findByDoc(activeDocKey(page));
+      var log=qs('.namo-inline-approval-log',box); var r=qs('[data-namo-inline-review]',box), a=qs('[data-namo-inline-approve]',box), rej=qs('[data-namo-inline-reject]',box);
+      if(!doc){log.textContent='아직 결재요청 전입니다.'; [r,a,rej].forEach(function(x){if(x)x.disabled=true}); return;}
+      log.textContent='현재 상태: '+(STATUS_LABEL[doc.status]||doc.status)+' / 작성자: '+(doc.writer||'-')+' / 검토자: '+(doc.reviewer||'-')+' / 승인자: '+(doc.approver||'-')+'\n'+(doc.history||[]).slice(-3).map(function(h){return '['+h.at+'] '+h.user+' - '+h.action+(h.memo?' ('+h.memo+')':'')}).join('\n');
+      if(r) r.disabled=!(doc.status==='review_pending');
+      if(a) a.disabled=!(doc.status==='approve_pending');
+      if(rej) rej.disabled=!(doc.status==='review_pending'||doc.status==='approve_pending');
+    });
+  }
+  function route(pageName){
+    if(pageName!=='approval-inbox') return false;
+    ensurePage(); qsa('.page').forEach(function(p){p.classList.remove('active')}); var p=qs('#page-approval-inbox'); p.classList.add('active'); qsa('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')==='approval-inbox')}); renderInbox(); return true;
+  }
+  document.addEventListener('click',function(e){
+    var nav=e.target.closest('.nav-item[data-page="approval-inbox"]'); if(nav){e.preventDefault(); e.stopPropagation(); route('approval-inbox'); return;}
+    var f=e.target.closest('[data-namo-apv-filter]'); if(f){qs('#page-approval-inbox').setAttribute('data-filter',f.getAttribute('data-namo-apv-filter')); renderInbox(); return;}
+    if(e.target.closest('#namoApprovalRefresh')){renderInbox();return;}
+    var open=e.target.closest('[data-namo-apv-open]'); if(open){var d=load().find(function(x){return x.id===open.getAttribute('data-namo-apv-open')}); if(d) openDoc(d); return;}
+    var rev=e.target.closest('[data-namo-apv-review]'); if(rev){act(rev.getAttribute('data-namo-apv-review'),'review');return;}
+    var app=e.target.closest('[data-namo-apv-approve]'); if(app){act(app.getAttribute('data-namo-apv-approve'),'approve');return;}
+    var rej=e.target.closest('[data-namo-apv-reject]'); if(rej){act(rej.getAttribute('data-namo-apv-reject'),'reject');return;}
+    var box=e.target.closest('.namo-inline-approval-box');
+    if(box){var page=box.closest('.page')||currentPage(), doc=findByDoc(activeDocKey(page));
+      if(e.target.closest('[data-namo-inline-request]')){requestApproval(page);return;}
+      if(e.target.closest('[data-namo-inline-inbox]')){route('approval-inbox');return;}
+      if(!doc){alert('먼저 결재요청을 등록하세요.');return;}
+      if(e.target.closest('[data-namo-inline-review]')){act(doc.id,'review');return;}
+      if(e.target.closest('[data-namo-inline-approve]')){act(doc.id,'approve');return;}
+      if(e.target.closest('[data-namo-inline-reject]')){act(doc.id,'reject');return;}
+    }
+  },true);
+  function boot(){ensurePage(); ensureNav(); ensureInlineBoxes(); updateBadges(); renderInbox();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.addEventListener('load',function(){boot(); setTimeout(boot,500); setTimeout(boot,1500);});
+  setInterval(function(){ensureNav(); ensureInlineBoxes(); updateBadges();},1200);
+})();
+</script>
+<!-- /NAMO QMS Unified Approval Inbox Patch v1 -->
