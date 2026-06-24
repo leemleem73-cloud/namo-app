@@ -6434,435 +6434,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const ok=await checkLogin();if(ok)await loadAll데이터();
 });
 
-/* 서명 이미지 첨부 / 결재 권한 통합 v23 - 관리자 전체 수정 잠김 해제, 일반 사용자는 본인 역할만 수정 */
-(function(){
-  const ROLES = ['writer','reviewer','approver'];
-  const TYPES = ['iqc','pqc','oqc','nc','training'];
-  const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
-  const qs = id => document.getElementById(id);
-  const users = () => (window.state && Array.isArray(state.signableUsers)) ? state.signableUsers : [];
-  const current = () => (window.state && state.currentUser) ? state.currentUser : null;
 
-  window.__qmsSignBooting = true;
-  setTimeout(() => { window.__qmsSignBooting = false; }, 1800);
-
-  function nowText(){
-    const d = new Date();
-    const p = n => String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-  }
-  function editIdFor(type){
-    return ({iqc:'incomingEditId', pqc:'processEditId', oqc:'shipmentEditId', nc:'ncEditId', training:'trainingEditId'})[type] || '';
-  }
-  function isNewRecord(type){
-    const id = editIdFor(type);
-    const el = id ? qs(id) : null;
-    return !(el && String(el.value || '').trim());
-  }
-  function storeKey(type, role){ return `${type}:${role}`; }
-  function getStore(type, role){
-    window.__signImageStore = window.__signImageStore || {};
-    const k = storeKey(type, role);
-    window.__signImageStore[k] = window.__signImageStore[k] || {};
-    return window.__signImageStore[k];
-  }
-  function clean(v){ return String(v || '').trim(); }
-  function samePerson(a,b){
-    if(!a || !b) return false;
-    const aid = clean(a.id || a.email || a.name);
-    const bid = clean(b.id || b.email || b.name);
-    if(aid && bid && aid === bid) return true;
-    const ae = clean(a.email), be = clean(b.email);
-    if(ae && be && ae === be) return true;
-    const an = clean(a.name), bn = clean(b.name);
-    return !!(an && bn && an === bn);
-  }
-  function userObj(u){
-    if(!u) return null;
-    return {id:u.id || u.email || u.name || '', name:u.name || '', title:u.title || '', department:u.department || '', email:u.email || '', role:u.role || ''};
-  }
-  function meObj(){ return userObj(current()); }
-  function currentIsAdmin(){
-    const me = current();
-    if(!me) return false;
-    if(me.isAdmin === true || me.admin === true || me.is_admin === true) return true;
-    const vals = [
-      me.role, me.permission, me.auth, me.authority, me.grade, me.level,
-      me.type, me.userType, me.user_type, me.accountType, me.name, me.email, me.id
-    ].map(v => clean(v).toLowerCase()).filter(Boolean);
-    return vals.some(v =>
-      v === 'admin' || v === 'administrator' || v === 'superadmin' ||
-      v === 'super_admin' || v === '관리자' ||
-      v.includes('admin') || v.includes('관리자')
-    );
-  }
-  function currentIsSenior(){
-    const me = current();
-    if(!me) return false;
-    if(currentIsAdmin()) return true;
-    if(typeof window.isSenior === 'function') return !!window.isSenior(me);
-    if(typeof isSenior === 'function') return !!isSenior(me);
-    const title = clean(me.title);
-    return /대표|이사|상무|전무|부장|팀장|관리자|본부장|실장|센터장|CEO|CTO|COO|CFO/i.test(title);
-  }
-  function findUserByIdOrName(data){
-    if(!data) return null;
-    return users().find(u =>
-      (data.id && clean(u.id) === clean(data.id)) ||
-      (data.email && clean(u.email) === clean(data.email)) ||
-      (data.name && clean(u.name) === clean(data.name))
-    ) || null;
-  }
-  function savedData(type, role){
-    const s = getStore(type, role);
-    return s.saved || null;
-  }
-  function optionText(data, label){
-    return `${data.name || ''} (${data.title || data.department || label || '사용자'})`;
-  }
-  function ensureOption(sel, data, label){
-    if(!sel || !data) return;
-    const id = data.id || data.email || data.name;
-    if(!id || !data.name) return;
-    let opt = Array.from(sel.options || []).find(o => String(o.value) === String(id));
-    if(!opt){
-      opt = document.createElement('option');
-      opt.value = id;
-      sel.appendChild(opt);
-    }
-    opt.textContent = optionText(data, label);
-    opt.dataset.name = data.name || '';
-    opt.dataset.title = data.title || '';
-    opt.dataset.department = data.department || '';
-    opt.dataset.email = data.email || '';
-    opt.dataset.role = data.role || '';
-  }
-  function populateUserOptions(sel, placeholder, filterFn){
-    if(!sel) return;
-    const prev = sel.value;
-    sel.innerHTML = `<option value="">${placeholder}</option>`;
-    users().filter(u => !filterFn || filterFn(u)).forEach(u => ensureOption(sel, userObj(u), '사용자'));
-    if(prev && Array.from(sel.options).some(o => String(o.value) === String(prev))) sel.value = prev;
-  }
-  function keepOnlyBlankAnd(sel, data, placeholder){
-    if(!sel) return;
-    const value = data && (data.id || data.email || data.name);
-    const text = data && data.name ? optionText(data, '본인') : '';
-    sel.innerHTML = `<option value="">${placeholder}</option>`;
-    if(value && text){
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = text;
-      opt.dataset.name = data.name || '';
-      opt.dataset.title = data.title || '';
-      opt.dataset.department = data.department || '';
-      opt.dataset.email = data.email || '';
-      opt.dataset.role = data.role || '';
-      sel.appendChild(opt);
-    }
-  }
-  function selectedUserFromSelect(type, role){
-    const sel = qs(`sg_${type}_${role}`);
-    if(!sel || !sel.value) return null;
-    const opt = sel.options[sel.selectedIndex];
-    return userObj(users().find(u => clean(u.id || u.email || u.name) === clean(sel.value))) || {
-      id: sel.value,
-      name: opt?.dataset?.name || (opt?.textContent || '').replace(/\s*\(.*\)\s*$/,''),
-      title: opt?.dataset?.title || '',
-      department: opt?.dataset?.department || '',
-      email: opt?.dataset?.email || '',
-      role: opt?.dataset?.role || ''
-    };
-  }
-  function setPreview(type, role, img){
-    const box = qs(`sg_${type}_${role}_preview`);
-    if(!box) return;
-    box.innerHTML = img ? `<img src="${img}" alt="서명 이미지">` : `<span class="sign-file-empty">서명 이미지 없음</span>`;
-  }
-  function setDateText(type, role, text){
-    const d = qs(`sg_${type}_${role}_date`);
-    if(d) d.textContent = text || '';
-  }
-  function setSub(type, role, text, color){
-    const sub = qs(`sg_${type}_${role}_sub`);
-    if(sub){
-      sub.textContent = text || '';
-      sub.style.color = color || '';
-    }
-  }
-  function setRoleControls(type, role, canEdit){
-    const file = qs(`sg_${type}_${role}_file`);
-    const wrap = document.querySelector(`[data-sign-file-wrap="${type}:${role}"]`);
-    if(file) file.disabled = !canEdit;
-    if(wrap){
-      wrap.querySelectorAll('button').forEach(btn => {
-        btn.disabled = !canEdit;
-        btn.style.opacity = canEdit ? '' : '.45';
-        btn.style.cursor = canEdit ? '' : 'not-allowed';
-      });
-    }
-  }
-  function canEditRole(type, role){
-    if(window.__qmsSignBooting) return true;
-    const me = meObj();
-    if(!me || !me.id) return false;
-    if(currentIsAdmin()) return true;
-    const saved = savedData(type, role);
-    const isNew = isNewRecord(type);
-
-    if(role === 'writer'){
-      if(isNew) return true;
-      return !!saved && samePerson(saved, me);
-    }
-    if(!currentIsSenior()) return false;
-    if(isNew) return true;
-    if(!saved || !saved.name) return true;
-    return samePerson(saved, me);
-  }
-  function selectedPayload(type, role){
-    const me = meObj();
-    const saved = savedData(type, role);
-    const sig = window.signature데이터(type, role);
-    const isNew = isNewRecord(type);
-    const picked = selectedUserFromSelect(type, role);
-
-    if(currentIsAdmin()){
-      const base = picked || saved || (role === 'writer' ? me : null);
-      return base ? {...base, signImage:sig.signImage || base.signImage || '', signDate:sig.signDate || base.signDate || ''} : {id:'', name:'', title:'', department:'', signImage:'', signDate:''};
-    }
-
-    if(role === 'writer'){
-      if(isNew) return me ? {...me, ...sig} : {id:'', name:'', title:'', department:'', ...sig};
-      if(saved && saved.name) return {...saved, signImage:sig.signImage || saved.signImage || '', signDate:sig.signDate || saved.signDate || ''};
-      return me ? {...me, ...sig} : {id:'', name:'', title:'', department:'', ...sig};
-    }
-
-    if(isNew){
-      if(currentIsSenior() && me && picked && samePerson(picked, me)) return {...me, ...sig};
-      return {id:'', name:'', title:'', department:'', signImage:'', signDate:''};
-    }
-    if(saved && saved.name) return {...saved, signImage:sig.signImage || saved.signImage || '', signDate:sig.signDate || saved.signDate || ''};
-    if(currentIsSenior() && me && picked && samePerson(picked, me)) return {...me, ...sig};
-    return {id:'', name:'', title:'', department:'', signImage:'', signDate:''};
-  }
-  function applyAdminRole(type, role){
-    const sel = qs(`sg_${type}_${role}`);
-    if(!sel) return;
-    const saved = savedData(type, role);
-    const isNew = isNewRecord(type);
-    const me = meObj();
-    const currentValue = sel.value;
-
-    populateUserOptions(sel, `-- ${ROLE_LABEL[role]} 선택 --`);
-    if(saved && saved.name){
-      ensureOption(sel, saved, `저장된 ${ROLE_LABEL[role]}`);
-      sel.value = saved.id || saved.email || saved.name || '';
-    }else if(isNew && role === 'writer' && me){
-      ensureOption(sel, me, '관리자');
-      sel.value = me.id || me.email || me.name || '';
-    }else if(currentValue && Array.from(sel.options).some(o => String(o.value) === String(currentValue))){
-      sel.value = currentValue;
-    }
-    sel.disabled = false;
-    setSub(type, role, '관리자: 모든 사용자 선택/수정 가능', 'var(--pri)');
-    setRoleControls(type, role, true);
-  }
-  function applyRolePermission(type, role){
-    const sel = qs(`sg_${type}_${role}`);
-    if(!sel) return;
-    if(currentIsAdmin()){
-      applyAdminRole(type, role);
-      return;
-    }
-
-    const me = meObj();
-    const saved = savedData(type, role);
-    const isNew = isNewRecord(type);
-    const canEdit = canEditRole(type, role);
-
-    if(role === 'writer'){
-      if(isNew){
-        keepOnlyBlankAnd(sel, me, '-- 작성자 본인 --');
-        if(me && me.id) sel.value = me.id;
-        sel.disabled = true;
-        setSub(type, role, me ? `${me.department || ''} ${me.title || ''}`.trim() || '로그인 본인만 작성 가능' : '로그인 정보 없음', 'var(--t3)');
-      }else if(saved && saved.name){
-        ensureOption(sel, saved, '저장된 작성자');
-        sel.value = saved.id || saved.email || saved.name;
-        sel.disabled = true;
-        setSub(type, role, samePerson(saved, me) ? '본인 작성자: 서명 첨부/수정 가능' : '저장된 작성자 보존', samePerson(saved, me) ? 'var(--pri)' : 'var(--t3)');
-      }else{
-        keepOnlyBlankAnd(sel, me, '-- 작성자 본인 --');
-        if(me && me.id) sel.value = me.id;
-        sel.disabled = true;
-        setSub(type, role, '작성자는 로그인 본인만 가능', 'var(--t3)');
-      }
-    }else{
-      if(isNew){
-        if(currentIsSenior() && me){
-          keepOnlyBlankAnd(sel, me, `-- ${ROLE_LABEL[role]} 선택 안 함 --`);
-          if(sel.dataset.userPicked !== '1') sel.value = '';
-          sel.disabled = false;
-          setSub(type, role, `${ROLE_LABEL[role]}는 본인만 선택 가능`, 'var(--pri)');
-        }else{
-          keepOnlyBlankAnd(sel, null, `-- ${ROLE_LABEL[role]} 권한 없음 --`);
-          sel.value = '';
-          sel.disabled = true;
-          setSub(type, role, '부장급 이상만 검토/승인 가능', 'var(--wa)');
-        }
-      }else if(saved && saved.name){
-        ensureOption(sel, saved, `저장된 ${ROLE_LABEL[role]}`);
-        sel.value = saved.id || saved.email || saved.name;
-        sel.disabled = true;
-        setSub(type, role, samePerson(saved, me) ? `본인 ${ROLE_LABEL[role]}: 서명 첨부/수정 가능` : `저장된 ${ROLE_LABEL[role]} 보존`, samePerson(saved, me) ? 'var(--pri)' : 'var(--t3)');
-      }else{
-        if(currentIsSenior() && me){
-          keepOnlyBlankAnd(sel, me, `-- ${ROLE_LABEL[role]} 선택 안 함 --`);
-          sel.disabled = false;
-          setSub(type, role, `${ROLE_LABEL[role]}는 본인만 선택 가능`, 'var(--pri)');
-        }else{
-          keepOnlyBlankAnd(sel, null, `-- ${ROLE_LABEL[role]} 권한 없음 --`);
-          sel.disabled = true;
-          setSub(type, role, '부장급 이상만 검토/승인 가능', 'var(--wa)');
-        }
-      }
-    }
-    setRoleControls(type, role, canEdit);
-  }
-  function applySignPermissions(type){
-    ROLES.forEach(role => applyRolePermission(type, role));
-    ROLES.forEach(role => notify(type, role));
-  }
-  function notify(type, role){
-    if(typeof window.onSignChange === 'function') window.onSignChange(type, role);
-    else if(typeof onSignChange === 'function') onSignChange(type, role);
-  }
-
-  window.signature데이터 = function(type, role){
-    const s = getStore(type, role);
-    const dateEl = qs(`sg_${type}_${role}_date`);
-    return {signImage: s.signImage || '', signDate: s.signDate || (dateEl ? dateEl.textContent : '') || ''};
-  };
-  window.updateSignaturePreview = function(type, role){
-    const s = getStore(type, role);
-    setPreview(type, role, s.signImage || '');
-    setDateText(type, role, s.signDate || '');
-  };
-  window.clearSignaturePad = function(type, role){
-    if(!canEditRole(type, role)) return false;
-    const s = getStore(type, role);
-    s.signImage = '';
-    s.signDate = '';
-    setPreview(type, role, '');
-    setDateText(type, role, '');
-    const f = qs(`sg_${type}_${role}_file`);
-    if(f) f.value = '';
-    notify(type, role);
-    return true;
-  };
-  window.restoreSignaturePad = function(type, role, data){
-    const s = getStore(type, role);
-    s.signImage = (data && data.signImage) || '';
-    s.signDate = (data && data.signDate) || '';
-    if(data && (data.name || data.id)) s.saved = {...data};
-    setPreview(type, role, s.signImage);
-    setDateText(type, role, s.signDate);
-  };
-  window.getSignPayload = function(type){
-    applySignPermissions(type);
-    return {writer: selectedPayload(type, 'writer'), reviewer: selectedPayload(type, 'reviewer'), approver: selectedPayload(type, 'approver')};
-  };
-  window.restoreSign = function(type, record){
-    if(!record) return;
-    const map = {writer: record.signWriter, reviewer: record.signReviewer, approver: record.signApprover};
-    ROLES.forEach(role => {
-      const data = map[role];
-      const s = getStore(type, role);
-      s.saved = data && (data.name || data.id) ? {...data} : null;
-      if(data){
-        const found = findUserByIdOrName(data);
-        const use = found ? {...data, id: found.id || data.id, name: found.name || data.name, title: data.title || found.title || '', department: data.department || found.department || '', email: data.email || found.email || '', role: data.role || found.role || ''} : data;
-        ensureOption(qs(`sg_${type}_${role}`), use, `저장된 ${ROLE_LABEL[role]}`);
-        const sel = qs(`sg_${type}_${role}`);
-        if(sel) sel.value = use.id || use.email || use.name || '';
-        window.restoreSignaturePad(type, role, use);
-      }else{
-        s.saved = null;
-      }
-    });
-    applySignPermissions(type);
-  };
-  window.applySignPermissions = applySignPermissions;
-  window.applyAllSignPermissions = function(){
-    const active=document.activeElement;
-    TYPES.forEach(type=>{
-      const before={};
-      ROLES.forEach(role=>{const sel=qs(`sg_${type}_${role}`);before[role]=sel?{value:sel.value,userPicked:sel.dataset.userPicked}:null;});
-      applySignPermissions(type);
-      ROLES.forEach(role=>{
-        const sel=qs(`sg_${type}_${role}`), b=before[role];
-        if(!sel||!b||!b.value)return;
-        const exists=Array.from(sel.options).some(o=>String(o.value)===String(b.value));
-        if(exists && (b.userPicked==='1'||active===sel)){
-          sel.value=b.value;
-          sel.dataset.userPicked='1';
-        }
-      });
-      ROLES.forEach(role=>notify(type,role));
-    });
-  };
-
-  /* v23: 로그인 직후 currentUser 세팅 타이밍 보정. 관리자 판별 후 잠김 해제 재적용 */
-  [100,300,700,1200,2000,3500].forEach(ms => setTimeout(() => {
-    if(typeof window.applyAllSignPermissions === 'function') window.applyAllSignPermissions();
-  }, ms));
-
-  document.addEventListener('click', function(e){
-    const attach = e.target.closest && e.target.closest('[data-sign-file-btn]');
-    if(attach){
-      const [type, role] = attach.getAttribute('data-sign-file-btn').split(':');
-      if(!canEditRole(type, role)) return false;
-      qs(`sg_${type}_${role}_file`)?.click();
-      return;
-    }
-    const clear = e.target.closest && e.target.closest('[data-sign-clear]');
-    if(clear){
-      const [type, role] = clear.getAttribute('data-sign-clear').split(':');
-      window.clearSignaturePad(type, role);
-    }
-  });
-  document.addEventListener('change', function(e){
-    const fileInput = e.target.closest && e.target.closest('[data-sign-file]');
-    if(fileInput && fileInput.files && fileInput.files[0]){
-      const [type, role] = fileInput.getAttribute('data-sign-file').split(':');
-      if(!canEditRole(type, role)){
-        fileInput.value = '';
-        return false;
-      }
-      const reader = new FileReader();
-      reader.onload = function(){
-        const s = getStore(type, role);
-        s.signImage = String(reader.result || '');
-        s.signDate = nowText();
-        window.updateSignaturePreview(type, role);
-        applySignPermissions(type);
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-      return;
-    }
-    const sel = e.target.closest && e.target.closest('.sign-sel');
-    if(sel){
-      sel.dataset.userPicked = '1';
-      const m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id || '');
-      if(m){ applySignPermissions(m[1]); }
-    }
-  });
-  window.addEventListener('load', function(){
-    setTimeout(window.applyAllSignPermissions, 500);
-    setTimeout(window.applyAllSignPermissions, 1500);
-    setTimeout(() => { window.__qmsSignBooting = false; window.applyAllSignPermissions(); }, 2200);
-  });
-})();
 
 </script>
 <script>
@@ -9629,260 +9201,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   [300,900,1800,3500].forEach(ms => setTimeout(() => refresh(false), ms));
 })();
 </script>
-
-<script>
-/* QMS FINAL OVERRIDE: 원본 유지 + 검토/승인란 '-' 표시 + 로그인 권한자만 내부 처리 v20260522-5
-   - 관리자: 작성자/검토자/승인자 전체 회원 표시
-   - 일반 사용자: 작성자는 로그인 본인만 표시
-   - 일반 사용자: 검토자/승인자는 화면에 항상 '-' 표시, 이름을 미리 노출하지 않음
-   - 단, 저장/검토/승인 시 현재 로그인 사용자가 작성자 직급별 권한자이면 내부 payload에는 로그인 사용자 정보가 들어감
-   - 작성자 사원~과장: 검토/승인 = 부장 이상
-   - 작성자 부장: 검토/승인 = 이사 이상
-   - 작성자 이사/상무: 검토 없음, 승인 = 전무 이상
-*/
-(function(){
-  'use strict';
-  const TYPES = ['iqc','pqc','oqc','nc','training'];
-  const ROLES = ['writer','reviewer','approver'];
-  const ROLE_LABEL = {writer:'작성자', reviewer:'검토자', approver:'승인자'};
-  const DIRECTOR_WORDS = ['이사','상무','전무','임원','대표이사','대표','사장','회장'];
-  const EXECUTIVE_WORDS = ['전무','대표이사','대표','사장','회장'];
-  const $ = id => document.getElementById(id);
-  const txt = v => String(v == null ? '' : v).trim();
-  const esc = v => txt(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
-  function appState(){ try { return window.state || state || {}; } catch(e){ return window.state || {}; } }
-  function norm(u){
-    if(!u) return null;
-    const email = txt(u.email || u.mail || '');
-    const name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || u.label || email || '');
-    const id = txt(u.id || u.userId || u.uid || email || name);
-    if(!id && !name) return null;
-    return {id:id || name, name:name || id, department:txt(u.department || u.dept || u.team || u.org || ''), title:txt(u.title || u.position || u.rank || u.jobTitle || ''), email, role:txt(u.role || u.userRole || ''), signImage:u.signImage || '', signDate:u.signDate || ''};
-  }
-  function currentUser(){ return norm(appState().currentUser || window.currentUser || null); }
-  function keyOf(u){ return txt(u && (u.id || u.email || u.name)); }
-  function addUnique(arr,u){ u = norm(u); const k = keyOf(u); if(!k) return; if(!arr.some(x => keyOf(x) === k || (u.name && x.name === u.name))) arr.push(u); }
-  function allUsers(){
-    const s = appState();
-    const arr = [];
-    addUnique(arr,currentUser());
-    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(k => {
-      if(Array.isArray(s[k])) s[k].forEach(u => addUnique(arr,u));
-      if(Array.isArray(window[k])) window[k].forEach(u => addUnique(arr,u));
-    });
-    return arr;
-  }
-  function isAdmin(u){
-    const s = `${u?.id || ''} ${u?.name || ''} ${u?.email || ''} ${u?.role || ''} ${u?.title || ''}`.toLowerCase();
-    return s.includes('admin') || s.includes('관리자');
-  }
-  function titleText(u){ return `${u?.title || ''} ${u?.role || ''}`; }
-  function hasAny(u, words){ const s = titleText(u); return words.some(w => s.includes(w)); }
-  function isDeptManagerOrAbove(u){ return titleText(u).includes('부장') || hasAny(u, DIRECTOR_WORDS); }
-  function isDirectorOrAbove(u){ return hasAny(u, DIRECTOR_WORDS); }
-  function isExecutiveOrAbove(u){ return hasAny(u, EXECUTIVE_WORDS); }
-  function writerLevel(u){
-    const s = titleText(u);
-    if(EXECUTIVE_WORDS.some(w => s.includes(w))) return 5; // 전무 이상
-    if(s.includes('상무')) return 4;
-    if(s.includes('이사')) return 3;
-    if(s.includes('부장')) return 2;
-    return 1; // 사원~과장
-  }
-  function userLabel(u){ u = norm(u) || {}; return `${u.name || '-'} / ${u.title || u.department || '-'}`; }
-  function emptyUser(){ return {id:'', name:'', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
-  function noneUser(){ return {id:'-', name:'-', department:'', title:'', email:'', role:'', signImage:'', signDate:''}; }
-  function sigStore(type, role){
-    window.__qmsFinalSignStore = window.__qmsFinalSignStore || {};
-    const k = `${type}:${role}`;
-    window.__qmsFinalSignStore[k] = window.__qmsFinalSignStore[k] || {signImage:'', signDate:''};
-    return window.__qmsFinalSignStore[k];
-  }
-  function normalizeSaved(data){
-    if(!data) return null;
-    if(typeof data === 'string') return norm({name:data,id:data});
-    const u = norm(data);
-    if(!u) return null;
-    u.signImage = data.signImage || '';
-    u.signDate = data.signDate || '';
-    return u;
-  }
-  function opts(list, ph){
-    return `<option value="">${esc(ph)}</option>` + list.map(u => `<option value="${esc(u.id || u.name)}" data-name="${esc(u.name)}" data-title="${esc(u.title)}" data-department="${esc(u.department)}" data-email="${esc(u.email)}" data-role="${esc(u.role)}">${esc(userLabel(u))}</option>`).join('');
-  }
-  function selected(type, role){
-    const sel = $(`sg_${type}_${role}`);
-    if(!sel || !sel.value) return emptyUser();
-    const o = sel.options[sel.selectedIndex];
-    const fallback = txt(o && o.textContent).replace(/\s*\/\s*.*$/,'');
-    return {id:sel.value, name:txt(o?.dataset?.name || fallback), title:txt(o?.dataset?.title || ''), department:txt(o?.dataset?.department || ''), email:txt(o?.dataset?.email || ''), role:txt(o?.dataset?.role || '')};
-  }
-  function canActByWriter(role, writer, user){
-    const lv = writerLevel(writer || currentUser());
-    if(!user || !user.name || user.name === '-') return false;
-    if(role === 'reviewer'){
-      if(lv <= 1) return isDeptManagerOrAbove(user); // 사원~과장 작성: 부장 이상 검토
-      if(lv === 2) return isDirectorOrAbove(user);  // 부장 작성: 이사 이상 검토
-      return false;                                  // 이사 이상 작성: 검토 없음
-    }
-    if(role === 'approver'){
-      if(lv <= 1) return isDeptManagerOrAbove(user); // 사원~과장 작성: 부장 이상 승인
-      if(lv === 2) return isDirectorOrAbove(user);   // 부장 작성: 이사 이상 승인
-      if(lv === 3 || lv === 4) return isExecutiveOrAbove(user); // 이사/상무 작성: 전무 이상 승인
-      return false;                                  // 전무 이상 작성: 승인 생략
-    }
-    return false;
-  }
-  function roleList(type, role, editRecord){
-    const me = currentUser();
-    if(isAdmin(me)) return allUsers();
-
-    // 수정 모드에서는 저장된 작성/검토/승인 담당자를 최우선으로 복원한다.
-    // 기존에는 작성자만 복원되고 검토자/승인자는 '-'로 고정되어 기타 문서 수정 시 이름이 사라졌다.
-    if(editRecord){
-      const savedMap = {
-        writer: editRecord.signWriter || editRecord.writer,
-        reviewer: editRecord.signReviewer || editRecord.reviewer,
-        approver: editRecord.signApprover || editRecord.approver
-      };
-      const saved = normalizeSaved(savedMap[role]);
-      if(saved && saved.name && saved.name !== '-') return [saved];
-    }
-
-    // 신규 작성 시 작성자는 로그인 본인, 검토/승인은 권한 처리 전까지 '-' 표시
-    if(role === 'writer') return me ? [me] : [];
-    return [noneUser()];
-  }
-  function fileBlock(type,role){
-    return `<div class="sign-file-wrap">
-      <div class="sign-file-preview" id="sg_${type}_${role}_preview"><span class="sign-file-empty">서명 이미지 없음</span></div>
-      <div class="sign-file-tools"><span class="sign-date" id="sg_${type}_${role}_date"></span><div>
-        <input type="file" class="sign-file-input" id="sg_${type}_${role}_file" accept="image/*" data-qms-final-file="${type}:${role}">
-        <button type="button" class="sign-file-btn" data-qms-final-file-btn="${type}:${role}">서명 첨부</button>
-        <button type="button" class="sign-clear-btn" data-qms-final-clear="${type}:${role}">서명 지우기</button>
-      </div></div></div>`;
-  }
-  function helpText(role){
-    if(role === 'writer') return '일반 사용자는 로그인 본인 고정, 관리자는 전체 회원 선택 가능.';
-    return '신규 작성 시 일반 사용자는 - 표시. 저장 후 해당 권한자 로그인 시 본인 검토/승인 가능. 관리자는 전체 회원 선택 가능.';
-  }
-  function renderRole(type, role, list, disabled){
-    const ROLE_TITLE = {writer:'작성자 (본인)', reviewer:'검토자 (부장)', approver:'승인자 (부장 이상)'};
-    const ph = role === 'writer' ? '-- 작성자 --' : `-- ${ROLE_LABEL[role]} 선택 --`;
-    return `<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">${esc(ROLE_TITLE[role] || ROLE_LABEL[role])}</span><span class="sign-box-badge any">규칙 적용</span></div><div class="sign-box-body">
-      <select class="sign-sel" id="sg_${type}_${role}" ${disabled ? 'disabled' : ''}>${opts(list, ph)}</select>
-      <div class="sign-sub" id="sg_${type}_${role}_sub" style="color:var(--t3);"></div>
-      ${fileBlock(type,role)}
-      <div class="sign-sub" style="color:var(--t3);margin-top:6px;">${esc(helpText(role))}</div>
-    </div></div>`;
-  }
-  function setPreview(type,role){
-    const st = sigStore(type,role);
-    const prev = $(`sg_${type}_${role}_preview`);
-    if(prev) prev.innerHTML = st.signImage ? `<img src="${st.signImage}" alt="서명 이미지">` : '<span class="sign-file-empty">서명 이미지 없음</span>';
-    const date = $(`sg_${type}_${role}_date`);
-    if(date) date.textContent = st.signDate || '';
-  }
-  function refreshSub(type,role){
-    const u = selected(type,role);
-    const sub = $(`sg_${type}_${role}_sub`);
-    if(sub) sub.textContent = u.name ? (u.name === '-' ? '-' : `${u.department || ''} ${u.title || ''}`.trim()) : '선택 후 서명 첨부';
-    setPreview(type,role);
-  }
-  function build(type, editRecord){
-    const grid = $(`signGrid_${type}`);
-    if(!grid) return;
-    window.__qmsEditSignRecord = window.__qmsEditSignRecord || {};
-    if(editRecord) window.__qmsEditSignRecord[type] = editRecord;
-    const rec = editRecord || null;
-    const me = currentUser();
-    const adminMode = isAdmin(me);
-    grid.innerHTML = ROLES.map(role => {
-      const list = roleList(type,role,rec);
-      const fixedDash = !adminMode && role !== 'writer' && list.length === 1 && list[0].name === '-';
-      const hasSaved = !!rec && list.length === 1 && list[0].name && list[0].name !== '-' && role !== 'writer';
-      // 일반 사용자의 검토자/승인자 선택칸은 항상 '-'로 고정한다.
-      // 실제 권한자 검토/승인은 getSignPayload에서 로그인 사용자를 내부 반영한다.
-      const disabled = adminMode ? false : (role === 'writer' || hasSaved || fixedDash);
-      return renderRole(type, role, list, disabled);
-    }).join('');
-    ROLES.forEach(role => {
-      const sel = $(`sg_${type}_${role}`);
-      const list = roleList(type,role,rec);
-      if(sel && list.length){ sel.value = list[0].id || list[0].name || ''; }
-      if(rec){
-        const map = {writer:rec.signWriter || rec.writer, reviewer:rec.signReviewer || rec.reviewer, approver:rec.signApprover || rec.approver};
-        const saved = normalizeSaved(map[role]);
-        const st = sigStore(type,role); st.signImage = saved?.signImage || ''; st.signDate = saved?.signDate || '';
-      }
-      refreshSub(type,role);
-    });
-  }
-  function rebuildForWriter(type){
-    const rec = window.__qmsEditSignRecord && window.__qmsEditSignRecord[type];
-    if(rec) return;
-    ['reviewer','approver'].forEach(role => {
-      const sel = $(`sg_${type}_${role}`); if(!sel) return;
-      const list = roleList(type,role,null);
-      sel.innerHTML = opts(list, `-- ${ROLE_LABEL[role]} 선택 --`);
-      if(list.length) sel.value = list[0].id || list[0].name || '';
-      sel.disabled = !isAdmin(currentUser());
-      refreshSub(type,role);
-    });
-  }
-  window.buildSignGrid = function(type){ build(type, null); };
-  window.restoreSign = function(type, record){ build(type, record || null); };
-  window.clearSign = function(type){ if(window.__qmsEditSignRecord) delete window.__qmsEditSignRecord[type]; build(type, null); ROLES.forEach(r => { const st=sigStore(type,r); st.signImage=''; st.signDate=''; refreshSub(type,r); }); };
-  window.signature데이터 = function(type, role){ const st = sigStore(type,role); return {signImage:st.signImage || '', signDate:st.signDate || ''}; };
-  window.restoreSignaturePad = function(type,role,data){ const st=sigStore(type,role); st.signImage=data?.signImage || ''; st.signDate=data?.signDate || ''; refreshSub(type,role); };
-  window.clearSignaturePad = function(type,role){ const st=sigStore(type,role); st.signImage=''; st.signDate=''; const f=$(`sg_${type}_${role}_file`); if(f) f.value=''; refreshSub(type,role); };
-  window.getSignPayload = function(type){
-    const out = {};
-    const me = currentUser();
-    const adminMode = isAdmin(me);
-    const rec = window.__qmsEditSignRecord && window.__qmsEditSignRecord[type];
-    ROLES.forEach(role => {
-      const sig = window.signature데이터(type,role);
-      out[role] = {...selected(type,role), ...sig};
-      if(role !== 'writer'){
-        const map = rec ? {writer:rec.signWriter || rec.writer, reviewer:rec.signReviewer || rec.reviewer, approver:rec.signApprover || rec.approver} : null;
-        const writer = (map && normalizeSaved(map.writer)) || out.writer || me;
-        // 일반 사용자는 화면상 '-'를 유지하지만, 권한자가 서명/검토/승인을 실행한 경우 내부 저장값은 로그인 사용자로 기록한다.
-        // 권한이 없으면 '-' 그대로 저장되어 검토/승인 처리되지 않는다.
-        if(!adminMode && out[role].name === '-' && canActByWriter(role, writer, me) && (sig.signImage || sig.signDate)){
-          out[role] = {...me, ...sig};
-        }
-        if(!out[role].name) out[role] = noneUser();
-      }
-    });
-    return {writer:out.writer, reviewer:out.reviewer, approver:out.approver};
-  };
-  document.addEventListener('change', function(e){
-    const sel = e.target.closest && e.target.closest('.sign-sel');
-    if(sel && /^sg_[^_]+_(writer|reviewer|approver)$/.test(sel.id || '')){
-      const m = /^sg_([^_]+)_(writer|reviewer|approver)$/.exec(sel.id);
-      if(m){ if(m[2] === 'writer') rebuildForWriter(m[1]); refreshSub(m[1],m[2]); }
-    }
-    const f = e.target.closest && e.target.closest('[data-qms-final-file]');
-    if(f && f.files && f.files[0]){
-      const pair = f.getAttribute('data-qms-final-file').split(':');
-      const rd = new FileReader();
-      rd.onload = function(){ const st=sigStore(pair[0],pair[1]); st.signImage=String(rd.result || ''); st.signDate=new Date().toLocaleString('ko-KR'); refreshSub(pair[0],pair[1]); };
-      rd.readAsDataURL(f.files[0]);
-    }
-  }, true);
-  document.addEventListener('click', function(e){
-    const b = e.target.closest && e.target.closest('[data-qms-final-file-btn]');
-    if(b){ e.preventDefault(); const pair=b.getAttribute('data-qms-final-file-btn').split(':'); $(`sg_${pair[0]}_${pair[1]}_file`)?.click(); }
-    const c = e.target.closest && e.target.closest('[data-qms-final-clear]');
-    if(c){ e.preventDefault(); const pair=c.getAttribute('data-qms-final-clear').split(':'); window.clearSignaturePad(pair[0],pair[1]); }
-  }, true);
-  window.qmsRefreshSignatures = function(){ TYPES.forEach(t => { if($(`signGrid_${t}`)) build(t, null); }); };
-  window.addEventListener('load', function(){ setTimeout(window.qmsRefreshSignatures, 500); });
-})();
-</script>
-
-
 <script id="namo-approval-position-lock-final">
 /* ════════════════════════════════════════════════════════════════
    NAMO MES/QMES 전자결재 권한 최종 교체 패치
@@ -11748,11 +11066,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 })();
 </script>
 <!-- NMC INSPECTION REPORT PORTRAIT PRINT FINAL PATCH 20260624 END -->
-
-</body>
-</html>
-
-
 <!-- REMOVED: IQC restore + full replace approval scripts 20260616 (replaced by stable v4) -->
 <!-- NAMO IQC/PQC/OQC LIST RESTORE PATCH 20260616 -->
 <style id="namo-inspection-list-restore-style">
@@ -12081,9 +11394,227 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
 
 
 
+<!-- NMC WORKORDER APPROVAL CLEANUP + PREFILTER PATCH v12 START -->
+<script>
+/* NMC Workorder Approval Prefilter No-Flicker Patch v11 - 2026-06-19
+   목적: F5 시 결재함이 잠깐 31건으로 보였다가 3건으로 바뀌는 현상 방지.
+   방식: 결재함 렌더링 전에 nmc_workorder_sent_items를 현재 작업지시 목록 기준으로 선필터링합니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_APPROVAL_PREFILTER_V11__) return;
+  window.__NMC_WORKORDER_APPROVAL_PREFILTER_V11__ = true;
 
-<!-- REMOVED BY RESTORE V2: NMC WORKORDER APPROVAL CLEANUP PREFILTER -->
+  var STORE = 'nmc_workorder_sent_items';
+  var ACTIVE_KEYS = [
+    'nmcWorkOrderHistory','nmcWorkorderHistory','workOrderHistory','workorderHistory',
+    'nmcWorkOrders','workOrders','workorders','qms_worklog','worklog','nmcSentWorkorders'
+  ];
 
+  var nativeGet = Storage.prototype.getItem;
+  var nativeSet = Storage.prototype.setItem;
+  var nativeRemove = Storage.prototype.removeItem;
+
+  function text(v){ return String(v == null ? '' : v).trim(); }
+  function safeParse(raw, def){ try{ return raw ? JSON.parse(raw) : def; }catch(e){ return def; } }
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function getRaw(key){ try{ return nativeGet.call(localStorage, key); }catch(e){ return null; } }
+  function setRaw(key, val){ try{ nativeSet.call(localStorage, key, val); }catch(e){} }
+
+  function isDeleted(r){
+    if(!r) return true;
+    var st = text(r.status || r.state || r.progressStatus || r.approvalStatus).toUpperCase();
+    return !!(r.deleted || r.isDeleted || r._deleted || r.removed || r._removed || st === 'DELETED' || st === 'TRASH' || st === 'REMOVED');
+  }
+  function woNoOf(r){ return text(r && (r.woNo || r.workOrderNo || r.orderNo || r.docNo || r.no || r.id || r.uid)); }
+  function lotOf(r){ return text(r && (r.lot || r.prodLot || r.productionLot || r.nmcProdLot || r.productLot)); }
+  function signature(r){
+    var w = woNoOf(r); if(w) return 'WO:' + w;
+    var l = lotOf(r); if(l) return 'LOT:' + l;
+    return '';
+  }
+  function getState(){ try{ return window.state || {}; }catch(e){ return {}; } }
+
+  function collectActiveSignatures(){
+    var S = getState();
+    var set = {};
+    ACTIVE_KEYS.forEach(function(k){
+      arr(S[k]).concat(arr(safeParse(getRaw(k), []))).forEach(function(r){
+        if(!r || isDeleted(r)) return;
+        var sig = signature(r);
+        if(sig) set[sig] = true;
+      });
+    });
+    return set;
+  }
+  function hasKeys(o){ return Object.keys(o || {}).length > 0; }
+  function filterSentList(list){
+    list = arr(list);
+    var active = collectActiveSignatures();
+    if(!hasKeys(active)) return list;
+    return list.filter(function(r){
+      if(!r || isDeleted(r)) return false;
+      var sig = signature(r);
+      return sig ? !!active[sig] : false;
+    });
+  }
+  function normalizeStore(){
+    var raw = getRaw(STORE);
+    var list = safeParse(raw, []);
+    if(!Array.isArray(list)) return;
+    var next = filterSentList(list);
+    if(next.length !== list.length) setRaw(STORE, JSON.stringify(next));
+  }
+
+  try{
+    normalizeStore();
+    Storage.prototype.getItem = function(key){
+      var val = nativeGet.call(this, key);
+      if(this === localStorage && key === STORE){
+        var list = safeParse(val, []);
+        if(Array.isArray(list)) return JSON.stringify(filterSentList(list));
+      }
+      return val;
+    };
+    Storage.prototype.setItem = function(key, value){
+      if(this === localStorage && key === STORE){
+        var list = safeParse(value, null);
+        if(Array.isArray(list)) value = JSON.stringify(filterSentList(list));
+      }
+      return nativeSet.call(this, key, value);
+    };
+    Storage.prototype.removeItem = function(key){ return nativeRemove.call(this, key); };
+  }catch(e){ console.warn('[NMC v11 approval prefilter]', e); }
+
+  window.nmcWorkorderApprovalPrefilterV11 = function(){ normalizeStore(); };
+  document.addEventListener('click', function(e){
+    var t = e.target && e.target.closest && e.target.closest('button,.sb,[data-delete],[data-del],[data-nmc-delete]');
+    if(!t) return;
+    if(/삭제|delete|remove|del/i.test(text(t.textContent || t.value))){
+      setTimeout(normalizeStore, 0);
+      setTimeout(normalizeStore, 250);
+      setTimeout(normalizeStore, 800);
+    }
+  }, true);
+})();
+
+</script>
+<script>
+/* NMC Workorder Approval Orphan Cleanup Patch v10 - 2026-06-19
+   목적: 작업지시서를 삭제했는데 결재함/결재 목록에 남는 고아 작업지시 스냅샷을 자동 정리합니다.
+   원본 파일 덮어쓰기 없이 HTML 하단에 삽입해서 사용합니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_APPROVAL_ORPHAN_CLEANUP_V10__) return;
+  window.__NMC_WORKORDER_APPROVAL_ORPHAN_CLEANUP_V10__ = true;
+
+  var SENT_KEYS = ['nmc_workorder_sent_items'];
+  var ACTIVE_KEYS = [
+    'qms_worklog','worklog','workorders','workOrders','nmcWorkOrders',
+    'workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'
+  ];
+
+  function text(v){ return String(v == null ? '' : v).trim(); }
+  function parse(key, def){
+    try{
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : def;
+    }catch(e){ return def; }
+  }
+  function save(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+  }
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function getState(){
+    try{ return window.state || state || {}; }catch(e){ return window.state || {}; }
+  }
+  function isDeleted(r){
+    if(!r) return true;
+    var st = text(r.status || r.state || r.progressStatus).toUpperCase();
+    return !!(r.deleted || r.isDeleted || r._deleted || r.removed || r._removed || st === 'DELETED' || st === 'TRASH' || st === 'REMOVED');
+  }
+  function woNoOf(r){
+    return text(r && (r.woNo || r.workOrderNo || r.orderNo || r.docNo || r.no || r.id || r.uid));
+  }
+  function lotOf(r){
+    return text(r && (r.lot || r.prodLot || r.productionLot || r.nmcProdLot || r.productLot));
+  }
+  function signature(r){
+    var w = woNoOf(r);
+    if(w) return 'WO:' + w;
+    var l = lotOf(r);
+    if(l) return 'LOT:' + l;
+    return '';
+  }
+  function collectActiveSignatures(){
+    var S = getState();
+    var set = {};
+    ACTIVE_KEYS.forEach(function(k){
+      arr(S[k]).concat(arr(parse(k, []))).forEach(function(r){
+        if(!r || isDeleted(r)) return;
+        var sig = signature(r);
+        if(sig) set[sig] = true;
+      });
+    });
+    return set;
+  }
+  function countKeys(obj){ return Object.keys(obj || {}).length; }
+
+  function cleanupSentWorkorders(){
+    var active = collectActiveSignatures();
+    if(!countKeys(active)) return 0; // 활성 작업지시 목록을 찾지 못하면 안전상 삭제하지 않음
+
+    var removed = 0;
+    SENT_KEYS.forEach(function(key){
+      var list = arr(parse(key, []));
+      if(!list.length) return;
+      var next = list.filter(function(r){
+        if(!r || isDeleted(r)){ removed++; return false; }
+        var sig = signature(r);
+        if(sig && active[sig]) return true;
+        removed++;
+        return false;
+      });
+      if(next.length !== list.length) save(key, next);
+    });
+    return removed;
+  }
+
+  function refreshApproval(){
+    try{ if(typeof window.renderApprovalInbox === 'function') window.renderApprovalInbox(); }catch(e){}
+    try{ if(typeof window.renderApprovalInboxFinal === 'function') window.renderApprovalInboxFinal(); }catch(e){}
+    try{ if(typeof window.namoRenderUnifiedApprovalInbox === 'function') window.namoRenderUnifiedApprovalInbox(); }catch(e){}
+    try{ if(typeof window.renderApproval === 'function') window.renderApproval(); }catch(e){}
+  }
+
+  function runCleanup(){
+    var n = cleanupSentWorkorders();
+    if(n) refreshApproval();
+    return n;
+  }
+
+  window.nmcCleanupWorkorderApprovalOrphans = runCleanup;
+
+  document.addEventListener('click', function(e){
+    var del = e.target && e.target.closest && e.target.closest('.sb.del, [data-delete], [data-del], [data-nmc-delete], button');
+    if(!del) return;
+    var t = text(del.textContent || del.value);
+    if(!/삭제|delete|del|remove/i.test(t)) return;
+    setTimeout(runCleanup, 150);
+    setTimeout(runCleanup, 700);
+  }, true);
+
+  document.addEventListener('click', function(e){
+    var nav = e.target && e.target.closest && e.target.closest('.nav-item[data-page="approval-inbox"], [data-nmc-approval-refresh], #approvalRefreshBtn');
+    if(nav) setTimeout(runCleanup, 60);
+  }, true);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(runCleanup, 400); });
+  else setTimeout(runCleanup, 400);
+  [1200, 3000].forEach(function(ms){ setTimeout(runCleanup, ms); });
+})();
+
+</script>
+<!-- NMC WORKORDER APPROVAL CLEANUP + PREFILTER PATCH v12 END -->
 
 <!-- NMC APPROVAL DELETE BUTTON PATCH v13: no overwrite -->
 
@@ -12611,75 +12142,6 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
 })();
 </script>
 <!-- NMC INSPECTION REPORT PORTRAIT PRINT FINAL PATCH 20260624 END -->
-
-
-
-<!-- NAMO APPROVAL RESTORE V2 20260624 START: 데이터 보존 / 결재함 복구 / 깜박임 제거 -->
-<style id="namo-approval-restore-v2-style">
-  .nav-item[data-page="approval-inbox"]{display:flex!important;visibility:visible!important;opacity:1!important;}
-  .namo-inline-approval-box{display:block!important;visibility:visible!important;opacity:1!important;}
-  .sign-grid{visibility:visible!important;opacity:1!important;animation:none!important;}
-  .sign-box,.sign-sel,.sign-file-wrap{animation:none!important;transition:none!important;}
-  .sign-box[data-namo-approval-state="active"]{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.10)!important;background:#fff!important;}
-  .sign-box[data-namo-approval-state="locked"]{background:#f8fafc!important;border-color:#d0d5de!important;}
-  .sign-sel:disabled{background:#f3f4f6!important;color:#475569!important;opacity:1!important;cursor:not-allowed!important;pointer-events:none!important;}
-  .sign-sub{font-size:11px!important;color:#64748b!important;min-height:15px!important;}
-  .sign-box-badge{font-size:10px!important;font-weight:900!important;padding:2px 7px!important;border-radius:999px!important;background:#eef2ff!important;color:#1d4ed8!important;}
-</style>
-<script id="namo-approval-restore-v2-script">
-(function(){
-  'use strict';
-  if(window.__NAMO_APPROVAL_RESTORE_V2_20260624__) return;
-  window.__NAMO_APPROVAL_RESTORE_V2_20260624__=true;
-  var TYPES=['iqc','pqc','oqc','nc','training'];
-  var ROLES=['writer','reviewer','approver'];
-  var ROLE_KO={writer:'작성',reviewer:'검토',approver:'승인'};
-  var LEVEL={STAFF:1,MANAGER:2,DIRECTOR:3,CEO:9};
-  var applying=false;
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function id(x){return document.getElementById(x)}
-  function text(v){v=String(v==null?'':v).trim();return (!v||v==='undefined'||v==='null')?'':v}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function stateObj(){try{return window.state||state||{}}catch(e){return window.state||{}}}
-  function norm(u){
-    if(!u) return null; if(typeof u==='string') u={name:u,id:u};
-    var email=text(u.email||u.mail||u.userEmail);
-    var name=text(u.name||u.username||u.userName||u.displayName||u.fullName||u.employeeName||u.korName||u.id||email);
-    if(!name&&email) name=email.split('@')[0]; if(!name) return null;
-    return {id:text(u.id||u.userId||u.uid||email||name)||name,name:name,email:email,department:text(u.department||u.dept||u.deptName||u.team||u.teamName||u.division||u.org),title:text(u.title||u.position||u.positionName||u.rank||u.jobTitle||u.roleName||u.duty||u.grade),role:text(u.role||u.auth||u.authority)};
-  }
-  function me(){var s=stateObj();return norm(s.currentUser||window.currentUser||window.loginUser||window.userInfo||null)}
-  function allUsers(){var s=stateObj(),src=[];['signableUsers','users','adminUsers','members'].forEach(function(k){if(Array.isArray(s[k])) src=src.concat(s[k]);});if(Array.isArray(window.signableUsers)) src=src.concat(window.signableUsers);var m=me();if(m)src.push(m);var seen={},out=[];src.forEach(function(u){u=norm(u);if(!u)return;var k=(u.email||u.id||u.name).toLowerCase();if(seen[k])return;seen[k]=1;out.push(u);});return out;}
-  function same(a,b){a=norm(a);b=norm(b);return !!(a&&b&&((a.id&&b.id&&String(a.id)===String(b.id))||(a.email&&b.email&&a.email.toLowerCase()===b.email.toLowerCase())||(a.name&&b.name&&a.name===b.name)))}
-  function isAdmin(u){u=norm(u);var r=(u&&u.role||'').toLowerCase(),t=(u&&u.title||'');return !!(u&&(r==='admin'||r==='administrator'||r.indexOf('관리자')>-1||t.indexOf('관리자')>-1));}
-  function level(u){u=norm(u);if(!u)return LEVEL.STAFF;if(isAdmin(u))return LEVEL.CEO;var t=(u.title+' '+u.role).replace(/\s/g,'');if(/대표이사|대표|사장|회장|CEO/i.test(t))return LEVEL.CEO;if(/이사|상무|전무|임원/i.test(t))return LEVEL.DIRECTOR;if(/부장|팀장|본부장|실장|센터장/i.test(t))return LEVEL.MANAGER;return LEVEL.STAFF;}
-  function reqLevel(writer,role){var wl=level(writer);if(role==='writer')return LEVEL.STAFF;if(wl<=LEVEL.STAFF)return LEVEL.MANAGER;if(wl===LEVEL.MANAGER)return LEVEL.DIRECTOR;if(role==='approver')return LEVEL.CEO;return LEVEL.DIRECTOR;}
-  function canAct(writer,role,u){u=norm(u);writer=norm(writer);if(!u||!writer)return false;if(isAdmin(u))return true;if(role==='writer')return same(writer,u);if(same(writer,u))return false;return level(u)>=reqLevel(writer,role)}
-  function label(u){u=norm(u);return u?u.name+(u.title?' / '+u.title:'')+(u.department?' / '+u.department:''):'-'}
-  function opt(u){u=norm(u);if(!u)return '<option value="">-</option>';return '<option value="'+esc(u.id||u.email||u.name)+'" data-name="'+esc(u.name)+'" data-title="'+esc(u.title)+'" data-department="'+esc(u.department)+'" data-email="'+esc(u.email)+'" data-role="'+esc(u.role)+'">'+esc(label(u))+'</option>'}
-  function setOnly(sel,u){if(!sel)return;u=norm(u);sel.innerHTML=u?opt(u):'<option value="">-</option>';sel.value=u?(u.id||u.email||u.name):''}
-  function selected(type,role){var sel=id('sg_'+type+'_'+role);if(!sel||!sel.value)return null;var o=sel.options[sel.selectedIndex]||{};return norm({id:sel.value,name:o.dataset&&o.dataset.name||o.textContent,title:o.dataset&&o.dataset.title,department:o.dataset&&o.dataset.department,email:o.dataset&&o.dataset.email,role:o.dataset&&o.dataset.role});}
-  function savedRecord(type){try{return (window.__qmsEditSignRecord&&window.__qmsEditSignRecord[type])||null}catch(e){return null}}
-  function savedUser(rec,role){if(!rec)return null;var raw=role==='writer'?(rec.signWriter||rec.writer||rec.inspector||rec.visual||rec.solid):role==='reviewer'?(rec.signReviewer||rec.reviewer):(rec.signApprover||rec.approver);return norm(raw);}
-  function setMsg(type,role,msg,badge,stateName){var sub=id('sg_'+type+'_'+role+'_sub');if(sub)sub.textContent=msg||'';var bd=id('sg_'+type+'_'+role+'_badge');if(bd)bd.textContent=badge||'';var sel=id('sg_'+type+'_'+role),box=sel&&sel.closest&&sel.closest('.sign-box');if(box)box.dataset.namoApprovalState=stateName||'locked';}
-  function lockSign(type,role,active){var file=id('sg_'+type+'_'+role+'_file');var btn=qs('[data-qms-final-file-btn="'+type+':'+role+'"],[data-final-sign-file-btn="'+type+':'+role+'"],[data-sign-file-btn="'+type+':'+role+'"],[data-qms-rule-file-btn="'+type+':'+role+'"]');var clr=qs('[data-qms-final-clear="'+type+':'+role+'"],[data-final-sign-clear="'+type+':'+role+'"],[data-sign-clear="'+type+':'+role+'"],[data-qms-rule-clear="'+type+':'+role+'"]');[file,btn,clr].forEach(function(el){if(el){el.disabled=!active;el.style.pointerEvents=active?'auto':'none';el.style.opacity=active?'1':'.45'}});}
-  function ensureGrid(type){var grid=id('signGrid_'+type);if(!grid)return null;if(id('sg_'+type+'_writer')&&id('sg_'+type+'_reviewer')&&id('sg_'+type+'_approver'))return grid;grid.innerHTML=ROLES.map(function(r){return '<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">'+ROLE_KO[r]+'</span><span class="sign-box-badge" id="sg_'+type+'_'+r+'_badge"></span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+type+'_'+r+'"></select><div class="sign-sub" id="sg_'+type+'_'+r+'_sub"></div></div></div>'}).join('');return grid;}
-  function applyType(type){var grid=ensureGrid(type);if(!grid)return;var cur=me(),admin=isAdmin(cur),rec=savedRecord(type);var writer=savedUser(rec,'writer')||selected(type,'writer')||cur;var wsel=id('sg_'+type+'_writer');setOnly(wsel,writer);if(wsel)wsel.disabled=true;setMsg(type,'writer',same(writer,cur)?'로그인 본인 작성':'작성자 보존','작성','active');lockSign(type,'writer',!!cur&&(admin||same(writer,cur)));['reviewer','approver'].forEach(function(role){var sel=id('sg_'+type+'_'+role);if(!sel)return;var saved=savedUser(rec,role)||selected(type,role);if(saved&&!admin){setOnly(sel,saved);sel.disabled=true;var active=!!cur&&same(saved,cur);setMsg(type,role,active?'로그인 본인 '+ROLE_KO[role]+' 가능':'지정된 '+ROLE_KO[role]+'자 로그인 시 가능',active?'본인':'잠김',active?'active':'locked');lockSign(type,role,active);return;}if(admin){var users=allUsers();sel.innerHTML='<option value="">-</option>'+users.map(opt).join('');sel.disabled=false;if(saved)sel.value=saved.id||saved.email||saved.name;setMsg(type,role,'관리자: 전체 회원 선택 가능','관리자','active');lockSign(type,role,true);return;}if(canAct(writer,role,cur)){setOnly(sel,cur);sel.disabled=false;setMsg(type,role,'권한 일치: 로그인 본인만 '+ROLE_KO[role]+' 가능','본인','active');lockSign(type,role,true);}else{setOnly(sel,null);sel.disabled=true;var req=reqLevel(writer,role),msg=req===LEVEL.MANAGER?'부장 이상':req===LEVEL.DIRECTOR?'이사 이상':'대표이사';setMsg(type,role,msg+' 로그인 시 '+ROLE_KO[role]+' 가능','잠김','locked');lockSign(type,role,false);}});}
-  function fixApprovalInbox(){var side=qs('.sidebar');if(side&&!qs('.nav-item[data-page="approval-inbox"]',side)){var btn=document.createElement('button');btn.className='nav-item';btn.type='button';btn.setAttribute('data-page','approval-inbox');btn.innerHTML='<span class="nav-icon">📥</span><span>결재함</span><span id="namoApprovalBadge" class="tag" style="margin-left:auto;display:none">0</span>';var dash=qs('.nav-item[data-page="dashboard"]',side);if(dash&&dash.nextSibling)side.insertBefore(btn,dash.nextSibling);else side.insertBefore(btn,side.firstChild);}qsa('.nav-item[data-page="approval-inbox"] span').forEach(function(sp){if((sp.textContent||'').indexOf('통합 결재함')>-1)sp.textContent='결재함'});if(!id('page-approval-inbox')){var content=qs('.content')||document.body,p=document.createElement('div');p.className='page';p.id='page-approval-inbox';p.innerHTML='<div class="ph"><div><div class="ph-title">결재함</div><div class="ph-sub">작성/검토/승인 문서를 확인합니다.</div></div></div><div class="card"><div class="cb">결재함 화면을 준비 중입니다. 새로고침 후 다시 확인하세요.</div></div>';content.appendChild(p);}}
-  function applyAll(){if(applying)return;applying=true;try{TYPES.forEach(applyType);fixApprovalInbox();}finally{applying=false}}
-  window.buildSignGrid=function(type){applyType(type);return id('signGrid_'+type)};
-  window.rebuildAllSignGrids=applyAll;window.applyAllSignPermissions=applyAll;window.qmsRefreshSignatures=applyAll;window.namoApprovalRestoreV2=applyAll;window.namoApprovalCanAct=canAct;
-  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-page],#incomingReset,#processReset,#shipmentReset,#ncReset,#trainingReset'))setTimeout(applyAll,80);},true);
-  document.addEventListener('change',function(e){if(e.target&&/^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)$/.test(e.target.id||''))setTimeout(applyAll,0)},true);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applyAll);else applyAll();
-  window.addEventListener('load',function(){setTimeout(applyAll,80);setTimeout(applyAll,500);});
-})();
-</script>
-<!-- NAMO APPROVAL RESTORE V2 20260624 END -->
-
-</body></html>
-
 <!-- NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_START
      비활성화됨: 작업지시 현황 메뉴/페이지 강제 숨김 패치 제거.
      최종 정책: 작업지시 현황은 NMC_WORKORDER_STATUS_DASHBOARD_FINAL 화면을 사용합니다.
@@ -12746,309 +12208,7 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_WORKORDER_STATUS_DASHBOARD_FINAL_END -->
 
-<!-- NAMO SIGN MEMBERS RANK-FILTERED FINAL v5
-     - 작성자: 항상 로그인 본인으로 고정(신규 작성/수정 모두 동일). 본인 외 다른 사람으로 변경 불가.
-     - 검토자/승인자: 작성자(=로그인 본인)의 직급에 따라 선택 가능한 후보가 자동으로 좁혀짐.
-       · 작성자 사원~과장  -> 검토/승인 후보 = 부장 이상
-       · 작성자 부장        -> 검토/승인 후보 = 이사 이상
-       · 작성자 이사/상무   -> 검토 후보 = 이사 이상, 승인 후보 = 전무 이상
-       · 작성자 전무 이상   -> 검토/승인 생략(후보 없음, "대상 없음" 표시)
-     - 관리자(admin) 로그인 시에는 검토/승인 후보에 예외적으로 전체 회원이 표시됩니다(운영 예외용).
--->
-<style id="namo-sign-rank-filter-v5-style">
-  #signGrid_iqc,#signGrid_pqc,#signGrid_oqc,#signGrid_nc,#signGrid_training{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:12px!important;
-    visibility:visible!important;
-    opacity:1!important;
-  }
-  #signGrid_iqc .sign-box,#signGrid_pqc .sign-box,#signGrid_oqc .sign-box,#signGrid_nc .sign-box,#signGrid_training .sign-box{
-    display:block!important;
-    visibility:visible!important;
-    opacity:1!important;
-    filter:none!important;
-  }
-  #signGrid_iqc select.sign-sel,#signGrid_pqc select.sign-sel,#signGrid_oqc select.sign-sel,#signGrid_nc select.sign-sel,#signGrid_training select.sign-sel{
-    background:#fff!important;
-  }
-  #signGrid_iqc select.sign-sel[disabled],#signGrid_pqc select.sign-sel[disabled],#signGrid_oqc select.sign-sel[disabled],#signGrid_nc select.sign-sel[disabled],#signGrid_training select.sign-sel[disabled]{
-    background:#f1f5f9!important;
-    color:#94a3b8!important;
-    cursor:not-allowed!important;
-  }
-  @media(max-width:900px){#signGrid_iqc,#signGrid_pqc,#signGrid_oqc,#signGrid_nc,#signGrid_training{grid-template-columns:1fr!important;}}
-</style>
-<script id="namo-sign-rank-filter-v5-script">
-(function(){
-  'use strict';
-  var TYPES=['iqc','pqc','oqc','nc','training'];
-  var ROLES=['writer','reviewer','approver'];
-  var ROLE_LABEL={writer:'작성자',reviewer:'검토자',approver:'승인자'};
-  var PREVIEW={
-    iqc:{pfx:'Iqc',box:'incomingReportPreview'},
-    pqc:{pfx:'Pqc',box:'processReportPreview'},
-    oqc:{pfx:'Oqc',box:'shipmentReportPreview'},
-    nc:{pfx:'Nc',box:''},
-    training:{pfx:'Training',box:'trainingPreviewSheet'}
-  };
 
-  // ── 직급 레벨 판정 ──────────────────────────────────────────
-  var LEVEL={STAFF:1, MANAGER:2, DIRECTOR:3, EXEC:4, CEO:9};
-  var EXEC_WORDS=['전무','대표이사','대표','사장','회장'];
-  var DIRECTOR_WORDS=['이사','상무'].concat(EXEC_WORDS);
-  var MANAGER_WORDS=['부장','본부장','실장','센터장'].concat(DIRECTOR_WORDS);
-
-  function titleText(u){
-    return String((u&&(u.title||''))+' '+(u&&(u.role||''))+' '+(u&&(u.department||''))).toLowerCase();
-  }
-  function hasAny(u,words){
-    var t=titleText(u);
-    return words.some(function(w){return t.indexOf(String(w).toLowerCase())>-1;});
-  }
-  function isAdminUser(u){
-    var t=titleText(u);
-    return t.indexOf('admin')>-1 || t.indexOf('관리자')>-1 || !!(u&&(u.isAdmin||u.admin||u.is_admin));
-  }
-  function userLevel(u){
-    if(!u) return 0;
-    if(isAdminUser(u)) return LEVEL.CEO;
-    if(/대표이사|대표|사장|회장|ceo/i.test(titleText(u))) return LEVEL.CEO;
-    if(hasAny(u,EXEC_WORDS)) return LEVEL.EXEC;
-    if(hasAny(u,DIRECTOR_WORDS)) return LEVEL.DIRECTOR;
-    if(hasAny(u,MANAGER_WORDS)) return LEVEL.MANAGER;
-    return LEVEL.STAFF;
-  }
-
-  // 작성자 레벨에 따라 검토/승인에 필요한 최소 레벨을 계산
-  function requiredLevel(writerLevel, role){
-    if(role==='writer') return LEVEL.STAFF;
-    if(writerLevel>=LEVEL.EXEC) return Infinity;             // 전무 이상 -> 검토/승인 생략
-    if(writerLevel<=LEVEL.STAFF) return LEVEL.MANAGER;       // 사원~과장 -> 부장 이상
-    if(writerLevel===LEVEL.MANAGER) return LEVEL.DIRECTOR;   // 부장 -> 이사 이상
-    if(writerLevel===LEVEL.DIRECTOR){                        // 이사/상무
-      return role==='approver' ? LEVEL.EXEC : LEVEL.DIRECTOR;
-    }
-    return Infinity;
-  }
-
-  var applying=false, pending=false;
-  function $(id){return document.getElementById(id);}
-  function clean(v){v=String(v==null?'':v).trim();return (!v||v==='undefined'||v==='null'||v==='-')?'':v;}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function norm(u){
-    if(!u)return null;
-    if(typeof u==='string')u={name:u,id:u};
-    var name=clean(u.name||u.username||u.userName||u.displayName||u.fullName||u.employeeName||u.korName||u.id||u.email||u.mail);
-    if(!name)return null;
-    return {
-      id:clean(u.id||u.userId||u.uid||u.email||u.mail||name)||name,
-      name:name,
-      department:clean(u.department||u.dept||u.deptName||u.team||u.teamName||u.division||u.org||''),
-      title:clean(u.title||u.position||u.positionName||u.rank||u.jobTitle||u.roleName||u.duty||''),
-      email:clean(u.email||u.mail||''),
-      role:clean(u.role||'')
-    };
-  }
-  function appState(){try{return window.state || state || {};}catch(e){try{return window.state || {};}catch(_){return {};}}}
-  function same(a,b){a=norm(a);b=norm(b);return !!(a&&b&&((a.id&&b.id&&String(a.id)===String(b.id))||(a.email&&b.email&&String(a.email).toLowerCase()===String(b.email).toLowerCase())||(a.name&&b.name&&a.name===b.name)));}
-  function addUser(out,seen,u){u=norm(u);if(!u)return;var k=(u.email||u.id||u.name).toLowerCase();if(seen[k])return;seen[k]=1;out.push(u);}
-  function readJsonArray(v){try{var x=JSON.parse(v||'');return Array.isArray(x)?x:[];}catch(e){return [];}}
-  function currentUser(){
-    var s=appState();
-    return norm(s.currentUser||window.currentUser||window.loginUser||window.userInfo||null);
-  }
-  function allUsers(){
-    var s=appState(), out=[], seen={};
-    addUser(out,seen,currentUser());
-    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList','nmcUsers'].forEach(function(k){
-      if(Array.isArray(s[k]))s[k].forEach(function(u){addUser(out,seen,u);});
-      if(Array.isArray(window[k]))window[k].forEach(function(u){addUser(out,seen,u);});
-    });
-    try{
-      for(var i=0;i<localStorage.length;i++){
-        var key=localStorage.key(i)||'';
-        if(!/(user|member|employee|signable|admin)/i.test(key))continue;
-        readJsonArray(localStorage.getItem(key)).forEach(function(u){addUser(out,seen,u);});
-      }
-    }catch(e){}
-    return out;
-  }
-  function label(u){u=norm(u);if(!u)return '-';var tail=[u.department,u.title].filter(Boolean).join(' / ');return u.name+(tail?' / '+tail:'');}
-  function opt(u){u=norm(u)||{};return '<option value="'+esc(u.id||u.email||u.name)+'" data-name="'+esc(u.name||'')+'" data-department="'+esc(u.department||'')+'" data-title="'+esc(u.title||'')+'" data-email="'+esc(u.email||'')+'">'+esc(label(u))+'</option>';}
-  function optHash(users){return users.map(function(u){return (u.id||u.email||u.name)+'|'+u.name+'|'+u.department+'|'+u.title;}).join('||');}
-
-  function selectedFrom(sel,users){
-    if(!sel||!sel.value)return null;
-    var o=sel.options[sel.selectedIndex], ds=(o&&o.dataset)||{};
-    var name=clean(ds.name||String(o&&o.textContent||'').replace(/\s*\/\s*.*$/,''));
-    var ref={id:sel.value,name:name,department:ds.department,title:ds.title,email:ds.email};
-    var found=users.find(function(u){return same(u,ref)||String(u.id)===String(sel.value)||String(u.email)===String(sel.value);});
-    return norm(found||ref);
-  }
-
-  function ensureBox(grid,type,role){
-    var sel=$('sg_'+type+'_'+role);
-    if(sel)return sel;
-    var box=document.createElement('div');
-    box.className='sign-box';
-    box.innerHTML='<div class="sign-box-hdr"><span class="sign-box-role">'+esc(ROLE_LABEL[role])+'</span><span class="sign-box-badge any" id="sg_'+esc(type)+'_'+esc(role)+'_badge"></span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+esc(type)+'_'+esc(role)+'"></select><div class="sign-sub" id="sg_'+esc(type)+'_'+esc(role)+'_sub"></div></div>';
-    grid.appendChild(box);
-    return $('sg_'+type+'_'+role);
-  }
-
-  function syncPreview(type){
-    var cfg=PREVIEW[type]||{}, pfx=cfg.pfx||'';
-    var users=allUsers();
-    ROLES.forEach(function(role){
-      var sel=$('sg_'+type+'_'+role), u=selectedFrom(sel,users), cap=role.charAt(0).toUpperCase()+role.slice(1);
-      if(!pfx)return;
-      var n=$('r'+pfx+cap), t=$('r'+pfx+cap+'T');
-      if(n)n.textContent=u?u.name:'-';
-      if(t)t.textContent=u?[u.department,u.title].filter(Boolean).join(' / '):'';
-    });
-  }
-  function ensurePreviewBox(type){
-    var cfg=PREVIEW[type]; if(!cfg||!cfg.box||!cfg.pfx)return;
-    var sheet=$(cfg.box); if(!sheet)return;
-    var sign=sheet.querySelector('.rprint-sign');
-    if(sign)return;
-    sign=document.createElement('div'); sign.className='rprint-sign';
-    sign.innerHTML=['writer','reviewer','approver'].map(function(role){var cap=role.charAt(0).toUpperCase()+role.slice(1);return '<div class="rpsign-col"><div class="rpsign-role">'+(role==='writer'?'작성':role==='reviewer'?'검토':'승인')+'</div><div class="rpsign-name" id="r'+cfg.pfx+cap+'">-</div><div class="rpsign-title" id="r'+cfg.pfx+cap+'T"></div><div class="rpsign-line"></div></div>';}).join('');
-    var bc=sheet.querySelector('.bcsec'); if(bc)sheet.insertBefore(sign,bc); else sheet.appendChild(sign);
-  }
-
-  function stabilizeType(type){
-    var grid=$('signGrid_'+type); if(!grid)return;
-    grid.style.display='grid';grid.style.visibility='visible';grid.style.opacity='1';
-
-    var allList=allUsers(), me=currentUser();
-    if(!allList.length&&me)allList=[me];
-
-    var meIsAdmin=isAdminUser(me);
-
-    // 작성자 select: 로그인 본인 1명만 표시하고 항상 잠금(신규/수정 모드 공통)
-    var writerSel=ensureBox(grid,type,'writer');
-    var meKey=me?(me.id||me.email||me.name):'';
-    var writerHash='WRITER_LOCKED:'+meKey;
-    if(writerSel){
-      var needsWriter=writerSel.dataset.namoRankHash!==writerHash;
-      if(needsWriter){
-        writerSel.innerHTML = me ? opt(me) : '<option value="">로그인 필요</option>';
-        writerSel.dataset.namoRankHash=writerHash;
-      }
-      if(me) writerSel.value=me.id||me.email||me.name;
-      writerSel.disabled=true; // 항상 잠금: 작성자는 로그인 본인 고정, 변경 불가
-      writerSel.style.pointerEvents='none';
-      writerSel.style.opacity='1';
-      var wsub=$('sg_'+type+'_writer_sub');
-      if(wsub)wsub.textContent='작성자는 로그인 본인으로 고정됩니다.';
-      var wbadge=$('sg_'+type+'_writer_badge');
-      if(wbadge)wbadge.textContent='본인고정';
-    }
-
-    var writerUser=me;
-    var writerLevel=userLevel(writerUser);
-
-    ['reviewer','approver'].forEach(function(role){
-      var sel=ensureBox(grid,type,role); if(!sel)return;
-      var reqLevel=requiredLevel(writerLevel,role);
-      var candidates;
-      if(meIsAdmin){
-        candidates=allList; // 관리자는 예외적으로 전체 회원 허용
-      } else if(reqLevel===Infinity){
-        candidates=[]; // 전무 이상 작성 -> 후보 없음
-      } else {
-        candidates=allList.filter(function(u){return userLevel(u)>=reqLevel;});
-      }
-
-      var hash=optHash(candidates);
-      var old=sel.value;
-      var needs=sel.dataset.namoRankHash!==hash || sel.options.length!==(candidates.length+1);
-      if(needs){
-        sel.innerHTML='<option value="">'+(candidates.length?'선택':'대상 없음')+'</option>'+candidates.map(opt).join('');
-        sel.dataset.namoRankHash=hash;
-      }
-      sel.disabled=!candidates.length;
-      if(candidates.length){
-        sel.style.pointerEvents='auto';sel.style.opacity='1';sel.style.filter='none';
-        if(old && Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(old);})){
-          sel.value=old;
-        }
-      } else {
-        sel.value='';
-      }
-
-      var sub=$('sg_'+type+'_'+role+'_sub');
-      if(sub){
-        var reqText = reqLevel===LEVEL.MANAGER?'부장 이상' : reqLevel===LEVEL.DIRECTOR?'이사 이상' : reqLevel===LEVEL.EXEC?'전무 이상' : reqLevel===Infinity?'대상 없음' : reqLevel>=LEVEL.CEO?'대표이사':'';
-        sub.textContent = candidates.length
-          ? ('작성자 직급 기준 '+reqText+' 선택 가능 ('+candidates.length+'명)')
-          : (writerLevel>=LEVEL.EXEC ? '전무 이상 작성: '+ROLE_LABEL[role]+' 생략' : reqText+' 회원이 없습니다.');
-      }
-      var badge=$('sg_'+type+'_'+role+'_badge');
-      if(badge)badge.textContent=meIsAdmin?'관리자 전체':'직급제한';
-
-      var box=sel.closest&&sel.closest('.sign-box');
-      if(box){box.style.display='block';box.style.visibility='visible';box.style.opacity='1';box.style.filter='none';}
-    });
-
-    ensurePreviewBox(type);
-    syncPreview(type);
-  }
-
-  function stabilizeAll(){
-    if(applying)return;
-    applying=true;
-    try{TYPES.forEach(stabilizeType);}catch(e){console.warn('[namo sign rank filter v5]',e);}finally{applying=false;}
-  }
-  function schedule(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;stabilizeAll();});}
-
-  window.namoStableSignMembers=stabilizeAll;
-  window.applyAllSignPermissions=stabilizeAll;
-  window.rebuildAllSignGrids=stabilizeAll;
-  window.qmsRefreshSignatures=stabilizeAll;
-  window.buildSignGrid=function(type){stabilizeType(type);return $('signGrid_'+type);};
-
-  // 작성자를 바꾸면 검토/승인 후보 목록이 재계산되어야 함
-  // 작성자는 항상 로그인 본인으로 고정되므로, 검토자/승인자 변경 시에는 미리보기만 동기화
-  document.addEventListener('change',function(e){
-    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(reviewer|approver)$/.test(e.target.id||'')){
-      syncPreview(e.target.id.split('_')[1]);
-    }
-  },true);
-
-  // 로그인 사용자가 바뀌면(다른 계정 로그인) 작성자 고정값과 검토/승인 후보를 다시 계산
-  var lastUserKey='';
-  setInterval(function(){
-    var me=currentUser();
-    var key=me?(me.id||me.email||me.name):'';
-    if(key!==lastUserKey){
-      lastUserKey=key;
-      stabilizeAll();
-    }
-  },800);
-
-  document.addEventListener('click',function(e){
-    if(e.target&&e.target.closest&&e.target.closest('[data-page],#incomingReset,#processReset,#shipmentReset,#ncReset,#trainingReset'))setTimeout(stabilizeAll,80);
-  },true);
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',stabilizeAll);else stabilizeAll();
-  window.addEventListener('load',function(){stabilizeAll();setTimeout(stabilizeAll,300);setTimeout(stabilizeAll,1200);setTimeout(stabilizeAll,3500);setTimeout(stabilizeAll,6500);});
-
-  try{
-    var root=document.querySelector('.content')||document.body;
-    new MutationObserver(function(muts){
-      if(applying)return;
-      for(var i=0;i<muts.length;i++){
-        var t=muts[i].target;
-        if(t&&t.closest&&t.closest('#signGrid_iqc,#signGrid_pqc,#signGrid_oqc,#signGrid_nc,#signGrid_training')){schedule();return;}
-      }
-    }).observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','style','class']});
-  }catch(e){}
-})();
-</script>
-<!-- /NAMO SIGN MEMBERS RANK-FILTERED FINAL v5 -->
 
 
 
@@ -13158,470 +12318,13 @@ document.addEventListener('click',function(e){
 
 
 
-<!-- REMOVED BY RESTORE V2: NAMO SIGN MEMBERS RANK FILTER FINAL v7 -->
 
 
 
-<!-- =========================================================
- NAMO QMS Unified Approval Inbox Patch v1
- - 원본 HTML 덮어쓰기 금지: 추가 패치 방식
- - 작성/검토/승인 공통 결재함 + 화면 내 바로 검토/승인
- - localStorage 기반, 기존 기능 삭제 없음
-========================================================= -->
-<style id="namo-unified-inbox-style-v1">
-  .namo-approval-top-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
-  .namo-approval-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:18px;box-shadow:0 8px 22px rgba(15,23,42,.055)}
-  .namo-approval-kpi b{display:block;font-size:26px;font-weight:900;color:#0f172a;line-height:1}
-  .namo-approval-kpi span{display:block;margin-top:8px;font-size:12px;font-weight:800;color:#64748b}
-  .namo-approval-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-  .namo-approval-tab{height:34px;border:1px solid #dbe3ee;background:#fff;border-radius:999px;padding:0 14px;font-size:12px;font-weight:900;color:#64748b;cursor:pointer}
-  .namo-approval-tab.active{background:#2563eb;color:#fff;border-color:#2563eb;box-shadow:0 8px 16px rgba(37,99,235,.16)}
-  .namo-approval-table-wrap{background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 8px 22px rgba(15,23,42,.055);overflow:auto}
-  .namo-approval-table{width:100%;border-collapse:collapse;min-width:980px}
-  .namo-approval-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-align:left;padding:12px 14px;border-bottom:1px solid #e2e8f0;white-space:nowrap;text-transform:none}
-  .namo-approval-table td{padding:12px 14px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;vertical-align:middle}
-  .namo-approval-table tr:last-child td{border-bottom:none}
-  .namo-apv-badge{display:inline-flex;align-items:center;justify-content:center;min-width:76px;height:26px;border-radius:999px;font-size:11px;font-weight:900;padding:0 10px}
-  .namo-apv-badge.draft{background:#f1f5f9;color:#64748b}.namo-apv-badge.review_pending{background:#e0f2fe;color:#075985}.namo-apv-badge.approve_pending{background:#fef3c7;color:#92400e}.namo-apv-badge.approved{background:#dcfce7;color:#166534}.namo-apv-badge.rejected{background:#fee2e2;color:#991b1b}
-  .namo-approval-actions{display:flex;gap:6px;flex-wrap:wrap}
-  .namo-approval-actions button,.namo-inline-approval-actions button{height:28px;border:none;border-radius:8px;padding:0 10px;font-size:11px;font-weight:900;cursor:pointer}
-  .namo-apv-open{background:#e0f2fe;color:#075985}.namo-apv-review{background:#dbeafe;color:#1d4ed8}.namo-apv-approve{background:#dcfce7;color:#166534}.namo-apv-reject{background:#fee2e2;color:#991b1b}.namo-apv-request{background:#2563eb!important;color:#fff!important}.namo-apv-light{background:#f1f5f9;color:#475569}
-  .namo-inline-approval-box{margin-top:12px;border:1.5px solid #bfdbfe;border-radius:14px;background:#f8fbff;padding:12px 14px}
-  .namo-inline-approval-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-  .namo-inline-approval-title{font-size:13px;font-weight:900;color:#0f172a}
-  .namo-inline-approval-help{font-size:12px;font-weight:700;color:#64748b;line-height:1.5}
-  .namo-inline-approval-actions{display:flex;gap:8px;flex-wrap:wrap}
-  .namo-inline-approval-log{margin-top:10px;font-size:11px;color:#64748b;line-height:1.5;white-space:pre-wrap}
-  .namo-apv-muted{color:#94a3b8;font-size:12px}
-  @media(max-width:900px){.namo-approval-top-kpi{grid-template-columns:1fr 1fr}.namo-approval-tabs{gap:6px}}
-  @media(max-width:600px){.namo-approval-top-kpi{grid-template-columns:1fr}}
-</style>
-<script id="namo-unified-inbox-script-v1">
-(function(){
-  if(window.__NAMO_UNIFIED_INBOX_PATCH_V1__) return;
-  window.__NAMO_UNIFIED_INBOX_PATCH_V1__=true;
-  var STORE='namo_unified_approvals_v1';
-  var STATUS_LABEL={draft:'작성중',review_pending:'검토 대기',approve_pending:'승인 대기',approved:'승인 완료',rejected:'반려'};
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
-  function now(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-  function load(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch(e){return []}}
-  function save(a){localStorage.setItem(STORE,JSON.stringify(a)); renderInbox(); updateBadges();}
-  function currentUser(){
-    var n=(qs('.pname')||{}).textContent || (qs('#currentUserName')||{}).textContent || '';
-    if(!n) n=(localStorage.getItem('namoCurrentUserName')||localStorage.getItem('currentUserName')||'');
-    return String(n||'').trim();
-  }
-  function currentPage(){return qs('.page.active') || qs('[id^="page-"].active') || document.body}
-  function pageId(page){return (page&&page.id)||'page-unknown'}
-  function pageTitle(page){
-    var t=(qs('.ph-title',page)||qs('h1',page)||qs('h2',page)||{}).textContent||document.title||'문서';
-    return String(t).trim().replace(/\s+/g,' ');
-  }
-  function signValue(page,role){
-    var sels=qsa('select[id*="'+role+'"], select[id*="'+role[0]+'"]',page).filter(function(x){return /sg_|sign/i.test(x.id||x.name||'')});
-    if(role==='writer') sels=qsa('select[id*="writer"],select[id*="작성"],select[id*="sg_"]',page);
-    if(role==='reviewer') sels=qsa('select[id*="reviewer"],select[id*="review"],select[id*="검토"]',page);
-    if(role==='approver') sels=qsa('select[id*="approver"],select[id*="approve"],select[id*="승인"]',page);
-    var el=sels[0];
-    if(!el){
-      var box=qsa('.sign-box',page).filter(function(b){return (b.textContent||'').indexOf(role==='writer'?'작성':role==='reviewer'?'검토':'승인')>-1})[0];
-      el=box&&qs('select',box);
-    }
-    if(!el) return '';
-    return (el.options&&el.selectedIndex>=0?el.options[el.selectedIndex].text:el.value||'').trim();
-  }
-  function makeId(){return 'APV-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,5).toUpperCase()}
-  function findByDoc(docKey){return load().filter(function(x){return x.docKey===docKey}).sort(function(a,b){return String(b.createdAt).localeCompare(String(a.createdAt))})[0]}
-  function activeDocKey(page){return pageId(page)+'|'+pageTitle(page)}
-  function requestApproval(page){
-    page=page||currentPage();
-    var arr=load(), key=activeDocKey(page), old=findByDoc(key);
-    var doc=old||{id:makeId(),docKey:key,createdAt:now(),history:[]};
-    doc.pageId=pageId(page); doc.title=pageTitle(page); doc.type=doc.title;
-    doc.writer=signValue(page,'writer')||currentUser()||'-';
-    doc.reviewer=signValue(page,'reviewer')||'-';
-    doc.approver=signValue(page,'approver')||'-';
-    doc.status='review_pending'; doc.updatedAt=now();
-    doc.history=doc.history||[]; doc.history.push({at:now(),user:currentUser()||doc.writer,action:'결재요청',memo:'검토자 결재함 등록'});
-    arr=arr.filter(function(x){return x.id!==doc.id}); arr.unshift(doc); save(arr);
-    alert('결재요청이 등록되었습니다. 검토자 결재함에서 확인할 수 있습니다.');
-    updateInlineBoxes();
-  }
-  function act(id,action){
-    var arr=load(), doc=arr.find(function(x){return x.id===id}); if(!doc) return;
-    var user=currentUser()||'-';
-    if(action==='review') { doc.status='approve_pending'; doc.history=doc.history||[]; doc.history.push({at:now(),user:user,action:'검토완료',memo:'승인자 결재함 이관'}); }
-    if(action==='approve'){ doc.status='approved'; doc.history=doc.history||[]; doc.history.push({at:now(),user:user,action:'승인완료',memo:'최종 승인'}); }
-    if(action==='reject') { var memo=prompt('반려 사유를 입력하세요.',''); doc.status='rejected'; doc.history=doc.history||[]; doc.history.push({at:now(),user:user,action:'반려',memo:memo||''}); }
-    doc.updatedAt=now(); save(arr); updateInlineBoxes();
-  }
-  function canReview(doc){var u=currentUser(); return !doc.reviewer || doc.reviewer==='-' || !u || String(doc.reviewer).indexOf(u)>-1 || String(u).indexOf(doc.reviewer)>-1}
-  function canApprove(doc){var u=currentUser(); return !doc.approver || doc.approver==='-' || !u || String(doc.approver).indexOf(u)>-1 || String(u).indexOf(doc.approver)>-1}
-  function openDoc(doc){
-    var btn=qs('.nav-item[data-page="'+String(doc.pageId||'').replace(/^page-/,'')+'"]') || qs('.nav-item[data-page="'+esc(doc.pageId||'')+'"]');
-    if(btn){btn.click(); setTimeout(updateInlineBoxes,120); return;}
-    var page=qs('#'+CSS.escape(doc.pageId||''));
-    if(page){qsa('.page').forEach(function(p){p.classList.remove('active')}); page.classList.add('active'); updateInlineBoxes();}
-  }
-  function renderInbox(){
-    var page=qs('#page-approval-inbox'); if(!page) return;
-    var filter=page.getAttribute('data-filter')||'pending';
-    var arr=load();
-    var rows=arr.filter(function(d){
-      if(filter==='all') return true;
-      if(filter==='pending') return d.status==='review_pending'||d.status==='approve_pending';
-      return d.status===filter;
-    });
-    var k={review:arr.filter(function(x){return x.status==='review_pending'}).length, approve:arr.filter(function(x){return x.status==='approve_pending'}).length, done:arr.filter(function(x){return x.status==='approved'}).length, reject:arr.filter(function(x){return x.status==='rejected'}).length};
-    page.innerHTML='\
-      <div class="ph"><div><div class="ph-bc">메인 <span class="sep">/</span> 통합 결재함</div><div class="ph-title">통합 결재함</div><div class="ph-sub">작성/검토/승인이 있는 모든 문서를 한 곳에서 검토·승인합니다.</div></div><div class="ph-actions"><button class="btn light sm" type="button" id="namoApprovalRefresh">새로고침</button></div></div>\
-      <div class="namo-approval-top-kpi"><div class="namo-approval-kpi"><b>'+k.review+'</b><span>검토 대기</span></div><div class="namo-approval-kpi"><b>'+k.approve+'</b><span>승인 대기</span></div><div class="namo-approval-kpi"><b>'+k.done+'</b><span>승인 완료</span></div><div class="namo-approval-kpi"><b>'+k.reject+'</b><span>반려</span></div></div>\
-      <div class="namo-approval-tabs">'+tab('pending','대기 문서',filter)+tab('review_pending','검토 대기',filter)+tab('approve_pending','승인 대기',filter)+tab('approved','완료',filter)+tab('rejected','반려',filter)+tab('all','전체',filter)+'</div>\
-      <div class="namo-approval-table-wrap"><table class="namo-approval-table"><thead><tr><th>문서명</th><th>상태</th><th>작성자</th><th>검토자</th><th>승인자</th><th>요청/처리일</th><th>처리</th></tr></thead><tbody id="namoApprovalRows"></tbody></table></div>';
-    var body=qs('#namoApprovalRows',page);
-    body.innerHTML=rows.length?rows.map(function(d){return '<tr><td><b>'+esc(d.title)+'</b><div class="namo-apv-muted">'+esc(d.id)+'</div></td><td><span class="namo-apv-badge '+esc(d.status)+'">'+esc(STATUS_LABEL[d.status]||d.status)+'</span></td><td>'+esc(d.writer)+'</td><td>'+esc(d.reviewer)+'</td><td>'+esc(d.approver)+'</td><td>'+esc(d.updatedAt||d.createdAt||'')+'</td><td><div class="namo-approval-actions"><button class="namo-apv-open" data-namo-apv-open="'+esc(d.id)+'">열기</button>'+((d.status==='review_pending')?'<button class="namo-apv-review" data-namo-apv-review="'+esc(d.id)+'">검토</button>':'')+((d.status==='approve_pending')?'<button class="namo-apv-approve" data-namo-apv-approve="'+esc(d.id)+'">승인</button>':'')+((d.status==='review_pending'||d.status==='approve_pending')?'<button class="namo-apv-reject" data-namo-apv-reject="'+esc(d.id)+'">반려</button>':'')+'</div></td></tr>'}).join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:34px">결재 문서가 없습니다.</td></tr>';
-  }
-  function tab(v,l,f){return '<button class="namo-approval-tab '+(v===f?'active':'')+'" type="button" data-namo-apv-filter="'+v+'">'+l+'</button>'}
-  function ensurePage(){
-    var content=qs('.content')||qs('main')||document.body;
-    if(!qs('#page-approval-inbox')){var p=document.createElement('div');p.className='page';p.id='page-approval-inbox';p.setAttribute('data-filter','pending');content.appendChild(p)}
-  }
-  function ensureNav(){
-    var side=qs('.sidebar'); if(!side || qs('.nav-item[data-page="approval-inbox"]')) return;
-    var btn=document.createElement('button'); btn.className='nav-item'; btn.type='button'; btn.setAttribute('data-page','approval-inbox'); btn.innerHTML='<span class="nav-icon">📥</span><span>통합 결재함</span><span id="namoApprovalBadge" class="tag" style="margin-left:auto;display:none">0</span>';
-    var dash=qs('.nav-item[data-page="dashboard"]',side);
-    if(dash&&dash.nextSibling) side.insertBefore(btn,dash.nextSibling); else side.insertBefore(btn,side.firstChild);
-  }
-  function updateBadges(){
-    var c=load().filter(function(x){return x.status==='review_pending'||x.status==='approve_pending'}).length;
-    var b=qs('#namoApprovalBadge'); if(b){b.textContent=c; b.style.display=c?'inline-flex':'none'}
-  }
-  function ensureInlineBoxes(){
-    qsa('.sign-grid').forEach(function(grid){
-      if(grid.closest('#page-approval-inbox')) return;
-      if(grid.parentElement&&grid.parentElement.querySelector(':scope > .namo-inline-approval-box')) return;
-      var box=document.createElement('div'); box.className='namo-inline-approval-box';
-      box.innerHTML='<div class="namo-inline-approval-head"><div><div class="namo-inline-approval-title">통합 결재 연동</div><div class="namo-inline-approval-help">작성자는 결재요청, 검토자/승인자는 이 화면 또는 통합 결재함에서 바로 처리합니다.</div></div><div class="namo-inline-approval-actions"><button class="namo-apv-request" type="button" data-namo-inline-request>결재요청</button><button class="namo-apv-light" type="button" data-namo-inline-inbox>결재함</button><button class="namo-apv-review" type="button" data-namo-inline-review>검토</button><button class="namo-apv-approve" type="button" data-namo-inline-approve>승인</button><button class="namo-apv-reject" type="button" data-namo-inline-reject>반려</button></div></div><div class="namo-inline-approval-log"></div>';
-      grid.insertAdjacentElement('afterend',box);
-    });
-    updateInlineBoxes();
-  }
-  function updateInlineBoxes(){
-    qsa('.namo-inline-approval-box').forEach(function(box){
-      var page=box.closest('.page')||currentPage(), doc=findByDoc(activeDocKey(page));
-      var log=qs('.namo-inline-approval-log',box); var r=qs('[data-namo-inline-review]',box), a=qs('[data-namo-inline-approve]',box), rej=qs('[data-namo-inline-reject]',box);
-      if(!doc){log.textContent='아직 결재요청 전입니다.'; [r,a,rej].forEach(function(x){if(x)x.disabled=true}); return;}
-      log.textContent='현재 상태: '+(STATUS_LABEL[doc.status]||doc.status)+' / 작성자: '+(doc.writer||'-')+' / 검토자: '+(doc.reviewer||'-')+' / 승인자: '+(doc.approver||'-')+'\n'+(doc.history||[]).slice(-3).map(function(h){return '['+h.at+'] '+h.user+' - '+h.action+(h.memo?' ('+h.memo+')':'')}).join('\n');
-      if(r) r.disabled=!(doc.status==='review_pending');
-      if(a) a.disabled=!(doc.status==='approve_pending');
-      if(rej) rej.disabled=!(doc.status==='review_pending'||doc.status==='approve_pending');
-    });
-  }
-  function route(pageName){
-    if(pageName!=='approval-inbox') return false;
-    ensurePage(); qsa('.page').forEach(function(p){p.classList.remove('active')}); var p=qs('#page-approval-inbox'); p.classList.add('active'); qsa('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')==='approval-inbox')}); renderInbox(); return true;
-  }
-  document.addEventListener('click',function(e){
-    var nav=e.target.closest('.nav-item[data-page="approval-inbox"]'); if(nav){e.preventDefault(); e.stopPropagation(); route('approval-inbox'); return;}
-    var f=e.target.closest('[data-namo-apv-filter]'); if(f){qs('#page-approval-inbox').setAttribute('data-filter',f.getAttribute('data-namo-apv-filter')); renderInbox(); return;}
-    if(e.target.closest('#namoApprovalRefresh')){renderInbox();return;}
-    var open=e.target.closest('[data-namo-apv-open]'); if(open){var d=load().find(function(x){return x.id===open.getAttribute('data-namo-apv-open')}); if(d) openDoc(d); return;}
-    var rev=e.target.closest('[data-namo-apv-review]'); if(rev){act(rev.getAttribute('data-namo-apv-review'),'review');return;}
-    var app=e.target.closest('[data-namo-apv-approve]'); if(app){act(app.getAttribute('data-namo-apv-approve'),'approve');return;}
-    var rej=e.target.closest('[data-namo-apv-reject]'); if(rej){act(rej.getAttribute('data-namo-apv-reject'),'reject');return;}
-    var box=e.target.closest('.namo-inline-approval-box');
-    if(box){var page=box.closest('.page')||currentPage(), doc=findByDoc(activeDocKey(page));
-      if(e.target.closest('[data-namo-inline-request]')){requestApproval(page);return;}
-      if(e.target.closest('[data-namo-inline-inbox]')){route('approval-inbox');return;}
-      if(!doc){alert('먼저 결재요청을 등록하세요.');return;}
-      if(e.target.closest('[data-namo-inline-review]')){act(doc.id,'review');return;}
-      if(e.target.closest('[data-namo-inline-approve]')){act(doc.id,'approve');return;}
-      if(e.target.closest('[data-namo-inline-reject]')){act(doc.id,'reject');return;}
-    }
-  },true);
-  function boot(){ensurePage(); ensureNav(); ensureInlineBoxes(); updateBadges(); renderInbox();}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-  window.addEventListener('load',function(){boot(); setTimeout(boot,500); setTimeout(boot,1500);});
-  setInterval(function(){ensureNav(); ensureInlineBoxes(); updateBadges();},1200);
-})();
-</script>
-<!-- /NAMO QMS Unified Approval Inbox Patch v1 -->
 
 
-<!-- REMOVED BY RESTORE V2: NAMO approval role-lock final replacement -->
 
 
-<!-- NAMO member-linked approval UI cleanup/final override 20260624 -->
-<style id="namo-member-linked-approval-clean-style">
-  .sign-warning,
-  .namo-role-warning,
-  .namo-approval-warning,
-  .namo-apv-warning{display:none!important;}
-  .sign-sub{color:#64748b!important;background:transparent!important;border:0!important;}
-  .sign-box[data-namo-final-mode="editable"]{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.08)!important;}
-  .sign-box[data-namo-final-mode="locked"]{background:#f8fafc!important;}
-  .namo-inline-approval-actions button[hidden],
-  .namo-approval-actions button[hidden]{display:none!important;}
-</style>
-<script id="namo-member-linked-approval-clean-script">
-(function(){
-  'use strict';
-  if(window.__NAMO_MEMBER_LINKED_APPROVAL_CLEAN_20260624__) return;
-  window.__NAMO_MEMBER_LINKED_APPROVAL_CLEAN_20260624__ = true;
-
-  var STORE = 'namo_unified_approvals_v1';
-  var TYPES = ['iqc','pqc','oqc','nc','training'];
-  var ROLES = ['writer','reviewer','approver'];
-  var ROLE_KO = {writer:'작성', reviewer:'검토', approver:'승인'};
-  var LEVEL = {STAFF:1, MANAGER:2, DIRECTOR:3, CEO:4};
-
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function txt(v){return String(v==null?'':v).trim()}
-  function read(k,d){try{var raw=localStorage.getItem(k);return raw?JSON.parse(raw):d}catch(e){return d}}
-  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-  function appState(){try{return window.state || state || {}}catch(e){return window.state || {}}}
-  function norm(u){
-    if(!u) return null;
-    if(typeof u === 'string') u = {name:u, id:u};
-    var name = txt(u.name || u.username || u.userName || u.fullName || u.displayName || u.label || u.email || u.id);
-    var email = txt(u.email || u.mail || '');
-    var id = txt(u.id || u.userId || u.uid || email || name);
-    if(!name && !id) return null;
-    return {
-      id:id || name,
-      name:name || id,
-      email:email,
-      department:txt(u.department || u.dept || u.team || u.org || ''),
-      title:txt(u.title || u.position || u.rank || u.jobTitle || u.roleTitle || ''),
-      role:txt(u.role || u.userRole || '')
-    };
-  }
-  function keyOf(u){u=norm(u); return u ? txt(u.id || u.email || u.name) : ''}
-  function same(a,b){a=norm(a); b=norm(b); if(!a||!b) return false; return !!((a.id&&b.id&&a.id===b.id)||(a.email&&b.email&&a.email===b.email)||(a.name&&b.name&&a.name===b.name));}
-  function sameText(personText,u){
-    u=norm(u); var s=txt(personText); if(!s||!u) return false;
-    return (u.name && s.indexOf(u.name)>-1) || (u.email && s.indexOf(u.email)>-1) || (u.id && s.indexOf(u.id)>-1) || (u.name && u.name.indexOf(s.replace(/\s*\/.*$/,''))>-1);
-  }
-  function addUser(arr,u){u=norm(u); if(!u) return; var k=keyOf(u); if(!arr.some(function(x){return keyOf(x)===k || (u.name&&x.name===u.name)})) arr.push(u);}
-  function allUsers(){
-    var s=appState(), arr=[];
-    ['currentUser','loginUser','userInfo'].forEach(function(k){addUser(arr,s[k]||window[k]);});
-    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList','adminUserList'].forEach(function(k){
-      if(Array.isArray(s[k])) s[k].forEach(function(u){addUser(arr,u)});
-      if(Array.isArray(window[k])) window[k].forEach(function(u){addUser(arr,u)});
-    });
-    ['adminUsers','signableUsers','users','members','memberList','userList','employees','employeeList','qms_admin_users','namo_admin_users'].forEach(function(k){
-      var v=read(k,null); if(Array.isArray(v)) v.forEach(function(u){addUser(arr,u)});
-    });
-    return arr;
-  }
-  function currentUser(){
-    var s=appState();
-    var u=norm(s.currentUser || window.currentUser || window.loginUser || window.userInfo);
-    var pname=txt((qs('.pname')||{}).textContent || localStorage.getItem('namoCurrentUserName') || localStorage.getItem('currentUserName') || '');
-    if(!u && pname) u=norm({id:pname,name:pname});
-    if(u){
-      var hit=allUsers().find(function(x){return same(x,u)});
-      if(hit) u=Object.assign({},u,hit);
-    }
-    return u;
-  }
-  function titleBlob(u){u=norm(u)||{}; return txt([u.title,u.role,u.department].join(' ')).toLowerCase();}
-  function level(u){
-    var t=titleBlob(u);
-    if(/admin|관리자|대표이사|대표|ceo|사장|회장/.test(t)) return LEVEL.CEO;
-    if(/이사|상무|전무|임원|cto|coo|cfo|chief/.test(t)) return LEVEL.DIRECTOR;
-    if(/부장|본부장|실장|센터장/.test(t)) return LEVEL.MANAGER;
-    return LEVEL.STAFF;
-  }
-  function requiredLevel(writer,role){
-    var wl=level(writer);
-    if(wl<=LEVEL.STAFF) return LEVEL.MANAGER;
-    if(wl===LEVEL.MANAGER) return LEVEL.DIRECTOR;
-    if(wl===LEVEL.DIRECTOR) return role==='approver' ? LEVEL.CEO : LEVEL.DIRECTOR;
-    return LEVEL.CEO;
-  }
-  function reqLabel(writer,role){
-    var wl=level(writer);
-    if(wl<=LEVEL.STAFF) return '부장 이상';
-    if(wl===LEVEL.MANAGER) return '이사 이상';
-    if(wl===LEVEL.DIRECTOR && role==='approver') return '대표이사';
-    if(wl===LEVEL.DIRECTOR) return '이사 이상';
-    return '대표이사';
-  }
-  function candidates(writer,role){
-    var need=requiredLevel(writer,role);
-    var list=allUsers().filter(function(u){return !same(u,writer) && level(u)>=need;});
-    list.sort(function(a,b){return level(b)-level(a) || txt(a.name).localeCompare(txt(b.name),'ko')});
-    return list;
-  }
-  function label(u){u=norm(u); return u ? (u.name + (u.title||u.department ? ' / '+(u.title||u.department) : '')) : '-';}
-  function fillSelect(sel,list,selected){
-    if(!sel) return;
-    var old=txt(sel.value);
-    sel.innerHTML='';
-    if(!list || !list.length){
-      var op=document.createElement('option'); op.value=''; op.textContent='-'; sel.appendChild(op); return;
-    }
-    list.forEach(function(u){
-      u=norm(u); var op=document.createElement('option');
-      op.value=keyOf(u); op.textContent=label(u);
-      op.dataset.name=u.name; op.dataset.title=u.title; op.dataset.department=u.department; op.dataset.email=u.email; op.dataset.role=u.role;
-      sel.appendChild(op);
-    });
-    var target=selected?keyOf(selected):old;
-    if(target && Array.prototype.some.call(sel.options,function(o){return o.value===target})) sel.value=target;
-  }
-  function singleSelect(sel,u){fillSelect(sel,u?[u]:[],u)}
-  function selectedUser(sel){
-    if(!sel || !sel.options || sel.selectedIndex<0) return null;
-    var op=sel.options[sel.selectedIndex];
-    if(!txt(op.value) && txt(op.textContent)==='-') return null;
-    return norm({id:op.value||op.dataset.email||op.dataset.name||op.textContent,name:op.dataset.name||op.textContent.replace(/\s*\/.*$/,''),title:op.dataset.title||'',department:op.dataset.department||'',email:op.dataset.email||'',role:op.dataset.role||''});
-  }
-  function typeFromBox(box){
-    var sel=box && qs('select[id^="sg_"]',box); if(!sel) return null;
-    var m=(sel.id||'').match(/^sg_([^_]+)_/); return m?m[1]:null;
-  }
-  function roleEls(type,role){
-    var sel=document.getElementById('sg_'+type+'_'+role);
-    var box=sel?sel.closest('.sign-box'):null;
-    var sub=document.getElementById('sg_'+type+'_'+role+'_sub');
-    var file=document.getElementById('sg_'+type+'_'+role+'_file');
-    var btns=qsa('[data-sign-file-btn="'+type+':'+role+'"],[data-sign-clear="'+type+':'+role+'"],[data-qms-final-file-btn="'+type+':'+role+'"],[data-qms-final-clear="'+type+':'+role+'"],[data-qms-rule-file-btn="'+type+':'+role+'"],[data-qms-rule-clear="'+type+':'+role+'"]');
-    return {sel:sel,box:box,sub:sub,file:file,btns:btns};
-  }
-  function currentPage(){return qs('.page.active') || qs('[id^="page-"].active') || document.body}
-  function pageId(page){return (page&&page.id)||'page-unknown'}
-  function pageTitle(page){return txt(((qs('.ph-title',page)||qs('h1',page)||qs('h2',page)||{}).textContent)||document.title||'문서').replace(/\s+/g,' ')}
-  function docKey(page){return pageId(page)+'|'+pageTitle(page)}
-  function docs(){return read(STORE,[])}
-  function saveDocs(a){write(STORE,a)}
-  function latestDoc(page){var key=docKey(page); return docs().filter(function(d){return d.docKey===key}).sort(function(a,b){return String(b.createdAt||'').localeCompare(String(a.createdAt||''))})[0]||null;}
-  function writerFor(type){
-    var me=currentUser();
-    var sel=document.getElementById('sg_'+type+'_writer');
-    return selectedUser(sel) || me;
-  }
-  function docPerson(doc,role){return doc && txt(doc[role]);}
-  function canReviewDoc(doc,me){return !!(doc && me && doc.status==='review_pending' && sameText(doc.reviewer,me));}
-  function canApproveDoc(doc,me){return !!(doc && me && doc.status==='approve_pending' && sameText(doc.approver,me));}
-  function setSub(sub,text){ if(sub) sub.textContent = text || ''; }
-  function setMode(el,editable){
-    if(!el.sel) return;
-    el.sel.disabled=!editable;
-    el.sel.style.pointerEvents=editable?'':'none';
-    if(el.box) el.box.dataset.namoFinalMode=editable?'editable':'locked';
-  }
-  function enableFiles(type,role,on){
-    var el=roleEls(type,role);
-    [el.file].concat(el.btns).forEach(function(x){if(!x)return; x.disabled=!on; x.style.pointerEvents=on?'':'none'; x.style.opacity=on?'':'.45';});
-  }
-  function applyType(type){
-    var me=currentUser(); if(!me) return;
-    var page=qs('#page-'+type) || currentPage();
-    var doc=latestDoc(page);
-    var w=roleEls(type,'writer'), r=roleEls(type,'reviewer'), a=roleEls(type,'approver');
-    if(!w.sel) return;
-
-    // 작성: 로그인 사용자 고정, 안내문 삭제
-    singleSelect(w.sel, doc && doc.writer ? norm({id:doc.writer,name:doc.writer.replace(/\s*\/.*$/,'')}) : me);
-    setMode(w,false); setSub(w.sub,''); enableFiles(type,'writer',!doc || sameText(doc.writer,me));
-    var writer=writerFor(type) || me;
-
-    if(!doc){
-      // 작성중: 관리자 회원현황 기준 검토/승인 후보 선택 가능, 적색 문구 없음
-      var revs=candidates(writer,'reviewer'), apps=candidates(writer,'approver');
-      fillSelect(r.sel,revs,null); setMode(r,!!revs.length); setSub(r.sub, reqLabel(writer,'reviewer')+' 선택 가능 ('+revs.length+'명)'); enableFiles(type,'reviewer',false);
-      fillSelect(a.sel,apps,null); setMode(a,!!apps.length); setSub(a.sub, reqLabel(writer,'approver')+' 선택 가능 ('+apps.length+'명)'); enableFiles(type,'approver',false);
-    }else{
-      var reviewerText=docPerson(doc,'reviewer'), approverText=docPerson(doc,'approver');
-      var reviewActive=canReviewDoc(doc,me), approveActive=canApproveDoc(doc,me);
-      singleSelect(r.sel, reviewerText ? norm({id:reviewerText,name:reviewerText.replace(/\s*\/.*$/,'')}) : null);
-      setMode(r,false); setSub(r.sub, reviewActive ? '검토 승인 / 반려만 가능' : ''); enableFiles(type,'reviewer',reviewActive);
-      singleSelect(a.sel, approverText ? norm({id:approverText,name:approverText.replace(/\s*\/.*$/,'')}) : null);
-      setMode(a,false); setSub(a.sub, approveActive ? '최종 승인 / 반려만 가능' : ''); enableFiles(type,'approver',approveActive);
-    }
-  }
-  function applySigns(){TYPES.forEach(function(t){try{applyType(t)}catch(e){}}); hideWarnings();}
-  function hideWarnings(){
-    qsa('.sign-warning,.namo-role-warning,.namo-approval-warning,.namo-apv-warning').forEach(function(x){x.style.display='none'});
-    qsa('.sign-sub').forEach(function(x){x.style.color='#64748b'; x.style.background='transparent'; x.style.border='0'});
-  }
-  function buttonAllowed(doc,kind,me){
-    if(kind==='review') return canReviewDoc(doc,me);
-    if(kind==='approve') return canApproveDoc(doc,me);
-    if(kind==='reject') return canReviewDoc(doc,me) || canApproveDoc(doc,me);
-    return false;
-  }
-  function applyButtons(){
-    var me=currentUser();
-    qsa('[data-namo-apv-review],[data-namo-apv-approve],[data-namo-apv-reject]').forEach(function(btn){
-      var id=btn.getAttribute('data-namo-apv-review') || btn.getAttribute('data-namo-apv-approve') || btn.getAttribute('data-namo-apv-reject');
-      var kind=btn.hasAttribute('data-namo-apv-review')?'review':btn.hasAttribute('data-namo-apv-approve')?'approve':'reject';
-      var doc=docs().find(function(d){return d.id===id});
-      var ok=buttonAllowed(doc,kind,me);
-      btn.disabled=!ok; btn.hidden=!ok; btn.style.display=ok?'':'none';
-    });
-    qsa('.namo-inline-approval-box').forEach(function(box){
-      var page=box.closest('.page') || currentPage();
-      var doc=latestDoc(page);
-      var req=qs('[data-namo-inline-request]',box), inbox=qs('[data-namo-inline-inbox]',box), rev=qs('[data-namo-inline-review]',box), app=qs('[data-namo-inline-approve]',box), rej=qs('[data-namo-inline-reject]',box), log=qs('.namo-inline-approval-log',box), help=qs('.namo-inline-approval-help',box);
-      if(help) help.textContent='결재요청 후 검토자/승인자 본인에게 해당 버튼만 표시됩니다.';
-      var me2=currentUser();
-      if(!doc){
-        if(req){req.hidden=false;req.style.display='';req.disabled=false;}
-        [rev,app,rej].forEach(function(b){if(b){b.hidden=true;b.style.display='none';b.disabled=true;}});
-        if(log) log.textContent='검토자와 승인자를 선택한 뒤 결재요청을 진행하세요.';
-        return;
-      }
-      if(req){req.hidden=true;req.style.display='none';req.disabled=true;}
-      var rOk=buttonAllowed(doc,'review',me2), aOk=buttonAllowed(doc,'approve',me2), jOk=buttonAllowed(doc,'reject',me2);
-      if(rev){rev.textContent='검토 승인';rev.hidden=!rOk;rev.style.display=rOk?'':'none';rev.disabled=!rOk;}
-      if(app){app.textContent='최종 승인';app.hidden=!aOk;app.style.display=aOk?'':'none';app.disabled=!aOk;}
-      if(rej){rej.hidden=!jOk;rej.style.display=jOk?'':'none';rej.disabled=!jOk;}
-      if(inbox){inbox.hidden=false;inbox.style.display='';}
-      if(log){log.textContent='현재 상태: '+({review_pending:'검토 대기',approve_pending:'승인 대기',approved:'승인 완료',rejected:'반려'}[doc.status]||doc.status)+' / 작성자: '+(doc.writer||'-')+' / 검토자: '+(doc.reviewer||'-')+' / 승인자: '+(doc.approver||'-');}
-    });
-  }
-  function syncDocAfterRequest(){
-    var page=currentPage(), doc=latestDoc(page); if(!doc) return;
-    var type=(page.id||'').replace(/^page-/,'');
-    if(TYPES.indexOf(type)<0){
-      var grid=qs('.sign-grid',page); if(grid) type=typeFromBox(grid) || type;
-    }
-    if(TYPES.indexOf(type)<0) return;
-    var r=selectedUser(document.getElementById('sg_'+type+'_reviewer'));
-    var a=selectedUser(document.getElementById('sg_'+type+'_approver'));
-    var w=selectedUser(document.getElementById('sg_'+type+'_writer')) || currentUser();
-    var arr=docs(); var target=arr.find(function(d){return d.id===doc.id});
-    if(target){
-      target.writer=label(w);
-      target.reviewer=r?label(r):'-';
-      target.approver=a?label(a):'-';
-      target.history=target.history||[];
-      saveDocs(arr);
-    }
-  }
-  function applyAll(){applySigns();applyButtons();hideWarnings();}
-
-  document.addEventListener('click',function(e){
-    if(e.target.closest && e.target.closest('[data-namo-inline-request]')){
-      setTimeout(function(){syncDocAfterRequest();applyAll();},80);
-      setTimeout(function(){syncDocAfterRequest();applyAll();},300);
-    }
-  },false);
-
-  window.namoApplyMemberLinkedApprovalClean = applyAll;
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(applyAll,200)}); else setTimeout(applyAll,200);
-  window.addEventListener('load',function(){[300,800,1600,2800].forEach(function(ms){setTimeout(applyAll,ms)});});
-  setInterval(applyAll,700);
-})();
-</script>
-<!-- /NAMO member-linked approval UI cleanup/final override 20260624 -->
 
 <!-- NMC INSPECTION REPORT ONE-PAGE PRINT PATCH 20260624 START -->
 <style id="nmc-inspection-onepage-print-style">
@@ -13989,3 +12692,206 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NMC INSPECTION REPORT APPROVAL COMPACT + MANUAL SIGN HIDE PATCH 20260624 END -->
+
+<!-- NAMO APPROVAL CLEAN REPLACEMENT 20260624 START -->
+<style id="namo-approval-clean-replacement-style">
+  .sign-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;visibility:visible!important;opacity:1!important;}
+  .sign-box{border:1.5px solid var(--bd2);border-radius:10px;overflow:hidden;background:#fff!important;transition:none!important;animation:none!important;}
+  .sign-box[data-namo-approval-mode="active"]{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.10)!important;}
+  .sign-box[data-namo-approval-mode="locked"]{background:#f8fafc!important;border-color:#d0d5de!important;}
+  .sign-sel{transition:none!important;animation:none!important;}
+  .sign-sel:disabled{background:#f3f4f6!important;color:#475569!important;opacity:1!important;cursor:not-allowed!important;pointer-events:none!important;}
+  .sign-sub{font-size:11px!important;color:#64748b!important;min-height:15px!important;background:transparent!important;border:0!important;}
+  .sign-box-badge{font-size:10px!important;font-weight:800!important;padding:2px 7px!important;border-radius:99px!important;background:#eef2ff!important;color:#1d4ed8!important;}
+  .sign-warning,.namo-role-warning,.namo-approval-warning,.namo-apv-warning{display:none!important;}
+  .sign-file-wrap{transition:none!important;animation:none!important;}
+</style>
+<script id="namo-approval-clean-replacement-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_APPROVAL_CLEAN_REPLACEMENT_20260624__) return;
+  window.__NAMO_APPROVAL_CLEAN_REPLACEMENT_20260624__ = true;
+
+  var TYPES = ['iqc','pqc','oqc','nc','training'];
+  var ROLES = ['writer','reviewer','approver'];
+  var ROLE_KO = {writer:'작성', reviewer:'검토', approver:'승인'};
+  var LEVEL = {STAFF:1, MANAGER:2, DIRECTOR:3, EXEC:4, CEO:9};
+  var applying = false;
+
+  function $(id){return document.getElementById(id);}
+  function txt(v){v=String(v==null?'':v).trim();return (!v||v==='undefined'||v==='null'||v==='-')?'':v;}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function stateObj(){try{return window.state || state || {};}catch(e){return window.state || {};}}
+  function normalize(u){
+    if(!u) return null;
+    if(typeof u === 'string') u = {name:u,id:u};
+    var name = txt(u.name||u.username||u.userName||u.displayName||u.fullName||u.employeeName||u.korName||u.id||u.email||u.mail);
+    var email = txt(u.email||u.mail||u.userEmail);
+    if(!name && email) name = email.split('@')[0];
+    if(!name) return null;
+    return {
+      id:txt(u.id||u.userId||u.uid||email||name)||name,
+      name:name,
+      email:email,
+      department:txt(u.department||u.dept||u.deptName||u.team||u.teamName||u.division||u.org||''),
+      title:txt(u.title||u.position||u.positionName||u.rank||u.jobTitle||u.roleName||u.duty||u.grade||''),
+      role:txt(u.role||u.auth||u.authority||'')
+    };
+  }
+  function same(a,b){a=normalize(a);b=normalize(b);return !!(a&&b&&((a.id&&b.id&&String(a.id)===String(b.id))||(a.email&&b.email&&a.email.toLowerCase()===b.email.toLowerCase())||(a.name&&b.name&&a.name===b.name)));}
+  function currentUser(){var s=stateObj();return normalize(s.currentUser||window.currentUser||window.loginUser||window.userInfo||null);}
+  function allUsers(){
+    var s=stateObj(), src=[];
+    ['signableUsers','users','adminUsers','members'].forEach(function(k){if(Array.isArray(s[k])) src=src.concat(s[k]);});
+    if(Array.isArray(window.signableUsers)) src=src.concat(window.signableUsers);
+    var seen={}, out=[];
+    src.forEach(function(u){u=normalize(u);if(!u)return;var k=(u.email||u.id||u.name).toLowerCase();if(seen[k])return;seen[k]=1;out.push(u);});
+    return out;
+  }
+  function isAdmin(u){u=normalize(u);var r=(u&&u.role||'').toLowerCase();var t=(u&&u.title||'');return !!(u&&(r==='admin'||r==='administrator'||r.indexOf('관리자')>-1||t.indexOf('관리자')>-1));}
+  function userLevel(u){
+    u=normalize(u); if(!u) return LEVEL.STAFF;
+    var t=(u.title+' '+u.role).replace(/\s/g,'');
+    if(/대표이사|대표|사장|회장/.test(t)) return LEVEL.CEO;
+    if(/전무|부사장/.test(t)) return LEVEL.EXEC;
+    if(/이사|상무/.test(t)) return LEVEL.DIRECTOR;
+    if(/부장|팀장|본부장|실장|센터장/.test(t)) return LEVEL.MANAGER;
+    return LEVEL.STAFF;
+  }
+  function requiredLevel(writer, role){
+    var wl = userLevel(writer);
+    if(role==='writer') return LEVEL.STAFF;
+    if(role==='reviewer'){
+      if(wl <= LEVEL.STAFF) return LEVEL.MANAGER;      // 사원~과장 작성 -> 부장 이상 검토
+      if(wl === LEVEL.MANAGER) return LEVEL.DIRECTOR;  // 부장 작성 -> 이사 이상 검토
+      return Infinity;                                 // 이사 이상 작성 -> 검토 생략
+    }
+    if(role==='approver'){
+      if(wl <= LEVEL.STAFF) return LEVEL.MANAGER;      // 사원~과장 작성 -> 부장 이상 승인
+      if(wl === LEVEL.MANAGER) return LEVEL.DIRECTOR;  // 부장 작성 -> 이사 이상 승인
+      if(wl === LEVEL.DIRECTOR || wl === LEVEL.EXEC) return LEVEL.CEO; // 이사/상무/전무 -> 대표이사 승인
+      return Infinity;
+    }
+    return Infinity;
+  }
+  function canAct(writer, role, user){
+    user=normalize(user); if(!user || isAdmin(user)) return !!user;
+    var req = requiredLevel(writer, role);
+    return req !== Infinity && userLevel(user) >= req;
+  }
+  function opt(u,label){
+    u=normalize(u); if(!u) return '<option value="">-</option>';
+    var v=esc(u.id||u.email||u.name);
+    var text=esc(label || (u.name + (u.title?' / '+u.title:'') + (u.department?' / '+u.department:'')));
+    return '<option value="'+v+'" data-name="'+esc(u.name)+'" data-title="'+esc(u.title)+'" data-department="'+esc(u.department)+'" data-email="'+esc(u.email)+'" data-role="'+esc(u.role)+'">'+text+'</option>';
+  }
+  function setOnly(sel,u,label){sel.innerHTML = u ? opt(u,label) : '<option value="">-</option>'; sel.value = u ? (u.id||u.email||u.name) : '';}
+  function selectedUser(type,role){
+    var sel=$('sg_'+type+'_'+role); if(!sel) return null;
+    var o=sel.options[sel.selectedIndex]; if(!o || !sel.value) return null;
+    return normalize({id:sel.value,name:o.dataset.name||o.textContent,title:o.dataset.title,department:o.dataset.department,email:o.dataset.email,role:o.dataset.role});
+  }
+  function setSub(type,role,msg,badge,mode){
+    var sub=$('sg_'+type+'_'+role+'_sub'); if(sub) sub.textContent=msg||'';
+    var b=$('sg_'+type+'_'+role+'_badge'); if(b) b.textContent=badge||'';
+    var box=$('sg_'+type+'_'+role); box=box && box.closest && box.closest('.sign-box');
+    if(box) box.dataset.namoApprovalMode = mode || 'locked';
+  }
+  function savedRecord(type){return (window.__qmsEditSignRecord && window.__qmsEditSignRecord[type]) || null;}
+  function savedUser(rec,role){
+    if(!rec) return null;
+    var raw = role==='writer' ? (rec.signWriter||rec.writer||rec.inspector||rec.visual||rec.solid) : role==='reviewer' ? (rec.signReviewer||rec.reviewer) : (rec.signApprover||rec.approver);
+    return normalize(raw);
+  }
+  function lockSignControls(type,role,active){
+    var file=$('sg_'+type+'_'+role+'_file');
+    var btn=document.querySelector('[data-qms-final-file-btn="'+type+':'+role+'"],[data-final-sign-file-btn="'+type+':'+role+'"],[data-sign-file-btn="'+type+':'+role+'"]');
+    var clear=document.querySelector('[data-qms-final-clear="'+type+':'+role+'"],[data-final-sign-clear="'+type+':'+role+'"],[data-sign-clear="'+type+':'+role+'"]');
+    [file,btn,clear].forEach(function(el){if(el){el.disabled=!active;el.style.pointerEvents=active?'auto':'none';el.style.opacity=active?'1':'.45';}});
+  }
+  function buildIfMissing(type){
+    var grid=$('signGrid_'+type); if(!grid) return null;
+    if($('sg_'+type+'_writer') && $('sg_'+type+'_reviewer') && $('sg_'+type+'_approver')) return grid;
+    grid.innerHTML = ROLES.map(function(role){
+      return '<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">'+ROLE_KO[role]+'</span><span class="sign-box-badge" id="sg_'+type+'_'+role+'_badge"></span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+type+'_'+role+'"></select><div class="sign-sub" id="sg_'+type+'_'+role+'_sub"></div></div></div>';
+    }).join('');
+    return grid;
+  }
+  function applyType(type){
+    var grid=buildIfMissing(type); if(!grid) return;
+    var me=currentUser();
+    var admin=isAdmin(me);
+    var rec=savedRecord(type);
+    var writerSel=$('sg_'+type+'_writer'), reviewerSel=$('sg_'+type+'_reviewer'), approverSel=$('sg_'+type+'_approver');
+    if(!writerSel||!reviewerSel||!approverSel) return;
+
+    var writer=savedUser(rec,'writer') || me;
+    setOnly(writerSel, writer, writer ? writer.name + (writer.title?' / '+writer.title:'') : '로그인 필요');
+    writerSel.disabled=true;
+    setSub(type,'writer', same(writer,me)?'로그인 본인 작성':'저장된 작성자 보존','본인고정', same(writer,me)?'active':'locked');
+    lockSignControls(type,'writer', !!me && (admin || same(writer,me)));
+
+    ['reviewer','approver'].forEach(function(role){
+      var sel=$('sg_'+type+'_'+role);
+      var saved=savedUser(rec,role);
+      if(saved){
+        setOnly(sel,saved,saved.name + (saved.title?' / '+saved.title:''));
+        sel.disabled=true;
+        var active=!!me && (admin || same(saved,me));
+        setSub(type,role, active ? '현재 로그인 계정 처리 가능' : '저장된 '+ROLE_KO[role]+'자 보존', active?'처리가능':'잠김', active?'active':'locked');
+        lockSignControls(type,role,active);
+        return;
+      }
+      if(admin){
+        var list=allUsers();
+        sel.innerHTML='<option value="">-</option>'+list.map(function(u){return opt(u);}).join('');
+        sel.disabled=false;
+        setSub(type,role,'관리자: 전체 회원 선택 가능','관리자','active');
+        lockSignControls(type,role,true);
+        return;
+      }
+      if(canAct(writer,role,me)){
+        setOnly(sel,me,me.name + (me.title?' / '+me.title:''));
+        sel.disabled=false;
+        setSub(type,role,'권한 일치: 로그인 본인만 '+ROLE_KO[role]+' 가능','본인','active');
+        lockSignControls(type,role,true);
+      }else{
+        setOnly(sel,null,'-');
+        sel.disabled=true;
+        var req=requiredLevel(writer,role);
+        var reqText=req===LEVEL.MANAGER?'부장 이상':req===LEVEL.DIRECTOR?'이사 이상':req===LEVEL.CEO?'대표이사':'대상 없음';
+        setSub(type,role,reqText+' 로그인 시 '+ROLE_KO[role]+' 가능','잠김','locked');
+        lockSignControls(type,role,false);
+      }
+    });
+    if(typeof window.onSignChange==='function'){try{window.onSignChange(type,'approval-clean');}catch(e){}}
+  }
+  function applyAll(){
+    if(applying) return; applying=true;
+    try{TYPES.forEach(applyType);}finally{applying=false;}
+  }
+
+  // 기존 반복 패치가 덮어쓰지 못하도록 최종 진입점만 1회성으로 통합
+  window.buildSignGrid=function(type){applyType(type);return $('signGrid_'+type);};
+  window.rebuildAllSignGrids=applyAll;
+  window.applyAllSignPermissions=applyAll;
+  window.qmsRefreshSignatures=applyAll;
+  window.namoApplyApprovalCleanReplacement=applyAll;
+  window.namoApprovalCanAct=canAct;
+
+  document.addEventListener('change',function(e){
+    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)$/.test(e.target.id||'')){
+      var type=e.target.id.split('_')[1];
+      applyType(type);
+    }
+  },true);
+  document.addEventListener('click',function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-page],#incomingReset,#processReset,#shipmentReset,#ncReset,#trainingReset')) setTimeout(applyAll,60);
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyAll); else applyAll();
+  window.addEventListener('load',function(){setTimeout(applyAll,80);setTimeout(applyAll,400);});
+})();
+</script>
+<!-- NAMO APPROVAL CLEAN REPLACEMENT 20260624 END -->
+</body>
+</html>
