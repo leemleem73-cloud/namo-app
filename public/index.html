@@ -11173,8 +11173,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       '<table><tbody>'+metaRows(type)+'</tbody></table>'+
       '<div class="tw mt12"><table><thead><tr><th>No.</th><th>검사항목</th><th>검사기준(SPEC)</th><th>측정값/확인</th><th>판정</th></tr></thead><tbody>'+makeRows(currentItems(type))+'</tbody></table></div>'+
       '<div class="rbox"><div class="rlbl">최종 판정</div><div class="big" style="color:#111;">'+line()+'</div></div>'+
-      makeSign()+
-      '<div class="nmc-manual-note">수기작성용 출력본입니다. 검사 후 측정값, 판정, 서명을 현장에서 직접 기입하십시오.</div>';
+      '<div class="nmc-manual-note">수기작성용 출력본입니다. 검사 후 측정값과 판정을 현장에서 직접 기입하십시오.</div>';
     return wrap;
   }
   function printManual(type){
@@ -14215,3 +14214,238 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NMC INSPECTION REPORT ONE-PAGE PRINT PATCH 20260624 END -->
+
+
+<!-- NMC INSPECTION REPORT APPROVAL COMPACT + MANUAL SIGN HIDE PATCH 20260624 START -->
+<style id="nmc-inspection-approval-compact-20260624">
+/* IQC/PQC/OQC 성적서: 작성/검토/승인 전자결재 스타일 공통 축소 */
+.rsheet .rprint-sign,
+#reportPrintTarget .rprint-sign,
+#incomingReportPreview .rprint-sign,
+#processReportPreview .rprint-sign,
+#shipmentReportPreview .rprint-sign{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  margin-top:10px!important;
+  border:1.2px solid #9ca3af!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.rsheet .rpsign-col,
+#reportPrintTarget .rpsign-col,
+#incomingReportPreview .rpsign-col,
+#processReportPreview .rpsign-col,
+#shipmentReportPreview .rpsign-col{
+  min-height:86px!important;
+  height:86px!important;
+  padding:0!important;
+  border-right:1px solid #c7ccd4!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  text-align:center!important;
+  background:#fff!important;
+}
+.rsheet .rpsign-col:last-child,
+#reportPrintTarget .rpsign-col:last-child,
+#incomingReportPreview .rpsign-col:last-child,
+#processReportPreview .rpsign-col:last-child,
+#shipmentReportPreview .rpsign-col:last-child{
+  border-right:none!important;
+}
+.rsheet .rpsign-role,
+#reportPrintTarget .rpsign-role,
+#incomingReportPreview .rpsign-role,
+#processReportPreview .rpsign-role,
+#shipmentReportPreview .rpsign-role{
+  width:100%!important;
+  height:24px!important;
+  line-height:24px!important;
+  padding:0!important;
+  margin:0 0 4px 0!important;
+  border-bottom:1px solid #d1d5db!important;
+  background:#fafafa!important;
+  color:#111827!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+.rsheet .rpsign-img,
+#reportPrintTarget .rpsign-img,
+#incomingReportPreview .rpsign-img,
+#processReportPreview .rpsign-img,
+#shipmentReportPreview .rpsign-img{
+  width:82px!important;
+  height:24px!important;
+  max-height:24px!important;
+  object-fit:contain!important;
+  margin:1px auto 0!important;
+}
+.rsheet .rpsign-name,
+#reportPrintTarget .rpsign-name,
+#incomingReportPreview .rpsign-name,
+#processReportPreview .rpsign-name,
+#shipmentReportPreview .rpsign-name{
+  min-height:16px!important;
+  line-height:16px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  color:#111827!important;
+  margin-top:1px!important;
+}
+.rsheet .rpsign-title,
+#reportPrintTarget .rpsign-title,
+#incomingReportPreview .rpsign-title,
+#processReportPreview .rpsign-title,
+#shipmentReportPreview .rpsign-title{
+  min-height:14px!important;
+  line-height:14px!important;
+  font-size:10px!important;
+  color:#4b5563!important;
+  margin-top:0!important;
+}
+.rsheet .rpsign-date,
+#reportPrintTarget .rpsign-date,
+#incomingReportPreview .rpsign-date,
+#processReportPreview .rpsign-date,
+#shipmentReportPreview .rpsign-date{
+  font-size:9px!important;
+  line-height:11px!important;
+  color:#6b7280!important;
+  margin-top:0!important;
+}
+.rsheet .rpsign-line,
+#reportPrintTarget .rpsign-line,
+#incomingReportPreview .rpsign-line,
+#processReportPreview .rpsign-line,
+#shipmentReportPreview .rpsign-line{
+  width:78%!important;
+  height:1px!important;
+  margin:2px auto 0!important;
+  background:#b0b7c3!important;
+}
+
+/* 수기작성 출력본에서는 작성/검토/승인 구조 제거 */
+.nmc-manual-inspection-sheet .rprint-sign,
+#printTarget.nmc-manual-inspection-sheet .rprint-sign,
+#printTarget .nmc-manual-inspection-sheet .rprint-sign{
+  display:none!important;
+}
+
+@media print{
+  @page{
+    size:A4 landscape;
+    margin:8mm;
+  }
+  #printTarget.nmc-onepage-print{
+    width:285mm!important;
+    max-width:285mm!important;
+  }
+  #printTarget.nmc-onepage-print .rprint-sign{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    margin-top:7px!important;
+    border:1.2px solid #888!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-col{
+    height:72px!important;
+    min-height:72px!important;
+    padding:0!important;
+    border-right:1px solid #aaa!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-col:last-child{
+    border-right:none!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-role{
+    height:20px!important;
+    line-height:20px!important;
+    font-size:9px!important;
+    padding:0!important;
+    margin:0 0 3px 0!important;
+    border-bottom:1px solid #ccc!important;
+    background:#fafafa!important;
+    color:#111!important;
+    text-transform:none!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-img{
+    width:76px!important;
+    height:20px!important;
+    max-height:20px!important;
+    margin:0 auto!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-name{
+    min-height:14px!important;
+    line-height:14px!important;
+    font-size:10.5px!important;
+    margin-top:0!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-title{
+    min-height:11px!important;
+    line-height:11px!important;
+    font-size:8.5px!important;
+    margin-top:0!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-date{
+    font-size:8px!important;
+    line-height:9px!important;
+    margin-top:0!important;
+  }
+  #printTarget.nmc-onepage-print .rpsign-line{
+    width:76%!important;
+    margin:1px auto 0!important;
+  }
+  #printTarget.nmc-onepage-print.nmc-manual-inspection-sheet .rprint-sign,
+  #printTarget.nmc-onepage-print .nmc-manual-inspection-sheet .rprint-sign{
+    display:none!important;
+  }
+}
+</style>
+<script id="nmc-inspection-manual-sign-remove-20260624">
+(function(){
+  'use strict';
+  if(window.__nmcInspectionManualSignRemove20260624) return;
+  window.__nmcInspectionManualSignRemove20260624 = true;
+
+  function removeManualApproval(root){
+    if(!root) return;
+    var manualRoots = [];
+    if(root.classList && root.classList.contains('nmc-manual-inspection-sheet')) manualRoots.push(root);
+    root.querySelectorAll && root.querySelectorAll('.nmc-manual-inspection-sheet').forEach(function(el){ manualRoots.push(el); });
+    manualRoots.forEach(function(sheet){
+      sheet.querySelectorAll('.rprint-sign').forEach(function(sign){ sign.remove(); });
+      sheet.querySelectorAll('.nmc-manual-note').forEach(function(note){
+        note.textContent = '수기작성용 출력본입니다. 검사 후 측정값과 판정을 현장에서 직접 기입하십시오.';
+      });
+    });
+  }
+
+  var oldPrintEl = window.printEl;
+  window.printEl = async function(el){
+    removeManualApproval(el);
+    if(typeof oldPrintEl === 'function'){
+      return oldPrintEl.call(this, el);
+    }
+    if(!el) return;
+    document.querySelectorAll('#printTarget').forEach(function(x){ x.remove(); });
+    var clone = el.cloneNode(true);
+    clone.id = 'printTarget';
+    removeManualApproval(clone);
+    document.body.appendChild(clone);
+    setTimeout(function(){ window.print(); }, 250);
+  };
+
+  function boot(){
+    document.querySelectorAll('.nmc-manual-inspection-sheet').forEach(removeManualApproval);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  setTimeout(boot, 500);
+})();
+</script>
+<!-- NMC INSPECTION REPORT APPROVAL COMPACT + MANUAL SIGN HIDE PATCH 20260624 END -->
