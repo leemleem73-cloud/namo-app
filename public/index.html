@@ -2951,6 +2951,21 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 </style>
 
+
+<style id="dashboard-loading-guard-style">
+body.dashboard-loading #qmesCockpit{position:relative;min-height:360px;}
+body.dashboard-loading #qmesCockpit::after{
+  content:'전체 데이터를 불러오는 중입니다...';
+  position:absolute;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:22px;
+  background:rgba(238,243,248,.82);
+  backdrop-filter:blur(3px);
+  color:#0f2f5f;font-weight:900;font-size:18px;
+}
+body.dashboard-loading #qmesCockpit > *{opacity:.28;pointer-events:none;}
+</style>
+
 </head>
 <body class="login-active">
 
@@ -5302,14 +5317,35 @@ async function loadInstruments(){
 function saveInstrumentsLocal(){
   try{localStorage.setItem('namo_qms_instruments',JSON.stringify(state.instruments));}catch(e){}
 }
+/* Dashboard loading guard: API 데이터가 모두 준비되기 전 0건 대시보드가 먼저 보이는 현상 방지 */
+window.__dashboardDataReady=false;
+window.__dashboardLoading=false;
+
 async function loadAll데이터(){
-  await loadSignableUsers();
-  await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform(),loadInstruments(),loadTrainingReports()]);
-  loadSpcReports();
-  if(state.currentUser?.role==='admin')await loadAdminUsers();
-  renderSummary();setTimeout(()=>{if(typeof renderSummary==='function')renderSummary();},250);populateReportSelect();loadStandaloneReport();
-  if(typeof renderTrainingTable==='function')renderTrainingTable();
-  if(typeof renderTrainingPreview==='function')renderTrainingPreview();
+  window.__dashboardDataReady=false;
+  window.__dashboardLoading=true;
+  document.body.classList.add('dashboard-loading');
+  try{
+    await loadSignableUsers();
+    await Promise.all([loadIncoming(),loadProcess(),loadShipment(),loadSuppliers(),loadWorklog(),loadNonconform(),loadInstruments(),loadTrainingReports()]);
+    loadSpcReports();
+    if(state.currentUser?.role==='admin')await loadAdminUsers();
+
+    window.__dashboardDataReady=true;
+    window.__dashboardLoading=false;
+    document.body.classList.remove('dashboard-loading');
+
+    renderSummary();
+    populateReportSelect();
+    loadStandaloneReport();
+    if(typeof renderTrainingTable==='function')renderTrainingTable();
+    if(typeof renderTrainingPreview==='function')renderTrainingPreview();
+  }catch(e){
+    window.__dashboardLoading=false;
+    document.body.classList.remove('dashboard-loading');
+    console.error('loadAll데이터 failed',e);
+    alert('전체 데이터를 불러오는 중 오류가 발생했습니다. 새로고침 후 다시 시도하세요.');
+  }
 }
 
 /* ═══ RENDER TABLES ═══ */
@@ -5591,6 +5627,9 @@ function qmesCountForQuarter(arr,yr,qi){
   }).length;
 }
 function renderSummary(){
+  if(window.__dashboardDataReady!==true){
+    return;
+  }
   const y=Number(($('dashYear')&&$('dashYear').value)||new Date().getFullYear()),p=y-1;
   const trainingArr=Array.isArray(state.trainingReports)?state.trainingReports:(Array.isArray(state.training)?state.training:[]);
   const iC=countByYear(state.incoming,y),pC=countByYear(state.process,y),sC=countByYear(state.shipment,y),wC=countByYear(state.worklog,y);
