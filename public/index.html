@@ -13105,4 +13105,58 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
 })();
 </script>
 <!-- /NAMO SIGN FORCE LOCK FINAL v9 20260624 -->
+
+
+<script id="namo-sign-clean-ui-v10-no-subtext">
+(function(){
+  'use strict';
+  var TYPES=['iqc','pqc','oqc','nc','training'];
+  var ROLES=['writer','reviewer','approver'];
+  var applying=false;
+  function $(id){return document.getElementById(id);}
+  function cleanSignSubTexts(){
+    if(applying)return;
+    applying=true;
+    try{
+      TYPES.forEach(function(type){
+        ROLES.forEach(function(role){
+          var sub=$('sg_'+type+'_'+role+'_sub');
+          if(sub){
+            sub.textContent='';
+            sub.innerHTML='';
+            sub.style.minHeight='0';
+            sub.style.marginTop='0';
+            sub.style.display='none';
+          }
+        });
+      });
+    }catch(e){}
+    applying=false;
+  }
+  var oldStable=window.namoStableSignMembers;
+  if(typeof oldStable==='function'){
+    window.namoStableSignMembers=function(){
+      var r=oldStable.apply(this,arguments);
+      cleanSignSubTexts();
+      setTimeout(cleanSignSubTexts,30);
+      return r;
+    };
+  }
+  var oldApply=window.applyAllSignPermissions;
+  if(typeof oldApply==='function'){
+    window.applyAllSignPermissions=function(){
+      var r=oldApply.apply(this,arguments);
+      cleanSignSubTexts();
+      setTimeout(cleanSignSubTexts,30);
+      return r;
+    };
+  }
+  document.addEventListener('click',function(){setTimeout(cleanSignSubTexts,60);},true);
+  document.addEventListener('change',function(){setTimeout(cleanSignSubTexts,60);},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cleanSignSubTexts);
+  else cleanSignSubTexts();
+  window.addEventListener('load',function(){cleanSignSubTexts();setTimeout(cleanSignSubTexts,200);setTimeout(cleanSignSubTexts,800);});
+  setInterval(cleanSignSubTexts,500);
+})();
+</script>
 </body></html>
