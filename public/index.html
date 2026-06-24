@@ -14083,3 +14083,135 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- /NAMO member-linked approval UI cleanup/final override 20260624 -->
+
+<!-- NMC INSPECTION REPORT ONE-PAGE PRINT PATCH 20260624 START -->
+<style id="nmc-inspection-onepage-print-style">
+@media print{
+  @page{size:A4 landscape!important;margin:6mm!important;}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important;}
+  body *{visibility:hidden!important;}
+  #printTarget,#printTarget *{visibility:visible!important;}
+  #printTarget.nmc-onepage-print{
+    position:absolute!important;
+    left:0!important;top:0!important;
+    width:285mm!important;max-width:285mm!important;
+    min-height:0!important;height:auto!important;
+    margin:0!important;padding:0!important;
+    background:#fff!important;box-shadow:none!important;border:0!important;
+    overflow:visible!important;
+    zoom:var(--nmc-onepage-zoom, .72)!important;
+    break-after:avoid!important;page-break-after:avoid!important;
+  }
+  #printTarget.nmc-onepage-print .rsheet,
+  #printTarget.nmc-onepage-print.rsheet{
+    width:100%!important;max-width:none!important;
+    border:1px solid #d0d5de!important;
+    border-radius:8px!important;
+    padding:8px 10px!important;
+    box-shadow:none!important;
+    background:#fff!important;
+    break-inside:avoid!important;page-break-inside:avoid!important;
+  }
+  #printTarget.nmc-onepage-print .rhdr{margin-bottom:6px!important;padding-bottom:6px!important;}
+  #printTarget.nmc-onepage-print .rhdr h2{font-size:14px!important;}
+  #printTarget.nmc-onepage-print .rbname{font-size:12px!important;}
+  #printTarget.nmc-onepage-print table{font-size:10.2px!important;line-height:1.22!important;}
+  #printTarget.nmc-onepage-print th,
+  #printTarget.nmc-onepage-print td{padding:4px 6px!important;}
+  #printTarget.nmc-onepage-print thead th{padding:5px 6px!important;font-size:9.6px!important;}
+  #printTarget.nmc-onepage-print tbody td{padding:5px 6px!important;}
+  #printTarget.nmc-onepage-print .tw{overflow:visible!important;border-radius:8px!important;}
+  #printTarget.nmc-onepage-print .rbox{margin-top:7px!important;padding:6px!important;}
+  #printTarget.nmc-onepage-print .big{font-size:18px!important;line-height:1.1!important;}
+  #printTarget.nmc-onepage-print .rprint-sign{margin-top:8px!important;}
+  #printTarget.nmc-onepage-print .rpsign-col{padding:5px 6px!important;}
+  #printTarget.nmc-onepage-print .rpsign-role{font-size:9px!important;padding-bottom:3px!important;margin-bottom:4px!important;}
+  #printTarget.nmc-onepage-print .rpsign-name{font-size:12px!important;min-height:16px!important;}
+  #printTarget.nmc-onepage-print .rpsign-title{font-size:9px!important;}
+  #printTarget.nmc-onepage-print .rpsign-line{margin:5px auto 2px!important;}
+  #printTarget.nmc-onepage-print .rpsign-img{height:26px!important;width:86px!important;margin-bottom:1px!important;}
+  #printTarget.nmc-onepage-print .print-user-info,
+  #printTarget.nmc-onepage-print .nmc-manual-note{margin-top:5px!important;padding-top:4px!important;font-size:9.2px!important;line-height:1.25!important;}
+  #printTarget.nmc-onepage-print .bcsec{display:none!important;}
+}
+</style>
+<script id="nmc-inspection-onepage-print-script">
+(function(){
+  'use strict';
+  if(window.__nmcInspectionOnePagePrint20260624) return;
+  window.__nmcInspectionOnePagePrint20260624 = true;
+
+  function isInspectionReport(el){
+    if(!el) return false;
+    var id = el.id || '';
+    return id === 'incomingReportPreview' || id === 'processReportPreview' || id === 'shipmentReportPreview' ||
+           id === 'reportPrintTarget' || id === 'ncFormPrintTarget' ||
+           (el.classList && (el.classList.contains('rsheet') || el.classList.contains('nmc-manual-inspection-sheet')));
+  }
+  function pxPerMm(){
+    var d=document.createElement('div');
+    d.style.cssText='position:absolute;left:-9999px;top:-9999px;width:100mm;height:1mm;visibility:hidden;';
+    document.body.appendChild(d);
+    var v=d.getBoundingClientRect().width/100;
+    d.remove();
+    return v || 3.78;
+  }
+  function applyOnePageZoom(target){
+    if(!target || !target.classList.contains('nmc-onepage-print')) return;
+    var ppm=pxPerMm();
+    var pageW=285*ppm, pageH=198*ppm;
+    target.style.width='285mm';
+    target.style.maxWidth='285mm';
+    target.style.zoom='1';
+    target.style.setProperty('--nmc-onepage-zoom','1');
+    var rect=target.getBoundingClientRect();
+    var w=Math.max(target.scrollWidth, rect.width, 1);
+    var h=Math.max(target.scrollHeight, rect.height, 1);
+    var z=Math.min(pageW/w, pageH/h, 1);
+    z=Math.max(0.52, Math.floor(z*100)/100);
+    target.style.setProperty('--nmc-onepage-zoom', String(z));
+    target.style.zoom=String(z);
+  }
+
+  var oldPrintEl = window.printEl;
+  window.printEl = async function(el){
+    if(!el) return;
+    document.querySelectorAll('#printTarget').forEach(function(x){x.remove();});
+    var clone=el.cloneNode(true);
+    clone.id='printTarget';
+    if(el.id==='trainingPreviewSheet') clone.classList.add('training-print-onepage');
+    if(isInspectionReport(el)) clone.classList.add('nmc-onepage-print');
+
+    var originalCanvases=el.querySelectorAll('canvas');
+    var clonedCanvases=clone.querySelectorAll('canvas');
+    originalCanvases.forEach(function(cv,i){
+      var ccv=clonedCanvases[i]; if(!ccv) return;
+      var img=document.createElement('img');
+      img.className=cv.className||'sign-pad';
+      img.style.width=cv.style.width||'100%';
+      img.style.height=cv.style.height||'76px';
+      img.style.objectFit='contain';
+      var key=(cv.dataset.signType&&cv.dataset.signRole)?(cv.dataset.signType+':'+cv.dataset.signRole):'';
+      var stored=key&&window.__signImageStore&&window.__signImageStore[key]?window.__signImageStore[key].signImage:'';
+      try{img.src=stored||cv.toDataURL('image/png');}catch(e){img.src=stored||'';}
+      if(img.src) ccv.replaceWith(img);
+    });
+
+    if(typeof window.appendPrintUserInfo==='function') await window.appendPrintUserInfo(clone);
+    document.body.appendChild(clone);
+    if(clone.classList.contains('nmc-onepage-print')){
+      applyOnePageZoom(clone);
+      setTimeout(function(){applyOnePageZoom(clone); window.print();},250);
+    }else if(typeof oldPrintEl==='function' && !clone.classList.contains('nmc-onepage-print')){
+      setTimeout(function(){window.print();},300);
+    }else{
+      setTimeout(function(){window.print();},300);
+    }
+    window.onafterprint=function(){
+      document.querySelectorAll('#printTarget').forEach(function(x){x.remove();});
+      window.onafterprint=null;
+    };
+  };
+})();
+</script>
+<!-- NMC INSPECTION REPORT ONE-PAGE PRINT PATCH 20260624 END -->
