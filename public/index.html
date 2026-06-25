@@ -11951,6 +11951,9 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
   function norm(v){return txt(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'')}
   function num(v){var n=parseFloat(txt(v).replace(/,/g,'').replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0}
   function dateOnly(v){var s=txt(v); if(!s) return ''; var m=s.match(/(20\d{2})[-.\/년\s]*(\d{1,2})[-.\/월\s]*(\d{1,2})/); if(m) return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0'); m=s.match(/(20\d{2})(\d{2})(\d{2})/); if(m) return m[1]+'-'+m[2]+'-'+m[3]; return ''}
+  function isDateLike(v){return !!dateOnly(v)}
+  function cleanSupplier(v){v=txt(v); return (!v||v==='-'||isDateLike(v))?'':v}
+  function cleanQty(v){v=txt(v); return v&&v!=='-'?v:''}
   function pick(o,keys,def){o=o||{};for(var i=0;i<keys.length;i++){var k=keys[i],v=o[k];if(v!=null&&txt(v)!=='')return v}return def||''}
   function arr(v){return Array.isArray(v)?v:[]}
   function readJson(k){try{var v=localStorage.getItem(k);if(!v)return [];var p=JSON.parse(v);return Array.isArray(p)?p:[]}catch(e){return []}}
@@ -11983,7 +11986,7 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
     if(Array.isArray(v))return v;
     var out=[];
     for(var i=1;i<=12;i++){
-      var lot=pick(o,['materialLot'+i,'matLot'+i,'rawLot'+i],''), name=pick(o,['material'+i,'matName'+i,'rawMaterial'+i],''), qty=pick(o,['materialQty'+i,'matQty'+i,'inputQty'+i],'');
+      var lot=pick(o,['materialLot'+i,'matLot'+i,'rawLot'+i,'lotNo'+i,'rmLot'+i,'incomingLot'+i],''), name=pick(o,['material'+i,'matName'+i,'rawMaterial'+i,'materialName'+i,'itemName'+i],''), qty=pick(o,['materialQty'+i,'matQty'+i,'inputQty'+i,'useQty'+i,'qty'+i,'amount'+i,'weight'+i],'');
       if(lot||name||qty)out.push({material:name,lotNo:lot,inputQty:qty});
     }
     return out;
@@ -11997,8 +12000,9 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
       if(!map[key]) map[key]={
         lot:lot,
         material:pick(x,['material','materialName','item','itemName','rawMaterial','incomingItem','product'],'')||'-',
-        supplier:pick(x,['supplier','supplierName','vendor','vendorName','incomingSupplier','company'],'')||'-',
+        supplier:cleanSupplier(pick(x,['supplier','supplierName','vendor','vendorName','incomingSupplier','company'],''))||'-',
         date:dateOnly(pick(x,['productionDate','prodDate','mfgDate','date','incomingDate','inspectionDate','receiveDate'],''))||'-',
+        qty:cleanQty(pick(x,['incomingQty','receiveQty','inspectionQty','qty','checkQty','weight','amount'],'')),
         judge:pick(x,['judge','result','status'],'')
       };
     });
@@ -12019,7 +12023,7 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
       mats.forEach(function(m){
         var lot=pick(m,['lot','lotNo','materialLot','rawLot','rmLot','incomingLot'],''); if(!lot)return;
         var iq=iqcMap[norm(lot)]||{};
-        materialRows.push({material:pick(m,['material','materialName','name','item','itemName','rawMaterial'],'')||iq.material||'-', materialLot:lot, prodDate:dateOnly(pick(w,['workDate','productionDate','prodDate','date'],''))||'-', supplier:iq.supplier||'-', qty:pick(m,['inputQty','qty','amount','weight','useQty'],'-'), finishedLot:finishedLot, product:pick(w,['product','productName','prodName','item','title'],'-'), orderNo:pick(w,['workOrderNo','woNo','orderNo','no','nmcWoNo'],''), remark:finishedLot?'작업일지 연결':'원료 LOT 연결'});
+        materialRows.push({material:pick(m,['material','materialName','name','item','itemName','rawMaterial'],'')||iq.material||'-', materialLot:lot, supplier:cleanSupplier(iq.supplier)||'-', prodDate:dateOnly(pick(w,['workDate','productionDate','prodDate','date','actualDate','startDate'],''))||iq.date||'-', qty:cleanQty(pick(m,['inputQty','useQty','materialQty','matQty','qty','amount','weight','inputWeight','useWeight'],''))||iq.qty||'-', finishedLot:finishedLot, product:pick(w,['product','productName','prodName','item','title'],'-'), orderNo:pick(w,['workOrderNo','woNo','orderNo','no','nmcWoNo'],''), remark:finishedLot?'작업일지 연결':'원료 LOT 연결'});
       });
     });
     ds.orders.forEach(function(o){
@@ -12028,14 +12032,14 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
       materialArray(o).forEach(function(m){
         var lot=pick(m,['lot','lotNo','materialLot','rawLot','rmLot','incomingLot'],''); if(!lot)return;
         var iq=iqcMap[norm(lot)]||{};
-        materialRows.push({material:pick(m,['material','materialName','name','item','itemName','rawMaterial'],'')||iq.material||'-', materialLot:lot, prodDate:dateOnly(pick(o,['workDate','productionDate','prodDate','date','orderDate'],''))||'-', supplier:iq.supplier||'-', qty:pick(m,['inputQty','qty','amount','weight','useQty'],'-'), finishedLot:finishedLot, product:pick(o,['product','productName','prodName','item','title','nmcProdName'],'-'), orderNo:pick(o,['workOrderNo','woNo','orderNo','no','docNo','nmcWoNo'],''), remark:finishedLot?'작업지시 연결':'원료 LOT 연결'});
+        materialRows.push({material:pick(m,['material','materialName','name','item','itemName','rawMaterial'],'')||iq.material||'-', materialLot:lot, supplier:cleanSupplier(iq.supplier)||'-', prodDate:dateOnly(pick(o,['workDate','productionDate','prodDate','date','orderDate','actualDate','startDate'],''))||iq.date||'-', qty:cleanQty(pick(m,['inputQty','useQty','materialQty','matQty','qty','amount','weight','inputWeight','useWeight'],''))||iq.qty||'-', finishedLot:finishedLot, product:pick(o,['product','productName','prodName','item','title','nmcProdName'],'-'), orderNo:pick(o,['workOrderNo','woNo','orderNo','no','docNo','nmcWoNo'],''), remark:finishedLot?'작업지시 연결':'원료 LOT 연결'});
       });
     });
     ds.iqc.forEach(function(x){
       var lot=pick(x,['lot','lotNo','materialLot','incomingLot','rawLot','iqcLot','rmLot'],''); if(!lot)return;
       if(!materialRows.some(function(r){return norm(r.materialLot)===norm(lot)})){
         var iq=iqcMap[norm(lot)]||{};
-        materialRows.push({material:iq.material||'-', materialLot:lot, prodDate:iq.date||'-', supplier:iq.supplier||'-', qty:'-', finishedLot:'', product:'-', orderNo:'', remark:'IQC 등록'});
+        materialRows.push({material:iq.material||'-', materialLot:lot, supplier:cleanSupplier(iq.supplier)||'-', prodDate:iq.date||'-', qty:iq.qty||'-', finishedLot:'', product:'-', orderNo:'', remark:'IQC 등록'});
       }
     });
     materialRows=unique(materialRows,function(r){return [r.materialLot,r.finishedLot,r.orderNo,r.material,r.qty].map(norm).join('|')});
@@ -12047,13 +12051,13 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
     if(!page){var cont=qs('.content')||qs('main')||document.body;page=document.createElement('div');page.id='page-trace';page.className='page';cont.appendChild(page)}
     if(page.__nmcLotCleanReady)return;
     page.__nmcLotCleanReady=true;
-    page.innerHTML='<div class="nmc-lot-wrap"><div class="nmc-lot-hero"><div class="nmc-lot-title">LOT 추적 조회</div><div class="nmc-lot-sub">원재료 LOT, 완제품 LOT, 제품명, 작업지시번호를 기준으로 순추적/역추적합니다.</div><div class="nmc-lot-search"><select id="traceType"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><input id="traceKeyword" placeholder="LOT 번호, 제품명, 작업지시번호 입력"><label class="nmc-lot-exact"><input id="traceExactMatch" type="checkbox" checked><span>전부일치</span></label><button id="traceSearch" class="nmc-lot-btn primary" type="button">조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div></div><div id="traceSummary" class="trace-summary-grid"></div><div id="traceTimeline" class="trace-flow"></div><div class="nmc-lot-grid"><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title">원재료 LOT 추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>생산일자</th><th>협력사명</th><th>투입량(kg)</th><th>연결 완제품</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title">완제품 LOT 추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>생산일자</th><th>출하일자</th><th>출하수량(kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div></div></div><div class="trace-note">협력사명은 IQC/수입검사에 등록된 원재료 LOT 기준으로만 표시합니다. 고객사명은 원재료 협력사명으로 사용하지 않습니다.</div></div>';
+    page.innerHTML='<div class="nmc-lot-wrap"><div class="nmc-lot-hero"><div class="nmc-lot-title">LOT 추적 조회</div><div class="nmc-lot-sub">원재료 LOT, 완제품 LOT, 제품명, 작업지시번호를 기준으로 순추적/역추적합니다.</div><div class="nmc-lot-search"><select id="traceType"><option value="all">전체</option><option value="material">원재료 LOT</option><option value="finished">완제품 LOT</option></select><input id="traceKeyword" placeholder="LOT 번호, 제품명, 작업지시번호 입력"><label class="nmc-lot-exact"><input id="traceExactMatch" type="checkbox" checked><span>전부일치</span></label><button id="traceSearch" class="nmc-lot-btn primary" type="button">조회</button><button id="traceReset" class="nmc-lot-btn light" type="button">초기화</button></div></div><div id="traceSummary" class="trace-summary-grid"></div><div id="traceTimeline" class="trace-flow"></div><div class="nmc-lot-grid"><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title">원재료 LOT 추적</div><span id="traceMatCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>원재료명</th><th>원재료 LOT</th><th>협력사명</th><th>생산일자</th><th>투입량(kg)</th><th>연결 완제품</th><th>비고</th></tr></thead><tbody id="traceTable"></tbody></table></div></div><div class="nmc-lot-card"><div class="nmc-lot-card-h"><div class="nmc-lot-card-title">완제품 LOT 추적</div><span id="traceFinishedCount" class="nmc-lot-count">0건</span></div><div class="nmc-lot-table-wrap"><table class="nmc-lot-table"><thead><tr><th>제품명</th><th>완제품 LOT</th><th>생산일자</th><th>출하일자</th><th>출하수량(kg)</th><th>OQC 상태</th><th>비고</th></tr></thead><tbody id="traceFinishedTable"></tbody></table></div></div></div><div class="trace-note">협력사명은 IQC/수입검사에 등록된 원재료 LOT 기준으로만 표시합니다. 고객사명은 원재료 협력사명으로 사용하지 않습니다.</div></div>';
   }
   function passesMaterial(r,kw){return match(r.materialLot,kw)||(!exactEnabled()&&(loose(r.material,kw)||loose(r.finishedLot,kw)||loose(r.product,kw)||loose(r.orderNo,kw)||loose(r.supplier,kw)))}
   function passesFinished(r,kw,materials){return match(r.finishedLot,kw)||(!exactEnabled()&&(loose(r.product,kw)||loose(r.orderNo,kw)||materials.some(function(m){return norm(m.finishedLot)===norm(r.finishedLot)&&passesMaterial(m,kw)})))}
   function renderSummary(materials,finished,kw){var el=id('traceSummary');if(!el)return;var qty=materials.reduce(function(s,r){return s+num(r.qty)},0);el.innerHTML='<div class="trace-kpi"><div class="l">검색 LOT</div><div class="v">'+esc(kw||'-')+'</div><div class="s">'+(exactEnabled()?'전부일치':'포함검색')+'</div></div><div class="trace-kpi"><div class="l">원재료 연결</div><div class="v">'+materials.length+'</div><div class="s">IQC/작업지시/작업일지</div></div><div class="trace-kpi"><div class="l">완제품 연결</div><div class="v">'+finished.length+'</div><div class="s">작업/OQC 기준</div></div><div class="trace-kpi"><div class="l">투입량 합계</div><div class="v">'+(qty?qty.toLocaleString():'-')+'</div><div class="s">숫자형 투입량 기준 kg</div></div>'}
   function renderTimeline(materials,finished){var el=id('traceTimeline');if(!el)return;el.innerHTML=['IQC 원료 LOT','작업지시/생산투입','완제품 LOT','OQC/출하'].map(function(x,i){var on=(i===0&&materials.length)||(i===1&&materials.some(function(r){return r.finishedLot}))||(i===2&&finished.length)||(i===3&&finished.some(function(r){return r.source==='oqc'||r.shipDate}));return '<div class="trace-step '+(on?'on':'')+'">'+esc(x)+'</div>'}).join('')}
-  function renderMaterials(rows){var tb=id('traceTable'),cnt=id('traceMatCount');if(cnt)cnt.textContent=rows.length+'건';if(!tb)return;if(!rows.length){tb.innerHTML=empty(7,'조회 결과가 없습니다.');return}tb.innerHTML=rows.map(function(r){return '<tr><td><b>'+esc(r.material||'-')+'</b></td><td>'+lotLink('iqc',r.materialLot)+'</td><td>'+esc(r.prodDate||'-')+'</td><td>'+esc(r.supplier||'-')+'</td><td>'+esc(r.qty||'-')+'</td><td>'+(r.finishedLot?lotLink('oqc',r.finishedLot):'-')+'</td><td>'+esc(r.remark||'-')+'</td></tr>'}).join('')}
+  function renderMaterials(rows){var tb=id('traceTable'),cnt=id('traceMatCount');if(cnt)cnt.textContent=rows.length+'건';if(!tb)return;if(!rows.length){tb.innerHTML=empty(7,'조회 결과가 없습니다.');return}tb.innerHTML=rows.map(function(r){return '<tr><td><b>'+esc(r.material||'-')+'</b></td><td>'+lotLink('iqc',r.materialLot)+'</td><td>'+esc(r.supplier||'-')+'</td><td>'+esc(r.prodDate||'-')+'</td><td>'+esc(r.qty||'-')+'</td><td>'+(r.finishedLot?lotLink('oqc',r.finishedLot):'-')+'</td><td>'+esc(r.remark||'-')+'</td></tr>'}).join('')}
   function renderFinished(rows){var tb=id('traceFinishedTable'),cnt=id('traceFinishedCount');if(cnt)cnt.textContent=rows.length+'건';if(!tb)return;if(!rows.length){tb.innerHTML=empty(7,'조회 결과가 없습니다.');return}tb.innerHTML=rows.map(function(r){var d=r.shipDate||'';return '<tr><td><b>'+esc(r.product||'-')+'</b></td><td>'+lotLink('oqc',r.finishedLot)+'</td><td>'+esc(r.prodDate||'-')+'</td><td>'+esc(d||'-')+'</td><td>'+esc(r.shipQty||'-')+'</td><td>'+badge((r.source==='oqc')||/합격|완료|PASS/i.test(r.oqcStatus||''),r.oqcStatus||'-')+'</td><td>'+esc(r.orderNo||r.source||'-')+'</td></tr>'}).join('')}
   function clearTraceView(){ensureUI();var input=id('traceKeyword');if(input)input.value='';if(id('traceSummary'))id('traceSummary').innerHTML='';if(id('traceTimeline'))id('traceTimeline').innerHTML='';if(id('traceTable'))id('traceTable').innerHTML=empty(7,'LOT 번호를 입력 후 조회하세요.');if(id('traceFinishedTable'))id('traceFinishedTable').innerHTML=empty(7,'LOT 번호를 입력 후 조회하세요.');if(id('traceMatCount'))id('traceMatCount').textContent='0건';if(id('traceFinishedCount'))id('traceFinishedCount').textContent='0건'}
   function searchTrace(){ensureUI();var kw=txt(id('traceKeyword')&&id('traceKeyword').value);if(!kw){clearTraceView();return}var type=(id('traceType')&&id('traceType').value)||'all';var all=collect();var mats=all.materials.filter(function(r){return passesMaterial(r,kw)});var fins=all.finished.filter(function(r){return passesFinished(r,kw,mats)});if(type==='material')fins=[];if(type==='finished')mats=mats.filter(function(r){return fins.some(function(f){return norm(f.finishedLot)===norm(r.finishedLot)})||match(r.materialLot,kw)});renderSummary(mats,fins,kw);renderTimeline(mats,fins);renderMaterials(mats);renderFinished(fins);window.__nmcLastLotTraceRows={materials:mats,finished:fins}}
@@ -12067,6 +12071,7 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
 })();
 </script>
 <!-- NMC LOT TRACE SINGLE CLEAN IMPLEMENTATION 20260623 END -->
+<!-- 20260625 FIX: 원재료 LOT 추적 컬럼 순서(협력사명/생산일자) 정렬 및 supplier 날짜값 방지, 투입량 키 보강 -->
 
 
 
