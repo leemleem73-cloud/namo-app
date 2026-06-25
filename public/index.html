@@ -408,6 +408,21 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .bcrow{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;}
 .bcitem{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .bcitem span{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;}
+.oqc-lot-card{width:100%;border:1px solid var(--bd);border-radius:var(--r3);background:#fff;padding:12px 14px;margin-bottom:12px;}
+.oqc-lot-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:900;color:var(--t1);margin-bottom:10px;}
+.oqc-lot-no{font-size:13px;font-weight:900;color:var(--pri);}
+.oqc-lot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
+.oqc-lot-cell{border:1px solid var(--bd);border-radius:var(--r1);background:var(--s2);padding:7px 8px;min-height:48px;}
+.oqc-lot-k{font-size:10px;font-weight:800;color:var(--t3);letter-spacing:.2px;margin-bottom:2px;}
+.oqc-lot-v{font-size:12px;font-weight:800;color:var(--t1);line-height:1.35;}
+.oqc-bc-main{width:100%;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.oqc-bc-main .bcitem{min-width:220px;align-items:flex-start;}
+.oqc-bc-main .bcitem.lot svg{max-width:260px;}
+.oqc-doc-text{min-width:210px;border-left:1px dashed var(--bd2);padding-left:14px;}
+.oqc-doc-text .k{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;}
+.oqc-doc-text .v{font-size:12px;font-weight:800;color:var(--t1);margin-top:4px;word-break:break-all;}
+@media print{.oqc-lot-card{padding:8px 10px!important;margin-bottom:8px!important}.oqc-lot-grid{grid-template-columns:repeat(5,1fr)!important;gap:5px!important}.oqc-lot-cell{padding:5px 6px!important;min-height:38px!important}.oqc-lot-k{font-size:8.5px!important}.oqc-lot-v{font-size:10px!important}.oqc-doc-text .v{font-size:10px!important}.oqc-bc-main .bcitem.lot svg{max-width:240px!important}}
+
 .lgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 .plabel{border:2px solid #000;border-radius:4px;padding:11px;background:#fff;font-family:'Inter',sans-serif;page-break-inside:avoid;}
 .pltitle{font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #000;padding-bottom:5px;margin-bottom:7px;}
@@ -3447,7 +3462,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                   <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rOqcReviewer">-</div><div class="rpsign-title" id="rOqcReviewerT"></div><div class="rpsign-line"></div></div>
                   <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rOqcApprover">-</div><div class="rpsign-title" id="rOqcApproverT"></div><div class="rpsign-line"></div></div>
                 </div>
-                <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcOqcLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcOqcDoc"></svg></div></div></div>
+                <div class="bcsec oqc-lot-sec"><h4>LOT 정보</h4><div class="oqc-lot-card" id="oqcLotInfoBox"></div><div class="oqc-bc-main"><div class="bcitem lot"><span>LOT 바코드</span><svg id="bcOqcLot"></svg></div><div class="oqc-doc-text"><div class="k">문서번호</div><div class="v" id="bcOqcDocText">-</div></div><svg id="bcOqcDoc" style="display:none"></svg></div></div>
               </div>
             </div>
           </div>
@@ -3487,7 +3502,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
               <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rRptReviewer">-</div><div class="rpsign-title" id="rRptReviewerT"></div><div class="rpsign-line"></div></div>
               <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rRptApprover">-</div><div class="rpsign-title" id="rRptApproverT"></div><div class="rpsign-line"></div></div>
             </div>
-            <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcRptLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcRptDoc"></svg></div></div></div>
+            <div class="bcsec" id="reportBcSec"><h4 id="reportBcTitle">바코드</h4><div class="oqc-lot-card" id="reportLotInfoBox" style="display:none"></div><div class="bcrow" id="reportDefaultBcRow"><div class="bcitem"><span>LOT</span><svg id="bcRptLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcRptDoc"></svg></div></div><div class="oqc-bc-main" id="reportOqcBcRow" style="display:none"><div class="bcitem lot"><span>LOT 바코드</span><svg id="bcRptOqcLot"></svg></div><div class="oqc-doc-text"><div class="k">문서번호</div><div class="v" id="bcRptDocText">-</div></div></div></div>
           </div>
         </div></div>
       </section>
@@ -4876,11 +4891,48 @@ function syncPqcPreview(){
   renderPrevRows('processPreviewBody',items);$('processFinalJudgeText').textContent=calcJ(items);
   renderBC('bcPqcLot',$('processLot').value||'LOT');renderBC('bcPqcDoc',doc);
 }
+
+function decodeNamoLot(lot){
+  const raw=String(lot||'').trim().toUpperCase();
+  const clean=raw.replace(/[^A-Z0-9]/g,'');
+  const siteMap={A:'외부사이트(OEM)',B:'Lab',C:'Pilot',D:'양산'};
+  const monthMap={A:'1월',B:'2월',C:'3월',D:'4월',E:'5월',F:'6월',G:'7월',H:'8월',I:'9월',J:'10월',K:'11월',L:'12월'};
+  const yCode=clean.charAt(1)||'';
+  const year=yCode?String(2025+(yCode.charCodeAt(0)-65)):'';
+  const mCode=clean.charAt(2)||'';
+  const day=clean.slice(3,5);
+  const seq=clean.slice(5,7);
+  return {
+    lot: raw||'-',
+    siteCode: clean.charAt(0)||'-',
+    site: siteMap[clean.charAt(0)]||'-',
+    yearCode: yCode||'-',
+    year: year||'-',
+    monthCode: mCode||'-',
+    month: monthMap[mCode]||'-',
+    day: day||'-',
+    seq: seq||'-'
+  };
+}
+function lotInfoHtml(lot){
+  const x=decodeNamoLot(lot);
+  return `<div class="oqc-lot-title"><span>LOT No.</span><span class="oqc-lot-no">${esc(x.lot)}</span></div>`+
+    `<div class="oqc-lot-grid">`+
+    `<div class="oqc-lot-cell"><div class="oqc-lot-k">생산 Site</div><div class="oqc-lot-v">${esc(x.siteCode)} (${esc(x.site)})</div></div>`+
+    `<div class="oqc-lot-cell"><div class="oqc-lot-k">생산년도</div><div class="oqc-lot-v">${esc(x.yearCode)} (${esc(x.year)})</div></div>`+
+    `<div class="oqc-lot-cell"><div class="oqc-lot-k">생산월</div><div class="oqc-lot-v">${esc(x.monthCode)} (${esc(x.month)})</div></div>`+
+    `<div class="oqc-lot-cell"><div class="oqc-lot-k">생산일</div><div class="oqc-lot-v">${esc(x.day)}일</div></div>`+
+    `<div class="oqc-lot-cell"><div class="oqc-lot-k">일련번호</div><div class="oqc-lot-v">${esc(x.seq)}</div></div>`+
+    `</div>`;
+}
 function syncOqcPreview(){
   const items=state.shipmentItemDrafts;const date=$('shipmentDate').value||todayKST();const doc=`OQC-${date.replaceAll('-','')}-0001`;
   $('shipmentMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>완제품 LOT</th><td>${esc($('shipmentLot').value||'-')}</td><th>고객사</th><td>${esc($('shipmentCustomer').value||'-')}</td></tr><tr><th>제품명</th><td>${esc($('shipmentProduct').value||'-')}</td><th>출하량</th><td>${esc($('shipmentOutQty').value||'0')}</td></tr><tr><th>검사수량</th><td>${esc($('shipmentQty').value||'0')}</td><th>불량수량</th><td>${esc($('shipmentFailQty').value||'0')}</td></tr><tr><th>비고</th><td colspan="3">${esc($('shipmentRemark').value||'-')}</td></tr>`;
   renderPrevRows('shipmentPreviewBody',items);$('shipmentFinalJudgeText').textContent=calcJ(items);
-  renderBC('bcOqcLot',$('shipmentLot').value||'LOT');renderBC('bcOqcDoc',doc);
+  const oqcLot=$('shipmentLot').value||'LOT';
+  if($('oqcLotInfoBox'))$('oqcLotInfoBox').innerHTML=lotInfoHtml(oqcLot);
+  if($('bcOqcDocText'))$('bcOqcDocText').textContent=doc;
+  renderBC('bcOqcLot',oqcLot);if($('bcOqcDoc'))renderBC('bcOqcDoc',doc);
 }
 
 /* ═══ 성적서 페이지 ═══ */
@@ -4948,7 +5000,13 @@ function loadStandaloneReport(){
   setReportSignature('writer',sw);
   setReportSignature('reviewer',sr);
   setReportSignature('approver',sa);
-  setTimeout(()=>{renderBC('bcRptLot',row.lot||'LOT');renderBC('bcRptDoc',docNo);},50);
+  const isOqcReport=type==='oqc';
+  if($('reportBcTitle'))$('reportBcTitle').textContent=isOqcReport?'LOT 정보':'바코드';
+  if($('reportLotInfoBox')){$('reportLotInfoBox').style.display=isOqcReport?'block':'none';$('reportLotInfoBox').innerHTML=isOqcReport?lotInfoHtml(row.lot||'LOT'):'';}
+  if($('reportDefaultBcRow'))$('reportDefaultBcRow').style.display=isOqcReport?'none':'flex';
+  if($('reportOqcBcRow'))$('reportOqcBcRow').style.display=isOqcReport?'flex':'none';
+  if($('bcRptDocText'))$('bcRptDocText').textContent=docNo;
+  setTimeout(()=>{if(isOqcReport){renderBC('bcRptOqcLot',row.lot||'LOT');}else{renderBC('bcRptLot',row.lot||'LOT');renderBC('bcRptDoc',docNo);}},50);
 }
 
 /* ═══ PRINT ═══ */
