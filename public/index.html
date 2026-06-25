@@ -3409,7 +3409,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                   <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rPqcReviewer">-</div><div class="rpsign-title" id="rPqcReviewerT"></div><div class="rpsign-line"></div></div>
                   <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rPqcApprover">-</div><div class="rpsign-title" id="rPqcApproverT"></div><div class="rpsign-line"></div></div>
                 </div>
-                <div class="bcsec"><h4>바코드</h4><div class="bcrow"><div class="bcitem"><span>LOT</span><svg id="bcPqcLot"></svg></div><div class="bcitem"><span>문서번호</span><svg id="bcPqcDoc"></svg></div></div></div>
+                <div class="bcsec oqc-lot-sec"><h4>LOT 정보</h4><div class="oqc-lot-card" id="pqcLotInfoBox"></div><div class="oqc-bc-main"><div class="bcitem lot"><span>LOT 바코드</span><svg id="bcPqcLot"></svg></div><div class="oqc-doc-text"><div class="k">문서번호</div><div class="v" id="bcPqcDocText">-</div></div></div></div>
               </div>
             </div>
           </div>
@@ -4894,7 +4894,10 @@ function syncPqcPreview(){
   const items=state.processItemDrafts;const date=$('processDate').value||todayKST();const doc=`PQC-${date.replaceAll('-','')}-0001`;
   $('processMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>LOT</th><td>${esc($('processLot').value||'-')}</td><th>설비명</th><td>${esc($('processLine').value||'-')}</td></tr><tr><th>제품명</th><td>${esc($('processProduct').value||'-')}</td><th>작업조</th><td>${esc($('processShift').value||'-')}</td></tr><tr><th>검사수량</th><td>${esc($('processQty').value||'0')}</td><th>불량수량</th><td>${esc($('processFailQty').value||'0')}</td></tr>`;
   renderPrevRows('processPreviewBody',items);$('processFinalJudgeText').textContent=calcJ(items);
-  renderBC('bcPqcLot',$('processLot').value||'LOT');renderBC('bcPqcDoc',doc);
+  const pqcLot=$('processLot').value||'LOT';
+  if($('pqcLotInfoBox'))$('pqcLotInfoBox').innerHTML=lotInfoHtml(pqcLot);
+  if($('bcPqcDocText'))$('bcPqcDocText').textContent=doc;
+  renderBC('bcPqcLot',pqcLot);
 }
 
 function decodeNamoLot(lot){
@@ -5005,13 +5008,13 @@ function loadStandaloneReport(){
   setReportSignature('writer',sw);
   setReportSignature('reviewer',sr);
   setReportSignature('approver',sa);
-  const isOqcReport=type==='oqc';
-  if($('reportBcTitle'))$('reportBcTitle').textContent=isOqcReport?'LOT 정보':'바코드';
-  if($('reportLotInfoBox')){$('reportLotInfoBox').style.display=isOqcReport?'block':'none';$('reportLotInfoBox').innerHTML=isOqcReport?lotInfoHtml(row.lot||'LOT'):'';}
-  if($('reportDefaultBcRow'))$('reportDefaultBcRow').style.display=isOqcReport?'none':'flex';
-  if($('reportOqcBcRow'))$('reportOqcBcRow').style.display=isOqcReport?'flex':'none';
+  const isLotReport=(type==='oqc'||type==='pqc');
+  if($('reportBcTitle'))$('reportBcTitle').textContent=isLotReport?'LOT 정보':'바코드';
+  if($('reportLotInfoBox')){$('reportLotInfoBox').style.display=isLotReport?'block':'none';$('reportLotInfoBox').innerHTML=isLotReport?lotInfoHtml(row.lot||'LOT'):'';}
+  if($('reportDefaultBcRow'))$('reportDefaultBcRow').style.display=isLotReport?'none':'flex';
+  if($('reportOqcBcRow'))$('reportOqcBcRow').style.display=isLotReport?'flex':'none';
   if($('bcRptDocText'))$('bcRptDocText').textContent=docNo;
-  setTimeout(()=>{if(isOqcReport){renderBC('bcRptOqcLot',row.lot||'LOT');}else{renderBC('bcRptLot',row.lot||'LOT');renderBC('bcRptDoc',docNo);}},50);
+  setTimeout(()=>{if(isLotReport){renderBC('bcRptOqcLot',row.lot||'LOT');}else{renderBC('bcRptLot',row.lot||'LOT');renderBC('bcRptDoc',docNo);}},50);
 }
 
 /* ═══ PRINT ═══ */
