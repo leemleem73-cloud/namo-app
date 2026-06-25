@@ -2820,6 +2820,11 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 @media(max-width:700px){.std-dms-flow,.std-dms-limit-grid{grid-template-columns:1fr}.std-dms-meta-row{grid-template-columns:86px 1fr}.std-dms-actions .btn{flex:1}}
 @media print{.std-dms-summary .std-dms-actions,.ph-actions,.sidebar,.topbar,.footer{display:none!important}.std-dms-wrap{grid-template-columns:1fr!important}.std-dms-panel{break-inside:avoid;page-break-inside:avoid}.std-dms-panel{display:block!important}.std-dms-panel:not([open]) .std-dms-panel-b{display:block!important}}
 
+
+/* OQC LOT 정보: 문서번호 바코드 제거, LOT 바코드 1개만 표시 */
+.oqc-lot-sec #bcOqcDoc,
+#reportOqcBcRow #bcRptDoc{display:none!important;}
+
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -3462,7 +3467,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                   <div class="rpsign-col"><div class="rpsign-role">검토자</div><div class="rpsign-name" id="rOqcReviewer">-</div><div class="rpsign-title" id="rOqcReviewerT"></div><div class="rpsign-line"></div></div>
                   <div class="rpsign-col"><div class="rpsign-role">승인자</div><div class="rpsign-name" id="rOqcApprover">-</div><div class="rpsign-title" id="rOqcApproverT"></div><div class="rpsign-line"></div></div>
                 </div>
-                <div class="bcsec oqc-lot-sec"><h4>LOT 정보</h4><div class="oqc-lot-card" id="oqcLotInfoBox"></div><div class="oqc-bc-main"><div class="bcitem lot"><span>LOT 바코드</span><svg id="bcOqcLot"></svg></div><div class="oqc-doc-text"><div class="k">문서번호</div><div class="v" id="bcOqcDocText">-</div></div><svg id="bcOqcDoc" style="display:none"></svg></div></div>
+                <div class="bcsec oqc-lot-sec"><h4>LOT 정보</h4><div class="oqc-lot-card" id="oqcLotInfoBox"></div><div class="oqc-bc-main"><div class="bcitem lot"><span>LOT 바코드</span><svg id="bcOqcLot"></svg></div><div class="oqc-doc-text"><div class="k">문서번호</div><div class="v" id="bcOqcDocText">-</div></div></div></div>
               </div>
             </div>
           </div>
@@ -4932,7 +4937,7 @@ function syncOqcPreview(){
   const oqcLot=$('shipmentLot').value||'LOT';
   if($('oqcLotInfoBox'))$('oqcLotInfoBox').innerHTML=lotInfoHtml(oqcLot);
   if($('bcOqcDocText'))$('bcOqcDocText').textContent=doc;
-  renderBC('bcOqcLot',oqcLot);if($('bcOqcDoc'))renderBC('bcOqcDoc',doc);
+  renderBC('bcOqcLot',oqcLot);
 }
 
 /* ═══ 성적서 페이지 ═══ */
