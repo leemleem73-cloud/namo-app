@@ -13955,5 +13955,55 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_INVENTORY_FINAL_FULL_REPLACE_HMC_20260625_END -->
 
+
+
+<!-- NMC_INVENTORY_PAGE_VISIBILITY_GUARD_20260625_START -->
+<style id="nmc-inventory-page-visibility-guard-20260625">
+  /* 재고 화면은 해당 메뉴가 활성화될 때만 노출: 기준서/IQC 화면과 겹침 방지 */
+  #page-raw-inventory:not(.active),
+  #page-fg-inventory:not(.active){display:none!important;}
+  body:not(.nmc-inventory-active) #page-raw-inventory,
+  body:not(.nmc-inventory-active) #page-fg-inventory{display:none!important;}
+</style>
+<script id="nmc-inventory-page-visibility-guard-20260625">
+(function(){
+  'use strict';
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function activePageName(){
+    var n=q('.nav-item.active[data-page]');
+    return n ? n.getAttribute('data-page') : '';
+  }
+  function visiblePageName(){
+    var p=q('.page.active');
+    return p ? String(p.id||'').replace(/^page-/,'') : '';
+  }
+  function normalize(){
+    var n=activePageName() || visiblePageName();
+    var isInv=(n==='raw-inventory'||n==='fg-inventory');
+    document.body.classList.toggle('nmc-inventory-active',isInv);
+    if(!isInv){
+      var r=q('#page-raw-inventory'), f=q('#page-fg-inventory');
+      if(r)r.classList.remove('active');
+      if(f)f.classList.remove('active');
+    }else{
+      qa('.page.active').forEach(function(p){
+        if(p.id!=='page-'+n) p.classList.remove('active');
+      });
+      var cur=q('#page-'+n); if(cur)cur.classList.add('active');
+    }
+  }
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('.nav-item[data-page]')){
+      setTimeout(normalize,0);setTimeout(normalize,80);setTimeout(normalize,220);
+    }
+  },true);
+  document.addEventListener('DOMContentLoaded',normalize);
+  window.addEventListener('load',normalize);
+  [50,250,700,1500,3000].forEach(function(t){setTimeout(normalize,t)});
+})();
+</script>
+<!-- NMC_INVENTORY_PAGE_VISIBILITY_GUARD_20260625_END -->
+
 </body>
 </html>
