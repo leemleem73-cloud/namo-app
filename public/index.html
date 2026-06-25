@@ -13092,5 +13092,116 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_INVENTORY_AUTO_SEED_FROM_EXCEL_V2_END -->
 
+
+
+<!-- NMC_INVENTORY_SYNC_FROM_IQC_WORKLOG_V3_START -->
+<script id="nmc-inventory-sync-from-iqc-worklog-v3">
+(function(){
+  'use strict';
+  if(window.__NMC_INVENTORY_SYNC_FROM_IQC_WORKLOG_V3__) return;
+  window.__NMC_INVENTORY_SYNC_FROM_IQC_WORKLOG_V3__ = true;
+
+  var RAW_KEY='nmcRawInventoryMovesV1';
+  var FG_KEY='nmcFinishedInventoryMovesV1';
+  var SYNC_PREFIX='SYNC-QMS-';
+
+  function q(s,r){return (r||document).querySelector(s)}
+  function id(x){return document.getElementById(x)}
+  function txt(v){return String(v==null?'':v).trim()}
+  function num(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0}
+  function today(){var d=new Date(),z=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
+  function esc(v){return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function read(k){try{return JSON.parse(localStorage.getItem(k)||'[]')||[]}catch(e){return[]}}
+  function write(k,a){localStorage.setItem(k,JSON.stringify(a||[]))}
+  function pick(o,keys,def){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!==undefined&&v!==null&&txt(v)!=='')return v}return def||''}
+  function dateOnly(v){var s=txt(v).replace(/\./g,'-').replace(/\//g,'-');var m=s.match(/(20\d{2})[-]?(\d{1,2})[-]?(\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');return s.slice(0,10)||today()}
+  function cleanGenerated(arr){return (arr||[]).filter(function(x){var idv=txt(x&&x.id);var doc=txt(x&&x.doc);return idv.indexOf(SYNC_PREFIX)!==0 && doc.indexOf('QMS자동연동')<0;});}
+  function currentState(){return window.state||{};}
+  function finalJudgePass(r){
+    var j=txt(pick(r,['judge','finalJudge','result','status'],''));
+    if(/불합격|fail|ng/i.test(j)) return false;
+    try{ if(!j && typeof window.calcJ==='function') j=txt(window.calcJ(r.items||[])); }catch(e){}
+    if(/불합격|fail|ng/i.test(j)) return false;
+    return true;
+  }
+  function iqcMoves(){
+    var st=currentState();
+    return (Array.isArray(st.incoming)?st.incoming:[]).filter(finalJudgePass).map(function(r,i){
+      var lot=pick(r,['lot','lotNo','incomingLot','materialLot','rawLot'],'');
+      var qty=num(pick(r,['incomingQty','qty','inQty','checkQty','입고수량'],''));
+      return {id:SYNC_PREFIX+'IQC-'+(r.id||i)+'-'+lot,date:dateOnly(pick(r,['date','incomingDate','createdAt','검사일자'],'')),type:'입고',item:pick(r,['item','material','materialName','product','품목'],'원자재'),lot:lot,supplier:pick(r,['supplier','supplierName','vendor','협력업체'],''),qty:qty,unit:'kg',mfgLot:'',location:'원자재 창고',doc:'QMS자동연동: IQC '+(r.id||''),remark:'현 수입검사 목록 기준 자동 입고 반영',createdAt:new Date().toISOString()};
+    }).filter(function(x){return txt(x.lot)&&num(x.qty)>0});
+  }
+  function materialRows(w){
+    var arr=[];
+    ['materials','rawMaterials','materialRows','inputMaterials','items'].some(function(k){ if(Array.isArray(w&&w[k])){arr=w[k];return true} return false });
+    return arr;
+  }
+  function worklogRawMoves(){
+    var st=currentState();
+    var out=[];
+    (Array.isArray(st.worklog)?st.worklog:[]).forEach(function(w,wi){
+      var wdate=dateOnly(pick(w,['workDate','work_date','date','createdAt'],''));
+      var mfgLot=pick(w,['finishedLot','prodLot','productionLot','lot','lotNo'],'');
+      materialRows(w).forEach(function(m,mi){
+        var lot=pick(m,['lotNo','lot','materialLot','rawLot','rmLot','원료LOT'],'');
+        var qty=num(pick(m,['inputQty','actualQty','qty','useQty','usedQty','투입량'],''));
+        if(!txt(lot)||qty<=0) return;
+        out.push({id:SYNC_PREFIX+'WRAW-'+(w.id||wi)+'-'+mi+'-'+lot,date:wdate,type:'생산투입',item:pick(m,['material','name','materialName','rawName','item','원료명'],'원료'),lot:lot,supplier:pick(m,['supName','supplier','supplierName','vendor','업체명'],''),qty:qty,unit:'kg',mfgLot:mfgLot,location:'원자재 창고',doc:'QMS자동연동: 작업일지 '+(w.id||''),remark:'현 작업일지 원료투입 기준 자동 차감',createdAt:new Date().toISOString()});
+      });
+    });
+    return out;
+  }
+  function worklogFgMoves(){
+    var st=currentState();
+    return (Array.isArray(st.worklog)?st.worklog:[]).map(function(w,i){
+      var lot=pick(w,['finishedLot','prodLot','productionLot','lot','lotNo'],'');
+      var qty=num(pick(w,['prodQty','actualQty','productionQty','resultQty','qty','실적수량'],''));
+      return {id:SYNC_PREFIX+'WFG-'+(w.id||i)+'-'+lot,date:dateOnly(pick(w,['workDate','work_date','date','createdAt'],'')),type:'생산입고',product:pick(w,['product','productName','prodName','item','제품명'],lot||'완제품'),lot:lot,customer:pick(w,['customer','customerName','client','고객사'],''),qty:qty,unit:'kg',doc:'QMS자동연동: 작업일지 '+(w.id||''),location:'완제품 창고',remark:'현 작업일지 생산실적 기준 자동 입고',createdAt:new Date().toISOString()};
+    }).filter(function(x){return txt(x.lot)&&num(x.qty)>0});
+  }
+  function syncInventoryFromCurrentQms(showAlert){
+    var rawManual=cleanGenerated(read(RAW_KEY));
+    var fgManual=cleanGenerated(read(FG_KEY));
+    var raw=rawManual.concat(iqcMoves()).concat(worklogRawMoves());
+    var fg=fgManual.concat(worklogFgMoves());
+    write(RAW_KEY,raw); write(FG_KEY,fg);
+    localStorage.setItem('nmcInventoryLastQmsSyncAt',new Date().toISOString());
+    try{ if(typeof window.nmcRenderRawInventory==='function') window.nmcRenderRawInventory(); }catch(e){}
+    try{ if(typeof window.nmcRenderFgInventory==='function') window.nmcRenderFgInventory(); }catch(e){}
+    installSyncPanel();
+    if(showAlert){alert('현 수입검사(IQC)와 작업일지 목록 기준으로 재고현황을 재계산했습니다.\n원자재: IQC 입고 + 작업일지 원료투입\n완제품: 작업일지 생산실적');}
+    return {raw:raw.length,fg:fg.length,iqc:iqcMoves().length,wraw:worklogRawMoves().length,wfg:worklogFgMoves().length};
+  }
+  function installSyncPanel(){
+    var last=localStorage.getItem('nmcInventoryLastQmsSyncAt');
+    var msg=last?new Date(last).toLocaleString('ko-KR'):'아직 없음';
+    ['raw','fg'].forEach(function(kind){
+      var page=id(kind==='raw'?'page-raw-inventory':'page-fg-inventory'); if(!page)return;
+      if(id(kind+'InvQmsSyncPanel')){var s=id(kind+'InvQmsSyncTime'); if(s)s.textContent=msg; return;}
+      var host=q('.ph-actions',page); if(host){host.insertAdjacentHTML('afterbegin','<button class="btn ghost" id="'+kind+'InvQmsSync" type="button">현 IQC/작업일지로 재계산</button>');}
+      var panelTarget=q('.inv-panel .inv-panel-b',page);
+      if(panelTarget){panelTarget.insertAdjacentHTML('afterbegin','<div class="inv-help" id="'+kind+'InvQmsSyncPanel" style="margin-top:0;margin-bottom:12px"><b>QMS 자동연동:</b> 수입검사(IQC) 목록과 작업일지 목록을 기준으로 재고현황을 맞춥니다. 마지막 반영: <span id="'+kind+'InvQmsSyncTime">'+esc(msg)+'</span></div>');}
+    });
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t && /^(rawInvQmsSync|fgInvQmsSync)$/.test(t.id)){e.preventDefault();syncInventoryFromCurrentQms(true);return false;}
+    var nav=t && t.closest && t.closest('.nav-item[data-page="raw-inventory"],.nav-item[data-page="fg-inventory"]');
+    if(nav){setTimeout(function(){installSyncPanel();syncInventoryFromCurrentQms(false);},120);}
+  },true);
+  var oldLoadAll=window.loadAll데이터;
+  if(typeof oldLoadAll==='function' && !oldLoadAll.__nmcInventorySyncWrapped){
+    var wrapped=async function(){var r=await oldLoadAll.apply(this,arguments);setTimeout(function(){syncInventoryFromCurrentQms(false);},250);return r;};
+    wrapped.__nmcInventorySyncWrapped=true; window.loadAll데이터=wrapped;
+  }
+  window.nmcSyncInventoryFromQms=syncInventoryFromCurrentQms;
+  function boot(){installSyncPanel(); if((currentState().incoming||[]).length || (currentState().worklog||[]).length) syncInventoryFromCurrentQms(false);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  [600,1500,3000,5000].forEach(function(t){setTimeout(boot,t)});
+})();
+</script>
+<!-- NMC_INVENTORY_SYNC_FROM_IQC_WORKLOG_V3_END -->
+
 </body>
 </html>
