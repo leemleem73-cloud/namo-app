@@ -13816,7 +13816,7 @@ document.addEventListener('click',function(e){
   function q(sel,root){return (root||document).querySelector(sel)}
   function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
   function txt(v){return String(v==null?'':v).trim()}
-  function num(v){var n=parseFloat(String(v==null?'').replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
+  function num(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
   function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
   function write(k,a){localStorage.setItem(k,JSON.stringify(a||[]))}
   function pick(o,keys,def){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!==undefined&&v!==null&&txt(v)!=='')return v}return def||''}
@@ -13912,7 +13912,7 @@ document.addEventListener('click',function(e){
   function q(s,r){return (r||document).querySelector(s)}
   function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
   function txt(v){return String(v==null?'':v).trim()}
-  function num(v){var n=parseFloat(String(v==null?'').replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
+  function num(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function fmt(n){n=Math.round(Number(n||0)*1000)/1000;if(Object.is(n,-0))n=0;return n.toLocaleString('ko-KR')}
   function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
