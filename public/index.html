@@ -13216,5 +13216,213 @@ document.addEventListener('click',function(e){
   document.addEventListener('input',function(e){ if(e && e.target && e.target.id==='incomingTotalWeight') sync(); },true);
 })();
 </script>
+
+<!-- NAMO_ADMIN_FULL_APPROVAL_MEMBER_LIST_PATCH_20260625_START -->
+<script>
+/*
+  관리자 로그인 시 작성/검토/승인 3개 셀렉트 모두 회원목록 표시 패치
+  - 일반회원: 기존 권한/잠금 로직 유지
+  - 관리자: 작성자도 검토/승인과 동일하게 전체 회원 선택 가능
+*/
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){
+    return txt(v).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function stateObj(){
+    try{ return eval('state') || window.state || {}; }catch(e){ return window.state || {}; }
+  }
+  function currentUser(){
+    var s = stateObj();
+    return s.currentUser || window.currentUser || null;
+  }
+  function isAdminUser(u){
+    if(!u) return false;
+    return !!(
+      u.isAdmin === true || u.admin === true || u.is_admin === true ||
+      txt(u.role).toLowerCase() === 'admin' ||
+      txt(u.role).indexOf('관리자') >= 0 ||
+      txt(u.permission).toLowerCase().indexOf('admin') >= 0 ||
+      txt(u.auth).toLowerCase().indexOf('admin') >= 0 ||
+      txt(u.authority).toLowerCase().indexOf('admin') >= 0 ||
+      txt(u.grade).indexOf('관리자') >= 0 ||
+      txt(u.name).indexOf('관리자') >= 0 ||
+      txt(u.email).toLowerCase().indexOf('admin') >= 0
+    );
+  }
+  function normalizeUser(u){
+    if(!u) return null;
+    var name = txt(u.name || u.username || u.displayName || u.email || u.id);
+    var id = txt(u.id || u.email || name);
+    if(!id && !name) return null;
+    return {
+      id: id || name,
+      name: name || id,
+      title: txt(u.title || u.position || u.roleName || u.roleTitle || ''),
+      department: txt(u.department || u.dept || ''),
+      email: txt(u.email || ''),
+      role: txt(u.role || '')
+    };
+  }
+  function allUsers(){
+    var s = stateObj();
+    var raw = [];
+    if(Array.isArray(s.signableUsers)) raw = raw.concat(s.signableUsers);
+    if(Array.isArray(s.adminUsers)) raw = raw.concat(s.adminUsers);
+    if(Array.isArray(window.signableUsers)) raw = raw.concat(window.signableUsers);
+    if(Array.isArray(window.adminUsers)) raw = raw.concat(window.adminUsers);
+    if(s.currentUser) raw.push(s.currentUser);
+    if(currentUser()) raw.push(currentUser());
+
+    var seen = {}, out = [];
+    raw.map(normalizeUser).filter(Boolean).forEach(function(u){
+      var key = txt(u.id || u.email || u.name);
+      if(!key || seen[key]) return;
+      seen[key] = true;
+      out.push(u);
+    });
+    return out;
+  }
+  function label(u){
+    var extra = txt(u.title || u.department || '-');
+    return txt(u.name || u.email || u.id) + ' / ' + (extra || '-');
+  }
+  function option(u){
+    return '<option value="'+esc(u.id || u.email || u.name)+'" data-name="'+esc(u.name)+'" data-title="'+esc(u.title)+'" data-department="'+esc(u.department)+'" data-email="'+esc(u.email)+'" data-role="'+esc(u.role)+'">'+esc(label(u))+'</option>';
+  }
+  function typeList(){
+    var found = {};
+    document.querySelectorAll('[id^="signGrid_"]').forEach(function(grid){
+      var type = txt(grid.id).replace(/^signGrid_/, '');
+      if(type) found[type] = true;
+    });
+    document.querySelectorAll('select[id^="sg_"]').forEach(function(sel){
+      var m = txt(sel.id).match(/^sg_(.+)_(writer|reviewer|approver)$/);
+      if(m && m[1]) found[m[1]] = true;
+    });
+    return Object.keys(found);
+  }
+  function setSub(type, role, msg){
+    var sub = $('sg_' + type + '_' + role + '_sub');
+    if(sub) sub.textContent = msg;
+    var badge = $('sg_' + type + '_' + role + '_badge');
+    if(badge){
+      badge.textContent = '관리자';
+      badge.className = 'sign-box-badge any';
+    }
+    var sel = $('sg_' + type + '_' + role);
+    var box = sel && sel.closest && sel.closest('.sign-box');
+    if(box){
+      box.dataset.approvalLock = 'active';
+      box.dataset.namoApprovalMode = 'active';
+      box.style.borderColor = 'rgba(26,86,219,.45)';
+    }
+  }
+  function unlockSignControls(type, role){
+    var file = $('sg_' + type + '_' + role + '_file');
+    var btn = document.querySelector('[data-qms-final-file-btn="'+type+':'+role+'"],[data-final-sign-file-btn="'+type+':'+role+'"],[data-sign-file-btn="'+type+':'+role+'"]');
+    var clear = document.querySelector('[data-qms-final-clear="'+type+':'+role+'"],[data-final-sign-clear="'+type+':'+role+'"],[data-sign-clear="'+type+':'+role+'"]');
+    [file, btn, clear].forEach(function(el){
+      if(el){
+        el.disabled = false;
+        el.style.pointerEvents = 'auto';
+        el.style.opacity = '1';
+      }
+    });
+  }
+  function ensureGrid(type){
+    var grid = $('signGrid_' + type);
+    if(!grid) return false;
+    if($('sg_' + type + '_writer') && $('sg_' + type + '_reviewer') && $('sg_' + type + '_approver')) return true;
+    grid.innerHTML = ['writer','reviewer','approver'].map(function(role){
+      var ko = role === 'writer' ? '작성' : role === 'reviewer' ? '검토' : '승인';
+      return '<div class="sign-box"><div class="sign-box-hdr"><span class="sign-box-role">'+ko+'</span><span class="sign-box-badge" id="sg_'+type+'_'+role+'_badge"></span></div><div class="sign-box-body"><select class="sign-sel" id="sg_'+type+'_'+role+'"></select><div class="sign-sub" id="sg_'+type+'_'+role+'_sub"></div></div></div>';
+    }).join('');
+    return true;
+  }
+  function applyAdminFullMemberList(){
+    var me = currentUser();
+    if(!isAdminUser(me)) return;
+    var users = allUsers();
+    if(!users.length) return;
+
+    typeList().forEach(function(type){
+      if(!ensureGrid(type)) return;
+      ['writer','reviewer','approver'].forEach(function(role){
+        var sel = $('sg_' + type + '_' + role);
+        if(!sel) return;
+        var oldVal = txt(sel.value);
+        sel.innerHTML = '<option value="">-- ' + (role === 'writer' ? '작성자' : role === 'reviewer' ? '검토자' : '승인자') + ' 선택 --</option>' + users.map(option).join('');
+        if(oldVal && Array.prototype.some.call(sel.options, function(o){ return txt(o.value) === oldVal; })){
+          sel.value = oldVal;
+        }else if(role === 'writer'){
+          var meNorm = normalizeUser(me);
+          var meKey = meNorm && txt(meNorm.id || meNorm.email || meNorm.name);
+          if(meKey && Array.prototype.some.call(sel.options, function(o){ return txt(o.value) === meKey; })) sel.value = meKey;
+        }
+        sel.disabled = false;
+        sel.style.pointerEvents = 'auto';
+        sel.style.opacity = '1';
+        setSub(type, role, '관리자 로그인: 전체 회원 선택 가능');
+        unlockSignControls(type, role);
+      });
+      try{ if(typeof window.onSignChange === 'function') window.onSignChange(type, 'admin-full-member-list'); }catch(e){}
+    });
+  }
+
+  var oldBuild = window.buildSignGrid;
+  if(typeof oldBuild === 'function' && !oldBuild.__adminFullMemberListWrapped){
+    var wrappedBuild = function(){
+      var r = oldBuild.apply(this, arguments);
+      setTimeout(applyAdminFullMemberList, 0);
+      setTimeout(applyAdminFullMemberList, 250);
+      return r;
+    };
+    wrappedBuild.__adminFullMemberListWrapped = true;
+    window.buildSignGrid = wrappedBuild;
+  }
+
+  var oldRebuild = window.rebuildAllSignGrids;
+  if(typeof oldRebuild === 'function' && !oldRebuild.__adminFullMemberListWrapped){
+    var wrappedRebuild = function(){
+      var r = oldRebuild.apply(this, arguments);
+      setTimeout(applyAdminFullMemberList, 0);
+      setTimeout(applyAdminFullMemberList, 250);
+      setTimeout(applyAdminFullMemberList, 800);
+      return r;
+    };
+    wrappedRebuild.__adminFullMemberListWrapped = true;
+    window.rebuildAllSignGrids = wrappedRebuild;
+  }
+
+  var oldPerm = window.applyAllSignPermissions;
+  window.applyAllSignPermissions = function(){
+    var r;
+    if(typeof oldPerm === 'function'){
+      try{ r = oldPerm.apply(this, arguments); }catch(e){}
+    }
+    setTimeout(applyAdminFullMemberList, 0);
+    setTimeout(applyAdminFullMemberList, 250);
+    return r;
+  };
+
+  document.addEventListener('change', function(e){
+    if(e.target && /^sg_.*_(writer|reviewer|approver)$/.test(e.target.id || '')){
+      setTimeout(applyAdminFullMemberList, 0);
+    }
+  }, true);
+
+  window.namoApplyAdminFullMemberList = applyAdminFullMemberList;
+  function boot(){ applyAdminFullMemberList(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load', function(){ [100, 500, 1200, 2500, 5000].forEach(function(t){ setTimeout(boot, t); }); });
+})();
+</script>
+<!-- NAMO_ADMIN_FULL_APPROVAL_MEMBER_LIST_PATCH_20260625_END -->
+
 </body>
 </html>
