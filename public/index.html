@@ -15980,5 +15980,218 @@ document.addEventListener('click',function(e){
 </script>
 <!-- /NAMO RAW LOT BARCODE DETAIL SAME AS FG INVENTORY 20260626 -->
 
+
+
+<!-- NAMO QMES MULTI LANGUAGE KO/EN/JA PATCH 20260626 -->
+<style id="namo-qmes-i18n-style">
+.namo-lang-select-wrap{display:flex!important;align-items:center!important;gap:6px!important;height:36px!important;border:1.5px solid var(--bd,#e4e7ed)!important;border-radius:10px!important;background:#fff!important;padding:0 9px!important;margin-right:6px!important;box-shadow:0 1px 3px rgba(0,0,0,.04)!important;white-space:nowrap!important;}
+.namo-lang-select-wrap .namo-lang-icon{font-size:14px!important;line-height:1!important;}
+#namoLangSelect{height:28px!important;border:none!important;background:transparent!important;color:var(--t1,#0d1117)!important;font-size:12px!important;font-weight:800!important;outline:none!important;cursor:pointer!important;padding:0 2px!important;}
+#namoLangFloating{position:fixed!important;right:18px!important;bottom:18px!important;z-index:3000!important;display:none!important;align-items:center!important;gap:6px!important;background:#fff!important;border:1px solid #dbe3ee!important;border-radius:999px!important;box-shadow:0 10px 28px rgba(15,23,42,.16)!important;padding:8px 10px!important;}
+#namoLangFloating select{border:none!important;outline:none!important;background:transparent!important;font-size:12px!important;font-weight:900!important;color:#0f172a!important;}
+body.login-active #namoLangFloating{display:flex!important;}
+@media(max-width:900px){.namo-lang-select-wrap{height:34px!important;padding:0 7px!important}.namo-lang-select-wrap .namo-lang-icon{display:none!important}#namoLangSelect{font-size:11px!important}}
+</style>
+<script id="namo-qmes-i18n-script">
+(function(){
+  if(window.__NAMO_QMES_I18N__) return;
+  window.__NAMO_QMES_I18N__=true;
+  var LS='namo_qmes_lang';
+  var languages={ko:'한국어',en:'English',ja:'日本語'};
+  var map={
+    '품질대시보드':['Quality Dashboard','品質ダッシュボード'],
+    '품질 대시보드':['Quality Dashboard','品質ダッシュボード'],
+    '통합 관제':['Integrated Control','統合管制'],
+    '통합관제':['Integrated Control','統合管制'],
+    '수입검사':['Incoming Inspection','受入検査'],
+    '공정검사':['Process Inspection','工程検査'],
+    '출하검사':['Final Inspection','出荷検査'],
+    '작업지시서':['Work Order','作業指示書'],
+    '작업지시':['Work Order','作業指示'],
+    'LOT 추적':['LOT Traceability','LOTトレーサビリティ'],
+    'LOT 추적성':['LOT Traceability','LOTトレーサビリティ'],
+    '원자재 LOT 관리 현황':['Raw Material LOT Status','原材料LOT管理状況'],
+    '원자재 재고현황':['Raw Material Inventory','原材料在庫状況'],
+    '원자재 재고':['Raw Material Inventory','原材料在庫'],
+    '완제품 재고관리':['Finished Goods Inventory','製品在庫管理'],
+    '완제품 재고관리 현황':['Finished Goods Inventory Status','製品在庫管理状況'],
+    '완제품 재고':['Finished Goods Inventory','製品在庫'],
+    '전자결재':['Electronic Approval','電子承認'],
+    '결재함':['Approval Inbox','承認ボックス'],
+    '기준서관리':['Document Control','基準書管理'],
+    '기준서 관리':['Document Control','基準書管理'],
+    '부적합보고서':['Nonconformance Report','不適合報告書'],
+    '시정조치 보고서':['Corrective Action Report','是正処置報告書'],
+    '협력업체 평가':['Supplier Evaluation','協力会社評価'],
+    '교육보고서':['Training Report','教育報告書'],
+    '회원관리':['User Management','ユーザー管理'],
+    '관리자':['Admin','管理者'],
+    '로그아웃':['Logout','ログアウト'],
+    '로그인':['Login','ログイン'],
+    '아이디':['ID','ID'],
+    '비밀번호':['Password','パスワード'],
+    'ID 저장':['Remember ID','IDを保存'],
+    '회사 홈페이지':['Company Website','会社ホームページ'],
+    '검색':['Search','検索'],
+    '전체':['All','全体'],
+    '등록':['Register','登録'],
+    '저장':['Save','保存'],
+    '수정':['Edit','修正'],
+    '삭제':['Delete','削除'],
+    '취소':['Cancel','取消'],
+    '닫기':['Close','閉じる'],
+    '출력':['Print','印刷'],
+    '인쇄':['Print','印刷'],
+    '미리보기':['Preview','プレビュー'],
+    '엑셀':['Excel','Excel'],
+    '다운로드':['Download','ダウンロード'],
+    '업로드':['Upload','アップロード'],
+    '신규 등록':['New Registration','新規登録'],
+    '목록':['List','一覧'],
+    '상세':['Detail','詳細'],
+    '상세보기':['Detail','詳細表示'],
+    'LOT 상세':['LOT Detail','LOT詳細'],
+    '기본 정보':['Basic Information','基本情報'],
+    '입고일자':['Incoming Date','入庫日'],
+    '입고량':['Incoming Qty','入庫量'],
+    '현재재고':['Current Stock','現在庫'],
+    '작업지시 사용량':['Work Order Usage','作業指示使用量'],
+    '수입검사 입고 근거자료':['Incoming Inspection Evidence','受入検査入庫根拠資料'],
+    '작업지시서 사용 근거자료':['Work Order Usage Evidence','作業指示書使用根拠資料'],
+    '재고 이력 전체 내용':['Full Inventory History','在庫履歴全体内容'],
+    '원본 전체 내용(JSON)':['Original Full Content (JSON)','元データ全体内容(JSON)'],
+    '원료명':['Raw Material','原料名'],
+    '원자재명':['Raw Material','原材料名'],
+    '품명':['Item Name','品名'],
+    '제품명':['Product Name','製品名'],
+    '협력사':['Supplier','協力会社'],
+    '협력사명':['Supplier','協力会社名'],
+    '고객사':['Customer','顧客会社'],
+    '수입검사번호':['Incoming Inspection No.','受入検査番号'],
+    '검사판정':['Inspection Judgment','検査判定'],
+    '상태':['Status','状態'],
+    '근거자료':['Evidence','根拠資料'],
+    '비고':['Remark','備考'],
+    '판정':['Judgment','判定'],
+    '합격':['Pass','合格'],
+    '불합격':['Fail','不合格'],
+    '보류':['Hold','保留'],
+    '작성':['Prepared','作成'],
+    '작성자':['Prepared by','作成者'],
+    '검토':['Reviewed','検討'],
+    '검토자':['Reviewed by','検討者'],
+    '승인':['Approved','承認'],
+    '승인자':['Approved by','承認者'],
+    '반려':['Reject','差戻し'],
+    '결재 요청':['Request Approval','承認依頼'],
+    '승인 완료':['Approved','承認完了'],
+    '작성중':['Draft','作成中'],
+    '검토중':['Under Review','検討中'],
+    '완료':['Complete','完了'],
+    '미완료':['Incomplete','未完了'],
+    '대기':['Waiting','待機'],
+    '진행중':['In Progress','進行中'],
+    '생산일자':['Production Date','生産日'],
+    '출하일자':['Shipment Date','出荷日'],
+    '생산 LOT':['Production LOT','生産LOT'],
+    '생산 LOT 번호':['Production LOT No.','生産LOT番号'],
+    '원재료 LOT':['Raw Material LOT','原材料LOT'],
+    '완제품 LOT':['Finished Goods LOT','製品LOT'],
+    '작업지시번호':['Work Order No.','作業指示番号'],
+    '투입량':['Input Qty','投入量'],
+    '사용량':['Usage Qty','使用量'],
+    '수량':['Qty','数量'],
+    '비율':['Ratio','比率'],
+    '일자':['Date','日付'],
+    '구분':['Type','区分'],
+    '생산투입':['Production Input','生産投入'],
+    '데이터가 없습니다.':['No data.','データがありません。'],
+    '작업지시서 투입량 기준':['Based on work order input quantity','作業指示書投入量基準'],
+    '수입검사 입고량 및 작업지시서 투입량 기준':['Based on incoming inspection quantity and work order input quantity','受入検査入庫量および作業指示書投入量基準'],
+    '완제품 재고관리 바코드 상세와 동일한 형식 · 원자재 LOT 사용 이력':['Same format as finished goods inventory barcode detail · Raw material LOT usage history','製品在庫管理バーコード詳細と同一形式・原材料LOT使用履歴'],
+    '수입검사:':['Incoming Inspection:','受入検査:'],
+    '작업지시서:':['Work Order:','作業指示書:'],
+    '월별 검사 추이':['Monthly Inspection Trend','月別検査推移'],
+    '공지사항':['Notice','お知らせ'],
+    'QMES 구조':['QMES Structure','QMES構造'],
+    '품질현황':['Quality Status','品質状況'],
+    '나모케미칼 품질현황 대시보드':['Namochemical Quality Dashboard','ナモケミカル品質状況ダッシュボード']
+  };
+  var rev={en:{},ja:{}};
+  Object.keys(map).forEach(function(k){rev.en[map[k][0]]=k;rev.ja[map[k][1]]=k;});
+  function getLang(){var v=localStorage.getItem(LS)||'ko';return languages[v]?v:'ko';}
+  function trText(s,lang){
+    if(!s) return s;
+    var raw=String(s), trim=raw.trim();
+    if(!trim) return raw;
+    var lead=raw.match(/^\s*/)[0], tail=raw.match(/\s*$/)[0];
+    var ko=trim;
+    if(rev.en[trim]) ko=rev.en[trim];
+    if(rev.ja[trim]) ko=rev.ja[trim];
+    if(lang==='ko') return lead+ko+tail;
+    if(map[ko]) return lead+map[ko][lang==='en'?0:1]+tail;
+    var idx=lang==='en'?0:1;
+    Object.keys(map).forEach(function(k){
+      if(ko.indexOf(k)>-1) ko=ko.split(k).join(map[k][idx]);
+    });
+    return lead+ko+tail;
+  }
+  function shouldSkip(el){
+    if(!el) return true;
+    var tag=el.nodeName;
+    if(tag==='SCRIPT'||tag==='STYLE'||tag==='NOSCRIPT'||tag==='TEXTAREA'||tag==='CANVAS'||tag==='SVG') return true;
+    if(el.closest && el.closest('#namoLangSelect,#namoLangFloating,.fg-detail-pre,script,style,textarea,canvas,svg')) return true;
+    return false;
+  }
+  function translateAttrs(root,lang){
+    var attrs=['placeholder','title','aria-label','value'];
+    (root.querySelectorAll?root.querySelectorAll('input,button,select,option,textarea,[title],[aria-label]'):[]).forEach(function(el){
+      attrs.forEach(function(a){
+        if(el.hasAttribute&&el.hasAttribute(a)){
+          var v=el.getAttribute(a);
+          if(v && (!el.dataset || !el.dataset.i18nValue || a!=='value')) el.setAttribute(a,trText(v,lang));
+        }
+      });
+    });
+  }
+  function translate(root){
+    var lang=getLang();
+    root=root||document.body;
+    try{
+      var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+        if(!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if(shouldSkip(n.parentElement)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }});
+      var nodes=[],n; while((n=walker.nextNode())) nodes.push(n);
+      nodes.forEach(function(t){var nv=trText(t.nodeValue,lang); if(nv!==t.nodeValue)t.nodeValue=nv;});
+      translateAttrs(root,lang);
+    }catch(e){}
+  }
+  function addSelector(){
+    if(document.getElementById('namoLangSelect')) return;
+    var html='<div class="namo-lang-select-wrap" id="namoLangSelectWrap"><span class="namo-lang-icon">🌐</span><select id="namoLangSelect"><option value="ko">한국어</option><option value="en">English</option><option value="ja">日本語</option></select></div>';
+    var right=document.querySelector('.tright');
+    if(right){right.insertAdjacentHTML('afterbegin',html);} 
+    if(!document.getElementById('namoLangFloating')) document.body.insertAdjacentHTML('beforeend','<div id="namoLangFloating"><span>🌐</span><select id="namoLangFloatSelect"><option value="ko">한국어</option><option value="en">English</option><option value="ja">日本語</option></select></div>');
+    var v=getLang();
+    var s=document.getElementById('namoLangSelect'), f=document.getElementById('namoLangFloatSelect');
+    if(s) s.value=v; if(f) f.value=v;
+    function change(v){localStorage.setItem(LS,v); if(s)s.value=v; if(f)f.value=v; translate(document.body);}
+    if(s) s.onchange=function(){change(this.value);};
+    if(f) f.onchange=function(){change(this.value);};
+  }
+  function boot(){addSelector();translate(document.body);}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  var timer=null;
+  new MutationObserver(function(muts){
+    if(timer) return;
+    timer=setTimeout(function(){timer=null;addSelector();translate(document.body);},120);
+  }).observe(document.documentElement,{childList:true,subtree:true});
+  window.NAMO_QMES_SET_LANG=function(lang){if(languages[lang]){localStorage.setItem(LS,lang);translate(document.body);var s=document.getElementById('namoLangSelect'),f=document.getElementById('namoLangFloatSelect');if(s)s.value=lang;if(f)f.value=lang;}};
+})();
+</script>
+<!-- /NAMO QMES MULTI LANGUAGE KO/EN/JA PATCH 20260626 -->
+
 </body>
 </html>
