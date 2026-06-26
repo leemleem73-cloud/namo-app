@@ -15632,5 +15632,98 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+
+
+<!-- ══════════════════════════════════
+     NAMO 원재료 재고현황 바코드 깜박임 제거 패치 v20260626
+     - 기존 원본 기능 유지
+     - rawHmcBc* JsBarcode 렌더링만 차단
+     - 바코드 그림 대신 고정 텍스트 버튼으로 표시
+     - LOT 클릭=수입검사, 사용량 상세 클릭=작업지시서 사용량 상세 유지
+══════════════════════════════════ -->
+<style id="namo-raw-inventory-barcode-text-patch-style">
+  #page-raw-inventory .raw-hmc-barcode svg{display:none!important;width:0!important;height:0!important;visibility:hidden!important;}
+  #page-raw-inventory .raw-hmc-barcode{
+    min-width:108px!important;
+    height:34px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:1px solid #dbe6f2!important;
+    background:#f8fbff!important;
+    color:#1d4ed8!important;
+    border-radius:10px!important;
+    padding:0 12px!important;
+    cursor:pointer!important;
+    box-shadow:none!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    white-space:nowrap!important;
+  }
+  #page-raw-inventory .raw-hmc-barcode:hover{
+    border-color:#1d4ed8!important;
+    background:#eff6ff!important;
+  }
+  #page-raw-inventory .raw-hmc-barcode .raw-hmc-use-text{pointer-events:none;}
+  #page-raw-inventory .raw-hmc-lot small{display:block!important;color:#475569!important;font-weight:800!important;}
+</style>
+<script id="namo-raw-inventory-barcode-text-patch-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_RAW_INV_BARCODE_TEXT_PATCH__) return;
+  window.__NAMO_RAW_INV_BARCODE_TEXT_PATCH__=true;
+
+  var originalJsBarcode=window.JsBarcode;
+  if(typeof originalJsBarcode==='function' && !originalJsBarcode.__namoRawTextPatched){
+    var wrapped=function(el,value,options){
+      try{
+        var node=(typeof el==='string')?document.querySelector(el):el;
+        if(node && /^rawHmcBc/i.test(String(node.id||''))){
+          node.setAttribute('data-barcode-text',String(value||''));
+          node.innerHTML='';
+          return node;
+        }
+      }catch(e){}
+      return originalJsBarcode.apply(this,arguments);
+    };
+    wrapped.__namoRawTextPatched=true;
+    window.JsBarcode=wrapped;
+  }
+
+  function applyRawBarcodeText(){
+    var page=document.getElementById('page-raw-inventory');
+    if(!page) return;
+    page.querySelectorAll('.raw-hmc-barcode[data-raw-hmc-detail]').forEach(function(btn){
+      btn.querySelectorAll('svg').forEach(function(svg){svg.remove();});
+      if(!btn.querySelector('.raw-hmc-use-text')){
+        btn.insertAdjacentHTML('afterbegin','<span class="raw-hmc-use-text">사용량 상세</span>');
+      }
+      btn.setAttribute('title','작업지시서 사용량 상세');
+    });
+    page.querySelectorAll('.raw-hmc-lot small').forEach(function(s){
+      s.textContent='LOT 클릭: 수입검사 / 사용량 상세: 작업지시서';
+    });
+  }
+
+  function boot(){
+    applyRawBarcodeText();
+    var page=document.getElementById('page-raw-inventory');
+    if(page && !page.__namoRawBarcodeObserver){
+      page.__namoRawBarcodeObserver=true;
+      new MutationObserver(function(){applyRawBarcodeText();}).observe(page,{childList:true,subtree:true});
+    }
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [100,300,700,1200,2500].forEach(function(ms){setTimeout(boot,ms);});
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('[data-page="raw-inventory"],[data-page-target="raw-inventory"],[data-inv-recalc],#rawInvQmsSync')){
+      setTimeout(applyRawBarcodeText,80);
+      setTimeout(applyRawBarcodeText,350);
+    }
+  },true);
+})();
+</script>
+
 </body>
 </html>
