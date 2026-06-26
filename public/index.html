@@ -15379,5 +15379,258 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+<!-- ══════════════════════════════════
+     NAMO 관리자 신규작성/수정 작성·검토·승인 전체회원 패치 v2
+     - 관리자(admin): 신규 작성/수정 모두 작성자·검토자·승인자 전체 회원 선택 가능
+     - 일반 사용자: 기존 권한/잠금 정책 유지
+     - IQC/PQC/OQC/NCR/교육보고서 전용
+══════════════════════════════════ -->
+<script id="namo-admin-new-edit-all-members-v2">
+(function(){
+  'use strict';
+  if(window.__NAMO_ADMIN_NEW_EDIT_ALL_MEMBERS_V2__) return;
+  window.__NAMO_ADMIN_NEW_EDIT_ALL_MEMBERS_V2__ = true;
+
+  var TYPES = ['iqc','pqc','oqc','nc','training'];
+  var ROLES = ['writer','reviewer','approver'];
+  var APPLY_TIMER = null;
+  var LOADING_USERS = false;
+
+  function S(){ try{return window.state || state || {};}catch(e){return window.state || {};}}
+  function T(v){ return String(v == null ? '' : v).trim(); }
+  function L(v){ return T(v).toLowerCase(); }
+  function E(v){ return T(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function $(id){ return document.getElementById(id); }
+
+  function me(){ return S().currentUser || window.currentUser || window.loginUser || window.userInfo || null; }
+  function isAdmin(){
+    var u = me() || {};
+    return L(u.role) === 'admin' || L(u.userRole) === 'admin' || L(u.auth) === 'admin' ||
+           L(u.email) === 'admin@namochemical.com' || u.isAdmin === true || u.admin === true;
+  }
+
+  function normUser(u){
+    if(!u) return null;
+    if(typeof u === 'string') return {id:u,name:u,email:'',title:'',department:'',role:''};
+    var name = T(u.name || u.username || u.displayName || u.fullName || u.email || u.id);
+    if(!name || name === '-') return null;
+    return {
+      id:T(u.id || u.userId || u.employeeId || u.email || name),
+      name:name,
+      email:T(u.email || ''),
+      title:T(u.title || u.position || u.rank || u.roleName || ''),
+      department:T(u.department || u.dept || u.team || ''),
+      role:T(u.role || u.userRole || '')
+    };
+  }
+  function keyOf(u){ u = normUser(u); return u ? T(u.id || u.email || u.name) : ''; }
+  function sameUser(a,b){
+    a = normUser(a); b = normUser(b);
+    if(!a || !b) return false;
+    return (a.id && b.id && T(a.id) === T(b.id)) ||
+           (a.email && b.email && L(a.email) === L(b.email)) ||
+           (a.name && b.name && T(a.name) === T(b.name));
+  }
+  function label(u){
+    u = normUser(u);
+    if(!u) return '-';
+    var sub = T(u.title || u.department || u.role || '-');
+    return T(u.name || u.email || u.id) + ' / ' + (sub || '-');
+  }
+
+  function collectLocalUsers(extra){
+    var s = S();
+    var raw = [];
+    ['signableUsers','adminUsers','users','members','memberList','userList','employees','employeeList'].forEach(function(k){
+      if(Array.isArray(s[k])) raw = raw.concat(s[k]);
+      if(Array.isArray(window[k])) raw = raw.concat(window[k]);
+    });
+    if(me()) raw.push(me());
+    if(Array.isArray(extra)) raw = raw.concat(extra);
+    var map = new Map();
+    raw.forEach(function(x){
+      var u = normUser(x);
+      if(!u) return;
+      var k = keyOf(u) || u.name;
+      if(k && !map.has(k)) map.set(k,u);
+    });
+    return Array.from(map.values()).sort(function(a,b){ return label(a).localeCompare(label(b),'ko'); });
+  }
+
+  function currentRecord(type){
+    return (window.__qmsEditSignRecord && window.__qmsEditSignRecord[type]) || null;
+  }
+  function recordPerson(type, role){
+    var r = currentRecord(type);
+    if(!r) return null;
+    var raw = role === 'writer' ? (r.signWriter || r.writer || r.inspector || r.visual || r.solid || r.createdBy) :
+              role === 'reviewer' ? (r.signReviewer || r.reviewer) :
+              (r.signApprover || r.approver);
+    return normUser(raw);
+  }
+  function selectedFromSelect(users, sel){
+    if(!sel || !sel.value) return null;
+    var v = T(sel.value);
+    return users.find(function(u){ return T(u.id) === v || L(u.email) === L(v) || T(u.name) === v; }) || null;
+  }
+  function optionHtml(u){
+    var v = keyOf(u), txt = label(u);
+    return '<option value="'+E(v)+'" data-name="'+E(u.name)+'" data-title="'+E(u.title)+'" data-department="'+E(u.department)+'" data-email="'+E(u.email)+'" data-role="'+E(u.role)+'">'+E(txt)+'</option>';
+  }
+
+  function fillSelect(type, role, users){
+    var sel = $('sg_' + type + '_' + role);
+    if(!sel) return;
+    var selected = recordPerson(type, role) || selectedFromSelect(users, sel) || (role === 'writer' ? normUser(me()) : null);
+    if(selected && !users.some(function(u){return sameUser(u, selected);})){ users = [selected].concat(users); }
+    var keep = selected ? keyOf(selected) : '';
+    sel.innerHTML = '<option value="">-</option>' + users.map(optionHtml).join('');
+    if(keep) sel.value = keep;
+    sel.disabled = false;
+    sel.readOnly = false;
+    sel.removeAttribute('disabled');
+    sel.removeAttribute('readonly');
+    sel.removeAttribute('data-namo-locked');
+    sel.dataset.namoAdminAllMembers = '1';
+    sel.style.pointerEvents = '';
+    sel.style.opacity = '';
+    sel.title = '관리자 권한: 전체 회원 선택 가능';
+
+    var sub = $('sg_' + type + '_' + role + '_sub');
+    if(sub) sub.textContent = '관리자 권한: 전체 회원 선택 가능';
+
+    var box = sel.closest && sel.closest('.sign-box');
+    if(box){ box.style.borderColor = 'rgba(26,86,219,.45)'; box.dataset.namoAdminAllMembers = '1'; }
+
+    var fileBtn = document.querySelector('[data-sign-file-btn="'+type+':'+role+'"]');
+    var clearBtn = document.querySelector('[data-sign-clear="'+type+':'+role+'"]');
+    var fileInput = $('sg_' + type + '_' + role + '_file');
+    [fileBtn, clearBtn, fileInput].forEach(function(el){
+      if(!el) return;
+      el.disabled = false;
+      el.removeAttribute('disabled');
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+  }
+
+  function applyNow(){
+    if(!isAdmin()) return;
+    var users = collectLocalUsers();
+    if(users.length < 2) ensureUsersLoaded();
+    if(!users.length) return;
+    TYPES.forEach(function(type){
+      ROLES.forEach(function(role){ fillSelect(type, role, users); });
+      try{ if(typeof window.onSignChange === 'function') window.onSignChange(type, 'admin-new-edit-all-members'); }catch(e){}
+      try{ if(typeof window.updateSignaturePreview === 'function') window.updateSignaturePreview(type); }catch(e){}
+    });
+  }
+  function scheduleApply(delay){
+    if(!isAdmin()) return;
+    clearTimeout(APPLY_TIMER);
+    APPLY_TIMER = setTimeout(applyNow, delay == null ? 0 : delay);
+  }
+
+  function ensureUsersLoaded(){
+    if(!isAdmin() || LOADING_USERS) return;
+    LOADING_USERS = true;
+    var done = function(){ LOADING_USERS = false; scheduleApply(0); scheduleApply(250); };
+    try{
+      if(typeof window.loadSignableUsers === 'function'){
+        var r1 = window.loadSignableUsers();
+        if(r1 && typeof r1.then === 'function') r1.then(done).catch(done);
+        else done();
+        return;
+      }
+    }catch(e){}
+    try{
+      if(typeof window.loadAdminUsers === 'function'){
+        var r2 = window.loadAdminUsers();
+        if(r2 && typeof r2.then === 'function') r2.then(done).catch(done);
+        else done();
+        return;
+      }
+    }catch(e){}
+    try{
+      if(typeof window.fetchUserListForSelectors === 'function'){
+        window.fetchUserListForSelectors().then(function(list){
+          var s = S();
+          s.adminUsers = list || [];
+          s.signableUsers = collectLocalUsers(list || []);
+          window.adminUsers = s.adminUsers;
+          window.signableUsers = s.signableUsers;
+          done();
+        }).catch(done);
+        return;
+      }
+    }catch(e){}
+    done();
+  }
+
+  function wrapFunction(name){
+    var old = window[name];
+    if(typeof old !== 'function' || old.__namoAdminNewEditWrapped) return;
+    var fn = function(){
+      var r = old.apply(this, arguments);
+      scheduleApply(0); scheduleApply(120); scheduleApply(400);
+      return r;
+    };
+    fn.__namoAdminNewEditWrapped = true;
+    window[name] = fn;
+  }
+
+  ['buildSignGrid','rebuildAllSignGrids','applyAllSignPermissions','clearIncoming','clearProcess','clearShipment','clearNc','clearTraining','editIncoming','editProcess','editShipment','editNc','editTraining'].forEach(wrapFunction);
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('#incomingReset,#processReset,#shipmentReset,#ncReset,#trainingReset,[data-action^="edit"],.sb.edit,.nav-item[data-page]')){
+      ensureUsersLoaded();
+      [0,120,350,800,1500].forEach(function(ms){ setTimeout(applyNow, ms); });
+    }
+  }, true);
+
+  document.addEventListener('focusin', function(e){
+    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)$/.test(e.target.id || '')) scheduleApply(0);
+  }, true);
+
+  document.addEventListener('mousedown', function(e){
+    if(e.target && /^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)$/.test(e.target.id || '')) scheduleApply(0);
+  }, true);
+
+  document.addEventListener('change', function(e){
+    var m = e.target && /^sg_(iqc|pqc|oqc|nc|training)_(writer|reviewer|approver)$/.exec(e.target.id || '');
+    if(m){
+      try{ if(typeof window.onSignChange === 'function') window.onSignChange(m[1], 'admin-select-change'); }catch(err){}
+      try{ if(typeof window.updateSignaturePreview === 'function') window.updateSignaturePreview(m[1], m[2]); }catch(err){}
+    }
+  }, true);
+
+  function startObserver(){
+    if(!document.body || window.__NAMO_ADMIN_NEW_EDIT_OBSERVER_V2__) return;
+    window.__NAMO_ADMIN_NEW_EDIT_OBSERVER_V2__ = new MutationObserver(function(list){
+      if(!isAdmin()) return;
+      for(var i=0;i<list.length;i++){
+        var n = list[i];
+        if((n.target && n.target.id && /^signGrid_/.test(n.target.id)) ||
+           (n.target && n.target.querySelector && n.target.querySelector('select[id^="sg_"]'))){
+          scheduleApply(0);
+          scheduleApply(180);
+          return;
+        }
+      }
+    });
+    window.__NAMO_ADMIN_NEW_EDIT_OBSERVER_V2__.observe(document.body,{childList:true,subtree:true});
+  }
+
+  function boot(){ ensureUsersLoaded(); applyNow(); startObserver(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load', function(){ [0,200,700,1500,3000].forEach(function(ms){ setTimeout(boot, ms); }); });
+  [300,900,1800,3500].forEach(function(ms){ setTimeout(applyNow, ms); });
+
+  window.namoAdminNewEditAllMembersApply = applyNow;
+})();
+</script>
+
 </body>
 </html>
