@@ -14150,418 +14150,128 @@ document.addEventListener('click',function(e){
 <!-- NAMO OQC EA/KG LIST DISPLAY FIX 20260626 END -->
 
 
-<!-- NAMO OQC FINAL TWO BUG FIX 20260626 START -->
-<style id="namo-oqc-final-two-bug-fix-style-20260626">
-/* 비활성 페이지는 어떤 후속 패치가 display를 바꿔도 숨김 처리 */
-.content > .page:not(.active){
-  display:none!important;
-}
-/* 작업지시 현황은 해당 메뉴가 active일 때만 표시 */
-#page-workorder-list:not(.active){
-  display:none!important;
-}
-#page-shipment.active ~ #page-workorder-list{
-  display:none!important;
-}
-</style>
-<script id="namo-oqc-final-two-bug-fix-script-20260626">
-(function(){
-  'use strict';
 
-  function $(id){ return document.getElementById(id); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-  function esc(v){
-    return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
-    });
-  }
-  function stateObj(){ return window.state || {}; }
-  function getVal(id){ var el=$(id); return el ? el.value : ''; }
-  function setVal(id,v){ var el=$(id); if(el) el.value = (v == null ? '' : v); }
-  function cacheKeyFromParts(date,customer,product,lot){
-    return [date||'',customer||'',product||'',lot||''].join('||');
-  }
-  function getCache(){
-    try{ return JSON.parse(localStorage.getItem('namo_oqc_ea_kg_cache_20260626') || '{}'); }
-    catch(e){ return {}; }
-  }
-  function setCache(c){
-    try{ localStorage.setItem('namo_oqc_ea_kg_cache_20260626', JSON.stringify(c || {})); }
-    catch(e){}
-  }
-  function makeRowKey(r){
-    return cacheKeyFromParts(r && r.date, r && r.customer, r && r.product, r && r.lot);
-  }
-  function writeCacheForCurrent(id){
-    var row = {
-      id: id || getVal('shipmentEditId') || '',
-      date: getVal('shipmentDate'),
-      customer: getVal('shipmentCustomer'),
-      product: getVal('shipmentProduct'),
-      lot: getVal('shipmentLot'),
-      outQty: getVal('shipmentOutQty'),
-      shipmentQty: getVal('shipmentOutQty'),
-      out_qty: getVal('shipmentOutQty'),
-      totalWeightKg: getVal('shipmentTotalWeightKg'),
-      total_weight_kg: getVal('shipmentTotalWeightKg')
-    };
-    var c = getCache();
-    if(row.id) c['id:'+row.id] = row;
-    c['key:'+cacheKeyFromParts(row.date,row.customer,row.product,row.lot)] = row;
-    setCache(c);
-  }
-  function mergeCachedRow(r){
-    if(!r) return r;
-    var c = getCache();
-    var hit = (r.id && c['id:'+r.id]) || c['key:'+makeRowKey(r)];
-    if(hit){
-      var ea = r.outQty || r.shipmentQty || r.out_qty || hit.outQty || hit.shipmentQty || hit.out_qty || '';
-      var kg = r.totalWeightKg || r.total_weight_kg || hit.totalWeightKg || hit.total_weight_kg || '';
-      r.outQty = ea;
-      r.shipmentQty = ea;
-      r.out_qty = ea;
-      r.totalWeightKg = kg;
-      r.total_weight_kg = kg;
-    }
-    return r;
-  }
-  function judge(items){
-    try{
-      if(typeof window.calcJ === 'function') return window.calcJ(items || []);
-      return (items||[]).some(function(x){return x && x.judge === '불합격';}) ? '불합격' : '합격';
-    }catch(e){ return '합격'; }
-  }
-  function badge(v){
-    if(typeof window.jBadge === 'function') return window.jBadge(v);
-    return '<span class="status '+(v==='불합격'?'fail':'pass')+'">'+esc(v)+'</span>';
-  }
-  function renderShipmentTableFinal(){
-    var tb = $('shipmentTable');
-    var st = stateObj();
-    var arr = Array.isArray(st.shipment) ? st.shipment : [];
-    if(!tb) return;
-    if(!arr.length){
-      tb.innerHTML = (typeof window.eRow === 'function') ? window.eRow(13) : '<tr><td colspan="13">데이터가 없습니다.</td></tr>';
-      return;
-    }
-    arr.forEach(mergeCachedRow);
-    tb.innerHTML = arr.map(function(r){
-      var ea = r.outQty || r.shipmentQty || r.out_qty || r.shipment_qty || '';
-      var kg = r.totalWeightKg || r.total_weight_kg || r.total_out_weight || r.shipment_weight_kg || '';
-      return '<tr>'
-        + '<td>'+(r.date||'')+'</td>'
-        + '<td>'+esc(r.customer||'')+'</td>'
-        + '<td>'+esc(r.product||'')+'</td>'
-        + '<td><strong>'+esc(r.lot||'')+'</strong></td>'
-        + '<td>'+esc(ea)+'</td>'
-        + '<td>'+esc(kg)+'</td>'
-        + '<td>'+esc(r.qty||'')+'</td>'
-        + '<td>'+esc(r.failQty||r.fail||'')+'</td>'
-        + '<td>'+badge(judge(r.items||[]))+'</td>'
-        + '<td>'+esc((r.signWriter&&r.signWriter.name)||'-')+'</td>'
-        + '<td>'+esc((r.signReviewer&&r.signReviewer.name)||'-')+'</td>'
-        + '<td>'+esc((r.signApprover&&r.signApprover.name)||'-')+'</td>'
-        + '<td><div class="ai">'
-        + '<button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button>'
-        + '<button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button>'
-        + '<button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button>'
-        + '</div></td></tr>';
-    }).join('');
-  }
-
-  var originalRenderShipmentTable = window.renderShipmentTable;
-  window.renderShipmentTable = function(){
-    try{
-      var st = stateObj();
-      if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow);
-    }catch(e){}
-    if(typeof originalRenderShipmentTable === 'function'){
-      try{ originalRenderShipmentTable.apply(this, arguments); }catch(e){}
-    }
-    try{ renderShipmentTableFinal(); }catch(e){ console.warn('[OQC list final render]', e); }
-  };
-
-  var originalEditShipment = window.editShipment;
-  window.editShipment = function(id){
-    if(typeof originalEditShipment === 'function'){
-      originalEditShipment.apply(this, arguments);
-    }
-    try{
-      var st = stateObj();
-      var r = Array.isArray(st.shipment) ? st.shipment.find(function(x){ return String(x.id) === String(id); }) : null;
-      mergeCachedRow(r);
-      var c = getCache();
-      var hit = (id && c['id:'+id]) || (r && c['key:'+makeRowKey(r)]);
-      var ea = (r && (r.outQty || r.shipmentQty || r.out_qty)) || (hit && (hit.outQty || hit.shipmentQty || hit.out_qty)) || '';
-      var kg = (r && (r.totalWeightKg || r.total_weight_kg)) || (hit && (hit.totalWeightKg || hit.total_weight_kg)) || '';
-      if(ea !== '') setVal('shipmentOutQty', ea);
-      if(kg !== '') setVal('shipmentTotalWeightKg', kg);
-    }catch(e){}
-  };
-
-  var originalSaveOqc = window.saveOqc;
-  window.saveOqc = async function(){
-    writeCacheForCurrent();
-    var result;
-    if(typeof originalSaveOqc === 'function'){
-      result = await originalSaveOqc.apply(this, arguments);
-    }
-    writeCacheForCurrent();
-    try{
-      var st = stateObj();
-      if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow);
-      renderShipmentTableFinal();
-    }catch(e){}
-    return result;
-  };
-
-  function enforceSingleVisiblePage(){
-    try{
-      var activeNav = document.querySelector('.nav-item[data-page].active');
-      var current = activeNav ? activeNav.getAttribute('data-page') : '';
-      var activePages = qsa('.content > .page.active');
-      if(current){
-        activePages.forEach(function(p){
-          if(p.id !== 'page-' + current) p.classList.remove('active');
-        });
-        var expected = $('page-' + current);
-        if(expected) expected.classList.add('active');
-      }else if(activePages.length > 1){
-        activePages.slice(1).forEach(function(p){ p.classList.remove('active'); });
-      }
-
-      var shipmentActive = $('page-shipment') && $('page-shipment').classList.contains('active');
-      var wo = $('page-workorder-list');
-      if(wo && shipmentActive){
-        wo.classList.remove('active');
-        wo.style.display = 'none';
-      }else if(wo && !wo.classList.contains('active')){
-        wo.style.display = 'none';
-      }else if(wo && wo.classList.contains('active')){
-        wo.style.display = '';
-      }
-    }catch(e){}
-  }
-
-  function boot(){
-    try{
-      renderShipmentTableFinal();
-      enforceSingleVisiblePage();
-    }catch(e){}
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-  window.addEventListener('load', boot);
-  document.addEventListener('click', function(){
-    setTimeout(function(){
-      try{
-        writeCacheForCurrent();
-        renderShipmentTableFinal();
-      }catch(e){}
-      enforceSingleVisiblePage();
-    }, 120);
-    setTimeout(enforceSingleVisiblePage, 500);
-  }, true);
-  ['input','change'].forEach(function(ev){
-    document.addEventListener(ev, function(e){
-      var id = e && e.target && e.target.id;
-      if(id === 'shipmentOutQty' || id === 'shipmentTotalWeightKg' || id === 'shipmentDate' || id === 'shipmentCustomer' || id === 'shipmentProduct' || id === 'shipmentLot'){
-        writeCacheForCurrent();
-      }
-    }, true);
-  });
-  [200,600,1200,2500,5000].forEach(function(ms){ setTimeout(boot, ms); });
-  try{
-    var mo = new MutationObserver(function(){
-      setTimeout(enforceSingleVisiblePage, 50);
-    });
-    var root = document.querySelector('.content') || document.body;
-    mo.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
-  }catch(e){}
-})();
-</script>
-<!-- NAMO OQC FINAL TWO BUG FIX 20260626 END -->
+<!-- removed unstable final patch: isolated stable patch inserted near body end -->
 
 
-<!-- NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE_20260626_START -->
-<style id="nmc-fg-inventory-hmc-ui-full-replace-20260626-css">
-/* 완제품 재고현황 현대자동차형 UI 전면 교체 */
-#page-fg-inventory.inv-premium-page{--hmc-navy:#071426;--hmc-navy2:#10294d;--hmc-blue:#1d4ed8;--hmc-cyan:#06b6d4;--hmc-green:#10b981;--hmc-orange:#f59e0b;--hmc-red:#ef4444;--hmc-line:#dbe6f2;--hmc-soft:#f6f9fd;--hmc-text:#0f172a;--hmc-muted:#64748b;}
-#page-fg-inventory .ph{display:none!important;}
-#page-fg-inventory .inv-panel:has(#fgDate){display:none!important;}
-#page-fg-inventory .inv-sync-card,#page-fg-inventory .inv-dev-row-btn,#page-fg-inventory [data-dev-use-open="fg"],#page-fg-inventory .inv-premium-flow,#page-fg-inventory .inv-premium-btn.primary{display:none!important;}
-#page-fg-inventory .inv-premium-hero{background:linear-gradient(135deg,#071426 0%,#10294d 58%,#0e7490 100%)!important;border-radius:22px!important;padding:26px 28px!important;margin-bottom:16px!important;box-shadow:0 16px 34px rgba(15,23,42,.18)!important;position:relative!important;overflow:hidden!important;}
-#page-fg-inventory .inv-premium-hero:before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 20% 20%,rgba(37,99,235,.38),transparent 28%),radial-gradient(circle at 78% 35%,rgba(6,182,212,.30),transparent 32%),linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);pointer-events:none;}
-#page-fg-inventory .inv-premium-hero>*{position:relative;}
-#page-fg-inventory .inv-premium-eyebrow{font-size:11px!important;letter-spacing:1.1px!important;color:#9ec5ff!important;font-weight:950!important;text-transform:uppercase!important;}
-#page-fg-inventory .inv-premium-title{font-size:30px!important;font-weight:950!important;color:#fff!important;letter-spacing:-.8px!important;line-height:1.12!important;margin-top:4px!important;}
-#page-fg-inventory .inv-premium-sub{font-size:13px!important;color:#dbeafe!important;margin-top:10px!important;line-height:1.65!important;max-width:760px!important;}
-#page-fg-inventory .inv-premium-actions{display:flex!important;gap:8px!important;align-items:center!important;}
-#page-fg-inventory .inv-premium-actions:before{content:'LOT / 바코드 추적 중심';display:inline-flex;align-items:center;height:40px;border-radius:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.20);padding:0 14px;font-size:13px;font-weight:950;color:#e0f2fe;}
-#page-fg-inventory .inv-premium-actions .inv-premium-btn{height:40px!important;border-radius:12px!important;background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.22)!important;color:#fff!important;font-weight:950!important;}
-#page-fg-inventory .inv-kpi-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;margin:0 0 16px!important;}
-#page-fg-inventory .inv-kpi{border-radius:16px!important;box-shadow:none!important;border:1px solid var(--hmc-line)!important;padding:18px!important;background:#fff!important;position:relative!important;overflow:hidden!important;}
-#page-fg-inventory .inv-kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1d4ed8,#06b6d4)!important;}
-#page-fg-inventory .inv-kpi .l{font-size:12px!important;color:#64748b!important;font-weight:950!important;}
-#page-fg-inventory .inv-kpi .v{font-size:30px!important;color:#0f172a!important;font-weight:950!important;letter-spacing:-1px!important;line-height:1.05!important;margin-top:7px!important;}
-#page-fg-inventory .inv-kpi .s{font-size:11px!important;color:#64748b!important;font-weight:800!important;margin-top:8px!important;}
-#page-fg-inventory .inv-panel{border:1px solid var(--hmc-line)!important;border-radius:18px!important;box-shadow:0 8px 24px rgba(15,23,42,.055)!important;background:#fff!important;overflow:hidden!important;}
-#page-fg-inventory .inv-panel-h{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding:18px 20px!important;background:#fff!important;border-bottom:1px solid #e5edf6!important;}
-#page-fg-inventory .inv-panel-h h3{font-size:19px!important;font-weight:950!important;color:#0f172a!important;letter-spacing:-.45px!important;}
-#page-fg-inventory .inv-filter{display:flex!important;gap:8px!important;align-items:center!important;flex-wrap:wrap!important;}
-#page-fg-inventory .inv-filter input{height:40px!important;min-width:360px!important;border:1px solid #d6e2f0!important;border-radius:12px!important;padding:0 14px!important;font-weight:800!important;color:#0f172a!important;background:#fff!important;}
-#page-fg-inventory .inv-filter select{height:40px!important;min-width:130px!important;border:1px solid #d6e2f0!important;border-radius:12px!important;padding:0 12px!important;font-weight:850!important;color:#0f172a!important;background:#fff!important;}
-#page-fg-inventory .inv-panel-b{padding:0!important;}
-#page-fg-inventory .inv-table-wrap{border:none!important;overflow:auto!important;}
-#page-fg-inventory .inv-table{min-width:1160px!important;border-collapse:separate!important;border-spacing:0!important;width:100%!important;}
-#page-fg-inventory .inv-table thead th{background:#f6f9fd!important;color:#25364d!important;font-size:12px!important;font-weight:950!important;padding:14px 16px!important;border-bottom:1px solid #d8e4f2!important;white-space:nowrap!important;text-transform:none!important;letter-spacing:0!important;}
-#page-fg-inventory .inv-table tbody td{padding:16px!important;border-bottom:1px solid #edf2f7!important;color:#25364d!important;font-size:13px!important;vertical-align:middle!important;}
-#page-fg-inventory .inv-table tbody tr:hover{background:#fbfdff!important;}
-#page-fg-inventory .fg-hmc-product{font-size:15px;font-weight:950;color:#0f172a;letter-spacing:-.2px;white-space:nowrap;}
-#page-fg-inventory .fg-hmc-customer{font-weight:850;color:#334155;white-space:nowrap;}
-#page-fg-inventory .fg-hmc-qty{font-weight:950;color:#0f172a;white-space:nowrap;}
-#page-fg-inventory .fg-hmc-stock{display:inline-flex;align-items:center;justify-content:flex-end;min-width:92px;height:32px;padding:0 12px;border-radius:8px;background:#f1f5f9;color:#334155;font-weight:950;white-space:nowrap;}
-#page-fg-inventory .fg-hmc-stock.zero{background:#eef2f7;color:#475569;}
-#page-fg-inventory .fg-hmc-stock.pos{background:#eff6ff;color:#1d4ed8;}
-#page-fg-inventory .fg-hmc-stock.neg{background:#fee2e2;color:#991b1b;}
-#page-fg-inventory .fg-status{display:inline-flex;align-items:center;justify-content:center;height:28px;min-width:82px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:950;white-space:nowrap;}
-#page-fg-inventory .fg-status.shipped{background:#dbeafe;color:#1d4ed8;}
-#page-fg-inventory .fg-status.stock{background:#dcfce7;color:#166534;}
-#page-fg-inventory .fg-status.bad{background:#fee2e2;color:#991b1b;}
-#page-fg-inventory .fg-lot-box{display:flex;align-items:center;gap:12px;min-width:260px;}
-#page-fg-inventory .fg-lot-main{min-width:86px;}
-#page-fg-inventory .fg-lot-code{display:block;border:none;background:transparent;color:#0f172a;font-size:14px;font-weight:950;padding:0;text-align:left;cursor:default;user-select:text;}
-#page-fg-inventory .fg-lot-code:hover{text-decoration:none;}
-#page-fg-inventory .fg-lot-hint{font-size:10px;color:#64748b;margin-top:3px;font-weight:800;}
-#page-fg-inventory .fg-bc-btn{border:1px solid #dbe6f2;background:#fff;border-radius:10px;padding:6px 8px;cursor:pointer;box-shadow:0 3px 10px rgba(15,23,42,.04);}
-#page-fg-inventory .fg-bc-btn:hover{border-color:#1d4ed8;background:#f8fbff;box-shadow:0 6px 16px rgba(29,78,216,.12);}
-#page-fg-inventory .fg-bc-btn svg{display:block;width:154px;height:34px;pointer-events:none;}
-#page-fg-inventory .fg-note{color:#64748b;font-size:12px;line-height:1.45;max-width:240px;}
-#page-fg-inventory .fg-note b{color:#0f172a;}
-.fg-detail-modal{position:fixed;inset:0;background:rgba(6,21,41,.62);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;z-index:5000;}
+
+
+<!-- removed unstable final patch: isolated stable patch inserted near body end -->
+
+
+
+
+<!-- NMC_FG_INVENTORY_STABLE_ISOLATED_20260626_START -->
+<style id="nmc-fg-inventory-stable-isolated-20260626-css">
+#page-fg-inventory.fg-stable-hmc{--fg-navy:#071426;--fg-blue:#1d4ed8;--fg-cyan:#06b6d4;--fg-line:#dbe6f2;--fg-soft:#f6f9fd;--fg-text:#0f172a;--fg-muted:#64748b;}
+#page-fg-inventory.fg-stable-hmc .ph{display:none!important;}
+#page-fg-inventory.fg-stable-hmc .inv-panel:has(#fgDate){display:none!important;}
+#page-fg-inventory.fg-stable-hmc .inv-sync-card,#page-fg-inventory.fg-stable-hmc .inv-dev-row-btn,#page-fg-inventory.fg-stable-hmc [data-dev-use-open="fg"]{display:none!important;}
+#page-fg-inventory.fg-stable-hmc .fg-stable-hero{background:linear-gradient(135deg,#071426 0%,#10294d 58%,#0e7490 100%);border-radius:22px;padding:26px 28px;margin-bottom:16px;box-shadow:0 16px 34px rgba(15,23,42,.18);position:relative;overflow:hidden;}
+#page-fg-inventory.fg-stable-hmc .fg-stable-hero:before{content:'';position:absolute;inset:-40%;background:radial-gradient(circle at 20% 20%,rgba(37,99,235,.38),transparent 28%),radial-gradient(circle at 78% 35%,rgba(6,182,212,.30),transparent 32%),linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);pointer-events:none;}
+#page-fg-inventory.fg-stable-hmc .fg-stable-hero>*{position:relative;}
+#page-fg-inventory.fg-stable-hmc .fg-stable-eyebrow{font-size:11px;letter-spacing:1.1px;color:#9ec5ff;font-weight:950;text-transform:uppercase;}
+#page-fg-inventory.fg-stable-hmc .fg-stable-title{font-size:30px;font-weight:950;color:#fff;letter-spacing:-.8px;line-height:1.12;margin-top:4px;}
+#page-fg-inventory.fg-stable-hmc .fg-stable-sub{font-size:13px;color:#dbeafe;margin-top:10px;line-height:1.65;max-width:760px;}
+#page-fg-inventory.fg-stable-hmc .inv-kpi-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;margin:0 0 16px!important;}
+#page-fg-inventory.fg-stable-hmc .inv-kpi{border-radius:16px!important;box-shadow:none!important;border:1px solid var(--fg-line)!important;padding:18px!important;background:#fff!important;position:relative!important;overflow:hidden!important;}
+#page-fg-inventory.fg-stable-hmc .inv-kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1d4ed8,#06b6d4);}
+#page-fg-inventory.fg-stable-hmc .inv-kpi .l{font-size:12px!important;color:#64748b!important;font-weight:950!important;}
+#page-fg-inventory.fg-stable-hmc .inv-kpi .v{font-size:30px!important;color:#0f172a!important;font-weight:950!important;letter-spacing:-1px!important;line-height:1.05!important;margin-top:7px!important;}
+#page-fg-inventory.fg-stable-hmc .inv-kpi .s{font-size:11px!important;color:#64748b!important;font-weight:800!important;margin-top:8px!important;}
+#page-fg-inventory.fg-stable-hmc .inv-panel{border:1px solid var(--fg-line)!important;border-radius:18px!important;box-shadow:0 8px 24px rgba(15,23,42,.055)!important;background:#fff!important;overflow:hidden!important;}
+#page-fg-inventory.fg-stable-hmc .inv-panel-h{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding:18px 20px!important;background:#fff!important;border-bottom:1px solid #e5edf6!important;}
+#page-fg-inventory.fg-stable-hmc .inv-panel-h h3{font-size:19px!important;font-weight:950!important;color:#0f172a!important;letter-spacing:-.45px!important;}
+#page-fg-inventory.fg-stable-hmc .inv-filter input{height:40px!important;min-width:360px!important;border:1px solid #d6e2f0!important;border-radius:12px!important;padding:0 14px!important;font-weight:800!important;color:#0f172a!important;background:#fff!important;}
+#page-fg-inventory.fg-stable-hmc .inv-filter select{height:40px!important;min-width:130px!important;border:1px solid #d6e2f0!important;border-radius:12px!important;padding:0 12px!important;font-weight:850!important;color:#0f172a!important;background:#fff!important;}
+#page-fg-inventory.fg-stable-hmc .inv-panel-b{padding:0!important;}
+#page-fg-inventory.fg-stable-hmc .inv-table{min-width:1160px!important;border-collapse:separate!important;border-spacing:0!important;width:100%!important;}
+#page-fg-inventory.fg-stable-hmc .inv-table thead th{background:#f6f9fd!important;color:#25364d!important;font-size:12px!important;font-weight:950!important;padding:14px 16px!important;border-bottom:1px solid #d8e4f2!important;white-space:nowrap!important;text-transform:none!important;letter-spacing:0!important;}
+#page-fg-inventory.fg-stable-hmc .inv-table tbody td{padding:16px!important;border-bottom:1px solid #edf2f7!important;color:#25364d!important;font-size:13px!important;vertical-align:middle!important;}
+.fg-stable-product{font-size:15px;font-weight:950;color:#0f172a;letter-spacing:-.2px;white-space:nowrap;}
+.fg-stable-customer{font-weight:850;color:#334155;white-space:nowrap;}
+.fg-stable-qty{font-weight:950;color:#0f172a;white-space:nowrap;}
+.fg-stable-stock{display:inline-flex;align-items:center;justify-content:flex-end;min-width:92px;height:32px;padding:0 12px;border-radius:8px;background:#f1f5f9;color:#334155;font-weight:950;white-space:nowrap;}
+.fg-stable-status{display:inline-flex;align-items:center;justify-content:center;height:28px;min-width:82px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:950;white-space:nowrap;background:#dbeafe;color:#1d4ed8;}
+.fg-stable-lotbox{display:flex;align-items:center;gap:12px;min-width:260px;}
+.fg-stable-lot{display:block;color:#0f172a;font-size:14px;font-weight:950;user-select:text;}
+.fg-stable-hint{font-size:10px;color:#64748b;margin-top:3px;font-weight:800;}
+.fg-stable-bc{border:1px solid #cbd5e1;border-radius:10px;background:#fff;padding:6px 9px;cursor:pointer;min-width:154px;transition:.15s ease;}
+.fg-stable-bc:hover{border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.10);}
+.fg-stable-note{font-size:12px;line-height:1.55;color:#64748b;min-width:190px;}
+.fg-detail-modal{position:fixed;inset:0;background:rgba(10,15,30,.52);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:3000;padding:22px;}
 .fg-detail-modal.show{display:flex;}
-.fg-detail-card{width:min(980px,calc(100vw - 32px));max-height:88vh;overflow:hidden;background:#fff;border-radius:22px;border:1px solid #dbe6f2;box-shadow:0 24px 60px rgba(15,23,42,.28);display:flex;flex-direction:column;}
-.fg-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 24px;background:linear-gradient(135deg,#071426,#12345d);color:#fff;}
-.fg-detail-title{font-size:22px;font-weight:950;letter-spacing:-.5px;}
-.fg-detail-sub{font-size:12px;color:#bfdbfe;margin-top:5px;}
-.fg-detail-close{width:34px;height:34px;border:none;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:18px;font-weight:900;cursor:pointer;}
-.fg-detail-body{padding:20px 24px;overflow:auto;}
-.fg-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px;}
-.fg-detail-kv{border:1px solid #dbe6f2;border-radius:14px;background:#f8fbff;padding:13px 14px;}
-.fg-detail-kv .k{font-size:11px;font-weight:950;color:#64748b;}
-.fg-detail-kv .v{font-size:16px;font-weight:950;color:#0f172a;margin-top:5px;word-break:break-all;}
-.fg-detail-section{border:1px solid #dbe6f2;border-radius:16px;margin-top:12px;overflow:hidden;}
-.fg-detail-section h4{margin:0;padding:12px 14px;background:#f8fafc;border-bottom:1px solid #e5edf6;font-size:13px;font-weight:950;color:#0f172a;}
-.fg-detail-section .inner{padding:14px;}
-.fg-detail-table{width:100%;border-collapse:collapse;font-size:12px;}
-.fg-detail-table th{background:#f8fafc;color:#475569;font-weight:950;text-align:left;padding:9px;border-bottom:1px solid #e5edf6;}
-.fg-detail-table td{padding:9px;border-bottom:1px solid #edf2f7;color:#334155;vertical-align:top;}
-.fg-detail-pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.55;color:#334155;background:#f8fafc;border-radius:12px;padding:12px;max-height:210px;overflow:auto;}
-.fg-detail-empty{color:#94a3b8;font-weight:800;text-align:center;padding:18px;}
-@media(max-width:900px){#page-fg-inventory .inv-kpi-grid,.fg-detail-grid{grid-template-columns:1fr!important;}#page-fg-inventory .inv-filter input{min-width:0!important;width:100%;}.fg-lot-box{min-width:220px}.fg-bc-btn svg{width:128px}}
+.fg-detail-card{width:min(1060px,calc(100vw - 44px));max-height:90vh;background:#fff;border:1px solid #dbe6f2;border-radius:22px;box-shadow:0 24px 60px rgba(15,23,42,.25);display:flex;flex-direction:column;overflow:hidden;}
+.fg-detail-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:linear-gradient(135deg,#071426,#10294d);color:#fff;}
+.fg-detail-title{font-size:20px;font-weight:950;letter-spacing:-.4px;}
+.fg-detail-sub{font-size:12px;color:#bfdbfe;margin-top:4px;font-weight:800;}
+.fg-detail-close{width:34px;height:34px;border:none;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:22px;cursor:pointer;}
+.fg-detail-body{padding:20px;overflow:auto;background:#f6f9fd;}
+.fg-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.fg-detail-kv{background:#fff;border:1px solid #dbe6f2;border-radius:14px;padding:13px 14px;}
+.fg-detail-kv .k{font-size:11px;font-weight:950;color:#64748b;}.fg-detail-kv .v{font-size:20px;font-weight:950;color:#0f172a;margin-top:3px;}
+.fg-detail-section{background:#fff;border:1px solid #dbe6f2;border-radius:16px;margin-top:12px;overflow:hidden;}
+.fg-detail-section h4{font-size:14px;font-weight:950;color:#0f172a;padding:13px 16px;border-bottom:1px solid #e5edf6;background:#fff;}
+.fg-detail-section .inner{padding:14px 16px;}
+.fg-detail-table{width:100%;border-collapse:collapse;font-size:12px;}.fg-detail-table th{background:#f8fafc;color:#475569;font-weight:950;text-align:left;padding:9px;border:1px solid #e5edf6;}.fg-detail-table td{padding:9px;border:1px solid #e5edf6;color:#334155;vertical-align:top;}.fg-detail-pre{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;line-height:1.5;color:#334155;background:#0f172a0d;border-radius:12px;padding:12px;max-height:260px;overflow:auto;}.fg-detail-empty{text-align:center;color:#94a3b8;padding:22px;font-weight:800;}
+@media(max-width:1100px){#page-fg-inventory.fg-stable-hmc .inv-kpi-grid,.fg-detail-grid{grid-template-columns:repeat(2,1fr)!important}.fg-stable-lotbox{min-width:220px}}
+@media(max-width:760px){#page-fg-inventory.fg-stable-hmc .inv-kpi-grid,.fg-detail-grid{grid-template-columns:1fr!important}#page-fg-inventory.fg-stable-hmc .inv-filter input{min-width:100%!important}}
 </style>
-<script id="nmc-fg-inventory-hmc-ui-full-replace-20260626-js">
+<script id="nmc-fg-inventory-stable-isolated-20260626-js">
 (function(){
-  'use strict';
-  if(window.__NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE__) return;
-  window.__NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE__=true;
-  var FG_KEY='nmcFinishedInventoryMovesV1';
+  if(window.__NMC_FG_INVENTORY_STABLE_ISOLATED_20260626__) return;
+  window.__NMC_FG_INVENTORY_STABLE_ISOLATED_20260626__=true;
   var applying=false, scheduled=false;
-  function $(id){return document.getElementById(id)}
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function byId(id){return document.getElementById(id)}
+  function qs(s,r){return (r||document).querySelector(s)}
   function txt(v){return String(v==null?'':v).trim()}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function num(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
-  function fmt(n){n=Math.round(Number(n||0)*1000)/1000;if(Object.is(n,-0))n=0;return n.toLocaleString('ko-KR')}
-  function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
-  function stateObj(){try{return typeof state!=='undefined'?state:(window.state||{})}catch(e){return window.state||{}}}
-  function first(){for(var i=0;i<arguments.length;i++){var v=arguments[i];if(v!==undefined&&v!==null&&txt(v)!=='')return v}return ''}
-  function signed(type,qty){qty=Math.abs(num(qty));if(/생산입고|입고|조정\+/.test(type))return qty;if(/출하|사용|투입|폐기|조정\-/.test(type))return -qty;return qty}
-  function keyLot(o){return txt(first(o&&o.finishedLot,o&&o.finished_lot,o&&o.nmcProdLot,o&&o.prodLot,o&&o.productionLot,o&&o.productLot,o&&o.outputLot,o&&o.shipmentLot,o&&o.oqcLot,o&&o.lot,o&&o.lotNo))}
-  function workOrderLot(o){return txt(first(o&&o.finishedLot,o&&o.finished_lot,o&&o.nmcProdLot,o&&o.prodLot,o&&o.productionLot,o&&o.productLot,o&&o.outputLot,o&&o.lot))}
-  function productOf(o){return txt(first(o&&o.product,o&&o.productName,o&&o.prodName,o&&o.item,o&&o.itemName,o&&o.nmcProdName,o&&o['제품명']))}
-  function customerOf(o){return txt(first(o&&o.customer,o&&o.customerName,o&&o.client,o&&o.supplier,o&&o['고객사']))}
-  function dateOf(o){return txt(first(o&&o.workDate,o&&o.date,o&&o.shipDate,o&&o.createdAt,o&&o.orderDate,o&&o.productionDate,o&&o.inspectionDate)).slice(0,10)}
-  function prodQtyOf(o){return num(first(o&&o.prodQty,o&&o.productionQty,o&&o.actualQty,o&&o.nmcActualQty,o&&o.qty,o&&o.planQty,o&&o.totalWeightKg,o&&o.total_weight_kg))}
-  function shipQtyOf(o){return num(first(o&&o.totalWeightKg,o&&o.total_weight_kg,o&&o.totalOutWeight,o&&o.total_out_weight,o&&o.shipment_weight_kg,o&&o.out_weight_kg,o&&o.weight_kg,o&&o.shipQty,o&&o.shipmentQty,o&&o.outQty,o&&o.qty))}
-  function fgMoves(){return read(FG_KEY).filter(function(m){return keyLot(m)})}
-  var WO_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','workorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'];
-  function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(txt(v))}
-  function normalizeWo(o,i){o=o||{};var no=txt(first(o.workOrderNo,o.woNo,o.orderNo,o.nmcWoNo,o.docNo,o.no,o.workNo,o.id,o.uid,'WO-'+(i+1)));var lot=txt(first(o.finishedLot,o.finished_lot,o.nmcProdLot,o.prodLot,o.productionLot,o.productLot,o.outputLot,o.production_lot,o.finished_lot_no,o['생산LOT'],o['완제품LOT']));var actual=prodQtyOf(o);var plan=num(first(o.planQty,o.plannedQty,o.plan,o.nmcPlanQty,o.targetQty,o['계획수량']));return Object.assign({},o,{workOrderNo:no,woNo:no,finishedLot:lot,product:o.product||o.productName||o.prodName||o.itemName||o.item||o.title||o.nmcProdName||o['제품명'],customer:o.customer||o.customerName||o.client||o.clientName||o.buyer||o.nmcCustomerName||o['고객사'],actualQty:actual,prodQty:actual,planQty:plan,workDate:first(o.workDate,o.startDate,o.workStartDate,o.orderDate,o.planDate,o.plannedDate,o.date,o.createdAt,o.sentAt,o.nmcOrderDate),dueDate:first(o.dueDate,o.endDate,o.planEndDate,o.plannedEndDate,o.finishDueDate,o.targetDate,o.nmcDueDate),__raw:o})}
-  function allWoRows(){var out=[], s=stateObj();['worklog','worklogs','workOrders','workorders','orders','workOrderHistory'].forEach(function(k){if(Array.isArray(s[k]))out=out.concat(s[k])});WO_KEYS.forEach(function(k){out=out.concat(read(k))});var seen={};return out.map(normalizeWo).filter(function(w){var no=txt(first(w.workOrderNo,w.woNo,w.orderNo,w.no));var lot=workOrderLot(w);var qty=prodQtyOf(w);if(!lot||isUuid(lot)||qty<=0)return false;var key=[no,lot,qty,productOf(w),customerOf(w)].join('|');if(seen[key])return false;seen[key]=1;return true})}
-  function worklogs(){return allWoRows()}
-  function shipments(){var s=stateObj();return Array.isArray(s.shipment)?s.shipment:[]}
-  function augmentedMoves(){var arr=fgMoves().slice();shipments().forEach(function(r){var lot=keyLot(r), qty=shipQtyOf(r);if(lot&&qty>0){arr.push({id:'SHIP-'+(r.id||lot+'-'+dateOf(r)),date:dateOf(r),type:'출하',product:productOf(r),lot:lot,customer:customerOf(r),qty:qty,unit:'kg',doc:'OQC/출하검사: '+(r.id||dateOf(r)||lot),location:'출하완료',remark:txt(first(r.remark,r.note,r.comment,'출하검사 이력 기준 자동 차감')),source:'shipment',raw:r});}});return arr}
-  function groupRows(){
-    /* 작업지시서 기준 완제품 재고현황
-       - 완제품 LOT는 작업지시/작업일지의 finishedLot만 사용
-       - 원료 LOT(lotNo/material lot)는 완제품 LOT로 만들지 않음
-       - 생산량 = 작업지시 실적수량(prodQty/actualQty)
-       - 출하량 = 생산량, 현재재고 = 0kg 기준으로 작업지시서와 완제품 현황 일치 */
-    var rows=worklogs().filter(function(w){return workOrderLot(w)&&prodQtyOf(w)>0});
-    var m={};
-    rows.forEach(function(w){
-      var lot=workOrderLot(w); if(!lot)return;
-      var id=txt(first(w.id,w.workOrderNo,w.woNo,w.orderNo,lot));
-      var qty=prodQtyOf(w);
-      if(!m[lot])m[lot]={lot:lot,product:'',customer:'',unit:'kg',prod:0,ship:0,stock:0,moves:[],prodDate:'',shipDate:'',remark:'',workOrderNo:''};
-      var g=m[lot];
-      g.product=g.product||productOf(w)||'완제품';
-      g.customer=g.customer||customerOf(w)||'현대자동차';
-      g.unit='kg';
-      g.workOrderNo=g.workOrderNo||id;
-      if(!g.prodDate)g.prodDate=dateOf(w);
-      if(!g.shipDate)g.shipDate=dateOf(w);
-      g.prod+=qty;
-      g.ship+=qty;
-      g.stock=0;
-      if(!g.remark)g.remark='작업지시 실적수량과 출하량 동일 적용';
-      g.moves.push({id:'WORKORDER-'+id,date:dateOf(w),type:'작업지시 생산/출하완료',product:productOf(w)||'완제품',lot:lot,customer:customerOf(w)||'현대자동차',qty:qty,unit:'kg',doc:'작업지시 기준: '+id,location:'출하완료',remark:txt(first(w.remark,w.note,'실적수량과 출하량 동일 적용')),source:'worklog',raw:w,workOrderNo:id});
-    });
-    /* 작업지시 데이터가 아직 로딩 전이면 기존 완제품 이력으로 임시 표시 */
-    if(!Object.keys(m).length){
-      augmentedMoves().forEach(function(x){
-        var lot=keyLot(x);if(!lot)return;
-        if(!m[lot])m[lot]={lot:lot,product:'',customer:'',unit:'kg',prod:0,ship:0,stock:0,moves:[],prodDate:'',shipDate:'',remark:'',workOrderNo:''};
-        var g=m[lot];g.product=g.product||productOf(x)||txt(x.item)||'완제품';g.customer=g.customer||customerOf(x)||'현대자동차';g.unit=txt(x.unit)||g.unit;
-        var t=txt(x.type), qv=num(x.qty), s=signed(t,qv);g.stock+=s;
-        if(/생산입고|입고/.test(t)){g.prod+=Math.abs(qv);if(!g.prodDate)g.prodDate=dateOf(x)}else if(/출하/.test(t)){g.ship+=Math.abs(qv);if(!g.shipDate)g.shipDate=dateOf(x)}
-        if(!g.remark)g.remark=txt(x.remark);g.moves.push(x);
-      });
-      Object.keys(m).forEach(function(k){var g=m[k];if(g.prod>0){g.ship=g.prod;g.stock=0;if(!g.remark)g.remark='완제품 이력 임시 기준';}});
-    }
-    return Object.values(m).sort(function(a,b){
-      var da=txt(b.prodDate).localeCompare(txt(a.prodDate)); if(da) return da;
-      return String(a.lot).localeCompare(String(b.lot));
-    });
+  function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+  function stateObj(){return window.state||{}}
+  function arr(a){return Array.isArray(a)?a:[]}
+  function num(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0}
+  function fmt(v){var n=num(v);return (Math.round(n*1000)/1000).toLocaleString('ko-KR',{maximumFractionDigits:3})}
+  function first(){for(var i=0;i<arguments.length;i++){var v=txt(arguments[i]);if(v)return v}return ''}
+  function active(){var p=byId('page-fg-inventory');return !!(p&&p.classList.contains('active'))}
+  function worklogs(){var st=stateObj();return [].concat(arr(st.worklog),arr(st.worklogs),arr(st.workOrderList),arr(st.nmcWorkOrders),arr(st.workOrders)).filter(Boolean)}
+  function shipments(){var st=stateObj();return [].concat(arr(st.shipment),arr(st.shipments),arr(st.oqc),arr(st.oqcList)).filter(Boolean)}
+  function fgMoves(){try{var raw=localStorage.getItem('nmc_fg_inventory_moves_v1')||localStorage.getItem('fgInventoryMoves')||'[]';var x=JSON.parse(raw);return arr(x)}catch(e){return []}}
+  function dateOf(o){return first(o.workDate,o.date,o.shipDate,o.shipmentDate,o.inspectionDate,o.regDate,o.createdDate,o.createdAt,o.updatedAt)}
+  function lotOfWork(o){return first(o.finishedLot,o.nmcProdLot,o.prodLot,o.productionLot,o.productLot,o.lot,o.lotNo)}
+  function lotOfShip(o){return first(o.finishedLot,o.nmcProdLot,o.prodLot,o.shipmentLot,o.lot,o.lotNo)}
+  function productOf(o){return first(o.productName,o.product,o.item,o.itemName,o.prodName,o.material,'완제품')}
+  function customerOf(o){return first(o.customer,o.customerName,o.client,o.clientName,o.company,o.supplier,'현대자동차')}
+  function workNoOf(o){return first(o.workOrderNo,o.woNo,o.orderNo,o.docNo,o.no,o.id)}
+  function prodQtyOf(o){return num(first(o.prodQty,o.actualQty,o.resultQty,o.workQty,o.qty,o.planQty,o.totalWeightKg,o.weightKg))}
+  function shipQtyOf(o){return num(first(o.totalWeightKg,o.shipQtyKg,o.shipWeight,o.outQtyKg,o.outQty,o.qty,o.actualQty,o.shipQty))}
+  function getGroups(){var map={};
+    worklogs().forEach(function(w){var lot=lotOfWork(w);if(!lot)return;var k=lot.toUpperCase();var q=prodQtyOf(w);if(!map[k])map[k]={lot:lot,product:productOf(w),customer:customerOf(w),prod:0,ship:0,stock:0,unit:'kg',prodDate:dateOf(w),shipDate:'',workOrderNo:workNoOf(w),remark:first(w.remark,w.note),works:[],ships:[],moves:[]};var g=map[k];g.prod=q||g.prod;if(!g.prodDate)g.prodDate=dateOf(w);g.product=productOf(w)||g.product;g.customer=customerOf(w)||g.customer;g.workOrderNo=workNoOf(w)||g.workOrderNo;g.works.push(w)});
+    shipments().forEach(function(s){var lot=lotOfShip(s);if(!lot)return;var k=lot.toUpperCase();if(!map[k])map[k]={lot:lot,product:productOf(s),customer:customerOf(s),prod:0,ship:0,stock:0,unit:'kg',prodDate:'',shipDate:dateOf(s),workOrderNo:workNoOf(s),remark:first(s.remark,s.note),works:[],ships:[],moves:[]};var g=map[k];var sq=shipQtyOf(s);g.ship=sq||g.ship;g.shipDate=dateOf(s)||g.shipDate;g.product=productOf(s)||g.product;g.customer=customerOf(s)||g.customer;g.ships.push(s)});
+    fgMoves().forEach(function(m){var lot=first(m.finishedLot,m.lot,m.lotNo);if(!lot)return;var k=lot.toUpperCase();if(!map[k])map[k]={lot:lot,product:productOf(m),customer:customerOf(m),prod:0,ship:0,stock:0,unit:first(m.unit,'kg'),prodDate:'',shipDate:'',workOrderNo:workNoOf(m),remark:first(m.remark,m.note),works:[],ships:[],moves:[]};map[k].moves.push(m)});
+    Object.keys(map).forEach(function(k){var g=map[k];if(g.prod>0){g.ship=g.prod;g.stock=0}else{g.stock=Math.max(0,g.prod-g.ship)}});
+    return Object.values(map).sort(function(a,b){return String(b.prodDate||b.shipDate).localeCompare(String(a.prodDate||a.shipDate))||String(a.lot).localeCompare(String(b.lot))})
   }
-  function filtered(groups){var kw=txt($('fgInvKeyword')&&$('fgInvKeyword').value).toLowerCase();var st=txt($('fgInvStatus')&&$('fgInvStatus').value);return groups.filter(function(g){var hit=!kw||[g.product,g.lot,g.customer].join(' ').toLowerCase().indexOf(kw)>-1;if(!hit)return false;if(st==='stock')return g.stock>0;if(st==='zero'||st==='shipped')return g.stock===0;if(st==='minus')return g.stock<0;return true})}
-  function statusHtml(g){if(g.stock<0)return '<span class="fg-status bad">이상</span>';if(g.stock>0)return '<span class="fg-status stock">재고보유</span>';return '<span class="fg-status shipped">출하완료</span>'}
-  function stockClass(g){return g.stock<0?'neg':(g.stock>0?'pos':'zero')}
+  function filtered(gs){var kw=txt(byId('fgInvKeyword')&&byId('fgInvKeyword').value).toLowerCase();var st=txt(byId('fgInvStatus')&&byId('fgInvStatus').value);return gs.filter(function(g){var ok=!kw||[g.product,g.lot,g.customer,g.workOrderNo].join(' ').toLowerCase().indexOf(kw)>-1;if(!ok)return false;if(st==='stock')return g.stock>0;if(st==='zero'||st==='shipped')return g.stock===0;if(st==='minus')return g.stock<0;return true})}
+  function hero(page){if(qs('.fg-stable-hero',page))return;page.insertAdjacentHTML('afterbegin','<div class="fg-stable-hero"><div class="fg-stable-eyebrow">FINISHED GOODS INVENTORY</div><div class="fg-stable-title">완제품 재고현황</div><div class="fg-stable-sub">작업지시서 실적수량을 생산량 기준으로 사용하고, 출하검사(OQC) 목록은 독립적으로 보호합니다. 바코드 클릭 시 LOT 상세 내용을 확인합니다.</div></div>')}
+  function header(){var page=byId('page-fg-inventory');if(!page)return;page.classList.add('fg-stable-hmc');hero(page);var t=qs('#fgInvBody')&&qs('#fgInvBody').closest('table');if(t){var tr=qs('thead tr',t);if(tr)tr.innerHTML='<th>제품명</th><th>LOT / 바코드</th><th>고객사</th><th>생산량</th><th>출하량</th><th>현재재고</th><th>상태</th><th>비고</th>'}var h=qs('#page-fg-inventory .inv-panel-h h3');if(h)h.textContent='완제품 재고현황';var sel=byId('fgInvStatus');if(sel&&!sel.__fgStable){sel.__fgStable=true;sel.innerHTML='<option value="">전체</option><option value="shipped">출하완료</option><option value="stock">재고보유</option><option value="minus">이상</option>'}var inp=byId('fgInvKeyword');if(inp)inp.placeholder='제품명 / LOT / 바코드 / 고객사 / 작업지시번호 검색'}
+  function kpis(gs){var total=gs.length, shipped=gs.filter(function(g){return g.stock===0}).length, stock=gs.reduce(function(s,g){return s+g.stock},0);return '<div class="inv-kpi"><div class="l">전체 LOT</div><div class="v">'+total+'</div><div class="s">작업지시 기준</div></div><div class="inv-kpi"><div class="l">출하완료</div><div class="v">'+shipped+'</div><div class="s">재고 0kg</div></div><div class="inv-kpi"><div class="l">현재재고</div><div class="v">'+fmt(stock)+'</div><div class="s">kg</div></div><div class="inv-kpi"><div class="l">OQC 보호</div><div class="v">ON</div><div class="s">출하검사 목록 미수정</div></div>'}
   function safeId(v){return String(v||'').replace(/[^A-Za-z0-9_-]/g,'')}
-  function lotCell(g){var id='fgHmcBc-'+safeId(g.lot);return '<div class="fg-lot-box"><div class="fg-lot-main"><span class="fg-lot-code">'+esc(g.lot)+'</span><div class="fg-lot-hint">바코드 클릭 상세</div></div><button type="button" class="fg-bc-btn" data-fg-barcode-detail="'+esc(g.lot)+'" title="바코드 상세보기"><span id="'+esc(id)+'"></span></button></div>'}
-  function kpis(groups){var total=groups.length, shipped=groups.filter(function(g){return g.stock===0}).length, stock=groups.reduce(function(s,g){return s+g.stock},0), today=(new Date()).toISOString().slice(0,10), todayShip=groups.reduce(function(s,g){return s+(g.shipDate===today?g.ship:0)},0);return '<div class="inv-kpi"><div class="l">전체 LOT</div><div class="v">'+total+'</div><div class="s">완제품 LOT</div></div><div class="inv-kpi"><div class="l">출하완료</div><div class="v">'+shipped+'</div><div class="s">재고 0kg 기준</div></div><div class="inv-kpi"><div class="l">현재재고</div><div class="v">'+fmt(stock)+'</div><div class="s">kg</div></div><div class="inv-kpi"><div class="l">금일 출하</div><div class="v">'+fmt(todayShip)+'</div><div class="s">kg</div></div>'}
-  function setHeader(){var page=$('page-fg-inventory'); if(page) page.classList.add('inv-premium-page'); var table=q('#fgInvBody')&&q('#fgInvBody').closest('table');if(table){var tr=q('thead tr',table);if(tr)tr.innerHTML='<th>제품명</th><th>LOT / 바코드</th><th>고객사</th><th>생산량</th><th>출하량</th><th>현재재고</th><th>상태</th><th>비고</th>';}
-    var sel=$('fgInvStatus');if(sel&&!sel.__fgHmcOptions){sel.__fgHmcOptions=true;sel.innerHTML='<option value="">전체</option><option value="shipped">출하완료</option><option value="stock">재고보유</option><option value="minus">이상</option>'}
-    var h=q('#page-fg-inventory .inv-panel-h h3');if(h)h.textContent='완제품 재고현황';var search=$('fgInvKeyword');if(search)search.placeholder='제품명 / LOT / 바코드 / 고객사 검색'}
-  function renderBarcodes(groups){groups.forEach(function(g){try{var el=$('fgHmcBc-'+safeId(g.lot));if(!el||!window.JsBarcode)return;el.innerHTML='';var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');el.appendChild(svg);JsBarcode(svg,String(g.lot||'LOT'),{format:'CODE128',height:30,width:1.35,displayValue:false,margin:0});}catch(e){}})}
-  function render(){if(applying)return;var body=$('fgInvBody');if(!body)return;applying=true;try{setHeader();var groups=groupRows();var k=$('fgInvKpi');if(k)k.innerHTML=kpis(groups);var rows=filtered(groups);body.innerHTML=rows.map(function(g){return '<tr><td><div class="fg-hmc-product">'+esc(g.product||'-')+'</div></td><td>'+lotCell(g)+'</td><td><div class="fg-hmc-customer">'+esc(g.customer||'-')+'</div></td><td><span class="fg-hmc-qty">'+fmt(g.prod)+' '+esc(g.unit)+'</span></td><td><span class="fg-hmc-qty">'+fmt(g.ship)+' '+esc(g.unit)+'</span></td><td><span class="fg-hmc-stock '+stockClass(g)+'">'+fmt(g.stock)+' '+esc(g.unit)+'</span></td><td>'+statusHtml(g)+'</td><td><div class="fg-note"><b>WO:</b> '+esc(g.workOrderNo||'-')+'<br><b>근거:</b> 작업지시 실적수량 기준<br>'+esc(g.remark||'출하완료 기준')+'</div></td></tr>'}).join('')||'<tr><td colspan="8" class="fg-detail-empty">등록된 완제품 LOT가 없습니다.</td></tr>';renderBarcodes(rows)}finally{applying=false}}
-  function ensureModal(){var m=$('fgLotDetailModal');if(m)return m;document.body.insertAdjacentHTML('beforeend','<div class="fg-detail-modal" id="fgLotDetailModal"><div class="fg-detail-card"><div class="fg-detail-head"><div><div class="fg-detail-title" id="fgDetailTitle">LOT 상세</div><div class="fg-detail-sub" id="fgDetailSub">생산·출하·근거자료 전체 내용</div></div><button type="button" class="fg-detail-close" id="fgDetailClose">×</button></div><div class="fg-detail-body" id="fgDetailBody"></div></div></div>');return $('fgLotDetailModal')}
-  function table(rows,cols){if(!rows.length)return '<div class="fg-detail-empty">데이터가 없습니다.</div>';return '<table class="fg-detail-table"><thead><tr>'+cols.map(function(c){return '<th>'+esc(c[0])+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+esc(typeof c[1]==='function'?c[1](r):r[c[1]])+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>'}
-  function openDetail(lot){var groups=groupRows(),g=groups.filter(function(x){return x.lot===lot})[0];if(!g)return;var w=worklogs().filter(function(r){return workOrderLot(r)===lot});var sh=shipments().filter(function(r){return keyLot(r)===lot});var moves=g.moves||[];var m=ensureModal();$('fgDetailTitle').textContent=(g.product||'완제품')+' · '+g.lot;$('fgDetailSub').textContent='생산일자 / 생산수량 / 근거자료 / 비고 / 전체 이력';var evidence=moves.map(function(x){return txt(first(x.doc,x.source,x.id,'-'))}).filter(Boolean);var rawText=[].concat(w.map(function(x){return {구분:'생산/작업',내용:x}}),sh.map(function(x){return {구분:'OQC/출하',내용:x}}),moves.map(function(x){return {구분:'재고이력',내용:x}}));$('fgDetailBody').innerHTML='<div class="fg-detail-grid"><div class="fg-detail-kv"><div class="k">생산일자</div><div class="v">'+esc(g.prodDate||'-')+'</div></div><div class="fg-detail-kv"><div class="k">생산수량</div><div class="v">'+fmt(g.prod)+' '+esc(g.unit)+'</div></div><div class="fg-detail-kv"><div class="k">출하수량</div><div class="v">'+fmt(g.ship)+' '+esc(g.unit)+'</div></div><div class="fg-detail-kv"><div class="k">현재재고</div><div class="v">'+fmt(g.stock)+' '+esc(g.unit)+'</div></div></div><div class="fg-detail-section"><h4>기본 정보</h4><div class="inner"><table class="fg-detail-table"><tbody><tr><th>제품명</th><td>'+esc(g.product||'-')+'</td><th>고객사</th><td>'+esc(g.customer||'-')+'</td></tr><tr><th>LOT</th><td>'+esc(g.lot)+'</td><th>작업지시번호</th><td>'+esc(g.workOrderNo||'-')+'</td></tr><tr><th>상태</th><td>'+(g.stock===0?'출하완료':g.stock>0?'재고보유':'이상')+'</td></tr><tr><th>근거자료</th><td colspan="3">'+esc(evidence.join(' / ')||'-')+'</td></tr><tr><th>비고</th><td colspan="3">'+esc(g.remark||'-')+'</td></tr></tbody></table></div></div><div class="fg-detail-section"><h4>생산 근거자료</h4><div class="inner">'+table(w,[['생산일자',dateOf],['생산수량',function(r){return fmt(prodQtyOf(r))+' kg'}],['작업지시/작업자',function(r){return first(r.workOrderNo,r.woNo,r.orderNo,r.no,r.worker,r.manager,'-')}],['비고',function(r){return first(r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>OQC / 출하 근거자료</h4><div class="inner">'+table(sh,[['출하일자',dateOf],['출하수량',function(r){return fmt(shipQtyOf(r))+' kg'}],['고객사',customerOf],['판정/비고',function(r){return first(r.judge,r.result,r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>재고 이력 전체 내용</h4><div class="inner">'+table(moves,[['일자',dateOf],['구분',function(r){return first(r.type,r.source,'-')}],['수량',function(r){return fmt(num(r.qty))+' '+first(r.unit,'kg')}],['근거자료',function(r){return first(r.doc,r.id,r.source,'-')}],['비고',function(r){return first(r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>원본 전체 내용(JSON)</h4><div class="inner"><div class="fg-detail-pre">'+esc(JSON.stringify(rawText,null,2))+'</div></div></div>';m.classList.add('show')}
-  function closeDetail(){var m=$('fgLotDetailModal');if(m)m.classList.remove('show')}
+  function lotCell(g){var id='fgStableBc-'+safeId(g.lot);return '<div class="fg-stable-lotbox"><div><span class="fg-stable-lot">'+esc(g.lot)+'</span><div class="fg-stable-hint">바코드 클릭 상세</div></div><button type="button" class="fg-stable-bc" data-fg-stable-detail="'+esc(g.lot)+'" title="바코드 상세보기"><span id="'+esc(id)+'"></span></button></div>'}
+  function renderBc(gs){gs.forEach(function(g){try{var el=byId('fgStableBc-'+safeId(g.lot));if(!el||!window.JsBarcode)return;el.innerHTML='';var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');el.appendChild(svg);JsBarcode(svg,String(g.lot||'LOT'),{format:'CODE128',height:30,width:1.35,displayValue:false,margin:0})}catch(e){}})}
+  function render(){if(!active()||applying)return;var body=byId('fgInvBody');if(!body)return;applying=true;try{header();var gs=getGroups();var kp=byId('fgInvKpi');if(kp)kp.innerHTML=kpis(gs);var rows=filtered(gs);body.innerHTML=rows.map(function(g){return '<tr><td><div class="fg-stable-product">'+esc(g.product||'-')+'</div></td><td>'+lotCell(g)+'</td><td><div class="fg-stable-customer">'+esc(g.customer||'-')+'</div></td><td><span class="fg-stable-qty">'+fmt(g.prod)+' '+esc(g.unit)+'</span></td><td><span class="fg-stable-qty">'+fmt(g.ship)+' '+esc(g.unit)+'</span></td><td><span class="fg-stable-stock">'+fmt(g.stock)+' '+esc(g.unit)+'</span></td><td><span class="fg-stable-status">출하완료</span></td><td><div class="fg-stable-note"><b>WO:</b> '+esc(g.workOrderNo||'-')+'<br><b>근거:</b> 작업지시 실적수량 기준<br>'+esc(g.remark||'출하완료 기준')+'</div></td></tr>'}).join('')||'<tr><td colspan="8" class="fg-detail-empty">등록된 완제품 LOT가 없습니다.</td></tr>';renderBc(rows)}finally{applying=false}}
+  function ensureModal(){var m=byId('fgStableDetailModal');if(m)return m;document.body.insertAdjacentHTML('beforeend','<div class="fg-detail-modal" id="fgStableDetailModal"><div class="fg-detail-card"><div class="fg-detail-head"><div><div class="fg-detail-title" id="fgStableDetailTitle">LOT 상세</div><div class="fg-detail-sub" id="fgStableDetailSub">생산·출하·근거자료 전체 내용</div></div><button type="button" class="fg-detail-close" id="fgStableDetailClose">×</button></div><div class="fg-detail-body" id="fgStableDetailBody"></div></div></div>');return byId('fgStableDetailModal')}
+  function table(rows,cols){if(!rows.length)return '<div class="fg-detail-empty">데이터가 없습니다.</div>';return '<table class="fg-detail-table"><thead><tr>'+cols.map(function(c){return '<th>'+esc(c[0])+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+esc(c[1](r))+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>'}
+  function openDetail(lot){var g=getGroups().filter(function(x){return String(x.lot)===String(lot)})[0];if(!g)return;var m=ensureModal();byId('fgStableDetailTitle').textContent=(g.product||'완제품')+' · '+g.lot;byId('fgStableDetailSub').textContent='생산일자 / 생산수량 / 출하수량 / 근거자료 / 비고 / 전체 이력';var raw=[].concat(g.works.map(function(x){return {구분:'작업지시',내용:x}}),g.ships.map(function(x){return {구분:'출하검사',내용:x}}),g.moves.map(function(x){return {구분:'재고이력',내용:x}}));byId('fgStableDetailBody').innerHTML='<div class="fg-detail-grid"><div class="fg-detail-kv"><div class="k">생산일자</div><div class="v">'+esc(g.prodDate||'-')+'</div></div><div class="fg-detail-kv"><div class="k">생산수량</div><div class="v">'+fmt(g.prod)+' '+esc(g.unit)+'</div></div><div class="fg-detail-kv"><div class="k">출하수량</div><div class="v">'+fmt(g.ship)+' '+esc(g.unit)+'</div></div><div class="fg-detail-kv"><div class="k">현재재고</div><div class="v">'+fmt(g.stock)+' '+esc(g.unit)+'</div></div></div><div class="fg-detail-section"><h4>기본 정보</h4><div class="inner"><table class="fg-detail-table"><tbody><tr><th>제품명</th><td>'+esc(g.product||'-')+'</td><th>고객사</th><td>'+esc(g.customer||'-')+'</td></tr><tr><th>LOT</th><td>'+esc(g.lot)+'</td><th>작업지시번호</th><td>'+esc(g.workOrderNo||'-')+'</td></tr><tr><th>상태</th><td>출하완료</td><th>비고</th><td>'+esc(g.remark||'-')+'</td></tr></tbody></table></div></div><div class="fg-detail-section"><h4>생산 근거자료</h4><div class="inner">'+table(g.works,[['생산일자',dateOf],['생산수량',function(r){return fmt(prodQtyOf(r))+' kg'}],['작업지시/작업자',function(r){return first(workNoOf(r),r.worker,r.manager,'-')}],['비고',function(r){return first(r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>OQC / 출하 근거자료</h4><div class="inner">'+table(g.ships,[['출하일자',dateOf],['출하수량',function(r){return fmt(shipQtyOf(r))+' kg'}],['고객사',customerOf],['판정/비고',function(r){return first(r.judge,r.result,r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>원본 전체 내용(JSON)</h4><div class="inner"><div class="fg-detail-pre">'+esc(JSON.stringify(raw,null,2))+'</div></div></div>';m.classList.add('show')}
+  function close(){var m=byId('fgStableDetailModal');if(m)m.classList.remove('show')}
   function schedule(){if(scheduled)return;scheduled=true;setTimeout(function(){scheduled=false;render()},120)}
-  document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-fg-barcode-detail]');if(b){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(b.getAttribute('data-fg-barcode-detail'));return false}if(e.target&&/^(fgDetailClose)$/.test(e.target.id||'')){closeDetail();return}if(e.target&&e.target.id==='fgLotDetailModal'){closeDetail();return}if(e.target&&e.target.closest&&e.target.closest('[data-page="fg-inventory"],[data-page-target="fg-inventory"],#fgInvQmsSync,[data-inv-recalc]'))setTimeout(render,250)},true);
-  document.addEventListener('input',function(e){if(e.target&&/^fgInv/.test(e.target.id||''))schedule()},true);document.addEventListener('change',function(e){if(e.target&&/^fgInv/.test(e.target.id||''))schedule()},true);
-  var old=window.nmcSyncInventoryFromQms;if(typeof old==='function'&&!old.__fgHmcWrapped){var wrap=function(){var r=old.apply(this,arguments);setTimeout(render,180);setTimeout(render,600);return r};wrap.__fgHmcWrapped=true;window.nmcSyncInventoryFromQms=wrap}
-  function observe(){var body=$('fgInvBody');if(body&&!body.__fgHmcObs){body.__fgHmcObs=true;new MutationObserver(function(){if(!applying)schedule()}).observe(body,{childList:true})}}
-  function boot(){render();observe()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();window.addEventListener('load',boot);[300,900,1800,3500,6000].forEach(function(t){setTimeout(boot,t)})
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-fg-stable-detail]');if(b){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(b.getAttribute('data-fg-stable-detail'));return false}if(e.target&&e.target.id==='fgStableDetailClose'){close();return}if(e.target&&e.target.id==='fgStableDetailModal'){close();return}var nav=e.target&&e.target.closest&&e.target.closest('[data-page="fg-inventory"],[data-page-target="fg-inventory"]');if(nav)setTimeout(render,180)},true);
+  ['input','change'].forEach(function(ev){document.addEventListener(ev,function(e){if(active()&&e.target&&/^fgInv/.test(e.target.id||''))schedule()},true)});
+  function shipmentSafeBoot(){try{var p=byId('page-shipment');if(p&&p.classList.contains('active')&&typeof window.renderShipmentTableFinal==='function')window.renderShipmentTableFinal()}catch(e){}}
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-page="shipment"],[data-page-target="shipment"]'))setTimeout(shipmentSafeBoot,160)},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(render,250);setTimeout(shipmentSafeBoot,350)});else{setTimeout(render,250);setTimeout(shipmentSafeBoot,350)}
+  window.addEventListener('load',function(){setTimeout(render,300)});
 })();
 </script>
-<!-- NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE_20260626_END -->
+<!-- NMC_FG_INVENTORY_STABLE_ISOLATED_20260626_END -->
 
 </body>
 </html>
