@@ -3435,11 +3435,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
                 <div class="field"><label>제품명</label><input id="shipmentProduct" placeholder="제품명"></div>
                 <div class="field"><label>완제품 LOT</label><input id="shipmentLot" placeholder="완제품 LOT 번호"></div>
                 <div class="field"><label>출하수량(EA)</label><input type="number" id="shipmentOutQty" placeholder="0"></div>
-                <div class="field"><label>단위중량(kg/EA)</label><input type="number" id="shipmentUnitWeightKg" placeholder="예: 25" step="0.001"></div>
                 <div class="field"><label>총 출하량(kg)</label><input type="number" id="shipmentTotalWeightKg" placeholder="0" step="0.001"></div>
                 <div class="field"><label>검사수량</label><input type="number" id="shipmentQty" placeholder="0"></div>
                 <div class="field"><label>불량수량</label><input type="number" id="shipmentFailQty" placeholder="0"></div>
-                <div class="field"><label>비고</label><input id="shipmentRemark" placeholder="비고"></div>
               </div>
               <div class="sp mt14">
                 <div class="sph"><h3>작성 / 검토 / 승인</h3><span class="tag" style="font-size:10px;">회원 DB 연동</span></div>
@@ -3477,7 +3475,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
         </div>
         <div class="card mt14"><div class="ch"><h3>출하검사 목록</h3></div>
           <div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);">
-            <table><thead><tr><th>일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>출하수량(EA)</th><th>총 출하량(kg)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr></thead><tbody id="shipmentTable"></tbody></table>
+            <table><thead><tr><th>일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>출하수량(EA)</th><th>총 출하량(kg)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="shipmentTable"></tbody></table>
           </div>
         </div>
       </section>
@@ -4938,7 +4936,7 @@ function lotInfoHtml(lot){
 }
 function syncOqcPreview(){
   const items=state.shipmentItemDrafts;const date=$('shipmentDate').value||todayKST();const doc=`OQC-${date.replaceAll('-','')}-0001`;
-  $('shipmentMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>완제품 LOT</th><td>${esc($('shipmentLot').value||'-')}</td><th>고객사</th><td>${esc($('shipmentCustomer').value||'-')}</td></tr><tr><th>제품명</th><td>${esc($('shipmentProduct').value||'-')}</td><th>출하수량(EA)</th><td>${esc($('shipmentOutQty').value||'0')}</td></tr><tr><th>단위중량(kg/EA)</th><td>${esc($('shipmentUnitWeightKg')?.value||'0')}</td><th>총 출하량(kg)</th><td>${esc($('shipmentTotalWeightKg')?.value||'0')}</td></tr><tr><th>검사수량</th><td>${esc($('shipmentQty').value||'0')}</td><th>불량수량</th><td>${esc($('shipmentFailQty').value||'0')}</td></tr><tr><th>비고</th><td colspan="3">${esc($('shipmentRemark').value||'-')}</td></tr>`;
+  $('shipmentMetaTable').innerHTML=`<tr><th>문서번호</th><td>${doc}</td><th>일자</th><td>${date}</td></tr><tr><th>완제품 LOT</th><td>${esc($('shipmentLot').value||'-')}</td><th>고객사</th><td>${esc($('shipmentCustomer').value||'-')}</td></tr><tr><th>제품명</th><td>${esc($('shipmentProduct').value||'-')}</td><th>출하수량(EA)</th><td>${esc($('shipmentOutQty').value||'0')}</td></tr><tr><th>총 출하량(kg)</th><td>${esc($('shipmentTotalWeightKg')?.value||'0')}</td><th>검사수량</th><td>${esc($('shipmentQty').value||'0')}</td></tr><tr><th>불량수량</th><td colspan="3">${esc($('shipmentFailQty').value||'0')}</td></tr>`;
   renderPrevRows('shipmentPreviewBody',items);$('shipmentFinalJudgeText').textContent=calcJ(items);
   const oqcLot=$('shipmentLot').value||'LOT';
   if($('oqcLotInfoBox'))$('oqcLotInfoBox').innerHTML=lotInfoHtml(oqcLot);
@@ -4999,7 +4997,7 @@ function loadStandaloneReport(){
     `<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>협력업체</th><td>${esc(row.supplier||'-')}</td></tr><tr><th>품목</th><td>${esc(row.item||'-')}</td><th>입고수량</th><td>${row.incomingQty??'-'}</td></tr><tr><th>총 입고 중량(kg)</th><td>${row.totalWeight??'-'}</td><th>검사수량</th><td>${row.checkQty??'-'}</td></tr>`:
     type==='pqc'?
     `<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>LOT</th><td>${esc(row.lot||'-')}</td><th>설비명</th><td>${esc(row.line||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr>`:
-    `<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>완제품 LOT</th><td>${esc(row.lot||'-')}</td><th>고객사</th><td>${esc(row.customer||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>출하수량(EA)</th><td>${row.outQty??row.shipmentQty??'-'}</td></tr><tr><th>단위중량(kg/EA)</th><td>${row.unitWeightKg??row.unit_weight_kg??'-'}</td><th>총 출하량(kg)</th><td>${row.totalWeightKg??row.total_weight_kg??'-'}</td></tr><tr><th>검사수량</th><td>${row.qty??'-'}</td><th>불량수량</th><td>${row.failQty??'-'}</td></tr>`;
+    `<tr><th>문서번호</th><td>${docNo}</td><th>일자</th><td>${row.date||'-'}</td></tr><tr><th>완제품 LOT</th><td>${esc(row.lot||'-')}</td><th>고객사</th><td>${esc(row.customer||'-')}</td></tr><tr><th>제품명</th><td>${esc(row.product||'-')}</td><th>출하수량(EA)</th><td>${row.outQty??row.shipmentQty??'-'}</td></tr><tr><th>총 출하량(kg)</th><td>${row.totalWeightKg??row.total_weight_kg??'-'}</td><th>검사수량</th><td>${row.qty??'-'}</td></tr><tr><th>불량수량</th><td colspan="3">${row.failQty??'-'}</td></tr>`;
   $('reportMetaTable').innerHTML=meta;
   const items=Array.isArray(row.items)?row.items:[];
   $('reportBodyTable').innerHTML=items.length?items.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.item||'')}</td><td>${esc(x.spec||'')}</td><td>${esc(x.value||'-')}</td><td>${jBadge(x.judge||'합격')}</td></tr>`).join(''):'<tr><td colspan="5">항목 없음</td></tr>';
@@ -5857,7 +5855,7 @@ async function savePqc(){
 }
 async function saveOqc(){
   const sp=getSignPayload('oqc');
-  const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),lot:$('shipmentLot').value.trim(),visual:sp.writer.name,outQty:$('shipmentOutQty').value,shipmentQty:$('shipmentOutQty').value,out_qty:$('shipmentOutQty').value,unitWeightKg:$('shipmentUnitWeightKg')?.value||'',unit_weight_kg:$('shipmentUnitWeightKg')?.value||'',totalWeightKg:$('shipmentTotalWeightKg')?.value||'',total_weight_kg:$('shipmentTotalWeightKg')?.value||'',qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,package:$('shipmentRemark').value.trim(),items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
+  const p={date:$('shipmentDate').value,customer:$('shipmentCustomer').value.trim(),product:$('shipmentProduct').value.trim(),lot:$('shipmentLot').value.trim(),visual:sp.writer.name,outQty:$('shipmentOutQty').value,shipmentQty:$('shipmentOutQty').value,out_qty:$('shipmentOutQty').value,totalWeightKg:$('shipmentTotalWeightKg')?.value||'',total_weight_kg:$('shipmentTotalWeightKg')?.value||'',qty:$('shipmentQty').value,failQty:$('shipmentFailQty').value,items:JSON.parse(JSON.stringify(state.shipmentItemDrafts)),signWriter:sp.writer,signReviewer:sp.reviewer,signApprover:sp.approver};
   const id=$('shipmentEditId').value;
   const{data}=await api(id?`/api/oqc/${id}`:'/api/oqc',{method:id?'PUT':'POST',body:JSON.stringify(p)});
   alert(data?.message||'저장되었습니다.');if(data?.success){clearOqc();await loadShipment();renderSummary();}
@@ -5892,7 +5890,7 @@ async function saveUser(){
 /* ═══ CLEAR ═══ */
 function clearIqc(){['incomingEditId','incomingLot','incomingSupplier','incomingItem','incomingQty','incomingTotalWeight','incomingCheckQty','incomingFailQty'].forEach(id=>$(id).value='');$('incomingDate').value=todayKST();clearSign('iqc');state.incomingItemDrafts=defIqc();renderIqcItems();}
 function clearPqc(){['processEditId','processLot','processLine','processShift','processProduct','processQty','processFailQty'].forEach(id=>$(id).value='');$('processDate').value=todayKST();clearSign('pqc');state.processItemDrafts=defPqc();renderPqcItems();}
-function clearOqc(){['shipmentEditId','shipmentCustomer','shipmentProduct','shipmentLot','shipmentOutQty','shipmentUnitWeightKg','shipmentTotalWeightKg','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>{if($(id))$(id).value='';});$('shipmentDate').value=todayKST();clearSign('oqc');state.shipmentItemDrafts=defOqc();renderOqcItems();}
+function clearOqc(){['shipmentEditId','shipmentCustomer','shipmentProduct','shipmentLot','shipmentOutQty','shipmentTotalWeightKg','shipmentQty','shipmentFailQty'].forEach(id=>{if($(id))$(id).value='';});$('shipmentDate').value=todayKST();clearSign('oqc');state.shipmentItemDrafts=defOqc();renderOqcItems();}
 function clearNc(){['ncEditId','ncNo','ncDept','ncLot','ncItem','ncQty','ncIssue','ncCause','ncAction','ncActionDate','ncVerify','ncVerifyDate','ncOwner'].forEach(id=>$(id).value='');$('ncDate').value=todayKST();$('ncType').value='';$('ncStatus').value='미결';clearSign('nc');}
 function clearSupplier(){['supplierEditId','supplierName','supplierManager','supplierPhone','supplierCategory','supplierStatus'].forEach(id=>$(id).value='');}
 function clearWorklog(){['worklogEditId','worklogFinishedLot','worklogWorker','worklogPlanQty','worklogProdQty','worklogFailQty','worklogRemark','worklogFlowSet','worklogFlowActual','worklogTempSet','worklogTempActual','worklogPressSet','worklogPressActual'].forEach(id=>$(id).value='');$('worklogDate').value=todayKST();state.worklogMaterialDrafts=[];renderWorklogMats();}
@@ -5901,7 +5899,7 @@ function clearUser(){['userEditId','userName','userEmail','userDepartment','user
 /* ═══ EDIT ═══ */
 function editIncoming(id){const r=state.incoming.find(x=>String(x.id)===String(id));if(!r)return;$('incomingEditId').value=r.id;$('incomingDate').value=r.date||'';$('incomingLot').value=r.lot||'';$('incomingSupplier').value=r.supplier||'';$('incomingItem').value=r.item||'';$('incomingQty').value=r.incomingQty||'';if($('incomingTotalWeight'))$('incomingTotalWeight').value=r.totalWeight||r.totalInWeight||r.total_in_weight||'';$('incomingCheckQty').value=r.checkQty||'';$('incomingFailQty').value=r.failQty||'';state.incomingItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defIqc();renderIqcItems();restoreSign('iqc',r);}
 function editProcess(id){const r=state.process.find(x=>String(x.id)===String(id));if(!r)return;$('processEditId').value=r.id;$('processDate').value=r.date||'';$('processLot').value=r.lot||'';$('processLine').value=r.line||'';$('processShift').value=r.shift||'';$('processProduct').value=r.product||'';$('processQty').value=r.qty||'';$('processFailQty').value=r.failQty||'';state.processItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defPqc();renderPqcItems();restoreSign('pqc',r);}
-function editShipment(id){const r=state.shipment.find(x=>String(x.id)===String(id));if(!r)return;$('shipmentEditId').value=r.id;$('shipmentDate').value=r.date||'';$('shipmentCustomer').value=r.customer||'';$('shipmentProduct').value=r.product||'';$('shipmentLot').value=r.lot||'';if($('shipmentOutQty'))$('shipmentOutQty').value=r.outQty||r.shipmentQty||r.out_qty||r.shipment_qty||'';if($('shipmentUnitWeightKg'))$('shipmentUnitWeightKg').value=r.unitWeightKg||r.unit_weight_kg||'';if($('shipmentTotalWeightKg'))$('shipmentTotalWeightKg').value=r.totalWeightKg||r.total_weight_kg||'';$('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';$('shipmentRemark').value=r.package||'';state.shipmentItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defOqc();renderOqcItems();restoreSign('oqc',r);}
+function editShipment(id){const r=state.shipment.find(x=>String(x.id)===String(id));if(!r)return;$('shipmentEditId').value=r.id;$('shipmentDate').value=r.date||'';$('shipmentCustomer').value=r.customer||'';$('shipmentProduct').value=r.product||'';$('shipmentLot').value=r.lot||'';if($('shipmentOutQty'))$('shipmentOutQty').value=r.outQty||r.shipmentQty||r.out_qty||r.shipment_qty||'';if($('shipmentTotalWeightKg'))$('shipmentTotalWeightKg').value=r.totalWeightKg||r.total_weight_kg||'';$('shipmentQty').value=r.qty||'';$('shipmentFailQty').value=r.failQty||'';state.shipmentItemDrafts=r.items?.length?JSON.parse(JSON.stringify(r.items)):defOqc();renderOqcItems();restoreSign('oqc',r);}
 function editNc(id){
   const r=state.nonconform.find(x=>String(x.id)===String(id));if(!r)return;
   $('ncEditId').value=r.id;$('ncDate').value=r.ncDate||'';$('ncNo').value=r.ncNo||'';$('ncType').value=r.ncType||'';$('ncDept').value=r.dept||'';$('ncLot').value=r.lot||'';$('ncItem').value=r.item||'';$('ncQty').value=r.qty||0;$('ncIssue').value=r.issue||'';$('ncCause').value=r.cause||'';$('ncAction').value=r.action||'';$('ncActionDate').value=r.actionDate||'';$('ncVerify').value=r.verify||'';$('ncVerifyDate').value=r.verifyDate||'';$('ncOwner').value=r.owner||'';$('ncStatus').value=r.status||'미결';
@@ -6405,7 +6403,7 @@ function bindEvents(){
   // OQC
   clickSafe2('shipmentSave',withSaving('oqc',$('shipmentSave'),saveOqc));clickSafe2('shipmentReset',clearOqc);
   clickSafe2('addShipmentRow',()=>{state.shipmentItemDrafts.push({item:'',spec:'',value:'',judge:'합격'});renderOqcItems();});
-  ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentQty','shipmentFailQty','shipmentRemark'].forEach(id=>onSafe2(id,'input',syncOqcPreview));
+  ['shipmentDate','shipmentCustomer','shipmentProduct','shipmentLot','shipmentOutQty','shipmentTotalWeightKg','shipmentQty','shipmentFailQty'].forEach(id=>onSafe2(id,'input',syncOqcPreview));
   clickSafe2('printShipmentReport',()=>printEl($('shipmentReportPreview')));
   // NC
   clickSafe2('ncSave',withSaving('nc',$('ncSave'),saveNc));clickSafe2('ncReset',clearNc);clickSafe2('printNcReport',()=>printEl($('ncFormPrintTarget')));
@@ -11182,7 +11180,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function ensureShipmentDom(){
     var page=$('page-shipment'); if(!page||$('shipmentTable'))return;
     var card=document.createElement('div'); card.className='card mt14';
-    card.innerHTML='<div class="ch"><h3>출하검사 목록</h3></div><div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>일자</th><th>고객사</th><th>제품명</th><th>LOT</th><th>출하수량(EA)</th><th>총 출하량(kg)</th><th>검사수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>비고</th></tr></thead><tbody id="shipmentTable"></tbody></table></div>';
+    card.innerHTML='<div class="ch"><h3>출하검사 목록</h3></div><div class="tw" style="border:none;border-top:1px solid var(--bd);border-radius:0 0 var(--r4) var(--r4);"><table><thead><tr><th>일자</th><th>고객사</th><th>제품명</th><th>LOT</th><th>출하수량(EA)</th><th>총 출하량(kg)</th><th>검사수량</th><th>불량수량</th><th>최종판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr></thead><tbody id="shipmentTable"></tbody></table></div>';
     page.appendChild(card);
   }
   window.renderIncomingTable=function(){
@@ -14010,64 +14008,43 @@ document.addEventListener('click',function(e){
 
 
 
-<!-- NMC_OQC_SHIPMENT_EA_KG_PATCH_20260626_START -->
-<script id="nmc-oqc-shipment-ea-kg-patch-20260626">
+<!-- NMC_OQC_SHIPMENT_EA_KG_SIMPLE_PATCH_20260626_START -->
+<script id="nmc-oqc-shipment-ea-kg-simple-patch-20260626">
 (function(){
   'use strict';
-  if(window.__NMC_OQC_SHIPMENT_EA_KG_PATCH__) return;
-  window.__NMC_OQC_SHIPMENT_EA_KG_PATCH__=true;
+  if(window.__NMC_OQC_SHIPMENT_EA_KG_SIMPLE_PATCH__) return;
+  window.__NMC_OQC_SHIPMENT_EA_KG_SIMPLE_PATCH__=true;
   function $(id){return document.getElementById(id)}
-  function num(v){var n=parseFloat(String(v||'').replace(/,/g,''));return isFinite(n)?n:0}
-  function fmt(n){if(!isFinite(n))return ''; return String(Math.round(n*1000)/1000).replace(/\.0+$/,'')}
-  function syncTotal(force){
-    var ea=$('shipmentOutQty'), unit=$('shipmentUnitWeightKg'), total=$('shipmentTotalWeightKg');
-    if(!ea||!unit||!total) return;
-    if(force || !String(total.value||'').trim()){
-      var v=num(ea.value)*num(unit.value);
-      if(v>0) total.value=fmt(v);
-    }
-    try{ if(typeof window.syncOqcPreview==='function') window.syncOqcPreview(); }catch(e){}
-  }
-  function ensureOqcKgFields(){
-    var ea=$('shipmentOutQty'); if(!ea) return;
-    var field=ea.closest('.field'); if(!field) return;
-    var lab=field.querySelector('label'); if(lab) lab.textContent='출하수량(EA)';
-    if(!$('shipmentUnitWeightKg')){
-      field.insertAdjacentHTML('afterend','<div class="field"><label>단위중량(kg/EA)</label><input type="number" id="shipmentUnitWeightKg" placeholder="예: 25" step="0.001"></div><div class="field"><label>총 출하량(kg)</label><input type="number" id="shipmentTotalWeightKg" placeholder="0" step="0.001"></div>');
-    }
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function removeUnusedFields(){
+    ['shipmentUnitWeightKg','shipmentRemark'].forEach(function(id){
+      var el=$(id); if(el){var f=el.closest&&el.closest('.field'); if(f) f.remove(); else el.remove();}
+    });
+    var ea=$('shipmentOutQty'); if(ea){var f=ea.closest&&ea.closest('.field'); var l=f&&f.querySelector('label'); if(l) l.textContent='출하수량(EA)';}
+    var tw=$('shipmentTotalWeightKg'); if(tw){var f2=tw.closest&&tw.closest('.field'); var l2=f2&&f2.querySelector('label'); if(l2) l2.textContent='총 출하량(kg)';}
+    document.querySelectorAll('#page-shipment table thead tr').forEach(function(tr){
+      var ths=tr.querySelectorAll('th'); if(ths.length && /비고/.test(ths[ths.length-1].textContent)) ths[ths.length-1].textContent='작업';
+    });
   }
   var oldSync=window.syncOqcPreview;
   window.syncOqcPreview=function(){
     if(typeof oldSync==='function') oldSync.apply(this,arguments);
     var tb=$('shipmentMetaTable'); if(!tb) return;
-    var rows=tb.querySelectorAll('tr');
-    if(rows.length>=3){
-      var date=$('shipmentDate')&&$('shipmentDate').value||'';
-      var doc='OQC-'+String(date||'').replaceAll('-','')+'-0001';
-      tb.innerHTML='<tr><th>문서번호</th><td>'+doc+'</td><th>일자</th><td>'+(date||'-')+'</td></tr>'+
-      '<tr><th>완제품 LOT</th><td>'+((($('shipmentLot')||{}).value)||'-')+'</td><th>고객사</th><td>'+((($('shipmentCustomer')||{}).value)||'-')+'</td></tr>'+
-      '<tr><th>제품명</th><td>'+((($('shipmentProduct')||{}).value)||'-')+'</td><th>출하수량(EA)</th><td>'+((($('shipmentOutQty')||{}).value)||'0')+'</td></tr>'+
-      '<tr><th>단위중량(kg/EA)</th><td>'+((($('shipmentUnitWeightKg')||{}).value)||'0')+'</td><th>총 출하량(kg)</th><td>'+((($('shipmentTotalWeightKg')||{}).value)||'0')+'</td></tr>'+
-      '<tr><th>검사수량</th><td>'+((($('shipmentQty')||{}).value)||'0')+'</td><th>불량수량</th><td>'+((($('shipmentFailQty')||{}).value)||'0')+'</td></tr>'+
-      '<tr><th>비고</th><td colspan="3">'+((($('shipmentRemark')||{}).value)||'-')+'</td></tr>';
-    }
+    var date=($('shipmentDate')&&$('shipmentDate').value)||new Date().toISOString().slice(0,10);
+    var doc='OQC-'+String(date||'').replace(/-/g,'')+'-0001';
+    tb.innerHTML='<tr><th>문서번호</th><td>'+esc(doc)+'</td><th>일자</th><td>'+esc(date||'-')+'</td></tr>'+
+      '<tr><th>완제품 LOT</th><td>'+esc((($('shipmentLot')||{}).value)||'-')+'</td><th>고객사</th><td>'+esc((($('shipmentCustomer')||{}).value)||'-')+'</td></tr>'+
+      '<tr><th>제품명</th><td>'+esc((($('shipmentProduct')||{}).value)||'-')+'</td><th>출하수량(EA)</th><td>'+esc((($('shipmentOutQty')||{}).value)||'0')+'</td></tr>'+
+      '<tr><th>총 출하량(kg)</th><td>'+esc((($('shipmentTotalWeightKg')||{}).value)||'0')+'</td><th>검사수량</th><td>'+esc((($('shipmentQty')||{}).value)||'0')+'</td></tr>'+
+      '<tr><th>불량수량</th><td colspan="3">'+esc((($('shipmentFailQty')||{}).value)||'0')+'</td></tr>';
   };
-  document.addEventListener('input',function(e){
-    if(!e.target) return;
-    if(e.target.id==='shipmentOutQty'||e.target.id==='shipmentUnitWeightKg') syncTotal(true);
-    if(e.target.id==='shipmentTotalWeightKg') try{window.syncOqcPreview()}catch(err){}
-  },true);
-  document.addEventListener('change',function(e){
-    if(!e.target) return;
-    if(e.target.id==='shipmentOutQty'||e.target.id==='shipmentUnitWeightKg') syncTotal(true);
-    if(e.target.id==='shipmentTotalWeightKg') try{window.syncOqcPreview()}catch(err){}
-  },true);
-  function boot(){ensureOqcKgFields();syncTotal(false);try{window.syncOqcPreview()}catch(e){}}
+  function boot(){removeUnusedFields(); try{window.syncOqcPreview&&window.syncOqcPreview()}catch(e){}}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-  [200,700,1500].forEach(function(t){setTimeout(boot,t)});
+  [200,700,1500,3000].forEach(function(t){setTimeout(boot,t)});
+  document.addEventListener('input',function(e){if(e.target&&/^shipment/.test(e.target.id||'')){setTimeout(function(){try{window.syncOqcPreview&&window.syncOqcPreview()}catch(err){}},0)}},true);
 })();
 </script>
-<!-- NMC_OQC_SHIPMENT_EA_KG_PATCH_20260626_END -->
+<!-- NMC_OQC_SHIPMENT_EA_KG_SIMPLE_PATCH_20260626_END -->
 
 </body>
 </html>
