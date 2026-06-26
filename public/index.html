@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=1440, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
 <title>Namochemical QMS</title>
 <!-- Cleaned DMS compact version: 원본 보존 / 기준서 화면 축소 정리본 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2825,6 +2825,105 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 .oqc-lot-sec #bcOqcDoc,
 #reportOqcBcRow #bcRptDoc{display:none!important;}
 
+
+
+/* ════════════════════════════════════════════════════════════════
+   MOBILE = PC SCREEN FINAL PATCH 2026-06-26
+   - 모바일 로그인 후 화면을 PC 화면과 동일하게 유지
+   - 모바일 전용 메뉴 숨김/1열 카드 변환/사이드바 제거 방지
+   - 작은 화면에서는 PC 폭을 유지하고 가로 스크롤/확대축소 사용
+   - 기존 기능/데이터 로직은 건드리지 않음
+════════════════════════════════════════════════════════════════ */
+@media screen and (max-width: 1024px){
+  :root{--sw:248px!important;--th:64px!important;}
+
+  html,
+  body{
+    width:100%!important;
+    min-width:1440px!important;
+    height:100%!important;
+    overflow:auto!important;
+  }
+
+  body.login-active{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+
+  /* 로그인 화면은 기존 모바일 최적화 유지 */
+  body.login-active #loginPage{
+    min-width:0!important;
+  }
+
+  /* 로그인 후 QMES 본화면은 PC 화면 폭으로 고정 */
+  body:not(.login-active) .app,
+  body:not(.login-active) .shell,
+  body:not(.login-active) .topbar,
+  body:not(.login-active) .layout{
+    min-width:1440px!important;
+  }
+
+  body:not(.login-active) .shell{
+    overflow:auto!important;
+  }
+
+  body:not(.login-active) .layout{
+    display:flex!important;
+    overflow:auto!important;
+  }
+
+  body:not(.login-active) .sidebar{
+    display:block!important;
+    width:248px!important;
+    min-width:248px!important;
+    flex:0 0 248px!important;
+  }
+
+  body:not(.login-active) .content{
+    min-width:1192px!important;
+    width:calc(1440px - 248px)!important;
+    padding:24px!important;
+    overflow-y:auto!important;
+  }
+
+  body:not(.login-active) .tlogo{
+    width:248px!important;
+    min-width:248px!important;
+    flex:0 0 248px!important;
+  }
+
+  /* PC 그리드 유지 */
+  body:not(.login-active) .sgrid{grid-template-columns:repeat(5,1fr)!important;}
+  body:not(.login-active) .fg5{grid-template-columns:repeat(5,1fr)!important;}
+  body:not(.login-active) .fg4{grid-template-columns:repeat(4,1fr)!important;}
+  body:not(.login-active) .fg3{grid-template-columns:repeat(3,1fr)!important;}
+  body:not(.login-active) .sign-grid,
+  body:not(.login-active) .rprint-sign{grid-template-columns:repeat(3,1fr)!important;}
+  body:not(.login-active) .lgrid{grid-template-columns:repeat(2,1fr)!important;}
+  body:not(.login-active) .wgrid{grid-template-columns:1.6fr 1fr!important;}
+  body:not(.login-active) .dlower{grid-template-columns:1.4fr .9fr!important;}
+
+  /* 주요 대시보드/생산/재고 화면도 PC 배열 유지 */
+  body:not(.login-active) .qmes-hero-grid.donut{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+  body:not(.login-active) #qmesCockpit .qmes-module-grid{grid-template-columns:repeat(8,minmax(0,1fr))!important;}
+  body:not(.login-active) .qmes-main-grid{grid-template-columns:minmax(0,2.75fr) minmax(320px,.9fr)!important;}
+  body:not(.login-active) .mes-prod-kpi-grid{grid-template-columns:repeat(5,1fr)!important;}
+  body:not(.login-active) .mes-menu-grid{grid-template-columns:repeat(3,1fr)!important;}
+  body:not(.login-active) .srm-kpi-grid{grid-template-columns:repeat(5,1fr)!important;}
+  body:not(.login-active) .srm-menu-grid{grid-template-columns:repeat(3,1fr)!important;}
+  body:not(.login-active) .srm-grade-grid{grid-template-columns:repeat(5,1fr)!important;}
+  body:not(.login-active) .inv-kpi-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+  body:not(.login-active) .inv-form-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;}
+
+  /* 테이블은 PC 기준 최소 폭 유지 */
+  body:not(.login-active) table{table-layout:auto!important;}
+  body:not(.login-active) .tw,
+  body:not(.login-active) .inv-table-wrap,
+  body:not(.login-active) .mes-recent-table-wrap,
+  body:not(.login-active) .srm-table-wrap{
+    overflow:auto!important;
+  }
+}
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
