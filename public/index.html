@@ -14454,7 +14454,7 @@ document.addEventListener('click',function(e){
   }
   function safeId(v){return String(v||'').replace(/[^A-Za-z0-9_-]/g,'')}
   function renderBarcode(id,lot){try{var el=$(id);if(!el||!window.JsBarcode)return;el.innerHTML='';var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');el.appendChild(svg);JsBarcode(svg,String(lot||'LOT'),{format:'CODE128',height:30,width:1.35,displayValue:false,margin:0});}catch(e){}}
-  function lotCell(g){var id='fgWoMatchBc-'+safeId(g.lot);return '<div class="fg-lot-box"><div class="fg-lot-main"><button type="button" class="fg-lot-code" data-fg-wo-detail="'+esc(g.id)+'">'+esc(g.lot)+'</button><div class="fg-lot-hint">바코드 클릭 상세</div></div><button type="button" class="fg-bc-btn" data-fg-wo-detail="'+esc(g.id)+'" title="작업지시 상세보기"><span id="'+esc(id)+'"></span></button></div>'}
+  function lotCell(g){var id='fgWoMatchBc-'+safeId(g.lot);return '<div class="fg-lot-box"><div class="fg-lot-main"><span class="fg-lot-code">'+esc(g.lot)+'</span><div class="fg-lot-hint">바코드 클릭 상세</div></div><button type="button" class="fg-bc-btn" data-fg-wo-detail="'+esc(g.id)+'" title="바코드 상세보기" aria-label="바코드 상세보기"><span id="'+esc(id)+'"></span></button></div>'}
   function setHeader(){var body=$('fgInvBody'), table=body&&body.closest('table');if(!table)return;var tr=q('thead tr',table);if(tr)tr.innerHTML='<th>제품명</th><th>LOT / 바코드</th><th>고객사</th><th>생산량</th><th>출하량</th><th>현재재고</th><th>상태</th><th>비고</th>';var h=q('#page-fg-inventory .inv-panel-h h3');if(h)h.textContent='완제품 LOT별 재고현황';var search=$('fgInvKeyword');if(search)search.placeholder='제품명 / LOT / 바코드 / 고객사 검색';var sel=$('fgInvStatus');if(sel&&!sel.__fgWoMatchOptions){sel.__fgWoMatchOptions=true;sel.innerHTML='<option value="">전체</option><option value="shipped">출하완료</option><option value="stock">재고보유</option><option value="minus">이상</option>'}}
   function filtered(rows){var kw=txt($('fgInvKeyword')&&$('fgInvKeyword').value).toLowerCase();var st=txt($('fgInvStatus')&&$('fgInvStatus').value);return rows.filter(function(g){var hit=!kw||[g.product,g.lot,g.customer,g.no].join(' ').toLowerCase().indexOf(kw)>-1;if(!hit)return false;if(st==='shipped')return true;if(st==='stock')return false;if(st==='minus')return false;return true})}
   function kpis(rows){var total=rows.length, shipped=rows.length, stock=0, today=(new Date()).toISOString().slice(0,10), todayShip=rows.reduce(function(s,g){return s+(g.start===today?g.ship:0)},0);return '<div class="inv-kpi"><div class="l">전체 LOT</div><div class="v">'+total+'</div><div class="s">작업지시 생산 LOT 기준</div></div><div class="inv-kpi"><div class="l">출하완료</div><div class="v">'+shipped+'</div><div class="s">출하량 = 작업지시 실적수량</div></div><div class="inv-kpi"><div class="l">현재재고</div><div class="v">'+fmt(stock)+'</div><div class="s">kg</div></div><div class="inv-kpi"><div class="l">금일 출하</div><div class="v">'+fmt(todayShip)+'</div><div class="s">kg</div></div>'}
@@ -14480,13 +14480,11 @@ document.addEventListener('click',function(e){
 
 <!-- NMC_FG_BARCODE_CLICK_FORCE_FIX_20260626_START -->
 <style id="nmc-fg-barcode-click-force-css">
-#page-fg-inventory #fgInvBody .fg-lot-box,
-#page-fg-inventory #fgInvBody .fg-lot-code,
 #page-fg-inventory #fgInvBody .fg-bc-btn{cursor:pointer!important;pointer-events:auto!important;position:relative!important;z-index:10!important;}
+#page-fg-inventory #fgInvBody .fg-lot-box,
+#page-fg-inventory #fgInvBody .fg-lot-code{cursor:default!important;pointer-events:auto!important;}
 #page-fg-inventory #fgInvBody .fg-bc-btn svg,
-#page-fg-inventory #fgInvBody .fg-bc-btn span,
-#page-fg-inventory #fgInvBody .fg-lot-code *{pointer-events:none!important;}
-#page-fg-inventory #fgInvBody .fg-lot-box:hover .fg-lot-code,
+#page-fg-inventory #fgInvBody .fg-bc-btn span{pointer-events:none!important;}
 #page-fg-inventory #fgInvBody .fg-bc-btn:hover{outline:2px solid rgba(37,99,235,.22)!important;outline-offset:2px!important;}
 </style>
 <script id="nmc-fg-barcode-click-force-js">
@@ -14505,7 +14503,7 @@ document.addEventListener('click',function(e){
   document.addEventListener('click',function(e){
     var t=e.target;
     if(!t || !t.closest) return;
-    var hit=t.closest('#fgInvBody [data-fg-wo-detail], #fgInvBody .fg-lot-box, #fgInvBody .fg-bc-btn, #fgInvBody .fg-lot-code');
+    var hit=t.closest('#fgInvBody .fg-bc-btn[data-fg-wo-detail]');
     if(!hit) return;
     var tr=hit.closest('tr');
     var id=hit.getAttribute('data-fg-wo-detail') || (tr && tr.getAttribute('data-fg-wo-row'));
@@ -14516,17 +14514,7 @@ document.addEventListener('click',function(e){
     openById(id);
     return false;
   },true);
-  document.addEventListener('dblclick',function(e){
-    var t=e.target;
-    if(!t || !t.closest) return;
-    var tr=t.closest('#fgInvBody tr[data-fg-wo-row]');
-    if(!tr) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    openById(tr.getAttribute('data-fg-wo-row'));
-    return false;
-  },true);
+  /* 바코드 전용 상세: 행/LOT 더블클릭 상세 열기 비활성화 */
 })();
 </script>
 <!-- NMC_FG_BARCODE_CLICK_FORCE_FIX_20260626_END -->
