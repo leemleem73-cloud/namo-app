@@ -5260,6 +5260,11 @@ async function loadShipment(){
     product:r.product,
     lot:r.lot,
     inspector:r.visual,
+    outQty:r.outQty ?? r.out_qty ?? r.shipmentQty ?? r.shipment_qty ?? r.out_qty_ea ?? r.shipment_out_qty ?? r.delivery_qty ?? '',
+    shipmentQty:r.shipmentQty ?? r.shipment_qty ?? r.outQty ?? r.out_qty ?? r.out_qty_ea ?? r.shipment_out_qty ?? r.delivery_qty ?? '',
+    out_qty:r.out_qty ?? r.outQty ?? r.shipment_qty ?? r.shipmentQty ?? r.out_qty_ea ?? r.shipment_out_qty ?? r.delivery_qty ?? '',
+    totalWeightKg:r.totalWeightKg ?? r.total_weight_kg ?? r.total_out_weight ?? r.shipment_weight_kg ?? r.out_weight_kg ?? r.weight_kg ?? '',
+    total_weight_kg:r.total_weight_kg ?? r.totalWeightKg ?? r.total_out_weight ?? r.shipment_weight_kg ?? r.out_weight_kg ?? r.weight_kg ?? '',
     qty:r.qty,
     failQty:r.fail,
     judge:r.judge,
@@ -11410,6 +11415,13 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
       '<td><div class="ai"><button class="sb edit" data-action="editProcess" data-id="'+htmlEsc(r.id)+'">수정</button><button class="sb del" data-action="deleteProcess" data-id="'+htmlEsc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelProcess" data-id="'+htmlEsc(r.id)+'">🏷라벨</button></div></td>'+
       '</tr>';}).join('');
   }
+  function firstVal(){
+    for(var i=0;i<arguments.length;i++){
+      var v=arguments[i];
+      if(v!==undefined && v!==null && String(v)!=='') return v;
+    }
+    return '';
+  }
   function renderShipmentTableFinal(){
     ensureFilter('page-shipment','shipmentTable','shipmentYearFilterFixed','shipmentYearCount');
     var tb=$('shipmentTable'); if(!tb) return;
@@ -11422,8 +11434,8 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
       '<td>'+htmlEsc(r.customer||'')+'</td>'+
       '<td>'+htmlEsc(r.product||'')+'</td>'+
       '<td><strong>'+htmlEsc(r.lot||'')+'</strong></td>'+
-      '<td>'+htmlEsc(r.outQty!=null?r.outQty:'')+'</td>'+
-      '<td>'+htmlEsc((r.totalWeightKg!=null?r.totalWeightKg:(r.total_weight_kg!=null?r.total_weight_kg:'')))+'</td>'+
+      '<td>'+htmlEsc(firstVal(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty))+'</td>'+
+      '<td>'+htmlEsc(firstVal(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg))+'</td>'+
       '<td>'+htmlEsc(r.qty!=null?r.qty:'')+'</td>'+
       '<td>'+htmlEsc(r.failQty!=null?r.failQty:'')+'</td>'+
       '<td>'+judge(r)+'</td>'+
@@ -14045,6 +14057,97 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NMC_OQC_SHIPMENT_EA_KG_SIMPLE_PATCH_20260626_END -->
+
+
+
+<!-- NAMO OQC EA/KG LIST DISPLAY FIX 20260626 START -->
+<script>
+(function(){
+  'use strict';
+  if(window.__namoOqcEaKgListFix20260626) return;
+  window.__namoOqcEaKgListFix20260626=true;
+  function $(id){return document.getElementById(id)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function first(){for(var i=0;i<arguments.length;i++){var v=arguments[i]; if(v!==undefined&&v!==null&&String(v)!=='') return v;} return '';}
+  function key(r){return String(first(r&&r.id,''));}
+  function cacheGet(){try{return JSON.parse(localStorage.getItem('namo_oqc_ea_kg_cache_20260626')||'{}')||{};}catch(e){return {};}}
+  function cacheSet(k,v){if(!k)return; var c=cacheGet(); c[String(k)]={outQty:first(v.outQty,v.shipmentQty,v.out_qty,v.shipment_qty),totalWeightKg:first(v.totalWeightKg,v.total_weight_kg,v.total_out_weight)}; localStorage.setItem('namo_oqc_ea_kg_cache_20260626',JSON.stringify(c));}
+  function mergeCachedRow(r){
+    if(!r) return r;
+    var c=cacheGet()[key(r)]||{};
+    if(first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty)==='' && first(c.outQty)!==''){
+      r.outQty=c.outQty; r.shipmentQty=c.outQty; r.out_qty=c.outQty;
+    }
+    if(first(r.totalWeightKg,r.total_weight_kg,r.total_out_weight)==='' && first(c.totalWeightKg)!==''){
+      r.totalWeightKg=c.totalWeightKg; r.total_weight_kg=c.totalWeightKg;
+    }
+    return r;
+  }
+  function stateObj(){try{return typeof state!=='undefined'?state:(window.state||{});}catch(e){return window.state||{};}}
+  function judge(r){try{if(typeof calcJ==='function' && typeof jBadge==='function') return jBadge(calcJ(r.items||[]));}catch(e){} return '<span class="badge pass">합격</span>';}
+  function person(r,t){
+    var o=t==='writer'?r.signWriter:(t==='reviewer'?r.signReviewer:r.signApprover);
+    if(o&&o.name) return o.name;
+    return '-';
+  }
+  function empty(cols){return '<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;padding:24px">데이터가 없습니다.</td></tr>';}
+  function filterList(arr){
+    var sel=$('shipmentYearFilterFixed');
+    var year=sel&&sel.value?sel.value:'all';
+    var list=(arr||[]).slice().map(mergeCachedRow).filter(function(r){return year==='all'||String(r.date||'').slice(0,4)===year;});
+    list.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
+    var tag=$('shipmentYearCount'); if(tag) tag.textContent=(year==='all'?'전체':year+'년')+' '+list.length+'건 / 최신순';
+    return list;
+  }
+  function render(){
+    var tb=$('shipmentTable'); if(!tb) return;
+    var st=stateObj(); var arr=Array.isArray(st.shipment)?st.shipment:[];
+    var list=filterList(arr);
+    if(!list.length){tb.innerHTML=empty(13);return;}
+    tb.innerHTML=list.map(function(r){
+      var out=first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty);
+      var kg=first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg);
+      return '<tr>'+ 
+        '<td>'+esc(r.date||'')+'</td>'+
+        '<td>'+esc(r.customer||'')+'</td>'+
+        '<td>'+esc(r.product||'')+'</td>'+
+        '<td><strong>'+esc(r.lot||'')+'</strong></td>'+
+        '<td>'+esc(out)+'</td>'+
+        '<td>'+esc(kg)+'</td>'+
+        '<td>'+esc(first(r.qty,r.checkQty,r.inspection_qty))+'</td>'+
+        '<td>'+esc(first(r.failQty,r.fail,r.fail_qty))+'</td>'+
+        '<td>'+judge(r)+'</td>'+
+        '<td>'+esc(person(r,'writer'))+'</td>'+
+        '<td>'+esc(person(r,'reviewer'))+'</td>'+
+        '<td>'+esc(person(r,'approver'))+'</td>'+
+        '<td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button></div></td>'+
+      '</tr>';
+    }).join('');
+  }
+  window.renderShipmentTable=render;
+  // 기존 수정 저장 시 API가 신규 필드를 즉시 반환하지 않아도 목록에 값이 남도록 로컬 병합 캐시 저장
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('#shipmentSave');
+    if(!btn) return;
+    var id=$('shipmentEditId')&&$('shipmentEditId').value;
+    if(id){cacheSet(id,{outQty:$('shipmentOutQty')&&$('shipmentOutQty').value,totalWeightKg:$('shipmentTotalWeightKg')&&$('shipmentTotalWeightKg').value});}
+    setTimeout(render,200); setTimeout(render,800); setTimeout(render,1600);
+  },true);
+  document.addEventListener('input',function(e){
+    if(e.target&&/^(shipmentOutQty|shipmentTotalWeightKg)$/.test(e.target.id||'')){
+      var id=$('shipmentEditId')&&$('shipmentEditId').value;
+      if(id) cacheSet(id,{outQty:$('shipmentOutQty')&&$('shipmentOutQty').value,totalWeightKg:$('shipmentTotalWeightKg')&&$('shipmentTotalWeightKg').value});
+    }
+  },true);
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='shipmentYearFilterFixed') setTimeout(render,0);},true);
+  document.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('[data-page="shipment"],[data-page-target="shipment"],#shipmentReset,#shipmentSave')) setTimeout(render,300);},true);
+  function boot(){try{var st=stateObj(); if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow); render();}catch(e){console.warn('[OQC EA/KG list fix]',e);}}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.addEventListener('load',boot);
+  [300,1000,2500,5000,8000].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+<!-- NAMO OQC EA/KG LIST DISPLAY FIX 20260626 END -->
 
 </body>
 </html>
