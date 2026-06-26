@@ -15837,5 +15837,148 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+
+
+<!-- NAMO RAW LOT BARCODE DETAIL SAME AS FG INVENTORY 20260626 -->
+<style id="namo-raw-lot-barcode-same-fg-20260626-style">
+  /* 원자재 LOT 바코드 상세를 완제품 재고관리 상세 팝업과 동일한 레이아웃으로 통일 */
+  #rawLotFgSameDetailModal.fg-detail-modal{z-index:4200!important;}
+  #rawLotFgSameDetailModal .fg-detail-card{width:min(1080px,calc(100vw - 32px))!important;}
+  #rawLotFgSameDetailModal .fg-detail-title{font-size:21px!important;font-weight:950!important;}
+  #rawLotFgSameDetailModal .fg-detail-kv .k{font-size:11px!important;font-weight:950!important;}
+  #rawLotFgSameDetailModal .fg-detail-kv .v{font-size:15px!important;font-weight:950!important;}
+  #rawLotFgSameDetailModal .fg-detail-pre{max-height:240px!important;}
+</style>
+<script id="namo-raw-lot-barcode-same-fg-20260626-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_RAW_LOT_BARCODE_SAME_FG_20260626__) return;
+  window.__NAMO_RAW_LOT_BARCODE_SAME_FG_20260626__ = true;
+
+  function $(id){return document.getElementById(id);}
+  function txt(v){return String(v==null?'':v).trim();}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function num(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(n)?n:0;}
+  function fmt(n){n=Math.round(num(n)*1000)/1000;if(Object.is(n,-0))n=0;return n.toLocaleString('ko-KR');}
+  function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+  function stateObj(){try{return typeof state!=='undefined'?state:(window.state||{});}catch(e){return window.state||{};}}
+  function pick(o,keys,def){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!==undefined&&v!==null&&txt(v)!=='')return v;}return def||'';}
+  function first(){for(var i=0;i<arguments.length;i++){var v=arguments[i];if(v!==undefined&&v!==null&&txt(v)!=='')return v;}return '';}
+  function dateOnly(v){var s=txt(v).replace(/[./]/g,'-');var m=s.match(/(20\d{2})[-]?(\d{1,2})[-]?(\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');return s.slice(0,10)||'';}
+
+  function incomingRows(){
+    var st=stateObj(), arr=[];
+    if(Array.isArray(st.incoming)) arr=arr.concat(st.incoming);
+    ['incomingList','nmcIncoming','nmc_iqc_list'].forEach(function(k){read(k).forEach(function(x){arr.push(x);});});
+    return arr;
+  }
+  function workRows(){
+    var st=stateObj(), out=[];
+    if(Array.isArray(st.worklog)) out=out.concat(st.worklog);
+    ['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'].forEach(function(k){read(k).forEach(function(x){out.push(x);});});
+    return out;
+  }
+  function iqcByLot(lot){
+    lot=txt(lot);
+    var found=null;
+    incomingRows().some(function(r,i){
+      var l=pick(r,['lot','incomingLot','materialLot','rawLot','lotNo','원료LOT'],'');
+      if(txt(l)===lot){
+        found={id:pick(r,['id','uid','docNo','iqcNo'],'IQC-'+(i+1)),date:dateOnly(pick(r,['date','incomingDate','createdAt','검사일자'],'')),item:pick(r,['item','material','materialName','product','품목','incomingItem'],'원자재'),supplier:pick(r,['supplier','supplierName','vendor','협력업체','incomingSupplier'],''),qty:num(pick(r,['totalWeight','totalWeightKg','total_in_weight','incomingTotalWeight','weight','qty','incomingQty'],'')),judge:pick(r,['judge','result','status','finalJudge'],'합격'),raw:r};
+        return true;
+      }
+      return false;
+    });
+    return found||{};
+  }
+  function workUsesByLot(lot){
+    lot=txt(lot); var rows=[];
+    workRows().forEach(function(w,wi){
+      var arr=[];
+      ['materials','materialRows','rawMaterials','inputMaterials','nmcMaterials','inputs','items','materialList'].some(function(k){if(Array.isArray(w&&w[k])){arr=w[k];return true;}return false;});
+      arr.forEach(function(mm){
+        var l=pick(mm,['lot','lotNo','materialLot','rawLot','raw_lot','rmLot','원료LOT','원자재LOT'],'');
+        if(txt(l)!==lot) return;
+        rows.push({
+          date:dateOnly(pick(w,['workDate','orderDate','startDate','date','createdAt','sentAt','nmcOrderDate'],'')),
+          wo:pick(w,['woNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid'],'WO-'+(wi+1)),
+          finishedLot:pick(w,['finishedLot','prodLot','productionLot','lot','lotNo','nmcProdLot'],''),
+          product:pick(w,['product','productName','item','itemName','품명'],''),
+          customer:pick(w,['customer','customerName','client','고객사'],''),
+          item:pick(mm,['material','name','materialName','rawName','rawMaterial','item','itemName','원료명'],''),
+          supplier:pick(mm,['supplier','supName','supplierName','vendor','업체명'],''),
+          qty:num(pick(mm,['actualQty','actualInputQty','inputQty','qty','useQty','usedQty','amount','planQty','plannedQty','투입량','실투입량'],'')),
+          ratio:pick(mm,['ratio','rate','percent','비율'],''),
+          remark:pick(mm,['remark','note','비고'],'작업지시서 투입량 기준'),
+          raw:{workorder:w,material:mm}
+        });
+      });
+    });
+    return rows;
+  }
+  function rowSummary(lot){
+    var btn=document.querySelector('.raw-hmc-barcode[data-raw-hmc-detail="'+CSS.escape(lot)+'"]');
+    var tr=btn&&btn.closest('tr');
+    if(!tr) return {};
+    var td=[].slice.call(tr.children).map(function(x){return txt(x.textContent).replace(/\s+/g,' ');});
+    return {item:td[0]||'',supplier:td[2]||'',inQty:td[3]||'',useQty:td[4]||'',stock:td[5]||'',status:td[6]||'',note:td[7]||''};
+  }
+  function table(rows,cols){
+    if(!rows || !rows.length) return '<div class="fg-detail-empty">데이터가 없습니다.</div>';
+    return '<table class="fg-detail-table"><thead><tr>'+cols.map(function(c){return '<th>'+esc(c[0])+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){var v=typeof c[1]==='function'?c[1](r):r[c[1]];return '<td>'+esc(v==null||v===''?'-':v)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';
+  }
+  function ensureModal(){
+    var m=$('rawLotFgSameDetailModal'); if(m) return m;
+    document.body.insertAdjacentHTML('beforeend','<div class="fg-detail-modal" id="rawLotFgSameDetailModal"><div class="fg-detail-card"><div class="fg-detail-head"><div><div class="fg-detail-title" id="rawFgSameTitle">LOT 상세</div><div class="fg-detail-sub" id="rawFgSameSub">작업지시 사용량·수입검사·원본자료 전체 내용</div></div><button type="button" class="fg-detail-close" id="rawFgSameClose">×</button></div><div class="fg-detail-body" id="rawFgSameBody"></div></div></div>');
+    return $('rawLotFgSameDetailModal');
+  }
+  function openRawAsFg(lot){
+    lot=txt(lot); if(!lot) return;
+    var iq=iqcByLot(lot), uses=workUsesByLot(lot), row=rowSummary(lot);
+    var item=first(row.item,iq.item,(uses[0]&&uses[0].item),'원자재');
+    var supplier=first(row.supplier,iq.supplier,(uses[0]&&uses[0].supplier),'-');
+    var inQtyText=row.inQty||((iq.qty?fmt(iq.qty)+' kg':'-'));
+    var useQty=uses.reduce(function(s,x){return s+num(x.qty);},0);
+    var useQtyText=row.useQty||(fmt(useQty)+' kg');
+    var stockText=row.stock||'-';
+    var evidence=[];
+    if(iq.id) evidence.push('수입검사: '+iq.id);
+    uses.forEach(function(u){if(u.wo && evidence.indexOf('작업지시서: '+u.wo)<0)evidence.push('작업지시서: '+u.wo);});
+    var rawText={iqc:iq.raw||iq,workUses:uses.map(function(x){return x.raw||x;})};
+    var m=ensureModal();
+    $('rawFgSameTitle').textContent=item+' · '+lot;
+    $('rawFgSameSub').textContent='완제품 재고관리 바코드 상세와 동일한 형식 · 원자재 LOT 사용 이력';
+    $('rawFgSameBody').innerHTML=
+      '<div class="fg-detail-grid">'+
+        '<div class="fg-detail-kv"><div class="k">입고일자</div><div class="v">'+esc(iq.date||'-')+'</div></div>'+
+        '<div class="fg-detail-kv"><div class="k">입고량</div><div class="v">'+esc(inQtyText)+'</div></div>'+
+        '<div class="fg-detail-kv"><div class="k">작업지시 사용량</div><div class="v">'+esc(useQtyText)+'</div></div>'+
+        '<div class="fg-detail-kv"><div class="k">현재재고</div><div class="v">'+esc(stockText)+'</div></div>'+
+      '</div>'+
+      '<div class="fg-detail-section"><h4>기본 정보</h4><div class="inner"><table class="fg-detail-table"><tbody>'+
+        '<tr><th>원료명</th><td>'+esc(item)+'</td><th>협력사</th><td>'+esc(supplier)+'</td></tr>'+
+        '<tr><th>원재료 LOT</th><td>'+esc(lot)+'</td><th>수입검사번호</th><td>'+esc(iq.id||'-')+'</td></tr>'+
+        '<tr><th>상태</th><td>'+esc(row.status||'-')+'</td><th>검사판정</th><td>'+esc(iq.judge||'-')+'</td></tr>'+
+        '<tr><th>근거자료</th><td colspan="3">'+esc(evidence.join(' / ')||'-')+'</td></tr>'+
+        '<tr><th>비고</th><td colspan="3">'+esc(row.note||'수입검사 입고량 및 작업지시서 투입량 기준')+'</td></tr>'+
+      '</tbody></table></div></div>'+
+      '<div class="fg-detail-section"><h4>수입검사 입고 근거자료</h4><div class="inner">'+table(iq.id?[iq]:[],[['입고일자','date'],['입고량',function(r){return fmt(r.qty)+' kg';}],['협력사','supplier'],['판정','judge'],['문서번호','id']])+'</div></div>'+
+      '<div class="fg-detail-section"><h4>작업지시서 사용 근거자료</h4><div class="inner">'+table(uses,[['투입일','date'],['작업지시번호','wo'],['생산 LOT','finishedLot'],['제품명','product'],['투입량',function(r){return fmt(r.qty)+' kg';}],['비율','ratio'],['비고','remark']])+'</div></div>'+
+      '<div class="fg-detail-section"><h4>재고 이력 전체 내용</h4><div class="inner">'+table(uses,[['일자','date'],['구분',function(){return '생산투입';}],['수량',function(r){return fmt(r.qty)+' kg';}],['근거자료','wo'],['비고','remark']])+'</div></div>'+
+      '<div class="fg-detail-section"><h4>원본 전체 내용(JSON)</h4><div class="inner"><div class="fg-detail-pre">'+esc(JSON.stringify(rawText,null,2))+'</div></div></div>';
+    m.classList.add('show');
+  }
+  function close(){var m=$('rawLotFgSameDetailModal'); if(m)m.classList.remove('show');}
+
+  window.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('.raw-hmc-barcode[data-raw-hmc-detail]');
+    if(b){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openRawAsFg(b.getAttribute('data-raw-hmc-detail'));return false;}
+    if(e.target&&e.target.id==='rawFgSameClose'){e.preventDefault();close();return false;}
+    if(e.target&&e.target.id==='rawLotFgSameDetailModal'){close();return false;}
+  },true);
+})();
+</script>
+<!-- /NAMO RAW LOT BARCODE DETAIL SAME AS FG INVENTORY 20260626 -->
+
 </body>
 </html>
