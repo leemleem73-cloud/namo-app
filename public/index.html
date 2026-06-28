@@ -16046,16 +16046,25 @@ document.addEventListener('click',function(e){
 
   function incomingByLot(){
     var map = {};
+    var seen = {};
     incomingRows().forEach(function(r, i){
       var lot = normLot(pick(r, ['lot','lotNo','incomingLot','materialLot','rawLot','iqcLot','rmLot','원료LOT','원자재LOT','LOT'], ''));
       if(!lot) return;
       var qty = num(pick(r, ['totalWeight','totalWeightKg','total_in_weight','incomingTotalWeight','incomingWeight','weight','qty','incomingQty','quantity','totalQty','입고량','총입고중량','총 입고 중량'], 0));
+      var doc = pick(r,['docNo','iqcNo','id','uid','no','reportNo'],'IQC-'+(i+1));
+      var date = dateOnly(pick(r,['date','incomingDate','inspectionDate','createdAt','검사일자'],''));
+      var item = pick(r, ['item','itemName','material','materialName','rawMaterial','incomingItem','product','productName','품목','원료명'], '원자재');
+      var supplier = pick(r, ['supplier','supplierName','vendor','vendorName','incomingSupplier','company','협력업체','협력사'], '');
+      /* 같은 수입검사 행이 state/localStorage 양쪽에 중복 저장된 경우 1회만 집계 */
+      var key = [lot, doc, date, item, supplier, qty].join('|');
+      if(seen[key]) return;
+      seen[key] = 1;
       if(!map[lot]) map[lot] = {lot:lot, item:'', supplier:'', qty:0, rows:[]};
       var g = map[lot];
-      g.item = g.item || pick(r, ['item','itemName','material','materialName','rawMaterial','incomingItem','product','productName','품목','원료명'], '원자재');
-      g.supplier = g.supplier || pick(r, ['supplier','supplierName','vendor','vendorName','incomingSupplier','company','협력업체','협력사'], '');
+      g.item = g.item || item;
+      g.supplier = g.supplier || supplier;
       g.qty += qty;
-      g.rows.push({date:dateOnly(pick(r,['date','incomingDate','inspectionDate','createdAt','검사일자'],'')), doc:pick(r,['docNo','iqcNo','id','uid','no'],'IQC-'+(i+1)), qty:qty, raw:r});
+      g.rows.push({date:date, doc:doc, qty:qty, raw:r});
     });
     return map;
   }
@@ -16068,24 +16077,28 @@ document.addEventListener('click',function(e){
 
   function workUsesByLot(){
     var map = {};
+    var seen = {};
     workRows().forEach(function(w, wi){
       var mats = materialArray(w);
+      var wo = pick(w, ['woNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid','작업지시번호'], 'WO-'+(wi+1));
+      var finishedLot = pick(w, ['finishedLot','prodLot','productionLot','lot','lotNo','nmcProdLot','생산LOT'], '');
+      var date = dateOnly(pick(w, ['workDate','date','orderDate','startDate','createdAt','sentAt','nmcOrderDate','작업일자','생산일자'], ''));
       mats.forEach(function(m, mi){
         var lot = normLot(pick(m, ['lot','lotNo','materialLot','rawLot','raw_lot','rmLot','원료LOT','원자재LOT','LOT'], ''));
         if(!lot) return;
-        var qty = num(pick(m, ['actualQty','actualInputQty','inputQty','qty','useQty','usedQty','amount','planQty','plannedQty','투입량','실투입량','계획투입량'], 0));
+        var qty = num(pick(m, ['actualQty','actualInputQty','inputQty','qty','useQty','usedQty','amount','투입량','실투입량'], 0));
+        /* 재고 차감은 실제 투입량만 사용. 실제 투입량이 없을 때만 계획량을 보조 사용 */
+        if(qty <= 0) qty = num(pick(m, ['planQty','plannedQty','계획투입량'], 0));
         if(qty <= 0) return;
+        var item = pick(m, ['material','name','materialName','rawName','rawMaterial','item','itemName','원료명'], '');
+        var supplier = pick(m, ['supplier','supName','supplierName','vendor','업체명','협력사'], '');
+        var remark = pick(m, ['remark','note','비고'], '');
+        /* 핵심: 같은 작업지시가 state/localStorage/이력에 중복 존재해도 LOT별 투입량은 1회만 집계 */
+        var key = [wo, finishedLot, date, lot, item, qty].join('|');
+        if(seen[key]) return;
+        seen[key] = 1;
         if(!map[lot]) map[lot] = [];
-        map[lot].push({
-          date:dateOnly(pick(w, ['workDate','date','orderDate','startDate','createdAt','sentAt','nmcOrderDate','작업일자','생산일자'], '')),
-          wo:pick(w, ['woNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid','작업지시번호'], 'WO-'+(wi+1)),
-          finishedLot:pick(w, ['finishedLot','prodLot','productionLot','lot','lotNo','nmcProdLot','생산LOT'], ''),
-          item:pick(m, ['material','name','materialName','rawName','rawMaterial','item','itemName','원료명'], ''),
-          supplier:pick(m, ['supplier','supName','supplierName','vendor','업체명','협력사'], ''),
-          qty:qty,
-          remark:pick(m, ['remark','note','비고'], ''),
-          raw:m
-        });
+        map[lot].push({date:date, wo:wo, finishedLot:finishedLot, item:item, supplier:supplier, qty:qty, remark:remark, raw:m});
       });
     });
     return map;
@@ -16268,15 +16281,8 @@ document.addEventListener('click',function(e){
   document.addEventListener('input', function(e){ if(e.target && (e.target.id === 'rawInvKeyword')) scheduleRender(); }, true);
   document.addEventListener('change', function(e){ if(e.target && (e.target.id === 'rawInvStatus')) scheduleRender(); }, true);
 
-  var mo = new MutationObserver(function(muts){
-    if(applying) return;
-    var page = $('page-raw-inventory');
-    if(!page || !page.classList.contains('active')) return;
-    for(var i=0;i<muts.length;i++){
-      if(muts[i].target && (muts[i].target.id === 'rawInvBody' || (muts[i].target.closest && muts[i].target.closest('#page-raw-inventory')))){ scheduleRender(); break; }
-    }
-  });
-  if(document.body) mo.observe(document.body, {childList:true, subtree:true});
+  /* 깜박임 방지: tbody 변경을 다시 감시하면 구버전/신버전 렌더가 반복될 수 있어 비활성화 */
+  var mo = null;
 
   function boot(){ burst(); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
