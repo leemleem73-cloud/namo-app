@@ -13710,63 +13710,144 @@ document.addEventListener('click',function(e){
 
 
 
-<!-- NAMO OQC EA/KG LIST DISPLAY FIX 20260626 START -->
-<script>
+<!-- NAMO OQC STABLE LIST RENDER PATCH 20260629 START -->
+<style id="namo-oqc-stable-list-render-style-20260629">
+/* 비활성 페이지는 후속 패치가 display를 바꿔도 숨김 유지 */
+.content > .page:not(.active){display:none!important;}
+#page-workorder-list:not(.active){display:none!important;}
+#page-shipment.active ~ #page-workorder-list{display:none!important;}
+</style>
+<script id="namo-oqc-stable-list-render-script-20260629">
 (function(){
   'use strict';
-  if(window.__namoOqcEaKgListFix20260626) return;
-  window.__namoOqcEaKgListFix20260626=true;
-  function $(id){return document.getElementById(id)}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function first(){for(var i=0;i<arguments.length;i++){var v=arguments[i]; if(v!==undefined&&v!==null&&String(v)!=='') return v;} return '';}
-  function key(r){return String(first(r&&r.id,''));}
-  function cacheGet(){try{return JSON.parse(localStorage.getItem('namo_oqc_ea_kg_cache_20260626')||'{}')||{};}catch(e){return {};}}
-  function cacheSet(k,v){if(!k)return; var c=cacheGet(); c[String(k)]={outQty:first(v.outQty,v.shipmentQty,v.out_qty,v.shipment_qty),totalWeightKg:first(v.totalWeightKg,v.total_weight_kg,v.total_out_weight)}; localStorage.setItem('namo_oqc_ea_kg_cache_20260626',JSON.stringify(c));}
+  if(window.__namoOqcStableListRender20260629) return;
+  window.__namoOqcStableListRender20260629 = true;
+
+  var CACHE_KEY = 'namo_oqc_ea_kg_cache_20260626';
+  var lastShipmentHtml = '';
+  var renderScheduled = false;
+
+  function $(id){ return document.getElementById(id); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function first(){
+    for(var i=0;i<arguments.length;i++){
+      var v = arguments[i];
+      if(v !== undefined && v !== null && String(v) !== '') return v;
+    }
+    return '';
+  }
+  function stateObj(){
+    try{ return (typeof state !== 'undefined' && state) ? state : (window.state || {}); }
+    catch(e){ return window.state || {}; }
+  }
+  function getVal(id){ var el=$(id); return el ? el.value : ''; }
+  function setVal(id,v){ var el=$(id); if(el) el.value = (v == null ? '' : v); }
+  function getCache(){
+    try{ return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setCache(c){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(c || {})); }catch(e){}
+  }
+  function rowKey(date,customer,product,lot){ return [date||'',customer||'',product||'',lot||''].join('||'); }
+  function makeRowKey(r){ return rowKey(r&&r.date,r&&r.customer,r&&r.product,r&&r.lot); }
+  function writeCacheForCurrent(){
+    var id = getVal('shipmentEditId');
+    var row = {
+      id:id,
+      date:getVal('shipmentDate'),
+      customer:getVal('shipmentCustomer'),
+      product:getVal('shipmentProduct'),
+      lot:getVal('shipmentLot'),
+      outQty:getVal('shipmentOutQty'),
+      shipmentQty:getVal('shipmentOutQty'),
+      out_qty:getVal('shipmentOutQty'),
+      totalWeightKg:getVal('shipmentTotalWeightKg'),
+      total_weight_kg:getVal('shipmentTotalWeightKg')
+    };
+    var c=getCache();
+    if(id) c['id:'+id]=row;
+    c['key:'+rowKey(row.date,row.customer,row.product,row.lot)] = row;
+    setCache(c);
+  }
   function mergeCachedRow(r){
     if(!r) return r;
-    var c=cacheGet()[key(r)]||{};
-    if(first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty)==='' && first(c.outQty)!==''){
-      r.outQty=c.outQty; r.shipmentQty=c.outQty; r.out_qty=c.outQty;
-    }
-    if(first(r.totalWeightKg,r.total_weight_kg,r.total_out_weight)==='' && first(c.totalWeightKg)!==''){
-      r.totalWeightKg=c.totalWeightKg; r.total_weight_kg=c.totalWeightKg;
+    var c=getCache();
+    var hit=(r.id && c['id:'+r.id]) || c['key:'+makeRowKey(r)];
+    if(hit){
+      var ea=first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,hit.outQty,hit.shipmentQty,hit.out_qty);
+      var kg=first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,hit.totalWeightKg,hit.total_weight_kg);
+      if(ea !== ''){ r.outQty=ea; r.shipmentQty=ea; r.out_qty=ea; }
+      if(kg !== ''){ r.totalWeightKg=kg; r.total_weight_kg=kg; }
     }
     return r;
   }
-  function stateObj(){try{return typeof state!=='undefined'?state:(window.state||{});}catch(e){return window.state||{};}}
-  function judge(r){try{if(typeof calcJ==='function' && typeof jBadge==='function') return jBadge(calcJ(r.items||[]));}catch(e){} return '<span class="badge pass">합격</span>';}
-  function person(r,t){
-    var o=t==='writer'?r.signWriter:(t==='reviewer'?r.signReviewer:r.signApprover);
-    if(o&&o.name) return o.name;
-    return '-';
+  function person(r,type){
+    var o = type === 'writer' ? r.signWriter : (type === 'reviewer' ? r.signReviewer : r.signApprover);
+    return (o && o.name) ? o.name : '-';
   }
-  function empty(cols){return '<tr><td colspan="'+cols+'" style="text-align:center;color:#94a3b8;padding:24px">데이터가 없습니다.</td></tr>';}
-  function filterList(arr){
-    var sel=$('shipmentYearFilterFixed');
-    var year=sel&&sel.value?sel.value:'all';
-    var list=(arr||[]).slice().map(mergeCachedRow).filter(function(r){return year==='all'||String(r.date||'').slice(0,4)===year;});
-    list.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
-    var tag=$('shipmentYearCount'); if(tag) tag.textContent=(year==='all'?'전체':year+'년')+' '+list.length+'건 / 최신순';
-    return list;
+  function judgeHtml(r){
+    try{
+      if(typeof window.calcJ === 'function' && typeof window.jBadge === 'function') return window.jBadge(window.calcJ(r.items || []));
+    }catch(e){}
+    var fail = (r.items || []).some(function(x){ return x && (x.judge === '불합격' || x.result === '불합격'); });
+    return '<span class="status '+(fail?'fail':'pass')+'">'+(fail?'불합격':'합격')+'</span>';
   }
-  function render(){
-    var tb=$('shipmentTable'); if(!tb) return;
-    var st=stateObj(); var arr=Array.isArray(st.shipment)?st.shipment:[];
-    var list=filterList(arr);
-    if(!list.length){tb.innerHTML=empty(13);return;}
-    tb.innerHTML=list.map(function(r){
-      var out=first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty);
+  function ensureYearFilter(arr){
+    var holder = document.querySelector('#page-shipment .ch .ca') || document.querySelector('#page-shipment .toolbar');
+    if(!holder || $('shipmentYearFilterFixed')) return;
+    var wrap=document.createElement('span');
+    wrap.style.display='inline-flex';
+    wrap.style.alignItems='center';
+    wrap.style.gap='6px';
+    wrap.innerHTML='<select id="shipmentYearFilterFixed" style="height:30px;border:1px solid #dbe3ee;border-radius:8px;padding:0 9px;font-size:12px"><option value="all">전체</option></select><span id="shipmentYearCount" class="tag">전체 0건 / 최신순</span>';
+    holder.insertBefore(wrap, holder.firstChild || null);
+  }
+  function syncYearOptions(arr){
+    ensureYearFilter(arr);
+    var sel=$('shipmentYearFilterFixed'); if(!sel) return 'all';
+    var cur=sel.value || 'all';
+    var years={};
+    (arr||[]).forEach(function(r){ var y=String(r&&r.date||'').slice(0,4); if(/^\d{4}$/.test(y)) years[y]=true; });
+    var list=Object.keys(years).sort(function(a,b){return Number(b)-Number(a);});
+    var html='<option value="all">전체</option>'+list.map(function(y){return '<option value="'+esc(y)+'">'+esc(y)+'년</option>';}).join('');
+    if(sel.getAttribute('data-years') !== list.join(',')){
+      sel.innerHTML=html;
+      sel.setAttribute('data-years',list.join(','));
+      sel.value=(cur==='all'||years[cur])?cur:'all';
+    }
+    return sel.value || 'all';
+  }
+  function buildShipmentHtml(){
+    var st=stateObj();
+    var arr=Array.isArray(st.shipment) ? st.shipment.slice() : [];
+    arr.forEach(mergeCachedRow);
+    var year=syncYearOptions(arr);
+    var list=arr.filter(function(r){ return year==='all' || String(r.date||'').slice(0,4)===year; })
+      .sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+    var tag=$('shipmentYearCount');
+    if(tag) tag.textContent=(year==='all'?'전체':year+'년')+' '+list.length+'건 / 최신순';
+    if(!list.length){
+      return '<tr><td colspan="13" style="text-align:center;color:#94a3b8;padding:24px">데이터가 없습니다.</td></tr>';
+    }
+    return list.map(function(r){
+      var ea=first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty);
       var kg=first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg);
-      return '<tr>'+ 
+      return '<tr>'+
         '<td>'+esc(r.date||'')+'</td>'+
         '<td>'+esc(r.customer||'')+'</td>'+
         '<td>'+esc(r.product||'')+'</td>'+
         '<td><strong>'+esc(r.lot||'')+'</strong></td>'+
-        '<td>'+esc(out)+'</td>'+
+        '<td>'+esc(ea)+'</td>'+
         '<td>'+esc(kg)+'</td>'+
         '<td>'+esc(first(r.qty,r.checkQty,r.inspection_qty))+'</td>'+
         '<td>'+esc(first(r.failQty,r.fail,r.fail_qty))+'</td>'+
-        '<td>'+judge(r)+'</td>'+
+        '<td>'+judgeHtml(r)+'</td>'+
         '<td>'+esc(person(r,'writer'))+'</td>'+
         '<td>'+esc(person(r,'reviewer'))+'</td>'+
         '<td>'+esc(person(r,'approver'))+'</td>'+
@@ -13774,264 +13855,101 @@ document.addEventListener('click',function(e){
       '</tr>';
     }).join('');
   }
-  window.renderShipmentTable=render;
-  // 기존 수정 저장 시 API가 신규 필드를 즉시 반환하지 않아도 목록에 값이 남도록 로컬 병합 캐시 저장
-  document.addEventListener('click',function(e){
-    var btn=e.target&&e.target.closest&&e.target.closest('#shipmentSave');
-    if(!btn) return;
-    var id=$('shipmentEditId')&&$('shipmentEditId').value;
-    if(id){cacheSet(id,{outQty:$('shipmentOutQty')&&$('shipmentOutQty').value,totalWeightKg:$('shipmentTotalWeightKg')&&$('shipmentTotalWeightKg').value});}
-    setTimeout(render,200); setTimeout(render,800); setTimeout(render,1600);
-  },true);
-  document.addEventListener('input',function(e){
-    if(e.target&&/^(shipmentOutQty|shipmentTotalWeightKg)$/.test(e.target.id||'')){
-      var id=$('shipmentEditId')&&$('shipmentEditId').value;
-      if(id) cacheSet(id,{outQty:$('shipmentOutQty')&&$('shipmentOutQty').value,totalWeightKg:$('shipmentTotalWeightKg')&&$('shipmentTotalWeightKg').value});
-    }
-  },true);
-  document.addEventListener('change',function(e){if(e.target&&e.target.id==='shipmentYearFilterFixed') setTimeout(render,0);},true);
-  document.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('[data-page="shipment"],[data-page-target="shipment"],#shipmentReset,#shipmentSave')) setTimeout(render,300);},true);
-  function boot(){try{var st=stateObj(); if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow); render();}catch(e){console.warn('[OQC EA/KG list fix]',e);}}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-  window.addEventListener('load',boot);
-  [300,1000,2500,5000,8000].forEach(function(ms){setTimeout(boot,ms);});
-})();
-</script>
-<!-- NAMO OQC EA/KG LIST DISPLAY FIX 20260626 END -->
-
-
-<!-- NAMO OQC FINAL TWO BUG FIX 20260626 START -->
-<style id="namo-oqc-final-two-bug-fix-style-20260626">
-/* 비활성 페이지는 어떤 후속 패치가 display를 바꿔도 숨김 처리 */
-.content > .page:not(.active){
-  display:none!important;
-}
-/* 작업지시 현황은 해당 메뉴가 active일 때만 표시 */
-#page-workorder-list:not(.active){
-  display:none!important;
-}
-#page-shipment.active ~ #page-workorder-list{
-  display:none!important;
-}
-</style>
-<script id="namo-oqc-final-two-bug-fix-script-20260626">
-(function(){
-  'use strict';
-
-  function $(id){ return document.getElementById(id); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-  function esc(v){
-    return String(v == null ? '' : v).replace(/[&<>"']/g,function(m){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
-    });
-  }
-  function stateObj(){ return window.state || {}; }
-  function getVal(id){ var el=$(id); return el ? el.value : ''; }
-  function setVal(id,v){ var el=$(id); if(el) el.value = (v == null ? '' : v); }
-  function cacheKeyFromParts(date,customer,product,lot){
-    return [date||'',customer||'',product||'',lot||''].join('||');
-  }
-  function getCache(){
-    try{ return JSON.parse(localStorage.getItem('namo_oqc_ea_kg_cache_20260626') || '{}'); }
-    catch(e){ return {}; }
-  }
-  function setCache(c){
-    try{ localStorage.setItem('namo_oqc_ea_kg_cache_20260626', JSON.stringify(c || {})); }
-    catch(e){}
-  }
-  function makeRowKey(r){
-    return cacheKeyFromParts(r && r.date, r && r.customer, r && r.product, r && r.lot);
-  }
-  function writeCacheForCurrent(id){
-    var row = {
-      id: id || getVal('shipmentEditId') || '',
-      date: getVal('shipmentDate'),
-      customer: getVal('shipmentCustomer'),
-      product: getVal('shipmentProduct'),
-      lot: getVal('shipmentLot'),
-      outQty: getVal('shipmentOutQty'),
-      shipmentQty: getVal('shipmentOutQty'),
-      out_qty: getVal('shipmentOutQty'),
-      totalWeightKg: getVal('shipmentTotalWeightKg'),
-      total_weight_kg: getVal('shipmentTotalWeightKg')
-    };
-    var c = getCache();
-    if(row.id) c['id:'+row.id] = row;
-    c['key:'+cacheKeyFromParts(row.date,row.customer,row.product,row.lot)] = row;
-    setCache(c);
-  }
-  function mergeCachedRow(r){
-    if(!r) return r;
-    var c = getCache();
-    var hit = (r.id && c['id:'+r.id]) || c['key:'+makeRowKey(r)];
-    if(hit){
-      var ea = r.outQty || r.shipmentQty || r.out_qty || hit.outQty || hit.shipmentQty || hit.out_qty || '';
-      var kg = r.totalWeightKg || r.total_weight_kg || hit.totalWeightKg || hit.total_weight_kg || '';
-      r.outQty = ea;
-      r.shipmentQty = ea;
-      r.out_qty = ea;
-      r.totalWeightKg = kg;
-      r.total_weight_kg = kg;
-    }
-    return r;
-  }
-  function judge(items){
+  function renderShipmentTableStable(){
+    var tb=$('shipmentTable'); if(!tb) return;
     try{
-      if(typeof window.calcJ === 'function') return window.calcJ(items || []);
-      return (items||[]).some(function(x){return x && x.judge === '불합격';}) ? '불합격' : '합격';
-    }catch(e){ return '합격'; }
+      var html=buildShipmentHtml();
+      if(html !== lastShipmentHtml){
+        tb.innerHTML=html;
+        lastShipmentHtml=html;
+      }
+    }catch(e){ console.warn('[OQC stable render]', e); }
   }
-  function badge(v){
-    if(typeof window.jBadge === 'function') return window.jBadge(v);
-    return '<span class="status '+(v==='불합격'?'fail':'pass')+'">'+esc(v)+'</span>';
+  function scheduleShipmentRender(delay){
+    if(renderScheduled) return;
+    renderScheduled=true;
+    var run=function(){ renderScheduled=false; renderShipmentTableStable(); };
+    if(delay && delay>0) setTimeout(run, delay);
+    else (window.requestAnimationFrame || function(fn){setTimeout(fn,16);})(run);
   }
-  function renderShipmentTableFinal(){
-    var tb = $('shipmentTable');
-    var st = stateObj();
-    var arr = Array.isArray(st.shipment) ? st.shipment : [];
-    if(!tb) return;
-    if(!arr.length){
-      tb.innerHTML = (typeof window.eRow === 'function') ? window.eRow(13) : '<tr><td colspan="13">데이터가 없습니다.</td></tr>';
-      return;
-    }
-    arr.forEach(mergeCachedRow);
-    tb.innerHTML = arr.map(function(r){
-      var ea = r.outQty || r.shipmentQty || r.out_qty || r.shipment_qty || '';
-      var kg = r.totalWeightKg || r.total_weight_kg || r.total_out_weight || r.shipment_weight_kg || '';
-      return '<tr>'
-        + '<td>'+(r.date||'')+'</td>'
-        + '<td>'+esc(r.customer||'')+'</td>'
-        + '<td>'+esc(r.product||'')+'</td>'
-        + '<td><strong>'+esc(r.lot||'')+'</strong></td>'
-        + '<td>'+esc(ea)+'</td>'
-        + '<td>'+esc(kg)+'</td>'
-        + '<td>'+esc(r.qty||'')+'</td>'
-        + '<td>'+esc(r.failQty||r.fail||'')+'</td>'
-        + '<td>'+badge(judge(r.items||[]))+'</td>'
-        + '<td>'+esc((r.signWriter&&r.signWriter.name)||'-')+'</td>'
-        + '<td>'+esc((r.signReviewer&&r.signReviewer.name)||'-')+'</td>'
-        + '<td>'+esc((r.signApprover&&r.signApprover.name)||'-')+'</td>'
-        + '<td><div class="ai">'
-        + '<button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button>'
-        + '<button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button>'
-        + '<button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">🏷라벨</button>'
-        + '</div></td></tr>';
-    }).join('');
-  }
-
-  var originalRenderShipmentTable = window.renderShipmentTable;
-  window.renderShipmentTable = function(){
-    try{
-      var st = stateObj();
-      if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow);
-    }catch(e){}
-    if(typeof originalRenderShipmentTable === 'function'){
-      try{ originalRenderShipmentTable.apply(this, arguments); }catch(e){}
-    }
-    try{ renderShipmentTableFinal(); }catch(e){ console.warn('[OQC list final render]', e); }
-  };
-
-  var originalEditShipment = window.editShipment;
-  window.editShipment = function(id){
-    if(typeof originalEditShipment === 'function'){
-      originalEditShipment.apply(this, arguments);
-    }
-    try{
-      var st = stateObj();
-      var r = Array.isArray(st.shipment) ? st.shipment.find(function(x){ return String(x.id) === String(id); }) : null;
-      mergeCachedRow(r);
-      var c = getCache();
-      var hit = (id && c['id:'+id]) || (r && c['key:'+makeRowKey(r)]);
-      var ea = (r && (r.outQty || r.shipmentQty || r.out_qty)) || (hit && (hit.outQty || hit.shipmentQty || hit.out_qty)) || '';
-      var kg = (r && (r.totalWeightKg || r.total_weight_kg)) || (hit && (hit.totalWeightKg || hit.total_weight_kg)) || '';
-      if(ea !== '') setVal('shipmentOutQty', ea);
-      if(kg !== '') setVal('shipmentTotalWeightKg', kg);
-    }catch(e){}
-  };
-
-  var originalSaveOqc = window.saveOqc;
-  window.saveOqc = async function(){
-    writeCacheForCurrent();
-    var result;
-    if(typeof originalSaveOqc === 'function'){
-      result = await originalSaveOqc.apply(this, arguments);
-    }
-    writeCacheForCurrent();
-    try{
-      var st = stateObj();
-      if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow);
-      renderShipmentTableFinal();
-    }catch(e){}
-    return result;
-  };
-
   function enforceSingleVisiblePage(){
     try{
-      var activeNav = document.querySelector('.nav-item[data-page].active');
-      var current = activeNav ? activeNav.getAttribute('data-page') : '';
-      var activePages = qsa('.content > .page.active');
+      var activeNav=document.querySelector('.nav-item[data-page].active');
+      var current=activeNav ? activeNav.getAttribute('data-page') : '';
       if(current){
-        activePages.forEach(function(p){
-          if(p.id !== 'page-' + current) p.classList.remove('active');
-        });
-        var expected = $('page-' + current);
-        if(expected) expected.classList.add('active');
-      }else if(activePages.length > 1){
-        activePages.slice(1).forEach(function(p){ p.classList.remove('active'); });
+        qsa('.content > .page.active').forEach(function(p){ if(p.id !== 'page-'+current) p.classList.remove('active'); });
+        var expected=$('page-'+current); if(expected) expected.classList.add('active');
       }
-
-      var shipmentActive = $('page-shipment') && $('page-shipment').classList.contains('active');
-      var wo = $('page-workorder-list');
-      if(wo && shipmentActive){
-        wo.classList.remove('active');
-        wo.style.display = 'none';
-      }else if(wo && !wo.classList.contains('active')){
-        wo.style.display = 'none';
-      }else if(wo && wo.classList.contains('active')){
-        wo.style.display = '';
-      }
+      var shipmentActive=$('page-shipment') && $('page-shipment').classList.contains('active');
+      var wo=$('page-workorder-list');
+      if(wo && shipmentActive){ wo.classList.remove('active'); wo.style.display='none'; }
+      else if(wo && !wo.classList.contains('active')) wo.style.display='none';
+      else if(wo) wo.style.display='';
     }catch(e){}
   }
 
-  function boot(){
+  window.renderShipmentTable = renderShipmentTableStable;
+  window.namoRenderShipmentTableStable = renderShipmentTableStable;
+
+  var oldEdit=window.editShipment;
+  window.editShipment=function(id){
+    if(typeof oldEdit === 'function') oldEdit.apply(this, arguments);
     try{
-      renderShipmentTableFinal();
-      enforceSingleVisiblePage();
+      var st=stateObj();
+      var r=Array.isArray(st.shipment) ? st.shipment.find(function(x){ return String(x.id)===String(id); }) : null;
+      mergeCachedRow(r);
+      if(r){
+        var ea=first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty);
+        var kg=first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight);
+        if(ea !== '') setVal('shipmentOutQty', ea);
+        if(kg !== '') setVal('shipmentTotalWeightKg', kg);
+      }
     }catch(e){}
+  };
+
+  var oldSave=window.saveOqc;
+  if(typeof oldSave === 'function'){
+    window.saveOqc = async function(){
+      writeCacheForCurrent();
+      var result = await oldSave.apply(this, arguments);
+      writeCacheForCurrent();
+      try{ var st=stateObj(); if(Array.isArray(st.shipment)) st.shipment.forEach(mergeCachedRow); }catch(e){}
+      scheduleShipmentRender(180);
+      return result;
+    };
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-  window.addEventListener('load', boot);
-  document.addEventListener('click', function(){
-    setTimeout(function(){
-      try{
-        writeCacheForCurrent();
-        renderShipmentTableFinal();
-      }catch(e){}
+  document.addEventListener('change',function(e){
+    if(e && e.target && e.target.id === 'shipmentYearFilterFixed') scheduleShipmentRender(0);
+  },true);
+  document.addEventListener('input',function(e){
+    var id=e && e.target && e.target.id;
+    if(/^(shipmentOutQty|shipmentTotalWeightKg|shipmentDate|shipmentCustomer|shipmentProduct|shipmentLot)$/.test(id||'')) writeCacheForCurrent();
+  },true);
+  document.addEventListener('click',function(e){
+    var t=e && e.target;
+    if(t && t.closest && t.closest('[data-page="shipment"],[data-page-target="shipment"]')){
       enforceSingleVisiblePage();
-    }, 120);
-    setTimeout(enforceSingleVisiblePage, 500);
-  }, true);
-  ['input','change'].forEach(function(ev){
-    document.addEventListener(ev, function(e){
-      var id = e && e.target && e.target.id;
-      if(id === 'shipmentOutQty' || id === 'shipmentTotalWeightKg' || id === 'shipmentDate' || id === 'shipmentCustomer' || id === 'shipmentProduct' || id === 'shipmentLot'){
-        writeCacheForCurrent();
-      }
-    }, true);
-  });
-  [200,600,1200,2500,5000].forEach(function(ms){ setTimeout(boot, ms); });
-  try{
-    var mo = new MutationObserver(function(){
-      setTimeout(enforceSingleVisiblePage, 50);
-    });
-    var root = document.querySelector('.content') || document.body;
-    mo.observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
-  }catch(e){}
+      scheduleShipmentRender(80);
+    }
+  },true);
+
+  var oldShow=window.showPage;
+  if(typeof oldShow === 'function'){
+    window.showPage=function(pg){
+      var ret=oldShow.apply(this, arguments);
+      enforceSingleVisiblePage();
+      if(pg === 'shipment') scheduleShipmentRender(80);
+      return ret;
+    };
+  }
+
+  function boot(){ enforceSingleVisiblePage(); scheduleShipmentRender(0); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load', boot);
 })();
 </script>
-<!-- NAMO OQC FINAL TWO BUG FIX 20260626 END -->
+<!-- NAMO OQC STABLE LIST RENDER PATCH 20260629 END -->
 
 
 <!-- NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE_20260626_START -->
