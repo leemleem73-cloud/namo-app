@@ -13119,9 +13119,15 @@ document.addEventListener('click',function(e){
   function filterGroups(groups,prefix){var kw=(id(prefix+'InvKeyword')&&id(prefix+'InvKeyword').value||'').trim().toLowerCase();var st=(id(prefix+'InvStatus')&&id(prefix+'InvStatus').value||'');return groups.filter(function(g){var hay=[g.item,g.lot,g.supplier,g.customer,g.location].join(' ').toLowerCase(); if(kw && hay.indexOf(kw)<0)return false; if(st==='stock'&&!(g.stock>0))return false; if(st==='zero'&&g.stock!==0)return false; if(st==='minus'&&!(g.stock<0))return false; return true})}
   function lotCell(lot,prefix){return '<div class="inv-lot-cell"><div><div class="inv-lot-text">'+esc(lot)+'</div><div class="inv-mini">CODE128</div></div><div class="inv-barcode" id="'+prefix+'bc-'+esc(lot).replace(/[^A-Za-z0-9_-]/g,'')+'"></div></div>'}
   function renderRaw(){var groups=groupByLot(read(RAW_KEY),'raw'); id('rawInvKpi').innerHTML=kpiHtml(groups,'raw'); var rows=filterGroups(groups,'raw').map(function(g){var key=g.lot.replace(/[^A-Za-z0-9_-]/g,'');return '<tr><td><b>'+esc(g.item||'-')+'</b></td><td>'+lotCell(g.lot,'raw')+'</td><td>'+esc(g.supplier||'-')+'</td><td>'+fmt(g.inQty)+' '+esc(g.unit)+'</td><td>'+fmt(g.prodUse)+' '+esc(g.unit)+'</td><td>'+fmt(g.devUse)+' '+esc(g.unit)+'</td><td>'+fmt(g.scrap)+' '+esc(g.unit)+'</td><td><b>'+fmt(g.stock)+' '+esc(g.unit)+'</b></td><td>'+esc(g.location||'-')+'</td><td>'+status(g.stock)+'</td><td><button class="inv-link" data-inv-detail="raw" data-lot="'+esc(g.lot)+'">상세</button> <button class="inv-del" data-inv-del-lot="raw" data-lot="'+esc(g.lot)+'">삭제</button></td></tr>'}).join('')||'<tr><td colspan="11" style="text-align:center;color:#94a3b8;padding:28px">등록된 원자재 재고 이력이 없습니다.</td></tr>'; id('rawInvBody').innerHTML=rows; groups.forEach(function(g){renderBarcode('#rawbc-'+g.lot.replace(/[^A-Za-z0-9_-]/g,''),g.lot)});}
-  function renderFg(){var groups=groupByLot(read(FG_KEY),'fg'); id('fgInvKpi').innerHTML=kpiHtml(groups,'fg'); var rows=filterGroups(groups,'fg').map(function(g){return '<tr><td><b>'+esc(g.item||'-')+'</b></td><td>'+lotCell(g.lot,'fg')+'</td><td>'+esc(g.customer||'-')+'</td><td>'+fmt(g.inQty)+' '+esc(g.unit)+'</td><td>'+fmt(g.ship)+' '+esc(g.unit)+'</td><td>'+fmt(g.devUse)+' '+esc(g.unit)+'</td><td>'+fmt(g.scrap)+' '+esc(g.unit)+'</td><td><b>'+fmt(g.stock)+' '+esc(g.unit)+'</b></td><td>'+esc(g.location||'-')+'</td><td>'+status(g.stock)+'</td><td><button class="inv-link" data-inv-detail="fg" data-lot="'+esc(g.lot)+'">상세</button> <button class="inv-del" data-inv-del-lot="fg" data-lot="'+esc(g.lot)+'">삭제</button></td></tr>'}).join('')||'<tr><td colspan="11" style="text-align:center;color:#94a3b8;padding:28px">등록된 완제품 재고 이력이 없습니다.</td></tr>'; id('fgInvBody').innerHTML=rows; groups.forEach(function(g){renderBarcode('#fgbc-'+g.lot.replace(/[^A-Za-z0-9_-]/g,''),g.lot)});}
-  function resetRaw(){['rawItem','rawLot','rawSupplier','rawQty','rawMfgLot','rawLocation','rawDoc','rawRemark'].forEach(function(x){if(id(x))id(x).value=''}); if(id('rawDate'))id('rawDate').value=today(); if(id('rawType'))id('rawType').value='입고';}
-  function resetFg(){['fgProduct','fgLot','fgCustomer','fgQty','fgDoc','fgLocation','fgRemark'].forEach(function(x){if(id(x))id(x).value=''}); if(id('fgDate'))id('fgDate').value=today(); if(id('fgType'))id('fgType').value='생산입고';}
+  function renderFg(){
+    /* OQC-only final: legacy localStorage/workorder render disabled to prevent flicker. */
+    if(typeof window.namoRenderFinishedInventoryOqcOnly==='function'){
+      try{window.namoRenderFinishedInventoryOqcOnly();return;}catch(e){}
+    }
+    var body=id('fgInvBody');
+    if(body)body.innerHTML='<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:28px">출하검사 목록이 없습니다. 완제품 재고현황도 0건입니다.</td></tr>';
+    var k=id('fgInvKpi'); if(k)k.innerHTML='';
+  }
   function saveRaw(){var lot=(id('rawLot').value||'').trim(),qty=id('rawQty').value;if(!lot||!qty){alert('원료 LOT와 수량을 입력하세요.');return;}var a=read(RAW_KEY);a.push({id:uid(),date:id('rawDate').value||today(),type:id('rawType').value,item:id('rawItem').value.trim(),lot:lot,supplier:id('rawSupplier').value.trim(),qty:num(qty),unit:id('rawUnit').value,mfgLot:id('rawMfgLot').value.trim(),location:id('rawLocation').value.trim(),doc:id('rawDoc').value.trim(),remark:id('rawRemark').value.trim(),createdAt:new Date().toISOString()});write(RAW_KEY,a);resetRaw();renderRaw();}
   function saveFg(){var lot=(id('fgLot').value||'').trim(),qty=id('fgQty').value;if(!lot||!qty){alert('제조 LOT와 수량을 입력하세요.');return;}var a=read(FG_KEY);a.push({id:uid(),date:id('fgDate').value||today(),type:id('fgType').value,product:id('fgProduct').value.trim(),lot:lot,customer:id('fgCustomer').value.trim(),qty:num(qty),unit:id('fgUnit').value,location:id('fgLocation').value.trim(),doc:id('fgDoc').value.trim(),remark:id('fgRemark').value.trim(),createdAt:new Date().toISOString()});write(FG_KEY,a);resetFg();renderFg();}
   function detail(kind,lot){var key=kind==='raw'?RAW_KEY:FG_KEY, arr=read(key).filter(function(x){return x.lot===lot});var groups=groupByLot(arr,kind),g=groups[0]; if(!g)return;var title=kind==='raw'?'원자재 LOT 상세':'완제품 LOT 상세';var rows=arr.sort(function(a,b){return String(a.date).localeCompare(String(b.date))}).map(function(x){var s=signed(x.type,x.qty), cls=s>=0?'inv-qty-plus':'inv-qty-minus';return '<tr><td>'+esc(x.date||'')+'</td><td>'+esc(x.type||'')+'</td><td class="'+cls+'">'+(s>=0?'+':'-')+fmt(Math.abs(s))+' '+esc(x.unit||g.unit)+'</td><td>'+esc(x.doc||x.mfgLot||'-')+'</td><td>'+esc(x.location||'-')+'</td><td>'+esc(x.remark||'-')+'</td><td><button class="inv-del" data-inv-del-move="'+esc(kind)+'" data-id="'+esc(x.id)+'">삭제</button></td></tr>'}).join('');var html='<div class="inv-detail-card"><div class="inv-detail-head"><div><div class="inv-detail-title">'+title+' · '+esc(lot)+'</div><div class="inv-detail-sub">현재재고 '+fmt(g.stock)+' '+esc(g.unit)+' / 상태 '+(g.stock>0?'사용중':g.stock===0?'소진':'마이너스')+'</div></div><button class="btn light sm" id="invDetailClose" type="button">닫기</button></div><div class="inv-detail-barcode" id="invDetailBarcode"></div></div><div class="inv-table-wrap"><table class="inv-history-table"><thead><tr><th>일자</th><th>구분</th><th>수량</th><th>근거문서</th><th>위치</th><th>비고</th><th>관리</th></tr></thead><tbody>'+rows+'</tbody></table></div>';showModal(html);setTimeout(function(){renderBarcode('#invDetailBarcode',lot)},50)}
@@ -14566,101 +14572,8 @@ document.addEventListener('click',function(e){
 <script id="nmc-fg-inventory-hmc-ui-full-replace-20260626-js">
 (function(){
   'use strict';
-  if(window.__NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE__) return;
   window.__NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE__=true;
-  var FG_KEY='nmcFinishedInventoryMovesV1';
-  var applying=false, scheduled=false;
-  function $(id){return document.getElementById(id)}
-  function q(s,r){return (r||document).querySelector(s)}
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function txt(v){return String(v==null?'':v).trim()}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function num(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
-  function fmt(n){n=Math.round(Number(n||0)*1000)/1000;if(Object.is(n,-0))n=0;return n.toLocaleString('ko-KR')}
-  function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
-  function stateObj(){try{return typeof state!=='undefined'?state:(window.state||{})}catch(e){return window.state||{}}}
-  function first(){for(var i=0;i<arguments.length;i++){var v=arguments[i];if(v!==undefined&&v!==null&&txt(v)!=='')return v}return ''}
-  function signed(type,qty){qty=Math.abs(num(qty));if(/생산입고|입고|조정\+/.test(type))return qty;if(/출하|사용|투입|폐기|조정\-/.test(type))return -qty;return qty}
-  function keyLot(o){return txt(first(o&&o.finishedLot,o&&o.finished_lot,o&&o.nmcProdLot,o&&o.prodLot,o&&o.productionLot,o&&o.productLot,o&&o.outputLot,o&&o.shipmentLot,o&&o.oqcLot,o&&o.lot,o&&o.lotNo))}
-  function workOrderLot(o){return txt(first(o&&o.finishedLot,o&&o.finished_lot,o&&o.nmcProdLot,o&&o.prodLot,o&&o.productionLot,o&&o.productLot,o&&o.outputLot,o&&o.lot))}
-  function productOf(o){return txt(first(o&&o.product,o&&o.productName,o&&o.prodName,o&&o.item,o&&o.itemName,o&&o.nmcProdName,o&&o['제품명']))}
-  function customerOf(o){return txt(first(o&&o.customer,o&&o.customerName,o&&o.client,o&&o.supplier,o&&o['고객사']))}
-  function dateOf(o){return txt(first(o&&o.workDate,o&&o.date,o&&o.shipDate,o&&o.createdAt,o&&o.orderDate,o&&o.productionDate,o&&o.inspectionDate)).slice(0,10)}
-  function prodQtyOf(o){return num(first(o&&o.prodQty,o&&o.productionQty,o&&o.actualQty,o&&o.nmcActualQty,o&&o.qty,o&&o.planQty,o&&o.totalWeightKg,o&&o.total_weight_kg))}
-  function shipQtyOf(o){return num(first(o&&o.totalWeightKg,o&&o.total_weight_kg,o&&o.totalOutWeight,o&&o.total_out_weight,o&&o.shipment_weight_kg,o&&o.out_weight_kg,o&&o.weight_kg,o&&o.shipQty,o&&o.shipmentQty,o&&o.outQty,o&&o.qty))}
-  function fgMoves(){return read(FG_KEY).filter(function(m){return keyLot(m)})}
-  var WO_KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','workorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'];
-  function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(txt(v))}
-  function normalizeWo(o,i){o=o||{};var no=txt(first(o.workOrderNo,o.woNo,o.orderNo,o.nmcWoNo,o.docNo,o.no,o.workNo,o.id,o.uid,'WO-'+(i+1)));var lot=txt(first(o.finishedLot,o.finished_lot,o.nmcProdLot,o.prodLot,o.productionLot,o.productLot,o.outputLot,o.production_lot,o.finished_lot_no,o['생산LOT'],o['완제품LOT']));var actual=prodQtyOf(o);var plan=num(first(o.planQty,o.plannedQty,o.plan,o.nmcPlanQty,o.targetQty,o['계획수량']));return Object.assign({},o,{workOrderNo:no,woNo:no,finishedLot:lot,product:o.product||o.productName||o.prodName||o.itemName||o.item||o.title||o.nmcProdName||o['제품명'],customer:o.customer||o.customerName||o.client||o.clientName||o.buyer||o.nmcCustomerName||o['고객사'],actualQty:actual,prodQty:actual,planQty:plan,workDate:first(o.workDate,o.startDate,o.workStartDate,o.orderDate,o.planDate,o.plannedDate,o.date,o.createdAt,o.sentAt,o.nmcOrderDate),dueDate:first(o.dueDate,o.endDate,o.planEndDate,o.plannedEndDate,o.finishDueDate,o.targetDate,o.nmcDueDate),__raw:o})}
-  function allWoRows(){var out=[], s=stateObj();['worklog','worklogs','workOrders','workorders','orders','workOrderHistory'].forEach(function(k){if(Array.isArray(s[k]))out=out.concat(s[k])});WO_KEYS.forEach(function(k){out=out.concat(read(k))});var seen={};return out.map(normalizeWo).filter(function(w){var no=txt(first(w.workOrderNo,w.woNo,w.orderNo,w.no));var lot=workOrderLot(w);var qty=prodQtyOf(w);if(!lot||isUuid(lot)||qty<=0)return false;var key=[no,lot,qty,productOf(w),customerOf(w)].join('|');if(seen[key])return false;seen[key]=1;return true})}
-  function worklogs(){return allWoRows()}
-  function shipments(){var s=stateObj();return Array.isArray(s.shipment)?s.shipment:[]}
-  function augmentedMoves(){var arr=fgMoves().slice();shipments().forEach(function(r){var lot=keyLot(r), qty=shipQtyOf(r);if(lot&&qty>0){arr.push({id:'SHIP-'+(r.id||lot+'-'+dateOf(r)),date:dateOf(r),type:'출하',product:productOf(r),lot:lot,customer:customerOf(r),qty:qty,unit:'kg',doc:'OQC/출하검사: '+(r.id||dateOf(r)||lot),location:'출하완료',remark:txt(first(r.remark,r.note,r.comment,'출하검사 이력 기준 자동 차감')),source:'shipment',raw:r});}});return arr}
-  function groupRows(){
-    /* 작업지시서 기준 완제품 재고현황
-       - 완제품 LOT는 작업지시/작업일지의 finishedLot만 사용
-       - 원료 LOT(lotNo/material lot)는 완제품 LOT로 만들지 않음
-       - 생산량 = 작업지시 실적수량(prodQty/actualQty)
-       - 출하량 = 생산량, 현재재고 = 0kg 기준으로 작업지시서와 완제품 현황 일치 */
-    var rows=worklogs().filter(function(w){return workOrderLot(w)&&prodQtyOf(w)>0});
-    var m={};
-    rows.forEach(function(w){
-      var lot=workOrderLot(w); if(!lot)return;
-      var id=txt(first(w.id,w.workOrderNo,w.woNo,w.orderNo,lot));
-      var qty=prodQtyOf(w);
-      if(!m[lot])m[lot]={lot:lot,product:'',customer:'',unit:'kg',prod:0,ship:0,stock:0,moves:[],prodDate:'',shipDate:'',remark:'',workOrderNo:''};
-      var g=m[lot];
-      g.product=g.product||productOf(w)||'완제품';
-      g.customer=g.customer||customerOf(w)||'현대자동차';
-      g.unit='kg';
-      g.workOrderNo=g.workOrderNo||id;
-      if(!g.prodDate)g.prodDate=dateOf(w);
-      if(!g.shipDate)g.shipDate=dateOf(w);
-      g.prod+=qty;
-      g.ship+=qty;
-      g.stock=0;
-      if(!g.remark)g.remark='작업지시 실적수량과 출하량 동일 적용';
-      g.moves.push({id:'WORKORDER-'+id,date:dateOf(w),type:'작업지시 생산/출하완료',product:productOf(w)||'완제품',lot:lot,customer:customerOf(w)||'현대자동차',qty:qty,unit:'kg',doc:'작업지시 기준: '+id,location:'출하완료',remark:txt(first(w.remark,w.note,'실적수량과 출하량 동일 적용')),source:'worklog',raw:w,workOrderNo:id});
-    });
-    /* 작업지시 데이터가 아직 로딩 전이면 기존 완제품 이력으로 임시 표시 */
-    if(!Object.keys(m).length){
-      augmentedMoves().forEach(function(x){
-        var lot=keyLot(x);if(!lot)return;
-        if(!m[lot])m[lot]={lot:lot,product:'',customer:'',unit:'kg',prod:0,ship:0,stock:0,moves:[],prodDate:'',shipDate:'',remark:'',workOrderNo:''};
-        var g=m[lot];g.product=g.product||productOf(x)||txt(x.item)||'완제품';g.customer=g.customer||customerOf(x)||'현대자동차';g.unit=txt(x.unit)||g.unit;
-        var t=txt(x.type), qv=num(x.qty), s=signed(t,qv);g.stock+=s;
-        if(/생산입고|입고/.test(t)){g.prod+=Math.abs(qv);if(!g.prodDate)g.prodDate=dateOf(x)}else if(/출하/.test(t)){g.ship+=Math.abs(qv);if(!g.shipDate)g.shipDate=dateOf(x)}
-        if(!g.remark)g.remark=txt(x.remark);g.moves.push(x);
-      });
-      Object.keys(m).forEach(function(k){var g=m[k];if(g.prod>0){g.ship=g.prod;g.stock=0;if(!g.remark)g.remark='완제품 이력 임시 기준';}});
-    }
-    return Object.values(m).sort(function(a,b){
-      var da=txt(b.prodDate).localeCompare(txt(a.prodDate)); if(da) return da;
-      return String(a.lot).localeCompare(String(b.lot));
-    });
-  }
-  function filtered(groups){var kw=txt($('fgInvKeyword')&&$('fgInvKeyword').value).toLowerCase();var st=txt($('fgInvStatus')&&$('fgInvStatus').value);return groups.filter(function(g){var hit=!kw||[g.product,g.lot,g.customer].join(' ').toLowerCase().indexOf(kw)>-1;if(!hit)return false;if(st==='stock')return g.stock>0;if(st==='zero'||st==='shipped')return g.stock===0;if(st==='minus')return g.stock<0;return true})}
-  function statusHtml(g){if(g.stock<0)return '<span class="fg-status bad">이상</span>';if(g.stock>0)return '<span class="fg-status stock">재고보유</span>';return '<span class="fg-status shipped">출하완료</span>'}
-  function stockClass(g){return g.stock<0?'neg':(g.stock>0?'pos':'zero')}
-  function safeId(v){return String(v||'').replace(/[^A-Za-z0-9_-]/g,'')}
-  function lotCell(g){var id='fgHmcBc-'+safeId(g.lot);return '<div class="fg-lot-box"><div class="fg-lot-main"><span class="fg-lot-code">'+esc(g.lot)+'</span><div class="fg-lot-hint">바코드 클릭: 작업지시 사용량</div></div><button type="button" class="fg-bc-btn" data-fg-barcode-detail="'+esc(g.lot)+'" title="바코드 상세보기"><span id="'+esc(id)+'"></span></button></div>'}
-  function kpis(groups){var total=groups.length, shipped=groups.filter(function(g){return g.stock===0}).length, stock=groups.reduce(function(s,g){return s+g.stock},0), today=(new Date()).toISOString().slice(0,10), todayShip=groups.reduce(function(s,g){return s+(g.shipDate===today?g.ship:0)},0);return '<div class="inv-kpi"><div class="l">전체 LOT</div><div class="v">'+total+'</div><div class="s">완제품 LOT</div></div><div class="inv-kpi"><div class="l">출하완료</div><div class="v">'+shipped+'</div><div class="s">재고 0kg 기준</div></div><div class="inv-kpi"><div class="l">현재재고</div><div class="v">'+fmt(stock)+'</div><div class="s">kg</div></div><div class="inv-kpi"><div class="l">금일 출하</div><div class="v">'+fmt(todayShip)+'</div><div class="s">kg</div></div>'}
-  function setHeader(){var page=$('page-fg-inventory'); if(page) page.classList.add('inv-premium-page'); var table=q('#fgInvBody')&&q('#fgInvBody').closest('table');if(table){var tr=q('thead tr',table);if(tr)tr.innerHTML='<th>제품명</th><th>LOT / 바코드</th><th>고객사</th><th>생산량</th><th>출하량</th><th>현재재고</th><th>상태</th><th>비고</th>';}
-    var sel=$('fgInvStatus');if(sel&&!sel.__fgHmcOptions){sel.__fgHmcOptions=true;sel.innerHTML='<option value="">전체</option><option value="shipped">출하완료</option><option value="stock">재고보유</option><option value="minus">이상</option>'}
-    var h=q('#page-fg-inventory .inv-panel-h h3');if(h)h.textContent='완제품 재고현황';var search=$('fgInvKeyword');if(search)search.placeholder='제품명 / LOT / 바코드 / 고객사 검색'}
-  function renderBarcodes(groups){groups.forEach(function(g){try{var el=$('fgHmcBc-'+safeId(g.lot));if(!el||!window.JsBarcode)return;el.innerHTML='';var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');el.appendChild(svg);JsBarcode(svg,String(g.lot||'LOT'),{format:'CODE128',height:30,width:1.35,displayValue:false,margin:0});}catch(e){}})}
-  function render(){if(applying)return;var body=$('fgInvBody');if(!body)return;applying=true;try{setHeader();var groups=groupRows();var k=$('fgInvKpi');if(k)k.innerHTML=kpis(groups);var rows=filtered(groups);body.innerHTML=rows.map(function(g){return '<tr><td><div class="fg-hmc-product">'+esc(g.product||'-')+'</div></td><td>'+lotCell(g)+'</td><td><div class="fg-hmc-customer">'+esc(g.customer||'-')+'</div></td><td><span class="fg-hmc-qty">'+fmt(g.prod)+' '+esc(g.unit)+'</span></td><td><span class="fg-hmc-qty">'+fmt(g.ship)+' '+esc(g.unit)+'</span></td><td><span class="fg-hmc-stock '+stockClass(g)+'">'+fmt(g.stock)+' '+esc(g.unit)+'</span></td><td>'+statusHtml(g)+'</td><td><div class="fg-note"><b>WO:</b> '+esc(g.workOrderNo||'-')+'<br><b>근거:</b> 작업지시 실적수량 기준<br>'+esc(g.remark||'출하완료 기준')+'</div></td></tr>'}).join('')||'<tr><td colspan="8" class="fg-detail-empty">등록된 완제품 LOT가 없습니다.</td></tr>';renderBarcodes(rows)}finally{applying=false}}
-  function ensureModal(){var m=$('fgLotDetailModal');if(m)return m;document.body.insertAdjacentHTML('beforeend','<div class="fg-detail-modal" id="fgLotDetailModal"><div class="fg-detail-card"><div class="fg-detail-head"><div><div class="fg-detail-title" id="fgDetailTitle">LOT 상세</div><div class="fg-detail-sub" id="fgDetailSub">생산·출하·근거자료 전체 내용</div></div><button type="button" class="fg-detail-close" id="fgDetailClose">×</button></div><div class="fg-detail-body" id="fgDetailBody"></div></div></div>');return $('fgLotDetailModal')}
-  function table(rows,cols){if(!rows.length)return '<div class="fg-detail-empty">데이터가 없습니다.</div>';return '<table class="fg-detail-table"><thead><tr>'+cols.map(function(c){return '<th>'+esc(c[0])+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+esc(typeof c[1]==='function'?c[1](r):r[c[1]])+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>'}
-  function openDetail(lot){var groups=groupRows(),g=groups.filter(function(x){return x.lot===lot})[0];if(!g)return;var w=worklogs().filter(function(r){return workOrderLot(r)===lot});var sh=shipments().filter(function(r){return keyLot(r)===lot});var moves=g.moves||[];var m=ensureModal();$('fgDetailTitle').textContent=(g.product||'완제품')+' · '+g.lot;$('fgDetailSub').textContent='생산일자 / 생산수량 / 근거자료 / 비고 / 전체 이력';var evidence=moves.map(function(x){return txt(first(x.doc,x.source,x.id,'-'))}).filter(Boolean);var rawText=[].concat(w.map(function(x){return {구분:'생산/작업',내용:x}}),sh.map(function(x){return {구분:'OQC/출하',내용:x}}),moves.map(function(x){return {구분:'재고이력',내용:x}}));$('fgDetailBody').innerHTML='<div class="fg-detail-grid"><div class="fg-detail-kv"><div class="k">생산일자</div><div class="v">'+esc(g.prodDate||'-')+'</div></div><div class="fg-detail-kv"><div class="k">생산수량</div><div class="v">'+fmt(g.prod)+' '+esc(g.unit)+'</div></div><div class="fg-detail-kv"><div class="k">출하수량</div><div class="v">'+fmt(g.ship)+' '+esc(g.unit)+'</div></div><div class="fg-detail-kv"><div class="k">현재재고</div><div class="v">'+fmt(g.stock)+' '+esc(g.unit)+'</div></div></div><div class="fg-detail-section"><h4>기본 정보</h4><div class="inner"><table class="fg-detail-table"><tbody><tr><th>제품명</th><td>'+esc(g.product||'-')+'</td><th>고객사</th><td>'+esc(g.customer||'-')+'</td></tr><tr><th>LOT</th><td>'+esc(g.lot)+'</td><th>작업지시번호</th><td>'+esc(g.workOrderNo||'-')+'</td></tr><tr><th>상태</th><td>'+(g.stock===0?'출하완료':g.stock>0?'재고보유':'이상')+'</td></tr><tr><th>근거자료</th><td colspan="3">'+esc(evidence.join(' / ')||'-')+'</td></tr><tr><th>비고</th><td colspan="3">'+esc(g.remark||'-')+'</td></tr></tbody></table></div></div><div class="fg-detail-section"><h4>생산 근거자료</h4><div class="inner">'+table(w,[['생산일자',dateOf],['생산수량',function(r){return fmt(prodQtyOf(r))+' kg'}],['작업지시/작업자',function(r){return first(r.workOrderNo,r.woNo,r.orderNo,r.no,r.worker,r.manager,'-')}],['비고',function(r){return first(r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>OQC / 출하 근거자료</h4><div class="inner">'+table(sh,[['출하일자',dateOf],['출하수량',function(r){return fmt(shipQtyOf(r))+' kg'}],['고객사',customerOf],['판정/비고',function(r){return first(r.judge,r.result,r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>재고 이력 전체 내용</h4><div class="inner">'+table(moves,[['일자',dateOf],['구분',function(r){return first(r.type,r.source,'-')}],['수량',function(r){return fmt(num(r.qty))+' '+first(r.unit,'kg')}],['근거자료',function(r){return first(r.doc,r.id,r.source,'-')}],['비고',function(r){return first(r.remark,r.note,'-')} ]])+'</div></div><div class="fg-detail-section"><h4>원본 전체 내용(JSON)</h4><div class="inner"><div class="fg-detail-pre">'+esc(JSON.stringify(rawText,null,2))+'</div></div></div>';m.classList.add('show')}
-  function closeDetail(){var m=$('fgLotDetailModal');if(m)m.classList.remove('show')}
-  function schedule(){if(scheduled)return;scheduled=true;setTimeout(function(){scheduled=false;render()},120)}
-  document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-fg-barcode-detail]');if(b){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(b.getAttribute('data-fg-barcode-detail'));return false}if(e.target&&/^(fgDetailClose)$/.test(e.target.id||'')){closeDetail();return}if(e.target&&e.target.id==='fgLotDetailModal'){closeDetail();return}if(e.target&&e.target.closest&&e.target.closest('[data-page="fg-inventory"],[data-page-target="fg-inventory"],#fgInvQmsSync,[data-inv-recalc]'))setTimeout(render,250)},true);
-  document.addEventListener('input',function(e){if(e.target&&/^fgInv/.test(e.target.id||''))schedule()},true);document.addEventListener('change',function(e){if(e.target&&/^fgInv/.test(e.target.id||''))schedule()},true);
-  var old=window.nmcSyncInventoryFromQms;if(typeof old==='function'&&!old.__fgHmcWrapped){var wrap=function(){var r=old.apply(this,arguments);setTimeout(render,180);setTimeout(render,600);return r};wrap.__fgHmcWrapped=true;window.nmcSyncInventoryFromQms=wrap}
-  function observe(){var body=$('fgInvBody');if(body&&!body.__fgHmcObs){body.__fgHmcObs=true;new MutationObserver(function(){if(!applying)schedule()}).observe(body,{childList:true})}}
-  function boot(){render();observe()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();window.addEventListener('load',boot);[300,900,1800,3500,6000].forEach(function(t){setTimeout(boot,t)})
+  /* Disabled by OQC-only anti-flicker patch 20260628: previous script rendered workorder-based finished inventory. */
 })();
 </script>
 <!-- NMC_FG_INVENTORY_HMC_UI_FULL_REPLACE_20260626_END -->
@@ -14680,74 +14593,8 @@ document.addEventListener('click',function(e){
 <script id="namo-fg-inventory-no-flash-20260626-script">
 (function(){
   'use strict';
-  if(window.__NAMO_FG_INVENTORY_NO_FLASH_20260626__) return;
   window.__NAMO_FG_INVENTORY_NO_FLASH_20260626__=true;
-  var FG_KEY='nmcFinishedInventoryMovesV1';
-  function $(id){return document.getElementById(id)}
-  function q(sel,root){return (root||document).querySelector(sel)}
-  function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
-  function txt(v){return String(v==null?'':v).trim()}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function num(v){var n=parseFloat(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(n)?n:0}
-  function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
-  function write(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
-  function stateObj(){return window.state||{};}
-  function pick(o,keys,def){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!==undefined&&v!==null&&txt(v)!=='')return v}return def||''}
-  function onlyDate(v){var s=txt(v).replace(/[./]/g,'-');var m=s.match(/(20\d{2})[-]?(\d{1,2})[-]?(\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');return s.slice(0,10)||new Date().toISOString().slice(0,10)}
-  function woList(){
-    var out=[], seen={};
-    ['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'].forEach(function(k){read(k).forEach(function(o){var key=txt(pick(o,['uid','id','woNo','workOrderNo','orderNo','nmcWoNo','docNo','no'],''))+JSON.stringify(o).slice(0,100);if(!seen[key]){seen[key]=1;out.push(o)}})});
-    var st=stateObj(); if(Array.isArray(st.worklog)) out=out.concat(st.worklog);
-    return out;
-  }
-  function shipmentList(){var st=stateObj(); return Array.isArray(st.shipment)?st.shipment:[];}
-  function woNo(o,i){return pick(o,['woNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid'],'WO-'+(i+1));}
-  function makeWoMoves(){
-    return woList().map(function(w,i){
-      var no=woNo(w,i), lot=pick(w,['prodLot','productionLot','finishedLot','lot','lotNo','nmcProdLot'],'');
-      var qty=num(pick(w,['actualQty','prodQty','productionQty','resultQty','qty','nmcActualQty','planQty','실적수량','생산량'],''));
-      if(!txt(lot)||qty<=0)return null;
-      return {id:'NMC-FG-FINAL-WO-'+no+'-'+lot,date:onlyDate(pick(w,['workDate','orderDate','startDate','createdAt','sentAt','date','nmcOrderDate'],'')),type:'생산입고',product:pick(w,['productName','product','prodName','item','제품명','nmcProdName'],lot||'완제품'),lot:lot,customer:pick(w,['customer','customerName','client','고객사','nmcCustomerName'],'현대자동차'),qty:qty,unit:'kg',doc:'작업지시서: '+no,location:'완제품 창고',remark:'작업지시서 생산수량 기준 자동 입고',createdAt:new Date().toISOString()};
-    }).filter(Boolean);
-  }
-  function makeShipMoves(){
-    return shipmentList().map(function(r,i){
-      var lot=pick(r,['lot','finishedLot','shipmentLot','prodLot','productionLot'],'');
-      var qty=num(pick(r,['totalWeightKg','total_weight_kg','totalOutWeight','total_out_weight','shipment_weight_kg','out_weight_kg','weight_kg','qty'],''));
-      if(!txt(lot)||qty<=0)return null;
-      return {id:'NMC-FG-FINAL-OQC-'+pick(r,['id','uid','docNo','oqcNo','no'],'OQC-'+(i+1))+'-'+lot,date:onlyDate(pick(r,['date','shipmentDate','createdAt'],'')),type:'출하',product:pick(r,['product','productName','item'],'완제품'),lot:lot,customer:pick(r,['customer','customerName','client'],'현대자동차'),qty:qty,unit:'kg',doc:'출하검사 목록: '+pick(r,['docNo','oqcNo','id','uid'],'OQC-'+(i+1)),location:'출하완료',remark:'출하검사 목록 총 출하량 기준 자동 차감',createdAt:new Date().toISOString()};
-    }).filter(Boolean);
-  }
-  function syncFg(){
-    var manual=read(FG_KEY).filter(function(m){var id=txt(m&&m.id), doc=txt(m&&m.doc);return id.indexOf('NMC-FG-FINAL-WO-')!==0&&id.indexOf('NMC-FG-FINAL-OQC-')!==0&&id.indexOf('NMC-IQWO-SYNC-FG-')!==0&&doc.indexOf('QMS자동연동')<0;});
-    write(FG_KEY,manual.concat(makeWoMoves()).concat(makeShipMoves()));
-  }
-  function forcePremiumNow(){
-    var page=$('page-fg-inventory'); if(!page)return;
-    page.classList.add('inv-premium-page');
-    var ph=q('.ph',page); if(ph)ph.style.display='none';
-    var form=q('.inv-panel:has(#fgDate),.inv-panel:has(#fgInvSave)',page); if(form)form.classList.add('nmc-hidden-original-form');
-    if(!q('.inv-premium-hero',page)){
-      var html='<div class="inv-premium-hero"><div class="inv-premium-top"><div><div class="inv-premium-eyebrow">NAMOCHEMICAL QMS · INVENTORY COCKPIT</div><div class="inv-premium-title">완제품 재고현황</div><div class="inv-premium-sub">작업지시서 생산수량과 출하검사 목록 총 출하량을 자동 집계합니다.<br>바코드 클릭 시 LOT 상세 이력을 확인합니다.</div></div><div class="inv-premium-actions"><button class="inv-premium-btn" data-inv-recalc>현 수입검사/작업지시로 재계산</button></div></div></div>';
-      if(ph)ph.insertAdjacentHTML('afterend',html); else page.insertAdjacentHTML('afterbegin',html);
-    }
-  }
-  function renderOnce(){
-    syncFg();
-    forcePremiumNow();
-    try{if(typeof window.nmcSyncInventoryFromQms==='function')window.nmcSyncInventoryFromQms(false);}catch(e){}
-    try{if(typeof window.renderFgInventory==='function')window.renderFgInventory();}catch(e){}
-    var body=$('fgInvBody'); if(body){qsa('.inv-dev-row-btn',body).forEach(function(b){b.style.display='none'}); qsa('td:last-child',body).forEach(function(td){if(/상세|삭제/.test(td.textContent)){td.innerHTML='<span class="nmc-inv-note ok">자동계산</span>';}})}
-    var panel=q('#page-fg-inventory .inv-panel:has(#fgInvBody)'); if(panel)panel.style.visibility='visible';
-  }
-  document.addEventListener('click',function(e){
-    var nav=e.target&&e.target.closest&&e.target.closest('.nav-item[data-page="fg-inventory"],[data-page-target="fg-inventory"]');
-    if(nav){forcePremiumNow();setTimeout(renderOnce,0);setTimeout(renderOnce,60);}
-    var lot=e.target&&e.target.closest&&e.target.closest('#page-fg-inventory .inv-lot-text,#page-fg-inventory .nmc-inv-lot-open,#page-fg-inventory .inv-barcode');
-    if(lot){var tr=lot.closest('tr'), d=tr&&q('[data-inv-detail="fg"]',tr); if(d){e.preventDefault();e.stopPropagation();d.click();}}
-  },true);
-  function boot(){if($('page-fg-inventory'))renderOnce();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  /* Disabled by OQC-only anti-flicker patch 20260628: previous script re-created inventory from workorders/localStorage. */
 })();
 </script>
 <!-- NAMO FINISHED INVENTORY NO-FLASH + OQC MATCH PATCH 20260626 END -->
@@ -16071,6 +15918,67 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NAMO FINISHED INVENTORY OQC ONLY FINAL PATCH 20260628 END -->
+
+<!-- NAMO FINISHED INVENTORY OQC ONLY ANTI-FLICKER PATCH 20260628 START -->
+<style id="namo-fg-oqc-only-anti-flicker-20260628-style">
+  #page-fg-inventory .inv-panel:has(#fgDate),
+  #page-fg-inventory .inv-panel:has(#fgInvSave){display:none!important;}
+  #page-fg-inventory .inv-panel:has(#fgInvBody){visibility:visible!important;}
+</style>
+<script id="namo-fg-oqc-only-anti-flicker-20260628-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_FG_OQC_ONLY_ANTI_FLICKER_20260628__) return;
+  window.__NAMO_FG_OQC_ONLY_ANTI_FLICKER_20260628__=true;
+  var FG_KEY='nmcFinishedInventoryMovesV1';
+  function $(id){return document.getElementById(id)}
+  function q(s,r){return (r||document).querySelector(s)}
+  function txt(v){return String(v==null?'':v).trim()}
+  function clearLegacyFinishedMoves(){
+    try{
+      var raw=localStorage.getItem(FG_KEY);
+      if(!raw) return;
+      var arr=JSON.parse(raw);
+      if(!Array.isArray(arr)) return;
+      var keep=arr.filter(function(m){
+        var id=txt(m&&m.id), doc=txt(m&&m.doc), remark=txt(m&&m.remark);
+        return !(id.indexOf('NMC-FG-FINAL-WO-')===0 || id.indexOf('NMC-FG-FINAL-OQC-')===0 || id.indexOf('NMC-IQWO-SYNC-FG-')===0 || id.indexOf('NMC-FG-OQC-ONLY-')===0 || doc.indexOf('작업지시서:')===0 || doc.indexOf('출하검사 목록:')===0 || remark.indexOf('자동')>-1);
+      });
+      localStorage.setItem(FG_KEY,JSON.stringify(keep));
+    }catch(e){}
+  }
+  function renderFinal(){
+    clearLegacyFinishedMoves();
+    if(typeof window.namoRenderFinishedInventoryOqcOnly==='function') {
+      try{window.namoRenderFinishedInventoryOqcOnly();return;}catch(e){}
+    }
+    var body=$('fgInvBody');
+    if(body) body.innerHTML='<tr><td colspan="8" class="fg-detail-empty">출하검사 목록이 없습니다. 완제품 재고현황도 0건입니다.</td></tr>';
+    var k=$('fgInvKpi'); if(k) k.innerHTML='';
+  }
+  var timer=null;
+  function schedule(ms){clearTimeout(timer);timer=setTimeout(renderFinal,ms||0)}
+  document.addEventListener('click',function(e){
+    var nav=e.target&&e.target.closest&&e.target.closest('[data-page="fg-inventory"],[data-page-target="fg-inventory"],[data-action="deleteShipment"],#shipmentSave,#shipmentReset');
+    if(nav){schedule(0);schedule(80);schedule(250);}
+  },true);
+  document.addEventListener('input',function(e){if(e.target&&/^fgInv/.test(e.target.id||''))schedule(0)},true);
+  document.addEventListener('change',function(e){if(e.target&&/^fgInv/.test(e.target.id||''))schedule(0)},true);
+  function observe(){
+    var body=$('fgInvBody');
+    if(!body||body.__oqcAntiFlickerObs) return;
+    body.__oqcAntiFlickerObs=true;
+    new MutationObserver(function(){
+      var t=body.textContent||'';
+      if(t.indexOf('작업지시')>-1 || t.indexOf('생산입고')>-1 || t.indexOf('현재재고')>-1 && t.indexOf('출하검사 목록이 없습니다')<0){schedule(0);}
+    }).observe(body,{childList:true,subtree:true,characterData:true});
+  }
+  function boot(){renderFinal();observe();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.addEventListener('load',function(){schedule(0);schedule(200);});
+})();
+</script>
+<!-- NAMO FINISHED INVENTORY OQC ONLY ANTI-FLICKER PATCH 20260628 END -->
 
 </body>
 </html>
