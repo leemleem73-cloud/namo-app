@@ -15591,5 +15591,156 @@ document.addEventListener('click',function(e){
 </script>
 <!-- /NAMO WORKORDER SEND SAVE DISPLAY FIX 20260629 -->
 
+
+
+<!-- NAMO LOT TRACE WORKORDER MATERIAL LINK FIX 20260629 START -->
+<script id="namo-lot-trace-workorder-material-link-fix-20260629">
+(function(){
+  'use strict';
+  if(window.__NAMO_LOT_TRACE_WO_MATERIAL_FIX_20260629__) return;
+  window.__NAMO_LOT_TRACE_WO_MATERIAL_FIX_20260629__=true;
+
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function txt(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function norm(v){return txt(v).toLowerCase().replace(/[\s\-_/\\#().]+/g,'')}
+  function numText(v){return txt(v).replace(/,/g,'').replace(/[^0-9.\-]/g,'')}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify((a||[]).slice(0,700)));}catch(e){}}
+  function visibleById(id){var a=qsa('#'+id);return a.find(function(x){return x.offsetParent!==null})||a[0]||null}
+  function val(id){var el=visibleById(id); if(!el) return ''; if(el.tagName==='SELECT') return Array.prototype.slice.call(el.selectedOptions||[]).map(function(o){return txt(o.textContent)}).filter(Boolean).join(', '); return txt(el.value)}
+  function pick(o,keys,d){o=o||{};for(var i=0;i<keys.length;i++){var k=keys[i];if(o[k]!=null&&txt(o[k])!=='')return o[k]}return d||''}
+
+  function collectFormMaterials(){
+    var table=qs('#page-workorder-final #nmcMaterialTable')||qs('#nmcMaterialTable');
+    if(!table) return [];
+    return qsa('tbody tr',table).map(function(tr){
+      var inputs=qsa('input,select,textarea',tr);
+      var material=txt(inputs[0]&&inputs[0].value);
+      var lot=txt(inputs[1]&&inputs[1].value);
+      var planQty=txt(inputs[2]&&inputs[2].value);
+      var actualQty=txt((tr.querySelector('.nmc-mat-qty')||inputs[3]||{}).value);
+      var ratio=txt((tr.querySelector('.nmc-mat-ratio')||inputs[4]||{}).value);
+      var remark=txt(inputs[5]&&inputs[5].value);
+      if(!material && !lot && !planQty && !actualQty) return null;
+      return {
+        material:material,
+        materialName:material,
+        rawMaterial:material,
+        itemName:material,
+        lot:lot,
+        lotNo:lot,
+        materialLot:lot,
+        rawLot:lot,
+        rmLot:lot,
+        incomingLot:lot,
+        planQty:numText(planQty),
+        planInputQty:numText(planQty),
+        inputQty:numText(actualQty)||numText(planQty),
+        actualQty:numText(actualQty),
+        useQty:numText(actualQty)||numText(planQty),
+        qty:numText(actualQty)||numText(planQty),
+        ratio:ratio,
+        remark:remark
+      };
+    }).filter(Boolean);
+  }
+
+  function formSnapshot(){
+    var wo=val('nmcWoNo'), prodLot=val('nmcProdLot')||val('nmcProdCode'), product=val('nmcProdName');
+    var date=val('nmcOrderDate'), plan=val('nmcPlanQty'), actual=val('nmcActualQty');
+    var mats=collectFormMaterials();
+    if(!wo && !prodLot && !product && !mats.length) return null;
+    return {
+      id:wo||('WO-'+Date.now()), no:wo, workOrderNo:wo, orderNo:wo, docNo:wo,
+      date:date, orderDate:date, workDate:date, productionDate:date, prodDate:date,
+      product:product, productName:product, prodName:product, item:product,
+      lot:prodLot, lotNo:prodLot, prodLot:prodLot, productionLot:prodLot, productLot:prodLot, finishedLot:prodLot, nmcProdLot:prodLot,
+      planQty:plan, actualQty:actual, prodQty:actual,
+      materials:mats, rawMaterials:mats, materialRows:mats, inputMaterials:mats,
+      status:'발송완료', state:'발송완료', source:'workorder-form', savedAt:new Date().toISOString()
+    };
+  }
+
+  function upsertMaterialsToStoredWorkOrders(){
+    var snap=formSnapshot();
+    if(!snap || !snap.materials.length) return snap;
+    var keys=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','nmcWorkOrderHistory','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'];
+    keys.forEach(function(k){
+      var arr=readArr(k), found=false;
+      arr=arr.map(function(x){
+        var same=(norm(pick(x,['workOrderNo','orderNo','no','docNo','id'],'')) && norm(pick(x,['workOrderNo','orderNo','no','docNo','id'],''))===norm(snap.workOrderNo)) ||
+                 (norm(pick(x,['finishedLot','prodLot','productionLot','productLot','lot','lotNo','nmcProdLot'],'')) && norm(pick(x,['finishedLot','prodLot','productionLot','productLot','lot','lotNo','nmcProdLot'],''))===norm(snap.finishedLot));
+        if(same){found=true; return Object.assign({},x,snap,{status:x.status||snap.status,state:x.state||snap.state});}
+        return x;
+      });
+      if(!found) arr.unshift(snap);
+      writeArr(k,arr);
+    });
+    try{window.nmcWorkOrders=readArr('nmcWorkOrders')}catch(e){}
+    try{window.workOrders=readArr('workOrders')}catch(e){}
+    try{window.workOrderHistory=readArr('workOrderHistory')}catch(e){}
+    try{window.nmcSentWorkorders=readArr('nmcSentWorkorders')}catch(e){}
+    return snap;
+  }
+
+  var oldSave=window.nmcSaveWorkOrderHistory;
+  window.nmcSaveWorkOrderHistory=function(status){
+    var rec=null;
+    try{ if(typeof oldSave==='function') rec=oldSave.apply(this,arguments); }catch(e){}
+    var snap=upsertMaterialsToStoredWorkOrders();
+    return rec||snap;
+  };
+  document.addEventListener('namo:workorder-sent',function(){setTimeout(upsertMaterialsToStoredWorkOrders,0);setTimeout(upsertMaterialsToStoredWorkOrders,120);},true);
+
+  function materialRowsFromOrder(o){
+    var mats=[];
+    ['materials','rawMaterials','materialRows','inputMaterials','items'].forEach(function(k){if(Array.isArray(o&&o[k]))mats=mats.concat(o[k])});
+    for(var i=1;i<=20;i++){
+      var lot=pick(o,['materialLot'+i,'matLot'+i,'rawLot'+i,'lotNo'+i,'rmLot'+i,'incomingLot'+i],'');
+      var name=pick(o,['material'+i,'matName'+i,'rawMaterial'+i,'materialName'+i,'itemName'+i],'');
+      var qty=pick(o,['materialQty'+i,'matQty'+i,'inputQty'+i,'useQty'+i,'qty'+i,'amount'+i,'weight'+i],'');
+      if(lot||name||qty)mats.push({material:name,materialLot:lot,lotNo:lot,inputQty:qty,qty:qty});
+    }
+    return mats;
+  }
+
+  var cleanCollect=window.nmcLotTraceCollectClean;
+  window.nmcLotTraceCollectClean=function(){
+    var base={materials:[],finished:[]};
+    try{ if(typeof cleanCollect==='function') base=cleanCollect()||base; }catch(e){}
+    base.materials=Array.isArray(base.materials)?base.materials:[];
+    base.finished=Array.isArray(base.finished)?base.finished:[];
+    var orders=[];
+    ['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','nmcWorkOrderHistory','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'].forEach(function(k){orders=orders.concat(readArr(k))});
+    var snap=formSnapshot(); if(snap) orders.unshift(snap);
+    orders.forEach(function(o){
+      var finishedLot=pick(o,['finishedLot','prodLot','productionLot','productLot','lot','lotNo','nmcProdLot'],'');
+      var orderNo=pick(o,['workOrderNo','orderNo','woNo','no','docNo','nmcWoNo','id'],'');
+      var product=pick(o,['product','productName','prodName','item','itemName','title','nmcProdName'],'');
+      var prodDate=pick(o,['workDate','productionDate','prodDate','date','orderDate','actualDate','startDate'],'');
+      if(finishedLot){base.finished.push({source:'workorder',product:product||'-',finishedLot:finishedLot,prodLot:finishedLot,orderNo:orderNo,prodDate:prodDate,shipDate:'',shipQty:pick(o,['actualQty','prodQty','planQty','qty'],''),oqcStatus:pick(o,['oqcStatus','status','state'],'작업지시'),remark:'작업지시 연결'});}
+      materialRowsFromOrder(o).forEach(function(m){
+        var lot=pick(m,['materialLot','lot','lotNo','rawLot','rmLot','incomingLot'],'');
+        if(!lot) return;
+        base.materials.push({
+          source:'workorder',material:pick(m,['material','materialName','name','item','itemName','rawMaterial'],'')||'-',materialLot:lot,lotNo:lot,
+          supplier:pick(m,['supplier','supplierName','vendor','vendorName'],'')||'-',prodDate:prodDate||'-',qty:pick(m,['inputQty','actualQty','useQty','materialQty','matQty','qty','amount','weight','inputWeight','useWeight'],''),
+          finishedLot:finishedLot,product:product||'-',orderNo:orderNo,iqcStatus:pick(m,['iqcStatus','judge','result','status'],'합격'),remark:finishedLot?'작업지시 투입원료':'작업지시 원료 LOT'
+        });
+      });
+    });
+    var seen={};
+    base.materials=base.materials.filter(function(r){var k=[r.materialLot,r.finishedLot,r.orderNo,r.material,r.qty].map(norm).join('|'); if(!k||seen[k])return false; seen[k]=1; return true;});
+    seen={};
+    base.finished=base.finished.filter(function(r){var k=[r.finishedLot,r.orderNo,r.product,r.source].map(norm).join('|'); if(!k||seen[k])return false; seen[k]=1; return true;});
+    return base;
+  };
+
+  window.namoFixWorkorderMaterialLotLink=upsertMaterialsToStoredWorkOrders;
+})();
+</script>
+<!-- NAMO LOT TRACE WORKORDER MATERIAL LINK FIX 20260629 END -->
+
 </body>
 </html>
