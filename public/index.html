@@ -16075,5 +16075,141 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO WORKORDER CUSTOMER ALIGN + SAVE FIX 20260629 END -->
 
+
+
+<!-- NAMO WORKORDER CUSTOMER -> PRODUCTION RESULT SYNC FIX 20260629 START -->
+<script id="namo-workorder-customer-production-sync-fix-20260629">
+(function(){
+  'use strict';
+  if(window.__NAMO_WORKORDER_CUSTOMER_PRODUCTION_SYNC_FIX_20260629__) return;
+  window.__NAMO_WORKORDER_CUSTOMER_PRODUCTION_SYNC_FIX_20260629__ = true;
+
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function norm(v){return clean(v).toLowerCase().replace(/[\s\-_/\\#().:]+/g,'')}
+  function num(v){var n=parseFloat(clean(v).replace(/,/g,''));return isFinite(n)?n:0}
+  function get(id){var el=q('#page-workorder-final #'+id)||q('#'+id);return el?clean(el.value):''}
+  function pick(o,ks,d){o=o||{};for(var i=0;i<ks.length;i++){var k=ks[i];if(o[k]!=null&&clean(o[k])!=='')return o[k]}return d||''}
+  function read(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function keysOf(o){return {
+    wo:pick(o,['woNo','workOrderNo','orderNo','no','docNo','id','uid','nmcWoNo'],''),
+    lot:pick(o,['prodLot','productionLot','productLot','finishedLot','lot','lotNo','batchNo','nmcProdLot','nmcProdCode'],''),
+    product:pick(o,['product','productName','prodName','item','itemName','title','nmcProdName'],''),
+    plan:pick(o,['plan','planQty','plannedQty','nmcPlanQty','qty','quantity','orderQty'],''),
+    actual:pick(o,['actual','actualQty','inputQty','nmcActualQty','resultQty','prodQty'],''),
+    date:pick(o,['date','orderDate','workDate','productionDate','prodDate','doneDate','completeDate','createdAt'],'')
+  }}
+  function formKey(){return {
+    wo:get('nmcWoNo'),
+    lot:get('nmcProdLot')||get('nmcProdCode'),
+    product:get('nmcProdName'),
+    customer:get('nmcCustomerName')||get('nmcCustomer')||get('customerName'),
+    plan:get('nmcPlanQty'),
+    actual:get('nmcActualQty'),
+    date:get('nmcOrderDate')
+  }}
+  function sameRecord(o,f){
+    var k=keysOf(o);
+    if(f.wo && k.wo && norm(f.wo)===norm(k.wo)) return true;
+    if(f.lot && k.lot && norm(f.lot)===norm(k.lot)) return true;
+    if(f.product && k.product && norm(f.product)===norm(k.product)){
+      if(f.plan && k.plan && Math.abs(num(f.plan)-num(k.plan))<0.001) return true;
+      if(f.actual && k.actual && Math.abs(num(f.actual)-num(k.actual))<0.001) return true;
+      if(f.date && k.date && clean(k.date).slice(0,10)===clean(f.date).slice(0,10)) return true;
+    }
+    return false;
+  }
+  function setCustomer(o,c){
+    if(!o || typeof o!=='object') return false;
+    o.customer=c; o.customerName=c; o.client=c; o.clientName=c; o.buyer=c; o.buyerName=c; o.shipCustomer=c; o.nmcCustomerName=c;
+    return true;
+  }
+  function walkUpdate(v,f,c){
+    var changed=false;
+    if(Array.isArray(v)){
+      v.forEach(function(x){ if(walkUpdate(x,f,c)) changed=true; });
+    }else if(v && typeof v==='object'){
+      if(sameRecord(v,f)){ setCustomer(v,c); changed=true; }
+      Object.keys(v).forEach(function(k){ var child=v[k]; if(child && (Array.isArray(child)||typeof child==='object')){ if(walkUpdate(child,f,c)) changed=true; } });
+    }
+    return changed;
+  }
+  var STORE_KEYS=[
+    'nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','workorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders',
+    'worklog','worklogs','nmcWorklogs','namoWorklog','productionLogs','productionResults','nmcProductionLogs','qms_worklog','nmcProductionResults','nmcProdResults','prodResults','production_result','productionResult',
+    'namo_workorder_material_backup','namo_workorder_material_backup_v2'
+  ];
+  function syncCustomer(){
+    var f=formKey(), c=f.customer;
+    if(!c) return false;
+    var any=false;
+    STORE_KEYS.forEach(function(k){
+      var v=read(k); if(v==null) return;
+      if(walkUpdate(v,f,c)){ write(k,v); any=true; }
+    });
+    try{
+      if(window.state){
+        ['worklog','worklogs','productionLogs','productionResults','nmcProductionLogs','shipment','pqc','iqc'].forEach(function(k){
+          if(window.state[k] && walkUpdate(window.state[k],f,c)) any=true;
+        });
+      }
+    }catch(e){}
+    try{ document.dispatchEvent(new CustomEvent('namo:workorder-customer-synced',{detail:{workOrderNo:f.wo,lot:f.lot,customer:c}})); }catch(e){}
+    refreshScreens(c,f);
+    return any;
+  }
+  function refreshScreens(c,f){
+    ['renderProductionResult','refreshProductionResult','renderProductionTable','renderProductionData','renderProductionPlan','renderProductionDashboard','renderWorkOrderList','renderWorkOrderInbox','refreshWorkOrderTables'].forEach(function(fn){
+      try{ if(typeof window[fn]==='function') window[fn](); }catch(e){}
+    });
+    setTimeout(function(){patchVisibleTables(c,f)},80);
+    setTimeout(function(){patchVisibleTables(c,f)},400);
+  }
+  function patchVisibleTables(c,f){
+    if(!c) c=formKey().customer; if(!c) return;
+    qa('#page-production-result table, #page-workorder-list table, #page-production-progress table, #page-production table').forEach(function(table){
+      var heads=qa('thead th',table).map(function(th){return clean(th.textContent)});
+      var custIdx=heads.indexOf('고객사'); if(custIdx<0) return;
+      var woIdx=heads.indexOf('작업지시번호');
+      var lotIdx=heads.indexOf('생산 LOT');
+      var prodIdx=heads.indexOf('제품명');
+      qa('tbody tr',table).forEach(function(tr){
+        var td=qa('td',tr); if(!td[custIdx]) return;
+        var row={wo:woIdx>=0&&td[woIdx]?clean(td[woIdx].textContent):'',lot:lotIdx>=0&&td[lotIdx]?clean(td[lotIdx].textContent):'',product:prodIdx>=0&&td[prodIdx]?clean(td[prodIdx].textContent):''};
+        if((f.wo&&row.wo&&norm(f.wo)===norm(row.wo))||(f.lot&&row.lot&&norm(f.lot)===norm(row.lot))||(f.product&&row.product&&norm(f.product)===norm(row.product))){
+          td[custIdx].textContent=c;
+        }
+      });
+    });
+  }
+  function bindSave(){
+    document.addEventListener('click',function(e){
+      var btn=e.target&&e.target.closest&&e.target.closest('button, [role="button"], input[type="button"], input[type="submit"]');
+      if(!btn) return;
+      var txt=clean(btn.textContent||btn.value||'');
+      var isSave=btn.matches('[data-nmc-action="send"],[data-nmc-action="write"],[data-nmc-action="draft"],#nmcEditSave,#nmcSaveBtn,.nmc-save-btn') || /저장|수정 저장|발송|작성/.test(txt);
+      if(isSave){ syncCustomer(); setTimeout(syncCustomer,120); setTimeout(syncCustomer,700); setTimeout(syncCustomer,1500); }
+    },true);
+    document.addEventListener('input',function(e){ if(e.target&&e.target.id==='nmcCustomerName') setTimeout(syncCustomer,50); },true);
+    document.addEventListener('change',function(e){ if(e.target&&e.target.id==='nmcCustomerName') setTimeout(syncCustomer,50); },true);
+  }
+  var oldSave=window.nmcSaveWorkOrderHistory;
+  if(typeof oldSave==='function'){
+    window.nmcSaveWorkOrderHistory=function(){ syncCustomer(); var r=oldSave.apply(this,arguments); setTimeout(syncCustomer,100); setTimeout(syncCustomer,700); return r; };
+  }
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__namoCustomerProdSyncWrapped){
+    var wrapped=function(pg){var r=oldShow.apply(this,arguments); if(pg==='production-result'||pg==='workorder-list'||pg==='production-progress'||pg==='workorder-final') setTimeout(function(){var f=formKey();patchVisibleTables(f.customer,f)},300); return r;};
+    wrapped.__namoCustomerProdSyncWrapped=true; window.showPage=wrapped;
+  }
+  function boot(){bindSave();setTimeout(syncCustomer,500);setTimeout(syncCustomer,1500)}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.namoSyncWorkorderCustomerToProduction=function(){return syncCustomer()};
+})();
+</script>
+<!-- NAMO WORKORDER CUSTOMER -> PRODUCTION RESULT SYNC FIX 20260629 END -->
+
 </body>
 </html>
