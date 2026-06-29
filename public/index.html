@@ -8351,7 +8351,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
     qsa('#nmcMaterialTotalPlanQty').forEach(x=>x.textContent = planTotal.toFixed(2) + ' kg');
     qsa('#nmcMaterialTotalQty, #nmcMatTotal').forEach(x=>x.textContent = total.toFixed(2) + ' kg');
     qsa('#nmcMaterialTotalRatio').forEach(x=>x.textContent = total > 0 ? '100.00 %' : '0.00 %');
+
+    // 상단 제품 정보 자동 합계 반영
+    // 계획 수량(kg) = 투입 원료 계획투입량 합계
+    // 실 투입량(kg) = 투입 원료 실투입량 합계
+    qsa('#nmcPlanQty').forEach(x=>{
+      x.value = planTotal > 0 ? planTotal.toFixed(2) : '0';
+      x.dispatchEvent(new Event('change', { bubbles:true }));
+    });
+    qsa('#nmcActualQty').forEach(x=>{
+      x.value = total > 0 ? total.toFixed(2) : '0';
+      x.dispatchEvent(new Event('change', { bubbles:true }));
+    });
   }
+
+  window.updateMaterialTotal = updateMaterialTotal;
 
   function addMaterialRow(){
     const tbody=qs('#nmcMaterialTable tbody'); if(!tbody) return;
