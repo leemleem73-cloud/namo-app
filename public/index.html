@@ -8000,7 +8000,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-field"><label>완제품 LOT</label><input class="nmc-input nmc-lot-source" id="nmcProdCode" placeholder="완제품 LOT 직접 입력"></div>
           <div class="nmc-field"><label>계획 수량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcPlanQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
           <div class="nmc-field"><label>실 투입량 (kg)<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input with-unit" id="nmcActualQty" placeholder="0" readonly><span class="nmc-unit">kg</span></span></div>
-          <div class="nmc-field" style="grid-column:span 2"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" placeholder="생산 LOT 입력"></span></div>
+          <div class="nmc-field"><label>생산 LOT<span class="req">*</span></label><span class="nmc-input-wrap"><input class="nmc-input" id="nmcProdLot" placeholder="생산 LOT 입력"></span></div>
+          <div class="nmc-field" data-namo-customer-field="1"><label>고객사명</label><input class="nmc-input" id="nmcCustomerName" placeholder="고객사명 직접 입력"></div>
         </div>
       </div>
       <div class="nmc-workorder-card">
@@ -10117,7 +10118,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       return [m.name,m.lot,m.planQty,m.actualQty,m.ratio,m.note].some(function(v){return String(v||'').trim()!=='' && String(v)!=='0' && String(v)!=='0.00';});
     });
   }
-  function makeSnapshot(action){var sender=currentUser(); var receivers=selectedUsers('nmcRecvDept'); var refs=selectedUsers('nmcRefDept'); var d=new Date(); var woNo=val('nmcWoNo') || ('NM-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-LOCAL'); return {uid:'wo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),woNo:woNo,action:action||'send',title:val('nmcProdName')||'작업지시',productName:val('nmcProdName'),productCode:val('nmcProdCode'),prodLot:val('nmcProdLot'),orderDate:val('nmcOrderDate'),planQty:val('nmcPlanQty'),actualQty:val('nmcActualQty'),instruction:val('nmcInstruction'),sendNote:val('nmcSendNote'),sendTime:val('nmcSendTime')||new Date().toLocaleString('ko-KR'),sender:sender,receivers:receivers,refs:refs,receiverText:selectedText('nmcRecvDept','-'),refText:selectedText('nmcRefDept','-'),createdAt:new Date().toISOString(),status:'sent',materials:collectWorkorderMaterials(),readBy:{},refReadBy:{}};}
+  function makeSnapshot(action){var sender=currentUser(); var receivers=selectedUsers('nmcRecvDept'); var refs=selectedUsers('nmcRefDept'); var d=new Date(); var woNo=val('nmcWoNo') || ('NM-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-LOCAL'); return {uid:'wo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),woNo:woNo,action:action||'send',title:val('nmcProdName')||'작업지시',productName:val('nmcProdName'),productCode:val('nmcProdCode'),prodLot:val('nmcProdLot'),customer:val('nmcCustomerName'),customerName:val('nmcCustomerName'),client:val('nmcCustomerName'),nmcCustomerName:val('nmcCustomerName'),orderDate:val('nmcOrderDate'),planQty:val('nmcPlanQty'),actualQty:val('nmcActualQty'),instruction:val('nmcInstruction'),sendNote:val('nmcSendNote'),sendTime:val('nmcSendTime')||new Date().toLocaleString('ko-KR'),sender:sender,receivers:receivers,refs:refs,receiverText:selectedText('nmcRecvDept','-'),refText:selectedText('nmcRefDept','-'),createdAt:new Date().toISOString(),status:'sent',materials:collectWorkorderMaterials(),readBy:{},refReadBy:{}};}
   function sameUser(a,u){if(!a||!u) return false; return (a.id&&u.id&&String(a.id)===String(u.id)) || (a.email&&u.email&&String(a.email).toLowerCase()===String(u.email).toLowerCase()) || (a.name&&u.name&&String(a.name)===String(u.name));}
   function isMine(list,u){return (list||[]).some(function(x){return sameUser(x,u);});}
   function saveSentWorkOrder(){var snap=makeSnapshot('send'); snap.receiverIds=(snap.receivers||[]).map(function(x){return String(x.id||x.email||x.name||'');}).filter(Boolean); snap.refIds=(snap.refs||[]).map(function(x){return String(x.id||x.email||x.name||'');}).filter(Boolean); if(!snap.receiverIds.length){alert('수신 부서를 먼저 선택하세요.'); return false;} var list=readItems(); var idx=list.findIndex(function(x){return x.woNo===snap.woNo;}); if(idx>=0) list[idx]=Object.assign({},list[idx],snap,{uid:list[idx].uid||snap.uid,readBy:list[idx].readBy||{},refReadBy:list[idx].refReadBy||{}}); else list.unshift(snap); writeItems(list); renderInboxPages(); return true;}
@@ -15519,6 +15520,7 @@ document.addEventListener('click',function(e){
       orderDate: val('nmcOrderDate') || sendTime,
       product: val('nmcProdName'),
       productName: val('nmcProdName'),
+      customer: val('nmcCustomerName'), customerName: val('nmcCustomerName'), client: val('nmcCustomerName'), nmcCustomerName: val('nmcCustomerName'),
       item: val('nmcProdName'),
       lot: val('nmcProdLot') || val('nmcProdCode'),
       prodLot: val('nmcProdLot') || val('nmcProdCode'),
@@ -15964,6 +15966,114 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NAMO WORKORDER CUSTOMER + MATERIAL RECOVERY SAFETY PATCH 20260629 END -->
+
+
+<!-- NAMO WORKORDER CUSTOMER ALIGN + SAVE FIX 20260629 START -->
+<style id="namo-workorder-customer-align-style-20260629">
+#page-workorder-final .nmc-workorder-card:nth-of-type(2) .nmc-form-grid.five{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:18px 28px!important;
+  align-items:end!important;
+}
+#page-workorder-final #nmcProdName{min-width:0!important;}
+#page-workorder-final #nmcProdCode{min-width:0!important;}
+#page-workorder-final #nmcProdLot{min-width:0!important;}
+#page-workorder-final #nmcCustomerName{min-width:0!important;}
+@media(max-width:1500px){
+  #page-workorder-final .nmc-workorder-card:nth-of-type(2) .nmc-form-grid.five{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-width:900px){
+  #page-workorder-final .nmc-workorder-card:nth-of-type(2) .nmc-form-grid.five{grid-template-columns:1fr!important;}
+}
+</style>
+<script id="namo-workorder-customer-align-save-fix-20260629">
+(function(){
+  'use strict';
+  if(window.__NAMO_WORKORDER_CUSTOMER_ALIGN_SAVE_FIX_20260629__) return;
+  window.__NAMO_WORKORDER_CUSTOMER_ALIGN_SAVE_FIX_20260629__=true;
+  function qs(s,r){return (r||document).querySelector(s)}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+  function norm(v){return clean(v).toLowerCase().replace(/[\s\-_/\\#().:]+/g,'')}
+  function get(id){var el=qs('#page-workorder-final #'+id)||qs('#'+id);return el?clean(el.value):''}
+  function set(id,v){qsa('#page-workorder-final #'+id+',#'+id).forEach(function(el){if(el&&!clean(el.value))el.value=clean(v)})}
+  function pick(o,ks,d){o=o||{};for(var i=0;i<ks.length;i++){var k=ks[i];if(o[k]!=null&&clean(o[k])!=='')return o[k]}return d||''}
+  function read(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function arr(k){var v=read(k);return Array.isArray(v)?v:[]}
+  function applyLayout(){
+    var page=qs('#page-workorder-final'); if(!page)return;
+    var prodName=qs('#nmcProdName',page), prodCode=qs('#nmcProdCode',page), plan=qs('#nmcPlanQty',page), actual=qs('#nmcActualQty',page), prodLot=qs('#nmcProdLot',page), cust=qs('#nmcCustomerName',page);
+    if(!cust){
+      var f=document.createElement('div'); f.className='nmc-field'; f.setAttribute('data-namo-customer-field','1');
+      f.innerHTML='<label>고객사명</label><input class="nmc-input" id="nmcCustomerName" placeholder="고객사명 직접 입력">';
+      var grid=(prodLot&&prodLot.closest('.nmc-form-grid'))||qs('.nmc-workorder-card:nth-of-type(2) .nmc-form-grid.five',page)||qs('.nmc-form-grid.five',page);
+      if(grid) grid.appendChild(f);
+      cust=qs('#nmcCustomerName',page);
+    }
+    var map=[[prodName,'1','1'],[prodCode,'2','1'],[plan,'3','1'],[actual,'4','1'],[prodLot,'1','2'],[cust,'2','2']];
+    map.forEach(function(x){var el=x[0]; if(!el)return; var p=el.closest('.nmc-field'); if(!p)return; p.style.gridColumn=x[1]; p.style.gridRow=x[2];});
+  }
+  function fillCustomerFromDraft(){
+    var cust=get('nmcCustomerName'); if(cust)return;
+    var draft=read('nmcWorkorderEditDraft')||read('nmcWorkOrderEditDraft')||read('nmcWorkorderEditItem')||null;
+    if(draft){
+      var c=pick(draft,['customer','customerName','client','clientName','buyer','buyerName','shipCustomer','nmcCustomerName'],'');
+      if(c)set('nmcCustomerName',c);
+    }
+    if(!get('nmcCustomerName')){
+      var wo=get('nmcWoNo'), lot=get('nmcProdLot')||get('nmcProdCode');
+      ['nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'].some(function(k){
+        return arr(k).some(function(o){
+          var ow=pick(o,['woNo','workOrderNo','orderNo','no','docNo','id','nmcWoNo'],'');
+          var ol=pick(o,['prodLot','productionLot','productLot','finishedLot','lot','lotNo','nmcProdLot','nmcProdCode'],'');
+          if((wo&&ow&&norm(wo)===norm(ow))||(lot&&ol&&norm(lot)===norm(ol))){
+            var c=pick(o,['customer','customerName','client','clientName','buyer','buyerName','shipCustomer','nmcCustomerName'],'');
+            if(c){set('nmcCustomerName',c);return true}
+          }
+          return false;
+        });
+      });
+    }
+  }
+  function patchStoredCustomer(){
+    var cust=get('nmcCustomerName'), wo=get('nmcWoNo'), prodLot=get('nmcProdLot')||get('nmcProdCode'), prod=get('nmcProdName');
+    if(!cust)return;
+    var keys=['nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders','namo_workorder_material_backup','namo_workorder_material_backup_v2'];
+    keys.forEach(function(k){
+      var a=arr(k), changed=false;
+      a.forEach(function(o){
+        if(!o||typeof o!=='object')return;
+        var ow=pick(o,['woNo','workOrderNo','orderNo','no','docNo','id','nmcWoNo'],'');
+        var ol=pick(o,['prodLot','productionLot','productLot','finishedLot','lot','lotNo','nmcProdLot','nmcProdCode'],'');
+        var op=pick(o,['product','productName','prodName','item','itemName','title','nmcProdName'],'');
+        if((wo&&ow&&norm(wo)===norm(ow))||(prodLot&&ol&&norm(prodLot)===norm(ol))||(prod&&op&&norm(prod)===norm(op))){
+          o.customer=cust; o.customerName=cust; o.client=cust; o.clientName=cust; o.buyer=cust; o.nmcCustomerName=cust; changed=true;
+        }
+      });
+      if(changed)write(k,a);
+    });
+  }
+  function boot(){applyLayout(); fillCustomerFromDraft(); setTimeout(function(){applyLayout();fillCustomerFromDraft();},400); setTimeout(function(){applyLayout();fillCustomerFromDraft();},1200)}
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest&&e.target.closest('[data-nmc-action="send"],[data-nmc-action="write"],[data-nmc-action="draft"],#nmcEditSave,#nmcSaveBtn,.nmc-save-btn');
+    if(t){patchStoredCustomer(); setTimeout(patchStoredCustomer,200); setTimeout(patchStoredCustomer,900);}
+  },true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='nmcCustomerName')setTimeout(patchStoredCustomer,0)},true);
+  var old=window.nmcSaveWorkOrderHistory;
+  if(typeof old==='function'){
+    window.nmcSaveWorkOrderHistory=function(){patchStoredCustomer(); var r=old.apply(this,arguments); setTimeout(patchStoredCustomer,100); return r;};
+  }
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function'){
+    window.showPage=function(pg){var r=oldShow.apply(this,arguments); if(pg==='workorder-final')setTimeout(boot,100); return r;};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.namoWorkorderCustomerAlignFix=function(){applyLayout();fillCustomerFromDraft();patchStoredCustomer();};
+})();
+</script>
+<!-- NAMO WORKORDER CUSTOMER ALIGN + SAVE FIX 20260629 END -->
 
 </body>
 </html>
