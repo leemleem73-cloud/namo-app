@@ -15172,5 +15172,278 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_WORKORDER_LIST_EDIT_BUTTON_FIX_20260629_END -->
 
+
+
+<!-- NMC_WORKORDER_EDIT_SENDLOCK_SAVE_FINAL_20260629_START -->
+<style id="nmc-workorder-edit-sendlock-save-final-20260629-style">
+/* 작업지시 수정 모드: 발송정보 잠금 + 수정 저장 버튼 */
+#page-workorder-final.nmc-edit-mode .nmc-send-card{
+  border-color:#bfdbfe!important;
+  background:linear-gradient(180deg,#ffffff,#f8fbff)!important;
+}
+#page-workorder-final.nmc-edit-mode .nmc-send-card h3::after{
+  content:'  🔒 발송 완료 정보 잠금';
+  display:inline-flex;
+  margin-left:8px;
+  padding:3px 9px;
+  border-radius:999px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:11px;
+  font-weight:900;
+  vertical-align:middle;
+}
+#page-workorder-final .nmc-edit-lock-note{
+  grid-column:1 / -1;
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  color:#1e3a8a;
+  border-radius:10px;
+  padding:11px 14px;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.6;
+}
+#page-workorder-final.nmc-edit-mode .nmc-send-card select,
+#page-workorder-final.nmc-edit-mode .nmc-send-card input,
+#page-workorder-final.nmc-edit-mode .nmc-send-card textarea,
+#page-workorder-final .nmc-edit-locked{
+  background:#f1f5f9!important;
+  background-color:#f1f5f9!important;
+  color:#475569!important;
+  border-color:#cbd5e1!important;
+  cursor:not-allowed!important;
+  opacity:1!important;
+}
+#page-workorder-final.nmc-edit-mode .nmc-send-actions [data-nmc-action="send"]{
+  display:none!important;
+}
+#page-workorder-final .nmc-edit-save-bar{
+  position:sticky;
+  bottom:0;
+  z-index:50;
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:18px 0 0;
+  padding:14px 16px;
+  border:1px solid #dbe3ee;
+  border-radius:14px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 -8px 22px rgba(15,23,42,.08);
+  backdrop-filter:blur(8px);
+}
+#page-workorder-final.nmc-edit-mode .nmc-edit-save-bar{display:flex!important;}
+#page-workorder-final .nmc-edit-save-bar .txt{
+  color:#334155;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.5;
+}
+#page-workorder-final .nmc-edit-save-bar .btns{display:flex;gap:8px;align-items:center;}
+#page-workorder-final .nmc-edit-save-bar .save{
+  min-width:120px;
+  height:40px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+#page-workorder-final .nmc-edit-save-bar .cancel{
+  min-width:90px;
+  height:40px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  background:#fff;
+  color:#475569;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+#page-workorder-final.nmc-edit-mode #nmcWoNo{
+  background:#f1f5f9!important;
+  color:#475569!important;
+  cursor:not-allowed!important;
+}
+</style>
+<script id="nmc-workorder-edit-sendlock-save-final-20260629-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_EDIT_SENDLOCK_SAVE_FINAL_20260629__) return;
+  window.__NMC_WORKORDER_EDIT_SENDLOCK_SAVE_FINAL_20260629__ = true;
+
+  var KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory','nmcSentWorkorders'];
+  function $(id){return document.getElementById(id);}
+  function qs(sel,root){return (root||document).querySelector(sel);}
+  function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&String(v).trim()!=='')return v;}return fb||'';}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]));}catch(e){}}
+  function idOf(o){return String(pick(o,['id','uid','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','lot'],''));}
+  function getVal(id){var el=$(id);return el?String(el.value||'').trim():'';}
+  function setVal(id,v){var el=$(id);if(!el)return;el.value=(v==null?'':String(v));try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}catch(e){}}
+  function selectedObjects(id){var el=$(id);if(!el||el.tagName!=='SELECT')return [];
+    return Array.prototype.slice.call(el.selectedOptions||[]).map(function(o){return {id:o.value||o.dataset.email||o.dataset.name||o.textContent.trim(),name:o.dataset.name||o.textContent.trim(),department:o.dataset.department||'',title:o.dataset.title||'',email:o.dataset.email||'',text:o.textContent.trim()};});
+  }
+  function addOptionIfMissing(sel,obj){
+    if(!sel||!obj) return null;
+    var id=String(obj.id||obj.uid||obj.email||obj.name||obj.text||'').trim();
+    var name=String(obj.name||obj.text||obj.label||id||'').trim();
+    var dept=String(obj.department||obj.dept||'').trim();
+    var title=String(obj.title||obj.position||'').trim();
+    var email=String(obj.email||'').trim();
+    var text=String(obj.text||obj.label||([dept,name,title].filter(Boolean).join(' ')||name||id)).trim();
+    if(!id && !text) return null;
+    var opt=Array.prototype.slice.call(sel.options||[]).find(function(o){return String(o.value)===String(id)||String(o.dataset.email||'')===email||(name&&String(o.dataset.name||'')===name);});
+    if(!opt){opt=document.createElement('option');opt.value=id||text;opt.textContent=text;sel.appendChild(opt);} 
+    if(name) opt.dataset.name=name;if(dept) opt.dataset.department=dept;if(title) opt.dataset.title=title;if(email) opt.dataset.email=email;
+    return opt;
+  }
+  function normalizePeople(v,text){
+    if(Array.isArray(v)) return v.map(function(x){return typeof x==='object'?x:{name:String(x),text:String(x)};}).filter(Boolean);
+    if(v && typeof v==='object') return [v];
+    return String(text||v||'').split(',').map(function(x){x=x.trim();return x?{name:x,text:x}:null;}).filter(Boolean);
+  }
+  function originalDraft(){try{return JSON.parse(localStorage.getItem('nmcWorkorderEditDraft')||'{}')||{};}catch(e){return {};}}
+  function restoreSendInfo(raw){
+    raw=raw||originalDraft();
+    var senderSel=$('nmcSenderName'), recvSel=$('nmcRecvDept'), refSel=$('nmcRefDept');
+    var sender=raw.sender||raw.senderUser||raw.writerUser||raw.createdByUser||null;
+    if(senderSel && sender){var so=addOptionIfMissing(senderSel,sender); if(so) so.selected=true;}
+    var receivers=normalizePeople(raw.receivers||raw.receiverUsers||raw.recvUsers, raw.receiverText||raw.recvText||raw.nmcRecvDept);
+    var refs=normalizePeople(raw.refs||raw.referenceUsers||raw.refUsers, raw.refText||raw.nmcRefDept);
+    if(recvSel && receivers.length){Array.prototype.slice.call(recvSel.options).forEach(function(o){o.selected=false;});receivers.forEach(function(p){var o=addOptionIfMissing(recvSel,p);if(o)o.selected=true;});}
+    if(refSel && refs.length){Array.prototype.slice.call(refSel.options).forEach(function(o){o.selected=false;});refs.forEach(function(p){var o=addOptionIfMissing(refSel,p);if(o)o.selected=true;});}
+    setVal('nmcSendTime', pick(raw,['sendTime','sentAt','createdAt','savedAt'], getVal('nmcSendTime')));
+    setVal('nmcSendNote', pick(raw,['sendNote','sendMemo','sendRemark'], getVal('nmcSendNote')));
+  }
+  function collectMaterials(){
+    var rows=qsa('#page-workorder-final #nmcMaterialTable tbody tr');
+    return rows.map(function(tr){var inp=qsa('input',tr);return {
+      name:inp[0]?inp[0].value.trim():'', material:inp[0]?inp[0].value.trim():'',
+      lot:inp[1]?inp[1].value.trim():'', lotNo:inp[1]?inp[1].value.trim():'',
+      planQty:inp[2]?inp[2].value.trim():'', actualQty:inp[3]?inp[3].value.trim():'', qty:inp[3]?inp[3].value.trim():'',
+      ratio:inp[4]?inp[4].value.trim():'', note:inp[5]?inp[5].value.trim():''
+    };}).filter(function(m){return m.name||m.lot||m.planQty||m.actualQty||m.note;});
+  }
+  function collectEditedRecord(){
+    var raw=originalDraft();
+    var sender=raw.sender||raw.senderUser||selectedObjects('nmcSenderName')[0]||null;
+    var receivers=raw.receivers||raw.receiverUsers||selectedObjects('nmcRecvDept');
+    var refs=raw.refs||raw.referenceUsers||selectedObjects('nmcRefDept');
+    var now=new Date().toISOString();
+    var rec=Object.assign({},raw,{
+      id: raw.id||raw.uid||getVal('nmcWoNo')||('WO-'+Date.now()),
+      uid: raw.uid||raw.id||getVal('nmcWoNo')||('WO-'+Date.now()),
+      woNo:getVal('nmcWoNo'), no:getVal('nmcWoNo'), workOrderNo:getVal('nmcWoNo'), nmcWoNo:getVal('nmcWoNo'),
+      orderDate:getVal('nmcOrderDate'), date:getVal('nmcOrderDate')||raw.date||'',
+      planType:getVal('nmcPlanType')||raw.planType||'일간',
+      reqDept:getVal('nmcReqDept')||raw.reqDept||'', requestDept:getVal('nmcReqDept')||raw.requestDept||'',
+      worker:getVal('nmcWorker')||raw.worker||'',
+      productName:getVal('nmcProdName'), product:getVal('nmcProdName'), prodName:getVal('nmcProdName'),
+      productCode:getVal('nmcProdCode'), prodCode:getVal('nmcProdCode'),
+      prodLot:getVal('nmcProdLot'), productionLot:getVal('nmcProdLot'), lot:getVal('nmcProdLot'),
+      planQty:getVal('nmcPlanQty'), plannedQty:getVal('nmcPlanQty'),
+      actualQty:getVal('nmcActualQty'), actual:getVal('nmcActualQty'), inputQty:getVal('nmcActualQty'),
+      instruction:getVal('nmcInstruction'), workInstruction:getVal('nmcInstruction'),
+      sendNote: raw.sendNote||raw.sendMemo||getVal('nmcSendNote'), sendTime: raw.sendTime||raw.sentAt||getVal('nmcSendTime'), sentAt: raw.sentAt||raw.sendTime||getVal('nmcSendTime'),
+      sender:sender, receivers:receivers, refs:refs,
+      receiverText:raw.receiverText||selectedObjects('nmcRecvDept').map(function(x){return x.text||x.name;}).join(', '),
+      refText:raw.refText||selectedObjects('nmcRefDept').map(function(x){return x.text||x.name;}).join(', '),
+      materials:collectMaterials(), status:raw.status||'sent', editUpdatedAt:now, updatedAt:now
+    });
+    return rec;
+  }
+  function sameRecord(o,key,rec){
+    var vals=[key,idOf(o),o&&o.id,o&&o.uid,o&&o.woNo,o&&o.no,o&&o.workOrderNo,o&&o.orderNo,o&&o.nmcWoNo,o&&o.docNo,o&&o.prodLot,o&&o.lot];
+    var targets=[key,rec.id,rec.uid,rec.woNo,rec.no,rec.workOrderNo,rec.nmcWoNo,rec.prodLot,rec.lot].map(function(x){return String(x||'');}).filter(Boolean);
+    return vals.some(function(v){v=String(v||'');return v&&targets.indexOf(v)>=0;});
+  }
+  function saveEditedRecord(){
+    var page=$('page-workorder-final'); if(!page || page.dataset.nmcEditMode!=='1'){alert('수정 모드가 아닙니다.');return;}
+    var rec=collectEditedRecord();
+    var key=page.dataset.nmcEditId||localStorage.getItem('nmcWorkorderEditId')||rec.woNo||rec.id;
+    var saved=false;
+    KEYS.forEach(function(k){
+      var arr=readArr(k); if(!arr.length) return;
+      var changed=false;
+      arr=arr.map(function(o){if(sameRecord(o,key,rec)){changed=true; return Object.assign({},o,rec);} return o;});
+      if(changed){writeArr(k,arr); saved=true;}
+    });
+    if(!saved){var a=readArr('nmcWorkOrderHistory'); a.unshift(rec); writeArr('nmcWorkOrderHistory',a.slice(0,500));}
+    try{localStorage.removeItem('nmcWorkorderEditDraft');localStorage.removeItem('nmcWorkorderEditId');}catch(e){}
+    page.dataset.nmcEditMode=''; page.classList.remove('nmc-edit-mode');
+    alert('작업지시 수정 내용이 저장되었습니다.');
+    try{ if(typeof window.renderWorkorderStatus==='function') window.renderWorkorderStatus(); }catch(e){}
+    try{ if(typeof window.renderWorkOrderHistory==='function') window.renderWorkOrderHistory(); }catch(e){}
+    try{ if(typeof window.renderHistory==='function') window.renderHistory(); }catch(e){}
+    goListPage();
+  }
+  function goListPage(){
+    var done=false;
+    try{ if(typeof window.goPage==='function'){window.goPage('workorder-list'); done=true;} }catch(e){}
+    if(!done){try{ if(typeof window.showPage==='function'){window.showPage('workorder-list'); done=true;} }catch(e){}}
+    if(!done){var nav=qs('.nav-item[data-page="workorder-list"],.nav-item[data-page-target="workorder-list"]'); if(nav){nav.click(); done=true;}}
+    if(!done){var p=$('page-workorder-list'); if(p){qsa('.page').forEach(function(x){x.classList.remove('active');});p.classList.add('active');}}
+  }
+  function cancelEdit(){
+    if(!confirm('수정 내용을 취소하고 작업지시 현황으로 이동하시겠습니까?')) return;
+    try{localStorage.removeItem('nmcWorkorderEditDraft');localStorage.removeItem('nmcWorkorderEditId');}catch(e){}
+    var page=$('page-workorder-final'); if(page){page.dataset.nmcEditMode=''; page.classList.remove('nmc-edit-mode');}
+    goListPage();
+  }
+  function ensureSaveBar(page){
+    if(!page || qs('.nmc-edit-save-bar',page)) return;
+    page.insertAdjacentHTML('beforeend','<div class="nmc-edit-save-bar"><div class="txt">🔒 발송정보는 잠금 상태입니다. 제품/LOT/수량/투입원료 수정 후 <b>수정 저장</b>을 눌러주세요.</div><div class="btns"><button type="button" class="cancel" id="nmcEditCancelBtn">취소</button><button type="button" class="save" id="nmcEditSaveBtn">수정 저장</button></div></div>');
+  }
+  function lockSendInfo(){
+    var page=$('page-workorder-final'); if(!page) return;
+    var edit=page.dataset.nmcEditMode==='1' || /수정/.test((qs('#page-workorder-final .ph-title')||{}).textContent||'');
+    ensureSaveBar(page);
+    if(!edit) return;
+    page.classList.add('nmc-edit-mode');
+    restoreSendInfo(originalDraft());
+    ['nmcSenderName','nmcRecvDept','nmcRefDept','nmcSendTime','nmcSendNote','nmcWoNo'].forEach(function(id){
+      var el=$(id); if(!el) return;
+      if(id==='nmcWoNo') el.readOnly=true; else el.disabled=true;
+      el.classList.add('nmc-edit-locked');
+      el.setAttribute('aria-label',(el.getAttribute('aria-label')||'')+' 잠김');
+    });
+    qsa('#page-workorder-final .nmc-send-grid').forEach(function(grid){
+      if(!qs('.nmc-edit-lock-note',grid)) grid.insertAdjacentHTML('beforeend','<div class="nmc-edit-lock-note">🔒 이미 발송된 작업지시입니다. 발송부서, 수신부서, 참조부서, 발송일시, 발송비고는 추적성 보호를 위해 수정할 수 없습니다.</div>');
+    });
+    ['nmcPlanQty','nmcActualQty','nmcProdName','nmcProdCode','nmcProdLot','nmcOrderDate','nmcPlanType','nmcReqDept','nmcInstruction'].forEach(function(id){
+      var el=$(id); if(!el) return;
+      el.disabled=false;
+      if(id!=='nmcWoNo') { el.readOnly=false; el.removeAttribute('readonly'); }
+      el.classList.remove('nmc-edit-locked');
+    });
+  }
+  function bind(){
+    document.addEventListener('click',function(e){
+      var save=e.target&&e.target.closest&&e.target.closest('#nmcEditSaveBtn');
+      if(save){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();saveEditedRecord();return false;}
+      var cancel=e.target&&e.target.closest&&e.target.closest('#nmcEditCancelBtn');
+      if(cancel){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();cancelEdit();return false;}
+    },true);
+    var oldSafe=window.nmcWoSafeEdit;
+    if(typeof oldSafe==='function' && !oldSafe.__sendLockWrapped){
+      var wrapped=function(btn){var r=oldSafe.apply(this,arguments);setTimeout(lockSendInfo,180);setTimeout(lockSendInfo,500);setTimeout(lockSendInfo,1000);return r;};
+      wrapped.__sendLockWrapped=true; window.nmcWoSafeEdit=wrapped;
+    }
+    setInterval(function(){try{lockSendInfo();}catch(e){}},800);
+    document.addEventListener('click',function(){setTimeout(lockSendInfo,120);},true);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){bind();setTimeout(lockSendInfo,300);}); else {bind();setTimeout(lockSendInfo,300);} 
+  [500,1200,2500].forEach(function(t){setTimeout(lockSendInfo,t);});
+})();
+</script>
+<!-- NMC_WORKORDER_EDIT_SENDLOCK_SAVE_FINAL_20260629_END -->
+
 </body>
 </html>
