@@ -15459,5 +15459,137 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_WORKORDER_EDIT_SENDLOCK_SAVE_FINAL_20260629_END -->
 
+
+
+<!-- NAMO WORKORDER SEND SAVE DISPLAY FIX 20260629 -->
+<script id="namo-workorder-send-save-display-fix-20260629">
+(function(){
+  'use strict';
+  if(window.__namoWorkorderSendSaveDisplayFix20260629) return;
+  window.__namoWorkorderSendSaveDisplayFix20260629 = true;
+
+  function qs(s,root){return (root||document).querySelector(s);}
+  function qsa(s,root){return Array.prototype.slice.call((root||document).querySelectorAll(s));}
+  function visibleById(id){
+    var nodes=qsa('#'+id);
+    return nodes.find(function(x){return x.offsetParent!==null;}) || nodes[0] || null;
+  }
+  function val(id){
+    var el=visibleById(id);
+    if(!el) return '';
+    if(el.tagName==='SELECT'){
+      return Array.prototype.slice.call(el.selectedOptions||[]).map(function(o){return (o.textContent||'').trim();}).filter(Boolean).join(', ');
+    }
+    return (el.value||'').trim();
+  }
+  function selectedTexts(id){
+    var el=visibleById(id);
+    if(!el) return [];
+    if(el.tagName==='SELECT'){
+      return Array.prototype.slice.call(el.selectedOptions||[]).map(function(o){return (o.textContent||'').trim();}).filter(Boolean);
+    }
+    return String(el.value||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  }
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a.slice(0,500)));}catch(e){}}
+  function notifySafe(title,msg){
+    try{ if(typeof window.notify==='function') return window.notify(title,msg); }catch(e){}
+    try{ alert(title+'\n'+msg); }catch(e){}
+  }
+  function nowText(){return new Date().toLocaleString('ko-KR');}
+  function nowIso(){return new Date().toISOString();}
+
+  function makeWorkOrderRecord(status){
+    if(typeof window.updateMaterialTotal==='function'){
+      try{ window.updateMaterialTotal(); }catch(e){}
+    }
+    var recv=selectedTexts('nmcRecvDept');
+    var refs=selectedTexts('nmcRefDept');
+    var sender=val('nmcSenderName') || val('nmcWriter') || val('nmcReqDept') || '로그인 사용자';
+    var sendTime=val('nmcSendTime') || nowText();
+    var woNo=val('nmcWoNo') || ('NM-'+Date.now());
+    return {
+      id: woNo,
+      no: woNo,
+      workOrderNo: woNo,
+      orderNo: woNo,
+      status: status || '발송완료',
+      state: status || '발송완료',
+      date: val('nmcOrderDate') || sendTime,
+      orderDate: val('nmcOrderDate') || sendTime,
+      product: val('nmcProdName'),
+      productName: val('nmcProdName'),
+      item: val('nmcProdName'),
+      lot: val('nmcProdLot') || val('nmcProdCode'),
+      prodLot: val('nmcProdLot') || val('nmcProdCode'),
+      plan: val('nmcPlanQty'),
+      planQty: val('nmcPlanQty'),
+      actual: val('nmcActualQty'),
+      actualQty: val('nmcActualQty'),
+      worker: val('nmcWorker') || sender,
+      writer: val('nmcWorker') || sender,
+      senderText: sender,
+      sender: sender,
+      recvText: recv.join(', '),
+      receivers: recv,
+      refText: refs.join(', '),
+      refs: refs,
+      sendNote: val('nmcSendNote'),
+      note: val('nmcSendNote'),
+      instruction: val('nmcInstruction'),
+      sendTime: sendTime,
+      sentAt: sendTime,
+      savedAt: nowIso(),
+      createdAt: nowIso(),
+      progress: status==='발송완료' ? 10 : 0
+    };
+  }
+
+  function saveWorkOrderRecord(status){
+    var rec=makeWorkOrderRecord(status);
+    var keys=['nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'];
+    keys.forEach(function(k){
+      var arr=readArr(k);
+      arr=arr.filter(function(x){return String(x && (x.id||x.no||x.workOrderNo||x.orderNo)) !== String(rec.id);});
+      arr.unshift(rec);
+      writeArr(k,arr);
+    });
+    try{ window.nmcWorkOrders=readArr('nmcWorkOrders'); }catch(e){}
+    try{ window.workOrderHistory=readArr('workOrderHistory'); }catch(e){}
+    try{ window.nmcSentWorkorders=readArr('nmcSentWorkorders'); }catch(e){}
+    return rec;
+  }
+
+  window.nmcSaveWorkOrderHistory=function(status){
+    return saveWorkOrderRecord(status||'저장완료');
+  };
+
+  document.addEventListener('click',function(e){
+    var btn=e.target && e.target.closest ? e.target.closest('[data-nmc-action="send"]') : null;
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    var sendTime=visibleById('nmcSendTime');
+    if(sendTime) sendTime.value=nowText();
+
+    var rec=saveWorkOrderRecord('발송완료');
+    var recv=selectedTexts('nmcRecvDept');
+    var refs=selectedTexts('nmcRefDept');
+    var msg=(rec.no||rec.id)+' 작업지시가 발송완료로 저장되었습니다.';
+    if(recv.length) msg+=' 수신 '+recv.length+'명';
+    if(refs.length) msg+=' / 참조 '+refs.length+'명';
+
+    ['renderWorkOrderAlert','renderWorkOrderList','renderWorkOrderInbox','renderProductionTable','renderProductionPlan','renderProductionDashboard','refreshWorkOrderTables','renderSentWorkorders'].forEach(function(fn){
+      try{ if(typeof window[fn]==='function') window[fn](); }catch(err){}
+    });
+    try{ document.dispatchEvent(new CustomEvent('namo:workorder-sent',{detail:rec})); }catch(err){}
+    notifySafe('작업지시 발송 완료',msg);
+  },true);
+})();
+</script>
+<!-- /NAMO WORKORDER SEND SAVE DISPLAY FIX 20260629 -->
+
 </body>
 </html>
