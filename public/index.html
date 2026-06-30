@@ -3362,7 +3362,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
           </aside>
           <div class="std-dms-body">
             <details class="std-dms-panel" open><summary>검사 절차</summary><div class="std-dms-panel-b"><div class="std-dms-flow"><div class="std-dms-step"><b><span>1</span>LOT 확인</b><p>생산 LOT 및 품목 확인</p></div><div class="std-dms-step"><b><span>2</span>시료채취</b><p>지정 위치와 기준량에 따라 채취</p></div><div class="std-dms-step"><b><span>3</span>공정검사</b><p>점도, 고형분, Dmax, 접착력, 전해액 안정성, 수분 등 확인</p></div><div class="std-dms-step"><b><span>4</span>QMES 기록</b><p>측정값과 판정 입력</p></div><div class="std-dms-step"><b><span>5</span>판정/조치</b><p>합격, 보류, 부적합 및 CAPA 연계</p></div></div></div></details>
-            <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 응집, 변색 등 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도</b></td><td>점도계 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>고형분</b></td><td>건조/측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>Dmax</b></td><td>입도 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>접착력</b></td><td>접착력 시험</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr><tr><td><b>전해액 안정성</b></td><td>안정성 시험</td><td>제품별 SPEC 이내</td><td>필요 사</td></tr><tr><td><b>수분</b></td><td>수분측정기</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr></tbody></table></div></details>
+            <details class="std-dms-panel"><summary>검사항목 및 판정기준</summary><div class="std-dms-panel-b"><table class="std-dms-table"><thead><tr><th>항목</th><th>검사방법</th><th>판정기준</th><th>기록/비고</th></tr></thead><tbody><tr><td><b>외관</b></td><td>육안 확인</td><td>이물, 응집, 변색 등 이상 없을 것</td><td>필수</td></tr><tr><td><b>점도</b></td><td>점도계 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>고형분</b></td><td>건조/측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>Dmax</b></td><td>입도 측정</td><td>제품별 SPEC 이내</td><td>CTQ</td></tr><tr><td><b>접착력</b></td><td>접착력 시험</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>전해액 안정성</b></td><td>안정성 시험</td><td>제품별 SPEC 이내</td><td>필수</td></tr><tr><td><b>수분</b></td><td>수분측정기</td><td>제품별 SPEC 이내</td><td>필요 시</td></tr></tbody></table></div></details>
             <details class="std-dms-panel"><summary>부적합 처리 / 조치 기준</summary><div class="std-dms-panel-b"><div class="std-dms-note">공정검사 결과가 SPEC을 벗어나면 해당 LOT를 보류하고 원인 확인, 재검사, 공정조건 조정, 부적합 보고서 및 CAPA를 진행합니다.</div></div></details>
           </div>
         </div>
@@ -12379,7 +12379,44 @@ NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
   function addDays(d,days){var x=new Date(d);if(isNaN(x.getTime()))return '';x.setDate(x.getDate()+days);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
   function statusClass(st){st=String(st||''); if(st.indexOf('지연')>-1||st.indexOf('delay')>-1)return 'delay'; if(st.indexOf('보류')>-1||st.indexOf('hold')>-1)return 'hold'; if(st.indexOf('완료')>-1||st.indexOf('종결')>-1||st.indexOf('done')>-1)return 'done'; if(st.indexOf('진행')>-1||st.indexOf('시작')>-1||st.indexOf('run')>-1)return 'run'; return 'wait'}
   function statusText(st){var c=statusClass(st);return {wait:'대기',run:'진행중',done:'완료',delay:'지연',hold:'보류'}[c]||'대기'}
-  function normalize(o){o=o||{};var no=pick(o,['woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],idOf(o)||'-');var lot=pick(o,['prodLot','productionLot','lot','lotNo','nmcProdLot'],no);var start=onlyDate(pick(o,['startDate','workStartDate','orderDate','workDate','planDate','plannedDate','date','createdAt','sentAt','nmcOrderDate'],''))||onlyDate(lot)||onlyDate(no);var due=onlyDate(pick(o,['dueDate','endDate','planEndDate','plannedEndDate','finishDueDate','targetDate','nmcDueDate'],''))||addDays(start,1);var plan=num(pick(o,['planQty','plannedQty','plan','nmcPlanQty','targetQty'],''));var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','productionQty'],''));var pct=plan>0?Math.min(100,Math.round(actual/plan*100)):({wait:0,run:50,done:100,delay:30,hold:0}[statusClass(pick(o,['status','state'],''))]||0);var rawStatus=pick(o,['status','state'],'대기');var sc=statusClass(rawStatus);if(sc!=='done'&&due){var now=new Date();var dd=new Date(due+'T23:59:59');if(!isNaN(dd.getTime())&&now>dd)sc='delay'}return {raw:o,id:idOf(o)||no,no:no,product:pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],'-'),customer:pick(o,['customer','customerName','client','clientName','vendor','buyer','nmcCustomer','nmcCustomerName'],'-'),plan:plan,actual:actual,pct:pct,status:statusText(sc),sc:sc,start:start||'-',due:due||'-',worker:pick(o,['worker','operator','manager','prodManager','managerName','senderName','writerName','createdByName','reqDept'],'-'),lot:lot,code:pick(o,['productCode','prodCode','code','nmcProdCode'],'-'),receiver:pick(o,['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'],'-'),ref:pick(o,['refText','reference','refDept','ref','cc','refNames','refTargets'],'-'),note:pick(o,['sendNote','sendMemo','remark','memo','comment','instruction','workInstruction','nmcInstruction'],''),materials:Array.isArray(o.materials)?o.materials:[]}}
+  function currentDisplayName(){
+    var cand=[];
+    try{cand.push((window.state&&window.state.currentUser&&window.state.currentUser.name)||'');}catch(e){}
+    try{cand.push((window.currentUser&&window.currentUser.name)||'');}catch(e){}
+    try{cand.push((window.loginUser&&window.loginUser.name)||'');}catch(e){}
+    try{cand.push((JSON.parse(localStorage.getItem('nmc_current_user')||'{}').name)||'');}catch(e){}
+    try{cand.push((JSON.parse(localStorage.getItem('currentUser')||'{}').name)||'');}catch(e){}
+    var el=q('.pname'); if(el)cand.push(el.textContent||'');
+    for(var i=0;i<cand.length;i++){var v=String(cand[i]||'').trim(); if(v&&v!=='로그인 사용자'&&v!=='login-user'&&v!=='-') return v;}
+    return '임흥배';
+  }
+  function cleanWorker(v,o){
+    var raw=String(v||'').trim();
+    if(!raw || raw==='-' || raw==='login-user' || raw==='로그인 사용자'){
+      raw=pick(o,['managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept','sendDept','senderDept'],'');
+    }
+    raw=String(raw||'').trim();
+    if(!raw || raw==='-' || raw==='login-user' || raw==='로그인 사용자') return currentDisplayName();
+    return raw;
+  }
+  function normalize(o){
+    o=o||{};
+    var no=pick(o,['woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],idOf(o)||'-');
+    var lot=pick(o,['prodLot','productionLot','lot','lotNo','nmcProdLot'],no);
+    var start=onlyDate(pick(o,['startDate','workStartDate','orderDate','workDate','planDate','plannedDate','date','createdAt','sentAt','nmcOrderDate'],''))||onlyDate(lot)||onlyDate(no);
+    var due=onlyDate(pick(o,['dueDate','endDate','planEndDate','plannedEndDate','finishDueDate','targetDate','nmcDueDate'],''))||addDays(start,1);
+    var plan=num(pick(o,['planQty','plannedQty','plan','nmcPlanQty','targetQty'],''));
+    var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','productionQty'],''));
+    var rawStatus=pick(o,['status','state'],'대기');
+    var sc=statusClass(rawStatus);
+    if(sc!=='done'&&due){var now=new Date();var dd=new Date(due+'T23:59:59');if(!isNaN(dd.getTime())&&now>dd)sc='delay'}
+    var pct=0;
+    if(sc==='done') pct=100;
+    else if(plan>0) pct=Math.min(100,Math.round(actual/plan*100));
+    else pct=({wait:0,run:50,delay:30,hold:0}[sc]||0);
+    var workerRaw=pick(o,['worker','managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept','sendDept','senderDept'],'');
+    return {raw:o,id:idOf(o)||no,no:no,product:pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],'-'),customer:pick(o,['customer','customerName','client','clientName','vendor','buyer','nmcCustomer','nmcCustomerName'],'-'),plan:plan,actual:actual,pct:pct,status:statusText(sc),sc:sc,start:start||'-',due:due||'-',worker:cleanWorker(workerRaw,o),lot:lot,code:pick(o,['productCode','prodCode','code','nmcProdCode'],'-'),receiver:pick(o,['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'],'-'),ref:pick(o,['refText','reference','refDept','ref','cc','refNames','refTargets'],'-'),note:pick(o,['sendNote','sendMemo','remark','memo','comment','instruction','workInstruction','nmcInstruction'],''),materials:Array.isArray(o.materials)?o.materials:[]}
+  }
   function allOrders(){var m=new Map();STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(o){var n=normalize(o);if(n.id&&n.id!=='-')m.set(n.id,n)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','worklog','worklogs','namoWorklog','nmcWorklogs','productionLogs','productionResults','nmcProductionLogs','productionWorkOrders','prodWorkOrders','qms_worklog'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(o){var n=normalize(o);if(n.id&&n.id!=='-')m.set(n.id,n)})});return Array.from(m.values()).sort(function(a,b){return String(b.start||'').localeCompare(String(a.start||''))})}
   function filtered(){var a=allOrders();var date=q('#nmcWoFinalDate')&&q('#nmcWoFinalDate').value;var st=q('#nmcWoFinalStatus')&&q('#nmcWoFinalStatus').value;var kw=(q('#nmcWoFinalKeyword')&&q('#nmcWoFinalKeyword').value||'').trim().toLowerCase();return a.filter(function(x){if(date&&x.start!==date)return false;if(st&&x.sc!==st)return false;if(kw&&[x.no,x.product,x.customer,x.worker,x.lot].join(' ').toLowerCase().indexOf(kw)<0)return false;return true})}
   function kpis(){var a=allOrders();return {all:a.length,wait:a.filter(function(x){return x.sc==='wait'}).length,run:a.filter(function(x){return x.sc==='run'}).length,done:a.filter(function(x){return x.sc==='done'}).length,delay:a.filter(function(x){return x.sc==='delay'}).length}}
@@ -16347,6 +16384,161 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NAMO PRODUCTION RESULT CUSTOMER/MANAGER FINAL FIX 20260701 END -->
+
+
+
+<!-- NAMO PATCH 20260701: 작업지시 발송정보 수신/참조 체크박스 좌클릭 정상화 -->
+<style id="namo-send-checkbox-patch-style">
+  #page-workorder-final #nmcRecvDept,
+  #page-workorder-final #nmcRefDept{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    left:-9999px!important;
+  }
+  #page-workorder-final .namo-send-check-wrap{
+    width:100%!important;
+    min-height:54px!important;
+    border:1.5px solid #cfd9e8!important;
+    border-radius:12px!important;
+    background:#fff!important;
+    padding:10px 12px!important;
+  }
+  #page-workorder-final .namo-send-check-summary{
+    min-height:30px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    color:#0f172a!important;
+    font-size:15px!important;
+    font-weight:900!important;
+    cursor:pointer!important;
+    user-select:none!important;
+  }
+  #page-workorder-final .namo-send-check-summary .hint{
+    color:#64748b!important;
+    font-size:12px!important;
+    font-weight:800!important;
+  }
+  #page-workorder-final .namo-send-check-list{
+    display:grid!important;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;
+    gap:8px!important;
+    margin-top:10px!important;
+  }
+  #page-workorder-final .namo-send-check-item{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    min-height:34px!important;
+    border:1px solid #dbe3ee!important;
+    border-radius:9px!important;
+    background:#f8fafc!important;
+    padding:7px 9px!important;
+    color:#0f172a!important;
+    font-size:13px!important;
+    font-weight:800!important;
+    cursor:pointer!important;
+    user-select:none!important;
+  }
+  #page-workorder-final .namo-send-check-item:hover{
+    border-color:#2563eb!important;
+    background:#eff6ff!important;
+  }
+  #page-workorder-final .namo-send-check-item input{
+    width:16px!important;
+    height:16px!important;
+    accent-color:#2563eb!important;
+    cursor:pointer!important;
+    flex:0 0 auto!important;
+  }
+  #page-workorder-final .namo-send-check-item.on{
+    border-color:#2563eb!important;
+    background:#eff6ff!important;
+    color:#0b57d0!important;
+  }
+</style>
+<script id="namo-send-checkbox-patch-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_SEND_CHECKBOX_PATCH_20260701__) return;
+  window.__NAMO_SEND_CHECKBOX_PATCH_20260701__ = true;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function optionKey(opt){ return opt.value || opt.textContent || ''; }
+
+  function build(id){
+    var sel = $(id);
+    if(!sel || sel.__namoCheckboxReady) return;
+    sel.__namoCheckboxReady = true;
+    sel.multiple = true;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'namo-send-check-wrap';
+    wrap.setAttribute('data-for', id);
+    wrap.innerHTML = '<div class="namo-send-check-summary"><span class="count">0개 선택됨</span><span class="hint">왼쪽 클릭으로 체크</span></div><div class="namo-send-check-list"></div>';
+    sel.parentNode.insertBefore(wrap, sel.nextSibling);
+
+    function render(){
+      var list = wrap.querySelector('.namo-send-check-list');
+      var old = {};
+      list.querySelectorAll('input[type="checkbox"]').forEach(function(ch){ old[ch.value] = ch.checked; });
+      list.innerHTML = '';
+      Array.prototype.forEach.call(sel.options, function(opt, i){
+        if(!optionKey(opt)) return;
+        var val = optionKey(opt);
+        if(old.hasOwnProperty(val)) opt.selected = !!old[val];
+        var label = document.createElement('label');
+        label.className = 'namo-send-check-item' + (opt.selected ? ' on' : '');
+        label.innerHTML = '<input type="checkbox" value="'+esc(val)+'" '+(opt.selected?'checked':'')+'> <span>'+esc(opt.textContent || val)+'</span>';
+        var ch = label.querySelector('input');
+        ch.addEventListener('change', function(){
+          opt.selected = ch.checked;
+          label.classList.toggle('on', ch.checked);
+          update();
+          sel.dispatchEvent(new Event('change', {bubbles:true}));
+          sel.dispatchEvent(new Event('input', {bubbles:true}));
+        });
+        label.addEventListener('mousedown', function(e){ e.stopPropagation(); }, true);
+        label.addEventListener('click', function(e){ e.stopPropagation(); }, true);
+        list.appendChild(label);
+      });
+      update();
+    }
+
+    function update(){
+      var selected = Array.prototype.filter.call(sel.options, function(o){ return o.selected; });
+      var count = selected.length;
+      var names = selected.map(function(o){ return o.textContent || o.value; }).join(', ');
+      var txt = count ? (count + '개 선택됨' + (names ? ' : ' + names : '')) : '0개 선택됨';
+      wrap.querySelector('.count').textContent = txt;
+      wrap.querySelectorAll('.namo-send-check-item').forEach(function(label){
+        var ch = label.querySelector('input');
+        label.classList.toggle('on', !!(ch && ch.checked));
+      });
+    }
+
+    sel.addEventListener('change', render);
+    var mo = new MutationObserver(render);
+    mo.observe(sel, {childList:true, subtree:false, attributes:true, attributeFilter:['selected']});
+    render();
+  }
+
+  function init(){ build('nmcRecvDept'); build('nmcRefDept'); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+  [300,800,1500,3000,5000].forEach(function(ms){ setTimeout(init, ms); });
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('.nav-item[data-page="workorder-final"], .nav-item[data-page="production"]')){
+      [100,400,900].forEach(function(ms){ setTimeout(init, ms); });
+    }
+  }, true);
+})();
+</script>
 
 </body>
 </html>
