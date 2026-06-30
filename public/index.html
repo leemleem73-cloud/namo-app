@@ -16480,7 +16480,7 @@ document.addEventListener('click',function(e){
     var wrap = document.createElement('div');
     wrap.className = 'namo-send-check-wrap';
     wrap.setAttribute('data-for', id);
-    wrap.innerHTML = '<div class="namo-send-check-summary"><span class="count">0개 선택됨</span><span class="hint">왼쪽 클릭으로 체크</span></div><div class="namo-send-check-list"></div>';
+    wrap.innerHTML = '<div class="namo-send-check-summary"><span class="count">0개 선택됨</span><span class="hint"></span></div><div class="namo-send-check-list"></div>';
     sel.parentNode.insertBefore(wrap, sel.nextSibling);
 
     function render(){
