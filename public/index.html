@@ -7988,7 +7988,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <div class="nmc-field"><label>계획 구분<span class="req">*</span></label><select class="nmc-select" id="nmcPlanType"><option>일간</option><option>주간</option><option>월간</option></select></div>
           <div class="nmc-field"><label>우선순위</label><select class="nmc-select"><option>보통</option><option>높음</option><option>낮음</option></select></div>
           <div class="nmc-field"><label>요청 부서<span class="req">*</span></label><input class="nmc-input" id="nmcReqDept" placeholder="요청 부서 직접 입력"></div>
-          <div class="nmc-field"><label>작업자</label><select class="nmc-select nmc-input" id="nmcWorker"><option value="">작업자 선택</option><option value="박도훈">박도훈</option><option value="문지훈">문지훈</option></select></div>
+          <div class="nmc-field"><label>작업자</label><input class="nmc-input" id="nmcWorker" placeholder="작업자 직접 입력"></div>
           <div class="nmc-field" style="grid-column:span 4"><label>비고</label><input class="nmc-input" placeholder="비고를 입력하세요."></div>
         </div>
         <div id="nmcWorkorderAlert" class="nmc-notice" style="margin-top:16px"></div>
@@ -11128,7 +11128,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function byMonth(data){var a=Array(12).fill(0);data.forEach(function(r){var m=String(r.date).match(/^\d{4}[-/.](\d{1,2})/);var i=m?Number(m[1])-1:(new Date().getMonth());a[i]+=num(r.actual)});return a}
   function chart(){var c=q('#nmcProductionResultChart');if(!c||!window.Chart)return;try{if(window.__nmcProductionResultChart&&window.__nmcProductionResultChart.destroy)window.__nmcProductionResultChart.destroy();}catch(e){}window.__nmcProductionResultChart=new Chart(c,{type:'line',data:{labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],datasets:[{label:'생산실적(kg)',data:byMonth(resultRows()),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',fill:true,tension:.35,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#edf2f7'}}}}})}
   function table(){var a=resultRows();if(!a.length)return '<tr><td colspan="11" class="nmc-result-empty">생산실적 데이터가 없습니다. 작업지시 등록/수신함/생산진행 데이터를 먼저 확인하세요.</td></tr>';return a.map(function(r){var y=pct(r),key=esc(r.no+'|'+r.lot);return '<tr><td>'+esc(r.date)+'</td><td><b>'+esc(r.no)+'</b></td><td>'+esc(r.product)+'</td><td>'+esc(r.customer)+'</td><td><b>'+esc(r.lot)+'</b></td><td>'+fmt(r.plan)+'</td><td>'+fmt(r.actual)+'</td><td>'+y+'%</td><td><span class="mes-status-pill '+(r.kind==='run'?'run':r.kind==='done'?'done':r.kind==='delay'?'warn':'wait')+'">'+esc(r.status)+'</span></td><td>'+esc(r.worker)+'</td><td><div class="nmc-pr-action-wrap"><button class="btn light sm nmc-pr-edit-btn" type="button" data-nmc-prod-edit="'+key+'">수정</button><button class="btn light sm nmc-pr-del-btn" type="button" data-nmc-prod-delete="'+key+'">삭제</button></div></td></tr>'}).join('')}
-  function html(){var k=kpis();return '<div class="ph"><div><div class="ph-title">생산실적</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산실적</div><div class="ph-sub">작업지시/생산진행 데이터를 기준으로 계획 대비 실적, 수율, LOT별 생산 결과를 조회합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">작업지시 등록</button><button class="btn ghost" data-page-target="production-progress">생산진행 현황</button></div></div><div class="nmc-result-kpi-grid"><div class="nmc-result-kpi" style="--c:#2563eb"><div class="l">생산 LOT</div><div class="v">'+k.lot+'</div><div class="s">집계 LOT 수</div></div><div class="nmc-result-kpi" style="--c:#16a34a"><div class="l">실적수량</div><div class="v">'+fmt(k.kg)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#7c3aed"><div class="l">계획수량</div><div class="v">'+fmt(k.plan)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#f59e0b"><div class="l">평균 수율</div><div class="v">'+k.yield+'%</div><div class="s">실적/계획</div></div><div class="nmc-result-kpi" style="--c:#06b6d4"><div class="l">진행/완료</div><div class="v">'+k.run+'/'+k.done+'</div><div class="s">진행중 / 완료</div></div></div><div class="nmc-result-toolbar"><div style="font-size:16px;font-weight:900;color:#0f172a">생산실적 목록</div><div class="nmc-result-filter"><input id="nmcResultDate" type="date"><select id="nmcResultStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option></select><input id="nmcResultKeyword" type="search" placeholder="WO번호/LOT/제품명/고객사"></div></div><div class="nmc-result-card"><div class="nmc-result-chart"><canvas id="nmcProductionResultChart"></canvas></div></div><div class="nmc-result-card"><div class="nmc-result-table-wrap"><table class="nmc-pr-table"><thead><tr><th>생산일자</th><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>생산 LOT</th><th>계획수량</th><th>실적수량</th><th>수율</th><th>상태</th><th>작업자</th><th>비고</th></tr></thead><tbody id="nmcProductionResultBody">'+table()+'</tbody></table></div></div><div class="nmc-result-note"><b>정리 기준:</b> 생산실적은 작업지시/생산진행과 동일한 데이터 수집 함수를 사용합니다. 별도 화면에서 중복 계산하지 않고 동일한 LOT/WO 기준으로 집계합니다.</div>'}
+  function html(){var k=kpis();return '<div class="ph"><div><div class="ph-title">생산실적</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산실적</div><div class="ph-sub">작업지시/생산진행 데이터를 기준으로 계획 대비 실적, 수율, LOT별 생산 결과를 조회합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">작업지시 등록</button><button class="btn ghost" data-page-target="production-progress">생산진행 현황</button></div></div><div class="nmc-result-kpi-grid"><div class="nmc-result-kpi" style="--c:#2563eb"><div class="l">생산 LOT</div><div class="v">'+k.lot+'</div><div class="s">집계 LOT 수</div></div><div class="nmc-result-kpi" style="--c:#16a34a"><div class="l">실적수량</div><div class="v">'+fmt(k.kg)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#7c3aed"><div class="l">계획수량</div><div class="v">'+fmt(k.plan)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#f59e0b"><div class="l">평균 수율</div><div class="v">'+k.yield+'%</div><div class="s">실적/계획</div></div><div class="nmc-result-kpi" style="--c:#06b6d4"><div class="l">진행/완료</div><div class="v">'+k.run+'/'+k.done+'</div><div class="s">진행중 / 완료</div></div></div><div class="nmc-result-toolbar"><div style="font-size:16px;font-weight:900;color:#0f172a">생산실적 목록</div><div class="nmc-result-filter"><input id="nmcResultDate" type="date"><select id="nmcResultStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option></select><input id="nmcResultKeyword" type="search" placeholder="WO번호/LOT/제품명/고객사"></div></div><div class="nmc-result-card"><div class="nmc-result-chart"><canvas id="nmcProductionResultChart"></canvas></div></div><div class="nmc-result-card"><div class="nmc-result-table-wrap"><table class="nmc-pr-table"><thead><tr><th>생산일자</th><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>생산 LOT</th><th>계획수량</th><th>실적수량</th><th>수율</th><th>상태</th><th>담당자</th><th>비고</th></tr></thead><tbody id="nmcProductionResultBody">'+table()+'</tbody></table></div></div><div class="nmc-result-note"><b>정리 기준:</b> 생산실적은 작업지시/생산진행과 동일한 데이터 수집 함수를 사용합니다. 별도 화면에서 중복 계산하지 않고 동일한 LOT/WO 기준으로 집계합니다.</div>'}
   function ensurePage(){var c=q('.content');if(!c)return;var p=q('#page-production-result');if(!p){p=document.createElement('section');p.className='page';p.id='page-production-result';c.appendChild(p)}p.innerHTML=html();setTimeout(chart,40)}
   function ensureMenu(){var side=q('.sidebar');if(!side)return;function add(pg,label,icon,afterSel){if(q('.nav-item[data-page="'+pg+'"]',side))return;var b=document.createElement('button');b.type='button';b.className='nav-item';b.setAttribute('data-page',pg);b.innerHTML='<span class="nav-icon">'+icon+'</span><span>'+label+'</span>';var a=q(afterSel,side)||q('.nav-item[data-page="production"]',side);if(a)a.insertAdjacentElement('afterend',b);else side.appendChild(b)}add('workorder-list','작업지시 현황','▸','.nav-item[data-page="workorder-final"]');add('production-result','생산실적','◔','.nav-item[data-page="dashboard"]');}
   function showFix(){qa('#page-workorder-list').forEach(function(p){p.style.display=p.classList.contains('active')?'block':''});qa('.sidebar .nav-item[data-page="workorder-list"],.sidebar .nav-item[data-page-target="workorder-list"]').forEach(function(n){n.style.display='flex'});}
@@ -12422,11 +12422,11 @@ NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
   function kpis(){var a=allOrders();return {all:a.length,wait:a.filter(function(x){return x.sc==='wait'}).length,run:a.filter(function(x){return x.sc==='run'}).length,done:a.filter(function(x){return x.sc==='done'}).length,delay:a.filter(function(x){return x.sc==='delay'}).length}}
   function renderKpi(){var k=kpis();return '<div class="nmc-wo-kpi-final"><div class="nmc-wo-kpi-card all"><div class="l">작업지시 전체</div><div class="v">'+k.all+'</div><div class="s">등록된 WO 전체</div></div><div class="nmc-wo-kpi-card wait"><div class="l">대기</div><div class="v">'+k.wait+'</div><div class="s">작업 시작 전</div></div><div class="nmc-wo-kpi-card run"><div class="l">진행중</div><div class="v">'+k.run+'</div><div class="s">생산 진행 WO</div></div><div class="nmc-wo-kpi-card done"><div class="l">완료</div><div class="v">'+k.done+'</div><div class="s">생산 완료/종결</div></div><div class="nmc-wo-kpi-card delay"><div class="l">지연</div><div class="v">'+k.delay+'</div><div class="s">예정일 초과</div></div></div>'}
   function tableRows(){var a=filtered();if(!a.length)return '<tr><td colspan="11" class="nmc-wo-empty-final">작업지시 데이터가 없습니다. 먼저 작업지시 등록 화면에서 WO를 발행하세요.</td></tr>';return a.map(function(x,i){var rowCls=x.sc==='delay'?' class="nmc-wo-warn-row"':'';var plan=fmt(x.plan), actual=fmt(x.actual);return '<tr'+rowCls+' data-nmc-wo-id="'+esc(x.id)+'"><td><button type="button" class="nmc-wo-no-final" data-nmc-wo-final-open="'+esc(x.id)+'">'+esc(x.no)+'</button></td><td>'+esc(x.product)+'</td><td>'+esc(x.customer)+'</td><td>'+esc(plan||'-')+'</td><td>'+esc(actual||'-')+'</td><td><div class="nmc-wo-progress-final"><div class="bar"><span style="width:'+x.pct+'%"></span></div><b>'+x.pct+'%</b></div></td><td><span class="nmc-wo-status-final '+x.sc+'">'+esc(x.status)+'</span></td><td>'+esc(x.start||'-')+'</td><td>'+esc(x.due||'-')+'</td><td>'+esc(x.worker||'-')+'</td><td><div class="nmc-wo-actions-final"><button type="button" class="nmc-wo-btn-final" data-nmc-wo-final-open="'+esc(x.id)+'">상세</button><button type="button" class="nmc-wo-btn-final" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafePrint?window.nmcWoSafePrint(this):true">인쇄</button><button type="button" class="nmc-wo-btn-final primary" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafeEdit?window.nmcWoSafeEdit(this):true">수정</button></div></td></tr>'}).join('')}
-  function pageHtml(){return '<div class="ph"><div><div class="ph-title">작업지시 현황</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시 현황</div><div class="ph-sub">작업지시번호, 제품명, 고객사, 계획/실적, 진행률, 상태, 일정, 작업자를 기준으로 WO를 실시간 관리합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">+ 작업지시 등록</button></div></div><div class="nmc-wo-hero-final"><h2>Work Order Monitoring</h2><p>나모케미칼 MES 작업지시 현황 화면입니다. 대기·진행중·완료·지연·보류 상태를 한 화면에서 확인하고, 생산 LOT/실적/작업자 기준으로 추적합니다.</p><div class="nmc-wo-hero-badges"><span class="nmc-wo-hero-badge">WO Monitoring</span><span class="nmc-wo-hero-badge">LOT 연계</span><span class="nmc-wo-hero-badge">진행률 자동계산</span><span class="nmc-wo-hero-badge">지연 자동감지</span></div></div><div id="nmcWoKpiHost">'+renderKpi()+'</div><div class="nmc-wo-toolbar-final"><div class="nmc-wo-toolbar-title">작업지시 목록</div><div class="nmc-wo-filter-final"><input id="nmcWoFinalDate" type="date" title="시작일"><select id="nmcWoFinalStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option><option value="hold">보류</option></select><input id="nmcWoFinalKeyword" type="search" placeholder="WO번호/제품명/고객사/작업자"><button class="btn light sm" id="nmcWoFinalExcel" type="button">엑셀 다운로드</button></div></div><div class="nmc-wo-table-final-wrap"><table class="nmc-wo-table-final"><thead><tr><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th><th>시작일</th><th>예정완료일</th><th>작업자</th><th>작업</th></tr></thead><tbody id="nmcWoFinalBody">'+tableRows()+'</tbody></table></div><div id="nmcWoFinalDetail" class="nmc-wo-detail-final"></div><div class="nmc-wo-recommend-final"><b>운영 기준:</b> 실제 삭제 대신 수정이력/Audit Trail 저장을 권장합니다. 작업지시 저장 시 WO번호, 제품명, 고객사, 계획수량, 시작일, 예정완료일, 작업자를 필수값으로 관리하면 MES 추적성이 좋아집니다.</div>'}
+  function pageHtml(){return '<div class="ph"><div><div class="ph-title">작업지시 현황</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 작업지시 현황</div><div class="ph-sub">작업지시번호, 제품명, 고객사, 계획/실적, 진행률, 상태, 일정, 담당자를 기준으로 WO를 실시간 관리합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">+ 작업지시 등록</button></div></div><div class="nmc-wo-hero-final"><h2>Work Order Monitoring</h2><p>나모케미칼 MES 작업지시 현황 화면입니다. 대기·진행중·완료·지연·보류 상태를 한 화면에서 확인하고, 생산 LOT/실적/담당자 기준으로 추적합니다.</p><div class="nmc-wo-hero-badges"><span class="nmc-wo-hero-badge">WO Monitoring</span><span class="nmc-wo-hero-badge">LOT 연계</span><span class="nmc-wo-hero-badge">진행률 자동계산</span><span class="nmc-wo-hero-badge">지연 자동감지</span></div></div><div id="nmcWoKpiHost">'+renderKpi()+'</div><div class="nmc-wo-toolbar-final"><div class="nmc-wo-toolbar-title">작업지시 목록</div><div class="nmc-wo-filter-final"><input id="nmcWoFinalDate" type="date" title="시작일"><select id="nmcWoFinalStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option><option value="hold">보류</option></select><input id="nmcWoFinalKeyword" type="search" placeholder="WO번호/제품명/고객사/담당자"><button class="btn light sm" id="nmcWoFinalExcel" type="button">엑셀 다운로드</button></div></div><div class="nmc-wo-table-final-wrap"><table class="nmc-wo-table-final"><thead><tr><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th><th>시작일</th><th>예정완료일</th><th>담당자</th><th>작업</th></tr></thead><tbody id="nmcWoFinalBody">'+tableRows()+'</tbody></table></div><div id="nmcWoFinalDetail" class="nmc-wo-detail-final"></div><div class="nmc-wo-recommend-final"><b>운영 기준:</b> 실제 삭제 대신 수정이력/Audit Trail 저장을 권장합니다. 작업지시 저장 시 WO번호, 제품명, 고객사, 계획수량, 시작일, 예정완료일, 담당자를 필수값으로 관리하면 MES 추적성이 좋아집니다.</div>'}
   function ensurePage(){var c=q('.content');if(!c)return;var p=q('#page-workorder-list');if(!p){p=document.createElement('section');p.className='page';p.id='page-workorder-list';c.appendChild(p)}if(!p.dataset.nmcWoFinalApplied){p.innerHTML=pageHtml();p.dataset.nmcWoFinalApplied='1'}}
   function refresh(){var p=q('#page-workorder-list');if(!p)return;var k=q('#nmcWoKpiHost',p);if(k)k.innerHTML=renderKpi();var b=q('#nmcWoFinalBody',p);if(b)b.innerHTML=tableRows()}
-  function openDetail(id){var x=allOrders().filter(function(o){return String(o.id)===String(id)})[0];if(!x)return;var host=q('#nmcWoFinalDetail');if(!host)return;var mats=x.materials.length?x.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],'-'))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],'-'))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],'-'))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],'-'))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6" class="nmc-wo-empty-final">등록된 투입 원료 정보가 없습니다.</td></tr>';host.innerHTML='<h3 style="margin:0;font-size:18px;font-weight:900;color:#0f172a">작업지시 상세</h3><div class="nmc-wo-detail-grid-final"><div class="nmc-wo-detail-cell-final"><b>작업지시번호</b><span>'+esc(x.no)+'</span></div><div class="nmc-wo-detail-cell-final"><b>상태</b><span>'+esc(x.status)+'</span></div><div class="nmc-wo-detail-cell-final"><b>제품명</b><span>'+esc(x.product)+'</span></div><div class="nmc-wo-detail-cell-final"><b>고객사</b><span>'+esc(x.customer)+'</span></div><div class="nmc-wo-detail-cell-final"><b>계획수량</b><span>'+esc(fmt(x.plan)||'-')+'</span></div><div class="nmc-wo-detail-cell-final"><b>실적수량</b><span>'+esc(fmt(x.actual)||'-')+'</span></div><div class="nmc-wo-detail-cell-final"><b>시작일</b><span>'+esc(x.start)+'</span></div><div class="nmc-wo-detail-cell-final"><b>예정완료일</b><span>'+esc(x.due)+'</span></div><div class="nmc-wo-detail-cell-final"><b>작업자</b><span>'+esc(x.worker)+'</span></div><div class="nmc-wo-detail-cell-final"><b>생산 LOT</b><span>'+esc(x.lot)+'</span></div><div class="nmc-wo-detail-cell-final"><b>제품코드</b><span>'+esc(x.code)+'</span></div><div class="nmc-wo-detail-cell-final"><b>수신/참조</b><span>'+esc(x.receiver)+' / '+esc(x.ref)+'</span></div></div><h4 style="margin:16px 0 8px">투입 원료</h4><div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div><h4 style="margin:16px 0 8px">비고/지시사항</h4><div class="nmc-wo-detail-box-final">'+esc(x.note||'-')+'</div>';host.classList.add('show');host.scrollIntoView({behavior:'smooth',block:'start'})}
-  function excel(){var rows=[['작업지시번호','제품명','고객사','계획수량','실적수량','진행률','상태','시작일','예정완료일','작업자']];filtered().forEach(function(x){rows.push([x.no,x.product,x.customer,x.plan,x.actual,x.pct+'%',x.status,x.start,x.due,x.worker])});if(window.XLSX){var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'작업지시 현황');XLSX.writeFile(wb,'작업지시_현황.xlsx')}else{var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='작업지시_현황.csv';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000)}}
+  function openDetail(id){var x=allOrders().filter(function(o){return String(o.id)===String(id)})[0];if(!x)return;var host=q('#nmcWoFinalDetail');if(!host)return;var mats=x.materials.length?x.materials.map(function(m,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(pick(m,['name','material','materialName','rawName'],'-'))+'</td><td>'+esc(pick(m,['lot','lotNo','materialLot','rawLot'],'-'))+'</td><td>'+esc(pick(m,['actualQty','qty','inputQty','planQty'],'-'))+'</td><td>'+esc(pick(m,['ratio','rate','percent'],'-'))+'</td><td>'+esc(pick(m,['note','remark','memo'],''))+'</td></tr>'}).join(''):'<tr><td colspan="6" class="nmc-wo-empty-final">등록된 투입 원료 정보가 없습니다.</td></tr>';host.innerHTML='<h3 style="margin:0;font-size:18px;font-weight:900;color:#0f172a">작업지시 상세</h3><div class="nmc-wo-detail-grid-final"><div class="nmc-wo-detail-cell-final"><b>작업지시번호</b><span>'+esc(x.no)+'</span></div><div class="nmc-wo-detail-cell-final"><b>상태</b><span>'+esc(x.status)+'</span></div><div class="nmc-wo-detail-cell-final"><b>제품명</b><span>'+esc(x.product)+'</span></div><div class="nmc-wo-detail-cell-final"><b>고객사</b><span>'+esc(x.customer)+'</span></div><div class="nmc-wo-detail-cell-final"><b>계획수량</b><span>'+esc(fmt(x.plan)||'-')+'</span></div><div class="nmc-wo-detail-cell-final"><b>실적수량</b><span>'+esc(fmt(x.actual)||'-')+'</span></div><div class="nmc-wo-detail-cell-final"><b>시작일</b><span>'+esc(x.start)+'</span></div><div class="nmc-wo-detail-cell-final"><b>예정완료일</b><span>'+esc(x.due)+'</span></div><div class="nmc-wo-detail-cell-final"><b>담당자</b><span>'+esc(x.worker)+'</span></div><div class="nmc-wo-detail-cell-final"><b>생산 LOT</b><span>'+esc(x.lot)+'</span></div><div class="nmc-wo-detail-cell-final"><b>제품코드</b><span>'+esc(x.code)+'</span></div><div class="nmc-wo-detail-cell-final"><b>수신/참조</b><span>'+esc(x.receiver)+' / '+esc(x.ref)+'</span></div></div><h4 style="margin:16px 0 8px">투입 원료</h4><div class="tw"><table><thead><tr><th>No</th><th>원료명</th><th>LOT</th><th>투입량</th><th>비율</th><th>비고</th></tr></thead><tbody>'+mats+'</tbody></table></div><h4 style="margin:16px 0 8px">비고/지시사항</h4><div class="nmc-wo-detail-box-final">'+esc(x.note||'-')+'</div>';host.classList.add('show');host.scrollIntoView({behavior:'smooth',block:'start'})}
+  function excel(){var rows=[['작업지시번호','제품명','고객사','계획수량','실적수량','진행률','상태','시작일','예정완료일','담당자']];filtered().forEach(function(x){rows.push([x.no,x.product,x.customer,x.plan,x.actual,x.pct+'%',x.status,x.start,x.due,x.worker])});if(window.XLSX){var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'작업지시 현황');XLSX.writeFile(wb,'작업지시_현황.xlsx')}else{var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='작업지시_현황.csv';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000)}}
   function boot(){ensurePage();refresh()}
   document.addEventListener('click',function(e){var nav=e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');if(nav){setTimeout(boot,60)}var open=e.target.closest&&e.target.closest('[data-nmc-wo-final-open]');if(open){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openDetail(open.getAttribute('data-nmc-wo-final-open'));return false}var ex=e.target.closest&&e.target.closest('#nmcWoFinalExcel');if(ex){e.preventDefault();excel();return false}},true);
   document.addEventListener('input',function(e){if(e.target&&e.target.id==='nmcWoFinalKeyword')refresh()},true);
@@ -16480,7 +16480,7 @@ document.addEventListener('click',function(e){
     var wrap = document.createElement('div');
     wrap.className = 'namo-send-check-wrap';
     wrap.setAttribute('data-for', id);
-    wrap.innerHTML = '<div class="namo-send-check-summary"><span class="count">0개 선택됨</span><span class="hint"></span></div><div class="namo-send-check-list"></div>';
+    wrap.innerHTML = '<div class="namo-send-check-summary"><span class="count">0개 선택됨</span><span class="hint">왼쪽 클릭으로 체크</span></div><div class="namo-send-check-list"></div>';
     sel.parentNode.insertBefore(wrap, sel.nextSibling);
 
     function render(){
@@ -16539,164 +16539,6 @@ document.addEventListener('click',function(e){
   }, true);
 })();
 </script>
-
-
-
-<!-- NAMO WORKER TWO PERSON INTEGRATION PATCH 20260701 START -->
-<style id="namo-worker-two-person-style-20260701">
-#page-workorder-final #nmcWorker{
-  width:100%!important;
-  min-height:46px!important;
-  border:1.5px solid #cfd9e8!important;
-  border-radius:12px!important;
-  background:#fff!important;
-  color:#0f172a!important;
-  font-size:15px!important;
-  font-weight:800!important;
-  padding:0 14px!important;
-  outline:none!important;
-}
-#page-workorder-final #nmcWorker:focus{
-  border-color:#2563eb!important;
-  box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;
-}
-</style>
-<script id="namo-worker-two-person-integration-20260701">
-(function(){
-  'use strict';
-  if(window.__NAMO_WORKER_TWO_PERSON_INTEGRATION_20260701__) return;
-  window.__NAMO_WORKER_TWO_PERSON_INTEGRATION_20260701__=true;
-
-  var WORKERS=['박도훈','문지훈'];
-  var BAD_VALUES={'login-user':1,'login_user':1,'LOGIN-USER':1,'admin':1,'관리자':1,'-':1};
-  var STORE_KEYS=['nmcWorkOrders','workOrders','workorders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','nmc_workorder_sent_items','qms_worklog','worklog','productionResults','productionProgress'];
-  var WORKER_KEYS=['worker','operator','operatorName','workUser','workUserName','productionWorker','prodWorker','nmcWorker','manager','managerName','prodManager','personInCharge'];
-
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
-  function norm(v){return clean(v).toLowerCase().replace(/[\s\-_/.\\#()]+/g,'')}
-  function pick(o,keys,d){o=o||{};for(var i=0;i<keys.length;i++){var k=keys[i];if(o[k]!=null&&clean(o[k]))return clean(o[k])}return d||''}
-  function read(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
-  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-  function nameFromAny(v){
-    v=clean(v);
-    if(!v || BAD_VALUES[v]) return '';
-    for(var i=0;i<WORKERS.length;i++){ if(norm(v)===norm(WORKERS[i]) || v.indexOf(WORKERS[i])>=0) return WORKERS[i]; }
-    return v;
-  }
-  function findWorkerInObject(o){
-    var v=nameFromAny(pick(o,WORKER_KEYS,''));
-    if(v) return v;
-    return '';
-  }
-  function repairObject(o){
-    if(!o || typeof o!=='object') return false;
-    var changed=false;
-    var w=findWorkerInObject(o);
-    if(w){
-      WORKER_KEYS.forEach(function(k){
-        if(o[k]!==w){ o[k]=w; changed=true; }
-      });
-      if(o.writer && WORKERS.indexOf(clean(o.writer))>=0){ delete o.writer; changed=true; }
-    }else{
-      WORKER_KEYS.forEach(function(k){
-        if(o[k] && BAD_VALUES[clean(o[k])]){ o[k]=''; changed=true; }
-      });
-    }
-    Object.keys(o).forEach(function(k){
-      var c=o[k];
-      if(c && typeof c==='object'){
-        if(Array.isArray(c)) c.forEach(function(x){ if(repairObject(x)) changed=true; });
-        else if(repairObject(c)) changed=true;
-      }
-    });
-    return changed;
-  }
-  function repairStores(){
-    STORE_KEYS.forEach(function(k){
-      var v=read(k);
-      if(v==null) return;
-      if(repairObject(v)) write(k,v);
-    });
-    try{ if(window.state && repairObject(window.state)){ /* state only, no write needed */ } }catch(e){}
-  }
-  function ensureWorkerSelect(){
-    var el=qs('#page-workorder-final #nmcWorker')||qs('#nmcWorker');
-    if(!el) return;
-    var cur=nameFromAny(el.value||el.getAttribute('value')||'');
-    if(el.tagName!=='SELECT'){
-      var sel=document.createElement('select');
-      sel.id='nmcWorker';
-      sel.className=(el.className||'nmc-input')+' nmc-select';
-      sel.innerHTML='<option value="">작업자 선택</option>'+WORKERS.map(function(w){return '<option value="'+w+'">'+w+'</option>';}).join('');
-      el.parentNode.replaceChild(sel,el);
-      el=sel;
-    }else{
-      var html='<option value="">작업자 선택</option>'+WORKERS.map(function(w){return '<option value="'+w+'">'+w+'</option>';}).join('');
-      if(el.innerHTML.replace(/\s+/g,'')!==html.replace(/\s+/g,'')) el.innerHTML=html;
-    }
-    if(cur && WORKERS.indexOf(cur)>=0) el.value=cur;
-    if(el.value && WORKERS.indexOf(el.value)<0) el.value='';
-  }
-  function currentWorker(){
-    var el=qs('#page-workorder-final #nmcWorker')||qs('#nmcWorker');
-    return nameFromAny(el&&el.value);
-  }
-  function syncFormWorkerToDrafts(){
-    var w=currentWorker(); if(!w) return;
-    try{
-      ['nmcWorkorderEditDraft','nmcWorkorderDraft'].forEach(function(k){
-        var o=read(k); if(o&&typeof o==='object'){WORKER_KEYS.forEach(function(x){o[x]=w}); write(k,o);}
-      });
-    }catch(e){}
-  }
-  function patchHeaders(root){
-    qsa('th',root||document).forEach(function(th){
-      var t=clean(th.textContent);
-      if(t==='담당자') th.textContent='작업자';
-    });
-    qsa('.ph-sub,.nmc-wo-hero-final p,.nmc-wo-recommend-final',root||document).forEach(function(el){
-      el.textContent=el.textContent.replace(/담당자/g,'작업자');
-    });
-    qsa('input[placeholder]',root||document).forEach(function(el){
-      if(/담당자/.test(el.getAttribute('placeholder')||'')) el.setAttribute('placeholder',(el.getAttribute('placeholder')||'').replace(/담당자/g,'작업자'));
-    });
-    qsa('.nmc-wo-detail-cell-final b',root||document).forEach(function(b){if(clean(b.textContent)==='담당자')b.textContent='작업자'});
-    qsa('td',root||document).forEach(function(td){
-      if(BAD_VALUES[clean(td.textContent)]) td.textContent='';
-    });
-  }
-  function beforeSave(){ensureWorkerSelect();syncFormWorkerToDrafts();repairStores();}
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest&&e.target.closest('[data-nmc-action="send"],[data-nmc-action="write"],[data-nmc-action="draft"],button');
-    if(b && /발송|저장|작성|등록|수정/.test(clean(b.textContent||b.value||''))) beforeSave();
-  },true);
-  document.addEventListener('change',function(e){if(e.target&&e.target.id==='nmcWorker')syncFormWorkerToDrafts();},true);
-
-  var oldSet=Storage.prototype.setItem;
-  try{
-    Storage.prototype.setItem=function(k,v){
-      if(STORE_KEYS.indexOf(k)>=0){
-        try{var obj=JSON.parse(v); if(repairObject(obj)) v=JSON.stringify(obj);}catch(e){}
-      }
-      return oldSet.call(this,k,v);
-    };
-  }catch(e){}
-
-  function boot(){
-    ensureWorkerSelect();
-    repairStores();
-    patchHeaders(document);
-    setTimeout(function(){ensureWorkerSelect();patchHeaders(document);},300);
-    setTimeout(function(){ensureWorkerSelect();repairStores();patchHeaders(document);},1200);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  try{new MutationObserver(function(){ensureWorkerSelect();patchHeaders(document);}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
-  window.namoWorkerTwoPersonPatch=boot;
-})();
-</script>
-<!-- NAMO WORKER TWO PERSON INTEGRATION PATCH 20260701 END -->
 
 </body>
 </html>
