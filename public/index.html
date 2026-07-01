@@ -16579,5 +16579,139 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+<!-- NAMO WORKORDER WORKER + CUSTOMER FINAL FIX 20260701 START -->
+<script id="namo-workorder-worker-customer-final-fix-20260701">
+(function(){
+  'use strict';
+  if(window.__NAMO_WORKORDER_WORKER_CUSTOMER_FINAL_FIX_20260701__) return;
+  window.__NAMO_WORKORDER_WORKER_CUSTOMER_FINAL_FIX_20260701__ = true;
+
+  var KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory','nmcSentWorkorders','productionResults','nmcProductionLogs','productionLogs','productionWorkOrders','prodWorkOrders'];
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function clean(v){return String(v==null?'':v).trim();}
+  function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean(v));}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&clean(v)!=='')return v;}return fb||'';}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify((a||[]).slice(0,500)));}catch(e){}}
+  function currentName(){
+    var c=[];
+    try{c.push(window.state&&window.state.currentUser&&window.state.currentUser.name);}catch(e){}
+    try{c.push(window.currentUser&&window.currentUser.name);}catch(e){}
+    try{c.push(window.loginUser&&window.loginUser.name);}catch(e){}
+    try{c.push((JSON.parse(localStorage.getItem('currentUser')||'{}')||{}).name);}catch(e){}
+    try{c.push((JSON.parse(localStorage.getItem('nmc_current_user')||'{}')||{}).name);}catch(e){}
+    var p=qs('.pname'); if(p)c.push(p.textContent);
+    for(var i=0;i<c.length;i++){var v=clean(c[i]); if(v&&v!=='로그인 사용자'&&v!=='login-user'&&v!=='-') return v;}
+    return '';
+  }
+  function userPool(){
+    var out=[];
+    ['users','nmcUsers','nmc_users','qmsUsers','members','nmcMembers','userList','nmcUserList','employees','nmcEmployees'].forEach(function(k){out=out.concat(readArr(k));});
+    try{if(Array.isArray(window.users))out=out.concat(window.users);}catch(e){}
+    try{if(Array.isArray(window.nmcUsers))out=out.concat(window.nmcUsers);}catch(e){}
+    return out.filter(Boolean);
+  }
+  function nameOf(v,raw){
+    var s=clean(v);
+    var direct=clean(pick(raw,['workerName','operatorName','prodManagerName','managerName','producerName','writerName','senderName','createdByName'],''));
+    if(direct && !isUuid(direct)) return direct;
+    if(!s || s==='-' || s==='login-user' || s==='로그인 사용자') return currentName() || '-';
+    if(!isUuid(s)) return s;
+    var pool=userPool();
+    for(var i=0;i<pool.length;i++){
+      var u=pool[i]||{};
+      var ids=[u.id,u.uid,u.userId,u.uuid,u.email,u.loginId,u.username].map(clean);
+      if(ids.indexOf(s)>=0){
+        return clean(u.name||u.userName||u.displayName||u.fullName||u.korName||u.label||u.email)||s;
+      }
+    }
+    return direct || currentName() || s;
+  }
+  function formVal(id){var el=document.getElementById(id);return el?clean(el.value):'';}
+  function identity(o){return clean(pick(o,['id','uid','woNo','no','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','lot'],''));}
+  function same(o,key){
+    var vals=[identity(o),o&&o.id,o&&o.uid,o&&o.woNo,o&&o.no,o&&o.workOrderNo,o&&o.orderNo,o&&o.nmcWoNo,o&&o.docNo,o&&o.prodLot,o&&o.lot].map(clean).filter(Boolean);
+    return vals.indexOf(clean(key))>=0;
+  }
+  function normalizeStoredRecord(o){
+    if(!o||typeof o!=='object') return o;
+    var cust=clean(pick(o,['nmcCustomerName','customerName','customer','client','clientName'],''));
+    if(cust){o.customer=cust;o.customerName=cust;o.client=cust;o.nmcCustomerName=cust;}
+    var wr=nameOf(pick(o,['worker','workerName','operator','operatorName','prodManager','manager','managerName','producer','producerName','writerName','senderName','createdByName','createdBy'],''),o);
+    if(wr&&wr!=='-'){o.worker=wr;o.workerName=wr;o.operator=wr;o.managerName=wr;o.producer=wr;o.producerName=wr;}
+    return o;
+  }
+  function syncEditDraft(){
+    var page=qs('#page-workorder-final');
+    var key=(page&&page.dataset&&page.dataset.nmcEditId)||localStorage.getItem('nmcWorkorderEditId')||formVal('nmcWoNo');
+    if(!key) return;
+    var cust=formVal('nmcCustomerName');
+    var worker=formVal('nmcWorker');
+    try{
+      var draft=JSON.parse(localStorage.getItem('nmcWorkorderEditDraft')||'{}')||{};
+      if(cust){draft.customer=cust;draft.customerName=cust;draft.client=cust;draft.nmcCustomerName=cust;}
+      if(worker){draft.worker=nameOf(worker,draft);draft.workerName=draft.worker;draft.operator=draft.worker;draft.managerName=draft.worker;draft.producer=draft.worker;draft.producerName=draft.worker;}
+      localStorage.setItem('nmcWorkorderEditDraft',JSON.stringify(draft));
+    }catch(e){}
+    KEYS.forEach(function(k){
+      var arr=readArr(k), changed=false;
+      arr.forEach(function(o){
+        if(same(o,key)){
+          if(cust){o.customer=cust;o.customerName=cust;o.client=cust;o.nmcCustomerName=cust;}
+          if(worker){var w=nameOf(worker,o);o.worker=w;o.workerName=w;o.operator=w;o.managerName=w;o.producer=w;o.producerName=w;}
+          changed=true;
+        }
+      });
+      if(changed) writeArr(k,arr);
+    });
+  }
+  function rewriteLabels(root){
+    root=root||document;
+    qsa('th,label,b,span,div,p,button,input',root).forEach(function(el){
+      if(el.tagName==='INPUT'){
+        var ph=el.getAttribute('placeholder')||'';
+        if(ph.indexOf('생산자')>-1) el.setAttribute('placeholder',ph.replace(/생산자/g,'작업자'));
+        return;
+      }
+      if(el.childNodes&&el.childNodes.length===1&&el.childNodes[0].nodeType===3){
+        var t=el.textContent||'';
+        if(t.indexOf('생산자')>-1) el.textContent=t.replace(/생산자/g,'작업자');
+      }
+    });
+  }
+  function patchTableValues(root){
+    root=root||document;
+    qsa('#page-workorder-list table,#page-production-result table',root).forEach(function(table){
+      var heads=qsa('thead th',table).map(function(th){return clean(th.textContent);});
+      var workerIdx=heads.indexOf('작업자');
+      if(workerIdx<0) workerIdx=heads.indexOf('생산자');
+      if(workerIdx<0) return;
+      qsa('tbody tr',table).forEach(function(tr){
+        var cells=qsa('td',tr); if(!cells[workerIdx]) return;
+        var txt=clean(cells[workerIdx].textContent);
+        if(isUuid(txt)||txt==='login-user'||txt==='로그인 사용자') cells[workerIdx].textContent=nameOf(txt,null);
+      });
+    });
+  }
+  function normalizeStorage(){KEYS.forEach(function(k){var a=readArr(k),ch=false;a.forEach(function(o){var before=JSON.stringify(o);normalizeStoredRecord(o);if(JSON.stringify(o)!==before)ch=true;});if(ch)writeArr(k,a);});}
+  function refreshKnown(){
+    try{ if(typeof window.nmcRenderWorkOrderStatusDashboard==='function') window.nmcRenderWorkOrderStatusDashboard(); }catch(e){}
+    try{ if(typeof window.renderWorkorderStatus==='function') window.renderWorkorderStatus(); }catch(e){}
+    try{ if(typeof window.renderWorkOrderHistory==='function') window.renderWorkOrderHistory(); }catch(e){}
+    try{ if(typeof window.renderHistory==='function') window.renderHistory(); }catch(e){}
+  }
+  function apply(){normalizeStorage();rewriteLabels(document);patchTableValues(document);}
+  document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest&&e.target.closest('#nmcEditSaveBtn,[data-nmc-action="write"],[data-nmc-action="send"],[data-nmc-action="draft"]')){syncEditDraft();setTimeout(function(){normalizeStorage();refreshKnown();apply();},200);setTimeout(function(){normalizeStorage();refreshKnown();apply();},900);}},true);
+  document.addEventListener('input',function(e){if(e.target&&/^(nmcCustomerName|nmcWorker)$/.test(e.target.id||''))syncEditDraft();},true);
+  document.addEventListener('click',function(){setTimeout(apply,80);setTimeout(apply,600);},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
+  [200,800,1600,3000].forEach(function(t){setTimeout(apply,t);});
+  try{new MutationObserver(function(){apply();}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});}catch(e){}
+  window.namoFixWorkorderWorkerCustomer20260701=function(){syncEditDraft();normalizeStorage();refreshKnown();apply();};
+})();
+</script>
+<!-- NAMO WORKORDER WORKER + CUSTOMER FINAL FIX 20260701 END -->
+
 </body>
 </html>
