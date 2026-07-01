@@ -3701,32 +3701,29 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 
 
 
-<style id="namo-login-car-shift-right-only-20260701">
-/* 로그인 바탕화면 전용: 자동차 위치만 오른쪽으로 이동
-   - 로그인 후 QMES 내부 화면에는 적용되지 않음
-   - 기존 배터리/로그인 카드/기능 스크립트는 그대로 유지 */
-body.login-active #loginPage .namo-final-car{
-  left:590px!important;
-  top:278px!important;
-  width:760px!important;
-  height:506px!important;
+<!-- NAMO LOGIN ONLY MINIMAL PATCH 20260701
+     범위: 로그인 화면만 / 자동차 오른쪽 이동 / 로그인 중 대시보드 겹침 방지 -->
+<style id="namo-login-only-car-right-safe-20260701">
+/* 로그인 화면이 떠 있을 때는 로그인 화면이 최상단에 오도록 고정 */
+body.login-active #loginPage{
+  z-index:3000!important;
 }
-body.login-active #loginPage .namo-final-hud{
-  left:760px!important;
+
+/* 로그인 전/로그인 중에는 QMES 본 화면이 뒤에 겹쳐 보이지 않도록 숨김 */
+body.login-active .shell{
+  display:none!important;
 }
+
+/* 로그인 바탕화면 자동차만 오른쪽으로 이동 */
+#loginPage .namo-final-car{
+  left:620px!important;
+}
+
+/* 작은 화면에서도 기존 위치보다 오른쪽으로만 보정 */
 @media(max-width:1280px){
-  body.login-active #loginPage .namo-final-car{
-    left:500px!important;
-    top:292px!important;
-    width:705px!important;
-    height:470px!important;
+  #loginPage .namo-final-car{
+    left:520px!important;
   }
-  body.login-active #loginPage .namo-final-hud{
-    left:675px!important;
-  }
-}
-@media(max-width:900px){
-  body.login-active #loginPage .namo-final-car{display:none!important;}
 }
 </style>
 
