@@ -16899,5 +16899,115 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO WORKORDER EDIT FIELD/MATERIAL FINAL FIX 20260701-2 END -->
 
+
+<!-- NAMO_DATE_DESC_SORT_FINAL_20260701_START -->
+<script id="namo-date-desc-sort-final-20260701">
+(function(){
+  'use strict';
+  if(window.__NAMO_DATE_DESC_SORT_FINAL_20260701__) return;
+  window.__NAMO_DATE_DESC_SORT_FINAL_20260701__ = true;
+
+  function q(s,r){ return (r||document).querySelector(s); }
+  function qa(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+  function text(el){ return (el && el.textContent || '').trim(); }
+  function normDate(v){
+    v = String(v||'').trim();
+    var m = v.match(/(20\d{2})[-/.년\s]*(\d{1,2})[-/.월\s]*(\d{1,2})/);
+    if(!m) return 0;
+    var y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    if(!y || !mo || !d) return 0;
+    return new Date(y, mo-1, d).getTime() || 0;
+  }
+  function woNoValue(v){
+    v = String(v||'');
+    var nums = v.match(/\d+/g);
+    return nums ? nums.join('').slice(-12) : v;
+  }
+  function colIndex(table, names, fallback){
+    var ths = qa('thead th', table).map(function(th){ return text(th).replace(/\s+/g,''); });
+    for(var i=0;i<ths.length;i++){
+      for(var j=0;j<names.length;j++){
+        if(ths[i] === names[j] || ths[i].indexOf(names[j]) > -1) return i;
+      }
+    }
+    return fallback;
+  }
+  function renameWorkerHeaders(root){
+    qa('th', root||document).forEach(function(th){
+      var t = text(th);
+      if(t === '생산자' || t === '생산 담당자' || t === '생산담당자') th.textContent = '작업자';
+    });
+    var sub = q('#page-workorder-list .ph-sub');
+    if(sub) sub.textContent = sub.textContent.replace(/생산자/g,'작업자');
+    qa('#page-workorder-list .nmc-wo-hero-final p,#page-workorder-list .nmc-wo-recommend-final',document).forEach(function(el){
+      el.innerHTML = el.innerHTML.replace(/생산자/g,'작업자');
+    });
+  }
+  function sortTable(table, dateNames, dateFallback, noNames, noFallback){
+    if(!table || table.dataset.namoSorting === '1') return;
+    var tbody = q('tbody', table);
+    if(!tbody) return;
+    var rows = qa('tr', tbody).filter(function(tr){ return qa('td', tr).length > 1 && !tr.classList.contains('nmc-result-empty') && !tr.classList.contains('nmc-wo-empty-final'); });
+    if(rows.length < 2) return;
+    var dateIdx = colIndex(table, dateNames, dateFallback);
+    var noIdx = colIndex(table, noNames, noFallback);
+    rows.sort(function(a,b){
+      var ac = qa('td',a), bc = qa('td',b);
+      var da = normDate(text(ac[dateIdx]));
+      var db = normDate(text(bc[dateIdx]));
+      if(db !== da) return db - da; // 최신 날짜가 위로
+      var na = text(ac[noIdx]);
+      var nb = text(bc[noIdx]);
+      return String(woNoValue(nb)).localeCompare(String(woNoValue(na)), undefined, {numeric:true, sensitivity:'base'});
+    });
+    table.dataset.namoSorting = '1';
+    rows.forEach(function(tr){ tbody.appendChild(tr); });
+    setTimeout(function(){ delete table.dataset.namoSorting; },0);
+  }
+  function apply(){
+    renameWorkerHeaders(document);
+    // 생산실적: 생산일자 최신순, 같은 날짜면 작업지시번호 내림차순
+    qa('#page-production-result table').forEach(function(table){
+      sortTable(table, ['생산일자','작업일자','일자','날짜'], 0, ['작업지시번호','WO번호','작업지시'], 1);
+    });
+    // 작업지시 현황: 시작일 최신순, 같은 날짜면 작업지시번호 내림차순
+    qa('#page-workorder-list table').forEach(function(table){
+      sortTable(table, ['시작일','생산일자','작업일자','일자'], 7, ['작업지시번호','WO번호','작업지시'], 0);
+    });
+    // LOT 추적/생산진행 등 보이는 생산 관련 표도 날짜 컬럼이 있으면 최신순 보강
+    qa('#page-trace table,#page-production-progress table,#page-production table').forEach(function(table){
+      sortTable(table, ['생산일자','작업일자','출하일자','입고일자','시작일','일자'], 0, ['작업지시번호','LOT','LOT번호'], 1);
+    });
+  }
+  var oldShow = window.showPage;
+  if(typeof oldShow === 'function' && !oldShow.__namoDateSortWrapped){
+    var wrapped = function(pg){
+      var r = oldShow.apply(this, arguments);
+      setTimeout(apply, 80);
+      setTimeout(apply, 250);
+      return r;
+    };
+    wrapped.__namoDateSortWrapped = true;
+    window.showPage = wrapped;
+  }
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-page],[data-page-target],.nav-item,.btn')){
+      setTimeout(apply, 120);
+      setTimeout(apply, 350);
+    }
+  }, true);
+  document.addEventListener('input', function(e){
+    if(e.target && /nmc(Result|WoFinal)/.test(e.target.id||'')) setTimeout(apply, 100);
+  }, true);
+  document.addEventListener('change', function(e){
+    if(e.target && /nmc(Result|WoFinal)/.test(e.target.id||'')) setTimeout(apply, 100);
+  }, true);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply); else apply();
+  [200,600,1200,2500,4000].forEach(function(t){ setTimeout(apply,t); });
+  try{ new MutationObserver(function(){ clearTimeout(window.__namoDateSortTimer); window.__namoDateSortTimer=setTimeout(apply,80); }).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+})();
+</script>
+<!-- NAMO_DATE_DESC_SORT_FINAL_20260701_END -->
+
 </body>
 </html>
