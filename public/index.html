@@ -3701,139 +3701,52 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 
 
 
-<style id="login-background-isolation-fix-20260701">
-/* 로그인 전 배경은 #loginPage 안에서만 사용하고, 로그인 후에는 완전 제거 */
-body:not(.login-active) #loginPage,
-body:not(.login-active) #loginPage::before,
-body:not(.login-active) #loginPage::after,
-body:not(.login-active) #loginPage *{
+<style id="namo-login-background-only-fix-20260701">
+/* 로그인 바탕화면 전용 적용 패치
+   - 로그인 후에는 로그인 배경/자동차/배터리/로그인카드를 완전히 숨김
+   - QMES 본 화면(대시보드/상단바/사이드바)에는 절대 겹치지 않도록 처리
+*/
+body:not(.login-active) #loginPage{
   display:none!important;
   visibility:hidden!important;
   opacity:0!important;
   pointer-events:none!important;
+  z-index:-1!important;
 }
-body:not(.login-active) #loginPage{
-  position:absolute!important;
-  z-index:-9999!important;
-  width:0!important;
-  height:0!important;
-  min-height:0!important;
-  overflow:hidden!important;
-  background:transparent!important;
+body:not(.login-active) #loginPage *,
+body:not(.login-active) #loginPage::before,
+body:not(.login-active) #loginPage::after{
+  display:none!important;
+  visibility:hidden!important;
 }
 body:not(.login-active){
   background:var(--bg)!important;
+  overflow:hidden!important;
 }
-body.login-active .shell{
-  display:none!important;
+body:not(.login-active) .shell{
+  display:flex!important;
+  position:relative!important;
+  z-index:1!important;
+  background:var(--bg)!important;
+}
+body:not(.login-active) .topbar,
+body:not(.login-active) .layout,
+body:not(.login-active) .sidebar,
+body:not(.login-active) .content{
+  position:relative!important;
+  z-index:2!important;
 }
 body.login-active #loginPage{
   display:block!important;
   visibility:visible!important;
   opacity:1!important;
+  pointer-events:auto!important;
   z-index:9999!important;
 }
-</style>
-
-
-
-<style id="namo-login-side-car-center-final-20260701">
-/* 2026-07-01 로그인 배경 최종: 자동차 옆모습 + 하부 배터리팩 + 중앙 배치 */
-body.login-active #loginPage{
-  background:#031025!important;
-}
-body.login-active #loginPage::before{
-  background:
-    radial-gradient(circle at 24% 32%,rgba(20,160,255,.30),transparent 34%),
-    radial-gradient(circle at 55% 68%,rgba(0,210,255,.22),transparent 34%),
-    radial-gradient(circle at 72% 40%,rgba(37,99,235,.16),transparent 38%),
-    linear-gradient(135deg,#061225 0%,#0a2a55 48%,#05213d 100%)!important;
-}
-body.login-active #loginPage .namo-final-car{
-  left:250px!important;
-  top:255px!important;
-  width:780px!important;
-  height:410px!important;
-  opacity:.98!important;
-  z-index:3!important;
-  background:none!important;
-  mix-blend-mode:normal!important;
-  filter:drop-shadow(0 0 30px rgba(14,165,233,.42)) drop-shadow(0 18px 38px rgba(0,0,0,.24))!important;
-  animation:namoCarFloatFinal 7s ease-in-out infinite!important;
-}
-body.login-active #loginPage .namo-final-car svg{
-  display:block!important;
-  width:100%!important;
-  height:100%!important;
-}
-body.login-active #loginPage .namo-final-car .car-battery-pack{
-  transform-box:fill-box!important;
-  transform-origin:center center!important;
-  transform:translate(-36px,20px) scale(1.18)!important;
-  filter:drop-shadow(0 0 18px rgba(34,211,238,.85))!important;
-  animation:namoCarBatteryPulseFinal 3.4s ease-in-out infinite!important;
-}
-body.login-active #loginPage .namo-final-road{
-  display:block!important;
-  left:255px!important;
-  top:562px!important;
-  width:780px!important;
-  height:190px!important;
-  opacity:.80!important;
-  z-index:2!important;
-}
-body.login-active #loginPage .namo-final-hud{
-  left:690px!important;
-  top:70px!important;
-  z-index:4!important;
-}
-body.login-active #loginPage .namo-final-battery{
-  left:50px!important;
-  top:70px!important;
-  width:560px!important;
-  height:235px!important;
-}
-body.login-active #loginPage .namo-login-panel{
-  left:54px!important;
-  top:355px!important;
-  width:420px!important;
-  z-index:5!important;
-}
-body.login-active #loginPage .namo-login-title{
-  font-size:34px!important;
-  max-width:420px!important;
-}
-body.login-active #loginPage .namo-login-desc{
-  max-width:390px!important;
-}
-body.login-active #loginPage .namo-login-icons{
-  grid-template-columns:repeat(4,86px)!important;
-  gap:10px!important;
-  max-width:420px!important;
-  margin-top:24px!important;
-}
-body.login-active #loginPage .namo-login-icon{
-  min-height:76px!important;
-  border-radius:12px!important;
-}
-body.login-active #loginPage .lcard{
-  right:58px!important;
-  width:390px!important;
-  z-index:10!important;
-}
-@media(max-width:1280px){
-  body.login-active #loginPage .namo-final-car{left:230px!important;top:285px!important;width:690px!important;height:365px!important;}
-  body.login-active #loginPage .namo-final-road{left:240px!important;top:560px!important;width:680px!important;height:160px!important;}
-  body.login-active #loginPage .namo-final-hud{left:600px!important;}
-  body.login-active #loginPage .namo-final-battery{width:500px!important;}
-}
-@media(max-width:900px){
-  body.login-active #loginPage .namo-final-visual,
-  body.login-active #loginPage .namo-login-panel{display:none!important;}
-  body.login-active #loginPage .lcard{left:50%!important;right:auto!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(390px,calc(100vw - 32px))!important;}
+body.login-active .shell{
+  display:none!important;
 }
 </style>
-
 </head>
 <body class="login-active">
 
@@ -4918,7 +4831,7 @@ function hasLoginHint(){
   return !!getAuthToken() || sessionStorage.getItem('qms_logged_in')==='1';
 }
 function showLoggedOut(){
-  const lp=$('loginPage'); if(lp){ lp.style.setProperty('display','block','important'); lp.style.removeProperty('z-index'); }
+  const lp=$('loginPage'); if(lp) lp.style.display='flex';
   document.body.classList.add('login-active');
   const sh=document.querySelector('.shell'); if(sh) sh.style.display='none';
   state.currentUser=null;
@@ -5732,9 +5645,9 @@ async function checkLogin(force=false){
   sessionStorage.setItem('qms_logged_in','1');
   const user=data.data||data.user||data;
   state.currentUser=user;
-  const lp=$('loginPage'); if(lp){ lp.style.setProperty('display','none','important'); lp.style.setProperty('z-index','-9999','important'); }
+  const lp=$('loginPage'); if(lp) lp.style.display='none';
   document.body.classList.remove('login-active');
-  const sh=document.querySelector('.shell'); if(sh) sh.style.setProperty('display','flex','important');
+  const sh=document.querySelector('.shell'); if(sh) sh.style.display='flex';
   updateProfileUI(user);
   setTimeout(()=>{if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},100);
   setTimeout(()=>{if(typeof rebuildAllSignGrids==='function')rebuildAllSignGrids();else if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},500);
