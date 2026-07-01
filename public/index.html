@@ -3709,6 +3709,83 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 }
 </style>
 
+
+
+<style id="namo-login-exact-reference-rework-20260701">
+/* 로그인 바탕화면만 최종 재작업: 사용자가 제시한 1번째 캡처 기준 */
+body.login-active{overflow:hidden!important;background:#030b19!important;}
+#loginPage{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:100vh!important;background:#030b19!important;overflow:hidden!important;}
+#loginPage::before{content:''!important;position:absolute!important;inset:0!important;z-index:0!important;background:radial-gradient(ellipse 70% 60% at 34% 42%,rgba(0,105,255,.18),transparent 64%),radial-gradient(ellipse 44% 42% at 72% 60%,rgba(0,210,255,.12),transparent 62%),linear-gradient(90deg,#020817 0%,#061933 48%,#041225 100%)!important;}
+#loginPage::after{content:''!important;position:absolute!important;inset:0!important;z-index:0!important;background-image:linear-gradient(rgba(55,145,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(55,145,255,.09) 1px,transparent 1px),radial-gradient(circle,rgba(0,210,255,.35) 1px,transparent 1.8px)!important;background-size:120px 120px,120px 120px,86px 86px!important;opacity:.72!important;animation:namoCircuitMove 26s linear infinite!important;}
+#loginPage .ev-bg-svg{display:none!important;}
+#loginPage .namo-final-visual{display:block!important;position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important;}
+
+/* 상단 대형 배터리: 목표 이미지처럼 크게, 선명하게 */
+#loginPage .namo-final-battery{left:1.7vw!important;top:7.1vh!important;width:43.2vw!important;max-width:880px!important;min-width:620px!important;height:29vh!important;min-height:225px!important;max-height:270px!important;border:2px solid rgba(0,191,255,.96)!important;border-radius:30px 24px 24px 30px!important;background:linear-gradient(180deg,rgba(9,43,98,.46),rgba(2,12,28,.32))!important;box-shadow:0 0 32px rgba(0,184,255,.48),inset 0 0 36px rgba(0,170,255,.24),0 26px 52px rgba(0,0,0,.34)!important;opacity:1!important;}
+#loginPage .namo-final-battery:before{left:40px!important;top:-31px!important;color:#18d8ff!important;font-size:12px!important;letter-spacing:7px!important;text-shadow:0 0 12px rgba(0,210,255,.62)!important;}
+#loginPage .namo-final-battery:after{inset:10px!important;border-radius:22px!important;border:1px solid rgba(125,211,252,.42)!important;}
+#loginPage .namo-final-cap-ring{right:-56px!important;top:31%!important;width:64px!important;height:42%!important;border-color:#35cfff!important;background:rgba(14,165,233,.24)!important;box-shadow:0 0 28px rgba(56,189,248,.55)!important;}
+#loginPage .namo-final-cap-ring:after{right:-24px!important;width:32px!important;height:100%!important;border-color:rgba(125,211,252,.95)!important;}
+#loginPage .namo-final-cells{left:4.2%!important;right:5.4%!important;top:18%!important;bottom:12%!important;display:grid!important;grid-template-columns:repeat(10,1fr)!important;gap:13px!important;}
+#loginPage .namo-final-cell{border:1.5px solid rgba(72,175,255,.72)!important;border-radius:8px!important;background:rgba(5,24,58,.68)!important;box-shadow:inset 0 0 16px rgba(0,170,255,.18),0 0 10px rgba(0,170,255,.12)!important;}
+#loginPage .namo-final-cell span:first-child{background:linear-gradient(180deg,#1b52ff 0%,#08d8ff 100%)!important;opacity:.88!important;filter:drop-shadow(0 0 14px rgba(0,220,255,.62))!important;}
+#loginPage .namo-final-cell:nth-child(1){--h:60%}#loginPage .namo-final-cell:nth-child(2){--h:52%}#loginPage .namo-final-cell:nth-child(3){--h:67%}#loginPage .namo-final-cell:nth-child(4){--h:58%}#loginPage .namo-final-cell:nth-child(5){--h:72%}#loginPage .namo-final-cell:nth-child(6){--h:49%}#loginPage .namo-final-cell:nth-child(7){--h:45%}#loginPage .namo-final-cell:nth-child(8){--h:65%}#loginPage .namo-final-cell:nth-child(9){--h:56%}#loginPage .namo-final-cell:nth-child(10){--h:78%}
+#loginPage .namo-final-chart{left:5.2%!important;right:6%!important;top:18%!important;height:44%!important;filter:drop-shadow(0 0 12px rgba(0,220,255,.90))!important;}
+#loginPage .namo-final-chart .main{stroke-width:4.5!important;}
+
+/* HUD 위치/크기 */
+#loginPage .namo-final-hud{left:49.1vw!important;top:6.4vh!important;gap:13px!important;z-index:4!important;}
+#loginPage .namo-final-hud-card{width:178px!important;height:76px!important;border:1px solid rgba(0,180,255,.42)!important;border-radius:9px!important;background:rgba(2,18,44,.62)!important;padding:14px 18px!important;box-shadow:0 0 18px rgba(0,175,255,.16)!important;}
+#loginPage .namo-final-hud-card b{font-size:10.5px!important;color:#0ed4ff!important;}
+#loginPage .namo-final-hud-card strong{font-size:18px!important;color:#30f0ff!important;}
+
+/* 중앙 EV 자동차: 크게 + 오른쪽 이동 + 배터리팩 강조 */
+#loginPage .namo-final-car{left:33vw!important;top:36.2vh!important;width:43.5vw!important;min-width:650px!important;max-width:860px!important;height:39vh!important;min-height:310px!important;max-height:390px!important;opacity:1!important;filter:drop-shadow(0 0 30px rgba(0,170,255,.56)) drop-shadow(0 18px 38px rgba(0,0,0,.26))!important;z-index:3!important;}
+#loginPage .namo-final-car svg{transform:scale(1.18)!important;transform-origin:center!important;overflow:visible!important;}
+#loginPage .namo-final-car svg path,#loginPage .namo-final-car svg circle{vector-effect:non-scaling-stroke;}
+#loginPage .namo-final-car .car-battery-pack{opacity:1!important;filter:drop-shadow(0 0 18px rgba(0,240,255,.92))!important;}
+#loginPage .namo-final-car .car-battery-cell{opacity:1!important;}
+#loginPage .namo-final-road{left:30.0vw!important;top:65.5vh!important;width:42vw!important;min-width:640px!important;max-width:860px!important;height:16vh!important;min-height:130px!important;border:2px solid rgba(0,190,255,.64)!important;box-shadow:0 0 42px rgba(0,190,255,.34),inset 0 0 16px rgba(0,190,255,.12)!important;transform:rotate(-5deg)!important;z-index:2!important;}
+
+/* 좌측 문구/아이콘 위치 */
+#loginPage .namo-login-panel{display:block!important;position:absolute!important;left:2.0vw!important;top:42.5vh!important;width:31vw!important;min-width:430px!important;max-width:610px!important;height:auto!important;padding:0!important;z-index:5!important;transform:none!important;}
+#loginPage .namo-login-brand{margin:0 0 7px!important;}
+#loginPage .namo-wordmark .namo{font-size:24px!important;color:#08d9ff!important;font-weight:950!important;text-shadow:0 0 18px rgba(0,210,255,.45)!important;}
+#loginPage .namo-wordmark .chem{font-size:24px!important;color:#fff!important;font-weight:500!important;}
+#loginPage .namo-login-title{font-size:36px!important;line-height:1.13!important;letter-spacing:-1.2px!important;max-width:620px!important;color:#fff!important;margin:0 0 17px!important;}
+#loginPage .namo-login-title:after{width:145px!important;height:3px!important;margin-top:19px!important;background:#5eefff!important;box-shadow:0 0 14px rgba(94,239,255,.65)!important;}
+#loginPage .namo-login-desc{font-size:14px!important;line-height:1.72!important;color:rgba(230,245,255,.78)!important;max-width:520px!important;margin:0 0 24px!important;font-weight:700!important;}
+#loginPage .namo-login-icons{display:grid!important;grid-template-columns:repeat(4,92px)!important;gap:11px!important;margin:0!important;}
+#loginPage .namo-login-icon{height:74px!important;border-radius:8px!important;background:rgba(5,31,78,.62)!important;border:1px solid rgba(42,156,255,.42)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 18px rgba(0,160,255,.10)!important;}
+#loginPage .namo-login-icon span{font-size:24px!important;width:34px!important;height:31px!important;background:transparent!important;color:#03d8ff!important;filter:drop-shadow(0 0 10px rgba(0,218,255,.72))!important;}
+#loginPage .namo-login-icon b{font-size:10.5px!important;color:#fff!important;font-weight:900!important;}
+
+/* 로그인 카드: 원본 기능 유지, 위치만 목표처럼 */
+#loginPage .lcard{position:absolute!important;right:3.8vw!important;top:50%!important;transform:translateY(-50%)!important;width:420px!important;margin:0!important;padding:38px 34px!important;border-radius:18px!important;background:rgba(255,255,255,.965)!important;box-shadow:0 28px 68px rgba(0,0,0,.30),0 0 60px rgba(0,170,255,.22)!important;z-index:10!important;}
+#loginPage .lbrand img{height:54px!important;max-width:270px!important;object-fit:contain!important;}
+#loginPage .lcard h2{font-size:22px!important;font-weight:900!important;color:#111827!important;margin-bottom:8px!important;}
+#loginPage .lcard>p{font-size:13px!important;font-weight:700!important;color:#64748b!important;margin-bottom:22px!important;}
+#loginPage .ltabs{height:40px!important;border-radius:9px!important;padding:3px!important;}
+#loginPage .ltab{height:32px!important;font-size:13px!important;}
+#loginPage .lform{gap:12px!important;}
+#loginPage .lform input{height:48px!important;border-radius:8px!important;font-size:14px!important;}
+#loginPage .login-options{margin:0 0 3px!important;}
+#loginPage .lform .btn.pri{height:48px!important;border-radius:8px!important;font-size:14px!important;background:#0957f7!important;}
+#loginPage .lform .home-link{height:46px!important;border-radius:8px!important;}
+
+@media(max-width:1280px){
+  #loginPage .namo-final-battery{min-width:560px!important;width:42vw!important;}
+  #loginPage .namo-final-hud{left:48vw!important;}
+  #loginPage .namo-final-car{left:31vw!important;min-width:560px!important;width:42vw!important;top:39vh!important;}
+  #loginPage .namo-login-panel{min-width:420px!important;}
+  #loginPage .lcard{right:2.4vw!important;width:390px!important;}
+}
+@media(max-width:900px){
+  #loginPage .namo-final-visual,#loginPage .namo-login-panel{display:none!important;}
+  #loginPage .lcard{left:50%!important;right:auto!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(420px,calc(100vw - 32px))!important;}
+}
+</style>
+
 </head>
 <body class="login-active">
 
@@ -3721,6 +3798,8 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
     <div class="namo-final-battery">
       <div class="namo-final-cap-ring"></div>
       <div class="namo-final-cells">
+        <div class="namo-final-cell"><span></span><span></span><span></span></div>
+        <div class="namo-final-cell"><span></span><span></span><span></span></div>
         <div class="namo-final-cell"><span></span><span></span><span></span></div>
         <div class="namo-final-cell"><span></span><span></span><span></span></div>
         <div class="namo-final-cell"><span></span><span></span><span></span></div>
@@ -17755,299 +17834,3 @@ document.addEventListener('click',function(e){
 
 </body>
 </html>
-
-<!-- LOGIN BACKGROUND ONLY REPLACE PATCH 20260701
-     목적: 로그인 바탕화면만 1번째 시안 스타일로 교체
-     범위: #loginPage 내부 배경/좌측 비주얼/로그인 카드 위치만 조정, 로그인 후 화면 영향 없음
--->
-<style id="namo-login-bg-only-first-screen-20260701">
-body.login-active{
-  overflow:hidden!important;
-  background:#020817!important;
-}
-body.login-active #loginPage{
-  position:fixed!important;
-  inset:0!important;
-  width:100vw!important;
-  height:100vh!important;
-  min-height:100vh!important;
-  overflow:hidden!important;
-  display:block!important;
-  background:#020817!important;
-}
-body.login-active #loginPage::before{
-  content:''!important;
-  position:absolute!important;
-  inset:0!important;
-  z-index:0!important;
-  background:
-    radial-gradient(ellipse 58% 70% at 35% 58%,rgba(0,142,255,.24),transparent 61%),
-    radial-gradient(ellipse 48% 62% at 70% 34%,rgba(0,217,255,.13),transparent 58%),
-    radial-gradient(ellipse 45% 55% at 84% 78%,rgba(0,98,255,.13),transparent 60%),
-    linear-gradient(135deg,#020817 0%,#071b38 46%,#031225 100%)!important;
-}
-body.login-active #loginPage::after{
-  content:''!important;
-  position:absolute!important;
-  inset:0!important;
-  z-index:0!important;
-  background-image:
-    linear-gradient(rgba(64,156,255,.10) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(64,156,255,.10) 1px,transparent 1px),
-    radial-gradient(circle,rgba(33,211,255,.42) 1px,transparent 1.8px)!important;
-  background-size:8.8vw 12.5vh,8.8vw 12.5vh,4.5vw 4.5vw!important;
-  opacity:.62!important;
-  animation:namoFirstBgMove 24s linear infinite!important;
-}
-body.login-active #loginPage .ev-bg-svg,
-body.login-active #loginPage .namo-ev-bg{
-  display:none!important;
-}
-body.login-active #loginPage .namo-final-visual{
-  display:block!important;
-  position:absolute!important;
-  inset:0!important;
-  z-index:1!important;
-  pointer-events:none!important;
-}
-body.login-active #loginPage .namo-final-battery{
-  left:2.2vw!important;
-  top:7.8vh!important;
-  width:42.3vw!important;
-  max-width:650px!important;
-  min-width:560px!important;
-  height:31.6vh!important;
-  max-height:248px!important;
-  min-height:206px!important;
-  border:2px solid rgba(0,185,255,.95)!important;
-  border-radius:28px 22px 22px 28px!important;
-  background:linear-gradient(180deg,rgba(7,35,82,.54),rgba(2,11,30,.30))!important;
-  box-shadow:0 0 28px rgba(0,191,255,.50),inset 0 0 34px rgba(0,191,255,.24),0 20px 44px rgba(0,0,0,.32)!important;
-  opacity:1!important;
-  transform:none!important;
-  animation:namoFirstBatteryFloat 6.5s ease-in-out infinite!important;
-}
-body.login-active #loginPage .namo-final-battery:before{
-  left:2.4vw!important;
-  top:-30px!important;
-  color:#22d3ee!important;
-  font-size:11px!important;
-  font-weight:900!important;
-  letter-spacing:6px!important;
-  opacity:.92!important;
-}
-body.login-active #loginPage .namo-final-cells{
-  left:2.6vw!important;
-  right:3.5vw!important;
-  top:5.4vh!important;
-  bottom:4.5vh!important;
-  grid-template-columns:repeat(8,1fr)!important;
-  gap:.8vw!important;
-}
-body.login-active #loginPage .namo-final-cell{
-  border:1.5px solid rgba(64,156,255,.78)!important;
-  border-radius:8px!important;
-  background:rgba(8,30,70,.58)!important;
-  box-shadow:inset 0 0 13px rgba(0,186,255,.20),0 0 12px rgba(0,110,255,.10)!important;
-}
-body.login-active #loginPage .namo-final-cell span:first-child{
-  background:linear-gradient(180deg,#1554ff 0%,#09d7ff 100%)!important;
-  opacity:.88!important;
-  filter:drop-shadow(0 0 13px rgba(0,215,255,.62))!important;
-}
-body.login-active #loginPage .namo-final-chart{
-  left:2.5vw!important;
-  right:3.4vw!important;
-  top:5.4vh!important;
-  height:11.5vh!important;
-  opacity:1!important;
-  filter:drop-shadow(0 0 10px rgba(30,210,255,.95))!important;
-}
-body.login-active #loginPage .namo-final-cap-ring{
-  right:-3.1vw!important;
-  top:8.7vh!important;
-  width:4.2vw!important;
-  min-width:58px!important;
-  height:12.6vh!important;
-  min-height:86px!important;
-  border-color:#65d9ff!important;
-  background:rgba(0,157,255,.25)!important;
-}
-body.login-active #loginPage .namo-final-cap-ring:after{
-  right:-1.5vw!important;
-  height:100%!important;
-  width:2.0vw!important;
-  min-width:28px!important;
-}
-body.login-active #loginPage .namo-final-hud{
-  left:49.4vw!important;
-  top:6.7vh!important;
-  gap:1.5vh!important;
-  z-index:3!important;
-}
-body.login-active #loginPage .namo-final-hud-card{
-  width:11.8vw!important;
-  min-width:150px!important;
-  height:9.5vh!important;
-  min-height:62px!important;
-  border:1px solid rgba(0,185,255,.42)!important;
-  border-radius:10px!important;
-  background:rgba(4,19,45,.64)!important;
-  box-shadow:0 0 18px rgba(0,191,255,.18),inset 0 1px 0 rgba(255,255,255,.08)!important;
-  padding:1.5vh 1.2vw!important;
-  opacity:1!important;
-}
-body.login-active #loginPage .namo-final-hud-card b{font-size:10px!important;color:#0bd3ff!important;}
-body.login-active #loginPage .namo-final-hud-card strong{font-size:16px!important;color:#52e8ff!important;}
-body.login-active #loginPage .namo-final-car{
-  left:32.0vw!important;
-  top:35.0vh!important;
-  width:50.5vw!important;
-  min-width:700px!important;
-  max-width:930px!important;
-  height:auto!important;
-  opacity:1!important;
-  filter:drop-shadow(0 0 30px rgba(0,166,255,.56)) drop-shadow(0 20px 38px rgba(0,0,0,.28))!important;
-  animation:namoFirstCarFloat 6.8s ease-in-out infinite!important;
-}
-body.login-active #loginPage .namo-final-car svg{
-  width:100%!important;
-  height:auto!important;
-  overflow:visible!important;
-}
-body.login-active #loginPage .namo-final-car svg path,
-body.login-active #loginPage .namo-final-car svg circle{
-  vector-effect:non-scaling-stroke;
-}
-body.login-active #loginPage .namo-final-road{
-  left:31.0vw!important;
-  top:66.8vh!important;
-  width:50.8vw!important;
-  min-width:680px!important;
-  height:20.5vh!important;
-  min-height:135px!important;
-  border:2px solid rgba(0,215,255,.62)!important;
-  box-shadow:0 0 38px rgba(0,197,255,.40),inset 0 0 25px rgba(0,197,255,.16)!important;
-  opacity:.95!important;
-}
-body.login-active #loginPage .namo-login-panel{
-  display:block!important;
-  position:absolute!important;
-  left:2.4vw!important;
-  top:43.5vh!important;
-  width:33vw!important;
-  min-width:420px!important;
-  max-width:610px!important;
-  padding:0!important;
-  z-index:5!important;
-  transform:none!important;
-}
-body.login-active #loginPage .namo-login-brand{margin:0 0 6px!important;}
-body.login-active #loginPage .namo-wordmark{justify-content:flex-start!important;gap:7px!important;}
-body.login-active #loginPage .namo-wordmark .namo{
-  font-size:24px!important;
-  color:#00caff!important;
-  font-weight:950!important;
-  text-shadow:0 0 18px rgba(0,202,255,.46)!important;
-}
-body.login-active #loginPage .namo-wordmark .chem{
-  font-size:23px!important;
-  color:#fff!important;
-  font-weight:550!important;
-}
-body.login-active #loginPage .namo-login-title{
-  max-width:610px!important;
-  font-size:35px!important;
-  line-height:1.14!important;
-  font-weight:950!important;
-  letter-spacing:-1.2px!important;
-  color:#fff!important;
-  margin:0 0 20px!important;
-  text-shadow:0 4px 18px rgba(0,0,0,.42)!important;
-}
-body.login-active #loginPage .namo-login-title:after{
-  content:''!important;
-  display:block!important;
-  width:150px!important;
-  height:3px!important;
-  margin-top:17px!important;
-  border-radius:99px!important;
-  background:#63e8ff!important;
-  box-shadow:0 0 15px rgba(99,232,255,.65)!important;
-}
-body.login-active #loginPage .namo-login-desc{
-  max-width:520px!important;
-  color:rgba(225,242,255,.80)!important;
-  font-size:14px!important;
-  line-height:1.72!important;
-  font-weight:650!important;
-  margin:0 0 19px!important;
-}
-body.login-active #loginPage .namo-login-icons{
-  display:grid!important;
-  grid-template-columns:repeat(4,88px)!important;
-  gap:10px!important;
-  max-width:none!important;
-  margin:0!important;
-}
-body.login-active #loginPage .namo-login-icon{
-  width:88px!important;
-  height:71px!important;
-  border:1px solid rgba(36,128,255,.55)!important;
-  border-radius:9px!important;
-  background:rgba(5,31,73,.62)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 18px rgba(0,183,255,.12)!important;
-  color:#fff!important;
-  gap:5px!important;
-}
-body.login-active #loginPage .namo-login-icon span{
-  width:28px!important;
-  height:28px!important;
-  border-radius:10px!important;
-  background:rgba(0,192,255,.16)!important;
-  color:#10d9ff!important;
-  font-size:17px!important;
-}
-body.login-active #loginPage .namo-login-icon b{
-  font-size:10px!important;
-  font-weight:900!important;
-  color:#fff!important;
-}
-body.login-active #loginPage .lcard{
-  position:absolute!important;
-  right:2.3vw!important;
-  top:50%!important;
-  transform:translateY(-50%)!important;
-  z-index:10!important;
-  width:25vw!important;
-  min-width:330px!important;
-  max-width:420px!important;
-  margin:0!important;
-  padding:34px 30px!important;
-  border-radius:18px!important;
-  background:rgba(255,255,255,.97)!important;
-  border:1px solid rgba(255,255,255,.66)!important;
-  box-shadow:0 25px 65px rgba(0,0,0,.38),0 0 40px rgba(0,178,255,.26)!important;
-}
-body.login-active #loginPage .lbrand img{height:42px!important;}
-body.login-active #loginPage .lcard h2{font-size:21px!important;font-weight:900!important;color:#111827!important;}
-body.login-active #loginPage .lcard>p{font-size:12px!important;color:#667085!important;font-weight:650!important;}
-body.login-active #loginPage .lform input{height:48px!important;border-radius:8px!important;}
-body.login-active #loginPage .btn.pri{height:43px!important;border-radius:7px!important;}
-body.login-active #loginPage .home-link{height:43px!important;border-radius:7px!important;}
-@keyframes namoFirstBgMove{to{background-position:0 0,0 0,90px 90px;}}
-@keyframes namoFirstBatteryFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
-@keyframes namoFirstCarFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@media(max-width:1100px){
-  body.login-active #loginPage .namo-final-car{left:28vw!important;width:58vw!important;min-width:620px!important;}
-  body.login-active #loginPage .namo-final-hud{display:none!important;}
-  body.login-active #loginPage .namo-login-panel{left:3vw!important;width:38vw!important;}
-  body.login-active #loginPage .lcard{right:2vw!important;width:340px!important;}
-}
-@media(max-width:900px){
-  body.login-active #loginPage .namo-final-visual,
-  body.login-active #loginPage .namo-login-panel{display:none!important;}
-  body.login-active #loginPage .lcard{position:relative!important;right:auto!important;top:auto!important;transform:none!important;margin:auto!important;width:min(420px,calc(100vw - 32px))!important;}
-  body.login-active #loginPage{display:flex!important;align-items:center!important;justify-content:center!important;}
-}
-</style>
