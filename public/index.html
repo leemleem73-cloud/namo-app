@@ -3654,10 +3654,10 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 #loginPage .namo-final-hud-card b{display:block!important;color:#38bdf8!important;font-size:10px!important;font-weight:900!important;opacity:.82!important;}
 #loginPage .namo-final-hud-card strong{display:block!important;color:#67e8f9!important;font-size:16px!important;font-weight:900!important;margin-top:3px!important;}
 #loginPage .namo-final-hud-card:nth-child(2){animation-delay:.45s!important;}#loginPage .namo-final-hud-card:nth-child(3){animation-delay:.9s!important;}
-#loginPage .namo-final-car{position:absolute!important;left:500px!important;top:360px!important;width:480px!important;height:230px!important;opacity:.62!important;filter:drop-shadow(0 0 18px rgba(14,165,233,.28));animation:namoCarFloatFinal 7s ease-in-out infinite!important;}
+#loginPage .namo-final-car{position:absolute!important;left:520px!important;top:300px!important;width:690px!important;height:332px!important;opacity:.78!important;filter:drop-shadow(0 0 24px rgba(14,165,233,.38));animation:namoCarFloatFinal 7s ease-in-out infinite!important;}
 #loginPage .namo-final-car svg{width:100%!important;height:100%!important;}.namo-final-car .glow{animation:namoHeadLightFinal 2.2s ease-in-out infinite!important;}
-#loginPage .namo-final-road{position:absolute!important;left:560px!important;top:520px!important;width:390px!important;height:116px!important;border:2px solid rgba(34,211,238,.32)!important;border-radius:50%!important;transform:rotate(-6deg)!important;box-shadow:0 0 26px rgba(34,211,238,.18)!important;animation:namoRoadFinal 5.8s linear infinite!important;}
-#loginPage .namo-login-panel{display:block!important;position:absolute!important;left:56px!important;top:382px!important;width:560px!important;height:auto!important;padding:0!important;z-index:4!important;transform:none!important;}
+#loginPage .namo-final-road{position:absolute!important;left:505px!important;top:560px!important;width:650px!important;height:168px!important;border:2px solid rgba(34,211,238,.38)!important;border-radius:50%!important;transform:rotate(-6deg)!important;box-shadow:0 0 34px rgba(34,211,238,.24)!important;animation:namoRoadFinal 5.8s linear infinite!important;}
+#loginPage .namo-login-panel{display:block!important;position:absolute!important;left:56px!important;top:382px!important;width:560px!important;height:auto!important;padding:0!important;z-index:5!important;transform:none!important;}
 #loginPage .namo-login-brand{margin:0 0 8px!important;}
 #loginPage .namo-wordmark{justify-content:flex-start!important;gap:7px!important;}
 #loginPage .namo-wordmark .namo{font-size:26px!important;font-weight:900!important;color:#00c8ff!important;text-shadow:0 0 16px rgba(0,200,255,.35)!important;}
@@ -3675,6 +3675,17 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 #loginPage .lcard h2{font-size:22px!important;font-weight:900!important;margin-bottom:7px!important;}
 #loginPage .lcard>p{font-size:13px!important;font-weight:700!important;margin-bottom:22px!important;color:#64748b!important;}
 #loginPage .ltabs{height:44px!important;border-radius:11px!important;}.lform input{height:43px!important}.lform .home-link{height:42px!important}.lform .btn.pri{height:44px!important;}
+
+#loginPage .namo-final-car .car-battery-pack{filter:drop-shadow(0 0 14px rgba(34,211,238,.72));animation:namoCarBatteryPulseFinal 3.4s ease-in-out infinite!important;}
+#loginPage .namo-final-car .car-battery-cell{animation:namoCarBatteryCellFinal 2.6s ease-in-out infinite!important;transform-origin:center;}
+#loginPage .namo-final-car .car-battery-cell:nth-child(2){animation-delay:.18s!important;}
+#loginPage .namo-final-car .car-battery-cell:nth-child(3){animation-delay:.36s!important;}
+#loginPage .namo-final-car .car-battery-cell:nth-child(4){animation-delay:.54s!important;}
+#loginPage .namo-final-car .car-battery-cell:nth-child(5){animation-delay:.72s!important;}
+#loginPage .namo-final-car .car-battery-flow{stroke-dasharray:18 18;animation:namoCarEnergyFlowFinal 2.2s linear infinite!important;}
+@keyframes namoCarBatteryPulseFinal{0%,100%{opacity:.72;filter:drop-shadow(0 0 10px rgba(34,211,238,.42));}50%{opacity:1;filter:drop-shadow(0 0 22px rgba(34,211,238,.95));}}
+@keyframes namoCarBatteryCellFinal{0%,100%{opacity:.62;}50%{opacity:1;}}
+@keyframes namoCarEnergyFlowFinal{to{stroke-dashoffset:-120;}}
 @keyframes namoBatteryFloatFinal{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
 @keyframes namoCapPulseFinal{0%,100%{opacity:.65;box-shadow:0 0 16px rgba(56,189,248,.28)}50%{opacity:1;box-shadow:0 0 30px rgba(56,189,248,.55)}}
 @keyframes namoLiquidFinal{0%,100%{transform:scaleY(.88);opacity:.66}50%{transform:scaleY(1.08);opacity:.86}}
@@ -3687,7 +3698,7 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 @keyframes namoIconPulseFinal{0%,100%{box-shadow:0 0 8px rgba(34,211,238,.22)}50%{box-shadow:0 0 18px rgba(34,211,238,.62)}}
 @media(max-width:1280px){
   #loginPage .namo-final-battery{left:38px!important;width:540px!important;transform:scale(.92)!important;transform-origin:left top!important;}
-  #loginPage .namo-final-hud{left:620px!important;}.namo-final-car{left:430px!important;}
+  #loginPage .namo-final-hud{left:620px!important;}#loginPage .namo-final-car{left:460px!important;width:560px!important;height:270px!important;top:330px!important;}
   #loginPage .namo-login-panel{left:44px!important;width:510px!important}.namo-login-title{font-size:34px!important}.namo-login-icons{grid-template-columns:repeat(3,92px)!important;}
   #loginPage .lcard{right:34px!important;width:360px!important;}
 }
@@ -3734,17 +3745,47 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
     <div class="namo-final-road"></div>
     <div class="namo-final-car">
       <svg viewBox="0 0 520 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M56 160 C92 102 138 80 216 73 C288 66 345 86 400 128 C430 151 467 154 492 170" stroke="#38bdf8" stroke-width="2.2" opacity=".80"/>
-        <path d="M104 152 C139 119 179 105 244 101 C303 98 352 114 389 145" stroke="#67e8f9" stroke-width="1.2" opacity=".42"/>
-        <path d="M46 171 L108 170 L144 128 L315 125 L390 170 L486 176" stroke="#38bdf8" stroke-width="2" opacity=".72"/>
-        <path d="M156 129 L201 91 L284 94 L333 129" stroke="#38bdf8" stroke-width="1.4" opacity=".58"/>
-        <path d="M204 95 L203 128M284 96 L288 128" stroke="#38bdf8" stroke-width="1.1" opacity=".45"/>
-        <circle cx="146" cy="184" r="38" stroke="#38bdf8" stroke-width="2" opacity=".72"/>
-        <circle cx="146" cy="184" r="20" stroke="#67e8f9" stroke-width="1.2" opacity=".54"/>
-        <circle cx="392" cy="184" r="39" stroke="#38bdf8" stroke-width="2" opacity=".72"/>
-        <circle cx="392" cy="184" r="21" stroke="#67e8f9" stroke-width="1.2" opacity=".54"/>
-        <path class="glow" d="M422 151 C451 149 471 153 491 166" stroke="#67e8f9" stroke-width="5" opacity=".78" stroke-linecap="round"/>
-        <path d="M88 170 C146 195 325 202 457 177" stroke="#0ea5e9" stroke-width="1" opacity=".34"/>
+        <defs>
+          <linearGradient id="namoCarBatteryGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1d4ed8" stop-opacity=".92"/>
+            <stop offset="1" stop-color="#06b6d4" stop-opacity=".82"/>
+          </linearGradient>
+          <linearGradient id="namoCarGlassGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#38bdf8" stop-opacity=".26"/>
+            <stop offset="1" stop-color="#0ea5e9" stop-opacity=".04"/>
+          </linearGradient>
+        </defs>
+        <path d="M56 160 C92 102 138 80 216 73 C288 66 345 86 400 128 C430 151 467 154 492 170" stroke="#38bdf8" stroke-width="2.2" opacity=".88"/>
+        <path d="M104 152 C139 119 179 105 244 101 C303 98 352 114 389 145" stroke="#67e8f9" stroke-width="1.2" opacity=".48"/>
+        <path d="M46 171 L108 170 L144 128 L315 125 L390 170 L486 176" stroke="#38bdf8" stroke-width="2.2" opacity=".78"/>
+        <path d="M156 129 L201 91 L284 94 L333 129" fill="url(#namoCarGlassGrad)" stroke="#38bdf8" stroke-width="1.5" opacity=".70"/>
+        <path d="M204 95 L203 128M284 96 L288 128" stroke="#38bdf8" stroke-width="1.1" opacity=".48"/>
+        <path d="M122 156 C194 146 305 146 386 162" stroke="#0ea5e9" stroke-width="1.4" opacity=".52"/>
+        <g class="car-battery-pack">
+          <path d="M232 145 L361 147 L388 166 L252 172 Z" fill="rgba(2,20,46,.58)" stroke="#67e8f9" stroke-width="1.5" opacity=".94"/>
+          <g fill="url(#namoCarBatteryGrad)" stroke="#a5f3fc" stroke-width=".8" opacity=".92">
+            <path class="car-battery-cell" d="M244 149 L266 150 L281 166 L258 167 Z"/>
+            <path class="car-battery-cell" d="M270 150 L292 150.8 L307 166.7 L284 166.9 Z"/>
+            <path class="car-battery-cell" d="M296 151 L318 151.7 L333 167.6 L310 167.8 Z"/>
+            <path class="car-battery-cell" d="M322 152 L344 152.7 L359 168.4 L336 168.8 Z"/>
+            <path class="car-battery-cell" d="M348 153 L366 154 L381 168.8 L363 169.2 Z"/>
+          </g>
+          <path class="car-battery-flow" d="M246 143 C292 126 334 128 386 148" stroke="#67e8f9" stroke-width="2.4" opacity=".78" stroke-linecap="round"/>
+          <circle cx="246" cy="143" r="3" fill="#67e8f9" opacity=".9"/>
+          <circle cx="318" cy="131" r="3" fill="#67e8f9" opacity=".9"/>
+          <circle cx="386" cy="148" r="3" fill="#67e8f9" opacity=".9"/>
+        </g>
+        <path d="M215 140 C245 125 318 123 372 146" stroke="#67e8f9" stroke-width="1" opacity=".35"/>
+        <path d="M252 176 C295 188 355 188 411 176" stroke="#38bdf8" stroke-width="1.2" opacity=".42"/>
+        <circle cx="146" cy="184" r="38" stroke="#38bdf8" stroke-width="2.2" opacity=".76"/>
+        <circle cx="146" cy="184" r="20" stroke="#67e8f9" stroke-width="1.3" opacity=".58"/>
+        <path d="M126 184 H166M146 164 V204" stroke="#38bdf8" stroke-width="1" opacity=".32"/>
+        <circle cx="392" cy="184" r="39" stroke="#38bdf8" stroke-width="2.2" opacity=".76"/>
+        <circle cx="392" cy="184" r="21" stroke="#67e8f9" stroke-width="1.3" opacity=".58"/>
+        <path d="M371 184 H413M392 163 V205" stroke="#38bdf8" stroke-width="1" opacity=".32"/>
+        <path class="glow" d="M422 151 C451 149 471 153 491 166" stroke="#67e8f9" stroke-width="5.5" opacity=".86" stroke-linecap="round"/>
+        <path class="glow" d="M61 166 C77 158 89 156 106 158" stroke="#22d3ee" stroke-width="4" opacity=".54" stroke-linecap="round"/>
+        <path d="M88 170 C146 195 325 202 457 177" stroke="#0ea5e9" stroke-width="1" opacity=".38"/>
       </svg>
     </div>
   </div>
@@ -11447,7 +11488,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   'use strict';
   function q(s,r){return (r||document).querySelector(s)}
   function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]})}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function num(v){var x=Number(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(x)?x:0}
   function arr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
   function setArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
@@ -15912,7 +15953,7 @@ document.addEventListener('click',function(e){
 
   window.nmcWoSafePrint=function(btn){
     var key=btn&&btn.getAttribute?btn.getAttribute('data-nmc-safe-id'):btn;
-    var open=qs('[data-nmc-wo-final-open="'+String(key).replace(/"/g,'\\"')+'"]');
+    var open=qs('[data-nmc-wo-final-open="'+String(key).replace(/"/g,'\"')+'"]');
     if(open){open.click();setTimeout(function(){window.print();},300);}
     else setTimeout(function(){window.print();},100);
     return false;
