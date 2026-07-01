@@ -16713,5 +16713,125 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO WORKORDER WORKER + CUSTOMER FINAL FIX 20260701 END -->
 
+<!-- NMC_WORKORDER_EDIT_ROBUST_FINAL_20260701_START -->
+<script id="nmc-workorder-edit-robust-final-20260701">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_EDIT_ROBUST_FINAL_20260701__) return;
+  window.__NMC_WORKORDER_EDIT_ROBUST_FINAL_20260701__ = true;
+
+  var KEYS = [
+    'nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory',
+    'nmcSentWorkorders','worklog','worklogs','namoWorklog','nmcWorklogs','productionLogs','productionResults',
+    'nmcProductionLogs','productionWorkOrders','prodWorkOrders','qms_worklog'
+  ];
+  var ID_KEYS = ['id','uid','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo','nmcProdLot'];
+  var CUSTOMER_KEYS = ['customer','customerName','client','clientName','buyer','buyerName','shipCustomer','nmcCustomerName','company','corp'];
+  var WORKER_KEYS = ['worker','workerName','operator','manager','managerName','prodManager','producer','producerName','senderName','writerName','createdByName','createdBy','reqDept'];
+  function $(id){return document.getElementById(id);}
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function clean(v){return String(v==null?'':v).trim();}
+  function norm(v){return clean(v).toLowerCase().replace(/\s+/g,'').replace(/[\u200b-\u200d\ufeff]/g,'');}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function writeArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]));}catch(e){}}
+  function pick(o,ks,fb){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&clean(v)!=='')return v;}return fb||'';}
+  function setVal(id,v){var el=$(id); if(!el) return; el.value=(v==null?'':String(v)); try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}catch(e){}}
+  function getVal(id){var el=$(id);return el?clean(el.value):'';}
+  function onlyDate(v){var s=String(v||'');var m=s.match(/(20\d{2})[-.\/](\d{1,2})[-.\/](\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');return s.slice(0,10);}
+  function idValues(o){return ID_KEYS.map(function(k){return o&&o[k];}).concat([pick(o,ID_KEYS,'')]).map(clean).filter(Boolean);}
+  function isSame(o,key){var nk=norm(key); if(!nk) return false; return idValues(o).some(function(v){return norm(v)===nk;});}
+  function allRows(){var out=[];KEYS.forEach(function(k){readArr(k).forEach(function(o){if(o&&typeof o==='object')out.push({storeKey:k,raw:o});});});return out;}
+  function findRecord(key){
+    key=clean(key);
+    var rows=allRows();
+    for(var i=0;i<rows.length;i++){ if(isSame(rows[i].raw,key)) return rows[i]; }
+    var nk=norm(key);
+    for(var j=0;j<rows.length;j++){
+      var vals=idValues(rows[j].raw).map(norm).join('|');
+      if(nk && vals.indexOf(nk)>=0) return rows[j];
+    }
+    return null;
+  }
+  function fallbackFromButton(btn,key){
+    var tr=btn && btn.closest ? btn.closest('tr') : null;
+    if(!tr) return null;
+    var td=qsa('td',tr).map(function(x){return clean(x.textContent);});
+    if(!td.length) return null;
+    var no=td[0]||key;
+    return {storeKey:'nmcWorkOrderHistory',raw:{
+      id:no, uid:no, woNo:no, no:no, workOrderNo:no, nmcWoNo:no,
+      productName:td[1]||'', product:td[1]||'', prodName:td[1]||'',
+      customer:td[2]||'', customerName:td[2]||'', client:td[2]||'', nmcCustomerName:td[2]||'',
+      planQty:td[3]||'', actualQty:td[4]||'', actual:td[4]||'',
+      status:td[6]||'완료', orderDate:td[7]||'', startDate:td[7]||'', dueDate:td[8]||'',
+      worker:td[9]||'', workerName:td[9]||'', managerName:td[9]||''
+    }};
+  }
+  function goForm(){
+    try{ if(typeof window.goPage==='function'){window.goPage('workorder-final');return;} }catch(e){}
+    try{ if(typeof window.showPage==='function'){window.showPage('workorder-final');return;} }catch(e){}
+    var nav=qs('.nav-item[data-page="workorder-final"],[data-page-target="workorder-final"]'); if(nav){nav.click();return;}
+    qsa('.page').forEach(function(p){p.classList.remove('active');}); var p=$('page-workorder-final'); if(p)p.classList.add('active');
+  }
+  function fill(o,key){
+    o=o||{}; key=key||pick(o,ID_KEYS,'');
+    setVal('nmcWoNo', pick(o,['woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],key));
+    setVal('nmcOrderDate', onlyDate(pick(o,['orderDate','startDate','workDate','planDate','date','createdAt','sentAt','nmcOrderDate'],'')));
+    setVal('nmcPlanType', pick(o,['planType','nmcPlanType'],'일간'));
+    setVal('nmcReqDept', pick(o,['reqDept','requestDept','department'],'생산부'));
+    setVal('nmcWorker', pick(o,WORKER_KEYS,''));
+    setVal('nmcProdName', pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],''));
+    setVal('nmcProdCode', pick(o,['productCode','prodCode','code','finishedLot','nmcProdCode'],''));
+    setVal('nmcProdLot', pick(o,['prodLot','productionLot','lot','lotNo','nmcProdLot'],''));
+    setVal('nmcCustomerName', pick(o,CUSTOMER_KEYS,''));
+    setVal('nmcPlanQty', pick(o,['planQty','plannedQty','plan','nmcPlanQty','targetQty','qty'],''));
+    setVal('nmcActualQty', pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','productionQty'],''));
+    setVal('nmcInstruction', pick(o,['instruction','workInstruction','nmcInstruction','note','remark','memo'],''));
+    setVal('nmcSendNote', pick(o,['sendNote','sendMemo','remark','memo','comment'],''));
+    setVal('nmcSendTime', pick(o,['sendTime','sentAt','createdAt','savedAt'],''));
+    var page=$('page-workorder-final');
+    if(page){page.dataset.nmcEditMode='1';page.dataset.nmcEditId=String(key||pick(o,ID_KEYS,''));page.classList.add('nmc-edit-mode');}
+    var title=qs('#page-workorder-final .ph-title'); if(title) title.textContent='작업지시 수정';
+    try{localStorage.setItem('nmcWorkorderEditDraft',JSON.stringify(o));localStorage.setItem('nmcWorkorderEditId',String(key||pick(o,ID_KEYS,'')));}catch(e){}
+  }
+  function patchStoredFromForm(){
+    var key=getVal('nmcWoNo') || localStorage.getItem('nmcWorkorderEditId') || '';
+    var cust=getVal('nmcCustomerName'), worker=getVal('nmcWorker');
+    if(!key) return;
+    KEYS.forEach(function(k){
+      var arr=readArr(k), changed=false;
+      arr.forEach(function(o){
+        if(o&&typeof o==='object'&&isSame(o,key)){
+          if(cust){CUSTOMER_KEYS.forEach(function(x){o[x]=cust;});}
+          if(worker){o.worker=worker;o.workerName=worker;o.operator=worker;o.managerName=worker;o.prodManager=worker;o.producer=worker;o.producerName=worker;}
+          changed=true;
+        }
+      });
+      if(changed) writeArr(k,arr);
+    });
+  }
+  window.nmcWoSafeEdit=function(btn){
+    try{
+      var key=btn&&btn.getAttribute?btn.getAttribute('data-nmc-safe-id'):btn;
+      key=clean(key) || clean(btn&&btn.closest&&btn.closest('tr')&&btn.closest('tr').children[0]&&btn.closest('tr').children[0].textContent);
+      var found=findRecord(key) || fallbackFromButton(btn,key);
+      if(!found){alert('수정할 작업지시 데이터를 찾을 수 없습니다.');return false;}
+      goForm();
+      setTimeout(function(){fill(found.raw,key);},80);
+      setTimeout(function(){fill(found.raw,key);var first=$('nmcWoNo');if(first)first.focus();},300);
+      return false;
+    }catch(e){console.warn('[NMC] robust workorder edit failed',e);alert('작업지시 수정 화면 이동 중 오류가 발생했습니다.');return false;}
+  };
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('[data-nmc-safe-id]');
+    if(btn && /수정/.test(clean(btn.textContent))){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();return window.nmcWoSafeEdit(btn);}
+  },true);
+  document.addEventListener('input',function(e){if(e.target&&/^(nmcCustomerName|nmcWorker)$/.test(e.target.id))setTimeout(patchStoredFromForm,50);},true);
+  document.addEventListener('change',function(e){if(e.target&&/^(nmcCustomerName|nmcWorker)$/.test(e.target.id))setTimeout(patchStoredFromForm,50);},true);
+})();
+</script>
+<!-- NMC_WORKORDER_EDIT_ROBUST_FINAL_20260701_END -->
+
 </body>
 </html>
