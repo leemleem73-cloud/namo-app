@@ -3699,6 +3699,37 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 }
 </style>
 
+
+
+<style id="namo-login-car-shift-right-only-20260701">
+/* 로그인 바탕화면 전용: 자동차 위치만 오른쪽으로 이동
+   - 로그인 후 QMES 내부 화면에는 적용되지 않음
+   - 기존 배터리/로그인 카드/기능 스크립트는 그대로 유지 */
+body.login-active #loginPage .namo-final-car{
+  left:590px!important;
+  top:278px!important;
+  width:760px!important;
+  height:506px!important;
+}
+body.login-active #loginPage .namo-final-hud{
+  left:760px!important;
+}
+@media(max-width:1280px){
+  body.login-active #loginPage .namo-final-car{
+    left:500px!important;
+    top:292px!important;
+    width:705px!important;
+    height:470px!important;
+  }
+  body.login-active #loginPage .namo-final-hud{
+    left:675px!important;
+  }
+}
+@media(max-width:900px){
+  body.login-active #loginPage .namo-final-car{display:none!important;}
+}
+</style>
+
 </head>
 <body class="login-active">
 
