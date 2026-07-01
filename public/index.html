@@ -3699,6 +3699,42 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 }
 </style>
 
+
+
+<style id="login-background-isolation-fix-20260701">
+/* 로그인 전 배경은 #loginPage 안에서만 사용하고, 로그인 후에는 완전 제거 */
+body:not(.login-active) #loginPage,
+body:not(.login-active) #loginPage::before,
+body:not(.login-active) #loginPage::after,
+body:not(.login-active) #loginPage *{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+body:not(.login-active) #loginPage{
+  position:absolute!important;
+  z-index:-9999!important;
+  width:0!important;
+  height:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+}
+body:not(.login-active){
+  background:var(--bg)!important;
+}
+body.login-active .shell{
+  display:none!important;
+}
+body.login-active #loginPage{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  z-index:9999!important;
+}
+</style>
+
 </head>
 <body class="login-active">
 
@@ -4783,7 +4819,7 @@ function hasLoginHint(){
   return !!getAuthToken() || sessionStorage.getItem('qms_logged_in')==='1';
 }
 function showLoggedOut(){
-  const lp=$('loginPage'); if(lp) lp.style.display='flex';
+  const lp=$('loginPage'); if(lp){ lp.style.setProperty('display','block','important'); lp.style.removeProperty('z-index'); }
   document.body.classList.add('login-active');
   const sh=document.querySelector('.shell'); if(sh) sh.style.display='none';
   state.currentUser=null;
@@ -5597,9 +5633,9 @@ async function checkLogin(force=false){
   sessionStorage.setItem('qms_logged_in','1');
   const user=data.data||data.user||data;
   state.currentUser=user;
-  const lp=$('loginPage'); if(lp) lp.style.display='none';
+  const lp=$('loginPage'); if(lp){ lp.style.setProperty('display','none','important'); lp.style.setProperty('z-index','-9999','important'); }
   document.body.classList.remove('login-active');
-  const sh=document.querySelector('.shell'); if(sh) sh.style.display='flex';
+  const sh=document.querySelector('.shell'); if(sh) sh.style.setProperty('display','flex','important');
   updateProfileUI(user);
   setTimeout(()=>{if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},100);
   setTimeout(()=>{if(typeof rebuildAllSignGrids==='function')rebuildAllSignGrids();else if(typeof applyAllSignPermissions==='function')applyAllSignPermissions();},500);
