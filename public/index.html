@@ -11128,7 +11128,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function byMonth(data){var a=Array(12).fill(0);data.forEach(function(r){var m=String(r.date).match(/^\d{4}[-/.](\d{1,2})/);var i=m?Number(m[1])-1:(new Date().getMonth());a[i]+=num(r.actual)});return a}
   function chart(){var c=q('#nmcProductionResultChart');if(!c||!window.Chart)return;try{if(window.__nmcProductionResultChart&&window.__nmcProductionResultChart.destroy)window.__nmcProductionResultChart.destroy();}catch(e){}window.__nmcProductionResultChart=new Chart(c,{type:'line',data:{labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],datasets:[{label:'생산실적(kg)',data:byMonth(resultRows()),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',fill:true,tension:.35,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#edf2f7'}}}}})}
   function table(){var a=resultRows();if(!a.length)return '<tr><td colspan="11" class="nmc-result-empty">생산실적 데이터가 없습니다. 작업지시 등록/수신함/생산진행 데이터를 먼저 확인하세요.</td></tr>';return a.map(function(r){var y=pct(r),key=esc(r.no+'|'+r.lot);return '<tr><td>'+esc(r.date)+'</td><td><b>'+esc(r.no)+'</b></td><td>'+esc(r.product)+'</td><td>'+esc(r.customer)+'</td><td><b>'+esc(r.lot)+'</b></td><td>'+fmt(r.plan)+'</td><td>'+fmt(r.actual)+'</td><td>'+y+'%</td><td><span class="mes-status-pill '+(r.kind==='run'?'run':r.kind==='done'?'done':r.kind==='delay'?'warn':'wait')+'">'+esc(r.status)+'</span></td><td>'+esc(r.worker)+'</td><td><div class="nmc-pr-action-wrap"><button class="btn light sm nmc-pr-edit-btn" type="button" data-nmc-prod-edit="'+key+'">수정</button><button class="btn light sm nmc-pr-del-btn" type="button" data-nmc-prod-delete="'+key+'">삭제</button></div></td></tr>'}).join('')}
-  function html(){var k=kpis();return '<div class="ph"><div><div class="ph-title">생산실적</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산실적</div><div class="ph-sub">작업지시/생산진행 데이터를 기준으로 계획 대비 실적, 수율, LOT별 생산 결과를 조회합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">작업지시 등록</button><button class="btn ghost" data-page-target="production-progress">생산진행 현황</button></div></div><div class="nmc-result-kpi-grid"><div class="nmc-result-kpi" style="--c:#2563eb"><div class="l">생산 LOT</div><div class="v">'+k.lot+'</div><div class="s">집계 LOT 수</div></div><div class="nmc-result-kpi" style="--c:#16a34a"><div class="l">실적수량</div><div class="v">'+fmt(k.kg)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#7c3aed"><div class="l">계획수량</div><div class="v">'+fmt(k.plan)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#f59e0b"><div class="l">평균 수율</div><div class="v">'+k.yield+'%</div><div class="s">실적/계획</div></div><div class="nmc-result-kpi" style="--c:#06b6d4"><div class="l">진행/완료</div><div class="v">'+k.run+'/'+k.done+'</div><div class="s">진행중 / 완료</div></div></div><div class="nmc-result-toolbar"><div style="font-size:16px;font-weight:900;color:#0f172a">생산실적 목록</div><div class="nmc-result-filter"><input id="nmcResultDate" type="date"><select id="nmcResultStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option></select><input id="nmcResultKeyword" type="search" placeholder="WO번호/LOT/제품명/고객사"></div></div><div class="nmc-result-card"><div class="nmc-result-chart"><canvas id="nmcProductionResultChart"></canvas></div></div><div class="nmc-result-card"><div class="nmc-result-table-wrap"><table class="nmc-pr-table"><thead><tr><th>생산일자</th><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>생산 LOT</th><th>계획수량</th><th>실적수량</th><th>수율</th><th>상태</th><th>담당자</th><th>비고</th></tr></thead><tbody id="nmcProductionResultBody">'+table()+'</tbody></table></div></div><div class="nmc-result-note"><b>정리 기준:</b> 생산실적은 작업지시/생산진행과 동일한 데이터 수집 함수를 사용합니다. 별도 화면에서 중복 계산하지 않고 동일한 LOT/WO 기준으로 집계합니다.</div>'}
+  function html(){var k=kpis();return '<div class="ph"><div><div class="ph-title">생산실적</div><div class="ph-bc">홈 <span class="sep">›</span> 생산 관리 <span class="sep">›</span> 생산실적</div><div class="ph-sub">작업지시/생산진행 데이터를 기준으로 계획 대비 실적, 수율, LOT별 생산 결과를 조회합니다.</div></div><div class="ph-actions"><button class="btn pri" data-page-target="workorder-final">작업지시 등록</button><button class="btn ghost" data-page-target="production-progress">생산진행 현황</button></div></div><div class="nmc-result-kpi-grid"><div class="nmc-result-kpi" style="--c:#2563eb"><div class="l">생산 LOT</div><div class="v">'+k.lot+'</div><div class="s">집계 LOT 수</div></div><div class="nmc-result-kpi" style="--c:#16a34a"><div class="l">실적수량</div><div class="v">'+fmt(k.kg)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#7c3aed"><div class="l">계획수량</div><div class="v">'+fmt(k.plan)+'</div><div class="s">kg 기준</div></div><div class="nmc-result-kpi" style="--c:#f59e0b"><div class="l">평균 수율</div><div class="v">'+k.yield+'%</div><div class="s">실적/계획</div></div><div class="nmc-result-kpi" style="--c:#06b6d4"><div class="l">진행/완료</div><div class="v">'+k.run+'/'+k.done+'</div><div class="s">진행중 / 완료</div></div></div><div class="nmc-result-toolbar"><div style="font-size:16px;font-weight:900;color:#0f172a">생산실적 목록</div><div class="nmc-result-filter"><input id="nmcResultDate" type="date"><select id="nmcResultStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option></select><input id="nmcResultKeyword" type="search" placeholder="WO번호/LOT/제품명/고객사"></div></div><div class="nmc-result-card"><div class="nmc-result-chart"><canvas id="nmcProductionResultChart"></canvas></div></div><div class="nmc-result-card"><div class="nmc-result-table-wrap"><table class="nmc-pr-table"><thead><tr><th>생산일자</th><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>생산 LOT</th><th>계획수량</th><th>실적수량</th><th>수율</th><th>상태</th><th>생산자</th><th>비고</th></tr></thead><tbody id="nmcProductionResultBody">'+table()+'</tbody></table></div></div><div class="nmc-result-note"><b>정리 기준:</b> 생산실적은 작업지시/생산진행과 동일한 데이터 수집 함수를 사용합니다. 별도 화면에서 중복 계산하지 않고 동일한 LOT/WO 기준으로 집계합니다.</div>'}
   function ensurePage(){var c=q('.content');if(!c)return;var p=q('#page-production-result');if(!p){p=document.createElement('section');p.className='page';p.id='page-production-result';c.appendChild(p)}p.innerHTML=html();setTimeout(chart,40)}
   function ensureMenu(){var side=q('.sidebar');if(!side)return;function add(pg,label,icon,afterSel){if(q('.nav-item[data-page="'+pg+'"]',side))return;var b=document.createElement('button');b.type='button';b.className='nav-item';b.setAttribute('data-page',pg);b.innerHTML='<span class="nav-icon">'+icon+'</span><span>'+label+'</span>';var a=q(afterSel,side)||q('.nav-item[data-page="production"]',side);if(a)a.insertAdjacentElement('afterend',b);else side.appendChild(b)}add('workorder-list','작업지시 현황','▸','.nav-item[data-page="workorder-final"]');add('production-result','생산실적','◔','.nav-item[data-page="dashboard"]');}
   function showFix(){qa('#page-workorder-list').forEach(function(p){p.style.display=p.classList.contains('active')?'block':''});qa('.sidebar .nav-item[data-page="workorder-list"],.sidebar .nav-item[data-page-target="workorder-list"]').forEach(function(n){n.style.display='flex'});}
@@ -16314,7 +16314,7 @@ document.addEventListener('click',function(e){
   function tableIndexes(table){
     var h=qsa('thead th',table).map(function(th){return clean(th.textContent)});
     function idx(names){for(var i=0;i<names.length;i++){var n=h.indexOf(names[i]);if(n>=0)return n}return -1}
-    return {wo:idx(['작업지시번호','WO번호','작업지시 No.']),lot:idx(['생산 LOT','완제품 LOT','LOT']),product:idx(['제품명','품명']),customer:idx(['고객사','고객사명']),manager:idx(['생산자','담당자','작업자','생산담당자'])};
+    return {wo:idx(['작업지시번호','WO번호','작업지시 No.']),lot:idx(['생산 LOT','완제품 LOT','LOT']),product:idx(['제품명','품명']),customer:idx(['고객사','고객사명']),manager:idx(['생산자','작업자','생산담당자','담당자'])};
   }
   function patchTable(table){
     var ix=tableIndexes(table);
@@ -16537,6 +16537,45 @@ document.addEventListener('click',function(e){
       [100,400,900].forEach(function(ms){ setTimeout(init, ms); });
     }
   }, true);
+})();
+</script>
+
+
+
+<!-- NAMO WORKORDER LABEL FIX v2: 담당자 -> 생산자 (작업지시/생산실적 화면 전용) -->
+<script>
+(function(){
+  'use strict';
+  function fixWorkorderLabels(){
+    try{
+      var roots=[];
+      var ids=['page-workorder-list','page-production-result','page-workorder-final'];
+      ids.forEach(function(id){var el=document.getElementById(id); if(el) roots.push(el);});
+      var active=document.querySelector('.page.active'); if(active) roots.push(active);
+      roots.forEach(function(root){
+        if(!root) return;
+        root.querySelectorAll('th,label,b,span,div,p,input').forEach(function(el){
+          if(el.tagName==='INPUT'){
+            var ph=el.getAttribute('placeholder')||'';
+            if(ph.indexOf('담당자')>-1) el.setAttribute('placeholder',ph.replace(/담당자/g,'생산자'));
+            return;
+          }
+          if(el.childNodes && el.childNodes.length===1 && el.childNodes[0].nodeType===3){
+            var t=el.textContent;
+            if(t.indexOf('담당자')>-1) el.textContent=t.replace(/담당자/g,'생산자');
+          }
+        });
+      });
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    fixWorkorderLabels();
+    setTimeout(fixWorkorderLabels,200);
+    setTimeout(fixWorkorderLabels,800);
+  });
+  document.addEventListener('click',function(){setTimeout(fixWorkorderLabels,120);},true);
+  document.addEventListener('input',function(){setTimeout(fixWorkorderLabels,120);},true);
+  window.nmcFixWorkorderProducerLabel=fixWorkorderLabels;
 })();
 </script>
 
