@@ -17305,81 +17305,89 @@ document.addEventListener('click',function(e){
 
 
 
-<!-- NMC_WORKORDER_HARD_DELETE_PATCH_20260703_V2_START -->
-<style id="nmc-workorder-hard-delete-20260703-v2-style">
-  .nmc-wo-delete-all-btn-v2{
+<!-- NMC_WORKORDER_DELETE_SAFE_PATCH_20260703_V3_START -->
+<style id="nmc-workorder-delete-safe-20260703-v3-style">
+  .nmc-wo-delete-all-btn-v3{
     height:36px!important;padding:0 14px!important;border:1.5px solid #ef4444!important;border-radius:10px!important;
     background:#fff!important;color:#dc2626!important;font-size:13px!important;font-weight:900!important;cursor:pointer!important;
   }
-  .nmc-wo-delete-all-btn-v2:hover{background:#fee2e2!important;}
+  .nmc-wo-delete-all-btn-v3:hover{background:#fee2e2!important;}
 </style>
-<script id="nmc-workorder-hard-delete-20260703-v2-script">
+<script id="nmc-workorder-delete-safe-20260703-v3-script">
 (function(){
   'use strict';
-  if(window.__NMC_WORKORDER_HARD_DELETE_20260703_V2__) return;
-  window.__NMC_WORKORDER_HARD_DELETE_20260703_V2__ = true;
+  if(window.__NMC_WORKORDER_DELETE_SAFE_20260703_V3__) return;
+  window.__NMC_WORKORDER_DELETE_SAFE_20260703_V3__ = true;
 
   var KEYS=[
-    'nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory','nmcSentWorkorders',
-    'workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders','namo_workorder_material_backup','namo_workorder_material_backup_v2',
+    'nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderList','nmcWorkorderList','nmc_workorder_list',
+    'productionWorkOrders','prodWorkOrders','nmcProdWorkOrders','nmcSentWorkorders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory',
     'nmcWorkorderEditDraft','nmcWorkorderEditId','nmcWoFinalEditId','nmcWoFinalEditDraft','nmc_workorder_status_cache','nmc_workorder_cache','workorders'
   ];
-  var MARK='nmc_workorder_hard_deleted_20260703_v2';
-  function qs(s,r){return (r||document).querySelector(s)}
-  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function emptyRow(cols,msg){return '<tr><td colspan="'+(cols||11)+'" style="text-align:center;padding:30px;color:#94a3b8;font-weight:900;">'+(msg||'등록된 작업지시가 없습니다.')+'</td></tr>'}
-  function clearStorage(){
+  var MARK='nmc_workorder_deleted_safe_20260703_v3';
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function emptyRow(cols,msg){return '<tr><td colspan="'+(cols||11)+'" style="text-align:center;padding:30px;color:#94a3b8;font-weight:900;">'+(msg||'등록된 작업지시가 없습니다.')+'</td></tr>';}
+
+  function clearWorkorderStorage(){
     try{
       KEYS.forEach(function(k){localStorage.removeItem(k);});
-      Object.keys(localStorage).forEach(function(k){
+      for(var i=localStorage.length-1;i>=0;i--){
+        var k=localStorage.key(i)||'';
         var lk=String(k).toLowerCase();
-        if(lk.indexOf('workorder')>-1 || lk.indexOf('work_order')>-1 || lk.indexOf('wofinal')>-1 || lk.indexOf('nmcwofinal')>-1 || lk.indexOf('nmc_seq_wo')===0 || lk.indexOf('nmc_seq_v2_wo')===0){
+        if(lk.indexOf('workorder')>-1 || lk.indexOf('work_order')>-1 || lk.indexOf('wofinal')>-1 || lk.indexOf('nmcwofinal')>-1){
           localStorage.removeItem(k);
         }
-      });
+      }
       localStorage.setItem(MARK,'1');
     }catch(e){}
     try{
       ['nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory','nmcSentWorkorders','workOrderList','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders'].forEach(function(k){window[k]=[];});
     }catch(e){}
   }
-  function patchDom(){
-    var bodies=['nmcWoFinalBody','nmcInboxWorkorderBody','nmcRefWorkorderBody','nmcWorkorderStatusBody','workOrderListBody','workorderListBody','workOrderHistoryBody','nmcProductionWorkorderBody'];
-    bodies.forEach(function(id){var tb=document.getElementById(id); if(tb){var th=qsa('th',tb.closest('table')||document).length||11; tb.innerHTML=emptyRow(th, id.indexOf('Inbox')>-1||id.indexOf('Ref')>-1?'확인할 작업지시가 없습니다.':'등록된 작업지시가 없습니다.');}});
-    qsa('tbody').forEach(function(tb){
-      var t=(tb.id+' '+((tb.closest('section')||{}).id||'')+' '+((tb.closest('table')||{}).className||'')).toLowerCase();
-      if((t.indexOf('workorder')>-1 || t.indexOf('wofinal')>-1 || t.indexOf('inboxworkorder')>-1 || t.indexOf('refworkorder')>-1) && t.indexOf('iqc')<0 && t.indexOf('pqc')<0 && t.indexOf('oqc')<0){
-        var th=qsa('th',tb.closest('table')||document).length||11; tb.innerHTML=emptyRow(th);
+
+  function clearWorkorderScreen(){
+    var bodyIds=['nmcWoFinalBody','nmcInboxWorkorderBody','nmcRefWorkorderBody','nmcWorkorderStatusBody','workOrderListBody','workorderListBody','workOrderHistoryBody','nmcProductionWorkorderBody'];
+    bodyIds.forEach(function(id){
+      var tb=document.getElementById(id);
+      if(tb){
+        var cols=qsa('th',tb.closest('table')||document).length||11;
+        tb.innerHTML=emptyRow(cols, (id.indexOf('Inbox')>-1||id.indexOf('Ref')>-1)?'확인할 작업지시가 없습니다.':'등록된 작업지시가 없습니다.');
       }
     });
-    qsa('#mesKpiTotal,#mesMenuWorkOrder,#woTotal,#workOrderTotal,#nmcWoFinalTotal,#nmcWoFinalDone,#nmcWoFinalRun,#nmcWoFinalWait,#nmcWoFinalDelay,[data-nmc-kpi="total"],[data-nmc-kpi="unread"],[data-nmc-kpi="read"],[data-nmc-kpi="sent"]').forEach(function(el){
-      if(el.id==='mesMenuWorkOrder') el.textContent='전체 0건'; else el.textContent='0';
-    });
-    qsa('#nmcWoFinalDetail,#nmcInboxWorkorderDetail,#nmcRefWorkorderDetail,#nmcWorkorderHistoryDetail').forEach(function(el){el.innerHTML=''; el.classList&&el.classList.remove('show');});
+    qsa('#nmcWoFinalDetail,#nmcInboxWorkorderDetail,#nmcRefWorkorderDetail,#nmcWorkorderHistoryDetail').forEach(function(el){el.innerHTML=''; if(el.classList)el.classList.remove('show');});
+    qsa('#nmcWoFinalTotal,#nmcWoFinalDone,#nmcWoFinalRun,#nmcWoFinalWait,#nmcWoFinalDelay,#woTotal,#workOrderTotal,[data-nmc-kpi="total"],[data-nmc-kpi="unread"],[data-nmc-kpi="read"],[data-nmc-kpi="sent"]').forEach(function(el){el.textContent='0';});
   }
-  function hardDelete(){clearStorage(); patchDom(); return false;}
-  window.nmcHardDeleteAllWorkorders20260703V2=hardDelete;
-  window.nmcDeleteAllWorkorders=hardDelete;
 
-  function addButton(){
+  function addDeleteButton(){
     ['page-workorder-status','page-workorder-list','page-production','page-workorder-final','page-workorder-inbox','page-workorder-reference'].forEach(function(pid){
-      var p=document.getElementById(pid); if(!p) return; var a=qs('.ph-actions',p); if(!a || qs('[data-nmc-hard-delete-workorders]',a)) return;
-      var b=document.createElement('button'); b.type='button'; b.className='nmc-wo-delete-all-btn-v2'; b.setAttribute('data-nmc-hard-delete-workorders','1'); b.textContent='작업지시 모두 삭제'; a.insertBefore(b,a.firstChild);
+      var p=document.getElementById(pid); if(!p) return;
+      var a=qs('.ph-actions',p); if(!a || qs('[data-nmc-delete-workorders-v3]',a)) return;
+      var b=document.createElement('button');
+      b.type='button'; b.className='nmc-wo-delete-all-btn-v3'; b.setAttribute('data-nmc-delete-workorders-v3','1'); b.textContent='작업지시 모두 삭제';
+      a.insertBefore(b,a.firstChild);
     });
   }
+
+  function runDelete(){clearWorkorderStorage(); clearWorkorderScreen(); addDeleteButton();}
+  window.nmcDeleteAllWorkordersSafeV3=runDelete;
+
   document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest&&e.target.closest('[data-nmc-hard-delete-workorders]');
-    if(b){e.preventDefault();e.stopPropagation(); if(confirm('작업지시 데이터를 완전히 삭제하시겠습니까?')){hardDelete(); alert('작업지시 데이터가 모두 삭제되었습니다.');}}
-    setTimeout(function(){hardDelete();addButton();},120);
+    var b=e.target&&e.target.closest&&e.target.closest('[data-nmc-delete-workorders-v3]');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    if(confirm('작업지시 데이터를 모두 삭제하시겠습니까?')){
+      runDelete();
+      alert('작업지시 데이터가 모두 삭제되었습니다.');
+    }
   },true);
-  function init(){addButton();hardDelete();}
+
+  function init(){runDelete();}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
-  [50,200,500,1000,2000,3500,6000,10000,15000,22000,30000].forEach(function(ms){setTimeout(init,ms)});
-  var n=0; var timer=setInterval(function(){n++;init(); if(n>80)clearInterval(timer);},500);
-  try{new MutationObserver(function(){addButton();patchDom();}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+  [300,800,1600,3000,5000,8000].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-<!-- NMC_WORKORDER_HARD_DELETE_PATCH_20260703_V2_END -->
+<!-- NMC_WORKORDER_DELETE_SAFE_PATCH_20260703_V3_END -->
 
 </body>
 </html>
