@@ -17009,5 +17009,175 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO_DATE_DESC_SORT_FINAL_20260701_END -->
 
+
+
+<!-- NAMO_WORKORDER_PRODUCTION_MATERIAL_WORKER_FIX_20260702_START -->
+<script id="namo-workorder-production-material-worker-fix-20260702">
+(function(){
+  'use strict';
+  if(window.__NAMO_WO_PROD_MAT_WORKER_FIX_20260702__) return;
+  window.__NAMO_WO_PROD_MAT_WORKER_FIX_20260702__ = true;
+
+  var STORE_KEYS = [
+    'nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkorderHistory','workOrderHistory','nmcWorkOrders','workOrders',
+    'productionResults','nmcProductionLogs','productionLogs','productionWorkOrders','prodWorkOrders','worklog','worklogs','namoWorklog','qms_worklog'
+  ];
+  var ID_KEYS = ['woNo','no','workOrderNo','workorderNo','orderNo','nmcWoNo','docNo','id','uid'];
+  var LOT_KEYS = ['prodLot','productionLot','finishedLot','lot','lotNo','nmcProdLot','batchNo'];
+  var WORKER_KEYS = ['worker','workerName','operator','manager','managerName','prodManager','producer','producerName','nmcWorker','작업자','생산자'];
+  var CUSTOMER_KEYS = ['customer','customerName','client','clientName','buyer','buyerName','nmcCustomerName'];
+  var PRODUCT_KEYS = ['productName','product','prodName','itemName','item','title','nmcProdName'];
+
+  function $(id){return document.getElementById(id);}
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function clean(v){return String(v==null?'':v).trim();}
+  function norm(v){return clean(v).toLowerCase().replace(/\s+/g,'').replace(/[\u200b-\u200d\ufeff]/g,'');}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function write(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]));}catch(e){}}
+  function pick(o,ks,fb){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&clean(v)!=='')return v;}return fb||'';}
+  function num(v){return clean(v).replace(/,/g,'').replace(/[^0-9.\-]/g,'');}
+  function dateOnly(v){var s=clean(v);var m=s.match(/(20\d{2})[-.\/년\s]*(\d{1,2})[-.\/월\s]*(\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');return s.slice(0,10)||new Date().toISOString().slice(0,10);}
+  function keyOf(o){return clean(pick(o,ID_KEYS,'')) || clean(pick(o,LOT_KEYS,''));}
+  function lotOf(o){return clean(pick(o,LOT_KEYS,''));}
+  function same(o,key){var nk=norm(key); if(!nk) return false; return ID_KEYS.concat(LOT_KEYS).some(function(k){return norm(o&&o[k])===nk;});}
+  function currentWorker(){return clean(($('nmcWorker')&&$('nmcWorker').value)||'');}
+  function formSnapshot(){
+    var d=new Date(), p=function(n){return String(n).padStart(2,'0')};
+    var wo=clean(($('nmcWoNo')&&$('nmcWoNo').value)||('NM-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())));
+    var worker=currentWorker();
+    return {
+      id:wo, uid:wo, woNo:wo, no:wo, workOrderNo:wo, nmcWoNo:wo,
+      productName:clean(($('nmcProdName')&&$('nmcProdName').value)||''), product:clean(($('nmcProdName')&&$('nmcProdName').value)||''), nmcProdName:clean(($('nmcProdName')&&$('nmcProdName').value)||''),
+      productCode:clean(($('nmcProdCode')&&$('nmcProdCode').value)||''), prodLot:clean(($('nmcProdLot')&&$('nmcProdLot').value)||''), productionLot:clean(($('nmcProdLot')&&$('nmcProdLot').value)||''), lot:clean(($('nmcProdLot')&&$('nmcProdLot').value)||''), nmcProdLot:clean(($('nmcProdLot')&&$('nmcProdLot').value)||''),
+      customer:clean(($('nmcCustomerName')&&$('nmcCustomerName').value)||''), customerName:clean(($('nmcCustomerName')&&$('nmcCustomerName').value)||''), nmcCustomerName:clean(($('nmcCustomerName')&&$('nmcCustomerName').value)||''),
+      orderDate:dateOnly(($('nmcOrderDate')&&$('nmcOrderDate').value)||''), workDate:dateOnly(($('nmcOrderDate')&&$('nmcOrderDate').value)||''),
+      planQty:num(($('nmcPlanQty')&&$('nmcPlanQty').value)||''), actualQty:num(($('nmcActualQty')&&$('nmcActualQty').value)||''),
+      worker:worker, workerName:worker, operator:worker, managerName:worker, prodManager:worker, producer:worker, producerName:worker, nmcWorker:worker,
+      status:'발송완료', sendTime:clean(($('nmcSendTime')&&$('nmcSendTime').value)||''), materials:collectMaterialsFromForm()
+    };
+  }
+  function findRecord(key){
+    var best=null;
+    STORE_KEYS.forEach(function(k){read(k).forEach(function(o){if(o&&typeof o==='object'&&same(o,key)&&!best) best={store:k,obj:o};});});
+    return best;
+  }
+  function normalizeMaterial(m){
+    m=m||{};
+    var name=pick(m,['name','material','materialName','rawMaterial','rawName','item','itemName','원료명'],'');
+    var lot=pick(m,['lot','lotNo','materialLot','rawLot','rmLot','incomingLot','원료LOT','원재료LOT'],'');
+    var plan=pick(m,['planQty','planInputQty','plannedQty','materialPlanQty','plan','계획투입량'],'');
+    var actual=pick(m,['actualQty','inputQty','useQty','materialQty','matQty','qty','amount','weight','actual','실투입량'],'');
+    var ratio=pick(m,['ratio','percent','rate','비율'],'');
+    var note=pick(m,['note','remark','memo','비고'],'');
+    if(!name&&!lot&&!plan&&!actual&&!note) return null;
+    return {name:clean(name),lot:clean(lot),planQty:num(plan),actualQty:num(actual)||num(plan),ratio:clean(ratio),note:clean(note)};
+  }
+  function materialsFromRecord(o){
+    var mats=[];
+    ['materials','rawMaterials','materialRows','inputMaterials','items','materialList','raws','rawMaterialList','bom','inputs','nmcMaterials','materialDrafts'].forEach(function(k){if(Array.isArray(o&&o[k])) mats=mats.concat(o[k]);});
+    var out=[], seen={};
+    mats.map(normalizeMaterial).filter(Boolean).forEach(function(m){var k=[m.name,m.lot,m.planQty,m.actualQty].map(norm).join('|'); if(seen[k])return; seen[k]=1; out.push(m);});
+    return out;
+  }
+  function collectMaterialsFromForm(){
+    return qsa('#page-workorder-final #nmcMaterialTable tbody tr,#nmcMaterialTable tbody tr').map(function(tr){
+      var td=tr.children||[];
+      function inv(sel,root){var el=qs(sel,root||tr);return el?clean(el.value):'';}
+      return normalizeMaterial({
+        name:td[1]&&qs('input',td[1])?qs('input',td[1]).value:'',
+        lot:td[2]&&qs('input',td[2])?qs('input',td[2]).value:'',
+        planQty:inv('.nmc-mat-plan-qty'), actualQty:inv('.nmc-mat-qty'), ratio:inv('.nmc-mat-ratio'),
+        note:td[6]&&qs('input',td[6])?qs('input',td[6]).value:''
+      });
+    }).filter(Boolean);
+  }
+  function rowHtml(i,m){m=m||{};return '<tr><td>'+i+'</td><td><input class="nmc-input" placeholder="원료명 직접입력" value="'+esc(m.name||'')+'"></td><td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력" value="'+esc(m.lot||'')+'"></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal" value="'+esc(m.planQty||'')+'"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal" value="'+esc(m.actualQty||'')+'"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="'+esc(m.ratio||'0.00')+'" readonly><span class="nmc-unit-box">%</span></div></td><td><input class="nmc-input" placeholder="비고 직접입력" value="'+esc(m.note||'')+'"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>';}
+  function replaceMaterials(mats){
+    var tb=qs('#page-workorder-final #nmcMaterialTable tbody')||qs('#nmcMaterialTable tbody'); if(!tb) return;
+    mats=(mats||[]).filter(Boolean);
+    tb.innerHTML = (mats.length?mats:[{}]).map(function(m,i){return rowHtml(i+1,m);}).join('');
+    try{ if(typeof window.updateMaterialRows==='function') window.updateMaterialRows(); }catch(e){}
+    try{ if(typeof window.updateMaterialTotal==='function') window.updateMaterialTotal(); }catch(e){}
+  }
+  function fixEditMaterials(key){
+    var rec=findRecord(key || (($('nmcWoNo')&&$('nmcWoNo').value)||localStorage.getItem('nmcWorkorderEditId')||''));
+    if(rec){ replaceMaterials(materialsFromRecord(rec.obj)); }
+  }
+  function upsert(k,obj){
+    var a=read(k), id=keyOf(obj), lot=lotOf(obj), changed=false;
+    for(var i=0;i<a.length;i++){
+      if((id&&same(a[i],id)) || (lot&&same(a[i],lot))){ a[i]=Object.assign({},a[i],obj,{id:a[i].id||obj.id,uid:a[i].uid||obj.uid}); changed=true; break; }
+    }
+    if(!changed) a.unshift(obj);
+    write(k,a.slice(0,500));
+  }
+  function syncProductionStores(){
+    var snap=formSnapshot();
+    if(!snap.woNo && !snap.prodLot) return;
+    if(!snap.worker){
+      var rec=findRecord(snap.woNo||snap.prodLot);
+      snap.worker=snap.workerName=snap.operator=snap.managerName=snap.prodManager=snap.producer=snap.producerName=pick(rec&&rec.obj,WORKER_KEYS,'');
+    }
+    upsert('nmc_workorder_sent_items',snap);
+    upsert('productionResults',snap);
+    upsert('nmcProductionLogs',snap);
+    upsert('productionLogs',snap);
+    try{ if(typeof window.nmcRenderWorkOrderStatusDashboard==='function') window.nmcRenderWorkOrderStatusDashboard(); }catch(e){}
+    try{ if(typeof window.renderProductionResult==='function') window.renderProductionResult(); }catch(e){}
+    try{ if(typeof window.renderProductionData==='function') window.renderProductionData(); }catch(e){}
+    patchWorkerCells();
+  }
+  function workerMap(){
+    var m={};
+    STORE_KEYS.forEach(function(k){read(k).forEach(function(o){if(!o||typeof o!=='object')return;var w=pick(o,WORKER_KEYS,'');if(!w)return;ID_KEYS.concat(LOT_KEYS).forEach(function(x){var v=clean(o[x]);if(v)m[norm(v)]=w;});});});
+    return m;
+  }
+  function patchWorkerCells(){
+    var wm=workerMap();
+    qsa('#page-production-result table,#page-workorder-list table,.nmc-pr-table,.nmc-wo-table-final').forEach(function(table){
+      var heads=qsa('thead th',table).map(function(th){return clean(th.textContent);});
+      var wi=heads.indexOf('작업자'); if(wi<0) wi=heads.indexOf('생산자'); if(wi<0) return;
+      var ni=heads.indexOf('작업지시번호'), li=heads.indexOf('생산 LOT');
+      qsa('tbody tr',table).forEach(function(tr){var td=qsa('td',tr); if(!td[wi]) return; var key=(td[ni]&&td[ni].textContent)||'', lot=(td[li]&&td[li].textContent)||''; var w=wm[norm(key)]||wm[norm(lot)]; if(w) td[wi].textContent=w;});
+    });
+  }
+
+  var oldEdit=window.nmcWoSafeEdit;
+  if(typeof oldEdit==='function' && !oldEdit.__namoMatWrapped){
+    var wrapped=function(btn){
+      var key=clean(btn&&btn.getAttribute&&btn.getAttribute('data-nmc-safe-id')) || clean(btn&&btn.getAttribute&&btn.getAttribute('data-nmc-prod-edit')) || clean(btn&&btn.closest&&btn.closest('tr')&&btn.closest('tr').textContent);
+      var ret=oldEdit.apply(this,arguments);
+      setTimeout(function(){fixEditMaterials(key);},180);
+      setTimeout(function(){fixEditMaterials(key);},520);
+      return ret;
+    };
+    wrapped.__namoMatWrapped=true;
+    window.nmcWoSafeEdit=wrapped;
+  }
+
+  document.addEventListener('click',function(e){
+    var edit=e.target&&e.target.closest&&e.target.closest('[data-nmc-safe-id],[data-nmc-prod-edit]');
+    if(edit && /수정/.test(clean(edit.textContent))){
+      var k=clean(edit.getAttribute('data-nmc-safe-id')||edit.getAttribute('data-nmc-prod-edit')||'');
+      setTimeout(function(){fixEditMaterials(k);},220);
+      setTimeout(function(){fixEditMaterials(k);},700);
+    }
+    var save=e.target&&e.target.closest&&e.target.closest('[data-nmc-action="send"],[data-nmc-action="write"],#nmcEditSaveBtn');
+    if(save){setTimeout(syncProductionStores,120);setTimeout(syncProductionStores,700);}
+    var nav=e.target&&e.target.closest&&e.target.closest('[data-page="production-result"],[data-page-target="production-result"],[data-page="workorder-list"],[data-page-target="workorder-list"]');
+    if(nav){setTimeout(patchWorkerCells,180);setTimeout(patchWorkerCells,800);}
+  },true);
+  document.addEventListener('input',function(e){if(e.target&&/^(nmcWorker|nmcProdLot|nmcWoNo|nmcCustomerName|nmcProdName|nmcPlanQty|nmcActualQty)$/.test(e.target.id||''))setTimeout(syncProductionStores,250);},true);
+  document.addEventListener('change',function(e){if(e.target&&/^(nmcWorker|nmcProdLot|nmcWoNo|nmcCustomerName|nmcProdName|nmcPlanQty|nmcActualQty)$/.test(e.target.id||''))setTimeout(syncProductionStores,250);},true);
+  function boot(){patchWorkerCells();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [300,900,1800,3500].forEach(function(t){setTimeout(boot,t);});
+  try{new MutationObserver(function(){clearTimeout(window.__namoWoProdMatFixTimer);window.__namoWoProdMatFixTimer=setTimeout(patchWorkerCells,120);}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+})();
+</script>
+<!-- NAMO_WORKORDER_PRODUCTION_MATERIAL_WORKER_FIX_20260702_END -->
+
 </body>
 </html>
