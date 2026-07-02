@@ -17303,5 +17303,130 @@ document.addEventListener('click',function(e){
 </script>
 <!-- /NMC Patch 20260702 -->
 
+
+
+<!-- NMC_WORKORDER_ALL_DELETE_PATCH_20260703_START -->
+<style id="nmc-workorder-all-delete-patch-20260703-style">
+  .nmc-wo-delete-all-btn{
+    height:36px!important;
+    padding:0 14px!important;
+    border:1.5px solid #ef4444!important;
+    border-radius:10px!important;
+    background:#fff!important;
+    color:#dc2626!important;
+    font-size:13px!important;
+    font-weight:900!important;
+    cursor:pointer!important;
+  }
+  .nmc-wo-delete-all-btn:hover{background:#fee2e2!important;}
+</style>
+<script id="nmc-workorder-all-delete-patch-20260703-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_ALL_DELETE_PATCH_20260703__) return;
+  window.__NMC_WORKORDER_ALL_DELETE_PATCH_20260703__ = true;
+
+  var WO_KEYS = [
+    'nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory',
+    'nmcSentWorkorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders',
+    'namo_workorder_material_backup','namo_workorder_material_backup_v2','workorders'
+  ];
+  var WO_EDIT_KEYS = ['nmcWorkorderEditDraft','nmcWorkorderEditId'];
+  var WO_SEQ_PREFIXES = ['nmc_seq_WO','nmc_seq_v2_WO'];
+  var AUTO_CLEAR_MARK = 'nmc_workorder_all_delete_done_20260703';
+
+  function $(id){return document.getElementById(id);}
+  function qs(sel,root){return (root||document).querySelector(sel);}
+  function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
+
+  function clearWorkorderStorage(){
+    try{
+      WO_KEYS.concat(WO_EDIT_KEYS).forEach(function(k){localStorage.removeItem(k);});
+      Object.keys(localStorage).forEach(function(k){
+        if(WO_SEQ_PREFIXES.some(function(p){return k.indexOf(p)===0;})) localStorage.removeItem(k);
+      });
+    }catch(e){}
+    try{
+      WO_KEYS.forEach(function(k){
+        if(Array.isArray(window[k])) window[k] = [];
+      });
+      window.workOrders=[];
+      window.workOrderHistory=[];
+      window.nmcWorkOrders=[];
+      window.nmcWorkOrderHistory=[];
+      window.nmcWorkorderHistory=[];
+      window.nmcSentWorkorders=[];
+    }catch(e){}
+  }
+
+  function refreshWorkorderScreens(){
+    [
+      'nmcRenderWorkOrderStatusDashboard','renderWorkorderStatus','renderWorkOrderHistory','renderHistory',
+      'renderInboxPages','nmcRefreshWorkorderInbox','nmcRenderProductionDashboard',
+      'nmcRenderLotTrace','nmcLotTraceRender','renderLotTrace'
+    ].forEach(function(fn){try{if(typeof window[fn]==='function') window[fn]();}catch(e){}});
+    qsa('tbody').forEach(function(tb){
+      var id=(tb.id||'').toLowerCase();
+      if(id.indexOf('workorder')>-1 || id.indexOf('wo')>-1 || id.indexOf('nmc')>-1){
+        var table=tb.closest('table');
+        var cols=table ? Math.max(1,qsa('thead th',table).length) : 10;
+        if(id.indexOf('iqc')<0 && id.indexOf('oqc')<0 && id.indexOf('pqc')<0){
+          tb.innerHTML='<tr><td colspan="'+cols+'" style="text-align:center;padding:30px;color:#94a3b8;font-weight:900;">등록된 작업지시가 없습니다.</td></tr>';
+        }
+      }
+    });
+    qsa('#mesKpiTotal,#mesMenuWorkOrder,#woTotal,#workOrderTotal,[data-nmc-kpi="total"]').forEach(function(el){
+      if(el.id==='mesMenuWorkOrder') el.textContent='전체 0건';
+      else el.textContent='0';
+    });
+  }
+
+  window.nmcDeleteAllWorkorders = function(auto){
+    if(!auto){
+      if(!confirm('작업지시 목록을 모두 삭제하시겠습니까?\n\n작업지시, 수신함/참조함, 투입원료 백업, 작업지시 이력이 함께 초기화됩니다.')) return false;
+    }
+    clearWorkorderStorage();
+    refreshWorkorderScreens();
+    try{localStorage.setItem(AUTO_CLEAR_MARK,'1');}catch(e){}
+    if(!auto) alert('작업지시 목록이 모두 삭제되었습니다.');
+    return false;
+  };
+
+  function addDeleteButtons(){
+    var pages=['page-workorder-status','page-workorder-list','page-production','page-workorder-final'];
+    pages.forEach(function(pid){
+      var page=$(pid); if(!page) return;
+      var actions=qs('.ph-actions',page); if(!actions || qs('[data-nmc-delete-all-workorders]',actions)) return;
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='nmc-wo-delete-all-btn';
+      btn.setAttribute('data-nmc-delete-all-workorders','1');
+      btn.textContent='작업지시 모두 삭제';
+      actions.insertBefore(btn,actions.firstChild);
+    });
+  }
+
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('[data-nmc-delete-all-workorders]');
+    if(btn){e.preventDefault();e.stopPropagation();window.nmcDeleteAllWorkorders(false);}
+  },true);
+
+  function init(){
+    addDeleteButtons();
+    /* 이번 원본은 기존 테스트 작업지시를 한 번만 자동 초기화합니다. */
+    try{
+      if(localStorage.getItem(AUTO_CLEAR_MARK)!=='1') window.nmcDeleteAllWorkorders(true);
+      else refreshWorkorderScreens();
+    }catch(e){window.nmcDeleteAllWorkorders(true);}
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+  [300,900,1800,3500].forEach(function(t){setTimeout(function(){addDeleteButtons();refreshWorkorderScreens();},t);});
+  try{new MutationObserver(function(){addDeleteButtons();}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+})();
+</script>
+<!-- NMC_WORKORDER_ALL_DELETE_PATCH_20260703_END -->
+
 </body>
 </html>
