@@ -17382,7 +17382,7 @@ document.addEventListener('click',function(e){
     }
   },true);
 
-  function init(){runDelete();}
+  function init(){addDeleteButton();}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
   [300,800,1600,3000,5000,8000].forEach(function(ms){setTimeout(init,ms);});
 })();
