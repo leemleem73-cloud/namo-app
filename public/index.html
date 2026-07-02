@@ -3850,7 +3850,7 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
     </main>
   </div>
-  <div class="footer">© 2026 Namochemical Inc. All rights reserved. · Quality Management Execution System</div>
+  <div class="footer">© 2026 Namochemical Inc. All rights reserved. · Quality  Manufacturing Execution System</div>
 </div></div>
 
 <!-- 비밀번호 변경 모달 -->
@@ -7803,7 +7803,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           <button class="btn light" data-nmc-action="reset">초기화</button>
         </div>
       </div>
-      <div class="nmc-tabs"><button class="nmc-tab active">작성</button><button class="nmc-tab">이력</button></div>
+      <div class="nmc-tabs"><button class="nmc-tab active">작성</button></div>
       <div class="nmc-workorder-card">
         <h3>1. 기본 정보</h3>
         <div class="nmc-form-grid">
@@ -7828,7 +7828,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         </div>
       </div>
       <div class="nmc-workorder-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin:0">3. 투입 원료</h3><button class="nmc-add-btn" id="nmcMaterialAdd" type="button">+ 원료 행추가</button></div>
+        <div class="nmc-material-head-final"><h3 style="margin:0">3. 투입 원료</h3><div class="nmc-material-actions-final"><button class="nmc-excel-btn" id="nmcMaterialExcelBtn" type="button">📄 투입원료 엑셀 불러오기</button><input id="nmcMaterialExcelInput" type="file" accept=".xlsx,.xls,.csv" style="display:none"><button class="nmc-add-btn" id="nmcMaterialAdd" type="button">+ 원료 행추가</button></div></div>
         <div class="nmc-subtable nmc-material-final-wrap"><table id="nmcMaterialTable"><thead><tr><th>No.</th><th>원료명</th><th>원료 LOT 번호</th><th>계획투입량 (kg)</th><th>실투입량 (kg)</th><th>비율 (%)</th><th>비고</th><th>삭제</th></tr></thead><tbody>
           <tr><td>1</td><td><input class="nmc-input" placeholder="원료명 직접입력"></td><td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력"></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="0.00" readonly><span class="nmc-unit-box">%</span></div></td><td><input class="nmc-input" placeholder="비고 직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>
         </tbody><tfoot><tr><td colspan="3">합계</td><td id="nmcMaterialTotalPlanQty">0.00 kg</td><td id="nmcMaterialTotalQty">0.00 kg</td><td id="nmcMaterialTotalRatio">0.00 %</td><td>-</td><td></td></tr></tfoot></table></div>
@@ -13123,6 +13123,224 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NMC F5 SAVE SCREEN RESTORE PATCH 20260702 END -->
+
+
+
+<!-- NMC WORKORDER HISTORY DELETE + MATERIAL EXCEL IMPORT PATCH 20260702 START -->
+<style id="nmc-workorder-material-excel-style-20260702">
+#page-workorder-final .nmc-tabs .nmc-tab:not(:first-child){display:none!important;}
+#page-workorder-final .nmc-material-head-final{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important;margin-bottom:12px!important;flex-wrap:wrap!important;}
+#page-workorder-final .nmc-material-actions-final{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;}
+#page-workorder-final .nmc-excel-btn{height:38px!important;border:none!important;border-radius:10px!important;background:#0f766e!important;color:#fff!important;font-size:13px!important;font-weight:900!important;padding:0 14px!important;cursor:pointer!important;box-shadow:0 4px 12px rgba(15,118,110,.18)!important;}
+#page-workorder-final .nmc-excel-btn:hover{background:#0d5f59!important;}
+#page-workorder-final .nmc-excel-help{margin-top:8px!important;color:#0f766e!important;font-size:12px!important;font-weight:800!important;}
+</style>
+<script id="nmc-workorder-material-excel-import-20260702">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_MATERIAL_EXCEL_IMPORT_20260702__) return;
+  window.__NMC_WORKORDER_MATERIAL_EXCEL_IMPORT_20260702__ = true;
+
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function text(v){return String(v==null?'':v).trim();}
+  function norm(v){return text(v).replace(/\s+/g,'').toLowerCase();}
+  function esc(v){return text(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function num(v){var n=parseFloat(text(v).replace(/,/g,'').replace(/kg|㎏|%/gi,'').replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0;}
+
+  function removeHistoryTab(){
+    qsa('#page-workorder-final .nmc-tab').forEach(function(btn,idx){
+      if(idx>0 || /이력|history/i.test(text(btn.textContent))){ btn.remove(); }
+      else { btn.classList.add('active'); }
+    });
+    qsa('#page-workorder-final [id*="History"],#page-workorder-final [id*="history"],#page-workorder-final [class*="history"],#page-workorder-final [class*="History"]').forEach(function(el){
+      if(!el.closest('#nmcMaterialTable')) el.style.display='none';
+    });
+  }
+
+  function ensureImportButton(){
+    removeHistoryTab();
+    var page=qs('#page-workorder-final'); if(!page) return;
+    var add=qs('#nmcMaterialAdd',page); if(!add) return;
+    if(qs('#nmcMaterialExcelBtn',page) && qs('#nmcMaterialExcelInput',page)) return;
+    var wrap=add.parentElement;
+    if(wrap && !wrap.classList.contains('nmc-material-actions-final')){
+      var head=add.closest('div');
+      if(head){ head.classList.add('nmc-material-head-final'); }
+      var actions=document.createElement('div');
+      actions.className='nmc-material-actions-final';
+      add.parentNode.insertBefore(actions, add);
+      actions.appendChild(add);
+      wrap=actions;
+    }
+    var btn=document.createElement('button');
+    btn.type='button'; btn.id='nmcMaterialExcelBtn'; btn.className='nmc-excel-btn';
+    btn.textContent='📄 투입원료 엑셀 불러오기';
+    var input=document.createElement('input');
+    input.type='file'; input.id='nmcMaterialExcelInput'; input.accept='.xlsx,.xls,.csv'; input.style.display='none';
+    wrap.insertBefore(btn, wrap.firstChild);
+    wrap.appendChild(input);
+  }
+
+  function colIndex(headers, tests, excludes){
+    excludes = excludes || [];
+    var best=-1;
+    headers.forEach(function(h,i){
+      var n=norm(h);
+      if(!n) return;
+      if(excludes.some(function(rx){return rx.test(n);} )) return;
+      if(tests.some(function(rx){return rx.test(n);} ) && best<0) best=i;
+    });
+    return best;
+  }
+
+  function findMaterialRows(rows){
+    var headerIdx=-1, headers=[];
+    for(var i=0;i<rows.length;i++){
+      var r=(rows[i]||[]).map(text);
+      var joined=norm(r.join(' '));
+      var score=0;
+      if(/원료|원재료|자재|품명/.test(joined)) score++;
+      if(/lot|로트/.test(joined)) score++;
+      if(/투입|수량|중량|계획/.test(joined)) score++;
+      if(/비고|remark/.test(joined)) score++;
+      if(score>=3){ headerIdx=i; headers=r; break; }
+    }
+    if(headerIdx<0){ throw new Error('엑셀에서 투입원료 표 헤더를 찾지 못했습니다.'); }
+
+    var idxNo=colIndex(headers,[/순서/,/^no\.?$/,/번호/]);
+    var idxName=colIndex(headers,[/원재료명/,/원료명/,/자재명/,/품명/,/원료/],[/lot|로트/,/비고/,/순서/,/^no\.?$/]);
+    var idxLot=colIndex(headers,[/lot/,/로트/]);
+    var idxActual=colIndex(headers,[/실투입/,/실제투입/,/actual/]);
+    var idxPlan=colIndex(headers,[/계획투입/,/투입량/,/중량/,/수량/,/qty/],[/실투입/,/실제투입/,/비율/,/%/]);
+    var idxNote=colIndex(headers,[/비고/,/remark/,/note/,/memo/]);
+
+    if(idxName<0) idxName=1;
+    if(idxLot<0) idxLot=2;
+    if(idxPlan<0 && idxActual>=0) idxPlan=idxActual;
+    if(idxActual<0 && idxPlan>=0) idxActual=idxPlan;
+
+    var out=[];
+    for(var r=headerIdx+1;r<rows.length;r++){
+      var row=rows[r]||[];
+      var name=text(row[idxName]);
+      var lot=text(row[idxLot]);
+      var plan=text(row[idxPlan]);
+      var actual=text(row[idxActual]);
+      var note=idxNote>=0?text(row[idxNote]):'';
+      var no=idxNo>=0?text(row[idxNo]):'';
+      var joined=norm(row.map(text).join(''));
+      if(!joined) { if(out.length) break; else continue; }
+      if(/합계|total/.test(joined)) break;
+      if(!name && !lot && !plan && !actual) continue;
+      if(!actual) actual=plan;
+      if(!plan) plan=actual;
+      out.push({no:no,name:name,lot:lot,plan:plan,actual:actual,note:note});
+    }
+    if(!out.length) throw new Error('투입원료 데이터 행을 찾지 못했습니다.');
+    return out;
+  }
+
+  function materialRowHtml(m,i){
+    return '<tr><td>'+(i+1)+'</td>'+
+      '<td><input class="nmc-input" placeholder="원료명 직접입력" value="'+esc(m.name)+'"></td>'+
+      '<td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력" value="'+esc(m.lot)+'"></td>'+
+      '<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal" value="'+esc(m.plan)+'"><span class="nmc-unit-box">kg</span></div></td>'+
+      '<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal" value="'+esc(m.actual)+'"><span class="nmc-unit-box">kg</span></div></td>'+
+      '<td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="0.00" readonly><span class="nmc-unit-box">%</span></div></td>'+
+      '<td><input class="nmc-input" placeholder="비고 직접입력" value="'+esc(m.note)+'"></td>'+
+      '<td><button class="nmc-small-btn" data-nmc-del-row>삭제</button></td></tr>';
+  }
+
+  function recalcMaterial(){
+    var rows=qsa('#nmcMaterialTable tbody tr');
+    var planTotal=0, actualTotal=0;
+    rows.forEach(function(tr,i){
+      var c=tr.children[0]; if(c) c.textContent=String(i+1);
+      planTotal += num(qs('.nmc-mat-plan-qty',tr)?.value);
+      actualTotal += num(qs('.nmc-mat-qty',tr)?.value);
+    });
+    rows.forEach(function(tr,i){
+      var q=num(qs('.nmc-mat-qty',tr)?.value);
+      var ratio=actualTotal>0 ? q/actualTotal*100 : 0;
+      if(actualTotal>0 && i===rows.length-1){
+        var prev=0;
+        rows.slice(0,-1).forEach(function(r){ prev += Number(qs('.nmc-mat-ratio',r)?.value||0)||0; });
+        ratio=Math.max(0,100-prev);
+      }
+      var ri=qs('.nmc-mat-ratio',tr); if(ri) ri.value=ratio.toFixed(2);
+    });
+    var p=qs('#nmcMaterialTotalPlanQty'); if(p) p.textContent=planTotal.toFixed(2)+' kg';
+    var a=qs('#nmcMaterialTotalQty'); if(a) a.textContent=actualTotal.toFixed(2)+' kg';
+    qsa('#nmcMatTotal').forEach(function(x){x.textContent=actualTotal.toFixed(2)+' kg';});
+    var r=qs('#nmcMaterialTotalRatio'); if(r) r.textContent=actualTotal>0?'100.00 %':'0.00 %';
+    var planInput=qs('#nmcPlanQty'); if(planInput) planInput.value=planTotal.toFixed(2);
+    var actualInput=qs('#nmcActualQty'); if(actualInput) actualInput.value=actualTotal.toFixed(2);
+  }
+
+  function applyRows(list){
+    var tb=qs('#nmcMaterialTable tbody'); if(!tb) throw new Error('QMES 투입원료 표를 찾지 못했습니다.');
+    tb.innerHTML=list.map(materialRowHtml).join('');
+    recalcMaterial();
+    qsa('#nmcMaterialTable input').forEach(function(el){
+      try{el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true}));}catch(e){}
+    });
+    recalcMaterial();
+    var info=qs('#page-workorder-final .nmc-material-info');
+    if(info){
+      var old=qs('.nmc-excel-help',info); if(old) old.remove();
+      info.insertAdjacentHTML('beforeend','<div class="nmc-excel-help">엑셀 투입원료 '+list.length+'건을 자동 입력했습니다.</div>');
+    }
+  }
+
+  function readExcel(file){
+    if(!file) return;
+    if(!window.XLSX){ alert('엑셀 라이브러리(XLSX)가 로드되지 않았습니다.'); return; }
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var wb=window.XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+        var all=[];
+        wb.SheetNames.forEach(function(name){
+          var sh=wb.Sheets[name];
+          var rows=window.XLSX.utils.sheet_to_json(sh,{header:1,defval:''});
+          if(rows && rows.length) all=all.concat(rows);
+        });
+        var list=findMaterialRows(all);
+        applyRows(list);
+        alert('투입원료 '+list.length+'건을 자동 입력했습니다.');
+      }catch(err){
+        console.error(err);
+        alert('투입원료 자동 입력 실패: '+(err && err.message ? err.message : err));
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  document.addEventListener('click',function(e){
+    var btn=e.target && e.target.closest && e.target.closest('#nmcMaterialExcelBtn');
+    if(btn){ e.preventDefault(); var input=qs('#nmcMaterialExcelInput'); if(input) input.click(); }
+  },true);
+  document.addEventListener('change',function(e){
+    if(e.target && e.target.id==='nmcMaterialExcelInput'){
+      var f=e.target.files && e.target.files[0];
+      readExcel(f);
+      e.target.value='';
+    }
+  },true);
+  document.addEventListener('input',function(e){
+    if(e.target && (e.target.classList.contains('nmc-mat-plan-qty') || e.target.classList.contains('nmc-mat-qty'))){
+      setTimeout(recalcMaterial,0);
+    }
+  },true);
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureImportButton); else ensureImportButton();
+  window.addEventListener('load',function(){ setTimeout(ensureImportButton,100); setTimeout(ensureImportButton,700); setTimeout(ensureImportButton,1600); });
+  document.addEventListener('click',function(e){ if(e.target && e.target.closest && e.target.closest('[data-page],.nav-item')) setTimeout(ensureImportButton,120); },true);
+  window.nmcImportMaterialExcelRows20260702 = applyRows;
+})();
+</script>
+<!-- NMC WORKORDER HISTORY DELETE + MATERIAL EXCEL IMPORT PATCH 20260702 END -->
 
 </body>
 </html>
