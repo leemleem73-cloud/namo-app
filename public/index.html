@@ -17009,5 +17009,299 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO_DATE_DESC_SORT_FINAL_20260701_END -->
 
+
+
+<!-- NMC Patch 20260702: 작업지시 이력 삭제 + 투입원료 엑셀 자동입력 + F5 화면 유지 -->
+<style id="nmc-workorder-excel-history-f5-style-20260702">
+  #page-workorder-final .nmc-tab:nth-child(2),
+  #page-workorder-final .nmc-tab[data-tab="history"],
+  #page-workorder-final .nmc-tab[data-target*="history"],
+  #page-workorder-final .nmc-tab[data-target*="이력"],
+  .nav-item[data-page*="workorder-history"],
+  .nav-item[data-page*="workorderHistory"],
+  .nav-item[data-page*="workorder-log"],
+  .nav-item[data-page*="workorderLog"]{display:none!important;}
+  #page-workorder-final .nmc-material-excel-btn{
+    height:36px!important;border:none!important;border-radius:10px!important;background:#0b57d0!important;color:#fff!important;
+    padding:0 14px!important;font-size:13px!important;font-weight:900!important;cursor:pointer!important;box-shadow:0 6px 14px rgba(37,99,235,.20)!important;
+  }
+  #page-workorder-final .nmc-material-excel-btn:hover{background:#1648c4!important;}
+  #page-workorder-final .nmc-material-excel-file{display:none!important;}
+</style>
+<script id="nmc-workorder-excel-history-f5-patch-20260702">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_EXCEL_HISTORY_F5_PATCH_20260702__) return;
+  window.__NMC_WORKORDER_EXCEL_HISTORY_F5_PATCH_20260702__ = true;
+
+  var PAGE_KEY = 'nmc_qmes_last_page_20260702';
+  var FORM_KEY = 'nmc_qmes_workorder_draft_20260702';
+
+  function qs(s,r){ return (r||document).querySelector(s); }
+  function qsa(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+  function txt(v){ return String(v==null?'':v).trim(); }
+  function num(v){ var n=parseFloat(String(v||'').replace(/,/g,'').replace(/[^0-9.\-]/g,'')); return isFinite(n)?n:0; }
+
+  function clickPage(pageId){
+    if(!pageId) return false;
+    var btn = qs('.nav-item[data-page="'+pageId+'"], [data-page-target="'+pageId+'"]');
+    if(btn){ btn.click(); return true; }
+    var page = document.getElementById(pageId) || document.getElementById('page-'+pageId);
+    if(page){
+      qsa('.page').forEach(function(p){p.classList.remove('active');});
+      page.classList.add('active');
+      qsa('.nav-item').forEach(function(n){n.classList.toggle('active', n.getAttribute('data-page')===pageId);});
+      return true;
+    }
+    return false;
+  }
+
+  function rememberCurrentPage(){
+    var active = qs('.page.active');
+    if(active && active.id){
+      try{ sessionStorage.setItem(PAGE_KEY, active.id.replace(/^page-/,'')); }catch(e){}
+    }
+  }
+
+  function restorePage(){
+    var page='';
+    try{ page = sessionStorage.getItem(PAGE_KEY) || localStorage.getItem(PAGE_KEY) || ''; }catch(e){}
+    if(page) setTimeout(function(){ clickPage(page); }, 120);
+  }
+
+  function saveDraftSoon(){
+    clearTimeout(saveDraftSoon.t);
+    saveDraftSoon.t = setTimeout(saveDraft, 250);
+  }
+
+  function saveDraft(){
+    var root = qs('#page-workorder-final');
+    if(!root) return;
+    var draft = { fields:{}, materials:[] };
+    qsa('input,textarea,select', root).forEach(function(el){
+      if(!el.id) return;
+      if(el.type === 'file') return;
+      if(el.tagName === 'SELECT' && el.multiple){
+        draft.fields[el.id] = qsa('option', el).filter(function(o){return o.selected;}).map(function(o){return o.value;});
+      }else{
+        draft.fields[el.id] = el.value;
+      }
+    });
+    draft.materials = collectMaterialRows();
+    try{ localStorage.setItem(FORM_KEY, JSON.stringify(draft)); }catch(e){}
+  }
+
+  function restoreDraft(){
+    var root = qs('#page-workorder-final');
+    if(!root) return;
+    var raw='';
+    try{ raw=localStorage.getItem(FORM_KEY)||''; }catch(e){}
+    if(!raw) return;
+    var draft=null;
+    try{ draft=JSON.parse(raw); }catch(e){ return; }
+    if(!draft || !draft.fields) return;
+    Object.keys(draft.fields).forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el || el.type==='file') return;
+      var val = draft.fields[id];
+      if(el.tagName==='SELECT' && el.multiple && Array.isArray(val)){
+        qsa('option', el).forEach(function(o){ o.selected = val.indexOf(o.value) > -1; });
+      }else if(el.value === '' || id==='nmcInstruction'){
+        el.value = val;
+      }
+    });
+    if(Array.isArray(draft.materials) && draft.materials.length){ fillMaterials(draft.materials, false); }
+    updateTotals();
+  }
+
+  function collectMaterialRows(){
+    return qsa('#nmcMaterialTable tbody tr').map(function(tr,i){
+      var cells = tr.children;
+      function inputAt(idx){ var el = cells[idx] && qs('input', cells[idx]); return el ? txt(el.value) : ''; }
+      return {
+        no:i+1,
+        name:inputAt(1),
+        lot:inputAt(2),
+        planQty:(qs('.nmc-mat-plan-qty', tr)||{}).value || inputAt(3),
+        actualQty:(qs('.nmc-mat-qty', tr)||{}).value || inputAt(4),
+        ratio:(qs('.nmc-mat-ratio', tr)||{}).value || inputAt(5),
+        note:inputAt(6)
+      };
+    }).filter(function(r){ return [r.name,r.lot,r.planQty,r.actualQty,r.note].some(function(v){return txt(v);}); });
+  }
+
+  function rowHtml(){
+    return '<tr><td></td><td><input class="nmc-input" placeholder="원료명 직접입력"></td><td><input class="nmc-input" placeholder="원료 LOT 번호 직접입력"></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-plan-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-qty" placeholder="0" inputmode="decimal"><span class="nmc-unit-box">kg</span></div></td><td><div class="nmc-input-unit-wrap"><input class="nmc-input nmc-mat-ratio nmc-ratio-input" value="0.00" readonly><span class="nmc-unit-box">%</span></div></td><td><input class="nmc-input" placeholder="비고 직접입력"></td><td><button class="nmc-small-btn" data-nmc-del-row type="button">삭제</button></td></tr>';
+  }
+
+  function fillMaterials(rows, alertDone){
+    var tbody = qs('#nmcMaterialTable tbody');
+    if(!tbody || !rows || !rows.length) return;
+    tbody.innerHTML = '';
+    rows.forEach(function(r){
+      tbody.insertAdjacentHTML('beforeend', rowHtml());
+      var tr = tbody.lastElementChild;
+      var inputs = qsa('input', tr);
+      if(inputs[0]) inputs[0].value = r.name || '';
+      if(inputs[1]) inputs[1].value = r.lot || '';
+      var plan = qs('.nmc-mat-plan-qty', tr); if(plan) plan.value = r.planQty || r.qty || '';
+      var actual = qs('.nmc-mat-qty', tr); if(actual) actual.value = r.actualQty || r.qty || r.planQty || '';
+      var note = tr.children[6] && qs('input', tr.children[6]); if(note) note.value = r.note || '';
+    });
+    renumber();
+    updateTotals();
+    saveDraftSoon();
+    if(alertDone) alert('투입원료 엑셀 데이터를 불러왔습니다.');
+  }
+
+  function renumber(){
+    qsa('#nmcMaterialTable tbody tr').forEach(function(tr,i){ if(tr.children[0]) tr.children[0].textContent=String(i+1); });
+  }
+
+  function updateTotals(){
+    if(typeof window.updateMaterialTotal === 'function'){
+      try{ window.updateMaterialTotal(); return; }catch(e){}
+    }
+    var rows=qsa('#nmcMaterialTable tbody tr'), plan=0, actual=0;
+    rows.forEach(function(tr){ plan+=num((qs('.nmc-mat-plan-qty',tr)||{}).value); actual+=num((qs('.nmc-mat-qty',tr)||{}).value); });
+    rows.forEach(function(tr,i){
+      var q=num((qs('.nmc-mat-qty',tr)||{}).value), ratio=actual? q/actual*100:0;
+      var ri=qs('.nmc-mat-ratio',tr); if(ri) ri.value=ratio.toFixed(2);
+    });
+    var a=qs('#nmcMaterialTotalPlanQty'); if(a) a.textContent=plan.toFixed(2)+' kg';
+    var b=qs('#nmcMaterialTotalQty'); if(b) b.textContent=actual.toFixed(2)+' kg';
+    var c=qs('#nmcMaterialTotalRatio'); if(c) c.textContent=actual?'100.00 %':'0.00 %';
+    var p=qs('#nmcPlanQty'); if(p) p.value=plan.toFixed(2);
+    var ac=qs('#nmcActualQty'); if(ac) ac.value=actual.toFixed(2);
+  }
+
+  function headerIndex(headers, words){
+    for(var i=0;i<headers.length;i++){
+      var h=txt(headers[i]).replace(/\s+/g,'').toLowerCase();
+      for(var j=0;j<words.length;j++){
+        if(h.indexOf(words[j].toLowerCase())>-1) return i;
+      }
+    }
+    return -1;
+  }
+
+  function parseSheetRows(aoa){
+    var best=-1, score=-1;
+    for(var r=0;r<Math.min(80,aoa.length);r++){
+      var row=(aoa[r]||[]).map(txt);
+      var joined=row.join(' ');
+      var s=0;
+      if(/원료|원재료|자재/.test(joined)) s+=2;
+      if(/LOT|Lot|lot/.test(joined)) s+=2;
+      if(/투입|사용량|중량|수량/.test(joined)) s+=2;
+      if(/비고|Remark|remark/.test(joined)) s+=1;
+      if(s>score){score=s; best=r;}
+    }
+    if(best<0 || score<4) best=0;
+    var headers=(aoa[best]||[]).map(txt);
+    var idxNo=headerIndex(headers,['투입순서','순서','no','번호']);
+    var idxName=headerIndex(headers,['원재료명','원료명','자재명','품명','원재료']);
+    var idxLot=headerIndex(headers,['lotno','lot','로트','원료lot','원재료lot']);
+    var idxPlan=headerIndex(headers,['계획투입량','계획량','투입량','사용량','중량','수량']);
+    var idxActual=headerIndex(headers,['실투입량','실제투입량','실량','실사용량']);
+    var idxNote=headerIndex(headers,['비고','remark','note']);
+    if(idxName<0) idxName=1;
+    if(idxLot<0) idxLot=2;
+    if(idxPlan<0) idxPlan=3;
+    if(idxActual<0) idxActual=4;
+    var out=[];
+    for(var i=best+1;i<aoa.length;i++){
+      var row=aoa[i]||[];
+      var name=txt(row[idxName]), lot=txt(row[idxLot]), plan=txt(row[idxPlan]), actual=idxActual>=0?txt(row[idxActual]):'';
+      var note=idxNote>=0?txt(row[idxNote]):'';
+      var joined=row.map(txt).join('');
+      if(!joined) continue;
+      if(/합계|total/i.test(joined)) continue;
+      if(!name && !lot && !plan && !actual) continue;
+      if(name && /원료명|원재료명|품명/.test(name)) continue;
+      out.push({name:name, lot:lot, planQty:plan, actualQty:actual||plan, note:note});
+    }
+    return out;
+  }
+
+  function handleExcel(file){
+    if(!file) return;
+    if(!window.XLSX){ alert('엑셀 라이브러리(XLSX)를 불러오지 못했습니다.'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var data = new Uint8Array(e.target.result);
+        var wb = XLSX.read(data,{type:'array'});
+        var rows=[];
+        wb.SheetNames.some(function(name){
+          var ws=wb.Sheets[name];
+          var aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+          rows=parseSheetRows(aoa);
+          return rows.length>0;
+        });
+        if(!rows.length){ alert('투입원료 표를 찾지 못했습니다. 엑셀의 원료명 / LOT / 투입량 영역을 확인해 주세요.'); return; }
+        fillMaterials(rows, true);
+      }catch(err){ console.error(err); alert('엑셀 파일을 읽는 중 오류가 발생했습니다.'); }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function ensureExcelButton(){
+    var root=qs('#page-workorder-final'); if(!root) return;
+    var h3=qsa('h3',root).filter(function(x){return /투입\s*원료/.test(x.textContent||'');})[0];
+    if(!h3) return;
+    var bar=h3.parentElement;
+    if(!bar || qs('.nmc-material-excel-btn',bar)) return;
+    var fileId='nmcMaterialExcelFile20260702';
+    var btn=document.createElement('button');
+    btn.type='button'; btn.className='nmc-material-excel-btn'; btn.textContent='📄 투입원료 엑셀 불러오기';
+    var inp=document.createElement('input');
+    inp.type='file'; inp.id=fileId; inp.className='nmc-material-excel-file'; inp.accept='.xlsx,.xls,.csv';
+    btn.addEventListener('click',function(){ inp.click(); });
+    inp.addEventListener('change',function(){ handleExcel(inp.files && inp.files[0]); inp.value=''; });
+    var add=qs('#nmcMaterialAdd',bar);
+    if(add){ bar.insertBefore(btn, add); bar.insertBefore(inp, add); }
+    else { bar.appendChild(btn); bar.appendChild(inp); }
+  }
+
+  function hideHistory(){
+    qsa('#page-workorder-final .nmc-tab').forEach(function(b){
+      if(/이력|history/i.test(b.textContent||'')) b.style.setProperty('display','none','important');
+      if(/작성/.test(b.textContent||'')) b.classList.add('active');
+    });
+    qsa('.nav-item,button').forEach(function(b){
+      var t=txt(b.textContent);
+      if(/작업지시서\s*이력|작업지시\s*이력/.test(t)) b.style.setProperty('display','none','important');
+    });
+  }
+
+  document.addEventListener('click',function(e){
+    var p=e.target && e.target.closest && e.target.closest('[data-page],[data-page-target]');
+    if(p){
+      var id=p.getAttribute('data-page') || p.getAttribute('data-page-target') || '';
+      try{ sessionStorage.setItem(PAGE_KEY,id); localStorage.setItem(PAGE_KEY,id); }catch(err){}
+    }
+    if(e.target && e.target.closest && e.target.closest('[data-nmc-del-row]')) setTimeout(function(){renumber(); updateTotals(); saveDraftSoon();},0);
+  },true);
+
+  document.addEventListener('input',function(e){
+    if(e.target && e.target.closest && e.target.closest('#page-workorder-final')){
+      if(e.target.closest('#nmcMaterialTable')) updateTotals();
+      saveDraftSoon();
+    }
+  },true);
+  document.addEventListener('change',function(e){
+    if(e.target && e.target.closest && e.target.closest('#page-workorder-final')) saveDraftSoon();
+  },true);
+
+  window.addEventListener('beforeunload',function(){ rememberCurrentPage(); saveDraft(); });
+
+  function init(){ hideHistory(); ensureExcelButton(); restoreDraft(); restorePage(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  [300,800,1600,3000].forEach(function(ms){ setTimeout(init,ms); });
+})();
+</script>
+<!-- /NMC Patch 20260702 -->
+
 </body>
 </html>
