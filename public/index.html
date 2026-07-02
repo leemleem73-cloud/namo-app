@@ -12893,5 +12893,236 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NAMO APPROVAL CLEAN REPLACEMENT 20260624 END -->
+
+
+<!-- NMC F5 SAVE SCREEN RESTORE PATCH 20260702 START -->
+<script id="nmc-f5-save-screen-restore-20260702">
+(function(){
+  'use strict';
+  if(window.__NMC_F5_SAVE_SCREEN_RESTORE_20260702__) return;
+  window.__NMC_F5_SAVE_SCREEN_RESTORE_20260702__ = true;
+
+  var PAGE_KEY = 'nmc_qmes_last_active_page_v20260702';
+  var DRAFT_KEY = 'nmc_qmes_page_drafts_v20260702';
+  var WORKORDER_PAGE = 'workorder-final';
+  var SAVE_SELECTORS = [
+    '[data-nmc-action="write"]','[data-nmc-action="draft"]','[data-nmc-action="send"]',
+    '#nmcWorkOrderSave','#nmcWorkOrderDraft','#nmcWorkOrderSend',
+    '#incomingSave','#processSave','#shipmentSave','#trainingSave','#ncSave','#spcSave'
+  ].join(',');
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function txt(v){ return String(v == null ? '' : v); }
+  function safeParse(v, d){ try{ return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+  function readDrafts(){ return safeParse(localStorage.getItem(DRAFT_KEY), {}); }
+  function writeDrafts(obj){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(obj || {})); }catch(e){} }
+  function pageIdFromNode(node){
+    var p = node && node.closest ? node.closest('.page') : null;
+    if(p && /^page-/.test(p.id || '')) return p.id.replace(/^page-/, '');
+    var active = qs('.page.active');
+    return active && /^page-/.test(active.id || '') ? active.id.replace(/^page-/, '') : '';
+  }
+  function activePage(){
+    var p = qs('.page.active');
+    if(p && /^page-/.test(p.id || '')) return p.id.replace(/^page-/, '');
+    var nav = qs('.nav-item[data-page].active');
+    return nav ? nav.getAttribute('data-page') : '';
+  }
+  function setLastPage(pg){
+    if(!pg) return;
+    try{ sessionStorage.setItem(PAGE_KEY, pg); localStorage.setItem(PAGE_KEY, pg); }catch(e){}
+  }
+  function getLastPage(){
+    var pg = '';
+    try{ pg = sessionStorage.getItem(PAGE_KEY) || localStorage.getItem(PAGE_KEY) || ''; }catch(e){}
+    return pg;
+  }
+  function isSkippable(el){
+    if(!el) return true;
+    var type = txt(el.type).toLowerCase();
+    if(type === 'password' || type === 'file' || type === 'button' || type === 'submit' || type === 'reset') return true;
+    if(el.closest && el.closest('#loginPage')) return true;
+    return false;
+  }
+  function keyOf(el, idx){
+    return el.id || el.name || el.getAttribute('data-key') || el.getAttribute('data-nmc-field') || ('field_' + idx);
+  }
+  function valOf(el){
+    if(el.type === 'checkbox') return !!el.checked;
+    if(el.type === 'radio') return {checked:!!el.checked, value:el.value};
+    if(el.tagName === 'SELECT' && el.multiple) return qsa('option', el).filter(function(o){return o.selected;}).map(function(o){return o.value;});
+    return el.value;
+  }
+  function setVal(el, val){
+    if(val === undefined || val === null || !el) return;
+    if(el.type === 'checkbox'){ el.checked = !!val; return; }
+    if(el.type === 'radio'){
+      if(typeof val === 'object') el.checked = !!val.checked;
+      else el.checked = (el.value === String(val));
+      return;
+    }
+    if(el.tagName === 'SELECT' && el.multiple && Array.isArray(val)){
+      qsa('option', el).forEach(function(o){ o.selected = val.indexOf(o.value) > -1 || val.indexOf(o.textContent.trim()) > -1; });
+      return;
+    }
+    el.value = val;
+  }
+  function materialRows(root){
+    var table = qs('#nmcMaterialTable', root || document);
+    if(!table) return [];
+    return qsa('tbody tr', table).map(function(tr){
+      return qsa('input,select,textarea', tr).filter(function(el){ return !isSkippable(el); }).map(valOf);
+    });
+  }
+  function restoreMaterialRows(root, rows){
+    if(!Array.isArray(rows) || !rows.length) return;
+    root = root || document;
+    var table = qs('#nmcMaterialTable', root);
+    var tbody = table && qs('tbody', table);
+    if(!tbody) return;
+    var addBtn = qs('#nmcMaterialAdd', root) || qs('#nmcMaterialAdd');
+    while(qsa('tr', tbody).length < rows.length){
+      if(addBtn) addBtn.click();
+      else {
+        var first = qs('tr', tbody);
+        if(first){ var clone = first.cloneNode(true); qsa('input,select,textarea', clone).forEach(function(el){ el.value=''; }); tbody.appendChild(clone); }
+        else break;
+      }
+    }
+    while(qsa('tr', tbody).length > rows.length && qsa('tr', tbody).length > 1){
+      qsa('tr', tbody).pop().remove();
+    }
+    qsa('tr', tbody).forEach(function(tr, i){
+      var vals = rows[i] || [];
+      qsa('input,select,textarea', tr).filter(function(el){ return !isSkippable(el); }).forEach(function(el, j){ setVal(el, vals[j]); });
+    });
+    try{ if(typeof window.updateMaterialRows === 'function') window.updateMaterialRows(); }catch(e){}
+    try{ if(typeof window.updateMaterialTotal === 'function') window.updateMaterialTotal(); }catch(e){}
+  }
+  function capturePage(pg){
+    pg = pg || activePage();
+    if(!pg) return;
+    var root = qs('#page-' + pg);
+    if(!root) return;
+    var fields = {};
+    qsa('input,select,textarea', root).forEach(function(el, idx){
+      if(isSkippable(el)) return;
+      fields[keyOf(el, idx)] = valOf(el);
+    });
+    var drafts = readDrafts();
+    drafts[pg] = { time:Date.now(), fields:fields, materialRows: pg === WORKORDER_PAGE ? materialRows(root) : [] };
+    writeDrafts(drafts);
+    setLastPage(pg);
+  }
+  function restorePageDraft(pg){
+    pg = pg || getLastPage();
+    if(!pg) return false;
+    var root = qs('#page-' + pg);
+    if(!root) return false;
+    var d = readDrafts()[pg];
+    if(!d || !d.fields) return true;
+    qsa('input,select,textarea', root).forEach(function(el, idx){
+      if(isSkippable(el)) return;
+      var k = keyOf(el, idx);
+      if(Object.prototype.hasOwnProperty.call(d.fields, k)) setVal(el, d.fields[k]);
+    });
+    if(pg === WORKORDER_PAGE) restoreMaterialRows(root, d.materialRows);
+    ['input','change'].forEach(function(type){
+      qsa('input,select,textarea', root).forEach(function(el){
+        try{ el.dispatchEvent(new Event(type, {bubbles:true})); }catch(e){}
+      });
+    });
+    return true;
+  }
+  function showPageDirect(pg){
+    if(!pg) return false;
+    var page = qs('#page-' + pg);
+    if(!page) return false;
+    qsa('.page').forEach(function(p){ p.classList.remove('active'); p.style.display=''; });
+    page.classList.add('active');
+    qsa('.nav-item[data-page]').forEach(function(n){ n.classList.toggle('active', n.getAttribute('data-page') === pg); });
+    var content = qs('.content');
+    if(content) content.scrollTo({top:0, behavior:'auto'});
+    setLastPage(pg);
+    return true;
+  }
+  function goPage(pg){
+    if(!pg) return false;
+    var ok = false;
+    if(window.__nmcOriginalShowPageForRestore && window.__nmcOriginalShowPageForRestore !== goPage){
+      try{ window.__nmcOriginalShowPageForRestore(pg); ok = true; }catch(e){}
+    }
+    if(!ok) ok = showPageDirect(pg);
+    setLastPage(pg);
+    setTimeout(function(){ restorePageDraft(pg); }, 80);
+    setTimeout(function(){ restorePageDraft(pg); }, 350);
+    return ok;
+  }
+  function wrapShowPage(){
+    if(typeof window.showPage === 'function' && window.showPage !== goPage && !window.showPage.__nmcRestoreWrapped){
+      window.__nmcOriginalShowPageForRestore = window.showPage;
+      goPage.__nmcRestoreWrapped = true;
+      window.showPage = goPage;
+    }
+  }
+  function restoreLast(){
+    wrapShowPage();
+    var pg = getLastPage();
+    if(!pg) return;
+    if(goPage(pg)) restorePageDraft(pg);
+  }
+  function refreshAfterWorkorderSave(){
+    var fns = ['renderWorkOrderAlert','renderInboxPages','renderProgress','refreshResult','patchResultButtons','nmcRefreshWorkOrderList','namoWorkOrderListRefreshFinal','namoProductionProgressRefresh','namoProductionResultRefresh'];
+    fns.forEach(function(fn){ try{ if(typeof window[fn] === 'function') window[fn](); }catch(e){} });
+    qsa('[data-page="workorder-list"],[data-page-target="workorder-list"],[data-page="production-progress"],[data-page-target="production-progress"],[data-page="production-result"],[data-page-target="production-result"]').forEach(function(el){
+      try{ el.dispatchEvent(new Event('nmc-refresh', {bubbles:true})); }catch(e){}
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var nav = e.target && e.target.closest && e.target.closest('.nav-item[data-page],[data-page-target],[data-go]');
+    if(nav){
+      var pg = nav.getAttribute('data-page') || nav.getAttribute('data-page-target') || nav.getAttribute('data-go');
+      if(pg) setLastPage(pg);
+    }
+    var save = e.target && e.target.closest && e.target.closest(SAVE_SELECTORS);
+    if(save){
+      var pg2 = pageIdFromNode(save) || activePage() || WORKORDER_PAGE;
+      capturePage(pg2);
+      setLastPage(pg2);
+      setTimeout(function(){ capturePage(pg2); refreshAfterWorkorderSave(); }, 120);
+      setTimeout(function(){ capturePage(pg2); refreshAfterWorkorderSave(); }, 650);
+    }
+    var reset = e.target && e.target.closest && e.target.closest('[data-nmc-action="reset"],#incomingReset,#processReset,#shipmentReset,#trainingReset,#ncReset');
+    if(reset){
+      var rpg = pageIdFromNode(reset);
+      setTimeout(function(){ var d=readDrafts(); delete d[rpg]; writeDrafts(d); }, 100);
+    }
+  }, true);
+
+  document.addEventListener('input', function(e){
+    var pg = pageIdFromNode(e.target);
+    if(pg) { setLastPage(pg); clearTimeout(window.__nmcF5DraftTimer); window.__nmcF5DraftTimer=setTimeout(function(){capturePage(pg);}, 250); }
+  }, true);
+  document.addEventListener('change', function(e){
+    var pg = pageIdFromNode(e.target);
+    if(pg) { setLastPage(pg); setTimeout(function(){capturePage(pg);}, 50); }
+  }, true);
+  window.addEventListener('beforeunload', function(){ capturePage(activePage()); });
+
+  function boot(){
+    wrapShowPage();
+    var pg = activePage();
+    if(pg) setLastPage(pg);
+    restoreLast();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load', function(){ [50,250,700,1400,2600,4200].forEach(function(ms){ setTimeout(restoreLast, ms); }); });
+  [500,1200,2400,4000].forEach(function(ms){ setTimeout(restoreLast, ms); });
+})();
+</script>
+<!-- NMC F5 SAVE SCREEN RESTORE PATCH 20260702 END -->
+
 </body>
 </html>
