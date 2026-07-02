@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=1440, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
 <title>Namochemical QMS</title>
-<!-- Login background only patch: EV car shifted right, loginPage removed after login -->
 <!-- Cleaned DMS compact version: 원본 보존 / 기준서 화면 축소 정리본 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2925,274 +2924,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
     overflow:auto!important;
   }
 }
-
-/* ══════════════════════════════════
-   LOGIN PAGE FINAL PATCH — EV Battery Cell + Smart Factory + HUD
-   2026-07-01
-══════════════════════════════════ */
-#loginPage{
-  background:#061225!important;
-}
-#loginPage::before{
-  background:
-    radial-gradient(ellipse 72% 62% at 13% 42%, rgba(37,99,235,.38) 0%, transparent 60%),
-    radial-gradient(ellipse 48% 62% at 76% 22%, rgba(6,182,212,.22) 0%, transparent 58%),
-    radial-gradient(ellipse 42% 50% at 62% 78%, rgba(14,165,233,.16) 0%, transparent 56%),
-    linear-gradient(135deg,#061225 0%,#0b1f3d 46%,#062d45 100%)!important;
-}
-#loginPage::after{
-  background-image:
-    linear-gradient(120deg,rgba(255,255,255,.05),transparent 28%,rgba(56,189,248,.06) 52%,transparent 76%),
-    repeating-linear-gradient(90deg,transparent,transparent 112px,rgba(147,197,253,.055) 113px),
-    repeating-linear-gradient(0deg,transparent,transparent 112px,rgba(147,197,253,.04) 113px)!important;
-}
-.namo-ev-bg{opacity:1!important;}
-.namo-login-panel{
-  width:58%!important;
-  padding:72px 72px!important;
-  justify-content:center!important;
-}
-.namo-login-brand{margin-bottom:26px!important;}
-.namo-login-panel .namo-wordmark{
-  font-size:0!important;
-  text-shadow:0 0 26px rgba(56,189,248,.42)!important;
-}
-.namo-login-panel .namo-wordmark .namo{
-  font-size:34px!important;
-  font-weight:950!important;
-  letter-spacing:-1.6px!important;
-}
-.namo-login-panel .namo-wordmark .chem{
-  font-size:34px!important;
-  font-weight:500!important;
-  letter-spacing:-1.4px!important;
-}
-.namo-login-title{
-  color:#fff;
-  font-size:42px;
-  font-weight:900;
-  line-height:1.12;
-  letter-spacing:-1.3px;
-  max-width:650px;
-  text-shadow:0 14px 42px rgba(0,0,0,.32),0 0 32px rgba(56,189,248,.22);
-}
-.namo-login-title::after{
-  content:'';
-  display:block;
-  width:150px;
-  height:4px;
-  margin:22px 0 0;
-  border-radius:99px;
-  background:linear-gradient(90deg,#38bdf8,#22d3ee,#93c5fd);
-  box-shadow:0 0 20px rgba(56,189,248,.42);
-}
-.namo-login-desc{
-  margin-top:20px;
-  max-width:520px;
-  color:rgba(226,242,255,.76);
-  font-size:15px;
-  font-weight:600;
-  line-height:1.75;
-}
-.namo-login-icons{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(120px,1fr));
-  gap:12px;
-  max-width:600px;
-  margin-top:34px;
-}
-.namo-login-icon{
-  min-height:86px;
-  border:1px solid rgba(147,197,253,.22);
-  border-radius:18px;
-  background:linear-gradient(180deg,rgba(255,255,255,.105),rgba(255,255,255,.045));
-  backdrop-filter:blur(12px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 14px 28px rgba(2,8,23,.16);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  gap:8px;
-  color:#e0f2fe;
-}
-.namo-login-icon span{
-  width:34px;
-  height:34px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(56,189,248,.16);
-  box-shadow:0 0 0 1px rgba(125,211,252,.20),0 0 18px rgba(56,189,248,.18);
-  font-size:18px;
-}
-.namo-login-icon b{
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:.1px;
-  white-space:nowrap;
-}
-#loginPage .lcard{
-  width:420px!important;
-  margin-left:auto!important;
-  margin-right:64px!important;
-  background:rgba(255,255,255,.96)!important;
-  border:1px solid rgba(255,255,255,.62)!important;
-  box-shadow:0 28px 70px rgba(2,8,23,.38),0 0 0 1px rgba(56,189,248,.10),0 0 70px rgba(56,189,248,.20)!important;
-}
-#loginPage .lcard h2{
-  color:#0f172a!important;
-  font-weight:900!important;
-}
-#loginPage .lcard>p{
-  color:#64748b!important;
-  font-weight:600!important;
-}
-@media(max-width:1100px){
-  .namo-login-panel{width:52%!important;padding:48px!important;}
-  .namo-login-title{font-size:34px!important;}
-  .namo-login-icons{grid-template-columns:repeat(2,minmax(120px,1fr));max-width:430px;}
-  #loginPage .lcard{margin-right:36px!important;}
-}
-@media(max-width:900px){
-  .namo-login-panel{display:none!important;}
-  #loginPage .lcard{margin:auto!important;width:min(420px,calc(100vw - 32px))!important;}
-}
-
-
-/* ══════════════════════════════════
-   LOGIN MOTION PATCH — No Robot / Animated Battery HUD
-   2026-07-01
-   - 로봇 이미지 없음
-   - 좌측 상단 실험물성 패널 아래 이동
-   - 배터리 물성 막대/액체/회로 흐름 은은한 CSS 애니메이션
-══════════════════════════════════ */
-#loginPage{
-  background:#061225!important;
-}
-.namo-ev-bg{
-  opacity:1!important;
-}
-.namo-lab-panel{
-  transform-box:fill-box;
-  transform-origin:center;
-  animation:namoLabFloat 7.5s ease-in-out infinite;
-  filter:drop-shadow(0 0 18px rgba(56,189,248,.18));
-}
-.namo-lab-panel rect{
-  transform-box:fill-box;
-  transform-origin:50% 100%;
-}
-.namo-lab-panel rect:nth-of-type(9){animation:namoLevelA 3.6s ease-in-out infinite;}
-.namo-lab-panel rect:nth-of-type(10){animation:namoLevelB 4.1s ease-in-out infinite;}
-.namo-lab-panel rect:nth-of-type(11){animation:namoLevelC 3.8s ease-in-out infinite;}
-.namo-lab-panel rect:nth-of-type(12){animation:namoLevelA 4.4s ease-in-out infinite reverse;}
-.namo-lab-panel rect:nth-of-type(13){animation:namoLevelB 3.9s ease-in-out infinite reverse;}
-.namo-lab-panel rect:nth-of-type(14){animation:namoLevelC 4.6s ease-in-out infinite;}
-.namo-lab-panel rect:nth-of-type(15){animation:namoLevelA 4.2s ease-in-out infinite reverse;}
-.namo-flow-lines{
-  transform-box:fill-box;
-  transform-origin:center;
-  animation:namoFlowFloat 9s ease-in-out infinite;
-}
-.namo-flow-lines path{
-  stroke-dasharray:260 640;
-  animation:namoDash 5.5s linear infinite;
-}
-.namo-flow-lines circle{
-  animation:namoPulse 2.8s ease-in-out infinite;
-}
-.namo-hud-panel{
-  transform-box:fill-box;
-  transform-origin:center;
-  animation:namoHudPulse 6s ease-in-out infinite;
-}
-.namo-hud-panel rect:nth-of-type(2),
-.namo-hud-panel rect:nth-of-type(3),
-.namo-hud-panel rect:nth-of-type(4){
-  transform-box:fill-box;
-  transform-origin:50% 100%;
-  animation:namoFactoryBar 4.2s ease-in-out infinite;
-}
-.namo-hud-panel rect:nth-of-type(3){animation-delay:.8s;}
-.namo-hud-panel rect:nth-of-type(4){animation-delay:1.4s;}
-.namo-hud-panel circle{
-  animation:namoPulse 2.6s ease-in-out infinite;
-}
-.namo-molecule{
-  animation:namoMoleculeDrift 14s ease-in-out infinite;
-}
-#loginPage::after{
-  animation:namoCircuitMove 18s linear infinite;
-}
-.namo-login-icon{
-  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-.namo-login-icon:hover{
-  transform:translateY(-4px);
-  border-color:rgba(125,211,252,.55);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 18px 38px rgba(56,189,248,.16),0 0 24px rgba(56,189,248,.18);
-}
-.namo-login-icon span{
-  animation:namoIconGlow 3.5s ease-in-out infinite;
-}
-#loginPage .lcard{
-  backdrop-filter:blur(18px)!important;
-}
-@keyframes namoLabFloat{
-  0%,100%{transform:translateY(0);opacity:.58;}
-  50%{transform:translateY(10px);opacity:.68;}
-}
-@keyframes namoFlowFloat{
-  0%,100%{transform:translateY(0);opacity:.42;}
-  50%{transform:translateY(-8px);opacity:.52;}
-}
-@keyframes namoLevelA{
-  0%,100%{transform:scaleY(.82);opacity:.25;}
-  50%{transform:scaleY(1.08);opacity:.40;}
-}
-@keyframes namoLevelB{
-  0%,100%{transform:scaleY(1.04);opacity:.28;}
-  50%{transform:scaleY(.76);opacity:.38;}
-}
-@keyframes namoLevelC{
-  0%,100%{transform:scaleY(.90);opacity:.25;}
-  50%{transform:scaleY(1.16);opacity:.42;}
-}
-@keyframes namoDash{
-  from{stroke-dashoffset:0;}
-  to{stroke-dashoffset:-900;}
-}
-@keyframes namoPulse{
-  0%,100%{opacity:.45;transform:scale(.92);}
-  50%{opacity:.95;transform:scale(1.22);}
-}
-@keyframes namoHudPulse{
-  0%,100%{opacity:.30;filter:drop-shadow(0 0 0 rgba(56,189,248,0));}
-  50%{opacity:.42;filter:drop-shadow(0 0 18px rgba(56,189,248,.20));}
-}
-@keyframes namoFactoryBar{
-  0%,100%{transform:scaleY(.86);}
-  50%{transform:scaleY(1.08);}
-}
-@keyframes namoMoleculeDrift{
-  0%,100%{transform:translate(0,0);opacity:.20;}
-  50%{transform:translate(-18px,-10px);opacity:.30;}
-}
-@keyframes namoCircuitMove{
-  from{background-position:0 0,0 0,0 0;}
-  to{background-position:520px 0,224px 0,0 224px;}
-}
-@keyframes namoIconGlow{
-  0%,100%{box-shadow:0 0 0 1px rgba(125,211,252,.20),0 0 14px rgba(56,189,248,.14);}
-  50%{box-shadow:0 0 0 1px rgba(125,211,252,.42),0 0 24px rgba(56,189,248,.34);}
-}
-@media (prefers-reduced-motion: reduce){
-  .namo-lab-panel,.namo-flow-lines,.namo-flow-lines path,.namo-flow-lines circle,.namo-hud-panel,.namo-hud-panel rect,.namo-hud-panel circle,.namo-molecule,#loginPage::after,.namo-login-icon span{
-    animation:none!important;
-  }
-}
-
 </style>
 
 <!-- Supabase client for cross-PC QMS sync -->
@@ -3339,376 +3070,6 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 }
 </style>
 
-
-
-<!-- LOGIN material bar motion patch 20260701
-     - 좌측 실험물성 막대그래프 동적 효과
-     - 내부 물성 흐름, 막대 높이 변화, 라인/데이터 점 이동
-     - 로그인 좌측 콘텐츠 위치 하향 보정
--->
-<style id="namo-login-material-motion-patch-20260701">
-/* 좌측 로그인 내용이 상단에 붙어 보이지 않도록 전체 하향 */
-#loginPage .namo-login-panel{
-  transform:translateY(44px)!important;
-}
-
-/* 실험물성 막대그래프 전체: 은은한 HMI 동작 */
-#loginPage .namo-lab-panel{
-  transform-origin:center;
-  animation:namoLabPanelPulse 5.8s ease-in-out infinite;
-}
-
-/* 배터리/물성 기본 셀: 미세한 호흡 효과 */
-#loginPage .namo-lab-panel g rect{
-  transform-box:fill-box;
-  transform-origin:center bottom;
-  animation:namoBarBreath 4.8s ease-in-out infinite;
-}
-#loginPage .namo-lab-panel g rect:nth-child(2){animation-delay:.25s;}
-#loginPage .namo-lab-panel g rect:nth-child(3){animation-delay:.50s;}
-#loginPage .namo-lab-panel g rect:nth-child(4){animation-delay:.75s;}
-#loginPage .namo-lab-panel g rect:nth-child(5){animation-delay:1.00s;}
-#loginPage .namo-lab-panel g rect:nth-child(6){animation-delay:1.25s;}
-#loginPage .namo-lab-panel g rect:nth-child(7){animation-delay:1.50s;}
-
-/* 내부 물성 막대: 높이 변화 + 상하 흐름 느낌 */
-#loginPage .namo-lab-panel > rect:nth-of-type(2),
-#loginPage .namo-lab-panel > rect:nth-of-type(3),
-#loginPage .namo-lab-panel > rect:nth-of-type(4),
-#loginPage .namo-lab-panel > rect:nth-of-type(5),
-#loginPage .namo-lab-panel > rect:nth-of-type(6),
-#loginPage .namo-lab-panel > rect:nth-of-type(7),
-#loginPage .namo-lab-panel > rect:nth-of-type(8){
-  transform-box:fill-box;
-  transform-origin:center bottom;
-  filter:drop-shadow(0 0 10px rgba(103,232,249,.35));
-  animation:namoMaterialLevel 3.6s ease-in-out infinite;
-}
-#loginPage .namo-lab-panel > rect:nth-of-type(3){animation-delay:.35s;}
-#loginPage .namo-lab-panel > rect:nth-of-type(4){animation-delay:.70s;}
-#loginPage .namo-lab-panel > rect:nth-of-type(5){animation-delay:1.05s;}
-#loginPage .namo-lab-panel > rect:nth-of-type(6){animation-delay:1.40s;}
-#loginPage .namo-lab-panel > rect:nth-of-type(7){animation-delay:1.75s;}
-#loginPage .namo-lab-panel > rect:nth-of-type(8){animation-delay:2.10s;}
-
-/* 그래프 라인: 좌→우 흐름 */
-#loginPage .namo-flow-lines path{
-  stroke-dasharray:14 10;
-  animation:namoFlowDash 2.8s linear infinite;
-  filter:drop-shadow(0 0 8px rgba(56,189,248,.45));
-}
-#loginPage .namo-flow-lines path:nth-child(2){animation-duration:3.6s;animation-direction:reverse;}
-
-/* 데이터 점: 역동적인 이동 */
-#loginPage .namo-flow-lines circle{
-  transform-box:fill-box;
-  transform-origin:center;
-  animation:namoDataDot 3.2s ease-in-out infinite;
-  filter:drop-shadow(0 0 10px rgba(34,211,238,.65));
-}
-#loginPage .namo-flow-lines circle:nth-of-type(2){animation-delay:.45s;}
-#loginPage .namo-flow-lines circle:nth-of-type(3){animation-delay:.90s;}
-#loginPage .namo-flow-lines circle:nth-of-type(4){animation-delay:1.35s;}
-
-/* 우측 HUD 막대도 아주 약하게 동작시켜 배경 전체가 살아 보이게 처리 */
-#loginPage .namo-hud-panel rect:not(:first-child){
-  transform-box:fill-box;
-  transform-origin:center bottom;
-  animation:namoHudBar 5.2s ease-in-out infinite;
-}
-#loginPage .namo-hud-panel rect:nth-of-type(3){animation-delay:.7s;}
-#loginPage .namo-hud-panel rect:nth-of-type(4){animation-delay:1.4s;}
-#loginPage .namo-hud-panel circle{
-  animation:namoHudDot 3.8s ease-in-out infinite;
-}
-#loginPage .namo-hud-panel circle:nth-of-type(2){animation-delay:.65s;}
-#loginPage .namo-hud-panel circle:nth-of-type(3){animation-delay:1.30s;}
-
-@keyframes namoLabPanelPulse{
-  0%,100%{opacity:.54;}
-  50%{opacity:.70;}
-}
-@keyframes namoBarBreath{
-  0%,100%{transform:scaleY(.985);opacity:.78;}
-  50%{transform:scaleY(1.025);opacity:.92;}
-}
-@keyframes namoMaterialLevel{
-  0%,100%{transform:translateY(0) scaleY(.92);opacity:.24;}
-  45%{transform:translateY(-7px) scaleY(1.12);opacity:.42;}
-  70%{transform:translateY(-2px) scaleY(1.03);opacity:.34;}
-}
-@keyframes namoFlowDash{
-  to{stroke-dashoffset:-96;}
-}
-@keyframes namoDataDot{
-  0%,100%{transform:translate(0,0) scale(.88);opacity:.45;}
-  35%{transform:translate(18px,-10px) scale(1.22);opacity:.95;}
-  70%{transform:translate(38px,5px) scale(1.0);opacity:.70;}
-}
-@keyframes namoHudBar{
-  0%,100%{transform:scaleY(.94);opacity:.18;}
-  50%{transform:scaleY(1.08);opacity:.34;}
-}
-@keyframes namoHudDot{
-  0%,100%{opacity:.35;transform:translateX(0) scale(.9);}
-  50%{opacity:.85;transform:translateX(18px) scale(1.12);}
-}
-
-@media(max-width:900px){
-  #loginPage .namo-login-panel{transform:none!important;}
-}
-</style>
-
-
-<style id="namo-login-ev-battery-final-20260701">
-/* EV 배터리팩 최종 로그인 패치: 우측 불필요 막대 제거 + 좌측 배터리 형상 강화 */
-#loginPage .namo-ev-battery-pack{
-  transform-box:fill-box!important;
-  transform-origin:center!important;
-  animation:namoBatteryFloat 7.2s ease-in-out infinite!important;
-  filter:drop-shadow(0 0 22px rgba(56,189,248,.28)) drop-shadow(0 18px 42px rgba(2,8,23,.34))!important;
-}
-#loginPage .namo-battery-case{
-  filter:drop-shadow(0 0 16px rgba(34,211,238,.28));
-}
-#loginPage .namo-battery-cap{
-  animation:namoBatteryCapGlow 3.4s ease-in-out infinite!important;
-}
-#loginPage .namo-cell-shells rect{
-  transform-box:fill-box!important;
-  transform-origin:50% 100%!important;
-  animation:namoCellBreath 4.2s ease-in-out infinite!important;
-}
-#loginPage .namo-cell-shells rect:nth-child(2){animation-delay:.28s!important;}
-#loginPage .namo-cell-shells rect:nth-child(3){animation-delay:.56s!important;}
-#loginPage .namo-cell-shells rect:nth-child(4){animation-delay:.84s!important;}
-#loginPage .namo-cell-shells rect:nth-child(5){animation-delay:1.12s!important;}
-#loginPage .namo-cell-shells rect:nth-child(6){animation-delay:1.40s!important;}
-#loginPage .namo-cell-shells rect:nth-child(7){animation-delay:1.68s!important;}
-#loginPage .namo-cell-shells rect:nth-child(8){animation-delay:1.96s!important;}
-#loginPage .namo-cell-levels .level{
-  transform-box:fill-box!important;
-  transform-origin:50% 100%!important;
-  opacity:.72!important;
-  filter:drop-shadow(0 0 13px rgba(34,211,238,.38));
-}
-#loginPage .namo-cell-levels .l1{animation:namoLevelLiveA 3.8s ease-in-out infinite!important;}
-#loginPage .namo-cell-levels .l2{animation:namoLevelLiveB 4.4s ease-in-out infinite!important;}
-#loginPage .namo-cell-levels .l3{animation:namoLevelLiveC 3.9s ease-in-out infinite!important;}
-#loginPage .namo-cell-levels .l4{animation:namoLevelLiveA 4.6s ease-in-out infinite reverse!important;}
-#loginPage .namo-cell-levels .l5{animation:namoLevelLiveB 4.1s ease-in-out infinite reverse!important;}
-#loginPage .namo-cell-levels .l6{animation:namoLevelLiveC 4.8s ease-in-out infinite!important;}
-#loginPage .namo-cell-levels .l7{animation:namoLevelLiveA 4.3s ease-in-out infinite!important;}
-#loginPage .namo-cell-levels .l8{animation:namoLevelLiveB 4.7s ease-in-out infinite!important;}
-#loginPage .namo-energy-dots circle{
-  animation:namoEnergyRise 3.6s ease-in-out infinite!important;
-  filter:drop-shadow(0 0 10px rgba(103,232,249,.8));
-}
-#loginPage .namo-energy-dots circle:nth-child(3n){animation-delay:.45s!important;}
-#loginPage .namo-energy-dots circle:nth-child(3n+1){animation-delay:.9s!important;}
-#loginPage .namo-trend-line path{
-  stroke-dasharray:720!important;
-  stroke-dashoffset:720!important;
-  animation:namoTrendDraw 5.5s ease-in-out infinite!important;
-  filter:drop-shadow(0 0 9px rgba(34,211,238,.72));
-}
-#loginPage .namo-trend-dots circle{
-  animation:namoTrendDotPulse 2.8s ease-in-out infinite!important;
-  filter:drop-shadow(0 0 10px rgba(103,232,249,.90));
-}
-#loginPage .namo-trend-dots circle:nth-child(2n){animation-delay:.4s!important;}
-#loginPage .namo-ev-status{
-  animation:namoStatusFloat 7.5s ease-in-out infinite!important;
-}
-#loginPage .namo-status-card{
-  filter:drop-shadow(0 0 14px rgba(34,211,238,.13));
-  animation:namoStatusGlow 4.2s ease-in-out infinite!important;
-}
-#loginPage .namo-status-card:nth-child(2){animation-delay:.6s!important;}
-#loginPage .namo-status-card:nth-child(3){animation-delay:1.2s!important;}
-#loginPage .namo-flow-lines{opacity:.20!important;}
-#loginPage .namo-flow-lines path{stroke-dasharray:180 520!important;}
-#loginPage .namo-login-panel{
-  width:58%!important;
-  padding:82px 64px 64px 64px!important;
-  transform:translateY(18px)!important;
-}
-#loginPage .namo-login-title{font-size:40px!important;max-width:650px!important;}
-#loginPage .namo-login-icons{margin-top:28px!important;max-width:560px!important;}
-#loginPage .lcard{margin-right:54px!important;}
-@keyframes namoBatteryFloat{
-  0%,100%{transform:translateY(0);opacity:.91;}
-  50%{transform:translateY(12px);opacity:1;}
-}
-@keyframes namoBatteryCapGlow{
-  0%,100%{opacity:.58;filter:drop-shadow(0 0 8px rgba(34,211,238,.25));}
-  50%{opacity:.94;filter:drop-shadow(0 0 22px rgba(34,211,238,.58));}
-}
-@keyframes namoCellBreath{
-  0%,100%{opacity:.70;}
-  50%{opacity:.95;}
-}
-@keyframes namoLevelLiveA{
-  0%,100%{transform:scaleY(.86) translateY(5px);opacity:.58;}
-  50%{transform:scaleY(1.08) translateY(-7px);opacity:.86;}
-}
-@keyframes namoLevelLiveB{
-  0%,100%{transform:scaleY(1.03) translateY(-2px);opacity:.62;}
-  50%{transform:scaleY(.82) translateY(9px);opacity:.82;}
-}
-@keyframes namoLevelLiveC{
-  0%,100%{transform:scaleY(.94) translateY(2px);opacity:.58;}
-  50%{transform:scaleY(1.14) translateY(-9px);opacity:.90;}
-}
-@keyframes namoEnergyRise{
-  0%{transform:translateY(22px);opacity:.05;}
-  45%{opacity:.72;}
-  100%{transform:translateY(-48px);opacity:.02;}
-}
-@keyframes namoTrendDraw{
-  0%{stroke-dashoffset:720;opacity:.30;}
-  42%{stroke-dashoffset:0;opacity:1;}
-  70%{stroke-dashoffset:0;opacity:.90;}
-  100%{stroke-dashoffset:-720;opacity:.25;}
-}
-@keyframes namoTrendDotPulse{
-  0%,100%{opacity:.52;transform:scale(.86);}
-  50%{opacity:1;transform:scale(1.28);}
-}
-@keyframes namoStatusFloat{
-  0%,100%{transform:translateY(0);opacity:.66;}
-  50%{transform:translateY(8px);opacity:.84;}
-}
-@keyframes namoStatusGlow{
-  0%,100%{opacity:.68;}
-  50%{opacity:1;}
-}
-@media(max-width:1100px){
-  #loginPage .namo-login-panel{width:52%!important;padding:58px 44px!important;transform:translateY(8px)!important;}
-  #loginPage .namo-ev-status{display:none!important;}
-}
-@media(max-width:900px){
-  #loginPage .namo-login-panel{display:none!important;}
-  #loginPage .lcard{margin:auto!important;}
-}
-@media (prefers-reduced-motion: reduce){
-  #loginPage .namo-ev-battery-pack,
-  #loginPage .namo-battery-cap,
-  #loginPage .namo-cell-shells rect,
-  #loginPage .namo-cell-levels .level,
-  #loginPage .namo-energy-dots circle,
-  #loginPage .namo-trend-line path,
-  #loginPage .namo-trend-dots circle,
-  #loginPage .namo-ev-status,
-  #loginPage .namo-status-card{animation:none!important;}
-}
-</style>
-
-
-<style id="namo-login-left-screen-final-20260701">
-/* 로그인 화면 최종 교체: 사용자가 제시한 왼쪽 시안 기준 */
-body.login-active{overflow:hidden!important;background:#031025!important;}
-#loginPage{
-  position:fixed!important;inset:0!important;width:100%!important;height:100vh!important;min-height:100vh!important;
-  overflow:hidden!important;display:block!important;background:#031025!important;
-}
-#loginPage::before{
-  content:''!important;position:absolute!important;inset:0!important;z-index:0!important;
-  background:
-    radial-gradient(circle at 18% 30%,rgba(20,160,255,.32),transparent 34%),
-    radial-gradient(circle at 62% 74%,rgba(0,210,255,.20),transparent 34%),
-    linear-gradient(135deg,#061225 0%,#0a2a55 48%,#05213d 100%)!important;
-}
-#loginPage::after{
-  content:''!important;position:absolute!important;inset:0!important;z-index:0!important;
-  background-image:
-    linear-gradient(rgba(96,165,250,.14) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(96,165,250,.14) 1px,transparent 1px),
-    radial-gradient(circle,rgba(34,211,238,.38) 1px,transparent 1.6px)!important;
-  background-size:140px 120px,140px 120px,72px 72px!important;
-  opacity:.70!important;
-}
-#loginPage .ev-bg-svg{display:none!important;}
-#loginPage .namo-final-visual{display:block!important;position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important;}
-#loginPage .namo-final-battery{
-  position:absolute!important;left:52px!important;top:64px!important;width:610px!important;height:250px!important;
-  border:2px solid rgba(56,189,248,.92)!important;border-radius:34px 28px 28px 34px!important;
-  background:linear-gradient(180deg,rgba(11,48,105,.42),rgba(2,20,46,.28))!important;
-  box-shadow:0 0 28px rgba(34,211,238,.38),inset 0 0 34px rgba(14,165,233,.22),0 22px 42px rgba(0,0,0,.25)!important;
-  animation:namoBatteryFloatFinal 6.5s ease-in-out infinite!important;
-}
-#loginPage .namo-final-battery:before{content:'BATTERY MATERIALS ANALYTICS';position:absolute;left:42px;top:-28px;color:#38bdf8;font-size:11px;font-weight:900;letter-spacing:6px;opacity:.78;}
-#loginPage .namo-final-battery:after{content:'';position:absolute;inset:10px;border:1px solid rgba(125,211,252,.40);border-radius:24px;box-shadow:inset 0 0 18px rgba(125,211,252,.18);}
-#loginPage .namo-final-cap-ring{position:absolute!important;right:-54px!important;top:74px!important;width:74px!important;height:104px!important;border:2px solid #7dd3fc!important;border-radius:24px!important;background:rgba(14,165,233,.22)!important;box-shadow:0 0 22px rgba(56,189,248,.42)!important;animation:namoCapPulseFinal 3.2s ease-in-out infinite!important;}
-#loginPage .namo-final-cap-ring:after{content:'';position:absolute;right:-25px;top:0;width:34px;height:104px;border:2px solid rgba(125,211,252,.88);border-radius:50%;background:rgba(14,165,233,.18);}
-#loginPage .namo-final-cells{position:absolute!important;left:38px!important;right:52px!important;top:48px!important;bottom:40px!important;display:grid!important;grid-template-columns:repeat(8,1fr)!important;gap:11px!important;z-index:2!important;}
-#loginPage .namo-final-cell{position:relative!important;border:1.5px solid rgba(147,197,253,.74)!important;border-radius:10px!important;background:rgba(15,56,120,.50)!important;overflow:hidden!important;box-shadow:inset 0 0 12px rgba(56,189,248,.16)!important;}
-#loginPage .namo-final-cell span:first-child{position:absolute;left:0;right:0;bottom:0;height:var(--h,58%);border-radius:9px 9px 0 0;background:linear-gradient(180deg,#1d4ed8,#06b6d4);opacity:.76;filter:drop-shadow(0 0 12px rgba(34,211,238,.45));animation:namoLiquidFinal 4s ease-in-out infinite!important;}
-#loginPage .namo-final-cell:nth-child(1){--h:62%}#loginPage .namo-final-cell:nth-child(2){--h:50%}#loginPage .namo-final-cell:nth-child(3){--h:67%}#loginPage .namo-final-cell:nth-child(4){--h:46%}#loginPage .namo-final-cell:nth-child(5){--h:55%}#loginPage .namo-final-cell:nth-child(6){--h:73%}#loginPage .namo-final-cell:nth-child(7){--h:52%}#loginPage .namo-final-cell:nth-child(8){--h:80%}
-#loginPage .namo-final-cell span:nth-child(2),#loginPage .namo-final-cell span:nth-child(3){position:absolute;left:50%;bottom:15%;width:4px;height:4px;border-radius:50%;background:#67e8f9;box-shadow:0 0 10px #67e8f9;animation:namoBubbleFinal 2.8s ease-in-out infinite!important;}
-#loginPage .namo-final-cell span:nth-child(3){left:35%;animation-delay:.9s!important;}
-#loginPage .namo-final-cell:nth-child(2n) span{animation-delay:.35s!important;}#loginPage .namo-final-cell:nth-child(3n) span{animation-delay:.7s!important;}
-#loginPage .namo-final-chart{position:absolute!important;left:58px!important;right:42px!important;top:58px!important;height:96px!important;z-index:4!important;filter:drop-shadow(0 0 9px rgba(34,211,238,.75));animation:namoChartMoveFinal 5s ease-in-out infinite!important;}
-#loginPage .namo-final-chart svg{width:100%!important;height:100%!important;overflow:visible!important;}
-#loginPage .namo-final-hud{position:absolute!important;left:760px!important;top:70px!important;display:flex!important;flex-direction:column!important;gap:16px!important;z-index:3!important;}
-#loginPage .namo-final-hud-card{width:150px!important;height:64px!important;border:1px solid rgba(56,189,248,.36)!important;border-radius:10px!important;background:rgba(2,20,46,.42)!important;box-shadow:0 0 16px rgba(34,211,238,.12)!important;padding:12px 16px!important;animation:namoHudFinal 4s ease-in-out infinite!important;}
-#loginPage .namo-final-hud-card b{display:block!important;color:#38bdf8!important;font-size:10px!important;font-weight:900!important;opacity:.82!important;}
-#loginPage .namo-final-hud-card strong{display:block!important;color:#67e8f9!important;font-size:16px!important;font-weight:900!important;margin-top:3px!important;}
-#loginPage .namo-final-hud-card:nth-child(2){animation-delay:.45s!important;}#loginPage .namo-final-hud-card:nth-child(3){animation-delay:.9s!important;}
-#loginPage .namo-final-car{position:absolute!important;left:650px!important;top:300px!important;width:690px!important;height:332px!important;opacity:.78!important;filter:drop-shadow(0 0 24px rgba(14,165,233,.38));animation:namoCarFloatFinal 7s ease-in-out infinite!important;}
-#loginPage .namo-final-car svg{width:100%!important;height:100%!important;}.namo-final-car .glow{animation:namoHeadLightFinal 2.2s ease-in-out infinite!important;}
-#loginPage .namo-final-road{position:absolute!important;left:635px!important;top:560px!important;width:650px!important;height:168px!important;border:2px solid rgba(34,211,238,.38)!important;border-radius:50%!important;transform:rotate(-6deg)!important;box-shadow:0 0 34px rgba(34,211,238,.24)!important;animation:namoRoadFinal 5.8s linear infinite!important;}
-#loginPage .namo-login-panel{display:block!important;position:absolute!important;left:56px!important;top:382px!important;width:560px!important;height:auto!important;padding:0!important;z-index:5!important;transform:none!important;}
-#loginPage .namo-login-brand{margin:0 0 8px!important;}
-#loginPage .namo-wordmark{justify-content:flex-start!important;gap:7px!important;}
-#loginPage .namo-wordmark .namo{font-size:26px!important;font-weight:900!important;color:#00c8ff!important;text-shadow:0 0 16px rgba(0,200,255,.35)!important;}
-#loginPage .namo-wordmark .chem{font-size:25px!important;font-weight:500!important;color:#fff!important;text-shadow:0 0 16px rgba(255,255,255,.20)!important;}
-#loginPage .namo-login-title{max-width:560px!important;font-size:38px!important;line-height:1.16!important;font-weight:900!important;letter-spacing:-1.2px!important;color:#fff!important;margin:0 0 20px!important;text-shadow:0 4px 18px rgba(0,0,0,.35)!important;}
-#loginPage .namo-login-title:after{content:''!important;display:block!important;width:172px!important;height:3px!important;background:#67e8f9!important;border-radius:99px!important;margin-top:22px!important;box-shadow:0 0 12px rgba(103,232,249,.55)!important;}
-#loginPage .namo-login-desc{max-width:600px!important;color:rgba(226,242,255,.80)!important;font-size:15px!important;line-height:1.65!important;font-weight:700!important;margin:0 0 26px!important;}
-#loginPage .namo-login-icons{display:grid!important;grid-template-columns:repeat(4,92px)!important;gap:12px!important;max-width:none!important;margin:0!important;}
-#loginPage .namo-login-icon{height:78px!important;border:1px solid rgba(59,130,246,.34)!important;border-radius:9px!important;background:rgba(15,56,120,.48)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 0 18px rgba(14,165,233,.08)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;transition:.18s ease!important;}
-#loginPage .namo-login-icon:hover{transform:translateY(-3px)!important;border-color:rgba(103,232,249,.75)!important;box-shadow:0 0 24px rgba(14,165,233,.24)!important;}
-#loginPage .namo-login-icon span{width:30px!important;height:30px!important;border-radius:9px!important;background:rgba(14,165,233,.20)!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:17px!important;filter:drop-shadow(0 0 8px rgba(34,211,238,.55));animation:namoIconPulseFinal 3.6s ease-in-out infinite!important;}
-#loginPage .namo-login-icon b{font-size:11px!important;font-weight:900!important;color:#fff!important;line-height:1.15!important;text-align:center!important;}
-#loginPage .lcard{position:absolute!important;right:58px!important;top:50%!important;transform:translateY(-50%)!important;width:390px!important;margin:0!important;padding:34px 32px!important;border-radius:22px!important;z-index:10!important;background:rgba(255,255,255,.96)!important;box-shadow:0 26px 60px rgba(0,0,0,.24),0 0 60px rgba(34,211,238,.12)!important;}
-#loginPage .lbrand img{height:52px!important;max-width:250px!important;object-fit:contain!important;}
-#loginPage .lcard h2{font-size:22px!important;font-weight:900!important;margin-bottom:7px!important;}
-#loginPage .lcard>p{font-size:13px!important;font-weight:700!important;margin-bottom:22px!important;color:#64748b!important;}
-#loginPage .ltabs{height:44px!important;border-radius:11px!important;}.lform input{height:43px!important}.lform .home-link{height:42px!important}.lform .btn.pri{height:44px!important;}
-
-#loginPage .namo-final-car .car-battery-pack{filter:drop-shadow(0 0 14px rgba(34,211,238,.72));animation:namoCarBatteryPulseFinal 3.4s ease-in-out infinite!important;}
-#loginPage .namo-final-car .car-battery-cell{animation:namoCarBatteryCellFinal 2.6s ease-in-out infinite!important;transform-origin:center;}
-#loginPage .namo-final-car .car-battery-cell:nth-child(2){animation-delay:.18s!important;}
-#loginPage .namo-final-car .car-battery-cell:nth-child(3){animation-delay:.36s!important;}
-#loginPage .namo-final-car .car-battery-cell:nth-child(4){animation-delay:.54s!important;}
-#loginPage .namo-final-car .car-battery-cell:nth-child(5){animation-delay:.72s!important;}
-#loginPage .namo-final-car .car-battery-flow{stroke-dasharray:18 18;animation:namoCarEnergyFlowFinal 2.2s linear infinite!important;}
-@keyframes namoCarBatteryPulseFinal{0%,100%{opacity:.72;filter:drop-shadow(0 0 10px rgba(34,211,238,.42));}50%{opacity:1;filter:drop-shadow(0 0 22px rgba(34,211,238,.95));}}
-@keyframes namoCarBatteryCellFinal{0%,100%{opacity:.62;}50%{opacity:1;}}
-@keyframes namoCarEnergyFlowFinal{to{stroke-dashoffset:-120;}}
-@keyframes namoBatteryFloatFinal{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
-@keyframes namoCapPulseFinal{0%,100%{opacity:.65;box-shadow:0 0 16px rgba(56,189,248,.28)}50%{opacity:1;box-shadow:0 0 30px rgba(56,189,248,.55)}}
-@keyframes namoLiquidFinal{0%,100%{transform:scaleY(.88);opacity:.66}50%{transform:scaleY(1.08);opacity:.86}}
-@keyframes namoBubbleFinal{0%{transform:translateY(28px) scale(.7);opacity:0}45%{opacity:.85}100%{transform:translateY(-92px) scale(1.1);opacity:0}}
-@keyframes namoChartMoveFinal{0%,100%{transform:translateX(0);opacity:.92}50%{transform:translateX(12px);opacity:1}}
-@keyframes namoHudFinal{0%,100%{transform:translateY(0);opacity:.76}50%{transform:translateY(4px);opacity:1}}
-@keyframes namoCarFloatFinal{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
-@keyframes namoHeadLightFinal{0%,100%{opacity:.50}50%{opacity:1}}
-@keyframes namoRoadFinal{to{filter:hue-rotate(360deg)}}
-@keyframes namoIconPulseFinal{0%,100%{box-shadow:0 0 8px rgba(34,211,238,.22)}50%{box-shadow:0 0 18px rgba(34,211,238,.62)}}
-@media(max-width:1280px){
-  #loginPage .namo-final-battery{left:38px!important;width:540px!important;transform:scale(.92)!important;transform-origin:left top!important;}
-  #loginPage .namo-final-hud{left:620px!important;}#loginPage .namo-final-car{left:460px!important;width:560px!important;height:270px!important;top:330px!important;}
-  #loginPage .namo-login-panel{left:44px!important;width:510px!important}.namo-login-title{font-size:34px!important}.namo-login-icons{grid-template-columns:repeat(3,92px)!important;}
-  #loginPage .lcard{right:34px!important;width:360px!important;}
-}
-@media(max-width:900px){
-  #loginPage .namo-final-visual,#loginPage .namo-login-panel{display:none!important;}
-  #loginPage .lcard{left:50%!important;right:auto!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(390px,calc(100vw - 32px))!important;}
-}
-</style>
-
 </head>
 <body class="login-active">
 
@@ -3717,219 +3078,114 @@ body.login-active{overflow:hidden!important;background:#031025!important;}
 ══════════════════════════════════ -->
 <div id="loginPage">
 
-  <div class="namo-final-visual" aria-hidden="true">
-    <div class="namo-final-battery">
-      <div class="namo-final-cap-ring"></div>
-      <div class="namo-final-cells">
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-        <div class="namo-final-cell"><span></span><span></span><span></span></div>
-      </div>
-      <div class="namo-final-chart">
-        <svg viewBox="0 0 610 115" preserveAspectRatio="none">
-          <path class="main" d="M8 68 C58 48, 94 83, 138 42 S220 26, 270 54 S350 80, 404 38 S486 55, 552 30 S592 22, 608 14" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M8 68 C58 48, 94 83, 138 42 S220 26, 270 54 S350 80, 404 38 S486 55, 552 30 S592 22, 608 14" fill="none" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
-          <circle cx="8" cy="68" r="5" fill="#67e8f9"/><circle cx="138" cy="42" r="5" fill="#67e8f9"/><circle cx="270" cy="54" r="5" fill="#67e8f9"/><circle cx="404" cy="38" r="5" fill="#67e8f9"/><circle cx="552" cy="30" r="5" fill="#67e8f9"/><circle cx="608" cy="14" r="5" fill="#67e8f9"/>
-        </svg>
-      </div>
-    </div>
-    <div class="namo-final-hud">
-      <div class="namo-final-hud-card"><b>CELL VOLTAGE</b><strong>3.78 V</strong></div>
-      <div class="namo-final-hud-card"><b>TEMPERATURE</b><strong>25.6 ℃</strong></div>
-      <div class="namo-final-hud-card"><b>SAFETY STATUS</b><strong>OK</strong></div>
-    </div>
-    <div class="namo-final-road"></div>
-    <div class="namo-final-car">
-      <svg viewBox="0 0 520 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="namoCarBatteryGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#1d4ed8" stop-opacity=".92"/>
-            <stop offset="1" stop-color="#06b6d4" stop-opacity=".82"/>
-          </linearGradient>
-          <linearGradient id="namoCarGlassGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#38bdf8" stop-opacity=".26"/>
-            <stop offset="1" stop-color="#0ea5e9" stop-opacity=".04"/>
-          </linearGradient>
-        </defs>
-        <path d="M56 160 C92 102 138 80 216 73 C288 66 345 86 400 128 C430 151 467 154 492 170" stroke="#38bdf8" stroke-width="2.2" opacity=".88"/>
-        <path d="M104 152 C139 119 179 105 244 101 C303 98 352 114 389 145" stroke="#67e8f9" stroke-width="1.2" opacity=".48"/>
-        <path d="M46 171 L108 170 L144 128 L315 125 L390 170 L486 176" stroke="#38bdf8" stroke-width="2.2" opacity=".78"/>
-        <path d="M156 129 L201 91 L284 94 L333 129" fill="url(#namoCarGlassGrad)" stroke="#38bdf8" stroke-width="1.5" opacity=".70"/>
-        <path d="M204 95 L203 128M284 96 L288 128" stroke="#38bdf8" stroke-width="1.1" opacity=".48"/>
-        <path d="M122 156 C194 146 305 146 386 162" stroke="#0ea5e9" stroke-width="1.4" opacity=".52"/>
-        <g class="car-battery-pack">
-          <path d="M232 145 L361 147 L388 166 L252 172 Z" fill="rgba(2,20,46,.58)" stroke="#67e8f9" stroke-width="1.5" opacity=".94"/>
-          <g fill="url(#namoCarBatteryGrad)" stroke="#a5f3fc" stroke-width=".8" opacity=".92">
-            <path class="car-battery-cell" d="M244 149 L266 150 L281 166 L258 167 Z"/>
-            <path class="car-battery-cell" d="M270 150 L292 150.8 L307 166.7 L284 166.9 Z"/>
-            <path class="car-battery-cell" d="M296 151 L318 151.7 L333 167.6 L310 167.8 Z"/>
-            <path class="car-battery-cell" d="M322 152 L344 152.7 L359 168.4 L336 168.8 Z"/>
-            <path class="car-battery-cell" d="M348 153 L366 154 L381 168.8 L363 169.2 Z"/>
-          </g>
-          <path class="car-battery-flow" d="M246 143 C292 126 334 128 386 148" stroke="#67e8f9" stroke-width="2.4" opacity=".78" stroke-linecap="round"/>
-          <circle cx="246" cy="143" r="3" fill="#67e8f9" opacity=".9"/>
-          <circle cx="318" cy="131" r="3" fill="#67e8f9" opacity=".9"/>
-          <circle cx="386" cy="148" r="3" fill="#67e8f9" opacity=".9"/>
-        </g>
-        <path d="M215 140 C245 125 318 123 372 146" stroke="#67e8f9" stroke-width="1" opacity=".35"/>
-        <path d="M252 176 C295 188 355 188 411 176" stroke="#38bdf8" stroke-width="1.2" opacity=".42"/>
-        <circle cx="146" cy="184" r="38" stroke="#38bdf8" stroke-width="2.2" opacity=".76"/>
-        <circle cx="146" cy="184" r="20" stroke="#67e8f9" stroke-width="1.3" opacity=".58"/>
-        <path d="M126 184 H166M146 164 V204" stroke="#38bdf8" stroke-width="1" opacity=".32"/>
-        <circle cx="392" cy="184" r="39" stroke="#38bdf8" stroke-width="2.2" opacity=".76"/>
-        <circle cx="392" cy="184" r="21" stroke="#67e8f9" stroke-width="1.3" opacity=".58"/>
-        <path d="M371 184 H413M392 163 V205" stroke="#38bdf8" stroke-width="1" opacity=".32"/>
-        <path class="glow" d="M422 151 C451 149 471 153 491 166" stroke="#67e8f9" stroke-width="5.5" opacity=".86" stroke-linecap="round"/>
-        <path class="glow" d="M61 166 C77 158 89 156 106 158" stroke="#22d3ee" stroke-width="4" opacity=".54" stroke-linecap="round"/>
-        <path d="M88 170 C146 195 325 202 457 177" stroke="#0ea5e9" stroke-width="1" opacity=".38"/>
-      </svg>
-    </div>
-  </div>
-
-
-  <svg class="ev-bg-svg namo-ev-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg class="ev-bg-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="namoBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#061225"/>
-        <stop offset="45%" stop-color="#0b2a55"/>
-        <stop offset="100%" stop-color="#032b46"/>
-      </linearGradient>
-      <linearGradient id="namoCellGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#1d4ed8" stop-opacity=".86"/>
-        <stop offset="100%" stop-color="#06b6d4" stop-opacity=".58"/>
-      </linearGradient>
-      <linearGradient id="namoLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0"/>
-        <stop offset="50%" stop-color="#38bdf8" stop-opacity=".82"/>
-        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
-      </linearGradient>
-      <radialGradient id="namoGlowBlue" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#38bdf8" stop-opacity=".32"/>
-        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+      <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00c8ff" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/>
       </radialGradient>
-      <filter id="namoBlur"><feGaussianBlur stdDeviation="16"/></filter>
+      <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00ffa3" stop-opacity=".25"/>
+        <stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+      <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+      <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00c8ff" stop-opacity="0"/>
+        <stop offset="30%" stop-color="#00c8ff" stop-opacity=".8"/>
+        <stop offset="70%" stop-color="#00ffa3" stop-opacity=".8"/>
+        <stop offset="100%" stop-color="#00ffa3" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="cellGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1a56db" stop-opacity=".6"/>
+        <stop offset="100%" stop-color="#0d2d6e" stop-opacity=".8"/>
+      </linearGradient>
     </defs>
-
-    <rect width="1440" height="900" fill="url(#namoBgGrad)"/>
-    <circle cx="285" cy="230" r="260" fill="url(#namoGlowBlue)" filter="url(#namoBlur)"/>
-    <circle cx="1030" cy="680" r="240" fill="#06b6d4" opacity=".10" filter="url(#namoBlur)"/>
-
-    <g opacity=".18" stroke="#60a5fa" stroke-width="1">
-      <path d="M0 110 H1440M0 230 H1440M0 350 H1440M0 470 H1440M0 590 H1440M0 710 H1440"/>
-      <path d="M120 0 V900M260 0 V900M400 0 V900M540 0 V900M680 0 V900M820 0 V900M960 0 V900M1100 0 V900M1240 0 V900"/>
+    <g transform="translate(60,350)" opacity=".18">
+      <path d="M0,120 L30,60 Q60,20 120,15 L380,10 Q440,12 490,50 L560,120 Z" fill="#00c8ff" stroke="#00c8ff" stroke-width="1"/>
+      <path d="M80,60 Q130,-10 250,-15 Q370,-15 420,60" fill="none" stroke="#00c8ff" stroke-width="2"/>
+      <circle cx="120" cy="120" r="38" fill="#050d1f" stroke="#00c8ff" stroke-width="2"/>
+      <circle cx="120" cy="120" r="22" fill="none" stroke="#00c8ff" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <circle cx="440" cy="120" r="38" fill="#050d1f" stroke="#00c8ff" stroke-width="2"/>
+      <circle cx="440" cy="120" r="22" fill="none" stroke="#00c8ff" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <path d="M100,55 Q130,25 200,20 Q270,18 310,50 L310,55 Z" fill="#00c8ff" opacity=".3"/>
+      <path d="M315,50 Q360,15 420,55 L315,55 Z" fill="#00c8ff" opacity=".3"/>
+      <rect x="540" y="50" width="20" height="30" rx="3" fill="#00ffa3" opacity=".7"/>
     </g>
-
-    <g class="namo-lab-panel namo-ev-battery-pack" transform="translate(62,132)" opacity=".92">
-      <!-- EV battery pack body -->
-      <rect class="namo-battery-shadow" x="-2" y="22" width="646" height="304" rx="34" fill="#020617" opacity=".22"/>
-      <path class="namo-battery-case" d="M42 28 H582 L628 72 V278 L582 322 H42 L0 278 V72 Z" fill="rgba(3,18,43,.34)" stroke="#38bdf8" stroke-width="2.2"/>
-      <path class="namo-battery-highlight" d="M42 38 H578 L615 75" fill="none" stroke="#93c5fd" stroke-width="2.4" opacity=".48"/>
-      <rect class="namo-battery-cap" x="626" y="116" width="54" height="120" rx="18" fill="rgba(14,165,233,.22)" stroke="#7dd3fc" stroke-width="2"/>
-      <ellipse cx="680" cy="176" rx="19" ry="60" fill="rgba(14,165,233,.24)" stroke="#7dd3fc" stroke-width="1.7"/>
-      <text x="38" y="-12" fill="#38bdf8" opacity=".78" font-size="13" font-weight="800" letter-spacing="7">BATTERY MATERIALS ANALYTICS</text>
-
-      <g class="namo-cell-shells" fill="rgba(15,56,120,.58)" stroke="#93c5fd" stroke-width="1.3">
-        <rect x="44" y="62" width="58" height="218" rx="10"/>
-        <rect x="118" y="62" width="58" height="218" rx="10"/>
-        <rect x="192" y="62" width="58" height="218" rx="10"/>
-        <rect x="266" y="62" width="58" height="218" rx="10"/>
-        <rect x="340" y="62" width="58" height="218" rx="10"/>
-        <rect x="414" y="62" width="58" height="218" rx="10"/>
-        <rect x="488" y="62" width="58" height="218" rx="10"/>
-        <rect x="562" y="62" width="42" height="218" rx="10"/>
+    <g transform="translate(50, 80)" opacity=".22">
+      <rect x="0" y="0" width="340" height="180" rx="12" fill="none" stroke="#1a56db" stroke-width="1.5"/>
+      <g fill="url(#cellGrad)" stroke="#00c8ff" stroke-width=".8">
+        <rect x="10" y="10" width="38" height="160" rx="5"/>
+        <rect x="55" y="10" width="38" height="160" rx="5"/>
+        <rect x="100" y="10" width="38" height="160" rx="5"/>
+        <rect x="145" y="10" width="38" height="160" rx="5"/>
+        <rect x="190" y="10" width="38" height="160" rx="5"/>
+        <rect x="235" y="10" width="38" height="160" rx="5"/>
+        <rect x="280" y="10" width="38" height="160" rx="5"/>
       </g>
-
-      <g class="namo-cell-levels" fill="url(#namoCellGrad)">
-        <rect class="level l1" x="44" y="170" width="58" height="110" rx="10"/>
-        <rect class="level l2" x="118" y="190" width="58" height="90" rx="10"/>
-        <rect class="level l3" x="192" y="150" width="58" height="130" rx="10"/>
-        <rect class="level l4" x="266" y="202" width="58" height="78" rx="10"/>
-        <rect class="level l5" x="340" y="174" width="58" height="106" rx="10"/>
-        <rect class="level l6" x="414" y="164" width="58" height="116" rx="10"/>
-        <rect class="level l7" x="488" y="126" width="58" height="154" rx="10"/>
-        <rect class="level l8" x="562" y="146" width="42" height="134" rx="10"/>
-      </g>
-
-      <g class="namo-energy-dots" fill="#67e8f9" opacity=".60">
-        <circle cx="73" cy="238" r="2.2"/><circle cx="73" cy="210" r="1.6"/><circle cx="73" cy="188" r="1.9"/>
-        <circle cx="147" cy="248" r="1.8"/><circle cx="147" cy="220" r="2.1"/><circle cx="147" cy="198" r="1.5"/>
-        <circle cx="221" cy="232" r="2.2"/><circle cx="221" cy="205" r="1.7"/><circle cx="221" cy="180" r="2.0"/>
-        <circle cx="295" cy="252" r="1.8"/><circle cx="295" cy="224" r="2.3"/><circle cx="295" cy="200" r="1.6"/>
-        <circle cx="369" cy="238" r="1.8"/><circle cx="369" cy="211" r="2.0"/><circle cx="369" cy="186" r="1.5"/>
-        <circle cx="443" cy="232" r="2.2"/><circle cx="443" cy="204" r="1.7"/><circle cx="443" cy="178" r="2.2"/>
-        <circle cx="517" cy="215" r="2.0"/><circle cx="517" cy="187" r="1.7"/><circle cx="517" cy="156" r="2.1"/>
-        <circle cx="584" cy="228" r="2.0"/><circle cx="584" cy="198" r="1.8"/><circle cx="584" cy="168" r="2.2"/>
-      </g>
-
-      <g class="namo-trend-line" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M70 160 L145 176 L220 128 L295 154 L370 118 L445 166 L520 132 L586 92" stroke="#22d3ee" stroke-width="3.2"/>
-        <path d="M70 160 L145 176 L220 128 L295 154 L370 118 L445 166 L520 132 L586 92" stroke="#93c5fd" stroke-width="1.2" opacity=".9"/>
-      </g>
-      <g class="namo-trend-dots" fill="#67e8f9">
-        <circle cx="70" cy="160" r="5"/><circle cx="145" cy="176" r="5"/><circle cx="220" cy="128" r="5"/><circle cx="295" cy="154" r="5"/><circle cx="370" cy="118" r="5"/><circle cx="445" cy="166" r="5"/><circle cx="520" cy="132" r="5"/><circle cx="586" cy="92" r="5"/>
-      </g>
+      <rect x="10" y="80" width="38" height="90" rx="5" fill="#00c8ff" opacity=".4"/>
+      <rect x="55" y="60" width="38" height="110" rx="5" fill="#00c8ff" opacity=".4"/>
+      <rect x="100" y="100" width="38" height="70" rx="5" fill="#00c8ff" opacity=".4"/>
+      <rect x="145" y="40" width="38" height="130" rx="5" fill="#00ffa3" opacity=".4"/>
+      <rect x="190" y="70" width="38" height="100" rx="5" fill="#00c8ff" opacity=".4"/>
+      <rect x="235" y="90" width="38" height="80" rx="5" fill="#00c8ff" opacity=".4"/>
+      <rect x="280" y="50" width="38" height="120" rx="5" fill="#00ffa3" opacity=".4"/>
+      <rect x="128" y="0" width="14" height="8" rx="2" fill="#00ffa3" opacity=".6"/>
+      <rect x="263" y="0" width="14" height="8" rx="2" fill="#00ffa3" opacity=".6"/>
     </g>
-
-    <g class="namo-flow-lines" transform="translate(90,430)" opacity=".42" fill="none" stroke="#38bdf8" stroke-width="2">
-      <path d="M20 120 C90 40, 210 32, 290 80 S460 150, 560 60" stroke="url(#namoLineGrad)"/>
-      <path d="M0 220 C120 150, 210 180, 310 120 S510 70, 650 140" stroke="url(#namoLineGrad)" stroke-dasharray="10 8"/>
-      <circle cx="100" cy="72" r="6" fill="#38bdf8"/><circle cx="290" cy="80" r="5" fill="#22d3ee"/>
-      <circle cx="510" cy="78" r="6" fill="#38bdf8"/><circle cx="650" cy="140" r="5" fill="#22d3ee"/>
+    <g opacity=".35">
+      <path d="M400,200 Q550,150 700,200 Q850,250 1000,180" fill="none" stroke="url(#wireGrad)" stroke-width="1.5" stroke-dasharray="8,4"/>
+      <path d="M350,350 Q500,300 650,350 Q800,400 950,330" fill="none" stroke="url(#wireGrad)" stroke-width="1.5" stroke-dasharray="8,4"/>
+      <path d="M300,500 Q450,450 600,500 Q750,550 900,480" fill="none" stroke="url(#wireGrad)" stroke-width="1.2" stroke-dasharray="6,4"/>
     </g>
-
-    <g class="namo-hud-panel namo-ev-status" transform="translate(730,134)" opacity=".72">
-      <g class="namo-status-card">
-        <rect x="0" y="0" width="152" height="70" rx="12" fill="rgba(2,20,46,.42)" stroke="#38bdf8" stroke-width="1"/>
-        <text x="22" y="27" fill="#38bdf8" font-size="12" font-weight="800">CELL VOLTAGE</text>
-        <text x="22" y="52" fill="#67e8f9" font-size="20" font-weight="900">3.78 V</text>
-      </g>
-      <g class="namo-status-card" transform="translate(0,88)">
-        <rect x="0" y="0" width="152" height="70" rx="12" fill="rgba(2,20,46,.42)" stroke="#38bdf8" stroke-width="1"/>
-        <text x="22" y="27" fill="#38bdf8" font-size="12" font-weight="800">TEMPERATURE</text>
-        <text x="22" y="52" fill="#67e8f9" font-size="20" font-weight="900">25.6 ℃</text>
-      </g>
-      <g class="namo-status-card" transform="translate(0,176)">
-        <rect x="0" y="0" width="152" height="70" rx="12" fill="rgba(2,20,46,.42)" stroke="#38bdf8" stroke-width="1"/>
-        <text x="22" y="27" fill="#38bdf8" font-size="12" font-weight="800">SAFETY STATUS</text>
-        <text x="22" y="52" fill="#67e8f9" font-size="20" font-weight="900">OK</text>
-      </g>
+    <circle cx="250" cy="400" r="200" fill="url(#glow1)" filter="url(#blur8)"/>
+    <circle cx="900" cy="200" r="150" fill="url(#glow2)" filter="url(#blur8)"/>
+    <g fill="#00c8ff" opacity=".5">
+      <circle cx="480" cy="195" r="3"><animateMotion dur="4s" repeatCount="indefinite" path="M0,0 Q100,-30 200,0 Q300,30 400,0"/></circle>
+      <circle cx="550" cy="345" r="2.5"><animateMotion dur="5s" repeatCount="indefinite" path="M0,0 Q80,-20 160,0 Q240,20 320,0"/></circle>
+      <circle cx="420" cy="495" r="2"><animateMotion dur="3.5s" repeatCount="indefinite" path="M0,0 Q60,-15 120,0 Q180,15 240,0"/></circle>
     </g>
-
-    <g class="namo-molecule" opacity=".20" fill="none" stroke="#67e8f9" stroke-width="1.4">
-      <path d="M885 540 l48 -28 l48 28 v56 l-48 28 l-48 -28z"/>
-      <path d="M982 540 l48 -28 l48 28 v56 l-48 28 l-48 -28z"/>
-      <path d="M933 625 l48 -28 l48 28 v56 l-48 28 l-48 -28z"/>
-      <path d="M1030 625 l48 -28 l48 28 v56 l-48 28 l-48 -28z"/>
+    <g transform="translate(900, 550)" opacity=".2" stroke="#00ffa3" stroke-width="1.2" fill="none">
+      <circle cx="0" cy="0" r="18"/><circle cx="60" cy="0" r="15"/><circle cx="30" cy="-50" r="12"/>
+      <circle cx="-50" cy="-30" r="10"/><circle cx="110" cy="-30" r="10"/>
+      <line x1="18" y1="0" x2="45" y2="0"/><line x1="30" y1="-18" x2="30" y2="-38"/>
+      <line x1="-32" y1="-12" x2="0" y2="0"/><line x1="78" y1="-12" x2="60" y2="0"/>
+    </g>
+    <g transform="translate(980, 120)" opacity=".25">
+      <circle cx="0" cy="0" r="50" fill="none" stroke="#1a56db" stroke-width="3"/>
+      <circle cx="0" cy="0" r="50" fill="none" stroke="#00c8ff" stroke-width="3"
+              stroke-dasharray="220 314" stroke-dashoffset="-47" stroke-linecap="round"/>
+      <text x="0" y="8" text-anchor="middle" fill="#00c8ff" font-size="18" font-weight="bold" font-family="Inter,sans-serif">87%</text>
+      <text x="0" y="24" text-anchor="middle" fill="#fff" font-size="8" font-family="Inter,sans-serif">BATTERY</text>
     </g>
   </svg>
 
-  <div class="ev-left-panel namo-login-panel">
-    <div class="ev-brand-badge namo-login-brand">
+  <div class="ev-left-panel">
+    <div class="ev-brand-badge">
       <div class="namo-wordmark" aria-label="NAMO Chemical">
         <span class="namo">NAMO</span><span class="chem">Chemical</span>
       </div>
     </div>
-
-    <div class="namo-login-title">Battery Materials<br>Quality Management System</div>
-    <div class="namo-login-desc">
-      배터리 소재의 입고부터 출하까지 품질 전 과정을 데이터로 연결하여
-      최고의 품질과 신뢰를 제공합니다.
+    <div class="ev-headline">
+      EV 배터리 소재의<br>
+      <span class="accent">품질 혁신</span>
     </div>
-
-    <div class="namo-login-icons" aria-label="QMES Modules">
-      <div class="namo-login-icon"><span>🔍</span><b>IQC</b></div>
-      <div class="namo-login-icon"><span>⚙</span><b>PQC</b></div>
-      <div class="namo-login-icon"><span>🚚</span><b>OQC</b></div>
-      <div class="namo-login-icon"><span>⛓</span><b>LOT Traceability</b></div>
-      <div class="namo-login-icon"><span>📈</span><b>SPC</b></div>
-      <div class="namo-login-icon"><span>⊞</span><b>Dashboard</b></div>
-      <div class="namo-login-icon"><span>📄</span><b>Reports</b></div>
-      <div class="namo-login-icon"><span>🔔</span><b>Notifications</b></div>
+    <div class="ev-desc">
+      나모케미칼의 QMS는 수입검사(IQC), 공정검사(PQC), 출하검사(OQC)를 통합 관리하여 고품질 배터리 소재의 안정적인 생산을 지원합니다.
+    </div>
+    <div class="ev-stats">
+      <div class="ev-stat">
+        <div class="ev-stat-val">IQC</div>
+        <div class="ev-stat-lbl">수입 품질 검사</div>
+      </div>
+      <div class="ev-stat">
+        <div class="ev-stat-val">PQC</div>
+        <div class="ev-stat-lbl">공정 품질 검사</div>
+      </div>
+      <div class="ev-stat">
+        <div class="ev-stat-val">OQC</div>
+        <div class="ev-stat-lbl">출하 품질 검사</div>
+      </div>
     </div>
   </div>
 
@@ -5624,7 +4880,7 @@ async function checkLogin(force=false){
   sessionStorage.setItem('qms_logged_in','1');
   const user=data.data||data.user||data;
   state.currentUser=user;
-  const lp=$('loginPage'); if(lp) lp.remove();
+  const lp=$('loginPage'); if(lp) lp.style.display='none';
   document.body.classList.remove('login-active');
   const sh=document.querySelector('.shell'); if(sh) sh.style.display='flex';
   updateProfileUI(user);
@@ -11489,7 +10745,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   'use strict';
   function q(s,r){return (r||document).querySelector(s)}
   function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function esc(v){return String(v==null?'':v).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]})}
   function num(v){var x=Number(String(v==null?'':v).replace(/[^0-9.-]/g,''));return isFinite(x)?x:0}
   function arr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
   function setArr(k,a){try{localStorage.setItem(k,JSON.stringify(a||[]))}catch(e){}}
@@ -15954,7 +15210,7 @@ document.addEventListener('click',function(e){
 
   window.nmcWoSafePrint=function(btn){
     var key=btn&&btn.getAttribute?btn.getAttribute('data-nmc-safe-id'):btn;
-    var open=qs('[data-nmc-wo-final-open="'+String(key).replace(/"/g,'\"')+'"]');
+    var open=qs('[data-nmc-wo-final-open="'+String(key).replace(/"/g,'\\"')+'"]');
     if(open){open.click();setTimeout(function(){window.print();},300);}
     else setTimeout(function(){window.print();},100);
     return false;
