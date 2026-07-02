@@ -15451,7 +15451,7 @@ document.addEventListener('click',function(e){
   }
   function ensureSaveBar(page){
     if(!page || qs('.nmc-edit-save-bar',page)) return;
-    page.insertAdjacentHTML('beforeend','<div class="nmc-edit-save-bar"><div class="txt">🔒 발송정보는 잠금 상태입니다. 제품/LOT/수량/투입원료 수정 후 <b>수정 저장</b>을 눌러주세요.</div><div class="btns"><button type="button" class="cancel" id="nmcEditCancelBtn">취소</button><button type="button" class="save" id="nmcEditSaveBtn">수정 저장</button></div></div>');
+    page.insertAdjacentHTML('beforeend','<div class="nmc-edit-save-bar"><div class="txt">🔒 발송정보는 잠금 상태입니다. 작업지시번호/제품/LOT/수량/투입원료 수정 후 <b>수정 저장</b>을 눌러주세요.</div><div class="btns"><button type="button" class="cancel" id="nmcEditCancelBtn">취소</button><button type="button" class="save" id="nmcEditSaveBtn">수정 저장</button></div></div>');
   }
   function lockSendInfo(){
     var page=$('page-workorder-final'); if(!page) return;
@@ -15460,19 +15460,19 @@ document.addEventListener('click',function(e){
     if(!edit) return;
     page.classList.add('nmc-edit-mode');
     restoreSendInfo(originalDraft());
-    ['nmcSenderName','nmcRecvDept','nmcRefDept','nmcSendTime','nmcSendNote','nmcWoNo'].forEach(function(id){
+    ['nmcSenderName','nmcRecvDept','nmcRefDept','nmcSendTime','nmcSendNote'].forEach(function(id){
       var el=$(id); if(!el) return;
-      if(id==='nmcWoNo') el.readOnly=true; else el.disabled=true;
+      el.disabled=true;
       el.classList.add('nmc-edit-locked');
       el.setAttribute('aria-label',(el.getAttribute('aria-label')||'')+' 잠김');
     });
     qsa('#page-workorder-final .nmc-send-grid').forEach(function(grid){
       if(!qs('.nmc-edit-lock-note',grid)) grid.insertAdjacentHTML('beforeend','<div class="nmc-edit-lock-note">🔒 이미 발송된 작업지시입니다. 발송부서, 수신부서, 참조부서, 발송일시, 발송비고는 추적성 보호를 위해 수정할 수 없습니다.</div>');
     });
-    ['nmcPlanQty','nmcActualQty','nmcProdName','nmcProdCode','nmcProdLot','nmcOrderDate','nmcPlanType','nmcReqDept','nmcInstruction'].forEach(function(id){
+    ['nmcWoNo','nmcPlanQty','nmcActualQty','nmcProdName','nmcProdCode','nmcProdLot','nmcOrderDate','nmcPlanType','nmcReqDept','nmcInstruction'].forEach(function(id){
       var el=$(id); if(!el) return;
       el.disabled=false;
-      if(id!=='nmcWoNo') { el.readOnly=false; el.removeAttribute('readonly'); }
+      el.readOnly=false; el.removeAttribute('readonly');
       el.classList.remove('nmc-edit-locked');
     });
   }
