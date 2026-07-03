@@ -11591,7 +11591,237 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
 </script>
 <!-- NAMO PQC/OQC YEAR FILTER FINAL OVERRIDE 20260618 END -->
 
-<!-- NMC WORKORDER APPROVAL CLEANUP + PREFILTER PATCH v12 REMOVED: 16건 통합 집계와 충돌하여 제거됨 -->
+
+
+
+
+
+
+
+
+
+
+<!-- NMC WORKORDER APPROVAL CLEANUP + PREFILTER PATCH v12 START -->
+<script>
+/* NMC Workorder Approval Prefilter No-Flicker Patch v11 - 2026-06-19
+   목적: F5 시 결재함이 잠깐 31건으로 보였다가 3건으로 바뀌는 현상 방지.
+   방식: 결재함 렌더링 전에 nmc_workorder_sent_items를 현재 작업지시 목록 기준으로 선필터링합니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_APPROVAL_PREFILTER_V11__) return;
+  window.__NMC_WORKORDER_APPROVAL_PREFILTER_V11__ = true;
+
+  var STORE = 'nmc_workorder_sent_items';
+  var ACTIVE_KEYS = [
+    'nmcWorkOrderHistory','nmcWorkorderHistory','workOrderHistory','workorderHistory',
+    'nmcWorkOrders','workOrders','workorders','qms_worklog','worklog','nmcSentWorkorders'
+  ];
+
+  var nativeGet = Storage.prototype.getItem;
+  var nativeSet = Storage.prototype.setItem;
+  var nativeRemove = Storage.prototype.removeItem;
+
+  function text(v){ return String(v == null ? '' : v).trim(); }
+  function safeParse(raw, def){ try{ return raw ? JSON.parse(raw) : def; }catch(e){ return def; } }
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function getRaw(key){ try{ return nativeGet.call(localStorage, key); }catch(e){ return null; } }
+  function setRaw(key, val){ try{ nativeSet.call(localStorage, key, val); }catch(e){} }
+
+  function isDeleted(r){
+    if(!r) return true;
+    var st = text(r.status || r.state || r.progressStatus || r.approvalStatus).toUpperCase();
+    return !!(r.deleted || r.isDeleted || r._deleted || r.removed || r._removed || st === 'DELETED' || st === 'TRASH' || st === 'REMOVED');
+  }
+  function woNoOf(r){ return text(r && (r.woNo || r.workOrderNo || r.orderNo || r.docNo || r.no || r.id || r.uid)); }
+  function lotOf(r){ return text(r && (r.lot || r.prodLot || r.productionLot || r.nmcProdLot || r.productLot)); }
+  function signature(r){
+    var w = woNoOf(r); if(w) return 'WO:' + w;
+    var l = lotOf(r); if(l) return 'LOT:' + l;
+    return '';
+  }
+  function getState(){ try{ return window.state || {}; }catch(e){ return {}; } }
+
+  function collectActiveSignatures(){
+    var S = getState();
+    var set = {};
+    ACTIVE_KEYS.forEach(function(k){
+      arr(S[k]).concat(arr(safeParse(getRaw(k), []))).forEach(function(r){
+        if(!r || isDeleted(r)) return;
+        var sig = signature(r);
+        if(sig) set[sig] = true;
+      });
+    });
+    return set;
+  }
+  function hasKeys(o){ return Object.keys(o || {}).length > 0; }
+  function filterSentList(list){
+    list = arr(list);
+    var active = collectActiveSignatures();
+    if(!hasKeys(active)) return list;
+    return list.filter(function(r){
+      if(!r || isDeleted(r)) return false;
+      var sig = signature(r);
+      return sig ? !!active[sig] : false;
+    });
+  }
+  function normalizeStore(){
+    var raw = getRaw(STORE);
+    var list = safeParse(raw, []);
+    if(!Array.isArray(list)) return;
+    var next = filterSentList(list);
+    if(next.length !== list.length) setRaw(STORE, JSON.stringify(next));
+  }
+
+  try{
+    normalizeStore();
+    Storage.prototype.getItem = function(key){
+      var val = nativeGet.call(this, key);
+      if(this === localStorage && key === STORE){
+        var list = safeParse(val, []);
+        if(Array.isArray(list)) return JSON.stringify(filterSentList(list));
+      }
+      return val;
+    };
+    Storage.prototype.setItem = function(key, value){
+      if(this === localStorage && key === STORE){
+        var list = safeParse(value, null);
+        if(Array.isArray(list)) value = JSON.stringify(filterSentList(list));
+      }
+      return nativeSet.call(this, key, value);
+    };
+    Storage.prototype.removeItem = function(key){ return nativeRemove.call(this, key); };
+  }catch(e){ console.warn('[NMC v11 approval prefilter]', e); }
+
+  window.nmcWorkorderApprovalPrefilterV11 = function(){ normalizeStore(); };
+  document.addEventListener('click', function(e){
+    var t = e.target && e.target.closest && e.target.closest('button,.sb,[data-delete],[data-del],[data-nmc-delete]');
+    if(!t) return;
+    if(/삭제|delete|remove|del/i.test(text(t.textContent || t.value))){
+      setTimeout(normalizeStore, 0);
+      setTimeout(normalizeStore, 250);
+      setTimeout(normalizeStore, 800);
+    }
+  }, true);
+})();
+
+</script>
+<script>
+/* NMC Workorder Approval Orphan Cleanup Patch v10 - 2026-06-19
+   목적: 작업지시서를 삭제했는데 결재함/결재 목록에 남는 고아 작업지시 스냅샷을 자동 정리합니다.
+   원본 파일 덮어쓰기 없이 HTML 하단에 삽입해서 사용합니다. */
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_APPROVAL_ORPHAN_CLEANUP_V10__) return;
+  window.__NMC_WORKORDER_APPROVAL_ORPHAN_CLEANUP_V10__ = true;
+
+  var SENT_KEYS = ['nmc_workorder_sent_items'];
+  var ACTIVE_KEYS = [
+    'qms_worklog','worklog','workorders','workOrders','nmcWorkOrders',
+    'workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders'
+  ];
+
+  function text(v){ return String(v == null ? '' : v).trim(); }
+  function parse(key, def){
+    try{
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : def;
+    }catch(e){ return def; }
+  }
+  function save(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+  }
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function getState(){
+    try{ return window.state || state || {}; }catch(e){ return window.state || {}; }
+  }
+  function isDeleted(r){
+    if(!r) return true;
+    var st = text(r.status || r.state || r.progressStatus).toUpperCase();
+    return !!(r.deleted || r.isDeleted || r._deleted || r.removed || r._removed || st === 'DELETED' || st === 'TRASH' || st === 'REMOVED');
+  }
+  function woNoOf(r){
+    return text(r && (r.woNo || r.workOrderNo || r.orderNo || r.docNo || r.no || r.id || r.uid));
+  }
+  function lotOf(r){
+    return text(r && (r.lot || r.prodLot || r.productionLot || r.nmcProdLot || r.productLot));
+  }
+  function signature(r){
+    var w = woNoOf(r);
+    if(w) return 'WO:' + w;
+    var l = lotOf(r);
+    if(l) return 'LOT:' + l;
+    return '';
+  }
+  function collectActiveSignatures(){
+    var S = getState();
+    var set = {};
+    ACTIVE_KEYS.forEach(function(k){
+      arr(S[k]).concat(arr(parse(k, []))).forEach(function(r){
+        if(!r || isDeleted(r)) return;
+        var sig = signature(r);
+        if(sig) set[sig] = true;
+      });
+    });
+    return set;
+  }
+  function countKeys(obj){ return Object.keys(obj || {}).length; }
+
+  function cleanupSentWorkorders(){
+    var active = collectActiveSignatures();
+    if(!countKeys(active)) return 0; // 활성 작업지시 목록을 찾지 못하면 안전상 삭제하지 않음
+
+    var removed = 0;
+    SENT_KEYS.forEach(function(key){
+      var list = arr(parse(key, []));
+      if(!list.length) return;
+      var next = list.filter(function(r){
+        if(!r || isDeleted(r)){ removed++; return false; }
+        var sig = signature(r);
+        if(sig && active[sig]) return true;
+        removed++;
+        return false;
+      });
+      if(next.length !== list.length) save(key, next);
+    });
+    return removed;
+  }
+
+  function refreshApproval(){
+    try{ if(typeof window.renderApprovalInbox === 'function') window.renderApprovalInbox(); }catch(e){}
+    try{ if(typeof window.renderApprovalInboxFinal === 'function') window.renderApprovalInboxFinal(); }catch(e){}
+    try{ if(typeof window.namoRenderUnifiedApprovalInbox === 'function') window.namoRenderUnifiedApprovalInbox(); }catch(e){}
+    try{ if(typeof window.renderApproval === 'function') window.renderApproval(); }catch(e){}
+  }
+
+  function runCleanup(){
+    var n = cleanupSentWorkorders();
+    if(n) refreshApproval();
+    return n;
+  }
+
+  window.nmcCleanupWorkorderApprovalOrphans = runCleanup;
+
+  document.addEventListener('click', function(e){
+    var del = e.target && e.target.closest && e.target.closest('.sb.del, [data-delete], [data-del], [data-nmc-delete], button');
+    if(!del) return;
+    var t = text(del.textContent || del.value);
+    if(!/삭제|delete|del|remove/i.test(t)) return;
+    setTimeout(runCleanup, 150);
+    setTimeout(runCleanup, 700);
+  }, true);
+
+  document.addEventListener('click', function(e){
+    var nav = e.target && e.target.closest && e.target.closest('.nav-item[data-page="approval-inbox"], [data-nmc-approval-refresh], #approvalRefreshBtn');
+    if(nav) setTimeout(runCleanup, 60);
+  }, true);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(runCleanup, 400); });
+  else setTimeout(runCleanup, 400);
+  [1200, 3000].forEach(function(ms){ setTimeout(runCleanup, ms); });
+})();
+
+</script>
+<!-- NMC WORKORDER APPROVAL CLEANUP + PREFILTER PATCH v12 END -->
 
 <!-- NMC APPROVAL DELETE BUTTON PATCH v13: no overwrite -->
 
@@ -17829,274 +18059,6 @@ document.addEventListener('click',function(e){
   [300,900,1800,3000].forEach(function(ms){setTimeout(schedule,ms);});
 })();
 </script>
-
-<!-- nmc-production-result-dashboard-final-fix-20260703-v3-workorder-count REMOVED: DOM 숫자 재활용 집계 제거 -->
-
-<!-- NMC_SAFE_NO_ONLY_RESTORE_V7_20260703_START -->
-<style id="nmc-safe-no-only-restore-v7-style">
-.nmc-safe-no-col{width:56px!important;min-width:56px!important;text-align:center!important;font-weight:900!important;color:#0f172a!important;}
-#page-workorder-list .nmc-wo-table-final th.nmc-safe-no-col,
-#page-production-result table th.nmc-safe-no-col{background:#f8fafc!important;color:#0f172a!important;}
-</style>
-<script id="nmc-safe-no-only-restore-v7-script">
-(function(){
-  'use strict';
-  if(window.__NMC_SAFE_NO_ONLY_RESTORE_V7__) return;
-  window.__NMC_SAFE_NO_ONLY_RESTORE_V7__=true;
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
-  function q(s,r){return (r||document).querySelector(s);}
-  function isNoText(t){return /^\s*(NO|No|no|순번)\s*$/i.test(String(t||''));}
-  function addNoToTable(table){
-    if(!table || table.dataset.nmcNoPatchBusy==='1') return;
-    table.dataset.nmcNoPatchBusy='1';
-    try{
-      var headRow=q('thead tr',table);
-      if(headRow && !isNoText(headRow.children[0]&&headRow.children[0].textContent)){
-        var th=document.createElement('th');
-        th.className='nmc-safe-no-col';
-        th.textContent='NO';
-        headRow.insertBefore(th,headRow.firstChild);
-      }else if(headRow && headRow.children[0]){
-        headRow.children[0].classList.add('nmc-safe-no-col');
-        headRow.children[0].textContent='NO';
-      }
-      var no=1;
-      qa('tbody tr',table).forEach(function(tr){
-        if(!tr.children || !tr.children.length) return;
-        var empty=/데이터가 없습니다|없습니다|등록된 WO/.test(tr.textContent||'');
-        if(empty){
-          if(headRow && tr.children[0]) tr.children[0].colSpan=headRow.children.length;
-          return;
-        }
-        if(!isNoText(headRow&&headRow.children[0]&&headRow.children[0].textContent)) return;
-        var first=tr.children[0];
-        var firstText=(first.textContent||'').trim();
-        var firstLooksNo=first.classList.contains('nmc-safe-no-col') || /^\d+$/.test(firstText);
-        if(!firstLooksNo){
-          var td=document.createElement('td');
-          td.className='nmc-safe-no-col';
-          tr.insertBefore(td,tr.firstChild);
-          first=td;
-        }
-        first.classList.add('nmc-safe-no-col');
-        first.textContent=String(no++);
-      });
-    }catch(e){}
-    table.dataset.nmcNoPatchBusy='0';
-  }
-  function apply(){
-    qa('#page-workorder-list .nmc-wo-table-final').forEach(addNoToTable);
-    qa('#page-production-result .mes-recent-table, #page-production-result .nmc-dash-table, #page-production-result table').forEach(function(t){
-      var text=(t.textContent||'');
-      if(/최근 생산실적|생산일자|작업지시번호|생산 LOT|제품명/.test(text) || t.closest('#page-production-result')) addNoToTable(t);
-    });
-  }
-  function schedule(){clearTimeout(window.__nmcNoOnlyV7Timer);window.__nmcNoOnlyV7Timer=setTimeout(apply,120);}
-  document.addEventListener('click',schedule,true);
-  document.addEventListener('input',schedule,true);
-  document.addEventListener('change',schedule,true);
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function'&&!oldShow.__nmcNoOnlyV7){
-    window.showPage=function(){var r=oldShow.apply(this,arguments);schedule();setTimeout(apply,600);return r;};
-    window.showPage.__nmcNoOnlyV7=true;
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-  [300,800,1500,3000,5000].forEach(function(t){setTimeout(apply,t);});
-  try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
-})();
-</script>
-<!-- NMC_SAFE_NO_ONLY_RESTORE_V7_20260703_END -->
-
-
-
-<!-- NMC_WORKORDER_PRODUCTION_UNIFIED_COUNT_STABLE_20260703_START -->
-<script id="nmc-workorder-production-unified-count-stable-20260703">
-(function(){
-  'use strict';
-  if(window.__NMC_WO_PROD_UNIFIED_20260703__) return;
-  window.__NMC_WO_PROD_UNIFIED_20260703__ = true;
-
-  var STORE_KEYS = [
-    'nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory','nmcSentWorkorders',
-    'workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders',
-    'worklog','worklogs','namoWorklog','nmcWorklogs','productionLogs','productionResults','nmcProductionLogs','qms_worklog'
-  ];
-  var WRITE_KEYS = ['nmc_workorder_sent_items'];
-
-  function txt(v){ return String(v == null ? '' : v).trim(); }
-  function esc(v){ return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-  function readArr(k){
-    try{
-      var raw = localStorage.getItem(k);
-      if(!raw) return [];
-      var v = JSON.parse(raw);
-      if(Array.isArray(v)) return v;
-      if(v && typeof v === 'object'){
-        if(Array.isArray(v.items)) return v.items;
-        if(Array.isArray(v.rows)) return v.rows;
-        if(Array.isArray(v.list)) return v.list;
-        if(Array.isArray(v.data)) return v.data;
-      }
-    }catch(e){}
-    return [];
-  }
-  function stateArr(k){ try{return Array.isArray(window[k]) ? window[k] : [];}catch(e){return [];} }
-  function pick(o,ks,fb){ o=o||{}; for(var i=0;i<ks.length;i++){ var v=o[ks[i]]; if(v != null && txt(v) !== '') return v; } return fb || ''; }
-  function num(v){ var n=parseFloat(String(v||'').replace(/[^0-9.-]/g,'')); return isNaN(n) ? 0 : n; }
-  function fmt(n){ return Number(n||0).toLocaleString('ko-KR'); }
-  function onlyDate(v){
-    v=txt(v);
-    var m=v.match(/\d{4}[-./]\d{1,2}[-./]\d{1,2}/);
-    if(m){ var a=m[0].replace(/[./]/g,'-').split('-'); return a[0]+'-'+String(a[1]).padStart(2,'0')+'-'+String(a[2]).padStart(2,'0'); }
-    m=v.match(/(?:^|[^0-9])(20\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);
-    if(m) return m[1]+'-'+m[2]+'-'+m[3];
-    m=v.match(/(?:^|[^0-9])(\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);
-    if(m) return '20'+m[1]+'-'+m[2]+'-'+m[3];
-    return v;
-  }
-  function statusClass(o){
-    var s=txt(pick(o,['status','state','progressStatus','approvalStatus','resultStatus','workStatus'],'')).toLowerCase();
-    if(/지연|delay/.test(s)) return 'delay';
-    if(/보류|hold/.test(s)) return 'hold';
-    if(/완료|종결|발송|수신|done|complete|completed|finish/.test(s)) return 'done';
-    if(/진행|생산중|시작|run|progress|working/.test(s)) return 'run';
-    return 'done';
-  }
-  function isDeleted(o){
-    var s=txt(pick(o,['status','state','progressStatus','approvalStatus'],'')).toUpperCase();
-    return !!(o && (o.deleted || o.isDeleted || o._deleted || o.removed || o._removed || s==='DELETED' || s==='TRASH' || s==='REMOVED'));
-  }
-  function idOf(o){
-    var wo = txt(pick(o,['woNo','workNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid'],''));
-    var lot = txt(pick(o,['prodLot','productionLot','lot','lotNo','nmcProdLot','productLot','finishedLot'],''));
-    var prod = txt(pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],''));
-    var d = onlyDate(pick(o,['orderDate','startDate','workDate','planDate','date','createdAt','sentAt','savedAt','nmcOrderDate'],''));
-    if(wo) return 'WO:'+wo;
-    if(lot || prod || d) return 'LPD:'+[lot,prod,d].join('|');
-    return '';
-  }
-  function scoreRaw(o){
-    var s=0;
-    ['woNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','productName','product','prodName','customer','customerName','nmcCustomerName','materials'].forEach(function(k){ if(o && o[k] != null && txt(o[k]) !== '') s++; });
-    if(o && Array.isArray(o.materials)) s += Math.min(5,o.materials.length);
-    return s;
-  }
-  function normalize(o){
-    o=o||{};
-    var n={};
-    n.woNo = txt(pick(o,['woNo','workNo','workOrderNo','orderNo','nmcWoNo','docNo','no','id','uid'],''));
-    n.no = n.woNo;
-    n.productName = txt(pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],''));
-    n.customerName = txt(pick(o,['customerName','customer','client','clientName','nmcCustomerName','buyer'],''));
-    n.prodLot = txt(pick(o,['prodLot','productionLot','lot','lotNo','nmcProdLot','productLot','finishedLot'],''));
-    n.productCode = txt(pick(o,['productCode','prodCode','code','finishedLot','nmcProdCode'],''));
-    n.planQty = pick(o,['planQty','plannedQty','plan','nmcPlanQty','targetQty','qty'],0);
-    n.actualQty = pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','productionQty','prodQty'],n.planQty);
-    n.orderDate = onlyDate(pick(o,['orderDate','startDate','workDate','planDate','date','createdAt','sentAt','nmcOrderDate'],''));
-    n.startDate = n.orderDate;
-    n.dueDate = onlyDate(pick(o,['dueDate','endDate','completeDate','finishDate','deliveryDate','nmcDueDate'],''));
-    n.worker = txt(pick(o,['worker','operator','manager','prodManager','managerName','senderName','writerName','createdByName','producer','productionManager'],''));
-    n.status = pick(o,['status','state','progressStatus','approvalStatus','resultStatus','workStatus'],'생산완료');
-    n.materials = Array.isArray(o.materials) ? o.materials : (Array.isArray(o.materialRows) ? o.materialRows : []);
-    n.instruction = txt(pick(o,['instruction','workInstruction','nmcInstruction','note','remark','memo','sendNote','sendMemo'],''));
-    Object.keys(o).forEach(function(k){ if(n[k] == null || n[k] === '') n[k] = o[k]; });
-    return n;
-  }
-  function collectUnifiedRaw(){
-    var map = new Map();
-    STORE_KEYS.forEach(function(k){
-      readArr(k).forEach(function(o){
-        if(!o || typeof o !== 'object' || isDeleted(o)) return;
-        var id=idOf(o); if(!id) return;
-        var old=map.get(id);
-        if(!old || scoreRaw(o) >= scoreRaw(old)) map.set(id,o);
-      });
-      stateArr(k).forEach(function(o){
-        if(!o || typeof o !== 'object' || isDeleted(o)) return;
-        var id=idOf(o); if(!id) return;
-        var old=map.get(id);
-        if(!old || scoreRaw(o) >= scoreRaw(old)) map.set(id,o);
-      });
-    });
-    return Array.from(map.values()).sort(function(a,b){
-      return String(onlyDate(pick(b,['orderDate','startDate','workDate','planDate','date','createdAt','sentAt'],''))).localeCompare(String(onlyDate(pick(a,['orderDate','startDate','workDate','planDate','date','createdAt','sentAt'],''))));
-    });
-  }
-  function collectUnified(){ return collectUnifiedRaw().map(normalize); }
-  function syncSentStore(){
-    var rows = collectUnifiedRaw();
-    if(!rows.length) return rows;
-    WRITE_KEYS.forEach(function(k){ try{ localStorage.setItem(k, JSON.stringify(rows)); }catch(e){} });
-    try{ window.nmcUnifiedWorkOrders20260703 = rows.map(normalize); }catch(e){}
-    return rows;
-  }
-  function setKpiByLabel(root,labelRe,value,unit){
-    Array.prototype.slice.call((root||document).querySelectorAll('.nmc-result-kpi,.nmc-dash-kpi,.mes-prod-kpi,.nmc-wo-kpi-card,.sc')).forEach(function(card){
-      var lab=(card.querySelector('.l,.sc-lbl,.mes-prod-kpi-label')||{}).textContent || '';
-      var val=card.querySelector('.v,.sc-val,.mes-prod-kpi-value');
-      if(labelRe.test(lab) && val){
-        if(unit) val.innerHTML=esc(value)+'<span class="unit">'+esc(unit)+'</span>';
-        else val.textContent=String(value);
-      }
-    });
-  }
-  function ensureWorkorderRows(){
-    var page=document.querySelector('#page-workorder-list');
-    if(!page) return;
-    var rows=collectUnified();
-    setKpiByLabel(page,/작업지시 전체|전체/,rows.length,'');
-    setKpiByLabel(page,/완료|생산완료/,rows.filter(function(r){return statusClass(r)==='done';}).length,'');
-    var body=document.getElementById('nmcWoFinalBody');
-    if(!body) return;
-    var current=body.querySelectorAll('tr[data-nmc-wo-id]').length;
-    if(current >= rows.length && rows.length) return;
-    body.innerHTML = rows.map(function(r,i){
-      var plan=num(r.planQty), actual=num(r.actualQty)||plan, pct=plan?Math.min(100,Math.round(actual/plan*100)):(actual?100:0), sc=statusClass(r);
-      var status={wait:'대기',run:'진행중',done:'완료',delay:'지연',hold:'보류'}[sc]||'완료';
-      return '<tr data-nmc-wo-id="'+esc(r.woNo||r.prodLot||i)+'"><td><button type="button" class="nmc-wo-no-final" data-nmc-wo-final-open="'+esc(r.woNo||r.prodLot||i)+'">'+esc(r.woNo||'-')+'</button></td><td>'+esc(r.productName||'-')+'</td><td>'+esc(r.customerName||'-')+'</td><td>'+esc(plan?fmt(plan):'-')+'</td><td>'+esc(actual?fmt(actual):'-')+'</td><td><div class="nmc-wo-progress-final"><div class="bar"><span style="width:'+pct+'%"></span></div><b>'+pct+'%</b></div></td><td><span class="nmc-wo-status-final '+sc+'">'+esc(status)+'</span></td><td>'+esc(r.startDate||'-')+'</td><td>'+esc(r.dueDate||'-')+'</td><td>'+esc(r.worker||'-')+'</td><td><div class="nmc-wo-actions-final"><button type="button" class="nmc-wo-btn-final" data-nmc-wo-final-delete="'+esc(r.woNo||r.prodLot||i)+'">삭제</button><button type="button" class="nmc-wo-btn-final" data-nmc-safe-id="'+esc(r.woNo||r.prodLot||i)+'" onclick="return window.nmcWoSafePrint?window.nmcWoSafePrint(this):true">인쇄</button><button type="button" class="nmc-wo-btn-final primary" data-nmc-safe-id="'+esc(r.woNo||r.prodLot||i)+'" onclick="return window.nmcWoSafeEdit?window.nmcWoSafeEdit(this):true">수정</button></div></td></tr>';
-    }).join('') || '<tr><td colspan="11" class="nmc-wo-empty-final">작업지시 데이터가 없습니다.</td></tr>';
-  }
-  function ensureProductionKpi(){
-    var page=document.querySelector('#page-production-result');
-    if(!page) return;
-    var rows=collectUnified();
-    var done=rows.length;
-    var run=rows.filter(function(r){return statusClass(r)==='run';}).length;
-    setKpiByLabel(page,/생산완료/,done,'건');
-    setKpiByLabel(page,/생산중/,run,'건');
-    setKpiByLabel(page,/작업지시|LOT|월간 LOT|생산 LOT/,done,'건');
-    Array.prototype.slice.call(page.querySelectorAll('.nmc-donut-center .big')).forEach(function(el){ if(/LOT|건|^\s*\d/.test(el.textContent||'')) el.textContent=done+' LOT'; });
-    Array.prototype.slice.call(page.querySelectorAll('.nmc-legend-row')).forEach(function(row){ var b=row.querySelector('b'); if(!b) return; var t=row.textContent||''; if(/생산완료/.test(t)) b.textContent=done; else if(/생산중/.test(t)) b.textContent=run; });
-    Array.prototype.slice.call(page.querySelectorAll('tbody tr, tfoot tr')).forEach(function(tr){
-      var text=tr.textContent||'';
-      if(/합계|전체|나모|고객사|LOT/.test(text) && tr.children.length>=4 && /LOT/.test(tr.children[3].textContent||'')) tr.children[3].textContent=done+' LOT';
-    });
-  }
-  function apply(){
-    syncSentStore();
-    try{ if(typeof window.nmcRenderWorkOrderStatusDashboard === 'function') window.nmcRenderWorkOrderStatusDashboard(); }catch(e){}
-    ensureWorkorderRows();
-    ensureProductionKpi();
-    try{ if(typeof window.nmcProductionResultDashboardRefresh === 'function') window.nmcProductionResultDashboardRefresh(); }catch(e){}
-    setTimeout(function(){ ensureWorkorderRows(); ensureProductionKpi(); },80);
-  }
-  window.nmcCollectUnifiedWorkOrders20260703 = collectUnified;
-  window.nmcSyncWorkOrderProductionUnified20260703 = apply;
-  function schedule(){ clearTimeout(window.__nmcUnifiedWoProdTimer); window.__nmcUnifiedWoProdTimer=setTimeout(apply,160); }
-  document.addEventListener('click',schedule,true);
-  document.addEventListener('input',schedule,true);
-  document.addEventListener('change',schedule,true);
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function' && !oldShow.__nmcUnifiedWoProdWrapped){
-    window.showPage=function(){ var r=oldShow.apply(this,arguments); schedule(); setTimeout(apply,500); return r; };
-    window.showPage.__nmcUnifiedWoProdWrapped=true;
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',schedule); else schedule();
-  [300,900,1800,3000,5000].forEach(function(t){ setTimeout(schedule,t); });
-  try{ new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
-})();
-</script>
-<!-- NMC_WORKORDER_PRODUCTION_UNIFIED_COUNT_STABLE_20260703_END -->
 
 </body>
 </html>
