@@ -17712,156 +17712,161 @@ document.addEventListener('click',function(e){
 <!-- NMC_MONTHLY_LOT_CHART_FIX_20260703_END -->
 
 
-<!-- NMC_PRODUCTION_LOT_BAR_DASHBOARD_20260703_V3_START -->
-<style id="nmc-production-lot-bar-dashboard-20260703-v3-style">
-#page-production-result .nmc-result-chart-grid-v3{
+<!-- NMC_PRODUCTION_LOT_BAR_SPLIT_PATCH_20260703_START -->
+<style id="nmc-prod-lot-bar-split-style-20260703">
+#page-production-result .nmc-result-chart-split{
   display:grid!important;
-  grid-template-columns:1fr 1fr!important;
-  gap:14px!important;
-  padding:14px!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:18px!important;
+  margin-bottom:18px!important;
 }
-#page-production-result .nmc-result-chart-box-v3{
-  background:#fff!important;
-  border:1px solid #dbe3ee!important;
-  border-radius:16px!important;
-  box-shadow:0 6px 18px rgba(15,23,42,.045)!important;
-  padding:14px 16px 12px!important;
-  min-height:330px!important;
+#page-production-result .nmc-result-chart-split .nmc-result-card{
+  margin-bottom:0!important;
 }
-#page-production-result .nmc-result-chart-title-v3{
+#page-production-result .nmc-result-chart-title{
   display:flex!important;
   align-items:center!important;
-  justify-content:space-between!important;
-  gap:10px!important;
-  margin-bottom:8px!important;
-  color:#0f172a!important;
-  font-size:15px!important;
+  gap:8px!important;
+  padding:18px 22px 0!important;
+  font-size:16px!important;
   font-weight:900!important;
+  color:#0f172a!important;
 }
-#page-production-result .nmc-result-chart-title-v3 .unit{
-  color:#64748b!important;
-  font-size:11px!important;
-  font-weight:800!important;
+#page-production-result .nmc-result-chart-title .dot{
+  width:10px!important;
+  height:10px!important;
+  border-radius:50%!important;
+  display:inline-block!important;
 }
-#page-production-result .nmc-result-chart-canvas-v3{
-  position:relative!important;
-  height:275px!important;
+#page-production-result .nmc-result-chart-title .dot.blue{background:#2563eb!important;}
+#page-production-result .nmc-result-chart-title .dot.green{background:#10b981!important;}
+#page-production-result .nmc-result-chart{
+  height:310px!important;
+  min-height:310px!important;
+  padding:18px 22px 24px!important;
 }
-#page-production-result .nmc-result-chart-canvas-v3 canvas{
+#page-production-result .nmc-result-chart canvas{
   width:100%!important;
   height:100%!important;
   display:block!important;
 }
-#page-production-result .nmc-result-kpi-grid{
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
-}
-#page-production-result .nmc-result-kpi:first-child .l::after{
-  content:' 막대그래프';
-  color:#2563eb;
-  font-size:10px;
-  font-weight:900;
-  margin-left:4px;
-}
 @media(max-width:1200px){
-  #page-production-result .nmc-result-chart-grid-v3{grid-template-columns:1fr!important;}
+  #page-production-result .nmc-result-chart-split{grid-template-columns:1fr!important;}
 }
 </style>
-<script id="nmc-production-lot-bar-dashboard-20260703-v3-script">
+<script id="nmc-prod-lot-bar-split-patch-20260703">
 (function(){
   'use strict';
-  if(window.__NMC_PRODUCTION_LOT_BAR_DASHBOARD_20260703_V3__) return;
-  window.__NMC_PRODUCTION_LOT_BAR_DASHBOARD_20260703_V3__=true;
-  var MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  if(window.__NMC_PROD_LOT_BAR_SPLIT_PATCH_20260703__) return;
+  window.__NMC_PROD_LOT_BAR_SPLIT_PATCH_20260703__=true;
+
+  /* 로그인/복원 안내 팝업 중 '투입원료 자동 복원' 문구만 숨김 */
+  if(!window.__NMC_ALERT_FILTER_20260703__){
+    window.__NMC_ALERT_FILTER_20260703__=true;
+    var nativeAlert=window.alert;
+    window.alert=function(msg){
+      var s=String(msg==null?'':msg);
+      if(s.indexOf('투입원료 자동 복원')>-1 || s.indexOf('저장된 이력에서 투입원료')>-1) return;
+      return nativeAlert.apply(window,arguments);
+    };
+  }
+
   function q(s,r){return (r||document).querySelector(s)}
   function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function num(v){var n=Number(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0}
+  function num(v){v=String(v==null?'':v).replace(/[^0-9.\-]/g,'');return Number(v)||0}
   function monthOf(v){var m=String(v||'').match(/(20\d{2})[-/.](\d{1,2})/);return m?Number(m[2])-1:null}
   function readRows(){
-    var table=q('#page-production-result .nmc-pr-table')||q('#page-production-result table');
+    var table=q('#page-production-result .nmc-pr-table')||q('#page-production-result .nmc-result-table')||q('.nmc-pr-table');
     if(!table) return [];
     var heads=qa('thead th',table).map(function(th){return (th.textContent||'').replace(/\s+/g,'')});
-    function idx(keys,fb){for(var i=0;i<heads.length;i++){for(var j=0;j<keys.length;j++){if(heads[i].indexOf(keys[j])>-1)return i}}return fb}
+    function idx(names,fb){for(var i=0;i<heads.length;i++){for(var j=0;j<names.length;j++){if(heads[i].indexOf(names[j])>-1)return i}}return fb}
     var di=idx(['생산일자','작업일자','일자'],0);
     var li=idx(['생산LOT','완제품LOT','LOT'],4);
     var ai=idx(['실적수량','실제생산량','생산수량'],6);
     return qa('tbody tr',table).map(function(tr){
-      var tds=qa('td',tr); if(tds.length<5) return null;
-      var date=(tds[di]&&tds[di].textContent||'').trim();
-      var lot=(tds[li]&&tds[li].textContent||'').trim();
-      var actual=num(tds[ai]&&tds[ai].textContent||'');
-      if(!date && !lot && !actual) return null;
-      return {date:date,lot:lot,actual:actual};
+      var tds=qa('td',tr); if(tds.length<3) return null;
+      return {date:(tds[di]&&tds[di].textContent)||'',lot:(tds[li]&&tds[li].textContent)||'',actual:num((tds[ai]&&tds[ai].textContent)||'')};
     }).filter(Boolean);
   }
   function monthly(rows){
-    var kg=Array(12).fill(0), lotSets=Array.from({length:12},function(){return {}});
+    var kg=Array(12).fill(0), lot=Array.from({length:12},function(){return {}});
     rows.forEach(function(r){
       var m=monthOf(r.date); if(m==null||m<0||m>11) return;
-      kg[m]+=num(r.actual);
-      var lot=String(r.lot||'').trim();
-      if(lot) lotSets[m][lot]=1;
+      kg[m]+=r.actual;
+      var k=String(r.lot||'').trim(); if(k) lot[m][k]=true;
     });
-    return {kg:kg, lot:lotSets.map(function(x){return Object.keys(x).length})};
+    return {kg:kg, lot:lot.map(function(x){return Object.keys(x).length})};
   }
-  function selectedMonth(){
-    var d=q('#nmcResultDate');
-    var m=d&&d.value?monthOf(d.value):null;
-    if(m==null){try{m=(new Date()).getMonth()}catch(e){m=0}}
-    return m;
+  function ensureSplitLayout(){
+    var page=q('#page-production-result');
+    var prodCanvas=q('#nmcProductionResultChart');
+    if(!page || !prodCanvas) return null;
+    var prodCard=prodCanvas.closest('.nmc-result-card');
+    if(!prodCard) return null;
+    var split=q('#nmcProdChartSplit',page);
+    if(!split){
+      split=document.createElement('div');
+      split.id='nmcProdChartSplit';
+      split.className='nmc-result-chart-split';
+      prodCard.parentNode.insertBefore(split,prodCard);
+      split.appendChild(prodCard);
+    }
+    if(!q('.nmc-result-chart-title',prodCard)){
+      prodCard.insertAdjacentHTML('afterbegin','<div class="nmc-result-chart-title"><span class="dot blue"></span>월별 생산량 (kg)</div>');
+    }
+    var lotCard=q('#nmcLotBarCard',split);
+    if(!lotCard){
+      lotCard=document.createElement('div');
+      lotCard.id='nmcLotBarCard';
+      lotCard.className='nmc-result-card';
+      lotCard.innerHTML='<div class="nmc-result-chart-title"><span class="dot green"></span>월별 LOT 수 (LOT)</div><div class="nmc-result-chart"><canvas id="nmcMonthlyLotBarChart"></canvas></div>';
+      split.appendChild(lotCard);
+    }
+    return q('#nmcMonthlyLotBarChart');
   }
-  function updateKpi(m){
-    var first=q('#page-production-result .nmc-result-kpi:first-child');
-    if(!first) return;
-    var l=q('.l',first), v=q('.v',first), s=q('.s',first);
-    if(l) l.textContent='월간 LOT';
-    if(v) v.textContent=String(m.lot[selectedMonth()]||0);
-    if(s) s.textContent='현재 선택 월 기준';
+  function updateProductionChart(m){
+    var c=q('#nmcProductionResultChart'); if(!c || !window.Chart) return;
+    var inst=window.__nmcProductionResultChart || (window.Chart.getChart&&window.Chart.getChart(c));
+    if(!inst) return;
+    inst.config.type='line';
+    inst.data.labels=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+    inst.data.datasets=[{
+      label:'월 생산량(kg)',data:m.kg,type:'line',borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.14)',fill:true,tension:.35,pointRadius:4,yAxisID:'y'
+    }];
+    inst.options.scales={
+      x:{grid:{display:false}},
+      y:{beginAtZero:true,grid:{color:'#edf2f7'},title:{display:true,text:'생산량(kg)'}}
+    };
+    inst.update();
   }
-  function ensureLayout(){
-    var old=q('#nmcProductionResultChart');
-    if(!old) return false;
-    var card=old.closest('.nmc-result-card');
-    if(!card) return false;
-    if(q('#nmcMonthlyLotBarChartV3',card)) return true;
-    try{var inst=window.Chart&&window.Chart.getChart&&window.Chart.getChart(old); if(inst)inst.destroy();}catch(e){}
-    card.innerHTML='<div class="nmc-result-chart-grid-v3">'+
-      '<div class="nmc-result-chart-box-v3"><div class="nmc-result-chart-title-v3"><span>월별 LOT 현황 (막대그래프)</span><span class="unit">LOT 수</span></div><div class="nmc-result-chart-canvas-v3"><canvas id="nmcMonthlyLotBarChartV3"></canvas></div></div>'+
-      '<div class="nmc-result-chart-box-v3"><div class="nmc-result-chart-title-v3"><span>월별 생산량 (kg)</span><span class="unit">실적수량</span></div><div class="nmc-result-chart-canvas-v3"><canvas id="nmcMonthlyKgBarChartV3"></canvas></div></div>'+
-      '</div>';
-    return true;
-  }
-  function drawBar(canvasId,label,data,color){
-    var c=q('#'+canvasId); if(!c||!window.Chart) return;
-    try{var old=window.Chart.getChart&&window.Chart.getChart(c); if(old)old.destroy();}catch(e){}
-    var ctx=c.getContext('2d');
-    var grad=ctx.createLinearGradient(0,0,0,260);
-    grad.addColorStop(0,color);
-    grad.addColorStop(1,'rgba(255,255,255,0.45)');
-    return new Chart(c,{type:'bar',data:{labels:MONTHS,datasets:[{label:label,data:data,backgroundColor:grad,borderColor:color,borderWidth:1,borderRadius:8,borderSkipped:false,maxBarThickness:46}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{boxWidth:18,usePointStyle:true,font:{weight:'700'}}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{color:'rgba(148,163,184,.18)'},ticks:{font:{weight:'700'}}},y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.22)'},ticks:{precision:0,font:{weight:'700'}}}}}});
+  function renderLotBar(m){
+    var c=ensureSplitLayout(); if(!c || !window.Chart) return;
+    try{if(window.__nmcMonthlyLotBarChart&&window.__nmcMonthlyLotBarChart.destroy)window.__nmcMonthlyLotBarChart.destroy();}catch(e){}
+    window.__nmcMonthlyLotBarChart=new Chart(c,{type:'bar',data:{
+      labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+      datasets:[{label:'월간 LOT 수',data:m.lot,backgroundColor:'#10b981',borderColor:'#059669',borderWidth:1,borderRadius:8,barPercentage:.55,categoryPercentage:.72}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ' LOT '+ctx.parsed.y+'건';}}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{precision:0},grid:{color:'#edf2f7'},title:{display:true,text:'LOT 수 (LOT)'}}}}});
   }
   function apply(){
     var page=q('#page-production-result'); if(!page) return;
-    if(!ensureLayout()) return;
     var rows=readRows();
+    if(!rows.length) return;
     var m=monthly(rows);
-    updateKpi(m);
-    drawBar('nmcMonthlyLotBarChartV3','LOT 수 (건)',m.lot,'rgba(37,99,235,0.92)');
-    drawBar('nmcMonthlyKgBarChartV3','생산량 (kg)',m.kg.map(function(x){return Math.round(x*100)/100}),'rgba(22,163,74,0.82)');
+    ensureSplitLayout();
+    updateProductionChart(m);
+    renderLotBar(m);
   }
-  function schedule(){clearTimeout(window.__nmcProdLotBarV3Timer);window.__nmcProdLotBarV3Timer=setTimeout(apply,120)}
-  document.addEventListener('input',function(e){if(e.target&&/^nmcResult/.test(e.target.id||''))schedule()},true);
-  document.addEventListener('change',function(e){if(e.target&&/^nmcResult/.test(e.target.id||''))schedule()},true);
-  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-page="production-result"],[data-page-target="production-result"]')){setTimeout(apply,250);setTimeout(apply,700)}},true);
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function'&&!oldShow.__nmcProdLotBarV3Wrapped){
-    window.showPage=function(){var r=oldShow.apply(this,arguments);setTimeout(apply,250);setTimeout(apply,700);return r};
-    window.showPage.__nmcProdLotBarV3Wrapped=true;
+  var old=window.showPage;
+  if(typeof old==='function'&&!old.__nmcLotBarSplitWrapped){
+    window.showPage=function(){var r=old.apply(this,arguments);setTimeout(apply,250);setTimeout(apply,800);return r};
+    window.showPage.__nmcLotBarSplitWrapped=true;
   }
-  [300,900,1700,3000].forEach(function(ms){setTimeout(apply,ms)});
-  try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
+  document.addEventListener('input',function(e){if(e.target&&/^nmcResult/.test(e.target.id||''))setTimeout(apply,120)},true);
+  document.addEventListener('change',function(e){if(e.target&&/^nmcResult/.test(e.target.id||''))setTimeout(apply,120)},true);
+  [300,900,1600,2800].forEach(function(t){setTimeout(apply,t)});
 })();
 </script>
-<!-- NMC_PRODUCTION_LOT_BAR_DASHBOARD_20260703_V3_END -->
+<!-- NMC_PRODUCTION_LOT_BAR_SPLIT_PATCH_20260703_END -->
 
 </body>
 </html>
