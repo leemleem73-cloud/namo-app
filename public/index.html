@@ -18174,76 +18174,76 @@ document.addEventListener('click',function(e){
 </script>
 
 
-<style id="nmc-no-column-style-20260703-v4">
-.nmc-row-no{font-weight:900!important;color:#0f172a!important;text-align:center!important;min-width:44px!important;}
-#page-workorder-list .nmc-wo-table-final th:first-child,
-#page-production-result .nmc-dash-table th:first-child,
-#page-production-result .nmc-pr-table th:first-child{width:58px!important;text-align:center!important;}
+
+<!-- NMC SAFE PATCH v5: 데이터 복구 기준(v3) + 화면 표시용 NO 컬럼만 추가 -->
+<style id="nmc-safe-no-column-style-20260703-v5">
+.nmc-safe-no-cell{font-weight:900!important;color:#0f172a!important;text-align:center!important;width:54px!important;min-width:54px!important;}
+#page-workorder-list table th.nmc-safe-no-cell,
+#page-production-result table th.nmc-safe-no-cell{width:54px!important;text-align:center!important;}
 </style>
-<script id="nmc-no-column-safety-20260703-v4">
+<script id="nmc-safe-no-column-20260703-v5">
 (function(){
   'use strict';
-  function isNoHeader(txt){return /^\s*(NO|No|no|순번)\s*$/.test(String(txt||''));}
-  function renumberWorkOrder(){
-    var page=document.querySelector('#page-workorder-list'); if(!page) return;
-    var table=page.querySelector('.nmc-wo-table-final'); if(!table) return;
-    var hr=table.querySelector('thead tr');
-    if(hr && !isNoHeader(hr.children[0]&&hr.children[0].textContent)){
-      var th=document.createElement('th'); th.textContent='NO'; hr.insertBefore(th,hr.firstChild);
+  function txt(el){return (el&&el.textContent||'').trim();}
+  function isNoHeader(el){return /^\s*(NO|No|no|순번)\s*$/.test(txt(el));}
+  function isNoCell(el){return el && (el.classList.contains('nmc-safe-no-cell') || /^\d+$/.test(txt(el)));}
+  function addNoToTable(table){
+    if(!table) return;
+    var headRow=table.querySelector('thead tr');
+    if(headRow && !isNoHeader(headRow.children[0])){
+      var th=document.createElement('th');
+      th.textContent='NO';
+      th.className='nmc-safe-no-cell';
+      headRow.insertBefore(th, headRow.firstChild);
+    }else if(headRow && headRow.children[0]){
+      headRow.children[0].classList.add('nmc-safe-no-cell');
     }
     var rows=Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
     var n=1;
     rows.forEach(function(tr){
-      if(tr.querySelector('.nmc-wo-empty-final')){ if(tr.children[0]) tr.children[0].setAttribute('colspan','12'); return; }
-      if(!tr.children.length) return;
-      var first=(tr.children[0].textContent||'').trim();
-      if(!tr.children[0].classList.contains('nmc-row-no') || !/^\d+$/.test(first)){
-        var td=document.createElement('td'); td.className='nmc-row-no'; tr.insertBefore(td,tr.firstChild);
+      if(!tr.children || !tr.children.length) return;
+      var rowText=txt(tr);
+      if(/데이터가 없습니다|데이터 없음|목록이 없습니다|없습니다/.test(rowText)){
+        tr.children[0].setAttribute('colspan', String((headRow&&headRow.children.length)||tr.children.length));
+        return;
       }
-      tr.children[0].classList.add('nmc-row-no');
+      if(!isNoCell(tr.children[0])){
+        var td=document.createElement('td');
+        td.className='nmc-safe-no-cell';
+        tr.insertBefore(td, tr.firstChild);
+      }
+      tr.children[0].classList.add('nmc-safe-no-cell');
       tr.children[0].textContent=String(n++);
     });
   }
-  function renumberProduction(){
-    var page=document.querySelector('#page-production-result'); if(!page) return;
-    Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-card')).forEach(function(card){
-      var title=card.querySelector('.nmc-dash-card-title'); title=(title&&title.textContent)||'';
-      if(!/최근 생산실적 목록|생산실적 전체 목록/.test(title)) return;
-      var table=card.querySelector('table'); if(!table) return;
-      var hr=table.querySelector('thead tr');
-      if(hr && !isNoHeader(hr.children[0]&&hr.children[0].textContent)){
-        var th=document.createElement('th'); th.textContent='NO'; hr.insertBefore(th,hr.firstChild);
-      }
-      var rows=Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
-      var n=1;
-      rows.forEach(function(tr){
-        if(/데이터 없음|생산실적 데이터가 없습니다/.test(tr.textContent||'')){
-          if(tr.children[0]) tr.children[0].setAttribute('colspan',String((hr&&hr.children.length)||8)); return;
-        }
-        if(!tr.children.length) return;
-        var first=(tr.children[0].textContent||'').trim();
-        // 최근 생산실적 목록은 기존 NO가 있으면 그대로 재번호만 수행
-        if(!tr.children[0].classList.contains('nmc-row-no') && !/^\d+$/.test(first)){
-          var td=document.createElement('td'); td.className='nmc-row-no'; tr.insertBefore(td,tr.firstChild);
-        }
-        tr.children[0].classList.add('nmc-row-no');
-        tr.children[0].textContent=String(n++);
-      });
-    });
+  function findCardByTitle(page, pattern){
+    var cards=Array.prototype.slice.call(page.querySelectorAll('.card,.nmc-dash-card,.mes-recent-card'));
+    return cards.filter(function(card){return pattern.test(txt(card.querySelector('.ch h2,.ch h3,.nmc-dash-card-title,.mes-recent-title')) || pattern.test(txt(card));});
   }
-  function run(){renumberWorkOrder();renumberProduction();}
-  function schedule(){clearTimeout(window.__nmcNoColumnV4Timer);window.__nmcNoColumnV4Timer=setTimeout(run,160);}
+  function runNoPatch(){
+    var wo=document.querySelector('#page-workorder-list');
+    if(wo){
+      var woTable=wo.querySelector('.nmc-wo-table-final table, table.nmc-wo-table-final, table');
+      addNoToTable(woTable);
+    }
+    var pr=document.querySelector('#page-production-result');
+    if(pr){
+      findCardByTitle(pr,/최근\s*생산실적\s*목록|생산실적\s*전체\s*목록/).forEach(function(card){
+        addNoToTable(card.querySelector('table'));
+      });
+    }
+  }
+  function schedule(){clearTimeout(window.__nmcSafeNoV5Timer);window.__nmcSafeNoV5Timer=setTimeout(runNoPatch,250);}
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__nmcSafeNoV5){
+    window.showPage=function(){var r=oldShow.apply(this,arguments);schedule();setTimeout(runNoPatch,800);return r;};
+    window.showPage.__nmcSafeNoV5=true;
+  }
   document.addEventListener('click',schedule,true);
   document.addEventListener('input',schedule,true);
   document.addEventListener('change',schedule,true);
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function'&&!oldShow.__nmcNoColumnV4Wrapped){
-    window.showPage=function(){var r=oldShow.apply(this,arguments);schedule();setTimeout(run,700);return r;};
-    window.showPage.__nmcNoColumnV4Wrapped=true;
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-  [300,900,1800,3000,5000].forEach(function(ms){setTimeout(schedule,ms);});
-  try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});}catch(e){}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',schedule); else schedule();
+  [500,1500,3000].forEach(function(ms){setTimeout(runNoPatch,ms);});
 })();
 </script>
 
