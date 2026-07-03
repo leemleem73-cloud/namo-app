@@ -11122,7 +11122,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function pick(o,ks,d){for(var i=0;i<ks.length;i++){var v=o&&o[ks[i]];if(v!=null&&String(v).trim()!=='')return v}return d||''}
   var KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','worklog','namoWorklog','productionWorkOrders','prodWorkOrders'];
   function customer(o){var direct=pick(o,['customerName','nmcCustomerName','clientName','buyerName','shipCustomer','customer','client','buyer','company','corp'],'');var t=[direct,pick(o,['product','productName','item','itemName','prodName','nmcProdName'],''),pick(o,['receiver','recv','recipients','recvNames','recvTargets'],'')].join(' ');if(/현대|hyundai|hmc|자동차/i.test(t))return '현대자동차';if(/삼성|samsung|sdi/i.test(t))return '삼성';if(/\bSK\b|에스케이|sk온|sk on/i.test(t))return 'SK';return direct||'기타'}
-  function statusKind(s){s=String(s||'');if(/지연|delay/i.test(s))return 'delay';if(/생산중|생산진행|진행|run/i.test(s))return 'run';if(/발송완료|발송|수신완료|수신|생산완료|완료|done|complete|completed/i.test(s))return 'done';if(/대기|작성|wait/i.test(s))return 'wait';return 'done'}
+  function statusKind(s){s=String(s||'');if(/지연|delay/i.test(s))return 'delay';if(/생산중|생산진행|진행|run/i.test(s))return 'run';if(/대기|발송|수신|작성|wait/i.test(s))return 'wait';return 'done'}
   function collectRows(){var out=[],seen={};KEYS.forEach(function(k){arr(k).forEach(function(o){if(!o||typeof o!=='object')return;var no=pick(o,['woNo','no','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],'');var lot=pick(o,['prodLot','lot','productionLot','nmcProdLot','lotNo','batchNo'],no);var key=(no||'-')+'|'+(lot||'-');if(seen[key])return;seen[key]=1;var plan=num(pick(o,['planQty','plan','plannedQty','nmcPlanQty','qty','quantity','orderQty'],'0'));var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','prodResultQty'],plan));var st=pick(o,['status','state','progressStatus'],'생산완료');var date=String(pick(o,['doneDate','completeDate','closedDate','workDate','orderDate','date','createdAt','updatedAt','writeDate'],'')||new Date().toISOString().slice(0,10)).slice(0,10);out.push({storeKey:k,raw:o,no:no||lot||'-',lot:lot||no||'-',product:pick(o,['productName','product','prodName','item','itemName','nmcProdName'],'슬러리'),customer:customer(o),plan:plan,actual:actual||plan,status:st,kind:statusKind(st),date:date,worker:pick(o,['worker','managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept'],'-')});})});return out}
   function fmt(n){return num(n).toLocaleString()}
   function pct(r){var p=num(r.plan),a=num(r.actual);return p?Math.min(999,Math.round(a/p*1000)/10):(a?100:0)}
@@ -17939,9 +17939,9 @@ document.addEventListener('click',function(e){
   function arr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
   function pick(o,ks,d){for(var i=0;i<ks.length;i++){var v=o&&o[ks[i]];if(v!=null&&String(v).trim()!=='')return v}return d||''}
   function customer(o){var direct=pick(o,['customerName','nmcCustomerName','clientName','buyerName','shipCustomer','customer','client','buyer','company','corp'],'');var t=[direct,pick(o,['product','productName','item','itemName','prodName','nmcProdName'],''),pick(o,['receiver','recv','recipients','recvNames','recvTargets'],'')].join(' ');if(/현대|hyundai|hmc|자동차/i.test(t))return '현대자동차';if(/삼성|samsung|sdi/i.test(t))return '삼성';if(/\bSK\b|에스케이|sk온|sk on/i.test(t))return 'SK';return direct||'기타'}
-  function statusKind(s){s=String(s||'');if(/지연|delay/i.test(s))return 'delay';if(/생산중|생산진행|진행|run/i.test(s))return 'run';if(/발송완료|발송|수신완료|수신|생산완료|완료|done|complete|completed/i.test(s))return 'done';if(/대기|작성|wait/i.test(s))return 'wait';return 'done'}
+  function statusKind(s){s=String(s||'');if(/지연|delay/i.test(s))return 'delay';if(/생산중|생산진행|진행|run/i.test(s))return 'run';if(/대기|발송|수신|작성|wait/i.test(s))return 'wait';return 'done'}
   var KEYS=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','worklog','namoWorklog','productionWorkOrders','prodWorkOrders'];
-  function collectRows(){var out=[],seen={};KEYS.forEach(function(k){arr(k).forEach(function(o){if(!o||typeof o!=='object')return;var no=pick(o,['woNo','no','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],'');var lot=pick(o,['prodLot','lot','productionLot','nmcProdLot','lotNo','finishedLot','batchNo'],no);var key=(no||'-')+'|'+(lot||'-');if(seen[key])return;seen[key]=1;var plan=num(pick(o,['planQty','plan','plannedQty','nmcPlanQty','qty','quantity','orderQty'],'0'));var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','prodResultQty','prodQty'],plan));var st=pick(o,['status','state','progressStatus'],'생산완료');var date=String(pick(o,['doneDate','completeDate','closedDate','workDate','orderDate','date','createdAt','updatedAt','writeDate'],'')||new Date().toISOString().slice(0,10)).slice(0,10);out.push({no:no||lot||'-',lot:lot||no||'-',product:pick(o,['productName','product','prodName','item','itemName','nmcProdName'],'슬러리'),customer:customer(o),plan:plan,actual:actual||plan,status:st,kind:statusKind(st),date:date,worker:pick(o,['worker','managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept'],'-')});})});out.sort(function(a,b){var d=String(b.date).localeCompare(String(a.date));if(d!==0)return d;return String(a.no||'').localeCompare(String(b.no||''),undefined,{numeric:true,sensitivity:'base'});});return out}
+  function collectRows(){var out=[],seen={};KEYS.forEach(function(k){arr(k).forEach(function(o){if(!o||typeof o!=='object')return;var no=pick(o,['woNo','no','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],'');var lot=pick(o,['prodLot','lot','productionLot','nmcProdLot','lotNo','finishedLot','batchNo'],no);var key=(no||'-')+'|'+(lot||'-');if(seen[key])return;seen[key]=1;var plan=num(pick(o,['planQty','plan','plannedQty','nmcPlanQty','qty','quantity','orderQty'],'0'));var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','prodResultQty','prodQty'],plan));var st=pick(o,['status','state','progressStatus'],'생산완료');var date=String(pick(o,['doneDate','completeDate','closedDate','workDate','orderDate','date','createdAt','updatedAt','writeDate'],'')||new Date().toISOString().slice(0,10)).slice(0,10);out.push({no:no||lot||'-',lot:lot||no||'-',product:pick(o,['productName','product','prodName','item','itemName','nmcProdName'],'슬러리'),customer:customer(o),plan:plan,actual:actual||plan,status:st,kind:statusKind(st),date:date,worker:pick(o,['worker','managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept'],'-')});})});out.sort(function(a,b){return String(b.date).localeCompare(String(a.date))});return out}
   function monthIndex(v){var m=String(v||'').match(/(20\d{2})[-/.](\d{1,2})/);return m?Number(m[2])-1:null}
   function filterRows(rows){var st=q('#nmcDashStatus'), kw=q('#nmcDashKeyword'), s=q('#nmcDashStart'), e=q('#nmcDashEnd');var sv=s&&s.value, ev=e&&e.value, stat=st&&st.value||'', key=(kw&&kw.value||'').trim().toLowerCase();return rows.filter(function(r){if(sv&&r.date<sv)return false;if(ev&&r.date>ev)return false;if(stat&&r.kind!==stat)return false;if(key&&[r.no,r.lot,r.product,r.customer,r.worker,r.status].join(' ').toLowerCase().indexOf(key)<0)return false;return true})}
   function monthly(rows){var kg=Array(12).fill(0), lots=Array.from({length:12},function(){return {}});rows.forEach(function(r){var m=monthIndex(r.date);if(m==null||m<0||m>11)return;kg[m]+=num(r.actual);var lot=String(r.lot||r.no||'').trim();if(lot)lots[m][lot]=1});return {kg:kg.map(function(x){return Math.round(x*100)/100}),lot:lots.map(function(x){return Object.keys(x).length})}}
@@ -17981,273 +17981,75 @@ document.addEventListener('click',function(e){
 <!-- NMC_PRODUCTION_RESULT_DASHBOARD_STYLE_20260703_END -->
 
 
-<script id="nmc-production-result-dashboard-final-fix-20260703-v2">
-(function(){
-  'use strict';
-  function txt(el,v){ if(el) el.textContent=v; }
-  function normStatusText(s){
-    s=String(s||'');
-    if(/지연|delay/i.test(s)) return 'delay';
-    if(/생산중|진행|run/i.test(s)) return 'run';
-    if(/발송|수신|완료|done|complete/i.test(s)) return 'done';
-    if(/대기|작성|wait/i.test(s)) return 'wait';
-    return 'done';
-  }
-  function fixProductionResultNumbers(){
-    var page=document.querySelector('#page-production-result');
-    if(!page) return;
-    var cards=Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-card'));
-    var recentCard=cards.find(function(c){return /최근 생산실적 목록/.test(c.textContent||'');});
-    if(!recentCard) return;
-    var rows=Array.prototype.slice.call(recentCard.querySelectorAll('tbody tr')).filter(function(tr){return tr.children.length>=8;});
-    rows.sort(function(a,b){
-      var ad=(a.children[1]&&a.children[1].textContent.trim())||'';
-      var bd=(b.children[1]&&b.children[1].textContent.trim())||'';
-      var d=bd.localeCompare(ad);
-      if(d!==0) return d;
-      var an=(a.children[2]&&a.children[2].textContent.trim())||'';
-      var bn=(b.children[2]&&b.children[2].textContent.trim())||'';
-      return an.localeCompare(bn, undefined, {numeric:true, sensitivity:'base'});
-    });
-    var body=recentCard.querySelector('tbody');
-    rows.forEach(function(tr,i){ if(tr.children[0]) tr.children[0].textContent=String(i+1); body.appendChild(tr); });
-    var total=rows.length, done=0, run=0, wait=0, delay=0;
-    rows.forEach(function(tr){
-      var st=normStatusText(tr.children[7]&&tr.children[7].textContent);
-      if(st==='done') done++; else if(st==='run') run++; else if(st==='delay') delay++; else wait++;
-    });
-    // 상단 KPI: 생산완료/생산중
-    Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-kpi')).forEach(function(kpi){
-      var label=(kpi.querySelector('.l')||{}).textContent||'';
-      var v=kpi.querySelector('.v');
-      if(/생산완료/.test(label) && v) v.innerHTML=done+'<span class="unit">건</span>';
-      if(/생산중/.test(label) && v) v.innerHTML=run+'<span class="unit">건</span>';
-    });
-    // 고객사별 생산현황 완료 LOT
-    var customerCard=cards.find(function(c){return /고객사별 생산현황/.test(c.textContent||'');});
-    if(customerCard){
-      Array.prototype.slice.call(customerCard.querySelectorAll('tbody tr')).forEach(function(tr){
-        if(tr.children.length>=4) tr.children[3].textContent=done+' LOT';
-      });
-    }
-    // LOT 상태별 현황 범례
-    var donutCard=cards.find(function(c){return /LOT 상태별 현황/.test(c.textContent||'');});
-    if(donutCard){
-      var big=donutCard.querySelector('.nmc-donut-center .big');
-      if(big) big.textContent=total+' LOT';
-      Array.prototype.slice.call(donutCard.querySelectorAll('.nmc-legend-row')).forEach(function(r){
-        var t=r.textContent||'', b=r.querySelector('b');
-        if(!b) return;
-        if(/생산완료/.test(t)) b.textContent=done;
-        else if(/생산중/.test(t)) b.textContent=run;
-        else if(/계획/.test(t)) b.textContent=wait;
-        else if(/지연/.test(t)) b.textContent=delay;
-      });
-      // Chart.js 도넛도 강제 갱신
-      var c=donutCard.querySelector('#nmcDashDonutChart');
-      if(c && window.Chart){
-        try{ var old=Chart.getChart&&Chart.getChart(c); if(old) old.destroy(); }catch(e){}
-        new Chart(c,{type:'doughnut',data:{labels:['생산완료','생산중','계획','지연'],datasets:[{data:[done,run,wait,delay],backgroundColor:['#22c55e','#f59e0b','#94a3b8','#ef4444'],borderColor:'#fff',borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,animation:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{enabled:true}}}});
-      }
-    }
-  }
-  function schedule(){ clearTimeout(window.__nmcProdFinalFixTimer); window.__nmcProdFinalFixTimer=setTimeout(fixProductionResultNumbers,180); }
-  document.addEventListener('click',schedule,true);
-  document.addEventListener('input',schedule,true);
-  document.addEventListener('change',schedule,true);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',schedule); else schedule();
-  [300,900,1800,3000].forEach(function(ms){setTimeout(schedule,ms);});
-})();
-</script>
 
-
-<script id="nmc-production-result-dashboard-final-fix-20260703-v3-workorder-count">
-(function(){
-  'use strict';
-  function normStatusText(s){
-    s=String(s||'');
-    if(/지연|delay/i.test(s)) return 'delay';
-    if(/생산중|진행|run/i.test(s)) return 'run';
-    if(/발송|수신|완료|done|complete/i.test(s)) return 'done';
-    if(/대기|작성|wait/i.test(s)) return 'wait';
-    return 'done';
-  }
-  function numFromText(t){
-    var m=String(t||'').replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);
-    return m?Number(m[0]):0;
-  }
-  function setKpi(page,labelRe,value,unit){
-    Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-kpi')).forEach(function(kpi){
-      var label=(kpi.querySelector('.l')||{}).textContent||'';
-      var v=kpi.querySelector('.v');
-      if(labelRe.test(label)&&v) v.innerHTML=String(value)+'<span class="unit">'+unit+'</span>';
-    });
-  }
-  function sortRecentNo(page){
-    var recentCard=Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-card')).find(function(c){return /최근 생산실적 목록/.test(c.textContent||'');});
-    if(!recentCard) return;
-    var body=recentCard.querySelector('tbody');
-    if(!body) return;
-    var rows=Array.prototype.slice.call(body.querySelectorAll('tr')).filter(function(tr){return tr.children.length>=8;});
-    rows.sort(function(a,b){
-      var ad=(a.children[1]&&a.children[1].textContent.trim())||'';
-      var bd=(b.children[1]&&b.children[1].textContent.trim())||'';
-      var d=bd.localeCompare(ad);
-      if(d!==0) return d;
-      var an=(a.children[2]&&a.children[2].textContent.trim())||'';
-      var bn=(b.children[2]&&b.children[2].textContent.trim())||'';
-      return an.localeCompare(bn, undefined, {numeric:true, sensitivity:'base'});
-    });
-    rows.forEach(function(tr,i){ if(tr.children[0]) tr.children[0].textContent=String(i+1); body.appendChild(tr); });
-  }
-  function countFromFullWorkOrderList(page){
-    var full=page.querySelector('#nmcDashFullTable tbody');
-    var fullRows=full?Array.prototype.slice.call(full.querySelectorAll('tr')).filter(function(tr){return tr.children.length>=9;}):[];
-    var rows=fullRows;
-    if(!rows.length){
-      var recent=Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-card')).find(function(c){return /최근 생산실적 목록/.test(c.textContent||'');});
-      rows=recent?Array.prototype.slice.call(recent.querySelectorAll('tbody tr')).filter(function(tr){return tr.children.length>=8;}):[];
-    }
-    var st={done:0,run:0,wait:0,delay:0,total:rows.length};
-    rows.forEach(function(tr){
-      var statusCell=tr.children[8] || tr.children[7];
-      var v=normStatusText(statusCell&&statusCell.textContent);
-      if(v==='done') st.done++; else if(v==='run') st.run++; else if(v==='delay') st.delay++; else st.wait++;
-    });
-    // 작성/작업지시 전체 목록 기준이 화면에 이미 계산되어 있으면 그 값을 우선 사용
-    var cards=Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-card'));
-    var customerCard=cards.find(function(c){return /고객사별 생산현황/.test(c.textContent||'');});
-    if(customerCard){
-      var vals=Array.prototype.slice.call(customerCard.querySelectorAll('tbody tr td:nth-child(4), tfoot tr td:nth-child(4)')).map(function(td){return numFromText(td.textContent);}).filter(Boolean);
-      if(vals.length){
-        var maxVal=Math.max.apply(null, vals);
-        if(maxVal>st.done){ st.done=maxVal; st.total=Math.max(st.total,maxVal); }
-      }
-    }
-    return st;
-  }
-  function apply(){
-    var page=document.querySelector('#page-production-result');
-    if(!page) return;
-    sortRecentNo(page);
-    var st=countFromFullWorkOrderList(page);
-    setKpi(page,/생산완료/,st.done,'건');
-    setKpi(page,/생산중/,st.run,'건');
-    var cards=Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-card'));
-    var customerCard=cards.find(function(c){return /고객사별 생산현황/.test(c.textContent||'');});
-    if(customerCard){
-      Array.prototype.slice.call(customerCard.querySelectorAll('tbody tr, tfoot tr')).forEach(function(tr){
-        if(tr.children.length>=4) tr.children[3].textContent=st.done+' LOT';
-      });
-    }
-    var donutCard=cards.find(function(c){return /LOT 상태별 현황/.test(c.textContent||'');});
-    if(donutCard){
-      var big=donutCard.querySelector('.nmc-donut-center .big');
-      if(big) big.textContent=st.done+' LOT';
-      Array.prototype.slice.call(donutCard.querySelectorAll('.nmc-legend-row')).forEach(function(r){
-        var t=r.textContent||'', b=r.querySelector('b'); if(!b) return;
-        if(/생산완료/.test(t)) b.textContent=st.done;
-        else if(/생산중/.test(t)) b.textContent=st.run;
-        else if(/계획/.test(t)) b.textContent=st.wait;
-        else if(/지연/.test(t)) b.textContent=st.delay;
-      });
-      var c=donutCard.querySelector('#nmcDashDonutChart');
-      if(c&&window.Chart){
-        try{var old=Chart.getChart&&Chart.getChart(c);if(old)old.destroy();}catch(e){}
-        new Chart(c,{type:'doughnut',data:{labels:['생산완료','생산중','계획','지연'],datasets:[{data:[st.done,st.run,st.wait,st.delay],backgroundColor:['#22c55e','#f59e0b','#94a3b8','#ef4444'],borderColor:'#fff',borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,animation:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{enabled:true}}}});
-      }
-    }
-  }
-  function schedule(){clearTimeout(window.__nmcProdFinalFixV3Timer);window.__nmcProdFinalFixV3Timer=setTimeout(apply,260);}
-  document.addEventListener('click',schedule,true);
-  document.addEventListener('input',schedule,true);
-  document.addEventListener('change',schedule,true);
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function'&&!oldShow.__nmcProdFinalFixV3Wrapped){
-    window.showPage=function(){var r=oldShow.apply(this,arguments);schedule();setTimeout(apply,800);return r;};
-    window.showPage.__nmcProdFinalFixV3Wrapped=true;
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-  [300,900,1800,3000,5000].forEach(function(ms){setTimeout(schedule,ms);});
-  try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});}catch(e){}
-})();
-</script>
-
-
-<!-- NMC_SAFE_NO_ONLY_RESTORE_V7_20260703_START -->
-<style id="nmc-safe-no-only-restore-v7-style">
-.nmc-safe-no-col{width:56px!important;min-width:56px!important;text-align:center!important;font-weight:900!important;color:#0f172a!important;}
-#page-workorder-list .nmc-wo-table-final th.nmc-safe-no-col,
-#page-production-result table th.nmc-safe-no-col{background:#f8fafc!important;color:#0f172a!important;}
+<!-- NMC_WORKORDER_LIST_16_RESTORE_NO_V8 START -->
+<style id="nmc-workorder-list-16-restore-no-v8-style">
+#page-workorder-list .nmc-v8-hero{background:linear-gradient(135deg,#071426 0%,#10284b 54%,#0e7490 100%);color:#fff;border-radius:24px;padding:24px 26px;margin-bottom:16px;box-shadow:0 16px 34px rgba(15,23,42,.18);position:relative;overflow:hidden}
+#page-workorder-list .nmc-v8-hero h2{margin:0;font-size:25px;font-weight:900;letter-spacing:-.6px}#page-workorder-list .nmc-v8-hero p{margin:6px 0 0;color:#c7ddff;font-size:13px;line-height:1.65}.nmc-v8-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nmc-v8-badge{height:28px;display:inline-flex;align-items:center;padding:0 11px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#e0f2fe;font-size:12px;font-weight:900}
+#page-workorder-list .nmc-v8-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}.nmc-v8-kpi{background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:17px 18px;box-shadow:0 8px 22px rgba(15,23,42,.055);position:relative;overflow:hidden}.nmc-v8-kpi:before{content:'';position:absolute;left:0;top:0;right:0;height:4px;background:var(--c,#2563eb)}.nmc-v8-kpi .l{font-size:12px;font-weight:900;color:#64748b}.nmc-v8-kpi .v{font-size:31px;font-weight:900;color:#0f172a;letter-spacing:-1px;line-height:1;margin-top:8px}.nmc-v8-kpi .s{font-size:11px;color:#64748b;margin-top:8px}.nmc-v8-kpi.all{--c:#2563eb}.nmc-v8-kpi.wait{--c:#f59e0b}.nmc-v8-kpi.run{--c:#7c3aed}.nmc-v8-kpi.done{--c:#16a34a}.nmc-v8-kpi.delay{--c:#ef4444}
+#page-workorder-list .nmc-v8-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:14px 16px;margin-bottom:14px;box-shadow:0 8px 22px rgba(15,23,42,.045)}.nmc-v8-toolbar-title{font-size:16px;font-weight:900;color:#0f172a}.nmc-v8-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.nmc-v8-filter input,.nmc-v8-filter select{height:36px;border:1.5px solid #dbe3ee;border-radius:10px;background:#fff;color:#0f172a;font-size:13px;font-weight:700;padding:0 12px;outline:none}.nmc-v8-table-wrap{background:#fff;border:1px solid #dbe3ee;border-radius:20px;box-shadow:0 10px 26px rgba(15,23,42,.06);overflow:auto}.nmc-v8-table{width:100%;border-collapse:collapse;min-width:1480px}.nmc-v8-table th{background:#f8fafc;color:#475569;font-size:11px;font-weight:900;text-transform:none;padding:13px 12px;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}.nmc-v8-table td{padding:13px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-size:13px;text-align:center;vertical-align:middle}.nmc-v8-table tr:hover td{background:#fbfdff}.nmc-v8-no{font-weight:900;color:#0f172a}.nmc-v8-wo{border:none;background:transparent;color:#1d4ed8;font-weight:900;cursor:pointer;padding:0}.nmc-v8-status{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:900}.nmc-v8-status.done{background:#dcfce7;color:#166534}.nmc-v8-status.run{background:#ede9fe;color:#6d28d9}.nmc-v8-status.wait{background:#fef3c7;color:#92400e}.nmc-v8-status.delay{background:#fee2e2;color:#991b1b}.nmc-v8-progress{display:flex;align-items:center;gap:9px;justify-content:center;min-width:128px}.nmc-v8-progress .bar{width:82px;height:8px;background:#e5edf6;border-radius:999px;overflow:hidden}.nmc-v8-progress .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#60a5fa)}.nmc-v8-progress b{font-size:12px;color:#2563eb}.nmc-v8-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.nmc-v8-actions button{height:28px;border:1px solid #dbe3ee;background:#fff;border-radius:8px;padding:0 10px;font-size:12px;font-weight:900;color:#334155;cursor:pointer}.nmc-v8-actions button.primary{background:#2563eb;color:#fff;border-color:#2563eb}.nmc-v8-note{margin-top:12px;border:1px solid #bfdbfe;background:#f8fbff;border-radius:14px;padding:13px 15px;color:#334155;font-size:12px;line-height:1.7}.nmc-v8-empty{padding:34px!important;text-align:center!important;color:#94a3b8!important;font-weight:900!important}
+@media(max-width:1400px){#page-workorder-list .nmc-v8-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){#page-workorder-list .nmc-v8-kpis{grid-template-columns:1fr}.nmc-v8-filter{width:100%}.nmc-v8-filter input,.nmc-v8-filter select{flex:1;min-width:140px}}
 </style>
-<script id="nmc-safe-no-only-restore-v7-script">
+<script id="nmc-workorder-list-16-restore-no-v8-script">
 (function(){
   'use strict';
-  if(window.__NMC_SAFE_NO_ONLY_RESTORE_V7__) return;
-  window.__NMC_SAFE_NO_ONLY_RESTORE_V7__=true;
-  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
-  function q(s,r){return (r||document).querySelector(s);}
-  function isNoText(t){return /^\s*(NO|No|no|순번)\s*$/i.test(String(t||''));}
-  function addNoToTable(table){
-    if(!table || table.dataset.nmcNoPatchBusy==='1') return;
-    table.dataset.nmcNoPatchBusy='1';
-    try{
-      var headRow=q('thead tr',table);
-      if(headRow && !isNoText(headRow.children[0]&&headRow.children[0].textContent)){
-        var th=document.createElement('th');
-        th.className='nmc-safe-no-col';
-        th.textContent='NO';
-        headRow.insertBefore(th,headRow.firstChild);
-      }else if(headRow && headRow.children[0]){
-        headRow.children[0].classList.add('nmc-safe-no-col');
-        headRow.children[0].textContent='NO';
-      }
-      var no=1;
-      qa('tbody tr',table).forEach(function(tr){
-        if(!tr.children || !tr.children.length) return;
-        var empty=/데이터가 없습니다|없습니다|등록된 WO/.test(tr.textContent||'');
-        if(empty){
-          if(headRow && tr.children[0]) tr.children[0].colSpan=headRow.children.length;
-          return;
-        }
-        if(!isNoText(headRow&&headRow.children[0]&&headRow.children[0].textContent)) return;
-        var first=tr.children[0];
-        var firstText=(first.textContent||'').trim();
-        var firstLooksNo=first.classList.contains('nmc-safe-no-col') || /^\d+$/.test(firstText);
-        if(!firstLooksNo){
-          var td=document.createElement('td');
-          td.className='nmc-safe-no-col';
-          tr.insertBefore(td,tr.firstChild);
-          first=td;
-        }
-        first.classList.add('nmc-safe-no-col');
-        first.textContent=String(no++);
-      });
-    }catch(e){}
-    table.dataset.nmcNoPatchBusy='0';
+  if(window.__NMC_WORKORDER_LIST_16_RESTORE_NO_V8__) return;
+  window.__NMC_WORKORDER_LIST_16_RESTORE_NO_V8__=true;
+  var KEYS=['nmc_workorder_sent_items','nmcWorkOrderHistory','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcSentWorkorders','workorders','workOrderList','nmcWorkorderList','nmc_workorder_list','productionWorkOrders','prodWorkOrders','nmcProdWorkOrders','worklog','worklogs','namoWorklog','nmcWorklogs','productionLogs','productionResults','nmcProductionLogs','qms_worklog'];
+  function q(s,r){return (r||document).querySelector(s)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  function pick(o,ks,fb){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&String(v).trim()!=='')return v}return fb||''}
+  function num(v){var n=parseFloat(String(v||'').replace(/[^0-9.-]/g,''));return isNaN(n)?0:n}
+  function fmt(v){var n=num(v);return n?n.toLocaleString('ko-KR'):''}
+  function onlyDate(v){v=String(v||'').trim();var m=v.match(/\d{4}[-./]\d{1,2}[-./]\d{1,2}/);if(m){var a=m[0].replace(/[./]/g,'-').split('-');return a[0]+'-'+String(a[1]).padStart(2,'0')+'-'+String(a[2]).padStart(2,'0')}m=v.match(/(?:^|[^0-9])(20\d{2})(\d{2})(\d{2})(?:[^0-9]|$)/);if(m)return m[1]+'-'+m[2]+'-'+m[3];return v||''}
+  function statusClass(st){st=String(st||'');if(/지연|delay/i.test(st))return 'delay';if(/진행|시작|run/i.test(st))return 'run';if(/완료|종결|발송완료|done/i.test(st))return 'done';return 'wait'}
+  function statusText(st){var c=statusClass(st);return {wait:'대기',run:'진행중',done:'완료',delay:'지연'}[c]}
+  function currentDisplayName(){var el=q('.pname');var v=el&&String(el.textContent||'').trim();return v&&v!=='로그인 사용자'?v:'임흥배'}
+  function idOf(o){return String(pick(o,['woNo','workOrderNo','orderNo','nmcWoNo','no','docNo','id','uid','prodLot','lot'],''))}
+  function deleted(o){var st=String(pick(o,['status','state','progressStatus'],'')).toUpperCase();return !!(o&& (o.deleted||o.isDeleted||o._deleted||o.removed||o._removed||st==='DELETED'||st==='TRASH'||st==='REMOVED'))}
+  function norm(o){
+    if(!o||typeof o!=='object'||deleted(o))return null;
+    var no=String(pick(o,['woNo','workOrderNo','orderNo','nmcWoNo','no','docNo','id'],'')).trim();
+    if(!no||no==='-')return null;
+    var product=pick(o,['product','productName','itemName','품명','제품명'],'절연슬러리');
+    var customer=pick(o,['customer','customerName','client','clientName','고객사'],'현대자동차');
+    var plan=num(pick(o,['planQty','plannedQty','orderQty','qty','targetQty','계획수량'],0));
+    var actual=num(pick(o,['actualQty','resultQty','prodQty','outputQty','실적수량'],0));
+    if(!actual) actual=plan;
+    var status=pick(o,['status','state','progressStatus'],'완료');
+    if(String(status).indexOf('발송완료')>-1) status='완료';
+    var sc=statusClass(status), pct=plan?Math.round(actual/plan*100):(sc==='done'?100:0); if(pct>100)pct=100; if(pct<0)pct=0;
+    var start=onlyDate(pick(o,['startDate','workDate','productionDate','date','orderDate','createdDate','createdAt','savedAt','sendTime','sentAt'],'')).trim();
+    var due=onlyDate(pick(o,['dueDate','endDate','finishDate','completeDate','expectedEndDate','예정완료일'],'')).trim();
+    var worker=pick(o,['worker','operator','manager','managerName','prodManager','writerName','senderName','createdByName','createdBy'],'');
+    if(!String(worker||'').trim()||worker==='login-user'||worker==='로그인 사용자') worker=currentDisplayName();
+    return {id:no,no:no,product:product,customer:customer,plan:plan,actual:actual,pct:pct,status:statusText(status),sc:sc,start:start,due:due,worker:worker,raw:o};
   }
-  function apply(){
-    qa('#page-workorder-list .nmc-wo-table-final').forEach(addNoToTable);
-    qa('#page-production-result .mes-recent-table, #page-production-result .nmc-dash-table, #page-production-result table').forEach(function(t){
-      var text=(t.textContent||'');
-      if(/최근 생산실적|생산일자|작업지시번호|생산 LOT|제품명/.test(text) || t.closest('#page-production-result')) addNoToTable(t);
-    });
+  function allOrders(){
+    var map=new Map();
+    KEYS.forEach(function(k){readArr(k).forEach(function(o){var n=norm(o);if(n&&!map.has(n.id))map.set(n.id,n)})});
+    KEYS.forEach(function(k){try{if(Array.isArray(window[k]))window[k].forEach(function(o){var n=norm(o);if(n&&!map.has(n.id))map.set(n.id,n)})}catch(e){}});
+    return Array.from(map.values()).sort(function(a,b){var d=String(b.start||'').localeCompare(String(a.start||'')); if(d)return d; return String(a.no).localeCompare(String(b.no),undefined,{numeric:true});});
   }
-  function schedule(){clearTimeout(window.__nmcNoOnlyV7Timer);window.__nmcNoOnlyV7Timer=setTimeout(apply,120);}
-  document.addEventListener('click',schedule,true);
-  document.addEventListener('input',schedule,true);
-  document.addEventListener('change',schedule,true);
-  var oldShow=window.showPage;
-  if(typeof oldShow==='function'&&!oldShow.__nmcNoOnlyV7){
-    window.showPage=function(){var r=oldShow.apply(this,arguments);schedule();setTimeout(apply,600);return r;};
-    window.showPage.__nmcNoOnlyV7=true;
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-  [300,800,1500,3000,5000].forEach(function(t){setTimeout(apply,t);});
-  try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+  function filters(){return {date:q('#nmcWoFinalDate')?q('#nmcWoFinalDate').value:'',st:q('#nmcWoFinalStatus')?q('#nmcWoFinalStatus').value:'',kw:q('#nmcWoFinalKeyword')?q('#nmcWoFinalKeyword').value.trim().toLowerCase():''}}
+  function list(){var f=filters();return allOrders().filter(function(x){if(f.date&&x.start!==f.date)return false;if(f.st&&x.sc!==f.st)return false;if(f.kw&&([x.no,x.product,x.customer,x.worker,x.status].join(' ').toLowerCase().indexOf(f.kw)<0))return false;return true})}
+  function kpis(){var a=allOrders();return {all:a.length,wait:a.filter(function(x){return x.sc==='wait'}).length,run:a.filter(function(x){return x.sc==='run'}).length,done:a.filter(function(x){return x.sc==='done'}).length,delay:a.filter(function(x){return x.sc==='delay'}).length}}
+  function kpiHtml(){var k=kpis();return '<div class="nmc-v8-kpis"><div class="nmc-v8-kpi all"><div class="l">작업지시 전체</div><div class="v">'+k.all+'</div><div class="s">등록된 WO 전체</div></div><div class="nmc-v8-kpi wait"><div class="l">대기</div><div class="v">'+k.wait+'</div><div class="s">작업 시작 전</div></div><div class="nmc-v8-kpi run"><div class="l">진행중</div><div class="v">'+k.run+'</div><div class="s">생산 진행 WO</div></div><div class="nmc-v8-kpi done"><div class="l">완료</div><div class="v">'+k.done+'</div><div class="s">생산 완료/종결</div></div><div class="nmc-v8-kpi delay"><div class="l">지연</div><div class="v">'+k.delay+'</div><div class="s">예정일 초과</div></div></div>'}
+  function rows(){var a=list();if(!a.length)return '<tr><td colspan="12" class="nmc-v8-empty">작업지시 데이터가 없습니다.</td></tr>';return a.map(function(x,i){return '<tr><td class="nmc-v8-no">'+(i+1)+'</td><td><button type="button" class="nmc-v8-wo" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafeEdit?window.nmcWoSafeEdit(this):true">'+esc(x.no)+'</button></td><td>'+esc(x.product)+'</td><td>'+esc(x.customer)+'</td><td>'+esc(fmt(x.plan)||'-')+'</td><td>'+esc(fmt(x.actual)||'-')+'</td><td><div class="nmc-v8-progress"><div class="bar"><span style="width:'+x.pct+'%"></span></div><b>'+x.pct+'%</b></div></td><td><span class="nmc-v8-status '+x.sc+'">'+esc(x.status)+'</span></td><td>'+esc(x.start||'-')+'</td><td>'+esc(x.due||'-')+'</td><td>'+esc(x.worker||'-')+'</td><td><div class="nmc-v8-actions"><button type="button" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafePrint?window.nmcWoSafePrint(this):true">인쇄</button><button type="button" class="primary" data-nmc-safe-id="'+esc(x.id)+'" onclick="return window.nmcWoSafeEdit?window.nmcWoSafeEdit(this):true">수정</button></div></td></tr>'}).join('')}
+  function pageHtml(){return '<div class="nmc-v8-hero"><h2>Work Order Monitoring</h2><p>나모케미칼 MES 작업지시 현황 화면입니다. 대기·진행중·완료·지연 상태를 한 화면에서 확인하고, 전체 저장소의 WO 데이터를 누락 없이 표시합니다.</p><div class="nmc-v8-badges"><span class="nmc-v8-badge">WO Monitoring</span><span class="nmc-v8-badge">LOT 연계</span><span class="nmc-v8-badge">NO 자동부여</span><span class="nmc-v8-badge">전체 저장소 복구</span></div></div><div id="nmcWoKpiHost">'+kpiHtml()+'</div><div class="nmc-v8-toolbar"><div class="nmc-v8-toolbar-title">작업지시 목록</div><div class="nmc-v8-filter"><input id="nmcWoFinalDate" type="date" title="시작일"><select id="nmcWoFinalStatus"><option value="">전체 상태</option><option value="wait">대기</option><option value="run">진행중</option><option value="done">완료</option><option value="delay">지연</option></select><input id="nmcWoFinalKeyword" type="search" placeholder="WO번호/제품명/고객사/작업자"></div></div><div class="nmc-v8-table-wrap"><table class="nmc-v8-table"><thead><tr><th>NO</th><th>작업지시번호</th><th>제품명</th><th>고객사</th><th>계획수량</th><th>실적수량</th><th>진행 구조</th><th>상태</th><th>시작일</th><th>예정완료일</th><th>작업자</th><th>작업</th></tr></thead><tbody id="nmcWoFinalBody">'+rows()+'</tbody></table></div><div class="nmc-v8-note"><b>복구 기준:</b> nmcWorkOrderHistory 포함 전체 작업지시 저장소를 읽어 WO번호 기준으로 중복 제거 후 표시합니다. NO는 현재 화면 표시 순서대로 자동 부여됩니다.</div>'}
+  function render(){var c=q('.content');if(!c)return;var p=q('#page-workorder-list');if(!p){p=document.createElement('section');p.id='page-workorder-list';p.className='page';c.appendChild(p)};p.innerHTML=pageHtml();p.dataset.nmcV8Applied='1'}
+  function refresh(){var p=q('#page-workorder-list');if(!p)return;if(!p.dataset.nmcV8Applied){render();return}var k=q('#nmcWoKpiHost',p);if(k)k.innerHTML=kpiHtml();var b=q('#nmcWoFinalBody',p);if(b)b.innerHTML=rows()}
+  window.nmcWorkorderListRestoreV8=render;
+  window.nmcRenderWorkOrderStatusDashboard=refresh;
+  document.addEventListener('click',function(e){var nav=e.target.closest&&e.target.closest('[data-page="workorder-list"],[data-page-target="workorder-list"]');if(nav)setTimeout(render,90)},true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='nmcWoFinalKeyword')refresh()},true);
+  document.addEventListener('change',function(e){if(e.target&&/^(nmcWoFinalDate|nmcWoFinalStatus)$/.test(e.target.id))refresh()},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(render,1200)});else setTimeout(render,1200);
+  [2200,3600,5200].forEach(function(t){setTimeout(function(){var p=q('#page-workorder-list');if(p&&p.classList.contains('active'))render();},t)});
 })();
 </script>
-<!-- NMC_SAFE_NO_ONLY_RESTORE_V7_20260703_END -->
+<!-- NMC_WORKORDER_LIST_16_RESTORE_NO_V8 END -->
 
 </body>
 </html>
