@@ -17501,5 +17501,167 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_WORKORDER_LIST_DELETE_MENU_KEEP_V7 END -->
 
+<script id="NMC_PRODUCTION_SERVER_API_PATCH_20260703_V1">
+(function(){
+  'use strict';
+  if(window.__NMC_PRODUCTION_SERVER_API_PATCH_V1__) return;
+  window.__NMC_PRODUCTION_SERVER_API_PATCH_V1__ = true;
+
+  function $(id){ return document.getElementById(id); }
+  function qs(sel,root){ return (root||document).querySelector(sel); }
+  function qsa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function num(v){ var n=Number(String(v==null?'':v).replace(/,/g,'')); return isFinite(n)?n:0; }
+  function fmt(v){ return Number(num(v)).toLocaleString('ko-KR'); }
+  function pct(a,b){ b=num(b); return b ? (num(a)/b*100) : 0; }
+  function todayText(){ var d=new Date(), p=function(n){return String(n).padStart(2,'0')}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+  function nowText(){ var d=new Date(), p=function(n){return String(n).padStart(2,'0')}; return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
+  function token(){ return localStorage.getItem('qms_token') || localStorage.getItem('token') || sessionStorage.getItem('qms_token') || ''; }
+  async function api(path,opt){
+    opt = opt || {};
+    var headers = Object.assign({'Content-Type':'application/json'}, opt.headers || {});
+    var t = token(); if(t) headers.Authorization = 'Bearer ' + t;
+    var res = await fetch(path, Object.assign({}, opt, {headers:headers}));
+    var data = null; try{ data = await res.json(); }catch(e){ data = null; }
+    if(!res.ok) throw new Error((data && (data.message||data.error)) || ('API 오류 '+res.status));
+    return data;
+  }
+  function kstDate(v){
+    if(!v) return '';
+    var s=String(v);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    var d=new Date(s); if(isNaN(d.getTime())) return s.slice(0,10);
+    var z=new Date(d.getTime()+9*60*60*1000);
+    return z.toISOString().slice(0,10);
+  }
+  function normalize(r){
+    r = r || {};
+    return {
+      id: r.id || r.uuid || r.worklog_id || r.no || (r.finishedLot||r.finished_lot||r.lot||'')+'-'+(r.workDate||r.work_date||r.date||''),
+      workDate: kstDate(r.workDate || r.work_date || r.date || r.productionDate || r.prodDate),
+      finishedLot: r.finishedLot || r.finished_lot || r.finished_lot_no || r.prodLot || r.productionLot || r.lot || r.lotNo || '',
+      worker: r.worker || r.operator || r.manager || r.writer || r.producer || '',
+      planQty: r.planQty || r.plan_qty || r.plannedQty || r.planQuantity || r.qtyPlan || '',
+      prodQty: r.prodQty || r.prod_qty || r.productionQty || r.resultQty || r.actualQty || r.qty || '',
+      failQty: r.failQty || r.fail_qty || r.badQty || r.defectQty || r.ngQty || 0,
+      materials: Array.isArray(r.materials) ? r.materials : [],
+      remark: r.remark || r.note || r.memo || ''
+    };
+  }
+  async function fetchWorklogRows(){
+    var data = await api('/api/worklog');
+    var list = (data && (data.data || data.rows || data.items)) || [];
+    if(!Array.isArray(list)) list = [];
+    return list.map(normalize).sort(function(a,b){
+      var da=String(a.workDate||''), db=String(b.workDate||'');
+      if(db!==da) return db.localeCompare(da);
+      return String(b.id||'').localeCompare(String(a.id||''));
+    });
+  }
+  function setText(id,val){ var el=$(id); if(el) el.textContent=val; }
+  function renderRows(rows){
+    rows = Array.isArray(rows) ? rows : [];
+    try{ if(window.state) window.state.worklog = rows; }catch(e){}
+    var plan=rows.reduce(function(a,r){return a+num(r.planQty);},0);
+    var prod=rows.reduce(function(a,r){return a+num(r.prodQty);},0);
+    var fail=rows.reduce(function(a,r){return a+num(r.failQty);},0);
+    var rate=pct(prod,plan), failRate=pct(fail,prod);
+    var matLots=rows.reduce(function(a,r){return a+(Array.isArray(r.materials)?r.materials.filter(function(m){return String((m&&m.lotNo)||'').trim();}).length:0);},0);
+    setText('mesTodayProd',fmt(prod));
+    setText('mesTodayPlan',fmt(plan));
+    setText('mesTodayRate',rate.toFixed(1)+'%');
+    setText('mesRunRate',rate.toFixed(1));
+    setText('mesFailRate',failRate.toFixed(1));
+    setText('mesFailQty',fmt(fail));
+    setText('mesWorkCount',fmt(rows.length));
+    setText('mesTodayRows',rows.length+'건');
+    setText('mesLastUpdate',nowText());
+    setText('mesMenuWorkOrder','전체 '+rows.length+'건');
+    setText('mesMenuResult','실적 '+rate.toFixed(1)+'%');
+    setText('mesMenuMaterial','원료 '+matLots+' LOT');
+    setText('mesMenuCondition','불량 '+rows.filter(function(r){return num(r.failQty)>0;}).length+'건');
+    setText('mesMenuYield','YIELD '+(100-failRate).toFixed(1)+'%');
+    setText('mesMenuTrace','SERVER');
+    var bar=$('mesTodayProgress'); if(bar) bar.style.width=Math.max(0,Math.min(rate,100))+'%';
+    var rt=$('mesRunTrend'); if(rt){rt.textContent=rows.length?rows.length+'건':'대기'; rt.className='mes-prod-kpi-trend '+(rows.length?'good':'');}
+    var ft=$('mesFailTrend'); if(ft){ft.textContent=failRate>0?'확인필요':'정상'; ft.className='mes-prod-kpi-trend '+(failRate>0?'bad':'good');}
+    setText('mesLiveStatus', fail>0?'확인필요':'정상');
+    var tb=$('productionRecentTable');
+    if(tb){
+      var recent=rows.slice(0,10);
+      if(!recent.length){ tb.innerHTML='<tr><td class="mes-empty" colspan="8">서버에 등록된 생산작업일지가 없습니다.</td></tr>'; }
+      else tb.innerHTML=recent.map(function(r){
+        return '<tr><td>'+esc(r.workDate||'-')+'</td><td><strong>'+esc(r.finishedLot||'-')+'</strong></td><td>'+esc(r.worker||'-')+'</td><td>'+fmt(r.planQty)+'</td><td>'+(num(r.prodQty)?fmt(r.prodQty):'-')+'</td><td>'+fmt(r.failQty)+'</td><td><span class="badge info">SERVER DB</span></td><td><div class="ai"><button class="sb edit" data-nmc-server-prod-edit="'+esc(r.id)+'">수정</button><button class="sb del" data-nmc-server-prod-del="'+esc(r.id)+'">삭제</button></div></td></tr>';
+      }).join('');
+    }
+    var note = qs('.mes-note');
+    if(note) note.innerHTML='ⓘ 생산현황은 <b>서버 API(/api/worklog)</b> 기준으로 표시됩니다. 다른 PC에서도 같은 데이터가 조회됩니다.';
+  }
+  async function refreshProductionServer(){
+    if(!qs('#page-production')) return;
+    try{
+      addServerButtons();
+      var rows = await fetchWorklogRows();
+      renderRows(rows);
+    }catch(e){
+      var tb=$('productionRecentTable');
+      if(tb) tb.innerHTML='<tr><td class="mes-empty" colspan="8">서버 생산현황 조회 실패: '+esc(e.message||e)+'</td></tr>';
+    }
+  }
+  function readLocalArray(key){ try{ var v=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+  function localCandidates(){
+    var keys=['worklog','worklogs','namoWorklog','nmcWorklogs','productionLogs','productionResults','nmcProductionLogs','qms_worklog'];
+    var map={};
+    keys.forEach(function(k){ readLocalArray(k).forEach(function(x){ var n=normalize(x); var id=[n.workDate,n.finishedLot,n.worker,n.prodQty].join('|'); if(n.finishedLot||n.prodQty) map[id]=n; }); });
+    return Object.keys(map).map(function(k){return map[k];});
+  }
+  async function syncLocalToServer(){
+    if(!confirm('현재 PC에만 저장된 생산작업일지 데이터를 서버로 동기화할까요?\n서버로 올라가면 다른 PC에서도 생산현황이 보입니다.')) return;
+    var locals=localCandidates();
+    if(!locals.length){ alert('현재 PC에 동기화할 localStorage 생산 데이터가 없습니다.'); return; }
+    var server=[]; try{ server=await fetchWorklogRows(); }catch(e){}
+    var exists={}; server.forEach(function(r){ exists[[r.workDate,r.finishedLot,r.worker,r.prodQty].join('|')]=true; });
+    var ok=0, skip=0, fail=0;
+    for(var i=0;i<locals.length;i++){
+      var r=locals[i]; var key=[r.workDate,r.finishedLot,r.worker,r.prodQty].join('|');
+      if(exists[key]){ skip++; continue; }
+      try{
+        await api('/api/worklog',{method:'POST',body:JSON.stringify({
+          workDate:r.workDate||todayText(), finishedLot:r.finishedLot, worker:r.worker, planQty:String(r.planQty||''), prodQty:String(r.prodQty||''), failQty:String(r.failQty||0), remark:r.remark||'', materials:r.materials||[]
+        })}); ok++;
+      }catch(e){ fail++; }
+    }
+    alert('서버 동기화 완료\n신규 '+ok+'건 / 중복 '+skip+'건 / 실패 '+fail+'건');
+    await refreshProductionServer();
+  }
+  function addServerButtons(){
+    var ph = qs('#page-production .ph-actions'); if(!ph || $('nmcProdServerRefresh')) return;
+    ph.insertAdjacentHTML('afterbegin','<button class="btn light" id="nmcProdServerRefresh" type="button">서버 새로고침</button><button class="btn ghost" id="nmcProdServerSync" type="button">현재PC자료 서버동기화</button>');
+    $('nmcProdServerRefresh').addEventListener('click',refreshProductionServer);
+    $('nmcProdServerSync').addEventListener('click',syncLocalToServer);
+  }
+  document.addEventListener('click',function(e){
+    var go=e.target.closest('[data-page="production"],[data-qmes-go="production"],[data-page-target="production"]');
+    if(go) setTimeout(refreshProductionServer,250);
+    var del=e.target.closest('[data-nmc-server-prod-del]');
+    if(del){
+      e.preventDefault(); e.stopPropagation();
+      var id=del.getAttribute('data-nmc-server-prod-del');
+      if(confirm('서버 생산작업일지를 삭제하시겠습니까?')) api('/api/worklog/'+encodeURIComponent(id),{method:'DELETE'}).then(refreshProductionServer).catch(function(err){alert('삭제 실패: '+(err.message||err));});
+    }
+    var edit=e.target.closest('[data-nmc-server-prod-edit]');
+    if(edit){
+      e.preventDefault(); e.stopPropagation();
+      var eid=edit.getAttribute('data-nmc-server-prod-edit');
+      if(typeof activate==='function') activate('worklog');
+      setTimeout(function(){ if(typeof window.editWorklog==='function') window.editWorklog(eid); },100);
+    }
+  },true);
+  window.nmcRefreshProductionFromServer = refreshProductionServer;
+  [400,1200,2500].forEach(function(ms){ setTimeout(refreshProductionServer,ms); });
+  setInterval(function(){ var p=$('page-production'); if(p && p.classList.contains('active')) refreshProductionServer(); },15000);
+})();
+</script>
+
 </body>
 </html>
