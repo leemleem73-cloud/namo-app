@@ -15991,13 +15991,13 @@ document.addEventListener('click',function(e){
     var hasReal=mats.some(function(m){return clean(m.material)||clean(m.lot)||num(m.planQty)||num(m.actualQty)});
     if(hasReal){backupCurrentMaterials('auto-backup'); return;}
     var rec=findRecoverMaterials();
-    if(rec.length){restoreMaterials(rec); notify('투입원료 자동 복원','저장된 이력에서 투입원료 '+rec.length+'건을 복원했습니다.');}
+    if(rec.length){restoreMaterials(rec);}
   }
   document.addEventListener('click',function(e){
     if(e.target&&e.target.closest&&e.target.closest('#namoMaterialRecoverBtn')){
       e.preventDefault(); e.stopPropagation();
       var n=restoreMaterials(findRecoverMaterials());
-      if(n) notify('투입원료 복원 완료','투입원료 '+n+'건을 복원했습니다. 확인 후 수정 저장하세요.');
+      
       else notify('투입원료 복원 불가','연결된 백업/LOT/작업지시 데이터에서 투입원료를 찾지 못했습니다. 이번 건은 다시 입력이 필요할 수 있습니다.');
     }
     var save=e.target&&e.target.closest&&e.target.closest('[data-nmc-action="send"],[data-nmc-action="write"],[data-nmc-action="draft"]');
