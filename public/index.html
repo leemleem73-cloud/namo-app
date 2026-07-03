@@ -17663,5 +17663,85 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+<script id="NMC_PRODUCTION_MONTHLY_LOT_KPI_20260703_V2">
+(function(){
+  'use strict';
+  if(window.__NMC_PRODUCTION_MONTHLY_LOT_KPI_V2__) return;
+  window.__NMC_PRODUCTION_MONTHLY_LOT_KPI_V2__ = true;
+
+  function qs(s,r){ return (r||document).querySelector(s); }
+  function qsa(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function currentYm(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1); }
+  function selectedYm(){
+    var d=qs('#nmcResultDate');
+    if(d && /^\d{4}-\d{2}/.test(d.value||'')) return d.value.slice(0,7);
+    return currentYm();
+  }
+  function getRows(){
+    var body=qs('#nmcProductionResultBody');
+    if(!body) return [];
+    return qsa('tr',body).filter(function(tr){ return !tr.querySelector('.nmc-result-empty'); });
+  }
+  function lotKeyFromRow(tr){
+    var tds=qsa('td',tr);
+    var wo=tds[1] ? (tds[1].textContent||'').trim() : '';
+    var lot=tds[4] ? (tds[4].textContent||'').trim() : '';
+    return lot || wo;
+  }
+  function dateFromRow(tr){
+    var td=tr.children && tr.children[0];
+    return td ? (td.textContent||'').trim().slice(0,10) : '';
+  }
+  function calcMonthlyLot(){
+    var ym=selectedYm();
+    var map={};
+    getRows().forEach(function(tr){
+      var dt=dateFromRow(tr);
+      if(dt && dt.slice(0,7)===ym){
+        var key=lotKeyFromRow(tr);
+        if(key) map[key]=true;
+      }
+    });
+    return {ym:ym, count:Object.keys(map).length};
+  }
+  function ensureStyle(){
+    if(qs('#NMC_PRODUCTION_MONTHLY_LOT_KPI_STYLE_20260703_V2')) return;
+    var st=document.createElement('style');
+    st.id='NMC_PRODUCTION_MONTHLY_LOT_KPI_STYLE_20260703_V2';
+    st.textContent='#page-production-result .nmc-result-kpi-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;}@media(max-width:1500px){#page-production-result .nmc-result-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}@media(max-width:760px){#page-production-result .nmc-result-kpi-grid{grid-template-columns:1fr!important;}}#nmcMonthlyLotKpi{border-color:#bfdbfe!important;}';
+    document.head.appendChild(st);
+  }
+  function updateMonthlyLot(){
+    var page=qs('#page-production-result');
+    if(!page) return;
+    var grid=qs('.nmc-result-kpi-grid',page);
+    if(!grid) return;
+    ensureStyle();
+    var data=calcMonthlyLot();
+    var card=qs('#nmcMonthlyLotKpi',grid);
+    if(!card){
+      card=document.createElement('div');
+      card.id='nmcMonthlyLotKpi';
+      card.className='nmc-result-kpi';
+      card.style.setProperty('--c','#0ea5e9');
+      var first=grid.children[1] || grid.firstElementChild;
+      if(first) grid.insertBefore(card, first); else grid.appendChild(card);
+    }
+    card.innerHTML='<div class="l">월간 LOT</div><div class="v">'+data.count+'</div><div class="s">'+data.ym+' 생산 LOT 수</div>';
+  }
+  function boot(){ updateMonthlyLot(); }
+  document.addEventListener('input',function(e){ if(e.target && e.target.id==='nmcResultKeyword') setTimeout(updateMonthlyLot,80); },true);
+  document.addEventListener('change',function(e){ if(e.target && /^(nmcResultDate|nmcResultStatus)$/.test(e.target.id||'')) setTimeout(updateMonthlyLot,80); },true);
+  document.addEventListener('click',function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-page="production-result"],[data-page-target="production-result"]')) setTimeout(updateMonthlyLot,300);
+  },true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [400,1000,2000,3500].forEach(function(ms){ setTimeout(updateMonthlyLot,ms); });
+  try{ new MutationObserver(function(){ clearTimeout(window.__nmcMonthlyLotKpiTimer); window.__nmcMonthlyLotKpiTimer=setTimeout(updateMonthlyLot,80); }).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+})();
+</script>
+
+
 </body>
 </html>
