@@ -17966,5 +17966,104 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NMC_WORKORDER_DETAIL_MATERIAL_PRINT_SAFE_FIX_20260704_V2_END -->
 
+
+
+<!-- NMC LOT TRACE IQC/OQC REPORT CLICK PATCH 20260704 START -->
+<script>
+(function(){
+  'use strict';
+  function $(id){return document.getElementById(id);}
+  function txt(v){return String(v==null?'':v).trim();}
+  function norm(v){return txt(v).replace(/[\s\-_/\\.]/g,'').toUpperCase();}
+  function getState(){return window.state || {};}
+  function safeCall(fn){try{if(typeof fn==='function')return fn();}catch(e){console.warn(e);} }
+  function showReportPage(){
+    if(typeof window.showPage === 'function'){
+      try{ window.showPage('report'); return; }catch(e){}
+    }
+    document.querySelectorAll('.nav-item[data-page]').forEach(function(b){b.classList.toggle('active', b.dataset.page==='report');});
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var p=$('page-report'); if(p) p.classList.add('active');
+    var c=document.querySelector('.content'); if(c) c.scrollTo({top:0,behavior:'smooth'});
+  }
+  function dataByType(type){
+    var s=getState();
+    if(type==='iqc') return Array.isArray(s.incoming)?s.incoming:[];
+    if(type==='pqc') return Array.isArray(s.process)?s.process:[];
+    if(type==='oqc') return Array.isArray(s.shipment)?s.shipment:[];
+    return [];
+  }
+  function rowLot(row){
+    return txt(row && (row.lot || row.lotNo || row.incomingLot || row.materialLot || row.finishedLot || row.shipmentLot));
+  }
+  function findByLot(type,lot){
+    var key=norm(lot);
+    return dataByType(type).find(function(r){return norm(rowLot(r))===key;}) || null;
+  }
+  function setReportType(type){
+    var rt=$('reportType');
+    if(rt){rt.value=type; rt.dispatchEvent(new Event('change',{bubbles:true}));}
+    if(typeof window.populateReportSelect==='function') safeCall(window.populateReportSelect);
+  }
+  function selectReportRow(type,row){
+    var sel=$('reportSelect');
+    if(!sel || !row) return false;
+    if(!sel.options.length || !Array.prototype.some.call(sel.options,function(o){return String(o.value)===String(row.id);})){ 
+      if(typeof window.populateReportSelect==='function') safeCall(window.populateReportSelect);
+    }
+    sel.value=String(row.id||'');
+    sel.dispatchEvent(new Event('change',{bubbles:true}));
+    if(typeof window.loadStandaloneReport==='function') safeCall(window.loadStandaloneReport);
+    return true;
+  }
+  function openReportByLot(type,lot){
+    lot=txt(lot);
+    if(!lot){alert('LOT 번호가 없습니다.');return false;}
+    var row=findByLot(type,lot);
+    if(!row){
+      var name=type==='iqc'?'수입검사(IQC)':type==='oqc'?'출하검사(OQC)':type==='pqc'?'공정검사(PQC)':'성적서';
+      alert(name+' 성적서에서 LOT ['+lot+'] 를 찾을 수 없습니다.');
+      return false;
+    }
+    showReportPage();
+    setTimeout(function(){
+      setReportType(type);
+      setTimeout(function(){
+        selectReportRow(type,row);
+        var target=$('reportPrintTarget') || $('reportMetaTable');
+        if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'start'});
+      },120);
+    },80);
+    return true;
+  }
+  window.openIncomingReportByLot=function(lot){return openReportByLot('iqc',lot);};
+  window.openShipmentReportByLot=function(lot){return openReportByLot('oqc',lot);};
+  window.openProcessReportByLot=function(lot){return openReportByLot('pqc',lot);};
+  window.goReportPageByLot=function(type,lot){
+    type=txt(type).toLowerCase();
+    if(type==='incoming') type='iqc';
+    if(type==='shipment') type='oqc';
+    if(type==='process') type='pqc';
+    if(type==='iqc'||type==='oqc'||type==='pqc') return openReportByLot(type,lot);
+    if(type==='workorder' && typeof window.nmcOpenWorkOrderByNo==='function') return window.nmcOpenWorkOrderByNo(lot);
+    return openReportByLot('iqc',lot);
+  };
+
+  /* 기존 LOT 링크가 span이어도 클릭 이동이 확실히 되도록 보강 */
+  document.addEventListener('click',function(e){
+    var a=e.target && e.target.closest && e.target.closest('.trace-link[data-report-type][data-report-lot], .lot-link[data-report-type][data-report-lot]');
+    if(!a) return;
+    var type=txt(a.getAttribute('data-report-type')).toLowerCase();
+    var lot=txt(a.getAttribute('data-report-lot'));
+    if(type==='iqc' || type==='oqc' || type==='pqc'){
+      e.preventDefault();
+      e.stopPropagation();
+      openReportByLot(type,lot);
+    }
+  },true);
+})();
+</script>
+<!-- NMC LOT TRACE IQC/OQC REPORT CLICK PATCH 20260704 END -->
+
 </body>
 </html>
