@@ -12170,6 +12170,46 @@ NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
     if(!raw || raw==='-' || raw==='login-user' || raw==='로그인 사용자') return currentDisplayName();
     return raw;
   }
+  function nmcRecoveredMaterials(o,no,lot){
+    function arr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+    function idv(x){return String(pick(x,['id','uid','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo'],'')).trim()}
+    function lotv(x){return String(pick(x,['prodLot','productionLot','lot','lotNo','nmcProdLot','finishedLot'],'')).trim()}
+    function clean(v){return String(v==null?'':v).trim()}
+    function materialFrom(m){
+      m=m||{};
+      var name=pick(m,['name','material','materialName','rawName','rawMaterial','item','itemName','product','productName','원료명'],'');
+      var ml=pick(m,['lot','lotNo','materialLot','rawLot','rmLot','incomingLot','iqcLot','원료LOT','원재료LOT'],'');
+      var plan=pick(m,['planQty','planInputQty','plannedQty','materialPlanQty','plan','계획투입량'],'');
+      var qty=pick(m,['actualQty','qty','inputQty','useQty','materialQty','matQty','amount','weight','inputWeight','actual','실투입량'],'');
+      var ratio=pick(m,['ratio','rate','percent','비율'],'');
+      var note=pick(m,['note','remark','memo','비고'],'');
+      if(!clean(name)&&!clean(ml)&&!clean(plan)&&!clean(qty)&&!clean(note)) return null;
+      return {name:clean(name),material:clean(name),materialName:clean(name),lot:clean(ml),lotNo:clean(ml),materialLot:clean(ml),planQty:clean(plan),actualQty:clean(qty)||clean(plan),qty:clean(qty)||clean(plan),ratio:clean(ratio),remark:clean(note),note:clean(note)};
+    }
+    function extract(x){
+      var out=[];
+      ['materials','rawMaterials','materialRows','inputMaterials','materialList','raws','rawMaterialList','bom','bomRows','inputs','nmcMaterials','materialDrafts','items'].forEach(function(k){
+        if(Array.isArray(x&&x[k])) out=out.concat(x[k]);
+      });
+      for(var i=1;i<=40;i++){
+        var name=pick(x,['material'+i,'materialName'+i,'matName'+i,'rawMaterial'+i,'rawName'+i,'itemName'+i,'원료명'+i],'');
+        var ml=pick(x,['materialLot'+i,'matLot'+i,'rawLot'+i,'rmLot'+i,'lotNo'+i,'incomingLot'+i,'원료LOT'+i,'원재료LOT'+i],'');
+        var plan=pick(x,['planQty'+i,'planInputQty'+i,'materialPlanQty'+i,'plannedQty'+i],'');
+        var qty=pick(x,['inputQty'+i,'actualQty'+i,'useQty'+i,'materialQty'+i,'matQty'+i,'qty'+i,'amount'+i,'weight'+i,'inputWeight'+i],'');
+        if(name||ml||plan||qty) out.push({name:name,material:name,lot:ml,planQty:plan,actualQty:qty,qty:qty});
+      }
+      return out.map(materialFrom).filter(Boolean);
+    }
+    function same(x){
+      var xn=idv(x), xl=lotv(x), n=String(no||'').trim(), l=String(lot||'').trim();
+      return (n&&xn&&norm(xn)===norm(n)) || (l&&xl&&norm(xl)===norm(l));
+    }
+    var mats=extract(o), seen={};
+    STORAGE_KEYS.concat(['namo_workorder_material_backup','namo_workorder_material_backup_v2','nmcWorkOrderHistory','workOrderList','nmcWorkorderList','nmc_workorder_list']).forEach(function(k){
+      arr(k).forEach(function(x){ if(x&&typeof x==='object'&&same(x)) mats=mats.concat(extract(x)); });
+    });
+    return mats.filter(function(m){var key=[m.name||m.material,m.lot||m.lotNo,m.planQty,m.actualQty||m.qty].map(function(v){return norm(v)}).join('|'); if(seen[key])return false; seen[key]=1; return true;});
+  }
   function normalize(o){
     o=o||{};
     var no=pick(o,['woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],idOf(o)||'-');
@@ -12186,7 +12226,7 @@ NMC_REMOVE_WORKORDER_STATUS_ONLY_FINAL_END -->
     else if(plan>0) pct=Math.min(100,Math.round(actual/plan*100));
     else pct=({wait:0,run:50,delay:30,hold:0}[sc]||0);
     var workerRaw=pick(o,['worker','managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept','sendDept','senderDept'],'');
-    return {raw:o,id:idOf(o)||no,no:no,product:pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],'-'),customer:pick(o,['customer','customerName','client','clientName','vendor','buyer','nmcCustomer','nmcCustomerName'],'-'),plan:plan,actual:actual,pct:pct,status:statusText(sc),sc:sc,start:start||'-',due:due||'-',worker:cleanWorker(workerRaw,o),lot:lot,code:pick(o,['productCode','prodCode','code','nmcProdCode'],'-'),receiver:pick(o,['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'],'-'),ref:pick(o,['refText','reference','refDept','ref','cc','refNames','refTargets'],'-'),note:pick(o,['sendNote','sendMemo','remark','memo','comment','instruction','workInstruction','nmcInstruction'],''),materials:Array.isArray(o.materials)?o.materials:[]}
+    return {raw:o,id:idOf(o)||no,no:no,product:pick(o,['productName','product','prodName','itemName','item','title','nmcProdName'],'-'),customer:pick(o,['customer','customerName','client','clientName','vendor','buyer','nmcCustomer','nmcCustomerName'],'-'),plan:plan,actual:actual,pct:pct,status:statusText(sc),sc:sc,start:start||'-',due:due||'-',worker:cleanWorker(workerRaw,o),lot:lot,code:pick(o,['productCode','prodCode','code','nmcProdCode'],'-'),receiver:pick(o,['receiverText','receiver','recvDept','recv','to','recvNames','recvTargets'],'-'),ref:pick(o,['refText','reference','refDept','ref','cc','refNames','refTargets'],'-'),note:pick(o,['sendNote','sendMemo','remark','memo','comment','instruction','workInstruction','nmcInstruction'],''),materials:nmcRecoveredMaterials(o,no,lot)}
   }
   function allOrders(){var m=new Map();STORAGE_KEYS.forEach(function(k){readArr(k).forEach(function(o){var n=normalize(o);if(n.id&&n.id!=='-')m.set(n.id,n)})});['nmcWorkOrders','workOrders','workOrderHistory','nmcSentWorkorders','worklog','worklogs','namoWorklog','nmcWorklogs','productionLogs','productionResults','nmcProductionLogs','productionWorkOrders','prodWorkOrders','qms_worklog'].forEach(function(k){if(Array.isArray(window[k]))window[k].forEach(function(o){var n=normalize(o);if(n.id&&n.id!=='-')m.set(n.id,n)})});return Array.from(m.values()).sort(function(a,b){return String(b.start||'').localeCompare(String(a.start||''))})}
   function filtered(){var a=allOrders();var date=q('#nmcWoFinalDate')&&q('#nmcWoFinalDate').value;var st=q('#nmcWoFinalStatus')&&q('#nmcWoFinalStatus').value;var kw=(q('#nmcWoFinalKeyword')&&q('#nmcWoFinalKeyword').value||'').trim().toLowerCase();return a.filter(function(x){if(date&&x.start!==date)return false;if(st&&x.sc!==st)return false;if(kw&&[x.no,x.product,x.customer,x.worker,x.lot].join(' ').toLowerCase().indexOf(kw)<0)return false;return true})}
@@ -17822,6 +17862,77 @@ document.addEventListener('click',function(e){
   [300,900,1800,3000].forEach(function(ms){setTimeout(schedule,ms);});
 })();
 </script>
+
+
+
+<!-- NMC_WORKORDER_DETAIL_MATERIAL_PRINT_FIX_20260704_START -->
+<style id="nmc-workorder-detail-material-print-fix-20260704-style">
+@media print{
+  #printTarget.nmc-wo-print-target{
+    width:190mm!important;
+    max-width:190mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    background:#fff!important;
+    color:#111!important;
+  }
+  #printTarget.nmc-wo-print-target .nmc-wo-detail-final{
+    display:block!important;
+    visibility:visible!important;
+    border:none!important;
+    box-shadow:none!important;
+    padding:0!important;
+  }
+  #printTarget.nmc-wo-print-target table,
+  #printTarget.nmc-wo-print-target th,
+  #printTarget.nmc-wo-print-target td{
+    border:1px solid #999!important;
+    border-collapse:collapse!important;
+  }
+  #printTarget.nmc-wo-print-target th,
+  #printTarget.nmc-wo-print-target td{
+    padding:6px 8px!important;
+    font-size:11px!important;
+  }
+}
+</style>
+<script id="nmc-workorder-detail-material-print-fix-20260704-script">
+(function(){
+  'use strict';
+  if(window.__NMC_WORKORDER_DETAIL_MATERIAL_PRINT_FIX_20260704__) return;
+  window.__NMC_WORKORDER_DETAIL_MATERIAL_PRINT_FIX_20260704__=true;
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function clean(v){return String(v==null?'':v).trim()}
+  function keyOfBtn(btn){return clean(btn&&btn.getAttribute&&btn.getAttribute('data-nmc-safe-id')) || clean(btn&&btn.closest&&btn.closest('tr')&&btn.closest('tr').getAttribute('data-nmc-wo-id')) || clean(btn)}
+  function ensureDetailFor(key,cb){
+    var open=q('[data-nmc-wo-final-open="'+String(key).replace(/"/g,'\\"')+'"]');
+    if(open) open.click();
+    setTimeout(function(){cb(q('#nmcWoFinalDetail'))}, open?450:80);
+  }
+  function doPrint(el){
+    if(!el || !clean(el.textContent)){alert('인쇄할 작업지시 상세 정보가 없습니다. 작업지시번호를 먼저 클릭해 주세요.');return;}
+    if(typeof window.printEl==='function'){
+      window.printEl(el);
+      setTimeout(function(){var t=q('#printTarget'); if(t)t.classList.add('nmc-wo-print-target');},30);
+      return;
+    }
+    qa('#printTarget').forEach(function(x){x.remove()});
+    var clone=el.cloneNode(true);
+    clone.id='printTarget';
+    clone.classList.add('nmc-wo-print-target');
+    document.body.appendChild(clone);
+    setTimeout(function(){window.print();},120);
+    window.onafterprint=function(){qa('#printTarget').forEach(function(x){x.remove()});window.onafterprint=null;};
+  }
+  window.nmcWoSafePrint=function(btn){
+    var key=keyOfBtn(btn);
+    ensureDetailFor(key,doPrint);
+    return false;
+  };
+})();
+</script>
+<!-- NMC_WORKORDER_DETAIL_MATERIAL_PRINT_FIX_20260704_END -->
 
 </body>
 </html>
