@@ -17454,7 +17454,7 @@ document.addEventListener('click',function(e){
     var di=idx(['생산일자','작업일자','일자'],0), li=idx(['생산LOT','완제품LOT','LOT'],4), ai=idx(['실적수량','실제생산량','생산수량'],6);
     return qa('tbody tr',table).map(function(tr){var tds=qa('td',tr);if(tds.length<3)return null;return {date:(tds[di]&&tds[di].textContent)||'', lot:(tds[li]&&tds[li].textContent)||'', actual:num((tds[ai]&&tds[ai].textContent)||'')};}).filter(Boolean);
   }
-  function monthly(rows){var kg=Array(12).fill(0), lot=Array.from({length:12},function(){return {}});rows.forEach(function(r){var m=monthOf(r.date); if(m==null||m<0||m>11)return; kg[m]+=r.actual; var k=String(r.lot||'').trim(); if(k)lot[m][k]=true;});return {kg:kg, lot:lot.map(function(x){return Object.keys(x).length})};}
+  function monthly(rows){var kg=Array(12).fill(0), lot=Array(12).fill(0);rows.forEach(function(r){var m=monthOf(r.date); if(m==null||m<0||m>11)return; kg[m]+=r.actual; lot[m]++;});return {kg:kg, lot:lot};}
   function apply(){
     var first=q('#page-production-result .nmc-result-kpi .l'); if(first && first.textContent.trim()==='생산 LOT') first.textContent='월간 LOT';
     var sub=q('#page-production-result .nmc-result-kpi .s'); if(sub && /집계 LOT/.test(sub.textContent)) sub.textContent='월별 LOT 수';
@@ -17564,14 +17564,13 @@ document.addEventListener('click',function(e){
     }).filter(Boolean);
   }
   function monthly(rows){
-    var kg=Array(12).fill(0), lotSets=Array.from({length:12},function(){return {}});
+    var kg=Array(12).fill(0), lot=Array(12).fill(0);
     rows.forEach(function(r){
       var m=monthOf(r.date); if(m==null||m<0||m>11) return;
       kg[m]+=num(r.actual);
-      var lot=String(r.lot||'').trim();
-      if(lot) lotSets[m][lot]=1;
+      lot[m]++;
     });
-    return {kg:kg, lot:lotSets.map(function(x){return Object.keys(x).length})};
+    return {kg:kg, lot:lot};
   }
   function selectedMonth(){
     var d=q('#nmcResultDate');
@@ -17707,10 +17706,10 @@ document.addEventListener('click',function(e){
   function collectRows(){var out=[],seen={};KEYS.forEach(function(k){arr(k).forEach(function(o){if(!o||typeof o!=='object')return;var no=pick(o,['woNo','no','workOrderNo','orderNo','nmcWoNo','docNo','id','uid'],'');var lot=pick(o,['prodLot','lot','productionLot','nmcProdLot','lotNo','finishedLot','batchNo'],no);var key=(no||'-')+'|'+(lot||'-');if(seen[key])return;seen[key]=1;var plan=num(pick(o,['planQty','plan','plannedQty','nmcPlanQty','qty','quantity','orderQty'],'0'));var actual=num(pick(o,['actualQty','actual','inputQty','nmcActualQty','resultQty','prodResultQty','prodQty'],plan));var st=pick(o,['status','state','progressStatus'],'생산완료');var date=String(pick(o,['doneDate','completeDate','closedDate','workDate','orderDate','date','createdAt','updatedAt','writeDate'],'')||new Date().toISOString().slice(0,10)).slice(0,10);out.push({no:no||lot||'-',lot:lot||no||'-',product:pick(o,['productName','product','prodName','item','itemName','nmcProdName'],'슬러리'),customer:customer(o),plan:plan,actual:actual||plan,status:st,kind:statusKind(st),date:date,worker:pick(o,['worker','managerName','prodManager','manager','operator','writerName','senderName','createdByName','createdBy','reqDept'],'-')});})});out.sort(function(a,b){var d=String(b.date).localeCompare(String(a.date));if(d!==0)return d;return String(a.no||'').localeCompare(String(b.no||''),undefined,{numeric:true,sensitivity:'base'});});return out}
   function monthIndex(v){var m=String(v||'').match(/(20\d{2})[-/.](\d{1,2})/);return m?Number(m[2])-1:null}
   function filterRows(rows){var st=q('#nmcDashStatus'), kw=q('#nmcDashKeyword'), s=q('#nmcDashStart'), e=q('#nmcDashEnd');var sv=s&&s.value, ev=e&&e.value, stat=st&&st.value||'', key=(kw&&kw.value||'').trim().toLowerCase();return rows.filter(function(r){if(sv&&r.date<sv)return false;if(ev&&r.date>ev)return false;if(stat&&r.kind!==stat)return false;if(key&&[r.no,r.lot,r.product,r.customer,r.worker,r.status].join(' ').toLowerCase().indexOf(key)<0)return false;return true})}
-  function monthly(rows){var kg=Array(12).fill(0), lots=Array.from({length:12},function(){return {}});rows.forEach(function(r){var m=monthIndex(r.date);if(m==null||m<0||m>11)return;kg[m]+=num(r.actual);var lot=String(r.lot||r.no||'').trim();if(lot)lots[m][lot]=1});return {kg:kg.map(function(x){return Math.round(x*100)/100}),lot:lots.map(function(x){return Object.keys(x).length})}}
+  function monthly(rows){var kg=Array(12).fill(0), lots=Array(12).fill(0);rows.forEach(function(r){var m=monthIndex(r.date);if(m==null||m<0||m>11)return;kg[m]+=num(r.actual);lots[m]++;});return {kg:kg.map(function(x){return Math.round(x*100)/100}),lot:lots}}
   function pct(a,b){return b?Math.round(num(a)/num(b)*1000)/10:(num(a)?100:0)}
-  function kpis(rows){var lotSet={},kg=0,plan=0,done=0,run=0;rows.forEach(function(r){if(r.lot)lotSet[r.lot]=1;kg+=num(r.actual);plan+=num(r.plan);if(r.kind==='done')done++;if(r.kind==='run')run++;});var cm=new Date().getMonth(), m=monthly(rows);return {lots:Object.keys(lotSet).length,kg:kg,plan:plan,done:done,run:run,yield:pct(kg,plan),monthLot:m.lot[cm]||0}}
-  function customerTable(rows){var map={};rows.forEach(function(r){var k=r.customer||'기타';if(!map[k])map[k]={lots:{},kg:0,done:0};map[k].lots[r.lot||r.no]=1;map[k].kg+=num(r.actual);if(r.kind==='done')map[k].done++;});var arr=Object.keys(map).map(function(k){var v=map[k];return {name:k,lots:Object.keys(v.lots).length,kg:v.kg,done:v.done}}).sort(function(a,b){return b.kg-a.kg}).slice(0,5);if(!arr.length)return '<tr><td colspan="4">데이터 없음</td></tr>';var total={lots:0,kg:0,done:0};arr.forEach(function(x){total.lots+=x.lots;total.kg+=x.kg;total.done+=x.done});return arr.map(function(x){return '<tr><td>'+esc(x.name)+'</td><td>'+x.lots+' LOT</td><td>'+fmt(x.kg,2)+'</td><td>'+x.done+' LOT</td></tr>'}).join('')+'<tfoot><tr><td>합계</td><td>'+total.lots+' LOT</td><td>'+fmt(total.kg,2)+'</td><td>'+total.done+' LOT</td></tr></tfoot>'}
+  function kpis(rows){var kg=0,plan=0,done=0,run=0;rows.forEach(function(r){kg+=num(r.actual);plan+=num(r.plan);if(r.kind==='done')done++;if(r.kind==='run')run++;});var cm=new Date().getMonth(), m=monthly(rows);return {lots:rows.length,kg:kg,plan:plan,done:done,run:run,yield:pct(kg,plan),monthLot:m.lot[cm]||0}}
+  function customerTable(rows){var map={};rows.forEach(function(r){var k=r.customer||'기타';if(!map[k])map[k]={lots:0,kg:0,done:0};map[k].lots++;map[k].kg+=num(r.actual);if(r.kind==='done')map[k].done++;});var arr=Object.keys(map).map(function(k){var v=map[k];return {name:k,lots:v.lots,kg:v.kg,done:v.done}}).sort(function(a,b){return b.kg-a.kg}).slice(0,5);if(!arr.length)return '<tr><td colspan="4">데이터 없음</td></tr>';var total={lots:0,kg:0,done:0};arr.forEach(function(x){total.lots+=x.lots;total.kg+=x.kg;total.done+=x.done});return arr.map(function(x){return '<tr><td>'+esc(x.name)+'</td><td>'+x.lots+' LOT</td><td>'+fmt(x.kg,2)+'</td><td>'+x.done+' LOT</td></tr>'}).join('')+'<tfoot><tr><td>합계</td><td>'+total.lots+' LOT</td><td>'+fmt(total.kg,2)+'</td><td>'+total.done+' LOT</td></tr></tfoot>'}
   function recentTable(rows){var a=rows.slice(0,8);if(!a.length)return '<tr><td colspan="7">데이터 없음</td></tr>';return a.map(function(r,i){var y=pct(r.actual,r.plan);var cls=r.kind==='run'?'run':r.kind==='done'?'done':r.kind==='delay'?'warn':'wait';return '<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td><b>'+esc(r.no)+'</b></td><td><b>'+esc(r.lot)+'</b></td><td>'+esc(r.product)+'</td><td>'+fmt(r.actual,2)+'</td><td>'+y.toFixed(1)+'%</td><td><span class="nmc-status-pill '+cls+'">'+esc(r.status)+'</span></td></tr>'}).join('')}
   function fullTable(rows){if(!rows.length)return '<tr><td colspan="11" class="nmc-result-empty">생산실적 데이터가 없습니다.</td></tr>';return rows.map(function(r){var y=pct(r.actual,r.plan);var cls=r.kind==='run'?'run':r.kind==='done'?'done':r.kind==='delay'?'warn':'wait';return '<tr><td>'+esc(r.date)+'</td><td><b>'+esc(r.no)+'</b></td><td>'+esc(r.product)+'</td><td>'+esc(r.customer)+'</td><td><b>'+esc(r.lot)+'</b></td><td>'+fmt(r.plan,2)+'</td><td>'+fmt(r.actual,2)+'</td><td>'+y.toFixed(1)+'%</td><td><span class="nmc-status-pill '+cls+'">'+esc(r.status)+'</span></td><td>'+esc(r.worker)+'</td><td>-</td></tr>'}).join('')}
   function statusCounts(rows){var o={done:0,run:0,wait:0,delay:0};rows.forEach(function(r){if(o[r.kind]==null)o.done++;else o[r.kind]++});return o}
@@ -17783,14 +17782,19 @@ document.addEventListener('click',function(e){
     Array.prototype.slice.call(page.querySelectorAll('.nmc-dash-kpi')).forEach(function(kpi){
       var label=(kpi.querySelector('.l')||{}).textContent||'';
       var v=kpi.querySelector('.v');
+      if(/생산 LOT 수/.test(label) && v) v.innerHTML=total;
       if(/생산완료/.test(label) && v) v.innerHTML=done+'<span class="unit">건</span>';
       if(/생산중/.test(label) && v) v.innerHTML=run+'<span class="unit">건</span>';
     });
-    // 고객사별 생산현황 완료 LOT
+    // 고객사별 생산현황 합계 보정: 최근 생산실적 목록 기준과 동일하게 유지
     var customerCard=cards.find(function(c){return /고객사별 생산현황/.test(c.textContent||'');});
     if(customerCard){
-      Array.prototype.slice.call(customerCard.querySelectorAll('tbody tr')).forEach(function(tr){
-        if(tr.children.length>=4) tr.children[3].textContent=done+' LOT';
+      Array.prototype.slice.call(customerCard.querySelectorAll('tbody tr, tfoot tr')).forEach(function(tr){
+        var first=(tr.children[0]&&tr.children[0].textContent.trim())||'';
+        if(tr.children.length>=4 && first==='합계'){
+          tr.children[1].textContent=total+' LOT';
+          tr.children[3].textContent=done+' LOT';
+        }
       });
     }
     // LOT 상태별 현황 범례
