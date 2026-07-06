@@ -18300,5 +18300,288 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO OQC QTY LIST SAVE DISPLAY FINAL PATCH 20260706 END -->
 
+
+<!-- NAMO OQC LIST EA_KG FORCE FINAL PATCH 20260706-2 START -->
+<script id="namo-oqc-list-ea-kg-force-final-20260706-2">
+(function(){
+  'use strict';
+  if(window.__NAMO_OQC_LIST_EA_KG_FORCE_FINAL_20260706_2__) return;
+  window.__NAMO_OQC_LIST_EA_KG_FORCE_FINAL_20260706_2__ = true;
+
+  var CACHE_KEY = 'namo_oqc_qty_list_cache_20260706_force_v2';
+  var OLD_CACHE_KEYS = ['namo_oqc_qty_list_cache_20260706','namo_oqc_ea_kg_cache_20260626'];
+
+  function $(id){ return document.getElementById(id); }
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function esc(v){ return txt(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function first(){
+    for(var i=0;i<arguments.length;i++){
+      var v = arguments[i];
+      if(v !== undefined && v !== null && txt(v) !== '') return v;
+    }
+    return '';
+  }
+  function stateObj(){
+    try{ return (typeof state !== 'undefined' && state) ? state : (window.state || {}); }
+    catch(e){ return window.state || {}; }
+  }
+  function readJson(key){
+    try{ return JSON.parse(localStorage.getItem(key) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function saveJson(key,obj){
+    try{ localStorage.setItem(key, JSON.stringify(obj || {})); }catch(e){}
+  }
+  function normKeyPart(v){ return txt(v).toUpperCase().replace(/\s+/g,''); }
+  function rowKey(r){
+    r = r || {};
+    return [normKeyPart(r.date || r.shipmentDate || r.inspectionDate),
+            normKeyPart(r.customer || r.customerName || r.client),
+            normKeyPart(r.product || r.productName || r.item),
+            normKeyPart(r.lot || r.finishedLot || r.finished_lot || r.lotNo)].join('||');
+  }
+  function lotKey(r){
+    r = r || {};
+    var lot = first(r.lot,r.finishedLot,r.finished_lot,r.lotNo);
+    return lot ? 'lot:' + normKeyPart(lot) : '';
+  }
+  function cacheAll(){
+    var merged = {};
+    OLD_CACHE_KEYS.concat([CACHE_KEY]).forEach(function(k){
+      var c = readJson(k);
+      Object.keys(c).forEach(function(x){ if(c[x]) merged[x] = c[x]; });
+    });
+    return merged;
+  }
+  function getVal(id){ var el=$(id); return el ? el.value : ''; }
+  function setVal(id,v){ var el=$(id); if(el && txt(v) !== '') el.value = v; }
+
+  function currentFormRow(){
+    var ea = getVal('shipmentOutQty');
+    var kg = getVal('shipmentTotalWeightKg');
+    var qty = getVal('shipmentQty');
+    var fail = getVal('shipmentFailQty');
+    return {
+      id:getVal('shipmentEditId'),
+      date:getVal('shipmentDate'),
+      customer:getVal('shipmentCustomer'),
+      product:getVal('shipmentProduct'),
+      lot:getVal('shipmentLot'),
+      outQty:ea, shipmentQty:ea, out_qty:ea, shipment_qty:ea, out_qty_ea:ea, shipment_out_qty:ea, delivery_qty:ea,
+      totalWeightKg:kg, total_weight_kg:kg, totalOutWeight:kg, total_out_weight:kg, shipment_weight_kg:kg, out_weight_kg:kg, weight_kg:kg,
+      qty:qty, checkQty:qty, inspectionQty:qty, inspection_qty:qty, check_qty:qty,
+      failQty:fail, fail:fail, fail_qty:fail
+    };
+  }
+  function cacheCurrentForm(){
+    var r = currentFormRow();
+    if(!r.id && !r.date && !r.customer && !r.product && !r.lot) return;
+    var c = cacheAll();
+    if(r.id) c['id:'+r.id] = r;
+    var rk = rowKey(r); if(rk !== '||||') c['key:'+rk] = r;
+    var lk = lotKey(r); if(lk) c[lk] = r;
+    saveJson(CACHE_KEY,c);
+  }
+  function mergeOqcRow(r){
+    if(!r) return r;
+    var c = cacheAll();
+    var hit = (r.id && c['id:'+r.id]) || c['key:'+rowKey(r)] || c[lotKey(r)] || {};
+
+    var ea = first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty,r.outputQty,r.outQuantity,r.shipQty,
+                   hit.outQty,hit.shipmentQty,hit.out_qty,hit.shipment_qty,hit.out_qty_ea,hit.shipment_out_qty,hit.delivery_qty);
+    var kg = first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg,r.totalWeight,r.total_weight,r.shipWeight,
+                   hit.totalWeightKg,hit.total_weight_kg,hit.totalOutWeight,hit.total_out_weight,hit.shipment_weight_kg,hit.out_weight_kg,hit.weight_kg,hit.totalWeight,hit.total_weight);
+    var qty = first(r.qty,r.checkQty,r.inspectionQty,r.inspection_qty,r.check_qty,hit.qty,hit.checkQty,hit.inspectionQty,hit.inspection_qty,hit.check_qty);
+    var fail = first(r.failQty,r.fail,r.fail_qty,r.ngQty,r.ng_qty,hit.failQty,hit.fail,hit.fail_qty,hit.ngQty,hit.ng_qty);
+
+    if(ea !== ''){
+      r.outQty = r.shipmentQty = r.out_qty = r.shipment_qty = r.out_qty_ea = r.shipment_out_qty = r.delivery_qty = ea;
+    }
+    if(kg !== ''){
+      r.totalWeightKg = r.total_weight_kg = r.totalOutWeight = r.total_out_weight = r.shipment_weight_kg = r.out_weight_kg = r.weight_kg = kg;
+    }
+    if(qty !== ''){
+      r.qty = r.checkQty = r.inspectionQty = r.inspection_qty = r.check_qty = qty;
+    }
+    if(fail !== ''){
+      r.failQty = r.fail = r.fail_qty = fail;
+    }
+
+    var c2 = cacheAll();
+    if(r.id) c2['id:'+r.id] = {
+      id:r.id,date:r.date,customer:r.customer,product:r.product,lot:r.lot,
+      outQty:r.outQty,totalWeightKg:r.totalWeightKg,qty:r.qty,failQty:r.failQty
+    };
+    var rk2=rowKey(r); if(rk2 !== '||||') c2['key:'+rk2]=c2['id:'+r.id] || r;
+    var lk2=lotKey(r); if(lk2) c2[lk2]=c2['id:'+r.id] || r;
+    saveJson(CACHE_KEY,c2);
+    return r;
+  }
+  function person(r,role){
+    r = r || {};
+    var cap = role==='writer'?'Writer':role==='reviewer'?'Reviewer':'Approver';
+    var o = r['sign'+cap] || {};
+    return first(o.name,r[role+'Name'],r[role],role==='writer'?r.inspector:'') || '-';
+  }
+  function judgeHtml(r){
+    try{
+      if(typeof window.jBadge === 'function' && typeof window.calcJ === 'function') return window.jBadge(window.calcJ(r.items || []));
+    }catch(e){}
+    var bad = (Array.isArray(r && r.items) ? r.items : []).some(function(x){
+      return txt(x && (x.judge || x.result)) === '불합격';
+    });
+    return '<span class="status '+(bad?'fail':'pass')+'">'+(bad?'불합격':'합격')+'</span>';
+  }
+  function ensureHeader(){
+    var page = $('page-shipment'); if(!page) return;
+    var table = page.querySelector('#shipmentTable') && page.querySelector('#shipmentTable').closest('table');
+    if(!table) return;
+    var thead = table.querySelector('thead');
+    if(!thead){
+      thead = document.createElement('thead');
+      table.insertBefore(thead, table.firstChild);
+    }
+    thead.innerHTML = '<tr><th>일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>출하수량(EA)</th><th>총 출하량(KG)</th><th>검사수량</th><th>불량수량</th><th>판정</th><th>작성자</th><th>검토자</th><th>승인자</th><th>작업</th></tr>';
+    if(!$('shipmentYearFilterFixed')){
+      var ch = page.querySelector('.card.mt14 .ch') || page.querySelector('.ch');
+      if(ch){
+        var box = document.createElement('div');
+        box.className = 'ca';
+        box.innerHTML = '<select id="shipmentYearFilterFixed"><option value="all">전체</option><option value="2026">2026</option><option value="2025">2025</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select><span class="tag" id="shipmentYearCount">전체 0건 / 최신순</span>';
+        ch.appendChild(box);
+      }
+    }
+  }
+  function emptyRow(){
+    return '<tr><td colspan="13" style="text-align:center;color:#94a3b8;padding:18px;">등록된 출하검사가 없습니다.</td></tr>';
+  }
+  function renderOqcListForce(){
+    ensureHeader();
+    var tb = $('shipmentTable'); if(!tb) return;
+    var st = stateObj();
+    var arr = Array.isArray(st.shipment) ? st.shipment.slice() : [];
+    arr.forEach(mergeOqcRow);
+
+    var yEl = $('shipmentYearFilterFixed');
+    var y = yEl ? yEl.value : 'all';
+    var list = arr.filter(function(r){
+      return !y || y === 'all' || txt(r.date || r.shipmentDate || r.inspectionDate).slice(0,4) === y;
+    }).sort(function(a,b){ return txt(b.date).localeCompare(txt(a.date)); });
+
+    var tag = $('shipmentYearCount');
+    if(tag) tag.textContent = (y === 'all' ? '전체' : y + '년') + ' ' + list.length + '건 / 최신순';
+
+    if(!list.length){ tb.innerHTML = emptyRow(); return; }
+
+    tb.innerHTML = list.map(function(r){
+      var ea = first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty);
+      var kg = first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg);
+      var qty = first(r.qty,r.checkQty,r.inspectionQty,r.inspection_qty,r.check_qty);
+      var fail = first(r.failQty,r.fail,r.fail_qty);
+      return '<tr>'+
+        '<td>'+esc(r.date || r.shipmentDate || r.inspectionDate)+'</td>'+
+        '<td>'+esc(r.customer || r.customerName || r.client)+'</td>'+
+        '<td>'+esc(r.product || r.productName || r.item)+'</td>'+
+        '<td><strong>'+esc(r.lot || r.finishedLot || r.finished_lot || r.lotNo)+'</strong></td>'+
+        '<td>'+esc(ea)+'</td>'+
+        '<td>'+esc(kg)+'</td>'+
+        '<td>'+esc(qty)+'</td>'+
+        '<td>'+esc(fail)+'</td>'+
+        '<td>'+judgeHtml(r)+'</td>'+
+        '<td>'+esc(person(r,'writer'))+'</td>'+
+        '<td>'+esc(person(r,'reviewer'))+'</td>'+
+        '<td>'+esc(person(r,'approver'))+'</td>'+
+        '<td><div class="ai"><button class="sb edit" data-action="editShipment" data-id="'+esc(r.id)+'">수정</button><button class="sb del" data-action="deleteShipment" data-id="'+esc(r.id)+'">삭제</button><button class="sb lbl" data-action="labelShipment" data-id="'+esc(r.id)+'">라벨</button></div></td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  window.renderShipmentTable = renderOqcListForce;
+  window.namoRenderShipmentTableStable = renderOqcListForce;
+  window.namoRenderOqcListForce20260706 = renderOqcListForce;
+
+  var oldSave = window.saveOqc;
+  if(typeof oldSave === 'function'){
+    window.saveOqc = async function(){
+      cacheCurrentForm();
+      var ret = await oldSave.apply(this, arguments);
+      try{
+        var st = stateObj();
+        if(Array.isArray(st.shipment)) st.shipment.forEach(mergeOqcRow);
+      }catch(e){}
+      [0,120,350,800,1600].forEach(function(t){ setTimeout(renderOqcListForce,t); });
+      return ret;
+    };
+  }
+
+  var oldLoad = window.loadShipment;
+  if(typeof oldLoad === 'function'){
+    window.loadShipment = async function(){
+      var ret = await oldLoad.apply(this, arguments);
+      try{
+        var st = stateObj();
+        if(Array.isArray(st.shipment)) st.shipment.forEach(mergeOqcRow);
+      }catch(e){}
+      renderOqcListForce();
+      return ret;
+    };
+  }
+
+  var oldEdit = window.editShipment;
+  if(typeof oldEdit === 'function'){
+    window.editShipment = function(id){
+      var ret = oldEdit.apply(this, arguments);
+      try{
+        var st = stateObj();
+        var r = Array.isArray(st.shipment) ? st.shipment.find(function(x){ return String(x.id) === String(id); }) : null;
+        mergeOqcRow(r);
+        if(r){
+          setVal('shipmentOutQty', first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty));
+          setVal('shipmentTotalWeightKg', first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg));
+          setVal('shipmentQty', first(r.qty,r.checkQty,r.inspectionQty,r.inspection_qty,r.check_qty));
+          setVal('shipmentFailQty', first(r.failQty,r.fail,r.fail_qty));
+        }
+      }catch(e){}
+      return ret;
+    };
+  }
+
+  document.addEventListener('input',function(e){
+    var id = e.target && e.target.id;
+    if(/^(shipmentDate|shipmentCustomer|shipmentProduct|shipmentLot|shipmentOutQty|shipmentTotalWeightKg|shipmentQty|shipmentFailQty)$/.test(id || '')){
+      cacheCurrentForm();
+      setTimeout(renderOqcListForce,50);
+    }
+  },true);
+  document.addEventListener('change',function(e){
+    var id = e.target && e.target.id;
+    if(id === 'shipmentYearFilterFixed') renderOqcListForce();
+    if(/^(shipmentDate|shipmentCustomer|shipmentProduct|shipmentLot|shipmentOutQty|shipmentTotalWeightKg|shipmentQty|shipmentFailQty)$/.test(id || '')){
+      cacheCurrentForm();
+      setTimeout(renderOqcListForce,50);
+    }
+  },true);
+  document.addEventListener('click',function(e){
+    var t = e.target;
+    if(t && t.closest && t.closest('#shipmentSave')) cacheCurrentForm();
+    if(t && t.closest && t.closest('[data-page="shipment"],[data-page-target="shipment"]')){
+      [80,300,900].forEach(function(ms){ setTimeout(renderOqcListForce,ms); });
+    }
+  },true);
+
+  function boot(){
+    try{
+      var st = stateObj();
+      if(Array.isArray(st.shipment)) st.shipment.forEach(mergeOqcRow);
+    }catch(e){}
+    renderOqcListForce();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.addEventListener('load',boot);
+  [200,700,1500,3000,5000].forEach(function(ms){ setTimeout(boot,ms); });
+})();
+</script>
+<!-- NAMO OQC LIST EA_KG FORCE FINAL PATCH 20260706-2 END -->
+
 </body>
 </html>
