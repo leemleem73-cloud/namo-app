@@ -18273,5 +18273,190 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO OQC QTY DOM/PERSIST FIX NO-FLICKER 20260706 END -->
 
+
+<!-- NAMO PRODUCTION STATUS BAR GRAPH SAME STYLE PATCH 20260706 START -->
+<style id="namo-production-status-bar-same-style-20260706">
+/* 생산실적현황 그래프를 품질대시보드와 동일한 카드/막대 스타일로 통일 */
+#page-production-result .nmc-dash-chart-grid{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:18px!important;
+  margin-bottom:16px!important;
+}
+#page-production-result .nmc-dash-chart-grid .nmc-dash-card{
+  border-radius:20px!important;
+  border:1px solid #dbe3ee!important;
+  background:#fff!important;
+  box-shadow:0 10px 26px rgba(15,23,42,.065)!important;
+  overflow:hidden!important;
+}
+#page-production-result .nmc-dash-chart-grid .nmc-dash-card-h{
+  min-height:58px!important;
+  padding:16px 20px!important;
+  background:linear-gradient(180deg,#ffffff,#f8fafc)!important;
+  border-bottom:1px solid #e5edf6!important;
+}
+#page-production-result .nmc-dash-chart-grid .nmc-dash-card-title{
+  font-size:17px!important;
+  font-weight:900!important;
+  color:#0f172a!important;
+  letter-spacing:-.3px!important;
+}
+#page-production-result .nmc-dash-card-unit{
+  display:inline-flex!important;
+  align-items:center!important;
+  height:25px!important;
+  padding:0 10px!important;
+  border-radius:999px!important;
+  border:1px solid #dbe3ee!important;
+  background:#f8fafc!important;
+  color:#64748b!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+#page-production-result .nmc-dash-chart{
+  height:330px!important;
+  min-height:330px!important;
+  max-height:330px!important;
+  position:relative!important;
+  padding:18px 22px 20px!important;
+  overflow:hidden!important;
+}
+#page-production-result .nmc-dash-chart canvas{
+  display:block!important;
+  width:100%!important;
+  height:290px!important;
+  max-height:290px!important;
+}
+@media(max-width:1200px){
+  #page-production-result .nmc-dash-chart-grid{grid-template-columns:1fr!important;}
+}
+</style>
+<script id="namo-production-status-bar-same-style-20260706-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_PROD_STATUS_BAR_SAME_STYLE_20260706__) return;
+  window.__NAMO_PROD_STATUS_BAR_SAME_STYLE_20260706__ = true;
+
+  var MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  function q(s,r){return (r||document).querySelector(s)}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function num(v){var n=Number(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0}
+  function monthIndex(v){var m=String(v||'').match(/(20\d{2})[-/.](\d{1,2})/);return m?Number(m[2])-1:null}
+  function txt(el){return (el&&el.textContent||'').trim()}
+
+  function collectRows(){
+    var table=q('#page-production-result #nmcDashFullTable table') || q('#page-production-result .nmc-pr-table') || q('#page-production-result .nmc-dash-table');
+    if(!table) return [];
+    var heads=qa('thead th',table).map(function(th){return txt(th).replace(/\s+/g,'')});
+    function idx(keys,fb){for(var i=0;i<heads.length;i++){for(var j=0;j<keys.length;j++){if(heads[i].indexOf(keys[j])>-1) return i}}return fb}
+    var di=idx(['생산일자','작업일자','일자'],0);
+    var li=idx(['생산LOT','완제품LOT','LOT'],4);
+    var ai=idx(['생산량(kg)','실적수량','실제생산량','생산수량'],6);
+    return qa('tbody tr',table).map(function(tr){
+      var tds=qa('td',tr); if(tds.length<5) return null;
+      var date=txt(tds[di]);
+      var lot=txt(tds[li]);
+      var kg=num(txt(tds[ai]));
+      if(!date && !lot && !kg) return null;
+      return {date:date, lot:lot, kg:kg};
+    }).filter(Boolean);
+  }
+
+  function monthly(rows){
+    var kg=Array(12).fill(0), lot=Array(12).fill(0);
+    rows.forEach(function(r){
+      var m=monthIndex(r.date); if(m==null || m<0 || m>11) return;
+      kg[m]+=num(r.kg); lot[m]+=1;
+    });
+    return {kg:kg.map(function(v){return Math.round(v*100)/100}), lot:lot};
+  }
+
+  var valuePlugin={
+    id:'namoProdBarValueLabel',
+    afterDatasetsDraw:function(chart){
+      var ctx=chart.ctx;
+      ctx.save();
+      ctx.textAlign='center';
+      ctx.textBaseline='bottom';
+      ctx.fillStyle='#2563eb';
+      ctx.font='800 12px Inter, Malgun Gothic, sans-serif';
+      chart.data.datasets.forEach(function(ds,di){
+        var meta=chart.getDatasetMeta(di);
+        meta.data.forEach(function(bar,i){
+          var v=ds.data[i];
+          if(!v) return;
+          var label=(Math.round(v*100)/100).toLocaleString();
+          ctx.fillText(label, bar.x, bar.y-6);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
+  function drawBar(id,label,data,mainColor,softColor){
+    var c=q('#'+id); if(!c || !window.Chart) return;
+    try{var old=Chart.getChart&&Chart.getChart(c); if(old) old.destroy();}catch(e){}
+    var ctx=c.getContext('2d');
+    var g=ctx.createLinearGradient(0,0,0,290);
+    g.addColorStop(0,mainColor);
+    g.addColorStop(.62,softColor);
+    g.addColorStop(1,'rgba(255,255,255,.82)');
+    new Chart(c,{type:'bar',data:{labels:MONTHS,datasets:[{
+      label:label,
+      data:data,
+      backgroundColor:g,
+      borderColor:mainColor,
+      borderWidth:2,
+      borderRadius:12,
+      borderSkipped:false,
+      barPercentage:.58,
+      categoryPercentage:.72,
+      maxBarThickness:56
+    }]},options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{duration:800,easing:'easeOutQuart'},
+      plugins:{
+        legend:{display:true,position:'top',labels:{usePointStyle:true,boxWidth:9,boxHeight:9,color:'#334155',font:{weight:'900',size:12}}},
+        tooltip:{enabled:true,mode:'index',intersect:false,backgroundColor:'rgba(15,23,42,.92)',titleFont:{weight:'900'},bodyFont:{weight:'800'},padding:10,cornerRadius:10},
+        namoProdBarValueLabel:{}
+      },
+      scales:{
+        x:{grid:{color:'rgba(148,163,184,.16)'},ticks:{color:'#334155',font:{weight:'900',size:12}}},
+        y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.22)'},ticks:{precision:0,color:'#64748b',font:{weight:'800',size:11}}}
+      }
+    },plugins:[valuePlugin]});
+  }
+
+  function apply(){
+    var page=q('#page-production-result');
+    if(!page) return;
+    var lotCanvas=q('#nmcDashLotChart');
+    var kgCanvas=q('#nmcDashKgChart');
+    if(!lotCanvas || !kgCanvas) return;
+    var data=monthly(collectRows());
+    drawBar('nmcDashLotChart','LOT 수 (건)',data.lot,'rgba(37,99,235,.96)','rgba(96,165,250,.56)');
+    drawBar('nmcDashKgChart','생산량 (kg)',data.kg,'rgba(22,163,74,.90)','rgba(134,239,172,.50)');
+  }
+
+  function schedule(){clearTimeout(window.__namoProdStatusBarTimer); window.__namoProdStatusBarTimer=setTimeout(apply,180);}
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('[data-page="production-result"],[data-page-target="production-result"],#nmcDashSearch,#nmcDashToggleFull')){setTimeout(schedule,80);setTimeout(schedule,450);}
+  },true);
+  document.addEventListener('input',function(e){if(e.target&&/^nmcDash/.test(e.target.id||'')) schedule();},true);
+  document.addEventListener('change',function(e){if(e.target&&/^nmcDash/.test(e.target.id||'')) schedule();},true);
+  var oldShow=window.showPage;
+  if(typeof oldShow==='function' && !oldShow.__namoProdStatusBarSameStyleWrapped){
+    window.showPage=function(pg){var r=oldShow.apply(this,arguments); if(pg==='production-result'){setTimeout(schedule,120);setTimeout(schedule,700);} return r;};
+    window.showPage.__namoProdStatusBarSameStyleWrapped=true;
+  }
+  function boot(){if(q('#page-production-result')){setTimeout(schedule,400);setTimeout(schedule,1200);}}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.addEventListener('load',boot);
+})();
+</script>
+<!-- NAMO PRODUCTION STATUS BAR GRAPH SAME STYLE PATCH 20260706 END -->
+
 </body>
 </html>
