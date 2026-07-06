@@ -18273,5 +18273,112 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO OQC QTY DOM/PERSIST FIX NO-FLICKER 20260706 END -->
 
+
+
+<script>
+/* NAMO OQC EA/KG LIST FINAL FIX 20260706
+   - 출하수량(EA), 총 출하량(kg) 수정 저장 후 목록 0 표시 문제 보정
+   - 입력값 캐시 + state 행 보정 + 목록 셀 강제 반영
+*/
+(function(){
+  'use strict';
+  var CACHE_KEY='namo_oqc_ea_kg_final_cache_20260706';
+  var pending=false;
+  function $(id){return document.getElementById(id)}
+  function txt(v){return String(v==null?'':v).trim()}
+  function norm(v){return txt(v).replace(/\s+/g,' ').toUpperCase()}
+  function keyOf(date,customer,product,lot){return [norm(date),norm(customer),norm(product),norm(lot)].join('||')}
+  function read(){try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'{}')||{}}catch(e){return {}}}
+  function write(o){try{localStorage.setItem(CACHE_KEY,JSON.stringify(o||{}))}catch(e){}}
+  function val(id){var el=$(id);return el?txt(el.value):''}
+  function first(){for(var i=0;i<arguments.length;i++){var v=arguments[i];if(v!==undefined&&v!==null&&txt(v)!=='')return txt(v)}return ''}
+  function isBlankOrZero(v){var x=txt(v);return x===''||x==='-'||/^0+(\.0+)?$/.test(x)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+  function st(){try{return window.state||state||{}}catch(e){return window.state||{}}}
+  function rowKey(r){return keyOf(r&&r.date,r&&r.customer,r&&r.product,r&&r.lot)}
+  function setAliases(r,ea,kg){
+    if(!r) return;
+    if(txt(ea)!==''){
+      r.outQty=ea; r.shipmentQty=ea; r.out_qty=ea; r.shipment_qty=ea; r.out_qty_ea=ea; r.shipment_out_qty=ea; r.delivery_qty=ea;
+    }
+    if(txt(kg)!==''){
+      r.totalWeightKg=kg; r.total_weight_kg=kg; r.totalOutWeight=kg; r.total_out_weight=kg; r.shipment_weight_kg=kg; r.out_weight_kg=kg; r.weight_kg=kg;
+    }
+  }
+  function saveCacheFromForm(){
+    var ea=val('shipmentOutQty'), kg=val('shipmentTotalWeightKg');
+    if(ea==='' && kg==='') return;
+    var row={id:val('shipmentEditId'),date:val('shipmentDate'),customer:val('shipmentCustomer'),product:val('shipmentProduct'),lot:val('shipmentLot'),ea:ea,kg:kg,qty:val('shipmentQty'),fail:val('shipmentFailQty')};
+    var c=read(), k=keyOf(row.date,row.customer,row.product,row.lot);
+    if(row.id) c['id:'+row.id]=row;
+    if(k!=='||||') c['key:'+k]=row;
+    write(c);
+    try{(Array.isArray(st().shipment)?st().shipment:[]).forEach(function(r){if((row.id&&String(r.id)===String(row.id))||rowKey(r)===k)setAliases(r,ea,kg)})}catch(e){}
+  }
+  function cacheFromState(){
+    var c=read(), changed=false;
+    try{(Array.isArray(st().shipment)?st().shipment:[]).forEach(function(r){
+      var ea=first(r.outQty,r.shipmentQty,r.out_qty,r.shipment_qty,r.out_qty_ea,r.shipment_out_qty,r.delivery_qty);
+      var kg=first(r.totalWeightKg,r.total_weight_kg,r.totalOutWeight,r.total_out_weight,r.shipment_weight_kg,r.out_weight_kg,r.weight_kg);
+      if(ea===''&&kg==='')return;
+      var row={id:txt(r.id),date:txt(r.date),customer:txt(r.customer),product:txt(r.product),lot:txt(r.lot),ea:ea,kg:kg,qty:first(r.qty,r.checkQty,r.inspectionQty,r.inspection_qty),fail:first(r.failQty,r.fail,r.fail_qty)};
+      var k=keyOf(row.date,row.customer,row.product,row.lot);
+      if(row.id)c['id:'+row.id]=row;
+      if(k!=='||||')c['key:'+k]=row;
+      changed=true;
+    })}catch(e){}
+    if(changed)write(c);
+  }
+  function fillRows(){
+    cacheFromState();
+    var tb=$('shipmentTable'); if(!tb) return;
+    var c=read();
+    Array.prototype.forEach.call(tb.querySelectorAll('tr'),function(tr){
+      var td=tr.children; if(!td||td.length<8) return;
+      var k=keyOf(td[0].textContent,td[1].textContent,td[2].textContent,td[3].textContent);
+      var hit=c['key:'+k];
+      if(!hit) return;
+      if(txt(hit.ea)!=='' && isBlankOrZero(td[4].textContent)) td[4].textContent=hit.ea;
+      if(txt(hit.kg)!=='' && isBlankOrZero(td[5].textContent)) td[5].textContent=hit.kg;
+      if(txt(hit.qty)!=='' && isBlankOrZero(td[6].textContent)) td[6].textContent=hit.qty;
+      if(txt(hit.fail)!=='' && isBlankOrZero(td[7].textContent)) td[7].textContent=hit.fail;
+    });
+  }
+  function requestFill(delay){
+    if(pending) return;
+    pending=true;
+    setTimeout(function(){pending=false;try{fillRows()}catch(e){}},delay||30);
+  }
+  function wrapRender(){
+    if(window.renderShipmentTable && !window.renderShipmentTable.__eaKgFinalFix){
+      var old=window.renderShipmentTable;
+      var fn=function(){var ret=old.apply(this,arguments);requestFill(10);return ret};
+      fn.__eaKgFinalFix=true; window.renderShipmentTable=fn;
+    }
+  }
+  function wrapSave(){
+    if(window.saveOqc && !window.saveOqc.__eaKgFinalFix){
+      var old=window.saveOqc;
+      var fn=async function(){
+        saveCacheFromForm();
+        var ret=await old.apply(this,arguments);
+        setTimeout(function(){try{if(window.renderShipmentTable)window.renderShipmentTable()}catch(e){}requestFill(10)},200);
+        setTimeout(function(){try{if(window.renderShipmentTable)window.renderShipmentTable()}catch(e){}requestFill(10)},900);
+        return ret;
+      };
+      fn.__eaKgFinalFix=true; window.saveOqc=fn;
+    }
+  }
+  document.addEventListener('input',function(e){var id=e&&e.target&&e.target.id;if(/^(shipmentDate|shipmentCustomer|shipmentProduct|shipmentLot|shipmentOutQty|shipmentTotalWeightKg|shipmentQty|shipmentFailQty)$/.test(id||'')){saveCacheFromForm();requestFill(50)}},true);
+  document.addEventListener('change',function(e){var id=e&&e.target&&e.target.id;if(/^(shipmentDate|shipmentCustomer|shipmentProduct|shipmentLot|shipmentOutQty|shipmentTotalWeightKg|shipmentQty|shipmentFailQty)$/.test(id||'')){saveCacheFromForm();requestFill(50)}},true);
+  document.addEventListener('click',function(e){var t=e&&e.target;if(t&&t.closest&&t.closest('#shipmentSave')){saveCacheFromForm();requestFill(80);setTimeout(saveCacheFromForm,250);setTimeout(function(){try{if(window.renderShipmentTable)window.renderShipmentTable()}catch(x){}requestFill(20)},700)} if(t&&t.closest&&t.closest('[data-page="shipment"],[data-page-target="shipment"]'))requestFill(120)},true);
+  function observe(){var tb=$('shipmentTable');if(tb&&!tb.__eaKgFinalObserver){tb.__eaKgFinalObserver=true;try{new MutationObserver(function(){requestFill(20)}).observe(tb,{childList:true,subtree:true,characterData:true})}catch(e){}}}
+  function boot(){wrapRender();wrapSave();observe();requestFill(100);setTimeout(function(){wrapRender();wrapSave();observe();requestFill(20)},500);setTimeout(requestFill,1500)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  window.addEventListener('load',boot);
+})();
+</script>
+<!-- NAMO OQC EA/KG LIST FINAL FIX 20260706 END -->
+
 </body>
 </html>
