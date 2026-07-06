@@ -1406,9 +1406,9 @@ tbody td input:focus,tbody td select:focus{border-color:var(--pri);box-shadow:0 
 
 
 /* ══════════════════════════════════
-   Dashboard Area Trend Final v42
+   Dashboard Bar Trend Final v44
    - 이미지 추천형 대시보드
-   - 막대그래프 → Area Line
+   - Area Line → 막대그래프
    - 공지사항 축소
    - 교육보고서 완료/미완료 판정 보정
 ══════════════════════════════════ */
@@ -5689,19 +5689,22 @@ function renderCharts(){
   };
 
   state.charts.trend=new Chart(canvas,{
-    type:'line',
+    type:'bar',
     data:{
       labels,
       datasets:[
-        {label:'수입검사 (IQC)',data:incoming,borderColor:'#2563eb',backgroundColor:makeGradient(ctx,'blue'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},
-        {label:'공정검사 (PQC)',data:process,borderColor:'#8b5cf6',backgroundColor:makeGradient(ctx,'purple'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5},
-        {label:'출하검사 (OQC)',data:shipment,borderColor:'#f97316',backgroundColor:makeGradient(ctx,'orange'),fill:true,tension:.34,borderWidth:2.7,pointRadius:4.2,pointHoverRadius:6,pointBackgroundColor:'#fff',pointBorderWidth:2.5}
+        {label:'수입검사 (IQC)',data:incoming,backgroundColor:'#2563eb',borderColor:'#2563eb',borderWidth:1,borderRadius:8,borderSkipped:false,barPercentage:.72,categoryPercentage:.72,maxBarThickness:34},
+        {label:'공정검사 (PQC)',data:process,backgroundColor:'#8b5cf6',borderColor:'#8b5cf6',borderWidth:1,borderRadius:8,borderSkipped:false,barPercentage:.72,categoryPercentage:.72,maxBarThickness:34},
+        {label:'출하검사 (OQC)',data:shipment,backgroundColor:'#f97316',borderColor:'#f97316',borderWidth:1,borderRadius:8,borderSkipped:false,barPercentage:.72,categoryPercentage:.72,maxBarThickness:34}
       ]
     },
     plugins:[pointLabelPlugin],
     options:{
       responsive:true,
       maintainAspectRatio:false,
+      animation:false,
+      responsiveAnimationDuration:0,
+      resizeDelay:180,
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{position:'top',align:'center',labels:{font:{size:12,weight:'800'},boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',padding:18}},
@@ -5709,7 +5712,7 @@ function renderCharts(){
       },
       scales:{
         y:{beginAtZero:true,suggestedMax:maxVal+1,ticks:{precision:0,stepSize:1,font:{size:11,weight:'800'},color:'#64748b'},grid:{color:'rgba(15,23,42,.07)',drawBorder:false}},
-        x:{offset:false,ticks:{font:{size:11,weight:'800'},color:'#64748b'},grid:{display:false}}
+        x:{offset:true,ticks:{font:{size:11,weight:'800'},color:'#64748b'},grid:{display:false}}
       }
     }
   });
