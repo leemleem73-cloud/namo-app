@@ -18493,5 +18493,156 @@ document.addEventListener('click',function(e){
 </script>
 <!-- NAMO PRODUCTION STATUS BAR GRAPH SAME STYLE PATCH 20260706 END -->
 
+
+
+<!-- NAMO LOT TRACE CLICK NAVIGATION PATCH 20260707 START
+     - LOT 추적조회 원재료 LOT 클릭 -> 수입검사(IQC) 성적서/등록화면 이동
+     - LOT 추적조회 작업지시 클릭 -> 작업지시서 상세/수정 화면 이동
+     - 기존 LOT 추적 검색 기능은 유지
+-->
+<style id="namo-lot-trace-click-navigation-20260707-style">
+  #page-trace .nmc-lot-link[data-trace-type="material"]::after{content:'  IQC';font-size:10px;font-weight:900;color:#2563eb;opacity:.75;text-decoration:none;}
+  #page-trace .nmc-lot-link[data-trace-type="workorder"]::after{content:'  작업지시';font-size:10px;font-weight:900;color:#2563eb;opacity:.75;text-decoration:none;}
+</style>
+<script id="namo-lot-trace-click-navigation-20260707-script">
+(function(){
+  'use strict';
+  if(window.__NAMO_LOT_TRACE_CLICK_NAVIGATION_20260707__) return;
+  window.__NAMO_LOT_TRACE_CLICK_NAVIGATION_20260707__ = true;
+
+  function byId(id){return document.getElementById(id);}
+  function qs(s,r){return (r||document).querySelector(s);}
+  function qsa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(v){return String(v==null?'':v).trim();}
+  function norm(v){return txt(v).toLowerCase().replace(/\s+/g,'');}
+  function esc(v){return txt(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  function notifySafe(title,msg){try{ if(typeof window.notify==='function') window.notify(title,msg); else console.log(title,msg); }catch(e){}}
+  function show(pg){
+    try{ if(typeof window.showPage==='function'){ window.showPage(pg); return true; } }catch(e){}
+    qsa('.page').forEach(function(p){p.classList.toggle('active',p.id==='page-'+pg);});
+    qsa('.nav-item[data-page]').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===pg);});
+    return true;
+  }
+  function readArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+  function pick(o,keys,fb){o=o||{};for(var i=0;i<keys.length;i++){var v=o[keys[i]];if(v!=null&&txt(v)!=='')return v;}return fb||'';}
+  function same(a,b){return norm(a) && norm(a)===norm(b);}
+
+  function findIqcByLot(lot){
+    lot=txt(lot);
+    var st=(window.state&&Array.isArray(window.state.incoming))?window.state.incoming:[];
+    var found=st.find(function(r){return same(r.lot||r.lotNo||r.incomingLot,lot);});
+    if(found) return found;
+    ['incoming','iqc','nmcIncoming','nmc_iqc','nmcIqc','incomingInspection','incomingInspections'].some(function(k){
+      var arr=readArr(k);
+      found=arr.find(function(r){return same(pick(r,['lot','lotNo','incomingLot','rawLot','materialLot','LOT'],''),lot);});
+      return !!found;
+    });
+    return found||null;
+  }
+
+  function fillIqcForm(row,lot){
+    if(!row) row={lot:lot};
+    try{ if(typeof window.editIncoming==='function' && row.id!=null){ window.editIncoming(row.id); return true; } }catch(e){}
+    var map={
+      incomingEditId:pick(row,['id','uid'],''),
+      incomingDate:pick(row,['date','incomingDate','inspectionDate','createdAt'],''),
+      incomingLot:pick(row,['lot','lotNo','incomingLot','rawLot','materialLot'],lot),
+      incomingSupplier:pick(row,['supplier','supplierName','partner','partnerName','vendor','company'],''),
+      incomingItem:pick(row,['item','itemName','product','productName','material','materialName'],''),
+      incomingQty:pick(row,['incomingQty','qty','quantity','inQty'],''),
+      incomingTotalWeight:pick(row,['totalWeight','totalInWeight','total_in_weight','incomingTotalWeight','weight'],''),
+      incomingCheckQty:pick(row,['checkQty','inspectionQty','sampleQty'],''),
+      incomingFailQty:pick(row,['failQty','defectQty','badQty'], '')
+    };
+    Object.keys(map).forEach(function(id){var el=byId(id); if(el) el.value=map[id]||'';});
+    try{ if(row.items&&Array.isArray(row.items)&&window.state){ window.state.incomingItemDrafts=JSON.parse(JSON.stringify(row.items)); } }catch(e){}
+    try{ if(typeof window.renderIqcItems==='function') window.renderIqcItems(); else if(typeof window.syncIqcPreview==='function') window.syncIqcPreview(); }catch(e){}
+    return true;
+  }
+
+  window.namoOpenIqcByLot=function(lot){
+    lot=txt(lot);
+    if(!lot){alert('원재료 LOT 정보가 없습니다.');return false;}
+    show('incoming');
+    setTimeout(function(){
+      var row=findIqcByLot(lot);
+      fillIqcForm(row,lot);
+      var lotInput=byId('incomingLot');
+      if(lotInput){lotInput.focus(); lotInput.select&&lotInput.select();}
+      if(row) notifySafe('수입검사 성적서 이동', lot+' LOT 수입검사 자료를 열었습니다.');
+      else notifySafe('수입검사 이동', lot+' LOT로 수입검사 화면을 열었습니다. 목록 데이터 로딩 후 다시 클릭하면 상세가 표시됩니다.');
+    },180);
+    return false;
+  };
+
+  function findWorkOrderKey(no){
+    no=txt(no);
+    var keys=['nmc_workorder_sent_items','nmcWorkOrders','workOrders','workOrderHistory','nmcWorkorderHistory','nmcWorkOrderHistory','nmcSentWorkorders'];
+    var found=null;
+    keys.some(function(k){
+      readArr(k).some(function(o){
+        var vals=[pick(o,['id','uid','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo','nmcProdLot'],''),o&&o.id,o&&o.uid,o&&o.woNo,o&&o.no,o&&o.workOrderNo,o&&o.orderNo,o&&o.nmcWoNo,o&&o.docNo,o&&o.prodLot,o&&o.productionLot,o&&o.lot,o&&o.lotNo];
+        if(vals.some(function(v){return same(v,no);})){
+          found={key:pick(o,['id','uid','woNo','no','workNo','workOrderNo','orderNo','nmcWoNo','docNo','prodLot','productionLot','lot','lotNo','nmcProdLot'],no), raw:o};
+          return true;
+        }
+        return false;
+      });
+      return !!found;
+    });
+    return found;
+  }
+
+  window.namoOpenWorkOrderByNo=function(no){
+    no=txt(no);
+    if(!no){alert('작업지시 번호가 없습니다.');return false;}
+    show('workorder-list');
+    setTimeout(function(){
+      var target=null;
+      qsa('[data-nmc-wo-final-open],[data-nmc-safe-id]').some(function(el){
+        var key=el.getAttribute('data-nmc-wo-final-open')||el.getAttribute('data-nmc-safe-id')||'';
+        if(same(key,no) || same(el.textContent,no)){target=el;return true;}
+        return false;
+      });
+      if(target){target.click();return;}
+      var found=findWorkOrderKey(no);
+      var key=found && (found.key||no);
+      if(typeof window.nmcWoSafeEdit==='function'){
+        try{window.nmcWoSafeEdit(key||no);notifySafe('작업지시서 이동',no+' 작업지시서를 열었습니다.');return;}catch(e){}
+      }
+      show('workorder-final');
+      setTimeout(function(){
+        if(found && typeof window.nmcWoSafeEdit==='function'){
+          try{window.nmcWoSafeEdit(key||no);return;}catch(e){}
+        }
+        var input=byId('nmcWoNo');
+        if(input){input.value=no;input.focus();input.select&&input.select();}
+        notifySafe('작업지시서 이동',no+' 작업지시 화면으로 이동했습니다.');
+      },160);
+    },260);
+    return false;
+  };
+
+  function handleTraceLink(e){
+    var a=e.target&&e.target.closest&&e.target.closest('#page-trace [data-trace-lot]');
+    if(!a) return;
+    var type=txt(a.getAttribute('data-trace-type')||'all');
+    var lot=txt(a.getAttribute('data-trace-lot')||a.textContent||'');
+    if(type==='material'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      return window.namoOpenIqcByLot(lot);
+    }
+    if(type==='workorder'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      return window.namoOpenWorkOrderByNo(lot);
+    }
+  }
+  document.addEventListener('click',handleTraceLink,true);
+
+  /* 기존 렌더가 다시 그려져도 원재료 LOT/작업지시 링크는 위 캡처 이벤트로 계속 동작합니다. */
+})();
+</script>
+<!-- NAMO LOT TRACE CLICK NAVIGATION PATCH 20260707 END -->
+
 </body>
 </html>
