@@ -12061,7 +12061,7 @@ NMC_SYNTAX_AND_WORKORDER_SAFE_FIX_20260617_END -->
   }
   function passesMaterial(r,kw){return match(r.materialLot,kw)||(!exactEnabled()&&(loose(r.material,kw)||loose(r.finishedLot,kw)||loose(r.product,kw)||loose(r.orderNo,kw)||loose(r.supplier,kw)))}
   function passesFinished(r,kw,materials){return match(r.finishedLot,kw)||(!exactEnabled()&&(loose(r.product,kw)||loose(r.orderNo,kw)||materials.some(function(m){return norm(m.finishedLot)===norm(r.finishedLot)&&passesMaterial(m,kw)})))}
-  function renderSummary(materials,finished,kw){var el=id('traceSummary');if(!el)return;var qty=materials.reduce(function(s,r){return s+num(r.qty)},0);el.innerHTML='<div class="trace-kpi"><div class="l">검색 LOT</div><div class="v">'+esc(kw||'-')+'</div><div class="s">'+(exactEnabled()?'전부일치':'포함검색')+'</div></div><div class="trace-kpi"><div class="l">원재료 연결</div><div class="v">'+materials.length+'</div><div class="s">IQC/작업지시/작업일지</div></div><div class="trace-kpi"><div class="l">완제품 연결</div><div class="v">'+finished.length+'</div><div class="s">작업/OQC 기준</div></div><div class="trace-kpi"><div class="l">투입량 합계</div><div class="v">'+(qty?qty.toLocaleString():'-')+'</div><div class="s">숫자형 투입량 기준 kg</div></div>'}
+  function renderSummary(materials,finished,kw){var el=id('traceSummary');if(!el)return;var qty=materials.reduce(function(s,r){return s+num(r.qty)},0);el.innerHTML='<div class="trace-kpi"><div class="l">검색 LOT</div><div class="v">'+esc(kw||'-')+'</div><div class="s">'+(exactEnabled()?'전부일치':'포함검색')+'</div></div><div class="trace-kpi"><div class="l">원재료 연결</div><div class="v">'+materials.length+'</div><div class="s">IQC/작업지시/작업일지</div></div><div class="trace-kpi"><div class="l">완제품 연결</div><div class="v">'+finished.length+'</div><div class="s">OQC/출하 기준</div></div><div class="trace-kpi"><div class="l">투입량 합계</div><div class="v">'+(qty?qty.toLocaleString():'-')+'</div><div class="s">숫자형 투입량 기준 kg</div></div>'}
   function renderTimeline(materials,finished){var el=id('traceTimeline');if(!el)return;el.innerHTML=['IQC 원료 LOT','작업지시/생산투입','완제품 LOT','OQC/출하'].map(function(x,i){var on=(i===0&&materials.length)||(i===1&&materials.some(function(r){return r.finishedLot}))||(i===2&&finished.length)||(i===3&&finished.some(function(r){return r.source==='oqc'||r.shipDate}));return '<div class="trace-step '+(on?'on':'')+'">'+esc(x)+'</div>'}).join('')}
   function renderMaterials(rows){var tb=id('traceTable'),cnt=id('traceMatCount');if(cnt)cnt.textContent=rows.length+'건';if(!tb)return;if(!rows.length){tb.innerHTML=empty(7,'조회 결과가 없습니다.');return}tb.innerHTML=rows.map(function(r){return '<tr><td><b>'+esc(r.material||'-')+'</b></td><td>'+lotLink('iqc',r.materialLot)+'</td><td>'+esc(r.supplier||'-')+'</td><td>'+esc(r.prodDate||'-')+'</td><td>'+esc(r.qty||'-')+'</td><td>'+(r.finishedLot?lotLink('oqc',r.finishedLot):'-')+'</td><td>'+esc(r.remark||'-')+'</td></tr>'}).join('')}
   function renderFinished(rows){var tb=id('traceFinishedTable'),cnt=id('traceFinishedCount');if(cnt)cnt.textContent=rows.length+'건';if(!tb)return;if(!rows.length){tb.innerHTML=empty(7,'조회 결과가 없습니다.');return}tb.innerHTML=rows.map(function(r){var d=r.shipDate||'';return '<tr><td><b>'+esc(r.product||'-')+'</b></td><td>'+lotLink('oqc',r.finishedLot)+'</td><td>'+esc(r.prodDate||'-')+'</td><td>'+esc(d||'-')+'</td><td>'+esc(r.shipQty||'-')+'</td><td>'+badge((r.source==='oqc')||/합격|완료|PASS/i.test(r.oqcStatus||''),r.oqcStatus||'-')+'</td><td>'+esc(r.orderNo||r.source||'-')+'</td></tr>'}).join('')}
@@ -18643,6 +18643,158 @@ document.addEventListener('click',function(e){
 })();
 </script>
 <!-- NAMO LOT TRACE CLICK NAVIGATION PATCH 20260707 END -->
+
+
+
+<!-- NAMO LOT TRACE FINISHED OQC ONLY BUGFIX 20260707 START
+     수정내용: LOT 추적 조회의 '완제품 LOT 추적'은 작업지시/작업일지 중복이 아니라
+     출하검사(OQC/출하검사 목록)에 실제 등록된 건만 표시하도록 고정.
+     예) DBD2101 검색 시 2026-04-21 출하검사 목록 1건만 표시.
+-->
+<script id="namo-lot-trace-finished-oqc-only-bugfix-20260707">
+(function(){
+  'use strict';
+  if(window.__NAMO_LOT_TRACE_FINISHED_OQC_ONLY_BUGFIX_20260707__) return;
+  window.__NAMO_LOT_TRACE_FINISHED_OQC_ONLY_BUGFIX_20260707__ = true;
+
+  function txt(v){return String(v==null?'':v).trim();}
+  function norm(v){return txt(v).toLowerCase().replace(/[\s\-_/\\#()]+/g,'');}
+  function dateOnly(v){
+    var s=txt(v); if(!s) return '';
+    var m=s.match(/(20\d{2})[-.\/년\s]*(\d{1,2})[-.\/월\s]*(\d{1,2})/);
+    if(m) return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
+    m=s.match(/(20\d{2})(\d{2})(\d{2})/);
+    if(m) return m[1]+'-'+m[2]+'-'+m[3];
+    return s.slice(0,10);
+  }
+  function pick(o,keys,d){
+    o=o||{};
+    for(var i=0;i<keys.length;i++){
+      var v=o[keys[i]];
+      if(v!=null && txt(v)!=='') return v;
+    }
+    return d||'';
+  }
+  function arr(v){return Array.isArray(v)?v:[];}
+  function readArr(k){
+    try{var v=localStorage.getItem(k); if(!v) return []; var p=JSON.parse(v); return Array.isArray(p)?p:[];}catch(e){return [];}
+  }
+  function addUnique(out,row){
+    var key=[row.finishedLot,row.shipDate,row.customer,row.shipQty,row.product].map(norm).join('|');
+    if(!key || out._seen[key]) return;
+    out._seen[key]=1; out.push(row);
+  }
+  function getShipmentRows(){
+    var rows=[]; rows._seen={};
+    var sources=[];
+    try{ if(window.state) sources=sources.concat(arr(window.state.shipment)); }catch(e){}
+    try{ sources=sources.concat(arr(window.shipment),arr(window.oqc)); }catch(e){}
+    [
+      'nmc_oqc','qms_oqc','oqc','shipment','shipmentHistory','oqcHistory',
+      'nmcShipment','nmc_shipments','shipmentList','oqcList','nmcOqc','nmc_oqc_list'
+    ].forEach(function(k){sources=sources.concat(readArr(k));});
+
+    sources.forEach(function(o){
+      if(!o || typeof o!=='object') return;
+      var lot=pick(o,['finishedLot','shipmentLot','oqcLot','prodLot','productionLot','productLot','lot','lotNo','nmcProdLot'],'');
+      if(!lot) return;
+      addUnique(rows,{
+        source:'oqc',
+        product:pick(o,['product','productName','prodName','item','itemName','title','nmcProdName'],'-'),
+        finishedLot:lot,
+        orderNo:pick(o,['workOrderNo','woNo','orderNo','no','docNo','nmcWoNo'],''),
+        prodDate:dateOnly(pick(o,['workDate','productionDate','prodDate','mfgDate','orderDate'],''))||'',
+        shipDate:dateOnly(pick(o,['shipmentDate','shipDate','oqcDate','date','inspectionDate','createdAt'],''))||'',
+        customer:pick(o,['customer','customerName','client','clientName','shipTo','destination','buyer','company'],'-')||'-',
+        shipQty:pick(o,['totalShipmentKg','shipmentWeight','shipmentQtyKg','totalShipKg','shipQtyKg','shipmentQty','shipQty','qty','totalQty','outQty'],''),
+        oqcStatus:pick(o,['oqcStatus','inspectionResult','result','judge','status'],'발송완료'),
+        remark:pick(o,['remark','remarks','note','memo','comment'],'출하검사 기준')
+      });
+    });
+    delete rows._seen;
+    return rows;
+  }
+
+  function applyOqcOnlyCollect(){
+    var old=window.nmcLotTraceCollectClean;
+    if(typeof old!=='function' || old.__namoOqcOnly) return false;
+    var wrapped=function(){
+      var base={materials:[],finished:[]};
+      try{base=old.apply(this,arguments)||base;}catch(e){}
+      if(!base || typeof base!=='object') base={materials:[],finished:[]};
+      base.materials=arr(base.materials);
+      base.finished=getShipmentRows();
+      return base;
+    };
+    wrapped.__namoOqcOnly=true;
+    wrapped.__namoOriginalCollect=old;
+    window.nmcLotTraceCollectClean=wrapped;
+    return true;
+  }
+
+  function refreshIfTraceHasKeyword(){
+    try{
+      applyOqcOnlyCollect();
+      var page=document.getElementById('page-trace');
+      var input=document.getElementById('traceKeyword');
+      if(page && page.classList.contains('active') && input && txt(input.value) && typeof window.searchTrace==='function'){
+        window.searchTrace();
+      }
+    }catch(e){}
+  }
+
+  applyOqcOnlyCollect();
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(refreshIfTraceHasKeyword,120);},true);
+  window.addEventListener('load',function(){setTimeout(refreshIfTraceHasKeyword,300); setTimeout(refreshIfTraceHasKeyword,1200);});
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t && t.closest && (t.closest('.nav-item[data-page="trace"]') || t.closest('#traceSearch') || t.closest('[data-trace-lot]'))){
+      setTimeout(refreshIfTraceHasKeyword,80);
+      setTimeout(refreshIfTraceHasKeyword,350);
+    }
+  },true);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter' && e.target && e.target.id==='traceKeyword') setTimeout(refreshIfTraceHasKeyword,80);
+  },true);
+})();
+</script>
+<!-- NAMO LOT TRACE FINISHED OQC ONLY BUGFIX 20260707 END -->
+
+
+
+<!-- NAMO LOT TRACE REVIEW LABEL SAFETY PATCH 20260707 START
+     검토 보강: LOT 추적 요약/카운트 문구를 출하검사(OQC) 기준으로 통일.
+     완제품 LOT 추적 데이터는 위 OQC ONLY BUGFIX에서 출하검사 목록만 사용.
+-->
+<script id="namo-lot-trace-review-label-safety-20260707">
+(function(){
+  'use strict';
+  if(window.__NAMO_LOT_TRACE_REVIEW_LABEL_SAFETY_20260707__) return;
+  window.__NAMO_LOT_TRACE_REVIEW_LABEL_SAFETY_20260707__=true;
+  function fix(){
+    try{
+      var root=document.getElementById('page-trace'); if(!root) return;
+      root.querySelectorAll('.trace-kpi .s').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(t==='작업/OQC 기준'||t==='생산/OQC/출하 기준') el.textContent='OQC/출하 기준';
+      });
+      var title=root.querySelector('.nmc-lot-card:nth-child(2) .nmc-lot-card-title');
+      if(title && title.textContent.indexOf('출하검사 기준')<0) title.textContent='완제품 LOT 추적';
+    }catch(e){}
+  }
+  var old=window.searchTrace;
+  if(typeof old==='function' && !old.__namoReviewLabelSafety){
+    window.searchTrace=function(){var r=old.apply(this,arguments); setTimeout(fix,30); setTimeout(fix,180); return r;};
+    window.searchTrace.__namoReviewLabelSafety=true;
+  }
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('#traceSearch,.nav-item[data-page="trace"],[data-trace-lot]')){setTimeout(fix,80);setTimeout(fix,300);}
+  },true);
+  document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target&&e.target.id==='traceKeyword')setTimeout(fix,100);},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);else fix();
+})();
+</script>
+<!-- NAMO LOT TRACE REVIEW LABEL SAFETY PATCH 20260707 END -->
 
 </body>
 </html>
