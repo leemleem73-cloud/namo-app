@@ -153,15 +153,12 @@ const SPC_CONFIG = {
 
 function spcStats(values, lsl, usl) {
   const n = values.length;
-  if (n < 2) return { mean: 0, sd: 0, cp: null, cpk: null, n };
   const mean = values.reduce((a, b) => a + b, 0) / n;
   const sd = Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1));
-  if (!isFinite(sd) || sd === 0) return { mean, sd: 0, cp: null, cpk: null, n };
   const cp = lsl != null && usl != null ? (usl - lsl) / (6 * sd) : null;
   const cpu = usl != null ? (usl - mean) / (3 * sd) : null;
   const cpl = lsl != null ? (mean - lsl) / (3 * sd) : null;
-  const cpkVals = [cpu, cpl].filter((v) => v != null && isFinite(v));
-  const cpk = cpkVals.length ? Math.min(...cpkVals) : null;
+  const cpk = Math.min(...[cpu, cpl].filter((v) => v != null));
   return { mean, sd, cp, cpk, n };
 }
 
@@ -474,7 +471,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [nextId, setNextId] = useState(idStart);
 
   const pass = records.filter((r) => r.judge === "합격").length;
-  const rate = records.length ? ((pass / records.length) * 100).toFixed(1) : "—";
+  const rate = ((pass / records.length) * 100).toFixed(1);
   const spec = QC_ITEMS[form.check];
   const isNumericItem = spec.lo != null || spec.hi != null;
   const trimmedVal = form.value.trim();
@@ -746,11 +743,9 @@ function resultTone(r) {
 
 function TraceTab() {
   const lotIds = Object.keys(LOTS);
-  if (lotIds.length === 0) return <EmptyState title="LOT 추적 데이터 없음" message="LOTS 데이터가 비어 있어 조회할 LOT가 없습니다." />;
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(lotIds[0]);
   const lot = LOTS[selected];
-  if (!lot) return <EmptyState title="LOT 선택 오류" message="선택된 LOT 데이터를 찾을 수 없습니다." />;
   const dec = decodeLot(selected);
 
   const filtered = lotIds.filter(
@@ -946,7 +941,6 @@ function TraceTab() {
 /* ──────────────────────────── SPC / 공정능력 (Cpk) 탭 ──────────────────────────── */
 
 function cpkGrade(cpk) {
-  if (cpk == null || !isFinite(cpk)) return { label: "데이터 없음", tone: "gray" };
   if (cpk >= 1.67) return { label: "우수 (≥1.67)", tone: "green" };
   if (cpk >= 1.33) return { label: "적합 (≥1.33)", tone: "blue" };
   if (cpk >= 1.0) return { label: "개선 필요 (<1.33)", tone: "amber" };
@@ -1126,10 +1120,8 @@ function NcrTab() {
 
 function CoaTab() {
   const ids = Object.keys(COA);
-  if (ids.length === 0) return <EmptyState title="CoA 발행 데이터 없음" message="OQC 합격 LOT이 등록되면 출하성적서가 표시됩니다." />;
   const [sel, setSel] = useState(ids[0]);
   const c = COA[sel];
-  if (!c) return <EmptyState title="CoA 선택 오류" message="선택된 성적서 데이터를 찾을 수 없습니다." />;
 
   return (
     <div className="flex flex-col gap-4">
@@ -1379,10 +1371,8 @@ function IqcTab() {
 
 function WoDocTab() {
   const ids = Object.keys(WO_DOCS);
-  if (ids.length === 0) return <EmptyState title="작업지시서 데이터 없음" message="작업지시 발행 탭에서 작업지시서를 등록하면 표시됩니다." />;
   const [sel, setSel] = useState(ids[0]);
   const w = WO_DOCS[sel];
-  if (!w) return <EmptyState title="작업지시서 선택 오류" message="선택된 작업지시서 데이터를 찾을 수 없습니다." />;
   const okMark = (ok) =>
     ok === true ? <span className="font-semibold text-emerald-600">적합</span>
     : ok === null ? <span className="font-medium text-sky-600">진행중</span>
@@ -1817,38 +1807,6 @@ function InterlockTab() {
 /* ──────────────────────────── 현장 입력 (iPad · POP) 탭 ──────────────────────────── */
 /* 현장 작업자가 태블릿으로 측정값만 입력하면: 규격 자동판정 → 성적서 자동기록 → Lot 이력 반영 → 불합격 시 자동 홀드·알람 */
 
-function EmptyState({ title = "등록된 데이터가 없습니다", message = "데이터를 등록하면 이 화면에 표시됩니다." }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 text-center">
-      <CircleDot size={22} className="text-slate-500 mx-auto mb-2" />
-      <div className="text-sm font-semibold text-slate-200">{title}</div>
-      <div className="text-xs text-slate-500 mt-1">{message}</div>
-    </div>
-  );
-}
-
-function autoJudge(item, value) {
-  const spec = QC_ITEMS[item];
-  if (!spec) return "합격";
-  const num = parseFloat(String(value).replace(/,/g, ""));
-  if (!isFinite(num)) return "불합격";
-  if (spec.lo != null && num < spec.lo) return "불합격";
-  if (spec.hi != null && num > spec.hi) return "불합격";
-  return "합격";
-}
-
-function PopTab() {
-  return <EmptyState title="현장 입력 데이터 없음" message="PQC/OQC 탭에서 측정값을 등록하면 현장 입력 기록과 연동할 수 있습니다." />;
-}
-
-function ComplaintTab() {
-  return <EmptyState title="고객불만 접수 건 없음" message="고객불만 접수 → 초동조치 → 원인분석 → 시정조치 → 고객승인 Close 흐름으로 관리합니다." />;
-}
-
-function SafeTab({ comp: Comp }) {
-  try { return <Comp />; } catch (e) { return <EmptyState title="화면 표시 오류" message={String(e && e.message ? e.message : e)} />; }
-}
-
 const FIELD_LOTS = [];
 
 const MENU_GROUPS = [
@@ -1858,27 +1816,6 @@ const MENU_GROUPS = [
   { title: "개선 · 대응", ids: ["ncr", "cc", "4m"] },
   { title: "재고 · 추적", ids: ["inv", "trace", "coa"] },
   { title: "시스템", ids: ["members"] },
-];
-
-const TABS = [
-  { id: "dash", label: "대시보드", icon: LayoutDashboard, comp: DashboardTab },
-  { id: "eq", label: "설비 모니터링", icon: Cpu, comp: EquipmentTab },
-  { id: "pop", label: "현장 입력", icon: Tablet, comp: PopTab },
-  { id: "prod", label: "생산현황", icon: BarChart3, comp: ProductionTab },
-  { id: "wo", label: "작업지시서", icon: FileText, comp: WoDocTab },
-  { id: "woIssue", label: "작업지시 발행", icon: ClipboardList, comp: IssueWoTab },
-  { id: "iqc", label: "수입검사", icon: ArrowDownToLine, comp: IqcTab },
-  { id: "pqc", label: "공정검사", icon: Beaker, comp: PqcTab },
-  { id: "oqc", label: "출하검사", icon: Truck, comp: OqcTab },
-  { id: "spc", label: "SPC/Cpk", icon: Activity, comp: SpcTab },
-  { id: "lock", label: "품질 인터락", icon: Lock, comp: InterlockTab },
-  { id: "ncr", label: "부적합/8D", icon: ShieldAlert, comp: NcrTab },
-  { id: "cc", label: "고객불만", icon: MessageSquareWarning, comp: ComplaintTab },
-  { id: "4m", label: "4M 변경", icon: Repeat, comp: FourMTab },
-  { id: "inv", label: "재고", icon: Warehouse, comp: InventoryTab },
-  { id: "trace", label: "LOT 추적", icon: GitBranch, comp: TraceTab },
-  { id: "coa", label: "CoA", icon: FileText, comp: CoaTab },
-  { id: "members", label: "회원 관리", icon: Users, comp: MembersTab, adminOnly: true },
 ];
 
 function QMESChemical({ user, onLogout }) {
@@ -1891,7 +1828,7 @@ function QMESChemical({ user, onLogout }) {
   }, []);
 
   const visibleTabs = TABS.filter((t) => !t.adminOnly || user.role === "admin");
-  const Active = (TABS.find((t) => t.id === tab) || TABS[0]).comp;
+  const Active = TABS.find((t) => t.id === tab).comp;
 
   const currentTab = TABS.find((t) => t.id === tab);
 
