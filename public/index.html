@@ -1,18 +1,37 @@
-import { useState, useEffect } from "react";
-import {
-  LineChart, Line, BarChart, Bar, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine,
-} from "recharts";
-import {
-  FlaskConical, Activity, AlertTriangle, CheckCircle2, XCircle, Gauge,
-  Package, ClipboardCheck, Cpu, LayoutDashboard, Bell, Search,
-  TrendingUp, TrendingDown, Thermometer, Droplets, Plus, ChevronRight,
-  Truck, Boxes, GitBranch, ArrowDownToLine, ArrowUpFromLine, CircleDot,
-  Beaker, Filter, Warehouse, FileText, Wind, RotateCw,
-  BarChart3, Repeat, ShieldAlert, Printer, Users, Wrench, ClipboardList,
-  Lock, Unlock, ShieldCheck, Tablet,
-} from "lucide-react";
-
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namochemical QMES - 전체 교체본</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.js"></script>
+  <style>
+    body { margin: 0; background: #020617; font-family: Inter, Apple SD Gothic Neo, Malgun Gothic, Arial, sans-serif; }
+    * { box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const {
+      LineChart, Line, BarChart, Bar, AreaChart, Area,
+      XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine
+    } = Recharts;
+    const {
+      FlaskConical, Activity, AlertTriangle, CheckCircle2, XCircle, Gauge,
+      Package, ClipboardCheck, Cpu, LayoutDashboard, Bell, Search,
+      TrendingUp, TrendingDown, Thermometer, Droplets, Plus, ChevronRight,
+      Truck, Boxes, GitBranch, ArrowDownToLine, ArrowUpFromLine, CircleDot,
+      Beaker, Filter, Warehouse, FileText, Wind, RotateCw,
+      BarChart3, Repeat, ShieldAlert, Printer, Users, Wrench, ClipboardList,
+      Lock, Unlock, ShieldCheck, Tablet
+    } = lucideReact;
 /* ═══════════════════════════════════════════════════════════════
    나모케미칼㈜ QMES — 절연 슬러리 공정
    관리계획서 NMC-C-220-01 REV.0 (2026.03.12 개정 2차) 기준
@@ -2190,7 +2209,7 @@ const TABS = [
   { id: "cp", label: "관리계획서", icon: FileText, comp: ControlPlanTab },
 ];
 
-export default function QMESChemical() {
+function QMESChemical() {
   const [tab, setTab] = useState("dash");
   const [clock, setClock] = useState(new Date());
 
@@ -2257,3 +2276,9 @@ export default function QMESChemical() {
     </div>
   );
 }
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<QMESChemical />);
+  </script>
+</body>
+</html>
