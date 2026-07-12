@@ -1747,9 +1747,9 @@ function WoDocTab() {
   const ids = Object.keys(DB.woDocs);
   const [sel, setSel] = useState(ids[0]);
   const [edit, setEdit] = useState(false);
-  const [rows, setRows] = useState([]);
+  const [vals, setVals] = useState({});       // 실투입량 입력
+  const [lotVals, setLotVals] = useState({}); // 원재료 공급사 Lot 입력
   const [condVals, setCondVals] = useState({});
-  const [selectedRows, setSelectedRows] = useState({});
   const [errs, setErrs] = useState([]);
   const w = DB.woDocs[sel];
 
@@ -1762,150 +1762,241 @@ function WoDocTab() {
   }
 
   const num = (v) => { const n = parseFloat(String(v ?? "").replace(/,/g, "")); return isNaN(n) ? null : n; };
-  const toleranceOf = (r) => num(r.tol) ?? Math.max(0.1, (num(r.std) || 0) * 0.01);
-  const ratioOf = (r) => { const std = num(r.std), act = num(r.act); return std && act != null ? (act / std) * 100 : null; };
   const totalStd = w.inputs.reduce((a, r) => a + (num(r.std) || 0), 0);
   const totalAct = w.inputs.reduce((a, r) => a + (num(r.act) || 0), 0);
-  const totalRatio = totalStd > 0 && totalAct > 0 ? (totalAct / totalStd) * 100 : null;
-  const allDone = w.inputs.length > 0 && w.inputs.every((r) => r.act != null && r.lot) && w.conds.every((c) => c.act && c.act !== "—");
+  const allDone = w.inputs.every((r) => r.act != null) && w.conds.every((c) => c.act && c.act !== "—");
 
   const startEdit = () => {
-    setRows(w.inputs.map((r, i) => ({
-      ...r,
-      lot: r.lot && r.lot !== "—" ? r.lot : "",
-      std: r.std ?? "",
-      act: r.act ?? "",
-      tol: toleranceOf(r),
-    })));
+    setVals(Object.fromEntries(w.inputs.map((r, i) => [i, r.act != null ? String(r.act) : ""])));
+    setLotVals(Object.fromEntries(w.inputs.map((r, i) => [i, r.lot && r.lot !== "—" ? r.lot : ""])));
     setCondVals(Object.fromEntries(w.conds.map((c, j) => [j, c.act && c.act !== "—" ? c.act : ""])));
-    setSelectedRows({});
     setErrs([]);
     setEdit(true);
   };
 
-  const addMaterial = () => {
-    setRows((prev) => [...prev, {
-      seq: prev.length + 1, name: "", lot: "", std: "", act: "", tol: 0.1, unit: "kg", note: "", ok: null,
-    }]);
-  };
-
-  const removeSelected = () => {
-    const next = rows.filter((_, i) => !selectedRows[i]).map((r, i) => ({ ...r, seq: i + 1 }));
-    setRows(next);
-    setSelectedRows({});
-  };
-
-  const updateRow = (i, key, value) => setRows(rows.map((r, idx) => idx === i ? { ...r, [key]: value } : r));
-
   const saveActs = () => {
     const e2 = [];
     const user = window.__QMES_USER__ || "-";
-    if (!rows.length) e2.push("원료를 1개 이상 등록하세요.");
-    const newInputs = rows.map((r, i) => {
-      const name = String(r.name || "").trim();
-      const lot = String(r.lot || "").trim();
-      const stdText = String(r.std ?? "").trim();
-      const actText = String(r.act ?? "").trim();
-      const tolText = String(r.tol ?? "").trim();
-      if (!name) e2.push(`${i + 1}번: 원료명을 입력하세요.`);
-      if (!lot) e2.push(`${name || i + 1 + "번"}: LOT No를 입력하세요.`);
-      if (!/^\d+(\.\d+)?$/.test(stdText)) e2.push(`${name || i + 1 + "번"}: 계획량 숫자 형식 오류`);
-      if (!/^\d+(\.\d+)?$/.test(actText)) e2.push(`${name || i + 1 + "번"}: 실투입량 숫자 형식 오류`);
-      if (!/^\d+(\.\d+)?$/.test(tolText)) e2.push(`${name || i + 1 + "번"}: 허용공차 숫자 형식 오류`);
-      const std = num(stdText) || 0, act = num(actText), tol = num(tolText) ?? 0;
-      return { ...r, seq: i + 1, name, lot, std, act, tol, ok: act == null ? null : Math.abs(act - std) <= tol, by: user };
+    const newInputs = w.inputs.map((r, i) => {
+      const v = String(vals[i] ?? "").trim();
+      const lotv = String(lotVals[i] ?? "").trim();
+      if (v === "") return { ...r, lot: lotv || r.lot || "" };
+      if (!/^\d+(\.\d+)?$/.test(v)) { e2.push(`${r.name}: 실투입량 숫자 형식 오류 — 저장 진입 금지`); return r; }
+      const act = parseFloat(v);
+      const std = num(r.std) || 0;
+      const tol = Math.max(0.1, std * 0.01); // 계량 공차: ±0.1kg 또는 기준량의 1% 중 큰 값
+      return { ...r, lot: lotv, act, ok: Math.abs(act - std) <= tol, by: user };
     });
     if (e2.length) { setErrs(e2); return; }
     const newConds = w.conds.map((c, j) => {
       const v = String(condVals[j] ?? "").trim();
       return v === "" ? c : { ...c, act: v, ok: true, by: user };
     });
-    const done = newInputs.every((r) => r.act != null && r.lot) && newConds.every((c) => c.act && c.act !== "—");
+    const done = newInputs.every((r) => r.act != null) && newConds.every((c) => c.act && c.act !== "—");
     const overTol = newInputs.some((r) => r.ok === false);
-    DB.woDocs[sel] = { ...w, inputs: newInputs, conds: newConds, status: done && !overTol ? "완료" : overTol ? "공차 이탈" : "실적 기록중" };
+    DB.woDocs[sel] = { ...w, inputs: newInputs, conds: newConds, status: done ? "완료" : "실적 기록중" };
+
     const b = DB.batches.find((x) => x.no === sel);
-    if (b) { if (done && !overTol) { b.status = "완료"; b.done = b.plan; } else if (b.status === "발행") b.status = "진행중"; }
+    if (b) { if (done) { b.status = "완료"; b.done = b.plan; } else if (b.status === "발행") b.status = "진행중"; }
+
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const L = DB.lots[sel];
     if (L) {
-      L.stage = "생산";
-      L.status = overTol ? "홀드 — 원료 계량 공차 이탈" : done ? "생산완료 — 검사 대기" : "생산중 (실적 기록)";
       if (done && !L.steps.some((st) => st.name === "생산 실적 기록 완료")) {
-        L.steps = [...L.steps, { stage: "생산", name: "생산 실적 기록 완료", time, detail: `실투입 합계 ${newInputs.reduce((a, r) => a + (num(r.act) || 0), 0).toFixed(3)}kg · 투입비율 ${((newInputs.reduce((a, r) => a + (num(r.act) || 0), 0) / newInputs.reduce((a, r) => a + (num(r.std) || 0), 0)) * 100).toFixed(2)}%`, result: overTol ? "공차 이탈" : "완료", by: user }];
+        L.steps = [...L.steps, { stage: "생산", name: "생산 실적 기록 완료", time, detail: `실투입 합계 ${newInputs.reduce((a, r) => a + (num(r.act) || 0), 0).toFixed(2)}kg / 기준 ${totalStd.toFixed(2)}kg · 공정조건 전 항목 기록${overTol ? " · 계량 공차 이탈 항목 있음" : ""}`, result: overTol ? "완료 (공차 이탈 확인 필요)" : "완료", by: user }];
+        L.stage = "생산";
+        if (!L.status.includes("홀드")) L.status = "생산완료 — 검사 대기";
+      } else if (!done) {
+        L.stage = "생산";
+        if (!L.status.includes("홀드")) L.status = "생산중 (실적 기록)";
       }
     }
-    if (overTol) DB.holds = [{ id: `HLD-${String(Date.now()).slice(-6)}`, target: sel, type: "제품 Lot", gate: "투입 게이트", reason: "원료 실투입량 허용공차 초과", since: time, cond: "재계량 + 관리책임자 확인", status: "차단중", ncr: "-" }, ...DB.holds];
     dbSave();
-    setErrs([]); setEdit(false);
+    setErrs([]);
+    setEdit(false);
   };
 
-  const okMark = (ok) => ok === true ? <span className="font-semibold text-emerald-600">OK</span> : ok == null ? <span className="font-medium text-sky-600">대기</span> : <span className="font-semibold text-red-600">NG</span>;
+  const okMark = (ok) =>
+    ok === true ? <span className="font-semibold text-emerald-600">적합</span>
+    : ok == null ? <span className="font-medium text-sky-600">—</span>
+    : <span className="font-semibold text-red-600">공차 이탈</span>;
   const editCls = "w-full bg-white border border-stone-300 rounded px-2 py-1 text-sm tabular-nums text-stone-900 focus:outline-none focus:border-sky-600";
-  const displayRows = edit ? rows : w.inputs;
 
   return (
     <div className="flex flex-col gap-4">
-      <Panel title="작업지시서 조회 · 원료 투입 실적" right={
-        <div className="flex flex-wrap gap-2">
-          {edit ? <>
-            <button onClick={addMaterial} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium"><Plus size={13}/> 원료 추가</button>
-            <button onClick={removeSelected} className="rounded border border-red-500/40 text-red-300 hover:bg-red-500/10 px-3 py-1.5 text-xs font-medium">선택 삭제</button>
-            <button onClick={saveActs} className="bg-emerald-600 hover:bg-emerald-500 text-white rounded px-3 py-1.5 text-xs font-medium">임시저장 / 실적저장</button>
-            <button onClick={() => setEdit(false)} className="rounded border border-slate-600 text-slate-300 px-3 py-1.5 text-xs">취소</button>
-          </> : <button onClick={startEdit} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium"><ClipboardList size={13}/> 실적 입력</button>}
-          <button onClick={printDoc} className="flex items-center gap-1.5 rounded border border-slate-600 text-slate-200 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium"><Printer size={13}/> 인쇄 / PDF</button>
+      <Panel title="작업지시서 조회 · 실적 기록 · 발행" right={
+        <div className="flex gap-2">
+          {edit ? (
+            <button onClick={saveActs} className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded px-3 py-1.5 text-xs font-medium transition-colors">
+              실적 저장
+            </button>
+          ) : (
+            <button onClick={startEdit} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium transition-colors">
+              <ClipboardList size={13} /> 실적 입력
+            </button>
+          )}
+          <button onClick={printDoc} className="flex items-center gap-1.5 rounded border border-slate-600 text-slate-200 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium transition-colors">
+            <Printer size={13} /> 인쇄 / PDF
+          </button>
         </div>
       }>
         <div className="flex flex-wrap gap-2">
-          {ids.map((id) => <button key={id} onClick={() => { setSel(id); setEdit(false); setErrs([]); }} className={`px-3 py-1.5 rounded border text-xs font-mono ${sel === id ? "bg-sky-500/15 border-sky-500/50 text-sky-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>{id} <span className="text-slate-500 ml-1">{DB.woDocs[id].status}</span></button>)}
+          {ids.map((id) => (
+            <button key={id} onClick={() => { setSel(id); setEdit(false); setErrs([]); }}
+              className={`px-3 py-1.5 rounded border text-xs font-mono transition-colors ${
+                sel === id ? "bg-sky-500/15 border-sky-500/50 text-sky-300" : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500"
+              }`}>
+              {id} <span className="text-slate-500 ml-1">{DB.woDocs[id].status}</span>
+            </button>
+          ))}
         </div>
-        {errs.length > 0 && <div className="mt-3 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{errs.map((e, i) => <div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13}/>{e}</div>)}</div>}
+        {errs.length > 0 && (
+          <div className="mt-3 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">
+            {errs.map((e, i) => <div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> {e}</div>)}
+          </div>
+        )}
       </Panel>
 
-      <div className="doc-paper bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl w-full" style={{maxWidth:"1180px"}}>
+      {/* 작업지시서 (실사용 양식) */}
+      <div className="doc-paper bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
         <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3">
-          <div><div className="text-xl font-bold tracking-wide">원료 투입 작업지시서</div><div className="text-xs text-slate-500 mt-0.5">Raw Material Charging Work Order — QMES 전자기록</div></div>
-          <div className="text-right text-xs text-slate-600"><div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div><div>상태: <span className={w.status === "완료" ? "text-emerald-600 font-semibold" : w.status === "공차 이탈" ? "text-red-600 font-semibold" : "text-sky-600 font-semibold"}>{w.status}</span></div></div>
+          <div>
+            <div className="text-xl font-bold tracking-wide">작 업 지 시 서</div>
+            <div className="text-xs text-slate-500 mt-0.5">Work Order — 관리계획서 NMC-C-220-01 기준</div>
+          </div>
+          <div className="text-right text-xs text-slate-600">
+            <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
+            <div>상태: <span className={w.status === "완료" ? "text-emerald-600 font-semibold" : "text-sky-600 font-semibold"}>{w.status}</span></div>
+          </div>
         </div>
 
-        <table className="w-full text-sm mt-3 border border-slate-300"><tbody>
-          <tr className="border-b border-slate-300"><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">작업지시번호</td><td className="px-2 py-1.5 border-r border-slate-300 font-mono">{w.orderNo || sel}</td><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">제품명</td><td className="px-2 py-1.5 border-r border-slate-300">{w.item || w.procName || "절연 슬러리"}</td><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">생산 LOT</td><td className="px-2 py-1.5 font-mono font-semibold">{sel}</td></tr>
-          <tr className="border-b border-slate-300"><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">계획 생산량</td><td className="px-2 py-1.5 border-r border-slate-300">{typeof w.plan === "number" ? `${w.plan.toLocaleString()} kg` : w.plan}</td><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">사용 설비</td><td className="px-2 py-1.5 border-r border-slate-300">{w.tank}</td><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">생산일자</td><td className="px-2 py-1.5">{w.date}</td></tr>
-          <tr><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">작업자</td><td className="px-2 py-1.5 border-r border-slate-300">{w.workers || w.worker || "-"}</td><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">작업시간</td><td className="px-2 py-1.5 border-r border-slate-300">{w.timeRange || w.hours || "-"}</td><td className="bg-slate-50 px-2 py-1.5 text-xs font-semibold border-r border-slate-300">근무유형</td><td className="px-2 py-1.5">{w.shiftType || "일반"}</td></tr>
-        </tbody></table>
+        {/* 헤더 표 — 실사용 양식과 동일 배치 */}
+        <table className="w-full text-sm mt-3 border border-slate-300">
+          <tbody>
+            <tr className="border-b border-slate-300">
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold w-20 border-r border-slate-300">공정명</td>
+              <td className="px-2 py-1.5 border-r border-slate-300">{w.procName || "절연슬러리 제조"}</td>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold w-20 border-r border-slate-300">설비명</td>
+              <td className="px-2 py-1.5 border-r border-slate-300">{w.tank}</td>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold w-24 border-r border-slate-300">생산일자</td>
+              <td className="px-2 py-1.5 tabular-nums">{w.date}</td>
+            </tr>
+            <tr className="border-b border-slate-300">
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold border-r border-slate-300">LOT No.</td>
+              <td className="px-2 py-1.5 font-mono font-semibold border-r border-slate-300">{sel}</td>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold border-r border-slate-300">작업시간</td>
+              <td className="px-2 py-1.5 border-r border-slate-300">{w.hours || "-"}</td>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold border-r border-slate-300">생산시간</td>
+              <td className="px-2 py-1.5 tabular-nums">{w.timeRange || "-"}</td>
+            </tr>
+            <tr>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold border-r border-slate-300">작업자</td>
+              <td className="px-2 py-1.5 border-r border-slate-300">{w.workers || w.worker || "-"}</td>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold border-r border-slate-300">생산계획량</td>
+              <td className="px-2 py-1.5 tabular-nums border-r border-slate-300">{typeof w.plan === "number" ? `${w.plan.toLocaleString()} kg` : w.plan}</td>
+              <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold border-r border-slate-300">근무유형</td>
+              <td className="px-2 py-1.5 text-sm">
+                {["일반", "잔업", "특근"].map((t) => (
+                  <span key={t} className="mr-3">{(w.shiftType || "일반") === t ? "☑" : "☐"} {t}</span>
+                ))}
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
+        {/* ① 원재료 투입 */}
         <div className="mt-5">
-          <div className="flex items-center justify-between gap-2"><div className="text-sm font-bold border-l-4 border-slate-900 pl-2">① 원료 투입</div>{edit && <div className="text-xs text-slate-500">원료 추가 후 원료명, 원료 LOT No, 계획량과 실투입량을 입력하세요.</div>}</div>
-          <div className="overflow-x-auto"><table className="w-full text-sm mt-2" style={{minWidth:"1040px"}}>
-            <thead><tr className="text-xs text-slate-500 border-b-2 border-slate-900">
-              {edit && <th className="text-center py-1.5 w-10">선택</th>}<th className="text-center py-1.5 w-12">순서</th><th className="text-left py-1.5 pr-2">원료명</th><th className="text-left py-1.5 pr-2">원료 LOT No</th><th className="text-right py-1.5 pr-2">계획량(kg)</th><th className="text-right py-1.5 pr-2">실투입량(kg)</th><th className="text-right py-1.5 pr-2">투입비율(%)</th><th className="text-center py-1.5 w-16">판정</th>
-            </tr></thead>
-            <tbody>{displayRows.map((r, i) => { const ratio = ratioOf(r); const tol = toleranceOf(r); const liveOk = num(r.act) == null || num(r.std) == null ? null : Math.abs(num(r.act)-num(r.std)) <= tol; return <tr key={i} className="border-b border-slate-200">
-              {edit && <td className="text-center"><input type="checkbox" checked={!!selectedRows[i]} onChange={(e)=>setSelectedRows({...selectedRows,[i]:e.target.checked})}/></td>}
-              <td className="py-1.5 text-center text-slate-500">{i+1}</td>
-              <td className="py-1.5 pr-2 font-medium">{edit ? <input value={r.name||""} onChange={(e)=>updateRow(i,"name",e.target.value)} placeholder="원료명" className={editCls}/> : r.name}</td>
-              <td className="py-1.5 pr-2 font-mono text-xs">{edit ? <input value={r.lot||""} onChange={(e)=>updateRow(i,"lot",e.target.value)} placeholder="LOT No" className={editCls}/> : (r.lot||"—")}</td>
-              <td className="py-1.5 pr-2 text-right">{edit ? <input inputMode="decimal" value={r.std??""} onChange={(e)=>updateRow(i,"std",e.target.value)} className={editCls+" text-right"}/> : (num(r.std)!=null?num(r.std).toFixed(3):"—")}</td>
-              <td className="py-1.5 pr-2 text-right font-medium">{edit ? <input inputMode="decimal" value={r.act??""} onChange={(e)=>updateRow(i,"act",e.target.value)} className={editCls+" text-right"}/> : (num(r.act)!=null?num(r.act).toFixed(3):"—")}</td>
-              <td className="py-1.5 pr-2 text-right font-semibold">{ratio!=null?ratio.toFixed(2):"—"}</td>
-              <td className="py-1.5 text-center">{okMark(edit?liveOk:r.ok)}</td>
-            </tr>})}
-            <tr className="border-t-2 border-slate-900"><td colSpan={edit?4:3} className="py-2 font-bold text-right pr-3">합계</td><td className="py-2 text-right font-bold">{(edit?rows:w.inputs).reduce((a,r)=>a+(num(r.std)||0),0).toFixed(3)}</td><td className="py-2 text-right font-bold">{(edit?rows:w.inputs).reduce((a,r)=>a+(num(r.act)||0),0).toFixed(3)}</td><td className="py-2 text-right font-bold">{(()=>{const rs=(edit?rows:w.inputs),s=rs.reduce((a,r)=>a+(num(r.std)||0),0),a=rs.reduce((a,r)=>a+(num(r.act)||0),0);return s>0?(a/s*100).toFixed(2):"—"})()}</td><td className="text-center font-bold">{(edit?rows:w.inputs).some(r=>{const a=num(r.act),st=num(r.std);return a!=null&&st!=null&&Math.abs(a-st)>toleranceOf(r)})?<span className="text-red-600">NG</span>:<span className="text-emerald-600">OK</span>}</td></tr>
-            </tbody></table></div>
+          <div className="text-sm font-bold border-l-4 border-slate-900 pl-2">① 원재료 투입 <span className="text-xs font-normal text-slate-500">(전자저울 계량 · 계량 공차 자동판정: ±0.1kg 또는 기준량 1% 중 큰 값)</span></div>
+          <table className="w-full text-sm mt-2">
+            <thead>
+              <tr className="text-xs text-slate-500 border-b-2 border-slate-900">
+                <th className="text-left py-1.5 pr-2 font-semibold w-14">투입순서</th>
+                <th className="text-left py-1.5 pr-2 font-semibold">원재료명</th>
+                <th className="text-left py-1.5 pr-2 font-semibold">LOT No (공급사)</th>
+                <th className="text-right py-1.5 pr-2 font-semibold">투입량</th>
+                <th className="text-right py-1.5 pr-2 font-semibold">실투입량</th>
+                <th className="text-center py-1.5 pr-2 font-semibold w-16">판정</th>
+                <th className="text-left py-1.5 pr-2 font-semibold">확인자</th>
+                <th className="text-left py-1.5 font-semibold">비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              {w.inputs.map((r, i) => (
+                <tr key={i} className="border-b border-slate-200">
+                  <td className="py-1.5 pr-2 text-slate-500 tabular-nums">{r.seq ?? i + 1}</td>
+                  <td className="py-1.5 pr-2 font-medium">{r.name}</td>
+                  <td className="py-1.5 pr-2 font-mono text-xs">
+                    {edit ? <input value={lotVals[i] ?? ""} onChange={(e) => setLotVals({ ...lotVals, [i]: e.target.value })} placeholder="공급사 Lot" className={editCls} />
+                      : (r.lot && r.lot !== "—" ? r.lot : "—")}
+                  </td>
+                  <td className="py-1.5 pr-2 text-right tabular-nums">{num(r.std) != null ? `${num(r.std)} ${r.unit || "kg"}` : r.std}</td>
+                  <td className="py-1.5 pr-2 text-right tabular-nums font-medium">
+                    {edit ? <input inputMode="decimal" value={vals[i] ?? ""} onChange={(e) => setVals({ ...vals, [i]: e.target.value })} placeholder="실측" className={editCls + " text-right"} />
+                      : (r.act != null ? `${r.act} ${r.unit || "kg"}` : "—")}
+                  </td>
+                  <td className="py-1.5 pr-2 text-center">{okMark(r.ok)}</td>
+                  <td className="py-1.5 pr-2 text-xs text-slate-600">{r.by || "—"}</td>
+                  <td className="py-1.5 text-xs text-slate-600">{r.note || ""}</td>
+                </tr>
+              ))}
+              <tr className="border-t-2 border-slate-900">
+                <td className="py-1.5 pr-2" />
+                <td className="py-1.5 pr-2 font-bold">계</td>
+                <td className="py-1.5 pr-2" />
+                <td className="py-1.5 pr-2 text-right tabular-nums font-bold">{totalStd.toFixed(2)} kg</td>
+                <td className="py-1.5 pr-2 text-right tabular-nums font-bold">{totalAct > 0 ? `${totalAct.toFixed(2)} kg` : "—"}</td>
+                <td colSpan={3} />
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4">
-          <div className="border border-slate-300 rounded p-2"><div className="text-[10px] text-slate-500">계획 투입량</div><div className="font-bold tabular-nums">{totalStd.toFixed(3)} kg</div></div>
-          <div className="border border-slate-300 rounded p-2"><div className="text-[10px] text-slate-500">실투입량</div><div className="font-bold tabular-nums">{totalAct.toFixed(3)} kg</div></div>
-          <div className="border border-slate-300 rounded p-2"><div className="text-[10px] text-slate-500">전체 투입비율</div><div className="font-bold tabular-nums">{totalRatio!=null?`${totalRatio.toFixed(2)} %`:"—"}</div></div>
-          <div className="border border-slate-300 rounded p-2"><div className="text-[10px] text-slate-500">정상 원료</div><div className="font-bold">{w.inputs.filter(r=>r.ok===true).length} / {w.inputs.length}</div></div>
-          <div className="border border-slate-300 rounded p-2"><div className="text-[10px] text-slate-500">최종 판정</div><div className={`font-bold ${w.inputs.some(r=>r.ok===false)?"text-red-600":"text-emerald-600"}`}>{w.inputs.some(r=>r.ok===false)?"NG · 투입 차단":"OK"}</div></div>
+        {/* ② 공정조건 관리 */}
+        <div className="mt-5">
+          <div className="text-sm font-bold border-l-4 border-slate-900 pl-2">② 공정조건 관리 <span className="text-xs font-normal text-slate-500">(PLC 패널 육안 확인 후 기록)</span></div>
+          <table className="w-full text-sm mt-2">
+            <thead>
+              <tr className="text-xs text-slate-500 border-b-2 border-slate-900">
+                <th className="text-left py-1.5 pr-3 font-semibold">공정</th>
+                <th className="text-left py-1.5 pr-3 font-semibold">관리항목</th>
+                <th className="text-left py-1.5 pr-3 font-semibold">관리기준</th>
+                <th className="text-left py-1.5 pr-3 font-semibold">확인방법</th>
+                <th className="text-left py-1.5 pr-3 font-semibold">실적</th>
+                <th className="text-left py-1.5 font-semibold">확인자</th>
+              </tr>
+            </thead>
+            <tbody>
+              {w.conds.map((c, j) => (
+                <tr key={j} className="border-b border-slate-200">
+                  <td className="py-1.5 pr-3 text-slate-600 text-xs">{c.proc}</td>
+                  <td className="py-1.5 pr-3 font-medium">{c.item}</td>
+                  <td className="py-1.5 pr-3 text-slate-600 text-xs">{c.std}</td>
+                  <td className="py-1.5 pr-3 text-slate-500 text-xs">{c.method}</td>
+                  <td className="py-1.5 pr-3 tabular-nums">
+                    {edit ? <input value={condVals[j] ?? ""} onChange={(e) => setCondVals({ ...condVals, [j]: e.target.value })} placeholder="실측값" className={editCls} />
+                      : (c.act && c.act !== "—" ? c.act : "—")}
+                  </td>
+                  <td className="py-1.5 text-xs text-slate-600">{c.by || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <div className="mt-5"><div className="text-sm font-bold border-l-4 border-slate-900 pl-2">② 공정조건 관리</div><table className="w-full text-sm mt-2"><thead><tr className="text-xs text-slate-500 border-b-2 border-slate-900"><th className="text-left py-1.5 pr-3">공정</th><th className="text-left py-1.5 pr-3">관리항목</th><th className="text-left py-1.5 pr-3">관리기준</th><th className="text-left py-1.5 pr-3">확인방법</th><th className="text-left py-1.5 pr-3">실적</th><th className="text-left py-1.5">확인자</th></tr></thead><tbody>{w.conds.map((c,j)=><tr key={j} className="border-b border-slate-200"><td className="py-1.5 pr-3 text-xs">{c.proc}</td><td className="py-1.5 pr-3 font-medium">{c.item}</td><td className="py-1.5 pr-3 text-xs">{c.std}</td><td className="py-1.5 pr-3 text-xs">{c.method}</td><td className="py-1.5 pr-3">{edit?<input value={condVals[j]??""} onChange={(e)=>setCondVals({...condVals,[j]:e.target.value})} className={editCls}/>:c.act||"—"}</td><td className="py-1.5 text-xs">{c.by||"—"}</td></tr>)}</tbody></table></div>
+        <div className="text-[11px] text-slate-500 mt-4 leading-relaxed border border-slate-300 rounded p-2.5">
+          ※ 확인자 서명은 로그인 사용자(고유번호 포함) 전자기록으로 대체됩니다. 계량 공차 초과 시 즉시 투입 중지 → 재계량 → 관리책임자 보고 (NMCOP3-SP05).<br />
+          ※ 원재료 투입·공정조건 전 항목 기록 완료 시 배치 상태가 "완료"로 전환되고 Lot 이력에 자동 반영됩니다.
+        </div>
 
-        <div className="text-[11px] text-slate-500 mt-4 border border-slate-300 rounded p-2.5">※ 투입비율은 실투입량 ÷ 계획량 × 100으로 자동 계산됩니다. 판정은 시스템 내부 허용기준으로 자동 처리됩니다.<br/>※ 원료명, 원료 LOT No, 계획량 또는 실투입량이 누락되거나 NG 원료가 있으면 다음 공정 진입이 차단됩니다.</div>
+        <div className="flex items-end justify-between mt-5">
+          <div className="text-xs text-slate-500">본 지시서의 실적은 Lot({sel}) 이력에 연결되어 추적됩니다.</div>
+          <div className="flex gap-6 text-center text-xs">
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작업</div><div className="mt-1 text-slate-600">{(w.workers || "").split(",")[0] || "-"}</div></div>
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">확인</div><div className="mt-1 text-slate-600">{allDone ? (window.__QMES_USER__ || "-").split(" ")[1] || "-" : "-"}</div></div>
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">-</div></div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1935,20 +2026,10 @@ function IssueWoTab() {
     shiftType: "일반", worker: "관리자",
   });
   const [issued, setIssued] = useState(DB.batches);
-  const [materialRows, setMaterialRows] = useState([]);
 
   const bom = BOM[form.product];
   const qtyNum = parseFloat(form.qty) || 0;
   const ratio = qtyNum > 0 ? qtyNum / bom.baseQty : 0;
-
-  const updateMaterial = (idx, key, value) => setMaterialRows(materialRows.map((r, i) => i === idx ? { ...r, [key]: value } : r));
-  const addMaterialRow = () => setMaterialRows([...materialRows, { seq: materialRows.length + 1, name: "", lot: "", plan: "", actual: "", tol: 0.1, note: "" }]);
-  const removeMaterialRow = (idx) => setMaterialRows(materialRows.filter((_, i) => i !== idx).map((r, i) => ({ ...r, seq: i + 1 })));
-  const materialJudge = (r) => {
-    const plan = parseFloat(r.plan), actual = parseFloat(r.actual), tol = parseFloat(r.tol);
-    if (![plan, actual, tol].every(Number.isFinite)) return null;
-    return Math.abs(actual - plan) <= tol;
-  };
 
   /* 생산일자·생산구분 기반 자동 채번 — [사이트][년][월][일][당일 순번] */
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(form.prodDate);
@@ -1981,12 +2062,9 @@ function IssueWoTab() {
       item: form.product, procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
       workers: form.worker.trim(), status: "발행",
-      inputs: materialRows.map((r, i) => ({
-        seq: i + 1, name: r.name, lot: r.lot, unit: "kg", note: r.note,
-        std: Number(parseFloat(r.plan || 0).toFixed(3)),
-        act: r.actual === "" ? null : Number(parseFloat(r.actual).toFixed(3)),
-        tol: Number(parseFloat(r.tol || 0).toFixed(3)),
-        ok: r.actual === "" ? null : materialJudge(r), by: "",
+      inputs: bom.items.map((it) => ({
+        seq: it.seq, name: it.name, lot: "", unit: it.unit, note: it.note,
+        std: Number((it.base * ratio).toFixed(3)), act: null, ok: null, by: "",
       })),
       conds: [
         { proc: "HSM 용해", item: "시간", std: "≤ 80 min", method: "PLC 패널", act: "", ok: null, by: "" },
@@ -2065,57 +2143,38 @@ function IssueWoTab() {
           </div>
         </div>
 
-        {/* 원료 투입 작업지시서 — 현장 입력형 */}
+        {/* 원재료 투입 계획 — 수량 비례 자동 계산 */}
         <div className="mt-4 bg-slate-800/50 border border-slate-700/60 rounded-lg p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div>
-              <div className="text-sm font-semibold text-slate-200">① 원료 투입 작업지시서</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">원료 추가 후 원료명, 원료 LOT No, 계획량과 실투입량을 입력합니다. 투입비율과 판정은 자동 계산됩니다.</div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={addMaterialRow} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium"><Plus size={13}/> 원료 추가</button>
-            </div>
+          <div className="text-xs font-medium text-slate-300 mb-2">
+            ① 원재료 투입 계획 <span className="text-slate-500">(기준 배치 {bom.baseQty}kg 대비 ×{ratio ? ratio.toFixed(3) : "—"} · 자동 계산)</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[820px]">
+            <table className="w-full text-sm min-w-[520px]">
               <thead>
                 <tr className="text-[11px] text-slate-500 border-b border-slate-700/60">
-                  <th className="text-center py-2 px-2 font-medium w-12">순서</th>
-                  <th className="text-left py-2 px-2 font-medium">원료명</th>
-                  <th className="text-left py-2 px-2 font-medium w-48">원료 LOT No</th>
-                  <th className="text-right py-2 px-2 font-medium w-28">계획량(kg)</th>
-                  <th className="text-right py-2 px-2 font-medium w-28">실투입량(kg)</th>
-                  <th className="text-right py-2 px-2 font-medium w-28">투입비율(%)</th>
-                  <th className="text-center py-2 px-2 font-medium w-20">판정</th>
-                  <th className="text-center py-2 px-2 font-medium w-16">관리</th>
+                  <th className="text-left py-1.5 pr-3 font-medium w-14">순서</th>
+                  <th className="text-left py-1.5 pr-3 font-medium">원재료명</th>
+                  <th className="text-right py-1.5 pr-3 font-medium">투입량 (기준)</th>
+                  <th className="text-left py-1.5 font-medium">비고</th>
                 </tr>
               </thead>
               <tbody>
-                {materialRows.length === 0 && <tr><td colSpan={8} className="py-7 text-center text-sm text-slate-500">등록된 원료가 없습니다. [+ 원료 추가] 버튼을 눌러 빈 행을 추가하세요.</td></tr>}
-                {materialRows.map((r, i) => {
-                  const plan = parseFloat(r.plan), actual = parseFloat(r.actual);
-                  const pct = Number.isFinite(plan) && plan > 0 && Number.isFinite(actual) ? actual / plan * 100 : null;
-                  const ok = materialJudge(r);
-                  const ic = "w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500";
-                  return <tr key={i} className="border-b border-slate-800/60">
-                    <td className="text-center py-2 px-2 text-slate-400">{i + 1}</td>
-                    <td className="py-2 px-2"><input value={r.name} onChange={(e)=>updateMaterial(i,'name',e.target.value)} placeholder="원료명 입력" className={ic}/></td>
-                    <td className="py-2 px-2"><input value={r.lot} onChange={(e)=>updateMaterial(i,'lot',e.target.value)} placeholder="원료 LOT No 입력" className={`${ic} font-mono`}/></td>
-                    <td className="py-2 px-2"><input type="number" step="0.001" value={r.plan} onChange={(e)=>updateMaterial(i,'plan',e.target.value)} placeholder="계획량" className={`${ic} text-right tabular-nums`}/></td>
-                    <td className="py-2 px-2"><input type="number" step="0.001" value={r.actual} onChange={(e)=>updateMaterial(i,'actual',e.target.value)} placeholder="실투입량" className={`${ic} text-right tabular-nums`}/></td>
-                    <td className="py-2 px-2 text-right tabular-nums text-sky-300 font-medium">{pct == null ? '—' : `${pct.toFixed(2)}%`}</td>
-                    <td className="py-2 px-2 text-center">{ok == null ? <Badge tone="gray">대기</Badge> : ok ? <Badge tone="green">OK</Badge> : <Badge tone="red">NG</Badge>}</td>
-                    <td className="py-2 px-2 text-center"><button type="button" onClick={()=>removeMaterialRow(i)} className="text-xs text-red-300 hover:text-red-200">삭제</button></td>
-                  </tr>;
-                })}
+                {bom.items.map((it) => (
+                  <tr key={it.seq} className="border-b border-slate-800/60">
+                    <td className="py-1.5 pr-3 text-slate-500 tabular-nums">{it.seq}</td>
+                    <td className="py-1.5 pr-3 text-slate-100">{it.name}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-slate-200">{(it.base * ratio).toFixed(it.base < 1 ? 3 : 2)} {it.unit}</td>
+                    <td className="py-1.5 text-xs text-slate-400">{it.note}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="py-1.5 pr-3" />
+                  <td className="py-1.5 pr-3 font-medium text-slate-200">계</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{bom.items.reduce((a, it) => a + it.base * ratio, 0).toFixed(2)} kg</td>
+                  <td />
+                </tr>
               </tbody>
             </table>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
-            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">계획 투입량</div><div className="text-lg font-bold text-slate-100 tabular-nums">{materialRows.reduce((a,r)=>a+(parseFloat(r.plan)||0),0).toFixed(3)} kg</div></div>
-            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">실투입량</div><div className="text-lg font-bold text-slate-100 tabular-nums">{materialRows.reduce((a,r)=>a+(parseFloat(r.actual)||0),0).toFixed(3)} kg</div></div>
-            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">전체 투입비율</div><div className="text-lg font-bold text-sky-300 tabular-nums">{(() => { const p=materialRows.reduce((a,r)=>a+(parseFloat(r.plan)||0),0), a=materialRows.reduce((x,r)=>x+(parseFloat(r.actual)||0),0); return p>0&&a>0?`${(a/p*100).toFixed(2)}%`:'—'; })()}</div></div>
-            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">최종 판정</div><div className={`text-lg font-bold ${materialRows.some(r=>materialJudge(r)===false)?'text-red-400':'text-emerald-400'}`}>{materialRows.some(r=>materialJudge(r)===false)?'NG':'대기 / OK'}</div></div>
           </div>
         </div>
 
@@ -2694,35 +2753,132 @@ const MENU_GROUPS = [
 
 function QMESChemical({ user, onLogout }) {
   const [tab, setTab] = useState("dash");
-  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem("qmes-sidebar-collapsed") === "1"; } catch(e) { return false; } });
+  const [clock, setClock] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setClock(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
   const visibleTabs = TABS.filter((t) => !t.adminOnly || user.role === "admin");
   const Active = TABS.find((t) => t.id === tab).comp;
-  const quickIds = ["dash", "pop", "pqc", "oqc", "lock", "trace"];
-  const quickLabels = { dash:"대시보드", pop:"현장 입력", pqc:"공정검사", oqc:"출하검사", lock:"인터락", trace:"Lot 추적" };
-  const toggleSidebar = () => { const n=!collapsed; setCollapsed(n); try { localStorage.setItem("qmes-sidebar-collapsed", n?"1":"0"); } catch(e){} };
+
+  const currentTab = TABS.find((t) => t.id === tab);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex" style={{ fontFamily: "'Pretendard', 'Noto Sans KR', system-ui, sans-serif" }}>
-      <aside className="hidden lg:flex flex-col shrink-0 sticky top-0 h-screen overflow-y-auto px-3 py-5 transition-colors" style={{ width: collapsed ? "64px" : "240px", background: "linear-gradient(165deg,#081A33 0%,#0A2242 55%,#0D3260 100%)", transition:"width .2s ease" }}>
-        <div className={`flex items-center ${collapsed?"justify-center":"justify-between"} mb-2`}>
-          {!collapsed && <div className="flex items-center gap-2.5 px-2"><div className="w-9 h-9 rounded-lg flex items-center justify-center border border-[#2C4A72]" style={{ background: "rgba(65,196,238,.12)" }}><FlaskConical size={18} className="text-[#41C4EE]" /></div><div><div className="text-sm font-bold tracking-widest text-white">QMES</div><div className="text-[10px] text-[#8CA5C4] -mt-0.5">나모케미칼㈜</div></div></div>}
-          <button onClick={toggleSidebar} title={collapsed?"사이드바 펼치기":"사이드바 접기"} className="w-9 h-9 rounded-lg border border-white/10 hover:bg-white/10 text-[#BCCDE2] flex items-center justify-center">☰</button>
+      {/* 좌측 사이드바 (데스크톱) */}
+      <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-0 h-screen overflow-y-auto px-3 py-5"
+        style={{ background: "linear-gradient(165deg,#081A33 0%,#0A2242 55%,#0D3260 100%)" }}>
+        <div className="flex items-center gap-2.5 px-2 mb-2">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center border border-[#2C4A72]" style={{ background: "rgba(65,196,238,.12)" }}>
+            <FlaskConical size={18} className="text-[#41C4EE]" />
+          </div>
+          <div>
+            <div className="text-sm font-bold tracking-widest text-white">QMES</div>
+            <div className="text-[10px] text-[#8CA5C4] -mt-0.5">나모케미칼㈜ 절연 슬러리</div>
+          </div>
         </div>
-        {MENU_GROUPS.map((g) => { const items=g.ids.map(id=>visibleTabs.find(t=>t.id===id)).filter(Boolean); if(!items.length)return null; return <div key={g.title} className="mt-4">{!collapsed&&<div className="px-2 text-[10px] tracking-[0.18em] text-[#7E97B8] font-semibold mb-1.5">{g.title}</div>}<div className="flex flex-col gap-0.5">{items.map(t=><button key={t.id} title={t.label} onClick={()=>setTab(t.id)} className={`flex items-center ${collapsed?"justify-center":"gap-2.5"} px-2.5 py-2 rounded-lg text-[13px] text-left transition-colors ${tab===t.id?"bg-white/10 text-white font-medium shadow-[inset_2px_0_0_#41C4EE]":"text-[#BCCDE2] hover:text-white hover:bg-white/5"}`}><t.icon size={16} className={tab===t.id?"text-[#41C4EE]":""}/>{!collapsed&&<span>{t.label}</span>}</button>)}</div></div> })}
-        <div className="flex-1" />{!collapsed&&<div className="px-2 pt-4 border-t border-white/10 text-[10px] text-[#7E97B8] leading-relaxed">QMES Chemical v1.0<br/>NMC-C-220-01 REV.0</div>}
+
+        {MENU_GROUPS.map((g) => {
+          const items = g.ids.map((id) => visibleTabs.find((t) => t.id === id)).filter(Boolean);
+          if (items.length === 0) return null;
+          return (
+            <div key={g.title} className="mt-4">
+              <div className="px-2 text-[10px] tracking-[0.18em] text-[#7E97B8] font-semibold mb-1.5">{g.title}</div>
+              <div className="flex flex-col gap-0.5">
+                {items.map((t) => (
+                  <button key={t.id} onClick={() => setTab(t.id)}
+                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] text-left transition-colors ${
+                      tab === t.id
+                        ? "bg-white/10 text-white font-medium shadow-[inset_2px_0_0_#41C4EE]"
+                        : "text-[#BCCDE2] hover:text-white hover:bg-white/5"
+                    }`}>
+                    <t.icon size={15} className={tab === t.id ? "text-[#41C4EE]" : ""} />
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        <div className="flex-1" />
+        <div className="px-2 pt-4 border-t border-white/10 text-[10px] text-[#7E97B8] leading-relaxed">
+          QMES Chemical v1.0<br />NMC-C-220-01 REV.0 기준
+        </div>
       </aside>
 
+      {/* 본문 영역 */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
-          <div className="w-full px-4 flex items-center min-h-[56px] gap-3">
-            <div className="flex lg:hidden items-center gap-2"><FlaskConical size={17} className="text-sky-400"/><span className="text-sm font-bold tracking-widest">QMES</span></div>
-            <nav className="flex items-center gap-1 overflow-x-auto py-2">
-              {quickIds.map(id=>{const t=TABS.find(x=>x.id===id); return <button key={id} onClick={()=>setTab(id)} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${tab===id?"bg-sky-500/15 text-sky-300 border border-sky-500/40":"text-slate-300 border border-transparent hover:bg-slate-800 hover:text-white"}`}><t.icon size={14}/>{quickLabels[id]}</button>})}
-            </nav>
+      <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
+        <div className="w-full px-4 py-3 flex items-center gap-4">
+          <div className="flex lg:hidden items-center gap-2.5">
+            <div className="w-8 h-8 rounded bg-sky-500/15 border border-sky-500/40 flex items-center justify-center">
+              <FlaskConical size={16} className="text-sky-400" />
+            </div>
+            <div>
+              <div className="text-sm font-bold tracking-widest">QMES</div>
+              <div className="text-[10px] text-slate-500 -mt-0.5">나모케미칼㈜ 절연 슬러리</div>
+            </div>
           </div>
-        </header>
-        <main className="w-full px-4 lg:px-6 py-5 flex-1"><Active /></main>
-        <footer className="w-full px-4 lg:px-6 pb-6 text-[11px] text-slate-600">QMES Chemical v1.0 · 관리계획서 NMC-C-220-01 REV.0 기준</footer>
+
+          <div className="hidden lg:flex items-center gap-2">
+            {currentTab && <currentTab.icon size={16} className="text-sky-400" />}
+            <span className="text-sm font-semibold text-slate-100">{currentTab ? currentTab.label : ""}</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 ml-2">
+            <span>슬러리 공장</span>
+            <ChevronRight size={12} />
+            <span className="text-slate-200">개발/Pilot 라인</span>
+          </div>
+
+          <div className="flex-1" />
+
+          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-mono tabular-nums">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{clock.toLocaleTimeString("ko-KR", { hour12: false })}</span>
+          </div>
+          <button className="relative p-2 rounded hover:bg-slate-800 transition-colors" aria-label="알림">
+            <Bell size={16} className="text-slate-300" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
+            <div className="hidden md:block leading-tight">
+              <div className="text-xs text-slate-200">{user.name}</div>
+              <div className="text-[10px] text-slate-500">{user.dept} · <span className="font-mono">{user.uid || "U-0000"}</span></div>
+            </div>
+            {onLogout && (
+              <button onClick={onLogout}
+                className="text-[11px] px-2 py-1 rounded border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors">
+                로그아웃
+              </button>
+            )}
+          </div>
+        </div>
+
+        <nav className="lg:hidden w-full px-4 flex gap-1 overflow-x-auto">
+          {visibleTabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                tab === t.id ? "border-sky-400 text-sky-300 font-medium" : "border-transparent text-slate-400 hover:text-slate-200"
+              }`}>
+              <t.icon size={14} />
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      <main className="w-full px-4 lg:px-6 py-5 flex-1">
+        <Active />
+      </main>
+
+      <footer className="w-full px-4 lg:px-6 pb-6 text-[11px] text-slate-600">
+        QMES Chemical v1.0 · 관리계획서 NMC-C-220-01 REV.0 (개발/Pilot 단계 초안) 기준 · 데모 데이터 — 실제 운영 시 PLC·계측기(점도계, 입도분석기, Gauss Meter)·ERP 연동 필요
+      </footer>
       </div>
     </div>
   );
