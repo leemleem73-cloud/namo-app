@@ -1940,10 +1940,31 @@ function IssueWoTab() {
     shiftType: "일반", worker: "관리자",
   });
   const [issued, setIssued] = useState(DB.batches);
+  const [materialRows, setMaterialRows] = useState(() => BOM[products[0]].items.map((it, i) => ({
+    seq: i + 1, code: `RM-${String(i + 1).padStart(3, "0")}`, name: it.name, lot: "",
+    plan: it.base, actual: "", tol: it.base < 1 ? 0.005 : it.base < 30 ? 0.1 : 0.2, note: it.note || ""
+  })));
 
   const bom = BOM[form.product];
   const qtyNum = parseFloat(form.qty) || 0;
   const ratio = qtyNum > 0 ? qtyNum / bom.baseQty : 0;
+
+  useEffect(() => {
+    setMaterialRows(bom.items.map((it, i) => ({
+      seq: i + 1, code: `RM-${String(i + 1).padStart(3, "0")}`, name: it.name, lot: "",
+      plan: Number((it.base * ratio).toFixed(3)), actual: "",
+      tol: it.base < 1 ? 0.005 : it.base < 30 ? 0.1 : 0.2, note: it.note || ""
+    })));
+  }, [form.product, form.qty]);
+
+  const updateMaterial = (idx, key, value) => setMaterialRows(materialRows.map((r, i) => i === idx ? { ...r, [key]: value } : r));
+  const addMaterialRow = () => setMaterialRows([...materialRows, { seq: materialRows.length + 1, code: `RM-${String(materialRows.length + 1).padStart(3, "0")}`, name: "", lot: "", plan: "", actual: "", tol: 0.1, note: "" }]);
+  const removeMaterialRow = (idx) => setMaterialRows(materialRows.filter((_, i) => i !== idx).map((r, i) => ({ ...r, seq: i + 1 })));
+  const materialJudge = (r) => {
+    const plan = parseFloat(r.plan), actual = parseFloat(r.actual), tol = parseFloat(r.tol);
+    if (![plan, actual, tol].every(Number.isFinite)) return null;
+    return Math.abs(actual - plan) <= tol;
+  };
 
   /* 생산일자·생산구분 기반 자동 채번 — [사이트][년][월][일][당일 순번] */
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(form.prodDate);
@@ -1976,9 +1997,12 @@ function IssueWoTab() {
       item: form.product, procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
       workers: form.worker.trim(), status: "발행",
-      inputs: bom.items.map((it) => ({
-        seq: it.seq, name: it.name, lot: "", unit: it.unit, note: it.note,
-        std: Number((it.base * ratio).toFixed(3)), act: null, ok: null, by: "",
+      inputs: materialRows.map((r, i) => ({
+        seq: i + 1, code: r.code, name: r.name, lot: r.lot, unit: "kg", note: r.note,
+        std: Number(parseFloat(r.plan || 0).toFixed(3)),
+        act: r.actual === "" ? null : Number(parseFloat(r.actual).toFixed(3)),
+        tol: Number(parseFloat(r.tol || 0).toFixed(3)),
+        ok: r.actual === "" ? null : materialJudge(r), by: "",
       })),
       conds: [
         { proc: "HSM 용해", item: "시간", std: "≤ 80 min", method: "PLC 패널", act: "", ok: null, by: "" },
@@ -2057,38 +2081,62 @@ function IssueWoTab() {
           </div>
         </div>
 
-        {/* 원재료 투입 계획 — 수량 비례 자동 계산 */}
+        {/* 원료 투입 작업지시서 — 현장 입력형 */}
         <div className="mt-4 bg-slate-800/50 border border-slate-700/60 rounded-lg p-3">
-          <div className="text-xs font-medium text-slate-300 mb-2">
-            ① 원재료 투입 계획 <span className="text-slate-500">(기준 배치 {bom.baseQty}kg 대비 ×{ratio ? ratio.toFixed(3) : "—"} · 자동 계산)</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-200">① 원료 투입 작업지시서</div>
+              <div className="text-[11px] text-slate-500 mt-0.5">계획량·실투입량·투입비율·허용공차·판정을 한 화면에서 관리합니다.</div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={addMaterialRow} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium"><Plus size={13}/> 원료 추가</button>
+              <button type="button" className="rounded border border-slate-600 text-slate-300 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium">BOM 불러오기</button>
+              <button type="button" className="rounded border border-slate-600 text-slate-300 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium">Excel 불러오기</button>
+            </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[520px]">
+            <table className="w-full text-sm min-w-[980px]">
               <thead>
                 <tr className="text-[11px] text-slate-500 border-b border-slate-700/60">
-                  <th className="text-left py-1.5 pr-3 font-medium w-14">순서</th>
-                  <th className="text-left py-1.5 pr-3 font-medium">원재료명</th>
-                  <th className="text-right py-1.5 pr-3 font-medium">투입량 (기준)</th>
-                  <th className="text-left py-1.5 font-medium">비고</th>
+                  <th className="text-center py-2 px-2 font-medium w-12">순서</th>
+                  <th className="text-left py-2 px-2 font-medium w-24">원료코드</th>
+                  <th className="text-left py-2 px-2 font-medium">원료명</th>
+                  <th className="text-left py-2 px-2 font-medium w-40">LOT No</th>
+                  <th className="text-right py-2 px-2 font-medium w-28">계획(kg)</th>
+                  <th className="text-right py-2 px-2 font-medium w-28">실투입(kg)</th>
+                  <th className="text-right py-2 px-2 font-medium w-28">투입비율</th>
+                  <th className="text-right py-2 px-2 font-medium w-28">허용공차</th>
+                  <th className="text-center py-2 px-2 font-medium w-20">판정</th>
+                  <th className="text-center py-2 px-2 font-medium w-16">관리</th>
                 </tr>
               </thead>
               <tbody>
-                {bom.items.map((it) => (
-                  <tr key={it.seq} className="border-b border-slate-800/60">
-                    <td className="py-1.5 pr-3 text-slate-500 tabular-nums">{it.seq}</td>
-                    <td className="py-1.5 pr-3 text-slate-100">{it.name}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-slate-200">{(it.base * ratio).toFixed(it.base < 1 ? 3 : 2)} {it.unit}</td>
-                    <td className="py-1.5 text-xs text-slate-400">{it.note}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td className="py-1.5 pr-3" />
-                  <td className="py-1.5 pr-3 font-medium text-slate-200">계</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{bom.items.reduce((a, it) => a + it.base * ratio, 0).toFixed(2)} kg</td>
-                  <td />
-                </tr>
+                {materialRows.map((r, i) => {
+                  const plan = parseFloat(r.plan), actual = parseFloat(r.actual);
+                  const pct = Number.isFinite(plan) && plan > 0 && Number.isFinite(actual) ? actual / plan * 100 : null;
+                  const ok = materialJudge(r);
+                  const ic = "w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500";
+                  return <tr key={i} className="border-b border-slate-800/60">
+                    <td className="text-center py-2 px-2 text-slate-400">{i + 1}</td>
+                    <td className="py-2 px-2"><input value={r.code} onChange={(e)=>updateMaterial(i,'code',e.target.value)} className={ic}/></td>
+                    <td className="py-2 px-2"><input value={r.name} onChange={(e)=>updateMaterial(i,'name',e.target.value)} className={ic}/></td>
+                    <td className="py-2 px-2"><input value={r.lot} onChange={(e)=>updateMaterial(i,'lot',e.target.value)} placeholder="LOT 입력" className={`${ic} font-mono`}/></td>
+                    <td className="py-2 px-2"><input type="number" step="0.001" value={r.plan} onChange={(e)=>updateMaterial(i,'plan',e.target.value)} className={`${ic} text-right tabular-nums`}/></td>
+                    <td className="py-2 px-2"><input type="number" step="0.001" value={r.actual} onChange={(e)=>updateMaterial(i,'actual',e.target.value)} placeholder="실투입" className={`${ic} text-right tabular-nums`}/></td>
+                    <td className="py-2 px-2 text-right tabular-nums text-sky-300 font-medium">{pct == null ? '—' : `${pct.toFixed(2)}%`}</td>
+                    <td className="py-2 px-2"><div className="flex items-center gap-1"><span className="text-slate-500">±</span><input type="number" step="0.001" value={r.tol} onChange={(e)=>updateMaterial(i,'tol',e.target.value)} className={`${ic} text-right tabular-nums`}/></div></td>
+                    <td className="py-2 px-2 text-center">{ok == null ? <Badge tone="gray">대기</Badge> : ok ? <Badge tone="green">OK</Badge> : <Badge tone="red">NG</Badge>}</td>
+                    <td className="py-2 px-2 text-center"><button type="button" onClick={()=>removeMaterialRow(i)} className="text-xs text-red-300 hover:text-red-200">삭제</button></td>
+                  </tr>;
+                })}
               </tbody>
             </table>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">계획 투입량</div><div className="text-lg font-bold text-slate-100 tabular-nums">{materialRows.reduce((a,r)=>a+(parseFloat(r.plan)||0),0).toFixed(3)} kg</div></div>
+            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">실투입량</div><div className="text-lg font-bold text-slate-100 tabular-nums">{materialRows.reduce((a,r)=>a+(parseFloat(r.actual)||0),0).toFixed(3)} kg</div></div>
+            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">전체 투입비율</div><div className="text-lg font-bold text-sky-300 tabular-nums">{(() => { const p=materialRows.reduce((a,r)=>a+(parseFloat(r.plan)||0),0), a=materialRows.reduce((x,r)=>x+(parseFloat(r.actual)||0),0); return p>0&&a>0?`${(a/p*100).toFixed(2)}%`:'—'; })()}</div></div>
+            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-2"><div className="text-[10px] text-slate-500">최종 판정</div><div className={`text-lg font-bold ${materialRows.some(r=>materialJudge(r)===false)?'text-red-400':'text-emerald-400'}`}>{materialRows.some(r=>materialJudge(r)===false)?'NG':'대기 / OK'}</div></div>
           </div>
         </div>
 
