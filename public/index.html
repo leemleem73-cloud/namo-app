@@ -1690,7 +1690,6 @@ function IqcTab() {
   const overall = (f) => {
     const vals = [f.visual, f.label, f.weight, f.coa];
     if (vals.includes("불합격")) return "반품";
-    if (vals.includes("조건부")) return "조건부 합격";
     return "합격";
   };
 
@@ -1728,7 +1727,7 @@ function IqcTab() {
       <span className="text-[10px] text-slate-500">{label}</span>
       <select value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-        <option>합격</option><option>조건부</option><option>불합격</option>
+        <option>합격</option><option>불합격</option>
       </select>
     </div>
   );
@@ -1739,7 +1738,7 @@ function IqcTab() {
         <Kpi icon={ArrowDownToLine} label="당월 입고 Lot" value={rows.length} unit="건" tone="text-violet-400" />
         <Kpi icon={CheckCircle2} label="IQC 합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
         <Kpi icon={Activity} label="검사 대기" value={waiting} unit="건" tone="text-sky-400" />
-        <Kpi icon={XCircle} label="조건부 / 반품" value={rows.filter((r) => r.judge.includes("조건부") || r.judge === "반품").length} unit="건" tone="text-amber-400" />
+        <Kpi icon={XCircle} label="반품" value={rows.filter((r) => r.judge === "반품").length} unit="건" tone="text-red-400" />
       </div>
 
       <Panel title="수입검사 등록 (공정 20)" right={<span className="text-xs text-slate-400">종합판정: <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></span>}>
@@ -2345,7 +2344,7 @@ function IssueWoTab() {
 
 /* ──────────────────────────── 공정검사(PQC) · 출하검사(OQC) 분리 ──────────────────────────── */
 
-const PQC_KEYS = ["점도", "고형분", "입도(Dmax)", "외관", "Gauss(필터)"];
+const PQC_KEYS = ["점도", "고형분", "입도(Dmax)", "외관"];
 const OQC_KEYS = ["외관", "점도", "고형분", "입도(Dmax)", "접착력", "절연저항", "수분", "전해액 안정성"];
 
 const PQC_INIT = [];
