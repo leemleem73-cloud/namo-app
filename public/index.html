@@ -1717,7 +1717,8 @@ function iqcTone(v) {
 
 function IqcTab() {
   const [rows, setRows] = useState(DB.iqc);
-  const [form, setForm] = useState({ name: "NMP", lot: "", qty: "", visual: "합격", label: "합격", weight: "합격", coa: "합격" });
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({ recvDate: today, lot: "", name: "NMP", supplier: "", qty: "", visual: "합격", label: "합격", weight: "합격", coa: "합격" });
   const [tried, setTried] = useState(false);
   const [editingInNo, setEditingInNo] = useState(null);
 
@@ -1738,15 +1739,17 @@ function IqcTab() {
   if (form.qty.trim() !== "" && !qtyOk) iqcErrors.push("수량 형식 오류 — 숫자+단위로 입력 (예: 480 kg)");
   if (tried && form.lot.trim() === "") iqcErrors.push("원료 Lot 번호를 입력하세요 — 공급사 라벨 표기 그대로");
   if (tried && form.qty.trim() === "") iqcErrors.push("입고 수량을 입력하세요 (예: 480 kg)");
-  const iqcReady = lotOk && qtyOk;
+  if (tried && !form.recvDate) iqcErrors.push("입고일자를 선택하세요");
+  const iqcReady = Boolean(form.recvDate) && lotOk && qtyOk;
 
   const addRow = () => {
     if (!iqcReady) { setTried(true); return; }
     const now = new Date();
-    const recv = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const inNo = `IN-${String(now.getFullYear()).slice(2)}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(DB.seqs.iqc || 1).padStart(2, "0")}`;
+    const recv = form.recvDate;
+    const dateKey = form.recvDate.replaceAll("-", "").slice(2);
+    const inNo = `IN-${dateKey}-${String(DB.seqs.iqc || 1).padStart(2, "0")}`;
     if (!editingInNo) DB.seqs.iqc = (DB.seqs.iqc || 1) + 1;
-    const rowData = { inNo: editingInNo || inNo, lot: form.lot.trim(), code: "-", name: form.name, supplier: "-", qty: form.qty, recv, visual: form.visual, label: form.label, weight: form.weight, coa: form.coa, judge: overall(form), note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 협력사 통보" : "", by: (window.__QMES_USER__ || "현재 사용자") };
+    const rowData = { inNo: editingInNo || inNo, recv, lot: form.lot.trim(), code: "-", name: form.name, supplier: form.supplier.trim() || "-", qty: form.qty, visual: form.visual, label: form.label, weight: form.weight, coa: form.coa, judge: overall(form), note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 협력사 통보" : "", by: (window.__QMES_USER__ || "현재 사용자") };
     const nr = editingInNo ? rows.map((r) => r.inNo === editingInNo ? rowData : r) : [rowData, ...rows];
     setRows(nr);
     DB.iqc = nr;
@@ -1756,11 +1759,11 @@ function IqcTab() {
     auditLog("IQC", editingInNo ? "수정" : "등록", rowData.inNo, `${rowData.lot} / ${rowData.judge}`);
     dbSave();
     setEditingInNo(null);
-    setForm({ ...form, lot: "", qty: "" });
+    setForm({ ...form, recvDate: today, lot: "", supplier: "", qty: "" });
     setTried(false);
   };
 
-  const editIqc = (r) => { setEditingInNo(r.inNo); setForm({ name:r.name, lot:r.lot, qty:r.qty, visual:r.visual, label:r.label, weight:r.weight, coa:r.coa }); window.scrollTo({top:0,behavior:"smooth"}); };
+  const editIqc = (r) => { setEditingInNo(r.inNo); setForm({ recvDate:(r.recv || today).slice(0,10), lot:r.lot, name:r.name, supplier:r.supplier === "-" ? "" : (r.supplier || ""), qty:r.qty, visual:r.visual, label:r.label, weight:r.weight, coa:r.coa }); window.scrollTo({top:0,behavior:"smooth"}); };
   const deleteIqc = (r) => { const reason=askDeleteReason(`수입검사 ${r.inNo}`); if(reason===null)return; const next=rows.filter(x=>x.inNo!==r.inNo); setRows(next); DB.iqc=next; auditLog("IQC","삭제",r.inNo,reason); dbSave(); };
 
   const judgeSelect = (key, label) => (
@@ -1783,30 +1786,45 @@ function IqcTab() {
       </div>
 
       <Panel title="수입검사 등록 (공정 20)" right={<span className="text-xs text-slate-400">종합판정: <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></span>}>
-        <div className="grid grid-cols-2 md:grid-cols-8 gap-2 items-end">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] text-slate-500">원료</span>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-2 items-end">
+          <div className="flex flex-col gap-1 lg:col-span-2">
+            <span className="text-[10px] text-slate-500">입고번호</span>
+            <input value={editingInNo || "자동 부여"} readOnly
+              className="bg-slate-800/60 border border-slate-700 rounded px-2 py-2 text-sm text-slate-400 font-mono cursor-not-allowed" />
+          </div>
+          <div className="flex flex-col gap-1 lg:col-span-2">
+            <span className="text-[10px] text-slate-500">입고일자</span>
+            <input type="date" value={form.recvDate} onChange={(e) => setForm({ ...form, recvDate: e.target.value })}
+              className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+          </div>
+          <div className="flex flex-col gap-1 lg:col-span-2">
+            <span className="text-[10px] text-slate-500">원료 LOT No.</span>
+            <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })} placeholder="공급사 LOT 그대로"
+              className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          </div>
+          <div className="flex flex-col gap-1 lg:col-span-2">
+            <span className="text-[10px] text-slate-500">품명</span>
             <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
               {IQC_MATERIALS.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] text-slate-500">원료 Lot 번호</span>
-            <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })} placeholder="공급사 Lot 그대로 (형식 무관)"
+          <div className="flex flex-col gap-1 lg:col-span-2">
+            <span className="text-[10px] text-slate-500">공급사</span>
+            <input value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} placeholder="공급사명"
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] text-slate-500">입고 수량</span>
+          <div className="flex flex-col gap-1 lg:col-span-2">
+            <span className="text-[10px] text-slate-500">수량</span>
             <input value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value })} placeholder="예: 480 kg"
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
           </div>
-          {judgeSelect("visual", "외관 (파손유무)")}
-          {judgeSelect("label", "라벨 (파손유무)")}
-          {judgeSelect("weight", "중량 (허용오차)")}
-          {judgeSelect("coa", "CoA (성적서)")}
+          <div className="lg:col-span-2">{judgeSelect("visual", "외관 (파손유무)")}</div>
+          <div className="lg:col-span-2">{judgeSelect("label", "라벨 (파손유무)")}</div>
+          <div className="lg:col-span-2">{judgeSelect("weight", "중량 (허용오차)")}</div>
+          <div className="lg:col-span-2">{judgeSelect("coa", "CoA (성적서)")}</div>
           <button onClick={addRow}
-            className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
+            className="lg:col-span-2 flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
             <Plus size={15} /> {editingInNo ? "수정 저장" : "등록"}
           </button>
         </div>
@@ -1829,11 +1847,11 @@ function IqcTab() {
               <thead>
                 <tr className="text-xs text-slate-400 border-b border-slate-800">
                   <th className="text-left py-2 pr-3 font-medium">입고번호</th>
-                  <th className="text-left py-2 pr-3 font-medium">원료 Lot (공급사)</th>
+                  <th className="text-left py-2 pr-3 font-medium">입고일자</th>
+                  <th className="text-left py-2 pr-3 font-medium">원료 LOT No.</th>
                   <th className="text-left py-2 pr-3 font-medium">품명</th>
                   <th className="text-left py-2 pr-3 font-medium">공급사</th>
                   <th className="text-right py-2 pr-3 font-medium">수량</th>
-                  <th className="text-left py-2 pr-3 font-medium">입고일시</th>
                   <th className="text-center py-2 pr-2 font-medium">외관</th>
                   <th className="text-center py-2 pr-2 font-medium">라벨</th>
                   <th className="text-center py-2 pr-2 font-medium">중량</th>
@@ -1849,11 +1867,11 @@ function IqcTab() {
                 {rows.map((r) => (
                   <tr key={r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
                     <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{r.inNo || "-"}</td>
+                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{(r.recv || "-").slice(0, 10)}</td>
                     <td className="py-2.5 pr-3 font-mono text-xs text-violet-300">{r.lot}</td>
                     <td className="py-2.5 pr-3 text-slate-100">{r.name}</td>
                     <td className="py-2.5 pr-3 text-xs text-slate-400">{r.supplier}</td>
                     <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs">{r.qty}</td>
-                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{r.recv}</td>
                     {[r.visual, r.label, r.weight, r.coa].map((v, i) => (
                       <td key={i} className="py-2.5 pr-2 text-center">
                         {v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" />
