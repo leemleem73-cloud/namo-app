@@ -2994,6 +2994,30 @@ function QMESChemical({ user, onLogout }) {
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => {
+    if (!qualityMenuOpen) return;
+
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest("[data-quality-menu]")) {
+        setQualityMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setQualityMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [qualityMenuOpen]);
+
   const visibleTabs = TABS.filter((t) => !t.adminOnly || user.role === "admin");
   const Active = TABS.find((t) => t.id === tab).comp;
 
@@ -3063,7 +3087,7 @@ function QMESChemical({ user, onLogout }) {
                   </div>
                   <div className="flex items-stretch gap-0.5">
                     {g.dropdown && dropdownItems.length > 0 && (
-                      <div className="relative flex items-stretch">
+                      <div className="relative flex items-stretch" data-quality-menu>
                         <button
                           onClick={() => setQualityMenuOpen((v) => !v)}
                           className={`flex items-center gap-1.5 px-3 py-3 text-[12px] whitespace-nowrap border-b-2 transition-colors ${
