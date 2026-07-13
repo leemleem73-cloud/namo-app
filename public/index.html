@@ -518,7 +518,7 @@ function DashboardTab() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        <Panel title="입도(Dmax) 관리도 (SPC) — < 10 μm · CTQ" right={<Badge tone="gray">CTQ</Badge>}>
+        <Panel title="입도 관리도 (SPC) — Dmax < 10 μm · CTQ" right={<Badge tone="gray">CTQ</Badge>}>
           <ResponsiveContainer width="100%" height={230}>
             <LineChart data={PARTICLE_SPC}>
               <CartesianGrid stroke="#16283E" strokeDasharray="3 3" />
@@ -668,8 +668,17 @@ function ProductionTab() {
 /* ──────────────────────────── 품질 관리 ──────────────────────────── */
 
 function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idStart, notice, storeKey, traceStage }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const isOqc = storeKey === "OQC";
   const [records, setRecords] = useState(DB.insp[storeKey] || initial);
-  const [form, setForm] = useState({ lot: "", check: itemKeys[0], value: "", judge: "합격" });
+  const [form, setForm] = useState({
+    date: today,
+    shipDate: today,
+    lot: isOqc ? (lotOptions?.[0] || "") : "",
+    check: itemKeys[0],
+    value: "",
+    judge: "합격"
+  });
   const [tried, setTried] = useState(false);
   const [nextId, setNextId] = useState(DB.seqs[storeKey] || idStart);
   const [editingId, setEditingId] = useState(null);
@@ -686,19 +695,21 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const lotErr = form.lot.trim() !== "" && !/^[A-D][A-Z][A-L]\d{4}$/.test(form.lot.trim())
     ? "Lot 형식 오류 — 채번 체계(예: CBG1001)와 불일치, 등록 진입 금지" : null;
   const triedErrors = [];
-  if (tried && form.lot.trim() === "") triedErrors.push("Lot 번호를 입력하세요 (예: CBG1001)");
+  if (!isOqc && tried && form.lot.trim() === "") triedErrors.push("Lot 번호를 입력하세요 (예: CBG1001)");
+  if (tried && form.date.trim() === "") triedErrors.push("검사일자를 입력하세요");
+  if (isOqc && tried && form.shipDate.trim() === "") triedErrors.push("출하일자를 입력하세요");
   if (tried && trimmedVal === "") triedErrors.push("측정값을 입력하세요");
-  const canAdd = trimmedVal !== "" && !inputError && !lotErr && form.lot.trim() !== "";
+  const canAdd = trimmedVal !== "" && !inputError && !lotErr && form.date.trim() !== "" && (isOqc ? form.shipDate.trim() !== "" : form.lot.trim() !== "");
 
   const addRecord = () => {
     if (!canAdd) { setTried(true); return; }
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const date = form.date;
     const judge = isNumericItem ? autoJ : form.judge;
     const lotNo = form.lot.trim();
     const prev = editingId ? records.find((r) => r.id === editingId) : null;
-    const rec = { id: editingId || `${idPrefix}${nextId}`, date: prev?.date || date, time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
+    const rec = { id: editingId || `${idPrefix}${nextId}`, date, shipDate: isOqc ? form.shipDate : (prev?.shipDate || ""), time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
     const next = editingId ? records.map((r) => r.id === editingId ? rec : r) : [rec, ...records];
     setRecords(next);
     DB.insp[storeKey] = next;
@@ -735,13 +746,13 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     dbSave();
     if (!editingId) setNextId(nextId + 1);
     setEditingId(null);
-    setForm({ ...form, value: "" });
+    setForm({ ...form, value: "", judge: "합격" });
     setTried(false);
   };
 
   const editRecord = (r) => {
     setEditingId(r.id);
-    setForm({ lot: r.lot, check: r.check, value: String(r.value ?? ""), judge: r.judge || "합격" });
+    setForm({ date: r.date || today, shipDate: r.shipDate || today, lot: r.lot, check: r.check, value: String(r.value ?? ""), judge: r.judge || "합격" });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const deleteRecord = (r) => {
@@ -768,10 +779,20 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       )}
 
       <Panel title="검사 결과 등록" right={spec && <span className="text-xs text-slate-400">규격: <span className="text-sky-300">{spec.spec}</span> · {spec.method} · {spec.type !== "-" && <Badge tone="violet">{spec.type}</Badge>}</span>}>
-        <div className="grid md:grid-cols-5 gap-2">
-          <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value.toUpperCase() })}
-            placeholder="Lot (예: CBG1001)"
-            className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+        <div className={`grid gap-2 ${isOqc ? "md:grid-cols-6" : "md:grid-cols-5"}`}>
+          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
+            title="검사일자"
+            className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+          {isOqc && (
+            <input type="date" value={form.shipDate} onChange={(e) => setForm({ ...form, shipDate: e.target.value })}
+              title="출하일자"
+              className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+          )}
+          {!isOqc && (
+            <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value.toUpperCase() })}
+              placeholder="LOT No. (예: CBG1001)"
+              className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          )}
           <select value={form.check} onChange={(e) => setForm({ ...form, check: e.target.value })}
             className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
             {itemKeys.map((k) => <option key={k}>{k}</option>)}
@@ -779,20 +800,27 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })}
             placeholder={`측정값 (${spec.spec})`}
             className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-          {isNumericItem ? (
+          {isOqc ? (
+            <select value={isNumericItem ? (autoJ || form.judge) : form.judge}
+              onChange={(e) => setForm({ ...form, judge: e.target.value })}
+              disabled={isNumericItem && !!autoJ}
+              title="합불판정"
+              className={`bg-slate-800 border rounded px-3 py-2 text-sm focus:outline-none ${
+                (isNumericItem ? autoJ : form.judge) === "불합격"
+                  ? "border-red-500/40 text-red-400"
+                  : "border-emerald-500/40 text-emerald-400"
+              }`}>
+              <option>합격</option><option>불합격</option>
+            </select>
+          ) : (
             <div className={`flex items-center justify-center rounded border px-3 py-2 text-sm font-medium ${
               inputError ? "border-red-500/40 text-red-400 bg-red-500/10"
               : autoJ === "합격" ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
               : autoJ === "불합격" ? "border-red-500/40 text-red-400 bg-red-500/10"
               : "border-slate-700 text-slate-500 bg-slate-800"
             }`}>
-              {inputError ? "진입 금지" : autoJ ?? "자동 판정"}
+              {inputError ? "진입 금지" : autoJ ?? "자동판정"}
             </div>
-          ) : (
-            <select value={form.judge} onChange={(e) => setForm({ ...form, judge: e.target.value })}
-              className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-              <option>합격</option><option>불합격</option>
-            </select>
           )}
           <button onClick={addRecord}
             className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
@@ -811,7 +839,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
 
       <Panel title={`검사 기록 (${docName})`}>
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className="w-full text-sm min-w-[1160px] table-fixed">
+          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1280px]" : "min-w-[1160px]"}`}>
             <colgroup>
               <col style={{ width: "130px" }} />
               <col style={{ width: "120px" }} />
@@ -821,6 +849,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               <col style={{ width: "110px" }} />
               <col style={{ width: "90px" }} />
               <col style={{ width: "120px" }} />
+              {isOqc && <col style={{ width: "120px" }} />}
               <col style={{ width: "130px" }} />
             </colgroup>
             <thead>
@@ -833,12 +862,13 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">측정값</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">판정</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사자</th>
+                {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">출하일자</th>}
                 <th className="text-center py-2 px-3 font-medium whitespace-nowrap">관리</th>
               </tr>
             </thead>
             <tbody>
               {records.length === 0 && (
-                <tr><td colSpan={9} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
+                <tr><td colSpan={isOqc ? 10 : 9} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
               )}
               {records.map((r) => (
                 <tr key={r.id} className="border-b border-slate-800/60 hover:bg-slate-800/30">
@@ -852,6 +882,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   <td className="py-2.5 px-3 text-slate-300 tabular-nums truncate" title={String(r.value)}>{r.value}</td>
                   <td className="py-2.5 px-3"><Badge tone={r.judge === "합격" ? "green" : "red"}>{r.judge}</Badge></td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector}>{r.inspector}</td>
+                  {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-3 text-center whitespace-nowrap">
                     <button onClick={() => editRecord(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
                     <button onClick={() => deleteRecord(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
