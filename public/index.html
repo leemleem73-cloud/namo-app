@@ -182,6 +182,13 @@ const SPC_CONFIG = {
   "입도(Dmax)": { data: PARTICLE_SPC, lsl: null, usl: 10, target: null, unit: "μm", domain: [6, 11], spec: "<10 μm", color: "#34d399" },
 };
 
+/* CTQ 관리도 점 표시: 규격 내 파랑, 규격 이탈 빨강 */
+function SpecDot({ cx, cy, payload, lo = null, hi = null }) {
+  const value = Number(payload?.v);
+  const isOut = Number.isFinite(value) && ((lo != null && value < lo) || (hi != null && value > hi));
+  return <circle cx={cx} cy={cy} r={4} fill={isOut ? "#ef4444" : "#38bdf8"} stroke={isOut ? "#fecaca" : "#bae6fd"} strokeWidth={1.5} />;
+}
+
 function spcStats(values, lsl, usl) {
   const n = values.length;
   const mean = values.reduce((a, b) => a + b, 0) / n;
@@ -518,8 +525,8 @@ function DashboardTab() {
               <XAxis dataKey="b" stroke="#8AA3C0" fontSize={11} />
               <YAxis stroke="#8AA3C0" fontSize={11} domain={[0, 11]} />
               <Tooltip {...chartTooltip} />
-              <ReferenceLine y={10} stroke="#f87171" strokeDasharray="4 4" label={{ value: "USL 10.0", fill: "#f87171", fontSize: 10, position: "insideTopRight" }} />
-              <Line type="monotone" dataKey="v" name="입도 Dmax(μm)" stroke="#34d399" strokeWidth={2} dot={{ r: 3.5 }} />
+              <ReferenceLine y={10} stroke="#38bdf8" strokeWidth={2} strokeDasharray="5 4" label={{ value: "USL 10", fill: "#7dd3fc", fontSize: 11, fontWeight: 700, position: "insideTopRight" }} />
+              <Line type="monotone" dataKey="v" name="입도 Dmax(μm)" stroke="#34d399" strokeWidth={2} dot={(props) => <SpecDot {...props} hi={10} />} activeDot={(props) => <SpecDot {...props} hi={10} />} />
             </LineChart>
           </ResponsiveContainer>
         </Panel>
@@ -531,10 +538,10 @@ function DashboardTab() {
               <XAxis dataKey="b" stroke="#8AA3C0" fontSize={11} />
               <YAxis stroke="#8AA3C0" fontSize={11} domain={[1100, 1900]} />
               <Tooltip {...chartTooltip} />
-              <ReferenceLine y={1800} stroke="#f87171" strokeDasharray="4 4" label={{ value: "USL 1,800", fill: "#f87171", fontSize: 10, position: "insideTopRight" }} />
+              <ReferenceLine y={1800} stroke="#38bdf8" strokeWidth={2} strokeDasharray="5 4" label={{ value: "USL 1,800", fill: "#7dd3fc", fontSize: 11, fontWeight: 700, position: "insideTopRight" }} />
               <ReferenceLine y={1500} stroke="#8AA3C0" strokeDasharray="2 4" label={{ value: "CL 1,500", fill: "#C5D5E8", fontSize: 10, position: "insideRight" }} />
-              <ReferenceLine y={1200} stroke="#f87171" strokeDasharray="4 4" label={{ value: "LSL 1,200", fill: "#f87171", fontSize: 10, position: "insideBottomRight" }} />
-              <Line type="monotone" dataKey="v" name="점도(cP)" stroke="#33C1E8" strokeWidth={2} dot={{ r: 3.5 }} />
+              <ReferenceLine y={1200} stroke="#38bdf8" strokeWidth={2} strokeDasharray="5 4" label={{ value: "LSL 1,200", fill: "#7dd3fc", fontSize: 11, fontWeight: 700, position: "insideBottomRight" }} />
+              <Line type="monotone" dataKey="v" name="점도(cP)" stroke="#33C1E8" strokeWidth={2} dot={(props) => <SpecDot {...props} lo={1200} hi={1800} />} activeDot={(props) => <SpecDot {...props} lo={1200} hi={1800} />} />
             </LineChart>
           </ResponsiveContainer>
         </Panel>
@@ -546,10 +553,10 @@ function DashboardTab() {
               <XAxis dataKey="b" stroke="#8AA3C0" fontSize={11} />
               <YAxis stroke="#8AA3C0" fontSize={11} domain={[18.5, 21.5]} />
               <Tooltip {...chartTooltip} />
-              <ReferenceLine y={21.0} stroke="#f87171" strokeDasharray="4 4" label={{ value: "USL 21.0", fill: "#f87171", fontSize: 10, position: "insideTopRight" }} />
+              <ReferenceLine y={21.0} stroke="#38bdf8" strokeWidth={2} strokeDasharray="5 4" label={{ value: "USL 21", fill: "#7dd3fc", fontSize: 11, fontWeight: 700, position: "insideTopRight" }} />
               <ReferenceLine y={20.0} stroke="#8AA3C0" strokeDasharray="2 4" label={{ value: "CL 20.0", fill: "#C5D5E8", fontSize: 10, position: "insideRight" }} />
-              <ReferenceLine y={19.0} stroke="#f87171" strokeDasharray="4 4" label={{ value: "LSL 19.0", fill: "#f87171", fontSize: 10, position: "insideBottomRight" }} />
-              <Line type="monotone" dataKey="v" name="고형분(wt%)" stroke="#a78bfa" strokeWidth={2} dot={{ r: 3.5 }} />
+              <ReferenceLine y={19.0} stroke="#38bdf8" strokeWidth={2} strokeDasharray="5 4" label={{ value: "LSL 19", fill: "#7dd3fc", fontSize: 11, fontWeight: 700, position: "insideBottomRight" }} />
+              <Line type="monotone" dataKey="v" name="고형분(wt%)" stroke="#a78bfa" strokeWidth={2} dot={(props) => <SpecDot {...props} lo={19} hi={21} />} activeDot={(props) => <SpecDot {...props} lo={19} hi={21} />} />
             </LineChart>
           </ResponsiveContainer>
         </Panel>
@@ -1495,9 +1502,9 @@ function SpcTab() {
             <XAxis dataKey="b" stroke="#8AA3C0" fontSize={11} />
             <YAxis stroke="#8AA3C0" fontSize={11} domain={cfg.domain} />
             <Tooltip {...chartTooltip} />
-            {cfg.usl != null && <ReferenceLine y={cfg.usl} stroke="#f87171" strokeDasharray="4 4" label={{ value: `USL ${cfg.usl.toLocaleString()}`, fill: "#f87171", fontSize: 10, position: "insideTopRight" }} />}
+            {cfg.usl != null && <ReferenceLine y={cfg.usl} stroke="#38bdf8" strokeDasharray="4 4" label={{ value: `USL ${cfg.usl.toLocaleString()}`, fill: "#7dd3fc", fontSize: 10, position: "insideTopRight" }} />}
             {cfg.target != null && <ReferenceLine y={cfg.target} stroke="#8AA3C0" strokeDasharray="2 4" label={{ value: `CL ${cfg.target.toLocaleString()}`, fill: "#C5D5E8", fontSize: 10, position: "insideRight" }} />}
-            {cfg.lsl != null && <ReferenceLine y={cfg.lsl} stroke="#f87171" strokeDasharray="4 4" label={{ value: `LSL ${cfg.lsl.toLocaleString()}`, fill: "#f87171", fontSize: 10, position: "insideBottomRight" }} />}
+            {cfg.lsl != null && <ReferenceLine y={cfg.lsl} stroke="#38bdf8" strokeDasharray="4 4" label={{ value: `LSL ${cfg.lsl.toLocaleString()}`, fill: "#7dd3fc", fontSize: 10, position: "insideBottomRight" }} />}
             {s && <ReferenceLine y={s.mean} stroke="#fbbf24" strokeDasharray="6 3" label={{ value: "x̄", fill: "#fbbf24", fontSize: 10, position: "insideLeft" }} />}
             <Line type="monotone" dataKey="v" name={`${item} (${cfg.unit})`} stroke={cfg.color} strokeWidth={2} dot={{ r: 4 }} />
           </LineChart>
