@@ -278,7 +278,7 @@ let __qmesLastServerUpdatedAt = null;
 let __qmesApplyingRemote = false;
 
 function dbDefault() {
-  return { batches: [], woDocs: {}, iqc: [], insp: { PQC: [], OQC: [] }, holds: [], eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {}, popEntries: [], seqs: {} };
+  return { batches: [], woDocs: {}, iqc: [], insp: { PQC: [], OQC: [] }, holds: [], eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {}, popEntries: [], auditLogs: [], seqs: {} };
 }
 let DB = (() => {
   try { const r = window.localStorage.getItem(DB_KEY); if (r) return { ...dbDefault(), ...JSON.parse(r) }; } catch (e) { /* 무시 */ }
@@ -367,6 +367,22 @@ async function qmesPushToServer() {
     console.warn("QMES Supabase save failed:", e);
     qmesSyncBadge(navigator.onLine ? "error" : "offline", navigator.onLine ? "서버 저장 실패 · 로컬 보관" : "오프라인 · 로컬 보관");
   }
+}
+
+function auditLog(module, action, target, reason = "") {
+  const now = new Date();
+  DB.auditLogs = [{
+    id: `AUD-${Date.now()}`, module, action, target, reason,
+    by: (window.__QMES_USER__ || "현재 사용자"),
+    at: now.toLocaleString("ko-KR", { hour12: false })
+  }, ...(DB.auditLogs || [])].slice(0, 500);
+}
+
+function askDeleteReason(label) {
+  const reason = window.prompt(`${label} 삭제 사유를 입력하세요.\n※ 삭제 이력은 감사 로그에 남습니다.`);
+  if (reason === null) return null;
+  if (!reason.trim()) { window.alert("삭제 사유를 입력해야 합니다."); return null; }
+  return reason.trim();
 }
 
 function dbSave() {
@@ -598,7 +614,7 @@ function ProductionTab() {
           </thead>
           <tbody>
             {list.length === 0 && (
-              <tr><td colSpan={8} className="py-6 text-center text-sm text-slate-500">배치 실적이 없습니다 — [작업지시 발행]에서 배치를 발행하세요.</td></tr>
+              <tr><td colSpan={9} className="py-6 text-center text-sm text-slate-500">배치 실적이 없습니다 — [작업지시 발행]에서 배치를 발행하세요.</td></tr>
             )}
             {list.map((w) => {
               const pct = Math.round((w.done / w.plan) * 100);
@@ -636,6 +652,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [form, setForm] = useState({ lot: "", check: itemKeys[0], value: "", judge: "합격" });
   const [tried, setTried] = useState(false);
   const [nextId, setNextId] = useState(DB.seqs[storeKey] || idStart);
+  const [editingId, setEditingId] = useState(null);
 
   const pass = records.filter((r) => r.judge === "합격").length;
   const rate = records.length ? ((pass / records.length) * 100).toFixed(1) : "—";
@@ -659,11 +676,12 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const judge = isNumericItem ? autoJ : form.judge;
     const lotNo = form.lot.trim();
-    const rec = { id: `${idPrefix}${nextId}`, time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
-    const next = [rec, ...records];
+    const rec = { id: editingId || `${idPrefix}${nextId}`, time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
+    const next = editingId ? records.map((r) => r.id === editingId ? rec : r) : [rec, ...records];
     setRecords(next);
     DB.insp[storeKey] = next;
-    DB.seqs[storeKey] = nextId + 1;
+    if (!editingId) DB.seqs[storeKey] = nextId + 1;
+    auditLog(storeKey, editingId ? "수정" : "등록", rec.id, `${rec.lot} / ${rec.check} / ${rec.value} / ${rec.judge}`);
 
     /* Lot 이력 자동 반영 */
     const L = DB.lots[lotNo];
@@ -693,9 +711,23 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       }
     }
     dbSave();
-    setNextId(nextId + 1);
+    if (!editingId) setNextId(nextId + 1);
+    setEditingId(null);
     setForm({ ...form, value: "" });
     setTried(false);
+  };
+
+  const editRecord = (r) => {
+    setEditingId(r.id);
+    setForm({ lot: r.lot, check: r.check, value: String(r.value ?? ""), judge: r.judge || "합격" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const deleteRecord = (r) => {
+    const reason = askDeleteReason(`${docName} ${r.id}`);
+    if (reason === null) return;
+    const next = records.filter((x) => x.id !== r.id);
+    setRecords(next); DB.insp[storeKey] = next;
+    auditLog(storeKey, "삭제", r.id, reason); dbSave();
   };
 
   return (
@@ -742,7 +774,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           )}
           <button onClick={addRecord}
             className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
-            <Plus size={15} /> 검사 등록
+            <Plus size={15} /> {editingId ? "검사 수정 저장" : "검사 등록"}
           </button>
         </div>
         {(inputError || lotErr || triedErrors.length > 0) && (
@@ -767,7 +799,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 <th className="text-left py-2 pr-3 font-medium">규격</th>
                 <th className="text-left py-2 pr-3 font-medium">측정값</th>
                 <th className="text-left py-2 pr-3 font-medium">판정</th>
-                <th className="text-left py-2 font-medium">검사자</th>
+                <th className="text-left py-2 pr-3 font-medium">검사자</th>
+                <th className="text-center py-2 font-medium">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -785,7 +818,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   <td className="py-2.5 pr-3 text-xs text-slate-400">{QC_ITEMS[r.check]?.spec || "-"}</td>
                   <td className="py-2.5 pr-3 text-slate-300 tabular-nums">{r.value}</td>
                   <td className="py-2.5 pr-3"><Badge tone={r.judge === "합격" ? "green" : "red"}>{r.judge}</Badge></td>
-                  <td className="py-2.5 text-slate-400 text-xs">{r.inspector}</td>
+                  <td className="py-2.5 pr-3 text-slate-400 text-xs">{r.inspector}</td>
+                  <td className="py-2.5 text-center whitespace-nowrap">
+                    <button onClick={() => editRecord(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
+                    <button onClick={() => deleteRecord(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -1682,6 +1719,7 @@ function IqcTab() {
   const [rows, setRows] = useState(DB.iqc);
   const [form, setForm] = useState({ name: "NMP", lot: "", qty: "", visual: "합격", label: "합격", weight: "합격", coa: "합격" });
   const [tried, setTried] = useState(false);
+  const [editingInNo, setEditingInNo] = useState(null);
 
   const done = rows.filter((r) => r.judge !== "검사중");
   const pass = done.filter((r) => r.judge === "합격").length;
@@ -1707,20 +1745,23 @@ function IqcTab() {
     const now = new Date();
     const recv = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const inNo = `IN-${String(now.getFullYear()).slice(2)}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(DB.seqs.iqc || 1).padStart(2, "0")}`;
-    DB.seqs.iqc = (DB.seqs.iqc || 1) + 1;
-    const nr = [
-      { inNo, lot: form.lot.trim(), code: "-", name: form.name, supplier: "-", qty: form.qty, recv, visual: form.visual, label: form.label, weight: form.weight, coa: form.coa, judge: overall(form), note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 협력사 통보" : "", by: (window.__QMES_USER__ || "현재 사용자") },
-      ...rows,
-    ];
+    if (!editingInNo) DB.seqs.iqc = (DB.seqs.iqc || 1) + 1;
+    const rowData = { inNo: editingInNo || inNo, lot: form.lot.trim(), code: "-", name: form.name, supplier: "-", qty: form.qty, recv, visual: form.visual, label: form.label, weight: form.weight, coa: form.coa, judge: overall(form), note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 협력사 통보" : "", by: (window.__QMES_USER__ || "현재 사용자") };
+    const nr = editingInNo ? rows.map((r) => r.inNo === editingInNo ? rowData : r) : [rowData, ...rows];
     setRows(nr);
     DB.iqc = nr;
     if (overall(form) !== "합격") {
       DB.holds = [{ id: `HLD-${String(Date.now()).slice(-6)}`, target: `${form.lot.trim()} (${inNo})`, type: "원료 Lot", gate: "IQC 게이트", reason: `수입검사 ${overall(form)} — 판정·승인 완료 전 생산 불출 차단`, since: recv, cond: overall(form) === "반품" ? "격리 후 반품 처리 확정" : "재시험 합격 + 품질부장 조건부 사용 승인", status: "차단중", ncr: "-" }, ...DB.holds];
     }
+    auditLog("IQC", editingInNo ? "수정" : "등록", rowData.inNo, `${rowData.lot} / ${rowData.judge}`);
     dbSave();
+    setEditingInNo(null);
     setForm({ ...form, lot: "", qty: "" });
     setTried(false);
   };
+
+  const editIqc = (r) => { setEditingInNo(r.inNo); setForm({ name:r.name, lot:r.lot, qty:r.qty, visual:r.visual, label:r.label, weight:r.weight, coa:r.coa }); window.scrollTo({top:0,behavior:"smooth"}); };
+  const deleteIqc = (r) => { const reason=askDeleteReason(`수입검사 ${r.inNo}`); if(reason===null)return; const next=rows.filter(x=>x.inNo!==r.inNo); setRows(next); DB.iqc=next; auditLog("IQC","삭제",r.inNo,reason); dbSave(); };
 
   const judgeSelect = (key, label) => (
     <div className="flex flex-col gap-1">
@@ -1766,7 +1807,7 @@ function IqcTab() {
           {judgeSelect("coa", "CoA (성적서)")}
           <button onClick={addRow}
             className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
-            <Plus size={15} /> 등록
+            <Plus size={15} /> {editingInNo ? "수정 저장" : "등록"}
           </button>
         </div>
         {iqcErrors.length > 0 && (
@@ -1797,12 +1838,13 @@ function IqcTab() {
                   <th className="text-center py-2 pr-2 font-medium">라벨</th>
                   <th className="text-center py-2 pr-2 font-medium">중량</th>
                   <th className="text-center py-2 pr-3 font-medium">CoA</th>
-                  <th className="text-left py-2 font-medium">종합판정</th>
+                  <th className="text-left py-2 pr-3 font-medium">종합판정</th>
+                  <th className="text-center py-2 font-medium">관리</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 && (
-                  <tr><td colSpan={11} className="py-6 text-center text-sm text-slate-500">수입검사 기록이 없습니다 — 원료 입고 시 상단에서 등록하세요.</td></tr>
+                  <tr><td colSpan={12} className="py-6 text-center text-sm text-slate-500">수입검사 기록이 없습니다 — 원료 입고 시 상단에서 등록하세요.</td></tr>
                 )}
                 {rows.map((r) => (
                   <tr key={r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
@@ -1820,9 +1862,13 @@ function IqcTab() {
                           : <XCircle size={14} className="text-red-400 inline" />}
                       </td>
                     ))}
-                    <td className="py-2.5">
+                    <td className="py-2.5 pr-3">
                       <Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>
                       {r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[180px] leading-snug">{r.note}</div>}
+                    </td>
+                    <td className="py-2.5 text-center whitespace-nowrap">
+                      <button onClick={() => editIqc(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
+                      <button onClick={() => deleteIqc(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
                     </td>
                   </tr>
                 ))}
@@ -2134,6 +2180,7 @@ function IssueWoTab() {
     shiftType: "일반", worker: "관리자",
   });
   const [issued, setIssued] = useState(DB.batches);
+  const [editingWo, setEditingWo] = useState(null);
 
   const bom = BOM[form.product];
   const qtyNum = parseFloat(form.qty) || 0;
@@ -2161,12 +2208,13 @@ function IssueWoTab() {
     if (!woReady) return;
     const time = new Date().toLocaleTimeString("ko-KR", { hour12: false });
     const seqKey = `wo-${form.prodDate}-${form.site}`;
-    DB.seqs[seqKey] = (DB.seqs[seqKey] || 1) + 1;
+    if (!editingWo) DB.seqs[seqKey] = (DB.seqs[seqKey] || 1) + 1;
 
-    const batch = { no: nextNo, item: form.product, tank: form.tank, plan: qtyNum, done: 0, unit: "kg", due: form.prodDate, status: "발행", shift: `${form.shiftType} · ${form.timeRange}`, worker: form.worker.trim(), time };
-    DB.batches = [batch, ...DB.batches];
+    const woNo = editingWo || nextNo;
+    const batch = { no: woNo, item: form.product, tank: form.tank, plan: qtyNum, done: editingWo ? (DB.batches.find(b=>b.no===editingWo)?.done || 0) : 0, unit: "kg", due: form.prodDate, status: "발행", shift: `${form.shiftType} · ${form.timeRange}`, worker: form.worker.trim(), time };
+    DB.batches = editingWo ? DB.batches.map((b)=>b.no===editingWo?batch:b) : [batch, ...DB.batches];
 
-    DB.woDocs[nextNo] = {
+    DB.woDocs[woNo] = {
       item: form.product, procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
       workers: form.worker.trim(), status: "발행",
@@ -2185,16 +2233,21 @@ function IssueWoTab() {
       ],
     };
 
-    DB.lots[nextNo] = {
+    DB.lots[woNo] = {
       item: "NBA20-HM01", itemName: form.product,
-      qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: nextNo, status: "발행 — 생산 대기", stage: "수입",
+      qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
       materials: [], binderLot: null,
       steps: [{ stage: "수입", name: "작업지시 발행", time, detail: `${bom.procName} · ${form.tank} · 계획 ${qtyNum.toLocaleString()}kg · ${form.prodDate} ${form.timeRange} (${form.shiftType})`, result: "발행", by: window.__QMES_USER__ || "-" }],
       ship: null,
     };
+    auditLog("작업지시", editingWo ? "수정" : "발행", woNo, `${form.product} / ${qtyNum}kg / ${form.prodDate}`);
     dbSave();
-    setIssued(DB.batches);
+    setEditingWo(null);
+    setIssued([...DB.batches]);
   };
+
+  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" }); window.scrollTo({top:0,behavior:"smooth"}); };
+  const deleteWo = (r) => { const reason=askDeleteReason(`작업지시 ${r.no}`); if(reason===null)return; DB.batches=DB.batches.filter(x=>x.no!==r.no); delete DB.woDocs[r.no]; delete DB.lots[r.no]; DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no); DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no); DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no); auditLog("작업지시","삭제",r.no,reason); dbSave(); setIssued([...DB.batches]); };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
   const label = (t) => <span className="text-[10px] text-slate-500">{t}</span>;
@@ -2299,7 +2352,7 @@ function IssueWoTab() {
           <p className="text-[11px] text-slate-500">발행 시 실제 양식 그대로의 작업지시서(원재료 투입 실적란·공정조건 관리란 포함)가 생성되고, 배치·Lot 추적에 자동 연동됩니다.</p>
           <button onClick={issue} disabled={!woReady}
             className={`flex items-center gap-1.5 rounded px-4 py-2 text-sm font-medium transition-colors ${!woReady ? "bg-slate-800 text-slate-600" : "bg-sky-600 hover:bg-sky-500 text-white"}`}>
-            <Plus size={15} /> 작업지시 발행
+            <Plus size={15} /> {editingWo ? "작업지시 수정 저장" : "작업지시 발행"}
           </button>
         </div>
       </Panel>
@@ -2318,7 +2371,8 @@ function IssueWoTab() {
                   <th className="text-right py-2 pr-3 font-medium">계획량</th>
                   <th className="text-left py-2 pr-3 font-medium">생산일자</th>
                   <th className="text-left py-2 pr-3 font-medium">근무 / 작업자</th>
-                  <th className="text-left py-2 font-medium">발행시각</th>
+                  <th className="text-left py-2 pr-3 font-medium">발행시각</th>
+                  <th className="text-center py-2 font-medium">관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -2330,7 +2384,11 @@ function IssueWoTab() {
                     <td className="py-2.5 pr-3 text-right tabular-nums text-slate-100">{r.plan.toLocaleString()} kg</td>
                     <td className="py-2.5 pr-3 text-xs tabular-nums text-slate-300">{r.due}</td>
                     <td className="py-2.5 pr-3 text-xs text-slate-400">{r.shift} / {r.worker}</td>
-                    <td className="py-2.5 text-xs font-mono text-slate-400">{r.time}</td>
+                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{r.time}</td>
+                    <td className="py-2.5 text-center whitespace-nowrap">
+                      <button onClick={() => editWo(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
+                      <button onClick={() => deleteWo(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -2520,6 +2578,7 @@ function FieldInputTab() {
   const [entries, setEntries] = useState(DB.popEntries);
   const [seq, setSeq] = useState(DB.seqs.POP || 1);
   const [tried, setTried] = useState(false);
+  const [editingPop, setEditingPop] = useState(null);
 
   const spec = QC_ITEMS[check];
   const isVisual = spec.lo == null && spec.hi == null;
@@ -2554,12 +2613,13 @@ function FieldInputTab() {
     if (judged == null || inputError || !lotFormatOk) { setTried(true); return; }
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const recId = `POP-${String(seq).padStart(4, "0")}`;
+    const recId = editingPop || `POP-${String(seq).padStart(4, "0")}`;
     const lotNo = lot.trim();
     const display = isVisual ? (visualOk ? "적합" : "부적합") : trimmed;
     /* 공정검사 성적서 자동 기록 */
-    DB.insp.PQC = [{ id: recId, time, lot: lotNo, check, value: display, judge: judged, note: "현장 입력", inspector: window.__QMES_USER__ || "-" }, ...DB.insp.PQC];
-    DB.seqs.POP = seq + 1;
+    const pqcRec = { id: recId, time, lot: lotNo, check, value: display, judge: judged, note: "현장 입력", inspector: window.__QMES_USER__ || "-" };
+    DB.insp.PQC = editingPop ? DB.insp.PQC.map((r)=>r.id===recId?pqcRec:r) : [pqcRec, ...DB.insp.PQC];
+    if (!editingPop) DB.seqs.POP = seq + 1;
     /* Lot 이력 자동 반영 */
     const L = DB.lots[lotNo];
     if (L) {
@@ -2578,15 +2638,20 @@ function FieldInputTab() {
         ? [`규격(${spec.spec}) 자동판정 → 합격`, `${recId} 공정검사 성적서 자동 기록`, L ? `Lot ${lotNo} 이력 반영 완료` : `Lot ${lotNo} 미등록 — 작업지시 발행 시 이력 연결`]
         : [`규격(${spec.spec}) 자동판정 → 불합격`, `${recId} 성적서 자동 기록`, `자동 홀드 생성 — 공정 게이트 차단`, `품질부 알람 · 격리 Rack 지정 대기`, `NCR 발행 대기 (8D 착수)`],
     };
-    const nextEntries = [entry, ...entries];
+    const nextEntries = editingPop ? entries.map((e)=>e.id===editingPop?entry:e) : [entry, ...entries];
     setEntries(nextEntries);
     DB.popEntries = nextEntries;
+    auditLog("현장입력", editingPop ? "수정" : "등록", recId, `${lotNo} / ${check} / ${display} / ${judged}`);
     dbSave();
-    setSeq(seq + 1);
+    if (!editingPop) setSeq(seq + 1);
+    setEditingPop(null);
     setValue("");
     setVisualOk(null);
     setTried(false);
   };
+
+  const editPop = (e) => { setEditingPop(e.id); setLot(e.lot); setCheck(e.check); const numeric=QC_ITEMS[e.check]?.lo!=null||QC_ITEMS[e.check]?.hi!=null; if(numeric){setValue(String(e.value));setVisualOk(null);}else{setValue("");setVisualOk(e.judge==="합격");} window.scrollTo({top:0,behavior:"smooth"}); };
+  const deletePop = (e) => { const reason=askDeleteReason(`현장 입력 ${e.id}`); if(reason===null)return; const next=entries.filter(x=>x.id!==e.id); setEntries(next); DB.popEntries=next; DB.insp.PQC=DB.insp.PQC.filter(x=>x.id!==e.id); auditLog("현장입력","삭제",e.id,reason); dbSave(); };
 
   const bigBtn = (active) =>
     `rounded-xl border px-4 py-3.5 text-base font-medium transition-colors ${
@@ -2658,7 +2723,7 @@ function FieldInputTab() {
           </div>
           <button onClick={save}
             className={`rounded-xl px-6 py-3 text-base font-bold transition-colors text-white ${judged === "불합격" ? "bg-red-600 hover:bg-red-500" : judged === "합격" ? "bg-emerald-600 hover:bg-emerald-500" : "bg-sky-600 hover:bg-sky-500"}`}>
-            저장 (자동 처리)
+            {editingPop ? "수정 저장 (자동 처리)" : "저장 (자동 처리)"}
           </button>
         </div>
       </Panel>
@@ -2675,6 +2740,10 @@ function FieldInputTab() {
                   <span className="text-sm text-slate-100">{e.check}</span>
                   <span className="text-sm tabular-nums text-slate-200">{e.value}</span>
                   <Badge tone={e.judge === "합격" ? "green" : "red"}>{e.judge}</Badge>
+                  <span className="ml-auto whitespace-nowrap">
+                    <button onClick={() => editPop(e)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
+                    <button onClick={() => deletePop(e)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
+                  </span>
                 </div>
                 <ul className="mt-1.5 flex flex-col gap-0.5">
                   {e.auto.map((a, i) => (
