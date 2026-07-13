@@ -780,13 +780,19 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
 
       <Panel title="검사 결과 등록" right={spec && <span className="text-xs text-slate-400">규격: <span className="text-sky-300">{spec.spec}</span> · {spec.method} · {spec.type !== "-" && <Badge tone="violet">{spec.type}</Badge>}</span>}>
         <div className={`grid gap-2 ${isOqc ? "md:grid-cols-6" : "md:grid-cols-5"}`}>
-          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
-            title="검사일자"
-            className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
-          {isOqc && (
-            <input type="date" value={form.shipDate} onChange={(e) => setForm({ ...form, shipDate: e.target.value })}
-              title="출하일자"
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">검사일자</label>
+            <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
+              aria-label="검사일자"
               className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+          </div>
+          {isOqc && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-400">출하일자</label>
+              <input type="date" value={form.shipDate} onChange={(e) => setForm({ ...form, shipDate: e.target.value })}
+                aria-label="출하일자"
+                className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+            </div>
           )}
           {!isOqc && (
             <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value.toUpperCase() })}
