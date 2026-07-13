@@ -853,7 +853,7 @@ function InventoryTab() {
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="text-left py-2 pr-3 font-medium">자재코드</th>
-                <th className="text-left py-2 pr-3 font-medium">품명</th>
+                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">품명</th>
                 <th className="text-right py-2 pr-3 font-medium">현재고</th>
                 <th className="text-right py-2 pr-3 font-medium">안전재고</th>
                 <th className="text-left py-2 pr-3 font-medium w-36">재고 수준</th>
@@ -1368,7 +1368,7 @@ function TraceTab() {
                 <th className="text-left py-2 pr-3 font-medium">원료 Lot</th>
                 <th className="text-left py-2 pr-3 font-medium">자재코드</th>
                 <th className="text-left py-2 pr-3 font-medium">품명</th>
-                <th className="text-left py-2 pr-3 font-medium">공급사</th>
+                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">공급사</th>
                 <th className="text-right py-2 pr-3 font-medium">투입량</th>
                 <th className="text-left py-2 pr-3 font-medium">입고일시</th>
                 <th className="text-left py-2 font-medium">수입검사</th>
@@ -1786,45 +1786,49 @@ function IqcTab() {
       </div>
 
       <Panel title="수입검사 등록 (공정 20)" right={<span className="text-xs text-slate-400">종합판정: <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></span>}>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-2 items-end">
-          <div className="flex flex-col gap-1 lg:col-span-2">
+        <div className="overflow-x-auto pb-1">
+          <div className="grid grid-cols-6 gap-2 items-end min-w-[1080px]">
+          <div className="flex flex-col gap-1">
             <span className="text-[10px] text-slate-500">입고번호</span>
             <input value={editingInNo || "자동 부여"} readOnly
               className="bg-slate-800/60 border border-slate-700 rounded px-2 py-2 text-sm text-slate-400 font-mono cursor-not-allowed" />
           </div>
-          <div className="flex flex-col gap-1 lg:col-span-2">
+          <div className="flex flex-col gap-1">
             <span className="text-[10px] text-slate-500">입고일자</span>
             <input type="date" value={form.recvDate} onChange={(e) => setForm({ ...form, recvDate: e.target.value })}
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
           </div>
-          <div className="flex flex-col gap-1 lg:col-span-2">
+          <div className="flex flex-col gap-1">
             <span className="text-[10px] text-slate-500">원료 LOT No.</span>
             <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })} placeholder="공급사 LOT 그대로"
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
           </div>
-          <div className="flex flex-col gap-1 lg:col-span-2">
+          <div className="flex flex-col gap-1">
             <span className="text-[10px] text-slate-500">품명</span>
             <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
               {IQC_MATERIALS.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1 lg:col-span-2">
+          <div className="flex flex-col gap-1">
             <span className="text-[10px] text-slate-500">공급사</span>
             <input value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} placeholder="공급사명"
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
           </div>
-          <div className="flex flex-col gap-1 lg:col-span-2">
+          <div className="flex flex-col gap-1">
             <span className="text-[10px] text-slate-500">수량</span>
             <input value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value })} placeholder="예: 480 kg"
               className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
           </div>
-          <div className="lg:col-span-2">{judgeSelect("visual", "외관 (파손유무)")}</div>
-          <div className="lg:col-span-2">{judgeSelect("label", "라벨 (파손유무)")}</div>
-          <div className="lg:col-span-2">{judgeSelect("weight", "중량 (허용오차)")}</div>
-          <div className="lg:col-span-2">{judgeSelect("coa", "CoA (성적서)")}</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end mt-2">
+          <div>{judgeSelect("visual", "외관 (파손유무)")}</div>
+          <div>{judgeSelect("label", "라벨 (파손유무)")}</div>
+          <div>{judgeSelect("weight", "중량 (허용오차)")}</div>
+          <div>{judgeSelect("coa", "CoA (성적서)")}</div>
           <button onClick={addRow}
-            className="lg:col-span-2 flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
+            className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
             <Plus size={15} /> {editingInNo ? "수정 저장" : "등록"}
           </button>
         </div>
@@ -1843,15 +1847,21 @@ function IqcTab() {
       <div className="grid lg:grid-cols-3 gap-4">
         <Panel title="수입검사 관리대장" className="lg:col-span-2">
           <div className="overflow-x-auto -mx-4 px-4">
-            <table className="w-full text-sm min-w-[820px]">
+            <table className="w-full table-fixed text-sm min-w-[1180px]">
+              <colgroup>
+                <col style={{width:"130px"}} /><col style={{width:"110px"}} /><col style={{width:"140px"}} />
+                <col style={{width:"150px"}} /><col style={{width:"130px"}} /><col style={{width:"100px"}} />
+                <col style={{width:"64px"}} /><col style={{width:"64px"}} /><col style={{width:"64px"}} /><col style={{width:"64px"}} />
+                <col style={{width:"110px"}} /><col style={{width:"120px"}} />
+              </colgroup>
               <thead>
                 <tr className="text-xs text-slate-400 border-b border-slate-800">
-                  <th className="text-left py-2 pr-3 font-medium">입고번호</th>
-                  <th className="text-left py-2 pr-3 font-medium">입고일자</th>
-                  <th className="text-left py-2 pr-3 font-medium">원료 LOT No.</th>
+                  <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th>
+                  <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th>
+                  <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">원료 LOT No.</th>
                   <th className="text-left py-2 pr-3 font-medium">품명</th>
                   <th className="text-left py-2 pr-3 font-medium">공급사</th>
-                  <th className="text-right py-2 pr-3 font-medium">수량</th>
+                  <th className="text-right py-2 pr-3 font-medium whitespace-nowrap">수량</th>
                   <th className="text-center py-2 pr-2 font-medium">외관</th>
                   <th className="text-center py-2 pr-2 font-medium">라벨</th>
                   <th className="text-center py-2 pr-2 font-medium">중량</th>
@@ -1866,12 +1876,12 @@ function IqcTab() {
                 )}
                 {rows.map((r) => (
                   <tr key={r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
-                    <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{r.inNo || "-"}</td>
-                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{(r.recv || "-").slice(0, 10)}</td>
-                    <td className="py-2.5 pr-3 font-mono text-xs text-violet-300">{r.lot}</td>
-                    <td className="py-2.5 pr-3 text-slate-100">{r.name}</td>
-                    <td className="py-2.5 pr-3 text-xs text-slate-400">{r.supplier}</td>
-                    <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs">{r.qty}</td>
+                    <td className="py-2.5 pr-3 font-mono text-xs text-sky-300 whitespace-nowrap">{r.inNo || "-"}</td>
+                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{(r.recv || "-").slice(0, 10)}</td>
+                    <td className="py-2.5 pr-3 font-mono text-xs text-violet-300 whitespace-nowrap truncate">{r.lot}</td>
+                    <td className="py-2.5 pr-3 text-slate-100 truncate">{r.name}</td>
+                    <td className="py-2.5 pr-3 text-xs text-slate-400 truncate">{r.supplier}</td>
+                    <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.qty}</td>
                     {[r.visual, r.label, r.weight, r.coa].map((v, i) => (
                       <td key={i} className="py-2.5 pr-2 text-center">
                         {v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" />
