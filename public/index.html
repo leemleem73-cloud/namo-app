@@ -2854,7 +2854,15 @@ const TABS = [
 const MENU_GROUPS = [
   { title: "모니터링", ids: ["dash", "eq"] },
   { title: "생산 현장", ids: ["pop", "prod", "wo", "woIssue"] },
-  { title: "품질 검사", ids: ["iqc", "pqc", "oqc", "spc", "lock"] },
+  {
+    title: "품질 검사",
+    dropdown: {
+      label: "품질검사",
+      icon: ClipboardCheck,
+      ids: ["iqc", "pqc", "oqc"],
+    },
+    ids: ["spc", "lock"],
+  },
   { title: "개선 · 대응", ids: ["ncr", "cc", "4m"] },
   { title: "재고 · 추적", ids: ["inv", "trace", "coa"] },
   { title: "시스템", ids: ["members"] },
@@ -2863,6 +2871,7 @@ const MENU_GROUPS = [
 function QMESChemical({ user, onLogout }) {
   const [tab, setTab] = useState("dash");
   const [clock, setClock] = useState(new Date());
+  const [qualityMenuOpen, setQualityMenuOpen] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
@@ -2921,18 +2930,77 @@ function QMESChemical({ user, onLogout }) {
         </div>
 
         <div className="border-t border-white/10" style={{ background: "linear-gradient(90deg,#081A33 0%,#0A2242 55%,#0D3260 100%)" }}>
-          <nav className="w-full px-3 lg:px-5 flex items-stretch gap-1 overflow-x-auto">
+          <nav className="w-full px-3 lg:px-5 flex flex-wrap items-stretch gap-1 overflow-visible">
             {MENU_GROUPS.map((g) => {
               const items = g.ids.map((id) => visibleTabs.find((t) => t.id === id)).filter(Boolean);
-              if (items.length === 0) return null;
+              const dropdownItems = g.dropdown
+                ? g.dropdown.ids.map((id) => visibleTabs.find((t) => t.id === id)).filter(Boolean)
+                : [];
+              if (items.length === 0 && dropdownItems.length === 0) return null;
+              const dropdownActive = dropdownItems.some((t) => t.id === tab);
+              const DropdownIcon = g.dropdown ? g.dropdown.icon : null;
+
               return (
-                <div key={g.title} className="flex items-stretch shrink-0">
+                <div key={g.title} className="flex items-stretch shrink-0 relative">
                   <div className="hidden xl:flex items-center px-2 text-[9px] tracking-widest text-[#7E97B8] font-semibold whitespace-nowrap">
                     {g.title}
                   </div>
                   <div className="flex items-stretch gap-0.5">
+                    {g.dropdown && dropdownItems.length > 0 && (
+                      <div className="relative flex items-stretch">
+                        <button
+                          onClick={() => setQualityMenuOpen((v) => !v)}
+                          className={`flex items-center gap-1.5 px-3 py-3 text-[12px] whitespace-nowrap border-b-2 transition-colors ${
+                            dropdownActive
+                              ? "border-sky-400 bg-white/10 text-white font-medium"
+                              : "border-transparent text-[#BCCDE2] hover:text-white hover:bg-white/5"
+                          }`}
+                          aria-haspopup="menu"
+                          aria-expanded={qualityMenuOpen}
+                        >
+                          <DropdownIcon size={14} className={dropdownActive ? "text-[#41C4EE]" : ""} />
+                          {g.dropdown.label}
+                          <ChevronRight
+                            size={12}
+                            className="transition-transform"
+                            style={{ transform: qualityMenuOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                          />
+                        </button>
+
+                        {qualityMenuOpen && (
+                          <div
+                            className="absolute top-full left-0 mt-1 min-w-[220px] rounded-lg border border-slate-700 bg-slate-900 shadow-xl overflow-hidden"
+                            style={{ zIndex: 50 }}
+                            role="menu"
+                          >
+                            <div className="px-3 py-2 text-[10px] tracking-widest text-slate-500 border-b border-slate-800 bg-slate-950/60">
+                              검사 구분 선택
+                            </div>
+                            {dropdownItems.map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => {
+                                  setTab(t.id);
+                                  setQualityMenuOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[12px] transition-colors ${
+                                  tab === t.id
+                                    ? "bg-sky-500/15 text-white"
+                                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                                }`}
+                                role="menuitem"
+                              >
+                                <t.icon size={15} className={tab === t.id ? "text-sky-400" : "text-slate-500"} />
+                                <span>{t.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {items.map((t) => (
-                      <button key={t.id} onClick={() => setTab(t.id)}
+                      <button key={t.id} onClick={() => { setTab(t.id); setQualityMenuOpen(false); }}
                         className={`flex items-center gap-1.5 px-3 py-3 text-[12px] whitespace-nowrap border-b-2 transition-colors ${
                           tab === t.id
                             ? "border-sky-400 bg-white/10 text-white font-medium"
