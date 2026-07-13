@@ -269,6 +269,14 @@ function printDoc() {
 /* 화면 간 연동 + 새로고침 후에도 기록 유지. 실제 서버 구축 시 이 계층만 API로 교체하면 됩니다. */
 
 const DB_KEY = "qmes-db-v1";
+const SUPABASE_URL = "https://zbxvheitjyibrrxisnih.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Xg7f7R5Mz7eXJy-2WC9oUQ_SChc-6f_";
+const SUPABASE_ROW_ID = "namochemical-main";
+const SUPABASE_TABLE = "qmes_shared_state";
+let __qmesSaveTimer = null;
+let __qmesLastServerUpdatedAt = null;
+let __qmesApplyingRemote = false;
+
 function dbDefault() {
   return { batches: [], woDocs: {}, iqc: [], insp: { PQC: [], OQC: [] }, holds: [], eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {}, popEntries: [], seqs: {} };
 }
@@ -276,8 +284,109 @@ let DB = (() => {
   try { const r = window.localStorage.getItem(DB_KEY); if (r) return { ...dbDefault(), ...JSON.parse(r) }; } catch (e) { /* 무시 */ }
   return dbDefault();
 })();
-function dbSave() { try { window.localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) { /* 무시 */ } }
-function dbReset() { DB = dbDefault(); try { window.localStorage.removeItem(DB_KEY); } catch (e) { /* 무시 */ } }
+
+function qmesSyncBadge(state, message) {
+  let el = document.getElementById("qmes-sync-status");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "qmes-sync-status";
+    el.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:99999;padding:8px 11px;border-radius:999px;font:600 12px Pretendard,Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px)";
+    document.body.appendChild(el);
+  }
+  const colors = {
+    online: ["#064e3b", "#a7f3d0"],
+    syncing: ["#0c4a6e", "#bae6fd"],
+    offline: ["#78350f", "#fde68a"],
+    error: ["#7f1d1d", "#fecaca"]
+  };
+  const c = colors[state] || colors.offline;
+  el.style.background = c[0]; el.style.color = c[1];
+  el.textContent = message;
+}
+
+function qmesHeaders(extra = {}) {
+  return {
+    "apikey": SUPABASE_PUBLISHABLE_KEY,
+    "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+    "Content-Type": "application/json",
+    ...extra,
+  };
+}
+
+async function qmesLoadFromServer({ initial = false } = {}) {
+  try {
+    if (initial) qmesSyncBadge("syncing", "공용 DB 연결 중...");
+    const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.${encodeURIComponent(SUPABASE_ROW_ID)}&select=payload,updated_at`;
+    const res = await fetch(url, { headers: qmesHeaders(), cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    const row = rows && rows[0];
+    if (row && row.payload && typeof row.payload === "object") {
+      const changed = row.updated_at && row.updated_at !== __qmesLastServerUpdatedAt;
+      __qmesLastServerUpdatedAt = row.updated_at || null;
+      const localEmpty = JSON.stringify(DB) === JSON.stringify(dbDefault());
+      if (initial || localEmpty) {
+        DB = { ...dbDefault(), ...row.payload };
+        localStorage.setItem(DB_KEY, JSON.stringify(DB));
+      } else if (changed && !__qmesApplyingRemote) {
+        const remoteJson = JSON.stringify({ ...dbDefault(), ...row.payload });
+        const localJson = JSON.stringify(DB);
+        if (remoteJson !== localJson) {
+          __qmesApplyingRemote = true;
+          localStorage.setItem(DB_KEY, remoteJson);
+          qmesSyncBadge("online", "다른 장치 기록 반영 중...");
+          setTimeout(() => location.reload(), 500);
+          return;
+        }
+      }
+    }
+    qmesSyncBadge("online", "공용 DB 연결");
+    return true;
+  } catch (e) {
+    console.warn("QMES Supabase load failed:", e);
+    qmesSyncBadge(navigator.onLine ? "error" : "offline", navigator.onLine ? "공용 DB 연결 실패 · 로컬 저장" : "오프라인 · 로컬 저장");
+    return false;
+  }
+}
+
+async function qmesPushToServer() {
+  try {
+    qmesSyncBadge("syncing", "공용 DB 저장 중...");
+    const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?on_conflict=id`;
+    const body = [{ id: SUPABASE_ROW_ID, payload: DB, updated_by: (window.__QMES_USER__ || "현재 사용자") }];
+    const res = await fetch(url, {
+      method: "POST",
+      headers: qmesHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const rows = await res.json();
+    if (rows && rows[0] && rows[0].updated_at) __qmesLastServerUpdatedAt = rows[0].updated_at;
+    qmesSyncBadge("online", "공용 DB 저장 완료");
+  } catch (e) {
+    console.warn("QMES Supabase save failed:", e);
+    qmesSyncBadge(navigator.onLine ? "error" : "offline", navigator.onLine ? "서버 저장 실패 · 로컬 보관" : "오프라인 · 로컬 보관");
+  }
+}
+
+function dbSave() {
+  try { window.localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) { /* 무시 */ }
+  clearTimeout(__qmesSaveTimer);
+  __qmesSaveTimer = setTimeout(qmesPushToServer, 350);
+}
+function dbReset() {
+  DB = dbDefault();
+  try { window.localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) { /* 무시 */ }
+  dbSave();
+}
+
+async function qmesStart() {
+  await qmesLoadFromServer({ initial: true });
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(QMESApp));
+  setInterval(() => qmesLoadFromServer(), 15000);
+  window.addEventListener("online", () => { qmesSyncBadge("syncing", "인터넷 복구 · 동기화 중..."); qmesPushToServer().then(() => qmesLoadFromServer()); });
+  window.addEventListener("offline", () => qmesSyncBadge("offline", "오프라인 · 로컬 저장"));
+}
 
 /* ──────────────────────────── 공통 UI ──────────────────────────── */
 
@@ -3162,7 +3271,7 @@ function MembersTab() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(QMESApp));
+qmesStart();
 
 </script>
 </body>
