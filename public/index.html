@@ -1312,16 +1312,15 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
         </div>
 
         <div className="doc-paper bg-white max-w-4xl mx-auto mt-4 p-6 rounded text-stone-900">
-          <div className="grid grid-cols-3 items-stretch border-2 border-slate-900">
-            <div className="flex items-center justify-center border-r border-slate-900 text-sm font-bold">나모케미칼(주)</div>
-            <div className="flex items-center justify-center text-xl font-bold tracking-wide">{title}</div>
-            <div className="grid grid-cols-3 text-center text-[10px] border-l border-slate-900">
-              {["작성","검토","승인"].map((x) => (
-                <div key={x} className="border-r last:border-r-0 border-slate-900">
-                  <div className="py-1 border-b border-slate-900 font-semibold">{x}</div>
-                  <div className="h-10"></div>
-                </div>
-              ))}
+          <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
+            <div>
+              <div className="text-xl font-bold tracking-wide">{title}</div>
+              <div className="text-xs text-slate-500 mt-0.5">Inspection Report</div>
+            </div>
+            <div className="text-right text-xs text-slate-600">
+              <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
+              <div>성적서 번호: <span className="font-mono">{isIqc ? (record.inNo || "-") : (record.id || record.lot || "-")}</span></div>
+              <div>검사일: {isIqc ? ((record.recv || "-").slice(0,10)) : (record.date || "-")}</div>
             </div>
           </div>
 
@@ -1398,9 +1397,28 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
               </table>
             </>
           )}
-          <div className="mt-4 flex items-end justify-between text-xs">
-            <div>※ 상기 검사 결과를 기준으로 최종 판정합니다.</div>
-            <div className="font-bold">최종판정 : {finalJudge}</div>
+          <div className="flex items-end justify-between mt-6">
+            <div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div>
+            <div className="flex items-center gap-5">
+              <div className="text-sm">최종판정</div>
+              <div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>
+                {finalJudge}
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-6 text-center text-xs mt-5">
+            <div>
+              <div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작성</div>
+              <div className="mt-1 text-slate-600">검사원</div>
+            </div>
+            <div>
+              <div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검토</div>
+              <div className="mt-1 text-slate-600">-</div>
+            </div>
+            <div>
+              <div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div>
+              <div className="mt-1 text-slate-600">-</div>
+            </div>
           </div>
         </div>
       </div>
