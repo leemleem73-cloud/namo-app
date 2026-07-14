@@ -1285,6 +1285,129 @@ function ProductionTab() {
 
 /* ──────────────────────────── 품질 관리 ──────────────────────────── */
 
+
+function QualityInspectionViewer({ type, record, records = [], onClose }) {
+  if (!record) return null;
+  const isIqc = type === "IQC";
+  const title = isIqc ? "수입검사 성적서" : type === "PQC" ? "공정검사 성적서" : "출하검사 성적서";
+  const lotRows = isIqc ? [] : records.filter((r) => r.lot === record.lot);
+  const latestByItem = {};
+  lotRows.forEach((r) => { if (!latestByItem[r.check]) latestByItem[r.check] = r; });
+  const orderedRows = isIqc ? [] : Object.values(latestByItem);
+  const finalJudge = isIqc ? record.judge : orderedRows.length && orderedRows.every((r) => r.judge === "합격") ? "합격" : orderedRows.some((r) => r.judge === "불합격") ? "불합격" : "검사중";
+
+  return (
+    <div className="qmes-modal-backdrop" onClick={onClose}>
+      <div className="qmes-wo-viewer" onClick={(e) => e.stopPropagation()}>
+        <div className="qmes-wo-viewer-head">
+          <div>
+            <div className="text-sm font-semibold text-slate-100">{title} 보기</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">{isIqc ? record.inNo : record.lot}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => { document.body.classList.add("print-doc"); setTimeout(() => { window.print(); document.body.classList.remove("print-doc"); }, 100); }}
+              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white">인쇄</button>
+            <button onClick={onClose} className="qmes-modal-close">×</button>
+          </div>
+        </div>
+
+        <div className="doc-paper bg-white max-w-4xl mx-auto mt-4 p-6 rounded text-stone-900">
+          <div className="grid grid-cols-3 items-stretch border-2 border-slate-900">
+            <div className="flex items-center justify-center border-r border-slate-900 text-sm font-bold">나모케미칼(주)</div>
+            <div className="flex items-center justify-center text-xl font-bold tracking-wide">{title}</div>
+            <div className="grid grid-cols-3 text-center text-[10px] border-l border-slate-900">
+              {["작성","검토","승인"].map((x) => (
+                <div key={x} className="border-r last:border-r-0 border-slate-900">
+                  <div className="py-1 border-b border-slate-900 font-semibold">{x}</div>
+                  <div className="h-10"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {isIqc ? (
+            <>
+              <div className="grid grid-cols-4 border-x border-b border-slate-900 text-xs">
+                {[
+                  ["입고번호", record.inNo || "-"],
+                  ["입고일자", (record.recv || "-").slice(0,10)],
+                  ["원료 LOT No.", record.lot || "-"],
+                  ["품명", record.name || "-"],
+                  ["공급사", record.supplier || "-"],
+                  ["수량", record.qty || "-"],
+                  ["검사자", "검사원"],
+                  ["최종판정", record.judge || "-"],
+                ].map(([k,v]) => (
+                  <div key={k} className="grid grid-cols-2 border-r border-b border-slate-300 last:border-r-0">
+                    <div className="bg-slate-50 px-2 py-2 font-semibold border-r border-slate-300">{k}</div>
+                    <div className="px-2 py-2">{v}</div>
+                  </div>
+                ))}
+              </div>
+              <table className="w-full text-xs border-x border-b border-slate-900">
+                <thead><tr className="bg-slate-50">
+                  <th className="border-r border-slate-300 py-2">검사항목</th>
+                  <th className="border-r border-slate-300 py-2">판정</th>
+                  <th className="py-2">비고</th>
+                </tr></thead>
+                <tbody>
+                  {[["외관",record.visual],["라벨",record.label],["중량",record.weight],["CoA",record.coa]].map(([k,v]) => (
+                    <tr key={k} className="border-t border-slate-300">
+                      <td className="border-r border-slate-300 px-3 py-2 text-center">{k}</td>
+                      <td className="border-r border-slate-300 px-3 py-2 text-center">{v}</td>
+                      <td className="px-3 py-2 text-center">-</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-4 border-x border-b border-slate-900 text-xs">
+                {[
+                  ["LOT No.", record.lot || "-"],
+                  ["검사일자", record.date || "-"],
+                  ["검사구분", type === "PQC" ? "공정검사" : "출하검사"],
+                  ["검사자", "검사원"],
+                  ...(type === "OQC" ? [["출하일자", record.shipDate || "-"]] : []),
+                  ["최종판정", finalJudge],
+                ].map(([k,v]) => (
+                  <div key={k} className="grid grid-cols-2 border-r border-b border-slate-300">
+                    <div className="bg-slate-50 px-2 py-2 font-semibold border-r border-slate-300">{k}</div>
+                    <div className="px-2 py-2">{v}</div>
+                  </div>
+                ))}
+              </div>
+              <table className="w-full text-xs border-x border-b border-slate-900">
+                <thead><tr className="bg-slate-50">
+                  <th className="border-r border-slate-300 py-2">검사항목</th>
+                  <th className="border-r border-slate-300 py-2">규격</th>
+                  <th className="border-r border-slate-300 py-2">측정값</th>
+                  <th className="py-2">판정</th>
+                </tr></thead>
+                <tbody>
+                  {orderedRows.map((r) => (
+                    <tr key={r.id} className="border-t border-slate-300">
+                      <td className="border-r border-slate-300 px-3 py-2 text-center">{r.check}</td>
+                      <td className="border-r border-slate-300 px-3 py-2 text-center">{QC_ITEMS[r.check]?.spec || "-"}</td>
+                      <td className="border-r border-slate-300 px-3 py-2 text-center">{r.value}</td>
+                      <td className="px-3 py-2 text-center">{r.judge}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+          <div className="mt-4 flex items-end justify-between text-xs">
+            <div>※ 상기 검사 결과를 기준으로 최종 판정합니다.</div>
+            <div className="font-bold">최종판정 : {finalJudge}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idStart, notice, storeKey, traceStage }) {
   const today = new Date().toISOString().slice(0, 10);
   const isOqc = storeKey === "OQC";
@@ -1302,6 +1425,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [editingId, setEditingId] = useState(null);
   const [recordSearch, setRecordSearch] = useState("");
   const [recordPage, setRecordPage] = useState(1);
+  const [viewingRecord, setViewingRecord] = useState(null);
   const recordPageSize = 10;
   const availableLots = Array.from(new Set((DB.batches || []).map((b) => b.no).filter(Boolean)));
 
@@ -1540,6 +1664,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector}>{r.inspector}</td>
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                    <button onClick={() => setViewingRecord(r)} className="px-2 py-1 mr-1 rounded border border-emerald-500/40 text-emerald-300 text-xs hover:bg-emerald-500/10">보기</button>
                     <button onClick={() => editRecord(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
                     <button onClick={() => deleteRecord(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
                   </td>
@@ -1561,6 +1686,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           </div>
         )}
       </Panel>
+      {viewingRecord && (
+        <QualityInspectionViewer
+          type={storeKey}
+          record={viewingRecord}
+          records={records}
+          onClose={() => setViewingRecord(null)}
+        />
+      )}
     </div>
   );
 }
@@ -2603,6 +2736,7 @@ function IqcTab() {
   const [form, setForm] = useState({ recvDate: today, lot: "", name: "NMP", supplier: "", qty: "", visual: "합격", label: "합격", weight: "합격", coa: "합격" });
   const [tried, setTried] = useState(false);
   const [editingInNo, setEditingInNo] = useState(null);
+  const [viewingIqc, setViewingIqc] = useState(null);
 
   const done = rows.filter((r) => r.judge !== "검사중");
   const pass = done.filter((r) => r.judge === "합격").length;
@@ -2775,6 +2909,7 @@ function IqcTab() {
                       {r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[180px] leading-snug">{r.note}</div>}
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                      <button onClick={() => setViewingIqc(r)} className="px-2 py-1 mr-1 rounded border border-emerald-500/40 text-emerald-300 text-xs hover:bg-emerald-500/10">보기</button>
                       <button onClick={() => editIqc(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
                       <button onClick={() => deleteIqc(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
                     </td>
@@ -2799,6 +2934,14 @@ function IqcTab() {
           <p className="text-[11px] text-slate-500 mt-2">기준선 98% 미만 공급사는 CAR 발행 및 수입검사 강화(전수/가혹) 대상입니다.</p>
         </Panel>
       </div>
+      {viewingIqc && (
+        <QualityInspectionViewer
+          type="IQC"
+          record={viewingIqc}
+          records={rows}
+          onClose={() => setViewingIqc(null)}
+        />
+      )}
     </div>
   );
 }
