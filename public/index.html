@@ -221,22 +221,22 @@ aside{display:none!important}
 .qmes-register-grid{
   display:grid;
   grid-auto-flow:column;
-  grid-auto-columns:150px;
+  grid-auto-columns:190px;
   gap:8px;
   align-items:end;
   width:max-content;
 }
 .qmes-register-grid-iqc{min-width:1722px}
-.qmes-register-grid-pqc{min-width:1098px}
+.qmes-register-grid-pqc{min-width:1340px}
 .qmes-register-grid-oqc{min-width:1256px}
 
 .qmes-register-grid > div,
 .qmes-register-grid > button,
 .qmes-register-grid > input,
 .qmes-register-grid > select{
-  width:150px!important;
-  min-width:150px!important;
-  max-width:150px!important;
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
 }
 
 .qmes-register-grid input,
@@ -264,8 +264,8 @@ aside{display:none!important}
 }
 
 .qmes-register-grid > div > div{
-  width:150px!important;
-  min-width:150px!important;
+  width:190px!important;
+  min-width:190px!important;
   height:40px!important;
   min-height:40px!important;
   box-sizing:border-box;
@@ -651,9 +651,9 @@ aside{display:none!important}
 <style>
 /* ===== 수입검사 판정칸 정렬 통일 ===== */
 .qmes-iqc-judge-cell{
-  width:150px!important;
-  min-width:150px!important;
-  max-width:150px!important;
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
   height:61px!important;
   display:flex!important;
   flex-direction:column!important;
@@ -661,9 +661,9 @@ aside{display:none!important}
   align-items:stretch!important;
 }
 .qmes-iqc-judge-cell > div{
-  width:150px!important;
-  min-width:150px!important;
-  max-width:150px!important;
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
   height:61px!important;
   display:flex!important;
   flex-direction:column!important;
@@ -682,9 +682,9 @@ aside{display:none!important}
 .qmes-iqc-judge-cell select,
 .qmes-iqc-judge-cell input,
 .qmes-iqc-judge-cell button{
-  width:150px!important;
-  min-width:150px!important;
-  max-width:150px!important;
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
   height:40px!important;
   min-height:40px!important;
   margin:0!important;
@@ -721,7 +721,7 @@ const [FlaskConical, Activity, AlertTriangle, CheckCircle2, XCircle, Gauge, Pack
 
 
 /* ═══════════════════════════════════════════════════════════════
-   나모케미칼㈜ QMES — 절연 슬러리 공정
+   나모케미칼㈜ QMES —  공정
    관리계획서 NMC-C-220-01 REV.0 (2026.03.12 개정 2차) 기준
    공정 흐름: 10 입고 → 20 IQC → 30 창고/드라이룸 → 40 바인더 제조(TK 501)
              → 50 슬러리 제조/검사/필터링/충진(TK 501A↔B) → 80 보관 → 90 출하
@@ -1447,7 +1447,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [form, setForm] = useState({
     date: today,
     shipDate: today,
-    lot: (DB.batches?.[0]?.no || lotOptions?.[0] || ""),
+    lot: isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "",
     check: itemKeys[0],
     value: "",
     judge: "합격"
@@ -1461,7 +1461,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const recordPageSize = 10;
   const availableLots = Array.from(new Set((DB.batches || []).map((b) => b.no).filter(Boolean)));
   const selectedBatch = (DB.batches || []).find((b) => b.no === form.lot);
-  const selectedProduct = selectedBatch?.itemName || selectedBatch?.item || "-";
+  const rawSelectedProduct = selectedBatch?.itemName || selectedBatch?.item || "";
+  const selectedProduct = rawSelectedProduct === "절연 슬러리" ? "" : rawSelectedProduct;
   const numberLabel = isOqc ? "출하번호" : "공정번호";
   const previewNo = editingId || nextInspectionNo(storeKey, form.date, records, "id");
 
@@ -1474,7 +1475,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     ? "숫자 형식이 아닙니다 — 오입력 상태에서는 등록(다음 단계 진입)이 금지됩니다"
     : null;
   const autoJ = isNumericItem && trimmedVal !== "" && !inputError ? autoJudge(form.check, trimmedVal) : null;
-  const lotErr = form.lot.trim() !== "" && availableLots.length > 0 && !availableLots.includes(form.lot.trim())
+  const lotErr = isOqc && form.lot.trim() !== "" && availableLots.length > 0 && !availableLots.includes(form.lot.trim())
     ? "작업지시에서 발행된 LOT를 선택하세요." : null;
   const triedErrors = [];
   if (tried && form.lot.trim() === "") triedErrors.push("작업지시 LOT를 선택하세요.");
@@ -1492,7 +1493,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const lotNo = form.lot.trim();
     const prev = editingId ? records.find((r) => r.id === editingId) : null;
     const inspectionNo = editingId || nextInspectionNo(storeKey, date, records, "id");
-    const product = (DB.batches || []).find((b) => b.no === lotNo)?.itemName || (DB.batches || []).find((b) => b.no === lotNo)?.item || prev?.product || "-";
+    const matchedProduct = (DB.batches || []).find((b) => b.no === lotNo)?.itemName || (DB.batches || []).find((b) => b.no === lotNo)?.item || prev?.product || "";
+    const product = matchedProduct === "절연 슬러리" ? "" : matchedProduct;
     const rec = { id: inspectionNo, date, shipDate: isOqc ? form.shipDate : (prev?.shipDate || ""), time, lot: lotNo, product, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
     const next = editingId ? records.map((r) => r.id === editingId ? rec : r) : [rec, ...records];
     setRecords(next);
@@ -1593,14 +1595,17 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           )}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">LOT No.</label>
-            <select value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })}
-              className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm font-mono text-slate-100 focus:outline-none focus:border-sky-500">
-              <option value="">LOT 선택</option>
-              {availableLots.map((lot) => {
-                const batch = DB.batches.find((b) => b.no === lot);
-                return <option key={lot} value={lot}>{lot}{batch?.item ? ` · ${batch.item}` : ""}</option>;
-              })}
-            </select>
+            {isOqc ? (
+              <select value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })}
+                className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm font-mono text-slate-100 focus:outline-none focus:border-sky-500">
+                <option value="">LOT 선택</option>
+                {availableLots.map((lot) => <option key={lot} value={lot}>{lot}</option>)}
+              </select>
+            ) : (
+              <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })}
+                placeholder="LOT No. 입력"
+                className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">제품명</label>
@@ -3331,7 +3336,7 @@ function WoDocTab() {
 /* ──────────────────────────── 작업지시 발행 탭 ──────────────────────────── */
 
 const BOM = {
-  "절연 슬러리 NBA20-HM01": {
+  " NBA20-HM01": {
     prefix: "SL", baseQty: 230, procName: "절연슬러리 제조",
     tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
     items: [
@@ -4542,7 +4547,7 @@ function QMESChemical({ user, onLogout }) {
             </div>
             <div>
               <div className="text-sm font-bold tracking-widest text-white">QMES</div>
-              <div className="text-[10px] text-[#8CA5C4] -mt-0.5">나모케미칼㈜ 절연 슬러리</div>
+              <div className="text-[10px] text-[#8CA5C4] -mt-0.5">나모케미칼㈜ </div>
             </div>
           </div>
 
@@ -4787,7 +4792,7 @@ function LoginScreen({ onLogin }) {
           </div>
           <div>
             <div className="text-lg font-bold tracking-widest">QMES</div>
-            <div className="text-[11px] text-slate-500 -mt-0.5">나모케미칼㈜ 절연 슬러리 · 품질제조실행시스템</div>
+            <div className="text-[11px] text-slate-500 -mt-0.5">나모케미칼㈜  · 품질제조실행시스템</div>
           </div>
         </div>
 
