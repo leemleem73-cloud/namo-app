@@ -227,8 +227,8 @@ aside{display:none!important}
   width:max-content;
 }
 .qmes-register-grid-iqc{min-width:1722px}
-.qmes-register-grid-pqc{min-width:782px}
-.qmes-register-grid-oqc{min-width:940px}
+.qmes-register-grid-pqc{min-width:1098px}
+.qmes-register-grid-oqc{min-width:1256px}
 
 .qmes-register-grid > div,
 .qmes-register-grid > button,
@@ -1428,8 +1428,9 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
 
 
 function nextInspectionNo(prefix, dateValue, rows, fieldName) {
-  const dateKey = String(dateValue || "").replaceAll("-", "").slice(0, 8);
-  const base = `${prefix}-${dateKey}_`;
+  const fullDate = String(dateValue || "").replaceAll("-", "").slice(0, 8);
+  const dateKey = fullDate.length === 8 ? fullDate.slice(2) : fullDate;
+  const base = `${prefix}-${dateKey}-`;
   const maxSeq = (rows || []).reduce((max, row) => {
     const value = String(row?.[fieldName] || "");
     if (!value.startsWith(base)) return max;
@@ -1459,6 +1460,10 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [viewingRecord, setViewingRecord] = useState(null);
   const recordPageSize = 10;
   const availableLots = Array.from(new Set((DB.batches || []).map((b) => b.no).filter(Boolean)));
+  const selectedBatch = (DB.batches || []).find((b) => b.no === form.lot);
+  const selectedProduct = selectedBatch?.itemName || selectedBatch?.item || "-";
+  const numberLabel = isOqc ? "출하번호" : "공정번호";
+  const previewNo = editingId || nextInspectionNo(storeKey, form.date, records, "id");
 
   const pass = records.filter((r) => r.judge === "합격").length;
   const rate = records.length ? ((pass / records.length) * 100).toFixed(1) : "—";
@@ -1487,7 +1492,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const lotNo = form.lot.trim();
     const prev = editingId ? records.find((r) => r.id === editingId) : null;
     const inspectionNo = editingId || nextInspectionNo(storeKey, date, records, "id");
-    const rec = { id: inspectionNo, date, shipDate: isOqc ? form.shipDate : (prev?.shipDate || ""), time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
+    const product = (DB.batches || []).find((b) => b.no === lotNo)?.itemName || (DB.batches || []).find((b) => b.no === lotNo)?.item || prev?.product || "-";
+    const rec = { id: inspectionNo, date, shipDate: isOqc ? form.shipDate : (prev?.shipDate || ""), time, lot: lotNo, product, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
     const next = editingId ? records.map((r) => r.id === editingId ? rec : r) : [rec, ...records];
     setRecords(next);
     DB.insp[storeKey] = next;
@@ -1541,7 +1547,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
 
   const filteredRecords = records.filter((r) => {
     const q = recordSearch.trim().toLowerCase();
-    return !q || [r.id, r.lot, r.check, r.inspector, r.judge]
+    return !q || [r.id, r.lot, r.product, r.check, r.inspector, r.judge]
       .some((v) => String(v || "").toLowerCase().includes(q));
   });
   const recordPageCount = Math.max(1, Math.ceil(filteredRecords.length / recordPageSize));
@@ -1567,6 +1573,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
         <div className="overflow-x-auto pb-1">
           <div className={`qmes-register-grid ${isOqc ? "qmes-register-grid-oqc" : "qmes-register-grid-pqc"}`}>
           <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">{numberLabel}</label>
+            <input value={previewNo} readOnly
+              className="bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm text-slate-400 font-mono cursor-not-allowed" />
+          </div>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">검사일자</label>
             <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
               aria-label="검사일자"
@@ -1591,13 +1602,26 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               })}
             </select>
           </div>
-          <select value={form.check} onChange={(e) => setForm({ ...form, check: e.target.value })}
-            className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-            {itemKeys.map((k) => <option key={k}>{k}</option>)}
-          </select>
-          <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })}
-            placeholder={`측정값 (${spec.spec})`}
-            className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">제품명</label>
+            <input value={selectedProduct} readOnly
+              className="bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm text-slate-300 cursor-not-allowed" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">검사항목</label>
+            <select value={form.check} onChange={(e) => setForm({ ...form, check: e.target.value })}
+              className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
+              {itemKeys.map((k) => <option key={k}>{k}</option>)}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">측정값</label>
+            <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })}
+              placeholder={`측정값 (${spec.spec})`}
+              className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">자동판정</label>
           {isOqc ? (
             <select value={isNumericItem ? (autoJ || form.judge) : form.judge}
               onChange={(e) => setForm({ ...form, judge: e.target.value })}
@@ -1620,6 +1644,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               {inputError ? "진입 금지" : autoJ ?? "자동판정"}
             </div>
           )}
+          </div>
           <button onClick={addRecord}
             className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
             <Plus size={15} /> {editingId ? "검사 수정 저장" : "검사 등록"}
@@ -1639,7 +1664,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       <Panel title={`검사 기록 (${docName})`} right={<span className="text-xs text-slate-500">{filteredRecords.length}건</span>}>
         <div className="flex items-end gap-2 mb-3">
           <div className="flex flex-col gap-1 w-72">
-            <span className="text-[10px] text-slate-500">검사번호 / LOT / 항목 / 검사자 검색</span>
+            <span className="text-[10px] text-slate-500">{numberLabel} / LOT / 제품명 / 항목 / 검사자 검색</span>
             <input value={recordSearch}
               onChange={(e) => { setRecordSearch(e.target.value); setRecordPage(1); }}
               placeholder="검색어 입력"
@@ -1649,11 +1674,12 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             className="h-9 px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
         </div>
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1280px]" : "min-w-[1160px]"}`}>
+          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1430px]" : "min-w-[1310px]"}`}>
             <colgroup>
-              <col style={{ width: "130px" }} />
+              <col style={{ width: "135px" }} />
               <col style={{ width: "120px" }} />
               <col style={{ width: "125px" }} />
+              <col style={{ width: "150px" }} />
               <col style={{ width: "145px" }} />
               <col style={{ width: "190px" }} />
               <col style={{ width: "110px" }} />
@@ -1664,13 +1690,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </colgroup>
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사번호</th>
+                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">{numberLabel}</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사일자</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">LOT No.</th>
+                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">제품명</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사항목</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">규격</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">측정값</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">판정</th>
+                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">자동판정</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사자</th>
                 {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">출하일자</th>}
                 <th className="text-center py-2 px-3 font-medium whitespace-nowrap">관리</th>
@@ -1678,13 +1705,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </thead>
             <tbody>
               {filteredRecords.length === 0 && (
-                <tr><td colSpan={isOqc ? 10 : 9} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
+                <tr><td colSpan={isOqc ? 11 : 10} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
               )}
               {pagedRecords.map((r) => (
                 <tr key={r.id} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 px-3 font-mono text-xs text-sky-300 truncate" title={r.id}>{r.id}</td>
                   <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.date || "-"}</td>
                   <td className="py-2.5 px-3 text-xs font-mono text-slate-300 truncate" title={r.lot}>{r.lot}</td>
+                  <td className="py-2.5 px-3 text-slate-300 truncate" title={r.product || "-"}>{r.product || (DB.batches || []).find((b) => b.no === r.lot)?.itemName || (DB.batches || []).find((b) => b.no === r.lot)?.item || "-"}</td>
                   <td className="py-2.5 px-3 text-slate-100 truncate" title={r.check}>
                     {r.check} {QC_ITEMS[r.check]?.type === "CTQ" && <Badge tone="violet">CTQ</Badge>}
                   </td>
@@ -2882,7 +2910,7 @@ function IqcTab() {
           </div>
         )}
         <p className="text-[11px] text-slate-500 mt-2">
-          공급사 Lot은 라벨 표기 그대로 기록하고, 추적용 사내 입고번호(IQC-입고일자_4자리 순번)가 자동 부여됩니다. 한 항목이라도 불합격 시 반품 처리: 즉시 격리 → 사용차단 → 협력사 통보 → 원인분석 → 재검사/반품 결정 (수입검사관리대장).
+          공급사 Lot은 라벨 표기 그대로 기록하고, 추적용 사내 입고번호(IQC-입고일자-4자리 순번)가 자동 부여됩니다. 한 항목이라도 불합격 시 반품 처리: 즉시 격리 → 사용차단 → 협력사 통보 → 원인분석 → 재검사/반품 결정 (수입검사관리대장).
         </p>
       </Panel>
 
