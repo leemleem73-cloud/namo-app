@@ -50,133 +50,6 @@ aside::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)}
 .doc-paper .bg-slate-50{background:#fafaf9}
 .doc-paper{box-shadow:0 2px 6px rgba(28,25,23,.08),0 24px 60px -24px rgba(28,25,23,.25)!important}
 
-
-/* ══ 사용자 중심 밝은 QMES 레이아웃 ══ */
-.app-light{background:#f4f7fb!important;color:#172033!important;min-height:100vh}
-.app-light .bg-slate-950{background:#f4f7fb!important}
-.app-light .bg-slate-950\/60{background:rgba(244,247,251,.92)!important}
-.app-light .bg-slate-900,.app-light .bg-slate-900\/80{background:#fff!important}
-.app-light .bg-slate-800,.app-light .bg-slate-800\/40,.app-light .bg-slate-800\/50,.app-light .bg-slate-800\/60{background:#eef3f8!important}
-.app-light .bg-slate-700{background:#dbe5ef!important}
-.app-light .border-slate-900,.app-light .border-slate-800,.app-light .border-slate-800\/60,.app-light .border-slate-700,.app-light .border-white\/10{border-color:#dce5ef!important}
-.app-light .text-white,.app-light .text-slate-100,.app-light .text-slate-200{color:#172033!important}
-.app-light .text-slate-300{color:#3d4d63!important}
-.app-light .text-slate-400{color:#63748a!important}
-.app-light .text-slate-500,.app-light .text-slate-600{color:#7a899d!important}
-.app-light input,.app-light select,.app-light textarea{background:#fff!important;color:#172033!important;border-color:#cfd9e5!important}
-.app-light input::placeholder,.app-light textarea::placeholder{color:#9aa8b9!important}
-.app-light .bg-sky-500\/10,.app-light .bg-sky-500\/15,.app-light .bg-sky-500\/20{background:#e9f3ff!important}
-.app-light .bg-emerald-500\/10,.app-light .bg-emerald-500\/20{background:#ecfdf5!important}
-.app-light .bg-red-500\/10,.app-light .bg-red-500\/20{background:#fff1f2!important}
-.app-light .bg-amber-500\/10,.app-light .bg-amber-500\/5{background:#fff8e7!important}
-.app-light .bg-violet-500\/10{background:#f5f1ff!important}
-.app-light .hover\:bg-slate-800:hover,.app-light .hover\:bg-slate-800\/30:hover,.app-light .hover\:bg-white\/5:hover{background:#edf4fb!important}
-.app-light .qmes-card{box-shadow:0 1px 3px rgba(15,35,60,.06),0 12px 30px rgba(15,35,60,.05)!important}
-.qmes-topbar{height:78px;background:#fff;border-bottom:1px solid #dce5ef;box-shadow:0 2px 10px rgba(16,42,67,.05)}
-.qmes-brand{width:270px;border-right:1px solid #e2e8f0;height:100%}
-.qmes-topnav{display:flex;align-items:stretch;min-width:0;flex:1;overflow:hidden}
-.qmes-topitem{min-width:82px;padding:11px 13px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-bottom:3px solid transparent;color:#344256;font-size:12px;white-space:nowrap;transition:.18s}
-.qmes-topitem:hover{background:#f3f7fc;color:#1357c8}
-.qmes-topitem.active{background:#edf4ff;color:#1559d6;border-bottom-color:#246ee9;font-weight:700}
-.qmes-shell{display:flex;min-height:calc(100vh - 78px)}
-.qmes-sidebar{width:232px;flex:0 0 232px;background:#fff;border-right:1px solid #dce5ef;padding:18px 10px;box-shadow:3px 0 16px rgba(25,55,85,.025)}
-.qmes-side-title{font-size:16px;font-weight:800;color:#172033;padding:7px 11px 14px}
-.qmes-sideitem{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:7px;font-size:13px;color:#344256;text-align:left;margin-bottom:4px}
-.qmes-sideitem:hover{background:#f1f6fd;color:#1559d6}
-.qmes-sideitem.active{background:linear-gradient(135deg,#1764dd,#0f4fc2);color:#fff;font-weight:700;box-shadow:0 5px 13px rgba(23,100,221,.2)}
-.qmes-main{min-width:0;flex:1;padding:25px 26px 35px}
-.qmes-pagehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.qmes-pagehead h1{font-size:24px;font-weight:800;color:#172033}
-.qmes-crumb{font-size:12px;color:#728197;margin-top:4px}
-@media(max-width:1180px){
-  .qmes-topitem{min-width:70px;padding-left:8px;padding-right:8px;font-size:11px}
-  .qmes-brand{width:225px}
-}
-@media(max-width:900px){
-  .qmes-topbar{height:auto}
-  .qmes-topnav{overflow-x:auto}
-  .qmes-brand{width:190px;min-width:190px}
-  .qmes-sidebar{width:190px;flex-basis:190px}
-}
-
-
-/* ══ 저채도 블루그레이 테마 오버라이드 ══ */
-:root{
-  --q-bg:#e7edf3;
-  --q-panel:#f4f7fa;
-  --q-card:#fbfcfd;
-  --q-line:#cfd9e3;
-  --q-text:#263442;
-  --q-sub:#6f7d8c;
-  --q-blue:#5f7890;
-  --q-blue-dark:#496176;
-  --q-green:#6f8f7b;
-  --q-red:#a46f73;
-  --q-amber:#a38b5e;
-  --q-violet:#7c748e;
-}
-.app-light{background:var(--q-bg)!important;color:var(--q-text)!important}
-.app-light .bg-slate-950{background:var(--q-bg)!important}
-.app-light .bg-slate-950\/60{background:rgba(231,237,243,.94)!important}
-.app-light .bg-slate-900,.app-light .bg-slate-900\/80{background:var(--q-card)!important}
-.app-light .bg-slate-800,.app-light .bg-slate-800\/40,.app-light .bg-slate-800\/50,.app-light .bg-slate-800\/60{background:#edf2f6!important}
-.app-light .bg-slate-700{background:#d8e1e9!important}
-.app-light .border-slate-900,.app-light .border-slate-800,.app-light .border-slate-800\/60,.app-light .border-slate-700,.app-light .border-white\/10{border-color:var(--q-line)!important}
-.app-light .text-white,.app-light .text-slate-100,.app-light .text-slate-200,.app-light .text-slate-900{color:var(--q-text)!important}
-.app-light .text-slate-300{color:#445464!important}
-.app-light .text-slate-400,.app-light .text-slate-500,.app-light .text-slate-600{color:var(--q-sub)!important}
-.app-light input,.app-light select,.app-light textarea{background:#fdfefe!important;color:var(--q-text)!important;border-color:#c8d2dc!important}
-.app-light input::placeholder,.app-light textarea::placeholder{color:#94a0ac!important}
-
-/* 저채도 포인트 컬러 */
-.app-light .text-sky-200,.app-light .text-sky-300,.app-light .text-sky-400,.app-light .text-sky-600,.app-light .text-\[\#41C4EE\]{color:var(--q-blue)!important}
-.app-light .bg-sky-400,.app-light .bg-sky-600{background:var(--q-blue)!important;background-image:none!important}
-.app-light .bg-sky-500\/10,.app-light .bg-sky-500\/15,.app-light .bg-sky-500\/20,.app-light .bg-sky-500\/40{background:#e7edf2!important}
-.app-light .border-sky-400,.app-light .border-sky-500\/30,.app-light .border-sky-500\/40,.app-light .border-sky-500\/50,.app-light .border-sky-500\/60{border-color:#91a3b3!important}
-
-.app-light .text-emerald-300,.app-light .text-emerald-400,.app-light .text-emerald-600{color:var(--q-green)!important}
-.app-light .bg-emerald-400,.app-light .bg-emerald-600{background:var(--q-green)!important;background-image:none!important}
-.app-light .bg-emerald-500\/10,.app-light .bg-emerald-500\/20,.app-light .bg-emerald-500\/40{background:#e9f0eb!important}
-.app-light .border-emerald-500\/30,.app-light .border-emerald-500\/40,.app-light .border-emerald-500\/60{border-color:#9eb1a3!important}
-
-.app-light .text-red-300,.app-light .text-red-300\/80,.app-light .text-red-400,.app-light .text-red-600{color:var(--q-red)!important}
-.app-light .bg-red-400,.app-light .bg-red-600{background:var(--q-red)!important;background-image:none!important}
-.app-light .bg-red-500\/10,.app-light .bg-red-500\/20{background:#f2e8e9!important}
-.app-light .border-red-500\/30,.app-light .border-red-500\/40,.app-light .border-red-500\/50,.app-light .border-red-500\/60{border-color:#b99a9d!important}
-
-.app-light .text-amber-200,.app-light .text-amber-300\/80,.app-light .text-amber-400{color:var(--q-amber)!important}
-.app-light .bg-amber-400{background:var(--q-amber)!important}
-.app-light .bg-amber-500\/10,.app-light .bg-amber-500\/5{background:#f1eee7!important}
-.app-light .border-amber-500\/30,.app-light .border-amber-500\/40{border-color:#b9aa8b!important}
-
-.app-light .text-violet-300,.app-light .text-violet-400{color:var(--q-violet)!important}
-.app-light .bg-violet-500\/10,.app-light .bg-violet-500\/40{background:#ece9ef!important}
-.app-light .border-violet-500\/30,.app-light .border-violet-500\/40{border-color:#aaa2b5!important}
-
-/* 상단/좌측 메뉴 저채도 */
-.qmes-topbar{background:#f0f4f7!important;border-bottom-color:var(--q-line)!important;box-shadow:0 2px 8px rgba(48,65,82,.05)!important}
-.qmes-brand{border-right-color:var(--q-line)!important}
-.qmes-brand .text-3xl{color:var(--q-blue-dark)!important}
-.qmes-topitem{color:#526170!important}
-.qmes-topitem:hover{background:#e8edf2!important;color:var(--q-blue-dark)!important}
-.qmes-topitem.active{background:#e1e8ee!important;color:var(--q-blue-dark)!important;border-bottom-color:var(--q-blue)!important}
-.qmes-sidebar{background:#eef3f6!important;border-right-color:var(--q-line)!important;box-shadow:2px 0 10px rgba(48,65,82,.03)!important}
-.qmes-side-title{color:var(--q-text)!important}
-.qmes-side-title svg{color:var(--q-blue-dark)!important}
-.qmes-sideitem{color:#536272!important}
-.qmes-sideitem:hover{background:#e3e9ee!important;color:var(--q-blue-dark)!important}
-.qmes-sideitem.active{background:linear-gradient(135deg,#6e8396,#566c7f)!important;color:#f8fafc!important;box-shadow:0 4px 10px rgba(70,88,104,.15)!important}
-.qmes-main{background:var(--q-bg)!important}
-.qmes-pagehead h1{color:var(--q-text)!important}
-.qmes-crumb{color:#7a8793!important}
-.qmes-card,.app-light .bg-slate-900{box-shadow:0 1px 2px rgba(44,58,71,.04),0 8px 22px rgba(44,58,71,.045)!important}
-
-/* 버튼 hover도 차분하게 */
-.app-light .hover\:bg-sky-500:hover{background:var(--q-blue-dark)!important;background-image:none!important}
-.app-light .hover\:bg-emerald-500:hover{background:#637f6d!important}
-.app-light .hover\:bg-red-500:hover{background:#946368!important}
-.app-light .hover\:bg-slate-800:hover,.app-light .hover\:bg-slate-800\/30:hover,.app-light .hover\:bg-white\/5:hover{background:#e5ebf0!important}
-
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
@@ -3144,50 +3017,27 @@ const TABS = [
   { id: "members", label: "회원 관리", icon: Users, comp: MembersTab, adminOnly: true },
 ];
 
-const TOP_MENUS = [
-  { id: "dash", label: "대시보드", icon: LayoutDashboard, tabs: ["dash"] },
-  { id: "work", label: "작업지시", icon: ClipboardList, tabs: ["wo", "woIssue"] },
-  { id: "quality", label: "품질검사", icon: ClipboardCheck, tabs: ["iqc", "pqc", "oqc", "lock"] },
-  { id: "prod", label: "생산관리", icon: FlaskConical, tabs: ["prod"] },
-  { id: "inv", label: "재고관리", icon: Package, tabs: ["inv"] },
-  { id: "eq", label: "설비 모니터링", icon: Cpu, tabs: ["eq"] },
-  { id: "pop", label: "현장입력", icon: Tablet, tabs: ["pop"] },
-  { id: "spc", label: "SPC/통계", icon: BarChart3, tabs: ["spc"] },
-  { id: "trace", label: "LOT 추적", icon: GitBranch, tabs: ["trace"] },
-  { id: "docs", label: "문서관리", icon: FileText, tabs: ["coa", "ncr", "cc", "4m"] },
-  { id: "system", label: "시스템관리", icon: Wrench, tabs: ["members"] },
+const MENU_GROUPS = [
+  { title: "모니터링", ids: ["dash", "eq"] },
+  { title: "생산 현장", ids: ["pop", "prod", "wo", "woIssue"] },
+  {
+    title: "품질 검사",
+    dropdown: {
+      label: "품질검사",
+      icon: ClipboardCheck,
+      ids: ["iqc", "pqc", "oqc"],
+    },
+    ids: ["spc", "lock"],
+  },
+  { title: "개선 · 대응", ids: ["ncr", "cc", "4m"] },
+  { title: "재고 · 추적", ids: ["inv", "trace", "coa"] },
+  { title: "시스템", ids: ["members"] },
 ];
-
-const SIDE_MENUS = {
-  dash: [{ id:"dash", label:"종합 대시보드", icon:LayoutDashboard }],
-  work: [
-    { id:"wo", label:"작업지시서", icon:ClipboardList },
-    { id:"woIssue", label:"작업지시 발행", icon:Plus },
-  ],
-  quality: [
-    { id:"iqc", label:"수입검사", icon:ArrowDownToLine },
-    { id:"pqc", label:"공정검사", icon:ClipboardCheck },
-    { id:"oqc", label:"출하검사", icon:ArrowUpFromLine },
-    { id:"lock", label:"품질 인터락", icon:Lock },
-  ],
-  prod: [{ id:"prod", label:"생산 배치 관리", icon:FlaskConical }],
-  inv: [{ id:"inv", label:"원재료 재고", icon:Package }],
-  eq: [{ id:"eq", label:"설비 모니터링", icon:Cpu }],
-  pop: [{ id:"pop", label:"현장 입력", icon:Tablet }],
-  spc: [{ id:"spc", label:"SPC · Cpk", icon:BarChart3 }],
-  trace: [{ id:"trace", label:"LOT 추적", icon:GitBranch }],
-  docs: [
-    { id:"coa", label:"출하성적서", icon:Printer },
-    { id:"ncr", label:"부적합 · 8D", icon:ShieldAlert },
-    { id:"cc", label:"고객불만 · GQMS", icon:MessageSquareWarning },
-    { id:"4m", label:"4M 변경관리", icon:Repeat },
-  ],
-  system: [{ id:"members", label:"회원 관리", icon:Users, adminOnly:true }],
-};
 
 function QMESChemical({ user, onLogout }) {
   const [tab, setTab] = useState("dash");
   const [clock, setClock] = useState(new Date());
+  const [qualityMenuOpen, setQualityMenuOpen] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
@@ -3195,91 +3045,160 @@ function QMESChemical({ user, onLogout }) {
   }, []);
 
   const visibleTabs = TABS.filter((t) => !t.adminOnly || user.role === "admin");
-  const tabDef = visibleTabs.find((t) => t.id === tab) || visibleTabs[0];
-  const Active = tabDef.comp;
-  const activeTop = TOP_MENUS.find((m) => m.tabs.includes(tab)) || TOP_MENUS[0];
-  const sideItems = (SIDE_MENUS[activeTop.id] || []).filter((m) => !m.adminOnly || user.role === "admin");
-  const ActiveTopIcon = activeTop.icon;
+  const Active = TABS.find((t) => t.id === tab).comp;
 
-  const openTop = (menu) => {
-    const first = menu.tabs.find((id) => visibleTabs.some((t) => t.id === id));
-    if (first) setTab(first);
-  };
+  const currentTab = TABS.find((t) => t.id === tab);
 
   return (
-    <div className="app-light flex flex-col" style={{ fontFamily: "'Pretendard', 'Noto Sans KR', system-ui, sans-serif" }}>
-      <header className="qmes-topbar sticky top-0 z-10 flex items-center">
-        <div className="qmes-brand flex items-center px-5 gap-3 shrink-0">
-          <div className="text-3xl font-bold tracking-tight" style={{color:"#1559d6"}}>QMES</div>
-          <div className="h-10 w-px" style={{background:"#dce5ef"}} />
-          <div className="leading-tight">
-            <div className="text-sm font-bold text-slate-900">나모케미칼㈜</div>
-            <div className="text-[11px] text-slate-500 mt-1">품질관리 시스템</div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col" style={{ fontFamily: "'Pretendard', 'Noto Sans KR', system-ui, sans-serif" }}>
+      {/* 상단 헤더 + 전체 가로 메뉴 */}
+      <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
+        <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center border border-[#2C4A72]" style={{ background: "rgba(65,196,238,.12)" }}>
+              <FlaskConical size={18} className="text-[#41C4EE]" />
+            </div>
+            <div>
+              <div className="text-sm font-bold tracking-widest text-white">QMES</div>
+              <div className="text-[10px] text-[#8CA5C4] -mt-0.5">나모케미칼㈜ 절연 슬러리</div>
+            </div>
+          </div>
+
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 ml-3">
+            <span>슬러리 공장</span>
+            <ChevronRight size={12} />
+            <span className="text-slate-200">개발/Pilot 라인</span>
+          </div>
+
+          <div className="flex-1" />
+
+          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-mono tabular-nums">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{clock.toLocaleTimeString("ko-KR", { hour12: false })}</span>
+          </div>
+          <button className="relative p-2 rounded hover:bg-slate-800 transition-colors" aria-label="알림">
+            <Bell size={16} className="text-slate-300" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
+            <div className="hidden md:block leading-tight">
+              <div className="text-xs text-slate-200">{user.name}</div>
+              <div className="text-[10px] text-slate-500">{user.dept} · <span className="font-mono">{user.uid || "U-0000"}</span></div>
+            </div>
+            {onLogout && (
+              <button onClick={onLogout}
+                className="text-[11px] px-2 py-1 rounded border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors">
+                로그아웃
+              </button>
+            )}
           </div>
         </div>
 
-        <nav className="qmes-topnav">
-          {TOP_MENUS.map((m) => {
-            if (m.id === "system" && user.role !== "admin") return null;
-            const Icon = m.icon;
-            const active = activeTop.id === m.id;
-            return (
-              <button key={m.id} onClick={() => openTop(m)} className={`qmes-topitem ${active ? "active" : ""}`}>
-                <Icon size={20} />
-                <span>{m.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <div className="border-t border-white/10" style={{ background: "linear-gradient(90deg,#081A33 0%,#0A2242 55%,#0D3260 100%)" }}>
+          <nav className="w-full px-3 lg:px-5 flex flex-wrap items-stretch gap-1 overflow-visible">
+            {MENU_GROUPS.map((g) => {
+              const items = g.ids.map((id) => visibleTabs.find((t) => t.id === id)).filter(Boolean);
+              const dropdownItems = g.dropdown
+                ? g.dropdown.ids.map((id) => visibleTabs.find((t) => t.id === id)).filter(Boolean)
+                : [];
+              if (items.length === 0 && dropdownItems.length === 0) return null;
+              const dropdownActive = dropdownItems.some((t) => t.id === tab);
+              const DropdownIcon = g.dropdown ? g.dropdown.icon : null;
 
-        <div className="px-4 flex items-center gap-3 shrink-0">
-          <div className="hidden xl:flex items-center gap-2 text-xs text-slate-500 font-mono">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            {clock.toLocaleTimeString("ko-KR",{hour12:false})}
-          </div>
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-900">{user.name[0]}</div>
-          <div className="hidden lg:block leading-tight">
-            <div className="text-xs font-semibold text-slate-900">{user.name}</div>
-            <div className="text-[10px] text-slate-500">{user.dept}</div>
-          </div>
-          {onLogout && <button onClick={onLogout} className="text-[11px] px-2 py-1 rounded border border-slate-300 text-slate-500">로그아웃</button>}
+              return (
+                <div key={g.title} className="flex items-stretch shrink-0 relative">
+                  <div className="hidden xl:flex items-center px-2 text-[9px] tracking-widest text-[#7E97B8] font-semibold whitespace-nowrap">
+                    {g.title}
+                  </div>
+                  <div className="flex items-stretch gap-0.5">
+                    {g.dropdown && dropdownItems.length > 0 && (
+                      <div className="relative flex items-stretch">
+                        <button
+                          onClick={() => setQualityMenuOpen((v) => !v)}
+                          className={`flex items-center gap-1.5 px-3 py-3 text-[12px] whitespace-nowrap border-b-2 transition-colors ${
+                            dropdownActive
+                              ? "border-sky-400 bg-white/10 text-white font-medium"
+                              : "border-transparent text-[#BCCDE2] hover:text-white hover:bg-white/5"
+                          }`}
+                          aria-haspopup="menu"
+                          aria-expanded={qualityMenuOpen}
+                        >
+                          <DropdownIcon size={14} className={dropdownActive ? "text-[#41C4EE]" : ""} />
+                          {g.dropdown.label}
+                          <ChevronRight
+                            size={12}
+                            className="transition-transform"
+                            style={{ transform: qualityMenuOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                          />
+                        </button>
+
+                        {qualityMenuOpen && (
+                          <div
+                            className="absolute top-full left-0 mt-1 min-w-[220px] rounded-lg border border-slate-700 bg-slate-900 shadow-xl overflow-hidden"
+                            style={{ zIndex: 50 }}
+                            role="menu"
+                          >
+                            <div className="px-3 py-2 text-[10px] tracking-widest text-slate-500 border-b border-slate-800 bg-slate-950/60">
+                              검사 구분 선택
+                            </div>
+                            {dropdownItems.map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => {
+                                  setTab(t.id);
+                                  setQualityMenuOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[12px] transition-colors ${
+                                  tab === t.id
+                                    ? "bg-sky-500/15 text-white"
+                                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                                }`}
+                                role="menuitem"
+                              >
+                                <t.icon size={15} className={tab === t.id ? "text-sky-400" : "text-slate-500"} />
+                                <span>{t.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {items.map((t) => (
+                      <button key={t.id} onClick={() => { setTab(t.id); setQualityMenuOpen(false); }}
+                        className={`flex items-center gap-1.5 px-3 py-3 text-[12px] whitespace-nowrap border-b-2 transition-colors ${
+                          tab === t.id
+                            ? "border-sky-400 bg-white/10 text-white font-medium"
+                            : "border-transparent text-[#BCCDE2] hover:text-white hover:bg-white/5"
+                        }`}>
+                        <t.icon size={14} className={tab === t.id ? "text-[#41C4EE]" : ""} />
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="w-px bg-white/10 mx-1 self-center" style={{ height: "24px" }} />
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="w-full px-4 lg:px-6 py-2 flex items-center gap-2 bg-slate-950/60">
+          {currentTab && <currentTab.icon size={15} className="text-sky-400" />}
+          <span className="text-xs font-semibold text-slate-200">{currentTab ? currentTab.label : ""}</span>
         </div>
       </header>
 
-      <div className="qmes-shell">
-        <aside className="qmes-sidebar">
-          <div className="qmes-side-title flex items-center gap-2">
-            <ActiveTopIcon size={18} style={{color:"#1559d6"}} />
-            {activeTop.label}
-          </div>
-          {sideItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button key={item.id} onClick={() => setTab(item.id)} className={`qmes-sideitem ${tab === item.id ? "active" : ""}`}>
-                <Icon size={16} />
-                <span>{item.label}</span>
-                <ChevronRight size={14} className="ml-auto" />
-              </button>
-            );
-          })}
-        </aside>
+      <main className="w-full px-4 lg:px-6 py-5 flex-1">
+        <Active />
+      </main>
 
-        <main className="qmes-main">
-          <div className="qmes-pagehead">
-            <div>
-              <h1>{tabDef.label}</h1>
-              <div className="qmes-crumb">QMES · {activeTop.label} · {tabDef.label}</div>
-            </div>
-          </div>
-          <div className="qmes-content">
-            <Active />
-          </div>
-          <footer className="pt-6 text-[11px] text-slate-500">
-            © 2026 NAMO CHEMICAL Co., Ltd. · QMES Chemical v1.0
-          </footer>
-        </main>
-      </div>
+      <footer className="w-full px-4 lg:px-6 pb-6 text-[11px] text-slate-600">
+        QMES Chemical v1.0 · 관리계획서 NMC-C-220-01 REV.0 (개발/Pilot 단계 초안) 기준 · 데모 데이터 — 실제 운영 시 PLC·계측기(점도계, 입도분석기, Gauss Meter)·ERP 연동 필요
+      </footer>
     </div>
+
   );
 }
 
