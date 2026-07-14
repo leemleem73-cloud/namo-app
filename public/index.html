@@ -2343,6 +2343,155 @@ function NcrTab() {
   );
 }
 
+/* ──────────────────────────── 검사 성적서 통합 조회 · 인쇄 ──────────────────────────── */
+
+function InspectionReportsTab() {
+  const [type, setType] = useState("IQC");
+  const dataByType = {
+    IQC: DB.iqc || [],
+    PQC: DB.insp?.PQC || [],
+    OQC: DB.insp?.OQC || [],
+  };
+
+  const reportIds = type === "IQC"
+    ? dataByType.IQC.map((r) => r.inNo || r.lot).filter(Boolean)
+    : Array.from(new Set(dataByType[type].map((r) => r.lot).filter(Boolean)));
+  const [sel, setSel] = useState(reportIds[0] || "");
+  const [reportPage, setReportPage] = useState(1);
+  const reportPageSize = 10;
+  const reportPageCount = Math.max(1, Math.ceil(reportIds.length / reportPageSize));
+  const safeReportPage = Math.min(reportPage, reportPageCount);
+  const pagedReportIds = reportIds.slice((safeReportPage - 1) * reportPageSize, safeReportPage * reportPageSize);
+
+  useEffect(() => {
+    setSel(reportIds[0] || "");
+    setReportPage(1);
+  }, [type]);
+
+  const iqc = type === "IQC" ? dataByType.IQC.find((r) => (r.inNo || r.lot) === sel) : null;
+  const inspectionRows = type === "IQC" ? [] : dataByType[type].filter((r) => r.lot === sel);
+  const batch = DB.batches.find((b) => b.no === sel) || {};
+  const latestByItem = {};
+  inspectionRows.forEach((r) => { if (!latestByItem[r.check]) latestByItem[r.check] = r; });
+  const itemOrder = type === "PQC" ? PQC_KEYS : OQC_KEYS;
+  const reportTitle = type === "IQC" ? "수입검사 성적서" : type === "PQC" ? "공정검사 성적서" : "출하검사 성적서";
+  const reportNo = type === "IQC" ? (iqc?.inNo || "-") : `${type}-${sel || "-"}`;
+  const reportDate = type === "IQC" ? (iqc?.recv || "-").slice(0, 10) : (inspectionRows[0]?.date || "-");
+  const finalJudge = type === "IQC"
+    ? (iqc?.judge || "-")
+    : inspectionRows.length && itemOrder.every((k) => latestByItem[k]?.judge === "합격") ? "합격"
+      : inspectionRows.some((r) => r.judge === "불합격") ? "불합격" : "검사중";
+
+  const selectReport = (id) => setSel(id);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Panel title="검사 성적서 조회 · 인쇄" right={sel && (
+        <button onClick={printDoc} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium transition-colors">
+          <Printer size={13} /> 선택 성적서 인쇄 / PDF
+        </button>
+      )}>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[{id:"IQC",label:"수입검사 성적서"},{id:"PQC",label:"공정검사 성적서"},{id:"OQC",label:"출하검사 성적서"}].map((t) => (
+            <button key={t.id} onClick={() => setType(t.id)}
+              className={`px-3 py-2 rounded border text-xs font-semibold transition-colors ${type === t.id ? "bg-sky-500/15 border-sky-500/60 text-sky-200" : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500"}`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {reportIds.length === 0 ? (
+          <p className="text-sm text-slate-500">등록된 {reportTitle} 데이터가 없습니다.</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[720px]">
+                <thead><tr className="text-xs text-slate-400 border-b border-slate-700">
+                  <th className="text-left py-2 px-3">성적서 번호 / LOT</th>
+                  <th className="text-left py-2 px-3">품명</th>
+                  <th className="text-center py-2 px-3">검사일자</th>
+                  <th className="text-center py-2 px-3">판정</th>
+                  <th className="text-center py-2 px-3">관리</th>
+                </tr></thead>
+                <tbody>
+                  {pagedReportIds.map((id) => {
+                    const row = type === "IQC" ? dataByType.IQC.find((r) => (r.inNo || r.lot) === id) : null;
+                    const rs = type === "IQC" ? [] : dataByType[type].filter((r) => r.lot === id);
+                    const b = DB.batches.find((x) => x.no === id) || {};
+                    const judge = type === "IQC" ? row?.judge : rs.some((r) => r.judge === "불합격") ? "불합격" : rs.length ? "합격" : "검사중";
+                    return <tr key={id} className={`border-b border-slate-800/60 ${sel === id ? "bg-sky-500/10" : "hover:bg-slate-800/30"}`}>
+                      <td className="py-2.5 px-3 font-mono text-sky-300">{id}</td>
+                      <td className="py-2.5 px-3 text-slate-100">{type === "IQC" ? row?.name : b.item || "-"}</td>
+                      <td className="py-2.5 px-3 text-center text-slate-300">{type === "IQC" ? (row?.recv || "-").slice(0,10) : rs[0]?.date || "-"}</td>
+                      <td className="py-2.5 px-3 text-center"><Badge tone={judge === "합격" ? "green" : judge === "불합격" || judge === "반품" ? "red" : "blue"}>{judge || "-"}</Badge></td>
+                      <td className="py-2.5 px-3 text-center"><button onClick={() => selectReport(id)} className="px-2.5 py-1 rounded border border-sky-500/50 text-sky-300 text-xs">보기</button></td>
+                    </tr>;
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {reportIds.length > reportPageSize && <div className="flex items-center justify-center gap-2 mt-3">
+              <button onClick={() => setReportPage((p) => Math.max(1,p-1))} disabled={safeReportPage===1} className="px-3 py-1.5 rounded border border-slate-700 text-xs text-slate-300 disabled:opacity-40">이전</button>
+              <span className="text-xs text-slate-400">{safeReportPage} / {reportPageCount}</span>
+              <button onClick={() => setReportPage((p) => Math.min(reportPageCount,p+1))} disabled={safeReportPage===reportPageCount} className="px-3 py-1.5 rounded border border-slate-700 text-xs text-slate-300 disabled:opacity-40">다음</button>
+            </div>}
+          </>
+        )}
+      </Panel>
+
+      {sel && (type === "IQC" ? iqc : inspectionRows.length > 0) && (
+        <div className="doc-paper bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
+          <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
+            <div><div className="text-xl font-bold tracking-wide">{reportTitle}</div><div className="text-xs text-slate-500 mt-0.5">Inspection Report</div></div>
+            <div className="text-right text-xs text-slate-600"><div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div><div>성적서 번호: <span className="font-mono">{reportNo}</span></div><div>검사일: {reportDate}</div></div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm py-4 border-b border-slate-300">
+            {type === "IQC" ? <>
+              <div className="flex justify-between"><span className="text-slate-500">품명</span><span className="font-medium">{iqc.name}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">공급사</span><span className="font-medium">{iqc.supplier || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">원료 LOT No.</span><span className="font-mono font-medium">{iqc.lot}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">입고수량</span><span className="font-medium">{iqc.qty || "-"}</span></div>
+            </> : <>
+              <div className="flex justify-between"><span className="text-slate-500">제품명</span><span className="font-medium">{batch.item || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">LOT No.</span><span className="font-mono font-medium">{sel}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">생산일자</span><span>{batch.due || "-"}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">검사자</span><span>{inspectionRows[0]?.inspector || "-"}</span></div>
+              {type === "OQC" && <div className="flex justify-between"><span className="text-slate-500">출하일자</span><span>{inspectionRows[0]?.shipDate || "-"}</span></div>}
+            </>}
+          </div>
+
+          <table className="w-full text-sm mt-4">
+            <thead><tr className="text-xs text-slate-500 border-b-2 border-slate-900">
+              <th className="text-left py-2 pr-3 w-10">NO</th><th className="text-left py-2 pr-3">검사 항목</th><th className="text-left py-2 pr-3">규격</th><th className="text-left py-2 pr-3">측정 결과</th><th className="text-center py-2 w-16">판정</th>
+            </tr></thead>
+            <tbody>
+              {(type === "IQC" ? [
+                {item:"외관",spec:"파손·누액 등 외관 이상 없음",val:iqc.visual,judge:iqc.visual},
+                {item:"라벨",spec:"표기사항 및 라벨 상태 이상 없음",val:iqc.label,judge:iqc.label},
+                {item:"중량",spec:"입고 규격 및 허용오차 충족",val:iqc.weight,judge:iqc.weight},
+                {item:"공급사 CoA",spec:"요구 성적서 일치 및 이상 없음",val:iqc.coa,judge:iqc.coa},
+              ] : itemOrder.map((k) => ({item:k,spec:QC_ITEMS[k]?.spec || "-",val:latestByItem[k]?.value || "-",judge:latestByItem[k]?.judge || "미검사"}))).map((r,i) => (
+                <tr key={r.item} className="border-b border-slate-200"><td className="py-2 pr-3 text-slate-500">{i+1}</td><td className="py-2 pr-3 font-medium">{r.item}</td><td className="py-2 pr-3 text-slate-600">{r.spec}</td><td className="py-2 pr-3">{r.val}</td><td className={`py-2 text-center font-semibold ${r.judge === "합격" ? "text-emerald-600" : r.judge === "불합격" ? "text-red-600" : "text-slate-500"}`}>{r.judge}</td></tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="flex items-end justify-between mt-6">
+            <div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div>
+            <div className="flex items-center gap-5"><div className="text-sm">최종판정</div><div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>{finalJudge}</div></div>
+          </div>
+          <div className="flex justify-end gap-6 text-center text-xs mt-6">
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검사</div><div className="mt-1 text-slate-600">{type === "IQC" ? "검사원" : inspectionRows[0]?.inspector || "검사원"}</div></div>
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">품질부장</div></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 /* ──────────────────────────── 출하성적서 (CoA) 탭 ──────────────────────────── */
 
 function CoaTab() {
@@ -2663,6 +2812,11 @@ function WoDocTab() {
   const [lotVals, setLotVals] = useState({}); // 원재료 공급사 Lot 입력
   const [condVals, setCondVals] = useState({});
   const [errs, setErrs] = useState([]);
+  const [woPage, setWoPage] = useState(1);
+  const woPageSize = 10;
+  const woPageCount = Math.max(1, Math.ceil(ids.length / woPageSize));
+  const safeWoPage = Math.min(woPage, woPageCount);
+  const pagedIds = ids.slice((safeWoPage - 1) * woPageSize, safeWoPage * woPageSize);
   const w = DB.woDocs[sel];
 
   if (!w) {
@@ -2768,7 +2922,7 @@ function WoDocTab() {
               </tr>
             </thead>
             <tbody>
-              {ids.map((id) => {
+              {pagedIds.map((id) => {
                 const doc = DB.woDocs[id] || {};
                 const batch = DB.batches.find((b) => b.no === id) || {};
                 return (
@@ -2817,6 +2971,17 @@ function WoDocTab() {
             </tbody>
           </table>
         </div>
+        {ids.length > woPageSize && (
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <button onClick={() => setWoPage((p) => Math.max(1, p - 1))}
+              disabled={safeWoPage === 1}
+              className="px-3 py-1.5 rounded border border-slate-700 text-xs text-slate-300 disabled:opacity-40">이전</button>
+            <span className="text-xs text-slate-400">{safeWoPage} / {woPageCount}</span>
+            <button onClick={() => setWoPage((p) => Math.min(woPageCount, p + 1))}
+              disabled={safeWoPage === woPageCount}
+              className="px-3 py-1.5 rounded border border-slate-700 text-xs text-slate-300 disabled:opacity-40">다음</button>
+          </div>
+        )}
       </Panel>
 
       {/* 작업지시서 (실사용 양식) */}
@@ -4110,6 +4275,7 @@ const TABS = [
   { id: "woIssue", label: "작업지시 발행", icon: Plus, comp: IssueWoTab },
   { id: "pqc", label: "공정검사 (PQC)", icon: ClipboardCheck, comp: PqcTab },
   { id: "oqc", label: "출하검사 (OQC)", icon: ArrowUpFromLine, comp: OqcTab },
+  { id: "reports", label: "검사 성적서", icon: Printer, comp: InspectionReportsTab },
   { id: "lock", label: "품질 인터락 (차단)", icon: Lock, comp: InterlockTab },
   { id: "inv", label: "원재료 재고", icon: Package, comp: InventoryTab },
   { id: "eq", label: "설비 모니터링", icon: Cpu, comp: EquipmentTab },
@@ -4130,7 +4296,7 @@ const TOP_MENUS = [
   },
   {
     id: "qualityMenu", label: "품질검사", icon: ClipboardCheck,
-    children: ["iqc", "pqc", "oqc", "spc", "lock", "coa"],
+    children: ["iqc", "pqc", "oqc", "reports", "spc", "lock", "coa"],
   },
   { id: "pop", label: "현장입력", icon: Tablet },
   { id: "inv", label: "재고관리", icon: Package },
