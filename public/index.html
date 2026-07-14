@@ -1426,6 +1426,19 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
   );
 }
 
+
+function nextInspectionNo(prefix, dateValue, rows, fieldName) {
+  const dateKey = String(dateValue || "").replaceAll("-", "").slice(0, 8);
+  const base = `${prefix}-${dateKey}_`;
+  const maxSeq = (rows || []).reduce((max, row) => {
+    const value = String(row?.[fieldName] || "");
+    if (!value.startsWith(base)) return max;
+    const seq = Number(value.slice(base.length));
+    return Number.isFinite(seq) ? Math.max(max, seq) : max;
+  }, 0);
+  return `${base}${String(maxSeq + 1).padStart(4, "0")}`;
+}
+
 function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idStart, notice, storeKey, traceStage }) {
   const today = new Date().toISOString().slice(0, 10);
   const isOqc = storeKey === "OQC";
@@ -1473,11 +1486,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const judge = isNumericItem ? autoJ : form.judge;
     const lotNo = form.lot.trim();
     const prev = editingId ? records.find((r) => r.id === editingId) : null;
-    const rec = { id: editingId || `${idPrefix}${nextId}`, date, shipDate: isOqc ? form.shipDate : (prev?.shipDate || ""), time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
+    const inspectionNo = editingId || nextInspectionNo(storeKey, date, records, "id");
+    const rec = { id: inspectionNo, date, shipDate: isOqc ? form.shipDate : (prev?.shipDate || ""), time, lot: lotNo, check: form.check, value: form.value, judge, note: `${spec.stage}`, inspector: (window.__QMES_USER__ || "현재 사용자") };
     const next = editingId ? records.map((r) => r.id === editingId ? rec : r) : [rec, ...records];
     setRecords(next);
     DB.insp[storeKey] = next;
-    if (!editingId) DB.seqs[storeKey] = nextId + 1;
     auditLog(storeKey, editingId ? "수정" : "등록", rec.id, `${rec.lot} / ${rec.check} / ${rec.value} / ${rec.judge}`);
 
     /* Lot 이력 자동 반영 */
@@ -1508,7 +1521,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       }
     }
     dbSave();
-    if (!editingId) setNextId(nextId + 1);
     setEditingId(null);
     setForm({ ...form, value: "", judge: "합격" });
     setTried(false);
@@ -2780,10 +2792,8 @@ function IqcTab() {
     if (!iqcReady) { setTried(true); return; }
     const now = new Date();
     const recv = form.recvDate;
-    const dateKey = form.recvDate.replaceAll("-", "").slice(2);
-    const inNo = `IN-${dateKey}-${String(DB.seqs.iqc || 1).padStart(2, "0")}`;
-    if (!editingInNo) DB.seqs.iqc = (DB.seqs.iqc || 1) + 1;
-    const rowData = { inNo: editingInNo || inNo, recv, lot: form.lot.trim(), code: "-", name: form.name, supplier: form.supplier.trim() || "-", qty: form.qty, visual: form.visual, label: form.label, weight: form.weight, coa: form.coa, judge: overall(form), note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 협력사 통보" : "", by: (window.__QMES_USER__ || "현재 사용자") };
+    const inNo = editingInNo || nextInspectionNo("IQC", form.recvDate, rows, "inNo");
+    const rowData = { inNo, recv, lot: form.lot.trim(), code: "-", name: form.name, supplier: form.supplier.trim() || "-", qty: form.qty, visual: form.visual, label: form.label, weight: form.weight, coa: form.coa, judge: overall(form), note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 협력사 통보" : "", by: (window.__QMES_USER__ || "현재 사용자") };
     const nr = editingInNo ? rows.map((r) => r.inNo === editingInNo ? rowData : r) : [rowData, ...rows];
     setRows(nr);
     DB.iqc = nr;
@@ -2872,7 +2882,7 @@ function IqcTab() {
           </div>
         )}
         <p className="text-[11px] text-slate-500 mt-2">
-          공급사 Lot은 라벨 표기 그대로 기록하고, 추적용 사내 입고번호(IN-날짜-순번)가 자동 부여됩니다. 한 항목이라도 불합격 시 반품 처리: 즉시 격리 → 사용차단 → 협력사 통보 → 원인분석 → 재검사/반품 결정 (수입검사관리대장).
+          공급사 Lot은 라벨 표기 그대로 기록하고, 추적용 사내 입고번호(IQC-입고일자_4자리 순번)가 자동 부여됩니다. 한 항목이라도 불합격 시 반품 처리: 즉시 격리 → 사용차단 → 협력사 통보 → 원인분석 → 재검사/반품 결정 (수입검사관리대장).
         </p>
       </Panel>
 
