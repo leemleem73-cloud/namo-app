@@ -2482,7 +2482,7 @@ function InspectionReportsTab() {
             <div className="flex items-center gap-5"><div className="text-sm">최종판정</div><div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>{finalJudge}</div></div>
           </div>
           <div className="flex justify-end gap-6 text-center text-xs mt-5">
-            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작성</div><div className="mt-1 text-slate-600">{type === "IQC" ? "검사원" : inspectionRows[0]?.inspector || "검사원"}</div></div>
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작성</div><div className="mt-1 text-slate-600">검사원</div></div>
             <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검토</div><div className="mt-1 text-slate-600">-</div></div>
             <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">-</div></div>
           </div>
