@@ -1457,6 +1457,179 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_PRINT_A4_ALIGNMENT_BORDER_FIX_260715 -->
+
+<style>
+/* ===== 인쇄 최종 보정: 좌우 정렬 + 글씨 잘림 방지 ===== */
+
+/* 기본정보 라벨 폭 축소 / 값 폭 확대 */
+.qmes-iqc-doc .qmes-iqc-basic-table th{
+  width:10.5%!important;
+  padding-left:3px!important;
+  padding-right:3px!important;
+  font-size:11px!important;
+  white-space:nowrap!important;
+}
+.qmes-iqc-doc .qmes-iqc-basic-table td{
+  width:22.8333%!important;
+  padding-left:7px!important;
+  padding-right:7px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+
+/* 검사표: 검사결과와 판정 폭을 확보해 미확인/불일치가 잘리지 않도록 */
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(1),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(1){width:5%!important}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(2),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(2){width:10%!important}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(3),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(3){width:55%!important}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(4),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(4){
+  width:17%!important;
+  white-space:nowrap!important;
+  font-size:11px!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(5),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(5){
+  width:13%!important;
+  white-space:nowrap!important;
+}
+
+/* 하단: 보기 화면과 동일한 좌우 비율, 양쪽 끝 정확히 정렬 */
+.qmes-iqc-doc .qmes-iqc-auth-row{
+  width:100%!important;
+  max-width:none!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;
+  gap:18px!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-code-area,
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-cell{
+  min-width:0!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title,
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+
+/* 인쇄 전용 */
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:7mm;
+  }
+
+  body.print-doc #qmes-print-root{
+    width:196mm!important;
+    max-width:196mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+  }
+
+  body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc{
+    width:196mm!important;
+    max-width:196mm!important;
+    min-width:196mm!important;
+    margin:0 auto!important;
+    padding:5mm 6mm!important;
+    box-sizing:border-box!important;
+  }
+
+  /* 기본정보 글씨 잘림 방지 */
+  body.print-doc #qmes-print-root .qmes-iqc-basic-table th{
+    width:10.5%!important;
+    padding:1.5mm .8mm!important;
+    font-size:9.2px!important;
+    white-space:nowrap!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-basic-table td{
+    width:22.8333%!important;
+    padding:1.5mm 1.5mm!important;
+    font-size:9.7px!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+  }
+
+  /* 검사표 열 폭 */
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(1),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(1){width:5%!important}
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(2),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(2){width:10%!important}
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(3),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(3){width:55%!important}
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(4),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(4){
+    width:17%!important;
+    font-size:9.3px!important;
+    white-space:nowrap!important;
+    padding-left:1mm!important;
+    padding-right:1mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(5),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(5){
+    width:13%!important;
+    white-space:nowrap!important;
+  }
+
+  /* 하단 좌우 정렬: gap까지 포함해 A4 폭 안에 정확히 배치 */
+  body.print-doc #qmes-print-root .qmes-iqc-auth-row{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;
+    gap:5mm!important;
+    margin:6mm 0 0!important;
+    padding-top:3mm!important;
+    box-sizing:border-box!important;
+    align-items:stretch!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-iqc-code-area,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    height:30mm!important;
+    min-height:30mm!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-iqc-sign-title{
+    height:7mm!important;
+    min-height:7mm!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
+    height:23mm!important;
+    min-height:23mm!important;
+  }
+}
+</style>
+
+<!-- IQC_PRINT_ALIGNMENT_TEXT_CLIP_FIX_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
