@@ -1404,6 +1404,82 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_STYLE: GENERATED_IMAGE_MATCH_260715 -->
+
+<style>
+/* IQC 성적서 이미지형 구조 - 성적서 내부에만 적용 */
+.qmes-iqc-doc .qmes-iqc-section{
+  margin-top:24px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-doc .qmes-iqc-first-section{margin-top:18px!important}
+.qmes-iqc-doc .qmes-iqc-section-title{
+  margin:0 0 9px!important;
+  padding:0 0 0 10px!important;
+  border:0!important;
+  border-left:4px solid #2563eb!important;
+  background:transparent!important;
+  color:#2563eb!important;
+  font-size:16px!important;
+  font-weight:800!important;
+}
+.qmes-iqc-doc .qmes-iqc-head-table,
+.qmes-iqc-doc .qmes-iqc-qty-table,
+.qmes-iqc-doc .qmes-iqc-inspection-table,
+.qmes-iqc-doc .qmes-iqc-judge-table{
+  width:100%!important;
+  border-collapse:collapse!important;
+  border:1px solid #aeb7c2!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-head-table td,
+.qmes-iqc-doc .qmes-iqc-qty-table th,
+.qmes-iqc-doc .qmes-iqc-qty-table td,
+.qmes-iqc-doc .qmes-iqc-inspection-table th,
+.qmes-iqc-doc .qmes-iqc-inspection-table td,
+.qmes-iqc-doc .qmes-iqc-judge-table th,
+.qmes-iqc-doc .qmes-iqc-judge-table td{
+  border:1px solid #c4cbd3!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-qty-table th,
+.qmes-iqc-doc .qmes-iqc-qty-table td{
+  padding:9px 8px!important;
+  text-align:center!important;
+  font-size:12px!important;
+}
+.qmes-iqc-doc .text-emerald-600,
+.qmes-iqc-doc .text-emerald-400{
+  color:#159447!important;
+  font-weight:800!important;
+}
+.qmes-iqc-doc .text-red-600,
+.qmes-iqc-doc .text-red-400{
+  color:#ef2020!important;
+  font-weight:800!important;
+}
+.qmes-iqc-doc .qmes-iqc-auth-row{
+  align-items:stretch!important;
+  padding-top:14px!important;
+  border-top:2px solid #111!important;
+}
+.qmes-iqc-doc .qmes-iqc-code-area,
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  height:122px!important;
+  min-height:122px!important;
+  border:1px solid #9ca3af!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  min-height:88px!important;
+  height:auto!important;
+}
+</style>
+
+<!-- IQC_FIXED_WORKING_IMAGE_LAYOUT -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: WORK_ORDER_STYLE_BARCODE_QR_260715 -->
 <body>
@@ -2084,20 +2160,30 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
 
           {isIqc ? (
             <>
-              <table className="qmes-iqc-head-table">
-                <tbody>
-                  <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{record.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(record.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{record.supplier || "-"}</td></tr>
-                  <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{record.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{record.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{record.qty || "-"}</td></tr>
-                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{record.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{record.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${record.judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{record.judge === "합격" ? "합격" : "불합격"}</td></tr>
-                </tbody>
-              </table>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">① 검사 결과</div>
+              <div className="qmes-iqc-section qmes-iqc-first-section">
+                <div className="qmes-iqc-section-title">입고 기본정보</div>
+                <table className="qmes-iqc-head-table">
+                  <tbody>
+                    <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{record.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(record.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{record.supplier || "-"}</td></tr>
+                    <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{record.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{record.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{record.qty || "-"}</td></tr>
+                    <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{record.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{record.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${record.judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{record.judge === "합격" ? "합격" : "불합격"}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">수량정보</div>
+                <table className="qmes-iqc-qty-table">
+                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>검사단위</th><th>비고</th></tr></thead>
+                  <tbody><tr><td>{record.name || "-"}</td><td>{record.qty || "-"}</td><td>{record.inspectQty || "-"}</td><td>{record.defectQty || "0"}</td><td>EA</td><td>-</td></tr></tbody>
+                </table>
+              </div>
+              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">검사결과</div>
                 <table className="qmes-iqc-inspection-table"><thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead><tbody>
                   {[["외관","파손, 변형, 누액 및 오염이 없을 것",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",record.label,record.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",record.weight,record.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,judge,result],i)=><tr key={k}><td className="text-slate-500">{i+1}</td><td className="font-medium">{k}</td><td className="text-slate-600">{spec}</td><td>{result}</td><td className={`text-center font-semibold ${judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{judge || "-"}</td></tr>)}
                 </tbody></table>
               </div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">② 판정</div><table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table></div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">③ 특이사항</div><div className="qmes-iqc-remarks-panel">{record.remarks || "-"}</div></div>
+              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">판정</div><table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table></div>
+              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">특이사항</div><div className="qmes-iqc-remarks-panel">{record.remarks || "-"}</div></div>
               <div className="qmes-iqc-auth-row"><IqcBarcodeQr record={record}/><div className="qmes-iqc-sign-grid">{["작성","검토","승인"].map(label=><div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (record.inspector || record.by || "") : ""}</div></div>)}</div></div>
               <div className="qmes-iqc-doc-footer"><span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span></div>
             </>
