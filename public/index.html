@@ -1089,6 +1089,115 @@ aside{display:none!important}
 }
 </style>
 
+
+<style>
+/* ===== 요청사항 반영: 바코드/QR/검사기준/기본정보 제목 ===== */
+
+/* 1) 바코드 영역 테두리 연하게 */
+.qmes-iqc-doc .qmes-iqc-code-area{
+  border-color:#d6dbe3!important;
+}
+.qmes-iqc-doc .qmes-iqc-barcode-wrap,
+.qmes-iqc-doc .qmes-iqc-qr-wrap{
+  background:#fff!important;
+}
+
+/* 2) 검사기준 칸을 더 넓게, 검사결과 칸은 더 좁게 */
+.qmes-iqc-doc .qmes-iqc-inspection-table{
+  table-layout:fixed!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(1),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(1){
+  width:5%!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(2),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(2){
+  width:10%!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(3),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(3){
+  width:64%!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(4),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(4){
+  width:11%!important;
+  white-space:nowrap!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(5),
+.qmes-iqc-doc .qmes-iqc-inspection-table td:nth-child(5){
+  width:10%!important;
+  white-space:nowrap!important;
+}
+
+/* 3) QR 모양 정리: 정사각형, 여백 균일, 선명하게 */
+.qmes-iqc-doc .qmes-iqc-qr-wrap{
+  width:82px!important;
+  height:82px!important;
+  padding:4px!important;
+  border:1px solid #d6dbe3!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.qmes-iqc-doc .qmes-iqc-qr-wrap img,
+.qmes-iqc-doc .qmes-iqc-qr-wrap canvas{
+  width:72px!important;
+  height:72px!important;
+  max-width:72px!important;
+  max-height:72px!important;
+  object-fit:contain!important;
+  image-rendering:pixelated!important;
+}
+
+/* 4) 입고 기본정보 제목칸 글씨 = 검사항목 제목과 동일 */
+.qmes-iqc-doc .qmes-iqc-basic-table th{
+  font-size:12px!important;
+  font-weight:800!important;
+  line-height:1.25!important;
+  letter-spacing:0!important;
+  color:#111827!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th:nth-child(2){
+  font-size:12px!important;
+  font-weight:800!important;
+}
+
+/* 인쇄에서도 동일 적용 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-code-area{
+    border-color:#d6dbe3!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-qr-wrap{
+    width:19mm!important;
+    height:19mm!important;
+    padding:1mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-qr-wrap img,
+  body.print-doc #qmes-print-root .qmes-iqc-qr-wrap canvas{
+    width:17mm!important;
+    height:17mm!important;
+    max-width:17mm!important;
+    max-height:17mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(3),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(3){
+    width:64%!important;
+    white-space:nowrap!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th:nth-child(4),
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td:nth-child(4){
+    width:11%!important;
+  }
+}
+</style>
+
+<!-- IQC_BARCODE_QR_WIDTH_FONT_FIX_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
