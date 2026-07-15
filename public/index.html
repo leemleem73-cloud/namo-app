@@ -703,6 +703,29 @@ aside{display:none!important}
 }
 </style>
 
+
+<style>
+/* ===== 수입검사 등록 화면 3단 그룹형 배치 ===== */
+.qmes-iqc-form{display:flex;flex-direction:column;gap:14px}
+.qmes-iqc-section{padding:13px;border:1px solid #243a55;border-radius:10px;background:rgba(15,32,54,.55)}
+.qmes-iqc-section-title{margin-bottom:9px;color:#8ca5c4;font-size:11px;font-weight:700;letter-spacing:.02em}
+.qmes-iqc-grid{display:grid;gap:9px;align-items:end}
+.qmes-iqc-grid-basic{grid-template-columns:1.15fr 1fr 1.1fr 1.25fr 1fr}
+.qmes-iqc-grid-qty{grid-template-columns:repeat(3,minmax(0,1fr))}
+.qmes-iqc-grid-result{grid-template-columns:repeat(5,minmax(0,1fr))}
+.qmes-iqc-field{min-width:0;display:flex;flex-direction:column;gap:4px}
+.qmes-iqc-field>span:first-child{height:16px;line-height:16px;white-space:nowrap;color:#63809f;font-size:10px}
+.qmes-iqc-field input,.qmes-iqc-field select{width:100%;height:40px;min-width:0;box-sizing:border-box}
+.qmes-material-select-wrap{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:6px}
+.qmes-material-add{height:40px;border:1px solid rgba(0,170,210,.48);border-radius:6px;color:#7dd3fc;background:rgba(0,170,210,.08);font-size:11px;font-weight:700}
+.qmes-material-add:hover{color:#fff;background:rgba(0,170,210,.18)}
+.qmes-iqc-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.qmes-iqc-submit{min-width:130px;height:40px}
+@media(max-width:1350px){.qmes-iqc-grid-basic{grid-template-columns:repeat(3,minmax(0,1fr))}.qmes-iqc-grid-result{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:820px){.qmes-iqc-grid-basic,.qmes-iqc-grid-qty,.qmes-iqc-grid-result{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.qmes-iqc-grid-basic,.qmes-iqc-grid-qty,.qmes-iqc-grid-result{grid-template-columns:1fr}.qmes-iqc-actions{justify-content:stretch}.qmes-iqc-submit{width:100%}}
+</style>
+
 </head>
 <body>
 <div id="root"></div>
@@ -920,14 +943,14 @@ function printDoc() {
 /* ──────────────────────────── 통합 데이터 저장소 ──────────────────────────── */
 /* 화면 간 연동 + 새로고침 후에도 기록 유지. 실제 서버 구축 시 이 계층만 API로 교체하면 됩니다. */
 
-const DB_KEY = "qmes-local-iqc-v2";
-const DB_RESET_MARKER = "qmes-iqc-v2-initialized";
+const DB_KEY = "qmes-local-iqc-v3";
+const DB_RESET_MARKER = "qmes-iqc-v3-initialized";
 
 /* 수입검사 개선본 최초 실행 시 기존 테스트 DB를 한 번 초기화합니다.
    이후 입력한 데이터는 새 DB_KEY에 저장되어 새로고침 후에도 유지됩니다. */
 try {
   if (!window.localStorage.getItem(DB_RESET_MARKER)) {
-    ["qmes-local-v1", "qmes-db-v1", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
+    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
     window.localStorage.setItem(DB_RESET_MARKER, "1");
   }
 } catch (e) { /* 무시 */ }
@@ -936,7 +959,7 @@ try {
    - 입력 데이터는 이 브라우저의 localStorage에만 저장됩니다.
    - 외부 서버 전송 및 장치 간 자동 동기화는 수행하지 않습니다. */
 function dbDefault() {
-  return { batches: [], woDocs: {}, iqc: [], insp: { PQC: [], OQC: [] }, holds: [], eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {}, popEntries: [], auditLogs: [], seqs: {} };
+  return { batches: [], woDocs: {}, iqc: [], iqcMaterials: [], insp: { PQC: [], OQC: [] }, holds: [], eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {}, popEntries: [], auditLogs: [], seqs: {} };
 }
 let DB = (() => {
   try {
@@ -2833,12 +2856,30 @@ function IqcTab() {
     label: "합격",
     weight: "합격",
     coa: "합격",
-    inspector: (window.__QMES_USER__ || "검사원")
+    inspector: ""
   });
   const [form, setForm] = useState(emptyForm);
   const [tried, setTried] = useState(false);
   const [editingInNo, setEditingInNo] = useState(null);
   const [viewingIqc, setViewingIqc] = useState(null);
+  const [materialOptions, setMaterialOptions] = useState(() => [...new Set([...IQC_MATERIALS, ...(DB.iqcMaterials || [])])]);
+
+  const addMaterialOption = () => {
+    const value = window.prompt("추가할 원재료명을 입력하세요.");
+    if (value === null) return;
+    const name = value.trim();
+    if (!name) { window.alert("원재료명을 입력하세요."); return; }
+    if (materialOptions.some((m) => m.toLowerCase() === name.toLowerCase())) {
+      window.alert("이미 등록된 원재료명입니다.");
+      setForm((prev) => ({ ...prev, name: materialOptions.find((m) => m.toLowerCase() === name.toLowerCase()) || prev.name }));
+      return;
+    }
+    const next = [...materialOptions, name];
+    setMaterialOptions(next);
+    DB.iqcMaterials = [...(DB.iqcMaterials || []), name];
+    dbSave();
+    setForm((prev) => ({ ...prev, name }));
+  };
 
   const monthRows = rows.filter((r) => String(r.recv || "").slice(0, 7) === currentMonth);
   const done = monthRows.filter((r) => r.judge !== "검사중");
@@ -2875,7 +2916,7 @@ function IqcTab() {
   if (form.inspectQty.trim() !== "" && !inspectQtyOk) iqcErrors.push("검사수량 형식 오류 — 숫자+단위로 입력 (예: 3 EA)");
   if (form.defectQty.trim() !== "" && !defectQtyOk) iqcErrors.push("불량수량 형식 오류 — 숫자+단위로 입력 (예: 0 EA)");
   if (inspectQtyOk && defectQtyOk && !defectRangeOk) iqcErrors.push("불량수량은 검사수량보다 클 수 없습니다");
-  if (tried && form.lot.trim() === "") iqcErrors.push("원재료 LOT No.를 입력하세요 — 업체 라벨 표기 그대로");
+  if (tried && form.lot.trim() === "") iqcErrors.push("원재료 LOT No.를 입력하세요");
   if (tried && form.qty.trim() === "") iqcErrors.push("입고수량을 입력하세요 (예: 480 kg)");
   if (tried && form.inspectQty.trim() === "") iqcErrors.push("검사수량을 입력하세요 (예: 3 EA)");
   if (tried && form.defectQty.trim() === "") iqcErrors.push("불량수량을 입력하세요 (예: 0 EA)");
@@ -2916,7 +2957,7 @@ function IqcTab() {
       lot:r.lot, name:r.name, supplier:r.supplier === "-" ? "" : (r.supplier || ""),
       qty:r.qty || "", inspectQty:r.inspectQty || "", defectQty:r.defectQty || "0 EA",
       visual:r.visual, label:r.label, weight:r.weight, coa:r.coa,
-      inspector:r.inspector || r.by || (window.__QMES_USER__ || "검사원")
+      inspector:r.inspector || r.by || ""
     });
     window.scrollTo({top:0,behavior:"smooth"});
   };
@@ -2941,53 +2982,74 @@ function IqcTab() {
         <Kpi icon={XCircle} label="반품" value={returned.length} unit="건" tone="text-red-400" />
       </div>
 
-      <Panel title="수입검사 등록 (공정 20)" right={<span className="text-xs text-slate-400">종합판정: <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></span>}>
-        <div className="overflow-x-auto pb-1">
-          <div className="qmes-register-grid qmes-register-grid-iqc">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-slate-500">입고번호</span>
-              <div className="flex gap-1">
-                <select value={form.inNoMode} disabled={Boolean(editingInNo)} onChange={(e) => setForm({ ...form, inNoMode:e.target.value, manualInNo:"" })}
-                  style={{width:"76px",minWidth:"76px"}} className="bg-slate-800 border border-slate-700 rounded px-1 text-xs text-slate-100 focus:outline-none focus:border-sky-500 disabled:opacity-60">
-                  <option value="auto">자동</option><option value="manual">직접</option>
-                </select>
-                <input value={displayedInNo} readOnly={Boolean(editingInNo) || form.inNoMode === "auto"}
-                  onChange={(e) => setForm({ ...form, manualInNo:e.target.value })}
-                  placeholder="입고번호 입력"
-                  className={`min-w-0 flex-1 bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono focus:outline-none focus:border-sky-500 ${Boolean(editingInNo) || form.inNoMode === "auto" ? "text-sky-300" : "text-slate-100"}`} />
+      <Panel title="수입검사 등록 (공정 20)">
+        <div className="qmes-iqc-form">
+          <div className="qmes-iqc-section">
+            <div className="qmes-iqc-section-title">입고 기본정보</div>
+            <div className="qmes-iqc-grid qmes-iqc-grid-basic">
+              <div className="qmes-iqc-field">
+                <span>입고번호</span>
+                <div className="flex gap-1">
+                  <select value={form.inNoMode} disabled={Boolean(editingInNo)} onChange={(e) => setForm({ ...form, inNoMode:e.target.value, manualInNo:"" })}
+                    style={{width:"70px",minWidth:"70px"}} className="bg-slate-800 border border-slate-700 rounded px-1 text-xs text-slate-100 focus:outline-none focus:border-sky-500 disabled:opacity-60">
+                    <option value="auto">자동</option><option value="manual">직접</option>
+                  </select>
+                  <input value={displayedInNo} readOnly={Boolean(editingInNo) || form.inNoMode === "auto"}
+                    onChange={(e) => setForm({ ...form, manualInNo:e.target.value })} placeholder="입고번호 입력"
+                    className={`min-w-0 flex-1 bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono focus:outline-none focus:border-sky-500 ${Boolean(editingInNo) || form.inNoMode === "auto" ? "text-sky-300" : "text-slate-100"}`} />
+                </div>
+              </div>
+              <div className="qmes-iqc-field">
+                <span>입고일자</span>
+                <input type="date" value={form.recvDate} onChange={(e) => setForm({ ...form, recvDate:e.target.value })}
+                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+              </div>
+              <div className="qmes-iqc-field">
+                <span>원재료 LOT No.</span>
+                <input value={form.lot} onChange={(e) => setForm({ ...form, lot:e.target.value })} placeholder="원재료 LOT No. 입력"
+                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+              </div>
+              <div className="qmes-iqc-field">
+                <span>원재료명</span>
+                <div className="qmes-material-select-wrap">
+                  <select value={form.name} onChange={(e) => setForm({ ...form, name:e.target.value })}
+                    className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
+                    {materialOptions.map((m) => <option key={m}>{m}</option>)}
+                  </select>
+                  <button type="button" onClick={addMaterialOption} className="qmes-material-add">+ 추가</button>
+                </div>
+              </div>
+              <div className="qmes-iqc-field">
+                <span>업체명</span>
+                <input value={form.supplier} onChange={(e) => setForm({ ...form, supplier:e.target.value })} placeholder="업체명"
+                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
               </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-slate-500">입고일자</span>
-              <input type="date" value={form.recvDate} onChange={(e) => setForm({ ...form, recvDate: e.target.value })}
-                className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+          </div>
+
+          <div className="qmes-iqc-section">
+            <div className="qmes-iqc-section-title">수량정보</div>
+            <div className="qmes-iqc-grid qmes-iqc-grid-qty">
+              <div className="qmes-iqc-field"><span>입고수량</span><input value={form.qty} onChange={(e)=>setForm({...form,qty:e.target.value})} placeholder="예: 480 kg" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
+              <div className="qmes-iqc-field"><span>검사수량</span><input value={form.inspectQty} onChange={(e)=>setForm({...form,inspectQty:e.target.value})} placeholder="예: 3 EA" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
+              <div className="qmes-iqc-field"><span>불량수량</span><input value={form.defectQty} onChange={(e)=>setForm({...form,defectQty:e.target.value})} placeholder="예: 0 EA" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-slate-500">원재료 LOT No.</span>
-              <input value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })} placeholder="업체 LOT 그대로"
-                className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          </div>
+
+          <div className="qmes-iqc-section">
+            <div className="qmes-iqc-section-title">검사결과</div>
+            <div className="qmes-iqc-grid qmes-iqc-grid-result">
+              <div className="qmes-iqc-field">{judgeSelect("visual", "외관")}</div>
+              <div className="qmes-iqc-field">{judgeSelect("label", "라벨")}</div>
+              <div className="qmes-iqc-field">{judgeSelect("weight", "중량")}</div>
+              <div className="qmes-iqc-field">{judgeSelect("coa", "COA")}</div>
+              <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-slate-500">원재료명</span>
-              <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-                {IQC_MATERIALS.map((m) => <option key={m}>{m}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-slate-500">업체명</span>
-              <input value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} placeholder="업체명"
-                className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-            </div>
-            <div className="flex flex-col gap-1"><span className="text-[10px] text-slate-500">입고수량</span><input value={form.qty} onChange={(e)=>setForm({...form,qty:e.target.value})} placeholder="예: 480 kg" className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-            <div className="flex flex-col gap-1"><span className="text-[10px] text-slate-500">검사수량</span><input value={form.inspectQty} onChange={(e)=>setForm({...form,inspectQty:e.target.value})} placeholder="예: 3 EA" className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-            <div className="flex flex-col gap-1"><span className="text-[10px] text-slate-500">불량수량</span><input value={form.defectQty} onChange={(e)=>setForm({...form,defectQty:e.target.value})} placeholder="예: 0 EA" className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-            <div className="qmes-iqc-judge-cell">{judgeSelect("visual", "외관")}</div>
-            <div className="qmes-iqc-judge-cell">{judgeSelect("label", "라벨")}</div>
-            <div className="qmes-iqc-judge-cell">{judgeSelect("weight", "중량")}</div>
-            <div className="qmes-iqc-judge-cell">{judgeSelect("coa", "COA")}</div>
-            <div className="flex flex-col gap-1"><span className="text-[10px] text-slate-500">검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자" className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-            <button onClick={addRow} className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white"><Plus size={15} /> {editingInNo ? "수정 저장" : "등록"}</button>
+          </div>
+
+          <div className="qmes-iqc-actions">
+            <span className="text-xs text-slate-400">종합판정 <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></span>
+            <button onClick={addRow} className="qmes-iqc-submit flex items-center justify-center gap-1.5 rounded px-3 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white"><Plus size={15} /> {editingInNo ? "수정 저장" : "등록"}</button>
           </div>
         </div>
         {iqcErrors.length > 0 && <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{iqcErrors.map((e,i)=><div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 진입 금지 — {e}</div>)}</div>}
