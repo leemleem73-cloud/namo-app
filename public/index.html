@@ -799,17 +799,23 @@ aside{display:none!important}
 <style>
 /* ===== 수입검사 성적서 가로형 기본정보 및 구역 여백 ===== */
 .qmes-iqc-report-info{width:100%;border-collapse:collapse;table-layout:fixed}
-.qmes-iqc-report-info th,.qmes-iqc-report-info td{border:1px solid #a8a29e;padding:8px 10px;vertical-align:middle}
-.qmes-iqc-report-info th{width:15%;background:#fafaf9;font-weight:700;text-align:left;white-space:nowrap}
-.qmes-iqc-report-info td{width:35%;font-weight:600;word-break:break-word}
-.qmes-iqc-report-gap{height:28px}
+.qmes-iqc-report-info th,.qmes-iqc-report-info td{border:1px solid #a8a29e;padding:7px 8px;vertical-align:middle}
+.qmes-iqc-report-info th{width:11%;background:#fafaf9;font-weight:700;text-align:left;white-space:nowrap}
+.qmes-iqc-report-info td{width:22.33%;font-weight:600;word-break:break-word}
+.qmes-iqc-report-gap{height:20px}
 .qmes-iqc-inspection-table{margin-top:0}
-.qmes-iqc-remarks-box{min-height:46px;white-space:pre-wrap;word-break:break-word}
+.qmes-iqc-remarks-box{min-height:42px;white-space:pre-wrap;word-break:break-word}
+.qmes-iqc-sign-grid{margin-top:14px}
+.qmes-iqc-sign-title{padding:5px 0;font-weight:700;border-bottom:1px solid #d6d3d1;background:#fafaf9}
+.qmes-iqc-sign-body{height:40px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#1c1917}
 @media print{
   body.print-doc #qmes-print-root .qmes-iqc-report-info th,
-  body.print-doc #qmes-print-root .qmes-iqc-report-info td{padding:2mm 2.5mm!important}
-  body.print-doc #qmes-print-root .qmes-iqc-report-gap{height:7mm!important}
-  body.print-doc #qmes-print-root .qmes-iqc-remarks-box{min-height:10mm!important}
+  body.print-doc #qmes-print-root .qmes-iqc-report-info td{padding:1.7mm 2mm!important}
+  body.print-doc #qmes-print-root .qmes-iqc-report-gap{height:5mm!important}
+  body.print-doc #qmes-print-root .qmes-iqc-remarks-box{min-height:9mm!important}
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{margin-top:3.5mm!important}
+  body.print-doc #qmes-print-root .qmes-iqc-sign-title{padding:1.2mm 0!important}
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{height:9mm!important;font-size:11px!important}
 }
 </style>
 </head>
@@ -1473,10 +1479,9 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
               <div className="mt-4 text-xs">
                 <table className="qmes-iqc-report-info">
                   <tbody>
-                    <tr><th>입고번호</th><td>{record.inNo || "-"}</td><th>입고일자</th><td>{(record.recv || "-").slice(0,10)}</td></tr>
-                    <tr><th>원재료명</th><td>{record.name || "-"}</td><th>원재료 LOT No.</th><td>{record.lot || "-"}</td></tr>
-                    <tr><th>업체명</th><td>{record.supplier || "-"}</td><th>작성자</th><td>{record.inspector || record.by || "-"}</td></tr>
-                    <tr><th>입고수량</th><td>{record.qty || "-"}</td><th>검사수량 / 불량수량</th><td>{record.inspectQty || "-"} / {record.defectQty || "0"}</td></tr>
+                    <tr><th>입고번호</th><td>{record.inNo || "-"}</td><th>입고일자</th><td>{(record.recv || "-").slice(0,10)}</td><th>원재료명</th><td>{record.name || "-"}</td></tr>
+                    <tr><th>원재료 LOT No.</th><td>{record.lot || "-"}</td><th>업체명</th><td>{record.supplier || "-"}</td><th>작성자</th><td>{record.inspector || record.by || "-"}</td></tr>
+                    <tr><th>입고수량</th><td>{record.qty || "-"}</td><th>검사수량</th><td>{record.inspectQty || "-"}</td><th>불량수량</th><td>{record.defectQty || "0"}</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1514,8 +1519,8 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-t border-slate-300">특이사항</div>
                 <div className="qmes-iqc-remarks-box col-span-3 px-3 py-2 border-t border-slate-300">{record.remarks || "-"}</div>
               </div>
-              <div className="grid grid-cols-3 mt-5 border border-slate-900 text-xs text-center">
-                {["작성","검토","승인"].map((label) => <div key={label} className="border-r border-slate-300 last:border-r-0"><div className="bg-slate-50 py-1.5 font-semibold border-b border-slate-300">{label}</div><div className="h-14 flex items-center justify-center text-base font-bold text-slate-900">{label === "작성" ? (record.inspector || record.by || "") : ""}</div></div>)}
+              <div className="qmes-iqc-sign-grid grid grid-cols-3 border border-slate-900 text-xs text-center">
+                {["작성","검토","승인"].map((label) => <div key={label} className="border-r border-slate-300 last:border-r-0"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (record.inspector || record.by || "") : ""}</div></div>)}
               </div>
               <div className="mt-4 pt-2 border-t border-slate-300 flex justify-between text-[10px] text-slate-500">
                 <span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span>
@@ -2810,10 +2815,9 @@ function InspectionReportsTab() {
               <div className="mt-4 text-xs">
                 <table className="qmes-iqc-report-info">
                   <tbody>
-                    <tr><th>입고번호</th><td>{iqc.inNo || "-"}</td><th>입고일자</th><td>{(iqc.recv || "-").slice(0,10)}</td></tr>
-                    <tr><th>원재료명</th><td>{iqc.name || "-"}</td><th>원재료 LOT No.</th><td>{iqc.lot || "-"}</td></tr>
-                    <tr><th>업체명</th><td>{iqc.supplier || "-"}</td><th>작성자</th><td>{iqc.inspector || iqc.by || "-"}</td></tr>
-                    <tr><th>입고수량</th><td>{iqc.qty || "-"}</td><th>검사수량 / 불량수량</th><td>{iqc.inspectQty || "-"} / {iqc.defectQty || "0"}</td></tr>
+                    <tr><th>입고번호</th><td>{iqc.inNo || "-"}</td><th>입고일자</th><td>{(iqc.recv || "-").slice(0,10)}</td><th>원재료명</th><td>{iqc.name || "-"}</td></tr>
+                    <tr><th>원재료 LOT No.</th><td>{iqc.lot || "-"}</td><th>업체명</th><td>{iqc.supplier || "-"}</td><th>작성자</th><td>{iqc.inspector || iqc.by || "-"}</td></tr>
+                    <tr><th>입고수량</th><td>{iqc.qty || "-"}</td><th>검사수량</th><td>{iqc.inspectQty || "-"}</td><th>불량수량</th><td>{iqc.defectQty || "0"}</td></tr>
                   </tbody>
                 </table>
                 <div className="qmes-iqc-report-gap" />
@@ -2855,8 +2859,8 @@ function InspectionReportsTab() {
                 <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-t border-slate-300">특이사항</div>
                 <div className="qmes-iqc-remarks-box col-span-3 px-3 py-2 border-t border-slate-300">{iqc.remarks || "-"}</div>
               </div>
-              <div className="grid grid-cols-3 mt-5 border border-slate-900 text-xs text-center">
-                {["작성","검토","승인"].map((label) => <div key={label} className="border-r border-slate-300 last:border-r-0"><div className="bg-slate-50 py-1.5 font-semibold border-b border-slate-300">{label}</div><div className="h-14 flex items-center justify-center text-base font-bold text-slate-900">{label === "작성" ? (iqc.inspector || iqc.by || "") : ""}</div></div>)}
+              <div className="qmes-iqc-sign-grid grid grid-cols-3 border border-slate-900 text-xs text-center">
+                {["작성","검토","승인"].map((label) => <div key={label} className="border-r border-slate-300 last:border-r-0"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (iqc.inspector || iqc.by || "") : ""}</div></div>)}
               </div>
               <div className="mt-4 pt-2 border-t border-slate-300 flex justify-between text-[10px] text-slate-500"><span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span></div>
             </>
