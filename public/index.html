@@ -966,6 +966,177 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_REPORT_STYLE: WORK_ORDER_WHITE_260715 -->
+
+<style>
+/* ===== 요청사항만 수정: 등록 화면 제목색 복원 + 성적서 글씨 확대 ===== */
+
+/* 수입검사 등록 화면의 그룹 제목은 기존 파란색 유지 */
+.qmes-iqc-form .qmes-iqc-section-title{
+  color:#8ca5c4!important;
+  border-left:0!important;
+  background:transparent!important;
+  padding-left:0!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  line-height:1.35!important;
+}
+
+/* 성적서 내부 제목만 작업지시서 스타일의 검정색 유지 */
+.qmes-iqc-doc .qmes-iqc-section-title{
+  color:#1c1917!important;
+  border-left:4px solid #1c1917!important;
+  padding-left:9px!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+
+/* 성적서 본문 글씨를 조금 크게 */
+.qmes-iqc-doc{
+  font-size:12px!important;
+}
+.qmes-iqc-doc .qmes-iqc-head-label{
+  font-size:12px!important;
+}
+.qmes-iqc-doc .qmes-iqc-head-value{
+  font-size:13px!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th{
+  font-size:11.5px!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table td{
+  font-size:12px!important;
+}
+.qmes-iqc-doc .qmes-iqc-result-table th,
+.qmes-iqc-doc .qmes-iqc-result-table td,
+.qmes-iqc-doc .qmes-iqc-judge-table th,
+.qmes-iqc-doc .qmes-iqc-judge-table td,
+.qmes-iqc-doc .qmes-iqc-remarks-panel{
+  font-size:12px!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title{
+  font-size:11px!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  font-size:15px!important;
+}
+
+/* 인쇄에서도 조금 크게 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-doc{
+    font-size:10.8px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-head-label,
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th{
+    font-size:10.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-head-value,
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-result-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-result-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-judge-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-judge-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-remarks-panel{
+    font-size:10.8px!important;
+  }
+}
+</style>
+
+<!-- IQC_FIX: TITLE_COLOR_RESTORE_AND_FONT_UP_260715 -->
+
+<style>
+/* ===== 요청사항만 수정: 판정 색상 + 결재란 높이 ===== */
+
+/* 성적서 판정 색상 */
+.qmes-iqc-doc .qmes-pass,
+.qmes-iqc-doc .result-pass,
+.qmes-iqc-doc [data-judge="합격"],
+.qmes-iqc-doc [data-result="합격"]{
+  color:#16a34a!important;
+  font-weight:700!important;
+}
+.qmes-iqc-doc .qmes-fail,
+.qmes-iqc-doc .result-fail,
+.qmes-iqc-doc [data-judge="불합격"],
+.qmes-iqc-doc [data-result="불합격"]{
+  color:#dc2626!important;
+  font-weight:700!important;
+}
+
+/* 바코드 영역과 결재란 높이 맞춤 */
+.qmes-iqc-auth-row{
+  align-items:stretch!important;
+}
+.qmes-iqc-code-area,
+.qmes-iqc-sign-grid{
+  min-height:82px!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-sign-cell{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.qmes-iqc-sign-title{
+  flex:0 0 auto!important;
+}
+.qmes-iqc-sign-body{
+  flex:1 1 auto!important;
+  min-height:56px!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* 인쇄 시에도 같은 비율 유지 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-code-area,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    min-height:21mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
+    min-height:15mm!important;
+    height:auto!important;
+  }
+}
+</style>
+
+<script>
+(function(){
+  function applyIqcJudgeColors(root){
+    var scope = root || document;
+    scope.querySelectorAll('.qmes-iqc-doc td, .qmes-iqc-doc span, .qmes-iqc-doc strong, .qmes-iqc-doc div')
+      .forEach(function(el){
+        var t = (el.textContent || '').trim();
+        if(t === '합격'){
+          el.style.color = '#16a34a';
+          el.style.fontWeight = '700';
+        }else if(t === '불합격' || t === '반품'){
+          el.style.color = '#dc2626';
+          el.style.fontWeight = '700';
+        }
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    applyIqcJudgeColors(document);
+    var observer = new MutationObserver(function(mutations){
+      mutations.forEach(function(m){
+        m.addedNodes.forEach(function(node){
+          if(node.nodeType === 1) applyIqcJudgeColors(node);
+        });
+      });
+    });
+    observer.observe(document.body, {childList:true, subtree:true});
+  });
+
+  window.addEventListener('beforeprint', function(){
+    applyIqcJudgeColors(document);
+  });
+})();
+</script>
+
+<!-- IQC_FIX: JUDGE_COLOR_AND_SIGN_HEIGHT_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: WORK_ORDER_STYLE_BARCODE_QR_260715 -->
 <body>
