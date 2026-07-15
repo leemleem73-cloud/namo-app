@@ -1766,6 +1766,95 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_REGISTER_COMPACT_INSPECTION_DATE_260715 -->
+
+<style>
+/* ===== 수입검사 KPI 카드 생동감 효과 ===== */
+.qmes-iqc-kpi-card{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.qmes-iqc-kpi-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(65,196,238,.38)!important;
+  box-shadow:0 14px 30px -20px rgba(65,196,238,.62)!important;
+}
+.qmes-iqc-kpi-card::before,
+.qmes-iqc-kpi-card::after{
+  content:"";
+  position:absolute;
+  border-radius:9999px;
+  pointer-events:none;
+  z-index:-1;
+}
+.qmes-iqc-kpi-card::before{
+  width:88px;
+  height:88px;
+  right:-30px;
+  top:-34px;
+  border:1px solid rgba(65,196,238,.18);
+  background:radial-gradient(circle,rgba(65,196,238,.13) 0%,rgba(65,196,238,.04) 47%,transparent 72%);
+  animation:qmes-iqc-orbit 4.6s ease-in-out infinite;
+}
+.qmes-iqc-kpi-card::after{
+  width:42px;
+  height:42px;
+  right:34px;
+  bottom:-20px;
+  border:1px solid rgba(255,255,255,.08);
+  animation:qmes-iqc-orbit-small 5.4s ease-in-out infinite reverse;
+}
+.qmes-iqc-kpi-dot{
+  width:8px;
+  height:8px;
+  flex:0 0 8px;
+  border-radius:9999px;
+  background:currentColor;
+  box-shadow:0 0 0 0 currentColor;
+  animation:qmes-iqc-pulse 2.2s ease-out infinite;
+}
+.qmes-iqc-kpi-icon{
+  animation:qmes-iqc-icon-float 2.8s ease-in-out infinite;
+}
+.qmes-iqc-kpi-card:nth-child(2)::before,
+.qmes-iqc-kpi-card:nth-child(2) .qmes-iqc-kpi-dot,
+.qmes-iqc-kpi-card:nth-child(2) .qmes-iqc-kpi-icon{animation-delay:.35s}
+.qmes-iqc-kpi-card:nth-child(3)::before,
+.qmes-iqc-kpi-card:nth-child(3) .qmes-iqc-kpi-dot,
+.qmes-iqc-kpi-card:nth-child(3) .qmes-iqc-kpi-icon{animation-delay:.7s}
+.qmes-iqc-kpi-card:nth-child(4)::before,
+.qmes-iqc-kpi-card:nth-child(4) .qmes-iqc-kpi-dot,
+.qmes-iqc-kpi-card:nth-child(4) .qmes-iqc-kpi-icon{animation-delay:1.05s}
+
+@keyframes qmes-iqc-pulse{
+  0%{box-shadow:0 0 0 0 currentColor;transform:scale(.9);opacity:.9}
+  65%{box-shadow:0 0 0 7px transparent;transform:scale(1.1);opacity:1}
+  100%{box-shadow:0 0 0 0 transparent;transform:scale(.9);opacity:.9}
+}
+@keyframes qmes-iqc-orbit{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(-8px,9px,0) scale(1.08)}
+}
+@keyframes qmes-iqc-orbit-small{
+  0%,100%{transform:translate3d(0,0,0)}
+  50%{transform:translate3d(7px,-6px,0)}
+}
+@keyframes qmes-iqc-icon-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-2px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .qmes-iqc-kpi-card::before,
+  .qmes-iqc-kpi-card::after,
+  .qmes-iqc-kpi-dot,
+  .qmes-iqc-kpi-icon{
+    animation:none!important;
+  }
+}
+</style>
+
+<!-- IQC_KPI_MOTION_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -2166,12 +2255,15 @@ function Panel({ title, right, children, className = "" }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400" }) {
+function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col gap-2">
+    <div className={`bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col gap-2 ${animated ? "qmes-iqc-kpi-card" : ""}`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-400 tracking-wide">{label}</span>
-        <Icon size={16} className={tone} />
+        <span className="text-xs text-slate-400 tracking-wide flex items-center gap-2">
+          {animated && <span className={`qmes-iqc-kpi-dot ${tone}`}></span>}
+          {label}
+        </span>
+        <Icon size={16} className={`${tone} ${animated ? "qmes-iqc-kpi-icon" : ""}`} />
       </div>
       <div className="flex items-end gap-1">
         <span className="text-2xl font-bold text-slate-100 tabular-nums">{value}</span>
@@ -4188,10 +4280,10 @@ function IqcTab() {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Kpi icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" />
-        <Kpi icon={CheckCircle2} label="IQC 합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
-        <Kpi icon={AlertTriangle} label="불합격 건수" value={failed.length} unit="건" tone="text-amber-400" />
-        <Kpi icon={XCircle} label="반품" value={returned.length} unit="건" tone="text-red-400" />
+        <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" />
+        <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
+        <Kpi animated icon={AlertTriangle} label="부적합 건수" value={failed.length} unit="건" tone="text-amber-400" />
+        <Kpi animated icon={XCircle} label="반품" value={returned.length} unit="건" tone="text-red-400" />
       </div>
 
       <Panel title="수입검사 등록 (공정 20)">
