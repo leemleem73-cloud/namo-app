@@ -1491,16 +1491,12 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 <table className="qmes-iqc-report-info">
                   <tbody>
                     <tr><th>입고번호</th><td>{record.inNo || "-"}</td><th>입고일자</th><td>{(record.recv || "-").slice(0,10)}</td><th>원재료명</th><td>{record.name || "-"}</td></tr>
-                    <tr><th>원재료 LOT No.</th><td>{record.lot || "-"}</td><th>업체명</th><td>{record.supplier || "-"}</td><th>작성자</th><td>{record.inspector || record.by || "-"}</td></tr>
+                    <tr><th>원재료 LOT No.</th><td>{record.lot || "-"}</td><th>업체명</th><td>{record.supplier || "-"}</td><th>검사주기</th><td>1회 / LOT</td></tr>
                     <tr><th>입고수량</th><td>{record.qty || "-"}</td><th>검사수량</th><td>{record.inspectQty || "-"}</td><th>불량수량</th><td>{record.defectQty || "0"}</td></tr>
                   </tbody>
                 </table>
               </div>
               <div className="qmes-iqc-report-gap" />
-              <div className="qmes-iqc-overview">
-                <div className="qmes-iqc-overview-label">검사주기</div><div className="qmes-iqc-overview-value">1회 / LOT</div>
-                <div className="qmes-iqc-overview-label">검사구분</div><div className="qmes-iqc-overview-value">수입검사 (IQC)</div>
-              </div>
               <table className="qmes-iqc-inspection-table w-full text-xs border border-slate-900">
                 <thead><tr className="bg-slate-50 border-b border-slate-900">
                   <th className="border-r border-slate-300 py-2 w-10">NO</th>
@@ -2833,15 +2829,11 @@ function InspectionReportsTab() {
                 <table className="qmes-iqc-report-info">
                   <tbody>
                     <tr><th>입고번호</th><td>{iqc.inNo || "-"}</td><th>입고일자</th><td>{(iqc.recv || "-").slice(0,10)}</td><th>원재료명</th><td>{iqc.name || "-"}</td></tr>
-                    <tr><th>원재료 LOT No.</th><td>{iqc.lot || "-"}</td><th>업체명</th><td>{iqc.supplier || "-"}</td><th>작성자</th><td>{iqc.inspector || iqc.by || "-"}</td></tr>
+                    <tr><th>원재료 LOT No.</th><td>{iqc.lot || "-"}</td><th>업체명</th><td>{iqc.supplier || "-"}</td><th>검사주기</th><td>1회 / LOT</td></tr>
                     <tr><th>입고수량</th><td>{iqc.qty || "-"}</td><th>검사수량</th><td>{iqc.inspectQty || "-"}</td><th>불량수량</th><td>{iqc.defectQty || "0"}</td></tr>
                   </tbody>
                 </table>
                 <div className="qmes-iqc-report-gap" />
-                <div className="qmes-iqc-overview">
-                  <div className="qmes-iqc-overview-label">검사주기</div><div className="qmes-iqc-overview-value">1회 / LOT</div>
-                  <div className="qmes-iqc-overview-label">검사구분</div><div className="qmes-iqc-overview-value">수입검사 (IQC)</div>
-                </div>
               </div>
             </>
           ) : (
