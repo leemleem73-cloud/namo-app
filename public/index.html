@@ -1681,6 +1681,91 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_LOT_LABEL_SIGN_SINGLE_LINE_260715 -->
+
+<style>
+/* ===== 수입검사 등록 화면 컴팩트형 ===== */
+.qmes-iqc-form{
+  gap:10px!important;
+}
+.qmes-iqc-form .qmes-iqc-section{
+  padding:10px 11px!important;
+  border-radius:8px!important;
+}
+.qmes-iqc-form .qmes-iqc-section-title{
+  margin-bottom:7px!important;
+  font-size:10.5px!important;
+}
+.qmes-iqc-form .qmes-iqc-grid{
+  gap:7px!important;
+}
+.qmes-iqc-form .qmes-iqc-grid-basic{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.qmes-iqc-form .qmes-iqc-grid-qty{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.qmes-iqc-form .qmes-iqc-grid-result{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+.qmes-iqc-form .qmes-iqc-field{
+  gap:3px!important;
+}
+.qmes-iqc-form .qmes-iqc-field>span:first-child{
+  height:14px!important;
+  line-height:14px!important;
+  font-size:9.5px!important;
+}
+.qmes-iqc-form .qmes-iqc-field input,
+.qmes-iqc-form .qmes-iqc-field select,
+.qmes-iqc-form .qmes-material-add{
+  height:34px!important;
+  min-height:34px!important;
+  font-size:12px!important;
+}
+.qmes-iqc-form textarea{
+  min-height:50px!important;
+  font-size:12px!important;
+}
+.qmes-iqc-form .qmes-material-select-wrap{
+  grid-template-columns:minmax(0,1fr) 52px!important;
+  gap:5px!important;
+}
+.qmes-iqc-form .qmes-material-add{
+  font-size:10px!important;
+}
+.qmes-iqc-form .mt-3{
+  margin-top:8px!important;
+}
+.qmes-iqc-form .qmes-iqc-submit{
+  min-width:110px!important;
+  height:34px!important;
+  min-height:34px!important;
+  font-size:12px!important;
+}
+
+/* 넓은 화면에서도 한 줄이 과하게 늘어나지 않도록 최대 폭 제한 */
+.qmes-iqc-form .qmes-iqc-grid-basic,
+.qmes-iqc-form .qmes-iqc-grid-qty,
+.qmes-iqc-form .qmes-iqc-grid-result{
+  max-width:1180px!important;
+}
+
+@media(max-width:1050px){
+  .qmes-iqc-form .qmes-iqc-grid-basic,
+  .qmes-iqc-form .qmes-iqc-grid-result{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  .qmes-iqc-form .qmes-iqc-grid-basic,
+  .qmes-iqc-form .qmes-iqc-grid-qty,
+  .qmes-iqc-form .qmes-iqc-grid-result{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+</style>
+
+<!-- IQC_REGISTER_COMPACT_INSPECTION_DATE_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -2400,7 +2485,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                     <tr>
                       <th>입고번호</th><td className="font-mono">{record.inNo || "-"}</td>
                       <th>입고일자</th><td>{(record.recv || "-").slice(0,10)}</td>
-                      <th>검사일자</th><td>{(record.inspectedAt || record.date || record.recv || "-").slice(0,10)}</td>
+                      <th>검사일자</th><td>{(record.inspectedAt || record.recv || "-").slice(0,10)}</td>
                     </tr>
                     <tr>
                       <th>업체명</th><td>{record.supplier || "-"}</td>
@@ -3768,7 +3853,7 @@ function InspectionReportsTab() {
                     <tr>
                       <th>입고번호</th><td className="font-mono">{iqc.inNo || "-"}</td>
                       <th>입고일자</th><td>{(iqc.recv || "-").slice(0,10)}</td>
-                      <th>검사일자</th><td>{(iqc.inspectedAt || iqc.date || iqc.recv || "-").slice(0,10)}</td>
+                      <th>검사일자</th><td>{(iqc.inspectedAt || iqc.recv || "-").slice(0,10)}</td>
                     </tr>
                     <tr>
                       <th>업체명</th><td>{iqc.supplier || "-"}</td>
@@ -3966,6 +4051,7 @@ function IqcTab() {
   const currentMonth = today.slice(0, 7);
   const emptyForm = () => ({
     recvDate: today,
+    inspectDate: today,
     inNoMode: "auto",
     manualInNo: "",
     lot: "",
@@ -4044,15 +4130,16 @@ function IqcTab() {
   if (tried && form.inspectQty.trim() === "") iqcErrors.push("검사수량을 입력하세요 (예: 3 EA)");
   if (tried && form.defectQty.trim() === "") iqcErrors.push("불량수량을 입력하세요 (예: 0 EA)");
   if (tried && !form.recvDate) iqcErrors.push("입고일자를 선택하세요");
+  if (tried && !form.inspectDate) iqcErrors.push("검사일자를 선택하세요");
   if (tried && !inspectorOk) iqcErrors.push("검사자를 입력하세요");
-  const iqcReady = Boolean(form.recvDate) && inNoOk && !duplicateInNo && lotOk && qtyOk && inspectQtyOk && defectQtyOk && defectRangeOk && inspectorOk;
+  const iqcReady = Boolean(form.recvDate) && Boolean(form.inspectDate) && inNoOk && !duplicateInNo && lotOk && qtyOk && inspectQtyOk && defectQtyOk && defectRangeOk && inspectorOk;
 
   const addRow = () => {
     if (!iqcReady) { setTried(true); return; }
     const recv = form.recvDate;
     const inNo = String(displayedInNo).trim();
     const rowData = {
-      inNo, recv, lot: form.lot.trim(), code: "-", name: form.name,
+      inNo, recv, inspectedAt: form.inspectDate, lot: form.lot.trim(), code: "-", name: form.name,
       supplier: form.supplier.trim() || "-", qty: form.qty.trim(),
       inspectQty: form.inspectQty.trim(), defectQty: form.defectQty.trim(),
       visual: form.visual, label: form.label, weight: form.weight, coa: form.coa,
@@ -4077,7 +4164,7 @@ function IqcTab() {
   const editIqc = (r) => {
     setEditingInNo(r.inNo);
     setForm({
-      recvDate:(r.recv || today).slice(0,10), inNoMode:"auto", manualInNo:"",
+      recvDate:(r.recv || today).slice(0,10), inspectDate:(r.inspectedAt || r.recv || today).slice(0,10), inNoMode:"auto", manualInNo:"",
       lot:r.lot, name:r.name, supplier:r.supplier === "-" ? "" : (r.supplier || ""),
       qty:r.qty || "", inspectQty:r.inspectQty || "", defectQty:r.defectQty || "0 EA",
       visual:r.visual, label:r.label, weight:r.weight, coa:r.coa,
@@ -4127,6 +4214,11 @@ function IqcTab() {
               <div className="qmes-iqc-field">
                 <span>입고일자</span>
                 <input type="date" value={form.recvDate} onChange={(e) => setForm({ ...form, recvDate:e.target.value })}
+                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
+              </div>
+              <div className="qmes-iqc-field">
+                <span>검사일자</span>
+                <input type="date" value={form.inspectDate} onChange={(e) => setForm({ ...form, inspectDate:e.target.value })}
                   className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
               </div>
               <div className="qmes-iqc-field">
@@ -4211,7 +4303,7 @@ function IqcTab() {
                     {[r.visual,r.label,r.weight,r.coa].map((v,i)=><td key={i} className="py-2.5 pr-2 text-center">{v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" /> : <XCircle size={14} className="text-red-400 inline" />}</td>)}
                     <td className="py-2.5 pr-3 text-xs text-slate-300 truncate">{r.inspector || r.by || "-"}</td>
                     <td className="py-2.5 pr-3"><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>{r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[180px] leading-snug">{r.note}</div>}</td>
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap"><button onClick={()=>setViewingIqc(r)} className="px-2 py-1 mr-1 rounded border border-emerald-500/40 text-emerald-300 text-xs hover:bg-emerald-500/10">보기</button><button onClick={()=>editIqc(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button><button onClick={()=>deleteIqc(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button></td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap"><button onClick={()=>setViewingIqc(r)} className="px-2 py-1 mr-1 rounded border border-emerald-500/40 text-emerald-300 text-xs hover:bg-emerald-500/10">성적서</button><button onClick={()=>editIqc(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button><button onClick={()=>deleteIqc(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button></td>
                   </tr>
                 ))}
               </tbody>
