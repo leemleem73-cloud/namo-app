@@ -1855,6 +1855,55 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_KPI_MOTION_260715 -->
+
+<style>
+/* ===== 수입검사 관리대장 작업 버튼 ===== */
+.qmes-iqc-action-btn{
+  height:29px;
+  padding:0 9px;
+  margin:0 2px;
+  border:1px solid;
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  font-size:11px;
+  font-weight:600;
+  line-height:1;
+  transition:background-color .16s ease,color .16s ease,border-color .16s ease;
+}
+.qmes-iqc-action-edit{
+  color:#7dd3fc;
+  border-color:rgba(14,165,233,.45);
+  background:rgba(14,165,233,.04);
+}
+.qmes-iqc-action-edit:hover{
+  color:#e0f2fe;
+  background:rgba(14,165,233,.13);
+}
+.qmes-iqc-action-print{
+  color:#e2e8f0;
+  border-color:#53657a;
+  background:#17263a;
+}
+.qmes-iqc-action-print:hover{
+  color:#fff;
+  border-color:#8193a8;
+  background:#22344a;
+}
+.qmes-iqc-action-delete{
+  color:#fca5a5;
+  border-color:rgba(239,68,68,.45);
+  background:rgba(239,68,68,.03);
+}
+.qmes-iqc-action-delete:hover{
+  color:#fee2e2;
+  background:rgba(239,68,68,.12);
+}
+</style>
+
+<!-- IQC_MANAGEMENT_ACTION_BUTTONS_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -2545,12 +2594,12 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
       <div className="qmes-wo-viewer" onClick={(e) => e.stopPropagation()}>
         <div className="qmes-wo-viewer-head">
           <div>
-            <div className="text-sm font-semibold text-slate-100">{title} 보기</div>
+            <div className="text-sm font-semibold text-slate-100">{title} 미리보기</div>
             <div className="text-[11px] text-slate-500 mt-0.5">{isIqc ? record.inNo : record.lot}</div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => printDoc()}
-              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white">인쇄</button>
+              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5"><Printer size={13} /> 인쇄 / PDF</button>
             <button onClick={onClose} className="qmes-modal-close">×</button>
           </div>
         </div>
@@ -4384,7 +4433,7 @@ function IqcTab() {
                 <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
                 <th className="text-right py-2 pr-3 font-medium">입고수량</th><th className="text-right py-2 pr-3 font-medium">검사수량</th><th className="text-right py-2 pr-3 font-medium">불량수량</th>
                 <th className="text-center py-2 pr-2 font-medium">외관</th><th className="text-center py-2 pr-2 font-medium">라벨</th><th className="text-center py-2 pr-2 font-medium">중량</th><th className="text-center py-2 pr-3 font-medium">COA</th>
-                <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-left py-2 pr-3 font-medium">종합판정</th><th className="text-center py-2 px-3 font-medium">관리</th>
+                <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-left py-2 pr-3 font-medium">종합판정</th><th className="text-center py-2 px-3 font-medium">작업</th>
               </tr></thead>
               <tbody>
                 {rows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">수입검사 기록이 없습니다 — 원재료 입고 시 상단에서 등록하세요.</td></tr>}
@@ -4395,7 +4444,11 @@ function IqcTab() {
                     {[r.visual,r.label,r.weight,r.coa].map((v,i)=><td key={i} className="py-2.5 pr-2 text-center">{v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" /> : <XCircle size={14} className="text-red-400 inline" />}</td>)}
                     <td className="py-2.5 pr-3 text-xs text-slate-300 truncate">{r.inspector || r.by || "-"}</td>
                     <td className="py-2.5 pr-3"><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>{r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[180px] leading-snug">{r.note}</div>}</td>
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap"><button onClick={()=>setViewingIqc(r)} className="px-2 py-1 mr-1 rounded border border-emerald-500/40 text-emerald-300 text-xs hover:bg-emerald-500/10">성적서</button><button onClick={()=>editIqc(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button><button onClick={()=>deleteIqc(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button></td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                      <button onClick={()=>editIqc(r)} title="수입검사 기록 수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
+                      <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
+                      <button onClick={()=>deleteIqc(r)} title="수입검사 기록 삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
