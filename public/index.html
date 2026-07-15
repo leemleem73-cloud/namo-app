@@ -2024,131 +2024,46 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_REGISTER_CHART_LEDGER_REFINED_260715 -->
-<style>
-/* ===== 수입검사 특이사항 및 관리대장 폭 최종 조정 260715 ===== */
-.qmes-iqc-form textarea{
-  height:42px!important;
-  min-height:42px!important;
-  max-height:70px!important;
-  padding:7px 10px!important;
-  line-height:18px!important;
-  resize:vertical!important;
-}
-.qmes-iqc-ledger-layout{
-  display:block!important;
-  width:100%!important;
-  max-width:none!important;
-}
-.qmes-iqc-ledger-panel{
-  width:100%!important;
-  max-width:none!important;
-  grid-column:1 / -1!important;
-}
-.qmes-iqc-ledger-panel > div{
-  width:100%!important;
-  max-width:none!important;
-}
-</style>
-
 
 <style>
-/* ===== 수입검사 등록 최종 배치 수정 260715 ===== */
-/* 입고 기본정보와 수량정보의 입력 칸 폭을 동일하게 정렬 */
-.qmes-iqc-form .qmes-iqc-grid-basic,
-.qmes-iqc-form .qmes-iqc-grid-qty{
-  width:100%!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  column-gap:9px!important;
-}
-.qmes-iqc-form .qmes-iqc-grid-basic > .qmes-iqc-field,
-.qmes-iqc-form .qmes-iqc-grid-qty > .qmes-iqc-field{
-  width:100%!important;
-  min-width:0!important;
-}
-
-/* 특이사항 칸은 축소하지 않고 기존 입력 높이 유지 */
-.qmes-iqc-form textarea{
-  height:42px!important;
-  min-height:42px!important;
-  max-height:70px!important;
-  padding:7px 10px!important;
-  line-height:18px!important;
-  resize:vertical!important;
-}
-
-/* 업체별 IQC 합격률 그래프를 수입검사 등록 오른쪽에 유지 */
-.qmes-iqc-register-chart-layout{
-  display:grid!important;
-  grid-template-columns:minmax(720px,2.15fr) minmax(330px,.85fr)!important;
-  gap:16px!important;
-  align-items:stretch!important;
-}
-.qmes-iqc-register-panel,
-.qmes-iqc-chart-panel{
-  min-width:0!important;
-}
-.qmes-iqc-chart-panel{
-  align-self:stretch!important;
-}
-.qmes-iqc-chart-panel > div{
-  height:100%!important;
-}
-.qmes-iqc-chart-panel .recharts-responsive-container{
-  min-height:250px!important;
-}
-
-/* 작은 화면에서만 세로 배치 */
-@media(max-width:980px){
-  .qmes-iqc-register-chart-layout{
-    grid-template-columns:1fr!important;
-  }
-}
-</style>
-
-<!-- IQC_REGISTER_RIGHT_CHART_AND_EQUAL_FIELDS_FINAL_260715 -->
-
-<style>
-/* ===== 수입검사 관리대장 균등 간격 및 특이사항 폭 조정 260715 ===== */
-/* 특이사항 입력칸은 검사결과 5개 열 전체(검사자 칸 끝선)까지만 맞춤 */
-.qmes-iqc-grid-result + .qmes-iqc-remarks-field,
-.qmes-iqc-section .qmes-iqc-remarks-field{
-  width:100%!important;
-  max-width:100%!important;
-  margin-top:12px!important;
-}
-.qmes-iqc-remarks-field textarea{
-  width:100%!important;
-  box-sizing:border-box!important;
-}
-
-/* 입고번호부터 관리까지 동일한 열 폭과 동일한 좌우 여백 적용 */
+/* ===== 수입검사 관리대장 글자·열 간격 최종 통일 ===== */
 .qmes-iqc-ledger-table{
-  width:100%!important;
-  min-width:1980px!important;
+  min-width:1868px!important;
   table-layout:fixed!important;
+  border-collapse:collapse!important;
 }
-.qmes-iqc-ledger-table col{width:132px!important}
 .qmes-iqc-ledger-table th,
 .qmes-iqc-ledger-table td{
-  width:132px!important;
-  min-width:132px!important;
-  max-width:132px!important;
-  padding-left:12px!important;
-  padding-right:12px!important;
   box-sizing:border-box!important;
-}
-.qmes-iqc-ledger-table thead th{
-  text-align:center!important;
-  white-space:nowrap!important;
+  padding:10px 12px!important;
+  vertical-align:middle!important;
+  line-height:1.35!important;
   letter-spacing:0!important;
 }
-.qmes-iqc-ledger-table tbody td{vertical-align:middle!important}
-.qmes-iqc-ledger-table .qmes-iqc-action-btn{
-  padding:0 7px!important;
-  margin:0 1px!important;
-  font-size:10px!important;
+.qmes-iqc-ledger-table thead th{
+  height:42px!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  white-space:nowrap!important;
+}
+.qmes-iqc-ledger-table tbody td{
+  height:52px!important;
+  font-size:13px!important;
+}
+.qmes-iqc-ledger-table th.text-left,
+.qmes-iqc-ledger-table td.text-left{text-align:left!important}
+.qmes-iqc-ledger-table th.text-right,
+.qmes-iqc-ledger-table td.text-right{text-align:right!important}
+.qmes-iqc-ledger-table th.text-center,
+.qmes-iqc-ledger-table td.text-center{text-align:center!important}
+.qmes-iqc-ledger-table td:last-child{
+  white-space:nowrap!important;
+  padding-left:8px!important;
+  padding-right:8px!important;
 }
 </style>
+<!-- IQC_LEDGER_SPACING_FINAL_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -4649,7 +4564,7 @@ function IqcTab() {
               <div className="qmes-iqc-field">{judgeSelect("coa", "COA")}</div>
               <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
             </div>
-            <div className="qmes-iqc-field qmes-iqc-remarks-field mt-3">
+            <div className="qmes-iqc-field mt-3">
               <span>특이사항</span>
               <textarea value={form.remarks} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항이 있을 경우 입력하세요. (예: 포장 일부 오염, COA 지연 수령, 라벨 재부착 등)" rows={2}
                 className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
@@ -4670,15 +4585,15 @@ function IqcTab() {
         </Panel></div>
       </div>
 
-      <div className="qmes-iqc-ledger-layout">
-        <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
-          <div className="overflow-x-auto -mx-4 px-4">
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Panel title="수입검사 관리대장" className="lg:col-span-2">
+          <div className="qmes-iqc-ledger-wrap overflow-x-auto -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm min-w-[1780px]">
               <colgroup>
-                <col style={{width:"175px"}} /><col style={{width:"125px"}} /><col style={{width:"165px"}} /><col style={{width:"145px"}} /><col style={{width:"155px"}} />
-                <col style={{width:"115px"}} /><col style={{width:"115px"}} /><col style={{width:"115px"}} />
-                <col style={{width:"72px"}} /><col style={{width:"72px"}} /><col style={{width:"72px"}} /><col style={{width:"72px"}} />
-                <col style={{width:"110px"}} /><col style={{width:"125px"}} /><col style={{width:"155px"}} />
+                <col style={{width:"160px"}} /><col style={{width:"130px"}} /><col style={{width:"160px"}} /><col style={{width:"150px"}} /><col style={{width:"150px"}} />
+                <col style={{width:"120px"}} /><col style={{width:"120px"}} /><col style={{width:"120px"}} />
+                <col style={{width:"82px"}} /><col style={{width:"82px"}} /><col style={{width:"82px"}} /><col style={{width:"82px"}} />
+                <col style={{width:"115px"}} /><col style={{width:"125px"}} /><col style={{width:"190px"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
