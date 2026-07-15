@@ -1832,9 +1832,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 </div>
               </div>
 
-              <div className="qmes-iqc-doc-footer mt-4 pt-2 border-t border-slate-300 flex justify-between text-[10px] text-slate-500">
-                <span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span>
-              </div>
+              <div className="qmes-iqc-doc-footer" style={{marginTop:"18px",paddingTop:"8px",borderTop:"1px solid #cbd5e1",display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"11px",fontWeight:700,color:"#374151"}}><span>본 문서는 QMES에서 발행된 관리본입니다.</span><span style={{flex:1,textAlign:"center"}}>나모케미칼(주)</span><span style={{width:"220px"}}></span></div>
             </>
           ) : (
             <>
@@ -3202,9 +3200,7 @@ function InspectionReportsTab() {
                 </div>
               </div>
 
-              <div className="qmes-iqc-doc-footer mt-4 pt-2 border-t border-slate-300 flex justify-between text-[10px] text-slate-500">
-                <span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span>
-              </div>
+              <div className="qmes-iqc-doc-footer" style={{marginTop:"18px",paddingTop:"8px",borderTop:"1px solid #cbd5e1",display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"11px",fontWeight:700,color:"#374151"}}><span>본 문서는 QMES에서 발행된 관리본입니다.</span><span style={{flex:1,textAlign:"center"}}>나모케미칼(주)</span><span style={{width:"220px"}}></span></div>
             </>
           ) : (
             <>
