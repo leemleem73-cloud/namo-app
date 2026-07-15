@@ -798,688 +798,84 @@ aside{display:none!important}
 </style>
 
 
-<style>
-/* ===== 수입검사 성적서 — 작업지시서 문서 스타일 통일 ===== */
-.qmes-iqc-doc{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif}
-.qmes-iqc-head-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:12px;border:1px solid #d6d3d1}
-.qmes-iqc-head-table td{padding:7px 8px;border-right:1px solid #d6d3d1;border-bottom:1px solid #d6d3d1;vertical-align:middle}
-.qmes-iqc-head-table tr:last-child td{border-bottom:0}
-.qmes-iqc-head-table td:last-child{border-right:0}
-.qmes-iqc-head-label{width:12%;background:#fafaf9;color:#78716c;font-size:11px;font-weight:700;white-space:nowrap}
-.qmes-iqc-head-value{width:21.33%;font-size:12px;font-weight:600;word-break:break-word}
-.qmes-iqc-section{margin-top:28px}
-.qmes-iqc-section-title{padding-left:9px!important;border-left:4px solid #1c1917!important;color:#1c1917!important;background:transparent!important;font-size:13px;font-weight:700;line-height:1.35}
-.qmes-iqc-judge-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:10px;border:1px solid #d6d3d1}
-.qmes-iqc-judge-table th,.qmes-iqc-judge-table td{padding:10px 12px;border-right:1px solid #d6d3d1;font-size:11px;vertical-align:middle}
-.qmes-iqc-judge-table th{width:16%;background:#fafaf9;color:#57534e;font-weight:700;text-align:left}
-.qmes-iqc-judge-table td{width:34%;font-weight:700}
-.qmes-iqc-judge-table td:last-child{border-right:0}
-.qmes-iqc-remarks-panel{margin-top:10px;min-height:70px;padding:12px 14px;border:1px solid #d6d3d1;background:#fff;color:#1c1917;font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.qmes-iqc-inspection-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:8px}
-.qmes-iqc-inspection-table thead tr{border-bottom:2px solid #1c1917}
-.qmes-iqc-inspection-table th{padding:7px 7px;color:#78716c;font-size:10.5px;font-weight:700;text-align:left}
-.qmes-iqc-inspection-table td{padding:8px 7px;border-bottom:1px solid #e7e5e4;font-size:11px;vertical-align:middle}
-.qmes-iqc-result-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:8px;border:1px solid #d6d3d1}
-.qmes-iqc-result-table th,.qmes-iqc-result-table td{padding:8px;border-right:1px solid #d6d3d1;border-bottom:1px solid #d6d3d1;font-size:11px}
-.qmes-iqc-result-table th{width:14%;background:#fafaf9;color:#57534e;font-weight:700;text-align:left}
-.qmes-iqc-result-table td:last-child,.qmes-iqc-result-table th:last-child{border-right:0}
-.qmes-iqc-result-table tr:last-child th,.qmes-iqc-result-table tr:last-child td{border-bottom:0}
-.qmes-iqc-remarks{min-height:46px;white-space:pre-wrap;word-break:break-word}
-.qmes-iqc-auth-row{display:grid;grid-template-columns:44% 56%;gap:18px;align-items:end;margin-top:30px}
-.qmes-iqc-code-area{min-height:72px;display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:10px;align-items:center;padding:7px 9px;border:1px solid #a8a29e;background:#fff}
-.qmes-iqc-barcode-wrap{min-width:0;text-align:center}
-.qmes-iqc-barcode-wrap svg{display:block;width:100%;max-width:260px;height:48px;margin:0 auto}
-.qmes-iqc-code-caption{margin-top:1px;color:#57534e;font-size:8.5px;text-align:center;letter-spacing:.03em}
-.qmes-iqc-qr-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center}
-.qmes-iqc-qr-wrap img{width:60px;height:60px;object-fit:contain}
-.qmes-iqc-qr-label{margin-top:1px;color:#78716c;font-size:7.5px;white-space:nowrap}
-.qmes-iqc-sign-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #a8a29e;text-align:center}
-.qmes-iqc-sign-cell{border-right:1px solid #d6d3d1}
-.qmes-iqc-sign-cell:last-child{border-right:0}
-.qmes-iqc-sign-title{padding:5px 0;border-bottom:1px solid #d6d3d1;background:#fafaf9;color:#57534e;font-size:10px;font-weight:700}
-.qmes-iqc-sign-body{height:37px;display:flex;align-items:center;justify-content:center;color:#1c1917;font-size:14px;font-weight:700}
-.qmes-iqc-doc-footer{margin-top:26px;padding-top:7px;border-top:1px solid #d6d3d1;display:flex;justify-content:space-between;color:#78716c;font-size:9px}
-@media(max-width:760px){.qmes-iqc-auth-row{grid-template-columns:1fr}.qmes-iqc-head-table{font-size:10px}}
-@media print{
- body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc{height:271mm!important;min-height:271mm!important;display:flex!important;flex-direction:column!important;justify-content:center!important;padding:5mm 6mm!important;box-sizing:border-box!important}
- body.print-doc #qmes-print-root .qmes-iqc-head-table{margin-top:3mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-head-table td{padding:1.8mm 2mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-section{margin-top:8mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-inspection-table{margin-top:2mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-inspection-table th{padding:1.5mm 1.7mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-inspection-table td{padding:2mm 1.7mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-result-table{margin-top:2mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-result-table th,body.print-doc #qmes-print-root .qmes-iqc-result-table td{padding:2mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-judge-table{margin-top:2.5mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-judge-table th,body.print-doc #qmes-print-root .qmes-iqc-judge-table td{padding:2.4mm 3mm!important;font-size:10px!important}
- body.print-doc #qmes-print-root .qmes-iqc-remarks-panel{margin-top:2.5mm!important;min-height:18mm!important;padding:3mm 3.5mm!important;font-size:10px!important;line-height:1.5!important}
- body.print-doc #qmes-print-root .qmes-iqc-remarks{min-height:12mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-auth-row{grid-template-columns:44% 56%!important;gap:5mm!important;margin-top:8mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-code-area{min-height:18mm!important;grid-template-columns:minmax(0,1fr) 18mm!important;gap:2mm!important;padding:1.5mm 2mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-barcode-wrap svg{max-width:none!important;width:100%!important;height:12mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-qr-wrap img{width:16mm!important;height:16mm!important}
- body.print-doc #qmes-print-root .qmes-iqc-sign-title{padding:1mm 0!important}
- body.print-doc #qmes-print-root .qmes-iqc-sign-body{height:9mm!important;font-size:11px!important}
- body.print-doc #qmes-print-root .qmes-iqc-doc-footer{margin-top:7mm!important;padding-top:1.5mm!important}
-}
-</style>
+
 
 <!-- IQC_REPORT_LAYOUT_VERSION: WORKORDER_STYLE_JUDGE_REMARKS_SEPARATED_CENTERED_260715 -->
 
-<style>
-/* IQC 성적서 전용 — 작업지시서와 동일한 흰색 문서형 */
-.qmes-iqc-doc .qmes-iqc-section{
-  margin-top:28px!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-.qmes-iqc-doc .qmes-iqc-section-title{
-  margin:0 0 10px 0!important;
-  padding:0 0 0 9px!important;
-  border:0!important;
-  border-left:3px solid #1c1917!important;
-  border-radius:0!important;
-  background:transparent!important;
-  color:#1c1917!important;
-  font-size:13px!important;
-  font-weight:700!important;
-  line-height:1.35!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-table{
-  border:1px solid #a8a29e!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-table td{
-  background:#fff!important;
-  color:#1c1917!important;
-  border-color:#d6d3d1!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-label{
-  background:#fff!important;
-  color:#1c1917!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table{
-  border:0!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table thead tr{
-  border-bottom:1.5px solid #1c1917!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table th,
-.qmes-iqc-doc .qmes-iqc-inspection-table td{
-  background:#fff!important;
-  color:#1c1917!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table td{
-  border-bottom:1px solid #e7e5e4!important;
-}
-.qmes-iqc-doc .qmes-iqc-judge-table{
-  border:1px solid #d6d3d1!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-judge-table th,
-.qmes-iqc-doc .qmes-iqc-judge-table td{
-  background:#fff!important;
-  color:#1c1917!important;
-  border-color:#d6d3d1!important;
-}
-.qmes-iqc-doc .qmes-iqc-remarks-panel{
-  margin-top:0!important;
-  min-height:58px!important;
-  padding:12px 14px!important;
-  border:1px solid #d6d3d1!important;
-  border-radius:0!important;
-  background:#fff!important;
-  color:#1c1917!important;
-  box-shadow:none!important;
-}
-.qmes-iqc-doc .qmes-iqc-auth-row{
-  margin-top:30px!important;
-}
-.qmes-iqc-doc .qmes-iqc-code-area,
-.qmes-iqc-doc .qmes-iqc-sign-grid{
-  border-color:#a8a29e!important;
-  border-radius:0!important;
-  background:#fff!important;
-  box-shadow:none!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-title{
-  background:#fff!important;
-  color:#1c1917!important;
-}
-.qmes-iqc-doc .qmes-iqc-code-caption,
-.qmes-iqc-doc .qmes-iqc-qr-label,
-.qmes-iqc-doc .qmes-iqc-doc-footer{
-  color:#1c1917!important;
-}
-@media print{
-  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-section{
-    padding:0!important;
-    border:0!important;
-    background:transparent!important;
-  }
-}
-</style>
+
 
 <!-- IQC_REPORT_STYLE: WORK_ORDER_WHITE_260715 -->
 
-<style>
-/* ===== 요청사항만 수정: 등록 화면 제목색 복원 + 성적서 글씨 확대 ===== */
 
-/* 수입검사 등록 화면의 그룹 제목은 기존 파란색 유지 */
-.qmes-iqc-form .qmes-iqc-section-title{
-  color:#8ca5c4!important;
-  border-left:0!important;
-  background:transparent!important;
-  padding-left:0!important;
-  font-size:11px!important;
-  font-weight:700!important;
-  line-height:1.35!important;
-}
-
-/* 성적서 내부 제목만 작업지시서 스타일의 검정색 유지 */
-.qmes-iqc-doc .qmes-iqc-section-title{
-  color:#1c1917!important;
-  border-left:4px solid #1c1917!important;
-  padding-left:9px!important;
-  font-size:14px!important;
-  font-weight:700!important;
-}
-
-/* 성적서 본문 글씨를 조금 크게 */
-.qmes-iqc-doc{
-  font-size:12px!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-label{
-  font-size:12px!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-value{
-  font-size:13px!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table th{
-  font-size:11.5px!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table td{
-  font-size:12px!important;
-}
-.qmes-iqc-doc .qmes-iqc-result-table th,
-.qmes-iqc-doc .qmes-iqc-result-table td,
-.qmes-iqc-doc .qmes-iqc-judge-table th,
-.qmes-iqc-doc .qmes-iqc-judge-table td,
-.qmes-iqc-doc .qmes-iqc-remarks-panel{
-  font-size:12px!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-title{
-  font-size:11px!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-body{
-  font-size:15px!important;
-}
-
-/* 인쇄에서도 조금 크게 */
-@media print{
-  body.print-doc #qmes-print-root .qmes-iqc-doc{
-    font-size:10.8px!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-head-label,
-  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th{
-    font-size:10.5px!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-head-value,
-  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td,
-  body.print-doc #qmes-print-root .qmes-iqc-result-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-result-table td,
-  body.print-doc #qmes-print-root .qmes-iqc-judge-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-judge-table td,
-  body.print-doc #qmes-print-root .qmes-iqc-remarks-panel{
-    font-size:10.8px!important;
-  }
-}
-</style>
 
 <!-- IQC_FIX: TITLE_COLOR_RESTORE_AND_FONT_UP_260715 -->
 
-<style>
-/* ===== 요청사항만 수정: 판정 색상 + 결재란 높이 ===== */
 
-/* 성적서 판정 색상 */
-.qmes-iqc-doc .qmes-pass,
-.qmes-iqc-doc .result-pass,
-.qmes-iqc-doc [data-judge="합격"],
-.qmes-iqc-doc [data-result="합격"]{
-  color:#16a34a!important;
-  font-weight:700!important;
-}
-.qmes-iqc-doc .qmes-fail,
-.qmes-iqc-doc .result-fail,
-.qmes-iqc-doc [data-judge="불합격"],
-.qmes-iqc-doc [data-result="불합격"]{
-  color:#dc2626!important;
-  font-weight:700!important;
-}
 
-/* 바코드 영역과 결재란 높이 맞춤 */
-.qmes-iqc-auth-row{
-  align-items:stretch!important;
-}
-.qmes-iqc-code-area,
-.qmes-iqc-sign-grid{
-  min-height:82px!important;
-  height:100%!important;
-  box-sizing:border-box!important;
-}
-.qmes-iqc-sign-cell{
-  display:flex!important;
-  flex-direction:column!important;
-}
-.qmes-iqc-sign-title{
-  flex:0 0 auto!important;
-}
-.qmes-iqc-sign-body{
-  flex:1 1 auto!important;
-  min-height:56px!important;
-  height:auto!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-}
 
-/* 인쇄 시에도 같은 비율 유지 */
-@media print{
-  body.print-doc #qmes-print-root .qmes-iqc-code-area,
-  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
-    min-height:21mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
-    min-height:15mm!important;
-    height:auto!important;
-  }
-}
-</style>
-
-<script>
-(function(){
-  function applyIqcJudgeColors(root){
-    var scope = root || document;
-    scope.querySelectorAll('.qmes-iqc-doc td, .qmes-iqc-doc span, .qmes-iqc-doc strong, .qmes-iqc-doc div')
-      .forEach(function(el){
-        var t = (el.textContent || '').trim();
-        if(t === '합격'){
-          el.style.color = '#16a34a';
-          el.style.fontWeight = '700';
-        }else if(t === '불합격' || t === '반품'){
-          el.style.color = '#dc2626';
-          el.style.fontWeight = '700';
-        }
-      });
-  }
-
-  document.addEventListener('DOMContentLoaded', function(){
-    applyIqcJudgeColors(document);
-    var observer = new MutationObserver(function(mutations){
-      mutations.forEach(function(m){
-        m.addedNodes.forEach(function(node){
-          if(node.nodeType === 1) applyIqcJudgeColors(node);
-        });
-      });
-    });
-    observer.observe(document.body, {childList:true, subtree:true});
-  });
-
-  window.addEventListener('beforeprint', function(){
-    applyIqcJudgeColors(document);
-  });
-})();
-</script>
 
 <!-- IQC_FIX: JUDGE_COLOR_AND_SIGN_HEIGHT_260715 -->
 
-<style>
-/* ===== IQC 성적서: 사용자 확인 이미지 스타일 고정 ===== */
 
-/* 등록 화면은 기존 색상 유지 */
-.qmes-iqc-form .qmes-iqc-section-title{
-  color:#8ca5c4!important;
-  border-left:0!important;
-  padding-left:0!important;
-  background:transparent!important;
-  font-size:11px!important;
-}
-
-/* 성적서 전체 */
-.qmes-iqc-doc{
-  background:#fff!important;
-  color:#111827!important;
-  font-size:13px!important;
-}
-.qmes-iqc-doc .text-xl{
-  font-size:25px!important;
-  line-height:1.2!important;
-  letter-spacing:.18em!important;
-}
-.qmes-iqc-doc .text-xs{
-  font-size:11px!important;
-}
-.qmes-iqc-doc .text-sm{
-  font-size:13px!important;
-}
-
-/* 상단 기본정보 */
-.qmes-iqc-doc .qmes-iqc-head-table{
-  margin-top:18px!important;
-  border:1px solid #cbd5e1!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-table td{
-  padding:10px 12px!important;
-  border-color:#cbd5e1!important;
-  background:#fff!important;
-  color:#111827!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-label{
-  background:#fff!important;
-  color:#111827!important;
-  font-size:12px!important;
-  font-weight:700!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-value{
-  color:#111827!important;
-  font-size:13px!important;
-  font-weight:700!important;
-}
-
-/* 구역 제목: 이미지처럼 파란색 세로선 + 파란 글씨 */
-.qmes-iqc-doc .qmes-iqc-section{
-  margin-top:30px!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-.qmes-iqc-doc .qmes-iqc-section-title{
-  margin:0 0 12px 0!important;
-  padding:0 0 0 12px!important;
-  border:0!important;
-  border-left:4px solid #2563eb!important;
-  border-radius:0!important;
-  background:transparent!important;
-  color:#2563eb!important;
-  font-size:17px!important;
-  font-weight:800!important;
-  line-height:1.3!important;
-}
-
-/* 검사결과 */
-.qmes-iqc-doc .qmes-iqc-inspection-table{
-  width:100%!important;
-  border:1px solid #cbd5e1!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table thead tr{
-  border-bottom:1px solid #94a3b8!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table th{
-  padding:10px 9px!important;
-  background:#fff!important;
-  color:#111827!important;
-  font-size:12px!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table td{
-  padding:10px 9px!important;
-  border-bottom:1px solid #cbd5e1!important;
-  background:#fff!important;
-  color:#111827!important;
-  font-size:12px!important;
-}
-.qmes-iqc-doc .qmes-iqc-inspection-table tbody tr:last-child td{
-  border-bottom:0!important;
-}
-
-/* 판정 */
-.qmes-iqc-doc .qmes-iqc-judge-table{
-  border:1px solid #cbd5e1!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-judge-table th,
-.qmes-iqc-doc .qmes-iqc-judge-table td{
-  padding:12px 14px!important;
-  border-color:#cbd5e1!important;
-  background:#fff!important;
-  font-size:13px!important;
-}
-.qmes-iqc-doc .qmes-iqc-judge-table th{
-  color:#111827!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .qmes-iqc-judge-table td{
-  font-weight:800!important;
-}
-
-/* 특이사항 */
-.qmes-iqc-doc .qmes-iqc-remarks-panel{
-  min-height:72px!important;
-  padding:14px 16px!important;
-  border:1px solid #cbd5e1!important;
-  border-radius:0!important;
-  background:#fff!important;
-  color:#111827!important;
-  font-size:13px!important;
-  line-height:1.6!important;
-}
-
-/* 판정 색상: 문서 내부 검정 강제 규칙보다 우선 */
-.qmes-iqc-doc .text-emerald-600,
-.qmes-iqc-doc .text-emerald-400{
-  color:#16a34a!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .text-red-600,
-.qmes-iqc-doc .text-red-400{
-  color:#ef2626!important;
-  font-weight:800!important;
-}
-
-/* 하단 바코드 / 결재란 */
-.qmes-iqc-doc .qmes-iqc-auth-row{
-  grid-template-columns:44% 56%!important;
-  gap:18px!important;
-  margin-top:30px!important;
-  align-items:stretch!important;
-}
-.qmes-iqc-doc .qmes-iqc-code-area,
-.qmes-iqc-doc .qmes-iqc-sign-grid{
-  height:128px!important;
-  min-height:128px!important;
-  border:1px solid #94a3b8!important;
-  background:#fff!important;
-  box-sizing:border-box!important;
-}
-.qmes-iqc-doc .qmes-iqc-code-area{
-  padding:10px 12px!important;
-  grid-template-columns:minmax(0,1fr) 82px!important;
-}
-.qmes-iqc-doc .qmes-iqc-barcode-wrap svg{
-  height:64px!important;
-  max-width:300px!important;
-}
-.qmes-iqc-doc .qmes-iqc-qr-wrap img{
-  width:76px!important;
-  height:76px!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-cell{
-  display:flex!important;
-  flex-direction:column!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-title{
-  flex:0 0 34px!important;
-  padding:0!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  border-bottom:1px solid #94a3b8!important;
-  background:#fff!important;
-  color:#111827!important;
-  font-size:13px!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-body{
-  flex:1 1 auto!important;
-  min-height:92px!important;
-  height:auto!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  color:#111827!important;
-  font-size:18px!important;
-  font-weight:800!important;
-}
-
-/* 하단 문서정보 */
-.qmes-iqc-doc .qmes-iqc-doc-footer{
-  margin-top:24px!important;
-  color:#111827!important;
-  font-size:10px!important;
-}
-
-/* 인쇄 */
-@media print{
-  body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc{
-    height:271mm!important;
-    min-height:271mm!important;
-    display:flex!important;
-    flex-direction:column!important;
-    justify-content:center!important;
-    padding:5mm 6mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-section{
-    margin-top:7mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-section-title{
-    font-size:13px!important;
-    margin-bottom:2.5mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-head-table td{
-    padding:2.3mm 2.5mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td{
-    padding:2.3mm 2mm!important;
-    font-size:10.5px!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-judge-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-judge-table td{
-    padding:2.6mm 3mm!important;
-    font-size:10.8px!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-remarks-panel{
-    min-height:17mm!important;
-    padding:3mm!important;
-    font-size:10.5px!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-auth-row{
-    margin-top:7mm!important;
-    gap:5mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-code-area,
-  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
-    height:31mm!important;
-    min-height:31mm!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-sign-title{
-    flex-basis:8mm!important;
-    font-size:10.5px!important;
-  }
-  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
-    min-height:23mm!important;
-    font-size:13px!important;
-  }
-}
-</style>
 
 <!-- IQC_STYLE: GENERATED_IMAGE_MATCH_260715 -->
 
+
+
+<!-- IQC_FIXED_WORKING_IMAGE_LAYOUT -->
+
 <style>
-/* IQC 성적서 이미지형 구조 - 성적서 내부에만 적용 */
-.qmes-iqc-doc .qmes-iqc-section{
-  margin-top:24px!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
+/* ===== IQC REPORT: CLEAN SINGLE STYLE ===== */
+.qmes-iqc-doc{background:#fff!important;color:#111827!important;font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;font-size:12px!important}
+.qmes-iqc-doc .qmes-iqc-section{margin-top:24px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 .qmes-iqc-doc .qmes-iqc-first-section{margin-top:18px!important}
-.qmes-iqc-doc .qmes-iqc-section-title{
-  margin:0 0 9px!important;
-  padding:0 0 0 10px!important;
-  border:0!important;
-  border-left:4px solid #2563eb!important;
-  background:transparent!important;
-  color:#2563eb!important;
-  font-size:16px!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-table,
-.qmes-iqc-doc .qmes-iqc-qty-table,
-.qmes-iqc-doc .qmes-iqc-inspection-table,
-.qmes-iqc-doc .qmes-iqc-judge-table{
-  width:100%!important;
-  border-collapse:collapse!important;
-  border:1px solid #aeb7c2!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-head-table td,
-.qmes-iqc-doc .qmes-iqc-qty-table th,
-.qmes-iqc-doc .qmes-iqc-qty-table td,
-.qmes-iqc-doc .qmes-iqc-inspection-table th,
-.qmes-iqc-doc .qmes-iqc-inspection-table td,
-.qmes-iqc-doc .qmes-iqc-judge-table th,
-.qmes-iqc-doc .qmes-iqc-judge-table td{
-  border:1px solid #c4cbd3!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-qty-table th,
-.qmes-iqc-doc .qmes-iqc-qty-table td{
-  padding:9px 8px!important;
-  text-align:center!important;
-  font-size:12px!important;
-}
-.qmes-iqc-doc .text-emerald-600,
-.qmes-iqc-doc .text-emerald-400{
-  color:#159447!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .text-red-600,
-.qmes-iqc-doc .text-red-400{
-  color:#ef2020!important;
-  font-weight:800!important;
-}
-.qmes-iqc-doc .qmes-iqc-auth-row{
-  align-items:stretch!important;
-  padding-top:14px!important;
-  border-top:2px solid #111!important;
-}
-.qmes-iqc-doc .qmes-iqc-code-area,
-.qmes-iqc-doc .qmes-iqc-sign-grid{
-  height:122px!important;
-  min-height:122px!important;
-  border:1px solid #9ca3af!important;
-  background:#fff!important;
-}
-.qmes-iqc-doc .qmes-iqc-sign-body{
-  min-height:88px!important;
-  height:auto!important;
+.qmes-iqc-doc .qmes-iqc-section-title{margin:0 0 9px!important;padding:0 0 0 10px!important;border:0!important;border-left:4px solid #2563eb!important;background:transparent!important;color:#2563eb!important;font-size:16px!important;font-weight:800!important;line-height:1.25!important}
+.qmes-iqc-doc table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;background:#fff!important}
+.qmes-iqc-doc .qmes-iqc-head-table,.qmes-iqc-doc .qmes-iqc-qty-table,.qmes-iqc-doc .qmes-iqc-inspection-table,.qmes-iqc-doc .qmes-iqc-judge-table{border:1px solid #9ca3af!important}
+.qmes-iqc-doc .qmes-iqc-head-table td,.qmes-iqc-doc .qmes-iqc-qty-table th,.qmes-iqc-doc .qmes-iqc-qty-table td,.qmes-iqc-doc .qmes-iqc-inspection-table th,.qmes-iqc-doc .qmes-iqc-inspection-table td,.qmes-iqc-doc .qmes-iqc-judge-table th,.qmes-iqc-doc .qmes-iqc-judge-table td{border:1px solid #c5cbd3!important;background:#fff!important;color:#111827!important}
+.qmes-iqc-doc .qmes-iqc-head-table td{padding:9px 10px!important}
+.qmes-iqc-doc .qmes-iqc-head-label{font-size:11.5px!important;font-weight:800!important;text-align:center!important}
+.qmes-iqc-doc .qmes-iqc-head-value{font-size:12.5px!important;font-weight:700!important}
+.qmes-iqc-doc .qmes-iqc-qty-table th,.qmes-iqc-doc .qmes-iqc-qty-table td{padding:9px 8px!important;text-align:center!important;font-size:12px!important}
+.qmes-iqc-doc .qmes-iqc-qty-table th{font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-inspection-table th{padding:9px 8px!important;text-align:center!important;font-size:11.5px!important;font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-inspection-table td{padding:9px 8px!important;font-size:11.5px!important}
+.qmes-iqc-doc .qmes-iqc-judge-table th,.qmes-iqc-doc .qmes-iqc-judge-table td{padding:11px 12px!important;font-size:13px!important}
+.qmes-iqc-doc .qmes-iqc-judge-table th{text-align:center!important;font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-judge-table td{font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-remarks-panel{min-height:58px!important;padding:12px 14px!important;border:1px solid #9ca3af!important;border-radius:0!important;background:#fff!important;color:#111827!important;font-size:12px!important;white-space:pre-wrap!important}
+.qmes-iqc-doc .text-emerald-600,.qmes-iqc-doc .text-emerald-400{color:#159447!important;font-weight:800!important}
+.qmes-iqc-doc .text-red-600,.qmes-iqc-doc .text-red-400{color:#ef2020!important;font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-auth-row{display:grid!important;grid-template-columns:40% 60%!important;gap:18px!important;align-items:stretch!important;margin-top:24px!important;padding-top:14px!important;border-top:2px solid #111827!important}
+.qmes-iqc-doc .qmes-iqc-code-area,.qmes-iqc-doc .qmes-iqc-sign-grid{height:122px!important;min-height:122px!important;border:1px solid #9ca3af!important;background:#fff!important;box-sizing:border-box!important}
+.qmes-iqc-doc .qmes-iqc-code-area{display:grid!important;grid-template-columns:minmax(0,1fr) 90px!important;gap:8px!important;padding:8px 10px!important;align-items:center!important}
+.qmes-iqc-doc .qmes-iqc-barcode-wrap svg{display:block!important;width:100%!important;max-width:300px!important;height:62px!important;margin:0 auto!important}
+.qmes-iqc-doc .qmes-iqc-code-caption{color:#111827!important;font-size:10px!important}
+.qmes-iqc-doc .qmes-iqc-qr-wrap img{display:block!important;width:76px!important;height:76px!important}
+.qmes-iqc-doc .qmes-iqc-qr-label{color:#111827!important;font-size:8px!important}
+.qmes-iqc-doc .qmes-iqc-sign-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important}
+.qmes-iqc-doc .qmes-iqc-sign-cell{display:flex!important;flex-direction:column!important;border-right:1px solid #9ca3af!important}
+.qmes-iqc-doc .qmes-iqc-sign-cell:last-child{border-right:0!important}
+.qmes-iqc-doc .qmes-iqc-sign-title{height:32px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-bottom:1px solid #9ca3af!important;background:#fff!important;color:#111827!important;font-size:12px!important;font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-sign-body{flex:1 1 auto!important;min-height:88px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#111827!important;font-size:17px!important;font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc-doc-footer{margin-top:18px!important;padding-top:7px!important;border-top:2px solid #111827!important;color:#111827!important;font-size:9px!important}
+@media print{
+body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc{width:194mm!important;height:271mm!important;min-height:271mm!important;display:flex!important;flex-direction:column!important;justify-content:center!important;padding:4mm 5mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-section{margin-top:5.2mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-first-section{margin-top:3.8mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-section-title{margin-bottom:2mm!important;font-size:12px!important}
+body.print-doc #qmes-print-root .qmes-iqc-head-table td{padding:1.7mm 2mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-qty-table th,body.print-doc #qmes-print-root .qmes-iqc-qty-table td,body.print-doc #qmes-print-root .qmes-iqc-inspection-table th,body.print-doc #qmes-print-root .qmes-iqc-inspection-table td{padding:1.7mm 1.5mm!important;font-size:9.4px!important}
+body.print-doc #qmes-print-root .qmes-iqc-judge-table th,body.print-doc #qmes-print-root .qmes-iqc-judge-table td{padding:2.1mm 2.4mm!important;font-size:10.2px!important}
+body.print-doc #qmes-print-root .qmes-iqc-remarks-panel{min-height:13mm!important;padding:2.4mm!important;font-size:9.6px!important}
+body.print-doc #qmes-print-root .qmes-iqc-auth-row{margin-top:4.8mm!important;padding-top:3mm!important;gap:4mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-code-area,body.print-doc #qmes-print-root .qmes-iqc-sign-grid{height:29mm!important;min-height:29mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-sign-title{height:7mm!important}
+body.print-doc #qmes-print-root .qmes-iqc-sign-body{min-height:22mm!important}
 }
 </style>
 
-<!-- IQC_FIXED_WORKING_IMAGE_LAYOUT -->
+<!-- IQC_REPORT_CLEAN_REBUILD_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: WORK_ORDER_STYLE_BARCODE_QR_260715 -->
 <body>
@@ -2162,14 +1558,13 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
             <>
               <div className="qmes-iqc-section qmes-iqc-first-section">
                 <div className="qmes-iqc-section-title">입고 기본정보</div>
-                <table className="qmes-iqc-head-table">
-                  <tbody>
-                    <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{record.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(record.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{record.supplier || "-"}</td></tr>
-                    <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{record.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{record.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{record.qty || "-"}</td></tr>
-                    <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{record.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{record.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${record.judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{record.judge === "합격" ? "합격" : "불합격"}</td></tr>
-                  </tbody>
-                </table>
+                <table className="qmes-iqc-head-table"><tbody>
+                  <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{record.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(record.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{record.supplier || "-"}</td></tr>
+                  <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{record.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{record.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{record.qty || "-"}</td></tr>
+                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{record.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{record.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${record.judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{record.judge === "합격" ? "합격" : "불합격"}</td></tr>
+                </tbody></table>
               </div>
+
               <div className="qmes-iqc-section">
                 <div className="qmes-iqc-section-title">수량정보</div>
                 <table className="qmes-iqc-qty-table">
@@ -2177,14 +1572,31 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                   <tbody><tr><td>{record.name || "-"}</td><td>{record.qty || "-"}</td><td>{record.inspectQty || "-"}</td><td>{record.defectQty || "0"}</td><td>EA</td><td>-</td></tr></tbody>
                 </table>
               </div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">검사결과</div>
-                <table className="qmes-iqc-inspection-table"><thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead><tbody>
-                  {[["외관","파손, 변형, 누액 및 오염이 없을 것",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",record.label,record.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",record.weight,record.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,judge,result],i)=><tr key={k}><td className="text-slate-500">{i+1}</td><td className="font-medium">{k}</td><td className="text-slate-600">{spec}</td><td>{result}</td><td className={`text-center font-semibold ${judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{judge || "-"}</td></tr>)}
-                </tbody></table>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">검사결과</div>
+                <table className="qmes-iqc-inspection-table">
+                  <thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead>
+                  <tbody>
+                    {[["외관","파손, 변형, 누액 및 오염이 없을 것",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",record.label,record.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",record.weight,record.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,itemJudge,result],i)=><tr key={k}><td>{i+1}</td><td className="font-medium">{k}</td><td>{spec}</td><td>{result}</td><td className={`text-center font-bold ${itemJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{itemJudge || "-"}</td></tr>)}
+                  </tbody>
+                </table>
               </div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">판정</div><table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table></div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">특이사항</div><div className="qmes-iqc-remarks-panel">{record.remarks || "-"}</div></div>
-              <div className="qmes-iqc-auth-row"><IqcBarcodeQr record={record}/><div className="qmes-iqc-sign-grid">{["작성","검토","승인"].map(label=><div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (record.inspector || record.by || "") : ""}</div></div>)}</div></div>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">판정</div>
+                <table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table>
+              </div>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">특이사항</div>
+                <div className="qmes-iqc-remarks-panel">{record.remarks || "-"}</div>
+              </div>
+
+              <div className="qmes-iqc-auth-row">
+                <IqcBarcodeQr record={record}/>
+                <div className="qmes-iqc-sign-grid">{["작성","검토","승인"].map(label=><div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (record.inspector || record.by || "") : ""}</div></div>)}</div>
+              </div>
               <div className="qmes-iqc-doc-footer"><span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span></div>
             </>
           ) : (
@@ -3473,17 +2885,47 @@ function InspectionReportsTab() {
 
           {type === "IQC" ? (
             <>
-              <table className="qmes-iqc-head-table"><tbody>
-                <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{iqc.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(iqc.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{iqc.supplier || "-"}</td></tr>
-                <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{iqc.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{iqc.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{iqc.qty || "-"}</td></tr>
-                <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{iqc.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{iqc.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{finalJudge === "합격" ? "합격" : "불합격"}</td></tr>
-              </tbody></table>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">① 검사 결과</div><table className="qmes-iqc-inspection-table"><thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead><tbody>
-                {[["외관","파손, 변형, 누액 및 오염이 없을 것",iqc.visual,iqc.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",iqc.label,iqc.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",iqc.weight,iqc.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",iqc.coa,iqc.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,judge,result],i)=><tr key={k}><td className="text-slate-500">{i+1}</td><td className="font-medium">{k}</td><td className="text-slate-600">{spec}</td><td>{result}</td><td className={`text-center font-semibold ${judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{judge || "-"}</td></tr>)}
-              </tbody></table></div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">② 판정</div><table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}>{finalJudge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={finalJudge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{finalJudge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table></div>
-              <div className="qmes-iqc-section"><div className="qmes-iqc-section-title">③ 특이사항</div><div className="qmes-iqc-remarks-panel">{iqc.remarks || "-"}</div></div>
-              <div className="qmes-iqc-auth-row"><IqcBarcodeQr record={iqc}/><div className="qmes-iqc-sign-grid">{["작성","검토","승인"].map(label=><div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (iqc.inspector || iqc.by || "") : ""}</div></div>)}</div></div>
+              <div className="qmes-iqc-section qmes-iqc-first-section">
+                <div className="qmes-iqc-section-title">입고 기본정보</div>
+                <table className="qmes-iqc-head-table"><tbody>
+                  <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{iqc.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(iqc.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{iqc.supplier || "-"}</td></tr>
+                  <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{iqc.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{iqc.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{iqc.qty || "-"}</td></tr>
+                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{iqc.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{iqc.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{finalJudge === "합격" ? "합격" : "불합격"}</td></tr>
+                </tbody></table>
+              </div>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">수량정보</div>
+                <table className="qmes-iqc-qty-table">
+                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>검사단위</th><th>비고</th></tr></thead>
+                  <tbody><tr><td>{iqc.name || "-"}</td><td>{iqc.qty || "-"}</td><td>{iqc.inspectQty || "-"}</td><td>{iqc.defectQty || "0"}</td><td>EA</td><td>-</td></tr></tbody>
+                </table>
+              </div>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">검사결과</div>
+                <table className="qmes-iqc-inspection-table">
+                  <thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead>
+                  <tbody>
+                    {[["외관","파손, 변형, 누액 및 오염이 없을 것",iqc.visual,iqc.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",iqc.label,iqc.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",iqc.weight,iqc.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",iqc.coa,iqc.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,itemJudge,result],i)=><tr key={k}><td>{i+1}</td><td className="font-medium">{k}</td><td>{spec}</td><td>{result}</td><td className={`text-center font-bold ${itemJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{itemJudge || "-"}</td></tr>)}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">판정</div>
+                <table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}>{finalJudge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}>{finalJudge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table>
+              </div>
+
+              <div className="qmes-iqc-section">
+                <div className="qmes-iqc-section-title">특이사항</div>
+                <div className="qmes-iqc-remarks-panel">{iqc.remarks || "-"}</div>
+              </div>
+
+              <div className="qmes-iqc-auth-row">
+                <IqcBarcodeQr record={iqc}/>
+                <div className="qmes-iqc-sign-grid">{["작성","검토","승인"].map(label=><div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (iqc.inspector || iqc.by || "") : ""}</div></div>)}</div>
+              </div>
               <div className="qmes-iqc-doc-footer"><span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span></div>
             </>
           ) : (
