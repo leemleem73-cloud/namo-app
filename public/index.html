@@ -1348,7 +1348,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
           <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
             <div>
               <div className="text-xl font-bold tracking-wide">{title}</div>
-              <div className="text-xs text-slate-500 mt-0.5">Inspection Report</div>
+              <div className="text-xs text-slate-500 mt-0.5">{isIqc ? "INCOMING INSPECTION REPORT" : "Inspection Report"}</div>
             </div>
             <div className="text-right text-xs text-slate-600">
               <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
@@ -1359,41 +1359,74 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
 
           {isIqc ? (
             <>
-              <div className="grid grid-cols-4 border-x border-b border-slate-900 text-xs">
-                {[
-                  ["입고번호", record.inNo || "-"],
-                  ["입고일자", (record.recv || "-").slice(0,10)],
-                  ["원료 LOT No.", record.lot || "-"],
-                  ["원재료명", record.name || "-"],
-                  ["업체명", record.supplier || "-"],
-                  ["입고수량", record.qty || "-"],
-                  ["검사수량", record.inspectQty || "-"],
-                  ["불량수량", record.defectQty || "-"],
-                  ["검사자", record.inspector || record.by || "-"],
-                  ["최종판정", record.judge || "-"],
-                ].map(([k,v]) => (
-                  <div key={k} className="grid grid-cols-2 border-r border-b border-slate-300 last:border-r-0">
-                    <div className="bg-slate-50 px-2 py-2 font-semibold border-r border-slate-300">{k}</div>
-                    <div className="px-2 py-2">{v}</div>
-                  </div>
-                ))}
+              <div className="mt-4 border border-slate-900 text-xs">
+                <div className="grid grid-cols-4">
+                  {[
+                    ["입고번호", record.inNo || "-"],
+                    ["입고일자", (record.recv || "-").slice(0,10)],
+                    ["원재료명", record.name || "-"],
+                    ["원재료 LOT No.", record.lot || "-"],
+                    ["업체명", record.supplier || "-"],
+                    ["검사자", record.inspector || record.by || "-"],
+                  ].map(([k,v]) => (
+                    <React.Fragment key={k}>
+                      <div className="bg-slate-50 px-2 py-2 font-semibold border-r border-b border-slate-300">{k}</div>
+                      <div className="px-2 py-2 border-r border-b border-slate-300 font-medium">{v}</div>
+                    </React.Fragment>
+                  ))}
+                </div>
+                <div className="grid grid-cols-6">
+                  {[
+                    ["입고수량", record.qty || "-"],
+                    ["검사수량", record.inspectQty || "-"],
+                    ["불량수량", record.defectQty || "0"],
+                  ].map(([k,v]) => (
+                    <React.Fragment key={k}>
+                      <div className="bg-slate-50 px-2 py-2 font-semibold border-r border-slate-300">{k}</div>
+                      <div className="px-2 py-2 border-r border-slate-300 text-right font-medium">{v}</div>
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
               <table className="w-full text-xs border-x border-b border-slate-900">
-                <thead><tr className="bg-slate-50">
-                  <th className="border-r border-slate-300 py-2">검사항목</th>
-                  <th className="border-r border-slate-300 py-2">판정</th>
-                  <th className="py-2">비고</th>
+                <thead><tr className="bg-slate-50 border-b border-slate-900">
+                  <th className="border-r border-slate-300 py-2 w-10">NO</th>
+                  <th className="border-r border-slate-300 py-2 w-24">검사항목</th>
+                  <th className="border-r border-slate-300 py-2">검사기준</th>
+                  <th className="border-r border-slate-300 py-2 w-28">검사결과</th>
+                  <th className="py-2 w-20">판정</th>
                 </tr></thead>
                 <tbody>
-                  {[["외관",record.visual],["라벨",record.label],["중량",record.weight],["CoA",record.coa]].map(([k,v]) => (
+                  {[
+                    ["외관","파손·누액·오염 등 외관 이상 없음",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],
+                    ["라벨","품명·LOT No.·표기사항 일치 및 훼손 없음",record.label,record.label === "합격" ? "일치" : "불일치"],
+                    ["중량","표시 중량 및 입고 규격 충족",record.weight,record.weight === "합격" ? "적합" : "부적합"],
+                    ["COA","원재료명·LOT No.·규격 및 결과 일치",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"],
+                  ].map(([k,spec,judge,result],i) => (
                     <tr key={k} className="border-t border-slate-300">
-                      <td className="border-r border-slate-300 px-3 py-2 text-center">{k}</td>
-                      <td className="border-r border-slate-300 px-3 py-2 text-center">{v}</td>
-                      <td className="px-3 py-2 text-center">-</td>
+                      <td className="border-r border-slate-300 px-2 py-2 text-center">{i+1}</td>
+                      <td className="border-r border-slate-300 px-3 py-2 text-center font-semibold">{k}</td>
+                      <td className="border-r border-slate-300 px-3 py-2">{spec}</td>
+                      <td className="border-r border-slate-300 px-3 py-2 text-center">{result}</td>
+                      <td className={`px-3 py-2 text-center font-bold ${judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{judge || "-"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              <div className="grid grid-cols-4 border-x border-b border-slate-900 text-xs">
+                <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-slate-300">종합판정</div>
+                <div className={`px-3 py-2 text-center font-bold border-r border-slate-300 ${record.judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{record.judge === "합격" ? "합격" : "불합격"}</div>
+                <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-slate-300">처리결과</div>
+                <div className="px-3 py-2 text-center font-bold">{record.judge === "합격" ? "입고 승인" : "반품"}</div>
+                <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-t border-slate-300">특이사항</div>
+                <div className="col-span-3 px-3 py-2 border-t border-slate-300">-</div>
+              </div>
+              <div className="grid grid-cols-3 mt-5 border border-slate-900 text-xs text-center">
+                {["검사","검토","승인"].map((label) => <div key={label} className="border-r border-slate-300 last:border-r-0"><div className="bg-slate-50 py-1.5 font-semibold border-b border-slate-300">{label}</div><div className="h-14 flex items-end justify-center pb-2 text-slate-500">{label === "검사" ? (record.inspector || record.by || "") : ""}</div></div>)}
+              </div>
+              <div className="mt-4 pt-2 border-t border-slate-300 flex justify-between text-[10px] text-slate-500">
+                <span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span>
+              </div>
             </>
           ) : (
             <>
@@ -2680,53 +2713,72 @@ function InspectionReportsTab() {
       {sel && (type === "IQC" ? iqc : inspectionRows.length > 0) && (
         <div className="doc-paper bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
           <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
-            <div><div className="text-xl font-bold tracking-wide">{reportTitle}</div><div className="text-xs text-slate-500 mt-0.5">Inspection Report</div></div>
+            <div><div className="text-xl font-bold tracking-wide">{reportTitle}</div><div className="text-xs text-slate-500 mt-0.5">{type === "IQC" ? "INCOMING INSPECTION REPORT" : "Inspection Report"}</div></div>
             <div className="text-right text-xs text-slate-600"><div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div><div>성적서 번호: <span className="font-mono">{reportNo}</span></div><div>검사일: {reportDate}</div></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm py-4 border-b border-slate-300">
-            {type === "IQC" ? <>
-              <div className="flex justify-between"><span className="text-slate-500">원재료명</span><span className="font-medium">{iqc.name}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">업체명</span><span className="font-medium">{iqc.supplier || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">원료 LOT No.</span><span className="font-mono font-medium">{iqc.lot}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">입고수량</span><span className="font-medium">{iqc.qty || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">검사수량</span><span className="font-medium">{iqc.inspectQty || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">불량수량</span><span className="font-medium">{iqc.defectQty || "-"}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">검사자</span><span className="font-medium">{iqc.inspector || iqc.by || "-"}</span></div>
-            </> : <>
+          {type === "IQC" ? (
+            <>
+              <div className="mt-4 border border-slate-900 text-xs">
+                <div className="grid grid-cols-4">
+                  {[
+                    ["입고번호", iqc.inNo || "-"],["입고일자", (iqc.recv || "-").slice(0,10)],
+                    ["원재료명", iqc.name || "-"],["원재료 LOT No.", iqc.lot || "-"],
+                    ["업체명", iqc.supplier || "-"],["검사자", iqc.inspector || iqc.by || "-"],
+                  ].map(([k,v]) => <React.Fragment key={k}><div className="bg-slate-50 px-2 py-2 font-semibold border-r border-b border-slate-300">{k}</div><div className="px-2 py-2 border-r border-b border-slate-300 font-medium">{v}</div></React.Fragment>)}
+                </div>
+                <div className="grid grid-cols-6">
+                  {[["입고수량",iqc.qty || "-"],["검사수량",iqc.inspectQty || "-"],["불량수량",iqc.defectQty || "0"]].map(([k,v]) => <React.Fragment key={k}><div className="bg-slate-50 px-2 py-2 font-semibold border-r border-slate-300">{k}</div><div className="px-2 py-2 border-r border-slate-300 text-right font-medium">{v}</div></React.Fragment>)}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm py-4 border-b border-slate-300">
               <div className="flex justify-between"><span className="text-slate-500">제품명</span><span className="font-medium">{batch.item || "-"}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">LOT No.</span><span className="font-mono font-medium">{sel}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">생산일자</span><span>{batch.due || "-"}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">검사자</span><span>{inspectionRows[0]?.inspector || "-"}</span></div>
               {type === "OQC" && <div className="flex justify-between"><span className="text-slate-500">출하일자</span><span>{inspectionRows[0]?.shipDate || "-"}</span></div>}
-            </>}
-          </div>
+            </div>
+          )}
 
-          <table className="w-full text-sm mt-4">
+          <table className={`w-full text-sm ${type === "IQC" ? "" : "mt-4"}`}>
             <thead><tr className="text-xs text-slate-500 border-b-2 border-slate-900">
               <th className="text-left py-2 pr-3 w-10">NO</th><th className="text-left py-2 pr-3">검사 항목</th><th className="text-left py-2 pr-3">규격</th><th className="text-left py-2 pr-3">측정 결과</th><th className="text-center py-2 w-16">판정</th>
             </tr></thead>
             <tbody>
               {(type === "IQC" ? [
-                {item:"외관",spec:"파손·누액 등 외관 이상 없음",val:iqc.visual,judge:iqc.visual},
-                {item:"라벨",spec:"표기사항 및 라벨 상태 이상 없음",val:iqc.label,judge:iqc.label},
-                {item:"중량",spec:"입고 규격 및 허용오차 충족",val:iqc.weight,judge:iqc.weight},
-                {item:"공급사 CoA",spec:"요구 성적서 일치 및 이상 없음",val:iqc.coa,judge:iqc.coa},
+                {item:"외관",spec:"파손·누액·오염 등 외관 이상 없음",val:iqc.visual === "합격" ? "이상 없음" : "이상 발생",judge:iqc.visual},
+                {item:"라벨",spec:"품명·LOT No.·표기사항 일치 및 훼손 없음",val:iqc.label === "합격" ? "일치" : "불일치",judge:iqc.label},
+                {item:"중량",spec:"표시 중량 및 입고 규격 충족",val:iqc.weight === "합격" ? "적합" : "부적합",judge:iqc.weight},
+                {item:"COA",spec:"원재료명·LOT No.·규격 및 결과 일치",val:iqc.coa === "합격" ? "확인 완료" : "미확인/불일치",judge:iqc.coa},
               ] : itemOrder.map((k) => ({item:k,spec:QC_ITEMS[k]?.spec || "-",val:latestByItem[k]?.value || "-",judge:latestByItem[k]?.judge || "미검사"}))).map((r,i) => (
                 <tr key={r.item} className="border-b border-slate-200"><td className="py-2 pr-3 text-slate-500">{i+1}</td><td className="py-2 pr-3 font-medium">{r.item}</td><td className="py-2 pr-3 text-slate-600">{r.spec}</td><td className="py-2 pr-3">{r.val}</td><td className={`py-2 text-center font-semibold ${r.judge === "합격" ? "text-emerald-600" : r.judge === "불합격" ? "text-red-600" : "text-slate-500"}`}>{r.judge}</td></tr>
               ))}
             </tbody>
           </table>
 
-          <div className="flex items-end justify-between mt-6">
-            <div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div>
-            <div className="flex items-center gap-5"><div className="text-sm">최종판정</div><div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>{finalJudge}</div></div>
-          </div>
-          <div className="flex justify-end gap-6 text-center text-xs mt-5">
-            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작성</div><div className="mt-1 text-slate-600">검사원</div></div>
-            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검토</div><div className="mt-1 text-slate-600">-</div></div>
-            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">-</div></div>
-          </div>
+          {type === "IQC" ? (
+            <>
+              <div className="grid grid-cols-4 border-x border-b border-slate-900 text-xs">
+                <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-slate-300">종합판정</div>
+                <div className={`px-3 py-2 text-center font-bold border-r border-slate-300 ${finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{finalJudge === "합격" ? "합격" : "불합격"}</div>
+                <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-slate-300">처리결과</div>
+                <div className="px-3 py-2 text-center font-bold">{finalJudge === "합격" ? "입고 승인" : "반품"}</div>
+                <div className="bg-slate-50 px-3 py-2 font-semibold border-r border-t border-slate-300">특이사항</div>
+                <div className="col-span-3 px-3 py-2 border-t border-slate-300">-</div>
+              </div>
+              <div className="grid grid-cols-3 mt-5 border border-slate-900 text-xs text-center">
+                {["검사","검토","승인"].map((label) => <div key={label} className="border-r border-slate-300 last:border-r-0"><div className="bg-slate-50 py-1.5 font-semibold border-b border-slate-300">{label}</div><div className="h-14 flex items-end justify-center pb-2 text-slate-500">{label === "검사" ? (iqc.inspector || iqc.by || "") : ""}</div></div>)}
+              </div>
+              <div className="mt-4 pt-2 border-t border-slate-300 flex justify-between text-[10px] text-slate-500"><span>문서번호: NMC-QC-IQC-001</span><span>개정번호: Rev.0</span><span>출력일시: {new Date().toLocaleString("ko-KR")}</span><span>Page 1 / 1</span></div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-end justify-between mt-6"><div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div><div className="flex items-center gap-5"><div className="text-sm">최종판정</div><div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>{finalJudge}</div></div></div>
+              <div className="flex justify-end gap-6 text-center text-xs mt-5"><div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작성</div><div className="mt-1 text-slate-600">검사원</div></div><div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검토</div><div className="mt-1 text-slate-600">-</div></div><div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">-</div></div></div>
+            </>
+          )}
         </div>
       )}
     </div>
