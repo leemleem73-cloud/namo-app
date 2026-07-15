@@ -1630,6 +1630,57 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_PRINT_ALIGNMENT_TEXT_CLIP_FIX_260715 -->
+
+<style>
+/* 작성/검토/승인 제목 한 줄 고정 */
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  grid-template-rows:34px 1fr!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-cell{
+  min-width:0!important;
+  display:grid!important;
+  grid-template-rows:34px 1fr!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title{
+  height:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  line-height:34px!important;
+  display:block!important;
+  text-align:center!important;
+  overflow:hidden!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  min-height:88px!important;
+  height:auto!important;
+  line-height:1.2!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* 인쇄 시에도 동일하게 한 줄 유지 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-cell{
+    grid-template-rows:7mm 23mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-title{
+    height:7mm!important;
+    min-height:7mm!important;
+    line-height:7mm!important;
+    white-space:nowrap!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
+    height:23mm!important;
+    min-height:23mm!important;
+  }
+}
+</style>
+
+<!-- IQC_LOT_LABEL_SIGN_SINGLE_LINE_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -2259,7 +2310,7 @@ function IqcBarcodeQr({ record }) {
     `입고번호: ${inNo || "-"}`,
     `입고일자: ${(record?.recv || "-").slice(0,10)}`,
     `원재료명: ${record?.name || "-"}`,
-    `원재료 LOT No.: ${record?.lot || "-"}`,
+    `LOT No.: ${record?.lot || "-"}`,
     `업체명: ${record?.supplier || "-"}`,
   ].join("\\n");
 
@@ -2354,7 +2405,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                     <tr>
                       <th>업체명</th><td>{record.supplier || "-"}</td>
                       <th>원재료명</th><td>{record.name || "-"}</td>
-                      <th>원재료 LOT No.</th><td className="font-mono">{record.lot || "-"}</td>
+                      <th>LOT No.</th><td className="font-mono">{record.lot || "-"}</td>
                     </tr>
 
                   </tbody>
@@ -3722,7 +3773,7 @@ function InspectionReportsTab() {
                     <tr>
                       <th>업체명</th><td>{iqc.supplier || "-"}</td>
                       <th>원재료명</th><td>{iqc.name || "-"}</td>
-                      <th>원재료 LOT No.</th><td className="font-mono">{iqc.lot || "-"}</td>
+                      <th>LOT No.</th><td className="font-mono">{iqc.lot || "-"}</td>
                     </tr>
 
                   </tbody>
@@ -3983,12 +4034,12 @@ function IqcTab() {
   const iqcErrors = [];
   if (tried && !inNoOk) iqcErrors.push(form.inNoMode === "auto" ? "입고번호를 생성할 수 없습니다 — 입고일자를 확인하세요" : "직접 입력할 입고번호를 2자 이상 입력하세요");
   if (tried && duplicateInNo) iqcErrors.push("이미 등록된 입고번호입니다 — 다른 번호를 입력하세요");
-  if (form.lot.trim() !== "" && !lotOk) iqcErrors.push("원재료 LOT No.가 너무 짧습니다 — 2자 이상 입력");
+  if (form.lot.trim() !== "" && !lotOk) iqcErrors.push("LOT No.가 너무 짧습니다 — 2자 이상 입력");
   if (form.qty.trim() !== "" && !qtyOk) iqcErrors.push("입고수량 형식 오류 — 숫자+단위로 입력 (예: 480 kg)");
   if (form.inspectQty.trim() !== "" && !inspectQtyOk) iqcErrors.push("검사수량 형식 오류 — 숫자+단위로 입력 (예: 3 EA)");
   if (form.defectQty.trim() !== "" && !defectQtyOk) iqcErrors.push("불량수량 형식 오류 — 숫자+단위로 입력 (예: 0 EA)");
   if (inspectQtyOk && defectQtyOk && !defectRangeOk) iqcErrors.push("불량수량은 검사수량보다 클 수 없습니다");
-  if (tried && form.lot.trim() === "") iqcErrors.push("원재료 LOT No.를 입력하세요");
+  if (tried && form.lot.trim() === "") iqcErrors.push("LOT No.를 입력하세요");
   if (tried && form.qty.trim() === "") iqcErrors.push("입고수량을 입력하세요 (예: 480 kg)");
   if (tried && form.inspectQty.trim() === "") iqcErrors.push("검사수량을 입력하세요 (예: 3 EA)");
   if (tried && form.defectQty.trim() === "") iqcErrors.push("불량수량을 입력하세요 (예: 0 EA)");
@@ -4079,8 +4130,8 @@ function IqcTab() {
                   className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
               </div>
               <div className="qmes-iqc-field">
-                <span>원재료 LOT No.</span>
-                <input value={form.lot} onChange={(e) => setForm({ ...form, lot:e.target.value })} placeholder="원재료 LOT No. 입력"
+                <span>LOT No.</span>
+                <input value={form.lot} onChange={(e) => setForm({ ...form, lot:e.target.value })} placeholder="LOT No. 입력"
                   className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
               </div>
               <div className="qmes-iqc-field">
@@ -4146,7 +4197,7 @@ function IqcTab() {
                 <col style={{width:"90px"}} /><col style={{width:"100px"}} /><col style={{width:"120px"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">원재료 LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
+                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
                 <th className="text-right py-2 pr-3 font-medium">입고수량</th><th className="text-right py-2 pr-3 font-medium">검사수량</th><th className="text-right py-2 pr-3 font-medium">불량수량</th>
                 <th className="text-center py-2 pr-2 font-medium">외관</th><th className="text-center py-2 pr-2 font-medium">라벨</th><th className="text-center py-2 pr-2 font-medium">중량</th><th className="text-center py-2 pr-3 font-medium">COA</th>
                 <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-left py-2 pr-3 font-medium">종합판정</th><th className="text-center py-2 px-3 font-medium">관리</th>
@@ -4769,7 +4820,7 @@ function IssueWoTab() {
                 <tr className="text-[11px] text-slate-500 border-b border-slate-700/60">
                   <th className="text-left py-1.5 pr-3 font-medium w-14">순서</th>
                   <th className="text-left py-1.5 pr-3 font-medium">원재료명</th>
-                  <th className="text-left py-1.5 px-2 font-medium">원재료 LOT No.</th>
+                  <th className="text-left py-1.5 px-2 font-medium">LOT No.</th>
                   <th className="text-center py-1.5 px-2 font-medium">기준량</th>
                   <th className="text-center py-1.5 px-2 font-medium">계획량</th>
                   <th className="text-center py-1.5 px-2 font-medium">실투입량</th>
@@ -5089,7 +5140,7 @@ function IssueWoTab() {
                       <tr className="text-xs text-slate-400 border-b border-slate-700">
                         <th className="text-center py-2 px-2">순서</th>
                         <th className="text-left py-2 px-2">원재료명</th>
-                        <th className="text-left py-2 px-2">원재료 LOT No.</th>
+                        <th className="text-left py-2 px-2">LOT No.</th>
                         <th className="text-right py-2 px-2">기준량</th>
                         <th className="text-right py-2 px-2">계획량</th>
                         <th className="text-right py-2 px-2">실투입량</th>
