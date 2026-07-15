@@ -2024,6 +2024,32 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_REGISTER_CHART_LEDGER_REFINED_260715 -->
+<style>
+/* ===== 수입검사 특이사항 및 관리대장 폭 최종 조정 260715 ===== */
+.qmes-iqc-form textarea{
+  height:42px!important;
+  min-height:42px!important;
+  max-height:70px!important;
+  padding:7px 10px!important;
+  line-height:18px!important;
+  resize:vertical!important;
+}
+.qmes-iqc-ledger-layout{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+}
+.qmes-iqc-ledger-panel{
+  width:100%!important;
+  max-width:none!important;
+  grid-column:1 / -1!important;
+}
+.qmes-iqc-ledger-panel > div{
+  width:100%!important;
+  max-width:none!important;
+}
+</style>
+
 
 <style>
 /* ===== 수입검사 등록 최종 배치 수정 260715 ===== */
@@ -2042,11 +2068,11 @@ aside{display:none!important}
 
 /* 특이사항 칸은 축소하지 않고 기존 입력 높이 유지 */
 .qmes-iqc-form textarea{
-  height:58px!important;
-  min-height:58px!important;
-  max-height:96px!important;
-  padding:9px 10px!important;
-  line-height:19px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:70px!important;
+  padding:7px 10px!important;
+  line-height:18px!important;
   resize:vertical!important;
 }
 
@@ -2080,6 +2106,49 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_REGISTER_RIGHT_CHART_AND_EQUAL_FIELDS_FINAL_260715 -->
+
+<style>
+/* ===== 수입검사 관리대장 균등 간격 및 특이사항 폭 조정 260715 ===== */
+/* 특이사항 입력칸은 검사결과 5개 열 전체(검사자 칸 끝선)까지만 맞춤 */
+.qmes-iqc-grid-result + .qmes-iqc-remarks-field,
+.qmes-iqc-section .qmes-iqc-remarks-field{
+  width:100%!important;
+  max-width:100%!important;
+  margin-top:12px!important;
+}
+.qmes-iqc-remarks-field textarea{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+
+/* 입고번호부터 관리까지 동일한 열 폭과 동일한 좌우 여백 적용 */
+.qmes-iqc-ledger-table{
+  width:100%!important;
+  min-width:1980px!important;
+  table-layout:fixed!important;
+}
+.qmes-iqc-ledger-table col{width:132px!important}
+.qmes-iqc-ledger-table th,
+.qmes-iqc-ledger-table td{
+  width:132px!important;
+  min-width:132px!important;
+  max-width:132px!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-ledger-table thead th{
+  text-align:center!important;
+  white-space:nowrap!important;
+  letter-spacing:0!important;
+}
+.qmes-iqc-ledger-table tbody td{vertical-align:middle!important}
+.qmes-iqc-ledger-table .qmes-iqc-action-btn{
+  padding:0 7px!important;
+  margin:0 1px!important;
+  font-size:10px!important;
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -4580,7 +4649,7 @@ function IqcTab() {
               <div className="qmes-iqc-field">{judgeSelect("coa", "COA")}</div>
               <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
             </div>
-            <div className="qmes-iqc-field mt-3">
+            <div className="qmes-iqc-field qmes-iqc-remarks-field mt-3">
               <span>특이사항</span>
               <textarea value={form.remarks} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항이 있을 경우 입력하세요. (예: 포장 일부 오염, COA 지연 수령, 라벨 재부착 등)" rows={2}
                 className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
@@ -4601,8 +4670,8 @@ function IqcTab() {
         </Panel></div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <Panel title="수입검사 관리대장" className="lg:col-span-2">
+      <div className="qmes-iqc-ledger-layout">
+        <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm min-w-[1780px]">
               <colgroup>
