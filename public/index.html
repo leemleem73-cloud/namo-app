@@ -876,6 +876,13 @@ body.print-doc #qmes-print-root .qmes-iqc-sign-body{min-height:22mm!important}
 </style>
 
 <!-- IQC_REPORT_CLEAN_REBUILD_260715 -->
+
+<style>
+.qmes-iqc-doc [style*="#159447"]{color:#159447!important}
+.qmes-iqc-doc [style*="#ef2020"]{color:#ef2020!important}
+</style>
+
+<!-- IQC_COLOR_INLINE_DIRECT_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: WORK_ORDER_STYLE_BARCODE_QR_260715 -->
 <body>
@@ -1561,7 +1568,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 <table className="qmes-iqc-head-table"><tbody>
                   <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{record.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(record.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{record.supplier || "-"}</td></tr>
                   <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{record.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{record.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{record.qty || "-"}</td></tr>
-                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{record.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{record.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${record.judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{record.judge === "합격" ? "합격" : "불합격"}</td></tr>
+                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{record.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{record.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className="qmes-iqc-head-value font-bold" style={{color:record.judge === "합격" ? "#159447" : "#ef2020"}}>{record.judge === "합격" ? "합격" : "불합격"}</td></tr>
                 </tbody></table>
               </div>
 
@@ -1578,14 +1585,14 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 <table className="qmes-iqc-inspection-table">
                   <thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead>
                   <tbody>
-                    {[["외관","파손, 변형, 누액 및 오염이 없을 것",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",record.label,record.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",record.weight,record.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,itemJudge,result],i)=><tr key={k}><td>{i+1}</td><td className="font-medium">{k}</td><td>{spec}</td><td>{result}</td><td className={`text-center font-bold ${itemJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{itemJudge || "-"}</td></tr>)}
+                    {[["외관","파손, 변형, 누액 및 오염이 없을 것",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",record.label,record.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",record.weight,record.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,itemJudge,result],i)=><tr key={k}><td>{i+1}</td><td className="font-medium">{k}</td><td>{spec}</td><td>{result}</td><td className="text-center font-bold" style={{color:itemJudge === "합격" ? "#159447" : itemJudge === "불합격" ? "#ef2020" : "#111827"}}>{itemJudge || "-"}</td></tr>)}
                   </tbody>
                 </table>
               </div>
 
               <div className="qmes-iqc-section">
                 <div className="qmes-iqc-section-title">판정</div>
-                <table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={record.judge === "합격" ? "text-emerald-600" : "text-red-600"}>{record.judge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table>
+                <table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td style={{color:record.judge === "합격" ? "#159447" : "#ef2020",fontWeight:800}}>{record.judge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td style={{color:record.judge === "합격" ? "#159447" : "#ef2020",fontWeight:800}}>{record.judge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table>
               </div>
 
               <div className="qmes-iqc-section">
@@ -2890,7 +2897,7 @@ function InspectionReportsTab() {
                 <table className="qmes-iqc-head-table"><tbody>
                   <tr><td className="qmes-iqc-head-label">입고번호</td><td className="qmes-iqc-head-value font-mono">{iqc.inNo || "-"}</td><td className="qmes-iqc-head-label">입고일자</td><td className="qmes-iqc-head-value">{(iqc.recv || "-").slice(0,10)}</td><td className="qmes-iqc-head-label">업체명</td><td className="qmes-iqc-head-value">{iqc.supplier || "-"}</td></tr>
                   <tr><td className="qmes-iqc-head-label">원재료명</td><td className="qmes-iqc-head-value">{iqc.name || "-"}</td><td className="qmes-iqc-head-label">원재료 LOT No.</td><td className="qmes-iqc-head-value font-mono">{iqc.lot || "-"}</td><td className="qmes-iqc-head-label">입고수량</td><td className="qmes-iqc-head-value">{iqc.qty || "-"}</td></tr>
-                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{iqc.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{iqc.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className={`qmes-iqc-head-value font-bold ${finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{finalJudge === "합격" ? "합격" : "불합격"}</td></tr>
+                  <tr><td className="qmes-iqc-head-label">검사수량</td><td className="qmes-iqc-head-value">{iqc.inspectQty || "-"}</td><td className="qmes-iqc-head-label">불량수량</td><td className="qmes-iqc-head-value">{iqc.defectQty || "0"}</td><td className="qmes-iqc-head-label">종합판정</td><td className="qmes-iqc-head-value font-bold" style={{color:finalJudge === "합격" ? "#159447" : "#ef2020"}}>{finalJudge === "합격" ? "합격" : "불합격"}</td></tr>
                 </tbody></table>
               </div>
 
@@ -2907,14 +2914,14 @@ function InspectionReportsTab() {
                 <table className="qmes-iqc-inspection-table">
                   <thead><tr><th style={{width:"6%"}}>NO</th><th style={{width:"13%"}}>검사항목</th><th style={{width:"49%"}}>검사기준</th><th style={{width:"19%"}}>검사결과</th><th style={{width:"13%"}} className="text-center">판정</th></tr></thead>
                   <tbody>
-                    {[["외관","파손, 변형, 누액 및 오염이 없을 것",iqc.visual,iqc.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",iqc.label,iqc.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",iqc.weight,iqc.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",iqc.coa,iqc.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,itemJudge,result],i)=><tr key={k}><td>{i+1}</td><td className="font-medium">{k}</td><td>{spec}</td><td>{result}</td><td className={`text-center font-bold ${itemJudge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{itemJudge || "-"}</td></tr>)}
+                    {[["외관","파손, 변형, 누액 및 오염이 없을 것",iqc.visual,iqc.visual === "합격" ? "이상 없음" : "이상 발생"],["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",iqc.label,iqc.label === "합격" ? "일치" : "불일치"],["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",iqc.weight,iqc.weight === "합격" ? "적합" : "부적합"],["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",iqc.coa,iqc.coa === "합격" ? "확인 완료" : "미확인/불일치"]].map(([k,spec,itemJudge,result],i)=><tr key={k}><td>{i+1}</td><td className="font-medium">{k}</td><td>{spec}</td><td>{result}</td><td className="text-center font-bold" style={{color:itemJudge === "합격" ? "#159447" : itemJudge === "불합격" ? "#ef2020" : "#111827"}}>{itemJudge || "-"}</td></tr>)}
                   </tbody>
                 </table>
               </div>
 
               <div className="qmes-iqc-section">
                 <div className="qmes-iqc-section-title">판정</div>
-                <table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td className={finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}>{finalJudge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td className={finalJudge === "합격" ? "text-emerald-600" : "text-red-600"}>{finalJudge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table>
+                <table className="qmes-iqc-judge-table"><tbody><tr><th>종합판정</th><td style={{color:finalJudge === "합격" ? "#159447" : "#ef2020",fontWeight:800}}>{finalJudge === "합격" ? "합격" : "불합격"}</td><th>처리결과</th><td style={{color:finalJudge === "합격" ? "#159447" : "#ef2020",fontWeight:800}}>{finalJudge === "합격" ? "입고 승인" : "반품"}</td></tr></tbody></table>
               </div>
 
               <div className="qmes-iqc-section">
