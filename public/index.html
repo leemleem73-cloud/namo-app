@@ -916,6 +916,72 @@ aside{display:none!important}
 </style>
 
 <!-- IQC_REQUEST_STRUCTURE_APPLIED -->
+
+<style>
+/* ===== 기본정보 칸 균등폭 및 결재란 확대 ===== */
+.qmes-iqc-doc .qmes-iqc-basic-table th{
+  width:14%!important;
+}
+.qmes-iqc-doc .qmes-iqc-basic-table td{
+  width:19.33%!important;
+}
+.qmes-iqc-doc .qmes-iqc-basic-table th,
+.qmes-iqc-doc .qmes-iqc-basic-table td{
+  height:42px!important;
+  vertical-align:middle!important;
+}
+
+.qmes-iqc-doc .qmes-iqc-auth-row{
+  align-items:stretch!important;
+}
+.qmes-iqc-doc .qmes-iqc-code-area,
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  min-height:130px!important;
+  height:130px!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-cell{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title{
+  height:34px!important;
+  min-height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  flex:1 1 auto!important;
+  min-height:95px!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:17px!important;
+  font-weight:800!important;
+}
+.qmes-iqc-doc .qmes-iqc-qr-label{
+  display:none!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-code-area,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    min-height:31mm!important;
+    height:31mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-title{
+    min-height:8mm!important;
+    height:8mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
+    min-height:23mm!important;
+  }
+}
+</style>
+
+<!-- IQC_BASIC_INFO_SIGN_RESIZE_260715 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -1582,7 +1648,7 @@ function IqcBarcodeQr({ record }) {
       </div>
       <div className="qmes-iqc-qr-wrap">
         {qrSrc ? <img src={qrSrc} alt={`${inNo} QR 코드`} /> : <div className="w-16 h-16 border border-slate-300" />}
-        <div className="qmes-iqc-qr-label">모바일 조회</div>
+        
       </div>
     </div>
   );
@@ -1635,12 +1701,12 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                     <tr>
                       <th>입고번호</th><td className="font-mono">{record.inNo || "-"}</td>
                       <th>입고일자</th><td>{(record.recv || "-").slice(0,10)}</td>
-                      <th>업체명</th><td>{record.supplier || "-"}</td>
+                      <th>검사일자</th><td>{(record.inspectedAt || record.date || record.recv || "-").slice(0,10)}</td>
                     </tr>
                     <tr>
+                      <th>업체명</th><td>{record.supplier || "-"}</td>
                       <th>원재료명</th><td>{record.name || "-"}</td>
                       <th>원재료 LOT No.</th><td className="font-mono">{record.lot || "-"}</td>
-                      <th>종합판정</th><td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "합격" : "불합격"}</td>
                     </tr>
 
                   </tbody>
@@ -3005,12 +3071,12 @@ function InspectionReportsTab() {
                     <tr>
                       <th>입고번호</th><td className="font-mono">{iqc.inNo || "-"}</td>
                       <th>입고일자</th><td>{(iqc.recv || "-").slice(0,10)}</td>
-                      <th>업체명</th><td>{iqc.supplier || "-"}</td>
+                      <th>검사일자</th><td>{(iqc.inspectedAt || iqc.date || iqc.recv || "-").slice(0,10)}</td>
                     </tr>
                     <tr>
+                      <th>업체명</th><td>{iqc.supplier || "-"}</td>
                       <th>원재료명</th><td>{iqc.name || "-"}</td>
                       <th>원재료 LOT No.</th><td className="font-mono">{iqc.lot || "-"}</td>
-                      <th>종합판정</th><td className={iqc.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{iqc.judge === "합격" ? "합격" : "불합격"}</td>
                     </tr>
 
                   </tbody>
