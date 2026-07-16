@@ -3307,6 +3307,168 @@ aside{display:none!important}
 </style>
 <!-- IQC_LEDGER_SEARCH_FILTER_EXPORT_260716 -->
 
+
+<style>
+/* ===== 수입검사 원재료 라벨 미리보기·인쇄 ===== */
+.qmes-iqc-action-label{
+  color:#c4b5fd;
+  border-color:rgba(139,92,246,.48);
+  background:rgba(139,92,246,.055);
+}
+.qmes-iqc-action-label:hover{
+  color:#f5f3ff;
+  border-color:rgba(167,139,250,.72);
+  background:rgba(139,92,246,.15);
+}
+
+.qmes-label-viewer{
+  width:min(720px,94vw);
+  max-height:92vh;
+  overflow:auto;
+  padding:20px;
+  border:1px solid #29415f;
+  border-radius:14px;
+  background:#0b1728;
+  box-shadow:0 28px 80px rgba(0,0,0,.58);
+}
+
+.qmes-iqc-label-paper{
+  width:520px;
+  max-width:100%;
+  margin:18px auto 0;
+  padding:18px;
+  border:2px solid #111827;
+  border-radius:4px;
+  box-shadow:0 14px 34px -20px rgba(0,0,0,.5);
+}
+
+.qmes-iqc-label-head{
+  padding-bottom:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border-bottom:3px solid #111827;
+}
+.qmes-iqc-label-company{
+  font-size:13px;
+  font-weight:800;
+}
+.qmes-iqc-label-title{
+  margin-top:2px;
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+.qmes-iqc-label-judge{
+  min-width:76px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:3px solid;
+  border-radius:7px;
+  font-size:18px;
+  font-weight:900;
+}
+.qmes-iqc-label-judge.pass{
+  color:#047857;
+  border-color:#059669;
+  background:#ecfdf5;
+}
+.qmes-iqc-label-judge.fail{
+  color:#b91c1c;
+  border-color:#dc2626;
+  background:#fef2f2;
+}
+
+.qmes-iqc-label-grid{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  border-top:1px solid #9ca3af;
+  border-left:1px solid #9ca3af;
+}
+.qmes-iqc-label-key,
+.qmes-iqc-label-value{
+  min-height:38px;
+  padding:8px 10px;
+  display:flex;
+  align-items:center;
+  border-right:1px solid #9ca3af;
+  border-bottom:1px solid #9ca3af;
+}
+.qmes-iqc-label-key{
+  color:#374151;
+  background:#f3f4f6;
+  font-size:11px;
+  font-weight:800;
+}
+.qmes-iqc-label-value{
+  color:#111827;
+  font-size:13px;
+  font-weight:700;
+  word-break:break-all;
+}
+.qmes-iqc-label-main{
+  font-size:17px;
+  font-weight:900;
+}
+
+.qmes-iqc-label-code{
+  margin-top:12px;
+  padding:10px;
+  border:1px solid #9ca3af;
+}
+.qmes-iqc-label-code .qmes-iqc-code-area{
+  margin:0!important;
+}
+.qmes-iqc-label-foot{
+  margin-top:9px;
+  color:#6b7280;
+  font-size:9px;
+  text-align:center;
+}
+
+/* 라벨 인쇄 시 한 장만 출력 */
+@media print{
+  body.print-doc .qmes-label-viewer{
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:0!important;
+    overflow:visible!important;
+    border:0!important;
+    background:#fff!important;
+    box-shadow:none!important;
+  }
+  body.print-doc .qmes-label-viewer .qmes-wo-viewer-head{
+    display:none!important;
+  }
+  body.print-doc .qmes-iqc-label-paper{
+    width:100mm!important;
+    max-width:100mm!important;
+    margin:0 auto!important;
+    padding:5mm!important;
+    border:1.5px solid #111!important;
+    box-shadow:none!important;
+    page-break-inside:avoid!important;
+  }
+}
+
+@media(max-width:640px){
+  .qmes-label-viewer{padding:13px}
+  .qmes-iqc-label-paper{padding:13px}
+  .qmes-iqc-label-title{font-size:18px}
+  .qmes-iqc-label-grid{grid-template-columns:92px minmax(0,1fr)}
+}
+</style>
+<!-- IQC_RAW_MATERIAL_LABEL_PREVIEW_PRINT_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -3977,6 +4139,83 @@ function IqcBarcodeQr({ record }) {
       <div className="qmes-iqc-qr-wrap">
         {qrSrc ? <img src={qrSrc} alt={`${inNo} QR 코드`} /> : <div className="w-16 h-16 border border-slate-300" />}
         
+      </div>
+    </div>
+  );
+}
+
+
+function IqcLabelViewer({ record, onClose }) {
+  if (!record) return null;
+
+  const printLabel = () => {
+    document.body.classList.add("print-doc");
+    window.print();
+    setTimeout(() => document.body.classList.remove("print-doc"), 300);
+  };
+
+  return (
+    <div className="qmes-modal-backdrop" onClick={onClose}>
+      <div className="qmes-label-viewer" onClick={(e)=>e.stopPropagation()}>
+        <div className="qmes-wo-viewer-head">
+          <div>
+            <div className="text-sm font-semibold text-slate-100">수입 원재료 라벨 미리보기</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">{record.inNo || "-"}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={printLabel}
+              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
+              <Printer size={13} /> 인쇄 / PDF
+            </button>
+            <button onClick={onClose} className="qmes-modal-close">×</button>
+          </div>
+        </div>
+
+        <div className="doc-paper qmes-iqc-label-paper bg-white text-stone-900">
+          <div className="qmes-iqc-label-head">
+            <div>
+              <div className="qmes-iqc-label-company">나모케미칼㈜</div>
+              <div className="qmes-iqc-label-title">수입 원재료 식별 라벨</div>
+            </div>
+            <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`}>
+              {record.judge || "-"}
+            </div>
+          </div>
+
+          <div className="qmes-iqc-label-grid">
+            <div className="qmes-iqc-label-key">원재료명</div>
+            <div className="qmes-iqc-label-value qmes-iqc-label-main">{record.name || "-"}</div>
+
+            <div className="qmes-iqc-label-key">LOT No.</div>
+            <div className="qmes-iqc-label-value qmes-iqc-label-main font-mono">{record.lot || "-"}</div>
+
+            <div className="qmes-iqc-label-key">입고번호</div>
+            <div className="qmes-iqc-label-value font-mono">{record.inNo || "-"}</div>
+
+            <div className="qmes-iqc-label-key">업체명</div>
+            <div className="qmes-iqc-label-value">{record.supplier || "-"}</div>
+
+            <div className="qmes-iqc-label-key">입고일자</div>
+            <div className="qmes-iqc-label-value">{String(record.recv || "-").slice(0,10)}</div>
+
+            <div className="qmes-iqc-label-key">입고수량</div>
+            <div className="qmes-iqc-label-value">{record.qty || "-"}</div>
+
+            <div className="qmes-iqc-label-key">검사자</div>
+            <div className="qmes-iqc-label-value">{record.inspector || record.by || "-"}</div>
+
+            <div className="qmes-iqc-label-key">라벨 확인</div>
+            <div className="qmes-iqc-label-value">{record.label || "-"}</div>
+          </div>
+
+          <div className="qmes-iqc-label-code">
+            <IqcBarcodeQr record={record} />
+          </div>
+
+          <div className="qmes-iqc-label-foot">
+            본 라벨은 수입검사 관리대장 등록정보를 기준으로 발행되었습니다.
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -5615,6 +5854,7 @@ function IqcTab() {
   const [tried, setTried] = useState(false);
   const [editingInNo, setEditingInNo] = useState(null);
   const [viewingIqc, setViewingIqc] = useState(null);
+  const [viewingLabel, setViewingLabel] = useState(null);
   const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("전체");
@@ -6026,6 +6266,7 @@ function IqcTab() {
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <button onClick={()=>editIqc(r)} title="수입검사 기록 수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
                       <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
+                      <button onClick={()=>setViewingLabel(r)} title="원재료 라벨 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-label"><Package size={12} /> 라벨</button>
                       <button onClick={()=>deleteIqc(r)} title="수입검사 기록 삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                     </td>
                   </tr>
@@ -6038,6 +6279,7 @@ function IqcTab() {
         
       </div>
       {viewingIqc && <QualityInspectionViewer type="IQC" record={viewingIqc} records={rows} onClose={()=>setViewingIqc(null)} />}
+      {viewingLabel && <IqcLabelViewer record={viewingLabel} onClose={()=>setViewingLabel(null)} />}
     </div>
   );
 }
