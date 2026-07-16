@@ -3025,6 +3025,102 @@ aside{display:none!important}
 </style>
 <!-- IQC_SUPPLIER_RANK_CARD_260716 -->
 
+
+<style>
+/* ===== 수입검사 관리대장 연도 조회 + 실제 업체별 합격률 ===== */
+.qmes-iqc-year-toolbar{
+  margin:0 0 12px;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(65,196,238,.18);
+  border-radius:10px;
+  background:linear-gradient(90deg,rgba(15,40,66,.72),rgba(9,28,48,.52));
+}
+.qmes-iqc-year-title{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#9db3ca;
+  font-size:11px;
+  font-weight:700;
+}
+.qmes-iqc-year-title svg{
+  color:#41c4ee;
+  filter:drop-shadow(0 0 5px rgba(65,196,238,.35));
+}
+.qmes-iqc-year-select{
+  width:112px;
+  height:34px;
+  padding:0 28px 0 11px;
+  border:1px solid #31506d;
+  border-radius:8px;
+  color:#e9f5ff;
+  background:#10243b;
+  font-size:12px;
+  font-weight:700;
+  outline:none;
+}
+.qmes-iqc-year-select:focus{
+  border-color:#41c4ee;
+  box-shadow:0 0 0 2px rgba(65,196,238,.12);
+}
+.qmes-iqc-year-select option{
+  color:#111827;
+  background:#fff;
+}
+.qmes-iqc-year-count{
+  margin-left:auto;
+  padding:4px 9px;
+  border:1px solid rgba(52,211,153,.20);
+  border-radius:999px;
+  color:#86efac;
+  background:rgba(52,211,153,.07);
+  font-size:10px;
+  font-weight:700;
+}
+.qmes-iqc-rank-count{
+  margin-left:auto;
+  color:#718ba5;
+  font-size:8px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.qmes-iqc-rank-empty{
+  min-height:172px;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  text-align:center;
+  border:1px dashed rgba(84,125,164,.32);
+  border-radius:12px;
+  color:#67849f;
+  background:rgba(8,25,45,.34);
+}
+.qmes-iqc-rank-empty svg{
+  color:#4c789d;
+}
+.qmes-iqc-rank-empty strong{
+  color:#a8bdd1;
+  font-size:11px;
+}
+.qmes-iqc-rank-empty span{
+  max-width:280px;
+  font-size:9px;
+  line-height:1.45;
+}
+@media(max-width:700px){
+  .qmes-iqc-year-toolbar{flex-wrap:wrap}
+  .qmes-iqc-year-count{margin-left:0}
+  .qmes-iqc-rank-count{display:none}
+}
+</style>
+<!-- IQC_REAL_DATA_YEAR_FILTER_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -5333,6 +5429,7 @@ function IqcTab() {
   const [tried, setTried] = useState(false);
   const [editingInNo, setEditingInNo] = useState(null);
   const [viewingIqc, setViewingIqc] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
   const [materialOptions, setMaterialOptions] = useState(() => [...new Set([...IQC_MATERIALS, ...(DB.iqcMaterials || [])])]);
 
   const addMaterialOption = () => {
@@ -5357,6 +5454,24 @@ function IqcTab() {
   const pass = done.filter((r) => r.judge === "합격").length;
   const failed = monthRows.filter((r) => [r.visual, r.label, r.weight, r.coa].includes("불합격"));
   const returned = monthRows.filter((r) => r.judge === "반품");
+
+  const availableYears = [...new Set([
+    "2025",
+    String(new Date().getFullYear()),
+    ...rows.map((r) => String(r.recv || r.inspectedAt || "").slice(0,4)).filter((y) => /^\d{4}$/.test(y))
+  ])].sort((a,b)=>Number(b)-Number(a));
+
+  const yearRows = rows.filter((r) => String(r.recv || r.inspectedAt || "").slice(0,4) === selectedYear);
+
+  const supplierRate = Object.values(yearRows.reduce((acc, r) => {
+    const supplier = String(r.supplier || "").trim();
+    if (!supplier || supplier === "-") return acc;
+    if (!acc[supplier]) acc[supplier] = { name:supplier, total:0, pass:0, rate:0 };
+    acc[supplier].total += 1;
+    if (r.judge === "합격") acc[supplier].pass += 1;
+    acc[supplier].rate = (acc[supplier].pass / acc[supplier].total) * 100;
+    return acc;
+  }, {}));
 
   const overall = (f) => {
     const vals = [f.visual, f.label, f.weight, f.coa];
@@ -5544,7 +5659,7 @@ function IqcTab() {
         {iqcErrors.length > 0 && <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{iqcErrors.map((e,i)=><div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 진입 금지 — {e}</div>)}</div>}
         <p className="text-[11px] text-slate-500 mt-2">입고번호는 자동 채번 또는 직접입력을 선택할 수 있습니다. 자동 채번 시 입고일자에 따라 IQC-YYMMDD-4자리 순번으로 즉시 변경됩니다. 외관·라벨·중량·COA 중 한 항목이라도 불합격이면 종합판정은 반품으로 자동 처리됩니다.</p>
       </Panel></div>
-        <div className="qmes-iqc-chart-panel qmes-iqc-rank-panel"><Panel title="업체별 IQC 합격률 (최근 6개월)">
+        <div className="qmes-iqc-chart-panel qmes-iqc-rank-panel"><Panel title={`업체별 IQC 합격률 (${selectedYear}년)`}>
           <div className="qmes-iqc-rank-head">
             <div>
               <span className="qmes-iqc-rank-kicker">SUPPLIER QUALITY</span>
@@ -5554,7 +5669,14 @@ function IqcTab() {
           </div>
 
           <div className="qmes-iqc-rank-list">
-            {[...SUPPLIER_RATE].sort((a,b)=>b.rate-a.rate).map((item,index)=>{
+            {supplierRate.length === 0 && (
+              <div className="qmes-iqc-rank-empty">
+                <Package size={22} />
+                <strong>{selectedYear}년 업체별 검사 데이터가 없습니다.</strong>
+                <span>수입검사 관리대장에 업체명이 포함된 기록을 등록하면 자동 집계됩니다.</span>
+              </div>
+            )}
+            {[...supplierRate].sort((a,b)=>b.rate-a.rate || b.total-a.total).map((item,index)=>{
               const below = item.rate < 98;
               return (
                 <div key={item.name} className={`qmes-iqc-rank-row ${below ? "is-warning" : "is-good"}`}>
@@ -5562,6 +5684,7 @@ function IqcTab() {
                   <div className="qmes-iqc-rank-main">
                     <div className="qmes-iqc-rank-label">
                       <span className="qmes-iqc-rank-name">{item.name}</span>
+                      <span className="qmes-iqc-rank-count">합격 {item.pass} / 전체 {item.total}</span>
                       <span className={`qmes-iqc-rank-grade ${below ? "warn" : "good"}`}>{below ? "관리대상" : "정상"}</span>
                     </div>
                     <div className="qmes-iqc-rank-track">
@@ -5584,6 +5707,16 @@ function IqcTab() {
 
       <div className="qmes-iqc-ledger-section">
         <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
+          <div className="qmes-iqc-year-toolbar">
+            <div className="qmes-iqc-year-title">
+              <ClipboardList size={15} />
+              <span>조회 연도</span>
+            </div>
+            <select value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)} className="qmes-iqc-year-select">
+              {availableYears.map((year)=><option key={year} value={year}>{year}년</option>)}
+            </select>
+            <span className="qmes-iqc-year-count">총 {yearRows.length}건</span>
+          </div>
           <div className="qmes-iqc-ledger-container -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
               <colgroup>
@@ -5599,8 +5732,8 @@ function IqcTab() {
                 <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-left py-2 pr-3 font-medium">종합판정</th><th className="text-center py-2 px-3 font-medium">관리</th>
               </tr></thead>
               <tbody>
-                {rows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">수입검사 기록이 없습니다 — 원재료 입고 시 상단에서 등록하세요.</td></tr>}
-                {rows.map((r) => (
+                {yearRows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">{selectedYear}년 수입검사 기록이 없습니다 — 조회 연도를 변경하거나 상단에서 등록하세요.</td></tr>}
+                {yearRows.map((r) => (
                   <tr key={r.inNo || r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
                     <td className="py-2.5 pr-3 font-mono text-xs text-sky-300 whitespace-nowrap">{r.inNo || "-"}</td><td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{(r.recv || "-").slice(0,10)}</td><td className="py-2.5 pr-3 font-mono text-xs text-violet-300 whitespace-nowrap truncate">{r.lot}</td><td className="py-2.5 pr-3 text-slate-100 truncate">{r.name}</td><td className="py-2.5 pr-3 text-xs text-slate-400 truncate">{r.supplier}</td>
                     <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.qty}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.inspectQty || "-"}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.defectQty || "-"}</td>
