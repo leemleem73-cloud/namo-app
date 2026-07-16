@@ -3121,6 +3121,192 @@ aside{display:none!important}
 </style>
 <!-- IQC_REAL_DATA_YEAR_FILTER_260716 -->
 
+
+<style>
+/* ===== 수입검사 관리대장 검색·필터·CSV 다운로드 ===== */
+.qmes-iqc-search-toolbar{
+  margin:0 0 13px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border:1px solid rgba(65,196,238,.18);
+  border-radius:12px;
+  background:
+    radial-gradient(500px 110px at 100% 0%,rgba(34,211,238,.055),transparent 70%),
+    linear-gradient(120deg,rgba(15,40,66,.78),rgba(8,26,47,.62));
+}
+.qmes-iqc-search-main{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) auto auto;
+  align-items:center;
+  gap:8px;
+}
+.qmes-iqc-search-box{
+  height:36px;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid #31506d;
+  border-radius:9px;
+  background:#0d2238;
+}
+.qmes-iqc-search-box:focus-within{
+  border-color:#41c4ee;
+  box-shadow:0 0 0 2px rgba(65,196,238,.10);
+}
+.qmes-iqc-search-box>svg{
+  flex:0 0 auto;
+  color:#41c4ee;
+}
+.qmes-iqc-search-box input{
+  min-width:0;
+  flex:1;
+  border:0;
+  outline:0;
+  color:#eef8ff;
+  background:transparent;
+  font-size:11px;
+}
+.qmes-iqc-search-box input::placeholder{
+  color:#5f7893;
+}
+.qmes-iqc-search-box button{
+  width:24px;
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  border-radius:6px;
+  color:#718ba5;
+  background:transparent;
+}
+.qmes-iqc-search-box button:hover{
+  color:#fff;
+  background:rgba(255,255,255,.06);
+}
+.qmes-iqc-filter-reset,
+.qmes-iqc-export-btn{
+  height:36px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border-radius:9px;
+  font-size:10px;
+  font-weight:700;
+  transition:.18s ease;
+}
+.qmes-iqc-filter-reset{
+  color:#a8bdd2;
+  border:1px solid #3b526c;
+  background:#132a43;
+}
+.qmes-iqc-filter-reset:hover{
+  color:#fff;
+  border-color:#607b96;
+  background:#1a3552;
+}
+.qmes-iqc-export-btn{
+  color:#a7f3d0;
+  border:1px solid rgba(52,211,153,.30);
+  background:rgba(52,211,153,.08);
+}
+.qmes-iqc-export-btn:hover{
+  color:#eafff5;
+  border-color:rgba(52,211,153,.52);
+  background:rgba(52,211,153,.14);
+}
+.qmes-iqc-filter-row{
+  display:grid;
+  grid-template-columns:110px 100px minmax(130px,1fr) 120px minmax(130px,1fr) auto;
+  align-items:end;
+  gap:8px;
+}
+.qmes-iqc-filter-row label{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.qmes-iqc-filter-row label>span{
+  padding-left:2px;
+  color:#718ca7;
+  font-size:9px;
+  font-weight:700;
+}
+.qmes-iqc-filter-row select{
+  width:100%;
+  height:33px;
+  padding:0 26px 0 9px;
+  border:1px solid #2e4965;
+  border-radius:8px;
+  outline:0;
+  color:#dce9f5;
+  background:#10243b;
+  font-size:10px;
+  font-weight:600;
+}
+.qmes-iqc-filter-row select:focus{
+  border-color:#41c4ee;
+  box-shadow:0 0 0 2px rgba(65,196,238,.09);
+}
+.qmes-iqc-filter-row option{
+  color:#111827;
+  background:#fff;
+}
+.qmes-iqc-result-count{
+  min-width:125px;
+  height:33px;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:1px solid rgba(65,196,238,.16);
+  border-radius:8px;
+  background:rgba(65,196,238,.045);
+  white-space:nowrap;
+}
+.qmes-iqc-result-count span{
+  color:#708aa4;
+  font-size:9px;
+}
+.qmes-iqc-result-count strong{
+  color:#bcefff;
+  font-size:10px;
+}
+@media(max-width:1200px){
+  .qmes-iqc-search-main{
+    grid-template-columns:minmax(220px,1fr) auto auto;
+  }
+  .qmes-iqc-filter-row{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .qmes-iqc-result-count{
+    min-width:0;
+  }
+}
+@media(max-width:700px){
+  .qmes-iqc-search-main{
+    grid-template-columns:1fr 1fr;
+  }
+  .qmes-iqc-search-box{
+    grid-column:1 / -1;
+  }
+  .qmes-iqc-filter-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .qmes-iqc-result-count{
+    grid-column:1 / -1;
+  }
+}
+</style>
+<!-- IQC_LEDGER_SEARCH_FILTER_EXPORT_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -5430,6 +5616,11 @@ function IqcTab() {
   const [editingInNo, setEditingInNo] = useState(null);
   const [viewingIqc, setViewingIqc] = useState(null);
   const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("전체");
+  const [selectedSupplier, setSelectedSupplier] = useState("전체");
+  const [selectedJudge, setSelectedJudge] = useState("전체");
+  const [selectedMaterial, setSelectedMaterial] = useState("전체");
   const [materialOptions, setMaterialOptions] = useState(() => [...new Set([...IQC_MATERIALS, ...(DB.iqcMaterials || [])])]);
 
   const addMaterialOption = () => {
@@ -5462,6 +5653,55 @@ function IqcTab() {
   ])].sort((a,b)=>Number(b)-Number(a));
 
   const yearRows = rows.filter((r) => String(r.recv || r.inspectedAt || "").slice(0,4) === selectedYear);
+
+  const supplierOptions = [...new Set(yearRows.map((r)=>String(r.supplier || "").trim()).filter((v)=>v && v !== "-"))].sort();
+  const materialFilterOptions = [...new Set(yearRows.map((r)=>String(r.name || "").trim()).filter(Boolean))].sort();
+
+  const filteredRows = yearRows.filter((r) => {
+    const recv = String(r.recv || r.inspectedAt || "");
+    const monthMatch = selectedMonth === "전체" || recv.slice(5,7) === selectedMonth;
+    const supplierMatch = selectedSupplier === "전체" || String(r.supplier || "") === selectedSupplier;
+    const judgeMatch = selectedJudge === "전체" || String(r.judge || "") === selectedJudge;
+    const materialMatch = selectedMaterial === "전체" || String(r.name || "") === selectedMaterial;
+    const q = searchTerm.trim().toLowerCase();
+    const searchMatch = !q || [
+      r.inNo, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
+      r.inspector, r.by, r.judge, r.remarks, r.note
+    ].some((v)=>String(v || "").toLowerCase().includes(q));
+    return monthMatch && supplierMatch && judgeMatch && materialMatch && searchMatch;
+  });
+
+  const resetIqcFilters = () => {
+    setSearchTerm("");
+    setSelectedMonth("전체");
+    setSelectedSupplier("전체");
+    setSelectedJudge("전체");
+    setSelectedMaterial("전체");
+  };
+
+  const exportFilteredIqcCsv = () => {
+    if (filteredRows.length === 0) {
+      window.alert("다운로드할 수입검사 데이터가 없습니다.");
+      return;
+    }
+    const headers = ["입고번호","입고일자","검사일자","LOT No.","원재료명","업체명","입고수량","검사수량","불량수량","외관","라벨","중량","COA","검사자","종합판정","특이사항"];
+    const csvRows = filteredRows.map((r)=>[
+      r.inNo, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
+      r.qty, r.inspectQty, r.defectQty, r.visual, r.label, r.weight,
+      r.coa, r.inspector || r.by, r.judge, r.remarks || r.note || ""
+    ]);
+    const escapeCsv = (v) => `"${String(v ?? "").replace(/"/g,'""')}"`;
+    const csv = "\uFEFF" + [headers, ...csvRows].map((row)=>row.map(escapeCsv).join(",")).join("\r\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `수입검사관리대장_${selectedYear}년_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const supplierRate = Object.values(yearRows.reduce((acc, r) => {
     const supplier = String(r.supplier || "").trim();
@@ -5707,15 +5947,58 @@ function IqcTab() {
 
       <div className="qmes-iqc-ledger-section">
         <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
-          <div className="qmes-iqc-year-toolbar">
-            <div className="qmes-iqc-year-title">
-              <ClipboardList size={15} />
-              <span>조회 연도</span>
+          <div className="qmes-iqc-search-toolbar">
+            <div className="qmes-iqc-search-main">
+              <div className="qmes-iqc-search-box">
+                <Search size={15} />
+                <input
+                  value={searchTerm}
+                  onChange={(e)=>setSearchTerm(e.target.value)}
+                  placeholder="입고번호, LOT, 업체명, 원재료명, 검사자 검색"
+                />
+                {searchTerm && <button type="button" onClick={()=>setSearchTerm("")} title="검색어 지우기"><XCircle size={13} /></button>}
+              </div>
+              <button type="button" onClick={resetIqcFilters} className="qmes-iqc-filter-reset"><RotateCw size={13} /> 초기화</button>
+              <button type="button" onClick={exportFilteredIqcCsv} className="qmes-iqc-export-btn"><ArrowDownToLine size={13} /> CSV 다운로드</button>
             </div>
-            <select value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)} className="qmes-iqc-year-select">
-              {availableYears.map((year)=><option key={year} value={year}>{year}년</option>)}
-            </select>
-            <span className="qmes-iqc-year-count">총 {yearRows.length}건</span>
+
+            <div className="qmes-iqc-filter-row">
+              <label><span>연도</span>
+                <select value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)}>
+                  {availableYears.map((year)=><option key={year} value={year}>{year}년</option>)}
+                </select>
+              </label>
+              <label><span>월</span>
+                <select value={selectedMonth} onChange={(e)=>setSelectedMonth(e.target.value)}>
+                  <option value="전체">전체</option>
+                  {Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map((m)=><option key={m} value={m}>{Number(m)}월</option>)}
+                </select>
+              </label>
+              <label><span>업체</span>
+                <select value={selectedSupplier} onChange={(e)=>setSelectedSupplier(e.target.value)}>
+                  <option value="전체">전체 업체</option>
+                  {supplierOptions.map((v)=><option key={v} value={v}>{v}</option>)}
+                </select>
+              </label>
+              <label><span>판정</span>
+                <select value={selectedJudge} onChange={(e)=>setSelectedJudge(e.target.value)}>
+                  <option value="전체">전체 판정</option>
+                  <option value="합격">합격</option>
+                  <option value="반품">반품</option>
+                  <option value="검사중">검사중</option>
+                </select>
+              </label>
+              <label><span>원재료</span>
+                <select value={selectedMaterial} onChange={(e)=>setSelectedMaterial(e.target.value)}>
+                  <option value="전체">전체 원재료</option>
+                  {materialFilterOptions.map((v)=><option key={v} value={v}>{v}</option>)}
+                </select>
+              </label>
+              <div className="qmes-iqc-result-count">
+                <span>전체 {yearRows.length}건</span>
+                <strong>검색결과 {filteredRows.length}건</strong>
+              </div>
+            </div>
           </div>
           <div className="qmes-iqc-ledger-container -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
@@ -5732,8 +6015,8 @@ function IqcTab() {
                 <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-left py-2 pr-3 font-medium">종합판정</th><th className="text-center py-2 px-3 font-medium">관리</th>
               </tr></thead>
               <tbody>
-                {yearRows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">{selectedYear}년 수입검사 기록이 없습니다 — 조회 연도를 변경하거나 상단에서 등록하세요.</td></tr>}
-                {yearRows.map((r) => (
+                {filteredRows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">검색 조건에 맞는 수입검사 기록이 없습니다.</td></tr>}
+                {filteredRows.map((r) => (
                   <tr key={r.inNo || r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
                     <td className="py-2.5 pr-3 font-mono text-xs text-sky-300 whitespace-nowrap">{r.inNo || "-"}</td><td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{(r.recv || "-").slice(0,10)}</td><td className="py-2.5 pr-3 font-mono text-xs text-violet-300 whitespace-nowrap truncate">{r.lot}</td><td className="py-2.5 pr-3 text-slate-100 truncate">{r.name}</td><td className="py-2.5 pr-3 text-xs text-slate-400 truncate">{r.supplier}</td>
                     <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.qty}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.inspectQty || "-"}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.defectQty || "-"}</td>
