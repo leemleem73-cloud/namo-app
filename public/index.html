@@ -3469,6 +3469,143 @@ aside{display:none!important}
 </style>
 <!-- IQC_RAW_MATERIAL_LABEL_PREVIEW_PRINT_260716 -->
 
+
+<style>
+/* ===== 수입검사 KPI 카드 색상 강화 + 하단 Hover Glow ===== */
+.qmes-iqc-kpi-card{
+  --kpi-accent:#8b5cf6;
+  --kpi-accent-rgb:139,92,246;
+  position:relative!important;
+  overflow:hidden!important;
+  border-color:rgba(var(--kpi-accent-rgb),.34)!important;
+  background:
+    radial-gradient(230px 115px at 100% 0%,rgba(var(--kpi-accent-rgb),.18),transparent 68%),
+    linear-gradient(145deg,rgba(18,42,70,.99),rgba(8,25,45,.995))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 12px 28px -20px rgba(0,0,0,.95)!important;
+  transition:
+    transform .24s cubic-bezier(.2,.8,.2,1),
+    border-color .24s ease,
+    box-shadow .24s ease,
+    background .24s ease!important;
+}
+
+/* 카드별 정확한 색상 */
+.qmes-iqc-kpi-card:nth-child(1){
+  --kpi-accent:#a855f7;
+  --kpi-accent-rgb:168,85,247;
+}
+.qmes-iqc-kpi-card:nth-child(2){
+  --kpi-accent:#22c55e;
+  --kpi-accent-rgb:34,197,94;
+}
+.qmes-iqc-kpi-card:nth-child(3){
+  --kpi-accent:#ef4444;
+  --kpi-accent-rgb:239,68,68;
+}
+.qmes-iqc-kpi-card:nth-child(4){
+  --kpi-accent:#f59e0b;
+  --kpi-accent-rgb:245,158,11;
+}
+
+/* 위쪽 포인트 라인 */
+.qmes-iqc-kpi-card{
+  border-top:2px solid rgba(var(--kpi-accent-rgb),.82)!important;
+}
+
+/* 하단 은은한 조명 */
+.qmes-iqc-kpi-card::after{
+  content:""!important;
+  position:absolute!important;
+  left:12%!important;
+  right:12%!important;
+  bottom:-28px!important;
+  width:auto!important;
+  height:46px!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:radial-gradient(
+    ellipse at center,
+    rgba(var(--kpi-accent-rgb),.68) 0%,
+    rgba(var(--kpi-accent-rgb),.24) 42%,
+    transparent 72%
+  )!important;
+  filter:blur(12px)!important;
+  opacity:.20!important;
+  transform:scaleX(.72)!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+  transition:
+    opacity .26s ease,
+    transform .26s ease,
+    bottom .26s ease!important;
+}
+
+/* 카드 안쪽 은은한 색상 반사 */
+.qmes-iqc-kpi-card::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.075),transparent 30%),
+    radial-gradient(180px 90px at 100% 100%,rgba(var(--kpi-accent-rgb),.10),transparent 70%)!important;
+  box-shadow:inset 0 -2px 0 rgba(var(--kpi-accent-rgb),.16)!important;
+}
+
+/* hover 시 해당 색상의 불빛이 아래에서 올라옴 */
+.qmes-iqc-kpi-card:hover{
+  transform:translateY(-4px) scale(1.008)!important;
+  border-color:rgba(var(--kpi-accent-rgb),.72)!important;
+  background:
+    radial-gradient(260px 135px at 100% 0%,rgba(var(--kpi-accent-rgb),.27),transparent 68%),
+    linear-gradient(145deg,rgba(20,46,76,.995),rgba(8,25,45,1))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.075),
+    0 20px 34px -22px rgba(var(--kpi-accent-rgb),.62),
+    0 0 0 1px rgba(var(--kpi-accent-rgb),.10)!important;
+}
+.qmes-iqc-kpi-card:hover::after{
+  bottom:-17px!important;
+  opacity:.82!important;
+  transform:scaleX(1.05)!important;
+}
+
+/* 아이콘과 숫자의 색감 강화 */
+.qmes-iqc-kpi-card svg{
+  color:var(--kpi-accent)!important;
+  background:rgba(var(--kpi-accent-rgb),.10)!important;
+  border-color:rgba(var(--kpi-accent-rgb),.28)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 0 16px rgba(var(--kpi-accent-rgb),.20)!important;
+  filter:drop-shadow(0 0 7px rgba(var(--kpi-accent-rgb),.72))!important;
+}
+.qmes-iqc-kpi-card .text-2xl,
+.qmes-iqc-kpi-card .text-xl{
+  color:#f8fbff!important;
+  text-shadow:
+    0 0 18px rgba(var(--kpi-accent-rgb),.14),
+    0 1px 0 rgba(255,255,255,.05)!important;
+}
+.qmes-iqc-kpi-card .rounded-full{
+  background:var(--kpi-accent)!important;
+  color:var(--kpi-accent)!important;
+  box-shadow:
+    0 0 0 4px rgba(var(--kpi-accent-rgb),.07),
+    0 0 13px rgba(var(--kpi-accent-rgb),.82)!important;
+}
+
+/* 카드 내용이 조명 위로 유지되도록 */
+.qmes-iqc-kpi-card > *{
+  position:relative!important;
+  z-index:2!important;
+}
+</style>
+<!-- IQC_KPI_STRONG_COLOR_BOTTOM_GLOW_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6047,8 +6184,8 @@ function IqcTab() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" />
         <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
-        <Kpi animated icon={AlertTriangle} label="부적합 건수" value={failed.length} unit="건" tone="text-amber-400" />
-        <Kpi animated icon={XCircle} label="반품" value={returned.length} unit="건" tone="text-red-400" />
+        <Kpi animated icon={AlertTriangle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" />
+        <Kpi animated icon={XCircle} label="반품" value={returned.length} unit="건" tone="text-amber-400" />
       </div>
 
       <div className="qmes-iqc-register-chart-layout">
