@@ -3606,6 +3606,182 @@ aside{display:none!important}
 </style>
 <!-- IQC_KPI_STRONG_COLOR_BOTTOM_GLOW_260716 -->
 
+
+<style>
+/* ===== IQC KPI 최종 색상·아이콘·Hover Glow ===== */
+.qmes-iqc-kpi-card{
+  --kpi-accent:#a855f7;
+  --kpi-rgb:168,85,247;
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  border:1px solid rgba(var(--kpi-rgb),.42)!important;
+  border-top:2px solid rgba(var(--kpi-rgb),.92)!important;
+  background:
+    radial-gradient(250px 130px at 100% 0%,rgba(var(--kpi-rgb),.22),transparent 68%),
+    linear-gradient(145deg,rgba(19,44,74,.99),rgba(7,23,42,1))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 14px 30px -22px rgba(0,0,0,.95)!important;
+  transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease!important;
+}
+.qmes-iqc-kpi-card:nth-child(1){--kpi-accent:#a855f7;--kpi-rgb:168,85,247}
+.qmes-iqc-kpi-card:nth-child(2){--kpi-accent:#22c55e;--kpi-rgb:34,197,94}
+.qmes-iqc-kpi-card:nth-child(3){--kpi-accent:#ef4444;--kpi-rgb:239,68,68}
+.qmes-iqc-kpi-card:nth-child(4){--kpi-accent:#f59e0b;--kpi-rgb:245,158,11}
+
+/* 하단 조명 */
+.qmes-iqc-kpi-card::after{
+  content:""!important;
+  position:absolute!important;
+  left:10%!important;
+  right:10%!important;
+  bottom:-30px!important;
+  width:auto!important;
+  height:50px!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:radial-gradient(ellipse at center,rgba(var(--kpi-rgb),.76),rgba(var(--kpi-rgb),.24) 44%,transparent 74%)!important;
+  filter:blur(13px)!important;
+  opacity:.18!important;
+  transform:scaleX(.72)!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+  transition:opacity .25s ease,transform .25s ease,bottom .25s ease!important;
+}
+.qmes-iqc-kpi-card:hover{
+  transform:translateY(-4px) scale(1.008)!important;
+  border-color:rgba(var(--kpi-rgb),.85)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 21px 38px -22px rgba(var(--kpi-rgb),.68),
+    0 0 0 1px rgba(var(--kpi-rgb),.10)!important;
+}
+.qmes-iqc-kpi-card:hover::after{
+  bottom:-17px!important;
+  opacity:.88!important;
+  transform:scaleX(1.08)!important;
+}
+.qmes-iqc-kpi-card svg{
+  color:var(--kpi-accent)!important;
+  background:rgba(var(--kpi-rgb),.11)!important;
+  border-color:rgba(var(--kpi-rgb),.34)!important;
+  filter:drop-shadow(0 0 8px rgba(var(--kpi-rgb),.75))!important;
+  transition:transform .22s ease,filter .22s ease!important;
+}
+.qmes-iqc-kpi-card:hover svg{
+  transform:scale(1.10)!important;
+  filter:drop-shadow(0 0 12px rgba(var(--kpi-rgb),.95))!important;
+}
+.qmes-iqc-kpi-card .qmes-iqc-kpi-dot{
+  background:var(--kpi-accent)!important;
+  color:var(--kpi-accent)!important;
+  box-shadow:0 0 12px rgba(var(--kpi-rgb),.9)!important;
+}
+
+/* ===== 노트북: 관리 열 잘림 방지 ===== */
+.qmes-iqc-ledger-table td:last-child{
+  overflow:visible!important;
+  white-space:normal!important;
+}
+@media(max-width:1366px){
+  .qmes-iqc-ledger-container{
+    width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    overflow:hidden!important;
+  }
+  .qmes-iqc-ledger-table td:last-child{
+    padding:3px 2px!important;
+  }
+  .qmes-iqc-ledger-table td:last-child{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:3px!important;
+    align-content:center!important;
+  }
+  .qmes-iqc-ledger-table td:last-child .qmes-iqc-action-btn{
+    width:100%!important;
+    min-width:0!important;
+    height:21px!important;
+    margin:0!important;
+    padding:0 2px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:2px!important;
+    font-size:7px!important;
+    overflow:hidden!important;
+  }
+  .qmes-iqc-ledger-table td:last-child .qmes-iqc-action-btn svg{
+    width:9px!important;
+    height:9px!important;
+    flex:0 0 auto!important;
+  }
+}
+@media(max-width:1100px){
+  .qmes-iqc-ledger-table thead th,
+  .qmes-iqc-ledger-table tbody td{
+    font-size:7.5px!important;
+    padding-left:2px!important;
+    padding-right:2px!important;
+  }
+  .qmes-iqc-ledger-table td:last-child .qmes-iqc-action-btn{
+    font-size:6.5px!important;
+  }
+}
+</style>
+<!-- IQC_KPI_ICON_COLOR_AND_LEDGER_MANAGE_FIX_260716 -->
+
+
+<style>
+/* === KPI color override === */
+
+/* 3rd card : 부적합 */
+.qmes-iqc-kpi-card:nth-child(3){
+  --kpi-accent:#ef4444 !important;
+  --kpi-rgb:239,68,68 !important;
+  border-color:rgba(239,68,68,.45)!important;
+  border-top-color:#ef4444!important;
+}
+.qmes-iqc-kpi-card:nth-child(3) svg,
+.qmes-iqc-kpi-card:nth-child(3) .rounded-full{
+  color:#ef4444!important;
+  border-color:rgba(239,68,68,.45)!important;
+  background:rgba(239,68,68,.12)!important;
+  box-shadow:0 0 14px rgba(239,68,68,.55)!important;
+}
+.qmes-iqc-kpi-card:nth-child(3)::after{
+  background:radial-gradient(ellipse at center,
+    rgba(239,68,68,.85),
+    rgba(239,68,68,.25) 45%,
+    transparent 75%)!important;
+}
+
+/* 4th card : 반품 */
+.qmes-iqc-kpi-card:nth-child(4){
+  --kpi-accent:#f59e0b !important;
+  --kpi-rgb:245,158,11 !important;
+  border-color:rgba(245,158,11,.45)!important;
+  border-top-color:#f59e0b!important;
+}
+.qmes-iqc-kpi-card:nth-child(4) svg,
+.qmes-iqc-kpi-card:nth-child(4) .rounded-full{
+  color:#f59e0b!important;
+  border-color:rgba(245,158,11,.45)!important;
+  background:rgba(245,158,11,.12)!important;
+  box-shadow:0 0 14px rgba(245,158,11,.55)!important;
+}
+.qmes-iqc-kpi-card:nth-child(4)::after{
+  background:radial-gradient(ellipse at center,
+    rgba(245,158,11,.85),
+    rgba(245,158,11,.25) 45%,
+    transparent 75%)!important;
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6184,8 +6360,8 @@ function IqcTab() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" />
         <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
-        <Kpi animated icon={AlertTriangle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" />
-        <Kpi animated icon={XCircle} label="반품" value={returned.length} unit="건" tone="text-amber-400" />
+        <Kpi animated icon={XCircle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" />
+        <Kpi animated icon={AlertTriangle} label="반품" value={returned.length} unit="건" tone="text-amber-400" />
       </div>
 
       <div className="qmes-iqc-register-chart-layout">
@@ -6380,10 +6556,10 @@ function IqcTab() {
           <div className="qmes-iqc-ledger-container -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
               <colgroup>
-                <col style={{width:"10%"}} /><col style={{width:"7%"}} /><col style={{width:"9%"}} /><col style={{width:"8%"}} /><col style={{width:"9%"}} />
+                <col style={{width:"9%"}} /><col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"8%"}} /><col style={{width:"8%"}} />
                 <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
                 <col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} />
-                <col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"8%"}} />
+                <col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"11%"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
