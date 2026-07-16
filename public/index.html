@@ -3837,6 +3837,36 @@ aside{display:none!important}
 </style>
 <!-- IQC_MANAGE_BUTTON_ORDER_2X2_260716 -->
 
+
+<style>
+/* === 관리 버튼 가로 일렬 배치 복원 === */
+.qmes-iqc-manage-grid{
+  max-width:none !important;
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  justify-content:center !important;
+  align-items:center !important;
+  gap:4px !important;
+}
+.qmes-iqc-manage-grid .qmes-iqc-action-btn{
+  width:auto !important;
+  min-width:54px !important;
+  height:28px !important;
+  padding:0 8px !important;
+  font-size:11px !important;
+}
+@media(max-width:1366px){
+  .qmes-iqc-manage-grid{
+    gap:3px !important;
+  }
+  .qmes-iqc-manage-grid .qmes-iqc-action-btn{
+    min-width:48px !important;
+    font-size:10px !important;
+    padding:0 6px !important;
+  }
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
