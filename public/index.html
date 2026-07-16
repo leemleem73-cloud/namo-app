@@ -2696,6 +2696,99 @@ aside{display:none!important}
 </style>
 <!-- IQC_KPI_ULTRA_PREMIUM_260716 -->
 
+
+<style>
+/* ===== 업체별 IQC 합격률 그래프 프리미엄 디자인 ===== */
+.qmes-iqc-chart-premium > div{
+  position:relative!important;
+  overflow:hidden!important;
+  border:1px solid rgba(73,112,151,.34)!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(340px 180px at 100% 0%,rgba(34,211,238,.09),transparent 68%),
+    linear-gradient(150deg,rgba(14,37,62,.98),rgba(8,25,45,.99))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 14px 30px -22px rgba(0,0,0,.9)!important;
+}
+.qmes-iqc-chart-premium > div::after{
+  content:"";
+  position:absolute;
+  top:-65px;
+  right:-55px;
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  border:1px solid rgba(103,232,249,.10);
+  box-shadow:0 0 0 32px rgba(34,211,238,.018),0 0 0 64px rgba(34,211,238,.01);
+  pointer-events:none;
+}
+.qmes-iqc-chart-premium .qmes-iqc-chart-summary{
+  position:relative;
+  z-index:2;
+  margin:-2px 0 6px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  color:#7f9ab7;
+  font-size:10px;
+  font-weight:600;
+}
+.qmes-iqc-chart-premium .qmes-iqc-chart-summary span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.qmes-chart-dot{
+  width:7px;
+  height:7px;
+  display:inline-block;
+  border-radius:9999px;
+}
+.qmes-chart-dot.good{
+  background:#22d3ee;
+  box-shadow:0 0 9px rgba(34,211,238,.8);
+}
+.qmes-chart-dot.warning{
+  background:#fbbf24;
+  box-shadow:0 0 9px rgba(251,191,36,.72);
+}
+.qmes-iqc-chart-premium .recharts-wrapper{
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.18));
+}
+.qmes-iqc-chart-premium .recharts-tooltip-wrapper{
+  outline:none!important;
+}
+.qmes-iqc-chart-note{
+  position:relative;
+  z-index:2;
+  min-height:31px;
+  margin-top:6px;
+  padding:7px 10px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid rgba(245,158,11,.22);
+  border-radius:8px;
+  color:#c5a86e;
+  background:rgba(245,158,11,.055);
+  font-size:10px;
+  line-height:1.35;
+}
+.qmes-iqc-chart-note svg{
+  flex:0 0 auto;
+  color:#fbbf24;
+  filter:drop-shadow(0 0 6px rgba(251,191,36,.45));
+}
+@media(max-width:1366px){
+  .qmes-iqc-chart-premium .qmes-iqc-chart-summary{
+    gap:10px;
+    font-size:9px;
+  }
+}
+</style>
+<!-- IQC_SUPPLIER_RATE_PREMIUM_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -2705,7 +2798,7 @@ aside{display:none!important}
 <script>window.__LUCIDE__ = {"FlaskConical":[["path",{"d":"M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"}],["path",{"d":"M6.453 15h11.094"}],["path",{"d":"M8.5 2h7"}]],"Activity":[["path",{"d":"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]],"AlertTriangle":[["path",{"d":"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}],["path",{"d":"M12 9v4"}],["path",{"d":"M12 17h.01"}]],"CheckCircle2":[["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"m9 12 2 2 4-4"}]],"XCircle":[["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"m15 9-6 6"}],["path",{"d":"m9 9 6 6"}]],"Gauge":[["path",{"d":"m12 14 4-4"}],["path",{"d":"M3.34 19a10 10 0 1 1 17.32 0"}]],"Package":[["path",{"d":"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"}],["path",{"d":"M12 22V12"}],["polyline",{"points":"3.29 7 12 12 20.71 7"}],["path",{"d":"m7.5 4.27 9 5.15"}]],"ClipboardCheck":[["rect",{"width":"8","height":"4","x":"8","y":"2","rx":"1","ry":"1"}],["path",{"d":"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}],["path",{"d":"m9 14 2 2 4-4"}]],"Cpu":[["path",{"d":"M12 20v2"}],["path",{"d":"M12 2v2"}],["path",{"d":"M17 20v2"}],["path",{"d":"M17 2v2"}],["path",{"d":"M2 12h2"}],["path",{"d":"M2 17h2"}],["path",{"d":"M2 7h2"}],["path",{"d":"M20 12h2"}],["path",{"d":"M20 17h2"}],["path",{"d":"M20 7h2"}],["path",{"d":"M7 20v2"}],["path",{"d":"M7 2v2"}],["rect",{"x":"4","y":"4","width":"16","height":"16","rx":"2"}],["rect",{"x":"8","y":"8","width":"8","height":"8","rx":"1"}]],"LayoutDashboard":[["rect",{"width":"7","height":"9","x":"3","y":"3","rx":"1"}],["rect",{"width":"7","height":"5","x":"14","y":"3","rx":"1"}],["rect",{"width":"7","height":"9","x":"14","y":"12","rx":"1"}],["rect",{"width":"7","height":"5","x":"3","y":"16","rx":"1"}]],"Bell":[["path",{"d":"M10.268 21a2 2 0 0 0 3.464 0"}],["path",{"d":"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"}]],"Search":[["path",{"d":"m21 21-4.34-4.34"}],["circle",{"cx":"11","cy":"11","r":"8"}]],"TrendingUp":[["path",{"d":"M16 7h6v6"}],["path",{"d":"m22 7-8.5 8.5-5-5L2 17"}]],"TrendingDown":[["path",{"d":"M16 17h6v-6"}],["path",{"d":"m22 17-8.5-8.5-5 5L2 7"}]],"Thermometer":[["path",{"d":"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"}]],"Droplets":[["path",{"d":"M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"}],["path",{"d":"M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"}]],"Plus":[["path",{"d":"M5 12h14"}],["path",{"d":"M12 5v14"}]],"ChevronRight":[["path",{"d":"m9 18 6-6-6-6"}]],"Truck":[["path",{"d":"M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"}],["path",{"d":"M15 18H9"}],["path",{"d":"M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"}],["circle",{"cx":"17","cy":"18","r":"2"}],["circle",{"cx":"7","cy":"18","r":"2"}]],"Boxes":[["path",{"d":"M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z"}],["path",{"d":"m7 16.5-4.74-2.85"}],["path",{"d":"m7 16.5 5-3"}],["path",{"d":"M7 16.5v5.17"}],["path",{"d":"M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z"}],["path",{"d":"m17 16.5-5-3"}],["path",{"d":"m17 16.5 4.74-2.85"}],["path",{"d":"M17 16.5v5.17"}],["path",{"d":"M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z"}],["path",{"d":"M12 8 7.26 5.15"}],["path",{"d":"m12 8 4.74-2.85"}],["path",{"d":"M12 13.5V8"}]],"GitBranch":[["path",{"d":"M15 6a9 9 0 0 0-9 9V3"}],["circle",{"cx":"18","cy":"6","r":"3"}],["circle",{"cx":"6","cy":"18","r":"3"}]],"ArrowDownToLine":[["path",{"d":"M12 17V3"}],["path",{"d":"m6 11 6 6 6-6"}],["path",{"d":"M19 21H5"}]],"ArrowUpFromLine":[["path",{"d":"m18 9-6-6-6 6"}],["path",{"d":"M12 3v14"}],["path",{"d":"M5 21h14"}]],"CircleDot":[["circle",{"cx":"12","cy":"12","r":"10"}],["circle",{"cx":"12","cy":"12","r":"1"}]],"Beaker":[["path",{"d":"M4.5 3h15"}],["path",{"d":"M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"}],["path",{"d":"M6 14h12"}]],"Filter":[["path",{"d":"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"}]],"Warehouse":[["path",{"d":"M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11"}],["path",{"d":"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8z"}],["path",{"d":"M6 13h12"}],["path",{"d":"M6 17h12"}]],"FileText":[["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M10 9H8"}],["path",{"d":"M16 13H8"}],["path",{"d":"M16 17H8"}]],"Wind":[["path",{"d":"M12.8 19.6A2 2 0 1 0 14 16H2"}],["path",{"d":"M17.5 8a2.5 2.5 0 1 1 2 4H2"}],["path",{"d":"M9.8 4.4A2 2 0 1 1 11 8H2"}]],"RotateCw":[["path",{"d":"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"}],["path",{"d":"M21 3v5h-5"}]],"BarChart3":[["path",{"d":"M3 3v16a2 2 0 0 0 2 2h16"}],["path",{"d":"M18 17V9"}],["path",{"d":"M13 17V5"}],["path",{"d":"M8 17v-3"}]],"Repeat":[["path",{"d":"m17 2 4 4-4 4"}],["path",{"d":"M3 11v-1a4 4 0 0 1 4-4h14"}],["path",{"d":"m7 22-4-4 4-4"}],["path",{"d":"M21 13v1a4 4 0 0 1-4 4H3"}]],"ShieldAlert":[["path",{"d":"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}],["path",{"d":"M12 8v4"}],["path",{"d":"M12 16h.01"}]],"Printer":[["path",{"d":"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"}],["path",{"d":"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"}],["rect",{"x":"6","y":"14","width":"12","height":"8","rx":"1"}]],"Users":[["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}],["path",{"d":"M16 3.128a4 4 0 0 1 0 7.744"}],["path",{"d":"M22 21v-2a4 4 0 0 0-3-3.87"}],["circle",{"cx":"9","cy":"7","r":"4"}]],"Wrench":[["path",{"d":"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"}]],"ClipboardList":[["rect",{"width":"8","height":"4","x":"8","y":"2","rx":"1","ry":"1"}],["path",{"d":"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}],["path",{"d":"M12 11h4"}],["path",{"d":"M12 16h4"}],["path",{"d":"M8 11h.01"}],["path",{"d":"M8 16h.01"}]],"Lock":[["rect",{"width":"18","height":"11","x":"3","y":"11","rx":"2","ry":"2"}],["path",{"d":"M7 11V7a5 5 0 0 1 10 0v4"}]],"Unlock":[["rect",{"width":"18","height":"11","x":"3","y":"11","rx":"2","ry":"2"}],["path",{"d":"M7 11V7a5 5 0 0 1 9.9-1"}]],"ShieldCheck":[["path",{"d":"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}],["path",{"d":"m9 12 2 2 4-4"}]],"Tablet":[["rect",{"width":"16","height":"20","x":"4","y":"2","rx":"2","ry":"2"}],["line",{"x1":"12","x2":"12.01","y1":"18","y2":"18"}]],"MessageSquareWarning":[["path",{"d":"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"}],["path",{"d":"M12 15h.01"}],["path",{"d":"M12 7v4"}]],"PhoneCall":[["path",{"d":"M13 2a9 9 0 0 1 9 9"}],["path",{"d":"M13 6a5 5 0 0 1 5 5"}],["path",{"d":"M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"}]]};</script>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect } = React;
-const { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } = Recharts;
+const { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine, LabelList, Cell } = Recharts;
 const __ATTR_FIX = { "stroke-width": "strokeWidth", "stroke-linecap": "strokeLinecap", "stroke-linejoin": "strokeLinejoin", "fill-rule": "fillRule", "clip-rule": "clipRule" };
 function __fixAttrs(a) { const o = {}; for (const k in a) o[__ATTR_FIX[k] || k] = a[k]; return o; }
 const __mkIcon = (name) => ({ size = 16, className = "" }) => React.createElement(
@@ -5215,9 +5308,40 @@ function IqcTab() {
         {iqcErrors.length > 0 && <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{iqcErrors.map((e,i)=><div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 진입 금지 — {e}</div>)}</div>}
         <p className="text-[11px] text-slate-500 mt-2">입고번호는 자동 채번 또는 직접입력을 선택할 수 있습니다. 자동 채번 시 입고일자에 따라 IQC-YYMMDD-4자리 순번으로 즉시 변경됩니다. 외관·라벨·중량·COA 중 한 항목이라도 불합격이면 종합판정은 반품으로 자동 처리됩니다.</p>
       </Panel></div>
-        <div className="qmes-iqc-chart-panel"><Panel title="업체별 IQC 합격률 (최근 6개월)">
-          <ResponsiveContainer width="100%" height={230}><BarChart data={SUPPLIER_RATE} layout="vertical"><CartesianGrid stroke="#16283E" strokeDasharray="3 3" horizontal={false} /><XAxis type="number" stroke="#8AA3C0" fontSize={11} domain={[90,100]} /><YAxis type="category" dataKey="name" stroke="#8AA3C0" fontSize={10} width={78} /><Tooltip {...chartTooltip} /><ReferenceLine x={98} stroke="#f59e0b" strokeDasharray="4 4" /><Bar dataKey="rate" name="합격률(%)" fill="#33C1E8" radius={[0,4,4,0]} barSize={14} /></BarChart></ResponsiveContainer>
-          <p className="text-[11px] text-slate-500 mt-2">기준선 98% 미만 업체는 CAR 발행 및 수입검사 강화 대상입니다.</p>
+        <div className="qmes-iqc-chart-panel qmes-iqc-chart-premium"><Panel title="업체별 IQC 합격률 (최근 6개월)">
+          <div className="qmes-iqc-chart-summary">
+            <span><i className="qmes-chart-dot good"></i> 기준 충족</span>
+            <span><i className="qmes-chart-dot warning"></i> 관리 기준 98%</span>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={SUPPLIER_RATE} layout="vertical" margin={{top:8,right:38,bottom:4,left:4}}>
+              <defs>
+                <linearGradient id="iqcRateGood" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#0891B2" />
+                  <stop offset="55%" stopColor="#22D3EE" />
+                  <stop offset="100%" stopColor="#67E8F9" />
+                </linearGradient>
+                <linearGradient id="iqcRateWarn" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#D97706" />
+                  <stop offset="100%" stopColor="#FBBF24" />
+                </linearGradient>
+                <filter id="iqcBarGlow" x="-20%" y="-50%" width="140%" height="200%">
+                  <feGaussianBlur stdDeviation="2.2" result="blur" />
+                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid stroke="rgba(84,122,160,.18)" strokeDasharray="2 6" horizontal={false} />
+              <XAxis type="number" stroke="#6F8BA8" tickLine={false} axisLine={false} fontSize={10} domain={[90,100]} tickFormatter={(v)=>`${v}%`} />
+              <YAxis type="category" dataKey="name" stroke="#A8BDD2" tickLine={false} axisLine={false} fontSize={11} width={82} />
+              <Tooltip {...chartTooltip} cursor={{fill:"rgba(65,196,238,.045)"}} formatter={(v)=>[`${Number(v).toFixed(1)}%`,"합격률"]} />
+              <ReferenceLine x={98} stroke="#FBBF24" strokeWidth={1.5} strokeDasharray="5 5" label={{value:"관리기준 98%",position:"insideTopRight",fill:"#FCD34D",fontSize:10}} />
+              <Bar dataKey="rate" name="합격률(%)" radius={[0,9,9,0]} barSize={18} background={{fill:"rgba(77,107,138,.16)",radius:9}} isAnimationActive={true} animationDuration={900}>
+                {SUPPLIER_RATE.map((entry,index)=><Cell key={`iqc-rate-${index}`} fill={entry.rate < 98 ? "url(#iqcRateWarn)" : "url(#iqcRateGood)"} filter="url(#iqcBarGlow)" />)}
+                <LabelList dataKey="rate" position="right" formatter={(v)=>`${Number(v).toFixed(1)}%`} fill="#DDF7FF" fontSize={11} fontWeight={700} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="qmes-iqc-chart-note"><AlertTriangle size={13} /><span>98% 미만 업체는 CAR 발행 및 수입검사 강화 대상입니다.</span></div>
         </Panel></div>
       </div>
 
