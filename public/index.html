@@ -2026,43 +2026,675 @@ aside{display:none!important}
 <!-- IQC_REGISTER_CHART_LEDGER_REFINED_260715 -->
 
 <style>
-/* ===== 수입검사 관리대장 글자·열 간격 최종 통일 ===== */
+/* ===== 수입검사 관리대장 부모 그리드 제거·전체 폭 강제 ===== */
+.qmes-iqc-ledger-section{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+}
+.qmes-iqc-ledger-panel{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  grid-column:1 / -1!important;
+}
+.qmes-iqc-ledger-container{
+  width:calc(100% + 2rem)!important;
+  max-width:none!important;
+  overflow:visible!important;
+}
 .qmes-iqc-ledger-table{
-  min-width:1868px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
   table-layout:fixed!important;
   border-collapse:collapse!important;
 }
 .qmes-iqc-ledger-table th,
 .qmes-iqc-ledger-table td{
+  min-width:0!important;
   box-sizing:border-box!important;
-  padding:10px 12px!important;
-  vertical-align:middle!important;
-  line-height:1.35!important;
-  letter-spacing:0!important;
-}
-.qmes-iqc-ledger-table thead th{
-  height:42px!important;
-  font-size:12px!important;
-  font-weight:600!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
   white-space:nowrap!important;
+  padding:8px 4px!important;
+  font-size:10px!important;
 }
-.qmes-iqc-ledger-table tbody td{
-  height:52px!important;
-  font-size:13px!important;
+.qmes-iqc-ledger-table .qmes-iqc-action-btn{
+  min-width:0!important;
+  height:24px!important;
+  padding:0 4px!important;
+  margin:1px!important;
+  font-size:8px!important;
 }
-.qmes-iqc-ledger-table th.text-left,
-.qmes-iqc-ledger-table td.text-left{text-align:left!important}
-.qmes-iqc-ledger-table th.text-right,
-.qmes-iqc-ledger-table td.text-right{text-align:right!important}
-.qmes-iqc-ledger-table th.text-center,
-.qmes-iqc-ledger-table td.text-center{text-align:center!important}
-.qmes-iqc-ledger-table td:last-child{
-  white-space:nowrap!important;
-  padding-left:8px!important;
-  padding-right:8px!important;
+@media(min-width:1600px){
+  .qmes-iqc-ledger-table th,
+  .qmes-iqc-ledger-table td{
+    padding:9px 7px!important;
+    font-size:12px!important;
+  }
+  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
+    height:28px!important;
+    padding:0 7px!important;
+    font-size:10px!important;
+  }
+}
+@media(max-width:1366px){
+  .qmes-iqc-ledger-table th,
+  .qmes-iqc-ledger-table td{
+    padding-left:2px!important;
+    padding-right:2px!important;
+    font-size:8.5px!important;
+  }
+  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
+    height:21px!important;
+    padding:0 2px!important;
+    font-size:7px!important;
+  }
 }
 </style>
-<!-- IQC_LEDGER_SPACING_FINAL_260716 -->
+<!-- IQC_LEDGER_PARENT_GRID_REMOVED_260716 -->
+
+
+<style>
+/* ===== 수입검사 관리대장 전체 가운데 정렬·동일 간격 ===== */
+.qmes-iqc-ledger-table{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+.qmes-iqc-ledger-table thead tr{
+  height:44px!important;
+}
+.qmes-iqc-ledger-table tbody tr{
+  height:52px!important;
+}
+.qmes-iqc-ledger-table th,
+.qmes-iqc-ledger-table td{
+  box-sizing:border-box!important;
+  height:inherit!important;
+  padding:8px 5px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  line-height:1.2!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.qmes-iqc-ledger-table thead th{
+  font-size:10px!important;
+  font-weight:600!important;
+}
+.qmes-iqc-ledger-table tbody td{
+  font-size:10px!important;
+}
+
+/* 기존 Tailwind 정렬 클래스보다 가운데 정렬을 우선 적용 */
+.qmes-iqc-ledger-table .text-left,
+.qmes-iqc-ledger-table .text-right,
+.qmes-iqc-ledger-table .text-center{
+  text-align:center!important;
+}
+
+/* 숫자·문자·아이콘·배지 위치 통일 */
+.qmes-iqc-ledger-table td > *,
+.qmes-iqc-ledger-table th > *{
+  margin-left:auto!important;
+  margin-right:auto!important;
+  vertical-align:middle!important;
+}
+.qmes-iqc-ledger-table td:nth-child(14) > div{
+  max-width:100%!important;
+  margin:3px auto 0!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* 관리 버튼 간격 통일 */
+.qmes-iqc-ledger-table td:last-child{
+  padding-left:3px!important;
+  padding-right:3px!important;
+}
+.qmes-iqc-ledger-table .qmes-iqc-action-btn{
+  height:25px!important;
+  min-width:0!important;
+  padding:0 5px!important;
+  margin:0 1px!important;
+  font-size:8px!important;
+  line-height:1!important;
+}
+
+/* 큰 모니터 */
+@media(min-width:1600px){
+  .qmes-iqc-ledger-table thead tr{height:46px!important}
+  .qmes-iqc-ledger-table tbody tr{height:54px!important}
+  .qmes-iqc-ledger-table th,
+  .qmes-iqc-ledger-table td{
+    padding:9px 7px!important;
+  }
+  .qmes-iqc-ledger-table thead th{font-size:12px!important}
+  .qmes-iqc-ledger-table tbody td{font-size:12px!important}
+  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
+    height:28px!important;
+    padding:0 7px!important;
+    font-size:10px!important;
+  }
+}
+
+/* 노트북 */
+@media(max-width:1366px){
+  .qmes-iqc-ledger-table thead tr{height:40px!important}
+  .qmes-iqc-ledger-table tbody tr{height:48px!important}
+  .qmes-iqc-ledger-table th,
+  .qmes-iqc-ledger-table td{
+    padding:7px 3px!important;
+  }
+  .qmes-iqc-ledger-table thead th{font-size:8.5px!important}
+  .qmes-iqc-ledger-table tbody td{font-size:8.5px!important}
+  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
+    height:22px!important;
+    padding:0 3px!important;
+    font-size:7px!important;
+  }
+}
+</style>
+<!-- IQC_LEDGER_ALL_CENTER_EQUAL_SPACING_260716 -->
+
+
+<style>
+/* ===== 특이사항: 외관~검사자 5칸 전체 너비와 동일 ===== */
+.qmes-iqc-form .qmes-iqc-grid-result{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+.qmes-iqc-remarks-span{
+  width:100%!important;
+  margin-top:9px!important;
+}
+.qmes-iqc-remarks-span .qmes-iqc-field{
+  width:100%!important;
+}
+.qmes-iqc-remarks-span textarea{
+  width:100%!important;
+  min-height:68px!important;
+  box-sizing:border-box!important;
+  resize:vertical!important;
+}
+</style>
+<!-- IQC_REMARKS_SPAN_VISUAL_TO_INSPECTOR_260716 -->
+
+
+<style>
+/* ===== 외관~검사자와 특이사항 폭 완전 연동 ===== */
+.qmes-iqc-result-remarks-wrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  display:block!important;
+}
+.qmes-iqc-result-remarks-wrap .qmes-iqc-grid-result{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin-top:9px!important;
+}
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span .qmes-iqc-field,
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span textarea{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span textarea{
+  min-height:68px!important;
+  resize:vertical!important;
+}
+
+/* 큰 모니터에서도 부모 폭 이상으로 늘어나지 않도록 차단 */
+@media(min-width:1600px){
+  .qmes-iqc-result-remarks-wrap,
+  .qmes-iqc-result-remarks-wrap .qmes-iqc-grid-result,
+  .qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span{
+    width:100%!important;
+    max-width:100%!important;
+  }
+}
+</style>
+<!-- IQC_RESULT_REMARKS_SAME_PARENT_WIDTH_260716 -->
+
+
+<style>
+/* ===== 최신본: 특이사항 가로길이만 검사결과 폭에 맞춤 ===== */
+.qmes-iqc-result-remarks-wrap{
+  width:100%!important;
+  max-width:1180px!important;
+  min-width:0!important;
+}
+.qmes-iqc-result-remarks-wrap > .qmes-iqc-grid-result,
+.qmes-iqc-result-remarks-wrap > .qmes-iqc-remarks-span,
+.qmes-iqc-result-remarks-wrap > .qmes-iqc-remarks-span .qmes-iqc-field,
+.qmes-iqc-result-remarks-wrap > .qmes-iqc-remarks-span textarea{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+</style>
+<!-- IQC_LATEST_REMARKS_WIDTH_ONLY_260716 -->
+
+
+<style>
+/* ===== 수입검사 등록 영역을 그래프 직전까지 빈 공간 없이 확장 ===== */
+.qmes-iqc-form,
+.qmes-iqc-form > .qmes-iqc-section,
+.qmes-iqc-result-remarks-wrap,
+.qmes-iqc-result-remarks-wrap > .qmes-iqc-grid-result,
+.qmes-iqc-result-remarks-wrap > .qmes-iqc-remarks-span,
+.qmes-iqc-form > .qmes-iqc-actions{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+
+/* 등록 카드 내부의 기본정보·수량정보·검사결과가 왼쪽 카드 전체 너비 사용 */
+.qmes-iqc-form .qmes-iqc-grid-basic,
+.qmes-iqc-form .qmes-iqc-grid-qty,
+.qmes-iqc-form .qmes-iqc-grid-result{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* 특이사항도 검사결과와 동일하게 등록 카드 끝까지 확장 */
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span,
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span .qmes-iqc-field,
+.qmes-iqc-result-remarks-wrap .qmes-iqc-remarks-span textarea{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+
+/* 종합판정·등록 버튼도 등록 카드 너비 안에서 자연스럽게 중앙 배치 */
+.qmes-iqc-form > .qmes-iqc-actions{
+  margin:14px 0 0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:14px!important;
+}
+
+/* 큰 모니터에서도 왼쪽 등록 카드 내부가 고정폭에서 멈추지 않도록 강제 */
+@media(min-width:1450px){
+  .qmes-iqc-form,
+  .qmes-iqc-result-remarks-wrap,
+  .qmes-iqc-form .qmes-iqc-grid-basic,
+  .qmes-iqc-form .qmes-iqc-grid-qty,
+  .qmes-iqc-form .qmes-iqc-grid-result{
+    width:100%!important;
+    max-width:none!important;
+  }
+}
+</style>
+<!-- IQC_REGISTER_FILL_TO_CHART_260716 -->
+
+
+<style>
+/* ===== IQC KPI 카드 디자인 개선 ===== */
+.qmes-iqc-kpi-card{
+  position:relative!important;
+  overflow:hidden!important;
+  min-height:94px!important;
+  padding:16px 18px!important;
+  border:1px solid rgba(83,125,170,.34)!important;
+  border-radius:14px!important;
+  background:
+    linear-gradient(145deg,rgba(17,43,71,.96) 0%,rgba(9,28,50,.98) 62%,rgba(7,23,42,1) 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 10px 26px -18px rgba(0,0,0,.8)!important;
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease!important;
+}
+
+.qmes-iqc-kpi-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(180px 90px at 100% 0%,rgba(65,196,238,.12),transparent 65%),
+    linear-gradient(90deg,rgba(255,255,255,.018),transparent 45%);
+}
+
+.qmes-iqc-kpi-card::after{
+  content:"";
+  position:absolute;
+  top:-34px;
+  right:-34px;
+  width:104px;
+  height:104px;
+  border-radius:9999px;
+  border:1px solid rgba(110,180,230,.12);
+  box-shadow:
+    0 0 0 24px rgba(80,145,200,.025),
+    0 0 0 48px rgba(80,145,200,.018);
+  pointer-events:none;
+}
+
+.qmes-iqc-kpi-card:hover{
+  transform:translateY(-2px)!important;
+  border-color:rgba(65,196,238,.5)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 18px 34px -20px rgba(0,170,210,.42)!important;
+}
+
+.qmes-iqc-kpi-card > *{
+  position:relative;
+  z-index:1;
+}
+
+.qmes-iqc-kpi-card .text-\[10px\],
+.qmes-iqc-kpi-card .text-xs{
+  font-size:11px!important;
+  font-weight:600!important;
+  letter-spacing:.01em!important;
+  color:#91a8c2!important;
+}
+
+.qmes-iqc-kpi-card .text-2xl,
+.qmes-iqc-kpi-card .text-xl{
+  margin-top:7px!important;
+  font-size:28px!important;
+  line-height:1!important;
+  font-weight:700!important;
+  letter-spacing:-.025em!important;
+  color:#f2f7fc!important;
+  text-shadow:0 1px 10px rgba(255,255,255,.04);
+}
+
+.qmes-iqc-kpi-card svg{
+  width:18px!important;
+  height:18px!important;
+  filter:drop-shadow(0 0 6px currentColor);
+}
+
+/* 카드별 은은한 포인트 라인 */
+.qmes-iqc-kpi-card:nth-child(1){
+  border-top-color:rgba(167,139,250,.62)!important;
+}
+.qmes-iqc-kpi-card:nth-child(2){
+  border-top-color:rgba(52,211,153,.62)!important;
+}
+.qmes-iqc-kpi-card:nth-child(3){
+  border-top-color:rgba(251,191,36,.62)!important;
+}
+.qmes-iqc-kpi-card:nth-child(4){
+  border-top-color:rgba(248,113,113,.62)!important;
+}
+
+/* 상단 라벨의 점 표시 */
+.qmes-iqc-kpi-card .rounded-full{
+  box-shadow:0 0 10px currentColor!important;
+}
+
+/* 숫자 뒤 단위는 조금 작게 */
+.qmes-iqc-kpi-card .text-sm,
+.qmes-iqc-kpi-card .text-xs.ml-1{
+  font-size:11px!important;
+  color:#8ca5c4!important;
+  font-weight:500!important;
+}
+
+/* 노트북에서는 높이만 살짝 압축 */
+@media(max-width:1366px){
+  .qmes-iqc-kpi-card{
+    min-height:86px!important;
+    padding:14px 16px!important;
+  }
+  .qmes-iqc-kpi-card .text-2xl,
+  .qmes-iqc-kpi-card .text-xl{
+    font-size:25px!important;
+  }
+}
+</style>
+<!-- IQC_KPI_CARD_PREMIUM_260716 -->
+
+
+<style>
+/* ===== IQC KPI 카드 — Premium Smart Factory Edition ===== */
+.qmes-iqc-kpi-card{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  min-height:112px!important;
+  padding:18px 20px 16px!important;
+  border:1px solid rgba(115,155,202,.32)!important;
+  border-radius:17px!important;
+  background:
+    linear-gradient(145deg,rgba(19,45,74,.98) 0%,rgba(10,29,51,.99) 58%,rgba(6,20,38,1) 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    inset 0 -1px 0 rgba(0,0,0,.32),
+    0 12px 28px -18px rgba(0,0,0,.92)!important;
+  transform:translateZ(0);
+  transition:
+    transform .24s cubic-bezier(.2,.8,.2,1),
+    border-color .24s ease,
+    box-shadow .24s ease!important;
+}
+
+/* 유리 반사광 */
+.qmes-iqc-kpi-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,.015) 22%,transparent 43%),
+    radial-gradient(220px 120px at 100% 0%,rgba(65,196,238,.15),transparent 66%);
+}
+
+/* 우측 장식 링 */
+.qmes-iqc-kpi-card::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:-48px;
+  right:-40px;
+  width:142px;
+  height:142px;
+  border-radius:50%;
+  border:1px solid rgba(125,211,252,.16);
+  background:
+    radial-gradient(circle at 35% 35%,rgba(255,255,255,.055),transparent 38%),
+    radial-gradient(circle,transparent 46%,rgba(65,196,238,.05) 47%,transparent 50%);
+  box-shadow:
+    0 0 0 22px rgba(65,196,238,.022),
+    0 0 0 45px rgba(65,196,238,.014);
+}
+
+/* 상단 네온 라인 */
+.qmes-iqc-kpi-card > .qmes-kpi-neon-line{
+  display:none;
+}
+.qmes-iqc-kpi-card{
+  border-top-width:2px!important;
+}
+
+/* hover */
+.qmes-iqc-kpi-card:hover{
+  transform:translateY(-4px) scale(1.008)!important;
+  border-color:rgba(125,211,252,.58)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.075),
+    0 22px 42px -22px rgba(0,170,210,.52),
+    0 0 0 1px rgba(65,196,238,.06)!important;
+}
+
+/* 카드 내부 정돈 */
+.qmes-iqc-kpi-card > *{
+  position:relative;
+  z-index:2;
+}
+
+.qmes-iqc-kpi-card .flex.items-center.justify-between{
+  min-height:26px!important;
+}
+
+/* 카드 제목 */
+.qmes-iqc-kpi-card .text-\[10px\],
+.qmes-iqc-kpi-card .text-xs{
+  font-size:11px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+  letter-spacing:.035em!important;
+  color:#9db2ca!important;
+}
+
+/* 메인 숫자 */
+.qmes-iqc-kpi-card .text-2xl,
+.qmes-iqc-kpi-card .text-xl{
+  margin-top:10px!important;
+  font-size:34px!important;
+  line-height:.95!important;
+  font-weight:800!important;
+  letter-spacing:-.045em!important;
+  color:#f8fbff!important;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.05),
+    0 0 20px rgba(148,210,255,.08)!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+/* 단위 */
+.qmes-iqc-kpi-card .ml-1,
+.qmes-iqc-kpi-card .text-sm{
+  font-size:11px!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+  color:#7f98b5!important;
+}
+
+/* 아이콘 배지 */
+.qmes-iqc-kpi-card svg{
+  width:18px!important;
+  height:18px!important;
+  padding:7px!important;
+  box-sizing:content-box!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.085)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 7px 14px -8px currentColor!important;
+  filter:drop-shadow(0 0 7px currentColor)!important;
+}
+
+/* 좌측 상태 점 */
+.qmes-iqc-kpi-card .rounded-full{
+  width:7px!important;
+  height:7px!important;
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,.018),
+    0 0 11px currentColor!important;
+}
+
+/* 카드 하단 얇은 라이트바 */
+.qmes-iqc-kpi-card{
+  background-clip:padding-box!important;
+}
+.qmes-iqc-kpi-card .qmes-kpi-footer-bar{
+  display:none;
+}
+.qmes-iqc-kpi-card{
+  --kpi-accent:#41c4ee;
+}
+.qmes-iqc-kpi-card:nth-child(1){--kpi-accent:#a78bfa!important;border-top-color:rgba(167,139,250,.78)!important}
+.qmes-iqc-kpi-card:nth-child(2){--kpi-accent:#34d399!important;border-top-color:rgba(52,211,153,.78)!important}
+.qmes-iqc-kpi-card:nth-child(3){--kpi-accent:#fbbf24!important;border-top-color:rgba(251,191,36,.78)!important}
+.qmes-iqc-kpi-card:nth-child(4){--kpi-accent:#f87171!important;border-top-color:rgba(248,113,113,.78)!important}
+
+/* 카드 아래쪽 강조선 */
+.qmes-iqc-kpi-card:has(.text-2xl)::before,
+.qmes-iqc-kpi-card:has(.text-xl)::before{
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--kpi-accent) 42%,transparent);
+}
+
+/* 카드별 은은한 색상광 */
+.qmes-iqc-kpi-card:nth-child(1){
+  background:
+    radial-gradient(260px 130px at 100% 0%,rgba(167,139,250,.16),transparent 66%),
+    linear-gradient(145deg,rgba(23,43,76,.98),rgba(10,28,50,.99) 62%,rgba(6,20,38,1))!important;
+}
+.qmes-iqc-kpi-card:nth-child(2){
+  background:
+    radial-gradient(260px 130px at 100% 0%,rgba(52,211,153,.14),transparent 66%),
+    linear-gradient(145deg,rgba(18,47,67,.98),rgba(9,29,48,.99) 62%,rgba(6,20,38,1))!important;
+}
+.qmes-iqc-kpi-card:nth-child(3){
+  background:
+    radial-gradient(260px 130px at 100% 0%,rgba(251,191,36,.13),transparent 66%),
+    linear-gradient(145deg,rgba(48,44,58,.98),rgba(14,30,48,.99) 62%,rgba(6,20,38,1))!important;
+}
+.qmes-iqc-kpi-card:nth-child(4){
+  background:
+    radial-gradient(260px 130px at 100% 0%,rgba(248,113,113,.14),transparent 66%),
+    linear-gradient(145deg,rgba(48,39,59,.98),rgba(14,27,47,.99) 62%,rgba(6,20,38,1))!important;
+}
+
+/* KPI 카드 컨테이너 간격 */
+.qmes-iqc-kpi-grid{
+  gap:14px!important;
+}
+
+/* 큰 모니터에서 더 시원하게 */
+@media(min-width:1600px){
+  .qmes-iqc-kpi-card{
+    min-height:120px!important;
+    padding:20px 22px 18px!important;
+  }
+  .qmes-iqc-kpi-card .text-2xl,
+  .qmes-iqc-kpi-card .text-xl{
+    font-size:38px!important;
+  }
+}
+
+/* 노트북에서는 과하지 않게 */
+@media(max-width:1366px){
+  .qmes-iqc-kpi-card{
+    min-height:98px!important;
+    padding:15px 16px 14px!important;
+    border-radius:14px!important;
+  }
+  .qmes-iqc-kpi-card .text-2xl,
+  .qmes-iqc-kpi-card .text-xl{
+    margin-top:7px!important;
+    font-size:29px!important;
+  }
+  .qmes-iqc-kpi-card svg{
+    width:16px!important;
+    height:16px!important;
+    padding:6px!important;
+  }
+}
+</style>
+<!-- IQC_KPI_ULTRA_PREMIUM_260716 -->
 
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
@@ -4557,17 +5189,21 @@ function IqcTab() {
 
           <div className="qmes-iqc-section">
             <div className="qmes-iqc-section-title">검사결과</div>
-            <div className="qmes-iqc-grid qmes-iqc-grid-result">
-              <div className="qmes-iqc-field">{judgeSelect("visual", "외관")}</div>
-              <div className="qmes-iqc-field">{judgeSelect("label", "라벨")}</div>
-              <div className="qmes-iqc-field">{judgeSelect("weight", "중량")}</div>
-              <div className="qmes-iqc-field">{judgeSelect("coa", "COA")}</div>
-              <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-            </div>
-            <div className="qmes-iqc-field mt-3">
-              <span>특이사항</span>
-              <textarea value={form.remarks} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항이 있을 경우 입력하세요. (예: 포장 일부 오염, COA 지연 수령, 라벨 재부착 등)" rows={2}
-                className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+            <div className="qmes-iqc-result-remarks-wrap">
+              <div className="qmes-iqc-grid qmes-iqc-grid-result">
+                <div className="qmes-iqc-field">{judgeSelect("visual", "외관")}</div>
+                <div className="qmes-iqc-field">{judgeSelect("label", "라벨")}</div>
+                <div className="qmes-iqc-field">{judgeSelect("weight", "중량")}</div>
+                <div className="qmes-iqc-field">{judgeSelect("coa", "COA")}</div>
+                <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
+              </div>
+              <div className="qmes-iqc-remarks-span">
+                <div className="qmes-iqc-field">
+                  <span>특이사항</span>
+                  <textarea value={form.remarks} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항이 있을 경우 입력하세요. (예: 포장 일부 오염, COA 지연 수령, 라벨 재부착 등)" rows={2}
+                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4585,15 +5221,15 @@ function IqcTab() {
         </Panel></div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <Panel title="수입검사 관리대장" className="lg:col-span-2">
-          <div className="qmes-iqc-ledger-wrap overflow-x-auto -mx-4 px-4">
-            <table className="qmes-iqc-ledger-table w-full table-fixed text-sm min-w-[1780px]">
+      <div className="qmes-iqc-ledger-section">
+        <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
+          <div className="qmes-iqc-ledger-container -mx-4 px-4">
+            <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
               <colgroup>
-                <col style={{width:"160px"}} /><col style={{width:"130px"}} /><col style={{width:"160px"}} /><col style={{width:"150px"}} /><col style={{width:"150px"}} />
-                <col style={{width:"120px"}} /><col style={{width:"120px"}} /><col style={{width:"120px"}} />
-                <col style={{width:"82px"}} /><col style={{width:"82px"}} /><col style={{width:"82px"}} /><col style={{width:"82px"}} />
-                <col style={{width:"115px"}} /><col style={{width:"125px"}} /><col style={{width:"190px"}} />
+                <col style={{width:"10%"}} /><col style={{width:"7%"}} /><col style={{width:"9%"}} /><col style={{width:"8%"}} /><col style={{width:"9%"}} />
+                <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
+                <col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} />
+                <col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"8%"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
