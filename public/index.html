@@ -2789,6 +2789,242 @@ aside{display:none!important}
 </style>
 <!-- IQC_SUPPLIER_RATE_PREMIUM_260716 -->
 
+
+<style>
+/* ===== 업체별 IQC 합격률 — 프리미엄 순위형 카드 ===== */
+.qmes-iqc-rank-panel > div{
+  position:relative!important;
+  overflow:hidden!important;
+  border:1px solid rgba(73,112,151,.34)!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(360px 190px at 100% 0%,rgba(34,211,238,.10),transparent 68%),
+    linear-gradient(150deg,rgba(14,37,62,.99),rgba(8,25,45,.99))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 16px 34px -24px rgba(0,0,0,.95)!important;
+}
+.qmes-iqc-rank-panel > div::after{
+  content:"";
+  position:absolute;
+  top:-72px;
+  right:-62px;
+  width:190px;
+  height:190px;
+  border-radius:50%;
+  border:1px solid rgba(103,232,249,.10);
+  box-shadow:0 0 0 34px rgba(34,211,238,.018),0 0 0 68px rgba(34,211,238,.01);
+  pointer-events:none;
+}
+.qmes-iqc-rank-head{
+  position:relative;
+  z-index:2;
+  margin:0 0 14px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+}
+.qmes-iqc-rank-head>div:first-child{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.qmes-iqc-rank-kicker{
+  color:#5f7f9f;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.16em;
+}
+.qmes-iqc-rank-head strong{
+  color:#e8f3fc;
+  font-size:13px;
+  font-weight:700;
+}
+.qmes-iqc-rank-standard{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#b8954d;
+  font-size:9px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.qmes-iqc-rank-standard span{
+  width:16px;
+  height:0;
+  border-top:2px dashed #fbbf24;
+}
+
+.qmes-iqc-rank-list{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.qmes-iqc-rank-row{
+  min-height:52px;
+  padding:9px 10px;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) 58px;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(73,105,139,.24);
+  border-radius:11px;
+  background:rgba(8,25,45,.58);
+  transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+.qmes-iqc-rank-row:hover{
+  transform:translateX(3px);
+  border-color:rgba(65,196,238,.38);
+  background:rgba(12,34,58,.76);
+}
+.qmes-iqc-rank-no{
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:9px;
+  color:#9bb3ca;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  font-size:11px;
+  font-weight:800;
+}
+.qmes-iqc-rank-row:nth-child(1) .qmes-iqc-rank-no{
+  color:#fef3c7;
+  border-color:rgba(251,191,36,.32);
+  background:linear-gradient(145deg,rgba(251,191,36,.20),rgba(120,82,12,.20));
+  box-shadow:0 0 14px rgba(251,191,36,.10);
+}
+.qmes-iqc-rank-main{
+  min-width:0;
+}
+.qmes-iqc-rank-label{
+  margin-bottom:7px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.qmes-iqc-rank-name{
+  overflow:hidden;
+  color:#d8e5f1;
+  font-size:11px;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.qmes-iqc-rank-grade{
+  padding:2px 6px;
+  border-radius:999px;
+  font-size:8px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.qmes-iqc-rank-grade.good{
+  color:#86efac;
+  background:rgba(34,197,94,.10);
+  border:1px solid rgba(34,197,94,.22);
+}
+.qmes-iqc-rank-grade.warn{
+  color:#fde68a;
+  background:rgba(245,158,11,.10);
+  border:1px solid rgba(245,158,11,.24);
+}
+.qmes-iqc-rank-track{
+  position:relative;
+  height:7px;
+  overflow:visible;
+  border-radius:999px;
+  background:rgba(76,104,138,.18);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.38);
+}
+.qmes-iqc-rank-fill{
+  position:absolute;
+  inset:0 auto 0 0;
+  min-width:2px;
+  border-radius:999px;
+  transition:width .8s ease;
+}
+.qmes-iqc-rank-fill.good{
+  background:linear-gradient(90deg,#0891b2 0%,#22d3ee 55%,#67e8f9 100%);
+  box-shadow:0 0 12px rgba(34,211,238,.34);
+}
+.qmes-iqc-rank-fill.warn{
+  background:linear-gradient(90deg,#d97706 0%,#fbbf24 100%);
+  box-shadow:0 0 12px rgba(251,191,36,.30);
+}
+.qmes-iqc-rank-standard-line{
+  position:absolute;
+  top:-3px;
+  bottom:-3px;
+  width:1px;
+  border-left:1px dashed rgba(251,191,36,.72);
+}
+.qmes-iqc-rank-value{
+  text-align:right;
+  font-size:18px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums;
+}
+.qmes-iqc-rank-value.good{
+  color:#dffaff;
+  text-shadow:0 0 14px rgba(34,211,238,.20);
+}
+.qmes-iqc-rank-value.warn{
+  color:#fde68a;
+  text-shadow:0 0 14px rgba(251,191,36,.18);
+}
+.qmes-iqc-rank-value small{
+  margin-left:2px;
+  font-size:9px;
+  font-weight:700;
+  color:#7891aa;
+}
+.qmes-iqc-rank-footer{
+  position:relative;
+  z-index:2;
+  min-height:31px;
+  margin-top:12px;
+  padding:7px 10px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid rgba(245,158,11,.20);
+  border-radius:8px;
+  color:#bd9d61;
+  background:rgba(245,158,11,.05);
+  font-size:9px;
+  line-height:1.35;
+}
+.qmes-iqc-rank-footer svg{
+  flex:0 0 auto;
+  color:#fbbf24;
+  filter:drop-shadow(0 0 6px rgba(251,191,36,.42));
+}
+@media(max-width:1366px){
+  .qmes-iqc-rank-row{
+    min-height:46px;
+    padding:7px 8px;
+    grid-template-columns:25px minmax(0,1fr) 52px;
+    gap:8px;
+  }
+  .qmes-iqc-rank-no{
+    width:25px;
+    height:25px;
+  }
+  .qmes-iqc-rank-value{
+    font-size:16px;
+  }
+}
+</style>
+<!-- IQC_SUPPLIER_RANK_CARD_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -5308,40 +5544,41 @@ function IqcTab() {
         {iqcErrors.length > 0 && <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{iqcErrors.map((e,i)=><div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 진입 금지 — {e}</div>)}</div>}
         <p className="text-[11px] text-slate-500 mt-2">입고번호는 자동 채번 또는 직접입력을 선택할 수 있습니다. 자동 채번 시 입고일자에 따라 IQC-YYMMDD-4자리 순번으로 즉시 변경됩니다. 외관·라벨·중량·COA 중 한 항목이라도 불합격이면 종합판정은 반품으로 자동 처리됩니다.</p>
       </Panel></div>
-        <div className="qmes-iqc-chart-panel qmes-iqc-chart-premium"><Panel title="업체별 IQC 합격률 (최근 6개월)">
-          <div className="qmes-iqc-chart-summary">
-            <span><i className="qmes-chart-dot good"></i> 기준 충족</span>
-            <span><i className="qmes-chart-dot warning"></i> 관리 기준 98%</span>
+        <div className="qmes-iqc-chart-panel qmes-iqc-rank-panel"><Panel title="업체별 IQC 합격률 (최근 6개월)">
+          <div className="qmes-iqc-rank-head">
+            <div>
+              <span className="qmes-iqc-rank-kicker">SUPPLIER QUALITY</span>
+              <strong>업체별 품질 순위</strong>
+            </div>
+            <div className="qmes-iqc-rank-standard"><span></span>관리기준 98%</div>
           </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={SUPPLIER_RATE} layout="vertical" margin={{top:8,right:38,bottom:4,left:4}}>
-              <defs>
-                <linearGradient id="iqcRateGood" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#0891B2" />
-                  <stop offset="55%" stopColor="#22D3EE" />
-                  <stop offset="100%" stopColor="#67E8F9" />
-                </linearGradient>
-                <linearGradient id="iqcRateWarn" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#D97706" />
-                  <stop offset="100%" stopColor="#FBBF24" />
-                </linearGradient>
-                <filter id="iqcBarGlow" x="-20%" y="-50%" width="140%" height="200%">
-                  <feGaussianBlur stdDeviation="2.2" result="blur" />
-                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                </filter>
-              </defs>
-              <CartesianGrid stroke="rgba(84,122,160,.18)" strokeDasharray="2 6" horizontal={false} />
-              <XAxis type="number" stroke="#6F8BA8" tickLine={false} axisLine={false} fontSize={10} domain={[90,100]} tickFormatter={(v)=>`${v}%`} />
-              <YAxis type="category" dataKey="name" stroke="#A8BDD2" tickLine={false} axisLine={false} fontSize={11} width={82} />
-              <Tooltip {...chartTooltip} cursor={{fill:"rgba(65,196,238,.045)"}} formatter={(v)=>[`${Number(v).toFixed(1)}%`,"합격률"]} />
-              <ReferenceLine x={98} stroke="#FBBF24" strokeWidth={1.5} strokeDasharray="5 5" label={{value:"관리기준 98%",position:"insideTopRight",fill:"#FCD34D",fontSize:10}} />
-              <Bar dataKey="rate" name="합격률(%)" radius={[0,9,9,0]} barSize={18} background={{fill:"rgba(77,107,138,.16)",radius:9}} isAnimationActive={true} animationDuration={900}>
-                {SUPPLIER_RATE.map((entry,index)=><Cell key={`iqc-rate-${index}`} fill={entry.rate < 98 ? "url(#iqcRateWarn)" : "url(#iqcRateGood)"} filter="url(#iqcBarGlow)" />)}
-                <LabelList dataKey="rate" position="right" formatter={(v)=>`${Number(v).toFixed(1)}%`} fill="#DDF7FF" fontSize={11} fontWeight={700} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div className="qmes-iqc-chart-note"><AlertTriangle size={13} /><span>98% 미만 업체는 CAR 발행 및 수입검사 강화 대상입니다.</span></div>
+
+          <div className="qmes-iqc-rank-list">
+            {[...SUPPLIER_RATE].sort((a,b)=>b.rate-a.rate).map((item,index)=>{
+              const below = item.rate < 98;
+              return (
+                <div key={item.name} className={`qmes-iqc-rank-row ${below ? "is-warning" : "is-good"}`}>
+                  <div className="qmes-iqc-rank-no">{index+1}</div>
+                  <div className="qmes-iqc-rank-main">
+                    <div className="qmes-iqc-rank-label">
+                      <span className="qmes-iqc-rank-name">{item.name}</span>
+                      <span className={`qmes-iqc-rank-grade ${below ? "warn" : "good"}`}>{below ? "관리대상" : "정상"}</span>
+                    </div>
+                    <div className="qmes-iqc-rank-track">
+                      <div className={`qmes-iqc-rank-fill ${below ? "warn" : "good"}`} style={{width:`${Math.max(0,Math.min(100,item.rate))}%`}}></div>
+                      <div className="qmes-iqc-rank-standard-line" style={{left:"98%"}}></div>
+                    </div>
+                  </div>
+                  <div className={`qmes-iqc-rank-value ${below ? "warn" : "good"}`}>{Number(item.rate).toFixed(1)}<small>%</small></div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="qmes-iqc-rank-footer">
+            <AlertTriangle size={13} />
+            <span>98% 미만 업체는 CAR 발행 및 수입검사 강화 대상입니다.</span>
+          </div>
         </Panel></div>
       </div>
 
