@@ -4223,6 +4223,123 @@ aside{display:none!important}
 </style>
 <!-- QMES_CUT_CORNER_GLASS_V3_260716 -->
 
+
+<style>
+/* ===== 수입검사 성적서: 진한 네이비 제목 + 부드러운 틀 ===== */
+
+/* 요청한 5개 섹션 제목 */
+.qmes-iqc-doc .qmes-iqc-report-title{
+  margin:0 0 8px!important;
+  padding:9px 14px!important;
+  border:0!important;
+  border-radius:12px 12px 6px 6px!important;
+  color:#ffffff!important;
+  background:linear-gradient(135deg,#102b4d 0%,#183b63 55%,#214b76 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 4px 12px -9px rgba(16,43,77,.70)!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  line-height:1.25!important;
+  letter-spacing:.015em!important;
+}
+
+/* 각 섹션 전체를 부드러운 카드처럼 */
+.qmes-iqc-doc .qmes-iqc-report-section{
+  padding:12px!important;
+  border:1px solid #d1d8e1!important;
+  border-radius:15px!important;
+  background:#ffffff!important;
+  box-shadow:0 7px 18px -15px rgba(15,35,58,.34)!important;
+}
+
+/* 첫 섹션 간격 유지 */
+.qmes-iqc-doc .qmes-iqc-report-first{
+  margin-top:18px!important;
+}
+
+/* 기본정보·수량정보 표 */
+.qmes-iqc-doc .qmes-iqc-report-info{
+  overflow:hidden!important;
+  border:1px solid #c8d0da!important;
+  border-radius:10px!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-report-info th,
+.qmes-iqc-doc .qmes-iqc-report-info td{
+  border-color:#d6dce4!important;
+}
+.qmes-iqc-doc .qmes-iqc-report-info th{
+  color:#26384f!important;
+  background:#f1f4f7!important;
+}
+
+/* 검사결과 표 */
+.qmes-iqc-doc .qmes-iqc-inspection-table{
+  overflow:hidden!important;
+  border:1px solid #c8d0da!important;
+  border-radius:10px!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table th,
+.qmes-iqc-doc .qmes-iqc-inspection-table td{
+  border-color:#d6dce4!important;
+}
+.qmes-iqc-doc .qmes-iqc-inspection-table thead th{
+  color:#26384f!important;
+  background:#edf1f5!important;
+}
+
+/* 판정·특이사항 박스 */
+.qmes-iqc-doc .qmes-iqc-result-box,
+.qmes-iqc-doc .qmes-iqc-remarks-box{
+  overflow:hidden!important;
+  border:1px solid #c8d0da!important;
+  border-radius:10px!important;
+  background:#ffffff!important;
+  box-shadow:0 4px 12px -11px rgba(15,35,58,.30)!important;
+}
+
+/* 결재·코드 영역도 동일한 둥근 틀 */
+.qmes-iqc-doc .qmes-iqc-code-area,
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  overflow:hidden!important;
+  border-radius:10px!important;
+}
+
+/* 성적서 종이 자체도 너무 딱딱하지 않게 */
+.qmes-iqc-doc.doc-paper{
+  border-radius:18px!important;
+  box-shadow:
+    0 3px 9px rgba(28,25,23,.07),
+    0 22px 50px -26px rgba(28,25,23,.25)!important;
+}
+
+/* 인쇄 시 색상과 둥근 틀 유지, 그림자만 제거 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-doc.doc-paper{
+    border-radius:10px!important;
+    box-shadow:none!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-report-title{
+    border-radius:8px 8px 4px 4px!important;
+    box-shadow:none!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-report-section,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-result-box,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-remarks-box{
+    box-shadow:none!important;
+  }
+}
+</style>
+<!-- IQC_REPORT_NAVY_SOFT_FRAME_ONLY_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -4467,7 +4584,7 @@ function printDoc(sourceEl) {
 /* 화면 간 연동 + 새로고침 후에도 기록 유지. 실제 서버 구축 시 이 계층만 API로 교체하면 됩니다. */
 
 const DB_KEY = "qmes-local-iqc-v3";
-const DB_RESET_MARKER = "qmes-iqc-v4-design-reset";
+const DB_RESET_MARKER = "qmes-iqc-report-soft-navy-reset-v1";
 
 /* 수입검사 개선본 최초 실행 시 기존 테스트 DB를 한 번 초기화합니다.
    이후 입력한 데이터는 새 DB_KEY에 저장되어 새로고침 후에도 유지됩니다. */
