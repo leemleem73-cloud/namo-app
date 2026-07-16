@@ -3782,6 +3782,61 @@ aside{display:none!important}
 }
 </style>
 
+
+<style>
+/* ===== 수입검사 관리 버튼 2×2 고정 배치 ===== */
+.qmes-iqc-ledger-table td.qmes-iqc-manage-cell{
+  overflow:visible!important;
+  white-space:normal!important;
+  padding:5px!important;
+  vertical-align:middle!important;
+}
+.qmes-iqc-manage-grid{
+  width:100%;
+  max-width:138px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:4px;
+}
+.qmes-iqc-manage-grid .qmes-iqc-action-btn{
+  width:100%!important;
+  min-width:0!important;
+  height:27px!important;
+  margin:0!important;
+  padding:0 4px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+}
+.qmes-iqc-manage-grid .qmes-iqc-action-btn svg{
+  width:11px!important;
+  height:11px!important;
+  flex:0 0 auto!important;
+}
+
+/* 노트북에서도 네 버튼이 잘리지 않도록 압축 */
+@media(max-width:1366px){
+  .qmes-iqc-manage-grid{
+    max-width:118px;
+    gap:3px;
+  }
+  .qmes-iqc-manage-grid .qmes-iqc-action-btn{
+    height:25px!important;
+    padding:0 2px!important;
+    font-size:7.5px!important;
+  }
+  .qmes-iqc-manage-grid .qmes-iqc-action-btn svg{
+    width:10px!important;
+    height:10px!important;
+  }
+}
+</style>
+<!-- IQC_MANAGE_BUTTON_ORDER_2X2_260716 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6576,11 +6631,13 @@ function IqcTab() {
                     {[r.visual,r.label,r.weight,r.coa].map((v,i)=><td key={i} className="py-2.5 pr-2 text-center">{v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" /> : <XCircle size={14} className="text-red-400 inline" />}</td>)}
                     <td className="py-2.5 pr-3 text-xs text-slate-300 truncate">{r.inspector || r.by || "-"}</td>
                     <td className="py-2.5 pr-3"><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>{r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[180px] leading-snug">{r.note}</div>}</td>
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <button onClick={()=>editIqc(r)} title="수입검사 기록 수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
-                      <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
-                      <button onClick={()=>setViewingLabel(r)} title="원재료 라벨 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-label"><Package size={12} /> 라벨</button>
-                      <button onClick={()=>deleteIqc(r)} title="수입검사 기록 삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                    <td className="py-2.5 px-3 text-center qmes-iqc-manage-cell">
+                      <div className="qmes-iqc-manage-grid">
+                        <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
+                        <button onClick={()=>setViewingLabel(r)} title="원재료 라벨 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-label"><Package size={12} /> 라벨</button>
+                        <button onClick={()=>editIqc(r)} title="수입검사 기록 수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
+                        <button onClick={()=>deleteIqc(r)} title="수입검사 기록 삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
