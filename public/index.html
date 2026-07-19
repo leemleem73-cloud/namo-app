@@ -5832,6 +5832,96 @@ aside{display:none!important}
   min-width: 0 !important;
 }
 </style>
+
+<style id="qmes-final-iqc-fixes">
+/* FINAL: 수입검사 필터·대장 균형 */
+.qmes-iqc-filter-row label:nth-of-type(3),
+.qmes-iqc-filter-row label:nth-of-type(5){max-width:150px!important; flex:0 1 150px!important;}
+.qmes-iqc-filter-row label:nth-of-type(4){max-width:125px!important; flex:0 1 125px!important;}
+.qmes-iqc-ledger-table th, .qmes-iqc-ledger-table td{vertical-align:middle;}
+
+/* FINAL: 결재란 외곽을 바코드 박스처럼 둥글게 */
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  border:1px solid #94a3b8!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid::before,
+.qmes-iqc-doc .qmes-iqc-sign-grid::after{display:none!important;content:none!important;}
+.qmes-iqc-doc .qmes-iqc-sign-grid > .qmes-iqc-sign-cell{
+  border:0!important;
+  border-right:1px solid #cbd5e1!important;
+  border-radius:0!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid > .qmes-iqc-sign-cell:last-child{border-right:0!important;}
+
+/* FINAL: 라벨 미리보기/인쇄 복구 */
+@media print{
+  body.print-label *{visibility:hidden!important;}
+  body.print-label #qmes-label-print-root,
+  body.print-label #qmes-label-print-root *{visibility:visible!important;}
+  body.print-label #qmes-label-print-root{
+    position:absolute!important;
+    left:50%!important; top:10mm!important;
+    transform:translateX(-50%)!important;
+    display:block!important;
+    width:100mm!important; max-width:100mm!important;
+    margin:0!important; box-shadow:none!important;
+    background:#fff!important; color:#111!important;
+  }
+  body.print-label .qmes-modal-backdrop,
+  body.print-label .qmes-label-viewer{display:block!important;background:#fff!important;}
+  body.print-label .qmes-wo-viewer-head{display:none!important;}
+}
+</style>
+
+<style id="QMES_FINAL_ACTUAL_FIX_V2">
+/* 실제 최종 수정: 관리대장 열 순서/폭 */
+.qmes-iqc-ledger-table{table-layout:fixed!important;}
+.qmes-iqc-ledger-table th:nth-child(4),.qmes-iqc-ledger-table td:nth-child(4){width:6%!important;max-width:6%!important;}
+.qmes-iqc-ledger-table th:nth-child(5),.qmes-iqc-ledger-table td:nth-child(5){width:6%!important;max-width:6%!important;text-align:left!important;}
+.qmes-iqc-ledger-table th:nth-child(6),.qmes-iqc-ledger-table td:nth-child(6){width:7%!important;max-width:7%!important;}
+
+/* 결재란: 바코드 영역처럼 둥근 외곽, 내부선 유지 */
+.qmes-iqc-doc .qmes-iqc-sign-grid,
+body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+  border:1px solid #d6dbe3!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-cell,
+body.print-doc #qmes-print-root .qmes-iqc-sign-cell{
+  border-radius:0!important;
+}
+
+/* 라벨 인쇄 전용: 다른 인쇄 규칙과 완전 분리 */
+@media print{
+  body.print-label{background:#fff!important;}
+  body.print-label > *{visibility:hidden!important;}
+  body.print-label #qmes-label-print-root,
+  body.print-label #qmes-label-print-root *{visibility:visible!important;}
+  body.print-label #qmes-label-print-root{
+    position:fixed!important;
+    left:50%!important;
+    top:8mm!important;
+    transform:translateX(-50%)!important;
+    display:block!important;
+    width:100mm!important;
+    max-width:100mm!important;
+    margin:0!important;
+    padding:5mm!important;
+    border:1.5px solid #111!important;
+    border-radius:4px!important;
+    box-shadow:none!important;
+    background:#fff!important;
+    color:#111!important;
+    z-index:2147483647!important;
+  }
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6562,9 +6652,12 @@ function IqcLabelViewer({ record, onClose }) {
   if (!record) return null;
 
   const printLabel = () => {
-    document.body.classList.add("print-doc");
-    window.print();
-    setTimeout(() => document.body.classList.remove("print-doc"), 300);
+    document.body.classList.remove("print-doc", "qmes-screen-exact-print");
+    document.body.classList.add("print-label");
+    const cleanup = () => document.body.classList.remove("print-label");
+    window.addEventListener("afterprint", cleanup, { once:true });
+    requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+    setTimeout(cleanup, 1800);
   };
 
   return (
@@ -6584,7 +6677,7 @@ function IqcLabelViewer({ record, onClose }) {
           </div>
         </div>
 
-        <div className="doc-paper qmes-iqc-label-paper bg-white text-stone-900">
+        <div id="qmes-label-print-root" className="doc-paper qmes-iqc-label-paper bg-white text-stone-900">
           <div className="qmes-iqc-label-head">
             <div>
               <div className="qmes-iqc-label-company">나모케미칼㈜</div>
@@ -8715,26 +8808,28 @@ function IqcTab() {
           <div className="qmes-iqc-ledger-container -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
               <colgroup>
-                <col style={{width:"10%"}} /><col style={{width:"8%"}} /><col style={{width:"9%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
+                <col style={{width:"10%"}} /><col style={{width:"8%"}} /><col style={{width:"9%"}} />
+                <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"7%"}} />
                 <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
                 <col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} />
-                <col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"11%"}} />
+                <col style={{width:"7%"}} /><col style={{width:"13%"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">원재료명</th><th className="text-left py-2 pr-3 font-medium">업체명</th>
+                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">업체명</th><th className="text-left py-2 pr-3 font-medium">종합판정</th>
+                <th className="text-left py-2 pr-3 font-medium">원재료명</th>
                 <th className="text-right py-2 pr-3 font-medium">입고수량</th><th className="text-right py-2 pr-3 font-medium">검사수량</th><th className="text-right py-2 pr-3 font-medium">불량수량</th>
                 <th className="text-center py-2 pr-2 font-medium">외관</th><th className="text-center py-2 pr-2 font-medium">라벨</th><th className="text-center py-2 pr-2 font-medium">중량</th><th className="text-center py-2 pr-3 font-medium">COA</th>
-                <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-left py-2 pr-3 font-medium">종합판정</th><th className="text-center py-2 px-3 font-medium">관리</th>
+                <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-center py-2 px-3 font-medium">관리</th>
               </tr></thead>
               <tbody>
                 {filteredRows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">검색 조건에 맞는 수입검사 기록이 없습니다.</td></tr>}
                 {filteredRows.map((r) => (
                   <tr key={r.inNo || r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
-                    <td className="py-2.5 pr-3 font-mono text-xs text-sky-300 whitespace-nowrap">{r.inNo || "-"}</td><td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{(r.recv || "-").slice(0,10)}</td><td className="py-2.5 pr-3 font-mono text-xs text-violet-300 whitespace-nowrap truncate">{r.lot}</td><td className="py-2.5 pr-3 text-slate-100 truncate">{r.name}</td><td className="py-2.5 pr-3 text-xs text-slate-400 truncate">{r.supplier}</td>
+                    <td className="py-2.5 pr-3 font-mono text-xs text-sky-300 whitespace-nowrap">{r.inNo || "-"}</td><td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{(r.recv || "-").slice(0,10)}</td><td className="py-2.5 pr-3 font-mono text-xs text-violet-300 whitespace-nowrap truncate">{r.lot}</td><td className="py-2.5 pr-3 text-xs text-slate-400 truncate">{r.supplier}</td>
+                    <td className="py-2.5 pr-3"><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>{r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[120px] leading-snug">{r.note}</div>}</td><td className="py-2.5 pr-3 text-slate-100 truncate">{r.name}</td>
                     <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.qty}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.inspectQty || "-"}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.defectQty || "-"}</td>
                     {[r.visual,r.label,r.weight,r.coa].map((v,i)=><td key={i} className="py-2.5 pr-2 text-center">{v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" /> : <XCircle size={14} className="text-red-400 inline" />}</td>)}
                     <td className="py-2.5 pr-3 text-xs text-slate-300 truncate">{r.inspector || r.by || "-"}</td>
-                    <td className="py-2.5 pr-3"><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>{r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[180px] leading-snug">{r.note}</div>}</td>
                     <td className="py-2.5 px-3 text-center qmes-iqc-manage-cell">
                       <div className="qmes-iqc-manage-grid">
                         <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
