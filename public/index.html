@@ -5783,6 +5783,41 @@ aside{display:none!important}
 </style>
 <!-- QMES_SCREEN_EXACT_PRINT_FINAL_260720 -->
 
+
+<style id="qmes-final-center-search-compact-260720">
+/* 인쇄 시 화면 복제본을 A4 정중앙에 배치 */
+@media print{
+  body.qmes-screen-exact-print #qmes-print-root{
+    align-items:flex-start!important;
+    justify-content:center!important;
+  }
+  body.qmes-screen-exact-print #qmes-print-root .qmes-screen-print-stage{
+    left:auto!important;
+    right:auto!important;
+    transform-origin:top center!important;
+  }
+}
+
+/* 수입검사 관리대장 검색칸 폭 축소 */
+.qmes-iqc-search-main{
+  grid-template-columns:minmax(300px,430px) auto auto!important;
+  justify-content:start!important;
+}
+.qmes-iqc-search-box{
+  width:100%!important;
+  max-width:430px!important;
+}
+@media(max-width:760px){
+  .qmes-iqc-search-main{
+    grid-template-columns:1fr!important;
+  }
+  .qmes-iqc-search-box{
+    max-width:none!important;
+    grid-column:auto!important;
+  }
+}
+</style>
+<!-- QMES_PRINT_CENTER_REPORTS_REMOVE_SEARCH_COMPACT_260720 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6037,7 +6072,7 @@ function printDoc(sourceEl) {
   stage.style.setProperty("width", `${rect.width}px`, "important");
   stage.style.setProperty("height", `${rect.height}px`, "important");
   stage.style.setProperty("transform", `scale(${scale})`, "important");
-  stage.style.setProperty("transform-origin", "top left", "important");
+  stage.style.setProperty("transform-origin", "top center", "important");
   stage.appendChild(screenClone);
 
   printRoot.innerHTML = "";
@@ -10182,7 +10217,6 @@ const TABS = [
   { id: "woIssue", label: "작업지시 발행", icon: Plus, comp: IssueWoTab },
   { id: "pqc", label: "공정검사 (PQC)", icon: ClipboardCheck, comp: PqcTab },
   { id: "oqc", label: "출하검사 (OQC)", icon: ArrowUpFromLine, comp: OqcTab },
-  { id: "reports", label: "검사 성적서", icon: Printer, comp: InspectionReportsTab },
   { id: "lock", label: "품질 인터락 (차단)", icon: Lock, comp: InterlockTab },
   { id: "inv", label: "원재료 재고", icon: Package, comp: InventoryTab },
   { id: "eq", label: "설비 모니터링", icon: Cpu, comp: EquipmentTab },
@@ -10203,7 +10237,7 @@ const TOP_MENUS = [
   },
   {
     id: "qualityMenu", label: "품질검사", icon: ClipboardCheck,
-    children: ["iqc", "pqc", "oqc", "reports", "spc", "lock", "coa"],
+    children: ["iqc", "pqc", "oqc", "spc", "lock", "coa"],
   },
   { id: "pop", label: "현장입력", icon: Tablet },
   { id: "inv", label: "재고관리", icon: Package },
