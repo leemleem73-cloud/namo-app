@@ -5818,6 +5818,20 @@ aside{display:none!important}
 }
 </style>
 <!-- QMES_PRINT_CENTER_REPORTS_REMOVE_SEARCH_COMPACT_260720 -->
+
+<style id="qmes-iqc-final-width-adjustment">
+.qmes-iqc-filter-row label:nth-of-type(3),
+.qmes-iqc-filter-row label:nth-of-type(5){
+  flex: 0 0 150px !important;
+  width: 150px !important;
+  max-width: 150px !important;
+}
+.qmes-iqc-filter-row label:nth-of-type(3) select,
+.qmes-iqc-filter-row label:nth-of-type(5) select{
+  width: 150px !important;
+  min-width: 0 !important;
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6639,8 +6653,8 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
             <div className="text-[11px] text-slate-500 mt-0.5">{isIqc ? record.inNo : record.lot}</div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => printDoc()}
-              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5"><Printer size={13} /> 인쇄 / PDF</button>
+            {!isIqc && <button onClick={() => printDoc()}
+              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5"><Printer size={13} /> 인쇄 / PDF</button>}
             <button onClick={onClose} className="qmes-modal-close">×</button>
           </div>
         </div>
@@ -8701,7 +8715,7 @@ function IqcTab() {
           <div className="qmes-iqc-ledger-container -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
               <colgroup>
-                <col style={{width:"9%"}} /><col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"8%"}} /><col style={{width:"8%"}} />
+                <col style={{width:"10%"}} /><col style={{width:"8%"}} /><col style={{width:"9%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
                 <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
                 <col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} />
                 <col style={{width:"7%"}} /><col style={{width:"8%"}} /><col style={{width:"11%"}} />
