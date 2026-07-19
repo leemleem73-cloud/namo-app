@@ -5922,6 +5922,129 @@ body.print-doc #qmes-print-root .qmes-iqc-sign-cell{
   }
 }
 </style>
+
+
+<style id="QMES_USER_REQUESTED_FINAL_FIX_260720">
+/* 1) 수입검사 관리대장 필터: 판정·원재료·검색결과를 업체 바로 옆에 밀착 배치 */
+.qmes-iqc-filter-row{
+  width:max-content!important;
+  max-width:100%!important;
+  grid-template-columns:110px 100px 150px 125px 150px 150px!important;
+  justify-content:start!important;
+  justify-items:stretch!important;
+  column-gap:8px!important;
+  row-gap:8px!important;
+}
+.qmes-iqc-filter-row label,
+.qmes-iqc-filter-row label:nth-of-type(3),
+.qmes-iqc-filter-row label:nth-of-type(4),
+.qmes-iqc-filter-row label:nth-of-type(5){
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  flex:none!important;
+}
+.qmes-iqc-filter-row label select{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+.qmes-iqc-result-count{
+  width:150px!important;
+  min-width:150px!important;
+  max-width:150px!important;
+  justify-self:start!important;
+}
+@media(max-width:920px){
+  .qmes-iqc-filter-row{
+    width:100%!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  .qmes-iqc-result-count{
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+}
+@media(max-width:700px){
+  .qmes-iqc-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .qmes-iqc-result-count{grid-column:1 / -1!important;}
+}
+
+/* 2) 성적서 작성·검토·승인 결재란: 바코드 박스처럼 둥근 외곽 */
+.qmes-iqc-doc .qmes-iqc-sign-table,
+body.print-doc #qmes-print-root .qmes-iqc-sign-table,
+body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  border:1px solid #64748b!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  clip-path:inset(0 round 10px)!important;
+  background:#fff!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-table th,
+.qmes-iqc-doc .qmes-iqc-sign-table td,
+body.print-doc #qmes-print-root .qmes-iqc-sign-table th,
+body.print-doc #qmes-print-root .qmes-iqc-sign-table td,
+body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table th,
+body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table td{
+  border:0!important;
+  border-right:1px solid #64748b!important;
+  border-bottom:1px solid #64748b!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-table tr:last-child td,
+body.print-doc #qmes-print-root .qmes-iqc-sign-table tr:last-child td,
+body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table tr:last-child td{
+  border-bottom:0!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-table th:last-child,
+.qmes-iqc-doc .qmes-iqc-sign-table td:last-child,
+body.print-doc #qmes-print-root .qmes-iqc-sign-table th:last-child,
+body.print-doc #qmes-print-root .qmes-iqc-sign-table td:last-child,
+body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table th:last-child,
+body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table td:last-child{
+  border-right:0!important;
+}
+
+/* 3) 라벨: 미리보기와 실제 인쇄를 동일한 정사각형 비율로 유지 */
+.qmes-iqc-label-paper{
+  box-sizing:border-box!important;
+  aspect-ratio:1 / 1!important;
+}
+@media print{
+  @page{size:A4 portrait;margin:8mm;}
+  body.print-label #qmes-label-print-root{
+    position:fixed!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    width:138mm!important;
+    height:138mm!important;
+    min-width:138mm!important;
+    max-width:138mm!important;
+    min-height:138mm!important;
+    max-height:138mm!important;
+    aspect-ratio:1 / 1!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:4.8mm!important;
+    overflow:hidden!important;
+    border:0.55mm solid #111!important;
+    border-radius:1.1mm!important;
+    background:#fff!important;
+    box-shadow:none!important;
+  }
+  body.print-label #qmes-label-print-root .qmes-iqc-label-head{padding-bottom:3.2mm!important;gap:3.7mm!important;}
+  body.print-label #qmes-label-print-root .qmes-iqc-label-grid{margin-top:3.2mm!important;grid-template-columns:29.5mm minmax(0,1fr)!important;}
+  body.print-label #qmes-label-print-root .qmes-iqc-label-key,
+  body.print-label #qmes-label-print-root .qmes-iqc-label-value{min-height:10mm!important;padding:2.1mm 2.6mm!important;}
+  body.print-label #qmes-label-print-root .qmes-iqc-label-code{margin-top:3.2mm!important;padding:2.6mm!important;}
+  body.print-label #qmes-label-print-root .qmes-iqc-label-foot{margin-top:2.3mm!important;}
+}
+</style>
+<!-- QMES_USER_REQUESTED_FINAL_FIX_260720 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
