@@ -5375,6 +5375,414 @@ aside{display:none!important}
 </style>
 <!-- IQC_SIGN_ALIGNMENT_DB_CLEAN_FINAL_V4 -->
 
+
+
+<!-- IQC_PRINT_PREVIEW_EXACT_MATCH_SIGN_SINGLE_LINE_V5 -->
+<style>
+/* ===== 화면/인쇄 최종 통일: 결재란 단일선 + 중앙 정렬 ===== */
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-flow:column!important;
+  gap:1px!important;
+  padding:1px!important;
+  overflow:hidden!important;
+  border:0!important;
+  outline:0!important;
+  background:#64748b!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid::before,
+.qmes-iqc-doc .qmes-iqc-sign-grid::after,
+.qmes-iqc-doc .qmes-iqc-sign-cell::before,
+.qmes-iqc-doc .qmes-iqc-sign-cell::after{
+  content:none!important;
+  display:none!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid > .qmes-iqc-sign-cell,
+.qmes-iqc-doc .qmes-iqc-sign-cell{
+  min-width:0!important;
+  width:auto!important;
+  display:grid!important;
+  grid-template-rows:34px minmax(88px,1fr)!important;
+  gap:1px!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:#64748b!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title,
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  width:100%!important;
+  margin:0!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title{
+  height:34px!important;
+  min-height:34px!important;
+  padding:0 6px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  background:#f8fafc!important;
+  color:#1c1917!important;
+  font-weight:700!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  min-height:88px!important;
+  height:auto!important;
+  padding:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:normal!important;
+  background:#fff!important;
+  color:#1c1917!important;
+  font-weight:700!important;
+  line-height:1.25!important;
+  letter-spacing:0!important;
+}
+
+@media print{
+  @page{size:A4 portrait;margin:7mm!important;}
+  html,body{
+    width:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    overflow:visible!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  body.print-doc #root{display:none!important;}
+  body.print-doc #qmes-print-root{
+    display:flex!important;
+    width:190mm!important;
+    min-height:283mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:visible!important;
+    background:#fff!important;
+    box-sizing:border-box!important;
+  }
+  /* 미리보기의 896px 구성과 간격을 그대로 80% 축소 */
+  body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc{
+    position:static!important;
+    display:block!important;
+    width:896px!important;
+    max-width:896px!important;
+    min-width:896px!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0 auto!important;
+    padding:24px!important;
+    border:0!important;
+    border-radius:8px!important;
+    box-shadow:none!important;
+    background:#fff!important;
+    font-size:17px!important;
+    line-height:1.5!important;
+    letter-spacing:normal!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    zoom:.80!important;
+    transform:none!important;
+    transform-origin:top center!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-centered-header{
+    grid-template-columns:minmax(170px,1fr) auto minmax(170px,1fr)!important;
+    align-items:center!important;
+    padding-bottom:16px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-report-section{
+    margin-top:24px!important;
+    padding:12px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-report-first{margin-top:18px!important;}
+  body.print-doc #qmes-print-root .qmes-iqc-report-title{
+    margin-bottom:8px!important;
+    padding:9px 14px!important;
+    font-size:14px!important;
+    line-height:1.25!important;
+    letter-spacing:normal!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-basic-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-basic-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-qty-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-qty-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-judge-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-judge-table td{
+    height:42px!important;
+    padding:9px 11px!important;
+    font-size:inherit!important;
+    line-height:inherit!important;
+    letter-spacing:normal!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table td{
+    padding:9px 11px!important;
+    font-size:inherit!important;
+    line-height:inherit!important;
+    letter-spacing:normal!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table tbody td{height:56px!important;}
+  body.print-doc #qmes-print-root .qmes-iqc-report-gap{height:28px!important;}
+  body.print-doc #qmes-print-root .qmes-iqc-lower-grid{margin-top:28px!important;}
+  body.print-doc #qmes-print-root .qmes-iqc-remarks-panel{
+    min-height:58px!important;
+    padding:10px 12px!important;
+    font-size:inherit!important;
+    line-height:inherit!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-auth-row{
+    grid-template-columns:minmax(0,44%) minmax(0,56%)!important;
+    gap:18px!important;
+    margin-top:24px!important;
+    align-items:stretch!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-code-area,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    width:100%!important;
+    height:122px!important;
+    min-height:122px!important;
+    margin:0!important;
+  }
+  /* 0.8 축소 후 정확히 1px이 되도록 1.25px 간격 사용 */
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:1.25px!important;
+    padding:1.25px!important;
+    border:0!important;
+    outline:0!important;
+    background:#64748b!important;
+    background-image:none!important;
+    box-shadow:none!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid > .qmes-iqc-sign-cell,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-cell{
+    grid-template-rows:34px minmax(88px,1fr)!important;
+    gap:1.25px!important;
+    border:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+    background:#64748b!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-title{
+    height:34px!important;
+    min-height:34px!important;
+    padding:0 6px!important;
+    border:0!important;
+    background:#f8fafc!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    line-height:1!important;
+    letter-spacing:0!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
+    min-height:88px!important;
+    height:auto!important;
+    padding:8px!important;
+    border:0!important;
+    background:#fff!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    font-size:17px!important;
+    line-height:1.25!important;
+    letter-spacing:0!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid::before,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid::after,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-cell::before,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-cell::after{
+    content:none!important;
+    display:none!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc-footer{
+    margin-top:18px!important;
+    padding-top:8px!important;
+    font-size:11px!important;
+    line-height:1.35!important;
+    letter-spacing:normal!important;
+  }
+}
+</style>
+
+<style>
+/* ===== 260720 인쇄 캡처 기준 최종 보정 ===== */
+.qmes-iqc-doc .qmes-iqc-centered-header{
+  display:grid!important;
+  grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr)!important;
+  align-items:center!important;
+}
+.qmes-iqc-doc .qmes-iqc-header-logo-wrap,
+.qmes-iqc-doc .qmes-iqc-centered-title,
+.qmes-iqc-doc .qmes-iqc-header-meta{
+  align-self:center!important;
+}
+.qmes-iqc-doc .qmes-iqc-header-meta{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:2px!important;
+  margin:0!important;
+  padding:0!important;
+  line-height:1.35!important;
+}
+
+/* 결재란은 실제 표 구조로 작성하여 외곽선/내부선이 각각 한 번만 렌더링됨 */
+.qmes-iqc-doc .qmes-iqc-sign-table{
+  width:100%!important;
+  height:130px!important;
+  min-height:130px!important;
+  margin:0!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+  border:1px solid #64748b!important;
+  background:#fff!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-table th,
+.qmes-iqc-doc .qmes-iqc-sign-table td{
+  width:33.3333%!important;
+  padding:0!important;
+  border:1px solid #64748b!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  color:#1c1917!important;
+  background:#fff!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-table .qmes-iqc-sign-head th{
+  height:34px!important;
+  background:#f8fafc!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-table .qmes-iqc-sign-value td{
+  height:95px!important;
+  font-size:17px!important;
+  font-weight:800!important;
+  line-height:1.25!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-centered-header{
+    display:grid!important;
+    grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr)!important;
+    align-items:center!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-header-meta{
+    align-self:center!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    gap:2px!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:1.35!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-table{
+    width:100%!important;
+    height:122px!important;
+    min-height:122px!important;
+    margin:0!important;
+    table-layout:fixed!important;
+    border-collapse:collapse!important;
+    border-spacing:0!important;
+    border:1px solid #64748b!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-table td{
+    padding:0!important;
+    border:1px solid #64748b!important;
+    text-align:center!important;
+    vertical-align:middle!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-table .qmes-iqc-sign-head th{
+    height:34px!important;
+    background:#f8fafc!important;
+    font-size:14px!important;
+    line-height:1!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-table .qmes-iqc-sign-value td{
+    height:88px!important;
+    font-size:17px!important;
+    line-height:1.25!important;
+  }
+}
+</style>
+<!-- IQC_HEADER_META_AND_SIGN_TABLE_FIX_260720 -->
+
+
+<style id="qmes-screen-exact-print-final">
+/* 화면의 성적서를 픽셀 단위로 그대로 인쇄하는 최종 규칙 */
+@page{size:A4 portrait;margin:0!important;}
+@media print{
+  html,body{
+    width:210mm!important;
+    height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.qmes-screen-exact-print #root{display:none!important;}
+  body.qmes-screen-exact-print #qmes-print-root{
+    display:flex!important;
+    position:fixed!important;
+    inset:0!important;
+    width:210mm!important;
+    height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.qmes-screen-exact-print #qmes-print-root .qmes-screen-print-stage{
+    position:relative!important;
+    flex:0 0 auto!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  body.qmes-screen-exact-print #qmes-print-root [data-qmes-screen-print="true"]{
+    position:relative!important;
+    top:auto!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    box-shadow:none!important;
+  }
+}
+</style>
+<!-- QMES_SCREEN_EXACT_PRINT_FINAL_260720 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -5584,6 +5992,28 @@ const COMPLAINT_FLOW_LABELS = ["① 접수·초동회신", "② 초동조치 (�
 
 const INITIAL_COMPLAINTS = [];
 
+function qmesCloneWithScreenStyles(source) {
+  const clone = source.cloneNode(true);
+  const sourceNodes = [source, ...source.querySelectorAll("*")];
+  const cloneNodes = [clone, ...clone.querySelectorAll("*")];
+
+  sourceNodes.forEach((node, index) => {
+    const clonedNode = cloneNodes[index];
+    if (!clonedNode || node.nodeType !== 1) return;
+
+    const computed = window.getComputedStyle(node);
+    for (let i = 0; i < computed.length; i += 1) {
+      const prop = computed[i];
+      try {
+        clonedNode.style.setProperty(prop, computed.getPropertyValue(prop), "important");
+      } catch (_) {}
+    }
+  });
+
+  clone.setAttribute("data-qmes-screen-print", "true");
+  return clone;
+}
+
 function printDoc(sourceEl) {
   const source = sourceEl || Array.from(document.querySelectorAll(".doc-paper"))
     .find((el) => el.offsetParent !== null);
@@ -5593,15 +6023,32 @@ function printDoc(sourceEl) {
     return;
   }
 
+  /* 화면에 보이는 성적서의 계산된 스타일을 그대로 인라인 복제합니다.
+     인쇄 전용 CSS가 글자·간격·결재란을 다시 바꾸지 못하도록 모든 속성을 important로 고정합니다. */
+  const rect = source.getBoundingClientRect();
+  const screenClone = qmesCloneWithScreenStyles(source);
+  const stage = document.createElement("div");
+  stage.className = "qmes-screen-print-stage";
+
+  const a4WidthPx = 210 * 96 / 25.4;
+  const a4HeightPx = 297 * 96 / 25.4;
+  const scale = Math.min(a4WidthPx / rect.width, a4HeightPx / rect.height, 1);
+
+  stage.style.setProperty("width", `${rect.width}px`, "important");
+  stage.style.setProperty("height", `${rect.height}px`, "important");
+  stage.style.setProperty("transform", `scale(${scale})`, "important");
+  stage.style.setProperty("transform-origin", "top left", "important");
+  stage.appendChild(screenClone);
+
   printRoot.innerHTML = "";
-  printRoot.appendChild(source.cloneNode(true));
-  document.body.classList.add("print-doc");
+  printRoot.appendChild(stage);
+  document.body.classList.add("print-doc", "qmes-screen-exact-print");
 
   let cleaned = false;
   const cleanup = () => {
     if (cleaned) return;
     cleaned = true;
-    document.body.classList.remove("print-doc");
+    document.body.classList.remove("print-doc", "qmes-screen-exact-print");
     printRoot.innerHTML = "";
     window.removeEventListener("afterprint", cleanup);
   };
@@ -5610,7 +6057,7 @@ function printDoc(sourceEl) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       window.print();
-      setTimeout(cleanup, 500);
+      setTimeout(cleanup, 700);
     });
   });
 }
@@ -6253,9 +6700,12 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
 
               <div className="qmes-iqc-auth-row">
                 <IqcBarcodeQr record={record} />
-                <div className="qmes-iqc-sign-grid grid grid-cols-3 border border-slate-900 text-xs text-center">
-                  {["작성","검토","승인"].map((label) => <div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (record.inspector || record.by || "") : ""}</div></div>)}
-                </div>
+                <table className="qmes-iqc-sign-table text-xs text-center">
+                  <tbody>
+                    <tr className="qmes-iqc-sign-head"><th>작성</th><th>검토</th><th>승인</th></tr>
+                    <tr className="qmes-iqc-sign-value"><td>{record.inspector || record.by || ""}</td><td></td><td></td></tr>
+                  </tbody>
+                </table>
               </div>
 
               <div className="qmes-iqc-doc-footer" style={{marginTop:"18px",paddingTop:"8px",borderTop:"1px solid #cbd5e1",fontSize:"11px",fontWeight:700,color:"#374151",textAlign:"center"}}>본 문서는 QMES에서 발행된 관리본입니다.</div>
@@ -7660,9 +8110,12 @@ function InspectionReportsTab() {
 
               <div className="qmes-iqc-auth-row">
                 <IqcBarcodeQr record={iqc} />
-                <div className="qmes-iqc-sign-grid grid grid-cols-3 border border-slate-900 text-xs text-center">
-                  {["작성","검토","승인"].map((label) => <div key={label} className="qmes-iqc-sign-cell"><div className="qmes-iqc-sign-title">{label}</div><div className="qmes-iqc-sign-body">{label === "작성" ? (iqc.inspector || iqc.by || "") : ""}</div></div>)}
-                </div>
+                <table className="qmes-iqc-sign-table text-xs text-center">
+                  <tbody>
+                    <tr className="qmes-iqc-sign-head"><th>작성</th><th>검토</th><th>승인</th></tr>
+                    <tr className="qmes-iqc-sign-value"><td>{iqc.inspector || iqc.by || ""}</td><td></td><td></td></tr>
+                  </tbody>
+                </table>
               </div>
 
               <div className="qmes-iqc-doc-footer" style={{marginTop:"18px",paddingTop:"8px",borderTop:"1px solid #cbd5e1",fontSize:"11px",fontWeight:700,color:"#374151",textAlign:"center"}}>본 문서는 QMES에서 발행된 관리본입니다.</div>
