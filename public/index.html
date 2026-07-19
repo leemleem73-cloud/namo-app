@@ -5273,6 +5273,108 @@ aside{display:none!important}
 </style>
 <!-- IQC_LOGO_SIGN_PRINT_MATCH_V3 -->
 
+
+<style>
+/* ===== 최종 수정: IQC 결재란 선 정렬 및 서명 가운데 정렬 ===== */
+.qmes-iqc-doc .qmes-iqc-sign-grid{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:1fr!important;
+  overflow:hidden!important;
+  border:1px solid #64748b!important;
+  background:#fff!important;
+  background-image:none!important;
+  isolation:auto!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid::before,
+.qmes-iqc-doc .qmes-iqc-sign-grid::after{
+  content:none!important;
+  display:none!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid > .qmes-iqc-sign-cell,
+.qmes-iqc-doc .qmes-iqc-sign-cell{
+  min-width:0!important;
+  display:grid!important;
+  grid-template-rows:34px minmax(88px,1fr)!important;
+  border:0!important;
+  border-right:1px solid #64748b!important;
+  background:#fff!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-grid > .qmes-iqc-sign-cell:last-child,
+.qmes-iqc-doc .qmes-iqc-sign-cell:last-child{
+  border-right:0!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-title{
+  width:100%!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:0!important;
+  border-bottom:1px solid #64748b!important;
+  background:#f8fafc!important;
+  color:#1c1917!important;
+  box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc-sign-body{
+  width:100%!important;
+  min-height:88px!important;
+  height:auto!important;
+  padding:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  background:#fff!important;
+  color:#1c1917!important;
+  box-sizing:border-box!important;
+}
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid{
+    background:#fff!important;
+    background-image:none!important;
+    border:1px solid #64748b!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid::before,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid::after{
+    content:none!important;
+    display:none!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid > .qmes-iqc-sign-cell,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-cell{
+    grid-template-rows:34px minmax(88px,1fr)!important;
+    border:0!important;
+    border-right:1px solid #64748b!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-grid > .qmes-iqc-sign-cell:last-child,
+  body.print-doc #qmes-print-root .qmes-iqc-sign-cell:last-child{
+    border-right:0!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-title{
+    height:34px!important;
+    min-height:34px!important;
+    padding:0!important;
+    border-bottom:1px solid #64748b!important;
+    background:#f8fafc!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-sign-body{
+    min-height:88px!important;
+    height:auto!important;
+    padding:8px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    background:#fff!important;
+  }
+}
+</style>
+<!-- IQC_SIGN_ALIGNMENT_DB_CLEAN_FINAL_V4 -->
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -5516,14 +5618,14 @@ function printDoc(sourceEl) {
 /* ──────────────────────────── 통합 데이터 저장소 ──────────────────────────── */
 /* 화면 간 연동 + 새로고침 후에도 기록 유지. 실제 서버 구축 시 이 계층만 API로 교체하면 됩니다. */
 
-const DB_KEY = "qmes-local-iqc-v3";
-const DB_RESET_MARKER = "qmes-iqc-logo-sign-print-match-reset-v3";
+const DB_KEY = "qmes-local-iqc-v4-clean";
+const DB_RESET_MARKER = "qmes-iqc-sign-align-db-clean-reset-v4";
 
 /* 수입검사 개선본 최초 실행 시 기존 테스트 DB를 한 번 초기화합니다.
    이후 입력한 데이터는 새 DB_KEY에 저장되어 새로고침 후에도 유지됩니다. */
 try {
   if (!window.localStorage.getItem(DB_RESET_MARKER)) {
-    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", "qmes-local-iqc-v3", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
+    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", "qmes-local-iqc-v3", "qmes-local-iqc-v4-clean", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
     window.localStorage.setItem(DB_RESET_MARKER, "1");
   }
 } catch (e) { /* 무시 */ }
@@ -5538,13 +5640,6 @@ let DB = (() => {
   try {
     const current = window.localStorage.getItem(DB_KEY);
     if (current) return { ...dbDefault(), ...JSON.parse(current) };
-    /* 기존 원본에서 저장한 로컬 데이터가 있으면 최초 1회 이어받기 */
-    const legacy = window.localStorage.getItem("qmes-db-v1");
-    if (legacy) {
-      const migrated = { ...dbDefault(), ...JSON.parse(legacy) };
-      window.localStorage.setItem(DB_KEY, JSON.stringify(migrated));
-      return migrated;
-    }
   } catch (e) { /* 무시 */ }
   return dbDefault();
 })();
