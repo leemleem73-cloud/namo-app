@@ -10019,8 +10019,8 @@ function IqcTab() {
           <div className="qmes-iqc-ledger-container -mx-4 px-4">
             <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
               <colgroup>
-                <col style={{width:"10%"}} /><col style={{width:"8%"}} /><col style={{width:"9%"}} />
-                <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"7%"}} />
+                <col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} />
+                <col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} />
                 <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
                 <col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} />
                 <col style={{width:"7%"}} /><col style={{width:"13%"}} />
@@ -12024,5 +12024,66 @@ function MembersTab() {
 qmesStart();
 
 </script>
+
+
+<style>
+/* ===== 요청 수정: 인쇄 외곽 번짐 제거 + 수입검사 관리대장 주요 열 간격 통일 ===== */
+@media print{
+  /* 표 전체를 감싸는 별도 외곽선/그림자를 제거하고 각 셀의 선만 선명하게 출력 */
+  body.print-doc #qmes-print-root .doc-paper,
+  body.print-doc #qmes-print-root .doc-paper table,
+  body.print-doc #qmes-print-root .qmes-iqc-basic-table,
+  body.print-doc #qmes-print-root .qmes-iqc-qty-table,
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table,
+  body.print-doc #qmes-print-root .qmes-iqc-judge-table,
+  body.print-doc #qmes-print-root .qmes-iqc-report-info{
+    box-shadow:none!important;
+    outline:none!important;
+    filter:none!important;
+  }
+  body.print-doc #qmes-print-root .doc-paper table,
+  body.print-doc #qmes-print-root .qmes-iqc-basic-table,
+  body.print-doc #qmes-print-root .qmes-iqc-qty-table,
+  body.print-doc #qmes-print-root .qmes-iqc-inspection-table,
+  body.print-doc #qmes-print-root .qmes-iqc-judge-table,
+  body.print-doc #qmes-print-root .qmes-iqc-report-info{
+    border:none!important;
+    border-collapse:collapse!important;
+  }
+  body.print-doc #qmes-print-root .doc-paper th,
+  body.print-doc #qmes-print-root .doc-paper td{
+    box-shadow:none!important;
+    outline:none!important;
+    background-clip:padding-box!important;
+  }
+}
+
+/* 관리대장 앞 6개 열: 제목과 값의 폭·간격·정렬을 동일하게 유지 */
+.qmes-iqc-ledger-table th:nth-child(-n+6),
+.qmes-iqc-ledger-table td:nth-child(-n+6){
+  width:7.6%!important;
+  padding-left:6px!important;
+  padding-right:6px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+.qmes-iqc-ledger-table th:nth-child(-n+6){
+  height:44px!important;
+  font-weight:700!important;
+}
+.qmes-iqc-ledger-table td:nth-child(-n+6){
+  height:52px!important;
+}
+.qmes-iqc-ledger-table td:nth-child(-n+6) > *{
+  max-width:100%!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+.qmes-iqc-ledger-table td:nth-child(5) .max-w-\[120px\]{
+  max-width:100%!important;
+  text-align:center!important;
+}
+</style>
+
 </body>
 </html>
