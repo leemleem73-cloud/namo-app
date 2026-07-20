@@ -7237,6 +7237,21 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 }
 </style>
 
+
+<style id="QMES_LABEL_LOGO_SLIGHTLY_LARGER_PRINT_ONLY_20260720">
+.qmes-iqc-label-logo-small{
+  max-width:118px!important;
+  height:24px!important;
+}
+@media print{
+  body.print-label #qmes-label-print-root .qmes-iqc-label-logo-small,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-logo-small{
+    max-width:118px!important;
+    height:24px!important;
+  }
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -8012,7 +8027,7 @@ function IqcLabelViewer({ record, onClose }) {
           <div className="flex items-center gap-2">
             <button onClick={printLabel}
               className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
-              <Printer size={13} /> 인쇄 / PDF
+              <Printer size={13} /> 인쇄
             </button>
             <button onClick={onClose} className="qmes-modal-close">×</button>
           </div>
@@ -8098,7 +8113,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => printDoc()}
-              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5"><Printer size={13} /> 인쇄 / PDF</button>
+              className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5"><Printer size={13} /> 인쇄</button>
             <button onClick={onClose} className="qmes-modal-close">×</button>
           </div>
         </div>
@@ -9458,7 +9473,7 @@ function InspectionReportsTab() {
     <div className="flex flex-col gap-4">
       <Panel title="검사 성적서 조회 · 인쇄" right={sel && (
         <button onClick={printDoc} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium transition-colors">
-          <Printer size={13} /> 선택 성적서 인쇄 / PDF
+          <Printer size={13} /> 선택 성적서 인쇄
         </button>
       )}>
         <div className="flex flex-wrap gap-2 mb-4">
@@ -9642,7 +9657,7 @@ function CoaTab() {
     <div className="flex flex-col gap-4">
       <Panel title="출하성적서 발행" right={
         <button onClick={printDoc} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium transition-colors">
-          <Printer size={13} /> 인쇄 / PDF
+          <Printer size={13} /> 인쇄
         </button>
       }>
         <div className="flex flex-wrap gap-2">
@@ -10302,7 +10317,7 @@ function WoDocTab() {
     <div className="flex flex-col gap-4">
       <Panel title="작업지시서 조회 · 인쇄" right={
         <button onClick={printDoc} className="flex items-center gap-1.5 rounded border border-slate-600 text-slate-200 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium transition-colors">
-          <Printer size={13} /> 선택 작업지시서 인쇄 / PDF
+          <Printer size={13} /> 선택 작업지시서 인쇄
         </button>
       }>
         <div className="text-xs text-slate-500 mb-3">
