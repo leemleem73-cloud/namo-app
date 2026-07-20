@@ -7013,6 +7013,80 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 }
 </style>
 
+
+<style id="QMES_IQC_LABEL_CENTER_KEYS_SMALL_CODES_FINAL_260720">
+/* 수입검사 라벨: 항목명만 가운데 정렬, 값은 기존처럼 왼쪽 정렬 */
+.qmes-iqc-label-paper .qmes-iqc-label-key{
+  justify-content:center!important;
+  text-align:center!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-label-value{
+  justify-content:flex-start!important;
+  text-align:left!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-label-reason{
+  line-height:1.35!important;
+  word-break:keep-all!important;
+  overflow-wrap:anywhere!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-label-reason.is-pass{color:#047857!important;}
+.qmes-iqc-label-paper .qmes-iqc-label-reason.is-fail{color:#b91c1c!important;}
+
+/* 바코드·QR 영역을 과하지 않게 축소 */
+.qmes-iqc-label-paper .qmes-iqc-label-code{
+  margin-top:10px!important;
+  padding:7px 8px!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-code-area{
+  min-height:62px!important;
+  grid-template-columns:minmax(0,1fr) 58px!important;
+  gap:8px!important;
+  padding:5px 7px!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-barcode-wrap svg{
+  width:100%!important;
+  max-width:225px!important;
+  height:42px!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-qr-wrap img,
+.qmes-iqc-label-paper .qmes-iqc-qr-wrap canvas{
+  width:50px!important;
+  height:50px!important;
+}
+.qmes-iqc-label-paper .qmes-iqc-code-caption{font-size:8px!important;}
+.qmes-iqc-label-paper .qmes-iqc-qr-label{font-size:7px!important;}
+
+@media print{
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-key{
+    justify-content:center!important;
+    text-align:center!important;
+  }
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-value{
+    justify-content:flex-start!important;
+    text-align:left!important;
+  }
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-code{
+    margin-top:10px!important;
+    padding:7px 8px!important;
+    min-height:0!important;
+  }
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-code-area{
+    min-height:62px!important;
+    grid-template-columns:minmax(0,1fr) 58px!important;
+    gap:8px!important;
+    padding:5px 7px!important;
+  }
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-barcode-wrap svg{
+    max-width:225px!important;
+    height:42px!important;
+  }
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-qr-wrap img,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-qr-wrap canvas{
+    width:50px!important;
+    height:50px!important;
+  }
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -7731,6 +7805,17 @@ function IqcBarcodeQr({ record }) {
 function IqcLabelViewer({ record, onClose }) {
   if (!record) return null;
 
+  const labelJudge = [record.visual, record.label, record.weight, record.coa].every(v => v === "합격")
+    ? "합격"
+    : "불합격(반품)";
+  const labelJudgeTop = labelJudge === "합격" ? "합격" : "불합격";
+  const judgeReasons = [];
+  if (record.visual !== "합격") judgeReasons.push("외관 이상");
+  if (record.label !== "합격") judgeReasons.push("라벨 이상");
+  if (record.weight !== "합격") judgeReasons.push("중량 기준 이탈");
+  if (record.coa !== "합격") judgeReasons.push("COA 불일치");
+  const judgeReason = judgeReasons.length ? judgeReasons.join(", ") : "이상 없음";
+
   const printLabel = () => {
     const source = document.getElementById("qmes-label-print-root");
     const printRoot = document.getElementById("qmes-print-root");
@@ -7789,8 +7874,8 @@ function IqcLabelViewer({ record, onClose }) {
               <div className="qmes-iqc-label-company">나모케미칼㈜</div>
               <div className="qmes-iqc-label-title">수입검사 원재료 라벨</div>
             </div>
-            <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`} data-judge={record.judge || ""}>
-              {record.judge === "불합격" ? "불합격(반품)" : (record.judge || "-")}
+            <div className={`qmes-iqc-label-judge ${labelJudge === "합격" ? "pass" : "fail"}`} data-judge={labelJudgeTop}>
+              {labelJudgeTop}
             </div>
           </div>
 
@@ -7810,21 +7895,26 @@ function IqcLabelViewer({ record, onClose }) {
             <div className="qmes-iqc-label-key">입고일자</div>
             <div className="qmes-iqc-label-value">{String(record.recv || "-").slice(0,10)}</div>
 
+            <div className="qmes-iqc-label-key">검사일자</div>
+            <div className="qmes-iqc-label-value">{String(record.inspectedAt || record.recv || "-").slice(0,10)}</div>
+
             <div className="qmes-iqc-label-key">입고수량</div>
             <div className="qmes-iqc-label-value">{record.qty || "-"}</div>
 
             <div className="qmes-iqc-label-key">검사자</div>
             <div className="qmes-iqc-label-value">{record.inspector || record.by || "-"}</div>
 
-            <div className="qmes-iqc-label-key">라벨 확인</div>
+            <div className="qmes-iqc-label-key">판정</div>
             <div
-              className={`qmes-iqc-label-value qmes-label-check-value ${
-                record.label === "합격" ? "is-pass" :
-                (record.label === "불합격" || record.label === "불합격(반품)") ? "is-fail" : ""
-              }`}
-              data-label-check={record.label || ""}
+              className={`qmes-iqc-label-value qmes-label-check-value ${labelJudge === "합격" ? "is-pass" : "is-fail"}`}
+              data-label-check={labelJudge}
             >
-              {record.label || "-"}
+              {labelJudge}
+            </div>
+
+            <div className="qmes-iqc-label-key">판정사유</div>
+            <div className={`qmes-iqc-label-value qmes-iqc-label-reason ${labelJudge === "합격" ? "is-pass" : "is-fail"}`}>
+              {judgeReason}
             </div>
           </div>
 
