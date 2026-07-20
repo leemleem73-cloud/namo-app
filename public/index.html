@@ -6864,11 +6864,6 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 
 
 <style id="QMES_LABEL_TEXT_FINAL_TUNING_260720">
-/* 라벨 화면 및 인쇄: 원재료명(NMP 포함)은 일반 굵기로 */
-.qmes-label-material-name{
-  font-weight:400!important;
-}
-
 /* 라벨의 나머지 주요 글씨는 더 크게 */
 #qmes-label-print-root .qmes-iqc-label-key,
 #qmes-label-print-root .qmes-iqc-label-value,
@@ -6907,10 +6902,6 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 }
 
 @media print{
-  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-label-material-name{
-    font-weight:400!important;
-  }
-
   body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-key,
   body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-value,
   body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge{
@@ -6930,27 +6921,94 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 </style>
 
 
-<style id="QMES_EXACT_LABEL_FIX_260720">
-/* 라벨 원재료명(NMP) 글씨: 굵은 강조 제거 + 연한 회색 */
-.qmes-iqc-label-material-name{
-  font-weight:400!important;
-  color:#6b7280!important;
+
+
+<style id="QMES_PATCH_LABEL_TEXT_AND_PRINT_CLARITY_260720">
+/* 라벨 내부 글씨 굵기 통일 */
+.qmes-iqc-label-grid .qmes-iqc-label-value{
+  font-weight:700!important;
 }
 
-/* 수입검사 라벨확인 선택값 색상 */
-.qmes-label-result-pass{
-  color:#34d399!important;
-  border-color:rgba(16,185,129,.45)!important;
-}
-.qmes-label-result-fail{
-  color:#f87171!important;
-  border-color:rgba(239,68,68,.45)!important;
-}
-
+/* 인쇄 선 번짐 방지
+   라벨 선에는 그라데이션이 없었고, 전체 scale(.80) 축소가 선을 흐리게 만드는 주원인이므로
+   실제 출력 크기로 배치하고 모든 효과를 제거한다. */
 @media print{
-  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-material-name{
-    font-weight:400!important;
-    color:#6b7280!important;
+  body.print-label #qmes-label-print-root{
+    left:50%!important;
+    top:6mm!important;
+    width:110mm!important;
+    min-width:110mm!important;
+    max-width:110mm!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:4mm!important;
+    transform:translateX(-50%)!important;
+    transform-origin:top center!important;
+    overflow:visible!important;
+    background:#fff!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-paper{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:4mm!important;
+    box-sizing:border-box!important;
+    border:1px solid #000!important;
+    border-radius:0!important;
+    background:#fff!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-head{
+    border-bottom:1px solid #000!important;
+    background:#fff!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-grid{
+    border-top:1px solid #000!important;
+    border-left:1px solid #000!important;
+    background:#fff!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-key,
+  body.print-label #qmes-label-print-root .qmes-iqc-label-value{
+    border-right:1px solid #000!important;
+    border-bottom:1px solid #000!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+    text-shadow:none!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-key{
+    background:#f3f4f6!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-value{
+    background:#fff!important;
+    font-weight:700!important;
+  }
+
+  body.print-label #qmes-label-print-root .qmes-iqc-label-code,
+  body.print-label #qmes-label-print-root .qmes-iqc-code-area{
+    border-color:#000!important;
+    background:#fff!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
   }
 }
 </style>
@@ -7732,16 +7790,16 @@ function IqcLabelViewer({ record, onClose }) {
               <div className="qmes-iqc-label-title">수입검사 원재료 라벨</div>
             </div>
             <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`} data-judge={record.judge || ""}>
-              {record.judge || "-"}
+              {record.judge === "불합격" ? "불합격(반품)" : (record.judge || "-")}
             </div>
           </div>
 
           <div className="qmes-iqc-label-grid">
             <div className="qmes-iqc-label-key">원재료명</div>
-            <div className="qmes-iqc-label-value qmes-iqc-label-main qmes-iqc-label-material-name">{record.name || "-"}</div>
+            <div className="qmes-iqc-label-value">{record.name || "-"}</div>
 
             <div className="qmes-iqc-label-key">LOT No.</div>
-            <div className="qmes-iqc-label-value qmes-iqc-label-main font-mono">{record.lot || "-"}</div>
+            <div className="qmes-iqc-label-value font-mono">{record.lot || "-"}</div>
 
             <div className="qmes-iqc-label-key">입고번호</div>
             <div className="qmes-iqc-label-value font-mono">{record.inNo || "-"}</div>
