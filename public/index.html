@@ -7704,6 +7704,257 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 }
 </style>
 
+
+<style id="QMES_IQC_FONT_AND_COMPACT_INSPECTION_REDESIGN_260720">
+/* ===== 수입검사: 관리대장 가독성 강화 ===== */
+.qmes-iqc-ledger-section .panel-title,
+.qmes-iqc-ledger-panel .panel-title{
+  font-size:16px!important;
+  font-weight:800!important;
+  letter-spacing:-.01em!important;
+}
+.qmes-iqc-search-box input{
+  font-size:13px!important;
+  font-weight:600!important;
+}
+.qmes-iqc-filter-reset,
+.qmes-iqc-export-btn{
+  font-size:12px!important;
+  font-weight:750!important;
+}
+.qmes-iqc-filter-row label>span{
+  font-size:11px!important;
+  font-weight:800!important;
+}
+.qmes-iqc-filter-row select{
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.qmes-iqc-result-count span{font-size:11px!important}
+.qmes-iqc-result-count strong{font-size:12px!important}
+.qmes-iqc-ledger-table{
+  font-size:13px!important;
+}
+.qmes-iqc-ledger-table thead th{
+  font-size:12px!important;
+  font-weight:800!important;
+}
+.qmes-iqc-ledger-table tbody td{
+  font-size:12px!important;
+}
+.qmes-iqc-ledger-table .badge,
+.qmes-iqc-ledger-table button{
+  font-size:11px!important;
+}
+
+/* ===== 공정·출하검사: 수입검사와 완전히 다른 미니 툴바형 조회창 ===== */
+.qmes-inspection-record-filter{
+  width:fit-content!important;
+  max-width:100%!important;
+  margin:0 0 12px auto!important;
+  padding:7px!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:6px!important;
+  border:1px solid #2b3d55!important;
+  border-radius:11px!important;
+  background:rgba(9,20,36,.76)!important;
+  box-shadow:0 7px 18px rgba(2,8,23,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  overflow:visible!important;
+  backdrop-filter:blur(10px);
+}
+.qmes-inspection-record-filter::before{
+  content:none!important;
+}
+.qmes-inspection-record-filter > div:first-child{
+  width:238px!important;
+  flex:0 0 238px!important;
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field{
+  width:96px!important;
+  flex:0 0 96px!important;
+}
+.qmes-inspection-record-filter > div:first-child > span,
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field > span{
+  min-height:0!important;
+  margin:0 0 3px 2px!important;
+  gap:4px!important;
+  color:#7389a3!important;
+  font-size:9px!important;
+  font-weight:750!important;
+}
+.qmes-inspection-record-filter > div:first-child > span::before,
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field > span::before{
+  display:none!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box{
+  height:32px!important;
+  border:1px solid #30445e!important;
+  border-radius:7px!important;
+  background:#0c1c30!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box:focus-within{
+  border-color:#a78bfa!important;
+  box-shadow:0 0 0 2px rgba(167,139,250,.10)!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box input{
+  height:30px!important;
+  padding:0 26px 0 30px!important;
+  font-size:11px!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-icon{
+  left:9px!important;
+  width:13px!important;
+  height:13px!important;
+  color:#a78bfa!important;
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field select{
+  height:32px!important;
+  padding:0 22px 0 8px!important;
+  border:1px solid #30445e!important;
+  border-radius:7px!important;
+  background:#0c1c30!important;
+  color:#dbe7f4!important;
+  font-size:11px!important;
+  font-weight:650!important;
+}
+.qmes-inspection-record-filter > button{
+  width:66px!important;
+  height:32px!important;
+  padding:0!important;
+  gap:4px!important;
+  border:0!important;
+  border-radius:7px!important;
+  color:#c4b5fd!important;
+  background:rgba(139,92,246,.12)!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  box-shadow:none!important;
+}
+.qmes-inspection-record-filter > button::before{
+  content:"↺"!important;
+  font-size:13px!important;
+}
+.qmes-inspection-record-filter > button:hover{
+  color:#ede9fe!important;
+  background:rgba(139,92,246,.22)!important;
+}
+/* 공정과 출하를 서로도 살짝 구분 */
+.qmes-pqc-record-filter{border-left:3px solid #a78bfa!important}
+.qmes-oqc-record-filter{border-left:3px solid #2dd4bf!important}
+.qmes-oqc-record-filter .qmes-inspection-search-icon{color:#2dd4bf!important}
+.qmes-oqc-record-filter .qmes-inspection-search-box:focus-within,
+.qmes-oqc-record-filter .qmes-oqc-record-filter-field select:focus{
+  border-color:#2dd4bf!important;
+  box-shadow:0 0 0 2px rgba(45,212,191,.10)!important;
+}
+.qmes-oqc-record-filter > button{
+  color:#99f6e4!important;
+  background:rgba(20,184,166,.11)!important;
+}
+.qmes-oqc-record-filter > button:hover{
+  color:#ccfbf1!important;
+  background:rgba(20,184,166,.20)!important;
+}
+@media(max-width:760px){
+  .qmes-inspection-record-filter{
+    width:100%!important;
+    margin-left:0!important;
+    display:grid!important;
+    grid-template-columns:1fr 88px 88px 62px!important;
+  }
+  .qmes-inspection-record-filter > div:first-child,
+  .qmes-inspection-record-filter .qmes-oqc-record-filter-field{
+    width:auto!important;
+    flex:auto!important;
+  }
+}
+@media(max-width:560px){
+  .qmes-inspection-record-filter{grid-template-columns:1fr 1fr!important}
+  .qmes-inspection-record-filter > div:first-child{grid-column:1/-1!important}
+  .qmes-inspection-record-filter > button{width:100%!important}
+}
+</style>
+
+
+<style id="QMES_KPI_PROGRESS_AND_IQC_SEARCH_FINAL_20260720">
+@property --donut-progress{
+  syntax:"<percentage>";
+  inherits:false;
+  initial-value:0%;
+}
+.qmes-hybrid-ring{
+  transition:--donut-progress 1.15s cubic-bezier(.22,.8,.28,1),filter .25s ease!important;
+}
+.qmes-hybrid-donut{
+  --ring-track:rgba(var(--kpi-rgb),.11);
+}
+.qmes-hybrid-ring{
+  background:conic-gradient(from -90deg,
+    var(--kpi-accent) 0 var(--donut-progress),
+    var(--ring-track) var(--donut-progress) 100%)!important;
+}
+.qmes-hybrid-percent{
+  position:absolute;
+  z-index:4;
+  left:50%;
+  bottom:13px;
+  transform:translateX(-50%);
+  min-width:34px;
+  color:rgba(231,245,255,.78);
+  font-size:9px;
+  font-weight:800;
+  line-height:1;
+  text-align:center;
+  letter-spacing:.02em;
+  font-variant-numeric:tabular-nums;
+  pointer-events:none;
+}
+.qmes-hybrid-icon{
+  transform:translateY(-5px)!important;
+}
+.qmes-iqc-search-toolbar{
+  align-items:flex-start!important;
+  border-color:#31506d!important;
+  background:#0d1d31!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.qmes-iqc-search-main{
+  width:auto!important;
+  max-width:100%!important;
+  grid-template-columns:minmax(300px,420px) auto auto!important;
+  justify-content:start!important;
+  justify-items:start!important;
+}
+.qmes-iqc-search-box{
+  width:100%!important;
+  height:40px!important;
+  border-color:#31506d!important;
+  border-radius:8px!important;
+  background:#10243b!important;
+}
+.qmes-iqc-search-box input{
+  font-size:12px!important;
+}
+.qmes-iqc-filter-reset,
+.qmes-iqc-export-btn{
+  height:40px!important;
+  border-radius:8px!important;
+}
+.qmes-iqc-filter-row{
+  width:auto!important;
+  max-width:100%!important;
+  justify-content:start!important;
+}
+@media(max-width:900px){
+  .qmes-iqc-search-main{
+    width:100%!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+  }
+  .qmes-iqc-export-btn{grid-column:1/-1}
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -8125,21 +8376,35 @@ function Panel({ title, right, children, className = "" }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false }) {
+function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false, progressValue }) {
   const numeric = Number(String(value).replace(/[^0-9.]/g,"")) || 0;
   const labelKey = String(label || "");
-  const progress =
-    labelKey.includes("합격") ? Math.max(0, Math.min(100, numeric)) :
-    labelKey.includes("LOT") ? Math.max(18, Math.min(88, numeric * 12)) :
-    labelKey.includes("부적합") ? Math.max(8, Math.min(72, numeric * 22)) :
-    labelKey.includes("불합격") ? Math.max(8, Math.min(64, numeric * 26)) : 58;
+  const calculatedProgress = progressValue !== undefined && progressValue !== null
+    ? Number(progressValue)
+    : labelKey.includes("합격") ? numeric
+    : labelKey.includes("LOT") ? (numeric > 0 ? 100 : 0)
+    : labelKey.includes("부적합") || labelKey.includes("반품") ? numeric
+    : 58;
+  const progress = Math.max(0, Math.min(100, Number.isFinite(calculatedProgress) ? calculatedProgress : 0));
+  const [displayProgress, setDisplayProgress] = useState(animated ? 0 : progress);
+
+  useEffect(() => {
+    if (!animated) {
+      setDisplayProgress(progress);
+      return;
+    }
+    setDisplayProgress(0);
+    const timer = window.setTimeout(() => setDisplayProgress(progress), 80);
+    return () => window.clearTimeout(timer);
+  }, [progress, animated]);
 
   return (
     <div className={`bg-slate-900 border border-slate-800 rounded-lg qmes-hybrid-kpi-card ${animated ? "qmes-iqc-kpi-card" : ""}`}>
-      <div className="qmes-hybrid-donut" style={{"--donut-progress": `${progress}%`}}>
+      <div className="qmes-hybrid-donut" style={{"--donut-progress": `${displayProgress}%`}}>
         <div className="qmes-hybrid-ring"></div>
         <div className="qmes-hybrid-ring-inner"></div>
         <Icon className={`qmes-hybrid-icon ${tone}`} />
+        {animated && <span className="qmes-hybrid-percent">{Math.round(displayProgress)}%</span>}
       </div>
       <div className="qmes-hybrid-copy">
         <div className="qmes-hybrid-label-row">
@@ -8154,7 +8419,7 @@ function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-
           {labelKey.includes("합격") && "검사 완료 기준 합격 비율"}
           {labelKey.includes("LOT") && "이번 달 누적 입고 실적"}
           {labelKey.includes("부적합") && "즉시 확인이 필요한 항목"}
-          {labelKey.includes("불합격") && "공급사 반송 처리 건수"}
+          {labelKey.includes("반품") && "공급사 반송 처리 건수"}
         </div>
         {delta && (
           <div className={`qmes-hybrid-delta ${deltaUp ? "is-up" : "is-down"}`}>
@@ -9021,9 +9286,9 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   return (
     <div className={isOqc ? "qmes-oqc-page flex flex-col gap-4" : "flex flex-col gap-4"}>
       <div className={isOqc ? "qmes-oqc-kpi-grid grid grid-cols-3 gap-3" : "qmes-pqc-kpi-grid grid grid-cols-3 gap-3"}>
-        <Kpi animated icon={ClipboardCheck} label="금일 검사 건수" value={records.length} unit="건" tone="text-sky-400" />
-        <Kpi animated icon={CheckCircle2} label="합격률" value={rate} unit="%" tone="text-emerald-400" />
-        <Kpi animated icon={XCircle} label="부적합" value={records.length - pass} unit="건" tone="text-red-400" />
+        <Kpi animated icon={ClipboardCheck} label="금일 검사 건수" value={records.length} unit="건" tone="text-sky-400" progressValue={records.length ? 100 : 0} />
+        <Kpi animated icon={CheckCircle2} label="합격률" value={rate} unit="%" tone="text-emerald-400" progressValue={records.length ? (pass / records.length) * 100 : 0} />
+        <Kpi animated icon={XCircle} label="부적합" value={records.length - pass} unit="건" tone="text-red-400" progressValue={records.length ? ((records.length - pass) / records.length) * 100 : 0} />
       </div>
 
       {notice && (
@@ -9108,7 +9373,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   : "border-emerald-500/40 text-emerald-400"
               }`}>
               <option value="합격">합격</option>
-              <option value="불합격">불합격</option>
+              <option value="불합격">반품</option>
             </select>
           ) : (
             <div className={`flex items-center justify-center rounded border px-3 py-2 text-sm font-medium ${
@@ -10587,10 +10852,10 @@ function IqcTab() {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" />
-        <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
-        <Kpi animated icon={XCircle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" />
-        <Kpi animated icon={AlertTriangle} label="불합격" value={returned.length} unit="건" tone="text-amber-400" />
+        <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" progressValue={monthRows.length ? 100 : 0} />
+        <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" progressValue={done.length ? (pass / done.length) * 100 : 0} />
+        <Kpi animated icon={XCircle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" progressValue={monthRows.length ? (failed.length / monthRows.length) * 100 : 0} />
+        <Kpi animated icon={AlertTriangle} label="반품" value={returned.length} unit="건" tone="text-amber-400" progressValue={monthRows.length ? (returned.length / monthRows.length) * 100 : 0} />
       </div>
 
       <div className="qmes-iqc-register-chart-layout">
