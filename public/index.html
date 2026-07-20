@@ -7525,6 +7525,185 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 }
 </style>
 
+
+
+<style id="QMES_INSPECTION_FILTER_KPI_REDESIGN_260720">
+/* ===== 공정검사·출하검사 조회 필터: 수입검사형 컬러 패널 ===== */
+.qmes-inspection-record-filter{
+  position:relative;
+  margin:0 0 16px!important;
+  padding:14px 16px 15px!important;
+  display:grid!important;
+  grid-template-columns:minmax(320px,1.7fr) 150px 150px 108px!important;
+  gap:10px!important;
+  align-items:end!important;
+  border:1px solid rgba(65,196,238,.20)!important;
+  border-radius:13px!important;
+  background:
+    linear-gradient(135deg,rgba(18,43,70,.96),rgba(10,27,48,.94))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(2,8,23,.20)!important;
+  overflow:hidden;
+}
+.qmes-inspection-record-filter::before{
+  content:"검사 기록 조회";
+  position:absolute;
+  top:0;left:0;
+  height:3px;width:100%;
+  font-size:0;
+  background:linear-gradient(90deg,#38bdf8 0%,#22d3ee 46%,#34d399 100%);
+}
+.qmes-inspection-record-filter > div{
+  min-width:0!important;
+}
+.qmes-inspection-record-filter > div:first-child > span,
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field > span{
+  min-height:17px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin-bottom:5px!important;
+  color:#9eb5cb!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  letter-spacing:.01em!important;
+}
+.qmes-inspection-record-filter > div:first-child > span::before{
+  content:"⌕";
+  width:18px;height:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:5px;
+  color:#7dd3fc;
+  background:rgba(56,189,248,.11);
+  font-size:13px;font-weight:900;
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field:nth-of-type(2) > span::before{
+  content:"Y";
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field:nth-of-type(3) > span::before{
+  content:"M";
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field > span::before{
+  width:18px;height:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:5px;
+  color:#a7f3d0;
+  background:rgba(52,211,153,.10);
+  font-size:9px;font-weight:900;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box{
+  position:relative!important;
+  height:40px!important;
+  border:1px solid #31506d!important;
+  border-radius:8px!important;
+  background:#10243b!important;
+  transition:.18s ease!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box:focus-within{
+  border-color:#41c4ee!important;
+  box-shadow:0 0 0 3px rgba(65,196,238,.10)!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box input{
+  width:100%!important;height:38px!important;
+  padding:0 34px 0 38px!important;
+  border:0!important;background:transparent!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-icon{
+  position:absolute!important;left:12px!important;top:50%!important;
+  transform:translateY(-50%)!important;color:#41c4ee!important;
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field select{
+  width:100%!important;height:40px!important;
+  border:1px solid #31506d!important;
+  border-radius:8px!important;
+  background:#10243b!important;
+  color:#e9f5ff!important;
+  font-size:12px!important;font-weight:650!important;
+}
+.qmes-inspection-record-filter > button{
+  height:40px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:6px!important;
+  border:1px solid rgba(248,113,113,.42)!important;
+  border-radius:8px!important;
+  color:#fecaca!important;
+  background:linear-gradient(180deg,rgba(239,68,68,.14),rgba(127,29,29,.10))!important;
+  font-size:12px!important;font-weight:700!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.qmes-inspection-record-filter > button::before{
+  content:"↻";
+  font-size:15px;font-weight:900;
+}
+.qmes-inspection-record-filter > button:hover{
+  color:#fff!important;border-color:#f87171!important;background:rgba(239,68,68,.20)!important;
+}
+
+/* ===== 공정·출하 검사 KPI 신규 디자인 ===== */
+.qmes-pqc-kpi-grid,.qmes-oqc-kpi-grid{
+  gap:12px!important;
+}
+.qmes-pqc-kpi-grid > div,.qmes-oqc-kpi-grid > div{
+  min-height:126px!important;
+  padding:0!important;
+  border-radius:14px!important;
+  border:1px solid #263b54!important;
+  background:linear-gradient(145deg,#0f2036 0%,#0b182b 100%)!important;
+  box-shadow:0 14px 32px rgba(2,8,23,.24),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  overflow:hidden!important;
+  position:relative!important;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease!important;
+}
+.qmes-pqc-kpi-grid > div:nth-child(1),.qmes-oqc-kpi-grid > div:nth-child(1){border-top:3px solid #38bdf8!important}
+.qmes-pqc-kpi-grid > div:nth-child(2),.qmes-oqc-kpi-grid > div:nth-child(2){border-top:3px solid #34d399!important}
+.qmes-pqc-kpi-grid > div:nth-child(3),.qmes-oqc-kpi-grid > div:nth-child(3){border-top:3px solid #f87171!important}
+.qmes-pqc-kpi-grid > div::before,.qmes-oqc-kpi-grid > div::before{
+  content:"";position:absolute;right:-28px;top:-34px;width:112px;height:112px;border-radius:999px;
+  background:radial-gradient(circle,rgba(255,255,255,.065),transparent 68%);
+}
+.qmes-pqc-kpi-grid > div:hover,.qmes-oqc-kpi-grid > div:hover{
+  transform:translateY(-2px)!important;border-color:#3d5874!important;box-shadow:0 18px 38px rgba(2,8,23,.34)!important;
+}
+.qmes-pqc-kpi-grid .qmes-hybrid-kpi-card,.qmes-oqc-kpi-grid .qmes-hybrid-kpi-card{
+  display:grid!important;
+  grid-template-columns:82px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:14px!important;
+  padding:18px 20px!important;
+}
+.qmes-pqc-kpi-grid .qmes-hybrid-donut,.qmes-oqc-kpi-grid .qmes-hybrid-donut{
+  width:72px!important;height:72px!important;min-width:72px!important;
+  border-radius:22px!important;
+  background:#122943!important;
+  border:1px solid #294764!important;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.22)!important;
+}
+.qmes-pqc-kpi-grid .qmes-hybrid-ring,.qmes-pqc-kpi-grid .qmes-hybrid-ring-inner,
+.qmes-oqc-kpi-grid .qmes-hybrid-ring,.qmes-oqc-kpi-grid .qmes-hybrid-ring-inner{display:none!important}
+.qmes-pqc-kpi-grid .qmes-hybrid-icon,.qmes-oqc-kpi-grid .qmes-hybrid-icon{width:27px!important;height:27px!important}
+.qmes-pqc-kpi-grid .qmes-hybrid-label,.qmes-oqc-kpi-grid .qmes-hybrid-label{
+  color:#9db3ca!important;font-size:12px!important;font-weight:700!important;
+}
+.qmes-pqc-kpi-grid .qmes-hybrid-value,.qmes-oqc-kpi-grid .qmes-hybrid-value{
+  color:#f8fbff!important;font-size:30px!important;line-height:1!important;font-weight:800!important;letter-spacing:-.035em!important;
+}
+.qmes-pqc-kpi-grid .qmes-hybrid-unit,.qmes-oqc-kpi-grid .qmes-hybrid-unit{font-size:12px!important;color:#7892ad!important;font-weight:700!important}
+.qmes-pqc-kpi-grid .qmes-hybrid-caption,.qmes-oqc-kpi-grid .qmes-hybrid-caption{
+  margin-top:7px!important;color:#68839f!important;font-size:10px!important;
+}
+.qmes-pqc-kpi-grid .qmes-iqc-kpi-dot,.qmes-oqc-kpi-grid .qmes-iqc-kpi-dot{
+  width:7px!important;height:7px!important;border-radius:999px!important;box-shadow:0 0 9px currentColor!important;
+}
+@media(max-width:900px){
+  .qmes-inspection-record-filter{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .qmes-inspection-record-filter > div:first-child{grid-column:1/-1!important}
+}
+@media(max-width:620px){
+  .qmes-inspection-record-filter{grid-template-columns:1fr!important}
+  .qmes-inspection-record-filter > div:first-child{grid-column:auto!important}
+  .qmes-pqc-kpi-grid,.qmes-oqc-kpi-grid{grid-template-columns:1fr!important}
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -8957,7 +9136,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       </Panel>
 
       <Panel title={`검사 기록 (${docName})`} right={<span className="text-xs text-slate-500">{filteredRecords.length}건</span>}>
-        <div className={isOqc ? "qmes-oqc-record-filter mb-3" : "flex items-end gap-2 mb-3"}>
+        <div className={`qmes-inspection-record-filter ${isOqc ? "qmes-oqc-record-filter" : "qmes-pqc-record-filter"}`}>
           <div className="flex flex-col gap-1 w-72">
             <span className="text-[10px] text-slate-500">{numberLabel} / LOT / 제품명 / 항목 / 검사자 검색</span>
             <div className="qmes-inspection-search-box">
