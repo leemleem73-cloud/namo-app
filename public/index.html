@@ -5738,11 +5738,11 @@ aside{display:none!important}
 
 <style id="qmes-screen-exact-print-final">
 /* 화면의 성적서를 픽셀 단위로 그대로 인쇄하는 최종 규칙 */
-@page{size:A4 portrait;margin:0!important;}
+@page{size:A4 portrait;margin:8mm!important;}
 @media print{
   html,body{
-    width:210mm!important;
-    height:297mm!important;
+    width:194mm!important;
+    height:281mm!important;
     margin:0!important;
     padding:0!important;
     overflow:hidden!important;
@@ -5752,14 +5752,15 @@ aside{display:none!important}
   body.qmes-screen-exact-print #qmes-print-root{
     display:flex!important;
     position:fixed!important;
-    inset:0!important;
-    width:210mm!important;
-    height:297mm!important;
+    left:0!important;
+    top:0!important;
+    width:194mm!important;
+    height:281mm!important;
     margin:0!important;
     padding:0!important;
     align-items:flex-start!important;
     justify-content:center!important;
-    overflow:hidden!important;
+    overflow:visible!important;
     background:#fff!important;
   }
   body.qmes-screen-exact-print #qmes-print-root .qmes-screen-print-stage{
@@ -5794,7 +5795,6 @@ aside{display:none!important}
   body.qmes-screen-exact-print #qmes-print-root .qmes-screen-print-stage{
     left:auto!important;
     right:auto!important;
-    transform-origin:top center!important;
   }
 }
 
@@ -6646,14 +6646,26 @@ function printDoc(sourceEl) {
   const stage = document.createElement("div");
   stage.className = "qmes-screen-print-stage";
 
-  const a4WidthPx = 210 * 96 / 25.4;
-  const a4HeightPx = 297 * 96 / 25.4;
-  const scale = Math.min(a4WidthPx / rect.width, a4HeightPx / rect.height, 1);
+  /* A4 실제 인쇄 가능 영역(좌우/상하 8mm 여백)을 기준으로 축소합니다.
+     transform은 clone에 적용하고 stage 자체는 축소된 크기로 잡아야
+     flex 중앙정렬 시 원본 폭(rect.width) 때문에 좌우가 잘리지 않습니다. */
+  const mmToPx = 96 / 25.4;
+  const printableWidthPx = (210 - 16) * mmToPx;   // 194mm
+  const printableHeightPx = (297 - 16) * mmToPx; // 281mm
+  const scale = Math.min(
+    printableWidthPx / rect.width,
+    printableHeightPx / rect.height,
+    1
+  );
 
-  stage.style.setProperty("width", `${rect.width}px`, "important");
-  stage.style.setProperty("height", `${rect.height}px`, "important");
-  stage.style.setProperty("transform", `scale(${scale})`, "important");
-  stage.style.setProperty("transform-origin", "top center", "important");
+  stage.style.setProperty("width", `${rect.width * scale}px`, "important");
+  stage.style.setProperty("height", `${rect.height * scale}px`, "important");
+  stage.style.setProperty("overflow", "visible", "important");
+
+  screenClone.style.setProperty("width", `${rect.width}px`, "important");
+  screenClone.style.setProperty("height", `${rect.height}px`, "important");
+  screenClone.style.setProperty("transform", `scale(${scale})`, "important");
+  screenClone.style.setProperty("transform-origin", "top left", "important");
   stage.appendChild(screenClone);
 
   printRoot.innerHTML = "";
