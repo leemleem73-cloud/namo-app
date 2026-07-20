@@ -7955,6 +7955,279 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 }
 </style>
 
+
+<style id="QMES_SEARCH_LEFT_IQC_COLOR_FIX_260720">
+/* ===== 공정검사·출하검사 검색 영역: 왼쪽 고정 정렬 ===== */
+.qmes-inspection-record-filter{
+  width:max-content!important;
+  max-width:100%!important;
+  grid-template-columns:420px 150px 150px 108px!important;
+  justify-content:start!important;
+  justify-items:stretch!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.qmes-inspection-record-filter > div:first-child{
+  width:420px!important;
+  min-width:420px!important;
+  max-width:420px!important;
+  justify-self:start!important;
+}
+.qmes-inspection-record-filter .qmes-inspection-search-box{
+  width:420px!important;
+  max-width:420px!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field{
+  width:150px!important;
+  min-width:150px!important;
+  max-width:150px!important;
+}
+.qmes-inspection-record-filter > button{
+  width:108px!important;
+  min-width:108px!important;
+  max-width:108px!important;
+}
+
+/* ===== 수입검사 검색·필터: 컬러 포인트 적용 ===== */
+.qmes-iqc-search-toolbar{
+  position:relative!important;
+  overflow:hidden!important;
+  padding:14px 16px 15px!important;
+  border:1px solid rgba(65,196,238,.24)!important;
+  border-radius:13px!important;
+  background:
+    radial-gradient(560px 150px at 100% 0%,rgba(34,211,238,.08),transparent 72%),
+    linear-gradient(135deg,rgba(18,43,70,.97),rgba(10,27,48,.95))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(2,8,23,.20)!important;
+}
+.qmes-iqc-search-toolbar::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:3px;
+  background:linear-gradient(90deg,#38bdf8 0%,#22d3ee 30%,#8b5cf6 58%,#34d399 82%,#f59e0b 100%);
+}
+.qmes-iqc-search-main{
+  width:max-content!important;
+  max-width:100%!important;
+  grid-template-columns:420px 96px 122px!important;
+  justify-content:start!important;
+  justify-items:stretch!important;
+  align-items:end!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.qmes-iqc-search-box{
+  width:420px!important;
+  max-width:420px!important;
+  border-color:rgba(56,189,248,.50)!important;
+  background:linear-gradient(180deg,rgba(16,48,77,.98),rgba(12,35,58,.98))!important;
+  box-shadow:inset 3px 0 0 #38bdf8!important;
+}
+.qmes-iqc-filter-reset{
+  color:#ddd6fe!important;
+  border-color:rgba(139,92,246,.48)!important;
+  background:linear-gradient(180deg,rgba(139,92,246,.15),rgba(76,29,149,.10))!important;
+}
+.qmes-iqc-export-btn{
+  color:#a7f3d0!important;
+  border-color:rgba(52,211,153,.48)!important;
+  background:linear-gradient(180deg,rgba(52,211,153,.14),rgba(6,95,70,.10))!important;
+}
+.qmes-iqc-filter-row{
+  width:max-content!important;
+  max-width:100%!important;
+  justify-content:start!important;
+  justify-items:stretch!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.qmes-iqc-filter-row label{
+  padding:7px 8px 8px!important;
+  border:1px solid #2c4865!important;
+  border-radius:9px!important;
+  background:rgba(8,28,49,.62)!important;
+}
+.qmes-iqc-filter-row label > span{
+  display:flex!important;
+  align-items:center!important;
+  min-height:16px!important;
+  margin-bottom:5px!important;
+  font-size:10px!important;
+  font-weight:800!important;
+}
+.qmes-iqc-filter-row label select{
+  height:36px!important;
+  border-radius:7px!important;
+  color:#edf7ff!important;
+  background:#10243b!important;
+}
+.qmes-iqc-filter-row label:nth-of-type(1){border-color:rgba(56,189,248,.38)!important;box-shadow:inset 0 3px 0 #38bdf8!important}
+.qmes-iqc-filter-row label:nth-of-type(1)>span{color:#7dd3fc!important}
+.qmes-iqc-filter-row label:nth-of-type(1) select{border-color:rgba(56,189,248,.44)!important}
+.qmes-iqc-filter-row label:nth-of-type(2){border-color:rgba(139,92,246,.38)!important;box-shadow:inset 0 3px 0 #8b5cf6!important}
+.qmes-iqc-filter-row label:nth-of-type(2)>span{color:#c4b5fd!important}
+.qmes-iqc-filter-row label:nth-of-type(2) select{border-color:rgba(139,92,246,.44)!important}
+.qmes-iqc-filter-row label:nth-of-type(3){border-color:rgba(52,211,153,.38)!important;box-shadow:inset 0 3px 0 #34d399!important}
+.qmes-iqc-filter-row label:nth-of-type(3)>span{color:#6ee7b7!important}
+.qmes-iqc-filter-row label:nth-of-type(3) select{border-color:rgba(52,211,153,.44)!important}
+.qmes-iqc-filter-row label:nth-of-type(4){border-color:rgba(248,113,113,.38)!important;box-shadow:inset 0 3px 0 #f87171!important}
+.qmes-iqc-filter-row label:nth-of-type(4)>span{color:#fca5a5!important}
+.qmes-iqc-filter-row label:nth-of-type(4) select{border-color:rgba(248,113,113,.44)!important}
+.qmes-iqc-filter-row label:nth-of-type(5){border-color:rgba(245,158,11,.38)!important;box-shadow:inset 0 3px 0 #f59e0b!important}
+.qmes-iqc-filter-row label:nth-of-type(5)>span{color:#fcd34d!important}
+.qmes-iqc-filter-row label:nth-of-type(5) select{border-color:rgba(245,158,11,.44)!important}
+.qmes-iqc-result-count{
+  border-color:rgba(34,211,238,.40)!important;
+  background:rgba(34,211,238,.08)!important;
+  color:#a5f3fc!important;
+  box-shadow:inset 0 3px 0 #22d3ee!important;
+}
+
+@media(max-width:980px){
+  .qmes-inspection-record-filter{
+    width:100%!important;
+    grid-template-columns:minmax(260px,1fr) 130px 130px 100px!important;
+  }
+  .qmes-inspection-record-filter > div:first-child,
+  .qmes-inspection-record-filter .qmes-inspection-search-box{
+    width:100%!important;min-width:0!important;max-width:none!important;
+  }
+  .qmes-inspection-record-filter .qmes-oqc-record-filter-field{
+    width:130px!important;min-width:130px!important;max-width:130px!important;
+  }
+  .qmes-inspection-record-filter > button{
+    width:100px!important;min-width:100px!important;max-width:100px!important;
+  }
+}
+@media(max-width:760px){
+  .qmes-inspection-record-filter{
+    width:100%!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+  .qmes-inspection-record-filter > div:first-child{
+    grid-column:1/-1!important;
+  }
+  .qmes-inspection-record-filter .qmes-oqc-record-filter-field,
+  .qmes-inspection-record-filter > button{
+    width:100%!important;min-width:0!important;max-width:none!important;
+  }
+  .qmes-iqc-search-main{
+    width:100%!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+  }
+  .qmes-iqc-search-box{width:100%!important;max-width:none!important}
+  .qmes-iqc-export-btn{grid-column:1/-1!important;width:100%!important}
+}
+</style>
+
+
+<style id="QMES_IQC_SIMPLE_ACCENT_FIX_20260720">
+/* ===== 수입검사 검색영역: 공정검사처럼 단순한 왼쪽 포인트선 ===== */
+.qmes-iqc-search-toolbar{
+  position:relative!important;
+  overflow:visible!important;
+  padding:10px!important;
+  border:1px solid #2b3d55!important;
+  border-left:3px solid #38bdf8!important;
+  border-radius:11px!important;
+  background:rgba(9,20,36,.76)!important;
+  box-shadow:0 7px 18px rgba(2,8,23,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.qmes-iqc-search-toolbar::before{content:none!important;display:none!important}
+
+.qmes-iqc-search-box{
+  border:1px solid #30445e!important;
+  background:#0c1c30!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-search-box:focus-within{
+  border-color:#38bdf8!important;
+  box-shadow:0 0 0 2px rgba(56,189,248,.10)!important;
+}
+.qmes-iqc-search-box>svg{
+  color:#38bdf8!important;
+}
+.qmes-iqc-search-box button{
+  color:#38bdf8!important;
+  background:rgba(56,189,248,.08)!important;
+}
+.qmes-iqc-search-box button:hover{
+  color:#e0f2fe!important;
+  background:rgba(56,189,248,.16)!important;
+}
+
+/* 초기화 버튼을 돋보기 포인트와 동일한 색상으로 통일 */
+.qmes-iqc-filter-reset{
+  color:#7dd3fc!important;
+  border:1px solid rgba(56,189,248,.34)!important;
+  background:rgba(56,189,248,.10)!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-filter-reset:hover{
+  color:#e0f2fe!important;
+  border-color:rgba(56,189,248,.52)!important;
+  background:rgba(56,189,248,.18)!important;
+}
+
+/* CSV 버튼은 튀지 않는 공통 네이비 톤 */
+.qmes-iqc-export-btn{
+  color:#a8bdd2!important;
+  border:1px solid #3b526c!important;
+  background:#132a43!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-export-btn:hover{
+  color:#fff!important;
+  border-color:#607b96!important;
+  background:#1a3552!important;
+}
+
+/* 필터별 알록달록한 색상 제거 */
+.qmes-iqc-filter-row label,
+.qmes-iqc-filter-row label:nth-of-type(1),
+.qmes-iqc-filter-row label:nth-of-type(2),
+.qmes-iqc-filter-row label:nth-of-type(3),
+.qmes-iqc-filter-row label:nth-of-type(4),
+.qmes-iqc-filter-row label:nth-of-type(5){
+  border:1px solid #2c4865!important;
+  border-radius:8px!important;
+  background:rgba(8,28,49,.42)!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-filter-row label>span,
+.qmes-iqc-filter-row label:nth-of-type(1)>span,
+.qmes-iqc-filter-row label:nth-of-type(2)>span,
+.qmes-iqc-filter-row label:nth-of-type(3)>span,
+.qmes-iqc-filter-row label:nth-of-type(4)>span,
+.qmes-iqc-filter-row label:nth-of-type(5)>span{
+  color:#839bb4!important;
+}
+.qmes-iqc-filter-row label select,
+.qmes-iqc-filter-row label:nth-of-type(1) select,
+.qmes-iqc-filter-row label:nth-of-type(2) select,
+.qmes-iqc-filter-row label:nth-of-type(3) select,
+.qmes-iqc-filter-row label:nth-of-type(4) select,
+.qmes-iqc-filter-row label:nth-of-type(5) select{
+  border:1px solid #30445e!important;
+  background:#0c1c30!important;
+  color:#dbe7f4!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-filter-row label select:focus{
+  border-color:#38bdf8!important;
+  box-shadow:0 0 0 2px rgba(56,189,248,.10)!important;
+}
+.qmes-iqc-result-count{
+  border:1px solid #2c4865!important;
+  background:rgba(8,28,49,.42)!important;
+  color:#a8bdd2!important;
+  box-shadow:none!important;
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -11031,7 +11304,7 @@ function IqcTab() {
                 <select value={selectedJudge} onChange={(e)=>setSelectedJudge(e.target.value)}>
                   <option value="전체">전체 판정</option>
                   <option value="합격">합격</option>
-                  <option value="불합격">불합격</option>
+                  <option value="불합격">반품</option>
                   <option value="검사중">검사중</option>
                 </select>
               </label>
