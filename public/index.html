@@ -6045,6 +6045,61 @@ body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table td:last-child
 </style>
 <!-- QMES_USER_REQUESTED_FINAL_FIX_260720 -->
 
+
+<style id="QMES_LABEL_PRINT_EXACT_PREVIEW_WIDTH_260720">
+/* 라벨 미리보기의 실제 너비(520px)를 인쇄에서도 그대로 유지 */
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:8mm;
+  }
+  body.print-label #qmes-label-print-root{
+    position:fixed!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    width:520px!important;
+    min-width:520px!important;
+    max-width:520px!important;
+    height:520px!important;
+    min-height:520px!important;
+    max-height:520px!important;
+    aspect-ratio:1 / 1!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:18px!important;
+    overflow:hidden!important;
+    border:2px solid #111827!important;
+    border-radius:4px!important;
+    background:#fff!important;
+    box-shadow:none!important;
+    zoom:1!important;
+  }
+
+  /* 미리보기와 동일한 내부 간격 및 크기 */
+  body.print-label #qmes-label-print-root .qmes-iqc-label-head{
+    padding-bottom:12px!important;
+    gap:14px!important;
+  }
+  body.print-label #qmes-label-print-root .qmes-iqc-label-grid{
+    margin-top:12px!important;
+    grid-template-columns:112px minmax(0,1fr)!important;
+  }
+  body.print-label #qmes-label-print-root .qmes-iqc-label-key,
+  body.print-label #qmes-label-print-root .qmes-iqc-label-value{
+    min-height:38px!important;
+    padding:8px 10px!important;
+  }
+  body.print-label #qmes-label-print-root .qmes-iqc-label-code{
+    margin-top:12px!important;
+    padding:10px!important;
+  }
+  body.print-label #qmes-label-print-root .qmes-iqc-label-foot{
+    margin-top:9px!important;
+  }
+}
+</style>
+<!-- QMES_LABEL_PRINT_EXACT_PREVIEW_WIDTH_260720 -->
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
