@@ -3760,7 +3760,7 @@ aside{display:none!important}
     transparent 75%)!important;
 }
 
-/* 4th card : 반품 */
+/* 4th card : 불합격 */
 .qmes-iqc-kpi-card:nth-child(4){
   --kpi-accent:#f59e0b !important;
   --kpi-rgb:245,158,11 !important;
@@ -6713,7 +6713,7 @@ body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table td:last-child
 
 
 <style id="QMES_LABEL_FONT_AND_JUDGE_COLOR_260720">
-/* 라벨 인쇄: '수입 원재료 식별 라벨' 제목 크기를 기준으로 전체 글자 크기 통일 */
+/* 라벨 인쇄: '수입검사 원재료 라벨' 제목 크기를 기준으로 전체 글자 크기 통일 */
 @media print{
   body.print-label #qmes-print-root .qmes-label-print-copy{
     font-size:18px!important;
@@ -6763,6 +6763,169 @@ select.qmes-label-judge-select option[value="불합격"],
 select.qmes-label-judge-select option[value="불합격(반품)"]{
   color:#dc2626!important;
   font-weight:700!important;
+}
+</style>
+
+
+<style id="QMES_FINAL_LABEL_PRINT_VISIBLE_AND_COLOR_260720">
+/* 화면/인쇄 공통 판정 색상 */
+.qmes-iqc-label-judge.pass,
+.qmes-iqc-label-judge[data-judge="합격"],
+.qmes-label-check-value.is-pass,
+.qmes-label-check-value[data-label-check="합격"]{
+  color:#16a34a!important;
+  font-weight:800!important;
+}
+
+.qmes-iqc-label-judge.fail,
+.qmes-iqc-label-judge[data-judge="불합격"],
+.qmes-iqc-label-judge[data-judge="불합격(반품)"],
+.qmes-label-check-value.is-fail,
+.qmes-label-check-value[data-label-check="불합격"],
+.qmes-label-check-value[data-label-check="불합격(반품)"]{
+  color:#dc2626!important;
+  font-weight:800!important;
+}
+
+@media print{
+  /* 인쇄 시 라벨 복제본이 확실히 보이도록 */
+  body.print-label #root{
+    display:none!important;
+  }
+
+  body.print-label #qmes-print-root{
+    display:block!important;
+    visibility:visible!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy{
+    display:block!important;
+    visibility:visible!important;
+    position:static!important;
+    width:520px!important;
+    min-width:520px!important;
+    max-width:520px!important;
+    min-height:660px!important;
+    height:auto!important;
+    margin:0 auto!important;
+    padding:20px!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    background:#fff!important;
+    color:#1c1917!important;
+    transform:scale(.80)!important;
+    transform-origin:top center!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy,
+  body.print-label #qmes-print-root .qmes-label-print-copy *{
+    visibility:visible!important;
+  }
+
+  /* 제목 글씨 크기에 맞춰 주요 라벨 내용을 동일 크기로 출력 */
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-title,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-key,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-value{
+    font-size:18px!important;
+    line-height:1.25!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-company{
+    font-size:16px!important;
+    line-height:1.25!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-code-caption,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-qr-label,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-foot{
+    font-size:13px!important;
+    line-height:1.25!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge.pass,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge[data-judge="합격"],
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-label-check-value.is-pass{
+    color:#16a34a!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge.fail,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge[data-judge="불합격"],
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge[data-judge="불합격(반품)"],
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-label-check-value.is-fail{
+    color:#dc2626!important;
+  }
+}
+</style>
+
+
+<style id="QMES_LABEL_TEXT_FINAL_TUNING_260720">
+/* 라벨 화면 및 인쇄: 원재료명(NMP 포함)은 일반 굵기로 */
+.qmes-label-material-name{
+  font-weight:400!important;
+}
+
+/* 라벨의 나머지 주요 글씨는 더 크게 */
+#qmes-label-print-root .qmes-iqc-label-key,
+#qmes-label-print-root .qmes-iqc-label-value,
+#qmes-label-print-root .qmes-iqc-label-judge{
+  font-size:20px!important;
+  line-height:1.3!important;
+}
+
+#qmes-label-print-root .qmes-iqc-label-title{
+  font-size:22px!important;
+  line-height:1.3!important;
+}
+
+#qmes-label-print-root .qmes-iqc-label-company{
+  font-size:17px!important;
+}
+
+/* 합격은 초록색 유지 */
+#qmes-label-print-root .qmes-iqc-label-judge.pass,
+#qmes-label-print-root .qmes-iqc-label-judge[data-judge="합격"],
+#qmes-label-print-root .qmes-label-check-value.is-pass,
+#qmes-label-print-root .qmes-label-check-value[data-label-check="합격"]{
+  color:#16a34a!important;
+  font-weight:800!important;
+}
+
+/* 불합격 및 불합격(반품)은 빨간색 */
+#qmes-label-print-root .qmes-iqc-label-judge.fail,
+#qmes-label-print-root .qmes-iqc-label-judge[data-judge="불합격"],
+#qmes-label-print-root .qmes-iqc-label-judge[data-judge="불합격(반품)"],
+#qmes-label-print-root .qmes-label-check-value.is-fail,
+#qmes-label-print-root .qmes-label-check-value[data-label-check="불합격"],
+#qmes-label-print-root .qmes-label-check-value[data-label-check="불합격(반품)"]{
+  color:#dc2626!important;
+  font-weight:800!important;
+}
+
+@media print{
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-label-material-name{
+    font-weight:400!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-key,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-value,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge{
+    font-size:20px!important;
+    line-height:1.3!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-title{
+    font-size:22px!important;
+    line-height:1.3!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-company{
+    font-size:17px!important;
+  }
 }
 </style>
 
@@ -7540,9 +7703,9 @@ function IqcLabelViewer({ record, onClose }) {
           <div className="qmes-iqc-label-head">
             <div>
               <div className="qmes-iqc-label-company">나모케미칼㈜</div>
-              <div className="qmes-iqc-label-title">수입 원재료 식별 라벨</div>
+              <div className="qmes-iqc-label-title">수입검사 원재료 라벨</div>
             </div>
-            <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`} data-judge={labelData.judge}>
+            <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`} data-judge={record.judge || ""}>
               {record.judge || "-"}
             </div>
           </div>
@@ -7570,7 +7733,15 @@ function IqcLabelViewer({ record, onClose }) {
             <div className="qmes-iqc-label-value">{record.inspector || record.by || "-"}</div>
 
             <div className="qmes-iqc-label-key">라벨 확인</div>
-            <div className="qmes-iqc-label-value">{record.label || "-"}</div>
+            <div
+              className={`qmes-iqc-label-value qmes-label-check-value ${
+                record.label === "합격" ? "is-pass" :
+                (record.label === "불합격" || record.label === "불합격(반품)") ? "is-fail" : ""
+              }`}
+              data-label-check={record.label || ""}
+            >
+              {record.label || "-"}
+            </div>
           </div>
 
           <div className="qmes-iqc-label-code">
@@ -8004,7 +8175,9 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   ? "border-red-500/40 text-red-400"
                   : "border-emerald-500/40 text-emerald-400"
               }`}>
-              <option>합격</option><option>불합격</option>
+              <option value="합격">합격</option>
+        <option value="불합격">불합격</option>
+        {key === "label" && <option value="불합격(반품)">불합격(반품)</option>}
             </select>
           ) : (
             <div className={`flex items-center justify-center rounded border px-3 py-2 text-sm font-medium ${
@@ -9231,7 +9404,7 @@ function iqcTone(v) {
   if (v === "합격") return "green";
   if (v === "검사중") return "blue";
   if (v.includes("조건부")) return "amber";
-  return "red"; // 불합격 / 반품
+  return "red"; // 불합격 / 불합격
 }
 
 function qmesStripQuantityUnit(value) {
@@ -9375,7 +9548,7 @@ function IqcTab() {
 
   const overall = (f) => {
     const vals = [f.visual, f.label, f.weight, f.coa];
-    if (vals.includes("불합격")) return "불합격";
+    if (vals.includes("불합격") || vals.includes("불합격(반품)")) return "불합격";
     return "합격";
   };
 
@@ -9429,7 +9602,7 @@ function IqcTab() {
     setRows(nr);
     DB.iqc = nr;
     if (overall(form) !== "합격") {
-      DB.holds = [{ id: `HLD-${String(Date.now()).slice(-6)}`, target: `${form.lot.trim()} (${inNo})`, type: "원재료 Lot", gate: "IQC 게이트", reason: `수입검사 ${overall(form)} — 판정·승인 완료 전 생산 불출 차단`, since: recv, cond: "격리 후 반품 처리 확정", status: "차단중", ncr: "-" }, ...DB.holds];
+      DB.holds = [{ id: `HLD-${String(Date.now()).slice(-6)}`, target: `${form.lot.trim()} (${inNo})`, type: "원재료 Lot", gate: "IQC 게이트", reason: `수입검사 ${overall(form)} — 판정·승인 완료 전 생산 불출 차단`, since: recv, cond: "격리 후 불합격 처리 확정", status: "차단중", ncr: "-" }, ...DB.holds];
     }
     auditLog("IQC", editingInNo ? "수정" : "등록", rowData.inNo, `${rowData.lot} / ${rowData.judge}`);
     dbSave();
@@ -9557,7 +9730,7 @@ function IqcTab() {
           </div>
         </div>
         {iqcErrors.length > 0 && <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{iqcErrors.map((e,i)=><div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 진입 금지 — {e}</div>)}</div>}
-        <p className="text-[11px] text-slate-500 mt-2">입고번호는 자동 채번 또는 직접입력을 선택할 수 있습니다. 자동 채번 시 입고일자에 따라 IQC-YYMMDD-4자리 순번으로 즉시 변경됩니다. 외관·라벨·중량·COA 중 한 항목이라도 불합격이면 종합판정은 반품으로 자동 처리됩니다.</p>
+        <p className="text-[11px] text-slate-500 mt-2">입고번호는 자동 채번 또는 직접입력을 선택할 수 있습니다. 자동 채번 시 입고일자에 따라 IQC-YYMMDD-4자리 순번으로 즉시 변경됩니다. 외관·라벨·중량·COA 중 한 항목이라도 불합격이면 종합판정은 불합격으로 자동 처리됩니다.</p>
       </Panel></div>
         <div className="qmes-iqc-chart-panel qmes-iqc-rank-panel"><Panel title={`업체별 IQC 합격률 (${selectedYear}년)`}>
           <div className="qmes-iqc-rank-head">
