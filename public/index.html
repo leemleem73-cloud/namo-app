@@ -6594,6 +6594,178 @@ body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table td:last-child
 }
 </style>
 
+
+<style id="QMES_PRINT_FIX_LABEL_AND_A4_260720">
+@page{
+  size:A4 portrait;
+  margin:8mm;
+}
+
+@media print{
+  html,body{
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    overflow:visible!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+
+  /* 화면 전체는 숨기고 인쇄용 복제본만 표시 */
+  body.print-doc #root,
+  body.print-label #root{
+    display:none!important;
+  }
+
+  body.print-doc #qmes-print-root,
+  body.print-label #qmes-print-root{
+    display:flex!important;
+    width:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+    background:#fff!important;
+    visibility:visible!important;
+  }
+
+  body.print-doc #qmes-print-root *,
+  body.print-label #qmes-print-root *{
+    visibility:visible!important;
+  }
+
+  /* 성적서: 미리보기 내용과 구조를 그대로 유지하며 A4 폭에 맞춤 */
+  body.print-doc #qmes-print-root .qmes-a4-preview-clone{
+    display:block!important;
+    position:static!important;
+    width:194mm!important;
+    max-width:194mm!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0 auto!important;
+    padding:6mm!important;
+    box-sizing:border-box!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    overflow:visible!important;
+    background:#fff!important;
+    transform:none!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-a4-preview-clone table{
+    width:100%!important;
+    max-width:100%!important;
+    table-layout:fixed!important;
+    border-collapse:collapse!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-a4-preview-clone img,
+  body.print-doc #qmes-print-root .qmes-a4-preview-clone svg,
+  body.print-doc #qmes-print-root .qmes-a4-preview-clone canvas{
+    max-width:100%!important;
+  }
+
+  /* 라벨: 복제된 미리보기 전체를 내용과 함께 80% 축소하여 표시 */
+  body.print-label #qmes-print-root .qmes-label-print-copy{
+    display:block!important;
+    position:static!important;
+    width:520px!important;
+    min-width:520px!important;
+    max-width:520px!important;
+    height:auto!important;
+    min-height:660px!important;
+    max-height:none!important;
+    margin:0 auto!important;
+    padding:20px!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    background:#fff!important;
+    transform:scale(.80)!important;
+    transform-origin:top center!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-code,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-code-area{
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-code-area{
+    min-height:78px!important;
+    padding:8px 10px!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-barcode-wrap svg{
+    width:100%!important;
+    max-width:275px!important;
+    height:54px!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-qr-wrap img,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-qr-wrap canvas{
+    width:66px!important;
+    height:66px!important;
+  }
+}
+</style>
+
+
+<style id="QMES_LABEL_FONT_AND_JUDGE_COLOR_260720">
+/* 라벨 인쇄: '수입 원재료 식별 라벨' 제목 크기를 기준으로 전체 글자 크기 통일 */
+@media print{
+  body.print-label #qmes-print-root .qmes-label-print-copy{
+    font-size:18px!important;
+    line-height:1.25!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-company,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-title,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-key,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-value,
+  body.print-label #qmes-print-root .qmes-label-print-copy table th,
+  body.print-label #qmes-print-root .qmes-label-print-copy table td{
+    font-size:18px!important;
+    line-height:1.25!important;
+  }
+
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-code-caption,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-qr-label,
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-foot{
+    font-size:14px!important;
+    line-height:1.25!important;
+  }
+}
+
+/* 라벨 판정 색상 */
+.qmes-label-judge-pass,
+.qmes-iqc-label-judge.text-emerald-600,
+.qmes-iqc-label-judge[data-judge="합격"]{
+  color:#16a34a!important;
+  font-weight:800!important;
+}
+.qmes-label-judge-fail,
+.qmes-iqc-label-judge.text-red-600,
+.qmes-iqc-label-judge[data-judge="불합격"],
+.qmes-iqc-label-judge[data-judge="불합격(반품)"]{
+  color:#dc2626!important;
+  font-weight:800!important;
+}
+
+/* 라벨 확인 선택창의 판정 색상 */
+select.qmes-label-judge-select option[value="합격"]{
+  color:#16a34a!important;
+  font-weight:700!important;
+}
+select.qmes-label-judge-select option[value="불합격"],
+select.qmes-label-judge-select option[value="불합격(반품)"]{
+  color:#dc2626!important;
+  font-weight:700!important;
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -6835,15 +7007,14 @@ function printDoc(sourceEl) {
     return;
   }
 
-  /* 미리보기의 성적서 본문만 복제하여 인쇄 영역에 넣습니다.
-     모달, 버튼, 배경, 화면 배치용 래퍼는 포함하지 않습니다. */
-  const cleanClone = source.cloneNode(true);
-  cleanClone.removeAttribute("style");
-  cleanClone.querySelectorAll("button, .qmes-modal-close, .qmes-print-actions, [data-no-print='true']")
+  const clone = source.cloneNode(true);
+  clone.querySelectorAll("button, .qmes-modal-close, .qmes-print-actions, [data-no-print='true']")
     .forEach((el) => el.remove());
+  clone.classList.add("qmes-a4-preview-clone");
 
   printRoot.innerHTML = "";
-  printRoot.appendChild(cleanClone);
+  printRoot.appendChild(clone);
+
   document.body.classList.remove("print-label", "qmes-screen-exact-print");
   document.body.classList.add("print-doc");
 
@@ -6857,12 +7028,10 @@ function printDoc(sourceEl) {
   };
 
   window.addEventListener("afterprint", cleanup);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      window.print();
-      setTimeout(cleanup, 900);
-    });
-  });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    window.print();
+    setTimeout(cleanup, 1500);
+  }));
 }
 
 /* ──────────────────────────── 통합 데이터 저장소 ──────────────────────────── */
@@ -7025,7 +7194,7 @@ function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-
     labelKey.includes("합격") ? Math.max(0, Math.min(100, numeric)) :
     labelKey.includes("LOT") ? Math.max(18, Math.min(88, numeric * 12)) :
     labelKey.includes("부적합") ? Math.max(8, Math.min(72, numeric * 22)) :
-    labelKey.includes("반품") ? Math.max(8, Math.min(64, numeric * 26)) : 58;
+    labelKey.includes("불합격") ? Math.max(8, Math.min(64, numeric * 26)) : 58;
 
   return (
     <div className={`bg-slate-900 border border-slate-800 rounded-lg qmes-hybrid-kpi-card ${animated ? "qmes-iqc-kpi-card" : ""}`}>
@@ -7047,7 +7216,7 @@ function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-
           {labelKey.includes("합격") && "검사 완료 기준 합격 비율"}
           {labelKey.includes("LOT") && "이번 달 누적 입고 실적"}
           {labelKey.includes("부적합") && "즉시 확인이 필요한 항목"}
-          {labelKey.includes("반품") && "공급사 반송 처리 건수"}
+          {labelKey.includes("불합격") && "공급사 반송 처리 건수"}
         </div>
         {delta && (
           <div className={`qmes-hybrid-delta ${deltaUp ? "is-up" : "is-down"}`}>
@@ -7316,12 +7485,38 @@ function IqcLabelViewer({ record, onClose }) {
   if (!record) return null;
 
   const printLabel = () => {
+    const source = document.getElementById("qmes-label-print-root");
+    const printRoot = document.getElementById("qmes-print-root");
+
+    if (!source || !printRoot) {
+      alert("인쇄할 라벨을 찾을 수 없습니다.");
+      return;
+    }
+
+    const clone = source.cloneNode(true);
+    clone.id = "qmes-label-print-copy";
+    clone.classList.add("qmes-label-print-copy");
+
+    printRoot.innerHTML = "";
+    printRoot.appendChild(clone);
+
     document.body.classList.remove("print-doc", "qmes-screen-exact-print");
     document.body.classList.add("print-label");
-    const cleanup = () => document.body.classList.remove("print-label");
-    window.addEventListener("afterprint", cleanup, { once:true });
-    requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
-    setTimeout(cleanup, 1800);
+
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      document.body.classList.remove("print-label");
+      printRoot.innerHTML = "";
+      window.removeEventListener("afterprint", cleanup);
+    };
+
+    window.addEventListener("afterprint", cleanup);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.print();
+      setTimeout(cleanup, 1500);
+    }));
   };
 
   return (
@@ -7347,7 +7542,7 @@ function IqcLabelViewer({ record, onClose }) {
               <div className="qmes-iqc-label-company">나모케미칼㈜</div>
               <div className="qmes-iqc-label-title">수입 원재료 식별 라벨</div>
             </div>
-            <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`}>
+            <div className={`qmes-iqc-label-judge ${record.judge === "합격" ? "pass" : "fail"}`} data-judge={labelData.judge}>
               {record.judge || "-"}
             </div>
           </div>
@@ -7494,7 +7689,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                     <th>종합판정</th>
                     <td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "합격" : "불합격"}</td>
                     <th>처리결과</th>
-                    <td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "입고 승인" : "반품"}</td>
+                    <td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "입고 승인" : "불합격"}</td>
                   </tr></tbody>
                 </table>
               </div>
@@ -7559,7 +7754,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 <div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div>
                 <div className="flex items-center gap-5">
                   <div className="text-sm">최종판정</div>
-                  <div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>
+                  <div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "불합격" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>
                     {finalJudge}
                   </div>
                 </div>
@@ -7814,10 +8009,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           ) : (
             <div className={`flex items-center justify-center rounded border px-3 py-2 text-sm font-medium ${
               inputError ? "border-red-500/40 text-red-400 bg-red-500/10"
-              : autoJ === "합격" ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
-              : autoJ === "불합격" ? "border-red-500/40 text-red-400 bg-red-500/10"
-              : "border-slate-700 text-slate-500 bg-slate-800"
-            }`}>
+              : autoJ === "합격" ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : autoJ === "불합격" ? "border-red-500/40 text-red-400 bg-red-500/10"
+              : "border-slate-700 text-slate-500 bg-slate-800"}`}>
               {inputError ? "진입 금지" : autoJ ?? "자동판정"}
             </div>
           )}
@@ -8807,7 +9000,7 @@ function InspectionReportsTab() {
                       <td className="py-2.5 px-3 font-mono text-sky-300">{id}</td>
                       <td className="py-2.5 px-3 text-slate-100">{type === "IQC" ? row?.name : b.item || "-"}</td>
                       <td className="py-2.5 px-3 text-center text-slate-300">{type === "IQC" ? (row?.recv || "-").slice(0,10) : rs[0]?.date || "-"}</td>
-                      <td className="py-2.5 px-3 text-center"><Badge tone={judge === "합격" ? "green" : judge === "불합격" || judge === "반품" ? "red" : "blue"}>{judge || "-"}</Badge></td>
+                      <td className="py-2.5 px-3 text-center"><Badge tone={judge === "합격" ? "green" : judge === "불합격" || judge === "불합격" ? "red" : "blue"}>{judge || "-"}</Badge></td>
                       <td className="py-2.5 px-3 text-center"><button onClick={() => selectReport(id)} className="px-2.5 py-1 rounded border border-sky-500/50 text-sky-300 text-xs">보기</button></td>
                     </tr>;
                   })}
@@ -8902,7 +9095,7 @@ function InspectionReportsTab() {
                     <th>종합판정</th>
                     <td className={iqc.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{iqc.judge === "합격" ? "합격" : "불합격"}</td>
                     <th>처리결과</th>
-                    <td className={iqc.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{iqc.judge === "합격" ? "입고 승인" : "반품"}</td>
+                    <td className={iqc.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{iqc.judge === "합격" ? "입고 승인" : "불합격"}</td>
                   </tr></tbody>
                 </table>
               </div>
@@ -8926,7 +9119,7 @@ function InspectionReportsTab() {
             </>
           ) : (
             <>
-              <div className="flex items-end justify-between mt-6"><div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div><div className="flex items-center gap-5"><div className="text-sm">최종판정</div><div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "반품" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>{finalJudge}</div></div></div>
+              <div className="flex items-end justify-between mt-6"><div className="text-xs text-slate-500">상기 검사 결과를 기준으로 최종 판정합니다.</div><div className="flex items-center gap-5"><div className="text-sm">최종판정</div><div className={`border-2 rounded px-5 py-2 font-bold ${finalJudge === "합격" ? "border-emerald-600 text-emerald-600" : finalJudge === "불합격" || finalJudge === "불합격" ? "border-red-600 text-red-600" : "border-slate-400 text-slate-600"}`}>{finalJudge}</div></div></div>
               <div className="flex justify-end gap-6 text-center text-xs mt-5"><div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작성</div><div className="mt-1 text-slate-600">검사원</div></div><div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검토</div><div className="mt-1 text-slate-600">-</div></div><div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">-</div></div></div>
             </>
           )}
@@ -9111,7 +9304,7 @@ function IqcTab() {
   const done = monthRows.filter((r) => r.judge !== "검사중");
   const pass = done.filter((r) => r.judge === "합격").length;
   const failed = monthRows.filter((r) => [r.visual, r.label, r.weight, r.coa].includes("불합격"));
-  const returned = monthRows.filter((r) => r.judge === "반품");
+  const returned = monthRows.filter((r) => r.judge === "불합격");
 
   const availableYears = [...new Set([
     "2025",
@@ -9182,7 +9375,7 @@ function IqcTab() {
 
   const overall = (f) => {
     const vals = [f.visual, f.label, f.weight, f.coa];
-    if (vals.includes("불합격")) return "반품";
+    if (vals.includes("불합격")) return "불합격";
     return "합격";
   };
 
@@ -9229,7 +9422,7 @@ function IqcTab() {
       visual: form.visual, label: form.label, weight: form.weight, coa: form.coa,
       remarks: form.remarks.trim(),
       judge: overall(form),
-      note: overall(form) === "반품" ? "즉시 격리 → 사용차단 → 업체 통보" : "",
+      note: overall(form) === "불합격" ? "즉시 격리 → 사용차단 → 업체 통보" : "",
       inspector: form.inspector.trim(), by: form.inspector.trim()
     };
     const nr = editingInNo ? rows.map((r) => r.inNo === editingInNo ? rowData : r) : [rowData, ...rows];
@@ -9275,7 +9468,7 @@ function IqcTab() {
         <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" />
         <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" />
         <Kpi animated icon={XCircle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" />
-        <Kpi animated icon={AlertTriangle} label="반품" value={returned.length} unit="건" tone="text-amber-400" />
+        <Kpi animated icon={AlertTriangle} label="불합격" value={returned.length} unit="건" tone="text-amber-400" />
       </div>
 
       <div className="qmes-iqc-register-chart-layout">
@@ -9451,7 +9644,7 @@ function IqcTab() {
                 <select value={selectedJudge} onChange={(e)=>setSelectedJudge(e.target.value)}>
                   <option value="전체">전체 판정</option>
                   <option value="합격">합격</option>
-                  <option value="반품">반품</option>
+                  <option value="불합격">불합격</option><option value="불합격(반품)">불합격(반품)</option>
                   <option value="검사중">검사중</option>
                 </select>
               </label>
@@ -10715,8 +10908,7 @@ function FieldInputTab() {
     }
     const entry = {
       id: recId, time, lot: lotNo, check, value: display, judge: judged,
-      auto: judged === "합격"
-        ? [`규격(${spec.spec}) 자동판정 → 합격`, `${recId} 공정검사 성적서 자동 기록`, L ? `Lot ${lotNo} 이력 반영 완료` : `Lot ${lotNo} 미등록 — 작업지시 발행 시 이력 연결`]
+      auto: judged === "합격" ? [`규격(${spec.spec}) 자동판정 → 합격`, `${recId} 공정검사 성적서 자동 기록`, L ? `Lot ${lotNo} 이력 반영 완료` : `Lot ${lotNo} 미등록 — 작업지시 발행 시 이력 연결`]
         : [`규격(${spec.spec}) 자동판정 → 불합격`, `${recId} 성적서 자동 기록`, `자동 홀드 생성 — 공정 게이트 차단`, `품질부 알람 · 격리 Rack 지정 대기`, `NCR 발행 대기 (8D 착수)`],
     };
     const nextEntries = editingPop ? entries.map((e)=>e.id===editingPop?entry:e) : [entry, ...entries];
@@ -10799,11 +10991,10 @@ function FieldInputTab() {
             <span className="text-xs text-slate-500">자동 판정:</span>
             {inputError ? <Badge tone="red">진입 금지 — 재입력 필요</Badge>
               : judged == null ? <Badge tone="gray">입력 대기</Badge>
-              : judged === "합격" ? <Badge tone="green">합격</Badge>
-              : <Badge tone="red">불합격 — 저장 시 자동 홀드</Badge>}
+              : judged === "합격" ? <Badge tone="green">합격</Badge> : <Badge tone="red">불합격 — 저장 시 자동 홀드</Badge>}
           </div>
           <button onClick={save}
-            className={`rounded-xl px-6 py-3 text-base font-bold transition-colors text-white ${judged === "불합격" ? "bg-red-600 hover:bg-red-500" : judged === "합격" ? "bg-emerald-600 hover:bg-emerald-500" : "bg-sky-600 hover:bg-sky-500"}`}>
+            className={`rounded-xl px-6 py-3 text-base font-bold transition-colors text-white ${judged === "불합격" ? "bg-red-600 hover:bg-red-500" : judged === "합격" ? "bg-emerald-600 hover : bg-emerald-500" : "bg-sky-600 hover:bg-sky-500"}`}>
             {editingPop ? "수정 저장 (자동 처리)" : "저장 (자동 처리)"}
           </button>
         </div>
