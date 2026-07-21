@@ -9079,6 +9079,187 @@ select.qmes-label-judge-select option[value="불합격"]{
   .qmes-iqc-donut-list{grid-template-columns:repeat(2,minmax(145px,1fr))!important}
 }
 </style>
+
+<style>
+/* ===== 최종 요청 반영: 검색창 아래부터 끝까지 전체 폭 ===== */
+.qmes-iqc-ledger-section,
+.qmes-iqc-ledger-panel,
+.qmes-iqc-ledger-panel > div,
+.qmes-iqc-ledger-container,
+.qmes-iqc-chart-only,
+.qmes-iqc-chart-panel,
+.qmes-iqc-chart-panel > div{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+.qmes-iqc-ledger-container{overflow-x:auto!important}
+.qmes-iqc-ledger-table{width:100%!important;min-width:1180px!important;table-layout:fixed!important}
+.qmes-iqc-ledger-table th,.qmes-iqc-ledger-table td{padding-left:12px!important;padding-right:12px!important}
+.qmes-iqc-donut-list{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:14px!important}
+
+/* ===== 공정·출하검사: 수입검사와 같은 신규등록 팝업 방식 ===== */
+.qmes-inspection-quickbar{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:16px 18px;border:1px solid #263b54;border-left:4px solid #8b5cf6;border-radius:11px;
+  background:linear-gradient(90deg,rgba(139,92,246,.10),rgba(15,32,54,.72));
+}
+.qmes-inspection-quickbar.qmes-oqc-quickbar{border-left-color:#10b981;background:linear-gradient(90deg,rgba(16,185,129,.10),rgba(15,32,54,.72))}
+.qmes-inspection-quickbar span{display:block;color:#7e97b8;font-size:9px;font-weight:800;letter-spacing:.14em}
+.qmes-inspection-quickbar strong{display:block;margin-top:2px;color:#f3f7fb;font-size:17px}
+.qmes-inspection-quickbar p{margin-top:3px;color:#7892af;font-size:11px}
+.qmes-inspection-new-btn{height:38px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:7px;color:#fff;font-size:12px;font-weight:800;background:linear-gradient(180deg,#00addf,#007fae);white-space:nowrap}
+.qmes-inspection-modal-backdrop{z-index:12500}
+.qmes-inspection-modal{width:min(1180px,96vw);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #3a4e70;border-radius:14px;background:#0a1728;box-shadow:0 30px 90px rgba(0,0,0,.68)}
+.qmes-inspection-modal.is-oqc{border-color:#285d51}
+.qmes-inspection-modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #263b54;background:linear-gradient(90deg,#251b45,#10223b)}
+.qmes-inspection-modal.is-oqc .qmes-inspection-modal-head{background:linear-gradient(90deg,#12382f,#10223b)}
+.qmes-inspection-modal-head span{display:block;color:#a78bfa;font-size:9px;font-weight:800;letter-spacing:.14em}
+.qmes-inspection-modal.is-oqc .qmes-inspection-modal-head span{color:#6ee7b7}
+.qmes-inspection-modal-head strong{display:block;margin-top:2px;color:#f4f8fc;font-size:17px}
+.qmes-inspection-modal-head button{width:34px;height:34px;border:1px solid #3b526d;border-radius:8px;color:#b9c8d8;font-size:24px;line-height:1}
+.qmes-inspection-modal-head button:hover{color:#fff;background:#172b43}
+.qmes-inspection-modal-body{overflow:auto;padding:16px}
+.qmes-inspection-modal-body > div{margin:0!important}
+.qmes-inspection-modal-body .qmes-register-grid{grid-auto-flow:row!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-columns:auto!important;width:100%!important;min-width:0!important;gap:10px!important}
+.qmes-inspection-modal-body .qmes-register-grid > div,
+.qmes-inspection-modal-body .qmes-register-grid > button,
+.qmes-inspection-modal-body .qmes-register-grid > input,
+.qmes-inspection-modal-body .qmes-register-grid > select{width:100%!important;min-width:0!important;max-width:none!important}
+.qmes-inspection-modal-body .qmes-register-grid > div > div{width:100%!important;min-width:0!important;max-width:none!important}
+.qmes-inspection-modal-body .qmes-measurement-field{grid-column:span 2}
+.qmes-inspection-modal-body .qmes-measurement-entry-line{width:100%!important}
+@media(max-width:900px){.qmes-inspection-modal-body .qmes-register-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmes-inspection-modal-body .qmes-measurement-field{grid-column:1/-1}}
+@media(max-width:620px){.qmes-inspection-quickbar{align-items:flex-start;flex-direction:column}.qmes-inspection-modal-body .qmes-register-grid{grid-template-columns:1fr!important}.qmes-inspection-modal-body .qmes-measurement-field{grid-column:auto}}
+</style>
+
+<style>
+/* ===== 공정·출하검사 신규등록 버튼 위치: 수입검사와 동일하게 제목 아래 배치 ===== */
+.qmes-inspection-quickbar{
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+}
+.qmes-inspection-quickbar>div{
+  width:100%!important;
+  order:1!important;
+}
+.qmes-inspection-new-btn{
+  order:2!important;
+  align-self:flex-start!important;
+  margin:0!important;
+}
+@media(max-width:680px){
+  .qmes-inspection-new-btn{width:auto!important;}
+}
+</style>
+
+<style id="QMES_IQC_FINAL_MATCH_PQC_OQC_20260721">
+/* 수입검사 관리 영역을 공정·출하검사와 같은 크기·구조로 통일 */
+.qmes-iqc-quickbar,
+.qmes-inspection-quickbar{
+  width:100%!important;
+  min-height:92px!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  padding:16px 18px!important;
+  border-top:1px solid #263b54!important;
+  border-right:1px solid #263b54!important;
+  border-bottom:1px solid #263b54!important;
+  border-radius:11px!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-quickbar{
+  border-left:4px solid #38bdf8!important;
+  background:linear-gradient(90deg,rgba(56,189,248,.10),rgba(15,32,54,.72))!important;
+}
+.qmes-iqc-quickbar>div,
+.qmes-inspection-quickbar>div{
+  width:100%!important;
+  min-width:0!important;
+  order:1!important;
+}
+.qmes-iqc-quickbar-kicker,
+.qmes-inspection-quickbar span{
+  display:block!important;
+  color:#7e97b8!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:.14em!important;
+}
+.qmes-iqc-quickbar strong,
+.qmes-inspection-quickbar strong{
+  display:block!important;
+  margin-top:2px!important;
+  color:#f3f7fb!important;
+  font-size:17px!important;
+  line-height:1.35!important;
+}
+.qmes-iqc-new-btn,
+.qmes-inspection-new-btn{
+  order:2!important;
+  align-self:flex-start!important;
+  width:auto!important;
+  min-width:98px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 16px!important;
+  margin:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  border-radius:7px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+}
+/* 수입검사 관리 버튼을 공정·출하검사와 동일한 크기와 글자 크기로 통일 */
+.qmes-iqc-ledger-table .qmes-iqc-manage-inline{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:100%!important;
+}
+.qmes-iqc-ledger-table .qmes-iqc-action-btn{
+  width:62px!important;
+  min-width:62px!important;
+  max-width:62px!important;
+  height:30px!important;
+  min-height:30px!important;
+  padding:0 6px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  border-radius:6px!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  flex:0 0 62px!important;
+}
+.qmes-iqc-ledger-table .qmes-iqc-action-btn svg{
+  width:12px!important;
+  height:12px!important;
+  flex:0 0 12px!important;
+}
+@media(max-width:760px){
+  .qmes-iqc-quickbar,.qmes-inspection-quickbar{min-height:92px!important;}
+  .qmes-iqc-ledger-table .qmes-iqc-action-btn{width:58px!important;min-width:58px!important;max-width:58px!important;flex-basis:58px!important;font-size:10px!important;}
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -10273,6 +10454,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [recordMonth, setRecordMonth] = useState("ALL");
   const [recordPage, setRecordPage] = useState(1);
   const [viewingRecord, setViewingRecord] = useState(null);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const recordPageSize = 10;
   const availableLots = Array.from(new Set((DB.batches || []).map((b) => b.no).filter(Boolean)));
   const selectedBatch = (DB.batches || []).find((b) => b.no === form.lot);
@@ -10385,6 +10567,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     setMeasurementRows([]);
     setMeasurementInput("");
     setTried(false);
+    setShowRegisterModal(false);
   };
 
   const editRecord = (r) => {
@@ -10406,7 +10589,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     });
     setMeasurementRows(savedMeasurements.filter((v) => String(v || "").trim() !== ""));
     setMeasurementInput("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTried(false);
+    setShowRegisterModal(true);
   };
   const deleteRecord = (r) => {
     const reason = askDeleteReason(`${docName} ${r.id}`);
@@ -10452,7 +10636,27 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
         </div>
       )}
 
-      <Panel title={isOqc ? "출하검사 등록" : "공정검사 등록"}>
+      <div className={`qmes-inspection-quickbar ${isOqc ? "qmes-oqc-quickbar" : "qmes-pqc-quickbar"}`}>
+        <div>
+          <span>{isOqc ? "OUTGOING QUALITY CONTROL" : "PROCESS QUALITY CONTROL"}</span>
+          <strong>{isOqc ? "출하검사 관리" : "공정검사 관리"}</strong>
+        </div>
+        <button type="button" className="qmes-inspection-new-btn" onClick={()=>{
+          setEditingId(null);
+          setForm({ date:today, shipDate:today, lot:isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "", product:"", check:itemKeys[0], value:"", value1:"", value2:"", value3:"", judge:"합격" });
+          setMeasurementRows([]); setMeasurementInput(""); setTried(false); setShowRegisterModal(true);
+        }}><Plus size={16}/> 신규등록</button>
+      </div>
+
+      {showRegisterModal && (
+        <div className="qmes-modal-backdrop qmes-inspection-modal-backdrop" onMouseDown={(e)=>{if(e.target===e.currentTarget){setShowRegisterModal(false);setEditingId(null);setTried(false);}}}>
+          <div className={`qmes-inspection-modal ${isOqc ? "is-oqc" : "is-pqc"}`} role="dialog" aria-modal="true">
+            <div className="qmes-inspection-modal-head">
+              <div><span>{isOqc ? "OUTGOING INSPECTION" : "PROCESS INSPECTION"}</span><strong>{editingId ? (isOqc ? "출하검사 수정" : "공정검사 수정") : (isOqc ? "출하검사 신규등록" : "공정검사 신규등록")}</strong></div>
+              <button type="button" onClick={()=>{setShowRegisterModal(false);setEditingId(null);setTried(false);}} aria-label="닫기">×</button>
+            </div>
+            <div className="qmes-inspection-modal-body">
+              <Panel title={isOqc ? "출하검사 등록" : "공정검사 등록"}>
         <div className="pb-1">
           <div className={`qmes-register-grid ${isOqc ? "qmes-register-grid-oqc" : "qmes-register-grid-pqc"}`}>
           <div className="flex flex-col gap-1">
@@ -10609,7 +10813,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             ))}
           </div>
         )}
-      </Panel>
+              </Panel>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Panel title={`검사 기록 (${docName})`} right={<span className="text-xs text-slate-500">{filteredRecords.length}건</span>}>
         <div className={`qmes-inspection-record-filter ${isOqc ? "qmes-oqc-record-filter" : "qmes-pqc-record-filter"}`}>
@@ -12078,7 +12286,6 @@ function IqcTab() {
         <div>
           <span className="qmes-iqc-quickbar-kicker">INCOMING QUALITY CONTROL</span>
           <strong>수입검사 관리</strong>
-          <p>신규 등록은 팝업에서 진행하고, 등록 내역은 아래 관리대장에서 확인합니다.</p>
         </div>
         <button type="button" className="qmes-iqc-new-btn" onClick={()=>{ setEditingInNo(null); setForm(emptyForm()); setTried(false); setIqcModalOpen(true); }}>
           <Plus size={16} /> 신규등록
@@ -12144,7 +12351,7 @@ function IqcTab() {
                     <td>{r.inspector || r.by || "-"}</td>
                     <td className="qmes-iqc-manage-cell">
                       <div className="qmes-iqc-manage-inline">
-                        <button onClick={()=>setViewingIqc(r)} title="미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print">미리보기</button>
+                        <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
                         <button onClick={()=>setViewingLabel(r)} title="라벨" className="qmes-iqc-action-btn qmes-iqc-action-label">라벨</button>
                         <button onClick={()=>editIqc(r)} title="수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
                         <button onClick={()=>deleteIqc(r)} title="삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
