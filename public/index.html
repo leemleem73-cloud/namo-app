@@ -299,7 +299,7 @@ aside{display:none!important}
 }
 .qmes-register-grid-iqc{min-width:2680px}
 .qmes-register-grid-pqc{min-width:1340px}
-.qmes-register-grid-oqc{min-width:1256px}
+.qmes-register-grid-oqc{min-width:1774px}
 
 .qmes-register-grid > div,
 .qmes-register-grid > button,
@@ -6757,7 +6757,7 @@ body.qmes-screen-exact-print #qmes-print-root .qmes-iqc-sign-table td:last-child
 .qmes-label-judge-fail,
 .qmes-iqc-label-judge.text-red-600,
 .qmes-iqc-label-judge[data-judge="불합격"],
-.qmes-iqc-label-judge[data-judge="불합격(반품)"]{
+.qmes-iqc-label-judge[data-judge="불합격"]{
   color:#dc2626!important;
   font-weight:800!important;
 }
@@ -6768,7 +6768,7 @@ select.qmes-label-judge-select option[value="합격"]{
   font-weight:700!important;
 }
 select.qmes-label-judge-select option[value="불합격"],
-select.qmes-label-judge-select option[value="불합격(반품)"]{
+select.qmes-label-judge-select option[value="불합격"]{
   color:#dc2626!important;
   font-weight:700!important;
 }
@@ -6787,10 +6787,10 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 
 .qmes-iqc-label-judge.fail,
 .qmes-iqc-label-judge[data-judge="불합격"],
-.qmes-iqc-label-judge[data-judge="불합격(반품)"],
+.qmes-iqc-label-judge[data-judge="불합격"],
 .qmes-label-check-value.is-fail,
 .qmes-label-check-value[data-label-check="불합격"],
-.qmes-label-check-value[data-label-check="불합격(반품)"]{
+.qmes-label-check-value[data-label-check="불합격"]{
   color:#dc2626!important;
   font-weight:800!important;
 }
@@ -6863,7 +6863,7 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 
   body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge.fail,
   body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge[data-judge="불합격"],
-  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge[data-judge="불합격(반품)"],
+  body.print-label #qmes-print-root .qmes-label-print-copy .qmes-iqc-label-judge[data-judge="불합격"],
   body.print-label #qmes-print-root .qmes-label-print-copy .qmes-label-check-value.is-fail{
     color:#dc2626!important;
   }
@@ -6898,13 +6898,13 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
   font-weight:800!important;
 }
 
-/* 불합격 및 불합격(반품)은 빨간색 */
+/* 불합격 및 불합격은 빨간색 */
 #qmes-label-print-root .qmes-iqc-label-judge.fail,
 #qmes-label-print-root .qmes-iqc-label-judge[data-judge="불합격"],
-#qmes-label-print-root .qmes-iqc-label-judge[data-judge="불합격(반품)"],
+#qmes-label-print-root .qmes-iqc-label-judge[data-judge="불합격"],
 #qmes-label-print-root .qmes-label-check-value.is-fail,
 #qmes-label-print-root .qmes-label-check-value[data-label-check="불합격"],
-#qmes-label-print-root .qmes-label-check-value[data-label-check="불합격(반품)"]{
+#qmes-label-print-root .qmes-label-check-value[data-label-check="불합격"]{
   color:#dc2626!important;
   font-weight:800!important;
 }
@@ -8229,65 +8229,856 @@ select.qmes-label-judge-select option[value="불합격(반품)"]{
 </style>
 
 
-<style>
-/* ===== 작업지시서: 수입검사 성적서와 동일한 문서 디자인 ===== */
-.qmes-wo-doc{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;color:#111827!important;font-size:12px!important;line-height:1.35!important}
-.qmes-wo-doc-header{display:grid;grid-template-columns:30% 40% 30%;align-items:center;min-height:86px;padding:0 0 14px;border-bottom:3px solid #111827}
-.qmes-wo-logo-area{display:flex;align-items:center;min-width:0;overflow:visible}
-.qmes-wo-logo{display:block!important;width:210px!important;max-width:100%!important;height:auto!important;object-fit:contain!important;object-position:left center!important}
-.qmes-wo-doc-title{text-align:center;color:#111827}
-.qmes-wo-title-ko{font-size:31px;font-weight:800;letter-spacing:-.04em;line-height:1.05;white-space:nowrap}
-.qmes-wo-title-en{margin-top:6px;color:#6b7280;font-size:13px;font-weight:600;letter-spacing:.03em}
-.qmes-wo-doc-meta{text-align:right;color:#374151;font-size:12px;line-height:1.8;white-space:nowrap}
-.qmes-wo-section{margin-top:18px}
-.qmes-wo-first{margin-top:14px}
-.qmes-wo-section-title{height:31px;display:flex;align-items:center;padding:0 10px;background:#213f73;color:#fff;font-size:13px;font-weight:800}
-.qmes-wo-section-title::before{content:'▪';margin-right:6px;font-size:12px}
-.qmes-wo-table{width:100%;table-layout:fixed;border-collapse:collapse;border:1px solid #52637d;background:#fff;color:#111827;font-size:12px}
-.qmes-wo-table th,.qmes-wo-table td{border:1px solid #52637d!important;padding:9px 8px!important;text-align:center!important;vertical-align:middle!important;line-height:1.35!important;color:#111827!important;background:#fff!important;white-space:normal!important;overflow:visible!important}
-.qmes-wo-table th,.qmes-wo-table td.bg-slate-50{background:#f8fafc!important;font-weight:800!important;color:#111827!important}
-.qmes-wo-basic-table td{font-weight:600}
-.qmes-wo-material-table thead tr,.qmes-wo-condition-table thead tr{border:0!important}
-.qmes-wo-material-table thead th,.qmes-wo-condition-table thead th{font-size:12px!important;font-weight:800!important;text-align:center!important;border:1px solid #52637d!important}
-.qmes-wo-material-table tbody td,.qmes-wo-condition-table tbody td{text-align:center!important;font-size:12px!important}
-.qmes-wo-note-box{min-height:54px;padding:11px 12px;border:1px solid #52637d;border-top:0;background:#fff;color:#111827;font-size:12px;line-height:1.6}
-.qmes-wo-auth-row{display:grid;grid-template-columns:56% 44%;gap:16px;align-items:stretch;margin-top:18px}
-.qmes-wo-code-area,.qmes-wo-sign-grid{height:104px;min-height:104px;box-sizing:border-box;border:1px solid #52637d;background:#fff}
-.qmes-wo-code-area{display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:8px;align-items:center;padding:8px}
-.qmes-wo-barcode-wrap{text-align:center;color:#374151;font-size:9px;overflow:hidden}
-.qmes-wo-barcode{display:block;width:100%;height:58px;margin:0 auto}
-.qmes-wo-qr-wrap{width:70px;height:70px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db}
-.qmes-wo-qr canvas,.qmes-wo-qr img{width:64px!important;height:64px!important;display:block}
-.qmes-wo-sign-grid{display:grid;grid-template-columns:repeat(3,1fr)}
-.qmes-wo-sign-cell{display:grid;grid-template-rows:32px 1fr;border-right:1px solid #52637d}
-.qmes-wo-sign-cell:last-child{border-right:0}
-.qmes-wo-sign-title{display:flex;align-items:center;justify-content:center;border-bottom:1px solid #52637d;background:#f8fafc;color:#111827;font-size:12px;font-weight:800}
-.qmes-wo-sign-body{display:flex;align-items:center;justify-content:center;color:#111827;font-size:14px;font-weight:700}
-@media print{
- body.print-doc #qmes-print-root .doc-paper.qmes-wo-doc{width:196mm!important;max-width:196mm!important;min-width:196mm!important;min-height:270mm!important;margin:0 auto!important;padding:6mm 7mm!important;font-size:10.5px!important;box-sizing:border-box!important;overflow:visible!important}
- body.print-doc #qmes-print-root .qmes-wo-doc-header{grid-template-columns:31% 39% 30%!important;min-height:24mm!important;padding-bottom:3mm!important}
- body.print-doc #qmes-print-root .qmes-wo-logo{width:54mm!important;max-width:54mm!important;height:auto!important}
- body.print-doc #qmes-print-root .qmes-wo-title-ko{font-size:22px!important}
- body.print-doc #qmes-print-root .qmes-wo-title-en{font-size:9px!important;margin-top:1mm!important}
- body.print-doc #qmes-print-root .qmes-wo-doc-meta{font-size:9px!important;line-height:1.7!important;padding-right:1mm!important}
- body.print-doc #qmes-print-root .qmes-wo-section{margin-top:4mm!important}
- body.print-doc #qmes-print-root .qmes-wo-first{margin-top:3mm!important}
- body.print-doc #qmes-print-root .qmes-wo-section-title{height:7mm!important;padding:0 2mm!important;font-size:10px!important}
- body.print-doc #qmes-print-root .qmes-wo-table{font-size:9px!important}
- body.print-doc #qmes-print-root .qmes-wo-table th,body.print-doc #qmes-print-root .qmes-wo-table td{padding:1.7mm 1.2mm!important;font-size:9px!important;line-height:1.25!important}
- body.print-doc #qmes-print-root .qmes-wo-note-box{min-height:12mm!important;padding:2mm 2.5mm!important;font-size:9px!important;line-height:1.45!important}
- body.print-doc #qmes-print-root .qmes-wo-auth-row{grid-template-columns:56% 44%!important;gap:4mm!important;margin-top:4mm!important}
- body.print-doc #qmes-print-root .qmes-wo-code-area,body.print-doc #qmes-print-root .qmes-wo-sign-grid{height:25mm!important;min-height:25mm!important}
- body.print-doc #qmes-print-root .qmes-wo-code-area{grid-template-columns:minmax(0,1fr) 18mm!important;padding:1.5mm!important;gap:2mm!important}
- body.print-doc #qmes-print-root .qmes-wo-barcode{height:14mm!important}
- body.print-doc #qmes-print-root .qmes-wo-qr-wrap{width:17mm!important;height:17mm!important}
- body.print-doc #qmes-print-root .qmes-wo-qr canvas,body.print-doc #qmes-print-root .qmes-wo-qr img{width:15.5mm!important;height:15.5mm!important}
- body.print-doc #qmes-print-root .qmes-wo-sign-cell{grid-template-rows:7mm 18mm!important}
- body.print-doc #qmes-print-root .qmes-wo-sign-title{font-size:9px!important}
- body.print-doc #qmes-print-root .qmes-wo-sign-body{font-size:10px!important}
+<style id="QMES_THREE_INSPECTION_FILTER_CARD_COLOR_SYNC_260721">
+/* 수입·공정·출하 관리대장 조회창: 카드 형태 및 화면별 단일 포인트 색상 통일 */
+.qmes-inspection-record-filter{
+  position:relative!important;
+  overflow:hidden!important;
+  padding:12px 14px!important;
+  border-radius:11px!important;
+  background:rgba(9,20,36,.78)!important;
+  box-shadow:0 7px 18px rgba(2,8,23,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.qmes-inspection-record-filter::before{
+  content:none!important;
+  display:none!important;
+}
+
+/* 공정검사: 블루 */
+.qmes-pqc-record-filter{
+  border:1px solid #2b3d55!important;
+  border-left:4px solid #38bdf8!important;
+}
+.qmes-pqc-record-filter > div:first-child > span,
+.qmes-pqc-record-filter .qmes-oqc-record-filter-field > span{
+  color:#8fb1ca!important;
+}
+.qmes-pqc-record-filter > div:first-child > span::before,
+.qmes-pqc-record-filter .qmes-oqc-record-filter-field > span::before{
+  color:#7dd3fc!important;
+  background:rgba(56,189,248,.10)!important;
+}
+.qmes-pqc-record-filter .qmes-inspection-search-icon{color:#38bdf8!important}
+.qmes-pqc-record-filter .qmes-inspection-search-box:focus-within,
+.qmes-pqc-record-filter .qmes-oqc-record-filter-field select:focus{
+  border-color:#38bdf8!important;
+  box-shadow:0 0 0 2px rgba(56,189,248,.10)!important;
+}
+.qmes-pqc-record-filter > button{
+  color:#7dd3fc!important;
+  border-color:rgba(56,189,248,.34)!important;
+  background:rgba(56,189,248,.10)!important;
+}
+.qmes-pqc-record-filter > button:hover{
+  color:#e0f2fe!important;
+  border-color:rgba(56,189,248,.52)!important;
+  background:rgba(56,189,248,.18)!important;
+}
+
+/* 출하검사: 에메랄드 */
+.qmes-oqc-record-filter{
+  border:1px solid #2b3d55!important;
+  border-left:4px solid #34d399!important;
+}
+.qmes-oqc-record-filter > div:first-child > span,
+.qmes-oqc-record-filter .qmes-oqc-record-filter-field > span{
+  color:#91b8aa!important;
+}
+.qmes-oqc-record-filter > div:first-child > span::before,
+.qmes-oqc-record-filter .qmes-oqc-record-filter-field > span::before{
+  color:#6ee7b7!important;
+  background:rgba(52,211,153,.10)!important;
+}
+.qmes-oqc-record-filter .qmes-inspection-search-icon{color:#34d399!important}
+.qmes-oqc-record-filter .qmes-inspection-search-box:focus-within,
+.qmes-oqc-record-filter .qmes-oqc-record-filter-field select:focus{
+  border-color:#34d399!important;
+  box-shadow:0 0 0 2px rgba(52,211,153,.10)!important;
+}
+.qmes-oqc-record-filter > button{
+  color:#6ee7b7!important;
+  border-color:rgba(52,211,153,.34)!important;
+  background:rgba(52,211,153,.10)!important;
+}
+.qmes-oqc-record-filter > button:hover{
+  color:#d1fae5!important;
+  border-color:rgba(52,211,153,.52)!important;
+  background:rgba(52,211,153,.18)!important;
+}
+
+/* 수입검사: 바이올렛 */
+.qmes-iqc-record-filter{
+  border:1px solid #2b3d55!important;
+  border-left:4px solid #8b5cf6!important;
+}
+.qmes-iqc-record-filter > div:first-child > span,
+.qmes-iqc-record-filter .qmes-oqc-record-filter-field > span{
+  color:#aaa0c5!important;
+}
+.qmes-iqc-record-filter > div:first-child > span::before,
+.qmes-iqc-record-filter .qmes-oqc-record-filter-field > span::before{
+  color:#c4b5fd!important;
+  background:rgba(139,92,246,.11)!important;
+}
+.qmes-iqc-record-filter .qmes-inspection-search-icon{color:#a78bfa!important}
+.qmes-iqc-record-filter .qmes-inspection-search-box:focus-within,
+.qmes-iqc-record-filter .qmes-oqc-record-filter-field select:focus{
+  border-color:#8b5cf6!important;
+  box-shadow:0 0 0 2px rgba(139,92,246,.11)!important;
+}
+.qmes-iqc-record-filter > button{
+  color:#c4b5fd!important;
+  border-color:rgba(139,92,246,.36)!important;
+  background:rgba(139,92,246,.10)!important;
+}
+.qmes-iqc-record-filter > button:hover{
+  color:#ede9fe!important;
+  border-color:rgba(139,92,246,.54)!important;
+  background:rgba(139,92,246,.18)!important;
+}
+
+/* 세 화면 공통 입력칸 톤 */
+.qmes-inspection-record-filter .qmes-inspection-search-box,
+.qmes-inspection-record-filter .qmes-oqc-record-filter-field select{
+  border:1px solid #30445e!important;
+  background:#0c1c30!important;
+  color:#e9f5ff!important;
+  box-shadow:none!important;
+}
+.qmes-inspection-record-filter > button::before{color:currentColor!important}
+</style>
+<style id="qmes-dynamic-measurement-rows-260721">
+.qmes-measurement-field{min-width:310px}
+.qmes-add-measurement-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:25px;padding:0 8px;border:1px solid rgba(56,189,248,.38);border-radius:6px;background:rgba(14,165,233,.10);color:#7dd3fc;font-size:11px;font-weight:700;white-space:nowrap;transition:.15s}
+.qmes-add-measurement-btn:hover{background:rgba(14,165,233,.20);border-color:rgba(56,189,248,.65)}
+.qmes-dynamic-measurements{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px}
+.qmes-measurement-row{position:relative;flex:0 0 88px}
+.qmes-measurement-row input{width:100%;height:38px;padding:0 24px 0 10px;border:1px solid #334155;border-radius:6px;background:#1e293b;color:#f1f5f9;font-size:13px;outline:none}
+.qmes-measurement-row input:focus{border-color:#0ea5e9}
+.qmes-remove-measurement-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:18px;height:18px;border:0;border-radius:50%;background:rgba(239,68,68,.13);color:#fca5a5;font-size:15px;line-height:16px;cursor:pointer}
+.qmes-remove-measurement-btn:hover{background:rgba(239,68,68,.25);color:#fecaca}
+.qmes-measurement-average{font-size:11px;color:#94a3b8;text-align:right;padding-right:2px}
+.qmes-measurement-average strong{color:#7dd3fc;font-variant-numeric:tabular-nums}
+</style>
+<style id="qmes-measurement-inline-no-horizontal-scroll-260721">
+/* 공정·출하 등록창: 가로 스크롤 없이 화면 폭에 맞춰 자동 줄바꿈 */
+.qmes-register-grid.qmes-register-grid-pqc,
+.qmes-register-grid.qmes-register-grid-oqc{
+  display:grid!important;
+  grid-auto-flow:row!important;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;
+  width:100%!important;
+  min-width:0!important;
+  gap:10px!important;
+}
+.qmes-register-grid.qmes-register-grid-pqc>div,
+.qmes-register-grid.qmes-register-grid-oqc>div,
+.qmes-register-grid.qmes-register-grid-pqc>button,
+.qmes-register-grid.qmes-register-grid-oqc>button{
+  width:100%!important;min-width:0!important;max-width:none!important;
+}
+.qmes-register-grid .qmes-measurement-field{grid-column:span 2;min-width:0!important}
+.qmes-register-grid .qmes-measurement-field>div{width:100%!important;min-width:0!important;height:auto!important;min-height:40px!important}
+.qmes-measurement-entry-line{display:grid!important;grid-template-columns:minmax(150px,1fr) 118px 62px;gap:6px;align-items:start}
+.qmes-measurement-value-box{min-height:40px;border:1px solid #334155;border-radius:6px;background:#1e293b;padding:5px 7px;display:flex;align-content:flex-start;align-items:center;gap:5px;flex-wrap:wrap;overflow-wrap:anywhere;box-sizing:border-box}
+.qmes-measurement-placeholder{font-size:12px;color:#64748b}
+.qmes-measurement-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 5px 3px 8px;border-radius:999px;background:rgba(14,165,233,.12);border:1px solid rgba(56,189,248,.28);color:#bae6fd;font-size:12px;font-variant-numeric:tabular-nums}
+.qmes-measurement-chip button{width:16px!important;min-width:16px!important;max-width:16px!important;height:16px!important;min-height:16px!important;border:0!important;border-radius:50%;padding:0!important;background:rgba(239,68,68,.16)!important;color:#fca5a5!important;line-height:14px!important}
+.qmes-measurement-new-input{width:100%!important;min-width:0!important;height:40px!important;border:1px solid #334155;border-radius:6px;background:#1e293b;color:#f1f5f9;padding:0 10px;font-size:13px;outline:none}
+.qmes-measurement-new-input:focus{border-color:#0ea5e9}
+.qmes-add-measurement-inline{width:62px!important;min-width:62px!important;max-width:62px!important;height:40px!important}
+@media(max-width:900px){.qmes-register-grid .qmes-measurement-field{grid-column:1/-1}}
+@media(max-width:560px){.qmes-measurement-entry-line{grid-template-columns:1fr 62px}.qmes-measurement-value-box{grid-column:1/-1}}
+</style>
+<style id="qmes-measurement-text-and-stable-position-260721">
+/* 측정값이 여러 줄로 늘어나도 입력칸과 추가 버튼은 상단 위치를 유지 */
+.qmes-measurement-entry-line>.qmes-measurement-new-input,
+.qmes-measurement-entry-line>.qmes-add-measurement-inline{align-self:start!important;margin-top:0!important}
+.qmes-measurement-chip{max-width:100%;white-space:normal;word-break:break-all;font-variant-numeric:normal!important}
+</style>
+<style id="qmes-notebook-responsive-registration-260721">
+/* 노트북에서도 가로 스크롤 없이 공정·출하 검사등록을 안정적으로 배치 */
+@media (min-width:1181px) and (max-width:1536px){
+  .qmes-register-grid.qmes-register-grid-pqc,
+  .qmes-register-grid.qmes-register-grid-oqc{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  .qmes-register-grid .qmes-measurement-field{grid-column:1/-1!important;}
+  .qmes-register-grid.qmes-register-grid-pqc>button,
+  .qmes-register-grid.qmes-register-grid-oqc>button{
+    grid-column:3!important;
+    margin-top:20px!important;
+  }
+}
+@media (min-width:721px) and (max-width:1180px){
+  .qmes-register-grid.qmes-register-grid-pqc,
+  .qmes-register-grid.qmes-register-grid-oqc{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .qmes-register-grid .qmes-measurement-field{grid-column:1/-1!important;}
+  .qmes-register-grid.qmes-register-grid-pqc>button,
+  .qmes-register-grid.qmes-register-grid-oqc>button{
+    grid-column:2!important;
+    margin-top:20px!important;
+  }
+}
+@media (max-width:720px){
+  .qmes-register-grid.qmes-register-grid-pqc,
+  .qmes-register-grid.qmes-register-grid-oqc{grid-template-columns:1fr!important;}
+  .qmes-register-grid .qmes-measurement-field,
+  .qmes-register-grid.qmes-register-grid-pqc>button,
+  .qmes-register-grid.qmes-register-grid-oqc>button{grid-column:1!important;}
+  .qmes-measurement-entry-line{grid-template-columns:1fr 62px!important;}
+  .qmes-measurement-value-box{grid-column:1/-1!important;}
+}
+</style>
+<style id="qmes-stable-grid-and-judge-option-colors-260721">
+/* 측정값 영역 높이가 증가해도 같은 행의 나머지 등록칸은 최초 상단 위치 유지 */
+.qmes-register-grid.qmes-register-grid-pqc,
+.qmes-register-grid.qmes-register-grid-oqc{
+  align-items:start!important;
+}
+.qmes-register-grid.qmes-register-grid-pqc>div,
+.qmes-register-grid.qmes-register-grid-oqc>div{
+  justify-content:flex-start!important;
+  align-self:start!important;
+}
+.qmes-register-grid.qmes-register-grid-pqc>button,
+.qmes-register-grid.qmes-register-grid-oqc>button{
+  align-self:start!important;
+  margin-top:20px!important;
+}
+.qmes-register-grid .qmes-measurement-field{align-self:start!important;}
+.qmes-register-grid .qmes-measurement-field .qmes-measurement-entry-line{align-items:start!important;}
+/* 판정 선택 목록: 처음 펼쳤을 때부터 합격/불합격 색상 구분 */
+.qmes-judge-select option[value="합격"],
+.qmes-iqc-judge-select option[value="합격"]{color:#22c55e!important;background:#0f172a!important;font-weight:700!important;}
+.qmes-judge-select option[value="불합격"],
+.qmes-iqc-judge-select option[value="불합격"],
+.qmes-iqc-judge-select option[value="불합격"]{color:#ef4444!important;background:#0f172a!important;font-weight:700!important;}
+</style>
+
+<style id="qmes-iqc-ledger-match-pqc-oqc-and-auto-spec-260721">
+/* 수입검사 관리대장: 공정·출하 조회 카드와 동일한 구조감, 왼쪽 선만 수입검사 색상 */
+.qmes-iqc-search-toolbar{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(260px,1.6fr) repeat(5,minmax(112px,.72fr)) auto auto!important;
+  align-items:end!important;
+  gap:10px!important;
+  padding:14px 16px!important;
+  margin-bottom:14px!important;
+  border:1px solid rgba(51,65,85,.9)!important;
+  border-left:3px solid #38bdf8!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,rgba(15,23,42,.72),rgba(15,23,42,.48))!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-search-main,.qmes-iqc-filter-row{display:contents!important}
+.qmes-iqc-search-box{order:1!important;height:40px!important;min-width:0!important;margin:0!important}
+.qmes-iqc-filter-row>label:nth-child(1){order:2!important}
+.qmes-iqc-filter-row>label:nth-child(2){order:3!important}
+.qmes-iqc-filter-row>label:nth-child(3){order:4!important}
+.qmes-iqc-filter-row>label:nth-child(4){order:5!important}
+.qmes-iqc-filter-row>label:nth-child(5){order:6!important}
+.qmes-iqc-filter-reset{order:7!important;height:40px!important;margin:0!important}
+.qmes-iqc-export-btn{order:8!important;height:40px!important;margin:0!important}
+.qmes-iqc-result-count{order:9!important;grid-column:1/-1!important;justify-self:end!important;margin-top:-2px!important}
+.qmes-iqc-filter-row>label{display:flex!important;flex-direction:column!important;gap:5px!important;min-width:0!important;margin:0!important}
+.qmes-iqc-filter-row>label>span{font-size:11px!important;font-weight:700!important;color:#94a3b8!important;line-height:1!important}
+.qmes-iqc-filter-row select{width:100%!important;height:40px!important;min-width:0!important;margin:0!important}
+.qmes-iqc-search-box:focus-within{border-color:#38bdf8!important;box-shadow:0 0 0 2px rgba(56,189,248,.10)!important}
+.qmes-auto-spec-field{min-width:0!important}
+.qmes-auto-spec-input{width:100%!important;height:40px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.qmes-measurement-new-input option{background:#0f172a;color:#f1f5f9}
+@media(max-width:1450px){
+  .qmes-iqc-search-toolbar{grid-template-columns:minmax(250px,1.5fr) repeat(3,minmax(118px,1fr))!important}
+  .qmes-iqc-filter-row>label:nth-child(4),.qmes-iqc-filter-row>label:nth-child(5),.qmes-iqc-filter-reset,.qmes-iqc-export-btn{grid-column:auto!important}
+}
+@media(max-width:900px){
+  .qmes-iqc-search-toolbar{grid-template-columns:1fr 1fr!important}
+  .qmes-iqc-search-box{grid-column:1/-1!important}
+  .qmes-iqc-filter-reset,.qmes-iqc-export-btn{width:100%!important}
+}
+@media(max-width:560px){.qmes-iqc-search-toolbar{grid-template-columns:1fr!important}.qmes-iqc-result-count{grid-column:1!important}}
+</style>
+
+<style id="QMES_IQC_YEAR_SIZE_MATCH_PQC_OQC_20260721">
+/* 수입검사 관리대장 연도/월 선택창을 공정·출하검사와 동일한 크기로 통일 */
+.qmes-iqc-filter-row{
+  grid-template-columns:150px 130px minmax(130px,1fr) 120px minmax(130px,1fr) auto!important;
+}
+.qmes-iqc-filter-row label:nth-child(1){width:150px!important;min-width:150px!important;}
+.qmes-iqc-filter-row label:nth-child(2){width:130px!important;min-width:130px!important;}
+.qmes-iqc-filter-row label:nth-child(1) select,
+.qmes-iqc-filter-row label:nth-child(2) select{
+  width:100%!important;
+  height:36px!important;
+  padding:0 28px 0 10px!important;
+  border:1px solid #243d58!important;
+  border-radius:6px!important;
+  color:#eaf1f9!important;
+  background:#182b42!important;
+  font-size:12px!important;
+  outline:none!important;
+}
+.qmes-iqc-year-select{
+  width:150px!important;
+  height:36px!important;
+  padding:0 28px 0 10px!important;
+  border-radius:6px!important;
+  border-color:#243d58!important;
+  background:#182b42!important;
+  font-size:12px!important;
+}
+@media(max-width:900px){
+  .qmes-iqc-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .qmes-iqc-filter-row label:nth-child(1),
+  .qmes-iqc-filter-row label:nth-child(2){width:auto!important;min-width:0!important;}
 }
 </style>
 
+<style id="qmes-final-request-sync-260721">
+/* 수입·공정·출하 연도별 조회창: 크기/간격 동일, 왼쪽 선만 검사별 색상 */
+.qmes-iqc-search-toolbar,
+.qmes-inspection-record-filter.qmes-pqc-record-filter,
+.qmes-inspection-record-filter.qmes-oqc-record-filter{
+  box-sizing:border-box!important;
+  min-height:70px!important;
+  padding:12px 14px!important;
+  margin:0 0 14px!important;
+  gap:10px!important;
+  border-top:1px solid #2b3d55!important;
+  border-right:1px solid #2b3d55!important;
+  border-bottom:1px solid #2b3d55!important;
+  border-radius:10px!important;
+  background:rgba(9,20,36,.78)!important;
+  box-shadow:0 7px 18px rgba(2,8,23,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.qmes-iqc-search-toolbar{border-left:4px solid #38bdf8!important;}
+.qmes-inspection-record-filter.qmes-pqc-record-filter{border-left:4px solid #a78bfa!important;}
+.qmes-inspection-record-filter.qmes-oqc-record-filter{border-left:4px solid #22c55e!important;}
+
+/* 연도·월 선택창 높이도 세 화면 동일 */
+.qmes-iqc-search-toolbar select,
+.qmes-iqc-search-toolbar input,
+.qmes-iqc-search-toolbar button,
+.qmes-inspection-record-filter select,
+.qmes-inspection-record-filter input,
+.qmes-inspection-record-filter button{
+  height:40px!important;
+  min-height:40px!important;
+  box-sizing:border-box!important;
+}
+
+/* 검사 등록칸 폭·높이·간격 통일 */
+.qmes-register-grid,
+.qmes-register-grid.qmes-register-grid-iqc,
+.qmes-register-grid.qmes-register-grid-pqc,
+.qmes-register-grid.qmes-register-grid-oqc{
+  column-gap:10px!important;
+  row-gap:10px!important;
+  align-items:start!important;
+}
+.qmes-register-grid>div,
+.qmes-register-grid>button{
+  margin:0!important;
+  align-self:start!important;
+}
+.qmes-register-grid>button{
+  margin-top:20px!important;
+}
+.qmes-register-grid label,
+.qmes-register-grid>div>span:first-child{
+  height:16px!important;
+  min-height:16px!important;
+  margin:0 0 4px!important;
+  line-height:16px!important;
+}
+.qmes-register-grid input,
+.qmes-register-grid select,
+.qmes-register-grid button,
+.qmes-register-grid>div>div{
+  height:40px!important;
+  min-height:40px!important;
+  box-sizing:border-box!important;
+}
+
+/* 검사결과 선택창: 합격 초록 / 불합격 빨강 */
+.qmes-judge-select,
+.qmes-iqc-judge-select{
+  font-weight:800!important;
+}
+.qmes-judge-select.text-emerald-400,
+.qmes-iqc-judge-select.text-emerald-400{
+  color:#22c55e!important;
+  border-color:rgba(34,197,94,.55)!important;
+}
+.qmes-judge-select.text-red-400,
+.qmes-iqc-judge-select.text-red-400{
+  color:#ef4444!important;
+  border-color:rgba(239,68,68,.55)!important;
+}
+.qmes-judge-select option[value="합격"],
+.qmes-iqc-judge-select option[value="합격"]{
+  color:#22c55e!important;
+  background:#0f172a!important;
+  font-weight:800!important;
+}
+.qmes-judge-select option[value="불합격"],
+.qmes-iqc-judge-select option[value="불합격"],
+.qmes-iqc-judge-select option[value="불합격"]{
+  color:#ef4444!important;
+  background:#0f172a!important;
+  font-weight:800!important;
+}
+</style>
+
+
+<style id="QMES_IQC_FILTER_EXACT_PQC_MATCH_20260721">
+/* 수입검사 연도별 조회창을 공정검사와 동일한 크기·정렬로 통일 */
+.qmes-inspection-record-filter.qmes-iqc-record-filter{
+  width:max-content!important;
+  max-width:100%!important;
+  grid-template-columns:420px 150px 150px 108px!important;
+  justify-content:start!important;
+  justify-items:stretch!important;
+  min-height:70px!important;
+  padding:12px 14px!important;
+  margin:0 0 14px!important;
+  gap:10px!important;
+  border:1px solid #2b3d55!important;
+  border-left:4px solid #38bdf8!important;
+  border-radius:10px!important;
+  background:rgba(9,20,36,.78)!important;
+  box-shadow:0 7px 18px rgba(2,8,23,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.qmes-iqc-record-filter > div:first-child{width:420px!important;min-width:420px!important;max-width:420px!important}
+.qmes-iqc-record-filter .qmes-inspection-search-box{width:420px!important;max-width:420px!important}
+.qmes-iqc-record-filter .qmes-oqc-record-filter-field{width:150px!important;min-width:150px!important;max-width:150px!important}
+.qmes-iqc-record-filter > button{width:108px!important;min-width:108px!important;max-width:108px!important}
+.qmes-iqc-record-filter .qmes-inspection-search-icon{color:#38bdf8!important}
+.qmes-iqc-record-filter .qmes-inspection-search-box:focus-within,
+.qmes-iqc-record-filter .qmes-oqc-record-filter-field select:focus{border-color:#38bdf8!important;box-shadow:0 0 0 2px rgba(56,189,248,.10)!important}
+.qmes-iqc-record-filter > button{color:#7dd3fc!important;border-color:rgba(56,189,248,.34)!important;background:rgba(56,189,248,.10)!important}
+.qmes-iqc-record-filter > button:hover{color:#e0f2fe!important;border-color:rgba(56,189,248,.52)!important;background:rgba(56,189,248,.18)!important}
+@media(max-width:980px){
+ .qmes-inspection-record-filter.qmes-iqc-record-filter{width:100%!important;grid-template-columns:minmax(260px,1fr) 130px 130px 100px!important}
+ .qmes-iqc-record-filter > div:first-child,.qmes-iqc-record-filter .qmes-inspection-search-box{width:100%!important;min-width:0!important;max-width:none!important}
+ .qmes-iqc-record-filter .qmes-oqc-record-filter-field{width:130px!important;min-width:130px!important;max-width:130px!important}
+ .qmes-iqc-record-filter > button{width:100px!important;min-width:100px!important;max-width:100px!important}
+}
+@media(max-width:760px){
+ .qmes-inspection-record-filter.qmes-iqc-record-filter{grid-template-columns:1fr 1fr!important}
+ .qmes-iqc-record-filter > div:first-child{grid-column:1/-1!important}
+ .qmes-iqc-record-filter .qmes-oqc-record-filter-field,.qmes-iqc-record-filter > button{width:100%!important;min-width:0!important;max-width:none!important}
+}
+</style>
+
+<style id="QMES_SPEC_LABEL_AND_FILTER_COLOR_SYNC_20260721">
+/* 스펙 명칭 변경 + 수입/공정 조회창 돋보기·초기화·글씨 색상 통일 */
+/* 수입검사: 하늘색 */
+.qmes-iqc-record-filter > div:first-child > span,
+.qmes-iqc-record-filter .qmes-oqc-record-filter-field > span{color:#7dd3fc!important;}
+.qmes-iqc-record-filter .qmes-inspection-search-icon,
+.qmes-iqc-record-filter .qmes-inspection-search-box button{color:#38bdf8!important;}
+.qmes-iqc-record-filter > button{
+  color:#7dd3fc!important;
+  border-color:rgba(56,189,248,.42)!important;
+  background:rgba(56,189,248,.11)!important;
+  font-weight:700!important;
+}
+.qmes-iqc-record-filter > button:hover,
+.qmes-iqc-record-filter .qmes-inspection-search-box button:hover{
+  color:#e0f2fe!important;
+  background:rgba(56,189,248,.19)!important;
+}
+
+/* 공정검사: 보라색 */
+.qmes-pqc-record-filter > div:first-child > span,
+.qmes-pqc-record-filter .qmes-oqc-record-filter-field > span{color:#c4b5fd!important;}
+.qmes-pqc-record-filter .qmes-inspection-search-icon,
+.qmes-pqc-record-filter .qmes-inspection-search-box button{color:#a78bfa!important;}
+.qmes-pqc-record-filter .qmes-inspection-search-box:focus-within,
+.qmes-pqc-record-filter .qmes-oqc-record-filter-field select:focus{
+  border-color:#a78bfa!important;
+  box-shadow:0 0 0 2px rgba(167,139,250,.12)!important;
+}
+.qmes-pqc-record-filter > button{
+  color:#c4b5fd!important;
+  border-color:rgba(167,139,250,.42)!important;
+  background:rgba(167,139,250,.11)!important;
+  font-weight:700!important;
+}
+.qmes-pqc-record-filter > button:hover,
+.qmes-pqc-record-filter .qmes-inspection-search-box button:hover{
+  color:#ede9fe!important;
+  background:rgba(167,139,250,.19)!important;
+}
+</style>
+
+<style id="qmes-iqc-result-color-fix-20260721">
+/* 수입검사 검사결과: 선택값별 색상 고정 */
+.qmes-iqc-judge-select{font-weight:800!important;}
+.qmes-iqc-judge-select.qmes-label-result-pass{
+  color:#22c55e!important;
+  border-color:rgba(34,197,94,.65)!important;
+  background-color:rgba(20,83,45,.28)!important;
+}
+.qmes-iqc-judge-select.qmes-label-result-fail{
+  color:#ef4444!important;
+  border-color:rgba(239,68,68,.72)!important;
+  background-color:rgba(127,29,29,.28)!important;
+}
+.qmes-iqc-judge-select option[value="합격"]{color:#22c55e!important;background:#0f172a!important;font-weight:800!important;}
+.qmes-iqc-judge-select option[value="불합격"]{color:#ef4444!important;background:#0f172a!important;font-weight:800!important;}
+</style>
+
+<style>
+/* 공정·출하검사 출력 버튼 흰색 통일 */
+.qmes-qc-output-btn{
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.52)!important;
+  background:rgba(255,255,255,.04)!important;
+}
+.qmes-qc-output-btn:hover{
+  color:#fff!important;
+  border-color:rgba(255,255,255,.82)!important;
+  background:rgba(255,255,255,.11)!important;
+}
+</style>
+
+<style id="QMES_PQC_OQC_ACTION_BUTTON_EQUAL_SIZE_20260721">
+/* 공정·출하검사 관리: 출력/수정/삭제 버튼 크기 동일 */
+.qmes-pqc-page table .qmes-iqc-action-btn,
+.qmes-oqc-page table .qmes-iqc-action-btn{
+  width:62px!important;
+  min-width:62px!important;
+  max-width:62px!important;
+  height:30px!important;
+  min-height:30px!important;
+  padding:0 6px!important;
+  margin:0 2px!important;
+  box-sizing:border-box!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+.qmes-pqc-page table .qmes-iqc-action-btn svg,
+.qmes-oqc-page table .qmes-iqc-action-btn svg{
+  width:12px!important;
+  height:12px!important;
+  flex:0 0 12px!important;
+}
+</style>
+
+<style>
+/* ===== QMES 2.0 IQC 팝업·무가로스크롤 리뉴얼 ===== */
+.qmes-iqc-quickbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;border:1px solid #263e5b;border-radius:12px;background:linear-gradient(120deg,#0c1c31,#102844);box-shadow:0 14px 34px -24px rgba(0,0,0,.8)}
+.qmes-iqc-quickbar>div{min-width:0}.qmes-iqc-quickbar-kicker{display:block;color:#41c4ee;font-size:10px;font-weight:800;letter-spacing:.12em}.qmes-iqc-quickbar strong{display:block;margin-top:3px;color:#f1f7fd;font-size:18px}.qmes-iqc-quickbar p{margin-top:3px;color:#829bb7;font-size:11px}.qmes-iqc-new-btn{flex:0 0 auto;height:40px;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;color:#fff;font-size:13px;font-weight:700;background:linear-gradient(180deg,#00addf,#007fae);box-shadow:0 7px 20px -10px rgba(0,170,210,.9)}
+.qmes-iqc-chart-only{display:block}.qmes-iqc-chart-only .qmes-iqc-chart-panel{width:100%!important}.qmes-iqc-register-panel{display:none!important}
+.qmes-iqc-ledger-container{width:100%;max-width:100%;overflow-x:hidden}.qmes-iqc-ledger-compact{width:100%!important;table-layout:fixed!important;border-collapse:collapse}.qmes-iqc-ledger-compact th{padding:10px 8px;text-align:left;white-space:nowrap;font-weight:600}.qmes-iqc-ledger-compact td{padding:11px 8px;border-bottom:1px solid rgba(36,61,88,.65);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c7d5e4;font-size:12px}.qmes-iqc-ledger-compact tbody tr:hover{background:rgba(24,43,66,.30)}.qmes-iqc-ledger-compact .qmes-date-cell{font-family:ui-monospace,monospace;color:#91a8c0}.qmes-iqc-ledger-compact .qmes-lot-cell{font-family:ui-monospace,monospace;color:#c4b5fd}.qmes-iqc-empty-row{text-align:center!important;padding:28px!important;color:#63809f!important}
+.qmes-iqc-manage-inline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;width:100%}.qmes-iqc-manage-inline .qmes-iqc-action-btn{width:100%;min-width:0;height:27px;padding:0 3px;justify-content:center;font-size:10px;white-space:nowrap}
+.qmes-iqc-modal-backdrop{z-index:12000}.qmes-iqc-modal{width:min(980px,96vw);max-height:92vh;display:flex;flex-direction:column;border:1px solid #304b6c;border-radius:14px;background:#0a1728;box-shadow:0 30px 90px rgba(0,0,0,.65);overflow:hidden}.qmes-iqc-modal-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #263b54;background:linear-gradient(90deg,#0d2038,#102c4c)}.qmes-iqc-modal-head span{display:block;color:#41c4ee;font-size:9px;font-weight:800;letter-spacing:.13em}.qmes-iqc-modal-head strong{display:block;margin-top:2px;color:#f4f8fc;font-size:17px}.qmes-iqc-modal-body{overflow-y:auto;padding:16px 18px}.qmes-iqc-modal-section{padding:13px;border:1px solid #243a55;border-radius:10px;background:rgba(15,32,54,.62)}.qmes-iqc-modal-section+.qmes-iqc-modal-section{margin-top:11px}.qmes-iqc-modal-section h4{margin:0 0 9px;color:#8ca5c4;font-size:11px;font-weight:800}.qmes-iqc-modal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.qmes-iqc-modal-grid-five{grid-template-columns:repeat(5,minmax(0,1fr))}.qmes-iqc-modal .qmes-iqc-field{min-width:0}.qmes-iqc-modal .qmes-iqc-field input,.qmes-iqc-modal .qmes-iqc-field select,.qmes-iqc-modal .qmes-iqc-field textarea{width:100%;min-width:0;border:1px solid #2b405b;border-radius:7px;background:#102138;color:#edf4fb;outline:none;box-sizing:border-box}.qmes-iqc-modal .qmes-iqc-field input,.qmes-iqc-modal .qmes-iqc-field select{height:38px;padding:0 9px}.qmes-iqc-modal .qmes-iqc-field textarea{padding:8px 9px;resize:none}.qmes-iqc-modal .qmes-iqc-field input:focus,.qmes-iqc-modal .qmes-iqc-field select:focus,.qmes-iqc-modal .qmes-iqc-field textarea:focus{border-color:#00aad2}.qmes-iqc-inno-row{display:grid;grid-template-columns:66px minmax(0,1fr);gap:5px}.qmes-iqc-modal-remarks{grid-column:span 2}.qmes-iqc-modal-errors{margin-top:10px;padding:9px 11px;border:1px solid rgba(239,68,68,.45);border-radius:8px;background:rgba(239,68,68,.09);color:#fca5a5;font-size:11px}.qmes-iqc-modal-foot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid #263b54;background:#0c1b2e;color:#9fb2c8;font-size:12px}.qmes-iqc-modal-foot>div:last-child{display:flex;gap:7px}.qmes-iqc-modal-cancel,.qmes-iqc-modal-save{height:36px;padding:0 17px;border-radius:7px;font-size:12px;font-weight:700}.qmes-iqc-modal-cancel{border:1px solid #3b526d;color:#b9c8d8}.qmes-iqc-modal-save{color:#fff;background:linear-gradient(180deg,#00addf,#007fae)}
+@media(max-width:900px){.qmes-iqc-modal-grid-five{grid-template-columns:repeat(3,minmax(0,1fr))}.qmes-iqc-ledger-compact th,.qmes-iqc-ledger-compact td{padding-left:5px;padding-right:5px;font-size:11px}}
+@media(max-width:680px){.qmes-iqc-quickbar{align-items:flex-start;flex-direction:column}.qmes-iqc-new-btn{width:100%}.qmes-iqc-modal-grid,.qmes-iqc-modal-grid-five{grid-template-columns:repeat(2,minmax(0,1fr))}.qmes-iqc-modal-remarks{grid-column:span 2}.qmes-iqc-ledger-compact col:nth-child(3),.qmes-iqc-ledger-compact th:nth-child(3),.qmes-iqc-ledger-compact td:nth-child(3),.qmes-iqc-ledger-compact col:nth-child(6),.qmes-iqc-ledger-compact th:nth-child(6),.qmes-iqc-ledger-compact td:nth-child(6){display:none}}
+</style>
+
+<style>
+/* ===== 요청 반영: 수입검사 관리대장 레이아웃 미세 조정 ===== */
+/* 신규등록 버튼을 왼쪽에 배치 */
+.qmes-iqc-quickbar{
+  justify-content:flex-start!important;
+}
+.qmes-iqc-quickbar>div{
+  order:2;
+}
+.qmes-iqc-new-btn{
+  order:1;
+  margin-right:2px;
+}
+
+/* 관리대장 열 간격 축소 */
+.qmes-iqc-ledger-table th,
+.qmes-iqc-ledger-table td{
+  padding-left:3px!important;
+  padding-right:3px!important;
+  letter-spacing:-.02em!important;
+}
+
+/* 관리 버튼을 작게, 가로 한 줄로 고정 */
+.qmes-iqc-ledger-table td.qmes-iqc-manage-cell{
+  overflow:visible!important;
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
+.qmes-iqc-manage-inline{
+  width:100%!important;
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  white-space:nowrap!important;
+}
+.qmes-iqc-manage-inline .qmes-iqc-action-btn{
+  width:auto!important;
+  min-width:0!important;
+  height:22px!important;
+  min-height:22px!important;
+  padding:0 4px!important;
+  margin:0!important;
+  border-radius:5px!important;
+  font-size:8px!important;
+  line-height:1!important;
+  gap:0!important;
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+}
+
+/* 업체별 IQC 합격률을 관리대장 하단 중앙에 작게 배치 */
+.qmes-iqc-chart-only{
+  width:min(620px,70%)!important;
+  margin:16px auto 0!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-chart-panel{
+  width:100%!important;
+  margin:0 auto!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-chart-panel>div{
+  padding:12px!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-rank-head{
+  margin-bottom:8px!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-rank-list{
+  gap:5px!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-rank-row{
+  min-height:38px!important;
+  padding:6px 8px!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-rank-footer{
+  margin-top:8px!important;
+  padding-top:7px!important;
+}
+
+@media(max-width:1000px){
+  .qmes-iqc-chart-only{width:min(680px,92%)!important}
+}
+@media(max-width:680px){
+  .qmes-iqc-quickbar{align-items:stretch!important}
+  .qmes-iqc-new-btn{width:auto!important;align-self:flex-start}
+  .qmes-iqc-chart-only{width:100%!important}
+  .qmes-iqc-manage-inline .qmes-iqc-action-btn{padding:0 3px!important;font-size:7px!important}
+}
+</style>
+
+
+<style>
+/* ===== 요청 반영: 수입검사 제목/신규등록 세로 배치 + 관리대장 간격 추가 축소 ===== */
+.qmes-iqc-quickbar{
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+}
+.qmes-iqc-quickbar>div{
+  order:1!important;
+  width:100%!important;
+}
+.qmes-iqc-new-btn{
+  order:2!important;
+  margin:0!important;
+  align-self:flex-start!important;
+}
+
+/* 표 전체 폭을 내용에 맞게 줄여 검사일~관리 열을 더 밀착 */
+.qmes-iqc-ledger-container{
+  width:min(1040px,100%)!important;
+  margin:0 auto!important;
+}
+.qmes-iqc-ledger-table{
+  width:100%!important;
+  table-layout:fixed!important;
+}
+.qmes-iqc-ledger-table th,
+.qmes-iqc-ledger-table td{
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
+.qmes-iqc-ledger-table th{
+  text-align:center!important;
+}
+.qmes-iqc-ledger-table td{
+  text-align:center!important;
+}
+.qmes-iqc-ledger-table td[title]{
+  text-align:center!important;
+}
+.qmes-iqc-ledger-table .qmes-iqc-manage-cell{
+  width:auto!important;
+}
+
+/* 신규등록 팝업: 수량 / 검사정보 / 특이사항을 각각 별도 줄로 분리 */
+.qmes-iqc-modal-grid-qty{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.qmes-iqc-modal-grid-inspection{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+.qmes-iqc-modal-remarks-full{
+  grid-column:1/-1!important;
+}
+.qmes-iqc-modal-remarks-full textarea{
+  min-height:72px!important;
+}
+@media(max-width:900px){
+  .qmes-iqc-modal-grid-inspection{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:680px){
+  .qmes-iqc-ledger-container{width:100%!important}
+  .qmes-iqc-modal-grid-qty,
+  .qmes-iqc-modal-grid-inspection{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+</style>
+
+
+<style>
+/* ===== 요청 반영: 관리대장 간격 소폭 확대 + 업체별 합격률 원형(도넛) 표시 ===== */
+.qmes-iqc-ledger-container{
+  width:min(1140px,100%)!important;
+}
+.qmes-iqc-ledger-table th,
+.qmes-iqc-ledger-table td{
+  padding-left:5px!important;
+  padding-right:5px!important;
+}
+.qmes-iqc-ledger-table th:nth-child(-n+6),
+.qmes-iqc-ledger-table td:nth-child(-n+6){
+  padding-left:7px!important;
+  padding-right:7px!important;
+}
+
+.qmes-iqc-donut-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+  gap:10px;
+  align-items:stretch;
+}
+.qmes-iqc-donut-card{
+  position:relative;
+  min-width:0;
+  padding:11px 8px 10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  border:1px solid #263b54;
+  border-radius:10px;
+  background:rgba(15,32,54,.72);
+}
+.qmes-iqc-donut-card.is-warning{border-color:rgba(245,158,11,.34)}
+.qmes-iqc-donut-card.is-good{border-color:rgba(16,185,129,.28)}
+.qmes-iqc-donut-rank{
+  position:absolute;
+  top:7px;
+  left:8px;
+  width:19px;
+  height:19px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  background:#172b43;
+  color:#8ca5c4;
+  font-size:9px;
+  font-weight:800;
+}
+.qmes-iqc-donut-ring{
+  width:82px;
+  height:82px;
+  padding:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.qmes-iqc-donut-center{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  border-radius:50%;
+  background:#0c1b2e;
+  color:#eef6fd;
+  line-height:1;
+  padding-top:25px;
+}
+.qmes-iqc-donut-center strong{font-size:17px;font-weight:800}
+.qmes-iqc-donut-center span{margin-left:1px;color:#8ca5c4;font-size:9px;font-weight:700}
+.qmes-iqc-donut-name{
+  width:100%;
+  margin-top:8px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#e5eef8;
+  font-size:11px;
+  text-align:center;
+}
+.qmes-iqc-donut-count{margin-top:3px;color:#7892af;font-size:9px;white-space:nowrap}
+.qmes-iqc-donut-card .qmes-iqc-rank-grade{margin-top:6px}
+@media(max-width:680px){
+  .qmes-iqc-ledger-container{width:100%!important}
+  .qmes-iqc-donut-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+
+<style>
+/* ===== 요청 반영: 업체별 합격률 영역 확장 + 관리대장 열 간격 확대 ===== */
+.qmes-iqc-chart-only{
+  width:min(1320px,100%)!important;
+  max-width:none!important;
+  margin:20px auto 0!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-chart-panel,
+.qmes-iqc-chart-only .qmes-iqc-chart-panel>div{
+  width:100%!important;
+}
+.qmes-iqc-chart-only .qmes-iqc-chart-panel>div{padding:16px!important}
+.qmes-iqc-donut-list{
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;
+  gap:13px!important;
+}
+.qmes-iqc-donut-card{padding:13px 10px 12px!important}
+
+.qmes-iqc-ledger-container{
+  width:min(1320px,100%)!important;
+  max-width:none!important;
+  overflow-x:auto!important;
+}
+.qmes-iqc-ledger-table{
+  width:100%!important;
+  min-width:1180px!important;
+}
+.qmes-iqc-ledger-table th,
+.qmes-iqc-ledger-table td{
+  padding-left:10px!important;
+  padding-right:10px!important;
+}
+.qmes-iqc-ledger-table th:nth-child(-n+6),
+.qmes-iqc-ledger-table td:nth-child(-n+6){
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+@media(max-width:900px){
+  .qmes-iqc-chart-only{width:100%!important}
+  .qmes-iqc-donut-list{grid-template-columns:repeat(2,minmax(145px,1fr))!important}
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -8349,9 +9140,9 @@ const QC_ITEMS = {
   "입도(Dmax)": { spec: "<10 µm", method: "입도분석기", type: "CTQ", stage: "PQC/OQC", hi: 10 },
   "수분": { spec: "<2,000 ppm", method: "수분측정기", type: "OQC", stage: "OQC", hi: 2000 },
   "접착력": { spec: "≥400 gf/12.7mm", method: "인장시험기", type: "OQC", stage: "OQC", lo: 400 },
-  "절연저항": { spec: "≥200 MΩ", method: "절연저항계", type: "OQC", stage: "OQC", lo: 200 },
+  "절연저항": { spec: "≥200 MΩ (Overflow)", method: "절연저항계", type: "OQC", stage: "OQC", lo: 200 },
   "외관": { spec: "이물질 혼입 없을 것", method: "육안", type: "-", stage: "PQC/OQC" },
-  "전해액 안정성": { spec: "미탈리", method: "육안", type: "OQC", stage: "OQC" },
+  "전해액 안정성": { spec: "탈리 / 미탈리", method: "육안", type: "OQC", stage: "OQC" },
   "Gauss(필터)": { spec: "≥1만 gauss (1단)", method: "Gauss Meter", type: "CTP", stage: "필터링", lo: 10000 },
 };
 
@@ -8521,10 +9312,7 @@ function qmesCloneWithScreenStyles(source) {
 }
 
 function printDoc(sourceEl) {
-  /* React onClick={printDoc} 사용 시 첫 인자로 MouseEvent가 전달됩니다.
-     이벤트 객체를 인쇄 DOM으로 오인하지 않도록 실제 Element만 허용합니다. */
-  const explicitSource = sourceEl instanceof Element ? sourceEl : null;
-  const source = explicitSource || Array.from(document.querySelectorAll(".doc-paper"))
+  const source = sourceEl || Array.from(document.querySelectorAll(".doc-paper"))
     .find((el) => el.offsetParent !== null && el.id !== "qmes-label-print-root");
   const printRoot = document.getElementById("qmes-print-root");
 
@@ -8610,17 +9398,10 @@ function printDoc(sourceEl) {
   };
 
   window.addEventListener("afterprint", cleanup);
-
-  /* 클릭 동작 안에서 즉시 호출해야 Chrome/Edge에서 안정적으로 인쇄창이 열립니다. */
-  try {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     window.print();
-  } catch (error) {
-    cleanup();
-    console.error("QMES print error:", error);
-    alert("인쇄창을 열지 못했습니다. 브라우저의 인쇄 권한을 확인해 주세요.");
-    return;
-  }
-  setTimeout(cleanup, 2000);
+    setTimeout(cleanup, 1500);
+  }));
 }
 
 /* ──────────────────────────── 통합 데이터 저장소 ──────────────────────────── */
@@ -9089,7 +9870,7 @@ function IqcLabelViewer({ record, onClose }) {
 
   const labelJudge = [record.visual, record.label, record.weight, record.coa].every(v => v === "합격")
     ? "합격"
-    : "불합격(반품)";
+    : "불합격";
   const labelJudgeTop = labelJudge === "합격" ? "합격" : "불합격";
   const judgeReasons = [];
   if (record.visual !== "합격") judgeReasons.push("외관 이상");
@@ -9310,7 +10091,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                         <td className="qmes-iqc2-spec-cell">{spec}</td>
                         <td>{method}</td>
                         <td>{result}</td>
-                        <td className={judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{judge || "-"}</td>
+                        <td className={judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{judge === "합격" ? "합격" : (judge ? "불합격" : "-")}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -9322,7 +10103,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
                 <table className="qmes-iqc2-table">
                   <thead><tr><th>종합판정</th><th>판정결과</th><th>처리결과</th><th>입고 승인</th></tr></thead>
                   <tbody><tr>
-                    <td className="font-semibold">{record.judge === "합격" ? "합격" : "불합격"}</td>
+                    <td className={record.judge === "합격" ? "qmes-iqc2-pass font-semibold" : "qmes-iqc2-fail font-semibold"}>{record.judge === "합격" ? "합격" : "불합격"}</td>
                     <td className={record.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{record.judge === "합격" ? "합격" : "불합격"}</td>
                     <td className="font-semibold">{record.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
                     <td className={record.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{record.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
@@ -9482,8 +10263,9 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     value3: "",
     judge: "합격"
   });
+  const [measurementRows, setMeasurementRows] = useState([]);
+  const [measurementInput, setMeasurementInput] = useState("");
   const [tried, setTried] = useState(false);
-  const [measureVals, setMeasureVals] = useState(["", "", ""]);
   const [nextId, setNextId] = useState(DB.seqs[storeKey] || idStart);
   const [editingId, setEditingId] = useState(null);
   const [recordSearch, setRecordSearch] = useState("");
@@ -9505,16 +10287,21 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const rate = records.length ? ((pass / records.length) * 100).toFixed(1) : "—";
   const spec = QC_ITEMS[form.check];
   const isNumericItem = spec.lo != null || spec.hi != null;
-  const measurementValues = measureVals.map((v) => String(v || "").trim());
-  const measurementComplete = measurementValues.every((v) => v !== "");
-  const measurementNumeric = measurementValues.every((v) => /^\d+(\.\d+)?$/.test(v.replace(/,/g, "")));
-  const measurementAverage = measurementComplete && measurementNumeric
-    ? measurementValues.reduce((sum, v) => sum + Number(v.replace(/,/g, "")), 0) / measurementValues.length
+  const pendingMeasurement = String(measurementInput || "").trim();
+  const measurementValues = [
+    ...measurementRows.map((v) => String(v || "").trim()),
+    ...(pendingMeasurement ? [pendingMeasurement] : [])
+  ].filter((v) => v !== "");
+  const measurementComplete = measurementValues.length > 0;
+  const numericMeasurementValues = measurementValues
+    .map((v) => v.replace(/,/g, ""))
+    .filter((v) => /^[-+]?\d+(?:\.\d+)?$/.test(v));
+  const measurementAverage = measurementComplete
+    && numericMeasurementValues.length === measurementValues.length
+    ? numericMeasurementValues.reduce((sum, v) => sum + Number(v), 0) / numericMeasurementValues.length
     : null;
   const trimmedVal = measurementComplete ? measurementValues.join(" / ") : "";
-  const inputError = measurementValues.some((v) => v !== "") && (!measurementComplete || !measurementNumeric)
-    ? "모든 회차 측정값을 숫자로 입력하세요."
-    : null;
+  const inputError = null;
   const autoJ = isNumericItem && measurementAverage != null && !inputError
     ? autoJudge(form.check, String(measurementAverage))
     : null;
@@ -9525,7 +10312,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   if (tried && form.date.trim() === "") triedErrors.push("검사일자를 입력하세요");
   if (isOqc && tried && form.shipDate.trim() === "") triedErrors.push("출하일자를 입력하세요");
   if (!isOqc && tried && form.product.trim() === "") triedErrors.push("제품명을 입력하세요");
-  if (tried && trimmedVal === "") triedErrors.push("모든 회차 측정값을 입력하세요");
+  if (tried && trimmedVal === "") triedErrors.push("측정값을 1개 이상 입력하세요");
   const canAdd = trimmedVal !== "" && !inputError && !lotErr
     && form.date.trim() !== "" && form.lot.trim() !== ""
     && (isOqc || form.product.trim() !== "")
@@ -9536,7 +10323,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const date = form.date;
-    const judge = isNumericItem ? autoJ : form.judge;
+    const judge = form.judge;
     const lotNo = form.lot.trim();
     const prev = editingId ? records.find((r) => r.id === editingId) : null;
     const inspectionNo = editingId || nextInspectionNo(storeKey, date, records, "id");
@@ -9568,14 +10355,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     /* Lot 이력 자동 반영 */
     const L = DB.lots[lotNo];
     if (L) {
-      L.steps = [...L.steps, { stage: traceStage, name: `${docName.replace(" 성적서", "")} — ${form.check}`, time, detail: `측정값 ${recordedValue} · 평균 ${measurementAverage?.toFixed(3)} · 규격 ${spec.spec}`, result: judge, by: rec.inspector }];
+      L.steps = [...L.steps, { stage: traceStage, name: `${docName.replace(" 성적서", "")} — ${form.check}`, time, detail: `측정값 ${recordedValue}${measurementAverage != null ? ` · 평균 ${measurementAverage.toFixed(3)}` : ""} · 규격 ${spec.spec}`, result: judge, by: rec.inspector }];
       if (judge === "불합격") L.status = "홀드 — 부적합 발생 (게이트 차단)";
       else if (traceStage === "출하") L.stage = "출하";
       else { L.stage = "생산"; if (!L.status.includes("홀드")) L.status = "생산중"; }
     }
     /* 불합격 → 자동 홀드 (게이트 차단) */
     if (judge === "불합격") {
-      DB.holds = [{ id: `HLD-${String(Date.now()).slice(-6)}`, target: lotNo, type: "제품 Lot", gate: traceStage === "출하" ? "출하 게이트" : "공정 게이트", reason: `${form.check} ${recordedValue} (평균 ${measurementAverage?.toFixed(3)}) — 규격(${spec.spec}) 부적합`, since: time, cond: "재검사 합격 + 품질부장 승인", status: "차단중", ncr: "-" }, ...DB.holds];
+      DB.holds = [{ id: `HLD-${String(Date.now()).slice(-6)}`, target: lotNo, type: "제품 Lot", gate: traceStage === "출하" ? "출하 게이트" : "공정 게이트", reason: `${form.check} ${recordedValue}${measurementAverage != null ? ` (평균 ${measurementAverage.toFixed(3)})` : ""} — 규격(${spec.spec}) 부적합`, since: time, cond: "재검사 합격 + 품질부장 승인", status: "차단중", ncr: "-" }, ...DB.holds];
     }
     /* OQC 8항목 전부 합격 → CoA 자동 발행 */
     if (storeKey === "OQC" && L) {
@@ -9595,7 +10382,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     dbSave();
     setEditingId(null);
     setForm({ ...form, value: "", value1: "", value2: "", value3: "", judge: "합격" });
-    setMeasureVals(["", "", ""]);
+    setMeasurementRows([]);
+    setMeasurementInput("");
     setTried(false);
   };
 
@@ -9604,9 +10392,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const savedMeasurements = Array.isArray(r.measurements)
       ? r.measurements
       : String(r.value || "").split("/").map((v) => v.trim());
-    const restored = savedMeasurements.map((v) => String(v || "").trim()).filter((v) => v !== "").slice(0, 5);
-    while (restored.length < 3) restored.push("");
-    setMeasureVals(restored);
     setForm({
       date: r.date || today,
       shipDate: r.shipDate || today,
@@ -9619,6 +10404,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       value3: savedMeasurements[2] || "",
       judge: r.judge || "합격"
     });
+    setMeasurementRows(savedMeasurements.filter((v) => String(v || "").trim() !== ""));
+    setMeasurementInput("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const deleteRecord = (r) => {
@@ -9651,7 +10438,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const pagedRecords = filteredRecords.slice((safeRecordPage - 1) * recordPageSize, safeRecordPage * recordPageSize);
 
   return (
-    <div className={isOqc ? "qmes-oqc-page flex flex-col gap-4" : "flex flex-col gap-4"}>
+    <div className={isOqc ? "qmes-oqc-page flex flex-col gap-4" : "qmes-pqc-page flex flex-col gap-4"}>
       <div className={isOqc ? "qmes-oqc-kpi-grid grid grid-cols-3 gap-3" : "qmes-pqc-kpi-grid grid grid-cols-3 gap-3"}>
         <Kpi animated icon={ClipboardCheck} label="금일 검사 건수" value={records.length} unit="건" tone="text-sky-400" progressValue={records.length ? 100 : 0} />
         <Kpi animated icon={CheckCircle2} label="합격률" value={rate} unit="%" tone="text-emerald-400" progressValue={records.length ? (pass / records.length) * 100 : 0} />
@@ -9665,29 +10452,29 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
         </div>
       )}
 
-      <Panel title={isOqc ? "출하검사 등록" : "공정검사 등록"} right={spec && <span className="text-xs text-slate-400">규격: <span className="text-sky-300">{spec.spec}</span> · {spec.method} · {spec.type !== "-" && <Badge tone="violet">{spec.type}</Badge>}</span>}>
-        <div className={isOqc ? "qmes-oqc-register-wrap" : "overflow-x-auto pb-1"}>
-          <div className={isOqc ? "qmes-oqc-register-grid" : `qmes-register-grid qmes-register-grid-pqc`}>
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
+      <Panel title={isOqc ? "출하검사 등록" : "공정검사 등록"}>
+        <div className="pb-1">
+          <div className={`qmes-register-grid ${isOqc ? "qmes-register-grid-oqc" : "qmes-register-grid-pqc"}`}>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">{numberLabel}</label>
             <input value={previewNo} readOnly
               className="bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm text-slate-400 font-mono cursor-not-allowed" />
           </div>
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">검사일자</label>
             <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
               aria-label="검사일자"
               className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
           </div>
           {isOqc && (
-            <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
+            <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-slate-400">출하일자</label>
               <input type="date" value={form.shipDate} onChange={(e) => setForm({ ...form, shipDate: e.target.value })}
                 aria-label="출하일자"
                 className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
             </div>
           )}
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">LOT No.</label>
             {isOqc ? (
               <select value={form.lot} onChange={(e) => setForm({ ...form, lot: e.target.value })}
@@ -9701,7 +10488,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
             )}
           </div>
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">제품명</label>
             <input
               value={selectedProduct}
@@ -9712,64 +10499,105 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 ? "bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm text-slate-300 cursor-not-allowed"
                 : "bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500"} />
           </div>
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-400">검사항목</label>
-            <select value={form.check} onChange={(e) => setForm({ ...form, check: e.target.value })}
+            <select value={form.check} onChange={(e) => {
+                setForm({ ...form, check: e.target.value });
+                setMeasurementRows([]);
+                setMeasurementInput("");
+              }}
               className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
               {itemKeys.map((k) => <option key={k}>{k}</option>)}
             </select>
           </div>
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
-            <label className="text-xs font-medium text-slate-400">측정값</label>
-            <div className="qmes-three-measurements" style={{ "--mcols": measureVals.length }}>
-              {measureVals.map((v, i) => (
-                <input key={i} value={v}
-                  onChange={(e) => setMeasureVals(measureVals.map((x, j) => j === i ? e.target.value : x))}
-                  placeholder={`${i + 1}차`} />
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <button type="button"
-                onClick={() => measureVals.length < 5 && setMeasureVals([...measureVals, ""])}
-                disabled={measureVals.length >= 5}
-                className={`text-[11px] px-2 py-0.5 rounded border transition-colors ${measureVals.length >= 5 ? "border-slate-700 text-slate-600 cursor-not-allowed" : "border-sky-500/40 text-sky-300 hover:bg-sky-500/10"}`}>
-                + 회차 추가
-              </button>
-              <button type="button"
-                onClick={() => measureVals.length > 3 && setMeasureVals(measureVals.slice(0, -1))}
-                disabled={measureVals.length <= 3}
-                className={`text-[11px] px-2 py-0.5 rounded border transition-colors ${measureVals.length <= 3 ? "border-slate-700 text-slate-600 cursor-not-allowed" : "border-red-500/40 text-red-300 hover:bg-red-500/10"}`}>
-                − 회차 삭제
-              </button>
-              <span className="text-[10px] text-slate-500">{measureVals.length}회 측정</span>
-            </div>
+          <div className="flex flex-col gap-1 qmes-auto-spec-field">
+            <label className="text-xs font-medium text-slate-400">관리기준</label>
+            <input
+              value={spec?.spec || "-"}
+              readOnly
+              title="검사항목 선택 시 자동 표시되는 규격"
+              className="qmes-auto-spec-input bg-slate-800/60 border border-slate-700 rounded px-3 py-2 text-sm text-sky-200 cursor-not-allowed" />
           </div>
-          <div className={isOqc ? "qmes-oqc-field flex flex-col gap-1" : "flex flex-col gap-1"}>
-            <label className="text-xs font-medium text-slate-400">자동판정</label>
-          {isOqc ? (
-            <select value={isNumericItem ? (autoJ || form.judge) : form.judge}
+          <div className="flex flex-col gap-1 qmes-measurement-field">
+            <label className="text-xs font-medium text-slate-400">측정값</label>
+            <div className="qmes-measurement-entry-line">
+              <div className="qmes-measurement-value-box" title="추가된 측정값">
+                {measurementRows.length ? measurementRows.map((value, index) => (
+                  <span key={`${value}-${index}`} className="qmes-measurement-chip">
+                    {value}
+                    <button type="button"
+                      onClick={() => setMeasurementRows((rows) => rows.filter((_, i) => i !== index))}
+                      aria-label={`측정값 ${value} 삭제`}
+                      title="측정값 삭제">×</button>
+                  </span>
+                )) : <span className="qmes-measurement-placeholder">추가된 값이 표시됩니다</span>}
+              </div>
+              {form.check === "전해액 안정성" ? (
+                <select
+                  value={measurementInput}
+                  onChange={(e) => setMeasurementInput(e.target.value)}
+                  className="qmes-measurement-new-input"
+                  aria-label="전해액 안정성 측정값">
+                  <option value="">결과 선택</option>
+                  <option value="미탈리">미탈리</option>
+                  <option value="탈리">탈리</option>
+                </select>
+              ) : (
+                <>
+                  <input
+                    value={measurementInput}
+                    onChange={(e) => setMeasurementInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const v = measurementInput.trim();
+                        if (v) { setMeasurementRows((rows) => [...rows, v]); setMeasurementInput(""); }
+                      }
+                    }}
+                    type="text"
+                    inputMode={form.check === "절연저항" ? "text" : "decimal"}
+                    autoComplete="off"
+                    list={form.check === "절연저항" ? "qmes-insulation-value-options" : undefined}
+                    className="qmes-measurement-new-input"
+                    placeholder={form.check === "절연저항" ? "측정값 또는 Overflow" : "측정값 입력"}
+                    aria-label="추가할 측정값" />
+                  {form.check === "절연저항" && (
+                    <datalist id="qmes-insulation-value-options"><option value="Overflow" /></datalist>
+                  )}
+                </>
+              )}
+              <button type="button"
+                onClick={() => {
+                  const v = measurementInput.trim();
+                  if (!v) return;
+                  setMeasurementRows((rows) => [...rows, v]);
+                  setMeasurementInput("");
+                }}
+                className="qmes-add-measurement-btn qmes-add-measurement-inline"
+                title="입력한 측정값 추가">
+                <Plus size={13} /> 추가
+              </button>
+            </div>
+            {measurementAverage != null && (
+              <div className="qmes-measurement-average">평균 <strong>{measurementAverage.toFixed(3)}</strong></div>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-400">판정</label>
+            <select value={form.judge}
               onChange={(e) => setForm({ ...form, judge: e.target.value })}
-              disabled={isNumericItem && !!autoJ}
-              title="합불판정"
-              className={`bg-slate-800 border rounded px-3 py-2 text-sm focus:outline-none ${
-                (isNumericItem ? autoJ : form.judge) === "불합격"
+              title="판정 선택"
+              className={`qmes-judge-select bg-slate-800 border rounded px-3 py-2 text-sm focus:outline-none ${
+                form.judge === "불합격"
                   ? "border-red-500/40 text-red-400"
                   : "border-emerald-500/40 text-emerald-400"
               }`}>
-              <option value="합격">합격</option>
-              <option value="불합격">반품</option>
+              <option value="합격" style={{color:"#22c55e",backgroundColor:"#0f172a",fontWeight:700}}>합격</option>
+              <option value="불합격" style={{color:"#ef4444",backgroundColor:"#0f172a",fontWeight:700}}>불합격</option>
             </select>
-          ) : (
-            <div className={`flex items-center justify-center rounded border px-3 py-2 text-sm font-medium ${
-              inputError ? "border-red-500/40 text-red-400 bg-red-500/10"
-              : autoJ === "합격" ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : autoJ === "불합격" ? "border-red-500/40 text-red-400 bg-red-500/10"
-              : "border-slate-700 text-slate-500 bg-slate-800"}`}>
-              {inputError ? "진입 금지" : autoJ ?? "자동판정"}
-            </div>
-          )}
           </div>
           <button onClick={addRecord}
-            className={isOqc ? "qmes-oqc-submit flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white" : "flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white"}>
+            className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
             <Plus size={15} /> {editingId ? "검사 수정 저장" : "검사 등록"}
           </button>
           </div>
@@ -9781,7 +10609,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             ))}
           </div>
         )}
-        <p className="text-[11px] text-slate-500 mt-2">검사 항목·관리기준·확인방법은 관리계획서 NMC-C-220-01 기준입니다. CTQ 항목(점도/고형분/입도)은 n=1, 기본 3회 측정 — 필요 시 최대 5회까지 회차 추가 가능.</p>
       </Panel>
 
       <Panel title={`검사 기록 (${docName})`} right={<span className="text-xs text-slate-500">{filteredRecords.length}건</span>}>
@@ -9844,7 +10671,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사항목</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">규격</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">측정값</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">자동판정</th>
+                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">판정</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사자</th>
                 {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">출하일자</th>}
                 <th className="text-center py-2 px-3 font-medium whitespace-nowrap">관리</th>
@@ -9869,9 +10696,9 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector}>{r.inspector}</td>
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                    <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="px-2 py-1 mr-1 rounded border border-emerald-500/40 text-emerald-300 text-xs hover:bg-emerald-500/10 inline-flex items-center gap-1"><Printer size={12} /> 출력</button>
-                    <button onClick={() => editRecord(r)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
-                    <button onClick={() => deleteRecord(r)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
+                    <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print mr-1"><Printer size={12} /> 출력</button>
+                    <button onClick={() => editRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-edit mr-1">수정</button>
+                    <button onClick={() => deleteRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                   </td>
                 </tr>
               ))}
@@ -10845,7 +11672,7 @@ function InspectionReportsTab() {
                         <td className="qmes-iqc2-spec-cell">{spec}</td>
                         <td>{method}</td>
                         <td>{result}</td>
-                        <td className={judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{judge || "-"}</td>
+                        <td className={judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{judge === "합격" ? "합격" : (judge ? "불합격" : "-")}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -10857,7 +11684,7 @@ function InspectionReportsTab() {
                 <table className="qmes-iqc2-table">
                   <thead><tr><th>종합판정</th><th>판정결과</th><th>처리결과</th><th>입고 승인</th></tr></thead>
                   <tbody><tr>
-                    <td className="font-semibold">{iqc.judge === "합격" ? "합격" : "불합격"}</td>
+                    <td className={iqc.judge === "합격" ? "qmes-iqc2-pass font-semibold" : "qmes-iqc2-fail font-semibold"}>{iqc.judge === "합격" ? "합격" : "불합격"}</td>
                     <td className={iqc.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{iqc.judge === "합격" ? "합격" : "불합격"}</td>
                     <td className="font-semibold">{iqc.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
                     <td className={iqc.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{iqc.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
@@ -11038,6 +11865,7 @@ function IqcTab() {
   const [form, setForm] = useState(emptyForm);
   const [tried, setTried] = useState(false);
   const [editingInNo, setEditingInNo] = useState(null);
+  const [iqcModalOpen, setIqcModalOpen] = useState(false);
   const [viewingIqc, setViewingIqc] = useState(null);
   const [viewingLabel, setViewingLabel] = useState(null);
   const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
@@ -11140,7 +11968,7 @@ function IqcTab() {
 
   const overall = (f) => {
     const vals = [f.visual, f.label, f.weight, f.coa];
-    if (vals.includes("불합격") || vals.includes("불합격(반품)")) return "불합격";
+    if (vals.includes("불합격") || vals.includes("불합격")) return "불합격";
     return "합격";
   };
 
@@ -11201,6 +12029,7 @@ function IqcTab() {
     setEditingInNo(null);
     setForm(emptyForm());
     setTried(false);
+    setIqcModalOpen(false);
   };
 
   const editIqc = (r) => {
@@ -11213,7 +12042,8 @@ function IqcTab() {
       inspector:r.inspector || r.by || "",
       remarks:r.remarks || ""
     });
-    window.scrollTo({top:0,behavior:"smooth"});
+    setTried(false);
+    setIqcModalOpen(true);
   };
   const deleteIqc = (r) => { const reason=askDeleteReason(`수입검사 ${r.inNo}`); if(reason===null)return; const next=rows.filter(x=>x.inNo!==r.inNo); setRows(next); DB.iqc=next; auditLog("IQC","삭제",r.inNo,reason); dbSave(); };
 
@@ -11223,16 +12053,14 @@ function IqcTab() {
       <select
         value={form[key]}
         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-        className={`bg-slate-800 border rounded px-2 py-2 text-sm focus:outline-none focus:border-sky-500 ${
+        className={`qmes-iqc-judge-select bg-slate-800 border rounded px-2 py-2 text-sm focus:outline-none focus:border-sky-500 ${
           form[key] === "합격"
             ? "qmes-label-result-pass border-emerald-500/40 text-emerald-400"
             : "qmes-label-result-fail border-red-500/40 text-red-400"
         }`}
       >
         <option value="합격">합격</option>
-        <option value={key === "label" ? "불합격(반품)" : "불합격"}>
-          {key === "label" ? "불합격(반품)" : "불합격"}
-        </option>
+        <option value="불합격">불합격</option>
       </select>
     </div>
   );
@@ -11246,94 +12074,92 @@ function IqcTab() {
         <Kpi animated icon={AlertTriangle} label="반품" value={returned.length} unit="건" tone="text-amber-400" progressValue={monthRows.length ? (returned.length / monthRows.length) * 100 : 0} />
       </div>
 
-      <div className="qmes-iqc-register-chart-layout">
-        <div className="qmes-iqc-register-panel"><Panel title="수입검사 등록 (공정 20)">
-        <div className="qmes-iqc-form">
-          <div className="qmes-iqc-section">
-            <div className="qmes-iqc-section-title">입고 기본정보</div>
-            <div className="qmes-iqc-grid qmes-iqc-grid-basic">
-              <div className="qmes-iqc-field">
-                <span>입고번호</span>
-                <div className="flex gap-1">
-                  <select value={form.inNoMode} disabled={Boolean(editingInNo)} onChange={(e) => setForm({ ...form, inNoMode:e.target.value, manualInNo:"" })}
-                    style={{width:"70px",minWidth:"70px"}} className="bg-slate-800 border border-slate-700 rounded px-1 text-xs text-slate-100 focus:outline-none focus:border-sky-500 disabled:opacity-60">
-                    <option value="auto">자동</option><option value="manual">직접</option>
-                  </select>
-                  <input value={displayedInNo} readOnly={Boolean(editingInNo) || form.inNoMode === "auto"}
-                    onChange={(e) => setForm({ ...form, manualInNo:e.target.value })} placeholder="입고번호 입력"
-                    className={`min-w-0 flex-1 bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono focus:outline-none focus:border-sky-500 ${Boolean(editingInNo) || form.inNoMode === "auto" ? "text-sky-300" : "text-slate-100"}`} />
-                </div>
-              </div>
-              <div className="qmes-iqc-field">
-                <span>입고일자</span>
-                <input type="date" value={form.recvDate} onChange={(e) => setForm({ ...form, recvDate:e.target.value })}
-                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
-              </div>
-              <div className="qmes-iqc-field">
-                <span>검사일자</span>
-                <input type="date" value={form.inspectDate} onChange={(e) => setForm({ ...form, inspectDate:e.target.value })}
-                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500" />
-              </div>
-              <div className="qmes-iqc-field">
-                <span>LOT No.</span>
-                <input value={form.lot} onChange={(e) => setForm({ ...form, lot:e.target.value })} placeholder="LOT No. 입력"
-                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-              </div>
-              <div className="qmes-iqc-field">
-                <span>원재료명</span>
-                <div className="qmes-material-select-wrap">
-                  <select value={form.name} onChange={(e) => setForm({ ...form, name:e.target.value })}
-                    className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-                    {materialOptions.map((m) => <option key={m}>{m}</option>)}
-                  </select>
-                  <button type="button" onClick={addMaterialOption} className="qmes-material-add">+ 추가</button>
-                </div>
-              </div>
-              <div className="qmes-iqc-field">
-                <span>업체명</span>
-                <input value={form.supplier} onChange={(e) => setForm({ ...form, supplier:e.target.value })} placeholder="업체명"
-                  className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-              </div>
-            </div>
-          </div>
-
-          <div className="qmes-iqc-section">
-            <div className="qmes-iqc-section-title">수량정보</div>
-            <div className="qmes-iqc-grid qmes-iqc-grid-qty">
-              <div className="qmes-iqc-field"><span>입고수량</span><input inputMode="decimal" value={form.qty} onFocus={(e)=>setForm({...form,qty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,qty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,qty:qmesQuantityWithUnit(e.target.value,"kg")}))} placeholder="숫자 입력 (kg 자동)" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-              <div className="qmes-iqc-field"><span>검사수량</span><input inputMode="decimal" value={form.inspectQty} onFocus={(e)=>setForm({...form,inspectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,inspectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,inspectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="숫자 입력 (EA 자동)" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-              <div className="qmes-iqc-field"><span>불량수량</span><input inputMode="decimal" value={form.defectQty} onFocus={(e)=>setForm({...form,defectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,defectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,defectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="숫자 입력 (EA 자동)" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-            </div>
-          </div>
-
-          <div className="qmes-iqc-section">
-            <div className="qmes-iqc-section-title">검사결과</div>
-            <div className="qmes-iqc-result-remarks-wrap">
-              <div className="qmes-iqc-grid qmes-iqc-grid-result">
-                <div className="qmes-iqc-field">{judgeSelect("visual", "외관")}</div>
-                <div className="qmes-iqc-field">{judgeSelect("label", "라벨")}</div>
-                <div className="qmes-iqc-field">{judgeSelect("weight", "중량")}</div>
-                <div className="qmes-iqc-field">{judgeSelect("coa", "COA")}</div>
-                <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력" className="bg-slate-800 border border-slate-700 rounded px-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" /></div>
-              </div>
-              <div className="qmes-iqc-remarks-span">
-                <div className="qmes-iqc-field">
-                  <span>특이사항</span>
-                  <textarea value={form.remarks} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항이 있을 경우 입력하세요. (예: 포장 일부 오염, COA 지연 수령, 라벨 재부착 등)" rows={2}
-                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="qmes-iqc-actions">
-            <span className="text-xs text-slate-400">종합판정 <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></span>
-            <button onClick={addRow} className="qmes-iqc-submit flex items-center justify-center gap-1.5 rounded px-3 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white"><Plus size={15} /> {editingInNo ? "수정 저장" : "등록"}</button>
-          </div>
+      <div className="qmes-iqc-quickbar">
+        <div>
+          <span className="qmes-iqc-quickbar-kicker">INCOMING QUALITY CONTROL</span>
+          <strong>수입검사 관리</strong>
+          <p>신규 등록은 팝업에서 진행하고, 등록 내역은 아래 관리대장에서 확인합니다.</p>
         </div>
-        {iqcErrors.length > 0 && <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">{iqcErrors.map((e,i)=><div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 진입 금지 — {e}</div>)}</div>}
-        <p className="text-[11px] text-slate-500 mt-2">입고번호는 자동 채번 또는 직접입력을 선택할 수 있습니다. 자동 채번 시 입고일자에 따라 IQC-YYMMDD-4자리 순번으로 즉시 변경됩니다. 외관·라벨·중량·COA 중 한 항목이라도 불합격이면 종합판정은 불합격으로 자동 처리됩니다.</p>
-      </Panel></div>
+        <button type="button" className="qmes-iqc-new-btn" onClick={()=>{ setEditingInNo(null); setForm(emptyForm()); setTried(false); setIqcModalOpen(true); }}>
+          <Plus size={16} /> 신규등록
+        </button>
+      </div>
+
+      <div className="qmes-iqc-ledger-section">
+        <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
+          <div className="qmes-inspection-record-filter qmes-iqc-record-filter">
+            <div className="flex flex-col gap-1 w-72">
+              <span className="text-[10px] text-slate-500">입고번호 / LOT / 검사자 검색</span>
+              <div className="qmes-inspection-search-box">
+                <Search size={15} className="qmes-inspection-search-icon" />
+                <input
+                  value={searchTerm}
+                  onChange={(e)=>setSearchTerm(e.target.value)}
+                  placeholder="검색어 입력"
+                  className="h-9 bg-slate-800 border border-slate-700 rounded text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                />
+                {searchTerm && (
+                  <button type="button" onClick={()=>setSearchTerm("")} title="검색어 지우기">
+                    <XCircle size={13} />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="qmes-oqc-record-filter-field">
+              <span>연도</span>
+              <select value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)}>
+                {availableYears.map((year)=><option key={year} value={year}>{year}년</option>)}
+              </select>
+            </div>
+            <div className="qmes-oqc-record-filter-field">
+              <span>월</span>
+              <select value={selectedMonth} onChange={(e)=>setSelectedMonth(e.target.value)}>
+                <option value="전체">전체 월</option>
+                {Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map((m)=><option key={m} value={m}>{Number(m)}월</option>)}
+              </select>
+            </div>
+            <button type="button" onClick={resetIqcFilters}
+              className="h-9 px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">
+              초기화
+            </button>
+          </div>
+          <div className="qmes-iqc-ledger-container">
+            <table className="qmes-iqc-ledger-table qmes-iqc-ledger-compact w-full text-sm">
+              <colgroup>
+                <col style={{width:"12%"}} /><col style={{width:"17%"}} /><col style={{width:"14%"}} />
+                <col style={{width:"15%"}} /><col style={{width:"9%"}} /><col style={{width:"10%"}} /><col style={{width:"23%"}} />
+              </colgroup>
+              <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
+                <th>검사일</th><th>LOT No.</th><th>업체명</th><th>원재료명</th><th>판정</th><th>검사자</th><th className="text-center">관리</th>
+              </tr></thead>
+              <tbody>
+                {filteredRows.length === 0 && <tr><td colSpan={7} className="qmes-iqc-empty-row">검색 조건에 맞는 수입검사 기록이 없습니다.</td></tr>}
+                {filteredRows.map((r) => (
+                  <tr key={r.inNo || r.lot}>
+                    <td className="qmes-date-cell">{(r.inspectedAt || r.recv || "-").slice(0,10)}</td>
+                    <td className="qmes-lot-cell" title={r.lot}>{r.lot || "-"}</td>
+                    <td title={r.supplier}>{r.supplier || "-"}</td>
+                    <td title={r.name}>{r.name || "-"}</td>
+                    <td><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge></td>
+                    <td>{r.inspector || r.by || "-"}</td>
+                    <td className="qmes-iqc-manage-cell">
+                      <div className="qmes-iqc-manage-inline">
+                        <button onClick={()=>setViewingIqc(r)} title="미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print">미리보기</button>
+                        <button onClick={()=>setViewingLabel(r)} title="라벨" className="qmes-iqc-action-btn qmes-iqc-action-label">라벨</button>
+                        <button onClick={()=>editIqc(r)} title="수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
+                        <button onClick={()=>deleteIqc(r)} title="삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+
+        
+      </div>
+      <div className="qmes-iqc-chart-only">
         <div className="qmes-iqc-chart-panel qmes-iqc-rank-panel"><Panel title={`업체별 IQC 합격률 (${selectedYear}년)`}>
           <div className="qmes-iqc-rank-head">
             <div>
@@ -11343,7 +12169,7 @@ function IqcTab() {
             <div className="qmes-iqc-rank-standard"><span></span>관리기준 98%</div>
           </div>
 
-          <div className="qmes-iqc-rank-list">
+          <div className="qmes-iqc-donut-list">
             {supplierRate.length === 0 && (
               <div className="qmes-iqc-rank-empty">
                 <Package size={22} />
@@ -11352,22 +12178,20 @@ function IqcTab() {
               </div>
             )}
             {[...supplierRate].sort((a,b)=>b.rate-a.rate || b.total-a.total).map((item,index)=>{
-              const below = item.rate < 98;
+              const rate = Math.max(0,Math.min(100,Number(item.rate) || 0));
+              const below = rate < 98;
+              const ringColor = below ? "#f59e0b" : "#10b981";
               return (
-                <div key={item.name} className={`qmes-iqc-rank-row ${below ? "is-warning" : "is-good"}`}>
-                  <div className="qmes-iqc-rank-no">{index+1}</div>
-                  <div className="qmes-iqc-rank-main">
-                    <div className="qmes-iqc-rank-label">
-                      <span className="qmes-iqc-rank-name">{item.name}</span>
-                      <span className="qmes-iqc-rank-count">합격 {item.pass} / 전체 {item.total}</span>
-                      <span className={`qmes-iqc-rank-grade ${below ? "warn" : "good"}`}>{below ? "관리대상" : "정상"}</span>
-                    </div>
-                    <div className="qmes-iqc-rank-track">
-                      <div className={`qmes-iqc-rank-fill ${below ? "warn" : "good"}`} style={{width:`${Math.max(0,Math.min(100,item.rate))}%`}}></div>
-                      <div className="qmes-iqc-rank-standard-line" style={{left:"98%"}}></div>
+                <div key={item.name} className={`qmes-iqc-donut-card ${below ? "is-warning" : "is-good"}`}>
+                  <div className="qmes-iqc-donut-rank">{index+1}</div>
+                  <div className="qmes-iqc-donut-ring" style={{background:`conic-gradient(${ringColor} ${rate}%, #20344c ${rate}% 100%)`}}>
+                    <div className="qmes-iqc-donut-center">
+                      <strong>{rate.toFixed(1)}</strong><span>%</span>
                     </div>
                   </div>
-                  <div className={`qmes-iqc-rank-value ${below ? "warn" : "good"}`}>{Number(item.rate).toFixed(1)}<small>%</small></div>
+                  <strong className="qmes-iqc-donut-name" title={item.name}>{item.name}</strong>
+                  <span className="qmes-iqc-donut-count">합격 {item.pass} / 전체 {item.total}</span>
+                  <span className={`qmes-iqc-rank-grade ${below ? "warn" : "good"}`}>{below ? "관리대상" : "정상"}</span>
                 </div>
               );
             })}
@@ -11380,103 +12204,59 @@ function IqcTab() {
         </Panel></div>
       </div>
 
-      <div className="qmes-iqc-ledger-section">
-        <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
-          <div className="qmes-iqc-search-toolbar">
-            <div className="qmes-iqc-search-main">
-              <div className="qmes-iqc-search-box">
-                <Search size={15} />
-                <input
-                  value={searchTerm}
-                  onChange={(e)=>setSearchTerm(e.target.value)}
-                  placeholder="입고번호, LOT, 업체명, 원재료명, 검사자 검색"
-                />
-                {searchTerm && <button type="button" onClick={()=>setSearchTerm("")} title="검색어 지우기"><XCircle size={13} /></button>}
-              </div>
-              <button type="button" onClick={resetIqcFilters} className="qmes-iqc-filter-reset"><RotateCw size={13} /> 초기화</button>
-              <button type="button" onClick={exportFilteredIqcCsv} className="qmes-iqc-export-btn"><ArrowDownToLine size={13} /> CSV 다운로드</button>
-            </div>
 
-            <div className="qmes-iqc-filter-row">
-              <label><span>연도</span>
-                <select value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)}>
-                  {availableYears.map((year)=><option key={year} value={year}>{year}년</option>)}
-                </select>
-              </label>
-              <label><span>월</span>
-                <select value={selectedMonth} onChange={(e)=>setSelectedMonth(e.target.value)}>
-                  <option value="전체">전체</option>
-                  {Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map((m)=><option key={m} value={m}>{Number(m)}월</option>)}
-                </select>
-              </label>
-              <label><span>업체</span>
-                <select value={selectedSupplier} onChange={(e)=>setSelectedSupplier(e.target.value)}>
-                  <option value="전체">전체 업체</option>
-                  {supplierOptions.map((v)=><option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-              <label><span>판정</span>
-                <select value={selectedJudge} onChange={(e)=>setSelectedJudge(e.target.value)}>
-                  <option value="전체">전체 판정</option>
-                  <option value="합격">합격</option>
-                  <option value="불합격">반품</option>
-                  <option value="검사중">검사중</option>
-                </select>
-              </label>
-              <label><span>원재료</span>
-                <select value={selectedMaterial} onChange={(e)=>setSelectedMaterial(e.target.value)}>
-                  <option value="전체">전체 원재료</option>
-                  {materialFilterOptions.map((v)=><option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-              <div className="qmes-iqc-result-count">
-                <span>전체 {yearRows.length}건</span>
-                <strong>검색결과 {filteredRows.length}건</strong>
+      {iqcModalOpen && (
+        <div className="qmes-modal-backdrop qmes-iqc-modal-backdrop" onMouseDown={(e)=>{ if(e.target===e.currentTarget){ setIqcModalOpen(false); setEditingInNo(null); setTried(false); } }}>
+          <div className="qmes-iqc-modal" role="dialog" aria-modal="true" aria-label="수입검사 등록">
+            <div className="qmes-iqc-modal-head">
+              <div><span>INCOMING INSPECTION</span><strong>{editingInNo ? "수입검사 수정" : "수입검사 신규등록"}</strong></div>
+              <button type="button" className="qmes-modal-close" onClick={()=>{setIqcModalOpen(false);setEditingInNo(null);setTried(false);}}>×</button>
+            </div>
+            <div className="qmes-iqc-modal-body">
+              <div className="qmes-iqc-modal-section">
+                <h4>기본정보</h4>
+                <div className="qmes-iqc-modal-grid">
+                  <div className="qmes-iqc-field"><span>입고번호</span><div className="qmes-iqc-inno-row"><select value={form.inNoMode} disabled={Boolean(editingInNo)} onChange={(e)=>setForm({...form,inNoMode:e.target.value,manualInNo:""})}><option value="auto">자동</option><option value="manual">직접</option></select><input value={displayedInNo} readOnly={Boolean(editingInNo)||form.inNoMode==="auto"} onChange={(e)=>setForm({...form,manualInNo:e.target.value})}/></div></div>
+                  <div className="qmes-iqc-field"><span>입고일자</span><input type="date" value={form.recvDate} onChange={(e)=>setForm({...form,recvDate:e.target.value})}/></div>
+                  <div className="qmes-iqc-field"><span>검사일자</span><input type="date" value={form.inspectDate} onChange={(e)=>setForm({...form,inspectDate:e.target.value})}/></div>
+                  <div className="qmes-iqc-field"><span>LOT No.</span><input value={form.lot} onChange={(e)=>setForm({...form,lot:e.target.value})} placeholder="LOT No. 입력"/></div>
+                  <div className="qmes-iqc-field"><span>원재료명</span><div className="qmes-material-select-wrap"><select value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})}>{materialOptions.map((m)=><option key={m}>{m}</option>)}</select><button type="button" onClick={addMaterialOption} className="qmes-material-add">+ 추가</button></div></div>
+                  <div className="qmes-iqc-field"><span>업체명</span><input value={form.supplier} onChange={(e)=>setForm({...form,supplier:e.target.value})} placeholder="업체명 입력"/></div>
+                </div>
               </div>
+              <div className="qmes-iqc-modal-section">
+                <h4>수량</h4>
+                <div className="qmes-iqc-modal-grid qmes-iqc-modal-grid-qty">
+                  <div className="qmes-iqc-field"><span>입고수량</span><input inputMode="decimal" value={form.qty} onFocus={(e)=>setForm({...form,qty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,qty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,qty:qmesQuantityWithUnit(e.target.value,"kg")}))} placeholder="kg"/></div>
+                  <div className="qmes-iqc-field"><span>검사수량</span><input inputMode="decimal" value={form.inspectQty} onFocus={(e)=>setForm({...form,inspectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,inspectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,inspectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="EA"/></div>
+                  <div className="qmes-iqc-field"><span>불량수량</span><input inputMode="decimal" value={form.defectQty} onFocus={(e)=>setForm({...form,defectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,defectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,defectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="EA"/></div>
+                </div>
+              </div>
+              <div className="qmes-iqc-modal-section">
+                <h4>검사정보</h4>
+                <div className="qmes-iqc-modal-grid qmes-iqc-modal-grid-inspection">
+                  <div className="qmes-iqc-field">{judgeSelect("visual","외관")}</div>
+                  <div className="qmes-iqc-field">{judgeSelect("label","라벨")}</div>
+                  <div className="qmes-iqc-field">{judgeSelect("weight","중량")}</div>
+                  <div className="qmes-iqc-field">{judgeSelect("coa","COA")}</div>
+                  <div className="qmes-iqc-field"><span>검사자</span><input value={form.inspector} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 입력"/></div>
+                </div>
+              </div>
+              <div className="qmes-iqc-modal-section">
+                <h4>특이사항</h4>
+                <div className="qmes-iqc-modal-grid">
+                  <div className="qmes-iqc-field qmes-iqc-modal-remarks-full"><textarea value={form.remarks} onChange={(e)=>setForm({...form,remarks:e.target.value})} rows={3} placeholder="특이사항 입력"/></div>
+                </div>
+              </div>
+              {iqcErrors.length>0 && <div className="qmes-iqc-modal-errors">{iqcErrors.map((e,i)=><div key={i}>• {e}</div>)}</div>}
+            </div>
+            <div className="qmes-iqc-modal-foot">
+              <div>종합판정 <Badge tone={iqcTone(overall(form))}>{overall(form)}</Badge></div>
+              <div><button type="button" className="qmes-iqc-modal-cancel" onClick={()=>{setIqcModalOpen(false);setEditingInNo(null);setTried(false);}}>취소</button><button type="button" className="qmes-iqc-modal-save" onClick={addRow}>{editingInNo ? "수정 저장" : "저장"}</button></div>
             </div>
           </div>
-          <div className="qmes-iqc-ledger-container -mx-4 px-4">
-            <table className="qmes-iqc-ledger-table w-full table-fixed text-sm">
-              <colgroup>
-                <col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} />
-                <col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} /><col style={{width:"7.6%"}} />
-                <col style={{width:"6%"}} /><col style={{width:"6%"}} /><col style={{width:"6%"}} />
-                <col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} /><col style={{width:"4%"}} />
-                <col style={{width:"7%"}} /><col style={{width:"13%"}} />
-              </colgroup>
-              <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고번호</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">입고일자</th><th className="text-left py-2 pr-3 font-medium whitespace-nowrap">LOT No.</th><th className="text-left py-2 pr-3 font-medium">업체명</th><th className="text-left py-2 pr-3 font-medium">종합판정</th>
-                <th className="text-left py-2 pr-3 font-medium">원재료명</th>
-                <th className="text-right py-2 pr-3 font-medium">입고수량</th><th className="text-right py-2 pr-3 font-medium">검사수량</th><th className="text-right py-2 pr-3 font-medium">불량수량</th>
-                <th className="text-center py-2 pr-2 font-medium">외관</th><th className="text-center py-2 pr-2 font-medium">라벨</th><th className="text-center py-2 pr-2 font-medium">중량</th><th className="text-center py-2 pr-3 font-medium">COA</th>
-                <th className="text-left py-2 pr-3 font-medium">검사자</th><th className="text-center py-2 px-3 font-medium">관리</th>
-              </tr></thead>
-              <tbody>
-                {filteredRows.length === 0 && <tr><td colSpan={15} className="py-6 text-center text-sm text-slate-500">검색 조건에 맞는 수입검사 기록이 없습니다.</td></tr>}
-                {filteredRows.map((r) => (
-                  <tr key={r.inNo || r.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30 align-top">
-                    <td className="py-2.5 pr-3 font-mono text-xs text-sky-300 whitespace-nowrap">{r.inNo || "-"}</td><td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{(r.recv || "-").slice(0,10)}</td><td className="py-2.5 pr-3 font-mono text-xs text-violet-300 whitespace-nowrap truncate">{r.lot}</td><td className="py-2.5 pr-3 text-xs text-slate-400 truncate">{r.supplier}</td>
-                    <td className="py-2.5 pr-3"><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge>{r.note && <div className="text-[10px] text-slate-500 mt-1 max-w-[120px] leading-snug">{r.note}</div>}</td><td className="py-2.5 pr-3 text-slate-100 truncate">{r.name}</td>
-                    <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.qty}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.inspectQty || "-"}</td><td className="py-2.5 pr-3 text-right tabular-nums text-slate-300 text-xs whitespace-nowrap">{r.defectQty || "-"}</td>
-                    {[r.visual,r.label,r.weight,r.coa].map((v,i)=><td key={i} className="py-2.5 pr-2 text-center">{v === "합격" ? <CheckCircle2 size={14} className="text-emerald-400 inline" /> : <XCircle size={14} className="text-red-400 inline" />}</td>)}
-                    <td className="py-2.5 pr-3 text-xs text-slate-300 truncate">{r.inspector || r.by || "-"}</td>
-                    <td className="py-2.5 px-3 text-center qmes-iqc-manage-cell">
-                      <div className="qmes-iqc-manage-grid">
-                        <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
-                        <button onClick={()=>setViewingLabel(r)} title="원재료 라벨 미리보기 및 인쇄" className="qmes-iqc-action-btn qmes-iqc-action-label"><Package size={12} /> 라벨</button>
-                        <button onClick={()=>editIqc(r)} title="수입검사 기록 수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
-                        <button onClick={()=>deleteIqc(r)} title="수입검사 기록 삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-
-        
-      </div>
+        </div>
+      )}
       {viewingIqc && <QualityInspectionViewer type="IQC" record={viewingIqc} records={rows} onClose={()=>setViewingIqc(null)} />}
       {viewingLabel && <IqcLabelViewer record={viewingLabel} onClose={()=>setViewingLabel(null)} />}
     </div>
@@ -11666,21 +12446,20 @@ function WoDocTab() {
       </Panel>
 
       {/* 작업지시서 (실사용 양식) */}
-      <div className="doc-paper qmes-wo-doc bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
-        <div className="qmes-wo-doc-header">
-          <div className="qmes-wo-logo-area"><img className="qmes-wo-logo" src="data:image/png;base64,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" alt="나모케미칼(주) 로고" /></div>
-          <div className="qmes-wo-doc-title">
-            <div className="qmes-wo-title-ko">작업지시서</div>
-            <div className="qmes-wo-title-en">WORK ORDER</div>
+      <div className="doc-paper bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
+        <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3">
+          <div>
+            <div className="text-xl font-bold tracking-wide">작 업 지 시 서</div>
+            <div className="text-xs text-slate-500 mt-0.5">Work Order — 관리계획서 NMC-C-220-01 기준</div>
           </div>
-          <div className="qmes-wo-doc-meta">
-            <div>작업지시번호 : <span className="font-mono">{w.woNo || sel}</span></div>
-            <div>작업지시일자 : {w.date || "-"}</div>
+          <div className="text-right text-xs text-slate-600">
+            <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
+            <div>상태: <span className={w.status === "완료" ? "text-emerald-600 font-semibold" : "text-sky-600 font-semibold"}>{w.status}</span></div>
           </div>
         </div>
 
         {/* 헤더 표 — 실사용 양식과 동일 배치 */}
-        <div className="qmes-wo-section qmes-wo-first"><div className="qmes-wo-section-title">기본정보</div><table className="qmes-wo-table qmes-wo-basic-table">
+        <table className="w-full text-sm mt-3 border border-slate-300">
           <tbody>
             <tr className="border-b border-slate-300">
               <td className="bg-slate-50 px-2 py-1.5 text-xs text-slate-500 font-semibold w-20 border-r border-slate-300">공정명</td>
@@ -11711,12 +12490,12 @@ function WoDocTab() {
               </td>
             </tr>
           </tbody>
-        </table></div>
+        </table>
 
         {/* ① 원재료 투입 */}
-        <div className="qmes-wo-section">
-          <div className="qmes-wo-section-title">투입원료 정보</div>
-          <table className="qmes-wo-table qmes-wo-material-table">
+        <div className="mt-5">
+          <div className="text-sm font-bold border-l-4 border-slate-900 pl-2">① 원재료 투입 <span className="text-xs font-normal text-slate-500">(전자저울 계량 · 계량 공차 자동판정: ±0.1kg 또는 기준량 1% 중 큰 값)</span></div>
+          <table className="w-full text-sm mt-2">
             <thead>
               <tr className="text-xs text-slate-500 border-b-2 border-slate-900">
                 <th className="text-left py-1.5 pr-2 font-semibold w-14">투입순서</th>
@@ -11761,9 +12540,9 @@ function WoDocTab() {
         </div>
 
         {/* ② 공정조건 관리 */}
-        <div className="qmes-wo-section">
-          <div className="qmes-wo-section-title">공정조건 관리</div>
-          <table className="qmes-wo-table qmes-wo-condition-table">
+        <div className="mt-5">
+          <div className="text-sm font-bold border-l-4 border-slate-900 pl-2">② 공정조건 관리 <span className="text-xs font-normal text-slate-500">(PLC 패널 육안 확인 후 기록)</span></div>
+          <table className="w-full text-sm mt-2">
             <thead>
               <tr className="text-xs text-slate-500 border-b-2 border-slate-900">
                 <th className="text-left py-1.5 pr-3 font-semibold">공정</th>
@@ -11792,31 +12571,17 @@ function WoDocTab() {
           </table>
         </div>
 
-        <div className="qmes-wo-section">
-          <div className="qmes-wo-section-title">작업내용</div>
-          <div className="qmes-wo-note-box">
-            - 정해진 표준 작업 절차에 따라 혼합 및 분산 공정 진행<br />
-            - 공정 중 이상 발생 시 즉시 보고<br />
-            ※ 계량 공차 초과 시 즉시 투입 중지 → 재계량 → 관리책임자 보고 (NMCOP3-SP05).
-          </div>
+        <div className="text-[11px] text-slate-500 mt-4 leading-relaxed border border-slate-300 rounded p-2.5">
+          ※ 확인자 서명은 로그인 사용자(고유번호 포함) 전자기록으로 대체됩니다. 계량 공차 초과 시 즉시 투입 중지 → 재계량 → 관리책임자 보고 (NMCOP3-SP05).<br />
+          ※ 원재료 투입·공정조건 전 항목 기록 완료 시 배치 상태가 "완료"로 전환되고 Lot 이력에 자동 반영됩니다.
         </div>
 
-        <div className="qmes-wo-section">
-          <div className="qmes-wo-section-title">특이사항</div>
-          <div className="qmes-wo-note-box">-</div>
-        </div>
-
-        <div className="qmes-wo-auth-row">
-          <div className="qmes-wo-code-area">
-            <div className="qmes-wo-barcode-wrap"><svg className="qmes-wo-barcode" data-value={w.woNo || sel}></svg><div>{w.woNo || sel}</div></div>
-            <div className="qmes-wo-qr-wrap"><div className="qmes-wo-qr" data-value={w.woNo || sel}></div></div>
-          </div>
-          <div className="qmes-wo-sign-grid">
-            {[
-              ["작성", (w.workers || "").split(",")[0] || "-"],
-              ["검토", allDone ? ((window.__QMES_USER__ || "-").split(" ")[1] || "-") : "-"],
-              ["승인", "-"]
-            ].map(([label,value]) => <div className="qmes-wo-sign-cell" key={label}><div className="qmes-wo-sign-title">{label}</div><div className="qmes-wo-sign-body">{value}</div></div>)}
+        <div className="flex items-end justify-between mt-5">
+          <div className="text-xs text-slate-500">본 지시서의 실적은 Lot({sel}) 이력에 연결되어 추적됩니다.</div>
+          <div className="flex gap-6 text-center text-xs">
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">작업</div><div className="mt-1 text-slate-600">{(w.workers || "").split(",")[0] || "-"}</div></div>
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">확인</div><div className="mt-1 text-slate-600">{allDone ? (window.__QMES_USER__ || "-").split(" ")[1] || "-" : "-"}</div></div>
+            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">-</div></div>
           </div>
         </div>
       </div>
@@ -12481,7 +13246,7 @@ function PqcTab() {
       initial={PQC_INIT}
       lotOptions={["CBG0803", "CBG0802", "CBG0801"]}
       idPrefix="PQC-" idStart={1} storeKey="PQC" traceStage="생산"
-      notice="공정 40(바인더)·50(슬러리) 공정관리 검사 — CTQ 항목(점도/고형분/입도)은 n=1, 3회 측정 후 공정검사 성적서에 기록합니다. 부적합 시 해당 배치 홀드."
+      notice=""
     />
   );
 }
@@ -12494,7 +13259,7 @@ function OqcTab() {
       initial={OQC_INIT}
       lotOptions={["CBG0802", "CBG0701"]}
       idPrefix="OQC-" idStart={1} storeKey="OQC" traceStage="출하"
-      notice="출하검사 8개 항목 전부 합격한 Lot만 출하성적서(CoA) 발행 및 출하가 가능합니다. CBG0802: 8/8 합격 — CoA 발행 대상. 파손 용기는 교체 후 수분/고형분/점도 재검사."
+      notice=""
     />
   );
 }
@@ -12803,8 +13568,8 @@ function FieldInputTab() {
                   <span className="text-sm tabular-nums text-slate-200">{e.value}</span>
                   <Badge tone={e.judge === "합격" ? "green" : "red"}>{e.judge}</Badge>
                   <span className="ml-auto whitespace-nowrap">
-                    <button onClick={() => editPop(e)} className="px-2 py-1 mr-1 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정</button>
-                    <button onClick={() => deletePop(e)} className="px-2 py-1 rounded border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10">삭제</button>
+                    <button onClick={() => editPop(e)} className="qmes-iqc-action-btn qmes-iqc-action-edit mr-1">수정</button>
+                    <button onClick={() => deletePop(e)} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                   </span>
                 </div>
                 <ul className="mt-1.5 flex flex-col gap-0.5">
@@ -13680,26 +14445,6 @@ qmesStart();
   }
 }
 </style>
-
-
-<script>
-(function(){
-  function renderWoCodes(root){
-    root=(root||document);
-    root.querySelectorAll('.qmes-wo-barcode').forEach(function(el){
-      var v=el.getAttribute('data-value')||'WORK-ORDER';
-      if(window.JsBarcode){try{JsBarcode(el,v,{format:'CODE128',displayValue:false,height:52,margin:2,width:1.5});}catch(e){}}
-    });
-    root.querySelectorAll('.qmes-wo-qr').forEach(function(el){
-      if(el.dataset.done==='1')return;
-      var v=el.getAttribute('data-value')||'WORK-ORDER';
-      if(window.QRCode){try{el.innerHTML='';QRCode.toCanvas(v,{width:64,margin:1},function(err,canvas){if(!err){el.appendChild(canvas);el.dataset.done='1';}});}catch(e){}}
-    });
-  }
-  window.addEventListener('load',function(){renderWoCodes();new MutationObserver(function(){renderWoCodes();}).observe(document.body,{childList:true,subtree:true});});
-  window.addEventListener('beforeprint',function(){renderWoCodes(document.getElementById('qmes-print-root')||document);});
-})();
-</script>
 
 </body>
 </html>
