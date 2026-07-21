@@ -9260,6 +9260,65 @@ select.qmes-label-judge-select option[value="불합격"]{
   .qmes-iqc-ledger-table .qmes-iqc-action-btn{width:58px!important;min-width:58px!important;max-width:58px!important;flex-basis:58px!important;font-size:10px!important;}
 }
 </style>
+
+<style id="QMES_PQC_MULTI_ITEM_FIX_20260721">
+/* 공정검사 신규등록: 상단 너비 축소 + 4개 검사항목 개별 입력 */
+.qmes-pqc-entry-form{display:flex;flex-direction:column;gap:14px}
+.qmes-pqc-basic-row{display:grid;grid-template-columns:170px 170px 190px 230px;gap:10px;align-items:end;justify-content:start}
+.qmes-pqc-basic-row>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.qmes-pqc-basic-row label{color:#8ca5c4;font-size:11px;font-weight:700}
+.qmes-pqc-basic-row input{width:100%;height:40px;padding:0 10px;border:1px solid #2b405b;border-radius:7px;background:#102138;color:#edf4fb;outline:none;box-sizing:border-box}
+.qmes-pqc-basic-row input:focus{border-color:#00aad2}
+.qmes-pqc-item-table-wrap{overflow-x:auto;border:1px solid #263b54;border-radius:10px}
+.qmes-pqc-item-table{width:100%;min-width:650px;border-collapse:collapse;table-layout:fixed}
+.qmes-pqc-item-table th{height:38px;padding:8px 12px;background:#102138;color:#8ca5c4;font-size:11px;text-align:left;border-bottom:1px solid #263b54}
+.qmes-pqc-item-table td{height:50px;padding:7px 12px;color:#dbe7f3;border-bottom:1px solid rgba(38,59,84,.7)}
+.qmes-pqc-item-table tr:last-child td{border-bottom:0}
+.qmes-pqc-item-table th:nth-child(1),.qmes-pqc-item-table td:nth-child(1){width:24%}
+.qmes-pqc-item-table th:nth-child(2),.qmes-pqc-item-table td:nth-child(2){width:36%}
+.qmes-pqc-item-table th:nth-child(3),.qmes-pqc-item-table td:nth-child(3){width:40%}
+.qmes-pqc-item-table input,.qmes-pqc-item-table select{width:100%;height:36px;padding:0 10px;border:1px solid #2b405b;border-radius:7px;background:#102138;color:#edf4fb;outline:none;box-sizing:border-box}
+.qmes-pqc-item-table input:focus,.qmes-pqc-item-table select:focus{border-color:#00aad2}
+.qmes-pqc-result-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid #263b54;border-radius:9px;background:#0f2036;color:#9fb2c8;font-size:12px;font-weight:700}
+.qmes-pqc-save-row{display:flex;justify-content:flex-end}.qmes-pqc-save-btn{height:40px;padding:0 18px;display:inline-flex;align-items:center;gap:6px;border-radius:7px;background:#0088b0;color:#fff;font-size:12px;font-weight:800}
+@media(max-width:850px){.qmes-pqc-basic-row{grid-template-columns:repeat(2,minmax(150px,1fr))}}
+@media(max-width:520px){.qmes-pqc-basic-row{grid-template-columns:1fr}}
+
+/* 측정값 3회 기본 + 가로 추가 / 열 간격 축소 */
+.qmes-pqc-item-table{min-width:760px}
+.qmes-pqc-item-table th,.qmes-pqc-item-table td{padding-left:8px!important;padding-right:8px!important}
+.qmes-pqc-item-table th:nth-child(1),.qmes-pqc-item-table td:nth-child(1){width:16%}
+.qmes-pqc-item-table th:nth-child(2),.qmes-pqc-item-table td:nth-child(2){width:24%}
+.qmes-pqc-item-table th:nth-child(3),.qmes-pqc-item-table td:nth-child(3){width:60%}
+.qmes-pqc-measure-line{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px}
+.qmes-pqc-measure-cell{position:relative;flex:0 0 100px}
+.qmes-pqc-measure-cell input{width:100%!important;padding-right:22px!important}
+.qmes-pqc-remove-value{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;color:#fca5a5;font-size:14px;line-height:16px}
+.qmes-pqc-add-value{flex:0 0 auto;height:36px;padding:0 10px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(0,170,210,.5);border-radius:7px;color:#7dd3fc;background:rgba(0,170,210,.08);font-size:11px;font-weight:700}
+.qmes-pqc-value-preview-btn{height:30px;padding:0 10px;border:1px solid rgba(0,170,210,.45);border-radius:6px;color:#7dd3fc;background:rgba(0,170,210,.08);font-size:11px;font-weight:700;white-space:nowrap}
+.qmes-pqc-value-preview-modal{width:min(760px,92vw);max-height:82vh;overflow:auto;border:1px solid #29415f;border-radius:12px;background:#0b1728;padding:16px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.qmes-pqc-value-preview-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#edf4fb}.qmes-pqc-value-preview-head button{font-size:24px;color:#9fb2c8}
+.qmes-pqc-value-preview-modal table{width:100%;border-collapse:collapse;table-layout:fixed}.qmes-pqc-value-preview-modal th,.qmes-pqc-value-preview-modal td{padding:10px;border-bottom:1px solid #263b54;text-align:left;font-size:12px;vertical-align:middle}.qmes-pqc-value-preview-modal th{color:#8ca5c4;background:#102138}.qmes-pqc-value-preview-modal td{color:#dbe7f3}
+.qmes-pqc-value-preview-modal{width:min(940px,94vw)}
+.qmes-pqc-preview-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}
+.qmes-pqc-preview-summary>div{min-width:0;padding:8px 9px;border:1px solid #263b54;border-radius:7px;background:#0f2036}
+.qmes-pqc-preview-summary span{display:block;margin-bottom:3px;color:#6f8eae;font-size:9px}
+.qmes-pqc-preview-summary strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e8f0f8;font-size:11px}
+.qmes-pqc-preview-values{display:flex;align-items:center;flex-wrap:wrap;gap:7px 14px;min-height:28px}
+.qmes-pqc-preview-value{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:#dbe7f3}
+.qmes-pqc-preview-value b{color:#7dd3fc;font-weight:800}
+.qmes-pqc-record-table{table-layout:fixed!important}
+.qmes-pqc-record-table th,.qmes-pqc-record-table td{text-align:center!important;padding-left:10px!important;padding-right:10px!important}
+.qmes-pqc-record-table td:nth-child(1),.qmes-pqc-record-table td:nth-child(2),.qmes-pqc-record-table td:nth-child(3),.qmes-pqc-record-table td:nth-child(4){text-align:left!important}
+@media(max-width:760px){.qmes-pqc-preview-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 수입검사 신규등록 팝업 빛번짐 제거 */
+.qmes-iqc-modal,.qmes-iqc-modal:hover{box-shadow:none!important;filter:none!important}
+.qmes-iqc-modal-head,.qmes-iqc-modal-save,.qmes-iqc-new-btn{box-shadow:none!important;text-shadow:none!important;filter:none!important;background-image:none!important}
+.qmes-iqc-modal-save,.qmes-iqc-new-btn{background-color:#0088b0!important}
+.qmes-iqc-modal-backdrop{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(2,8,20,.72)!important}
+.qmes-iqc-modal input:focus,.qmes-iqc-modal select:focus,.qmes-iqc-modal textarea:focus{box-shadow:none!important;outline:none!important}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -10446,6 +10505,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   });
   const [measurementRows, setMeasurementRows] = useState([]);
   const [measurementInput, setMeasurementInput] = useState("");
+  const makeInitialPqcValues = () => ({ "점도":["","",""], "고형분":["","",""], "입도(Dmax)":["","",""], "외관":["이상없음"] });
+  const [pqcValues, setPqcValues] = useState(makeInitialPqcValues());
   const [tried, setTried] = useState(false);
   const [nextId, setNextId] = useState(DB.seqs[storeKey] || idStart);
   const [editingId, setEditingId] = useState(null);
@@ -10454,6 +10515,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [recordMonth, setRecordMonth] = useState("ALL");
   const [recordPage, setRecordPage] = useState(1);
   const [viewingRecord, setViewingRecord] = useState(null);
+  const [measurementPreviewRows, setMeasurementPreviewRows] = useState(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const recordPageSize = 10;
   const availableLots = Array.from(new Set((DB.batches || []).map((b) => b.no).filter(Boolean)));
@@ -10487,6 +10549,18 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const autoJ = isNumericItem && measurementAverage != null && !inputError
     ? autoJudge(form.check, String(measurementAverage))
     : null;
+  const pqcItems = ["점도", "고형분", "입도(Dmax)", "외관"];
+  const pqcComplete = pqcItems.every((k) => {
+    const vals = Array.isArray(pqcValues[k]) ? pqcValues[k] : [pqcValues[k]];
+    return vals.length > 0 && vals.every((v) => String(v || "").trim() !== "");
+  });
+  const pqcJudges = Object.fromEntries(pqcItems.map((k) => {
+    const vals = (Array.isArray(pqcValues[k]) ? pqcValues[k] : [pqcValues[k]]).map((v)=>String(v||"").trim()).filter(Boolean);
+    if (k === "외관") return [k, vals[0] === "이상없음" ? "합격" : "불합격"];
+    const allPass = vals.length > 0 && vals.every((v) => autoJudge(k, v) === "합격");
+    return [k, allPass ? "합격" : "불합격"];
+  }));
+  const pqcOverallJudge = pqcItems.every((k) => pqcJudges[k] === "합격") ? "합격" : "불합격";
   const lotErr = isOqc && form.lot.trim() !== "" && availableLots.length > 0 && !availableLots.includes(form.lot.trim())
     ? "작업지시에서 발행된 LOT를 선택하세요." : null;
   const triedErrors = [];
@@ -10494,14 +10568,50 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   if (tried && form.date.trim() === "") triedErrors.push("검사일자를 입력하세요");
   if (isOqc && tried && form.shipDate.trim() === "") triedErrors.push("출하일자를 입력하세요");
   if (!isOqc && tried && form.product.trim() === "") triedErrors.push("제품명을 입력하세요");
-  if (tried && trimmedVal === "") triedErrors.push("측정값을 1개 이상 입력하세요");
-  const canAdd = trimmedVal !== "" && !inputError && !lotErr
-    && form.date.trim() !== "" && form.lot.trim() !== ""
-    && (isOqc || form.product.trim() !== "")
-    && (!isOqc || form.shipDate.trim() !== "");
+  if (!isOqc && tried && !pqcComplete) triedErrors.push("점도, 고형분, 입도, 외관 측정값을 모두 입력하세요");
+  if (isOqc && tried && trimmedVal === "") triedErrors.push("측정값을 1개 이상 입력하세요");
+  const canAdd = isOqc
+    ? (trimmedVal !== "" && !inputError && !lotErr && form.date.trim() !== "" && form.lot.trim() !== "" && form.shipDate.trim() !== "")
+    : (pqcComplete && form.date.trim() !== "" && form.lot.trim() !== "" && form.product.trim() !== "");
 
   const addRecord = () => {
     if (!canAdd) { setTried(true); return; }
+    if (!isOqc) {
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const date = form.date;
+      const lotNo = form.lot.trim();
+      const product = form.product.trim();
+      const baseNo = editingId || nextInspectionNo(storeKey, date, records, "id");
+      const inspector = (window.__QMES_USER__ || "현재 사용자");
+      const newRows = pqcItems.map((check, idx) => {
+        const values = (Array.isArray(pqcValues[check]) ? pqcValues[check] : [pqcValues[check]])
+          .map((v)=>String(v||"").trim()).filter(Boolean);
+        const nums = values.map((v)=>Number(v.replace(/,/g,""))).filter((v)=>Number.isFinite(v));
+        return {
+          id: editingId && idx === 0 ? editingId : `${baseNo}-${idx + 1}`,
+          groupId: baseNo,
+          date, shipDate:"", time, lot:lotNo, product, check,
+          value:values.join(" / "),
+          measurements:values,
+          average:check === "외관" || nums.length !== values.length ? null : nums.reduce((a,b)=>a+b,0)/nums.length,
+          judge:pqcJudges[check], note:`${QC_ITEMS[check]?.stage || "공정"}`, inspector
+        };
+      });
+      const next = editingId ? [...records.filter((r)=>r.id!==editingId), ...newRows] : [...newRows, ...records];
+      setRecords(next); DB.insp[storeKey]=next;
+      newRows.forEach((rec)=>auditLog(storeKey, editingId ? "수정" : "등록", rec.id, `${rec.lot} / ${rec.check} / ${rec.value} / ${rec.judge}`));
+      const L=DB.lots[lotNo];
+      if(L){
+        newRows.forEach((rec)=>{L.steps=[...L.steps,{stage:traceStage,name:`${docName.replace(" 성적서","")} — ${rec.check}`,time,detail:`측정값 ${rec.value} · 규격 ${QC_ITEMS[rec.check]?.spec || "-"}`,result:rec.judge,by:inspector}]});
+        if(pqcOverallJudge==="불합격") L.status="홀드 — 부적합 발생 (게이트 차단)";
+        else {L.stage="생산"; if(!L.status.includes("홀드")) L.status="생산중";}
+      }
+      if(pqcOverallJudge==="불합격"){
+        DB.holds=[{id:`HLD-${String(Date.now()).slice(-6)}`,target:lotNo,type:"제품 Lot",gate:"공정 게이트",reason:`공정검사 부적합 항목 발생`,since:time,cond:"재검사 합격 + 품질부장 승인",status:"차단중",ncr:"-"},...DB.holds];
+      }
+      dbSave(); setEditingId(null); setPqcValues(makeInitialPqcValues()); setTried(false); setShowRegisterModal(false); return;
+    }
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const date = form.date;
@@ -10620,6 +10730,17 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const recordPageCount = Math.max(1, Math.ceil(filteredRecords.length / recordPageSize));
   const safeRecordPage = Math.min(recordPage, recordPageCount);
   const pagedRecords = filteredRecords.slice((safeRecordPage - 1) * recordPageSize, safeRecordPage * recordPageSize);
+  const displayRecords = isOqc ? pagedRecords : pagedRecords.filter((r, idx, arr) => {
+    const key = r.groupId || String(r.id || "").replace(/-\d+$/, "");
+    return arr.findIndex((x) => (x.groupId || String(x.id || "").replace(/-\d+$/, "")) === key) === idx;
+  });
+  const getPqcGroupRows = (record) => {
+    const key = record.groupId || String(record.id || "").replace(/-\d+$/, "");
+    return records.filter((x) => {
+      const xKey = x.groupId || String(x.id || "").replace(/-\d+$/, "");
+      return xKey === key && String(x.lot || "") === String(record.lot || "") && String(x.date || "") === String(record.date || "");
+    });
+  };
 
   return (
     <div className={isOqc ? "qmes-oqc-page flex flex-col gap-4" : "qmes-pqc-page flex flex-col gap-4"}>
@@ -10644,7 +10765,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
         <button type="button" className="qmes-inspection-new-btn" onClick={()=>{
           setEditingId(null);
           setForm({ date:today, shipDate:today, lot:isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "", product:"", check:itemKeys[0], value:"", value1:"", value2:"", value3:"", judge:"합격" });
-          setMeasurementRows([]); setMeasurementInput(""); setTried(false); setShowRegisterModal(true);
+          setMeasurementRows([]); setMeasurementInput(""); setPqcValues(makeInitialPqcValues()); setTried(false); setShowRegisterModal(true);
         }}><Plus size={16}/> 신규등록</button>
       </div>
 
@@ -10657,6 +10778,45 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </div>
             <div className="qmes-inspection-modal-body">
               <Panel title={isOqc ? "출하검사 등록" : "공정검사 등록"}>
+        <div className="pb-1">
+          {!isOqc ? (
+            <div className="qmes-pqc-entry-form">
+              <div className="qmes-pqc-basic-row">
+                <div><label>공정번호</label><input value={previewNo} readOnly /></div>
+                <div><label>검사일자</label><input type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})} /></div>
+                <div><label>LOT No.</label><input value={form.lot} onChange={(e)=>setForm({...form,lot:e.target.value})} placeholder="LOT No. 입력" /></div>
+                <div><label>제품명</label><input value={form.product} onChange={(e)=>setForm({...form,product:e.target.value})} placeholder="제품명 입력" /></div>
+              </div>
+              <div className="qmes-pqc-item-table-wrap">
+                <table className="qmes-pqc-item-table">
+                  <thead><tr><th>검사항목</th><th>관리기준</th><th>측정값</th></tr></thead>
+                  <tbody>
+                    {pqcItems.map((item)=><tr key={item}>
+                      <td>{item === "입도(Dmax)" ? "입도" : item}</td>
+                      <td>{QC_ITEMS[item]?.spec || "-"}</td>
+                      <td>{item === "외관" ? (
+                        <select value={(pqcValues[item] || ["이상없음"])[0]} onChange={(e)=>setPqcValues({...pqcValues,[item]:[e.target.value]})}>
+                          <option value="이상없음">이상없음</option><option value="이상있음">이상있음</option>
+                        </select>
+                      ) : (
+                        <div className="qmes-pqc-measure-line">
+                          {(pqcValues[item] || ["", "", ""]).map((value, idx)=><div className="qmes-pqc-measure-cell" key={idx}>
+                            <input type="text" inputMode="decimal" value={value}
+                              onChange={(e)=>{const next=[...(pqcValues[item]||[])];next[idx]=e.target.value;setPqcValues({...pqcValues,[item]:next});}}
+                              placeholder={`${idx+1}회`} />
+                            {idx >= 3 && <button type="button" className="qmes-pqc-remove-value" onClick={()=>{const next=(pqcValues[item]||[]).filter((_,i)=>i!==idx);setPqcValues({...pqcValues,[item]:next});}} title="측정값 삭제">×</button>}
+                          </div>)}
+                          <button type="button" className="qmes-pqc-add-value" onClick={()=>setPqcValues({...pqcValues,[item]:[...(pqcValues[item]||[]),""]})}><Plus size={13}/> 추가</button>
+                        </div>
+                      )}</td>
+                    </tr>)}
+                  </tbody>
+                </table>
+              </div>
+              <div className="qmes-pqc-result-row"><span>판정</span><Badge tone={pqcOverallJudge === "합격" ? "green" : "red"}>{pqcOverallJudge}</Badge></div>
+              <div className="qmes-pqc-save-row"><button onClick={addRecord} className="qmes-pqc-save-btn"><Plus size={15}/>{editingId ? "검사 수정 저장" : "검사 등록"}</button></div>
+            </div>
+          ) : (
         <div className="pb-1">
           <div className={`qmes-register-grid ${isOqc ? "qmes-register-grid-oqc" : "qmes-register-grid-pqc"}`}>
           <div className="flex flex-col gap-1">
@@ -10806,6 +10966,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           </button>
           </div>
         </div>
+          )}
+        </div>
         {(inputError || lotErr || triedErrors.length > 0) && (
           <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">
             {[inputError, lotErr, ...triedErrors].filter(Boolean).map((e, i) => (
@@ -10856,52 +11018,53 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             className="h-9 px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
         </div>
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1430px]" : "min-w-[1310px]"}`}>
+          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1430px]" : "min-w-[980px] qmes-pqc-record-table"}`}>
             <colgroup>
-              <col style={{ width: "135px" }} />
-              <col style={{ width: "120px" }} />
-              <col style={{ width: "125px" }} />
-              <col style={{ width: "150px" }} />
-              <col style={{ width: "145px" }} />
-              <col style={{ width: "190px" }} />
-              <col style={{ width: "110px" }} />
-              <col style={{ width: "90px" }} />
-              <col style={{ width: "120px" }} />
-              {isOqc && <col style={{ width: "120px" }} />}
-              <col style={{ width: "130px" }} />
+              {isOqc ? <>
+                <col style={{ width: "135px" }} /><col style={{ width: "120px" }} /><col style={{ width: "125px" }} />
+                <col style={{ width: "150px" }} /><col style={{ width: "145px" }} /><col style={{ width: "190px" }} />
+                <col style={{ width: "110px" }} /><col style={{ width: "90px" }} /><col style={{ width: "120px" }} />
+                <col style={{ width: "120px" }} /><col style={{ width: "130px" }} />
+              </> : <>
+                <col style={{ width: "16%" }} /><col style={{ width: "13%" }} /><col style={{ width: "15%" }} />
+                <col style={{ width: "15%" }} /><col style={{ width: "11%" }} /><col style={{ width: "14%" }} /><col style={{ width: "16%" }} />
+              </>}
             </colgroup>
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">{numberLabel}</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사일자</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">LOT No.</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">제품명</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사항목</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">규격</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">측정값</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">판정</th>
-                <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사자</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">{numberLabel}</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">검사일자</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">LOT No.</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">제품명</th>
+                {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사항목</th>}
+                {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">규격</th>}
+                <th className="py-2 px-3 font-medium whitespace-nowrap">측정값</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">판정</th>
+                {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사자</th>}
                 {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">출하일자</th>}
-                <th className="text-center py-2 px-3 font-medium whitespace-nowrap">관리</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">관리</th>
               </tr>
             </thead>
             <tbody>
               {filteredRecords.length === 0 && (
-                <tr><td colSpan={isOqc ? 11 : 10} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
+                <tr><td colSpan={isOqc ? 11 : 7} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
               )}
-              {pagedRecords.map((r) => (
+              {displayRecords.map((r) => {
+                const groupRows = isOqc ? [r] : getPqcGroupRows(r);
+                const groupJudge = isOqc ? r.judge : (groupRows.length > 0 && groupRows.every((x)=>x.judge==="합격") ? "합격" : "불합격");
+                return (
                 <tr key={r.id} className="border-b border-slate-800/60 hover:bg-slate-800/30">
-                  <td className="py-2.5 px-3 font-mono text-xs text-sky-300 truncate" title={r.id}>{r.id}</td>
+                  <td className="py-2.5 px-3 font-mono text-xs text-sky-300 truncate" title={r.groupId || r.id}>{isOqc ? r.id : (r.groupId || String(r.id || "").replace(/-\d+$/, ""))}</td>
                   <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.date || "-"}</td>
                   <td className="py-2.5 px-3 text-xs font-mono text-slate-300 truncate" title={r.lot}>{r.lot}</td>
                   <td className="py-2.5 px-3 text-slate-300 truncate" title={r.product || "-"}>{r.product || (DB.batches || []).find((b) => b.no === r.lot)?.itemName || (DB.batches || []).find((b) => b.no === r.lot)?.item || "-"}</td>
-                  <td className="py-2.5 px-3 text-slate-100 truncate" title={r.check}>
-                    {r.check} {QC_ITEMS[r.check]?.type === "CTQ" && <Badge tone="violet">CTQ</Badge>}
+                  {isOqc && <td className="py-2.5 px-3 text-slate-100 truncate" title={r.check}>{r.check} {QC_ITEMS[r.check]?.type === "CTQ" && <Badge tone="violet">CTQ</Badge>}</td>}
+                  {isOqc && <td className="py-2.5 px-3 text-xs text-slate-400 truncate" title={QC_ITEMS[r.check]?.spec || "-"}>{QC_ITEMS[r.check]?.spec || "-"}</td>}
+                  <td className="py-2.5 px-3 text-slate-300 tabular-nums">
+                    {isOqc ? r.value : <button type="button" className="qmes-pqc-value-preview-btn" onClick={()=>setMeasurementPreviewRows(groupRows)}>측정값 미리보기</button>}
                   </td>
-                  <td className="py-2.5 px-3 text-xs text-slate-400 truncate" title={QC_ITEMS[r.check]?.spec || "-"}>{QC_ITEMS[r.check]?.spec || "-"}</td>
-                  <td className="py-2.5 px-3 text-slate-300 tabular-nums truncate" title={String(r.value)}>{r.value}</td>
-                  <td className="py-2.5 px-3"><Badge tone={r.judge === "합격" ? "green" : "red"}>{r.judge}</Badge></td>
-                  <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector}>{r.inspector}</td>
+                  <td className="py-2.5 px-3"><Badge tone={groupJudge === "합격" ? "green" : "red"}>{groupJudge}</Badge></td>
+                  {isOqc && <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector}>{r.inspector}</td>}
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-3 text-center whitespace-nowrap">
                     <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print mr-1"><Printer size={12} /> 출력</button>
@@ -10909,7 +11072,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                     <button onClick={() => deleteRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
@@ -10926,6 +11089,28 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           </div>
         )}
       </Panel>
+      {measurementPreviewRows && measurementPreviewRows.length > 0 && (
+        <div className="qmes-modal-backdrop" onMouseDown={(e)=>{if(e.target===e.currentTarget)setMeasurementPreviewRows(null);}}>
+          <div className="qmes-pqc-value-preview-modal">
+            <div className="qmes-pqc-value-preview-head"><strong>공정검사 측정값 미리보기</strong><button onClick={()=>setMeasurementPreviewRows(null)}>×</button></div>
+            <div className="qmes-pqc-preview-summary">
+              <div><span>공정번호</span><strong>{measurementPreviewRows[0].groupId || String(measurementPreviewRows[0].id || "").replace(/-\d+$/, "")}</strong></div>
+              <div><span>LOT No.</span><strong>{measurementPreviewRows[0].lot || "-"}</strong></div>
+              <div><span>제품명</span><strong>{measurementPreviewRows[0].product || "-"}</strong></div>
+              <div><span>검사일자</span><strong>{measurementPreviewRows[0].date || "-"}</strong></div>
+              <div><span>최종판정</span><strong>{measurementPreviewRows.every((row)=>row.judge === "합격") ? "합격" : "불합격"}</strong></div>
+            </div>
+            <table>
+              <colgroup><col style={{width:"15%"}}/><col style={{width:"22%"}}/><col style={{width:"51%"}}/><col style={{width:"12%"}}/></colgroup>
+              <thead><tr><th>검사항목</th><th>관리기준</th><th>측정값</th><th>판정</th></tr></thead>
+              <tbody>{measurementPreviewRows.map((row)=>{
+                const values=(row.measurements && row.measurements.length ? row.measurements : String(row.value || "").split("/")).map((v)=>String(v||"").trim()).filter(Boolean);
+                return <tr key={row.id}><td>{row.check === "입도(Dmax)" ? "입도" : row.check}</td><td>{QC_ITEMS[row.check]?.spec || "-"}</td><td><div className="qmes-pqc-preview-values">{values.map((value,index)=><span className="qmes-pqc-preview-value" key={`${row.id}-${index}`}><b>{["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"][index] || `${index+1}.`}</b>{value}</span>)}</div></td><td><Badge tone={row.judge === "합격" ? "green" : "red"}>{row.judge}</Badge></td></tr>;
+              })}</tbody>
+            </table>
+          </div>
+        </div>
+      )}
       {viewingRecord && (
         <QualityInspectionViewer
           type={storeKey}
