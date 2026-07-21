@@ -9319,6 +9319,100 @@ select.qmes-label-judge-select option[value="불합격"]{
 .qmes-iqc-modal-backdrop{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(2,8,20,.72)!important}
 .qmes-iqc-modal input:focus,.qmes-iqc-modal select:focus,.qmes-iqc-modal textarea:focus{box-shadow:none!important;outline:none!important}
 </style>
+
+<style>
+/* ===== 2026-07 심플 검사 현황: 수입·공정·출하 공통 ===== */
+.qmes-simple-summary{
+  overflow:hidden;
+  border:1px solid #223750;
+  border-radius:12px;
+  background:#0b1728;
+  box-shadow:0 10px 28px -22px rgba(0,0,0,.8);
+}
+.qmes-simple-summary-head{
+  min-height:66px;
+  padding:13px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  border-bottom:1px solid rgba(255,255,255,.065);
+}
+.qmes-simple-summary-title{display:flex;flex-direction:column;gap:2px;min-width:0}
+.qmes-simple-summary-title>span{
+  color:#63809f;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.16em;
+}
+.qmes-simple-summary-title>strong{
+  color:#edf5ff;
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:-.02em;
+}
+.qmes-simple-summary-new{
+  height:36px;
+  padding:0 13px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border:1px solid #31506f;
+  border-radius:7px;
+  color:#d8e7f6;
+  background:#102138;
+  font-size:12px;
+  font-weight:650;
+}
+.qmes-simple-summary-new:hover{color:#fff;border-color:#477298;background:#142a45}
+.qmes-simple-summary-items{
+  display:grid;
+  grid-template-columns:repeat(var(--summary-count,5),minmax(0,1fr));
+}
+.qmes-simple-summary-item{
+  min-height:98px;
+  padding:15px 16px 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:5px;
+  border-right:1px solid rgba(255,255,255,.055);
+}
+.qmes-simple-summary-item:last-child{border-right:0}
+.qmes-simple-summary-light{
+  width:6px;
+  height:6px;
+  margin-bottom:2px;
+  display:block;
+  border-radius:999px;
+  background:#41c4ee;
+  box-shadow:0 0 7px rgba(65,196,238,.72);
+}
+.qmes-simple-summary-light.violet{background:#a78bfa;box-shadow:0 0 7px rgba(167,139,250,.68)}
+.qmes-simple-summary-light.green{background:#34d399;box-shadow:0 0 7px rgba(52,211,153,.68)}
+.qmes-simple-summary-light.red{background:#f87171;box-shadow:0 0 7px rgba(248,113,113,.68)}
+.qmes-simple-summary-light.amber{background:#fbbf24;box-shadow:0 0 7px rgba(251,191,36,.68)}
+.qmes-simple-summary-label{color:#7f98b5;font-size:11px;font-weight:600;white-space:nowrap}
+.qmes-simple-summary-value{display:flex;align-items:baseline;gap:4px;line-height:1}
+.qmes-simple-summary-value strong{color:#f2f7fc;font-size:24px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.qmes-simple-summary-value small{color:#7189a4;font-size:10px;font-weight:600}
+@media(min-width:901px){
+  .qmes-simple-summary-items:has(.qmes-simple-summary-item:nth-child(4):last-child){grid-template-columns:repeat(4,minmax(0,1fr))}
+  .qmes-simple-summary-items:has(.qmes-simple-summary-item:nth-child(5):last-child){grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .qmes-simple-summary-items{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .qmes-simple-summary-item{border-bottom:1px solid rgba(255,255,255,.055)}
+}
+@media(max-width:520px){
+  .qmes-simple-summary-head{align-items:flex-start}
+  .qmes-simple-summary-items{grid-template-columns:1fr}
+  .qmes-simple-summary-item{min-height:78px;border-right:0}
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -9647,14 +9741,14 @@ function printDoc(sourceEl) {
 /* ──────────────────────────── 통합 데이터 저장소 ──────────────────────────── */
 /* 화면 간 연동 + 새로고침 후에도 기록 유지. 실제 서버 구축 시 이 계층만 API로 교체하면 됩니다. */
 
-const DB_KEY = "qmes-local-iqc-v4-clean";
-const DB_RESET_MARKER = "qmes-iqc-sign-align-db-clean-reset-v4";
+const DB_KEY = "qmes-local-title-inline-v6";
+const DB_RESET_MARKER = "qmes-title-inline-db-clean-reset-v6";
 
 /* 수입검사 개선본 최초 실행 시 기존 테스트 DB를 한 번 초기화합니다.
    이후 입력한 데이터는 새 DB_KEY에 저장되어 새로고침 후에도 유지됩니다. */
 try {
   if (!window.localStorage.getItem(DB_RESET_MARKER)) {
-    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", "qmes-local-iqc-v3", "qmes-local-iqc-v4-clean", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
+    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", "qmes-local-iqc-v3", "qmes-local-iqc-v4-clean", "qmes-local-simple-summary-v5", "qmes-local-title-inline-v6", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
     window.localStorage.setItem(DB_RESET_MARKER, "1");
   }
 } catch (e) { /* 무시 */ }
@@ -9794,6 +9888,25 @@ function Panel({ title, right, children, className = "" }) {
       )}
       <div className="p-4">{children}</div>
     </div>
+  );
+}
+
+function InspectionSummary({ items }) {
+  return (
+    <section className="qmes-simple-summary qmes-simple-summary-only">
+      <div className="qmes-simple-summary-items">
+        {items.map((item) => (
+          <div className="qmes-simple-summary-item" key={item.label}>
+            <span className={`qmes-simple-summary-light ${item.tone || "sky"}`} aria-hidden="true"></span>
+            <span className="qmes-simple-summary-label">{item.label}</span>
+            <div className="qmes-simple-summary-value">
+              <strong>{item.value}</strong>
+              {item.unit && <small>{item.unit}</small>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -10527,8 +10640,12 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const numberLabel = isOqc ? "출하번호" : "공정번호";
   const previewNo = editingId || nextInspectionNo(storeKey, form.date, records, "id");
 
-  const pass = records.filter((r) => r.judge === "합격").length;
-  const rate = records.length ? ((pass / records.length) * 100).toFixed(1) : "—";
+  const currentMonth = today.slice(0, 7);
+  const monthRecords = records.filter((r) => String(r.date || r.shipDate || "").slice(0, 7) === currentMonth);
+  const todayRecords = records.filter((r) => String(r.date || r.shipDate || "").slice(0, 10) === today);
+  const pass = monthRecords.filter((r) => r.judge === "합격").length;
+  const fail = monthRecords.filter((r) => r.judge === "불합격").length;
+  const rate = monthRecords.length ? ((pass / monthRecords.length) * 100).toFixed(1) : "—";
   const spec = QC_ITEMS[form.check];
   const isNumericItem = spec.lo != null || spec.hi != null;
   const pendingMeasurement = String(measurementInput || "").trim();
@@ -10744,10 +10861,27 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
 
   return (
     <div className={isOqc ? "qmes-oqc-page flex flex-col gap-4" : "qmes-pqc-page flex flex-col gap-4"}>
-      <div className={isOqc ? "qmes-oqc-kpi-grid grid grid-cols-3 gap-3" : "qmes-pqc-kpi-grid grid grid-cols-3 gap-3"}>
-        <Kpi animated icon={ClipboardCheck} label="금일 검사 건수" value={records.length} unit="건" tone="text-sky-400" progressValue={records.length ? 100 : 0} />
-        <Kpi animated icon={CheckCircle2} label="합격률" value={rate} unit="%" tone="text-emerald-400" progressValue={records.length ? (pass / records.length) * 100 : 0} />
-        <Kpi animated icon={XCircle} label="부적합" value={records.length - pass} unit="건" tone="text-red-400" progressValue={records.length ? ((records.length - pass) / records.length) * 100 : 0} />
+      <InspectionSummary
+        items={[
+          { label: "당월 검사", value: monthRecords.length, unit: "건", tone: "violet" },
+          { label: "금일 검사", value: todayRecords.length, unit: "건", tone: "sky" },
+          { label: "합격률", value: rate, unit: "%", tone: "green" },
+          { label: "부적합", value: fail, unit: "건", tone: "red" }
+        ]}
+      />
+
+      <div className={`qmes-inspection-quickbar ${isOqc ? "qmes-oqc-quickbar" : "qmes-pqc-quickbar"}`}>
+        <div className="qmes-management-heading">
+          <span>{isOqc ? "OUTGOING QUALITY CONTROL" : "PROCESS QUALITY CONTROL"}</span>
+          <div className="qmes-management-title-row">
+            <strong>{isOqc ? "출하검사 관리" : "공정검사 관리"}</strong>
+            <button type="button" className="qmes-inspection-new-btn" onClick={()=>{
+              setEditingId(null);
+              setForm({ date:today, shipDate:today, lot:isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "", product:"", check:itemKeys[0], value:"", value1:"", value2:"", value3:"", judge:"합격" });
+              setMeasurementRows([]); setMeasurementInput(""); setPqcValues(makeInitialPqcValues()); setTried(false); setShowRegisterModal(true);
+            }}><Plus size={16}/> 신규등록</button>
+          </div>
+        </div>
       </div>
 
       {notice && (
@@ -10756,18 +10890,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           <p className="text-sm text-sky-200">{notice}</p>
         </div>
       )}
-
-      <div className={`qmes-inspection-quickbar ${isOqc ? "qmes-oqc-quickbar" : "qmes-pqc-quickbar"}`}>
-        <div>
-          <span>{isOqc ? "OUTGOING QUALITY CONTROL" : "PROCESS QUALITY CONTROL"}</span>
-          <strong>{isOqc ? "출하검사 관리" : "공정검사 관리"}</strong>
-        </div>
-        <button type="button" className="qmes-inspection-new-btn" onClick={()=>{
-          setEditingId(null);
-          setForm({ date:today, shipDate:today, lot:isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "", product:"", check:itemKeys[0], value:"", value1:"", value2:"", value3:"", judge:"합격" });
-          setMeasurementRows([]); setMeasurementInput(""); setPqcValues(makeInitialPqcValues()); setTried(false); setShowRegisterModal(true);
-        }}><Plus size={16}/> 신규등록</button>
-      </div>
 
       {showRegisterModal && (
         <div className="qmes-modal-backdrop qmes-inspection-modal-backdrop" onMouseDown={(e)=>{if(e.target===e.currentTarget){setShowRegisterModal(false);setEditingId(null);setTried(false);}}}>
@@ -12287,6 +12409,7 @@ function IqcTab() {
   };
 
   const monthRows = rows.filter((r) => String(r.recv || "").slice(0, 7) === currentMonth);
+  const todayRows = rows.filter((r) => String(r.recv || "").slice(0, 10) === today);
   const done = monthRows.filter((r) => r.judge !== "검사중");
   const pass = done.filter((r) => r.judge === "합격").length;
   const failed = monthRows.filter((r) => [r.visual, r.label, r.weight, r.coa].includes("불합격"));
@@ -12460,21 +12583,26 @@ function IqcTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Kpi animated icon={ArrowDownToLine} label="당월 입고 LOT" value={monthRows.length} unit="건" tone="text-violet-400" progressValue={monthRows.length ? 100 : 0} />
-        <Kpi animated icon={CheckCircle2} label="합격률" value={done.length ? ((pass / done.length) * 100).toFixed(1) : "—"} unit="%" tone="text-emerald-400" progressValue={done.length ? (pass / done.length) * 100 : 0} />
-        <Kpi animated icon={XCircle} label="부적합 건수" value={failed.length} unit="건" tone="text-red-400" progressValue={monthRows.length ? (failed.length / monthRows.length) * 100 : 0} />
-        <Kpi animated icon={AlertTriangle} label="반품" value={returned.length} unit="건" tone="text-amber-400" progressValue={monthRows.length ? (returned.length / monthRows.length) * 100 : 0} />
-      </div>
+      <InspectionSummary
+        items={[
+          { label: "당월 입고", value: monthRows.length, unit: "건", tone: "violet" },
+          { label: "금일 입고", value: todayRows.length, unit: "건", tone: "sky" },
+          { label: "합격률", value: done.length ? ((pass / done.length) * 100).toFixed(1) : "—", unit: "%", tone: "green" },
+          { label: "부적합", value: failed.length, unit: "건", tone: "red" },
+          { label: "반품", value: returned.length, unit: "건", tone: "amber" }
+        ]}
+      />
 
       <div className="qmes-iqc-quickbar">
-        <div>
+        <div className="qmes-management-heading">
           <span className="qmes-iqc-quickbar-kicker">INCOMING QUALITY CONTROL</span>
-          <strong>수입검사 관리</strong>
+          <div className="qmes-management-title-row">
+            <strong>수입검사 관리</strong>
+            <button type="button" className="qmes-iqc-new-btn" onClick={()=>{ setEditingInNo(null); setForm(emptyForm()); setTried(false); setIqcModalOpen(true); }}>
+              <Plus size={16} /> 신규등록
+            </button>
+          </div>
         </div>
-        <button type="button" className="qmes-iqc-new-btn" onClick={()=>{ setEditingInNo(null); setForm(emptyForm()); setTried(false); setIqcModalOpen(true); }}>
-          <Plus size={16} /> 신규등록
-        </button>
       </div>
 
       <div className="qmes-iqc-ledger-section">
@@ -14835,6 +14963,75 @@ qmesStart();
     border-style:solid!important;
     border-width:1px!important;
   }
+}
+</style>
+
+
+<style>
+/* 관리 제목/신규등록은 기존 퀵바 방식으로 복원하고 현황 숫자만 심플 틀 유지 */
+.qmes-simple-summary-only{padding:0!important;}
+.qmes-simple-summary-only .qmes-simple-summary-items{border-top:0!important;}
+</style>
+
+
+<style>
+/* ===== 관리 제목 바로 옆 신규등록: 기존 왼쪽 정렬 + 버튼 틀 유지 ===== */
+.qmes-iqc-quickbar,
+.qmes-inspection-quickbar{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+}
+.qmes-management-heading{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:0!important;
+}
+.qmes-management-title-row{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  margin-top:3px!important;
+}
+.qmes-management-title-row strong{
+  display:block!important;
+  margin:0!important;
+  flex:0 0 auto!important;
+}
+.qmes-iqc-new-btn,
+.qmes-inspection-new-btn{
+  flex:0 0 auto!important;
+  width:auto!important;
+  height:34px!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:0 13px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  border:1px solid #475569!important;
+  border-radius:7px!important;
+  background:#102138!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  color:#dbe7f3!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  white-space:nowrap!important;
+}
+.qmes-iqc-new-btn:hover,
+.qmes-inspection-new-btn:hover{
+  border-color:#64748b!important;
+  background:#152b46!important;
+  color:#ffffff!important;
+}
+@media(max-width:680px){
+  .qmes-iqc-quickbar,
+  .qmes-inspection-quickbar{align-items:flex-start!important;flex-direction:row!important;}
+  .qmes-iqc-new-btn,
+  .qmes-inspection-new-btn{width:auto!important;align-self:auto!important;}
 }
 </style>
 
