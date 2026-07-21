@@ -8469,22 +8469,76 @@ function printDoc(sourceEl) {
     return;
   }
 
-  const clone = source.cloneNode(true);
-  clone.querySelectorAll("button, .qmes-modal-close, .qmes-print-actions, [data-no-print='true']")
-    .forEach((el) => el.remove());
+  /* ── 화면 미리보기 = 실제 인쇄 결과 ──
+     화면에 렌더링된 계산 스타일(computed style)을 요소별 인라인으로 복제해
+     인쇄 전용 CSS 재정의(글자/여백/표 높이 등)의 영향을 완전히 차단하고,
+     화면 모습 그대로를 A4에 맞게 비율만 축소하여 출력합니다. */
+  const clone = qmesCloneWithScreenStyles(source);
   clone.classList.add("qmes-a4-preview-clone");
 
-  printRoot.innerHTML = "";
-  printRoot.appendChild(clone);
+  /* 캔버스(QR 등) 내용은 cloneNode로 복사되지 않으므로 비트맵을 직접 복사 */
+  const srcCanvases = source.querySelectorAll("canvas");
+  const cloneCanvases = clone.querySelectorAll("canvas");
+  srcCanvases.forEach((c, i) => {
+    const cc = cloneCanvases[i];
+    if (!cc) return;
+    try {
+      cc.width = c.width;
+      cc.height = c.height;
+      cc.getContext("2d").drawImage(c, 0, 0);
+    } catch (_) {}
+  });
 
-  document.body.classList.remove("print-label", "qmes-screen-exact-print");
-  document.body.classList.add("print-doc");
+  /* 인쇄에 불필요한 요소 제거 */
+  clone.querySelectorAll("button, .qmes-modal-close, .qmes-print-actions, [data-no-print='true']")
+    .forEach((el) => el.remove());
+
+  /* 배경색·표 음영이 미리보기와 동일하게 인쇄되도록 강제 */
+  [clone, ...clone.querySelectorAll("*")].forEach((el) => {
+    try {
+      el.style.setProperty("-webkit-print-color-adjust", "exact", "important");
+      el.style.setProperty("print-color-adjust", "exact", "important");
+    } catch (_) {}
+  });
+
+  /* 화면 크기 측정 후 A4(210×297mm)에 맞는 축소 배율 계산 */
+  const rect = source.getBoundingClientRect();
+  const MM_TO_PX = 96 / 25.4;
+  const PAGE_W = 210 * MM_TO_PX;
+  const PAGE_H = 297 * MM_TO_PX;
+  const MARGIN = 8 * MM_TO_PX; /* 상하좌우 8mm 여백 */
+  const availW = PAGE_W - MARGIN * 2;
+  const availH = PAGE_H - MARGIN * 2;
+  const scale = Math.min(availW / rect.width, availH / rect.height, 1);
+
+  /* 복제본을 화면 폭 그대로 두고 transform으로만 축소 → 레이아웃 재계산 없음 */
+  clone.style.setProperty("width", rect.width + "px", "important");
+  clone.style.setProperty("margin", "0", "important");
+  clone.style.setProperty("box-shadow", "none", "important");
+  clone.style.setProperty("transform", "scale(" + scale + ")", "important");
+  clone.style.setProperty("transform-origin", "top left", "important");
+
+  const stage = document.createElement("div");
+  stage.className = "qmes-screen-print-stage";
+  /* 수입검사 성적서는 용지 상단에서 2.5cm 추가 하향 배치 */
+  const extraTop = source.classList.contains("qmes-iqc-doc") ? 25 * MM_TO_PX : 0;
+  stage.style.setProperty("width", (rect.width * scale) + "px", "important");
+  stage.style.setProperty("height", (rect.height * scale) + "px", "important");
+  stage.style.setProperty("margin", (MARGIN + extraTop) + "px auto 0", "important");
+  stage.style.setProperty("overflow", "visible", "important");
+  stage.appendChild(clone);
+
+  printRoot.innerHTML = "";
+  printRoot.appendChild(stage);
+
+  document.body.classList.remove("print-label", "print-doc");
+  document.body.classList.add("qmes-screen-exact-print");
 
   let cleaned = false;
   const cleanup = () => {
     if (cleaned) return;
     cleaned = true;
-    document.body.classList.remove("print-doc");
+    document.body.classList.remove("qmes-screen-exact-print");
     printRoot.innerHTML = "";
     window.removeEventListener("afterprint", cleanup);
   };
@@ -9116,97 +9170,101 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
               <div className="text-xs text-slate-500 mt-0.5">{isIqc ? "INCOMING INSPECTION REPORT" : type === "PQC" ? "PROCESS INSPECTION REPORT" : "OUTGOING INSPECTION REPORT"}</div>
             </div>
             <div className="qmes-iqc-header-meta text-right text-xs text-slate-600">
-              <div>성적서 번호: <span className="font-mono">{isIqc ? (record.inNo || "-") : (record.id || record.lot || "-")}</span></div>
-              <div>검사일: {isIqc ? ((record.recv || "-").slice(0,10)) : (record.date || "-")}</div>
+              <div>성적서번호 : <span className="font-mono">{isIqc ? (record.inNo || "-") : (record.id || record.lot || "-")}</span></div>
+              <div>검사일자 : {isIqc ? ((record.recv || "-").slice(0,10)) : (record.date || "-")}</div>
             </div>
           </div>
 
           {isIqc ? (
             <>
-              <div className="qmes-iqc-report-section qmes-iqc-report-first">
-                <div className="qmes-iqc-report-title">입고 기본정보</div>
-                <table className="qmes-iqc-basic-table">
-                  <tbody>
-                    <tr>
-                      <th>입고번호</th><td className="font-mono">{record.inNo || "-"}</td>
-                      <th>입고일자</th><td>{(record.recv || "-").slice(0,10)}</td>
-                      <th>검사일자</th><td>{(record.inspectedAt || record.recv || "-").slice(0,10)}</td>
-                    </tr>
-                    <tr>
-                      <th>업체명</th><td>{record.supplier || "-"}</td>
-                      <th>원재료명</th><td>{record.name || "-"}</td>
-                      <th>LOT No.</th><td className="font-mono">{record.lot || "-"}</td>
-                    </tr>
-
-                  </tbody>
+              <div className="qmes-iqc2-sec qmes-iqc2-first">
+                <div className="qmes-iqc2-sec-title">기본정보</div>
+                <table className="qmes-iqc2-table">
+                  <thead><tr><th>입고번호</th><th>LOT</th><th>원재료명</th><th>업체명</th><th>검사자</th></tr></thead>
+                  <tbody><tr>
+                    <td className="font-mono">{record.inNo || "-"}</td>
+                    <td className="font-mono">{record.lot || "-"}</td>
+                    <td>{record.name || "-"}</td>
+                    <td>{record.supplier || "-"}</td>
+                    <td>{record.inspector || record.by || "-"}</td>
+                  </tr></tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">수량정보</div>
-                <table className="qmes-iqc-qty-table">
-                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>비고</th></tr></thead>
-                  <tbody><tr><td>{record.name || "-"}</td><td>{record.qty || "-"}</td><td>{record.inspectQty || "-"}</td><td>{record.defectQty || "0"}</td><td>-</td></tr></tbody>
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">수량정보</div>
+                <table className="qmes-iqc2-table">
+                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불합수량</th><th>비고</th></tr></thead>
+                  <tbody><tr>
+                    <td>{record.name || "-"}</td>
+                    <td>{record.qty || "-"}</td>
+                    <td>{record.inspectQty || "-"}</td>
+                    <td>{record.defectQty || "0"}</td>
+                    <td>-</td>
+                  </tr></tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">검사결과</div>
-                <table className="qmes-iqc-inspection-table w-full text-xs border border-slate-900">
-                  <thead><tr className="border-b border-slate-900">
-                    <th className="border-r border-slate-300 py-2 w-10">NO</th>
-                    <th className="border-r border-slate-300 py-2 w-24">검사항목</th>
-                    <th className="border-r border-slate-300 py-2">검사기준</th>
-                    <th className="border-r border-slate-300 py-2 w-28">검사결과</th>
-                    <th className="py-2 w-20">판정</th>
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">검사결과</div>
+                <table className="qmes-iqc2-table qmes-iqc2-result-table">
+                  <thead><tr>
+                    <th className="qmes-iqc2-col-no">No</th>
+                    <th className="qmes-iqc2-col-item">검사항목</th>
+                    <th className="qmes-iqc2-col-spec">검사기준</th>
+                    <th className="qmes-iqc2-col-method">검사방법</th>
+                    <th className="qmes-iqc2-col-result">결과</th>
+                    <th className="qmes-iqc2-col-judge">판정</th>
                   </tr></thead>
                   <tbody>
                     {[
-                      ["외관","파손, 변형, 누액 및 오염이 없을 것",record.visual,record.visual === "합격" ? "이상 없음" : "이상 발생"],
-                      ["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",record.label,record.label === "합격" ? "일치" : "불일치"],
-                      ["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",record.weight,record.weight === "합격" ? "적합" : "부적합"],
-                      ["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",record.coa,record.coa === "합격" ? "확인 완료" : "미확인/불일치"],
-                    ].map(([k,spec,judge,result],i) => (
+                      ["외관","파손, 변형, 누액 및 오염이 없을 것","육안 관찰",record.visual,record.visual === "합격" ? "이상없음" : "이상 발생"],
+                      ["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것","육안",record.label,record.label === "합격" ? "이상없음" : "불일치"],
+                      ["포장","구성자재(내/외포 등) 상태가 양호하고 파손이 없을 것","육안",(record.packing || record.weight),(record.packing || record.weight) === "합격" ? "이상없음" : "이상 발생"],
+                      ["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것","확인, 대조",record.coa,record.coa === "합격" ? "일치" : "불일치"],
+                    ].map(([k,spec,method,judge,result],i) => (
                       <tr key={k}>
-                        <td className="border-r border-slate-300 px-2 py-2 text-center">{i+1}</td>
-                        <td className="border-r border-slate-300 px-3 py-2 text-center font-semibold">{k}</td>
-                        <td className="border-r border-slate-300 px-3 py-2">{spec}</td>
-                        <td className="border-r border-slate-300 px-3 py-2 text-center">{result}</td>
-                        <td className={`px-3 py-2 text-center font-bold ${judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{judge || "-"}</td>
+                        <td>{i+1}</td>
+                        <td className="qmes-iqc2-item-cell">{k}</td>
+                        <td className="qmes-iqc2-spec-cell">{spec}</td>
+                        <td>{method}</td>
+                        <td>{result}</td>
+                        <td className={judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{judge || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">판정</div>
-                <table className="qmes-iqc-judge-table">
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">종합판정</div>
+                <table className="qmes-iqc2-table">
+                  <thead><tr><th>종합판정</th><th>판정결과</th><th>처리결과</th><th>입고 승인</th></tr></thead>
                   <tbody><tr>
-                    <th>종합판정</th>
-                    <td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "합격" : "불합격"}</td>
-                    <th>처리결과</th>
-                    <td className={record.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{record.judge === "합격" ? "입고 승인" : "불합격"}</td>
+                    <td className="font-semibold">{record.judge === "합격" ? "합격" : "불합격"}</td>
+                    <td className={record.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{record.judge === "합격" ? "합격" : "불합격"}</td>
+                    <td className="font-semibold">{record.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
+                    <td className={record.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{record.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
                   </tr></tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">특이사항</div>
-                <div className="qmes-iqc-remarks-panel">{record.remarks || "-"}</div>
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">특이사항</div>
+                <div className="qmes-iqc2-remarks">{record.remarks || "-"}</div>
               </div>
 
-              <div className="qmes-iqc-auth-row">
-                <IqcBarcodeQr record={record} />
-                <table className="qmes-iqc-sign-table text-xs text-center">
+              <div className="qmes-iqc2-auth-row">
+                <div className="qmes-iqc2-code-box"><IqcBarcodeQr record={record} /></div>
+                <table className="qmes-iqc2-sign-table">
                   <tbody>
-                    <tr className="qmes-iqc-sign-head"><th>작성</th><th>검토</th><th>승인</th></tr>
-                    <tr className="qmes-iqc-sign-value"><td>{record.inspector || record.by || ""}</td><td></td><td></td></tr>
+                    <tr><th>작성</th><th>검토</th><th>승인</th></tr>
+                    <tr><td>{record.inspector || record.by || ""}</td><td></td><td></td></tr>
                   </tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-doc-footer" style={{marginTop:"18px",paddingTop:"8px",borderTop:"1px solid #cbd5e1",fontSize:"11px",fontWeight:700,color:"#374151",textAlign:"center"}}>본 문서는 QMES에서 발행된 관리본입니다.</div>
+              <div className="qmes-iqc2-doc-footer">본 문서는 QMES에서 발행된 관리문서입니다.</div>
             </>
           ) : (
             <>
@@ -10675,97 +10733,101 @@ function InspectionReportsTab() {
               <div className="text-xs text-slate-500 mt-0.5">{type === "IQC" ? "INCOMING INSPECTION REPORT" : "Inspection Report"}</div>
             </div>
             <div className="qmes-iqc-header-meta text-right text-xs text-slate-600">
-              <div>성적서 번호: <span className="font-mono">{reportNo}</span></div>
-              <div>검사일: {reportDate}</div>
+              <div>성적서번호 : <span className="font-mono">{reportNo}</span></div>
+              <div>검사일자 : {reportDate}</div>
             </div>
           </div>
 
           {type === "IQC" ? (
             <>
-              <div className="qmes-iqc-report-section qmes-iqc-report-first">
-                <div className="qmes-iqc-report-title">입고 기본정보</div>
-                <table className="qmes-iqc-basic-table">
-                  <tbody>
-                    <tr>
-                      <th>입고번호</th><td className="font-mono">{iqc.inNo || "-"}</td>
-                      <th>입고일자</th><td>{(iqc.recv || "-").slice(0,10)}</td>
-                      <th>검사일자</th><td>{(iqc.inspectedAt || iqc.recv || "-").slice(0,10)}</td>
-                    </tr>
-                    <tr>
-                      <th>업체명</th><td>{iqc.supplier || "-"}</td>
-                      <th>원재료명</th><td>{iqc.name || "-"}</td>
-                      <th>LOT No.</th><td className="font-mono">{iqc.lot || "-"}</td>
-                    </tr>
-
-                  </tbody>
+              <div className="qmes-iqc2-sec qmes-iqc2-first">
+                <div className="qmes-iqc2-sec-title">기본정보</div>
+                <table className="qmes-iqc2-table">
+                  <thead><tr><th>입고번호</th><th>LOT</th><th>원재료명</th><th>업체명</th><th>검사자</th></tr></thead>
+                  <tbody><tr>
+                    <td className="font-mono">{iqc.inNo || "-"}</td>
+                    <td className="font-mono">{iqc.lot || "-"}</td>
+                    <td>{iqc.name || "-"}</td>
+                    <td>{iqc.supplier || "-"}</td>
+                    <td>{iqc.inspector || iqc.by || "-"}</td>
+                  </tr></tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">수량정보</div>
-                <table className="qmes-iqc-qty-table">
-                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불량수량</th><th>비고</th></tr></thead>
-                  <tbody><tr><td>{iqc.name || "-"}</td><td>{iqc.qty || "-"}</td><td>{iqc.inspectQty || "-"}</td><td>{iqc.defectQty || "0"}</td><td>-</td></tr></tbody>
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">수량정보</div>
+                <table className="qmes-iqc2-table">
+                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불합수량</th><th>비고</th></tr></thead>
+                  <tbody><tr>
+                    <td>{iqc.name || "-"}</td>
+                    <td>{iqc.qty || "-"}</td>
+                    <td>{iqc.inspectQty || "-"}</td>
+                    <td>{iqc.defectQty || "0"}</td>
+                    <td>-</td>
+                  </tr></tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">검사결과</div>
-                <table className="qmes-iqc-inspection-table w-full text-xs border border-slate-900">
-                  <thead><tr className="border-b border-slate-900">
-                    <th className="border-r border-slate-300 py-2 w-10">NO</th>
-                    <th className="border-r border-slate-300 py-2 w-24">검사항목</th>
-                    <th className="border-r border-slate-300 py-2">검사기준</th>
-                    <th className="border-r border-slate-300 py-2 w-28">검사결과</th>
-                    <th className="py-2 w-20">판정</th>
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">검사결과</div>
+                <table className="qmes-iqc2-table qmes-iqc2-result-table">
+                  <thead><tr>
+                    <th className="qmes-iqc2-col-no">No</th>
+                    <th className="qmes-iqc2-col-item">검사항목</th>
+                    <th className="qmes-iqc2-col-spec">검사기준</th>
+                    <th className="qmes-iqc2-col-method">검사방법</th>
+                    <th className="qmes-iqc2-col-result">결과</th>
+                    <th className="qmes-iqc2-col-judge">판정</th>
                   </tr></thead>
                   <tbody>
                     {[
-                      ["외관","파손, 변형, 누액 및 오염이 없을 것",iqc.visual,iqc.visual === "합격" ? "이상 없음" : "이상 발생"],
-                      ["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것",iqc.label,iqc.label === "합격" ? "일치" : "불일치"],
-                      ["중량","구매계약서 또는 사양서에 정의된 중량 허용오차 이내일 것",iqc.weight,iqc.weight === "합격" ? "적합" : "부적합"],
-                      ["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것",iqc.coa,iqc.coa === "합격" ? "확인 완료" : "미확인/불일치"],
-                    ].map(([k,spec,judge,result],i) => (
+                      ["외관","파손, 변형, 누액 및 오염이 없을 것","육안 관찰",iqc.visual,iqc.visual === "합격" ? "이상없음" : "이상 발생"],
+                      ["라벨","자재명, LOT No., 제조일자(또는 입고일자) 및 공급사명이 표시되어 있을 것","육안",iqc.label,iqc.label === "합격" ? "이상없음" : "불일치"],
+                      ["포장","구성자재(내/외포 등) 상태가 양호하고 파손이 없을 것","육안",(iqc.packing || iqc.weight),(iqc.packing || iqc.weight) === "합격" ? "이상없음" : "이상 발생"],
+                      ["COA","공급사 COA의 시험결과가 구매 규격(SPEC)과 일치할 것","확인, 대조",iqc.coa,iqc.coa === "합격" ? "일치" : "불일치"],
+                    ].map(([k,spec,method,judge,result],i) => (
                       <tr key={k}>
-                        <td className="border-r border-slate-300 px-2 py-2 text-center">{i+1}</td>
-                        <td className="border-r border-slate-300 px-3 py-2 text-center font-semibold">{k}</td>
-                        <td className="border-r border-slate-300 px-3 py-2">{spec}</td>
-                        <td className="border-r border-slate-300 px-3 py-2 text-center">{result}</td>
-                        <td className={`px-3 py-2 text-center font-bold ${judge === "합격" ? "text-emerald-600" : "text-red-600"}`}>{judge || "-"}</td>
+                        <td>{i+1}</td>
+                        <td className="qmes-iqc2-item-cell">{k}</td>
+                        <td className="qmes-iqc2-spec-cell">{spec}</td>
+                        <td>{method}</td>
+                        <td>{result}</td>
+                        <td className={judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{judge || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">판정</div>
-                <table className="qmes-iqc-judge-table">
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">종합판정</div>
+                <table className="qmes-iqc2-table">
+                  <thead><tr><th>종합판정</th><th>판정결과</th><th>처리결과</th><th>입고 승인</th></tr></thead>
                   <tbody><tr>
-                    <th>종합판정</th>
-                    <td className={iqc.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{iqc.judge === "합격" ? "합격" : "불합격"}</td>
-                    <th>처리결과</th>
-                    <td className={iqc.judge === "합격" ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>{iqc.judge === "합격" ? "입고 승인" : "불합격"}</td>
+                    <td className="font-semibold">{iqc.judge === "합격" ? "합격" : "불합격"}</td>
+                    <td className={iqc.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{iqc.judge === "합격" ? "합격" : "불합격"}</td>
+                    <td className="font-semibold">{iqc.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
+                    <td className={iqc.judge === "합격" ? "qmes-iqc2-pass" : "qmes-iqc2-fail"}>{iqc.judge === "합격" ? "입고 승인" : "입고 보류"}</td>
                   </tr></tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-report-section">
-                <div className="qmes-iqc-report-title">특이사항</div>
-                <div className="qmes-iqc-remarks-panel">{iqc.remarks || "-"}</div>
+              <div className="qmes-iqc2-sec">
+                <div className="qmes-iqc2-sec-title">특이사항</div>
+                <div className="qmes-iqc2-remarks">{iqc.remarks || "-"}</div>
               </div>
 
-              <div className="qmes-iqc-auth-row">
-                <IqcBarcodeQr record={iqc} />
-                <table className="qmes-iqc-sign-table text-xs text-center">
+              <div className="qmes-iqc2-auth-row">
+                <div className="qmes-iqc2-code-box"><IqcBarcodeQr record={iqc} /></div>
+                <table className="qmes-iqc2-sign-table">
                   <tbody>
-                    <tr className="qmes-iqc-sign-head"><th>작성</th><th>검토</th><th>승인</th></tr>
-                    <tr className="qmes-iqc-sign-value"><td>{iqc.inspector || iqc.by || ""}</td><td></td><td></td></tr>
+                    <tr><th>작성</th><th>검토</th><th>승인</th></tr>
+                    <tr><td>{iqc.inspector || iqc.by || ""}</td><td></td><td></td></tr>
                   </tbody>
                 </table>
               </div>
 
-              <div className="qmes-iqc-doc-footer" style={{marginTop:"18px",paddingTop:"8px",borderTop:"1px solid #cbd5e1",fontSize:"11px",fontWeight:700,color:"#374151",textAlign:"center"}}>본 문서는 QMES에서 발행된 관리본입니다.</div>
+              <div className="qmes-iqc2-doc-footer">본 문서는 QMES에서 발행된 관리문서입니다.</div>
             </>
           ) : (
             <>
@@ -10824,7 +10886,7 @@ function CoaTab() {
           </div>
           <div className="text-right text-xs text-slate-600">
             <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
-            <div>성적서 번호: <span className="font-mono">{c.no}</span></div>
+            <div>성적서번호 : <span className="font-mono">{c.no}</span></div>
             <div>발행일: {c.ship}</div>
           </div>
         </div>
@@ -13386,6 +13448,161 @@ qmesStart();
 .qmes-iqc-ledger-table td:nth-child(5) .max-w-\[120px\]{
   max-width:100%!important;
   text-align:center!important;
+}
+</style>
+
+
+<style>
+/* 제목: 로고보다 크게 강조 */
+.qmes-iqc-doc .qmes-iqc-centered-title .text-xl{
+  font-size:32px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+.qmes-iqc-doc .qmes-iqc-centered-title .text-xs{
+  font-size:12.5px!important;
+  letter-spacing:.08em!important;
+}
+
+/* 상단 우측 메타 정보 확대 */
+.qmes-iqc-doc .qmes-iqc-header-meta{font-size:13.5px!important;line-height:1.55!important}
+
+/* ===== 수입검사 성적서: 외곽선 포함 전체 선 통일 (색상 #475569, 1px) ===== */
+.qmes-iqc-doc .qmes-iqc2-sec{margin-top:24px!important}
+.qmes-iqc-doc .qmes-iqc2-first{margin-top:22px!important}
+
+/* 섹션 제목: 네이비 바 */
+.qmes-iqc-doc .qmes-iqc2-sec-title{
+  background:#1e3a6d!important;color:#ffffff!important;
+  font-size:15.5px!important;font-weight:800!important;letter-spacing:.02em;
+  padding:7px 12px!important;border:1px solid #1e3a6d!important;border-bottom:none!important;
+  border-radius:0!important;text-align:left!important;
+}
+.qmes-iqc-doc .qmes-iqc2-sec-title::before{content:"\25A0\00A0";font-size:9px;position:relative;top:-1.5px}
+
+/* 표 공통: 외곽선 + 내부선 모두 동일한 1px 단일 색상, 칸 크기 균일 */
+.qmes-iqc-doc .qmes-iqc2-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:15px!important;border:1px solid #475569!important}
+.qmes-iqc-doc .qmes-iqc2-table th,
+.qmes-iqc-doc .qmes-iqc2-table td{
+  border:1px solid #475569!important;padding:12px 10px!important;height:46px!important;
+  text-align:center!important;vertical-align:middle!important;word-break:break-word;
+  background:#ffffff;color:#0f172a;box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc2-table thead th{background:#f8fafc!important;font-weight:700!important;color:#0f172a!important}
+
+/* 칸 폭 균일화: 5열 표(기본정보·수량정보) 20%씩, 4열 표(종합판정) 25%씩 */
+.qmes-iqc-doc .qmes-iqc2-table th:first-child:nth-last-child(5),
+.qmes-iqc-doc .qmes-iqc2-table th:first-child:nth-last-child(5) ~ th,
+.qmes-iqc-doc .qmes-iqc2-table td:first-child:nth-last-child(5),
+.qmes-iqc-doc .qmes-iqc2-table td:first-child:nth-last-child(5) ~ td{width:20%!important}
+.qmes-iqc-doc .qmes-iqc2-table th:first-child:nth-last-child(4),
+.qmes-iqc-doc .qmes-iqc2-table th:first-child:nth-last-child(4) ~ th,
+.qmes-iqc-doc .qmes-iqc2-table td:first-child:nth-last-child(4),
+.qmes-iqc-doc .qmes-iqc2-table td:first-child:nth-last-child(4) ~ td{width:25%!important}
+
+/* 검사결과 표 열 폭 */
+/* 검사결과 세로선을 기본정보·수량정보(20% 격자)와 일치:
+   No+검사항목=20%, 검사기준=40%(20~60%), 검사방법=20%(60~80%), 결과+판정=20% */
+.qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-col-no{width:7%!important}
+.qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-col-item{width:13%!important}
+.qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-col-spec{width:40%!important}
+.qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-col-method{width:20%!important}
+.qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-col-result{width:10%!important}
+.qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-col-judge{width:10%!important}
+.qmes-iqc-doc .qmes-iqc2-item-cell{font-weight:700!important}
+.qmes-iqc-doc .qmes-iqc2-spec-cell{text-align:left!important;padding-left:12px!important}
+.qmes-iqc-doc .qmes-iqc2-pass{color:#059669!important;font-weight:800!important}
+.qmes-iqc-doc .qmes-iqc2-fail{color:#dc2626!important;font-weight:800!important}
+
+/* 특이사항: 동일 색상 외곽선 박스 */
+.qmes-iqc-doc .qmes-iqc2-remarks{
+  border:1px solid #475569!important;padding:13px 12px!important;min-height:52px;
+  font-size:15px!important;text-align:left!important;background:#ffffff;
+}
+
+/* 하단: 바코드 + 결재란 — 외곽선 포함, 동일 색상 */
+.qmes-iqc-doc .qmes-iqc2-auth-row{
+  display:flex!important;justify-content:space-between!important;align-items:stretch!important;
+  gap:20px!important;margin-top:30px!important;width:100%!important;box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc2-code-box{
+  border:1px solid #475569!important;border-radius:0!important;
+  padding:10px 14px!important;display:flex!important;align-items:center!important;
+  flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc2-code-box > *{max-width:100%!important}
+.qmes-iqc-doc .qmes-iqc2-sign-table{
+  border-collapse:collapse!important;font-size:15px!important;table-layout:fixed!important;
+  border:1px solid #475569!important;
+  flex:0 1 42%!important;width:42%!important;max-width:42%!important;min-width:0!important;box-sizing:border-box!important;
+}
+.qmes-iqc-doc .qmes-iqc2-sign-table th,
+.qmes-iqc-doc .qmes-iqc2-sign-table td{border:1px solid #475569!important;width:33.33%!important;text-align:center!important;vertical-align:middle!important;background:#ffffff;box-sizing:border-box!important}
+.qmes-iqc-doc .qmes-iqc2-sign-table th{height:36px!important;padding:6px!important;background:#f8fafc!important;font-weight:700!important;font-size:14.5px!important}
+.qmes-iqc-doc .qmes-iqc2-sign-table td{height:78px!important;padding:6px!important}
+
+.qmes-iqc-doc .qmes-iqc2-doc-footer{
+  margin-top:22px!important;padding-top:10px!important;
+  font-size:13px!important;font-weight:600!important;color:#374151!important;text-align:center!important;
+}
+
+/* 인쇄 시 제목 축소 방지: 구버전 print-doc 규칙(.text-xl 14~16px 강제)을 무효화하고 화면 크기 유지 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-centered-title .text-xl,
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc-centered-title .text-xl{
+    font-size:32px!important;
+    line-height:1.2!important;
+    font-weight:800!important;
+    letter-spacing:.06em!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-centered-title .text-xs,
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc-centered-title .text-xs{
+    font-size:12.5px!important;
+    line-height:1.3!important;
+  }
+  /* 문서 전체를 용지에서 아래로 내림: 상단 여백 확보(이중 적용으로 확실히 하향) */
+  body.print-doc #qmes-print-root .qmes-iqc-doc,
+  body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc{
+    padding-top:30mm!important;
+    box-sizing:border-box!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-centered-header{
+    margin-top:0!important;
+  }
+  /* 인쇄 시 세로 간격: 하단까지 채우되 과하지 않은 중간값 */
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sec{margin-top:42px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-first{margin-top:32px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table td{height:52px!important;padding:13px 10px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-remarks{min-height:66px!important;padding:15px 12px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-auth-row{margin-top:48px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table th{height:38px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table td{height:94px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-doc-footer{margin-top:40px!important;padding-top:14px!important}
+  /* 인쇄 시 본문 글씨 크기 유지(구버전 축소 규칙 무효화) */
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:15.5px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table td{font-size:15px!important;line-height:1.4!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-remarks{font-size:15px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table th{font-size:14.5px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table td{font-size:15px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-doc-footer{font-size:13px!important}
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc-header-meta{font-size:13.5px!important}
+  /* 인쇄 시 표 선이 지워지지 않도록 동일 색상 선 강제 유지 */
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-sign-table td,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-remarks,
+  body.print-doc #qmes-print-root .qmes-iqc-doc .qmes-iqc2-code-box{
+    border-color:#475569!important;
+    border-style:solid!important;
+    border-width:1px!important;
+  }
 }
 </style>
 
