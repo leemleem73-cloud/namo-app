@@ -9482,6 +9482,474 @@ select.qmes-label-judge-select option[value="불합격"]{
 }
 </style>
 
+
+<style id="qmes_remove_section_accents">
+/* 출하관리 포함 모든 관리 제목 왼쪽 컬러선 제거 */
+[class*="report-title"],
+[class*="section-title"],
+.qmes-iqc-report-title,
+.qmes-pqc-report-title,
+.qmes-oqc-report-title{
+ border-left:none!important;
+ padding-left:0!important;
+ box-shadow:none!important;
+}
+
+/* 관리 박스 내부 배경색 제거 */
+.qmes-iqc-section,
+.qmes-pqc-section,
+.qmes-oqc-section{
+ background:transparent!important;
+}
+</style>
+
+
+<style id="QMES_MANAGEMENT_HEADER_FINAL_FIX_20260722">
+/* 수입·공정·출하검사 관리 네모 틀 색상 제거 및 동일 디자인 */
+.qmes-iqc-quickbar,
+.qmes-pqc-quickbar,
+.qmes-oqc-quickbar,
+.qmes-inspection-quickbar{
+  background:#0f2036!important;
+  background-image:none!important;
+  border:1px solid #263b54!important;
+  border-left:1px solid #263b54!important;
+  box-shadow:none!important;
+}
+
+/* 출하검사 관리 왼쪽 초록색 선 완전 삭제 */
+.qmes-oqc-quickbar{
+  border-left-color:#263b54!important;
+}
+.qmes-oqc-quickbar::before,
+.qmes-oqc-quickbar::after{
+  content:none!important;
+  display:none!important;
+}
+
+/* 세 관리 제목을 '수입검사 관리대장' 제목 글씨체로 통일 */
+.qmes-management-title-row strong{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  font-size:.875rem!important;
+  line-height:1.25rem!important;
+  font-weight:600!important;
+  letter-spacing:.025em!important;
+  color:#d3e0ef!important;
+}
+
+/* 영문 보조 제목도 색상 통일 */
+.qmes-management-heading > span,
+.qmes-iqc-quickbar-kicker{
+  color:#63809f!important;
+}
+</style>
+
+
+<style id="QMES_IQC_FONT_RESET_COLOR_FINAL_20260722">
+/* 수입검사 기본정보: 검사일자·LOT No. 입력 글씨체를 업체명 입력칸과 동일하게 */
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input,
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(4) > input{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  font-size:1rem!important;
+  line-height:1.5rem!important;
+  font-weight:400!important;
+  letter-spacing:normal!important;
+  font-variant-numeric:normal!important;
+}
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input[type="date"]::-webkit-datetime-edit,
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input[type="date"]::-webkit-datetime-edit-text,
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input[type="date"]::-webkit-datetime-edit-month-field,
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input[type="date"]::-webkit-datetime-edit-day-field,
+.qmes-iqc-modal-grid .qmes-iqc-field:nth-child(3) > input[type="date"]::-webkit-datetime-edit-year-field{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  font-size:1rem!important;
+  font-weight:400!important;
+}
+
+/* 수입·공정·출하 관리대장 초기화 버튼의 내부 색상 제거 */
+.qmes-iqc-record-filter > button,
+.qmes-pqc-record-filter > button,
+.qmes-oqc-record-filter > button,
+.qmes-iqc-filter-reset{
+  color:#ffffff!important;
+  background:transparent!important;
+  background-image:none!important;
+  border-color:#3b526c!important;
+  box-shadow:none!important;
+}
+.qmes-iqc-record-filter > button:hover,
+.qmes-pqc-record-filter > button:hover,
+.qmes-oqc-record-filter > button:hover,
+.qmes-iqc-filter-reset:hover{
+  color:#ffffff!important;
+  background:transparent!important;
+  background-image:none!important;
+  border-color:#58718c!important;
+  box-shadow:none!important;
+}
+</style>
+
+
+<style id="QMES_IQC_BASIC_VALUE_FONT_MATCH_FINAL_20260722">
+/* 수입검사 기본정보 입력값 전체를 업체명·원재료명과 같은 글씨체/굵기로 통일 */
+.qmes-iqc-modal-section:first-of-type .qmes-iqc-modal-grid .qmes-iqc-field input,
+.qmes-iqc-modal-section:first-of-type .qmes-iqc-modal-grid .qmes-iqc-field select,
+.qmes-iqc-modal-section:first-of-type .qmes-iqc-modal-grid .qmes-iqc-inno-row input,
+.qmes-iqc-modal-section:first-of-type .qmes-iqc-modal-grid .qmes-iqc-inno-row select{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  font-size:16px!important;
+  line-height:24px!important;
+  font-weight:400!important;
+  font-style:normal!important;
+  letter-spacing:normal!important;
+  font-variant:normal!important;
+  font-variant-numeric:normal!important;
+  font-feature-settings:normal!important;
+}
+
+/* 날짜 입력값의 브라우저 기본 숫자 글꼴 제거 */
+.qmes-iqc-modal-section:first-of-type input[type="date"]::-webkit-datetime-edit,
+.qmes-iqc-modal-section:first-of-type input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.qmes-iqc-modal-section:first-of-type input[type="date"]::-webkit-datetime-edit-text,
+.qmes-iqc-modal-section:first-of-type input[type="date"]::-webkit-datetime-edit-month-field,
+.qmes-iqc-modal-section:first-of-type input[type="date"]::-webkit-datetime-edit-day-field,
+.qmes-iqc-modal-section:first-of-type input[type="date"]::-webkit-datetime-edit-year-field{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  font-size:16px!important;
+  line-height:24px!important;
+  font-weight:400!important;
+  font-style:normal!important;
+  letter-spacing:normal!important;
+  font-variant:normal!important;
+  font-variant-numeric:normal!important;
+  font-feature-settings:normal!important;
+}
+
+/* LOT No. 입력칸에 적용될 수 있는 모노스페이스 강제 해제 */
+.qmes-iqc-modal-section:first-of-type .qmes-iqc-field:nth-child(4) input,
+.qmes-iqc-modal-section:first-of-type input[placeholder*="LOT"]{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  font-weight:400!important;
+  font-variant-numeric:normal!important;
+}
+</style>
+
+
+<style id="QMES_PQC_RECORD_SPACING_MATCH_20260722">
+/* 공정검사 기록 테이블을 수입검사와 동일한 글자 간격 */
+.qmes-pqc-record-table th,
+.qmes-pqc-record-table td,
+.qmes-pqc-page table th,
+.qmes-pqc-page table td{
+    letter-spacing:0 !important;
+    word-spacing:0 !important;
+    font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+}
+.qmes-pqc-page table td{
+    padding-top:10px!important;
+    padding-bottom:10px!important;
+}
+</style>
+
+
+<style id="QMES_RESET_BUTTON_BORDER_20260722">
+/* 초기화 버튼 - 색상 없이 테두리만 */
+.qmes-iqc-record-filter > button,
+.qmes-pqc-record-filter > button,
+.qmes-oqc-record-filter > button,
+.qmes-iqc-filter-reset{
+    background:transparent!important;
+    color:#ffffff!important;
+    border:1px solid #4b5f78!important;
+    border-radius:8px!important;
+    box-shadow:none!important;
+}
+.qmes-iqc-record-filter > button:hover,
+.qmes-pqc-record-filter > button:hover,
+.qmes-oqc-record-filter > button:hover,
+.qmes-iqc-filter-reset:hover{
+    background:rgba(255,255,255,.04)!important;
+    border-color:#6c829b!important;
+}
+</style>
+
+
+<style id="QMES_FILTER_HEIGHT_MATCH_20260722">
+/* 검색창 높이를 연도/월/초기화 버튼과 동일하게 */
+.qmes-inspection-search-box,
+.qmes-inspection-search-box input{
+    height:36px!important;
+    min-height:36px!important;
+    box-sizing:border-box!important;
+}
+.qmes-iqc-record-filter select,
+.qmes-pqc-record-filter select,
+.qmes-oqc-record-filter select,
+.qmes-iqc-record-filter>button,
+.qmes-pqc-record-filter>button,
+.qmes-oqc-record-filter>button{
+    height:36px!important;
+    min-height:36px!important;
+    box-sizing:border-box!important;
+}
+</style>
+
+<style id="QMES_OQC_MATCH_PQC_SPACING_FINAL_20260722">
+/* 출하검사 전체 구역 간격을 공정검사와 동일하게 */
+.qmes-oqc-page{
+  gap:16px!important;
+}
+
+/* 출하검사 검색/기록 영역 간격 */
+.qmes-oqc-record-filter{
+  gap:10px!important;
+  align-items:center!important;
+}
+
+/* 출하검사 기록 테이블: 출하번호부터 관리까지 일정한 간격 */
+.qmes-oqc-record-table,
+.qmes-oqc-page table{
+  width:100%!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+
+.qmes-oqc-record-table th,
+.qmes-oqc-record-table td,
+.qmes-oqc-page table th,
+.qmes-oqc-page table td{
+  padding:10px 12px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+  box-sizing:border-box!important;
+}
+
+/* 출하번호 ~ 관리 열 너비 균등 배치 */
+.qmes-oqc-record-table th,
+.qmes-oqc-record-table td{
+  width:auto!important;
+}
+
+/* 마지막 관리 열도 다른 열과 동일한 여백 유지 */
+.qmes-oqc-record-table th:last-child,
+.qmes-oqc-record-table td:last-child,
+.qmes-oqc-page table th:last-child,
+.qmes-oqc-page table td:last-child{
+  padding-left:12px!important;
+  padding-right:12px!important;
+  text-align:center!important;
+}
+
+/* 빈 기록 문구 중앙 정렬 */
+.qmes-empty-inspection-record,
+.qmes-oqc-empty-record{
+  width:100%!important;
+  padding:32px 12px!important;
+  text-align:center!important;
+  letter-spacing:0!important;
+}
+</style>
+
+
+<style id="QMES_OQC_RESET_BUTTON_BOTTOM_ALIGN_20260722">
+/* 출하검사 초기화 버튼을 검색창/연도/월 입력칸 하단 기준선에 맞춤 */
+.qmes-oqc-record-filter{
+  align-items:flex-end!important;
+}
+
+.qmes-oqc-record-filter > button{
+  height:36px!important;
+  min-height:36px!important;
+  align-self:flex-end!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+  box-sizing:border-box!important;
+}
+</style>
+
+
+<style id="QMES_IQC_PQC_OQC_TABLE_HEADER_COLOR_UNIFIED_20260722">
+/* 수입·공정·출하검사 기록표 제목칸 색상을 출하검사 기준으로 통일 */
+.qmes-iqc-record-table thead th,
+.qmes-pqc-record-table thead th,
+.qmes-oqc-record-table thead th,
+.qmes-iqc-page table thead th,
+.qmes-pqc-page table thead th,
+.qmes-oqc-page table thead th{
+  background:#16283d!important;
+  background-image:none!important;
+  color:#dbe7f3!important;
+  border-color:#31465d!important;
+  font-weight:600!important;
+}
+</style>
+
+
+<style id="QMES_PQC_OQC_REMARKS_LIVE_DOT_20260722">
+/* 공정·출하 신규등록 특이사항 */
+.qmes-inspection-remarks-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  min-width:0!important;
+}
+.qmes-inspection-remarks-field label{
+  color:#8ca5c4!important;
+  font-size:12px!important;
+  font-weight:600!important;
+}
+.qmes-inspection-remarks-field textarea{
+  width:100%!important;
+  min-width:0!important;
+  min-height:72px!important;
+  padding:9px 11px!important;
+  border:1px solid #334b68!important;
+  border-radius:8px!important;
+  background:#182b42!important;
+  color:#eaf1f8!important;
+  font-size:13px!important;
+  line-height:1.45!important;
+  resize:vertical!important;
+  outline:none!important;
+  box-sizing:border-box!important;
+}
+.qmes-inspection-remarks-field textarea:focus{
+  border-color:#00aad2!important;
+  box-shadow:0 0 0 2px rgba(0,170,210,.12)!important;
+}
+.qmes-inspection-remarks-field textarea::placeholder{
+  color:#63809f!important;
+}
+.qmes-pqc-entry-form .qmes-inspection-remarks-field{
+  margin-top:10px!important;
+}
+.qmes-register-grid-oqc .qmes-inspection-remarks-field{
+  width:390px!important;
+  min-width:390px!important;
+  max-width:390px!important;
+}
+</style>
+
+
+<style id="QMES_PQC_OQC_KPI_DOT_HIGHLIGHT_20260722">
+/* 공정·출하 상단 KPI 카드의 작은 원 불빛 강조 */
+.qmes-kpi-card .rounded-full,
+.qmes-summary-card .rounded-full,
+.qmes-inspection-summary .rounded-full,
+.qmes-metric-card .rounded-full{
+  animation:qmes-kpi-dot-glow 1.8s ease-in-out infinite!important;
+  transform-origin:center!important;
+  will-change:transform,opacity,box-shadow!important;
+}
+
+@keyframes qmes-kpi-dot-glow{
+  0%,100%{
+    transform:scale(.9);
+    opacity:.72;
+    box-shadow:0 0 0 0 currentColor;
+  }
+  50%{
+    transform:scale(1.18);
+    opacity:1;
+    box-shadow:0 0 0 5px transparent,0 0 10px currentColor;
+  }
+}
+</style>
+
+
+<style id="QMES_PQC_OQC_REMARKS_ACTIONS_MEASURE_20260722">
+/* 공정·출하 특이사항: 수입검사와 동일한 가로 폭·높이 */
+.qmes-pqc-entry-form .qmes-inspection-remarks-field,
+.qmes-register-grid-oqc .qmes-inspection-remarks-field{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  grid-column:1 / -1!important;
+  margin-top:10px!important;
+}
+.qmes-pqc-entry-form .qmes-inspection-remarks-field textarea,
+.qmes-register-grid-oqc .qmes-inspection-remarks-field textarea{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:92px!important;
+  height:92px!important;
+  padding:10px 12px!important;
+  box-sizing:border-box!important;
+  resize:vertical!important;
+}
+
+/* 수입검사형 취소/저장 버튼 */
+.qmes-inspection-action-row{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:9px!important;
+  margin-top:12px!important;
+  grid-column:1 / -1!important;
+}
+.qmes-inspection-cancel-btn,
+.qmes-inspection-save-btn{
+  min-width:92px!important;
+  height:40px!important;
+  padding:0 18px!important;
+  border-radius:7px!important;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+.qmes-inspection-cancel-btn{
+  color:#b8c8da!important;
+  border:1px solid #3a526f!important;
+  background:#102138!important;
+}
+.qmes-inspection-cancel-btn:hover{
+  color:#fff!important;
+  background:#152b46!important;
+}
+.qmes-inspection-save-btn{
+  color:#fff!important;
+  border:1px solid #008bb8!important;
+  background:linear-gradient(180deg,#00a9dc 0%,#007fa9 100%)!important;
+}
+.qmes-inspection-save-btn:hover{
+  background:linear-gradient(180deg,#00b7eb 0%,#008bb8 100%)!important;
+}
+
+/* 출하검사 1회·2회·3회 선택 */
+.qmes-oqc-measure-count{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin-bottom:7px!important;
+}
+.qmes-oqc-measure-count button{
+  min-width:54px!important;
+  height:30px!important;
+  padding:0 10px!important;
+  border:1px solid #334b68!important;
+  border-radius:7px!important;
+  color:#9fb2c8!important;
+  background:#102138!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.qmes-oqc-measure-count button:hover{
+  color:#fff!important;
+  border-color:#4d6b8b!important;
+  background:#152b46!important;
+}
+.qmes-oqc-measure-count button.is-active{
+  color:#e8faff!important;
+  border-color:rgba(65,196,238,.72)!important;
+  background:rgba(65,196,238,.14)!important;
+  box-shadow:inset 0 -2px 0 #41c4ee!important;
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -10683,7 +11151,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     value1: "",
     value2: "",
     value3: "",
-    judge: "합격"
+    judge: "합격",
+    remarks: ""
   });
   const [measurementRows, setMeasurementRows] = useState([]);
   const [measurementInput, setMeasurementInput] = useState("");
@@ -10735,6 +11204,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const autoJ = isNumericItem && measurementAverage != null && !inputError
     ? autoJudge(form.check, String(measurementAverage))
     : null;
+  const oqcAutoJudge = (() => {
+    const values = measurementValues.map((v) => String(v || "").trim().toLowerCase());
+    if (!values.length) return "합격";
+    if (form.check === "전해액 안정성") return values.every((v) => v === "미탈리") ? "합격" : "불합격";
+    if (form.check === "외관") return values.every((v) => v === "이상없음" || v === "정상") ? "합격" : "불합격";
+    if (form.check === "절연저항" && values.some((v) => v.includes("overflow"))) return "합격";
+    return autoJ || "합격";
+  })();
   const pqcItems = ["점도", "고형분", "입도(Dmax)", "외관"];
   const pqcComplete = pqcItems.every((k) => {
     const vals = Array.isArray(pqcValues[k]) ? pqcValues[k] : [pqcValues[k]];
@@ -10781,7 +11258,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           value:values.join(" / "),
           measurements:values,
           average:check === "외관" || nums.length !== values.length ? null : nums.reduce((a,b)=>a+b,0)/nums.length,
-          judge:pqcJudges[check], note:`${QC_ITEMS[check]?.stage || "공정"}`, inspector
+          judge:pqcJudges[check], note:`${QC_ITEMS[check]?.stage || "공정"}`, remarks:form.remarks || "", inspector
         };
       });
       const next = editingId ? [...records.filter((r)=>r.id!==editingId), ...newRows] : [...newRows, ...records];
@@ -10801,7 +11278,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const date = form.date;
-    const judge = form.judge;
+    const judge = oqcAutoJudge;
     const lotNo = form.lot.trim();
     const prev = editingId ? records.find((r) => r.id === editingId) : null;
     const inspectionNo = editingId || nextInspectionNo(storeKey, date, records, "id");
@@ -10823,6 +11300,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       average: measurementAverage,
       judge,
       note: `${spec.stage}`,
+      remarks: form.remarks || "",
       inspector: (window.__QMES_USER__ || "현재 사용자")
     };
     const next = editingId ? records.map((r) => r.id === editingId ? rec : r) : [rec, ...records];
@@ -10859,7 +11337,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     }
     dbSave();
     setEditingId(null);
-    setForm({ ...form, value: "", value1: "", value2: "", value3: "", judge: "합격" });
+    setForm({ ...form, value: "", value1: "", value2: "", value3: "", judge: "합격", remarks: "" });
     setMeasurementRows([]);
     setMeasurementInput("");
     setTried(false);
@@ -10881,7 +11359,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       value1: savedMeasurements[0] || "",
       value2: savedMeasurements[1] || "",
       value3: savedMeasurements[2] || "",
-      judge: r.judge || "합격"
+      judge: r.judge || "합격",
+      remarks: r.remarks || ""
     });
     setMeasurementRows(savedMeasurements.filter((v) => String(v || "").trim() !== ""));
     setMeasurementInput("");
@@ -10933,7 +11412,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       <InspectionSummary
         items={[
           { label: "당월 검사", value: monthRecords.length, unit: "건", tone: "violet" },
-          { label: "금일 검사", value: todayRecords.length, unit: "건", tone: "sky" },
           { label: "합격률", value: rate, unit: "%", tone: "green" },
           { label: "부적합", value: fail, unit: "건", tone: "red" }
         ]}
@@ -10946,7 +11424,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <strong>{isOqc ? "출하검사 관리" : "공정검사 관리"}</strong>
             <button type="button" className="qmes-inspection-new-btn" onClick={()=>{
               setEditingId(null);
-              setForm({ date:today, shipDate:today, lot:isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "", product:"", check:itemKeys[0], value:"", value1:"", value2:"", value3:"", judge:"합격" });
+              setForm({ date:today, shipDate:today, lot:isOqc ? (DB.batches?.[0]?.no || lotOptions?.[0] || "") : "", product:"", check:itemKeys[0], value:"", value1:"", value2:"", value3:"", judge:"합격", remarks:"" });
               setMeasurementRows([]); setMeasurementInput(""); setPqcValues(makeInitialPqcValues()); setTried(false); setShowRegisterModal(true);
             }}><Plus size={16}/> 신규등록</button>
           </div>
@@ -11004,8 +11482,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   </tbody>
                 </table>
               </div>
-              <div className="qmes-pqc-result-row"><span>판정</span><Badge tone={pqcOverallJudge === "합격" ? "green" : "red"}>{pqcOverallJudge}</Badge></div>
-              <div className="qmes-pqc-save-row"><button onClick={addRecord} className="qmes-pqc-save-btn"><Plus size={15}/>{editingId ? "검사 수정 저장" : "검사 등록"}</button></div>
+              <div className="qmes-inspection-remarks-field">
+                <label>특이사항</label>
+                <textarea value={form.remarks || ""} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항을 입력하세요" />
+              </div>
+              <div className="qmes-inspection-action-row">
+                <button type="button" onClick={()=>{setEditingId(null);setForm({...form,value:"",value1:"",value2:"",value3:"",remarks:""});}} className="qmes-inspection-cancel-btn">취소</button>
+                <button type="button" onClick={addRecord} className="qmes-inspection-save-btn">저장</button>
+              </div>
             </div>
           ) : (
         <div className="pb-1">
@@ -11137,24 +11621,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               <div className="qmes-measurement-average">평균 <strong>{measurementAverage.toFixed(3)}</strong></div>
             )}
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-slate-400">판정</label>
-            <select value={form.judge}
-              onChange={(e) => setForm({ ...form, judge: e.target.value })}
-              title="판정 선택"
-              className={`qmes-judge-select bg-slate-800 border rounded px-3 py-2 text-sm focus:outline-none ${
-                form.judge === "불합격"
-                  ? "border-red-500/40 text-red-400"
-                  : "border-emerald-500/40 text-emerald-400"
-              }`}>
-              <option value="합격" style={{color:"#22c55e",backgroundColor:"#0f172a",fontWeight:700}}>합격</option>
-              <option value="불합격" style={{color:"#ef4444",backgroundColor:"#0f172a",fontWeight:700}}>불합격</option>
-            </select>
+          <div className="flex flex-col gap-1 qmes-inspection-remarks-field">
+            <label className="text-xs font-medium text-slate-400">특이사항</label>
+            <textarea value={form.remarks || ""} onChange={(e)=>setForm({...form,remarks:e.target.value})} placeholder="특이사항을 입력하세요" />
           </div>
-          <button onClick={addRecord}
-            className="flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
-            <Plus size={15} /> {editingId ? "검사 수정 저장" : "검사 등록"}
-          </button>
+          <div className="qmes-inspection-action-row">
+      <button type="button" onClick={()=>{setEditingId(null);setForm({...form,value:"",value1:"",value2:"",value3:"",remarks:""});}} className="qmes-inspection-cancel-btn">취소</button>
+      <button type="button" onClick={addRecord} className="qmes-inspection-save-btn">저장</button>
+    </div>
           </div>
         </div>
           )}
@@ -11238,7 +11712,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </thead>
             <tbody>
               {filteredRecords.length === 0 && (
-                <tr><td colSpan={isOqc ? 11 : 7} className="py-6 text-center text-sm text-slate-500">검사 기록이 없습니다 — 상단에서 측정값을 등록하면 여기에 기록됩니다.</td></tr>
+                <tr><td colSpan={isOqc ? 11 : 7} className="py-6 text-center text-sm text-slate-500">{isOqc ? "출하검사 검사 기록이 없습니다." : "검사 기록이 없습니다."}</td></tr>
               )}
               {displayRecords.map((r) => {
                 const groupRows = isOqc ? [r] : getPqcGroupRows(r);
@@ -12722,7 +13196,7 @@ function IqcTab() {
                 <th>검사일</th><th>LOT No.</th><th>업체명</th><th>원재료명</th><th>판정</th><th>검사자</th><th className="text-center">관리</th>
               </tr></thead>
               <tbody>
-                {filteredRows.length === 0 && <tr><td colSpan={7} className="qmes-iqc-empty-row">검색 조건에 맞는 수입검사 기록이 없습니다.</td></tr>}
+                {filteredRows.length === 0 && <tr><td colSpan={7} className="qmes-iqc-empty-row">검색 조건에 맞는 수입출하검사 검사 기록이 없습니다.</td></tr>}
                 {filteredRows.map((r) => (
                   <tr key={r.inNo || r.lot}>
                     <td className="qmes-date-cell">{(r.inspectedAt || r.recv || "-").slice(0,10)}</td>
