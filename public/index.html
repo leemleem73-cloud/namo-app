@@ -11214,8 +11214,59 @@ function DashboardTab() {
 /* ──────────────────────────── 생산 관리 (배치) ──────────────────────────── */
 
 function ProductionTab() {
+  const [version, setVersion] = useState(0);
+  const [draftDone, setDraftDone] = useState(() => Object.fromEntries((DB.batches || []).map((b) => [b.no, String(Number(b.done || 0))])));
   const list = DB.batches;
   const stTone = { 발행: "violet", 진행중: "blue", 완료: "green", 대기: "amber", 계획: "gray" };
+
+  const saveProductionActual = (batch) => {
+    const raw = String(draftDone[batch.no] ?? batch.done ?? 0).replace(/,/g, "").trim();
+    if (!/^\d+(?:\.\d+)?$/.test(raw)) {
+      window.alert("생산실적은 0 이상의 숫자로 입력하세요.");
+      setDraftDone((prev) => ({ ...prev, [batch.no]: String(Number(batch.done || 0)) }));
+      return;
+    }
+
+    const actual = Math.max(0, Number(raw));
+    const plan = Math.max(0, Number(batch.plan || 0));
+    const status = actual <= 0 ? "발행" : actual < plan ? "진행중" : "완료";
+    batch.done = actual;
+    batch.status = status;
+    batch.updatedAt = new Date().toISOString();
+
+    const doc = DB.woDocs?.[batch.no];
+    if (doc) {
+      DB.woDocs[batch.no] = {
+        ...doc,
+        productionActual: actual,
+        productionProgress: plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0,
+        status: status === "완료" ? "완료" : status,
+      };
+    }
+
+    const lot = DB.lots?.[batch.no];
+    if (lot) {
+      lot.stage = "생산";
+      lot.qty = `${actual.toLocaleString()} kg / 계획 ${plan.toLocaleString()} kg`;
+      if (!String(lot.status || "").includes("홀드")) {
+        lot.status = status === "완료" ? "생산완료 — 검사 대기" : status === "진행중" ? "생산중" : "발행 — 생산 대기";
+      }
+      const stepName = "생산실적 입력";
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const detail = `생산실적 ${actual.toLocaleString()}kg / 계획 ${plan.toLocaleString()}kg (${plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0}%)`;
+      const steps = Array.isArray(lot.steps) ? [...lot.steps] : [];
+      const idx = steps.findIndex((st) => st.name === stepName);
+      const step = { stage: "생산", name: stepName, time, detail, result: status, by: window.__QMES_USER__ || "-" };
+      if (idx >= 0) steps[idx] = step; else steps.push(step);
+      lot.steps = steps;
+    }
+
+    dbSave();
+    setDraftDone((prev) => ({ ...prev, [batch.no]: String(actual) }));
+    setVersion((v) => v + 1);
+  };
+
   return (
     <Panel title="배치 작업지시 현황" right={<span className="text-xs text-slate-400">총 {list.length}건</span>}>
       <div className="overflow-x-auto -mx-4 px-4">
@@ -11244,7 +11295,28 @@ function ProductionTab() {
                   <td className="py-2.5 pr-3 text-slate-100">{w.item}</td>
                   <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{w.tank}</td>
                   <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{w.plan.toLocaleString()} {w.unit}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-100 font-medium">{w.done.toLocaleString()} {w.unit}</td>
+                  <td className="py-2.5 pr-3 text-right">
+                    <div className="inline-flex items-center justify-end gap-1">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={draftDone[w.no] ?? String(Number(w.done || 0))}
+                        onChange={(e) => setDraftDone((prev) => ({ ...prev, [w.no]: e.target.value }))}
+                        onBlur={() => saveProductionActual(w)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            saveProductionActual(w);
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        className="w-24 h-8 rounded border border-sky-500/40 bg-slate-950 px-2 text-right tabular-nums text-slate-100 font-semibold focus:outline-none focus:border-sky-400"
+                        title="생산실적 입력 후 Enter"
+                      />
+                      <span className="text-xs text-slate-400">{w.unit}</span>
+                    </div>
+                  </td>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-slate-800 rounded overflow-hidden">
@@ -14185,11 +14257,27 @@ function getAutoWoStatus(lotNo) {
 function saveWoManualStatus(lotNo, status) {
   const current = DB.woDocs[lotNo] || {};
   const prev = current.manualStatus || getAutoWoStatus(lotNo);
+  const batch = (DB.batches || []).find((b) => b.no === lotNo);
+  const plan = Math.max(0, Number(current.plan ?? batch?.plan ?? 0));
+
+  let actual = Math.max(0, Number(current.productionActual ?? batch?.done ?? 0));
+  let progress = plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0;
+
+  // 상태 직접 변경 시 생산현황·대시보드까지 같은 값으로 즉시 동기화
+  if (status === "완료") {
+    actual = plan;
+    progress = 100;
+  } else if (status === "발행") {
+    actual = 0;
+    progress = 0;
+  }
 
   DB.woDocs[lotNo] = {
     ...current,
     manualStatus: status,
     status: status,
+    productionActual: actual,
+    productionProgress: progress,
     statusHistory: [
       ...(current.statusHistory || []),
       {
@@ -14199,6 +14287,25 @@ function saveWoManualStatus(lotNo, status) {
       },
     ],
   };
+
+  if (batch) {
+    batch.status = status === "생산중" ? "진행중" : status;
+    batch.done = actual;
+    batch.updatedAt = new Date().toISOString();
+  }
+
+  const lot = DB.lots?.[lotNo];
+  if (lot && !String(lot.status || "").includes("홀드")) {
+    lot.stage = "생산";
+    lot.qty = `${actual.toLocaleString()} kg / 계획 ${plan.toLocaleString()} kg`;
+    lot.status = status === "완료"
+      ? "생산완료 — 검사 대기"
+      : status === "검사중"
+        ? "검사중"
+        : status === "생산중"
+          ? "생산중"
+          : "발행 — 생산 대기";
+  }
 
   dbSave();
 }
@@ -14629,7 +14736,8 @@ function IssueWoTab() {
             <tbody>
               {pagedIssued.map((r) => {
                 const doc = DB.woDocs[r.no] || {};
-                const actualTotal = (doc.inputs || []).reduce((sum, it) => sum + (Number(it.act) || 0), 0);
+                const inputActualTotal = (doc.inputs || []).reduce((sum, it) => sum + (Number(it.act) || 0), 0);
+                const actualTotal = Number(doc.productionActual ?? (inputActualTotal > 0 ? inputActualTotal : r.done) ?? 0);
                 const prodTime = doc.timeRange || (r.shift ? String(r.shift).split(" · ")[1] : "-");
                 const shiftType = doc.shiftType || (r.shift ? String(r.shift).split(" · ")[0] : "-");
                 return (
