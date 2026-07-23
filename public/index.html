@@ -10477,7 +10477,7 @@ const [FlaskConical, Activity, AlertTriangle, CheckCircle2, XCircle, Gauge, Pack
    나모케미칼㈜ QMES —  공정
    관리계획서 NMC-C-220-01 REV.0 (2026.03.12 개정 2차) 기준
    공정 흐름: 10 입고 → 20 IQC → 30 창고/드라이룸 → 40 바인더 제조(TK 501)
-             → 50 슬러리 제조/검사/필터링/충진(TK 501A↔B) → 80 보관 → 90 출하
+             → 50 절연 슬러리 제조(TK 501A↔B) → 60 OQC → 70 충진 → 80 보관 → 90 출하
    ═══════════════════════════════════════════════════════════════ */
 
 /* ──────────────────────────── 공정 현황 ──────────────────────────── */
@@ -10486,9 +10486,11 @@ const PROCESSES = [
   { no: "20", name: "원재료 입고검사 (IQC)", icon: ArrowDownToLine },
   { no: "30", name: "원재료 창고 · 드라이룸", icon: Warehouse },
   { no: "40", name: "바인더 제조 (TK 501)", icon: Beaker },
-  { no: "50", name: "슬러리 제조 (TK 501A↔B)", icon: RotateCw },
-  { no: "60·70", name: "공정검사 · 필터링 · 충진", icon: Filter },
-  { no: "80·90", name: "완제품 보관 · 출하", icon: Truck },
+  { no: "50", name: "절연 슬러리 제조 (TK 501A↔B)", icon: RotateCw },
+  { no: "60", name: "검사 (OQC)", icon: ClipboardCheck },
+  { no: "70", name: "충진", icon: Package },
+  { no: "80", name: "제품보관", icon: Warehouse },
+  { no: "90", name: "제품운송 · 출하", icon: Truck },
 ];
 
 const BATCH_HOURLY = [];
@@ -11021,26 +11023,26 @@ const chartTooltip = {
 function qmesProcessStatus() {
   const iqc = Array.isArray(DB.iqc) ? DB.iqc : [];
   const batches = Array.isArray(DB.batches) ? DB.batches : [];
-  const pqc = Array.isArray(DB.insp?.PQC) ? DB.insp.PQC : [];
   const oqc = Array.isArray(DB.insp?.OQC) ? DB.insp.OQC : [];
   const holds = Array.isArray(DB.holds) ? DB.holds : [];
   const activeHolds = holds.filter((h) => String(h.status || "").includes("차단"));
   const latestIqc = iqc[0];
   const latestBatch = batches[0];
   const activeBatch = batches.find((b) => !["완료", "생산완료", "출하완료"].some((x) => String(b.status || "").includes(x)));
-  const batchLot = activeBatch?.no || latestBatch?.no || "";
-  const lotPqc = batchLot ? pqc.filter((r) => r.lot === batchLot) : [];
+  const displayBatch = activeBatch || latestBatch;
+  const batchLot = displayBatch?.no || "";
   const lotOqc = batchLot ? oqc.filter((r) => r.lot === batchLot) : [];
+  const latestOqc = lotOqc[0] || oqc[0];
   const hasIqcAlarm = iqc.some((r) => r.judge && r.judge !== "합격") || activeHolds.some((h) => String(h.gate || "").includes("IQC"));
-  const hasPqcAlarm = pqc.some((r) => r.judge === "불합격") || activeHolds.some((h) => String(h.gate || "").includes("공정"));
   const hasOqcAlarm = oqc.some((r) => r.judge === "불합격") || activeHolds.some((h) => String(h.gate || "").includes("출하"));
   const passedIqc = iqc.filter((r) => r.judge === "합격");
-  const latestPqc = pqc[0];
-  const latestOqc = oqc[0];
-  const batchStatus = String(activeBatch?.status || latestBatch?.status || "");
-  const productionRunning = Boolean(activeBatch) && !batchStatus.includes("발행");
-  const pqcAllPass = lotPqc.length > 0 && lotPqc.every((r) => r.judge === "합격");
+  const batchStatus = String(displayBatch?.status || "");
+  const isIssued = Boolean(displayBatch) && batchStatus.includes("발행");
+  const isBatchComplete = Boolean(displayBatch) && ["완료", "생산완료", "출하완료"].some((x) => batchStatus.includes(x));
+  const isProductionRunning = Boolean(displayBatch) && !isIssued && !isBatchComplete;
   const oqcAllPass = lotOqc.length > 0 && lotOqc.every((r) => r.judge === "합격");
+  const lotInfo = batchLot ? LOTS?.[batchLot] : null;
+  const shipped = Boolean(lotInfo?.ship) || batchStatus.includes("출하완료");
 
   return [
     {
@@ -11055,23 +11057,33 @@ function qmesProcessStatus() {
     },
     {
       ...PROCESSES[2],
-      status: hasPqcAlarm ? "alarm" : activeBatch ? (batchStatus.includes("발행") ? "run" : "done") : "idle",
-      key: activeBatch ? `${activeBatch.no} · ${batchStatus || "작업지시"}` : "작업지시 없음"
+      status: isBatchComplete ? "done" : (isProductionRunning ? "run" : "idle"),
+      key: displayBatch ? `${displayBatch.no} · ${isBatchComplete ? "바인더 제조 완료" : isIssued ? "작업지시 발행 · 대기" : "바인더 제조중"}` : "작업지시 없음"
     },
     {
       ...PROCESSES[3],
-      status: hasPqcAlarm ? "alarm" : productionRunning ? "run" : (latestBatch && batchStatus.includes("완료") ? "done" : "idle"),
-      key: activeBatch ? `${activeBatch.no} · ${activeBatch.tank || "TK 501A/B"}` : "생산 진행 LOT 없음"
+      status: isBatchComplete ? "done" : (isProductionRunning ? "run" : "idle"),
+      key: displayBatch ? `${displayBatch.no} · ${isBatchComplete ? "슬러리 제조 완료" : isIssued ? "생산 대기" : (displayBatch.tank || "TK 501A/B")}` : "생산 진행 LOT 없음"
     },
     {
       ...PROCESSES[4],
-      status: hasPqcAlarm ? "alarm" : lotPqc.length ? (pqcAllPass ? "done" : "inspect") : (activeBatch ? "inspect" : "idle"),
-      key: latestPqc ? `${latestPqc.lot} · PQC ${latestPqc.judge || "검사중"}` : "PQC 등록 대기"
+      status: hasOqcAlarm ? "alarm" : lotOqc.length ? (oqcAllPass ? "done" : "inspect") : (isBatchComplete ? "inspect" : "idle"),
+      key: latestOqc ? `${latestOqc.lot} · OQC ${latestOqc.judge || "검사중"}` : (isBatchComplete ? "OQC 등록 대기" : "생산 완료 후 검사")
     },
     {
       ...PROCESSES[5],
-      status: hasOqcAlarm ? "alarm" : lotOqc.length ? (oqcAllPass ? "done" : "inspect") : "idle",
-      key: latestOqc ? `${latestOqc.lot} · OQC ${latestOqc.judge || "검사중"}` : "출하검사 등록 대기"
+      status: isBatchComplete ? "done" : (oqcAllPass ? "run" : "idle"),
+      key: isBatchComplete ? `${batchLot || "-"} · 충진 완료` : (oqcAllPass ? `${batchLot} · 충진 진행` : "OQC 합격 후 충진")
+    },
+    {
+      ...PROCESSES[6],
+      status: isBatchComplete ? "done" : "idle",
+      key: isBatchComplete ? `${batchLot || "-"} · 완제품 보관` : "충진 완료 후 보관"
+    },
+    {
+      ...PROCESSES[7],
+      status: shipped ? "done" : (isBatchComplete ? "idle" : "idle"),
+      key: shipped ? `${batchLot || "-"} · 출하 완료` : "출하 등록 대기"
     }
   ];
 }
@@ -11079,7 +11091,7 @@ function qmesProcessStatus() {
 function ProcessStrip() {
   const processes = qmesProcessStatus();
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2">
       {processes.map((p, i) => {
         const m = statusMeta[p.status] || statusMeta.idle;
         return (
