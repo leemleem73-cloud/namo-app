@@ -11214,58 +11214,8 @@ function DashboardTab() {
 /* ──────────────────────────── 생산 관리 (배치) ──────────────────────────── */
 
 function ProductionTab() {
-  const [version, setVersion] = useState(0);
-  const [draftDone, setDraftDone] = useState(() => Object.fromEntries((DB.batches || []).map((b) => [b.no, String(Number(b.done || 0))])));
   const list = DB.batches;
   const stTone = { 발행: "violet", 진행중: "blue", 완료: "green", 대기: "amber", 계획: "gray" };
-
-  const saveProductionActual = (batch) => {
-    const raw = String(draftDone[batch.no] ?? batch.done ?? 0).replace(/,/g, "").trim();
-    if (!/^\d+(?:\.\d+)?$/.test(raw)) {
-      window.alert("생산실적은 0 이상의 숫자로 입력하세요.");
-      setDraftDone((prev) => ({ ...prev, [batch.no]: String(Number(batch.done || 0)) }));
-      return;
-    }
-
-    const actual = Math.max(0, Number(raw));
-    const plan = Math.max(0, Number(batch.plan || 0));
-    const status = actual <= 0 ? "발행" : actual < plan ? "진행중" : "완료";
-    batch.done = actual;
-    batch.status = status;
-    batch.updatedAt = new Date().toISOString();
-
-    const doc = DB.woDocs?.[batch.no];
-    if (doc) {
-      DB.woDocs[batch.no] = {
-        ...doc,
-        productionActual: actual,
-        productionProgress: plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0,
-        status: status === "완료" ? "완료" : status,
-      };
-    }
-
-    const lot = DB.lots?.[batch.no];
-    if (lot) {
-      lot.stage = "생산";
-      lot.qty = `${actual.toLocaleString()} kg / 계획 ${plan.toLocaleString()} kg`;
-      if (!String(lot.status || "").includes("홀드")) {
-        lot.status = status === "완료" ? "생산완료 — 검사 대기" : status === "진행중" ? "생산중" : "발행 — 생산 대기";
-      }
-      const stepName = "생산실적 입력";
-      const now = new Date();
-      const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-      const detail = `생산실적 ${actual.toLocaleString()}kg / 계획 ${plan.toLocaleString()}kg (${plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0}%)`;
-      const steps = Array.isArray(lot.steps) ? [...lot.steps] : [];
-      const idx = steps.findIndex((st) => st.name === stepName);
-      const step = { stage: "생산", name: stepName, time, detail, result: status, by: window.__QMES_USER__ || "-" };
-      if (idx >= 0) steps[idx] = step; else steps.push(step);
-      lot.steps = steps;
-    }
-
-    dbSave();
-    setDraftDone((prev) => ({ ...prev, [batch.no]: String(actual) }));
-    setVersion((v) => v + 1);
-  };
 
   return (
     <Panel title="배치 작업지시 현황" right={<span className="text-xs text-slate-400">총 {list.length}건</span>}>
@@ -11288,34 +11238,15 @@ function ProductionTab() {
               <tr><td colSpan={9} className="py-6 text-center text-sm text-slate-500">배치 실적이 없습니다 — [작업지시 발행]에서 배치를 발행하세요.</td></tr>
             )}
             {list.map((w) => {
-              const pct = Math.round((w.done / w.plan) * 100);
+              const pct = Number(w.plan || 0) > 0 ? Math.round((Number(w.done || 0) / Number(w.plan)) * 100) : 0;
               return (
                 <tr key={w.no} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{w.no}</td>
                   <td className="py-2.5 pr-3 text-slate-100">{w.item}</td>
                   <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{w.tank}</td>
                   <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{w.plan.toLocaleString()} {w.unit}</td>
-                  <td className="py-2.5 pr-3 text-right">
-                    <div className="inline-flex items-center justify-end gap-1">
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.1"
-                        value={draftDone[w.no] ?? String(Number(w.done || 0))}
-                        onChange={(e) => setDraftDone((prev) => ({ ...prev, [w.no]: e.target.value }))}
-                        onBlur={() => saveProductionActual(w)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveProductionActual(w);
-                            e.currentTarget.blur();
-                          }
-                        }}
-                        className="w-24 h-8 rounded border border-sky-500/40 bg-slate-950 px-2 text-right tabular-nums text-slate-100 font-semibold focus:outline-none focus:border-sky-400"
-                        title="생산실적 입력 후 Enter"
-                      />
-                      <span className="text-xs text-slate-400">{w.unit}</span>
-                    </div>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-100 font-semibold">
+                    {Number(w.done || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">{w.unit}</span>
                   </td>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2">
