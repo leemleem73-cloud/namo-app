@@ -10454,6 +10454,32 @@ select.qmes-label-judge-select option[value="불합격"]{
 }
 </style>
 <!-- QMES_WO_PRINT_MATCH_IQC_SCREEN_20260723 -->
+
+<style>
+/* ===== 대시보드 텍스트 중심 KPI 패치 2026-07-23 ===== */
+.qmes-text-kpi-card{
+  min-height:112px; padding:18px 22px; display:flex; align-items:center;
+  background:linear-gradient(180deg,#102238 0%,#0b182a 100%)!important;
+  border-left:4px solid #33c1e8!important; box-shadow:0 12px 28px -22px rgba(0,0,0,.9)!important;
+}
+.qmes-text-kpi-card:nth-child(2){border-left-color:#34d399!important}
+.qmes-text-kpi-card:nth-child(3){border-left-color:#a78bfa!important}
+.qmes-text-kpi-card:nth-child(4){border-left-color:#f87171!important}
+.qmes-text-kpi-copy{width:100%; min-width:0}
+.qmes-text-kpi-card .qmes-hybrid-label-row{margin:0 0 8px!important}
+.qmes-text-kpi-card .qmes-hybrid-label{color:#dce8f5!important;font-size:17px!important;font-weight:800!important;letter-spacing:-.02em!important}
+.qmes-text-kpi-card .qmes-hybrid-value-row{display:flex!important;align-items:baseline!important;gap:9px!important;margin:0!important}
+.qmes-text-kpi-card .qmes-hybrid-value{color:#fff!important;font-size:38px!important;line-height:1!important;font-weight:850!important;letter-spacing:-.035em!important;text-shadow:0 1px 0 rgba(255,255,255,.08)}
+.qmes-text-kpi-card .qmes-hybrid-unit{color:#b9cbe0!important;font-size:14px!important;font-weight:700!important}
+.qmes-text-kpi-caption{margin-top:9px;color:#7892ae;font-size:12px;font-weight:600;line-height:1.3}
+.qmes-dashboard-empty{height:200px;display:flex;align-items:center;justify-content:center;color:#7e97b8;font-size:14px;font-weight:600;text-align:center}
+.qmes-dashboard-empty-success{height:150px;color:#86c8ae}
+@media(max-width:760px){
+ .qmes-text-kpi-card{min-height:100px;padding:15px 17px}
+ .qmes-text-kpi-card .qmes-hybrid-label{font-size:15px!important}
+ .qmes-text-kpi-card .qmes-hybrid-value{font-size:31px!important}
+}
+</style>
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -10957,7 +10983,7 @@ function InspectionSummary({ items }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false, progressValue }) {
+function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false, progressValue, textOnly = false, caption = "" }) {
   const numeric = Number(String(value).replace(/[^0-9.]/g,"")) || 0;
   const labelKey = String(label || "");
   const calculatedProgress = progressValue !== undefined && progressValue !== null
@@ -10980,14 +11006,16 @@ function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-
   }, [progress, animated]);
 
   return (
-    <div className={`bg-slate-900 border border-slate-800 rounded-lg qmes-hybrid-kpi-card ${animated ? "qmes-iqc-kpi-card" : ""}`}>
-      <div className="qmes-hybrid-donut" style={{"--donut-progress": `${displayProgress}%`}}>
-        <div className="qmes-hybrid-ring"></div>
-        <div className="qmes-hybrid-ring-inner"></div>
-        <Icon className={`qmes-hybrid-icon ${tone}`} />
-        {animated && <span className="qmes-hybrid-percent">{Math.round(displayProgress)}%</span>}
-      </div>
-      <div className="qmes-hybrid-copy">
+    <div className={`bg-slate-900 border border-slate-800 rounded-lg ${textOnly ? "qmes-text-kpi-card" : "qmes-hybrid-kpi-card"} ${animated ? "qmes-iqc-kpi-card" : ""}`}>
+      {!textOnly && Icon && (
+        <div className="qmes-hybrid-donut" style={{"--donut-progress": `${displayProgress}%`}}>
+          <div className="qmes-hybrid-ring"></div>
+          <div className="qmes-hybrid-ring-inner"></div>
+          <Icon className={`qmes-hybrid-icon ${tone}`} />
+          {animated && <span className="qmes-hybrid-percent">{Math.round(displayProgress)}%</span>}
+        </div>
+      )}
+      <div className={textOnly ? "qmes-text-kpi-copy" : "qmes-hybrid-copy"}>
         <div className="qmes-hybrid-label-row">
           {animated && <span className={`qmes-iqc-kpi-dot ${tone}`}></span>}
           <span className="qmes-hybrid-label">{label}</span>
@@ -10996,11 +11024,11 @@ function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-
           <span className="qmes-hybrid-value">{value}</span>
           {unit && <span className="qmes-hybrid-unit">{unit}</span>}
         </div>
-        <div className="qmes-hybrid-caption">
-          {labelKey.includes("합격") && "검사 완료 기준 합격 비율"}
-          {labelKey.includes("LOT") && "이번 달 누적 입고 실적"}
-          {labelKey.includes("부적합") && "즉시 확인이 필요한 항목"}
-          {labelKey.includes("반품") && "공급사 반송 처리 건수"}
+        <div className={textOnly ? "qmes-text-kpi-caption" : "qmes-hybrid-caption"}>
+          {caption || (labelKey.includes("합격") && "검사 완료 기준 합격 비율")}
+          {!caption && labelKey.includes("LOT") && "이번 달 누적 입고 실적"}
+          {!caption && labelKey.includes("부적합") && "즉시 확인이 필요한 항목"}
+          {!caption && labelKey.includes("반품") && "공급사 반송 처리 건수"}
         </div>
         {delta && (
           <div className={`qmes-hybrid-delta ${deltaUp ? "is-up" : "is-down"}`}>
@@ -11118,15 +11146,36 @@ function ProcessStrip() {
 /* ──────────────────────────── 대시보드 ──────────────────────────── */
 
 function DashboardTab() {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayBatches = (DB.batches || []).filter((b) => String(b.date || b.productionDate || b.startDate || "").slice(0, 10) === todayKey);
+  const todayKg = todayBatches.reduce((sum, b) => sum + (Number(b.qty || b.amount || b.productionQty || 0) || 0), 0);
+  const inspections = [...((DB.insp && DB.insp.PQC) || []), ...((DB.insp && DB.insp.OQC) || [])];
+  const completedInspections = inspections.filter((r) => r.judge);
+  const passCount = completedInspections.filter((r) => r.judge === "합격").length;
+  const fpy = completedInspections.length ? ((passCount / completedInspections.length) * 100).toFixed(1) : "—";
+  const ctqRows = inspections.filter((r) => ["점도", "고형분", "입도", "입도(Dmax)"].includes(r.item || r.name));
+  const ctqPass = ctqRows.filter((r) => r.judge === "합격").length;
+  const ctqRate = ctqRows.length ? ((ctqPass / ctqRows.length) * 100).toFixed(1) : "—";
+  const nonconforming = inspections.filter((r) => r.judge === "불합격").length + (DB.holds || []).length;
+  const shipmentMap = {};
+  Object.values(DB.lots || {}).forEach((lot) => {
+    const ship = lot && lot.ship;
+    if (!ship) return;
+    const customer = ship.customer || "미지정";
+    const qty = Number(ship.qty || ship.shipQty || ship.amount || 0) || 0;
+    shipmentMap[customer] = (shipmentMap[customer] || 0) + qty;
+  });
+  const customerShipments = Object.entries(shipmentMap).map(([customer, qty]) => ({ customer, qty })).sort((a,b) => b.qty - a.qty).slice(0, 8);
+
   return (
     <div className="flex flex-col gap-4">
       <ProcessStrip />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Kpi icon={FlaskConical} label="금일 생산 (슬러리)" value="0" unit="kg / 0배치" tone="text-sky-400" />
-        <Kpi icon={CheckCircle2} label="배치 일발합격률 (FPY)" value="—" unit="%" tone="text-emerald-400" />
-        <Kpi icon={Droplets} label="드라이룸 RH" value="—" unit="% (기준 0.54↓)" tone="text-violet-400" />
-        <Kpi icon={Wind} label="드라이룸 이슬점" value="—" unit="℃ (기준 -40)" tone="text-violet-400" />
+        <Kpi textOnly label="금일 생산량" value={todayKg.toLocaleString()} unit={`kg · ${todayBatches.length} LOT`} tone="text-sky-400" caption="오늘 등록된 생산 실적" />
+        <Kpi textOnly label="일발합격률 (FPY)" value={fpy} unit="%" tone="text-emerald-400" caption="PQC·OQC 검사 완료 기준" />
+        <Kpi textOnly label="CTQ 합격률" value={ctqRate} unit="%" tone="text-violet-400" caption="점도·고형분·입도 기준" />
+        <Kpi textOnly label="부적합 건수" value={nonconforming} unit="건" tone="text-red-400" caption="불합격 및 보류 대상" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
@@ -11175,18 +11224,20 @@ function DashboardTab() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        <Panel title="배치 실적 vs 계획 (최근 8일)">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={BATCH_HOURLY}>
-              <CartesianGrid stroke="#16283E" strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="t" stroke="#8AA3C0" fontSize={11} />
-              <YAxis stroke="#8AA3C0" fontSize={11} allowDecimals={false} />
-              <Tooltip {...chartTooltip} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="plan" name="계획" fill="#243D58" radius={[3, 3, 0, 0]} barSize={14} />
-              <Bar dataKey="actual" name="실적" fill="#33C1E8" radius={[3, 3, 0, 0]} barSize={14} />
-            </BarChart>
-          </ResponsiveContainer>
+        <Panel title="고객사별 출하현황 (누적 kg)">
+          {customerShipments.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={customerShipments} layout="vertical" margin={{ left: 8, right: 18 }}>
+                <CartesianGrid stroke="#16283E" strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" stroke="#8AA3C0" fontSize={11} />
+                <YAxis type="category" dataKey="customer" stroke="#8AA3C0" fontSize={11} width={92} />
+                <Tooltip {...chartTooltip} formatter={(value) => [`${Number(value).toLocaleString()} kg`, "출하량"]} />
+                <Bar dataKey="qty" name="출하량(kg)" fill="#33C1E8" radius={[0, 4, 4, 0]} barSize={18} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="qmes-dashboard-empty">등록된 고객사별 출하 실적이 없습니다.</div>
+          )}
         </Panel>
 
         <Panel title="부적합 파레토 (당월)">
@@ -11203,7 +11254,7 @@ function DashboardTab() {
 
         <Panel title="실시간 알람" right={<Badge tone="red">{ALARMS.length}건</Badge>}>
           <ul className="flex flex-col gap-3">
-            {ALARMS.length === 0 && <li className="text-sm text-slate-500">알람이 없습니다.</li>}
+            {ALARMS.length === 0 && <li className="qmes-dashboard-empty qmes-dashboard-empty-success">현재 이상 알람이 없습니다.</li>}
             {ALARMS.map((a, i) => (
               <li key={i} className="flex gap-2.5 items-start">
                 <AlertTriangle size={15} className={`mt-0.5 shrink-0 ${a.level === "심각" ? "text-red-400" : a.level === "경고" ? "text-amber-400" : "text-slate-400"}`} />
