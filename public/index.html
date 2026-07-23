@@ -10483,12 +10483,12 @@ const [FlaskConical, Activity, AlertTriangle, CheckCircle2, XCircle, Gauge, Pack
 /* ──────────────────────────── 공정 현황 ──────────────────────────── */
 
 const PROCESSES = [
-  { no: "20", name: "원재료 입고검사 (IQC)", status: "idle", key: "—", icon: ArrowDownToLine },
-  { no: "30", name: "원재료 창고 · 드라이룸", status: "idle", key: "—", icon: Warehouse },
-  { no: "40", name: "바인더 제조 (TK 501)", status: "idle", key: "—", icon: Beaker },
-  { no: "50", name: "슬러리 제조 (TK 501A↔B)", status: "idle", key: "—", icon: RotateCw },
-  { no: "50", name: "필터링 · 충진", status: "idle", key: "—", icon: Filter },
-  { no: "80·90", name: "완제품 보관 · 출하", status: "idle", key: "—", icon: Truck },
+  { no: "20", name: "원재료 입고검사 (IQC)", icon: ArrowDownToLine },
+  { no: "30", name: "원재료 창고 · 드라이룸", icon: Warehouse },
+  { no: "40", name: "바인더 제조 (TK 501)", icon: Beaker },
+  { no: "50", name: "슬러리 제조 (TK 501A↔B)", icon: RotateCw },
+  { no: "60·70", name: "공정검사 · 필터링 · 충진", icon: Filter },
+  { no: "80·90", name: "완제품 보관 · 출하", icon: Truck },
 ];
 
 const BATCH_HOURLY = [];
@@ -10899,9 +10899,11 @@ function qmesStart() {
 /* ──────────────────────────── 공통 UI ──────────────────────────── */
 
 const statusMeta = {
-  run: { label: "가동", dot: "bg-emerald-400", text: "text-emerald-400", ring: "border-emerald-500/40" },
+  run: { label: "진행중", dot: "bg-sky-400", text: "text-sky-400", ring: "border-sky-500/40" },
+  done: { label: "완료", dot: "bg-emerald-400", text: "text-emerald-400", ring: "border-emerald-500/40" },
+  inspect: { label: "검사중", dot: "bg-violet-400", text: "text-violet-400", ring: "border-violet-500/40" },
   idle: { label: "대기", dot: "bg-slate-500", text: "text-slate-400", ring: "border-slate-600/40" },
-  alarm: { label: "알람", dot: "bg-red-400", text: "text-red-400", ring: "border-red-500/50" },
+  alarm: { label: "이상", dot: "bg-red-400", text: "text-red-400", ring: "border-red-500/50" },
 };
 
 function Badge({ tone, children }) {
@@ -11016,17 +11018,76 @@ const chartTooltip = {
 
 /* ──────────────────────────── 공정 상태 스트립 ──────────────────────────── */
 
+function qmesProcessStatus() {
+  const iqc = Array.isArray(DB.iqc) ? DB.iqc : [];
+  const batches = Array.isArray(DB.batches) ? DB.batches : [];
+  const pqc = Array.isArray(DB.insp?.PQC) ? DB.insp.PQC : [];
+  const oqc = Array.isArray(DB.insp?.OQC) ? DB.insp.OQC : [];
+  const holds = Array.isArray(DB.holds) ? DB.holds : [];
+  const activeHolds = holds.filter((h) => String(h.status || "").includes("차단"));
+  const latestIqc = iqc[0];
+  const latestBatch = batches[0];
+  const activeBatch = batches.find((b) => !["완료", "생산완료", "출하완료"].some((x) => String(b.status || "").includes(x)));
+  const batchLot = activeBatch?.no || latestBatch?.no || "";
+  const lotPqc = batchLot ? pqc.filter((r) => r.lot === batchLot) : [];
+  const lotOqc = batchLot ? oqc.filter((r) => r.lot === batchLot) : [];
+  const hasIqcAlarm = iqc.some((r) => r.judge && r.judge !== "합격") || activeHolds.some((h) => String(h.gate || "").includes("IQC"));
+  const hasPqcAlarm = pqc.some((r) => r.judge === "불합격") || activeHolds.some((h) => String(h.gate || "").includes("공정"));
+  const hasOqcAlarm = oqc.some((r) => r.judge === "불합격") || activeHolds.some((h) => String(h.gate || "").includes("출하"));
+  const passedIqc = iqc.filter((r) => r.judge === "합격");
+  const latestPqc = pqc[0];
+  const latestOqc = oqc[0];
+  const batchStatus = String(activeBatch?.status || latestBatch?.status || "");
+  const productionRunning = Boolean(activeBatch) && !batchStatus.includes("발행");
+  const pqcAllPass = lotPqc.length > 0 && lotPqc.every((r) => r.judge === "합격");
+  const oqcAllPass = lotOqc.length > 0 && lotOqc.every((r) => r.judge === "합격");
+
+  return [
+    {
+      ...PROCESSES[0],
+      status: hasIqcAlarm ? "alarm" : latestIqc ? (latestIqc.judge === "합격" ? "done" : "inspect") : "idle",
+      key: latestIqc ? `${latestIqc.lot || latestIqc.inNo || "-"} · ${latestIqc.judge || "검사중"}` : "검사 등록 대기"
+    },
+    {
+      ...PROCESSES[1],
+      status: hasIqcAlarm ? "alarm" : passedIqc.length ? "done" : "idle",
+      key: passedIqc.length ? `합격 원료 ${passedIqc.length} LOT · 불출 가능` : "IQC 합격 원료 없음"
+    },
+    {
+      ...PROCESSES[2],
+      status: hasPqcAlarm ? "alarm" : activeBatch ? (batchStatus.includes("발행") ? "run" : "done") : "idle",
+      key: activeBatch ? `${activeBatch.no} · ${batchStatus || "작업지시"}` : "작업지시 없음"
+    },
+    {
+      ...PROCESSES[3],
+      status: hasPqcAlarm ? "alarm" : productionRunning ? "run" : (latestBatch && batchStatus.includes("완료") ? "done" : "idle"),
+      key: activeBatch ? `${activeBatch.no} · ${activeBatch.tank || "TK 501A/B"}` : "생산 진행 LOT 없음"
+    },
+    {
+      ...PROCESSES[4],
+      status: hasPqcAlarm ? "alarm" : lotPqc.length ? (pqcAllPass ? "done" : "inspect") : (activeBatch ? "inspect" : "idle"),
+      key: latestPqc ? `${latestPqc.lot} · PQC ${latestPqc.judge || "검사중"}` : "PQC 등록 대기"
+    },
+    {
+      ...PROCESSES[5],
+      status: hasOqcAlarm ? "alarm" : lotOqc.length ? (oqcAllPass ? "done" : "inspect") : "idle",
+      key: latestOqc ? `${latestOqc.lot} · OQC ${latestOqc.judge || "검사중"}` : "출하검사 등록 대기"
+    }
+  ];
+}
+
 function ProcessStrip() {
+  const processes = qmesProcessStatus();
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-      {PROCESSES.map((p, i) => {
-        const m = statusMeta[p.status];
+      {processes.map((p, i) => {
+        const m = statusMeta[p.status] || statusMeta.idle;
         return (
-          <div key={i} className={`bg-slate-900 border ${m.ring} rounded-lg px-3 py-2.5`}>
+          <div key={i} className={`bg-slate-900 border ${m.ring} rounded-lg px-3 py-2.5`} title={`${p.name}: ${p.key}`}>
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-slate-500 font-mono">공정 {p.no}</span>
               <span className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${m.dot} ${p.status === "run" ? "animate-pulse" : ""}`} />
+                <span className={`w-2 h-2 rounded-full ${m.dot} ${["run","inspect"].includes(p.status) ? "animate-pulse" : ""}`} />
                 <span className={`text-[11px] font-medium ${m.text}`}>{m.label}</span>
               </span>
             </div>
@@ -11034,7 +11095,7 @@ function ProcessStrip() {
               <p.icon size={13} className="text-slate-400 shrink-0" />
               <span className="text-[13px] text-slate-100 font-medium leading-tight">{p.name}</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-1.5 tabular-nums">{p.key}</div>
+            <div className="text-[11px] text-slate-400 mt-1.5 tabular-nums truncate">{p.key}</div>
           </div>
         );
       })}
