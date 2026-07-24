@@ -10893,6 +10893,354 @@ select.qmes-label-judge-select option[value="불합격"]{
   body.print-doc #qmes-print-root .qmes-iqc-header-meta{text-align:center!important;justify-self:center!important;line-height:1.45!important}
 }
 </style>
+
+<style id="QMES_WO_HEADER_POSITION_FIX_20260724">
+/* 작업지시서 미리보기·출력 상단 위치 보정 */
+.qmes-wo-cert .qmes-iqc-header-meta{
+  position:relative!important;
+  left:18px!important;
+}
+.qmes-wo-cert .qmes-iqc-header-logo{
+  transform:translateY(-8px)!important;
+}
+@media print{
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta{
+    position:relative!important;
+    left:18px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-logo{
+    transform:translateY(-8px)!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_HEADER_FINAL_ALIGN_20260724">
+/* 작업지시 출력 미리보기: 하얀 성적서 시작선 기준 */
+.qmes-wo-output-preview .qmes-wo-viewer-head{
+  padding-left:0!important;
+  padding-right:0!important;
+}
+.qmes-wo-output-preview .qmes-wo-preview-heading{
+  margin-left:0!important;
+  text-align:left!important;
+}
+
+/* 작업지시서 로고 확대 */
+.qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header-logo{
+  width:230px!important;
+  max-width:230px!important;
+  transform:translateY(-8px)!important;
+  transform-origin:left center!important;
+}
+
+/* 작업지시번호·생산일자: 문서 오른쪽 끝 정렬 및 글씨 확대 */
+.qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header{
+  grid-template-columns:250px minmax(260px,1fr) 270px!important;
+}
+.qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc-header-meta{
+  position:static!important;
+  left:auto!important;
+  right:auto!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  justify-self:stretch!important;
+  align-self:center!important;
+  text-align:right!important;
+  font-size:16px!important;
+  line-height:1.7!important;
+  font-weight:700!important;
+  color:#1c1917!important;
+  white-space:nowrap!important;
+}
+.qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc-header-meta .font-mono{
+  font-size:17px!important;
+  font-weight:700!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header{
+    grid-template-columns:46mm 1fr 58mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header-logo{
+    width:44mm!important;
+    max-width:44mm!important;
+    transform:translateY(-2mm)!important;
+  }
+  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc-header-meta{
+    position:static!important;
+    left:auto!important;
+    width:100%!important;
+    justify-self:stretch!important;
+    text-align:right!important;
+    font-size:11px!important;
+    line-height:1.6!important;
+    font-weight:700!important;
+  }
+  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc-header-meta .font-mono{
+    font-size:11px!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_OUTPUT_HEADER_CLEAN_20260724">
+.qmes-wo-output-preview .qmes-wo-viewer-head-print{
+  justify-content:flex-end!important;
+}
+.qmes-wo-cert .qmes-wo-number-small{
+  font-size:12px!important;
+  line-height:1.25!important;
+}
+@media print{
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-number-small{
+    font-size:7.5px!important;
+    line-height:1.2!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_PRINT_WIDTH_AND_TOP_NUMBER_20260724">
+/* 작업지시서 출력 폭 축소 */
+@media print{
+  body.print-doc #qmes-print-root{
+    width:182mm!important;
+    max-width:182mm!important;
+    margin:0 auto!important;
+  }
+  body.print-doc #qmes-print-root > .doc-paper,
+  body.print-doc #qmes-print-root .doc-paper,
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    width:182mm!important;
+    max-width:182mm!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+}
+
+/* 상단 작업지시번호 값(CBG1201)만 축소 */
+.qmes-wo-cert .qmes-wo-top-number-small{
+  font-size:12px!important;
+  line-height:1.25!important;
+  font-weight:600!important;
+}
+@media print{
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-top-number-small{
+    font-size:8px!important;
+    line-height:1.2!important;
+    font-weight:600!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_LOGO_AND_TOP_NUMBER_FINAL_20260724">
+/* 작업지시서 성적서 로고 확대 */
+.qmes-wo-cert .qmes-wo-header-logo-wrap{
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
+}
+.qmes-wo-cert .qmes-wo-header-logo{
+  width:180px!important;
+  max-width:180px!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+
+/* 작업지시번호 옆 값(CBG1201)만 축소 */
+.qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-top-number-small{
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:500!important;
+  letter-spacing:0!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo-wrap{
+    width:42mm!important;
+    min-width:42mm!important;
+    max-width:42mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo{
+    width:40mm!important;
+    max-width:40mm!important;
+    height:auto!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-top-number-small{
+    font-size:7px!important;
+    line-height:1.15!important;
+    font-weight:500!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_PRINT_LOGO_AND_NUMBER_REAL_FIX_20260724">
+/* 화면 미리보기: 작업지시서 로고 확대 */
+.qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header-logo-wrap,
+.qmes-wo-cert .qmes-wo-header-logo-wrap{
+  width:230px!important;
+  min-width:230px!important;
+  max-width:230px!important;
+}
+.qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header-logo,
+.qmes-wo-cert .qmes-wo-header-logo{
+  width:220px!important;
+  max-width:220px!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+
+/* 작업지시번호 라벨은 그대로, 옆 값만 축소 */
+.qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-top-number-small,
+.qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-number-small{
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:500!important;
+  letter-spacing:0!important;
+}
+
+/* 실제 인쇄 출력 전용 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header-logo-wrap,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo-wrap{
+    width:52mm!important;
+    min-width:52mm!important;
+    max-width:52mm!important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo{
+    width:50mm!important;
+    max-width:50mm!important;
+    height:auto!important;
+    transform:none!important;
+    object-fit:contain!important;
+  }
+
+  /* 실제 출력 JSX는 qmes-wo-number-small을 사용하므로 두 클래스 모두 지정 */
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-top-number-small,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-number-small{
+    font-size:7px!important;
+    line-height:1.1!important;
+    font-weight:500!important;
+    letter-spacing:0!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_NUMBER_MATCH_AND_PREVIEW_TITLE_20260724">
+/* 출력 화면 상단: 왼쪽 제목 + 오른쪽 버튼 */
+.qmes-wo-output-preview .qmes-wo-viewer-head-print{
+  justify-content:space-between!important;
+}
+.qmes-wo-preview-title-left{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+
+/* 작업지시번호 옆 값만 라벨/생산일자와 동일한 크기와 굵기로 */
+.qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-number-match{
+  font-family:inherit!important;
+  font-size:inherit!important;
+  line-height:inherit!important;
+  font-weight:inherit!important;
+  letter-spacing:inherit!important;
+  font-variant-numeric:normal!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta .qmes-wo-number-match{
+    font-family:inherit!important;
+    font-size:inherit!important;
+    line-height:inherit!important;
+    font-weight:inherit!important;
+    letter-spacing:inherit!important;
+    font-variant-numeric:normal!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_PRINT_HEADER_VERTICAL_ALIGN_20260724">
+/* 인쇄 시 로고와 작업지시서 제목을 우측 작업지시번호 영역 높이에 맞춰 아래로 이동 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header-logo-wrap,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo-wrap,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title{
+    position:relative!important;
+    top:12px!important;
+    transform:none!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo{
+    transform:none!important;
+  }
+}
+</style>
+
+<style id="QMES_PRINT_HEADER_ALIGN_FIX">
+@media print{
+body.print-doc #qmes-print-root .qmes-wo-header-logo-wrap,
+body.print-doc #qmes-print-root .qmes-iqc-centered-title{
+  position:relative!important;
+  top:30mm!important;
+  transform:none!important;
+  margin-top:0!important;
+}
+body.print-doc #qmes-print-root .qmes-wo-header-logo{
+  transform:none!important;
+}
+}
+</style>
+
+
+<style id="QMES_WO_PRINT_LOGO_TITLE_MATCH_WO_NUMBER_20260724_FINAL">
+/* 인쇄에서만: 기존 3cm 이동 해제 후 로고·작업지시서를 작업지시번호 줄에 맞춤 */
+@media print{
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header-logo-wrap,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo-wrap,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title{
+    position:relative!important;
+    top:1cm!important;
+    margin-top:0!important;
+    transform:none!important;
+    align-self:center!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-logo,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-logo{
+    transform:none!important;
+  }
+}
+</style>
+
+<style id="wo-title-center-final">
+@media print{
+body.print-doc #qmes-print-root .qmes-wo-header{
+position:relative!important;
+}
+body.print-doc #qmes-print-root .qmes-wo-header .qmes-iqc-centered-title{
+position:absolute!important;
+left:50%!important;
+transform:translateX(-50%)!important;
+width:auto!important;
+text-align:center!important;
+z-index:5!important;
+}
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -11225,14 +11573,14 @@ function printDoc(sourceEl) {
 /* ──────────────────────────── 통합 데이터 저장소 ──────────────────────────── */
 /* 화면 간 연동 + 새로고침 후에도 기록 유지. 실제 서버 구축 시 이 계층만 API로 교체하면 됩니다. */
 
-const DB_KEY = "qmes-local-title-inline-v6";
-const DB_RESET_MARKER = "qmes-title-inline-db-clean-reset-v6";
+const DB_KEY = "qmes-local-title-inline-v7-clean";
+const DB_RESET_MARKER = "qmes-title-inline-db-clean-reset-v7";
 
 /* 수입검사 개선본 최초 실행 시 기존 테스트 DB를 한 번 초기화합니다.
    이후 입력한 데이터는 새 DB_KEY에 저장되어 새로고침 후에도 유지됩니다. */
 try {
   if (!window.localStorage.getItem(DB_RESET_MARKER)) {
-    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", "qmes-local-iqc-v3", "qmes-local-iqc-v4-clean", "qmes-local-simple-summary-v5", "qmes-local-title-inline-v6", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
+    ["qmes-local-v1", "qmes-db-v1", "qmes-local-iqc-v2", "qmes-local-iqc-v3", "qmes-local-iqc-v4-clean", "qmes-local-simple-summary-v5", "qmes-local-title-inline-v6", "qmes-local-title-inline-v7-clean", DB_KEY].forEach((key) => window.localStorage.removeItem(key));
     window.localStorage.setItem(DB_RESET_MARKER, "1");
   }
 } catch (e) { /* 무시 */ }
@@ -14539,7 +14887,7 @@ function WoDocTab() {
             <div className="text-xs text-slate-500 mt-0.5">WORK ORDER</div>
           </div>
           <div className="qmes-iqc-header-meta text-right text-xs text-slate-600">
-            <div>작업지시번호 : <span className="font-mono">{doc.woNo || viewingWo || "-"}</span></div>
+            <div>작업지시번호 : <span className="qmes-wo-number-match">{doc.woNo || viewingWo || "-"}</span></div>
             <div>생산일자 : {doc.date || batch.due || "-"}</div>
           </div>
         </div>
@@ -15294,10 +15642,12 @@ function IssueWoTab() {
         return (
           <div className="qmes-modal-backdrop" onClick={() => setViewingWo(null)}>
             <div className={`qmes-wo-viewer ${woPreviewMode === "print" ? "qmes-wo-output-preview" : "qmes-wo-detail-preview"}`} onClick={(e) => e.stopPropagation()}>
-              <div className="qmes-wo-viewer-head">
-                <div>
-                  <div className="text-lg font-bold text-white">{woPreviewMode === "print" ? "작업지시 출력 미리보기" : "작업지시 미리보기"}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">LOT No. <span className="font-mono text-sky-300">{viewingWo}</span></div>
+              <div className={`qmes-wo-viewer-head ${woPreviewMode === "print" ? "qmes-wo-viewer-head-print" : ""}`}>
+                <div className="qmes-wo-preview-title-left">
+                  <div className="qmes-wo-preview-heading text-lg font-bold text-white">작업지시서 미리보기</div>
+                  {woPreviewMode !== "print" && (
+                    <div className="text-xs text-slate-400 mt-0.5">LOT No. <span className="font-mono text-sky-300">{viewingWo}</span></div>
+                  )}
                 </div>
                 {woPreviewMode === "print" && (
                   <div className="qmes-wo-head-actions">
@@ -15317,7 +15667,7 @@ function IssueWoTab() {
             <div className="text-xs text-slate-500 mt-0.5">WORK ORDER</div>
           </div>
           <div className="qmes-iqc-header-meta text-right text-xs text-slate-600">
-            <div>작업지시번호 : <span className="font-mono">{doc.woNo || viewingWo || "-"}</span></div>
+            <div>작업지시번호 : <span className="qmes-wo-number-match">{doc.woNo || viewingWo || "-"}</span></div>
             <div>생산일자 : {doc.date || batch.due || "-"}</div>
           </div>
         </div>
@@ -15971,7 +16321,7 @@ const TABS = [
   { id: "iqc", label: "수입검사 (IQC)", icon: ArrowDownToLine, comp: IqcTab },
   { id: "prod", label: "생산 (배치)", icon: FlaskConical, comp: ProductionTab },
   { id: "wo", label: "", icon: ClipboardList, comp: WoDocTab },
-  { id: "woIssue", label: "작업지시 발행", icon: Plus, comp: IssueWoTab },
+  { id: "woIssue", label: "작업지시서", icon: Plus, comp: IssueWoTab },
   { id: "pqc", label: "공정검사 (PQC)", icon: ClipboardCheck, comp: PqcTab },
   { id: "oqc", label: "출하검사 (OQC)", icon: ArrowUpFromLine, comp: OqcTab },
   { id: "lock", label: "품질 인터락 (차단)", icon: Lock, comp: InterlockTab },
@@ -17866,6 +18216,142 @@ qmesStart();
   body.print-doc #qmes-print-root .qmes-screen-print-copy > *{break-inside:avoid!important;page-break-inside:avoid!important;}
 }
 </style>
+
+
+<style id="QMES_WO_PRINT_TOP_SPACING_MATCH_PREVIEW_20260724">
+/* 출력 미리보기와 실제 인쇄의 상단 여백·헤더 간격을 동일하게 고정 */
+@page{size:A4 portrait!important;margin:0!important;}
+@media print{
+  html,body{
+    width:210mm!important;
+    height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body.print-doc #qmes-print-root{
+    display:flex!important;
+    position:fixed!important;
+    inset:0!important;
+    width:210mm!important;
+    height:297mm!important;
+    margin:0!important;
+    padding:8mm 0 0!important;
+    box-sizing:border-box!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy,
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    margin:0 auto!important;
+    top:0!important;
+    transform-origin:top center!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header{
+    margin-top:0!important;
+    padding-top:0!important;
+    padding-bottom:16px!important;
+    align-items:center!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-header,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-header{
+    margin-top:0!important;
+    margin-bottom:0!important;
+    padding-top:0!important;
+    padding-bottom:16px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-logo,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-logo{
+    transform:none!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-meta{
+    position:static!important;
+    left:auto!important;
+    top:auto!important;
+    margin:0!important;
+    transform:none!important;
+  }
+}
+</style>
+
+<style id="QMES_WO_PRINT_TOP_EXACT_MATCH_20260724_FINAL">
+/* 작업지시서 출력 미리보기와 실제 인쇄의 문서 시작 위치를 완전히 동일하게 고정 */
+@page{size:A4 portrait!important;margin:0!important;}
+@media print{
+  html,body{
+    width:210mm!important;
+    height:297mm!important;
+    min-height:297mm!important;
+    max-height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root{
+    display:block!important;
+    position:fixed!important;
+    top:0!important;
+    right:0!important;
+    bottom:0!important;
+    left:0!important;
+    width:210mm!important;
+    max-width:210mm!important;
+    height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy{
+    position:absolute!important;
+    top:0!important;
+    left:50%!important;
+    width:900px!important;
+    min-width:900px!important;
+    max-width:900px!important;
+    min-height:1272.6px!important;
+    margin:0!important;
+    padding:34px 38px!important;
+    box-sizing:border-box!important;
+    transform:translateX(-50%) scale(.82)!important;
+    transform-origin:top center!important;
+  }
+  /* 미리보기와 같은 헤더 시작선·내부 간격 */
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-header{
+    margin-top:0!important;
+    margin-bottom:0!important;
+    padding-top:0!important;
+    padding-bottom:16px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-logo{
+    transform:translateY(-8px)!important;
+    transform-origin:left center!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-meta{
+    position:static!important;
+    left:auto!important;
+    top:auto!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    align-self:center!important;
+    justify-self:stretch!important;
+    text-align:right!important;
+    transform:none!important;
+  }
+}
+</style>
+
+
+
 
 </body>
 </html>
