@@ -11285,6 +11285,137 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 }
 </style>
 
+<style id="QMES_DASHBOARD_PROCESS_8_WAITING_FONT_UNIFY">
+/* 대시보드 공정 8칸: 모든 글씨를 '대기'와 동일한 글씨체로 통일 */
+.qmes-dashboard-process-grid .qmes-process-card-text{
+  color:#ffffff!important;
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;
+  font-size:18px!important;
+  font-weight:700!important;
+  font-style:normal!important;
+  letter-spacing:0!important;
+  line-height:1!important;
+  font-variant-numeric:normal!important;
+}
+
+/* 기존 font-mono, medium, tabular 숫자 스타일 무효화 */
+.qmes-dashboard-process-grid .qmes-process-no,
+.qmes-dashboard-process-grid .qmes-process-status-label,
+.qmes-dashboard-process-grid .qmes-process-name,
+.qmes-dashboard-process-grid .qmes-process-key{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;
+  font-size:18px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  color:#ffffff!important;
+}
+</style>
+
+
+<style id="QMES_DASHBOARD_PROCESS_SUBTEXT_SMALL_UNIFY">
+/* 공정 번호 줄과 검사등록대기 줄만 조금 작게 동일 크기로 통일 */
+.qmes-dashboard-process-grid .qmes-process-no,
+.qmes-dashboard-process-grid .qmes-process-key{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;
+  font-size:14px!important;
+  font-weight:600!important;
+  line-height:1.2!important;
+  color:#ffffff!important;
+  letter-spacing:0!important;
+}
+
+/* 상태 및 공정명 글씨는 기존 크기 유지 */
+.qmes-dashboard-process-grid .qmes-process-status-label,
+.qmes-dashboard-process-grid .qmes-process-name{
+  font-size:18px!important;
+  font-weight:700!important;
+}
+</style>
+
+
+<style id="QMES_DASHBOARD_PROCESS_STATUS_RIGHT_CENTER">
+/* 대기·이상 등 상태 글씨를 각 공정 칸의 오른쪽 중앙에 배치 */
+.qmes-dashboard-process-grid .qmes-process-card{
+  position:relative!important;
+  padding-right:82px!important;
+  min-height:92px!important;
+}
+
+.qmes-dashboard-process-grid .qmes-process-status-wrap{
+  position:absolute!important;
+  right:12px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  white-space:nowrap!important;
+}
+
+/* 상태 점과 상태 글씨는 오른쪽 중앙에서 한 줄 유지 */
+.qmes-dashboard-process-grid .qmes-process-status-dot{
+  flex:0 0 auto!important;
+}
+.qmes-dashboard-process-grid .qmes-process-status-label{
+  display:block!important;
+  text-align:center!important;
+}
+</style>
+
+
+<style id="QMES_PRODUCTION_TABLE_TEXT_LARGER_FINAL">
+/* 생산(배치) > 배치 작업지시 현황: 배치번호부터 상태(발행)까지 글씨 확대 */
+.qmes-production-table th{
+  font-size:15px!important;
+  line-height:21px!important;
+  font-weight:700!important;
+}
+
+.qmes-production-table td,
+.qmes-production-table td span,
+.qmes-production-table td .text-xs,
+.qmes-production-table td .text-sm{
+  font-size:15px!important;
+  line-height:21px!important;
+}
+
+/* 진행률 막대 크기와 표 간격은 기존 상태 유지 */
+.qmes-production-table td .h-1\.5{
+  height:.375rem!important;
+}
+</style>
+
+
+<style id="QMES_IQC_PQC_OQC_TABLE_TEXT_LARGER_FINAL">
+/* 수입·공정·출하 관리표 글씨 크기 확대 */
+.qmes-iqc-ledger-table th,
+.qmes-pqc-record-table th,
+.qmes-oqc-record-table th{
+  font-size:15px!important;
+  line-height:21px!important;
+  font-weight:700!important;
+}
+
+.qmes-iqc-ledger-table td,
+.qmes-iqc-ledger-table td span,
+.qmes-pqc-record-table td,
+.qmes-pqc-record-table td span,
+.qmes-oqc-record-table td,
+.qmes-oqc-record-table td span{
+  font-size:15px!important;
+  line-height:21px!important;
+}
+
+/* 관리 버튼과 아이콘은 기존 크기 유지 */
+.qmes-iqc-ledger-table .qmes-iqc-action-btn,
+.qmes-pqc-record-table button,
+.qmes-oqc-record-table button{
+  font-size:11px!important;
+  line-height:1!important;
+}
+</style>
+
 </head>
 <!-- IQC_REPORT_LAYOUT_VERSION: 2COL_BARCODE_QR_260715 -->
 <body>
@@ -11924,23 +12055,23 @@ function qmesProcessStatus() {
 function ProcessStrip() {
   const processes = qmesProcessStatus();
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2">
+    <div className="qmes-dashboard-process-grid grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2">
       {processes.map((p, i) => {
         const m = statusMeta[p.status] || statusMeta.idle;
         return (
-          <div key={i} className={`bg-slate-900 border ${m.ring} rounded-lg px-3 py-2.5`} title={`${p.name}: ${p.key}`}>
+          <div key={i} className={`qmes-process-card bg-slate-900 border ${m.ring} rounded-lg px-3 py-2.5`} title={`${p.name}: ${p.key}`}>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-mono">공정 {p.no}</span>
-              <span className="flex items-center gap-1.5">
+              <span className="qmes-process-card-text qmes-process-no text-[11px] text-slate-500 font-mono">공정 {p.no}</span>
+              <span className="qmes-process-status-wrap flex items-center gap-1.5">
                 <span className={`qmes-process-status-dot rounded-full ${m.dot}`} />
-                <span className={`text-[18px] font-bold leading-none ${m.text}`}>{m.label}</span>
+                <span className={`qmes-process-card-text qmes-process-status-label text-[18px] font-bold leading-none ${m.text}`}>{m.label}</span>
               </span>
             </div>
             <div className="flex items-center gap-1.5 mt-1">
               <p.icon size={13} className="text-slate-400 shrink-0" />
-              <span className="text-[13px] text-slate-100 font-medium leading-tight">{p.name}</span>
+              <span className="qmes-process-card-text qmes-process-name text-[13px] text-slate-100 font-medium leading-tight">{p.name}</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-1.5 tabular-nums truncate">{p.key}</div>
+            <div className="qmes-process-card-text qmes-process-key text-[11px] text-slate-400 mt-1.5 tabular-nums truncate">{p.key}</div>
           </div>
         );
       })}
@@ -11984,7 +12115,7 @@ function DashboardTab() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        <Panel title="입도 관리도 (SPC) — Dmax < 10 μm · CTQ" right={<Badge tone="gray">CTQ</Badge>}>
+        <Panel title="입도 관리도 (SPC) — 규격 < 10 μm · CTQ" right={<Badge tone="gray">CTQ</Badge>}>
           <ResponsiveContainer width="100%" height={230}>
             <LineChart data={PARTICLE_SPC}>
               <CartesianGrid stroke="#16283E" strokeDasharray="3 3" />
@@ -11992,7 +12123,7 @@ function DashboardTab() {
               <YAxis stroke="#8AA3C0" fontSize={11} domain={[0, 11]} />
               <Tooltip {...chartTooltip} />
               <ReferenceLine y={10} stroke="#38bdf8" strokeWidth={2} strokeDasharray="5 4" label={{ value: "USL 10", fill: "#7dd3fc", fontSize: 11, fontWeight: 700, position: "insideTopRight" }} />
-              <Line type="monotone" dataKey="v" name="입도 Dmax(μm)" stroke="#34d399" strokeWidth={2} dot={(props) => <SpecDot {...props} hi={10} />} activeDot={(props) => <SpecDot {...props} hi={10} />} />
+              <Line type="monotone" dataKey="v" name="입도 규격(μm)" stroke="#34d399" strokeWidth={2} dot={(props) => <SpecDot {...props} hi={10} />} activeDot={(props) => <SpecDot {...props} hi={10} />} />
             </LineChart>
           </ResponsiveContainer>
         </Panel>
