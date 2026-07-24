@@ -335,7 +335,8 @@ aside{display:none!important}
   display:grid;
   grid-auto-flow:column;
   grid-auto-columns:190px;
-  gap:8px;
+  column-gap:7px;
+  row-gap:7px;
   align-items:end;
   width:max-content;
 }
@@ -577,7 +578,7 @@ aside{display:none!important}
 
 
 <style>
-/* ===== 작업지시서 발행 목록 및 인쇄 선택 화면 ===== */
+/* =====  발행 목록 및 인쇄 선택 화면 ===== */
 .qmes-wo-list-table{
   table-layout:fixed!important;
   border-collapse:collapse;
@@ -723,11 +724,13 @@ aside{display:none!important}
   border-color:#27986e!important;
 }
 
-/* ===== 신규 작업지시 발행 입력칸 동일 폭·높이 ===== */
+/* ===== 신규 작업지시 발행 입력칸 컴팩트 정렬 ===== */
 .qmes-wo-form-grid{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  width:97%;
+  margin:0 auto;
+  gap:6px 7px;
   align-items:end;
 }
 .qmes-wo-form-field{
@@ -735,11 +738,12 @@ aside{display:none!important}
   min-width:0;
   display:flex;
   flex-direction:column;
-  gap:5px;
+  gap:2px;
 }
 .qmes-wo-form-field > span:first-child{
   min-height:16px;
   line-height:16px;
+  letter-spacing:0;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -748,16 +752,58 @@ aside{display:none!important}
 .qmes-wo-form-field select{
   width:100%!important;
   min-width:0!important;
-  height:40px!important;
-  min-height:40px!important;
+  height:30px!important;
+  min-height:30px!important;
+  padding-top:3px!important;
+  padding-bottom:3px!important;
   box-sizing:border-box;
 }
-@media(max-width:1100px){
+
+.qmes-wo-form-field > span:first-child,
+.qmes-wo-form-field label{
+  font-size:12px!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+}
+@media(max-width:1300px){
+  .qmes-wo-form-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:1000px){
   .qmes-wo-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:640px){
   .qmes-wo-form-grid{grid-template-columns:1fr}
 }
+
+/* ===== 신규 작업지시 발행 화면 폭·필드 폭 균형 조정 ===== */
+.qmes-wo-issue-shell{
+  width:92%;
+  max-width:1480px;
+  margin:0 auto;
+}
+.qmes-wo-issue-shell .qmes-wo-form-grid{
+  width:100%;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:6px 8px;
+}
+.qmes-wo-issue-shell .qmes-wo-form-field input,
+.qmes-wo-issue-shell .qmes-wo-form-field select{
+  height:29px!important;
+  min-height:29px!important;
+  padding-left:8px!important;
+  padding-right:8px!important;
+}
+.qmes-wo-issue-shell .qmes-wo-material-compact th,
+.qmes-wo-issue-shell .qmes-wo-material-compact td{
+  padding-left:6px!important;
+  padding-right:6px!important;
+}
+.qmes-wo-issue-shell .qmes-wo-material-compact input,
+.qmes-wo-issue-shell .qmes-wo-material-compact select{
+  min-width:0!important;
+}
+@media(max-width:1300px){.qmes-wo-issue-shell{width:96%;}}
 </style>
 
 
@@ -10320,7 +10366,7 @@ select.qmes-label-judge-select option[value="불합격"]{
 <!-- PQC_OQC_PREVIEW_SUMMARY_3X2_REMARKS_CLEAN_260722 -->
 
 <style id="qmes-wo-iqc-identical-frame-v1">
-/* 작업지시서: 수입검사 성적서와 동일한 문서 틀 */
+/* : 수입검사 성적서와 동일한 문서 틀 */
 .qmes-wo-cert{width:100%;}
 .qmes-wo-cert .qmes-iqc2-table th,.qmes-wo-cert .qmes-iqc2-table td{font-size:10px;line-height:1.35;padding:7px 5px;vertical-align:middle;text-align:center;word-break:keep-all;}
 .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(1){width:5%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2){width:16%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(3){width:16%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4){width:11%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(5){width:11%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(6){width:10%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(7){width:12%}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8){width:19%}
@@ -10337,7 +10383,7 @@ select.qmes-label-judge-select option[value="불합격"]{
 
 
 <style id="QMES_WO_PRINT_MATCH_IQC_SCREEN_20260723">
-/* 작업지시서 출력 = 현재 수입검사 성적서 화면 비율과 동일 */
+/*  출력 = 현재 수입검사 성적서 화면 비율과 동일 */
 .qmes-wo-cert{
   width:100%!important;
   max-width:56rem!important;
@@ -10478,6 +10524,373 @@ select.qmes-label-judge-select option[value="불합격"]{
  .qmes-text-kpi-card{min-height:100px;padding:15px 17px}
  .qmes-text-kpi-card .qmes-hybrid-label{font-size:15px!important}
  .qmes-text-kpi-card .qmes-hybrid-value{font-size:31px!important}
+}
+</style>
+
+<style>
+/* ===== 공정 대시보드 상태 동그라미 확대 + 반짝임 ===== */
+.qmes-process-status-dot{
+  display:inline-block;
+  width:13px;
+  height:13px;
+  flex:0 0 13px;
+  animation:qmesProcessStatusSparkle 1.35s ease-in-out infinite;
+  transform-origin:center;
+}
+@keyframes qmesProcessStatusSparkle{
+  0%,100%{
+    transform:scale(1);
+    opacity:.78;
+    filter:brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+  50%{
+    transform:scale(1.28);
+    opacity:1;
+    filter:brightness(1.65) drop-shadow(0 0 5px rgba(255,255,255,.9));
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  .qmes-process-status-dot{animation:none;opacity:1;}
+}
+</style>
+
+<style>
+/* ===== 생산(배치) 배치 작업지시 현황 제목/내용 글자 간격 통일 ===== */
+.qmes-production-table th,
+.qmes-production-table td{
+  padding:10px 12px!important;
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;
+  font-size:12px!important;
+  line-height:18px!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+  vertical-align:middle!important;
+}
+.qmes-production-table th{
+  font-weight:600!important;
+}
+.qmes-production-table td{
+  font-weight:500!important;
+}
+.qmes-production-table td.font-mono,
+.qmes-production-table td .font-mono{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif!important;
+  letter-spacing:0!important;
+}
+.qmes-production-table .text-xs,
+.qmes-production-table .text-sm{
+  font-size:12px!important;
+  line-height:18px!important;
+  letter-spacing:0!important;
+}
+</style>
+
+<style id="QMES_PRODUCTION_EQUAL_COLUMNS_FINAL_20260724">
+/* 생산관리: 공정검사 관리대장처럼 제목/데이터 열 간격 완전 균등 */
+.qmes-production-table{
+  width:100%!important;
+  min-width:960px!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+.qmes-production-table colgroup{display:none!important;}
+.qmes-production-table th,
+.qmes-production-table td{
+  width:12.5%!important;
+  min-width:0!important;
+  max-width:none!important;
+  padding-left:10px!important;
+  padding-right:10px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+}
+.qmes-production-table th{
+  height:40px!important;
+  font-weight:600!important;
+}
+.qmes-production-table tbody tr{
+  height:48px!important;
+}
+.qmes-production-table td:nth-child(2){
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.qmes-production-table td:nth-child(6) > div{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+.qmes-production-table td:nth-child(6) > div > div{
+  flex:1 1 auto!important;
+  min-width:54px!important;
+}
+.qmes-production-table td:nth-child(6) span{
+  width:38px!important;
+  min-width:38px!important;
+  text-align:center!important;
+}
+.qmes-production-table td .inline-flex,
+.qmes-production-table td span{
+  margin-left:auto;
+  margin-right:auto;
+}
+</style>
+
+
+<style id="QMES_WORK_ORDER_MANAGEMENT_EQUAL_COLUMNS_20260724">
+/*  관리 발행 내역: 생산(배치)처럼 전체 열 간격 균등 */
+.qmes-issued-table-v2{
+  width:100%!important;
+  min-width:1540px!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+.qmes-issued-table-v2 colgroup{
+  display:none!important;
+}
+.qmes-issued-table-v2 th,
+.qmes-issued-table-v2 td,
+.qmes-issued-table-v2 th.num,
+.qmes-issued-table-v2 td.num,
+.qmes-issued-table-v2 th.center,
+.qmes-issued-table-v2 td.center{
+  width:9.0909%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  padding-left:8px!important;
+  padding-right:8px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+.qmes-issued-table-v2 thead th{
+  height:40px!important;
+  font-weight:600!important;
+}
+.qmes-issued-table-v2 tbody tr{
+  height:48px!important;
+}
+.qmes-issued-table-v2 td.truncate,
+.qmes-issued-table-v2 td .truncate{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.qmes-issued-table-v2 td button{
+  margin-left:auto;
+  margin-right:auto;
+}
+.qmes-issued-table-v2 td:nth-child(11){
+  padding-left:4px!important;
+  padding-right:4px!important;
+}
+.qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
+  margin-left:1px!important;
+  margin-right:1px!important;
+  padding-left:7px!important;
+  padding-right:7px!important;
+}
+</style>
+
+
+<style id="QMES_ISSUED_WORK_ORDER_PREVIEW_PRINT_20260724">
+.qmes-manage-btn.print{
+  color:#fff!important;
+  border-color:rgba(255,255,255,.55)!important;
+  background:rgba(255,255,255,.08)!important;
+}
+.qmes-manage-btn.print:hover{background:rgba(255,255,255,.16)!important}
+.qmes-issued-preview-cert{max-width:1000px!important;margin-left:auto!important;margin-right:auto!important}
+.qmes-issued-extra-summary{display:none!important}
+.qmes-issued-table-v2 td:nth-child(11){white-space:nowrap!important}
+.qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{font-size:10px!important;padding-left:5px!important;padding-right:5px!important}
+</style>
+
+
+<style id="QMES_WO_PREVIEW_SIMPLIFY_260724">
+/*  팝업 역할 분리: 일반 미리보기는 정보 확인만, 출력 미리보기는 성적서와 인쇄만 */
+.qmes-wo-output-preview .qmes-detail-only{display:none!important;}
+.qmes-wo-detail-preview .qmes-issued-preview-cert{display:none!important;}
+</style>
+
+<style id="QMES_WO_A4_CERTIFICATE_FINAL_20260724">
+/* 출력 미리보기: 실제 A4 세로 용지 비율로 (성적서 포함) 전체 표시 */
+.qmes-wo-output-preview{
+  width:min(980px,97vw)!important;
+  max-height:95vh!important;
+  overflow:auto!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert.qmes-wo-cert{
+  width:794px!important;
+  min-height:1123px!important;
+  max-width:calc(97vw - 64px)!important;
+  margin:12px auto 18px!important;
+  padding:30px 34px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+  background:#fff!important;
+  border-radius:2px!important;
+  box-shadow:0 12px 38px rgba(0,0,0,.30)!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sec{
+  break-inside:avoid!important;
+}
+
+/* 실제 인쇄: 미리보기 껍데기는 제외하고  성적서 전체만 A4 한 장에 출력 */
+@page{
+  size:A4 portrait!important;
+  margin:10mm!important;
+}
+@media print{
+  html,body{
+    width:210mm!important;
+    min-height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    overflow:visible!important;
+  }
+  body.print-doc #root{display:none!important;}
+  body.print-doc #qmes-print-root{
+    display:block!important;
+    width:190mm!important;
+    max-width:190mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    background:#fff!important;
+    overflow:visible!important;
+  }
+  body.print-doc #qmes-print-root > .doc-paper.qmes-wo-cert,
+  body.print-doc #qmes-print-root .doc-paper.qmes-wo-cert{
+    display:block!important;
+    position:static!important;
+    width:190mm!important;
+    max-width:190mm!important;
+    min-width:190mm!important;
+    min-height:277mm!important;
+    height:277mm!important;
+    max-height:277mm!important;
+    margin:0 auto!important;
+    padding:5mm 6mm!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    transform:none!important;
+    zoom:1!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:#fff!important;
+    color:#111!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid-page!important;
+    page-break-after:avoid!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header{
+    grid-template-columns:40mm 1fr 40mm!important;
+    padding-bottom:2.2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo{
+    width:37mm!important;
+    max-width:37mm!important;
+    max-height:10mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+    font-size:18px!important;
+    line-height:1.1!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xs,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta{
+    font-size:7.5px!important;
+    line-height:1.2!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-first{
+    margin-top:2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{
+    padding:1mm 1.6mm!important;
+    font-size:8.5px!important;
+    line-height:1.05!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table{
+    width:100%!important;
+    table-layout:fixed!important;
+    border-collapse:collapse!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    height:auto!important;
+    min-height:0!important;
+    padding:.9mm .7mm!important;
+    font-size:7px!important;
+    line-height:1.08!important;
+    overflow-wrap:anywhere!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{
+    min-height:7mm!important;
+    padding:1.2mm!important;
+    font-size:7px!important;
+    line-height:1.1!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{
+    margin-top:2mm!important;
+    gap:2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-code-box{
+    min-height:0!important;
+    padding:.8mm 1.2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th{
+    height:4.5mm!important;
+    font-size:7.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table td{
+    height:9mm!important;
+    font-size:7.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{
+    margin-top:1.5mm!important;
+    padding-top:.7mm!important;
+    font-size:6.2px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert table,
+  body.print-doc #qmes-print-root .qmes-wo-cert tr,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_HEADER_SCREEN_PREVIEW_PRINT_SYNC_20260724">
+/*  본 화면·미리보기·인쇄 상단 헤더를 동일 구조로 사용 */
+.qmes-issued-preview-cert .qmes-wo-header{
+  display:grid!important;
+  grid-template-columns:minmax(150px,1fr) minmax(260px,1.35fr) minmax(180px,1fr)!important;
+  align-items:center!important;
+  column-gap:14px!important;
+}
+.qmes-issued-preview-cert .qmes-wo-header-logo-wrap{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important}
+.qmes-issued-preview-cert .qmes-wo-header-logo{display:block!important;max-width:180px!important;width:100%!important;height:auto!important;object-fit:contain!important}
+.qmes-issued-preview-cert .qmes-iqc-centered-title{text-align:center!important;justify-self:center!important}
+.qmes-issued-preview-cert .qmes-iqc-header-meta{text-align:center!important;justify-self:center!important;line-height:1.55!important}
+@media print{
+  body.print-doc #qmes-print-root .qmes-wo-header{
+    display:grid!important;
+    grid-template-columns:42mm 1fr 48mm!important;
+    align-items:center!important;
+    column-gap:3mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-header-logo-wrap{display:flex!important;align-items:center!important;justify-content:flex-start!important}
+  body.print-doc #qmes-print-root .qmes-wo-header-logo{display:block!important;width:38mm!important;max-width:38mm!important;height:auto!important;object-fit:contain!important}
+  body.print-doc #qmes-print-root .qmes-iqc-centered-title{text-align:center!important;justify-self:center!important}
+  body.print-doc #qmes-print-root .qmes-iqc-header-meta{text-align:center!important;justify-self:center!important;line-height:1.45!important}
 }
 </style>
 </head>
@@ -10644,7 +11057,7 @@ const SUPPLIER_RATE = [];
 
 const IQC_MATERIALS = ["NMP", "PVdF", "SBS", "SBR", "Boehmite", "분산제"];
 
-/* ──────────────────────────── 작업지시서 데이터 — 공정 40·50 ──────────────────────────── */
+/* ────────────────────────────  데이터 — 공정 40·50 ──────────────────────────── */
 
 const WO_DOCS = {};
 
@@ -10670,7 +11083,7 @@ function decodeLot(lot) {
 
 const GATES = [
   { name: "① IQC 게이트 (불출 차단)", target: "수입검사 미완료·불합격 원료", rule: "판정이 '합격' 또는 승인된 '조건부'가 아니면 창고 출고(불출) 자체가 불가", sys: "원료 Lot 바코드 스캔 시 차단", icon: ArrowDownToLine },
-  { name: "② 투입 게이트 (오투입 차단)", target: "작업지시 외 원료·Lot", rule: "작업지시서 BOM에 등록된 원료 Lot만 계량·투입 가능, 기준량 허용공차 초과 시 투입 중지", sys: "전자저울·계량기 인터락", icon: Beaker },
+  { name: "② 투입 게이트 (오투입 차단)", target: "작업지시 외 원료·Lot", rule: " BOM에 등록된 원료 Lot만 계량·투입 가능, 기준량 허용공차 초과 시 투입 중지", sys: "전자저울·계량기 인터락", icon: Beaker },
   { name: "③ 공정 게이트 (진행 차단)", target: "PQC 미합격 배치", rule: "PQC(점도·고형분·입도) 합격 전 필터링·충진 공정 시작 불가, 부적합 시 배치 자동 홀드", sys: "PLC 인터락 · 배치 홀드", icon: Filter },
   { name: "④ 출하 게이트 (출하 차단)", target: "OQC 미합격·홀드 Lot", rule: "OQC 8항목 전부 합격 + 홀드 없음 조건 충족 시에만 CoA 발행·출하지시 가능", sys: "출하지시·성적서 발행 차단", icon: Truck },
 ];
@@ -11127,8 +11540,8 @@ function ProcessStrip() {
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-slate-500 font-mono">공정 {p.no}</span>
               <span className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${m.dot} ${["run","inspect"].includes(p.status) ? "animate-pulse" : ""}`} />
-                <span className={`text-[11px] font-medium ${m.text}`}>{m.label}</span>
+                <span className={`qmes-process-status-dot rounded-full ${m.dot}`} />
+                <span className={`text-[18px] font-bold leading-none ${m.text}`}>{m.label}</span>
               </span>
             </div>
             <div className="flex items-center gap-1.5 mt-1">
@@ -11283,32 +11696,32 @@ function ProductionTab() {
   return (
     <Panel title="배치 작업지시 현황" right={<span className="text-xs text-slate-400">총 {list.length}건</span>}>
       <div className="overflow-x-auto -mx-4 px-4">
-        <table className="w-full text-sm min-w-[680px]">
+        <table className="qmes-production-table w-full table-fixed text-sm min-w-[760px]">
           <thead>
             <tr className="text-xs text-slate-400 border-b border-slate-800">
-              <th className="text-left py-2 pr-3 font-medium">배치번호</th>
+              <th className="text-left py-2 px-3 font-medium">배치번호</th>
               <th className="text-left py-2 px-3 font-medium">품목</th>
-              <th className="text-left py-2 pr-3 font-medium">탱크</th>
-              <th className="text-right py-2 pr-3 font-medium">계획</th>
-              <th className="text-right py-2 pr-3 font-medium">실적</th>
-              <th className="text-left py-2 pr-3 font-medium w-40">진척률</th>
-              <th className="text-left py-2 pr-3 font-medium">납기</th>
-              <th className="text-left py-2 font-medium">상태</th>
+              <th className="text-left py-2 px-3 font-medium">탱크</th>
+              <th className="text-right py-2 px-3 font-medium">계획</th>
+              <th className="text-right py-2 px-3 font-medium">실적</th>
+              <th className="text-left py-2 px-3 font-medium">진척률</th>
+              <th className="text-left py-2 px-3 font-medium">납기</th>
+              <th className="text-left py-2 px-3 font-medium">상태</th>
             </tr>
           </thead>
           <tbody>
             {list.length === 0 && (
-              <tr><td colSpan={9} className="py-6 text-center text-sm text-slate-500">배치 실적이 없습니다 — [작업지시 발행]에서 배치를 발행하세요.</td></tr>
+              <tr><td colSpan={8} className="py-6 px-3 text-center text-sm text-slate-500">배치 실적이 없습니다 — [작업지시 발행]에서 배치를 발행하세요.</td></tr>
             )}
             {list.map((w) => {
               const pct = Number(w.plan || 0) > 0 ? Math.round((Number(w.done || 0) / Number(w.plan)) * 100) : 0;
               return (
                 <tr key={w.no} className="border-b border-slate-800/60 hover:bg-slate-800/30">
-                  <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{w.no}</td>
-                  <td className="py-2.5 pr-3 text-slate-100">{w.item}</td>
-                  <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{w.tank}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{w.plan.toLocaleString()} {w.unit}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-100 font-semibold">
+                  <td className="py-2.5 px-3 font-mono text-xs text-sky-300 whitespace-nowrap">{w.no}</td>
+                  <td className="py-2.5 px-3 text-slate-100 truncate">{w.item}</td>
+                  <td className="py-2.5 px-3 text-xs font-mono text-slate-400 whitespace-nowrap">{w.tank}</td>
+                  <td className="py-2.5 px-3 text-right tabular-nums text-slate-300 whitespace-nowrap">{w.plan.toLocaleString()} {w.unit}</td>
+                  <td className="py-2.5 px-3 text-right tabular-nums text-slate-100 font-semibold whitespace-nowrap">
                     {Number(w.done || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">{w.unit}</span>
                   </td>
                   <td className="py-2.5 px-3">
@@ -11319,8 +11732,8 @@ function ProductionTab() {
                       <span className="text-xs tabular-nums text-slate-400 w-9 text-right">{pct}%</span>
                     </div>
                   </td>
-                  <td className="py-2.5 pr-3 text-xs text-slate-300">{w.due}</td>
-                  <td className="py-2.5"><Badge tone={stTone[w.status]}>{w.status}</Badge></td>
+                  <td className="py-2.5 px-3 text-xs text-slate-300 whitespace-nowrap">{w.due}</td>
+                  <td className="py-2.5 px-3 whitespace-nowrap"><Badge tone={stTone[w.status]}>{w.status}</Badge></td>
                 </tr>
               );
             })}
@@ -13933,7 +14346,7 @@ function IqcTab() {
   );
 }
 
-/* ──────────────────────────── 작업지시서 탭 ──────────────────────────── */
+/* ────────────────────────────  탭 ──────────────────────────── */
 
 function WoDocTab() {
   const ids = Object.keys(DB.woDocs);
@@ -13952,8 +14365,8 @@ function WoDocTab() {
 
   if (!w) {
     return (
-      <Panel title="작업지시서">
-        <p className="text-sm text-slate-500">조회할 작업지시서가 없습니다. [작업지시 발행]에서 발행하면 이 화면에서 조회하고 인쇄할 수 있습니다.</p>
+      <Panel title="">
+        <p className="text-sm text-slate-500">조회할 가 없습니다. [작업지시 발행]에서 발행하면 이 화면에서 조회하고 인쇄할 수 있습니다.</p>
       </Panel>
     );
   }
@@ -14022,13 +14435,13 @@ function WoDocTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Panel title="작업지시서 조회 · 인쇄" right={
+      <Panel title=" 조회 · 인쇄" right={
         <button onClick={() => printDoc()} className="flex items-center gap-1.5 rounded border border-slate-600 text-slate-200 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium transition-colors">
-          <Printer size={13} /> 선택 작업지시서 인쇄
+          <Printer size={13} /> 선택  인쇄
         </button>
       }>
         <div className="text-xs text-slate-500 mb-3">
-          발행된 작업지시 목록에서 LOT No. 또는 품목을 누르거나, 관리의 보기 버튼을 눌러 작업지시서를 선택하세요.
+          발행된 작업지시 목록에서 LOT No. 또는 품목을 누르거나, 관리의 보기 버튼을 눌러 를 선택하세요.
         </div>
         <div className="qmes-iqc-ledger-wrap overflow-x-auto">
           <table className="qmes-wo-list-table w-full text-sm min-w-[900px]">
@@ -14115,7 +14528,7 @@ function WoDocTab() {
         )}
       </Panel>
 
-      {/* 작업지시서 — 수입검사 성적서와 동일한 문서 틀 */}
+      {/*  — 수입검사 성적서와 동일한 문서 틀 */}
       <div className="doc-paper qmes-iqc-doc qmes-wo-cert bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
         <div className="qmes-iqc-centered-header qmes-wo-header border-b-2 border-slate-900 pb-4">
           <div className="qmes-iqc-header-logo-wrap qmes-wo-header-logo-wrap">
@@ -14126,8 +14539,8 @@ function WoDocTab() {
             <div className="text-xs text-slate-500 mt-0.5">WORK ORDER</div>
           </div>
           <div className="qmes-iqc-header-meta text-right text-xs text-slate-600">
-            <div>작업지시번호 : <span className="font-mono">{w.woNo || sel || "-"}</span></div>
-            <div>생산일자 : {w.date || "-"}</div>
+            <div>작업지시번호 : <span className="font-mono">{doc.woNo || viewingWo || "-"}</span></div>
+            <div>생산일자 : {doc.date || batch.due || "-"}</div>
           </div>
         </div>
 
@@ -14136,7 +14549,7 @@ function WoDocTab() {
           <table className="qmes-iqc2-table">
             <thead><tr><th>작업지시번호</th><th>LOT</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
             <tbody><tr>
-              <td className="font-mono">{w.woNo || sel || "-"}</td>
+              <td className="font-mono">{doc.woNo || viewingWo || "-"}</td>
               <td className="font-mono">{sel || "-"}</td>
               <td>{w.item || "-"}</td>
               <td>{w.tank || "-"}</td>
@@ -14316,13 +14729,75 @@ function IssueWoTab() {
   const [form, setForm] = useState({
     product: products[0], tank: BOM[products[0]].tanks[0], qty: "230",
     prodDate: "2026-07-12", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
-    shiftType: "일반", worker: "관리자",
+    shiftType: "일반", worker: "",
   });
   const [issued, setIssued] = useState(DB.batches);
   const [editingWo, setEditingWo] = useState(null);
   const [viewingWo, setViewingWo] = useState(null);
+  const [woPreviewMode, setWoPreviewMode] = useState("detail");
+  const [showIssueForm, setShowIssueForm] = useState(false);
   const [issueSearch, setIssueSearch] = useState({ lot: "", item: "", date: "" });
   const [statusVersion, setStatusVersion] = useState(0);
+
+  const openWorkOrderPreview = (lotNo, mode = "detail") => {
+    setWoPreviewMode(mode);
+    setViewingWo(lotNo);
+  };
+
+  const printIssuedWorkOrder = (lotNo) => {
+    window.setTimeout(() => {
+      const cert = document.getElementById(`qmes-issued-cert-${lotNo}`);
+      const printRoot = document.getElementById("qmes-print-root");
+      if (!cert || !printRoot) {
+        alert("출력할 작업지시서를 찾을 수 없습니다.");
+        return;
+      }
+
+      /* 화면용 축소 미리보기 스타일을 복사하지 않고,
+          본문만 새로 복제하여 A4 인쇄 전용 CSS로 출력합니다. */
+      const clone = cert.cloneNode(true);
+      clone.removeAttribute("id");
+      clone.classList.remove("qmes-issued-print-only");
+      clone.classList.add("qmes-screen-print-copy");
+      clone.style.cssText = "";
+
+      /* QR canvas는 cloneNode로 픽셀이 복사되지 않으므로 직접 복사 */
+      const srcCanvases = cert.querySelectorAll("canvas");
+      const cloneCanvases = clone.querySelectorAll("canvas");
+      srcCanvases.forEach((canvas, index) => {
+        const copied = cloneCanvases[index];
+        if (!copied) return;
+        try {
+          copied.width = canvas.width;
+          copied.height = canvas.height;
+          copied.getContext("2d").drawImage(canvas, 0, 0);
+        } catch (_) {}
+      });
+
+      clone.querySelectorAll("button, .qmes-modal-close, [data-no-print='true']")
+        .forEach((el) => el.remove());
+
+      printRoot.innerHTML = "";
+      printRoot.appendChild(clone);
+      document.body.classList.remove("qmes-screen-exact-print", "print-label");
+      document.body.classList.add("print-doc");
+
+      let cleaned = false;
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        document.body.classList.remove("print-doc");
+        printRoot.innerHTML = "";
+        window.removeEventListener("afterprint", cleanup);
+      };
+
+      window.addEventListener("afterprint", cleanup);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.print();
+        setTimeout(cleanup, 1500);
+      }));
+    }, 60);
+  };
   const [issuePage, setIssuePage] = useState(1);
   const issuePageSize = 10;
   const [planItems, setPlanItems] = useState(BOM[products[0]].items.map((it) => ({ ...it, materialLot: "", actual: "" })));
@@ -14407,9 +14882,10 @@ function IssueWoTab() {
     dbSave();
     setEditingWo(null);
     setIssued([...DB.batches]);
+    setShowIssueForm(false);
   };
 
-  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
+  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setShowIssueForm(true); setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
   const deleteWo = (r) => { const reason=askDeleteReason(`작업지시 ${r.no}`); if(reason===null)return; DB.batches=DB.batches.filter(x=>x.no!==r.no); delete DB.woDocs[r.no]; delete DB.lots[r.no]; DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no); DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no); DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no); auditLog("작업지시","삭제",r.no,reason); dbSave(); setIssued([...DB.batches]); };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
@@ -14426,7 +14902,20 @@ function IssueWoTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Panel title="신규 작업지시 발행" right={<span className="text-xs text-slate-400">LOT No. 자동 채번: <span className="font-mono text-sky-300">{nextNo}</span></span>}>
+      <div className="flex items-center gap-3 py-1">
+        <h2 className="text-[22px] font-bold text-slate-100">작업지시 관리</h2>
+        <button
+          type="button"
+          onClick={() => { setEditingWo(null); setShowIssueForm(true); }}
+          className="qmes-iqc-new-btn"
+        >
+          <Plus size={16} /> 신규 발행
+        </button>
+      </div>
+
+      {showIssueForm && (
+      <div className="qmes-wo-issue-shell">
+      <Panel title={editingWo ? "작업지시 수정" : "신규 작업지시 발행"} right={<span className="text-xs text-slate-400">LOT No. 자동 채번: <span className="font-mono text-sky-300">{nextNo}</span></span>}>
         <div className="qmes-wo-form-grid">
           <div className="qmes-wo-form-field">
             {label("공정 / 품목 (Grd.)")}
@@ -14498,17 +14987,17 @@ function IssueWoTab() {
               <span className="ml-2 text-[10px] text-slate-500">오차 기준: ±0.5% 이내 정상 · ±1.0% 이내 주의 · 초과 이탈</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="qmes-material-table qmes-material-balanced w-full text-sm min-w-[1370px]">
+            <table className="qmes-material-table qmes-material-balanced qmes-wo-material-compact w-full text-sm min-w-[1160px]">
               <colgroup>
-                <col style={{ width: "58px" }} />
-                <col style={{ width: "230px" }} />
-                <col style={{ width: "190px" }} />
+                <col style={{ width: "52px" }} />
+                <col style={{ width: "185px" }} />
+                <col style={{ width: "130px" }} />
+                <col style={{ width: "130px" }} />
+                <col style={{ width: "130px" }} />
                 <col style={{ width: "155px" }} />
-                <col style={{ width: "155px" }} />
-                <col style={{ width: "155px" }} />
-                <col style={{ width: "120px" }} />
-                <col style={{ width: "120px" }} />
-                <col style={{ width: "250px" }} />
+                <col style={{ width: "100px" }} />
+                <col style={{ width: "100px" }} />
+                <col style={{ width: "185px" }} />
               </colgroup>
               <thead>
                 <tr className="text-[11px] text-slate-500 border-b border-slate-700/60">
@@ -14665,14 +15154,23 @@ function IssueWoTab() {
         )}
 
         <div className="flex items-center justify-between mt-3">
-          <p className="text-[11px] text-slate-500">발행 시 실제 양식의 작업지시서가 생성되며, [작업지시서] 화면에서 LOT별로 조회하고 인쇄할 수 있습니다.</p>
-          <button onClick={issue} disabled={!woReady}
-            className={`flex items-center gap-1.5 rounded px-4 py-2 text-sm font-medium transition-colors ${!woReady ? "bg-slate-800 text-slate-600" : "bg-sky-600 hover:bg-sky-500 text-white"}`}>
-            <Plus size={15} /> {editingWo ? "작업지시 수정 저장" : "작업지시 발행"}
-          </button>
+          <p className="text-[11px] text-slate-500">발행 시 실제 양식의 가 생성되며, [] 화면에서 LOT별로 조회하고 인쇄할 수 있습니다.</p>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
+              className="qmes-inspection-cancel-btn">
+              취소
+            </button>
+            <button type="button" onClick={issue} disabled={!woReady}
+              className={`qmes-inspection-save-btn ${!woReady ? "opacity-40 cursor-not-allowed" : ""}`}>
+              저장
+            </button>
+          </div>
         </div>
       </Panel>
+      </div>
+      )}
 
+      {!showIssueForm && (
       <Panel title="발행 내역" right={<span className="text-xs text-slate-400">{filteredIssued.length}건</span>}>
         <div className="qmes-status-guide">
           <span><i className="status-dot issue"></i>발행</span>
@@ -14697,21 +15195,8 @@ function IssueWoTab() {
           <button onClick={() => { setIssueSearch({ lot: "", item: "", date: "" }); setIssuePage(1); }}>초기화</button>
         </div>
 
-        <div className="overflow-x-auto -mx-4 px-4">
-          <table className="qmes-issued-table-v2 w-full text-sm min-w-[1610px]">
-            <colgroup>
-              <col style={{ width: "140px" }} />
-              <col style={{ width: "220px" }} />
-              <col style={{ width: "170px" }} />
-              <col style={{ width: "120px" }} />
-              <col style={{ width: "135px" }} />
-              <col style={{ width: "125px" }} />
-              <col style={{ width: "145px" }} />
-              <col style={{ width: "120px" }} />
-              <col style={{ width: "135px" }} />
-              <col style={{ width: "110px" }} />
-              <col style={{ width: "190px" }} />
-            </colgroup>
+        <div className="qmes-issued-table-wrap">
+          <table className="qmes-issued-table-v2 w-full text-sm">
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th>LOT No.</th>
@@ -14737,10 +15222,10 @@ function IssueWoTab() {
                 return (
                   <tr key={r.no} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                     <td className="font-mono whitespace-nowrap">
-                      <button onClick={() => setViewingWo(r.no)} className="text-sky-300 hover:text-sky-200 hover:underline">{r.no}</button>
+                      <button onClick={() => openWorkOrderPreview(r.no, "detail")} className="text-sky-300 hover:text-sky-200 hover:underline">{r.no}</button>
                     </td>
                     <td className="truncate" title={r.item}>
-                      <button onClick={() => setViewingWo(r.no)} className="text-slate-100 hover:text-white hover:underline text-left">{r.item}</button>
+                      <button onClick={() => openWorkOrderPreview(r.no, "detail")} className="text-slate-100 hover:text-white hover:underline text-left">{r.item}</button>
                     </td>
                     <td className="truncate text-slate-400" title={r.tank}>{r.tank}</td>
                     <td className="num text-slate-100">{Number(r.plan || 0).toLocaleString()} kg</td>
@@ -14766,7 +15251,8 @@ function IssueWoTab() {
                       </select>
                     </td>
                     <td className="center whitespace-nowrap">
-                      <button onClick={() => setViewingWo(r.no)} className="qmes-manage-btn view">보기</button>
+                      <button onClick={() => openWorkOrderPreview(r.no, "detail")} className="qmes-manage-btn view">미리보기</button>
+                      <button onClick={() => openWorkOrderPreview(r.no, "print")} className="qmes-manage-btn print">출력</button>
                       <button onClick={() => editWo(r)} className="qmes-manage-btn edit">수정</button>
                       <button onClick={() => deleteWo(r)} className="qmes-manage-btn delete">삭제</button>
                     </td>
@@ -14794,6 +15280,7 @@ function IssueWoTab() {
           </div>
         )}
       </Panel>
+      )}
 
       {viewingWo && (() => {
         const batch = issued.find((r) => r.no === viewingWo) || DB.batches.find((r) => r.no === viewingWo);
@@ -14806,16 +15293,106 @@ function IssueWoTab() {
 
         return (
           <div className="qmes-modal-backdrop" onClick={() => setViewingWo(null)}>
-            <div className="qmes-wo-viewer" onClick={(e) => e.stopPropagation()}>
+            <div className={`qmes-wo-viewer ${woPreviewMode === "print" ? "qmes-wo-output-preview" : "qmes-wo-detail-preview"}`} onClick={(e) => e.stopPropagation()}>
               <div className="qmes-wo-viewer-head">
                 <div>
-                  <div className="text-lg font-bold text-white">작업지시 상세</div>
+                  <div className="text-lg font-bold text-white">{woPreviewMode === "print" ? "작업지시 출력 미리보기" : "작업지시 미리보기"}</div>
                   <div className="text-xs text-slate-400 mt-0.5">LOT No. <span className="font-mono text-sky-300">{viewingWo}</span></div>
                 </div>
-                <button onClick={() => setViewingWo(null)} className="qmes-modal-close">×</button>
+                {woPreviewMode === "print" && (
+                  <div className="qmes-wo-head-actions">
+                    <button onClick={() => printIssuedWorkOrder(viewingWo)} className="qmes-wo-head-print">인쇄</button>
+                    <button onClick={() => setViewingWo(null)} className="qmes-wo-head-close">닫기</button>
+                  </div>
+                )}
               </div>
 
-              <div className="qmes-wo-summary">
+              <div id={`qmes-issued-cert-${viewingWo}`} className={`doc-paper qmes-iqc-doc qmes-wo-cert qmes-issued-preview-cert ${woPreviewMode === "detail" ? "qmes-issued-print-only" : ""} bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl w-full mt-4`}>
+                <div className="qmes-iqc-centered-header qmes-wo-header border-b-2 border-slate-900 pb-4">
+          <div className="qmes-iqc-header-logo-wrap qmes-wo-header-logo-wrap">
+            <img className="qmes-iqc-header-logo qmes-wo-header-logo" src="data:image/png;base64,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" alt="나모케미칼(주) 로고" />
+          </div>
+          <div className="qmes-iqc-centered-title">
+            <div className="text-xl font-bold tracking-wide">작업지시서</div>
+            <div className="text-xs text-slate-500 mt-0.5">WORK ORDER</div>
+          </div>
+          <div className="qmes-iqc-header-meta text-right text-xs text-slate-600">
+            <div>작업지시번호 : <span className="font-mono">{doc.woNo || viewingWo || "-"}</span></div>
+            <div>생산일자 : {doc.date || batch.due || "-"}</div>
+          </div>
+        </div>
+
+                <div className="qmes-iqc2-sec qmes-iqc2-first">
+                  <div className="qmes-iqc2-sec-title">기본정보</div>
+                  <table className="qmes-iqc2-table">
+                    <thead><tr><th>작업지시번호</th><th>LOT</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
+                    <tbody><tr>
+                      <td className="font-mono">{doc.woNo || viewingWo || "-"}</td>
+                      <td className="font-mono">{viewingWo || "-"}</td>
+                      <td>{doc.item || batch.item || "-"}</td>
+                      <td>{doc.tank || batch.tank || "-"}</td>
+                      <td>{doc.workers || batch.worker || "-"}</td>
+                    </tr></tbody>
+                  </table>
+                </div>
+
+                <div className="qmes-iqc2-sec">
+                  <div className="qmes-iqc2-sec-title">생산정보</div>
+                  <table className="qmes-iqc2-table">
+                    <thead><tr><th>공정명</th><th>생산계획량</th><th>작업시간</th><th>생산시간</th><th>근무유형</th></tr></thead>
+                    <tbody><tr>
+                      <td>{doc.procName || "절연슬러리 제조"}</td>
+                      <td>{Number(doc.plan ?? batch.plan ?? 0).toLocaleString()} kg</td>
+                      <td>{doc.hours || "-"}</td>
+                      <td>{doc.timeRange || "-"}</td>
+                      <td>{doc.shiftType || batch.shift || "일반"}</td>
+                    </tr></tbody>
+                  </table>
+                </div>
+
+                <div className="qmes-iqc2-sec">
+                  <div className="qmes-iqc2-sec-title">원재료 투입</div>
+                  <table className="qmes-iqc2-table qmes-wo-cert-material-table">
+                    <thead><tr><th>No</th><th>원재료명</th><th>원재료 LOT</th><th>투입량</th><th>실투입량</th><th>판정</th><th>확인자</th><th>비고</th></tr></thead>
+                    <tbody>
+                      {inputs.map((it, i) => (
+                        <tr key={`issued-cert-${viewingWo}-${i}`}>
+                          <td>{it.seq || i + 1}</td>
+                          <td>{it.name || "-"}</td>
+                          <td className="font-mono">{it.materialLot || it.lot || "-"}</td>
+                          <td>{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
+                          <td>{it.act == null ? "-" : `${Number(it.act).toFixed(3)} ${it.unit || "kg"}`}</td>
+                          <td>{it.ok === true ? "적합" : it.ok === false ? "공차 이탈" : "-"}</td>
+                          <td>{it.by || "-"}</td>
+                          <td>{it.note || "-"}</td>
+                        </tr>
+                      ))}
+                      <tr className="qmes-wo-cert-total-row">
+                        <td></td><td className="font-semibold">합계</td><td></td>
+                        <td className="font-semibold">{plannedTotal.toFixed(3)} kg</td>
+                        <td className="font-semibold">{actualTotal > 0 ? `${actualTotal.toFixed(3)} kg` : "-"}</td>
+                        <td colSpan={3}></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="qmes-iqc2-sec">
+                  <div className="qmes-iqc2-sec-title">특이사항</div>
+                  <div className="qmes-iqc2-remarks">{doc.remarks || "-"}</div>
+                </div>
+
+                <div className="qmes-iqc2-auth-row">
+                  <div className="qmes-iqc2-code-box"><IqcBarcodeQr record={{ inNo: doc.woNo || viewingWo, lot: viewingWo, name: doc.item || batch.item, supplier: doc.tank || batch.tank, recv: doc.date || batch.due }} /></div>
+                  <table className="qmes-iqc2-sign-table"><tbody>
+                    <tr><th>작성</th><th>검토</th><th>승인</th></tr>
+                    <tr><td>{(doc.workers || batch.worker || "").split(",")[0]}</td><td></td><td></td></tr>
+                  </tbody></table>
+                </div>
+                <div className="qmes-iqc2-doc-footer">본 문서는 QMES에서 발행된 관리문서입니다.</div>
+              </div>
+
+              <div className="qmes-wo-summary qmes-issued-extra-summary qmes-detail-only">
                 <div><span>품목</span><strong>{batch.item}</strong></div>
                 <div><span>설비</span><strong>{batch.tank}</strong></div>
                 <div><span>생산일자</span><strong>{batch.due}</strong></div>
@@ -14827,7 +15404,7 @@ function IssueWoTab() {
                 <div><span>상태</span><strong>{getAutoWoStatus(viewingWo)}</strong></div>
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4 qmes-detail-only">
                 <div className="text-sm font-semibold text-slate-200 mb-2">원재료 투입 계획</div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm min-w-[900px]">
@@ -14878,10 +15455,12 @@ function IssueWoTab() {
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-end gap-2">
-                <button onClick={() => { setViewingWo(null); editWo(batch); }} className="px-3 py-2 rounded border border-sky-500/40 text-sky-300 text-xs hover:bg-sky-500/10">수정하기</button>
-                <button onClick={() => setViewingWo(null)} className="px-3 py-2 rounded bg-slate-700 text-slate-100 text-xs hover:bg-slate-600">닫기</button>
-              </div>
+
+              {woPreviewMode === "detail" && (
+                <div className="qmes-wo-detail-footer">
+                  <button onClick={() => setViewingWo(null)} className="qmes-wo-footer-close">닫기</button>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -15391,7 +15970,7 @@ const TABS = [
   { id: "pop", label: "현장 입력 (iPad)", icon: Tablet, comp: FieldInputTab },
   { id: "iqc", label: "수입검사 (IQC)", icon: ArrowDownToLine, comp: IqcTab },
   { id: "prod", label: "생산 (배치)", icon: FlaskConical, comp: ProductionTab },
-  { id: "wo", label: "작업지시서", icon: ClipboardList, comp: WoDocTab },
+  { id: "wo", label: "", icon: ClipboardList, comp: WoDocTab },
   { id: "woIssue", label: "작업지시 발행", icon: Plus, comp: IssueWoTab },
   { id: "pqc", label: "공정검사 (PQC)", icon: ClipboardCheck, comp: PqcTab },
   { id: "oqc", label: "출하검사 (OQC)", icon: ArrowUpFromLine, comp: OqcTab },
@@ -15411,7 +15990,7 @@ const TOP_MENUS = [
   { id: "dash", label: "대시보드", icon: LayoutDashboard },
   {
     id: "productionMenu", label: "생산관리", icon: FlaskConical,
-    children: [ "prod", "woIssue", "wo" ],
+    children: ["prod", "woIssue"],
   },
   {
     id: "qualityMenu", label: "품질검사", icon: ClipboardCheck,
@@ -16211,7 +16790,7 @@ qmesStart();
 
 
 <style id="qmes-wo-print-large-a4-v2">
-/* 작업지시서 A4 확대 인쇄 최종 보정 */
+/*  A4 확대 인쇄 최종 보정 */
 @media print{
   body.print-doc #qmes-print-root{
     width:196mm!important;
@@ -16293,7 +16872,7 @@ qmesStart();
 </style>
 
 <style id="qmes-wo-print-report-identical-v3">
-/* 작업지시서 인쇄: 수입검사 성적서와 같은 로고·폭·글자 비율 */
+/*  인쇄: 수입검사 성적서와 같은 로고·폭·글자 비율 */
 .qmes-wo-cert .qmes-wo-header{
   display:grid!important;
   grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr)!important;
@@ -16415,7 +16994,7 @@ qmesStart();
 
 
 <style id="QMES_WO_PRINT_ONE_PAGE_NO_SCALE_20260723">
-/* 작업지시서 A4 1장 출력: 글자/표 크기는 유지하고 세로 여백만 정리 */
+/*  A4 1장 출력: 글자/표 크기는 유지하고 세로 여백만 정리 */
 @media print{
   @page{size:A4 portrait;margin:5mm!important;}
 
@@ -16503,7 +17082,7 @@ qmesStart();
 </style>
 
 <style id="QMES_WO_PRINT_TITLE_UP_20260723">
-/* 작업지시서 제목을 위로 이동하여 A4 1장 확보 - 글자/표 크기 유지 */
+/*  제목을 위로 이동하여 A4 1장 확보 - 글자/표 크기 유지 */
 @media print{
   body.print-doc #qmes-print-root .doc-paper.qmes-wo-cert{
     padding-top:1mm!important;
@@ -16514,6 +17093,777 @@ qmesStart();
   body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title{
     transform:translateY(-2mm)!important;
   }
+}
+</style>
+
+
+<style id="QMES_WO_PREVIEW_NO_CERT_AND_UNIFIED_BUTTONS_260724">
+/*  미리보기: 성적서 양식은 화면에서 제외하고 출력용으로만 유지 */
+.qmes-issued-print-only{display:none!important;}
+
+/*  관리 버튼: 수입·공정·출하 관리 버튼과 동일 규격 */
+.qmes-issued-table-v2 td:nth-child(11){
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+.qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:62px!important;
+  min-width:62px!important;
+  height:30px!important;
+  min-height:30px!important;
+  margin:2px 2px!important;
+  padding:0 6px!important;
+  box-sizing:border-box!important;
+  border-radius:6px!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  line-height:1!important;
+}
+</style>
+
+<style id="QMES_WO_PREVIEW_FIX_20260724">
+/* 작업지시 발행 목록: 화면 밖으로 밀리지 않도록 열 비율과 글자 간격 재정렬 */
+.qmes-issued-table-wrap{width:100%;overflow-x:hidden;}
+.qmes-issued-table-v2{width:100%!important;min-width:0!important;table-layout:fixed!important;}
+.qmes-issued-table-v2 th,.qmes-issued-table-v2 td{
+  padding-left:5px!important;padding-right:5px!important;
+  letter-spacing:0!important;word-spacing:0!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+.qmes-issued-table-v2 th:nth-child(1),.qmes-issued-table-v2 td:nth-child(1){width:9%!important}
+.qmes-issued-table-v2 th:nth-child(2),.qmes-issued-table-v2 td:nth-child(2){width:12%!important}
+.qmes-issued-table-v2 th:nth-child(3),.qmes-issued-table-v2 td:nth-child(3){width:7%!important}
+.qmes-issued-table-v2 th:nth-child(4),.qmes-issued-table-v2 td:nth-child(4){width:7%!important}
+.qmes-issued-table-v2 th:nth-child(5),.qmes-issued-table-v2 td:nth-child(5){width:8%!important}
+.qmes-issued-table-v2 th:nth-child(6),.qmes-issued-table-v2 td:nth-child(6){width:9%!important}
+.qmes-issued-table-v2 th:nth-child(7),.qmes-issued-table-v2 td:nth-child(7){width:9%!important}
+.qmes-issued-table-v2 th:nth-child(8),.qmes-issued-table-v2 td:nth-child(8){width:7%!important}
+.qmes-issued-table-v2 th:nth-child(9),.qmes-issued-table-v2 td:nth-child(9){width:7%!important}
+.qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:8%!important}
+.qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:17%!important;overflow:visible!important}
+.qmes-issued-table-v2 td:nth-child(11){display:table-cell!important;text-align:center!important;}
+.qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
+  display:inline-flex!important;width:48px!important;min-width:48px!important;height:28px!important;min-height:28px!important;
+  margin:0 1px!important;padding:0 3px!important;font-size:10px!important;letter-spacing:-.03em!important;
+}
+.qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{width:58px!important;min-width:58px!important;}
+
+/* 일반 미리보기에는 작업지시 정보만, 출력 미리보기에는 성적서 표시 */
+.qmes-wo-output-preview{width:min(1040px,96vw)!important;}
+.qmes-wo-output-preview .qmes-issued-preview-cert{display:block!important;}
+.qmes-wo-output-preview .qmes-issued-extra-summary,
+.qmes-wo-output-preview .qmes-issued-extra-summary + .mt-4{display:none!important;}
+.qmes-wo-output-preview .qmes-issued-preview-cert{max-height:calc(90vh - 150px);overflow:auto;}
+
+/* A4 1페이지 유지 */
+@media print{
+  body.print-doc #qmes-print-root .doc-paper.qmes-wo-cert{
+    width:194mm!important;max-width:194mm!important;min-height:0!important;
+    padding:2mm 4mm!important;font-size:8.5px!important;line-height:1.15!important;
+    transform:none!important;break-after:avoid-page!important;page-break-after:avoid!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec{margin-top:1.5mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert th,
+  body.print-doc #qmes-print-root .qmes-wo-cert td{padding:1mm 1.2mm!important;line-height:1.1!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{margin-top:1.5mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{margin-top:1.5mm!important;}
+}
+@media(max-width:1180px){
+  .qmes-issued-table-v2{font-size:11px!important;}
+  .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{padding-left:3px!important;padding-right:3px!important;}
+  .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{width:43px!important;min-width:43px!important;font-size:9px!important;}
+  .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{width:52px!important;min-width:52px!important;}
+}
+</style>
+
+
+<style id="qmes-wo-output-fit-final-20260724">
+/* 출력 미리보기:  전체가 한 화면에 들어오도록 전용 축소 표시 */
+.qmes-wo-output-preview{
+  width:min(1120px,97vw)!important;
+  height:94vh!important;
+  max-height:94vh!important;
+  overflow:auto!important;
+  padding:14px 18px 12px!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head{
+  position:sticky!important;
+  top:-14px!important;
+  z-index:20!important;
+  margin:-14px -18px 10px!important;
+  padding:12px 18px!important;
+  background:#0b1728!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  width:794px!important;
+  max-width:calc(97vw - 70px)!important;
+  margin:8px auto!important;
+  padding:20px 24px!important;
+  box-shadow:0 8px 30px rgba(0,0,0,.25)!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-wo-header-logo{
+  width:150px!important;
+  max-width:150px!important;
+  max-height:42px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-wo-header{
+  grid-template-columns:minmax(150px,1fr) auto minmax(150px,1fr)!important;
+  padding-bottom:10px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+  font-size:20px!important;
+  line-height:1.15!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title .text-xs,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-header-meta{
+  font-size:9px!important;
+  line-height:1.35!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sec{
+  margin-top:9px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sec-title{
+  font-size:11px!important;
+  padding:4px 7px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  font-size:9px!important;
+  line-height:1.2!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  padding:4px 3px!important;
+  min-height:0!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-remarks{
+  min-height:34px!important;
+  padding:6px!important;
+  font-size:9px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-auth-row{
+  margin-top:9px!important;
+  gap:8px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-code-box{
+  padding:5px 7px!important;
+  min-height:0!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sign-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sign-table td{
+  font-size:9px!important;
+  height:26px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-doc-footer{
+  margin-top:8px!important;
+  padding-top:4px!important;
+  font-size:7px!important;
+}
+
+/* 실제 인쇄: 프린터 여백을 고려한 A4 1페이지 안전영역 */
+@page{
+  size:A4 portrait!important;
+  margin:8mm!important;
+}
+@media print{
+  html,body{
+    width:210mm!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+  body.print-doc #qmes-print-root{
+    display:block!important;
+    width:194mm!important;
+    max-width:194mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+  body.print-doc #qmes-print-root .doc-paper.qmes-wo-cert{
+    width:194mm!important;
+    max-width:194mm!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:273mm!important;
+    margin:0 auto!important;
+    padding:5mm!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    transform:none!important;
+    zoom:1!important;
+    break-inside:avoid-page!important;
+    page-break-inside:avoid!important;
+    page-break-after:avoid!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header{
+    grid-template-columns:42mm 1fr 42mm!important;
+    padding-bottom:2.5mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo{
+    width:39mm!important;
+    max-width:39mm!important;
+    max-height:11mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+    font-size:20px!important;
+    line-height:1.1!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xs,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta{
+    font-size:8px!important;
+    line-height:1.25!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-first{
+    margin-top:2.5mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{
+    font-size:9px!important;
+    line-height:1.1!important;
+    padding:1.2mm 1.8mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    font-size:7.5px!important;
+    line-height:1.15!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    height:auto!important;
+    min-height:0!important;
+    padding:1.15mm .8mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{
+    min-height:8mm!important;
+    padding:1.5mm!important;
+    font-size:7.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{
+    margin-top:2.5mm!important;
+    gap:2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-code-box{
+    min-height:0!important;
+    padding:1mm 1.5mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th{
+    height:5mm!important;
+    font-size:8px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table td{
+    height:10mm!important;
+    font-size:8px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{
+    margin-top:2mm!important;
+    padding-top:.8mm!important;
+    font-size:6.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert table,
+  body.print-doc #qmes-print-root .qmes-wo-cert tr,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+}
+</style>
+
+<style id="QMES_WO_FULL_DOCUMENT_PRINT_20260724">
+/*  인쇄는 화면 미리보기 틀이 아니라 문서 전체 본문만 출력 */
+@page{size:A4 portrait;margin:7mm!important;}
+@media print{
+  body.print-doc #root{display:none!important;}
+  body.print-doc #qmes-print-root{
+    display:block!important;
+    width:196mm!important;
+    max-width:196mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    display:block!important;
+    width:196mm!important;
+    max-width:196mm!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0 auto!important;
+    padding:4mm!important;
+    overflow:visible!important;
+    transform:none!important;
+    zoom:1!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+    box-sizing:border-box!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header{
+    grid-template-columns:40mm 1fr 40mm!important;
+    padding-bottom:2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-first{margin-top:2mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    font-size:8px!important;
+    line-height:1.15!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    padding:1.1mm .8mm!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{min-height:8mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{margin-top:2mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{margin-top:1.5mm!important;}
+}
+</style>
+
+<style id="QMES_WO_CENTER_LARGE_FINAL_20260724">
+/*  출력/미리보기 최종 정렬 */
+.qmes-wo-viewer-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+}
+.qmes-wo-head-actions{
+  margin-left:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+}
+.qmes-wo-head-print{
+  height:34px!important;
+  padding:0 14px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:1px solid rgba(255,255,255,.45)!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:#111827!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  white-space:nowrap!important;
+}
+.qmes-wo-head-print:hover{background:#f1f5f9!important;}
+.qmes-wo-detail-preview .qmes-wo-head-actions{margin-left:auto!important;}
+
+/* 출력 미리보기: A4 모양을 중앙에 크게 표시 */
+.qmes-wo-output-preview{
+  width:min(1220px,98vw)!important;
+  height:96vh!important;
+  max-height:96vh!important;
+  padding:14px 20px 20px!important;
+  overflow:auto!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  display:block!important;
+  width:min(900px,calc(98vw - 90px))!important;
+  max-width:900px!important;
+  min-height:0!important;
+  margin:14px auto 24px!important;
+  padding:28px 32px!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+  zoom:1!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+  font-size:24px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  font-size:10px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  padding:5px 5px!important;
+}
+
+/* 실제 인쇄: A4 안전영역 중앙 정렬 + 성적서 확대 */
+@page{size:A4 portrait!important;margin:8mm!important;}
+@media print{
+  html,body{
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root{
+    display:flex!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+    overflow:visible!important;
+  }
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    flex:0 0 auto!important;
+    width:194mm!important;
+    max-width:194mm!important;
+    min-width:194mm!important;
+    margin:0 auto!important;
+    padding:5mm 6mm!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    transform:none!important;
+    zoom:1!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+    font-size:22px!important;
+    line-height:1.1!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xs,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta{
+    font-size:9px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{
+    font-size:10px!important;
+    padding:1.4mm 2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    font-size:8.7px!important;
+    line-height:1.18!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    padding:1.25mm 1mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{
+    min-height:9mm!important;
+    font-size:8.7px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table td{
+    font-size:8.5px!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_OUTPUT_LAYOUT_REFINED_20260724">
+/*  버튼/정렬/크기 최종 보정 */
+.qmes-wo-head-actions{margin-left:auto!important;display:flex!important;align-items:center!important;gap:8px!important;}
+.qmes-wo-head-print,.qmes-wo-head-close,.qmes-wo-footer-close{
+  height:32px!important;padding:0 12px!important;border:1px solid #4c6885!important;border-radius:6px!important;
+  background:#fff!important;color:#111827!important;font-size:12px!important;font-weight:600!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;
+}
+.qmes-wo-head-print:hover,.qmes-wo-head-close:hover,.qmes-wo-footer-close:hover{background:#f8fafc!important;border-color:#1f2937!important;}
+.qmes-wo-detail-footer{display:flex!important;justify-content:flex-end!important;align-items:center!important;margin-top:16px!important;padding-top:12px!important;border-top:1px solid #263b54!important;}
+
+/* 출력 미리보기: 문서를 가로/세로 가운데에 더 크게 배치 */
+.qmes-wo-output-preview{
+  width:min(1260px,98vw)!important;height:96vh!important;max-height:96vh!important;
+  padding:14px 20px 24px!important;overflow:auto!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head{position:sticky!important;top:-14px!important;z-index:20!important;background:#0b1728!important;padding:12px 0!important;}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  display:block!important;width:min(960px,calc(98vw - 100px))!important;max-width:960px!important;
+  min-height:calc(960px * 1.414)!important;margin:22px auto 32px!important;padding:34px 38px!important;
+  box-sizing:border-box!important;transform:none!important;zoom:1!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title .text-xl{font-size:28px!important;}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sec{margin-top:14px!important;}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sec-title{font-size:12px!important;padding:7px 10px!important;}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{font-size:11px!important;line-height:1.35!important;}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{padding:8px 7px!important;}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-remarks{min-height:72px!important;font-size:11px!important;padding:10px!important;}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-auth-row{margin-top:18px!important;}
+
+/* 실제 인쇄: A4 중앙 배치, 안전영역을 최대한 사용 */
+@page{size:A4 portrait!important;margin:6mm!important;}
+@media print{
+  html,body{width:100%!important;margin:0!important;padding:0!important;background:#fff!important;}
+  body.print-doc #qmes-print-root{display:flex!important;width:100%!important;min-height:285mm!important;margin:0!important;padding:0!important;justify-content:center!important;align-items:center!important;overflow:visible!important;}
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    width:198mm!important;max-width:198mm!important;min-width:198mm!important;
+    margin:auto!important;padding:5mm!important;box-sizing:border-box!important;overflow:visible!important;
+    transform:none!important;zoom:1!important;box-shadow:none!important;border:0!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl{font-size:24px!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec{margin-top:2.2mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{font-size:10.5px!important;padding:1.5mm 2mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{font-size:9.2px!important;line-height:1.22!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{padding:1.45mm 1.1mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{min-height:11mm!important;font-size:9.2px!important;}
+}
+</style>
+
+<style id="QMES_WO_PRINT_EXACT_SINGLE_PAGE_20260724">
+/*  출력 버튼: 수입검사 인쇄 버튼과 동일한 스카이 계열 */
+.qmes-wo-head-print{
+  height:32px!important;
+  padding:0 13px!important;
+  border:1px solid #0088b0!important;
+  border-radius:6px!important;
+  background:linear-gradient(180deg,#00A2D8 0%,#007BA8 100%)!important;
+  color:#fff!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.22)!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.qmes-wo-head-print:hover{
+  background:linear-gradient(180deg,#00B4EA 0%,#008BBC 100%)!important;
+  border-color:#00aad2!important;
+  color:#fff!important;
+}
+
+/* 출력 미리보기: 실제 A4 비율, 정중앙 배치 */
+.qmes-wo-output-preview{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  flex:0 0 auto!important;
+  width:min(900px,calc(98vw - 100px))!important;
+  min-height:calc(min(900px,calc(98vw - 100px)) * 1.414)!important;
+  margin:auto!important;
+}
+
+/* 실제 인쇄: 출력 미리보기와 동일한 구성, A4 1페이지만 출력 */
+@page{size:A4 portrait!important;margin:0!important;}
+@media print{
+  html,body{
+    width:210mm!important;
+    height:297mm!important;
+    min-height:297mm!important;
+    max-height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#fff!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  body.print-doc #root{display:none!important;}
+  body.print-doc #qmes-print-root{
+    display:flex!important;
+    position:fixed!important;
+    inset:0!important;
+    width:210mm!important;
+    height:297mm!important;
+    min-height:297mm!important;
+    max-height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    position:relative!important;
+    flex:0 0 auto!important;
+    width:198mm!important;
+    max-width:198mm!important;
+    min-width:198mm!important;
+    height:280mm!important;
+    min-height:280mm!important;
+    max-height:280mm!important;
+    margin:0!important;
+    padding:7mm 8mm!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    transform:none!important;
+    zoom:1!important;
+    background:#fff!important;
+    color:#1c1917!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-header{padding-bottom:3mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl{font-size:22px!important;line-height:1.15!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xs,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta{font-size:8.8px!important;line-height:1.25!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-first{margin-top:2.2mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{font-size:9.6px!important;line-height:1.2!important;padding:1.25mm 1.8mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{font-size:8.3px!important;line-height:1.18!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{padding:1.2mm .9mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{min-height:8mm!important;padding:1.5mm!important;font-size:8.3px!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{margin-top:2.2mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-code-box{min-height:18mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table td{font-size:8px!important;padding:1mm!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{margin-top:1.5mm!important;font-size:8px!important;}
+  body.print-doc #qmes-print-root .qmes-wo-cert table,
+  body.print-doc #qmes-print-root .qmes-wo-cert tr,
+  body.print-doc #qmes-print-root .qmes-wo-cert td,
+  body.print-doc #qmes-print-root .qmes-wo-cert th,
+  body.print-doc #qmes-print-root .qmes-wo-cert section,
+  body.print-doc #qmes-print-root .qmes-wo-cert > *{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_BODY_ROWS_BARCODE_LARGER_20260724">
+/* : 기본정보부터 바코드까지 본문 칸 높이 확대 */
+.qmes-wo-cert .qmes-iqc2-sec-title{
+  padding-top:8px!important;
+  padding-bottom:8px!important;
+}
+.qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-cert .qmes-iqc2-table td{
+  padding-top:10px!important;
+  padding-bottom:10px!important;
+  vertical-align:middle!important;
+}
+.qmes-wo-cert .qmes-iqc2-remarks{
+  min-height:82px!important;
+  padding:12px!important;
+}
+.qmes-wo-cert .qmes-iqc2-code-box{
+  min-height:96px!important;
+  padding:10px 14px!important;
+  display:flex!important;
+  align-items:center!important;
+}
+.qmes-wo-cert .qmes-iqc2-sign-table th{height:34px!important;}
+.qmes-wo-cert .qmes-iqc2-sign-table td{height:62px!important;}
+
+/* 출력 미리보기에도 동일한 확대 비율 적용 */
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  padding-top:10px!important;
+  padding-bottom:10px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-code-box{
+  min-height:96px!important;
+}
+
+/* 실제 인쇄: 본문 칸은 키우고 상단/간격을 줄여 A4 1페이지 유지 */
+@media print{
+  body.print-doc #qmes-print-root > .qmes-wo-cert{
+    height:280mm!important;
+    min-height:280mm!important;
+    max-height:280mm!important;
+    padding:5mm 8mm 4mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-header{
+    padding-bottom:1.5mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-first{
+    margin-top:1.45mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{
+    padding-top:1.35mm!important;
+    padding-bottom:1.35mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
+    padding-top:1.65mm!important;
+    padding-bottom:1.65mm!important;
+    vertical-align:middle!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks{
+    min-height:10mm!important;
+    padding:1.7mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{
+    margin-top:1.6mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-code-box{
+    min-height:22mm!important;
+    height:22mm!important;
+    padding:1.4mm 2.2mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th{
+    height:6.5mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table td{
+    height:15.5mm!important;
+  }
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{
+    margin-top:.8mm!important;
+    padding-top:0!important;
+    font-size:7.5px!important;
+  }
+}
+</style>
+
+
+<style id="QMES_WO_SCREEN_LAYOUT_PRINT_IDENTICAL_20260724">
+/*  출력 미리보기의 크기·위치·배열·간격을 그대로 유지한 인쇄본 */
+@page{size:A4 portrait!important;margin:0!important;}
+@media print{
+  html,body{
+    width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;
+    margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+  }
+  body.print-doc #root{display:none!important;}
+  body.print-doc #qmes-print-root{
+    display:flex!important;position:fixed!important;inset:0!important;
+    width:210mm!important;height:297mm!important;margin:0!important;padding:0!important;
+    align-items:center!important;justify-content:center!important;overflow:hidden!important;background:#fff!important;
+  }
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy{
+    display:block!important;position:relative!important;flex:0 0 auto!important;
+    width:900px!important;max-width:900px!important;min-width:900px!important;
+    height:auto!important;min-height:1272.6px!important;max-height:none!important;
+    margin:0!important;padding:34px 38px!important;box-sizing:border-box!important;
+    overflow:hidden!important;background:#fff!important;color:#0f172a!important;
+    border:0!important;border-radius:0!important;box-shadow:none!important;
+    transform:scale(.82)!important;transform-origin:center center!important;zoom:1!important;
+  }
+  /* 출력 미리보기에서 보이던 문서 내부 규격을 그대로 복제 */
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-header{padding-bottom:16px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title .text-xl{font-size:28px!important;line-height:1.2!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title .text-xs,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-meta{font-size:12px!important;line-height:1.35!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-sec,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-first{margin-top:14px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-sec-title{font-size:12px!important;line-height:1.3!important;padding:8px 10px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-table td{font-size:11px!important;line-height:1.35!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-table td{padding:10px 7px!important;height:auto!important;vertical-align:middle!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-remarks{min-height:82px!important;padding:12px!important;font-size:11px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-auth-row{margin-top:18px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-code-box{min-height:96px!important;height:auto!important;padding:10px 14px!important;display:flex!important;align-items:center!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-sign-table th{height:34px!important;font-size:11px!important;padding:7px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-sign-table td{height:62px!important;font-size:11px!important;padding:7px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc2-doc-footer{margin-top:8px!important;font-size:10px!important;}
+  body.print-doc #qmes-print-root .qmes-screen-print-copy table,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy tr,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy td,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy th,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy > *{break-inside:avoid!important;page-break-inside:avoid!important;}
 }
 </style>
 
