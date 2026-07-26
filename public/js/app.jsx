@@ -1,4 +1,28 @@
-/* QMES application entry point.
-   The split modules are not connected to public/index.html yet.
-   Enable the authenticated LoginScreen flow here during the integration step.
-   Do not restore the former automatic administrator test mode. */
+/* QMES authenticated application entry point. */
+
+function QMESApp() {
+  const [user, setUser] = useState(null);
+
+  if (!user) {
+    return (
+      <LoginScreen
+        onLogin={(nextUser) => {
+          window.__QMES_USER__ = `${nextUser.dept} ${nextUser.name} (${nextUser.uid || "U-0000"})`;
+          setUser(nextUser);
+        }}
+      />
+    );
+  }
+
+  return (
+    <QMESChemical
+      user={user}
+      onLogout={() => {
+        window.__QMES_USER__ = null;
+        setUser(null);
+      }}
+    />
+  );
+}
+
+qmesStart();
