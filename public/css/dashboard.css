@@ -1,3 +1,27 @@
 /* QMES dashboard styles.
    Dashboard and KPI extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* Dashboard KPI layout: explicit grid because responsive utility variants
+   are not guaranteed to exist in the extracted production CSS. */
+.qmes-dashboard-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.qmes-dashboard-kpi-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .qmes-dashboard-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .qmes-dashboard-kpi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
