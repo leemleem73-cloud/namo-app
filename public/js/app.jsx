@@ -1,26 +1,22 @@
-/* QMES authenticated application entry point. */
+/* QMES temporary test-mode entry point.
+ * Login is intentionally bypassed while the system is being tested.
+ */
+
+const QMES_TEST_USER = {
+  id: "admin",
+  uid: "U-0001",
+  name: "관리자",
+  dept: "관리부",
+  role: "admin",
+};
 
 function QMESApp() {
-  const [user, setUser] = useState(null);
-
-  if (!user) {
-    return (
-      <LoginScreen
-        onLogin={(nextUser) => {
-          window.__QMES_USER__ = `${nextUser.dept} ${nextUser.name} (${nextUser.uid || "U-0000"})`;
-          setUser(nextUser);
-        }}
-      />
-    );
-  }
+  window.__QMES_USER__ = `${QMES_TEST_USER.dept} ${QMES_TEST_USER.name} (${QMES_TEST_USER.uid})`;
 
   return (
     <QMESChemical
-      user={user}
-      onLogout={() => {
-        window.__QMES_USER__ = null;
-        setUser(null);
-      }}
+      user={QMES_TEST_USER}
+      onLogout={() => window.location.reload()}
     />
   );
 }
