@@ -488,7 +488,7 @@ function IssueWoTab() {
   const products = Object.keys(BOM);
   const [form, setForm] = useState({
     product: products[0], tank: BOM[products[0]].tanks[0], qty: String(BOM[products[0]].baseQty),
-    prodDate: "2026-07-12", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
+    prodDate: "", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
     shiftType: "일반", worker: "",
   });
   const [issued, setIssued] = useState(DB.batches);
@@ -634,7 +634,7 @@ function IssueWoTab() {
         <h2 className="text-[22px] font-bold text-slate-100">작업지시 관리</h2>
         <button
           type="button"
-          onClick={() => { setEditingWo(null); setShowIssueForm(true); }}
+          onClick={() => { setEditingWo(null); setForm({ ...form, prodDate:"", lotNo:"" }); setShowIssueForm(true); }}
           className="qmes-iqc-new-btn"
         >
           <Plus size={16} /> 신규 발행
