@@ -474,7 +474,7 @@ function woStatusTone(status) {
 function IssueWoTab() {
   const products = Object.keys(BOM);
   const [form, setForm] = useState({
-    product: products[0], tank: BOM[products[0]].tanks[0], qty: "230",
+    product: products[0], tank: BOM[products[0]].tanks[0], qty: "",
     prodDate: "2026-07-12", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
     shiftType: "일반", worker: "", intermediateLot: "",
   });
@@ -632,7 +632,7 @@ function IssueWoTab() {
         <div className="qmes-wo-form-grid">
           <div className="qmes-wo-form-field">
             {label("공정 / 품목 (Grd.)")}
-            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: String(BOM[next].baseQty) }); setPlanItems(blankPlanItems(next)); }} className={inputCls}>
+            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: "" }); setPlanItems(blankPlanItems(next)); }} className={inputCls}>
               {products.map((pd) => <option key={pd}>{pd}</option>)}
             </select>
           </div>
