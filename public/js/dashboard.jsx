@@ -98,19 +98,19 @@ function ProcessStrip() {
 /* ──────────────────────────── 대시보드 ──────────────────────────── */
 
 function DashboardTab() {
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = localISODate();
   const todayBatches = (DB.batches || []).filter((b) => String(b.date || b.productionDate || b.startDate || "").slice(0, 10) === todayKey);
-  const todayKg = todayBatches.reduce((sum, b) => sum + (Number(b.qty || b.amount || b.productionQty || 0) || 0), 0);
-  const inspections = [...((DB.insp && DB.insp.PQC) || []), ...((DB.insp && DB.insp.OQC) || [])];
-  const completedInspections = inspections.filter((r) => r.judge);
-  const passCount = completedInspections.filter((r) => r.judge === "합격").length;
-  const fpy = completedInspections.length ? ((passCount / completedInspections.length) * 100).toFixed(1) : "—";
-  const ctqRows = inspections.filter((r) => ["점도", "고형분", "입도", "입도(Dmax)"].includes(r.item || r.name));
-  const ctqPass = ctqRows.filter((r) => r.judge === "합격").length;
-  const ctqRate = ctqRows.length ? ((ctqPass / ctqRows.length) * 100).toFixed(1) : "—";
-  const nonconforming = inspections.filter((r) => r.judge === "불합격").length + (DB.holds || []).length;
+  const todayPlanKg = todayBatches.reduce((sum, b) => sum + (Number(b.plan || b.plannedQty || b.targetQty || 0) || 0), 0);
+  const todayKg = todayBatches.reduce((sum, b) => sum + (Number(b.qty || b.amount || b.productionQty || b.done || 0) || 0), 0);
+  const achievementRate = todayPlanKg > 0 ? ((todayKg / todayPlanKg) * 100).toFixed(1) : "—";
+  const activeNonconforming = (DB.holds || []).filter((h) => {
+    const status = String(h?.status || "");
+    return !["해제", "종결", "완료"].some((closed) => status.includes(closed));
+  });
+  const currentMonthKey = localISODate().slice(0, 7);
+  const monthShipmentLots = Object.values(DB.lots || {}).filter((lot) => String(lot?.ship?.shipDate || lot?.ship?.date || "").slice(0, 7) === currentMonthKey);
   const shipmentMap = {};
-  Object.values(DB.lots || {}).forEach((lot) => {
+  monthShipmentLots.forEach((lot) => {
     const ship = lot && lot.ship;
     if (!ship) return;
     const customer = ship.customer || "미지정";
@@ -118,20 +118,15 @@ function DashboardTab() {
     shipmentMap[customer] = (shipmentMap[customer] || 0) + qty;
   });
   const customerShipments = Object.entries(shipmentMap).map(([customer, qty]) => ({ customer, qty })).sort((a,b) => b.qty - a.qty).slice(0, 8);
-  const currentMonthKey = localISODate().slice(0, 7);
-  const monthShipmentLots = Object.values(DB.lots || {}).filter((lot) => String(lot?.ship?.shipDate || lot?.ship?.date || "").slice(0, 7) === currentMonthKey);
-  const monthShipmentQty = monthShipmentLots.reduce((sum, lot) => sum + (Number(lot?.ship?.qty || lot?.ship?.shipQty || 0) || 0), 0);
 
   return (
     <div className="flex flex-col gap-4">
       <ProcessStrip />
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Kpi textOnly label="금일 생산량" value={todayKg.toLocaleString()} unit={`kg · ${todayBatches.length} LOT`} tone="text-sky-400" caption="오늘 등록된 생산 실적" />
-        <Kpi textOnly label="당월 출하량" value={monthShipmentQty.toLocaleString()} unit={`kg · ${monthShipmentLots.length} LOT`} tone="text-sky-400" caption="출하검사 합격·출하확정 기준" />
-        <Kpi textOnly label="일발합격률 (FPY)" value={fpy} unit="%" tone="text-emerald-400" caption="PQC·OQC 검사 완료 기준" />
-        <Kpi textOnly label="CTQ 합격률" value={ctqRate} unit="%" tone="text-violet-400" caption="점도·고형분·입도 기준" />
-        <Kpi textOnly label="부적합 건수" value={nonconforming} unit="건" tone="text-red-400" caption="불합격 및 보류 대상" />
+        <Kpi textOnly label="목표 달성률" value={achievementRate} unit="%" tone="text-emerald-400" caption={todayPlanKg > 0 ? `계획 ${todayPlanKg.toLocaleString()} kg 대비` : "오늘 생산계획 등록 필요"} />
+        <Kpi textOnly label="미처리 부적합" value={activeNonconforming.length} unit="건" tone="text-red-400" caption="해제·종결·완료되지 않은 보류" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
@@ -180,7 +175,7 @@ function DashboardTab() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        <Panel title="고객사별 출하현황 (출하확정 누적 kg)" right={<span className="text-xs text-slate-400">OQC 합격 저장 시 자동 반영</span>}>
+        <Panel title="고객사별 당월 출하량 (출하확정 kg)" right={<span className="text-xs text-slate-400">OQC 합격 저장 시 자동 반영</span>}>
           {customerShipments.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={customerShipments} layout="vertical" margin={{ left: 8, right: 18 }}>
