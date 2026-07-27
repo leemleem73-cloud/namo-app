@@ -99,6 +99,22 @@ function WoDocTab() {
   const saveActs = () => {
     const e2 = [];
     const user = window.__QMES_USER__ || "-";
+
+    /* 원재료 LOT는 IQC 합격 + 홀드 없음 조건을 통과해야 실제 투입 저장 가능 */
+    w.inputs.forEach((row, i) => {
+      const intendedAct = String(vals[i] ?? row.act ?? "").trim();
+      if (!intendedAct || Number(intendedAct) <= 0) return;
+      const materialLot = String(lotVals[i] ?? row.lot ?? "").trim();
+      const gate = qmesMaterialGate(materialLot);
+      if (!gate.ok) e2.push(`${row.name}: ${materialLot || "LOT 미입력"} — ${gate.reason}`);
+    });
+    if (e2.length) {
+      e2.forEach((msg) => qmesRecordGateBlock("원재료 투입 게이트", sel, msg));
+      dbSave();
+      setErrs(e2);
+      return;
+    }
+
     const newInputs = w.inputs.map((r, i) => {
       const v = String(vals[i] ?? "").trim();
       const lotv = String(lotVals[i] ?? "").trim();
@@ -125,6 +141,25 @@ function WoDocTab() {
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const L = DB.lots[sel];
     if (L) {
+      /* 완제품↔중간배치↔원재료 양방향 계보 저장 */
+      L.materials = newInputs
+        .filter((row) => String(row.lot || "").trim())
+        .map((row) => {
+          const iqc = qmesLatestIqc(row.lot);
+          return {
+            lot:String(row.lot).trim(), code:row.code || "-", name:row.name,
+            supplier:iqc?.supplier || "-", qty:`${Number(row.act ?? row.std ?? 0).toLocaleString()} ${row.unit || "kg"}`,
+            recv:iqc?.recv || "-", iqc:iqc?.judge || "미검사"
+          };
+        });
+      const binderLot = L.binderLot || `${sel}-B01`;
+      L.binderLot = binderLot;
+      DB.intermediateLots[binderLot] = {
+        lot:binderLot, type:"바인더 중간배치", parentLots:L.materials.map((m) => m.lot),
+        childLots:[sel], qty:newInputs.reduce((sum, row) => sum + (num(row.act) || 0), 0),
+        status:done ? "공정완료" : "생산중", workOrder:sel,
+        updatedAt:new Date().toISOString(), by:user
+      };
       if (done && !L.steps.some((st) => st.name === "생산 실적 기록 완료")) {
         L.steps = [...L.steps, { stage: "생산", name: "생산 실적 기록 완료", time, detail: `실투입 합계 ${newInputs.reduce((a, r) => a + (num(r.act) || 0), 0).toFixed(2)}kg / 기준 ${totalStd.toFixed(2)}kg · 공정조건 전 항목 기록${overTol ? " · 계량 공차 이탈 항목 있음" : ""}`, result: overTol ? "완료 (공차 이탈 확인 필요)" : "완료", by: user }];
         L.stage = "생산";
@@ -540,12 +575,19 @@ function IssueWoTab() {
       ],
     };
 
+    const binderLot = `${woNo}-B01`;
     DB.lots[woNo] = {
       item: "NBA20-HM01", itemName: form.product,
       qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
-      materials: [], binderLot: null,
+      materials: [], binderLot,
       steps: [{ stage: "수입", name: "작업지시 발행", time, detail: `${bom.procName} · ${form.tank} · 계획 ${qtyNum.toLocaleString()}kg · ${form.prodDate} ${form.timeRange} (${form.shiftType})`, result: "발행", by: window.__QMES_USER__ || "-" }],
       ship: null,
+    };
+    DB.intermediateLots[binderLot] = {
+      lot:binderLot, type:"바인더 중간배치",
+      parentLots:planItems.map((it) => String(it.materialLot || "").trim()).filter(Boolean),
+      childLots:[woNo], qty:0, status:"생산대기", workOrder:woNo,
+      updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
     };
     auditLog("작업지시", editingWo ? "수정" : "발행", woNo, `${form.product} / ${qtyNum}kg / ${form.prodDate}`);
     dbSave();
