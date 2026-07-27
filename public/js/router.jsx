@@ -74,6 +74,10 @@ function QMESChemical({ user, onLogout }) {
               src="/logo.png"
               alt="나모케미칼"
               className="h-8 md:h-9 w-auto max-w-[180px] md:max-w-[210px] object-contain"
+              style={{
+                filter: "invert(1) hue-rotate(180deg) brightness(1.15) contrast(1.08)",
+                mixBlendMode: "screen",
+              }}
             />
           </div>
 
