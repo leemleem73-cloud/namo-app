@@ -10,4 +10,158 @@
 }
 
 .qmes-top-menu-button svg {
-  color: #fff
+  color: #fff !important;
+}
+
+.qmes-header-clock,
+.qmes-header-user-name,
+.qmes-header-action {
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+.qmes-header-user-meta {
+  color: #cbd5e1 !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+.qmes-header-action {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 1400px) {
+  .qmes-top-menu-button,
+  .qmes-header-clock,
+  .qmes-header-user-name,
+  .qmes-header-action {
+    font-size: 13px !important;
+  }
+}
+
+/* Work order material table: align headers, inputs, values and buttons */
+.qmes-wo-material-compact {
+  table-layout: fixed;
+}
+
+.qmes-wo-material-compact th,
+.qmes-wo-material-compact td {
+  box-sizing: border-box;
+  vertical-align: middle !important;
+}
+
+.qmes-wo-material-compact thead th {
+  height: 34px;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  line-height: 1.2;
+}
+
+.qmes-wo-material-compact tbody tr:not(:last-child) {
+  height: 62px;
+}
+
+.qmes-wo-material-compact tbody td {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.qmes-wo-material-compact input,
+.qmes-wo-material-compact select,
+.qmes-wo-material-compact button {
+  box-sizing: border-box;
+}
+
+.qmes-wo-material-compact tbody td > input,
+.qmes-wo-material-compact tbody td > select,
+.qmes-wo-material-compact .qmes-qty-input {
+  height: 34px !important;
+  min-height: 34px !important;
+  margin: 0 !important;
+}
+
+.qmes-wo-material-compact .qmes-qty-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  margin: 0;
+}
+
+.qmes-wo-material-compact .qmes-qty-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.qmes-wo-material-compact .qmes-qty-unit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 18px;
+  height: 34px;
+  line-height: 34px;
+  white-space: nowrap;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(1),
+.qmes-wo-material-compact tbody td:nth-child(7),
+.qmes-wo-material-compact tbody td:nth-child(8),
+.qmes-wo-material-compact tbody td:nth-child(9) {
+  vertical-align: middle !important;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(2),
+.qmes-wo-material-compact tbody td:nth-child(3),
+.qmes-wo-material-compact tbody td:nth-child(4),
+.qmes-wo-material-compact tbody td:nth-child(5),
+.qmes-wo-material-compact tbody td:nth-child(6),
+.qmes-wo-material-compact tbody td:nth-child(10) {
+  vertical-align: top !important;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(2) > select,
+.qmes-wo-material-compact tbody td:nth-child(3) > input,
+.qmes-wo-material-compact tbody td:nth-child(4) > select,
+.qmes-wo-material-compact tbody td:nth-child(5) .qmes-qty-wrap,
+.qmes-wo-material-compact tbody td:nth-child(6) .qmes-qty-wrap,
+.qmes-wo-material-compact tbody td:nth-child(10) > div {
+  margin-top: 0 !important;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(2) > span,
+.qmes-wo-material-compact tbody td:nth-child(3) > div {
+  display: flex;
+  align-items: center;
+  height: 16px;
+  min-height: 16px;
+  margin-top: 3px !important;
+  line-height: 16px;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(10) > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(10) input {
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+.qmes-wo-material-compact tbody td:nth-child(10) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  white-space: nowrap;
+}
