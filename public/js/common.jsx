@@ -497,7 +497,7 @@ function InspectionSummary({ items }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false, progressValue, textOnly = false, caption = "" }) {
+function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-400", animated = false, progressValue, showProgress = false, textOnly = false, caption = "" }) {
   const numeric = Number(String(value).replace(/[^0-9.]/g,"")) || 0;
   const labelKey = String(label || "");
   const calculatedProgress = progressValue !== undefined && progressValue !== null
@@ -544,6 +544,11 @@ function Kpi({ icon: Icon, label, value, unit, delta, deltaUp, tone = "text-sky-
           {!caption && labelKey.includes("부적합") && "즉시 확인이 필요한 항목"}
           {!caption && labelKey.includes("반품") && "공급사 반송 처리 건수"}
         </div>
+        {showProgress && (
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-800" role="progressbar" aria-label={`${label} 진행률`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(progress)}>
+            <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${displayProgress}%` }} />
+          </div>
+        )}
         {delta && (
           <div className={`qmes-hybrid-delta ${deltaUp ? "is-up" : "is-down"}`}>
             {deltaUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
