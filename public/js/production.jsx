@@ -107,12 +107,8 @@ function WoDocTab() {
       const materialLot = String(lotVals[i] ?? row.lot ?? "").trim();
       const isIntermediate = qmesMaterialType(row.name) === "중간재";
       const selectedContainer = row.containerNo ? DB.intermediateContainers?.[row.containerNo] : null;
-      if (isIntermediate && !String(row.containerNo || "").trim()) {
-        e2.push(`${row.name}: 중간재 포장 용기번호 미선택`);
-        return;
-      }
       if (selectedContainer && materialLot && selectedContainer.lot !== materialLot) {
-        e2.push(`${row.name}: LOT ${materialLot}과 용기 ${row.containerNo}의 등록 LOT(${selectedContainer.lot})가 다릅니다`);
+        e2.push(`${row.name}: LOT ${materialLot}과 포장번호 ${row.containerNo}의 등록 LOT(${selectedContainer.lot})가 다릅니다`);
         return;
       }
       const gate = isIntermediate
@@ -218,7 +214,7 @@ function WoDocTab() {
         };
       });
 
-      if (w.workType === "바인더 솔루션(중간재)" || w.workType === "세라믹 중간배치") {
+      if (w.workType === "바인더 솔루션(중간재)") {
         const output = DB.intermediateLots[sel] || {};
         const outputContainers = (w.packaging || []).map((row) => row.containerNo).filter(Boolean);
         DB.intermediateLots[sel] = {
@@ -401,7 +397,7 @@ function WoDocTab() {
           <div className="qmes-iqc2-sec-title">원재료 투입</div>
           <table className="qmes-iqc2-table qmes-wo-cert-material-table">
             <thead><tr>
-              <th>No</th><th>원재료명</th><th>LOT / 용기</th><th>상태</th><th>계획량</th><th>실투입량</th><th>사용 후 잔량</th><th>판정</th><th>비고</th>
+              <th>No</th><th>원재료명</th><th>원재료 LOT</th><th>상태</th><th>계획량</th><th>실투입량</th><th>사용 후 잔량</th><th>판정</th><th>비고</th>
             </tr></thead>
             <tbody>
               {w.inputs.map((r, i) => (
@@ -411,7 +407,6 @@ function WoDocTab() {
                   <td className="font-mono">
                     {edit ? <input value={lotVals[i] ?? ""} onChange={(e) => setLotVals({ ...lotVals, [i]: e.target.value })} placeholder="공급사 LOT" className={editCls} />
                       : ((r.materialLot || r.lot) && (r.materialLot || r.lot) !== "—" ? (r.materialLot || r.lot) : "-")}
-                    <small className="block">{r.containerNo || "BULK"}</small>
                   </td>
                   <td>{r.inputStatus || "신규"}</td>
                   <td>{num(r.std) != null ? `${num(r.std)} ${r.unit || "kg"}` : (r.std || "-")}</td>
@@ -436,7 +431,7 @@ function WoDocTab() {
           <div className="qmes-iqc2-sec">
             <div className="qmes-iqc2-sec-title">중간재 포장정보</div>
             <table className="qmes-iqc2-table">
-              <thead><tr><th>No</th><th>중간재 LOT</th><th>용기번호</th><th>포장중량</th><th>포장일자</th><th>보관위치</th><th>현재 잔량</th><th>상태</th></tr></thead>
+              <thead><tr><th>No</th><th>중간재 LOT</th><th>포장번호</th><th>포장중량</th><th>포장일자</th><th>보관위치</th><th>현재 잔량</th><th>상태</th></tr></thead>
               <tbody>
                 {w.packaging.map((row, index) => {
                   const current = DB.intermediateContainers?.[row.containerNo] || row;
@@ -526,26 +521,15 @@ const BOM = {
       { seq: 2, name: "SBS", base: 0, unit: "kg", note: "" },
     ],
   },
-  "세라믹 중간배치": {
-    prefix: "CBG", baseQty: 230, procName: "세라믹 중간배치 제조", workType: "세라믹 중간배치",
-    tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
-    items: [
-      { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
-      { seq: 2, name: "BYK180 (분산제)", base: 0, unit: "kg", note: "" },
-      { seq: 3, name: "AOH30 (Boehmite)", base: 0, unit: "kg", note: "" },
-      { seq: 4, name: "중간배치 선택", base: 0, unit: "kg", note: "" },
-    ],
-  },
 };
 
 const INTERMEDIATE_MATERIAL_OPTIONS = [
   "중간배치(SBR 바인더)",
   "중간배치(PVDF 바인더)",
   "중간배치(SBS 바인더)",
-  "세라믹 중간배치",
 ];
 
-const WORK_TYPE_OPTIONS = ["바인더 솔루션(중간재)", "세라믹 중간배치", "완제품"];
+const WORK_TYPE_OPTIONS = ["바인더 솔루션(중간재)", "완제품"];
 
 const MATERIAL_OPTIONS = [
   "NMP",
@@ -704,21 +688,16 @@ function IssueWoTab() {
   const [planItems, setPlanItems] = useState(blankPlanItems(firstProduct));
   const [packRows, setPackRows] = useState([blankPackRow()]);
 
-  const bom = BOM[form.product];
+  const bom = BOM[form.product] || BOM[firstProduct];
   const isBinderWorkOrder = bom.workType === "바인더 솔루션(중간재)";
-  const isCeramicWorkOrder = bom.workType === "세라믹 중간배치";
-  const isIntermediateWorkOrder = isBinderWorkOrder || isCeramicWorkOrder;
+  const isIntermediateWorkOrder = isBinderWorkOrder;
   const availableProducts = products.filter((name) => BOM[name].workType === form.workType);
   const productOptions = availableProducts.includes(form.product)
     ? availableProducts
     : [form.product, ...availableProducts];
-  const allowedIntermediateMaterials = isBinderWorkOrder
-    ? []
-    : isCeramicWorkOrder
-      ? INTERMEDIATE_MATERIAL_OPTIONS.filter((name) => name !== "세라믹 중간배치")
-      : INTERMEDIATE_MATERIAL_OPTIONS;
+  const allowedIntermediateMaterials = isBinderWorkOrder ? [] : INTERMEDIATE_MATERIAL_OPTIONS;
   const availableMaterialOptions = MATERIAL_OPTIONS.filter((name) =>
-    !String(name).includes("중간배치") && name !== "세라믹 중간배치"
+    !String(name).includes("중간배치")
   ).concat(allowedIntermediateMaterials.length ? ["중간배치 선택", ...allowedIntermediateMaterials] : []);
   const plannedTotal = planItems.reduce((sum, it) => sum + (Number(it.plan) || 0), 0);
   const qtyNum = Number(plannedTotal.toFixed(3));
@@ -734,45 +713,12 @@ function IssueWoTab() {
     return `${form.site}${yearChar}${monthChar}${dd}${String(seq).padStart(2, "0")}`;
   })();
 
-  const woErrors = [];
-  if (!(qtyNum > 0)) woErrors.push("생산계획량 미입력 또는 0 이하");
-  if (qtyNum > bom.baseQty) woErrors.push(`배치 용량 초과 — HSM 최대 배치 ${bom.baseQty}kg`);
-  if (!form.worker.trim()) woErrors.push("작업자 미지정 — 지정 전 발행 금지");
-  planItems.forEach((item, index) => {
-    if (!(Number(item.plan) > 0)) woErrors.push(`원료 ${index + 1} (${item.name}): 계획량을 입력하세요`);
-    if (!String(item.materialLot || "").trim()) woErrors.push(`원료 ${index + 1} (${item.name}): LOT를 입력하세요`);
-    if (qmesMaterialType(item.name) === "중간재" && !String(item.containerNo || "").trim()) {
-      woErrors.push(`원료 ${index + 1} (${item.name}): 포장 용기번호를 선택하세요`);
-    }
-  });
-  const intermediateInput = planItems.find((it) => qmesMaterialType(it.name) === "중간재");
-  if (!isBinderWorkOrder) {
-    if (!allowedIntermediateMaterials.includes(intermediateInput?.name)) {
-      woErrors.push("원재료 투입계획의 중간배치 원료명을 선택하세요");
-    } else if (!String(intermediateInput?.materialLot || "").trim()) {
-      woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
-    }
-  }
-  if (isBinderWorkOrder) {
-    const validPackRows = packRows.filter((row) => String(row.containerNo || row.packWeight || row.packDate || row.storageLocation).trim());
-    if (!validPackRows.length) woErrors.push("중간재 포장 용기를 1개 이상 등록하세요");
-    validPackRows.forEach((row, index) => {
-      if (!String(row.containerNo || "").trim()) woErrors.push(`포장 ${index + 1}: 용기번호를 입력하세요`);
-      if (!(Number(row.packWeight) > 0)) woErrors.push(`포장 ${index + 1}: 포장중량을 입력하세요`);
-      if (!String(row.packDate || form.prodDate || "").trim()) woErrors.push(`포장 ${index + 1}: 포장일자를 입력하세요`);
-      if (!String(row.storageLocation || "").trim()) woErrors.push(`포장 ${index + 1}: 보관위치를 입력하세요`);
-    });
-    const containerIds = validPackRows.map((row) => String(row.containerNo || "").trim()).filter(Boolean);
-    if (new Set(containerIds).size !== containerIds.length) woErrors.push("포장 용기번호가 중복되었습니다");
-  }
-  if (!dateOk) woErrors.push("생산일자를 선택하세요");
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
-  if (!requestedLotNo || requestedLotNo === "—") woErrors.push("LOT No.를 확인하세요");
-  if (!editingWo && DB.batches.some((b) => b.no === requestedLotNo)) woErrors.push("이미 사용 중인 LOT No.입니다");
-  const woReady = woErrors.length === 0;
 
   const issue = () => {
-    if (!woReady) return;
+    if (!dateOk) { window.alert("생산일자를 선택하세요."); return; }
+    if (!requestedLotNo || requestedLotNo === "—") { window.alert("LOT No.를 확인하세요."); return; }
+    if (!editingWo && DB.batches.some((b) => b.no === requestedLotNo)) { window.alert("이미 사용 중인 LOT No.입니다."); return; }
     const time = new Date().toLocaleTimeString("ko-KR", { hour12: false });
     const seqKey = `wo-${form.prodDate}-${form.site}`;
     if (!editingWo) DB.seqs[seqKey] = (DB.seqs[seqKey] || 1) + 1;
@@ -784,8 +730,8 @@ function IssueWoTab() {
     const normalizedPackaging = isBinderWorkOrder
       ? packRows
           .filter((row) => String(row.containerNo || row.packWeight || row.packDate || row.storageLocation).trim())
-          .map((row) => ({
-            containerNo: String(row.containerNo || "").trim().toUpperCase(),
+          .map((row, index) => ({
+            containerNo: String(row.containerNo || `${woNo}-P${String(index + 1).padStart(2, "0")}`).trim().toUpperCase(),
             packWeight: Number(Number(row.packWeight || 0).toFixed(3)),
             packDate: row.packDate || form.prodDate,
             storageLocation: String(row.storageLocation || "").trim(),
@@ -1053,19 +999,18 @@ function IssueWoTab() {
           </div>
         </div>
 
-        {/* 원재료 투입 계획 — LOT·용기·신규/잔량·잔량까지 작업지시에서 일괄 관리 */}
+        {/* 원재료 투입 계획 — LOT·신규/잔량·잔량까지 작업지시에서 일괄 관리 */}
         <div className="mt-4 bg-slate-800/50 border border-slate-700/60 rounded-lg p-3">
           <div className="text-xs font-medium text-slate-300 mb-2">
             ① 원재료 투입 계획 <span className="text-slate-500">(계획량 합계 → 생산계획량 자동 계산 · 실투입량 입력 시 잔량·오차·투입비율 자동 계산)</span>
               <span className="ml-2 text-[10px] text-slate-500">오차 기준: ±0.5% 이내 정상 · ±1.0% 이내 주의 · 초과 이탈</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="qmes-material-table qmes-material-balanced qmes-wo-material-compact w-full text-sm min-w-[1580px]">
+            <table className="qmes-material-table qmes-material-balanced qmes-wo-material-compact w-full text-sm min-w-[1400px]">
               <colgroup>
                 <col style={{ width: "52px" }} />
                 <col style={{ width: "220px" }} />
                 <col style={{ width: "145px" }} />
-                <col style={{ width: "160px" }} />
                 <col style={{ width: "95px" }} />
                 <col style={{ width: "125px" }} />
                 <col style={{ width: "135px" }} />
@@ -1079,7 +1024,6 @@ function IssueWoTab() {
                   <th className="text-left py-1.5 pr-3 font-medium w-14">순서</th>
                   <th className="text-left py-1.5 pr-3 font-medium">원재료명</th>
                   <th className="text-left py-1.5 px-2 font-medium">LOT No.</th>
-                  <th className="text-left py-1.5 px-2 font-medium">용기번호</th>
                   <th className="text-center py-1.5 px-2 font-medium">투입상태</th>
                   <th className="text-center py-1.5 px-2 font-medium">계획량</th>
                   <th className="text-center py-1.5 px-2 font-medium">실투입량</th>
@@ -1093,11 +1037,6 @@ function IssueWoTab() {
                 {planItems.map((it, idx) => {
                   const materialType = qmesMaterialType(it.name);
                   const isIntermediateMaterial = materialType === "중간재";
-                  const containerOptions = Object.values(DB.intermediateContainers || {}).filter((container) =>
-                    (!it.name || container.materialName === it.name) &&
-                    (!it.materialLot || container.lot === it.materialLot) &&
-                    Number(container.remainingQty || 0) > 0
-                  );
                   const remaining = qmesInputRemainingQty(it);
                   return (
                   <tr key={`${idx}-${it.name}`} className="border-b border-slate-800/60 align-top">
@@ -1134,35 +1073,6 @@ function IssueWoTab() {
                         placeholder="원재료 LOT"
                         className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-sm font-mono text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500"
                       />
-                    </td>
-                    <td className="py-1.5 px-2">
-                      {isIntermediateMaterial ? (
-                        <select
-                          value={it.containerNo || ""}
-                          onChange={(e) => {
-                            const selectedContainer = DB.intermediateContainers?.[e.target.value];
-                            setPlanItems(planItems.map((row, i) => i === idx ? {
-                              ...row,
-                              containerNo: e.target.value,
-                              materialLot: selectedContainer?.lot || row.materialLot,
-                              availableQty: selectedContainer?.remainingQty ?? row.availableQty,
-                              inputStatus: selectedContainer && Number(selectedContainer.remainingQty) < Number(selectedContainer.initialQty) ? "잔량" : "신규"
-                            } : row));
-                          }}
-                          className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-sky-500"
-                        >
-                          <option value="">용기 선택</option>
-                          {it.containerNo && !containerOptions.some((row) => row.containerNo === it.containerNo) && <option value={it.containerNo}>{it.containerNo}</option>}
-                          {containerOptions.map((row) => <option key={row.containerNo} value={row.containerNo}>{row.containerNo} · {Number(row.remainingQty).toFixed(3)}kg</option>)}
-                        </select>
-                      ) : (
-                        <input
-                          value={it.containerNo || ""}
-                          onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, containerNo:e.target.value.toUpperCase() } : row))}
-                          placeholder="선택 입력"
-                          className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500"
-                        />
-                      )}
                       {Number(qmesInputAvailableQty(it)) > 0 && <div className="mt-1 text-[10px] text-slate-500">가용 {Number(qmesInputAvailableQty(it)).toFixed(3)}kg</div>}
                     </td>
                     <td className="py-1.5 px-2">
@@ -1255,7 +1165,6 @@ function IssueWoTab() {
                   <td className="py-1.5 pr-3 font-medium text-slate-200">계</td>
                   <td className="py-1.5 px-2" />
                   <td className="py-1.5 px-2" />
-                  <td className="py-1.5 px-2" />
                   <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{planItems.some((it) => String(it.plan ?? "").trim() !== "") ? `${plannedTotal.toFixed(3)} kg` : ""}</td>
                   <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-emerald-300">
                     {planItems.some((it) => String(it.actual ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0).toFixed(3)} kg` : ""}
@@ -1303,7 +1212,7 @@ function IssueWoTab() {
                 <span className="ml-2 text-[10px] text-slate-500">중간재 LOT는 작업지시 LOT로 자동 연결됩니다.</span>
               </div>
               <button onClick={() => setPackRows([...packRows, blankPackRow()])} className="inline-flex items-center gap-1 rounded border border-violet-500/40 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300 hover:bg-violet-500/20">
-                <Plus size={13} /> 포장 용기 추가
+                <Plus size={13} /> 포장 추가
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -1311,7 +1220,7 @@ function IssueWoTab() {
                 <thead>
                   <tr className="text-[11px] text-slate-500 border-b border-slate-700/60">
                     <th className="py-1.5 px-2 text-center">No</th>
-                    <th className="py-1.5 px-2 text-left">용기번호</th>
+                    <th className="py-1.5 px-2 text-left">포장번호(선택)</th>
                     <th className="py-1.5 px-2 text-right">포장중량</th>
                     <th className="py-1.5 px-2 text-center">포장일자</th>
                     <th className="py-1.5 px-2 text-left">보관위치</th>
@@ -1324,7 +1233,7 @@ function IssueWoTab() {
                   {packRows.map((row, index) => (
                     <tr key={`pack-${index}`} className="border-b border-slate-800/60">
                       <td className="py-1.5 px-2 text-center text-slate-500">{index + 1}</td>
-                      <td className="py-1.5 px-2"><input value={row.containerNo} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, containerNo:e.target.value.toUpperCase() } : item))} placeholder="예: CBG2702-C01" className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 font-mono text-xs text-slate-100 focus:outline-none focus:border-violet-500" /></td>
+                      <td className="py-1.5 px-2"><input value={row.containerNo} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, containerNo:e.target.value.toUpperCase() } : item))} placeholder="미입력 시 자동 채번" className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 font-mono text-xs text-slate-100 focus:outline-none focus:border-violet-500" /></td>
                       <td className="py-1.5 px-2">
                         <div className="qmes-qty-wrap">
                           <input inputMode="decimal" value={row.packWeight} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, packWeight:e.target.value.replace(/[^0-9.]/g, "") } : item))} className="qmes-qty-input bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-right text-sm text-violet-200 focus:outline-none focus:border-violet-500" />
@@ -1353,15 +1262,6 @@ function IssueWoTab() {
           </div>
         )}
 
-        {!woReady && (
-          <div className="mt-3 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2.5">
-            <div className="flex items-center gap-2 text-xs text-red-300 font-medium"><XCircle size={14} className="shrink-0" /> 발행 진입 금지 — 아래 항목 수정 전 발행 불가</div>
-            <ul className="mt-1 flex flex-col gap-0.5">
-              {woErrors.map((e, i) => <li key={i} className="text-[11px] text-red-300/80">· {e}</li>)}
-            </ul>
-          </div>
-        )}
-
         <div className="flex items-center justify-between mt-3">
           <p className="text-[11px] text-slate-500">발행 시 실제 양식의 가 생성되며, [] 화면에서 LOT별로 조회하고 인쇄할 수 있습니다.</p>
           <div className="flex items-center gap-2">
@@ -1369,8 +1269,7 @@ function IssueWoTab() {
               className="qmes-inspection-cancel-btn">
               취소
             </button>
-            <button type="button" onClick={issue} disabled={!woReady}
-              className={`qmes-inspection-save-btn ${!woReady ? "opacity-40 cursor-not-allowed" : ""}`}>
+            <button type="button" onClick={issue} className="qmes-inspection-save-btn">
               저장
             </button>
           </div>
@@ -1568,13 +1467,13 @@ function IssueWoTab() {
                 <div className="qmes-iqc2-sec">
                   <div className="qmes-iqc2-sec-title">원재료 투입</div>
                   <table className="qmes-iqc2-table qmes-wo-cert-material-table">
-                    <thead><tr><th>No</th><th>원재료명</th><th>LOT / 용기</th><th>상태</th><th>계획량</th><th>실투입량</th><th>사용 후 잔량</th><th>판정</th><th>비고</th></tr></thead>
+                    <thead><tr><th>No</th><th>원재료명</th><th>원재료 LOT</th><th>상태</th><th>계획량</th><th>실투입량</th><th>사용 후 잔량</th><th>판정</th><th>비고</th></tr></thead>
                     <tbody>
                       {inputs.map((it, i) => (
                         <tr key={`issued-cert-${viewingWo}-${i}`}>
                           <td>{it.seq || i + 1}</td>
                           <td>{it.name || "-"}<small className="block text-slate-500">{it.materialType || qmesMaterialType(it.name)}</small></td>
-                          <td className="font-mono">{it.materialLot || it.lot || "-"}<small className="block">{it.containerNo || "BULK"}</small></td>
+                          <td className="font-mono">{it.materialLot || it.lot || "-"}</td>
                           <td>{it.inputStatus || "신규"}</td>
                           <td>{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
                           <td>{it.act == null ? "-" : `${Number(it.act).toFixed(3)} ${it.unit || "kg"}`}</td>
@@ -1598,7 +1497,7 @@ function IssueWoTab() {
                   <div className="qmes-iqc2-sec">
                     <div className="qmes-iqc2-sec-title">중간재 포장정보</div>
                     <table className="qmes-iqc2-table">
-                      <thead><tr><th>No</th><th>중간재 LOT</th><th>용기번호</th><th>포장중량</th><th>포장일자</th><th>보관위치</th><th>현재 잔량</th><th>상태</th></tr></thead>
+                      <thead><tr><th>No</th><th>중간재 LOT</th><th>포장번호</th><th>포장중량</th><th>포장일자</th><th>보관위치</th><th>현재 잔량</th><th>상태</th></tr></thead>
                       <tbody>
                         {doc.packaging.map((row, index) => {
                           const current = DB.intermediateContainers?.[row.containerNo] || row;
@@ -1644,13 +1543,12 @@ function IssueWoTab() {
               <div className="mt-4 qmes-detail-only">
                 <div className="text-sm font-semibold text-slate-200 mb-2">원재료 투입 계획</div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm min-w-[1300px]">
+                  <table className="w-full text-sm min-w-[1160px]">
                     <thead>
                       <tr className="text-xs text-slate-400 border-b border-slate-700">
                         <th className="text-center py-2 px-2">순서</th>
                         <th className="text-left py-2 px-2">원재료명</th>
                         <th className="text-left py-2 px-2">LOT No.</th>
-                        <th className="text-left py-2 px-2">용기번호</th>
                         <th className="text-center py-2 px-2">투입상태</th>
                         <th className="text-right py-2 px-2">계획량</th>
                         <th className="text-right py-2 px-2">실투입량</th>
@@ -1666,7 +1564,6 @@ function IssueWoTab() {
                           <td className="text-center py-2 px-2 text-slate-400">{it.seq || i + 1}</td>
                           <td className="py-2 px-2 text-slate-100">{it.name}<small className="block text-slate-500">{it.materialType || qmesMaterialType(it.name)}</small></td>
                           <td className="py-2 px-2 font-mono text-xs text-slate-300">{it.materialLot || it.lot || "-"}</td>
-                          <td className="py-2 px-2 font-mono text-xs text-slate-300">{it.containerNo || "BULK"}</td>
                           <td className="text-center py-2 px-2">{it.inputStatus || "신규"}</td>
                           <td className="text-right py-2 px-2 tabular-nums text-sky-300">{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
                           <td className="text-right py-2 px-2 tabular-nums text-emerald-300">{it.act == null ? "—" : `${Number(it.act).toFixed(3)} ${it.unit || "kg"}`}</td>
@@ -1679,7 +1576,6 @@ function IssueWoTab() {
                       <tr className="bg-slate-800/40 font-medium">
                         <td className="py-2 px-2" />
                         <td className="py-2 px-2 text-slate-200">합계</td>
-                        <td className="py-2 px-2" />
                         <td className="py-2 px-2" />
                         <td className="py-2 px-2" />
                         <td className="text-right py-2 px-2 text-sky-300">{plannedTotal.toFixed(3)} kg</td>
@@ -1703,7 +1599,7 @@ function IssueWoTab() {
                   <div className="text-sm font-semibold text-violet-200 mb-2">중간재 포장정보</div>
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[900px] text-sm">
-                      <thead><tr className="text-xs text-slate-400 border-b border-slate-700"><th className="py-2 px-2">중간재 LOT</th><th className="py-2 px-2">용기번호</th><th className="py-2 px-2 text-right">포장중량</th><th className="py-2 px-2">포장일자</th><th className="py-2 px-2">보관위치</th><th className="py-2 px-2 text-right">현재 잔량</th><th className="py-2 px-2">상태</th></tr></thead>
+                      <thead><tr className="text-xs text-slate-400 border-b border-slate-700"><th className="py-2 px-2">중간재 LOT</th><th className="py-2 px-2">포장번호</th><th className="py-2 px-2 text-right">포장중량</th><th className="py-2 px-2">포장일자</th><th className="py-2 px-2">보관위치</th><th className="py-2 px-2 text-right">현재 잔량</th><th className="py-2 px-2">상태</th></tr></thead>
                       <tbody>{doc.packaging.map((row, index) => {
                         const current = DB.intermediateContainers?.[row.containerNo] || row;
                         return <tr key={`detail-pack-${row.containerNo || index}`} className="border-b border-slate-800/70">
