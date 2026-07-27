@@ -832,10 +832,10 @@ function IssueWoTab() {
                   <td className="py-1.5 pr-3" />
                   <td className="py-1.5 pr-3 font-medium text-slate-200">계</td>
                   <td className="py-1.5 px-2" />
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{planItems.reduce((a, it) => a + Number(it.base || 0), 0).toFixed(3)} kg</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{planItems.reduce((a, it) => a + it.base * ratio, 0).toFixed(3)} kg</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{planItems.some((it) => String(it.base ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + Number(it.base || 0), 0).toFixed(3)} kg` : ""}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{planItems.some((it) => String(it.base ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + Number(it.base || 0) * ratio, 0).toFixed(3)} kg` : ""}</td>
                   <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-emerald-300">
-                    {planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0).toFixed(3)} kg
+                    {planItems.some((it) => String(it.actual ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0).toFixed(3)} kg` : ""}
                   </td>
                   <td className="py-1.5 pr-3 text-center tabular-nums">
                     {(() => {
