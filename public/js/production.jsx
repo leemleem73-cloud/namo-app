@@ -390,7 +390,7 @@ function WoDocTab() {
 
 const BOM = {
   " NBA20-HM01": {
-    prefix: "SL", baseQty: 230, procName: "절연슬러리 제조",
+    prefix: "SL", baseQty: 230, procName: "절연슬러리 제조", workType: "완제품",
     tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
     items: [
       { seq: 1, name: "NMP", base: 17.09, unit: "kg", note: "" },
@@ -400,6 +400,18 @@ const BOM = {
       { seq: 5, name: "PVdF", base: 0, unit: "kg", note: "" },
       { seq: 6, name: "SBR", base: 106.24, unit: "kg", note: "" },
       { seq: 7, name: "중간배치(바인더)", base: 0, unit: "kg", note: "" },
+    ],
+  },
+  "중간배치(바인더)": {
+    prefix: "CBG", baseQty: 230, procName: "바인더 중간배치 제조", workType: "중간배치",
+    tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
+    items: [
+      { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
+      { seq: 2, name: "BYK180 (분산제)", base: 0, unit: "kg", note: "" },
+      { seq: 3, name: "AOH30 (Boehmite)", base: 0, unit: "kg", note: "" },
+      { seq: 4, name: "SBS", base: 0, unit: "kg", note: "" },
+      { seq: 5, name: "PVdF", base: 0, unit: "kg", note: "" },
+      { seq: 6, name: "SBR", base: 0, unit: "kg", note: "" },
     ],
   },
 };
@@ -487,7 +499,7 @@ function woStatusTone(status) {
 function IssueWoTab() {
   const products = Object.keys(BOM);
   const [form, setForm] = useState({
-    product: products[0], tank: BOM[products[0]].tanks[0], qty: String(BOM[products[0]].baseQty),
+    product: products[0], tank: BOM[products[0]].tanks[0], qty: "",
     prodDate: "", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
     shiftType: "일반", worker: "",
   });
@@ -517,12 +529,16 @@ function IssueWoTab() {
   };
   const [issuePage, setIssuePage] = useState(1);
   const issuePageSize = 10;
-  const blankPlanItems = (product) => BOM[product].items.map((it) => ({ ...it, materialLot: "", base: "", actual: "", note: "" }));
+  const blankPlanItems = (product) => BOM[product].items.map((it) => ({ ...it, materialLot: "", base: "", plan: "", actual: "", note: "" }));
   const [planItems, setPlanItems] = useState(blankPlanItems(products[0]));
 
   const bom = BOM[form.product];
-  const qtyNum = parseFloat(form.qty) || 0;
-  const ratio = qtyNum > 0 ? qtyNum / bom.baseQty : 0;
+  const isIntermediateWorkOrder = bom.workType === "중간배치";
+  const availableMaterialOptions = isIntermediateWorkOrder
+    ? MATERIAL_OPTIONS.filter((name) => !String(name).includes("중간배치"))
+    : MATERIAL_OPTIONS;
+  const plannedTotal = planItems.reduce((sum, it) => sum + (Number(it.plan) || 0), 0);
+  const qtyNum = Number(plannedTotal.toFixed(3));
 
   /* 생산일자·생산구분 기반 자동 채번 — [사이트][년][월][일][당일 순번] */
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(form.prodDate);
@@ -540,7 +556,9 @@ function IssueWoTab() {
   if (qtyNum > bom.baseQty) woErrors.push(`배치 용량 초과 — HSM 최대 배치 ${bom.baseQty}kg`);
   if (!form.worker.trim()) woErrors.push("작업자 미지정 — 지정 전 발행 금지");
   const intermediateInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
-  if (!String(intermediateInput?.materialLot || "").trim()) woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
+  if (!isIntermediateWorkOrder && !String(intermediateInput?.materialLot || "").trim()) {
+    woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
+  }
   if (!dateOk) woErrors.push("생산일자를 선택하세요");
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
   if (!requestedLotNo || requestedLotNo === "—") woErrors.push("LOT No.를 확인하세요");
@@ -554,15 +572,15 @@ function IssueWoTab() {
     if (!editingWo) DB.seqs[seqKey] = (DB.seqs[seqKey] || 1) + 1;
 
     const woNo = editingWo || requestedLotNo;
-    const batch = { no: woNo, item: form.product, tank: form.tank, plan: qtyNum, done: editingWo ? (DB.batches.find(b=>b.no===editingWo)?.done || 0) : 0, unit: "kg", due: form.prodDate, status: "발행", shift: `${form.shiftType} · ${form.timeRange}`, worker: form.worker.trim(), time };
+    const batch = { no: woNo, item: form.product, workType: bom.workType || "완제품", tank: form.tank, plan: qtyNum, done: editingWo ? (DB.batches.find(b=>b.no===editingWo)?.done || 0) : 0, unit: "kg", due: form.prodDate, status: "발행", shift: `${form.shiftType} · ${form.timeRange}`, worker: form.worker.trim(), time };
     DB.batches = editingWo ? DB.batches.map((b)=>b.no===editingWo?batch:b) : [batch, ...DB.batches];
 
     DB.woDocs[woNo] = {
-      item: form.product, procName: bom.procName, tank: form.tank, plan: qtyNum,
+      item: form.product, workType: bom.workType || "완제품", procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
       workers: form.worker.trim(), status: "발행",
       inputs: planItems.map((it, index) => {
-        const planned = String(it.base ?? "").trim() === "" ? null : Number((Number(it.base) * ratio).toFixed(3));
+        const planned = String(it.plan ?? "").trim() === "" ? null : Number(Number(it.plan).toFixed(3));
         const actual = it.actual === "" || it.actual == null ? null : Number(it.actual);
         const inputRatio = planned > 0 && actual != null
           ? Number(((actual / planned) * 100).toFixed(2))
@@ -593,19 +611,22 @@ function IssueWoTab() {
 
     const binderInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
     const binderLot = String(binderInput?.materialLot || "").trim().toUpperCase();
-    DB.lots[woNo] = {
-      item: "NBA20-HM01", itemName: form.product,
-      qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
-      materials: [], binderLot,
-      steps: [{ stage: "수입", name: "작업지시 발행", time, detail: `${bom.procName} · ${form.tank} · 계획 ${qtyNum.toLocaleString()}kg · ${form.prodDate} ${form.timeRange} (${form.shiftType})`, result: "발행", by: window.__QMES_USER__ || "-" }],
-      ship: null,
-    };
-    DB.intermediateLots[binderLot] = {
-      lot:binderLot, type:"바인더 중간배치",
-      parentLots:planItems.filter((it) => !String(it.name || "").includes("중간배치")).map((it) => String(it.materialLot || "").trim()).filter(Boolean),
-      childLots:[woNo], qty:0, status:"생산대기", workOrder:woNo,
-      updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
-    };
+    // 1차 적용: 중간배치는 작업지시서에만 등록하고 LOT·재고 연동은 하지 않는다.
+    if (!isIntermediateWorkOrder) {
+      DB.lots[woNo] = {
+        item: "NBA20-HM01", itemName: form.product,
+        qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
+        materials: [], binderLot,
+        steps: [{ stage: "수입", name: "작업지시 발행", time, detail: `${bom.procName} · ${form.tank} · 계획 ${qtyNum.toLocaleString()}kg · ${form.prodDate} ${form.timeRange} (${form.shiftType})`, result: "발행", by: window.__QMES_USER__ || "-" }],
+        ship: null,
+      };
+      DB.intermediateLots[binderLot] = {
+        lot:binderLot, type:"바인더 중간배치",
+        parentLots:planItems.filter((it) => !String(it.name || "").includes("중간배치")).map((it) => String(it.materialLot || "").trim()).filter(Boolean),
+        childLots:[woNo], qty:0, status:"생산대기", workOrder:woNo,
+        updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
+      };
+    }
     auditLog("작업지시", editingWo ? "수정" : "발행", woNo, `${form.product} / ${qtyNum}kg / ${form.prodDate}`);
     dbSave();
     setEditingWo(null);
@@ -613,7 +634,18 @@ function IssueWoTab() {
     setShowIssueForm(false);
   };
 
-  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setShowIssueForm(true); setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
+  const editWo = (r) => {
+    const d = DB.woDocs[r.no] || {};
+    setShowIssueForm(true);
+    setEditingWo(r.no);
+    setForm({ product:r.item, tank:r.tank, qty:"", prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" });
+    setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({
+      seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "",
+      base:it.base ?? "", plan:it.plan ?? it.std ?? "", actual:it.act ?? "",
+      unit:it.unit||"kg", note:it.note||""
+    })));
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
   const deleteWo = (r) => { const reason=askDeleteReason(`작업지시 ${r.no}`); if(reason===null)return; DB.batches=DB.batches.filter(x=>x.no!==r.no); delete DB.woDocs[r.no]; delete DB.lots[r.no]; DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no); DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no); DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no); auditLog("작업지시","삭제",r.no,reason); dbSave(); setIssued([...DB.batches]); };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
@@ -634,7 +666,12 @@ function IssueWoTab() {
         <h2 className="text-[22px] font-bold text-slate-100">작업지시 관리</h2>
         <button
           type="button"
-          onClick={() => { setEditingWo(null); setForm({ ...form, prodDate:"", lotNo:"" }); setShowIssueForm(true); }}
+          onClick={() => {
+            setEditingWo(null);
+            setForm({ ...form, prodDate:"", lotNo:"", qty:"" });
+            setPlanItems(blankPlanItems(form.product));
+            setShowIssueForm(true);
+          }}
           className="qmes-iqc-new-btn"
         >
           <Plus size={16} /> 신규 발행
@@ -647,8 +684,12 @@ function IssueWoTab() {
         <div className="qmes-wo-form-grid">
           <div className="qmes-wo-form-field">
             {label("공정 / 품목 (Grd.)")}
-            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: String(BOM[next].baseQty) }); setPlanItems(blankPlanItems(next)); }} className={inputCls}>
-              {products.map((pd) => <option key={pd}>{pd}</option>)}
+            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: "" }); setPlanItems(blankPlanItems(next)); }} className={inputCls}>
+              {products.map((pd) => (
+                <option key={pd} value={pd}>
+                  {BOM[pd].workType === "중간배치" ? `[중간배치] ${pd}` : pd}
+                </option>
+              ))}
             </select>
           </div>
           <div className="qmes-wo-form-field">
@@ -686,7 +727,13 @@ function IssueWoTab() {
           </div>
           <div className="qmes-wo-form-field">
             {label("생산계획량 (kg)")}
-            <input type="number" value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value })} className={inputCls} />
+            <input
+              type="text"
+              value={qtyNum > 0 ? qtyNum.toFixed(3) : ""}
+              readOnly
+              placeholder="원료 계획량 합계"
+              className={`${inputCls} bg-slate-800/60 text-sky-300 font-semibold cursor-not-allowed`}
+            />
           </div>
           <div className="qmes-wo-form-field">
             {label("작업시간")}
@@ -711,7 +758,7 @@ function IssueWoTab() {
         {/* 원재료 투입 계획 — 수량 비례 자동 계산 */}
         <div className="mt-4 bg-slate-800/50 border border-slate-700/60 rounded-lg p-3">
           <div className="text-xs font-medium text-slate-300 mb-2">
-            ① 원재료 투입 계획 <span className="text-slate-500">(기준량 → 계획량 자동 계산 · 실투입량 입력 시 오차 및 투입비율 자동 계산)</span>
+            ① 원재료 투입 계획 <span className="text-slate-500">(계획량 합계 → 생산계획량 자동 계산 · 실투입량 입력 시 오차 및 투입비율 자동 계산)</span>
               <span className="ml-2 text-[10px] text-slate-500">오차 기준: ±0.5% 이내 정상 · ±1.0% 이내 주의 · 초과 이탈</span>
           </div>
           <div className="overflow-x-auto">
@@ -746,7 +793,7 @@ function IssueWoTab() {
                     <td className="py-1.5 pr-3 text-slate-500 tabular-nums">{idx + 1}</td>
                     <td className="py-1.5 pr-3">
                       <select value={it.name} onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, name: e.target.value } : row))} className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-                        {MATERIAL_OPTIONS.map((name) => <option key={name}>{name}</option>)}
+                         {availableMaterialOptions.map((name) => <option key={name}>{name}</option>)}
                       </select>
                     </td>
                     <td className="py-1.5 px-2">
@@ -774,9 +821,16 @@ function IssueWoTab() {
                     </td>
                     <td className="py-1.5 px-2">
                       <div className="qmes-qty-wrap">
-                        <div className="qmes-qty-input qmes-qty-readonly bg-slate-800/60 border border-slate-700 rounded px-2 py-1.5 text-right text-sm text-sky-300 font-medium tabular-nums">
-                          {String(it.base ?? "").trim() === "" ? "" : (Number(it.base) * ratio).toFixed(Number(it.base) < 1 ? 3 : 2)}
-                        </div>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={it.plan ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/[^0-9.]/g, "");
+                            setPlanItems(planItems.map((row, i) => i === idx ? { ...row, plan: v } : row));
+                          }}
+                          className="qmes-qty-input bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-right text-sm text-sky-300 font-medium focus:outline-none focus:border-sky-500"
+                        />
                         <span className="qmes-qty-unit text-xs text-slate-400">{it.unit}</span>
                       </div>
                     </td>
@@ -798,7 +852,7 @@ function IssueWoTab() {
                     </td>
                     <td className="py-1.5 pr-3 text-center tabular-nums">
                       {(() => {
-                        const planned = it.base * ratio;
+                        const planned = Number(it.plan) || 0;
                         const actual = parseFloat(it.actual);
                         if (!(planned > 0) || Number.isNaN(actual)) return <span className="text-slate-500">—</span>;
                         const err = (actual - planned) / planned * 100;
@@ -814,7 +868,7 @@ function IssueWoTab() {
                     </td>
                     <td className="py-1.5 pr-3 text-center tabular-nums">
                       {(() => {
-                        const planned = it.base * ratio;
+                        const planned = Number(it.plan) || 0;
                         const actual = parseFloat(it.actual);
                         if (!(planned > 0) || Number.isNaN(actual)) return <span className="text-slate-500">—</span>;
                         const pct = actual / planned * 100;
@@ -839,13 +893,13 @@ function IssueWoTab() {
                   <td className="py-1.5 pr-3 font-medium text-slate-200">계</td>
                   <td className="py-1.5 px-2" />
                   <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{planItems.some((it) => String(it.base ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + Number(it.base || 0), 0).toFixed(3)} kg` : ""}</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{planItems.some((it) => String(it.base ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + Number(it.base || 0) * ratio, 0).toFixed(3)} kg` : ""}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{planItems.some((it) => String(it.plan ?? "").trim() !== "") ? `${plannedTotal.toFixed(3)} kg` : ""}</td>
                   <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-emerald-300">
                     {planItems.some((it) => String(it.actual ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0).toFixed(3)} kg` : ""}
                   </td>
                   <td className="py-1.5 pr-3 text-center tabular-nums">
                     {(() => {
-                      const plannedTotal = planItems.reduce((a, it) => a + it.base * ratio, 0);
+                      const plannedTotal = planItems.reduce((a, it) => a + (Number(it.plan) || 0), 0);
                       const actualTotal = planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0);
                       if (!(plannedTotal > 0) || !(actualTotal > 0)) return <span className="text-slate-500">—</span>;
                       const err = (actualTotal - plannedTotal) / plannedTotal * 100;
@@ -856,7 +910,7 @@ function IssueWoTab() {
                   </td>
                   <td className="py-1.5 pr-3 text-center tabular-nums">
                     {(() => {
-                      const plannedTotal = planItems.reduce((a, it) => a + it.base * ratio, 0);
+                      const plannedTotal = planItems.reduce((a, it) => a + (Number(it.plan) || 0), 0);
                       const actualTotal = planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0);
                       return plannedTotal > 0 && actualTotal > 0
                         ? <span className="text-slate-300">{(actualTotal / plannedTotal * 100).toFixed(2)}%</span>
@@ -864,7 +918,7 @@ function IssueWoTab() {
                     })()}
                   </td>
                   <td className="py-1.5 text-right">
-                    <button onClick={() => setPlanItems([...planItems, { seq: planItems.length + 1, name: MATERIAL_OPTIONS[0], materialLot: "", base: "", actual: "", unit: "kg", note: "" }])} className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/20"><Plus size={13} /> 행 추가</button>
+                    <button onClick={() => setPlanItems([...planItems, { seq: planItems.length + 1, name: availableMaterialOptions[0], materialLot: "", base: "", plan: "", actual: "", unit: "kg", note: "" }])} className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/20"><Plus size={13} /> 행 추가</button>
                   </td>
                 </tr>
               </tbody>
@@ -1395,4 +1449,3 @@ function FieldInputTab() {
 }
 
 /* ──────────────────────────── 고객불만 관리 (GQMS) 탭 ──────────────────────────── */
-
