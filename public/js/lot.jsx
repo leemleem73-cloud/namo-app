@@ -90,12 +90,33 @@ function TraceTab() {
           </div>
         )}
 
-        {lot.binderLot && (
-          <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 rounded px-3 py-2 mb-4">
-            <Beaker size={14} className="text-violet-400 shrink-0" />
-            <span className="text-xs text-slate-300">중간 Lot (바인더): <span className="font-mono text-violet-300">{lot.binderLot}</span></span>
-          </div>
-        )}
+        {lot.binderLot && (() => {
+          const mid = DB.intermediateLots?.[lot.binderLot];
+          return (
+            <div className="bg-slate-800/60 border border-violet-500/30 rounded-lg px-3 py-3 mb-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Beaker size={14} className="text-violet-400 shrink-0" />
+                <span className="text-xs text-slate-300">중간 배치 LOT</span>
+                <span className="font-mono text-sm font-semibold text-violet-300">{lot.binderLot}</span>
+                <Badge tone={mid?.status === "PQC 합격" || mid?.status === "공정완료" ? "green" : "amber"}>{mid?.status || "계보 확인 필요"}</Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3 text-xs">
+                <div className="rounded border border-slate-700 px-3 py-2">
+                  <div className="text-slate-500 mb-1">상위 원재료 LOT</div>
+                  <div className="font-mono text-slate-200 break-words">{mid?.parentLots?.length ? mid.parentLots.join(" · ") : "미등록"}</div>
+                </div>
+                <div className="rounded border border-slate-700 px-3 py-2">
+                  <div className="text-slate-500 mb-1">중간 배치 유형</div>
+                  <div className="text-slate-200">{mid?.type || "바인더 중간배치"}</div>
+                </div>
+                <div className="rounded border border-slate-700 px-3 py-2">
+                  <div className="text-slate-500 mb-1">하위 완제품 LOT</div>
+                  <div className="font-mono text-sky-300 break-words">{mid?.childLots?.length ? mid.childLots.join(" · ") : selected}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="flex items-center gap-2">
           {["수입", "생산", "출하"].map((s, i) => {
