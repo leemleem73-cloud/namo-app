@@ -43,14 +43,45 @@ const TOP_MENUS = [
   },
 ];
 
+function safeStorageGet(key, fallback = null) {
+  try {
+    const value = localStorage.getItem(key);
+    return value == null ? fallback : value;
+  } catch (error) {
+    console.warn(`[QMES] localStorage 읽기 실패: ${key}`, error);
+    return fallback;
+  }
+}
+
+function safeStorageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.warn(`[QMES] localStorage 저장 실패: ${key}`, error);
+    return false;
+  }
+}
+
+function safeStorageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.warn(`[QMES] localStorage 삭제 실패: ${key}`, error);
+  }
+}
+
 function QMESChemical({ user, onLogout }) {
-  const [tab, setTab] = useState(() => localStorage.getItem("qmes_current_tab") || "dash");
-  useEffect(() => { localStorage.setItem("qmes_current_tab", tab); }, [tab]);
-  const [clock, setClock] = useState(new Date());
-  const [openMenu, setOpenMenu] = useState(() => localStorage.getItem("qmes_open_menu") || null);
+  const [tab, setTab] = useState(() => safeStorageGet("qmes_current_tab", "dash"));
   useEffect(() => {
-    if (openMenu) localStorage.setItem("qmes_open_menu", openMenu);
-    else localStorage.removeItem("qmes_open_menu");
+    safeStorageSet("qmes_current_tab", tab);
+  }, [tab]);
+
+  const [clock, setClock] = useState(new Date());
+  const [openMenu, setOpenMenu] = useState(() => safeStorageGet("qmes_open_menu", null));
+  useEffect(() => {
+    if (openMenu) safeStorageSet("qmes_open_menu", openMenu);
+    else safeStorageRemove("qmes_open_menu");
   }, [openMenu]);
 
   useEffect(() => {
@@ -62,9 +93,9 @@ function QMESChemical({ user, onLogout }) {
   useEffect(() => {
     if (!visibleTabs.some((t) => t.id === tab)) setTab("dash");
   }, [tab, visibleTabs.length]);
-  const Active = TABS.find((t) => t.id === tab).comp;
 
-  const currentTab = TABS.find((t) => t.id === tab);
+  const currentTab = TABS.find((t) => t.id === tab) || TABS[0];
+  const Active = currentTab.comp;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col" style={{ fontFamily: "'Pretendard', 'Noto Sans KR', system-ui, sans-serif" }}>
