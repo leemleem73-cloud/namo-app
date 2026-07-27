@@ -106,10 +106,6 @@ function DashboardTab() {
   const monthPlanKg = monthBatches.reduce((sum, b) => sum + (Number(b.plan || b.plannedQty || b.targetQty || 0) || 0), 0);
   const monthKg = monthBatches.reduce((sum, b) => sum + (Number(b.qty || b.amount || b.productionQty || b.done || 0) || 0), 0);
   const achievementRate = monthPlanKg > 0 ? ((monthKg / monthPlanKg) * 100).toFixed(1) : "—";
-  const activeNonconforming = (DB.holds || []).filter((h) => {
-    const status = String(h?.status || "");
-    return !["해제", "종결", "완료"].some((closed) => status.includes(closed));
-  });
   const monthShipmentLots = Object.values(DB.lots || {}).filter((lot) => String(lot?.ship?.shipDate || lot?.ship?.date || "").slice(0, 7) === currentMonthKey);
   const shipmentMap = {};
   monthShipmentLots.forEach((lot) => {
@@ -129,7 +125,6 @@ function DashboardTab() {
         <Kpi textOnly label="금일 생산량" value={todayKg.toLocaleString()} unit={`kg · ${todayBatches.length} LOT`} tone="text-sky-400" caption="오늘 등록된 생산 실적" />
         <Kpi textOnly label="당월 누적 생산량" value={monthKg.toLocaleString()} unit={`kg · ${monthBatches.length} LOT`} tone="text-cyan-400" caption="이번 달 작업지시 생산 실적" />
         <Kpi textOnly showProgress progressValue={achievementRate === "—" ? 0 : Number(achievementRate)} label="목표 달성률" value={achievementRate} unit="%" tone="text-emerald-400" caption={monthPlanKg > 0 ? `당월 계획 ${monthPlanKg.toLocaleString()} kg 대비` : "당월 생산계획 등록 필요"} />
-        <Kpi textOnly label="미처리 부적합" value={activeNonconforming.length} unit="건" tone="text-red-400" caption="해제·종결·완료되지 않은 보류" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
