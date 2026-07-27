@@ -20,10 +20,12 @@ function PartnersTab() {
     { code: "SUP005", company: "LG화학", material: "SBR", lot: "C3026B26A(1)", status: "거래중" },
     { code: "SUP006", company: "SOLVAY", material: "PVDF", lot: "CSE23202TA", status: "거래중" },
     { code: "SUP007", company: "금호석유화학", material: "SBS", lot: "W251016", status: "거래중" },
+    { code: "SUP008", company: "유니소재", material: "BYK-180", lot: "2708935", status: "거래중" },
   ];
 
   const normalizeMaterial = (name) => {
     const value = String(name || "").toUpperCase().replace(/\s+/g, "");
+    if (value.includes("BYK180") || value.includes("BYK-180") || value.includes("분산제")) return "BYK180";
     if (value.includes("AOH30") || value.includes("BOEHMITE")) return "BOEHMITE";
     if (value.includes("PVDF")) return "PVDF";
     if (value.includes("PAI")) return "PAI";
