@@ -165,3 +165,9 @@
   padding-bottom: 0 !important;
   white-space: nowrap;
 }
+
+/* Work order preview/print: judgment belongs to inspection records, not the work order */
+.qmes-wo-cert-material-table th:nth-child(8),
+.qmes-wo-cert-material-table td:nth-child(8) {
+  display: none !important;
+}
