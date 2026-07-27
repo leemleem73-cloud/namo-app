@@ -71,7 +71,7 @@ function QMESChemical({ user, onLogout }) {
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
           <div className="flex items-center shrink-0">
             <img
-              src="/assets/namo-header-logo.svg"
+              src="/assets/namo-header-logo.svg?v=20260727-2"
               alt="NAMO Chemical"
               className="h-8 md:h-9 w-auto max-w-[180px] md:max-w-[205px] object-contain opacity-95"
             />
