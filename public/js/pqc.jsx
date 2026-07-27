@@ -143,6 +143,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const valueStateClass = (item, value) => singleValueJudge(item, value) === "불합격" ? "qmes-measure-out" : "";
   const lotErr = isOqc && form.lot.trim() !== "" && availableLots.length > 0 && !availableLots.includes(form.lot.trim())
     ? "작업지시에서 발행된 LOT를 선택하세요." : null;
+  const processGate = !isOqc && form.lot.trim()
+    ? (qmesProductionComplete(form.lot.trim())
+        ? { ok:true, reason:"생산실적 완료" }
+        : { ok:false, reason:"생산실적 완료 전 PQC 등록 금지" })
+    : { ok:false, reason:"작업지시 LOT를 선택하세요" };
+  const shipmentGate = isOqc && form.lot.trim()
+    ? qmesShipmentGate(form.lot.trim())
+    : { ok:false, reason:"작업지시 LOT를 선택하세요" };
   const triedErrors = [];
   if (tried && form.lot.trim() === "") triedErrors.push("작업지시 LOT를 선택하세요.");
   if (tried && form.date.trim() === "") triedErrors.push("검사일자를 입력하세요");
@@ -153,12 +161,22 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   if (!isOqc && tried && form.product.trim() === "") triedErrors.push("제품명을 입력하세요");
   if (!isOqc && tried && !pqcComplete) triedErrors.push("점도, 고형분, 입도, 외관 측정값을 모두 입력하세요");
   if (isOqc && tried && !oqcComplete) triedErrors.push("출하검사 8개 항목의 측정값을 3회씩 모두 입력하세요");
+  if (!isOqc && tried && !processGate.ok) triedErrors.push(processGate.reason);
+  if (isOqc && tried && !shipmentGate.ok) triedErrors.push(`출하 게이트 차단 — ${shipmentGate.reason}`);
   const canAdd = isOqc
-    ? (oqcComplete && !lotErr && form.date.trim() !== "" && form.lot.trim() !== "" && form.shipDate.trim() !== "" && String(form.inspector || "").trim() !== "" && (oqcOverallJudge !== "합격" || shipmentInfoComplete))
-    : (pqcComplete && form.date.trim() !== "" && form.lot.trim() !== "" && form.product.trim() !== "" && String(form.inspector || "").trim() !== "");
+    ? (oqcComplete && !lotErr && shipmentGate.ok && form.date.trim() !== "" && form.lot.trim() !== "" && form.shipDate.trim() !== "" && String(form.inspector || "").trim() !== "" && (oqcOverallJudge !== "합격" || shipmentInfoComplete))
+    : (pqcComplete && processGate.ok && form.date.trim() !== "" && form.lot.trim() !== "" && form.product.trim() !== "" && String(form.inspector || "").trim() !== "");
 
   const addRecord = () => {
-    if (!canAdd) { setTried(true); return; }
+    if (!canAdd) {
+      const gate = isOqc ? shipmentGate : processGate;
+      if (form.lot.trim() && !gate.ok) {
+        qmesRecordGateBlock(isOqc ? "출하 게이트" : "공정 게이트", form.lot.trim(), gate.reason);
+        dbSave();
+      }
+      setTried(true);
+      return;
+    }
     if (!isOqc) {
       const now = new Date();
       const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -190,7 +208,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       if(L){
         newRows.forEach((rec)=>{L.steps=[...L.steps,{stage:traceStage,name:`${docName.replace(" 성적서","")} — ${rec.check}`,time,detail:`측정값 ${rec.value} · 규격 ${QC_ITEMS[rec.check]?.spec || "-"}`,result:rec.judge,by:inspector}]});
         if(pqcOverallJudge==="불합격") L.status="홀드 — 부적합 발생 (게이트 차단)";
-        else {L.stage="생산"; if(!L.status.includes("홀드")) L.status="생산중";}
+        else {
+          L.stage="생산";
+          if(!L.status.includes("홀드")) L.status="PQC 합격 — OQC 대기";
+          if (L.binderLot && DB.intermediateLots?.[L.binderLot]) {
+            DB.intermediateLots[L.binderLot].status = "PQC 합격";
+            DB.intermediateLots[L.binderLot].updatedAt = new Date().toISOString();
+          }
+        }
       }
       if(pqcOverallJudge==="불합격"){
         DB.holds=[{id:`HLD-${String(Date.now()).slice(-6)}`,target:lotNo,type:"제품 Lot",gate:"공정 게이트",reason:`공정검사 부적합 항목 발생`,since:time,cond:"재검사 합격 + 품질부장 승인",status:"차단중",ncr:"-"},...DB.holds];
