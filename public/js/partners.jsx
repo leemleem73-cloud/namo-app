@@ -12,13 +12,13 @@ function PartnersTab() {
   ];
 
   const suppliers = [
-    { code: "SUP001", company: "코오롱", material: "PAI", grade: "Binder PAI", lot: "-", status: "거래중" },
-    { code: "SUP002", company: "푸양광명화학", material: "NMP", grade: "NMP", lot: "-", status: "거래중" },
-    { code: "SUP003", company: "모리로쿠케미칼즈", material: "NMP", grade: "NMP", lot: "-", status: "거래중" },
-    { code: "SUP004", company: "강신산업", material: "Boehmite", grade: "AOH30", lot: "-", status: "거래중" },
-    { code: "SUP005", company: "LG화학", material: "SBR", grade: "ADC30-G", lot: "-", status: "거래중" },
-    { code: "SUP006", company: "SOLVAY", material: "PVDF", grade: "Solef5130 / Solef5140", lot: "-", status: "거래중" },
-    { code: "SUP007", company: "금호석유화학", material: "SBS", grade: "KTR201", lot: "-", status: "거래중" },
+    { code: "SUP001", company: "코오롱", material: "PAI", lot: "-", status: "거래중" },
+    { code: "SUP002", company: "푸양광명화학", material: "NMP", lot: "-", status: "거래중" },
+    { code: "SUP003", company: "모리로쿠케미칼즈", material: "NMP", lot: "-", status: "거래중" },
+    { code: "SUP004", company: "강신산업", material: "Boehmite", lot: "-", status: "거래중" },
+    { code: "SUP005", company: "LG화학", material: "SBR", lot: "-", status: "거래중" },
+    { code: "SUP006", company: "SOLVAY", material: "PVDF", lot: "-", status: "거래중" },
+    { code: "SUP007", company: "금호석유화학", material: "SBS", lot: "-", status: "거래중" },
   ];
 
   const keyword = searchText.trim().toLowerCase();
@@ -29,11 +29,24 @@ function PartnersTab() {
     )
   );
 
-  const filteredSuppliers = suppliers.filter((item) =>
-    [item.code, item.company, item.material, item.grade, item.lot, item.status].some((value) =>
-      String(value || "").toLowerCase().includes(keyword)
+  const filteredSuppliers = suppliers
+    .filter((item) =>
+      [item.code, item.company, item.material, item.lot, item.status].some((value) =>
+        String(value || "").toLowerCase().includes(keyword)
+      )
     )
-  );
+    .sort((a, b) => {
+      const aIsKorean = /^[가-힣]/.test(a.company);
+      const bIsKorean = /^[가-힣]/.test(b.company);
+
+      if (aIsKorean && !bIsKorean) return -1;
+      if (!aIsKorean && bIsKorean) return 1;
+
+      return a.company.localeCompare(b.company, aIsKorean ? "ko-KR" : "en", {
+        sensitivity: "base",
+        numeric: true,
+      });
+    });
 
   return (
     <div className="space-y-5">
@@ -84,7 +97,7 @@ function PartnersTab() {
           placeholder={
             activeType === "customer"
               ? "고객사명 또는 코드 검색"
-              : "공급업체, 원료명, Grade 검색"
+              : "공급업체, 원료명 검색"
           }
           className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-500 md:max-w-md"
         />
@@ -138,14 +151,13 @@ function PartnersTab() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px] text-sm">
+              <table className="w-full min-w-[900px] text-sm">
                 <thead className="bg-slate-800 text-slate-300">
                   <tr>
                     <th className="w-20 px-4 py-3 text-center">No</th>
                     <th className="px-4 py-3 text-left">공급업체 코드</th>
                     <th className="px-4 py-3 text-left">공급업체명</th>
                     <th className="px-4 py-3 text-left">원료명</th>
-                    <th className="px-4 py-3 text-left">규격(Grade)</th>
                     <th className="px-4 py-3 text-left">최근 LOT No.</th>
                     <th className="px-4 py-3 text-center">상태</th>
                   </tr>
@@ -157,7 +169,6 @@ function PartnersTab() {
                       <td className="px-4 py-3 font-mono text-sky-300">{item.code}</td>
                       <td className="px-4 py-3 font-semibold text-white">{item.company}</td>
                       <td className="px-4 py-3 text-white">{item.material}</td>
-                      <td className="px-4 py-3 text-slate-300">{item.grade}</td>
                       <td className="px-4 py-3 font-mono font-semibold text-cyan-300">{item.lot}</td>
                       <td className="px-4 py-3 text-center">
                         <span className="inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300">
@@ -168,7 +179,7 @@ function PartnersTab() {
                   ))}
                   {filteredSuppliers.length === 0 && (
                     <tr>
-                      <td colSpan="7" className="px-4 py-10 text-center text-slate-500">
+                      <td colSpan="6" className="px-4 py-10 text-center text-slate-500">
                         검색 결과가 없습니다.
                       </td>
                     </tr>
