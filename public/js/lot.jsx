@@ -28,8 +28,18 @@ function TraceTab() {
     );
   }
 
+  const lotMaterials = lot.materials || [];
+  const ownIntermediate = DB.intermediateLots?.[selected] || null;
+  const sourceIntermediate = lot.binderLot ? DB.intermediateLots?.[lot.binderLot] || null : null;
+  const lineageMid = ownIntermediate || sourceIntermediate;
+  const lineageLot = ownIntermediate ? selected : lot.binderLot;
+  const trackedContainerIds = Array.from(new Set([
+    ...(lot.containers || []),
+    ...(ownIntermediate?.containers || []),
+  ].filter(Boolean)));
+
   const filtered = lotIds.filter(
-    (id) => id.toLowerCase().includes(query.toLowerCase()) || DB.lots[id].itemName.includes(query)
+    (id) => id.toLowerCase().includes(query.toLowerCase()) || String(DB.lots[id].itemName || "").includes(query)
   );
 
   const stageDone = (s) => {
@@ -90,15 +100,15 @@ function TraceTab() {
           </div>
         )}
 
-        {lot.binderLot && (() => {
-          const mid = DB.intermediateLots?.[lot.binderLot];
+        {lineageMid && (() => {
+          const mid = lineageMid;
           return (
             <div className="bg-slate-800/60 border border-violet-500/30 rounded-lg px-3 py-3 mb-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Beaker size={14} className="text-violet-400 shrink-0" />
-                <span className="text-xs text-slate-300">중간 배치 LOT</span>
-                <span className="font-mono text-sm font-semibold text-violet-300">{lot.binderLot}</span>
-                <Badge tone={mid?.status === "PQC 합격" || mid?.status === "공정완료" ? "green" : "amber"}>{mid?.status || "계보 확인 필요"}</Badge>
+                <span className="text-xs text-slate-300">{ownIntermediate ? "현재 중간재 LOT" : "투입 중간재 LOT"}</span>
+                <span className="font-mono text-sm font-semibold text-violet-300">{lineageLot}</span>
+                <Badge tone={["PQC 합격", "공정완료", "사용가능"].includes(mid?.status) ? "green" : "amber"}>{mid?.status || "계보 확인 필요"}</Badge>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3 text-xs">
                 <div className="rounded border border-slate-700 px-3 py-2">
@@ -107,16 +117,41 @@ function TraceTab() {
                 </div>
                 <div className="rounded border border-slate-700 px-3 py-2">
                   <div className="text-slate-500 mb-1">중간 배치 유형</div>
-                  <div className="text-slate-200">{mid?.type || "바인더 중간배치"}</div>
+                  <div className="text-slate-200">{mid?.type || lot.itemName || "중간재"}</div>
                 </div>
                 <div className="rounded border border-slate-700 px-3 py-2">
-                  <div className="text-slate-500 mb-1">하위 완제품 LOT</div>
-                  <div className="font-mono text-sky-300 break-words">{mid?.childLots?.length ? mid.childLots.join(" · ") : selected}</div>
+                  <div className="text-slate-500 mb-1">하위 사용 LOT</div>
+                  <div className="font-mono text-sky-300 break-words">{mid?.childLots?.length ? mid.childLots.join(" · ") : "아직 미투입"}</div>
                 </div>
               </div>
             </div>
           );
         })()}
+
+        {trackedContainerIds.length > 0 && (
+          <div className="bg-slate-800/60 border border-amber-500/25 rounded-lg px-3 py-3 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Boxes size={14} className="text-amber-400" />
+              <span className="text-xs font-medium text-slate-200">중간재 포장·잔량 추적</span>
+              <span className="text-[11px] text-slate-500">LOT {selected}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-xs">
+                <thead><tr className="text-slate-500 border-b border-slate-700"><th className="py-2 pr-3 text-left">용기번호</th><th className="py-2 pr-3 text-right">초기 포장량</th><th className="py-2 pr-3 text-right">현재 잔량</th><th className="py-2 pr-3 text-left">보관위치</th><th className="py-2 text-left">상태</th></tr></thead>
+                <tbody>{trackedContainerIds.map((containerNo) => {
+                  const container = DB.intermediateContainers?.[containerNo] || {};
+                  return <tr key={containerNo} className="border-b border-slate-800/70">
+                    <td className="py-2 pr-3 font-mono text-violet-300">{containerNo}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{Number(container.initialQty ?? container.packWeight ?? 0).toFixed(3)} kg</td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-amber-300">{Number(container.remainingQty || 0).toFixed(3)} kg</td>
+                    <td className="py-2 pr-3 text-slate-300">{container.storageLocation || "-"}</td>
+                    <td className="py-2"><Badge tone={container.status === "소진" ? "gray" : container.status === "잔량" ? "amber" : "green"}>{container.status || "등록"}</Badge></td>
+                  </tr>;
+                })}</tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           {["수입", "생산", "출하"].map((s, i) => {
@@ -165,31 +200,37 @@ function TraceTab() {
 
       <Panel
         title="투입 원재료 역추적 (Backward Trace)"
-        right={<span className="flex items-center gap-1 text-xs text-slate-400"><GitBranch size={13} /> 원료 Lot {lot.materials.length}건</span>}
+        right={<span className="flex items-center gap-1 text-xs text-slate-400"><GitBranch size={13} /> 원료 Lot {lotMaterials.length}건</span>}
       >
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className="w-full text-sm min-w-[720px]">
+          <table className="w-full text-sm min-w-[1100px]">
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="text-left py-2 pr-3 font-medium">원료 Lot</th>
-                <th className="text-left py-2 pr-3 font-medium">자재코드</th>
                 <th className="text-left py-2 pr-3 font-medium">품명</th>
+                <th className="text-left py-2 pr-3 font-medium">구분</th>
+                <th className="text-left py-2 pr-3 font-medium">용기번호</th>
+                <th className="text-left py-2 pr-3 font-medium">투입상태</th>
                 <th className="text-left py-2 pr-3 font-medium whitespace-nowrap">공급사</th>
                 <th className="text-right py-2 pr-3 font-medium">투입량</th>
+                <th className="text-right py-2 pr-3 font-medium">사용 후 잔량</th>
                 <th className="text-left py-2 pr-3 font-medium">입고일시</th>
                 <th className="text-left py-2 font-medium">수입검사</th>
               </tr>
             </thead>
             <tbody>
-              {lot.materials.map((mat) => (
-                <tr key={mat.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
+              {lotMaterials.map((mat, index) => (
+                <tr key={`${mat.lot}-${mat.containerNo || index}`} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 pr-3 font-mono text-xs text-violet-300">{mat.lot}</td>
-                  <td className="py-2.5 pr-3 font-mono text-xs text-slate-400">{mat.code}</td>
                   <td className="py-2.5 pr-3 text-slate-100">{mat.name}</td>
+                  <td className="py-2.5 pr-3 text-slate-400">{mat.materialType || (String(mat.name || "").includes("중간배치") ? "중간재" : "일반원료")}</td>
+                  <td className="py-2.5 pr-3 font-mono text-xs text-slate-300">{mat.containerNo || "BULK"}</td>
+                  <td className={`py-2.5 pr-3 ${mat.inputStatus === "잔량" ? "text-amber-300" : "text-slate-300"}`}>{mat.inputStatus || "신규"}</td>
                   <td className="py-2.5 pr-3 text-slate-300">{mat.supplier}</td>
                   <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{mat.qty}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-amber-300">{mat.remainingQty == null ? "-" : `${Number(mat.remainingQty).toFixed(3)} kg`}</td>
                   <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{mat.recv}</td>
-                  <td className="py-2.5"><Badge tone={mat.iqc.includes("합격") ? "green" : "amber"}>{mat.iqc}</Badge></td>
+                  <td className="py-2.5"><Badge tone={String(mat.iqc || "").includes("합격") ? "green" : "amber"}>{mat.iqc || "미검사"}</Badge></td>
                 </tr>
               ))}
             </tbody>
@@ -240,4 +281,3 @@ function TraceTab() {
 }
 
 /* ──────────────────────────── SPC / 공정능력 (Cpk) 탭 ──────────────────────────── */
-
