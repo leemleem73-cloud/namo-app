@@ -166,7 +166,7 @@ function WoDocTab() {
       const binderLot = String(binderInput?.lot || L.binderLot || "").trim();
       L.binderLot = binderLot;
       DB.intermediateLots[binderLot] = {
-        lot:binderLot, type:"바인더 중간배치",
+        lot:binderLot, type:binderInput?.name || "바인더 중간배치",
         parentLots:L.materials.filter((m) => !String(m.name || "").includes("중간배치")).map((m) => m.lot),
         childLots:[sel], qty:num(binderInput?.act) || 0,
         status:done ? "공정완료" : "생산중", workOrder:sel,
@@ -399,7 +399,7 @@ const BOM = {
       { seq: 4, name: "SBS", base: 0, unit: "kg", note: "" },
       { seq: 5, name: "PVdF", base: 0, unit: "kg", note: "" },
       { seq: 6, name: "SBR", base: 106.24, unit: "kg", note: "" },
-      { seq: 7, name: "중간배치(바인더)", base: 0, unit: "kg", note: "" },
+      { seq: 7, name: "중간배치 선택", base: 0, unit: "kg", note: "" },
     ],
   },
   "중간배치(바인더)": {
@@ -416,7 +416,22 @@ const BOM = {
   },
 };
 
-const MATERIAL_OPTIONS = ["NMP", "BYK180 (분산제)", "AOH30 (Boehmite)", "SBS", "PVdF", "SBR", "중간배치(바인더)"];
+const INTERMEDIATE_MATERIAL_OPTIONS = [
+  "중간배치(SBR 바인더)",
+  "중간배치(PVDF 바인더)",
+  "중간배치(SBS 바인더)",
+];
+
+const MATERIAL_OPTIONS = [
+  "NMP",
+  "BYK180 (분산제)",
+  "AOH30 (Boehmite)",
+  "SBS",
+  "PVdF",
+  "SBR",
+  "중간배치 선택",
+  ...INTERMEDIATE_MATERIAL_OPTIONS,
+];
 
 function getAutoWoStatus(lotNo) {
   const doc = DB.woDocs[lotNo] || {};
@@ -556,8 +571,12 @@ function IssueWoTab() {
   if (qtyNum > bom.baseQty) woErrors.push(`배치 용량 초과 — HSM 최대 배치 ${bom.baseQty}kg`);
   if (!form.worker.trim()) woErrors.push("작업자 미지정 — 지정 전 발행 금지");
   const intermediateInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
-  if (!isIntermediateWorkOrder && !String(intermediateInput?.materialLot || "").trim()) {
-    woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
+  if (!isIntermediateWorkOrder) {
+    if (!INTERMEDIATE_MATERIAL_OPTIONS.includes(intermediateInput?.name)) {
+      woErrors.push("원재료 투입계획의 중간배치 원료명을 선택하세요");
+    } else if (!String(intermediateInput?.materialLot || "").trim()) {
+      woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
+    }
   }
   if (!dateOk) woErrors.push("생산일자를 선택하세요");
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
@@ -621,7 +640,7 @@ function IssueWoTab() {
         ship: null,
       };
       DB.intermediateLots[binderLot] = {
-        lot:binderLot, type:"바인더 중간배치",
+        lot:binderLot, type:binderInput?.name || "바인더 중간배치",
         parentLots:planItems.filter((it) => !String(it.name || "").includes("중간배치")).map((it) => String(it.materialLot || "").trim()).filter(Boolean),
         childLots:[woNo], qty:0, status:"생산대기", workOrder:woNo,
         updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
@@ -793,7 +812,12 @@ function IssueWoTab() {
                     <td className="py-1.5 pr-3 text-slate-500 tabular-nums">{idx + 1}</td>
                     <td className="py-1.5 pr-3">
                       <select value={it.name} onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, name: e.target.value } : row))} className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-                         {availableMaterialOptions.map((name) => <option key={name}>{name}</option>)}
+                        {it.name === "중간배치(바인더)" && (
+                          <option value="중간배치(바인더)" disabled>중간배치 원료명 선택 필요</option>
+                        )}
+                        {availableMaterialOptions.map((name) => (
+                          <option key={name} disabled={name === "중간배치 선택"}>{name}</option>
+                        ))}
                       </select>
                     </td>
                     <td className="py-1.5 px-2">
