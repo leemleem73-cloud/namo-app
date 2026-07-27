@@ -476,7 +476,7 @@ function IssueWoTab() {
   const [form, setForm] = useState({
     product: products[0], tank: BOM[products[0]].tanks[0], qty: "230",
     prodDate: "2026-07-12", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
-    shiftType: "일반", worker: "",
+    shiftType: "일반", worker: "", intermediateLot: "",
   });
   const [issued, setIssued] = useState(DB.batches);
   const [editingWo, setEditingWo] = useState(null);
@@ -504,7 +504,8 @@ function IssueWoTab() {
   };
   const [issuePage, setIssuePage] = useState(1);
   const issuePageSize = 10;
-  const [planItems, setPlanItems] = useState(BOM[products[0]].items.map((it) => ({ ...it, materialLot: "", actual: "" })));
+  const blankPlanItems = (product) => BOM[product].items.map((it) => ({ ...it, materialLot: "", base: "", actual: "", note: "" }));
+  const [planItems, setPlanItems] = useState(blankPlanItems(products[0]));
 
   const bom = BOM[form.product];
   const qtyNum = parseFloat(form.qty) || 0;
@@ -525,6 +526,7 @@ function IssueWoTab() {
   if (!(qtyNum > 0)) woErrors.push("생산계획량 미입력 또는 0 이하");
   if (qtyNum > bom.baseQty) woErrors.push(`배치 용량 초과 — HSM 최대 배치 ${bom.baseQty}kg`);
   if (!form.worker.trim()) woErrors.push("작업자 미지정 — 지정 전 발행 금지");
+  if (!String(form.intermediateLot || "").trim()) woErrors.push("중간 배치 LOT를 입력하세요");
   if (!dateOk) woErrors.push("생산일자를 선택하세요");
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
   if (!requestedLotNo || requestedLotNo === "—") woErrors.push("LOT No.를 확인하세요");
@@ -544,9 +546,9 @@ function IssueWoTab() {
     DB.woDocs[woNo] = {
       item: form.product, procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
-      workers: form.worker.trim(), status: "발행",
+      workers: form.worker.trim(), intermediateLot:form.intermediateLot.trim(), status: "발행",
       inputs: planItems.map((it, index) => {
-        const planned = Number((it.base * ratio).toFixed(3));
+        const planned = String(it.base ?? "").trim() === "" ? null : Number((Number(it.base) * ratio).toFixed(3));
         const actual = it.actual === "" || it.actual == null ? null : Number(it.actual);
         const inputRatio = planned > 0 && actual != null
           ? Number(((actual / planned) * 100).toFixed(2))
@@ -555,10 +557,10 @@ function IssueWoTab() {
           seq: index + 1, name: it.name,
           lot: it.materialLot || "", materialLot: it.materialLot || "",
           unit: it.unit, note: it.note,
-          base: Number(it.base), std: planned, plan: planned,
+          base: String(it.base ?? "").trim() === "" ? "" : Number(it.base), std: planned, plan: planned,
           act: actual,
           ratio: inputRatio,
-          error: planned > 0 && actual != null
+          error: planned != null && planned > 0 && actual != null
             ? Number((((actual - planned) / planned) * 100).toFixed(2))
             : null,
           ok: null, by: "",
@@ -575,7 +577,7 @@ function IssueWoTab() {
       ],
     };
 
-    const binderLot = `${woNo}-B01`;
+    const binderLot = form.intermediateLot.trim().toUpperCase();
     DB.lots[woNo] = {
       item: "NBA20-HM01", itemName: form.product,
       qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
@@ -596,7 +598,7 @@ function IssueWoTab() {
     setShowIssueForm(false);
   };
 
-  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setShowIssueForm(true); setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
+  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setShowIssueForm(true); setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"", intermediateLot:d.intermediateLot || DB.lots?.[r.no]?.binderLot || "" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
   const deleteWo = (r) => { const reason=askDeleteReason(`작업지시 ${r.no}`); if(reason===null)return; DB.batches=DB.batches.filter(x=>x.no!==r.no); delete DB.woDocs[r.no]; delete DB.lots[r.no]; DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no); DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no); DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no); auditLog("작업지시","삭제",r.no,reason); dbSave(); setIssued([...DB.batches]); };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
@@ -630,7 +632,7 @@ function IssueWoTab() {
         <div className="qmes-wo-form-grid">
           <div className="qmes-wo-form-field">
             {label("공정 / 품목 (Grd.)")}
-            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: String(BOM[next].baseQty) }); setPlanItems(BOM[next].items.map((it) => ({ ...it, materialLot: "", actual: "" }))); }} className={inputCls}>
+            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: String(BOM[next].baseQty) }); setPlanItems(blankPlanItems(next)); }} className={inputCls}>
               {products.map((pd) => <option key={pd}>{pd}</option>)}
             </select>
           </div>
@@ -657,6 +659,15 @@ function IssueWoTab() {
               placeholder="LOT No."
               readOnly={!!editingWo}
               className={`${inputCls} font-mono ${editingWo ? "bg-slate-800/60 text-slate-400 cursor-not-allowed" : ""}`}
+            />
+          </div>
+          <div className="qmes-wo-form-field">
+            {label("중간 배치 LOT")}
+            <input
+              value={form.intermediateLot || ""}
+              onChange={(e) => setForm({ ...form, intermediateLot: e.target.value.toUpperCase().replace(/\s/g, "") })}
+              placeholder="예: CBG1201-B01"
+              className={`${inputCls} font-mono`}
             />
           </div>
           <div className="qmes-wo-form-field">
@@ -758,7 +769,7 @@ function IssueWoTab() {
                     <td className="py-1.5 px-2">
                       <div className="qmes-qty-wrap">
                         <div className="qmes-qty-input qmes-qty-readonly bg-slate-800/60 border border-slate-700 rounded px-2 py-1.5 text-right text-sm text-sky-300 font-medium tabular-nums">
-                          {(Number(it.base || 0) * ratio).toFixed(Number(it.base || 0) < 1 ? 3 : 2)}
+                          {String(it.base ?? "").trim() === "" ? "" : (Number(it.base) * ratio).toFixed(Number(it.base) < 1 ? 3 : 2)}
                         </div>
                         <span className="qmes-qty-unit text-xs text-slate-400">{it.unit}</span>
                       </div>
@@ -847,7 +858,7 @@ function IssueWoTab() {
                     })()}
                   </td>
                   <td className="py-1.5 text-right">
-                    <button onClick={() => setPlanItems([...planItems, { seq: planItems.length + 1, name: MATERIAL_OPTIONS[0], materialLot: "", base: 0, actual: "", unit: "kg", note: "" }])} className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/20"><Plus size={13} /> 행 추가</button>
+                    <button onClick={() => setPlanItems([...planItems, { seq: planItems.length + 1, name: MATERIAL_OPTIONS[0], materialLot: "", base: "", actual: "", unit: "kg", note: "" }])} className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/20"><Plus size={13} /> 행 추가</button>
                   </td>
                 </tr>
               </tbody>
