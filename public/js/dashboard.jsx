@@ -125,7 +125,7 @@ function DashboardTab() {
     <div className="flex flex-col gap-4">
       <ProcessStrip />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <div className="qmes-dashboard-kpi-grid">
         <Kpi textOnly label="금일 생산량" value={todayKg.toLocaleString()} unit={`kg · ${todayBatches.length} LOT`} tone="text-sky-400" caption="오늘 등록된 생산 실적" />
         <Kpi textOnly label="당월 누적 생산량" value={monthKg.toLocaleString()} unit={`kg · ${monthBatches.length} LOT`} tone="text-cyan-400" caption="이번 달 작업지시 생산 실적" />
         <Kpi textOnly showProgress progressValue={achievementRate === "—" ? 0 : Number(achievementRate)} label="목표 달성률" value={achievementRate} unit="%" tone="text-emerald-400" caption={monthPlanKg > 0 ? `당월 계획 ${monthPlanKg.toLocaleString()} kg 대비` : "당월 생산계획 등록 필요"} />
