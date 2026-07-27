@@ -105,7 +105,14 @@ function WoDocTab() {
       const intendedAct = String(vals[i] ?? row.act ?? "").trim();
       if (!intendedAct || Number(intendedAct) <= 0) return;
       const materialLot = String(lotVals[i] ?? row.lot ?? "").trim();
-      const gate = qmesMaterialGate(materialLot);
+      const isIntermediate = String(row.name || "").includes("중간배치");
+      const gate = isIntermediate
+        ? (materialLot
+            ? (qmesActiveHold(materialLot)
+                ? { ok:false, reason:"격리·홀드된 중간 배치 LOT" }
+                : { ok:true, reason:"중간 배치 LOT 확인" })
+            : { ok:false, reason:"중간 배치 LOT 미입력" })
+        : qmesMaterialGate(materialLot);
       if (!gate.ok) e2.push(`${row.name}: ${materialLot || "LOT 미입력"} — ${gate.reason}`);
     });
     if (e2.length) {
@@ -145,18 +152,23 @@ function WoDocTab() {
       L.materials = newInputs
         .filter((row) => String(row.lot || "").trim())
         .map((row) => {
-          const iqc = qmesLatestIqc(row.lot);
+          const isIntermediate = String(row.name || "").includes("중간배치");
+          const iqc = isIntermediate ? null : qmesLatestIqc(row.lot);
           return {
             lot:String(row.lot).trim(), code:row.code || "-", name:row.name,
-            supplier:iqc?.supplier || "-", qty:`${Number(row.act ?? row.std ?? 0).toLocaleString()} ${row.unit || "kg"}`,
-            recv:iqc?.recv || "-", iqc:iqc?.judge || "미검사"
+            supplier:isIntermediate ? "사내 중간배치" : (iqc?.supplier || "-"),
+            qty:`${Number(row.act ?? row.std ?? 0).toLocaleString()} ${row.unit || "kg"}`,
+            recv:isIntermediate ? (w.date || "-") : (iqc?.recv || "-"),
+            iqc:isIntermediate ? "중간배치 추적" : (iqc?.judge || "미검사")
           };
         });
-      const binderLot = L.binderLot || `${sel}-B01`;
+      const binderInput = newInputs.find((row) => String(row.name || "").includes("중간배치"));
+      const binderLot = String(binderInput?.lot || L.binderLot || "").trim();
       L.binderLot = binderLot;
       DB.intermediateLots[binderLot] = {
-        lot:binderLot, type:"바인더 중간배치", parentLots:L.materials.map((m) => m.lot),
-        childLots:[sel], qty:newInputs.reduce((sum, row) => sum + (num(row.act) || 0), 0),
+        lot:binderLot, type:"바인더 중간배치",
+        parentLots:L.materials.filter((m) => !String(m.name || "").includes("중간배치")).map((m) => m.lot),
+        childLots:[sel], qty:num(binderInput?.act) || 0,
         status:done ? "공정완료" : "생산중", workOrder:sel,
         updatedAt:new Date().toISOString(), by:user
       };
