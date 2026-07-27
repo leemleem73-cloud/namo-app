@@ -344,7 +344,7 @@ try {
 function dbDefault() {
   return {
     batches: [], woDocs: {}, iqc: [], iqcMaterials: [], insp: { PQC: [], OQC: [] },
-    holds: [], gateEvents: [], intermediateLots: {},
+    holds: [], gateEvents: [], intermediateLots: {}, intermediateContainers: {}, materialRemainders: {},
     eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {},
     popEntries: [], auditLogs: [], seqs: {}
   };
@@ -625,4 +625,3 @@ const chartTooltip = {
 };
 
 /* ──────────────────────────── 공정 상태 스트립 ──────────────────────────── */
-
