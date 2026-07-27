@@ -69,11 +69,20 @@ function QMESChemical({ user, onLogout }) {
       {/* 상단 헤더 + 전체 가로 메뉴 */}
       <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
-          <div className="flex items-center shrink-0">
+          <button
+            type="button"
+            className="flex items-center shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+            aria-label="대시보드 메인으로 이동"
+            title="대시보드 메인"
+            onClick={() => {
+              setTab("dash");
+              setOpenMenu(null);
+            }}
+          >
             <img
               src="https://namochemical.com/img/svg/img_logo.svg"
               alt="NAMO Chemical"
-              className="h-6 md:h-[30px] w-auto max-w-[240px] md:max-w-[302px] object-contain"
+              className="h-[22px] md:h-[26px] w-auto max-w-[220px] md:max-w-[262px] object-contain"
               style={{ filter: "brightness(0) invert(1)" }}
               onError={(e) => {
                 e.currentTarget.onerror = null;
@@ -81,13 +90,7 @@ function QMESChemical({ user, onLogout }) {
                 e.currentTarget.src = "/assets/namo-header-logo.svg?v=20260727-3";
               }}
             />
-          </div>
-
-          <div className="hidden md:flex items-center gap-2 text-[13px] text-slate-400 border-l border-slate-700/80 pl-4 ml-1">
-            <span className="font-medium">슬러리 공장</span>
-            <ChevronRight size={14} className="text-slate-500" />
-            <span className="text-slate-100 font-semibold">개발/Pilot 라인</span>
-          </div>
+          </button>
 
           <div className="flex-1" />
 
