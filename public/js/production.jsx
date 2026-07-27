@@ -105,7 +105,16 @@ function WoDocTab() {
       const intendedAct = String(vals[i] ?? row.act ?? "").trim();
       if (!intendedAct || Number(intendedAct) <= 0) return;
       const materialLot = String(lotVals[i] ?? row.lot ?? "").trim();
-      const isIntermediate = String(row.name || "").includes("중간배치");
+      const isIntermediate = qmesMaterialType(row.name) === "중간재";
+      const selectedContainer = row.containerNo ? DB.intermediateContainers?.[row.containerNo] : null;
+      if (isIntermediate && !String(row.containerNo || "").trim()) {
+        e2.push(`${row.name}: 중간재 포장 용기번호 미선택`);
+        return;
+      }
+      if (selectedContainer && materialLot && selectedContainer.lot !== materialLot) {
+        e2.push(`${row.name}: LOT ${materialLot}과 용기 ${row.containerNo}의 등록 LOT(${selectedContainer.lot})가 다릅니다`);
+        return;
+      }
       const gate = isIntermediate
         ? (materialLot
             ? (qmesActiveHold(materialLot)
@@ -130,7 +139,14 @@ function WoDocTab() {
       const act = parseFloat(v);
       const std = num(r.std) || 0;
       const tol = Math.max(0.1, std * 0.01); // 계량 공차: ±0.1kg 또는 기준량의 1% 중 큰 값
-      return { ...r, lot: lotv, act, ok: Math.abs(act - std) <= tol, by: user };
+      const availableQty = Number(r.availableQty ?? qmesMaterialContainer(r)?.remainingQty ?? std);
+      const remaining = Number(Math.max(0, availableQty - act).toFixed(3));
+      return {
+        ...r, lot:lotv, materialLot:lotv, act, availableQty, remaining,
+        error:std > 0 ? Number((((act - std) / std) * 100).toFixed(2)) : null,
+        ratio:std > 0 ? Number(((act / std) * 100).toFixed(2)) : null,
+        ok:Math.abs(act - std) <= tol, by:user
+      };
     });
     if (e2.length) { setErrs(e2); return; }
     const newConds = w.conds.map((c, j) => {
@@ -140,6 +156,28 @@ function WoDocTab() {
     const done = newInputs.every((r) => r.act != null) && newConds.every((c) => c.act && c.act !== "—");
     const overTol = newInputs.some((r) => r.ok === false);
     DB.woDocs[sel] = { ...w, inputs: newInputs, conds: newConds, status: done ? "완료" : "실적 기록중" };
+
+    /* 모든 원료의 잔량을 LOT·용기 단위로 보존하고 중간재 용기 재고를 즉시 동기화 */
+    newInputs.filter((row) => row.act != null && String(row.lot || "").trim()).forEach((row) => {
+      const containerNo = String(row.containerNo || "").trim().toUpperCase();
+      const remainderKey = `${String(row.lot).trim().toUpperCase()}|${containerNo || "BULK"}`;
+      DB.materialRemainders[remainderKey] = {
+        key:remainderKey, name:row.name, materialType:row.materialType || qmesMaterialType(row.name),
+        lot:String(row.lot).trim().toUpperCase(), containerNo,
+        inputStatus:row.inputStatus || "신규", availableQty:Number(row.availableQty || 0),
+        usedQty:Number(row.act || 0), remainingQty:Number(row.remaining || 0),
+        status:Number(row.remaining || 0) > 0 ? "잔량" : "소진",
+        workOrder:sel, updatedAt:new Date().toISOString(), by:user
+      };
+      if (containerNo && DB.intermediateContainers?.[containerNo]) {
+        DB.intermediateContainers[containerNo] = {
+          ...DB.intermediateContainers[containerNo],
+          remainingQty:Number(row.remaining || 0),
+          status:Number(row.remaining || 0) > 0 ? "잔량" : "소진",
+          lastWorkOrder:sel, updatedAt:new Date().toISOString()
+        };
+      }
+    });
 
     const b = DB.batches.find((x) => x.no === sel);
     if (b) { if (done) { b.status = "완료"; b.done = b.plan; } else if (b.status === "발행") b.status = "진행중"; }
@@ -152,28 +190,55 @@ function WoDocTab() {
       L.materials = newInputs
         .filter((row) => String(row.lot || "").trim())
         .map((row) => {
-          const isIntermediate = String(row.name || "").includes("중간배치");
+          const isIntermediate = qmesMaterialType(row.name) === "중간재";
           const iqc = isIntermediate ? null : qmesLatestIqc(row.lot);
           return {
             lot:String(row.lot).trim(), code:row.code || "-", name:row.name,
+            materialType:row.materialType || qmesMaterialType(row.name),
+            containerNo:row.containerNo || "", inputStatus:row.inputStatus || "신규",
+            remainingQty:Number(row.remaining || 0),
             supplier:isIntermediate ? "사내 중간배치" : (iqc?.supplier || "-"),
             qty:`${Number(row.act ?? row.std ?? 0).toLocaleString()} ${row.unit || "kg"}`,
             recv:isIntermediate ? (w.date || "-") : (iqc?.recv || "-"),
             iqc:isIntermediate ? "중간배치 추적" : (iqc?.judge || "미검사")
           };
         });
-      const binderInput = newInputs.find((row) => String(row.name || "").includes("중간배치"));
+      const intermediateInputs = newInputs.filter((row) => qmesMaterialType(row.name) === "중간재" && String(row.lot || "").trim());
+      const binderInput = intermediateInputs[0];
       const binderLot = String(binderInput?.lot || L.binderLot || "").trim();
       L.binderLot = binderLot;
-      DB.intermediateLots[binderLot] = {
-        lot:binderLot, type:binderInput?.name || "바인더 중간배치",
-        parentLots:L.materials.filter((m) => !String(m.name || "").includes("중간배치")).map((m) => m.lot),
-        childLots:[sel], qty:num(binderInput?.act) || 0,
-        status:done ? "공정완료" : "생산중", workOrder:sel,
-        updatedAt:new Date().toISOString(), by:user
-      };
+      intermediateInputs.forEach((row) => {
+        const sourceLot = String(row.lot).trim();
+        const previous = DB.intermediateLots[sourceLot] || {};
+        DB.intermediateLots[sourceLot] = {
+          ...previous, lot:sourceLot, type:row.name,
+          childLots:Array.from(new Set([...(previous.childLots || []), sel])),
+          status:previous.status === "생산대기" ? "사용가능" : (previous.status || "사용가능"),
+          updatedAt:new Date().toISOString(), by:user
+        };
+      });
+
+      if (w.workType === "바인더 솔루션(중간재)" || w.workType === "세라믹 중간배치") {
+        const output = DB.intermediateLots[sel] || {};
+        const outputContainers = (w.packaging || []).map((row) => row.containerNo).filter(Boolean);
+        DB.intermediateLots[sel] = {
+          ...output, lot:sel, type:w.item, workType:w.workType,
+          parentLots:L.materials.map((material) => material.lot),
+          childLots:output.childLots || [], containers:outputContainers,
+          qty:Number(w.plan || 0), status:done ? "사용가능" : "생산중",
+          workOrder:sel, updatedAt:new Date().toISOString(), by:user
+        };
+        outputContainers.forEach((containerNo) => {
+          if (!DB.intermediateContainers?.[containerNo]) return;
+          DB.intermediateContainers[containerNo] = {
+            ...DB.intermediateContainers[containerNo],
+            status:done ? "사용가능" : "포장진행",
+            updatedAt:new Date().toISOString()
+          };
+        });
+      }
       if (done && !L.steps.some((st) => st.name === "생산 실적 기록 완료")) {
-        L.steps = [...L.steps, { stage: "생산", name: "생산 실적 기록 완료", time, detail: `실투입 합계 ${newInputs.reduce((a, r) => a + (num(r.act) || 0), 0).toFixed(2)}kg / 기준 ${totalStd.toFixed(2)}kg · 공정조건 전 항목 기록${overTol ? " · 계량 공차 이탈 항목 있음" : ""}`, result: overTol ? "완료 (공차 이탈 확인 필요)" : "완료", by: user }];
+        L.steps = [...L.steps, { stage: "생산", name: "생산 실적 기록 완료", time, detail: `실투입 합계 ${newInputs.reduce((a, r) => a + (num(r.act) || 0), 0).toFixed(2)}kg / 계획 ${totalStd.toFixed(2)}kg · 공정조건 전 항목 기록${overTol ? " · 계량 공차 이탈 항목 있음" : ""}`, result: overTol ? "완료 (공차 이탈 확인 필요)" : "완료", by: user }];
         L.stage = "생산";
         if (!L.status.includes("홀드")) L.status = "생산완료 — 검사 대기";
       } else if (!done) {
@@ -320,8 +385,9 @@ function WoDocTab() {
         <div className="qmes-iqc2-sec">
           <div className="qmes-iqc2-sec-title">생산정보</div>
           <table className="qmes-iqc2-table">
-            <thead><tr><th>공정명</th><th>생산계획량</th><th>작업시간</th><th>생산시간</th><th>근무유형</th></tr></thead>
+            <thead><tr><th>작업구분</th><th>공정명</th><th>생산계획량</th><th>작업시간</th><th>생산시간</th><th>근무유형</th></tr></thead>
             <tbody><tr>
+              <td>{w.workType || "완제품"}</td>
               <td>{w.procName || "절연슬러리 제조"}</td>
               <td>{typeof w.plan === "number" ? `${w.plan.toLocaleString()} kg` : (w.plan || "-")}</td>
               <td>{w.hours || "-"}</td>
@@ -335,33 +401,55 @@ function WoDocTab() {
           <div className="qmes-iqc2-sec-title">원재료 투입</div>
           <table className="qmes-iqc2-table qmes-wo-cert-material-table">
             <thead><tr>
-              <th>No</th><th>원재료명</th><th>원재료 LOT</th><th>투입량</th><th>실투입량</th><th>판정</th><th>확인자</th><th>비고</th>
+              <th>No</th><th>원재료명</th><th>LOT / 용기</th><th>상태</th><th>계획량</th><th>실투입량</th><th>사용 후 잔량</th><th>판정</th><th>비고</th>
             </tr></thead>
             <tbody>
               {w.inputs.map((r, i) => (
                 <tr key={i}>
                   <td>{r.seq ?? i + 1}</td>
-                  <td className="qmes-iqc2-item-cell">{r.name}</td>
+                  <td className="qmes-iqc2-item-cell">{r.name}<small className="block text-slate-500">{r.materialType || qmesMaterialType(r.name)}</small></td>
                   <td className="font-mono">
                     {edit ? <input value={lotVals[i] ?? ""} onChange={(e) => setLotVals({ ...lotVals, [i]: e.target.value })} placeholder="공급사 LOT" className={editCls} />
                       : ((r.materialLot || r.lot) && (r.materialLot || r.lot) !== "—" ? (r.materialLot || r.lot) : "-")}
+                    <small className="block">{r.containerNo || "BULK"}</small>
                   </td>
+                  <td>{r.inputStatus || "신규"}</td>
                   <td>{num(r.std) != null ? `${num(r.std)} ${r.unit || "kg"}` : (r.std || "-")}</td>
                   <td>{edit ? <input inputMode="decimal" value={vals[i] ?? ""} onChange={(e) => setVals({ ...vals, [i]: e.target.value })} placeholder="실측" className={editCls + " text-right"} /> : (r.act != null ? `${r.act} ${r.unit || "kg"}` : "-")}</td>
+                  <td>{r.remaining == null ? "-" : `${Number(r.remaining).toFixed(3)} ${r.unit || "kg"}`}</td>
                   <td>{okMark(r.ok)}</td>
-                  <td>{r.by || "-"}</td>
                   <td>{r.note || "-"}</td>
                 </tr>
               ))}
               <tr className="qmes-wo-cert-total-row">
-                <td></td><td className="font-semibold">합계</td><td></td>
+                <td></td><td className="font-semibold">합계</td><td></td><td></td>
                 <td className="font-semibold">{totalStd.toFixed(2)} kg</td>
                 <td className="font-semibold">{totalAct > 0 ? `${totalAct.toFixed(2)} kg` : "-"}</td>
-                <td colSpan={3}></td>
+                <td className="font-semibold">{w.inputs.some((r) => r.remaining != null) ? `${w.inputs.reduce((sum, r) => sum + Number(r.remaining || 0), 0).toFixed(3)} kg` : "-"}</td>
+                <td colSpan={2}></td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        {(w.packaging || []).length > 0 && (
+          <div className="qmes-iqc2-sec">
+            <div className="qmes-iqc2-sec-title">중간재 포장정보</div>
+            <table className="qmes-iqc2-table">
+              <thead><tr><th>No</th><th>중간재 LOT</th><th>용기번호</th><th>포장중량</th><th>포장일자</th><th>보관위치</th><th>현재 잔량</th><th>상태</th></tr></thead>
+              <tbody>
+                {w.packaging.map((row, index) => {
+                  const current = DB.intermediateContainers?.[row.containerNo] || row;
+                  return <tr key={`wo-pack-${row.containerNo || index}`}>
+                    <td>{index + 1}</td><td className="font-mono">{sel}</td><td className="font-mono">{row.containerNo}</td>
+                    <td>{Number(row.packWeight || 0).toFixed(3)} kg</td><td>{row.packDate || "-"}</td>
+                    <td>{row.storageLocation || "-"}</td><td>{Number(current.remainingQty || 0).toFixed(3)} kg</td><td>{current.status || row.status || "-"}</td>
+                  </tr>;
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <div className="qmes-iqc2-sec">
           <div className="qmes-iqc2-sec-title">특이사항</div>
@@ -403,7 +491,7 @@ const BOM = {
     ],
   },
   "중간배치(바인더)": {
-    prefix: "CBG", baseQty: 230, procName: "바인더 중간배치 제조", workType: "중간배치",
+    prefix: "CBG", baseQty: 230, procName: "바인더 솔루션 제조", workType: "바인더 솔루션(중간재)", legacy: true,
     tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
     items: [
       { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
@@ -414,13 +502,50 @@ const BOM = {
       { seq: 6, name: "SBR", base: 0, unit: "kg", note: "" },
     ],
   },
+  "중간배치(SBR 바인더)": {
+    prefix: "CBG", baseQty: 230, procName: "SBR 바인더 솔루션 제조", workType: "바인더 솔루션(중간재)",
+    tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
+    items: [
+      { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
+      { seq: 2, name: "SBR", base: 0, unit: "kg", note: "" },
+    ],
+  },
+  "중간배치(PVDF 바인더)": {
+    prefix: "CBG", baseQty: 230, procName: "PVDF 바인더 솔루션 제조", workType: "바인더 솔루션(중간재)",
+    tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
+    items: [
+      { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
+      { seq: 2, name: "PVdF", base: 0, unit: "kg", note: "" },
+    ],
+  },
+  "중간배치(SBS 바인더)": {
+    prefix: "CBG", baseQty: 230, procName: "SBS 바인더 솔루션 제조", workType: "바인더 솔루션(중간재)",
+    tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
+    items: [
+      { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
+      { seq: 2, name: "SBS", base: 0, unit: "kg", note: "" },
+    ],
+  },
+  "세라믹 중간배치": {
+    prefix: "CBG", baseQty: 230, procName: "세라믹 중간배치 제조", workType: "세라믹 중간배치",
+    tanks: ["HSM #1 (High Shear Mixer)", "HSM #2 (High Shear Mixer)"],
+    items: [
+      { seq: 1, name: "NMP", base: 0, unit: "kg", note: "" },
+      { seq: 2, name: "BYK180 (분산제)", base: 0, unit: "kg", note: "" },
+      { seq: 3, name: "AOH30 (Boehmite)", base: 0, unit: "kg", note: "" },
+      { seq: 4, name: "중간배치 선택", base: 0, unit: "kg", note: "" },
+    ],
+  },
 };
 
 const INTERMEDIATE_MATERIAL_OPTIONS = [
   "중간배치(SBR 바인더)",
   "중간배치(PVDF 바인더)",
   "중간배치(SBS 바인더)",
+  "세라믹 중간배치",
 ];
+
+const WORK_TYPE_OPTIONS = ["바인더 솔루션(중간재)", "세라믹 중간배치", "완제품"];
 
 const MATERIAL_OPTIONS = [
   "NMP",
@@ -432,6 +557,30 @@ const MATERIAL_OPTIONS = [
   "중간배치 선택",
   ...INTERMEDIATE_MATERIAL_OPTIONS,
 ];
+
+function qmesMaterialType(name) {
+  return INTERMEDIATE_MATERIAL_OPTIONS.includes(String(name || "")) || String(name || "").includes("중간배치")
+    ? "중간재"
+    : "일반원료";
+}
+
+function qmesMaterialContainer(row) {
+  const id = String(row?.containerNo || "").trim();
+  return id ? DB.intermediateContainers?.[id] || null : null;
+}
+
+function qmesInputAvailableQty(row) {
+  const container = qmesMaterialContainer(row);
+  const value = container?.remainingQty ?? row?.availableQty ?? row?.plan;
+  const qty = Number(value);
+  return Number.isFinite(qty) && qty >= 0 ? qty : 0;
+}
+
+function qmesInputRemainingQty(row, actualOverride) {
+  const actualValue = actualOverride ?? row?.actual ?? row?.act;
+  if (actualValue === "" || actualValue == null || Number.isNaN(Number(actualValue))) return null;
+  return Number(Math.max(0, qmesInputAvailableQty(row) - Number(actualValue)).toFixed(3));
+}
 
 function getAutoWoStatus(lotNo) {
   const doc = DB.woDocs[lotNo] || {};
@@ -512,9 +661,10 @@ function woStatusTone(status) {
 }
 
 function IssueWoTab() {
-  const products = Object.keys(BOM);
+  const products = Object.keys(BOM).filter((name) => !BOM[name].legacy);
+  const firstProduct = products.find((name) => BOM[name].workType === "완제품") || products[0];
   const [form, setForm] = useState({
-    product: products[0], tank: BOM[products[0]].tanks[0], qty: "",
+    workType: BOM[firstProduct].workType, product: firstProduct, tank: BOM[firstProduct].tanks[0], qty: "",
     prodDate: "", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
     shiftType: "일반", worker: "",
   });
@@ -544,14 +694,32 @@ function IssueWoTab() {
   };
   const [issuePage, setIssuePage] = useState(1);
   const issuePageSize = 10;
-  const blankPlanItems = (product) => BOM[product].items.map((it) => ({ ...it, materialLot: "", base: "", plan: "", actual: "", note: "" }));
-  const [planItems, setPlanItems] = useState(blankPlanItems(products[0]));
+  const blankPlanItems = (product) => BOM[product].items.map((it) => ({
+    ...it, materialLot: "", containerNo: "", inputStatus: "신규",
+    availableQty: "", base: "", plan: "", actual: "", remaining: null, note: ""
+  }));
+  const blankPackRow = () => ({
+    containerNo: "", packWeight: "", packDate: "", storageLocation: "", status: "포장계획"
+  });
+  const [planItems, setPlanItems] = useState(blankPlanItems(firstProduct));
+  const [packRows, setPackRows] = useState([blankPackRow()]);
 
   const bom = BOM[form.product];
-  const isIntermediateWorkOrder = bom.workType === "중간배치";
-  const availableMaterialOptions = isIntermediateWorkOrder
-    ? MATERIAL_OPTIONS.filter((name) => !String(name).includes("중간배치"))
-    : MATERIAL_OPTIONS;
+  const isBinderWorkOrder = bom.workType === "바인더 솔루션(중간재)";
+  const isCeramicWorkOrder = bom.workType === "세라믹 중간배치";
+  const isIntermediateWorkOrder = isBinderWorkOrder || isCeramicWorkOrder;
+  const availableProducts = products.filter((name) => BOM[name].workType === form.workType);
+  const productOptions = availableProducts.includes(form.product)
+    ? availableProducts
+    : [form.product, ...availableProducts];
+  const allowedIntermediateMaterials = isBinderWorkOrder
+    ? []
+    : isCeramicWorkOrder
+      ? INTERMEDIATE_MATERIAL_OPTIONS.filter((name) => name !== "세라믹 중간배치")
+      : INTERMEDIATE_MATERIAL_OPTIONS;
+  const availableMaterialOptions = MATERIAL_OPTIONS.filter((name) =>
+    !String(name).includes("중간배치") && name !== "세라믹 중간배치"
+  ).concat(allowedIntermediateMaterials.length ? ["중간배치 선택", ...allowedIntermediateMaterials] : []);
   const plannedTotal = planItems.reduce((sum, it) => sum + (Number(it.plan) || 0), 0);
   const qtyNum = Number(plannedTotal.toFixed(3));
 
@@ -570,13 +738,32 @@ function IssueWoTab() {
   if (!(qtyNum > 0)) woErrors.push("생산계획량 미입력 또는 0 이하");
   if (qtyNum > bom.baseQty) woErrors.push(`배치 용량 초과 — HSM 최대 배치 ${bom.baseQty}kg`);
   if (!form.worker.trim()) woErrors.push("작업자 미지정 — 지정 전 발행 금지");
-  const intermediateInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
-  if (!isIntermediateWorkOrder) {
-    if (!INTERMEDIATE_MATERIAL_OPTIONS.includes(intermediateInput?.name)) {
+  planItems.forEach((item, index) => {
+    if (!(Number(item.plan) > 0)) woErrors.push(`원료 ${index + 1} (${item.name}): 계획량을 입력하세요`);
+    if (!String(item.materialLot || "").trim()) woErrors.push(`원료 ${index + 1} (${item.name}): LOT를 입력하세요`);
+    if (qmesMaterialType(item.name) === "중간재" && !String(item.containerNo || "").trim()) {
+      woErrors.push(`원료 ${index + 1} (${item.name}): 포장 용기번호를 선택하세요`);
+    }
+  });
+  const intermediateInput = planItems.find((it) => qmesMaterialType(it.name) === "중간재");
+  if (!isBinderWorkOrder) {
+    if (!allowedIntermediateMaterials.includes(intermediateInput?.name)) {
       woErrors.push("원재료 투입계획의 중간배치 원료명을 선택하세요");
     } else if (!String(intermediateInput?.materialLot || "").trim()) {
       woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
     }
+  }
+  if (isBinderWorkOrder) {
+    const validPackRows = packRows.filter((row) => String(row.containerNo || row.packWeight || row.packDate || row.storageLocation).trim());
+    if (!validPackRows.length) woErrors.push("중간재 포장 용기를 1개 이상 등록하세요");
+    validPackRows.forEach((row, index) => {
+      if (!String(row.containerNo || "").trim()) woErrors.push(`포장 ${index + 1}: 용기번호를 입력하세요`);
+      if (!(Number(row.packWeight) > 0)) woErrors.push(`포장 ${index + 1}: 포장중량을 입력하세요`);
+      if (!String(row.packDate || form.prodDate || "").trim()) woErrors.push(`포장 ${index + 1}: 포장일자를 입력하세요`);
+      if (!String(row.storageLocation || "").trim()) woErrors.push(`포장 ${index + 1}: 보관위치를 입력하세요`);
+    });
+    const containerIds = validPackRows.map((row) => String(row.containerNo || "").trim()).filter(Boolean);
+    if (new Set(containerIds).size !== containerIds.length) woErrors.push("포장 용기번호가 중복되었습니다");
   }
   if (!dateOk) woErrors.push("생산일자를 선택하세요");
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
@@ -594,19 +781,42 @@ function IssueWoTab() {
     const batch = { no: woNo, item: form.product, workType: bom.workType || "완제품", tank: form.tank, plan: qtyNum, done: editingWo ? (DB.batches.find(b=>b.no===editingWo)?.done || 0) : 0, unit: "kg", due: form.prodDate, status: "발행", shift: `${form.shiftType} · ${form.timeRange}`, worker: form.worker.trim(), time };
     DB.batches = editingWo ? DB.batches.map((b)=>b.no===editingWo?batch:b) : [batch, ...DB.batches];
 
+    const normalizedPackaging = isBinderWorkOrder
+      ? packRows
+          .filter((row) => String(row.containerNo || row.packWeight || row.packDate || row.storageLocation).trim())
+          .map((row) => ({
+            containerNo: String(row.containerNo || "").trim().toUpperCase(),
+            packWeight: Number(Number(row.packWeight || 0).toFixed(3)),
+            packDate: row.packDate || form.prodDate,
+            storageLocation: String(row.storageLocation || "").trim(),
+            remainingQty: Number(Number(row.packWeight || 0).toFixed(3)),
+            status: row.status || "포장계획",
+          }))
+      : [];
+
     DB.woDocs[woNo] = {
       item: form.product, workType: bom.workType || "완제품", procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
-      workers: form.worker.trim(), status: "발행",
+      workers: form.worker.trim(), status: "발행", packaging: normalizedPackaging,
       inputs: planItems.map((it, index) => {
         const planned = String(it.plan ?? "").trim() === "" ? null : Number(Number(it.plan).toFixed(3));
         const actual = it.actual === "" || it.actual == null ? null : Number(it.actual);
         const inputRatio = planned > 0 && actual != null
           ? Number(((actual / planned) * 100).toFixed(2))
           : null;
+        const materialType = qmesMaterialType(it.name);
+        const container = qmesMaterialContainer(it);
+        const availableQty = materialType === "중간재"
+          ? Number(container?.remainingQty ?? it.availableQty ?? planned ?? 0)
+          : Number(it.availableQty || planned || 0);
+        const remaining = actual == null
+          ? null
+          : Number(Math.max(0, availableQty - actual).toFixed(3));
         return {
           seq: index + 1, name: it.name,
           lot: it.materialLot || "", materialLot: it.materialLot || "",
+          materialType, containerNo: String(it.containerNo || "").trim().toUpperCase(),
+          inputStatus: it.inputStatus || "신규", availableQty, remaining,
           unit: it.unit, note: it.note,
           base: String(it.base ?? "").trim() === "" ? "" : Number(it.base), std: planned, plan: planned,
           act: actual,
@@ -628,21 +838,53 @@ function IssueWoTab() {
       ],
     };
 
-    const binderInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
-    const binderLot = String(binderInput?.materialLot || "").trim().toUpperCase();
-    // 1차 적용: 중간배치는 작업지시서에만 등록하고 LOT·재고 연동은 하지 않는다.
-    if (!isIntermediateWorkOrder) {
-      DB.lots[woNo] = {
-        item: "NBA20-HM01", itemName: form.product,
-        qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
-        materials: [], binderLot,
-        steps: [{ stage: "수입", name: "작업지시 발행", time, detail: `${bom.procName} · ${form.tank} · 계획 ${qtyNum.toLocaleString()}kg · ${form.prodDate} ${form.timeRange} (${form.shiftType})`, result: "발행", by: window.__QMES_USER__ || "-" }],
-        ship: null,
+    normalizedPackaging.forEach((row) => {
+      DB.intermediateContainers[row.containerNo] = {
+        ...row, lot:woNo, materialName:form.product, workOrder:woNo,
+        initialQty:row.packWeight, updatedAt:new Date().toISOString(),
       };
+    });
+
+    const savedInputs = DB.woDocs[woNo].inputs;
+    const binderInput = savedInputs.find((it) => qmesMaterialType(it.name) === "중간재");
+    const binderLot = String(binderInput?.materialLot || "").trim().toUpperCase();
+
+    DB.lots[woNo] = {
+      item: form.product.trim(), itemName: form.product,
+      workType:bom.workType, qty: `${qtyNum.toLocaleString()} kg (계획)`,
+      wo: woNo, status: "발행 — 생산 대기", stage: "수입",
+      materials: savedInputs
+        .filter((it) => String(it.materialLot || "").trim())
+        .map((it) => ({
+          lot:it.materialLot, code:"-", name:it.name, materialType:it.materialType,
+          containerNo:it.containerNo || "", inputStatus:it.inputStatus || "신규",
+          qty:`${Number(it.act ?? it.plan ?? 0).toLocaleString()} ${it.unit || "kg"}`,
+          remainingQty:it.remaining, supplier:it.materialType === "중간재" ? "사내 중간재" : "-",
+          recv:form.prodDate, iqc:it.materialType === "중간재" ? "중간재 추적" : "투입 전 검사 확인"
+        })),
+      binderLot, containers:normalizedPackaging.map((row) => row.containerNo),
+      steps: [{ stage: "수입", name: "작업지시 발행", time, detail: `${bom.workType} · ${bom.procName} · ${form.tank} · 계획 ${qtyNum.toLocaleString()}kg`, result: "발행", by: window.__QMES_USER__ || "-" }],
+      ship: null,
+    };
+
+    if (binderLot) {
+      const previousMid = DB.intermediateLots[binderLot] || {};
       DB.intermediateLots[binderLot] = {
-        lot:binderLot, type:binderInput?.name || "바인더 중간배치",
-        parentLots:planItems.filter((it) => !String(it.name || "").includes("중간배치")).map((it) => String(it.materialLot || "").trim()).filter(Boolean),
-        childLots:[woNo], qty:0, status:"생산대기", workOrder:woNo,
+        ...previousMid, lot:binderLot, type:binderInput?.name || previousMid.type || "중간재",
+        childLots:Array.from(new Set([...(previousMid.childLots || []), woNo])),
+        status:previousMid.status || "투입대기", updatedAt:new Date().toISOString(),
+        by:window.__QMES_USER__ || "-"
+      };
+    }
+
+    if (isIntermediateWorkOrder) {
+      DB.intermediateLots[woNo] = {
+        ...(DB.intermediateLots[woNo] || {}),
+        lot:woNo, type:form.product, workType:bom.workType,
+        parentLots:savedInputs.map((it) => String(it.materialLot || "").trim()).filter(Boolean),
+        childLots:DB.intermediateLots[woNo]?.childLots || [],
+        containers:normalizedPackaging.map((row) => row.containerNo),
+        qty:qtyNum, status:"생산대기", workOrder:woNo,
         updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
       };
     }
@@ -655,17 +897,37 @@ function IssueWoTab() {
 
   const editWo = (r) => {
     const d = DB.woDocs[r.no] || {};
+    const productBom = BOM[r.item] || BOM[firstProduct];
+    const workType = d.workType || r.workType || productBom.workType || "완제품";
     setShowIssueForm(true);
     setEditingWo(r.no);
-    setForm({ product:r.item, tank:r.tank, qty:"", prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" });
-    setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({
+    setForm({ workType, product:r.item, tank:r.tank, qty:"", prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" });
+    setPlanItems((d.inputs?.length ? d.inputs : productBom.items).map((it, i) => ({
       seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "",
+      containerNo:it.containerNo || "", inputStatus:it.inputStatus || "신규",
+      availableQty:it.availableQty ?? "",
       base:it.base ?? "", plan:it.plan ?? it.std ?? "", actual:it.act ?? "",
-      unit:it.unit||"kg", note:it.note||""
+      remaining:it.remaining ?? null, unit:it.unit||"kg", note:it.note||""
     })));
+    setPackRows(d.packaging?.length ? d.packaging : [blankPackRow()]);
     window.scrollTo({top:0,behavior:"smooth"});
   };
-  const deleteWo = (r) => { const reason=askDeleteReason(`작업지시 ${r.no}`); if(reason===null)return; DB.batches=DB.batches.filter(x=>x.no!==r.no); delete DB.woDocs[r.no]; delete DB.lots[r.no]; DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no); DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no); DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no); auditLog("작업지시","삭제",r.no,reason); dbSave(); setIssued([...DB.batches]); };
+  const deleteWo = (r) => {
+    const reason=askDeleteReason(`작업지시 ${r.no}`);
+    if(reason===null)return;
+    const packaging = DB.woDocs[r.no]?.packaging || [];
+    packaging.forEach((row) => { if (row.containerNo) delete DB.intermediateContainers[row.containerNo]; });
+    DB.batches=DB.batches.filter(x=>x.no!==r.no);
+    delete DB.woDocs[r.no];
+    delete DB.lots[r.no];
+    delete DB.intermediateLots[r.no];
+    DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no);
+    DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no);
+    DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no);
+    auditLog("작업지시","삭제",r.no,reason);
+    dbSave();
+    setIssued([...DB.batches]);
+  };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
   const label = (t) => <span className="text-[10px] text-slate-500">{t}</span>;
@@ -689,6 +951,7 @@ function IssueWoTab() {
             setEditingWo(null);
             setForm({ ...form, prodDate:"", lotNo:"", qty:"" });
             setPlanItems(blankPlanItems(form.product));
+            setPackRows([blankPackRow()]);
             setShowIssueForm(true);
           }}
           className="qmes-iqc-new-btn"
@@ -702,11 +965,27 @@ function IssueWoTab() {
       <Panel title={editingWo ? "작업지시 수정" : "신규 작업지시 발행"} right={<span className="text-xs text-slate-400">LOT No. 자동 채번: <span className="font-mono text-sky-300">{nextNo}</span></span>}>
         <div className="qmes-wo-form-grid">
           <div className="qmes-wo-form-field">
+            {label("작업구분")}
+            <select
+              value={form.workType}
+              onChange={(e) => {
+                const nextType = e.target.value;
+                const nextProduct = products.find((name) => BOM[name].workType === nextType);
+                setForm({ ...form, workType:nextType, product:nextProduct, tank:BOM[nextProduct].tanks[0], qty:"" });
+                setPlanItems(blankPlanItems(nextProduct));
+                setPackRows([blankPackRow()]);
+              }}
+              className={inputCls}
+            >
+              {WORK_TYPE_OPTIONS.map((type) => <option key={type}>{type}</option>)}
+            </select>
+          </div>
+          <div className="qmes-wo-form-field">
             {label("공정 / 품목 (Grd.)")}
-            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, tank: BOM[next].tanks[0], qty: "" }); setPlanItems(blankPlanItems(next)); }} className={inputCls}>
-              {products.map((pd) => (
+            <select value={form.product} onChange={(e) => { const next = e.target.value; setForm({ ...form, product: next, workType:BOM[next].workType, tank: BOM[next].tanks[0], qty: "" }); setPlanItems(blankPlanItems(next)); setPackRows([blankPackRow()]); }} className={inputCls}>
+              {productOptions.map((pd) => (
                 <option key={pd} value={pd}>
-                  {BOM[pd].workType === "중간배치" ? `[중간배치] ${pd}` : pd}
+                  {BOM[pd]?.workType === "완제품" ? pd : `[${BOM[pd]?.workType || "기존"}] ${pd}`}
                 </option>
               ))}
             </select>
@@ -774,21 +1053,23 @@ function IssueWoTab() {
           </div>
         </div>
 
-        {/* 원재료 투입 계획 — 수량 비례 자동 계산 */}
+        {/* 원재료 투입 계획 — LOT·용기·신규/잔량·잔량까지 작업지시에서 일괄 관리 */}
         <div className="mt-4 bg-slate-800/50 border border-slate-700/60 rounded-lg p-3">
           <div className="text-xs font-medium text-slate-300 mb-2">
-            ① 원재료 투입 계획 <span className="text-slate-500">(계획량 합계 → 생산계획량 자동 계산 · 실투입량 입력 시 오차 및 투입비율 자동 계산)</span>
+            ① 원재료 투입 계획 <span className="text-slate-500">(계획량 합계 → 생산계획량 자동 계산 · 실투입량 입력 시 잔량·오차·투입비율 자동 계산)</span>
               <span className="ml-2 text-[10px] text-slate-500">오차 기준: ±0.5% 이내 정상 · ±1.0% 이내 주의 · 초과 이탈</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="qmes-material-table qmes-material-balanced qmes-wo-material-compact w-full text-sm min-w-[1160px]">
+            <table className="qmes-material-table qmes-material-balanced qmes-wo-material-compact w-full text-sm min-w-[1580px]">
               <colgroup>
                 <col style={{ width: "52px" }} />
-                <col style={{ width: "185px" }} />
-                <col style={{ width: "130px" }} />
-                <col style={{ width: "130px" }} />
-                <col style={{ width: "130px" }} />
-                <col style={{ width: "155px" }} />
+                <col style={{ width: "220px" }} />
+                <col style={{ width: "145px" }} />
+                <col style={{ width: "160px" }} />
+                <col style={{ width: "95px" }} />
+                <col style={{ width: "125px" }} />
+                <col style={{ width: "135px" }} />
+                <col style={{ width: "115px" }} />
                 <col style={{ width: "100px" }} />
                 <col style={{ width: "100px" }} />
                 <col style={{ width: "185px" }} />
@@ -798,20 +1079,33 @@ function IssueWoTab() {
                   <th className="text-left py-1.5 pr-3 font-medium w-14">순서</th>
                   <th className="text-left py-1.5 pr-3 font-medium">원재료명</th>
                   <th className="text-left py-1.5 px-2 font-medium">LOT No.</th>
-                  <th className="text-center py-1.5 px-2 font-medium">기준량</th>
+                  <th className="text-left py-1.5 px-2 font-medium">용기번호</th>
+                  <th className="text-center py-1.5 px-2 font-medium">투입상태</th>
                   <th className="text-center py-1.5 px-2 font-medium">계획량</th>
                   <th className="text-center py-1.5 px-2 font-medium">실투입량</th>
+                  <th className="text-center py-1.5 px-2 font-medium">사용 후 잔량</th>
                   <th className="text-center py-1.5 pr-3 font-medium">오차(%)</th>
                   <th className="text-center py-1.5 pr-3 font-medium">투입비율</th>
                   <th className="text-left py-1.5 font-medium">비고</th>
                 </tr>
               </thead>
               <tbody>
-                {planItems.map((it, idx) => (
-                  <tr key={`${idx}-${it.name}`} className="border-b border-slate-800/60">
+                {planItems.map((it, idx) => {
+                  const materialType = qmesMaterialType(it.name);
+                  const isIntermediateMaterial = materialType === "중간재";
+                  const containerOptions = Object.values(DB.intermediateContainers || {}).filter((container) =>
+                    (!it.name || container.materialName === it.name) &&
+                    (!it.materialLot || container.lot === it.materialLot) &&
+                    Number(container.remainingQty || 0) > 0
+                  );
+                  const remaining = qmesInputRemainingQty(it);
+                  return (
+                  <tr key={`${idx}-${it.name}`} className="border-b border-slate-800/60 align-top">
                     <td className="py-1.5 pr-3 text-slate-500 tabular-nums">{idx + 1}</td>
                     <td className="py-1.5 pr-3">
-                      <select value={it.name} onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, name: e.target.value } : row))} className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
+                      <select value={it.name} onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? {
+                        ...row, name: e.target.value, materialLot: "", containerNo: "", availableQty: "", inputStatus: "신규"
+                      } : row))} className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
                         {it.name === "중간배치(바인더)" && (
                           <option value="중간배치(바인더)" disabled>중간배치 원료명 선택 필요</option>
                         )}
@@ -819,29 +1113,67 @@ function IssueWoTab() {
                           <option key={name} disabled={name === "중간배치 선택"}>{name}</option>
                         ))}
                       </select>
+                      <span className={`mt-1 inline-flex rounded px-1.5 py-0.5 text-[10px] ${isIntermediateMaterial ? "bg-violet-500/15 text-violet-300" : "bg-slate-700/70 text-slate-400"}`}>
+                        {materialType}
+                      </span>
                     </td>
                     <td className="py-1.5 px-2">
                       <input
                         value={it.materialLot || ""}
-                        onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, materialLot: e.target.value.toUpperCase() } : row))}
+                        onChange={(e) => {
+                          const lot = e.target.value.toUpperCase();
+                          const remainder = Object.values(DB.materialRemainders || {}).find((record) =>
+                            record.lot === lot && record.name === it.name && Number(record.remainingQty || 0) > 0
+                          );
+                          setPlanItems(planItems.map((row, i) => i === idx ? {
+                            ...row, materialLot: lot,
+                            availableQty: remainder?.remainingQty ?? row.availableQty,
+                            inputStatus: remainder ? "잔량" : row.inputStatus
+                          } : row));
+                        }}
                         placeholder="원재료 LOT"
                         className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-sm font-mono text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500"
                       />
                     </td>
                     <td className="py-1.5 px-2">
-                      <div className="qmes-qty-wrap">
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={it.base}
+                      {isIntermediateMaterial ? (
+                        <select
+                          value={it.containerNo || ""}
                           onChange={(e) => {
-                            const v = e.target.value.replace(/[^0-9.]/g, "");
-                            setPlanItems(planItems.map((row, i) => i === idx ? { ...row, base: v === "" ? "" : v } : row));
+                            const selectedContainer = DB.intermediateContainers?.[e.target.value];
+                            setPlanItems(planItems.map((row, i) => i === idx ? {
+                              ...row,
+                              containerNo: e.target.value,
+                              materialLot: selectedContainer?.lot || row.materialLot,
+                              availableQty: selectedContainer?.remainingQty ?? row.availableQty,
+                              inputStatus: selectedContainer && Number(selectedContainer.remainingQty) < Number(selectedContainer.initialQty) ? "잔량" : "신규"
+                            } : row));
                           }}
-                          className="qmes-qty-input bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-right text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                          className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-sky-500"
+                        >
+                          <option value="">용기 선택</option>
+                          {it.containerNo && !containerOptions.some((row) => row.containerNo === it.containerNo) && <option value={it.containerNo}>{it.containerNo}</option>}
+                          {containerOptions.map((row) => <option key={row.containerNo} value={row.containerNo}>{row.containerNo} · {Number(row.remainingQty).toFixed(3)}kg</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          value={it.containerNo || ""}
+                          onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, containerNo:e.target.value.toUpperCase() } : row))}
+                          placeholder="선택 입력"
+                          className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs font-mono text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500"
                         />
-                        <span className="qmes-qty-unit text-xs text-slate-400">{it.unit}</span>
-                      </div>
+                      )}
+                      {Number(qmesInputAvailableQty(it)) > 0 && <div className="mt-1 text-[10px] text-slate-500">가용 {Number(qmesInputAvailableQty(it)).toFixed(3)}kg</div>}
+                    </td>
+                    <td className="py-1.5 px-2">
+                      <select
+                        value={it.inputStatus || "신규"}
+                        onChange={(e) => setPlanItems(planItems.map((row, i) => i === idx ? { ...row, inputStatus:e.target.value } : row))}
+                        className={`w-full h-[34px] rounded border px-2 text-xs font-medium focus:outline-none focus:border-sky-500 ${it.inputStatus === "잔량" ? "border-amber-500/40 bg-amber-500/10 text-amber-300" : "border-slate-700 bg-slate-800 text-slate-200"}`}
+                      >
+                        <option value="신규">신규</option>
+                        <option value="잔량">잔량</option>
+                      </select>
                     </td>
                     <td className="py-1.5 px-2">
                       <div className="qmes-qty-wrap">
@@ -873,6 +1205,11 @@ function IssueWoTab() {
                         />
                         <span className="qmes-qty-unit text-xs text-slate-400">{it.unit}</span>
                       </div>
+                    </td>
+                    <td className="py-1.5 px-2 text-right tabular-nums">
+                      {remaining == null
+                        ? <span className="text-slate-500">—</span>
+                        : <span className={remaining > 0 ? "text-amber-300" : "text-slate-400"}>{remaining.toFixed(3)} kg</span>}
                     </td>
                     <td className="py-1.5 pr-3 text-center tabular-nums">
                       {(() => {
@@ -911,15 +1248,20 @@ function IssueWoTab() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 <tr>
                   <td className="py-1.5 pr-3" />
                   <td className="py-1.5 pr-3 font-medium text-slate-200">계</td>
                   <td className="py-1.5 px-2" />
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{planItems.some((it) => String(it.base ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + Number(it.base || 0), 0).toFixed(3)} kg` : ""}</td>
+                  <td className="py-1.5 px-2" />
+                  <td className="py-1.5 px-2" />
                   <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-sky-300">{planItems.some((it) => String(it.plan ?? "").trim() !== "") ? `${plannedTotal.toFixed(3)} kg` : ""}</td>
                   <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-emerald-300">
                     {planItems.some((it) => String(it.actual ?? "").trim() !== "") ? `${planItems.reduce((a, it) => a + (parseFloat(it.actual) || 0), 0).toFixed(3)} kg` : ""}
+                  </td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-amber-300">
+                    {planItems.some((it) => qmesInputRemainingQty(it) != null) ? `${planItems.reduce((sum, it) => sum + (qmesInputRemainingQty(it) || 0), 0).toFixed(3)} kg` : ""}
                   </td>
                   <td className="py-1.5 pr-3 text-center tabular-nums">
                     {(() => {
@@ -942,13 +1284,74 @@ function IssueWoTab() {
                     })()}
                   </td>
                   <td className="py-1.5 text-right">
-                    <button onClick={() => setPlanItems([...planItems, { seq: planItems.length + 1, name: availableMaterialOptions[0], materialLot: "", base: "", plan: "", actual: "", unit: "kg", note: "" }])} className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/20"><Plus size={13} /> 행 추가</button>
+                    <button onClick={() => setPlanItems([...planItems, {
+                      seq:planItems.length + 1, name:availableMaterialOptions[0], materialLot:"", containerNo:"",
+                      inputStatus:"신규", availableQty:"", base:"", plan:"", actual:"", remaining:null, unit:"kg", note:""
+                    }])} className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/20"><Plus size={13} /> 행 추가</button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+
+        {isBinderWorkOrder && (
+          <div className="mt-4 bg-violet-500/5 border border-violet-500/30 rounded-lg p-3">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="text-xs font-medium text-violet-200">
+                ② 바인더 솔루션 포장정보
+                <span className="ml-2 text-[10px] text-slate-500">중간재 LOT는 작업지시 LOT로 자동 연결됩니다.</span>
+              </div>
+              <button onClick={() => setPackRows([...packRows, blankPackRow()])} className="inline-flex items-center gap-1 rounded border border-violet-500/40 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300 hover:bg-violet-500/20">
+                <Plus size={13} /> 포장 용기 추가
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[940px] text-sm">
+                <thead>
+                  <tr className="text-[11px] text-slate-500 border-b border-slate-700/60">
+                    <th className="py-1.5 px-2 text-center">No</th>
+                    <th className="py-1.5 px-2 text-left">용기번호</th>
+                    <th className="py-1.5 px-2 text-right">포장중량</th>
+                    <th className="py-1.5 px-2 text-center">포장일자</th>
+                    <th className="py-1.5 px-2 text-left">보관위치</th>
+                    <th className="py-1.5 px-2 text-center">상태</th>
+                    <th className="py-1.5 px-2 text-right">현재 잔량</th>
+                    <th className="py-1.5 px-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {packRows.map((row, index) => (
+                    <tr key={`pack-${index}`} className="border-b border-slate-800/60">
+                      <td className="py-1.5 px-2 text-center text-slate-500">{index + 1}</td>
+                      <td className="py-1.5 px-2"><input value={row.containerNo} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, containerNo:e.target.value.toUpperCase() } : item))} placeholder="예: CBG2702-C01" className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 font-mono text-xs text-slate-100 focus:outline-none focus:border-violet-500" /></td>
+                      <td className="py-1.5 px-2">
+                        <div className="qmes-qty-wrap">
+                          <input inputMode="decimal" value={row.packWeight} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, packWeight:e.target.value.replace(/[^0-9.]/g, "") } : item))} className="qmes-qty-input bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-right text-sm text-violet-200 focus:outline-none focus:border-violet-500" />
+                          <span className="qmes-qty-unit text-xs text-slate-400">kg</span>
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2"><input type="date" value={row.packDate || form.prodDate} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, packDate:e.target.value } : item))} className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500" /></td>
+                      <td className="py-1.5 px-2"><input value={row.storageLocation} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, storageLocation:e.target.value } : item))} placeholder="예: 중간재 Rack A-01" className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500" /></td>
+                      <td className="py-1.5 px-2">
+                        <select value={row.status || "포장계획"} onChange={(e) => setPackRows(packRows.map((item, i) => i === index ? { ...item, status:e.target.value } : item))} className="w-full h-[34px] bg-slate-800 border border-slate-700 rounded px-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500">
+                          <option>포장계획</option><option>포장완료</option><option>사용가능</option>
+                        </select>
+                      </td>
+                      <td className="py-1.5 px-2 text-right tabular-nums text-violet-200">{Number(row.packWeight || 0).toFixed(3)} kg</td>
+                      <td className="py-1.5 px-2 text-right"><button onClick={() => setPackRows(packRows.filter((_, i) => i !== index))} className="text-[11px] text-red-300 border border-red-500/30 rounded px-2 py-1.5 hover:bg-red-500/10">삭제</button></td>
+                    </tr>
+                  ))}
+                  <tr className="font-medium">
+                    <td></td><td className="py-2 px-2 text-slate-200">포장 합계</td>
+                    <td className="py-2 px-2 text-right tabular-nums text-violet-200">{packRows.reduce((sum, row) => sum + Number(row.packWeight || 0), 0).toFixed(3)} kg</td>
+                    <td colSpan={5}></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {!woReady && (
           <div className="mt-3 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2.5">
@@ -1150,8 +1553,9 @@ function IssueWoTab() {
                 <div className="qmes-iqc2-sec">
                   <div className="qmes-iqc2-sec-title">생산정보</div>
                   <table className="qmes-iqc2-table">
-                    <thead><tr><th>공정명</th><th>생산계획량</th><th>작업시간</th><th>생산시간</th><th>근무유형</th></tr></thead>
+                    <thead><tr><th>작업구분</th><th>공정명</th><th>생산계획량</th><th>작업시간</th><th>생산시간</th><th>근무유형</th></tr></thead>
                     <tbody><tr>
+                      <td>{doc.workType || batch.workType || "완제품"}</td>
                       <td>{doc.procName || "절연슬러리 제조"}</td>
                       <td>{Number(doc.plan ?? batch.plan ?? 0).toLocaleString()} kg</td>
                       <td>{doc.hours || "-"}</td>
@@ -1164,29 +1568,50 @@ function IssueWoTab() {
                 <div className="qmes-iqc2-sec">
                   <div className="qmes-iqc2-sec-title">원재료 투입</div>
                   <table className="qmes-iqc2-table qmes-wo-cert-material-table">
-                    <thead><tr><th>No</th><th>원재료명</th><th>원재료 LOT</th><th>투입량</th><th>실투입량</th><th>판정</th><th>확인자</th><th>비고</th></tr></thead>
+                    <thead><tr><th>No</th><th>원재료명</th><th>LOT / 용기</th><th>상태</th><th>계획량</th><th>실투입량</th><th>사용 후 잔량</th><th>판정</th><th>비고</th></tr></thead>
                     <tbody>
                       {inputs.map((it, i) => (
                         <tr key={`issued-cert-${viewingWo}-${i}`}>
                           <td>{it.seq || i + 1}</td>
-                          <td>{it.name || "-"}</td>
-                          <td className="font-mono">{it.materialLot || it.lot || "-"}</td>
+                          <td>{it.name || "-"}<small className="block text-slate-500">{it.materialType || qmesMaterialType(it.name)}</small></td>
+                          <td className="font-mono">{it.materialLot || it.lot || "-"}<small className="block">{it.containerNo || "BULK"}</small></td>
+                          <td>{it.inputStatus || "신규"}</td>
                           <td>{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
                           <td>{it.act == null ? "-" : `${Number(it.act).toFixed(3)} ${it.unit || "kg"}`}</td>
+                          <td>{it.remaining == null ? "-" : `${Number(it.remaining).toFixed(3)} ${it.unit || "kg"}`}</td>
                           <td>{it.ok === true ? "적합" : it.ok === false ? "공차 이탈" : "-"}</td>
-                          <td>{it.by || "-"}</td>
                           <td>{it.note || "-"}</td>
                         </tr>
                       ))}
                       <tr className="qmes-wo-cert-total-row">
-                        <td></td><td className="font-semibold">합계</td><td></td>
+                        <td></td><td className="font-semibold">합계</td><td></td><td></td>
                         <td className="font-semibold">{plannedTotal.toFixed(3)} kg</td>
                         <td className="font-semibold">{actualTotal > 0 ? `${actualTotal.toFixed(3)} kg` : "-"}</td>
-                        <td colSpan={3}></td>
+                        <td className="font-semibold">{inputs.some((it) => it.remaining != null) ? `${inputs.reduce((sum, it) => sum + Number(it.remaining || 0), 0).toFixed(3)} kg` : "-"}</td>
+                        <td colSpan={2}></td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
+
+                {(doc.packaging || []).length > 0 && (
+                  <div className="qmes-iqc2-sec">
+                    <div className="qmes-iqc2-sec-title">중간재 포장정보</div>
+                    <table className="qmes-iqc2-table">
+                      <thead><tr><th>No</th><th>중간재 LOT</th><th>용기번호</th><th>포장중량</th><th>포장일자</th><th>보관위치</th><th>현재 잔량</th><th>상태</th></tr></thead>
+                      <tbody>
+                        {doc.packaging.map((row, index) => {
+                          const current = DB.intermediateContainers?.[row.containerNo] || row;
+                          return <tr key={`issued-pack-${row.containerNo || index}`}>
+                            <td>{index + 1}</td><td className="font-mono">{viewingWo}</td><td className="font-mono">{row.containerNo}</td>
+                            <td>{Number(row.packWeight || 0).toFixed(3)} kg</td><td>{row.packDate || "-"}</td>
+                            <td>{row.storageLocation || "-"}</td><td>{Number(current.remainingQty || 0).toFixed(3)} kg</td><td>{current.status || row.status || "-"}</td>
+                          </tr>;
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
                 <div className="qmes-iqc2-sec">
                   <div className="qmes-iqc2-sec-title">특이사항</div>
@@ -1205,6 +1630,7 @@ function IssueWoTab() {
 
               <div className="qmes-wo-summary qmes-issued-extra-summary qmes-detail-only">
                 <div><span>품목</span><strong>{batch.item}</strong></div>
+                <div><span>작업구분</span><strong>{doc.workType || batch.workType || "완제품"}</strong></div>
                 <div><span>설비</span><strong>{batch.tank}</strong></div>
                 <div><span>생산일자</span><strong>{batch.due}</strong></div>
                 <div><span>계획량</span><strong>{Number(batch.plan || 0).toLocaleString()} kg</strong></div>
@@ -1218,15 +1644,17 @@ function IssueWoTab() {
               <div className="mt-4 qmes-detail-only">
                 <div className="text-sm font-semibold text-slate-200 mb-2">원재료 투입 계획</div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm min-w-[900px]">
+                  <table className="w-full text-sm min-w-[1300px]">
                     <thead>
                       <tr className="text-xs text-slate-400 border-b border-slate-700">
                         <th className="text-center py-2 px-2">순서</th>
                         <th className="text-left py-2 px-2">원재료명</th>
                         <th className="text-left py-2 px-2">LOT No.</th>
-                        <th className="text-right py-2 px-2">기준량</th>
+                        <th className="text-left py-2 px-2">용기번호</th>
+                        <th className="text-center py-2 px-2">투입상태</th>
                         <th className="text-right py-2 px-2">계획량</th>
                         <th className="text-right py-2 px-2">실투입량</th>
+                        <th className="text-right py-2 px-2">사용 후 잔량</th>
                         <th className="text-center py-2 px-2">오차</th>
                         <th className="text-center py-2 px-2">투입비율</th>
                         <th className="text-left py-2 px-2">비고</th>
@@ -1236,11 +1664,13 @@ function IssueWoTab() {
                       {inputs.map((it, i) => (
                         <tr key={`${viewingWo}-${i}`} className="border-b border-slate-800/70">
                           <td className="text-center py-2 px-2 text-slate-400">{it.seq || i + 1}</td>
-                          <td className="py-2 px-2 text-slate-100">{it.name}</td>
+                          <td className="py-2 px-2 text-slate-100">{it.name}<small className="block text-slate-500">{it.materialType || qmesMaterialType(it.name)}</small></td>
                           <td className="py-2 px-2 font-mono text-xs text-slate-300">{it.materialLot || it.lot || "-"}</td>
-                          <td className="text-right py-2 px-2 tabular-nums">{Number(it.base || 0).toFixed(3)} {it.unit || "kg"}</td>
+                          <td className="py-2 px-2 font-mono text-xs text-slate-300">{it.containerNo || "BULK"}</td>
+                          <td className="text-center py-2 px-2">{it.inputStatus || "신규"}</td>
                           <td className="text-right py-2 px-2 tabular-nums text-sky-300">{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
                           <td className="text-right py-2 px-2 tabular-nums text-emerald-300">{it.act == null ? "—" : `${Number(it.act).toFixed(3)} ${it.unit || "kg"}`}</td>
+                          <td className="text-right py-2 px-2 tabular-nums text-amber-300">{it.remaining == null ? "—" : `${Number(it.remaining).toFixed(3)} ${it.unit || "kg"}`}</td>
                           <td className="text-center py-2 px-2 tabular-nums">{it.error == null ? "—" : `${it.error > 0 ? "+" : ""}${Number(it.error).toFixed(2)}%`}</td>
                           <td className="text-center py-2 px-2 tabular-nums">{it.ratio == null ? "—" : `${Number(it.ratio).toFixed(2)}%`}</td>
                           <td className="py-2 px-2 text-xs text-slate-400">{it.note || "-"}</td>
@@ -1251,8 +1681,10 @@ function IssueWoTab() {
                         <td className="py-2 px-2 text-slate-200">합계</td>
                         <td className="py-2 px-2" />
                         <td className="py-2 px-2" />
+                        <td className="py-2 px-2" />
                         <td className="text-right py-2 px-2 text-sky-300">{plannedTotal.toFixed(3)} kg</td>
                         <td className="text-right py-2 px-2 text-emerald-300">{actualTotal > 0 ? `${actualTotal.toFixed(3)} kg` : "—"}</td>
+                        <td className="text-right py-2 px-2 text-amber-300">{inputs.some((it) => it.remaining != null) ? `${inputs.reduce((sum, it) => sum + Number(it.remaining || 0), 0).toFixed(3)} kg` : "—"}</td>
                         <td className="text-center py-2 px-2">
                           {plannedTotal > 0 && actualTotal > 0 ? `${(((actualTotal - plannedTotal) / plannedTotal) * 100).toFixed(2)}%` : "—"}
                         </td>
@@ -1265,6 +1697,25 @@ function IssueWoTab() {
                   </table>
                 </div>
               </div>
+
+              {(doc.packaging || []).length > 0 && (
+                <div className="mt-4 qmes-detail-only">
+                  <div className="text-sm font-semibold text-violet-200 mb-2">중간재 포장정보</div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[900px] text-sm">
+                      <thead><tr className="text-xs text-slate-400 border-b border-slate-700"><th className="py-2 px-2">중간재 LOT</th><th className="py-2 px-2">용기번호</th><th className="py-2 px-2 text-right">포장중량</th><th className="py-2 px-2">포장일자</th><th className="py-2 px-2">보관위치</th><th className="py-2 px-2 text-right">현재 잔량</th><th className="py-2 px-2">상태</th></tr></thead>
+                      <tbody>{doc.packaging.map((row, index) => {
+                        const current = DB.intermediateContainers?.[row.containerNo] || row;
+                        return <tr key={`detail-pack-${row.containerNo || index}`} className="border-b border-slate-800/70">
+                          <td className="py-2 px-2 font-mono text-slate-300">{viewingWo}</td><td className="py-2 px-2 font-mono text-violet-200">{row.containerNo}</td>
+                          <td className="py-2 px-2 text-right">{Number(row.packWeight || 0).toFixed(3)} kg</td><td className="py-2 px-2">{row.packDate || "-"}</td>
+                          <td className="py-2 px-2">{row.storageLocation || "-"}</td><td className="py-2 px-2 text-right text-amber-300">{Number(current.remainingQty || 0).toFixed(3)} kg</td><td className="py-2 px-2">{current.status || row.status || "-"}</td>
+                        </tr>;
+                      })}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
 
               {woPreviewMode === "detail" && (
