@@ -387,11 +387,12 @@ const BOM = {
       { seq: 4, name: "SBS", base: 0, unit: "kg", note: "" },
       { seq: 5, name: "PVdF", base: 0, unit: "kg", note: "" },
       { seq: 6, name: "SBR", base: 106.24, unit: "kg", note: "" },
+      { seq: 7, name: "중간배치(바인더)", base: 0, unit: "kg", note: "" },
     ],
   },
 };
 
-const MATERIAL_OPTIONS = ["NMP", "BYK180 (분산제)", "AOH30 (Boehmite)", "SBS", "PVdF", "SBR"];
+const MATERIAL_OPTIONS = ["NMP", "BYK180 (분산제)", "AOH30 (Boehmite)", "SBS", "PVdF", "SBR", "중간배치(바인더)"];
 
 function getAutoWoStatus(lotNo) {
   const doc = DB.woDocs[lotNo] || {};
@@ -476,7 +477,7 @@ function IssueWoTab() {
   const [form, setForm] = useState({
     product: products[0], tank: BOM[products[0]].tanks[0], qty: String(BOM[products[0]].baseQty),
     prodDate: "2026-07-12", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
-    shiftType: "일반", worker: "", intermediateLot: "",
+    shiftType: "일반", worker: "",
   });
   const [issued, setIssued] = useState(DB.batches);
   const [editingWo, setEditingWo] = useState(null);
@@ -526,7 +527,8 @@ function IssueWoTab() {
   if (!(qtyNum > 0)) woErrors.push("생산계획량 미입력 또는 0 이하");
   if (qtyNum > bom.baseQty) woErrors.push(`배치 용량 초과 — HSM 최대 배치 ${bom.baseQty}kg`);
   if (!form.worker.trim()) woErrors.push("작업자 미지정 — 지정 전 발행 금지");
-  if (!String(form.intermediateLot || "").trim()) woErrors.push("중간 배치 LOT를 입력하세요");
+  const intermediateInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
+  if (!String(intermediateInput?.materialLot || "").trim()) woErrors.push("원재료 투입계획의 중간배치 LOT를 입력하세요");
   if (!dateOk) woErrors.push("생산일자를 선택하세요");
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
   if (!requestedLotNo || requestedLotNo === "—") woErrors.push("LOT No.를 확인하세요");
@@ -546,7 +548,7 @@ function IssueWoTab() {
     DB.woDocs[woNo] = {
       item: form.product, procName: bom.procName, tank: form.tank, plan: qtyNum,
       date: form.prodDate, hours: form.hours, timeRange: form.timeRange, shiftType: form.shiftType,
-      workers: form.worker.trim(), intermediateLot:form.intermediateLot.trim(), status: "발행",
+      workers: form.worker.trim(), status: "발행",
       inputs: planItems.map((it, index) => {
         const planned = String(it.base ?? "").trim() === "" ? null : Number((Number(it.base) * ratio).toFixed(3));
         const actual = it.actual === "" || it.actual == null ? null : Number(it.actual);
@@ -577,7 +579,8 @@ function IssueWoTab() {
       ],
     };
 
-    const binderLot = form.intermediateLot.trim().toUpperCase();
+    const binderInput = planItems.find((it) => String(it.name || "").includes("중간배치"));
+    const binderLot = String(binderInput?.materialLot || "").trim().toUpperCase();
     DB.lots[woNo] = {
       item: "NBA20-HM01", itemName: form.product,
       qty: `${qtyNum.toLocaleString()} kg (계획)`, wo: woNo, status: "발행 — 생산 대기", stage: "수입",
@@ -587,7 +590,7 @@ function IssueWoTab() {
     };
     DB.intermediateLots[binderLot] = {
       lot:binderLot, type:"바인더 중간배치",
-      parentLots:planItems.map((it) => String(it.materialLot || "").trim()).filter(Boolean),
+      parentLots:planItems.filter((it) => !String(it.name || "").includes("중간배치")).map((it) => String(it.materialLot || "").trim()).filter(Boolean),
       childLots:[woNo], qty:0, status:"생산대기", workOrder:woNo,
       updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
     };
@@ -598,7 +601,7 @@ function IssueWoTab() {
     setShowIssueForm(false);
   };
 
-  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setShowIssueForm(true); setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"", intermediateLot:d.intermediateLot || DB.lots?.[r.no]?.binderLot || "" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
+  const editWo = (r) => { const d=DB.woDocs[r.no]||{}; setShowIssueForm(true); setEditingWo(r.no); setForm({ product:r.item, tank:r.tank, qty:String(r.plan), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" }); setPlanItems((d.inputs?.length ? d.inputs : BOM[r.item].items).map((it, i) => ({ seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "", base:Number(it.base ?? it.std ?? 0), actual:it.act ?? "", unit:it.unit||"kg", note:it.note||"" }))); window.scrollTo({top:0,behavior:"smooth"}); };
   const deleteWo = (r) => { const reason=askDeleteReason(`작업지시 ${r.no}`); if(reason===null)return; DB.batches=DB.batches.filter(x=>x.no!==r.no); delete DB.woDocs[r.no]; delete DB.lots[r.no]; DB.insp.PQC=DB.insp.PQC.filter(x=>x.lot!==r.no); DB.insp.OQC=DB.insp.OQC.filter(x=>x.lot!==r.no); DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no); auditLog("작업지시","삭제",r.no,reason); dbSave(); setIssued([...DB.batches]); };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
@@ -659,15 +662,6 @@ function IssueWoTab() {
               placeholder="LOT No."
               readOnly={!!editingWo}
               className={`${inputCls} font-mono ${editingWo ? "bg-slate-800/60 text-slate-400 cursor-not-allowed" : ""}`}
-            />
-          </div>
-          <div className="qmes-wo-form-field">
-            {label("중간 배치 LOT")}
-            <input
-              value={form.intermediateLot || ""}
-              onChange={(e) => setForm({ ...form, intermediateLot: e.target.value.toUpperCase().replace(/\s/g, "") })}
-              placeholder="예: CBG1201-B01"
-              className={`${inputCls} font-mono`}
             />
           </div>
           <div className="qmes-wo-form-field">
