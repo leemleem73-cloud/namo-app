@@ -356,7 +356,8 @@ function qmesActiveHold(lotNo) {
   const lot = qmesText(lotNo);
   return (DB.holds || []).find((h) => {
     const target = qmesText(h.target);
-    const active = !["해제", "종결", "완료"].includes(qmesText(h.status));
+    const status = qmesText(h.status);
+    const active = !(status.includes("해제 완료") || status.includes("종결") || status === "완료");
     return active && (target === lot || target.startsWith(lot + " ") || target.startsWith(lot + "("));
   }) || null;
 }
