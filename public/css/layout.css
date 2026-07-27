@@ -1,3 +1,46 @@
 /* QMES layout styles.
    Shared shell, header, sidebar and responsive layout extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* Main header typography */
+.qmes-top-menu-button {
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.qmes-top-menu-button svg {
+  color: #fff !important;
+}
+
+.qmes-header-clock,
+.qmes-header-user-name,
+.qmes-header-action {
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+.qmes-header-user-meta {
+  color: #cbd5e1 !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+.qmes-header-action {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 1400px) {
+  .qmes-top-menu-button,
+  .qmes-header-clock,
+  .qmes-header-user-name,
+  .qmes-header-action {
+    font-size: 13px !important;
+  }
+}
