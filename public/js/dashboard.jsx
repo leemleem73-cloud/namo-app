@@ -99,7 +99,7 @@ function ProcessStrip() {
 
 function DashboardTab() {
   const todayKey = localISODate();
-  const todayBatches = (DB.batches || []).filter((b) => String(b.date || b.productionDate || b.startDate || "").slice(0, 10) === todayKey);
+  const todayBatches = (DB.batches || []).filter((b) => String(b.due || b.date || b.productionDate || b.startDate || "").slice(0, 10) === todayKey);
   const todayPlanKg = todayBatches.reduce((sum, b) => sum + (Number(b.plan || b.plannedQty || b.targetQty || 0) || 0), 0);
   const todayKg = todayBatches.reduce((sum, b) => sum + (Number(b.qty || b.amount || b.productionQty || b.done || 0) || 0), 0);
   const achievementRate = todayPlanKg > 0 ? ((todayKg / todayPlanKg) * 100).toFixed(1) : "—";
