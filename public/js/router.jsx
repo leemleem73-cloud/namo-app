@@ -71,20 +71,16 @@ function QMESChemical({ user, onLogout }) {
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
           <div className="flex items-center shrink-0">
             <img
-              src="/logo.png"
-              alt="나모케미칼"
-              className="h-8 md:h-9 w-auto max-w-[180px] md:max-w-[210px] object-contain"
-              style={{
-                filter: "invert(1) hue-rotate(180deg) brightness(1.15) contrast(1.08)",
-                mixBlendMode: "screen",
-              }}
+              src="/assets/namo-header-logo.svg"
+              alt="NAMO Chemical"
+              className="h-8 md:h-9 w-auto max-w-[180px] md:max-w-[205px] object-contain opacity-95"
             />
           </div>
 
-          <div className="hidden md:flex items-center gap-2 text-sm text-slate-300 ml-4">
+          <div className="hidden md:flex items-center gap-2 text-[13px] text-slate-400 border-l border-slate-700/80 pl-4 ml-1">
             <span className="font-medium">슬러리 공장</span>
-            <ChevronRight size={15} />
-            <span className="text-white font-semibold">개발/Pilot 라인</span>
+            <ChevronRight size={14} className="text-slate-500" />
+            <span className="text-slate-100 font-semibold">개발/Pilot 라인</span>
           </div>
 
           <div className="flex-1" />
