@@ -71,9 +71,15 @@ function QMESChemical({ user, onLogout }) {
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
           <div className="flex items-center shrink-0">
             <img
-              src="/assets/namo-header-logo.svg?v=20260727-2"
+              src="https://namochemical.com/img/svg/img_logo.svg"
               alt="NAMO Chemical"
-              className="h-8 md:h-9 w-auto max-w-[180px] md:max-w-[205px] object-contain opacity-95"
+              className="h-6 md:h-[30px] w-auto max-w-[240px] md:max-w-[302px] object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.filter = "none";
+                e.currentTarget.src = "/assets/namo-header-logo.svg?v=20260727-3";
+              }}
             />
           </div>
 
