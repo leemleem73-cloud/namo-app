@@ -11,6 +11,7 @@ const TABS = [
   { id: "oqc", label: "출하검사 (OQC)", icon: ArrowUpFromLine, comp: OqcTab },
   { id: "lock", label: "품질 인터락 (차단)", icon: Lock, comp: InterlockTab },
   { id: "inv", label: "원재료 재고", icon: Package, comp: InventoryTab },
+  { id: "partners", label: "거래처 현황", icon: Users, comp: PartnersTab },
   { id: "eq", label: "설비 모니터링", icon: Cpu, comp: EquipmentTab },
   { id: "trace", label: "Lot 추적", icon: GitBranch, comp: TraceTab },
   { id: "spc", label: "SPC (Cpk)", icon: BarChart3, comp: SpcTab },
@@ -33,6 +34,7 @@ const TOP_MENUS = [
   },
   { id: "pop", label: "현장입력", icon: Tablet },
   { id: "inv", label: "재고관리", icon: Package },
+  { id: "partners", label: "거래처 현황", icon: Users },
   { id: "eq", label: "설비관리", icon: Cpu },
   { id: "trace", label: "LOT 추적", icon: GitBranch },
   {
@@ -220,11 +222,9 @@ function QMESChemical({ user, onLogout }) {
         <Active />
       </main>
     </div>
-
   );
 }
 
 /* ──────────────────────────── 회원가입 · 로그인 ──────────────────────────── */
 /* 가입: 이름·부서·비밀번호만 입력, 사번 없음. 가입 즉시 자동 승인되어 바로 시스템에 입장합니다.
    로그인: 이름 + 비밀번호. 관리자 권한은 [회원 관리]에서 지정. 비밀번호는 SHA-256 해시로만 저장. */
-
