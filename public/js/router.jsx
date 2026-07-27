@@ -94,7 +94,7 @@ function QMESChemical({ user, onLogout }) {
 
           <div className="flex-1" />
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-mono tabular-nums">
+          <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>{clock.toLocaleTimeString("ko-KR", { hour12: false })}</span>
           </div>
@@ -102,22 +102,22 @@ function QMESChemical({ user, onLogout }) {
             <Bell size={16} className="text-slate-300" />
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="qmes-header-controls flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
             <div className="hidden md:block leading-tight">
-              <div className="text-xs text-slate-200">{user.name}</div>
-              <div className="text-[10px] text-slate-500">{user.dept} · <span className="font-mono">{user.uid || "U-0000"}</span></div>
+              <div className="qmes-header-user-name">{user.name}</div>
+              <div className="qmes-header-user-meta">{user.dept} · <span className="font-mono">{user.uid || "U-0000"}</span></div>
             </div>
             <button onClick={downloadQmesBackup}
-              className="text-[11px] px-2 py-1 rounded border border-slate-700 text-slate-300 hover:text-white hover:border-sky-500/60 transition-colors"
+              className="qmes-header-action px-2 py-1 rounded border border-slate-700 hover:border-sky-500/60 transition-colors"
               title="전체 데이터 백업">백업</button>
             <button onClick={restoreQmesBackup}
-              className="text-[11px] px-2 py-1 rounded border border-slate-700 text-slate-300 hover:text-white hover:border-emerald-500/60 transition-colors"
+              className="qmes-header-action px-2 py-1 rounded border border-slate-700 hover:border-emerald-500/60 transition-colors"
               title="백업 파일 복원">복원</button>
             {user.role === "admin" && (
               <button
                 onClick={() => { setTab("members"); setOpenMenu(null); }}
-                className={`text-[11px] px-2 py-1 rounded border transition-colors ${
+                className={`qmes-header-action px-2 py-1 rounded border transition-colors ${
                   tab === "members"
                     ? "border-sky-500/60 text-sky-300 bg-sky-500/10"
                     : "border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500"
@@ -128,7 +128,7 @@ function QMESChemical({ user, onLogout }) {
             )}
             {onLogout && (
               <button onClick={onLogout}
-                className="text-[11px] px-2 py-1 rounded border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors">
+                className="qmes-header-action px-2 py-1 rounded border border-slate-700 hover:border-slate-500 transition-colors">
                 로그아웃
               </button>
             )}
