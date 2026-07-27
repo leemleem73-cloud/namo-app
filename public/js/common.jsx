@@ -342,7 +342,65 @@ try {
    - 입력 데이터는 이 브라우저의 localStorage에만 저장됩니다.
    - 외부 서버 전송 및 장치 간 자동 동기화는 수행하지 않습니다. */
 function dbDefault() {
-  return { batches: [], woDocs: {}, iqc: [], iqcMaterials: [], insp: { PQC: [], OQC: [] }, holds: [], eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {}, popEntries: [], auditLogs: [], seqs: {} };
+  return {
+    batches: [], woDocs: {}, iqc: [], iqcMaterials: [], insp: { PQC: [], OQC: [] },
+    holds: [], gateEvents: [], intermediateLots: {},
+    eqReadings: {}, eqLogs: [], eqAlarms: [], complaints: [], lots: {}, coa: {},
+    popEntries: [], auditLogs: [], seqs: {}
+  };
+}
+
+/* ── 고객사 지적 대응: 실제 저장 단계 품질 게이트 ── */
+function qmesText(v) { return String(v ?? "").trim(); }
+function qmesActiveHold(lotNo) {
+  const lot = qmesText(lotNo);
+  return (DB.holds || []).find((h) => {
+    const target = qmesText(h.target);
+    const active = !["해제", "종결", "완료"].includes(qmesText(h.status));
+    return active && (target === lot || target.startsWith(lot + " ") || target.startsWith(lot + "("));
+  }) || null;
+}
+function qmesLatestIqc(materialLot) {
+  const lot = qmesText(materialLot);
+  return (DB.iqc || [])
+    .filter((r) => qmesText(r.lot) === lot)
+    .sort((a, b) => qmesText(b.inspectedAt || b.recv).localeCompare(qmesText(a.inspectedAt || a.recv)))[0] || null;
+}
+function qmesMaterialGate(materialLot) {
+  const lot = qmesText(materialLot);
+  if (!lot) return { ok:false, reason:"원재료 LOT 미입력" };
+  const hold = qmesActiveHold(lot);
+  if (hold) return { ok:false, reason:`격리·홀드 LOT — ${hold.reason || hold.gate || "사용 차단"}` };
+  const iqc = qmesLatestIqc(lot);
+  if (!iqc) return { ok:false, reason:"IQC 검사 기록 없음" };
+  if (qmesText(iqc.judge) !== "합격") return { ok:false, reason:`IQC ${iqc.judge || "미판정"} — 합격 전 투입 금지` };
+  return { ok:true, reason:"IQC 합격" };
+}
+function qmesPqcPass(lotNo) {
+  const rows = (DB.insp?.PQC || []).filter((r) => qmesText(r.lot) === qmesText(lotNo));
+  if (!rows.length) return false;
+  const latestGroup = qmesText(rows[0].groupId || rows[0].id).replace(/-\d+$/, "");
+  const groupRows = rows.filter((r) => qmesText(r.groupId || r.id).replace(/-\d+$/, "") === latestGroup);
+  return groupRows.length > 0 && groupRows.every((r) => qmesText(r.judge) === "합격");
+}
+function qmesProductionComplete(lotNo) {
+  const doc = DB.woDocs?.[lotNo];
+  return !!doc && (qmesText(doc.status) === "완료" || qmesText(doc.manualStatus) === "완료");
+}
+function qmesShipmentGate(lotNo) {
+  const lot = qmesText(lotNo);
+  const hold = qmesActiveHold(lot);
+  if (hold) return { ok:false, reason:`홀드 미해제 — ${hold.reason || hold.gate || "출하 차단"}` };
+  if (!qmesProductionComplete(lot)) return { ok:false, reason:"생산실적 미완료" };
+  if (!qmesPqcPass(lot)) return { ok:false, reason:"PQC 합격 기록 없음" };
+  return { ok:true, reason:"출하검사 진행 가능" };
+}
+function qmesRecordGateBlock(gate, lotNo, reason) {
+  DB.gateEvents = [{
+    id:`GATE-${Date.now()}`, gate, lot:qmesText(lotNo), reason:qmesText(reason),
+    status:"차단", by:window.__QMES_USER__ || "현재 사용자", at:new Date().toISOString()
+  }, ...(DB.gateEvents || [])].slice(0, 1000);
+  auditLog("품질게이트", "차단", qmesText(lotNo), `${gate} / ${reason}`);
 }
 let DB = (() => {
   try {
