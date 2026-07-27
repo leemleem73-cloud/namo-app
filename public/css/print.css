@@ -1,3 +1,40 @@
 /* QMES print styles.
    Print-only extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* Work order: keep the printed header aligned with the on-screen preview.
+   This selector intentionally outranks the shared IQC rule that adds 30mm top padding. */
+@media print {
+  body.print-doc #qmes-print-root > .doc-paper.qmes-iqc-doc.qmes-wo-cert,
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.doc-paper.qmes-iqc-doc.qmes-wo-cert,
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert {
+    top: 0 !important;
+    margin: 0 auto !important;
+    padding: 5mm 8mm 4mm !important;
+    box-sizing: border-box !important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-header,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-header {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 16px !important;
+    align-items: center !important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-logo,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-logo,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-header-meta,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-header-meta {
+    position: static !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
