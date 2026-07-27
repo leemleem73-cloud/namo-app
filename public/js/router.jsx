@@ -69,20 +69,18 @@ function QMESChemical({ user, onLogout }) {
       {/* 상단 헤더 + 전체 가로 메뉴 */}
       <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center border border-[#2C4A72]" style={{ background: "rgba(65,196,238,.12)" }}>
-              <FlaskConical size={18} className="text-[#41C4EE]" />
-            </div>
-            <div>
-              <div className="text-sm font-bold tracking-widest text-white">QMES</div>
-              <div className="text-[10px] text-[#8CA5C4] -mt-0.5">나모케미칼㈜ </div>
-            </div>
+          <div className="flex items-center shrink-0">
+            <img
+              src="/logo.png"
+              alt="나모케미칼"
+              className="h-8 md:h-9 w-auto max-w-[180px] md:max-w-[210px] object-contain"
+            />
           </div>
 
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 ml-3">
-            <span>슬러리 공장</span>
-            <ChevronRight size={12} />
-            <span className="text-slate-200">개발/Pilot 라인</span>
+          <div className="hidden md:flex items-center gap-2 text-sm text-slate-300 ml-4">
+            <span className="font-medium">슬러리 공장</span>
+            <ChevronRight size={15} />
+            <span className="text-white font-semibold">개발/Pilot 라인</span>
           </div>
 
           <div className="flex-1" />
