@@ -3,11 +3,13 @@
  * - 최신 합격 LOT 자동 선택
  * - 거래처 현황 LOT를 보조 후보로 사용
  * - LOT 입력은 계속 수기 수정 가능
+ * - BYK 원료 표시명: BYK180 (분산제)
  */
 (function () {
   "use strict";
 
   const PASS_VALUES = new Set(["OK", "PASS", "합격", "적합"]);
+  const BYK_DISPLAY_NAME = "BYK180 (분산제)";
 
   function normalizeMaterial(value) {
     const text = String(value || "").toUpperCase().replace(/\s+/g, "");
@@ -19,6 +21,37 @@
     if (text.includes("SBR")) return "SBR";
     if (text.includes("SBS")) return "SBS";
     return text;
+  }
+
+  function standardizeBykData() {
+    const db = window.DB || {};
+    let changed = false;
+
+    if (Array.isArray(db.iqc)) {
+      db.iqc = db.iqc.map((row) => {
+        if (normalizeMaterial(row && row.name) !== "BYK180" || row.name === BYK_DISPLAY_NAME) return row;
+        changed = true;
+        return { ...row, name: BYK_DISPLAY_NAME };
+      });
+    }
+
+    if (Array.isArray(db.partnerSuppliers)) {
+      db.partnerSuppliers = db.partnerSuppliers.map((row) => {
+        if (normalizeMaterial(row && row.material) !== "BYK180" || row.material === BYK_DISPLAY_NAME) return row;
+        changed = true;
+        return { ...row, material: BYK_DISPLAY_NAME };
+      });
+    }
+
+    if (changed && typeof window.dbSave === "function") {
+      try { window.dbSave(); } catch (error) { console.warn("BYK180 명칭 저장 실패", error); }
+    }
+  }
+
+  function standardizeBykOptions(root) {
+    (root || document).querySelectorAll("select option").forEach((option) => {
+      if (normalizeMaterial(option.textContent) === "BYK180") option.textContent = BYK_DISPLAY_NAME;
+    });
   }
 
   function firstValue(record, keys) {
@@ -43,12 +76,7 @@
 
   function iqcRecords() {
     const db = window.DB || {};
-    const candidates = [
-      db.insp && db.insp.IQC,
-      db.iqc,
-      db.iqcRecords,
-      db.inspections && db.inspections.IQC,
-    ];
+    const candidates = [db.iqc, db.insp && db.insp.IQC, db.iqcRecords, db.inspections && db.inspections.IQC];
     const rows = candidates.find(Array.isArray);
     return Array.isArray(rows) ? rows : [];
   }
@@ -67,9 +95,7 @@
       candidates.push({ lot, date: received || "0000-00-00", supplier: firstValue(record, ["supplier", "company", "vendor"]) });
     });
 
-    const partnerRows = Array.isArray(window.DB && window.DB.partnerSuppliers)
-      ? window.DB.partnerSuppliers
-      : [];
+    const partnerRows = Array.isArray(window.DB && window.DB.partnerSuppliers) ? window.DB.partnerSuppliers : [];
     partnerRows.forEach((record) => {
       if (normalizeMaterial(record.material) !== key) return;
       const lot = String(record.lot || "").trim();
@@ -90,20 +116,34 @@
     input.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  function productionDate(shell) {
-    return shell && shell.querySelector('input[type="date"]')?.value || "";
+  function findWorkOrderRoot(node) {
+    if (!node || !node.closest) return null;
+    return node.closest(".qmes-wo-issue-shell") || node.closest("section") || node.closest("main") || document;
   }
 
-  function materialRows(shell) {
-    return Array.from(shell.querySelectorAll("table.qmes-material-table tbody tr"));
+  function productionDate(root) {
+    const dates = Array.from((root || document).querySelectorAll('input[type="date"]'));
+    return dates.find((input) => input.value)?.value || "";
+  }
+
+  function materialRows(root) {
+    const rows = Array.from((root || document).querySelectorAll("tbody tr"));
+    return rows.filter((row) => {
+      const select = row.querySelector("select");
+      const inputs = row.querySelectorAll("input");
+      return select && inputs.length >= 1 && Array.from(select.options || []).some((option) => normalizeMaterial(option.textContent) === "BYK180");
+    });
   }
 
   function applyRow(row, prodDate, overwriteBlankOnly) {
-    const materialSelect = row.querySelector("td:nth-child(2) select");
-    const lotInput = row.querySelector('td:nth-child(3) input[type="text"], td:nth-child(3) input:not([type])');
+    const selects = row.querySelectorAll("select");
+    const materialSelect = Array.from(selects).find((select) => Array.from(select.options || []).some((option) => normalizeMaterial(option.textContent) === "BYK180"));
+    const textInputs = Array.from(row.querySelectorAll('input[type="text"], input:not([type])'));
+    const lotInput = textInputs.find((input) => /LOT/i.test(input.placeholder || "")) || textInputs[0];
     if (!materialSelect || !lotInput) return;
 
-    const options = lotCandidates(materialSelect.value, prodDate);
+    standardizeBykOptions(row);
+    const options = lotCandidates(materialSelect.value || materialSelect.options[materialSelect.selectedIndex]?.textContent, prodDate);
     const listId = `qmes-lot-${normalizeMaterial(materialSelect.value)}-${Math.random().toString(36).slice(2, 8)}`;
     let datalist = lotInput.nextElementSibling;
     if (!datalist || datalist.tagName !== "DATALIST") {
@@ -115,35 +155,34 @@
     lotInput.setAttribute("list", listId);
     lotInput.title = options.length ? `사용 가능 LOT ${options.length}건 · 직접 입력 가능` : "사용 가능 합격 LOT 없음 · 직접 입력 가능";
 
-    if (options.length && (!overwriteBlankOnly || !String(lotInput.value || "").trim())) {
-      setReactInputValue(lotInput, options[0].lot);
-    }
+    if (options.length && (!overwriteBlankOnly || !String(lotInput.value || "").trim())) setReactInputValue(lotInput, options[0].lot);
   }
 
-  function applyAll(shell, overwriteBlankOnly) {
-    const date = productionDate(shell);
+  function applyAll(root, overwriteBlankOnly) {
+    const date = productionDate(root);
     if (!date) return;
-    window.setTimeout(() => {
-      materialRows(shell).forEach((row) => applyRow(row, date, overwriteBlankOnly));
-    }, 50);
+    window.setTimeout(() => materialRows(root).forEach((row) => applyRow(row, date, overwriteBlankOnly)), 50);
   }
 
   document.addEventListener("change", function (event) {
-    const shell = event.target.closest && event.target.closest(".qmes-wo-issue-shell");
-    if (!shell) return;
-
+    const root = findWorkOrderRoot(event.target);
     if (event.target.matches('input[type="date"]')) {
-      applyAll(shell, false);
+      applyAll(root, false);
       return;
     }
-
-    if (event.target.matches("table.qmes-material-table tbody td:nth-child(2) select")) {
-      window.setTimeout(() => applyRow(event.target.closest("tr"), productionDate(shell), false), 30);
+    if (event.target.matches("select")) {
+      window.setTimeout(() => applyRow(event.target.closest("tr"), productionDate(root), false), 30);
     }
   });
 
-  const observer = new MutationObserver(() => {
-    document.querySelectorAll(".qmes-wo-issue-shell").forEach((shell) => applyAll(shell, true));
+  standardizeBykData();
+  standardizeBykOptions(document);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === 1) standardizeBykOptions(node);
+    }));
+    applyAll(document, true);
   });
 
   observer.observe(document.documentElement, { childList: true, subtree: true });
