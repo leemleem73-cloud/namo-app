@@ -35,16 +35,23 @@ const TOP_MENUS = [
 ];
 
 function safeStorageGet(key, fallback=null){
-  try { const v=localStorage.getItem(key); return v==null?fallback:v; }
-  catch(e){ console.warn(`[QMES] localStorage 읽기 실패: ${key}`,e); return fallback; }
+  try {
+    const value = sessionStorage.getItem(key);
+    return value == null ? fallback : value;
+  } catch(e) {
+    return fallback;
+  }
 }
 function safeStorageSet(key,value){
-  try { localStorage.setItem(key,value); return true; }
-  catch(e){ console.warn(`[QMES] localStorage 저장 실패: ${key}`,e); return false; }
+  try {
+    sessionStorage.setItem(key,value);
+    return true;
+  } catch(e) {
+    return false;
+  }
 }
 function safeStorageRemove(key){
-  try { localStorage.removeItem(key); }
-  catch(e){ console.warn(`[QMES] localStorage 삭제 실패: ${key}`,e); }
+  try { sessionStorage.removeItem(key); } catch(e) { /* 화면 상태 저장 실패는 무시 */ }
 }
 
 function QMESChemical({user,onLogout}){
