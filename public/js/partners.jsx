@@ -1,5 +1,4 @@
 /* QMES module: 거래처 현황 */
-
 function PartnersTab() {
   const defaultCustomers = [
     { code:"CUS001", name:"현대자동차", status:"거래중" },
@@ -97,14 +96,14 @@ function PartnersTab() {
     setSupplierForm({ company:"", material:"", lot:"", status:"거래중" });
     setShowForm(false);
   };
-
-  const openNewFor = (type) => {
-    setEditCode(null);
-    setCustomerForm({ name:"", status:"거래중" });
-    setSupplierForm({ company:"", material:"", lot:"", status:"거래중" });
+  const switchType = (type) => {
     setActiveType(type);
     setSearchText("");
     setSaveMessage("");
+    resetForm();
+  };
+  const openNewFor = (type) => {
+    switchType(type);
     setShowForm(true);
     window.scrollTo({ top:0, behavior:"smooth" });
   };
@@ -114,28 +113,17 @@ function PartnersTab() {
   const saveCustomer = () => {
     const name = customerForm.name.trim();
     if (!name) return window.alert("고객사명을 입력하세요.");
-    const duplicate = customers.some((row)=>row.code!==editCode && row.name.toLowerCase()===name.toLowerCase());
-    if (duplicate) return window.alert("이미 등록된 고객사입니다.");
-    const next = editCode
-      ? customers.map((row)=>row.code===editCode ? { ...row, name, status:customerForm.status } : row)
-      : [...customers, { code:nextCode("CUS",customers), name, status:customerForm.status }];
-    setCustomers(next); persist(next,suppliers);
-    setSaveMessage(editCode ? `${name} 고객사 정보를 수정했습니다.` : `${name} 고객사를 등록했습니다.`);
-    resetForm();
+    if (customers.some((row)=>row.code!==editCode && row.name.toLowerCase()===name.toLowerCase())) return window.alert("이미 등록된 고객사입니다.");
+    const next = editCode ? customers.map((row)=>row.code===editCode ? { ...row, name, status:customerForm.status } : row) : [...customers, { code:nextCode("CUS",customers), name, status:customerForm.status }];
+    setCustomers(next); persist(next,suppliers); setSaveMessage(editCode ? `${name} 고객사 정보를 수정했습니다.` : `${name} 고객사를 등록했습니다.`); resetForm();
   };
-
   const saveSupplier = () => {
     const company = supplierForm.company.trim();
     const material = standardMaterialName(supplierForm.material);
     if (!company || !material) return window.alert("공급업체명과 원료명을 입력하세요.");
-    const next = editCode
-      ? suppliers.map((row)=>row.code===editCode ? { ...row, company, material, lot:supplierForm.lot.trim().toUpperCase(), status:supplierForm.status } : row)
-      : [...suppliers, { code:nextCode("SUP",suppliers), company, material, lot:supplierForm.lot.trim().toUpperCase(), status:supplierForm.status }];
-    setSuppliers(next); persist(customers,next);
-    setSaveMessage(editCode ? `${company} 공급업체 정보를 수정했습니다.` : `${company} 공급업체를 등록했습니다.`);
-    resetForm();
+    const next = editCode ? suppliers.map((row)=>row.code===editCode ? { ...row, company, material, lot:supplierForm.lot.trim().toUpperCase(), status:supplierForm.status } : row) : [...suppliers, { code:nextCode("SUP",suppliers), company, material, lot:supplierForm.lot.trim().toUpperCase(), status:supplierForm.status }];
+    setSuppliers(next); persist(customers,next); setSaveMessage(editCode ? `${company} 공급업체 정보를 수정했습니다.` : `${company} 공급업체를 등록했습니다.`); resetForm();
   };
-
   const saveSupplierLots = () => {
     try {
       persist();
@@ -147,7 +135,6 @@ function PartnersTab() {
       setSaveMessage("저장 중 오류가 발생했습니다.");
     }
   };
-
   const updateSupplierLot = (code,lot) => setSuppliers((prev)=>prev.map((row)=>row.code===code ? { ...row, lot } : row));
 
   const keyword = searchText.trim().toLowerCase();
@@ -155,18 +142,33 @@ function PartnersTab() {
   const filteredSuppliers = suppliers.filter((item)=>[item.code,item.company,item.material,item.lot,item.status].some((v)=>String(v||"").toLowerCase().includes(keyword))).sort((a,b)=>a.company.localeCompare(b.company,"ko-KR",{numeric:true,sensitivity:"base"}));
   const inputClass = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-500";
   const btnEdit = "rounded-md border border-sky-500/50 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/10";
-  const headerRegisterBtn = "rounded-md border border-sky-400/70 bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-500";
+  const activeTab = "border border-cyan-400 bg-cyan-600 text-white shadow-lg shadow-cyan-950/40";
+  const idleTab = "border border-slate-700 bg-slate-950 text-slate-300 hover:border-slate-500";
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">거래처 현황</h2>
-          <p className="mt-1 text-sm text-slate-400">고객사 및 원료 공급업체 정보를 등록·수정합니다.</p>
+          <p className="mt-1 text-sm text-slate-400">고객사와 원료 공급업체를 구분하여 관리합니다.</p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <button type="button" onClick={()=>openNewFor("customer")} className={headerRegisterBtn}>+ 고객사 등록</button>
-          <button type="button" onClick={()=>openNewFor("supplier")} className={headerRegisterBtn}>+ 공급업체 등록</button>
+        <button type="button" onClick={()=>openNewFor(activeType)} className="rounded-lg border border-sky-400/70 bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">
+          {activeType === "customer" ? "+ 고객사 등록" : "+ 공급업체 등록"}
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">조회 구분</div>
+        <div className="grid gap-3 md:grid-cols-[220px_220px_1fr]">
+          <button type="button" onClick={()=>switchType("customer")} aria-pressed={activeType==="customer"} className={`rounded-xl px-5 py-4 text-left transition ${activeType==="customer"?activeTab:idleTab}`}>
+            <div className="flex items-center justify-between"><span className="font-bold">고객사 목록</span><span className="rounded-full bg-black/20 px-2 py-0.5 text-sm">{customers.length}</span></div>
+            <div className="mt-1 text-xs opacity-75">고객사 코드와 거래상태 관리</div>
+          </button>
+          <button type="button" onClick={()=>switchType("supplier")} aria-pressed={activeType==="supplier"} className={`rounded-xl px-5 py-4 text-left transition ${activeType==="supplier"?activeTab:idleTab}`}>
+            <div className="flex items-center justify-between"><span className="font-bold">공급업체 목록</span><span className="rounded-full bg-black/20 px-2 py-0.5 text-sm">{suppliers.length}</span></div>
+            <div className="mt-1 text-xs opacity-75">공급업체·원료명·LOT 관리</div>
+          </button>
+          <div className="flex items-center"><input type="search" value={searchText} onChange={(e)=>setSearchText(e.target.value)} placeholder={activeType==="customer"?"고객사명 또는 고객사 코드 검색":"공급업체명 / 원료명 / LOT 검색"} className={inputClass}/></div>
         </div>
       </div>
 
@@ -185,19 +187,11 @@ function PartnersTab() {
         </div>}
       </div>}
 
-      <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900 p-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-2">
-          <button onClick={()=>{setActiveType("customer");resetForm();}} className={`rounded-lg px-5 py-2 text-sm font-semibold ${activeType==="customer"?"bg-cyan-600 text-white":"border border-slate-700 bg-slate-950 text-slate-300"}`}>고객사 <span className="ml-2">{customers.length}</span></button>
-          <button onClick={()=>{setActiveType("supplier");resetForm();}} className={`rounded-lg px-5 py-2 text-sm font-semibold ${activeType==="supplier"?"bg-cyan-600 text-white":"border border-slate-700 bg-slate-950 text-slate-300"}`}>공급업체 <span className="ml-2">{suppliers.length}</span></button>
-        </div>
-        <input type="search" value={searchText} onChange={(e)=>setSearchText(e.target.value)} placeholder={activeType==="customer"?"고객사명 또는 코드 검색":"공급업체, 원료명, LOT 검색"} className={`${inputClass} md:max-w-md`}/>
-      </div>
-
       {saveMessage && <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{saveMessage}</div>}
 
       <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-700 px-5 py-4">
-          <h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3>
+          <div><h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3><p className="mt-1 text-xs text-slate-500">{activeType==="customer"?`등록 고객사 ${filteredCustomers.length}건`:`등록 공급업체 ${filteredSuppliers.length}건 · 원료 LOT 작업지시서 연동`}</p></div>
           {activeType === "supplier" && <button type="button" onClick={saveSupplierLots} className="rounded-md border border-cyan-500/50 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/10">LOT 저장 · 작업지시서 반영</button>}
         </div>
         <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm">
