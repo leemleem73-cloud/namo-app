@@ -142,8 +142,8 @@ function PartnersTab() {
   const filteredSuppliers = suppliers.filter((item)=>[item.code,item.company,item.material,item.lot,item.status].some((v)=>String(v||"").toLowerCase().includes(keyword))).sort((a,b)=>a.company.localeCompare(b.company,"ko-KR",{numeric:true,sensitivity:"base"}));
   const inputClass = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-500";
   const btnEdit = "rounded-md border border-sky-500/50 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/10";
-  const activeTab = "border border-cyan-400 bg-cyan-600 text-white shadow-lg shadow-cyan-950/40";
-  const idleTab = "border border-slate-700 bg-slate-950 text-slate-300 hover:border-slate-500";
+  const activeTab = "border-cyan-400 bg-cyan-500/15 text-cyan-300";
+  const idleTab = "border-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-200";
 
   return (
     <div className="space-y-5">
@@ -157,18 +157,19 @@ function PartnersTab() {
         </button>
       </div>
 
-      <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">조회 구분</div>
-        <div className="grid gap-3 md:grid-cols-[220px_220px_1fr]">
-          <button type="button" onClick={()=>switchType("customer")} aria-pressed={activeType==="customer"} className={`rounded-xl px-5 py-4 text-left transition ${activeType==="customer"?activeTab:idleTab}`}>
-            <div className="flex items-center justify-between"><span className="font-bold">고객사 목록</span><span className="rounded-full bg-black/20 px-2 py-0.5 text-sm">{customers.length}</span></div>
-            <div className="mt-1 text-xs opacity-75">고객사 코드와 거래상태 관리</div>
-          </button>
-          <button type="button" onClick={()=>switchType("supplier")} aria-pressed={activeType==="supplier"} className={`rounded-xl px-5 py-4 text-left transition ${activeType==="supplier"?activeTab:idleTab}`}>
-            <div className="flex items-center justify-between"><span className="font-bold">공급업체 목록</span><span className="rounded-full bg-black/20 px-2 py-0.5 text-sm">{suppliers.length}</span></div>
-            <div className="mt-1 text-xs opacity-75">공급업체·원료명·LOT 관리</div>
-          </button>
-          <div className="flex items-center"><input type="search" value={searchText} onChange={(e)=>setSearchText(e.target.value)} placeholder={activeType==="customer"?"고객사명 또는 고객사 코드 검색":"공급업체명 / 원료명 / LOT 검색"} className={inputClass}/></div>
+      <div className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="inline-flex w-full rounded-lg border border-slate-700 bg-slate-950 p-1 lg:w-auto">
+            <button type="button" onClick={()=>switchType("customer")} aria-pressed={activeType==="customer"} className={`flex flex-1 items-center justify-center gap-2 rounded-md border px-5 py-2 text-sm font-semibold transition lg:flex-none ${activeType==="customer"?activeTab:idleTab}`}>
+              <span>고객사</span><span className="rounded-full bg-black/20 px-2 py-0.5 text-xs">{customers.length}</span>
+            </button>
+            <button type="button" onClick={()=>switchType("supplier")} aria-pressed={activeType==="supplier"} className={`flex flex-1 items-center justify-center gap-2 rounded-md border px-5 py-2 text-sm font-semibold transition lg:flex-none ${activeType==="supplier"?activeTab:idleTab}`}>
+              <span>공급업체</span><span className="rounded-full bg-black/20 px-2 py-0.5 text-xs">{suppliers.length}</span>
+            </button>
+          </div>
+          <div className="min-w-0 flex-1">
+            <input type="search" value={searchText} onChange={(e)=>setSearchText(e.target.value)} placeholder={activeType==="customer"?"고객사명 또는 고객사 코드 검색":"공급업체명 / 원료명 / LOT 검색"} className={inputClass}/>
+          </div>
         </div>
       </div>
 
