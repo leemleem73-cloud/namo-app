@@ -98,9 +98,18 @@ function PartnersTab() {
     setShowForm(false);
   };
 
-  const openNew = () => { resetForm(); setShowForm(true); };
-  const openCustomerEdit = (row) => { setEditCode(row.code); setCustomerForm({ name:row.name, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
-  const openSupplierEdit = (row) => { setEditCode(row.code); setSupplierForm({ company:row.company, material:row.material, lot:row.lot, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
+  const openNewFor = (type) => {
+    setEditCode(null);
+    setCustomerForm({ name:"", status:"거래중" });
+    setSupplierForm({ company:"", material:"", lot:"", status:"거래중" });
+    setActiveType(type);
+    setSearchText("");
+    setSaveMessage("");
+    setShowForm(true);
+    window.scrollTo({ top:0, behavior:"smooth" });
+  };
+  const openCustomerEdit = (row) => { setActiveType("customer"); setEditCode(row.code); setCustomerForm({ name:row.name, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
+  const openSupplierEdit = (row) => { setActiveType("supplier"); setEditCode(row.code); setSupplierForm({ company:row.company, material:row.material, lot:row.lot, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
 
   const saveCustomer = () => {
     const name = customerForm.name.trim();
@@ -146,19 +155,23 @@ function PartnersTab() {
   const filteredSuppliers = suppliers.filter((item)=>[item.code,item.company,item.material,item.lot,item.status].some((v)=>String(v||"").toLowerCase().includes(keyword))).sort((a,b)=>a.company.localeCompare(b.company,"ko-KR",{numeric:true,sensitivity:"base"}));
   const inputClass = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-500";
   const btnEdit = "rounded-md border border-sky-500/50 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/10";
+  const headerRegisterBtn = "rounded-md border border-sky-400/70 bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-500";
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div><h2 className="text-2xl font-bold text-white">거래처 현황</h2><p className="mt-1 text-sm text-slate-400">고객사 및 원료 공급업체 정보를 등록·수정합니다.</p></div>
-        <div className="flex gap-2">
-          <button onClick={openNew} className="rounded-lg border border-cyan-500 px-4 py-2 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/10">+ {activeType === "customer" ? "고객사 등록" : "공급업체 등록"}</button>
-          {activeType === "supplier" && <button onClick={saveSupplierLots} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-500">LOT 저장 · 작업지시서 반영</button>}
+        <div>
+          <h2 className="text-2xl font-bold text-white">거래처 현황</h2>
+          <p className="mt-1 text-sm text-slate-400">고객사 및 원료 공급업체 정보를 등록·수정합니다.</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={()=>openNewFor("customer")} className={headerRegisterBtn}>+ 고객사 등록</button>
+          <button type="button" onClick={()=>openNewFor("supplier")} className={headerRegisterBtn}>+ 공급업체 등록</button>
         </div>
       </div>
 
       {showForm && <div className="rounded-xl border border-cyan-500/40 bg-slate-900 p-4">
-        <div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-cyan-300">{editCode ? "등록 정보 수정" : "신규 등록"}</h3><button onClick={resetForm} className="text-sm text-slate-400">닫기</button></div>
+        <div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-cyan-300">{editCode ? "등록 정보 수정" : activeType === "customer" ? "신규 고객사 등록" : "신규 공급업체 등록"}</h3><button onClick={resetForm} className="text-sm text-slate-400">닫기</button></div>
         {activeType === "customer" ? <div className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
           <input value={customerForm.name} onChange={(e)=>setCustomerForm({ ...customerForm, name:e.target.value })} placeholder="고객사명" className={inputClass}/>
           <select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select>
@@ -183,7 +196,10 @@ function PartnersTab() {
       {saveMessage && <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{saveMessage}</div>}
 
       <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
-        <div className="border-b border-slate-700 px-5 py-4"><h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3></div>
+        <div className="flex items-center justify-between border-b border-slate-700 px-5 py-4">
+          <h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3>
+          {activeType === "supplier" && <button type="button" onClick={saveSupplierLots} className="rounded-md border border-cyan-500/50 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/10">LOT 저장 · 작업지시서 반영</button>}
+        </div>
         <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm">
           {activeType === "customer" ? <>
             <thead className="bg-slate-800 text-slate-300"><tr><th className="px-4 py-3">No</th><th className="px-4 py-3 text-left">고객사 코드</th><th className="px-4 py-3 text-left">고객사명</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">관리</th></tr></thead>
