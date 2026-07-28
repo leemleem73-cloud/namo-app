@@ -18,7 +18,6 @@ const TABS = [
   { id:"ncr", label:"부적합 (8D)", icon:ShieldAlert, comp:NcrTab },
   { id:"cc", label:"고객불만 (GQMS)", icon:MessageSquareWarning, comp:ComplaintTab },
   { id:"coa", label:"출하성적서", icon:Printer, comp:CoaTab },
-  { id:"talk", label:"NAMO Talk", icon:MessageSquareWarning, comp:NamoTalkTab },
   { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },
 ];
 
@@ -63,10 +62,6 @@ function QMESChemical({user,onLogout}){
     safeStorageSet("qmes_current_tab",tab);
   },[tab]);
   useEffect(()=>{
-    window.__QMES_CURRENT_USER__=user;
-    window.__QMES_USER__=user?.name||"";
-  },[user]);
-  useEffect(()=>{
     if(openMenu) safeStorageSet("qmes_open_menu",openMenu);
     else safeStorageRemove("qmes_open_menu");
   },[openMenu]);
@@ -88,7 +83,6 @@ function QMESChemical({user,onLogout}){
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
           <button className="relative p-2 rounded hover:bg-slate-800" aria-label="알림"><Bell size={16}/><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400"/></button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <button onClick={()=>{setTab("talk");setOpenMenu(null);}} className={`qmes-header-action px-3 py-1.5 rounded border font-semibold flex items-center gap-1.5 ${tab==="talk"?"border-sky-500/60 text-sky-300 bg-sky-500/10":"border-sky-500/40 text-sky-300 hover:bg-sky-500/10"}`} title="NAMO Talk 열기"><MessageSquareWarning size={14}/><span>NAMO Talk</span></button>
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
             <div className="hidden md:block leading-tight"><div className="qmes-header-user-name">{user.name}</div><div className="qmes-header-user-meta">{user.dept} · <span className="font-mono">{user.uid||"U-0000"}</span></div></div>
             <button onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">백업</button>
