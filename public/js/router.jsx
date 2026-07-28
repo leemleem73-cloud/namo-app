@@ -18,6 +18,7 @@ const TABS = [
   { id:"ncr", label:"부적합 (8D)", icon:ShieldAlert, comp:NcrTab },
   { id:"cc", label:"고객불만 (GQMS)", icon:MessageSquareWarning, comp:ComplaintTab },
   { id:"coa", label:"출하성적서", icon:Printer, comp:CoaTab },
+  { id:"namoTalk", label:"NAMO Talk", icon:Users, comp:NamoTalkTab },
   { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },
 ];
 
@@ -67,6 +68,8 @@ function QMESChemical({user,onLogout}){
   },[openMenu]);
   useEffect(()=>{ const t=setInterval(()=>setClock(new Date()),1000); return()=>clearInterval(t); },[]);
 
+  window.__QMES_CURRENT_USER__ = user;
+
   const visibleTabs=TABS.filter(t=>!t.adminOnly||user.role==="admin");
   useEffect(()=>{ if(!visibleTabs.some(t=>t.id===tab)) setTab("dash"); },[tab,visibleTabs.length]);
   const currentTab=TABS.find(t=>t.id===tab)||TABS[0];
@@ -82,6 +85,16 @@ function QMESChemical({user,onLogout}){
           <div className="flex-1" />
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
           <button className="relative p-2 rounded hover:bg-slate-800" aria-label="알림"><Bell size={16}/><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400"/></button>
+          <button
+            type="button"
+            onClick={()=>{setTab("namoTalk");setOpenMenu(null);}}
+            className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-bold transition-colors ${tab==="namoTalk"?"bg-sky-500/20 border-sky-400 text-white shadow-[0_0_18px_rgba(14,165,233,.2)]":"bg-sky-600/15 border-sky-500/70 text-sky-100 hover:bg-sky-500/25"}`}
+            aria-label="NAMO Talk 열기"
+          >
+            <span aria-hidden="true">💬</span>
+            <span>NAMO Talk</span>
+            <span className="min-w-[19px] h-[19px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[19px] text-center">5</span>
+          </button>
           <div className="qmes-header-controls flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
             <div className="hidden md:block leading-tight"><div className="qmes-header-user-name">{user.name}</div><div className="qmes-header-user-meta">{user.dept} · <span className="font-mono">{user.uid||"U-0000"}</span></div></div>
