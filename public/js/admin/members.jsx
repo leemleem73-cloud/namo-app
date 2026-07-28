@@ -129,3 +129,8 @@ function MembersManagementTab() {
     </div>
   );
 }
+
+/* 기존 라우터의 MembersTab 이름을 새 회원관리 화면에 연결 */
+function MembersTab() {
+  return <MembersManagementTab />;
+}
