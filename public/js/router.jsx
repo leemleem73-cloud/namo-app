@@ -19,6 +19,7 @@ const TABS = [
   { id: "ncr", label: "부적합 (8D)", icon: ShieldAlert, comp: NcrTab },
   { id: "cc", label: "고객불만 (GQMS)", icon: MessageSquareWarning, comp: ComplaintTab },
   { id: "coa", label: "출하성적서", icon: Printer, comp: CoaTab },
+  { id: "talk", label: "NAMO Talk", icon: MessageSquare, comp: NamoTalkTab },
   { id: "members", label: "회원 관리", icon: Users, comp: MembersTab, adminOnly: true },
 ];
 
@@ -77,6 +78,11 @@ function QMESChemical({ user, onLogout }) {
     safeStorageSet("qmes_current_tab", tab);
   }, [tab]);
 
+  useEffect(() => {
+    window.__QMES_CURRENT_USER__ = user;
+    window.__QMES_USER__ = user?.name || "";
+  }, [user]);
+
   const [clock, setClock] = useState(new Date());
   const [openMenu, setOpenMenu] = useState(() => safeStorageGet("qmes_open_menu", null));
   useEffect(() => {
@@ -99,7 +105,6 @@ function QMESChemical({ user, onLogout }) {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col" style={{ fontFamily: "'Pretendard', 'Noto Sans KR', system-ui, sans-serif" }}>
-      {/* 상단 헤더 + 전체 가로 메뉴 */}
       <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
           <button
@@ -136,6 +141,18 @@ function QMESChemical({ user, onLogout }) {
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400" />
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
+            <button
+              onClick={() => { setTab("talk"); setOpenMenu(null); }}
+              className={`qmes-header-action px-3 py-1.5 rounded border font-semibold transition-colors flex items-center gap-1.5 ${
+                tab === "talk"
+                  ? "border-sky-500/60 text-sky-300 bg-sky-500/10"
+                  : "border-sky-500/40 text-sky-300 hover:bg-sky-500/10"
+              }`}
+              title="NAMO Talk 열기"
+            >
+              <MessageSquare size={14} />
+              <span>NAMO Talk</span>
+            </button>
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
             <div className="hidden md:block leading-tight">
               <div className="qmes-header-user-name">{user.name}</div>
