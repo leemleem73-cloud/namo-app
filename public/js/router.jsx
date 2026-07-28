@@ -52,7 +52,9 @@ function QMESChemical({user,onLogout}){
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
 
-  useEffect(()=>safeStorageSet("qmes_current_tab",tab),[tab]);
+  useEffect(()=>{
+    safeStorageSet("qmes_current_tab",tab);
+  },[tab]);
   useEffect(()=>{
     window.__QMES_CURRENT_USER__=user;
     window.__QMES_USER__=user?.name||"";
