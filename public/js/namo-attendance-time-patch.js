@@ -1,17 +1,37 @@
 /* NAMO attendance time display and button action patch */
 (function () {
   const STORAGE_KEY = 'qmes-namo-attendance-v1';
+  const SESSION_KEY = 'qmes-namo-attendance-session-v1';
   const pad = (n) => String(n).padStart(2, '0');
   const dateText = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const timeText = (d = new Date()) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const clockText = (d = new Date()) => `${timeText(d)}:${pad(d.getSeconds())}`;
 
-  function loadRecords(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  function parseRows(value){
+    try { return JSON.parse(value || '[]'); }
     catch(e){ return []; }
   }
+  function loadRecords(){
+    const localRows = parseRows(localStorage.getItem(STORAGE_KEY));
+    const sessionRows = parseRows(sessionStorage.getItem(SESSION_KEY));
+    const merged = [...localRows];
+    sessionRows.forEach((row) => {
+      const idx = merged.findIndex((r) => r.date === row.date && ((r.uid && row.uid && r.uid === row.uid) || r.name === row.name));
+      if (idx >= 0) merged[idx] = Object.assign({}, merged[idx], row);
+      else merged.push(row);
+    });
+    return merged;
+  }
   function saveRecords(rows){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+    const data = JSON.stringify(rows);
+    try {
+      localStorage.setItem(STORAGE_KEY, data);
+      sessionStorage.removeItem(SESSION_KEY);
+      window.__NAMO_ATTENDANCE_STORAGE_FALLBACK__ = false;
+    } catch(e) {
+      sessionStorage.setItem(SESSION_KEY, data);
+      window.__NAMO_ATTENDANCE_STORAGE_FALLBACK__ = true;
+    }
     window.dispatchEvent(new CustomEvent('namo-attendance-changed'));
   }
   function getUser(){
@@ -33,7 +53,7 @@
   function toast(panel, message, ok){
     let el=panel.querySelector('#namo-attendance-toast');
     if(!el){
-      el=make('div','',{position:'absolute',left:'50%',top:'130px',transform:'translateX(-50%)',zIndex:'99',padding:'10px 16px',borderRadius:'10px',fontSize:'12px',fontWeight:'900',boxShadow:'0 8px 24px rgba(15,23,42,.2)',transition:'opacity .2s'});
+      el=make('div','',{position:'absolute',left:'50%',top:'130px',transform:'translateX(-50%)',zIndex:'99',padding:'10px 16px',borderRadius:'10px',fontSize:'12px',fontWeight:'900',boxShadow:'0 8px 24px rgba(15,23,42,.2)',transition:'opacity .2s',whiteSpace:'nowrap'});
       el.id='namo-attendance-toast';
       panel.appendChild(el);
     }
@@ -42,7 +62,7 @@
     el.style.color='#fff';
     el.style.opacity='1';
     clearTimeout(el._timer);
-    el._timer=setTimeout(()=>{ el.style.opacity='0'; },1800);
+    el._timer=setTimeout(()=>{ el.style.opacity='0'; },2200);
   }
   function findTodayRow(rows, user){
     const today=dateText();
@@ -62,7 +82,7 @@
     };
     if(idx>=0) rows[idx]=Object.assign({},rows[idx],row); else rows.push(row);
     saveRecords(rows);
-    toast(panel,`${row.clockIn} 출근 처리되었습니다.`,true);
+    toast(panel,window.__NAMO_ATTENDANCE_STORAGE_FALLBACK__ ? `${row.clockIn} 출근 처리됨 · 브라우저 저장공간 부족으로 임시 저장` : `${row.clockIn} 출근 처리되었습니다.`,true);
     refreshPanel(panel);
   }
   function doClockOut(panel){
@@ -79,7 +99,7 @@
     }
     rows[idx].clockOut=timeText();
     saveRecords(rows);
-    toast(panel,`${rows[idx].clockOut} 퇴근 처리되었습니다.`,true);
+    toast(panel,window.__NAMO_ATTENDANCE_STORAGE_FALLBACK__ ? `${rows[idx].clockOut} 퇴근 처리됨 · 임시 저장` : `${rows[idx].clockOut} 퇴근 처리되었습니다.`,true);
     refreshPanel(panel);
   }
   function refreshPanel(panel){
