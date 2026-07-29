@@ -1,144 +1,152 @@
-/* NAMO Talk: QMES 업무 메신저 1차 UI */
-const NAMO_TALK_KEY = "qmes-namo-talk-v3";
+/* NAMO Talk: full-screen light messenger UI */
+const NAMO_TALK_KEY = "qmes-namo-talk-v4";
 
 const NAMO_TALK_ROOMS = [
-  { id:"전체공지", name:"전체 공지", type:"공지", unread:0, preview:"대화가 없습니다.", time:"" },
-  { id:"품질부", name:"품질부", type:"부서", unread:0, preview:"대화가 없습니다.", time:"" },
-  { id:"생산부", name:"생산부", type:"부서", unread:0, preview:"대화가 없습니다.", time:"" },
-  { id:"연구소", name:"연구소", type:"부서", unread:0, preview:"대화가 없습니다.", time:"" },
+  { id:"전체공지", name:"전체공지", group:"업무 채널", icon:"공", preview:"대화가 없습니다.", unread:0 },
+  { id:"품질부", name:"품질부", group:"업무 채널", icon:"품", preview:"대화가 없습니다.", unread:0 },
+  { id:"생산부", name:"생산부", group:"업무 채널", icon:"생", preview:"대화가 없습니다.", unread:0 },
+  { id:"연구소", name:"연구소", group:"업무 채널", icon:"연", preview:"대화가 없습니다.", unread:0 },
 ];
 
-const NAMO_TALK_META = {};
-
-function loadNamoTalkMessages() {
+function loadNamoTalkMessages(){
   try {
-    const raw = localStorage.getItem(NAMO_TALK_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { /* 저장 오류는 무시 */ }
-  return {};
+    const raw=localStorage.getItem(NAMO_TALK_KEY);
+    return raw?JSON.parse(raw):{};
+  } catch(e){ return {}; }
 }
 
-function saveNamoTalkMessages(data) {
-  try { localStorage.setItem(NAMO_TALK_KEY, JSON.stringify(data)); } catch (e) { /* 저장 오류는 무시 */ }
+function saveNamoTalkMessages(data){
+  try { localStorage.setItem(NAMO_TALK_KEY,JSON.stringify(data)); } catch(e) { /* 무시 */ }
 }
 
-function NamoTalkBadge({children, tone="sky"}) {
-  const toneClass = tone === "green" ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : tone === "amber" ? "bg-amber-500/15 text-amber-300 border-amber-500/30" : "bg-sky-500/15 text-sky-300 border-sky-500/30";
-  return <span className={`inline-flex items-center rounded-md border px-2 py-1 text-[11px] font-semibold ${toneClass}`}>{children}</span>;
-}
+function NamoTalkTab(){
+  const currentUser=window.__QMES_CURRENT_USER__||{name:"사용자",dept:""};
+  const [activeRoom,setActiveRoom]=useState("전체공지");
+  const [messages,setMessages]=useState(loadNamoTalkMessages);
+  const [text,setText]=useState("");
+  const [search,setSearch]=useState("");
+  const [section,setSection]=useState("대화");
 
-function NamoTalkTab() {
-  const currentUser = window.__QMES_CURRENT_USER__ || { name: window.__QMES_USER__ || "사용자", dept:"" };
-  const [channel, setChannel] = useState("전체공지");
-  const [messages, setMessages] = useState(loadNamoTalkMessages);
-  const [text, setText] = useState("");
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("전체");
+  const room=NAMO_TALK_ROOMS.find(item=>item.id===activeRoom)||NAMO_TALK_ROOMS[0];
+  const visibleRooms=NAMO_TALK_ROOMS.filter(item=>!search.trim()||item.name.includes(search.trim()));
 
-  const visibleRooms = NAMO_TALK_ROOMS.filter(room => {
-    const matchesQuery = !query.trim() || room.name.toLowerCase().includes(query.trim().toLowerCase()) || room.preview.toLowerCase().includes(query.trim().toLowerCase());
-    const matchesFilter = filter === "전체" || (filter === "안 읽음" && room.unread > 0) || (filter === "LOT" && room.type === "LOT");
-    return matchesQuery && matchesFilter;
-  });
-
-  const selectedRoom = NAMO_TALK_ROOMS.find(room => room.id === channel) || NAMO_TALK_ROOMS[0];
-  const meta = NAMO_TALK_META[channel];
-  const unreadCount = NAMO_TALK_ROOMS.reduce((sum, room) => sum + room.unread, 0);
-
-  const sendMessage = () => {
-    const value = text.trim();
-    if (!value) return;
-    const next = {
+  const sendMessage=()=>{
+    const value=text.trim();
+    if(!value)return;
+    const next={
       ...messages,
-      [channel]: [
-        ...(messages[channel] || []),
-        {
-          id:Date.now(),
-          sender:currentUser.name || "사용자",
-          dept:currentUser.dept || "",
-          text:value,
-          time:new Date().toLocaleString("ko-KR", { hour12:false }),
-        },
-      ],
+      [activeRoom]:[
+        ...(messages[activeRoom]||[]),
+        {id:Date.now(),sender:currentUser.name,dept:currentUser.dept||"",text:value,time:new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:false})}
+      ]
     };
     setMessages(next);
     saveNamoTalkMessages(next);
     setText("");
   };
 
-  return (
-    <div className="min-h-[690px] rounded-2xl border border-slate-800 bg-slate-950/40 overflow-hidden shadow-2xl shadow-black/20">
-      <div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)_330px] min-h-[690px]">
-        <aside className="border-b xl:border-b-0 xl:border-r border-slate-800 bg-slate-900/75">
-          <div className="p-4 border-b border-slate-800">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div>
-                <h2 className="text-lg font-black tracking-tight text-white">NAMO Talk</h2>
-                <p className="text-xs text-slate-500 mt-1">{currentUser.name} · {currentUser.dept || "부서 미지정"}</p>
-              </div>
-              <button type="button" className="w-9 h-9 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-lg">＋</button>
-            </div>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">⌕</span>
-              <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="대화방 검색" className="w-full h-10 rounded-lg border border-slate-700 bg-slate-950/70 pl-9 pr-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500" />
-            </div>
-            <div className="grid grid-cols-3 gap-1 mt-3 rounded-lg bg-slate-950/60 p-1">
-              {["전체","안 읽음","LOT"].map(item=><button key={item} onClick={()=>setFilter(item)} className={`rounded-md px-2 py-2 text-xs font-semibold ${filter===item?"bg-slate-700 text-white":"text-slate-500 hover:text-slate-300"}`}>{item}{item==="안 읽음"&&unreadCount>0&&<span className="ml-1 text-red-400">{unreadCount}</span>}</button>)}
-            </div>
-          </div>
+  const closeTalk=()=>{
+    if(typeof window.__QMES_CLOSE_NAMO_TALK__==="function") window.__QMES_CLOSE_NAMO_TALK__();
+  };
 
-          <div className="max-h-[525px] overflow-y-auto p-2">
-            {visibleRooms.map(room=><button key={room.id} onClick={()=>setChannel(room.id)} className={`w-full rounded-xl p-3 mb-1 text-left transition-colors ${channel===room.id?"bg-slate-800 ring-1 ring-sky-500/30":"hover:bg-slate-800/60"}`}>
-              <div className="flex gap-3">
-                <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-bold text-xs ${room.type==="LOT"?"bg-sky-600/20 text-sky-300":room.type==="공지"?"bg-amber-500/20 text-amber-300":"bg-emerald-500/15 text-emerald-300"}`}>{room.type==="LOT"?"LOT":room.type==="공지"?"공지":"팀"}</div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2"><span className="truncate text-sm font-bold text-slate-100">{room.name}</span><span className="ml-auto text-[10px] text-slate-500">{room.time}</span></div>
-                  <div className="mt-1 flex items-center gap-2"><span className="truncate text-xs text-slate-500">{room.preview}</span>{room.unread>0&&<span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] leading-5 text-center">{room.unread}</span>}</div>
-                </div>
-              </div>
+  const styles={
+    app:{position:"fixed",inset:0,zIndex:1000,display:"flex",flexDirection:"column",background:"#eef5f9",color:"#13263a",fontFamily:"'Pretendard','Noto Sans KR',sans-serif"},
+    top:{height:68,background:"#0d253b",display:"flex",alignItems:"center",padding:"0 18px",color:"white",boxShadow:"0 2px 10px rgba(0,0,0,.15)"},
+    body:{flex:1,minHeight:0,display:"grid",gridTemplateColumns:"92px 350px minmax(0,1fr) 310px"},
+    rail:{background:"#0f2c46",padding:"16px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:10,color:"#d8e7f2"},
+    railBtn:{width:72,minHeight:66,border:0,borderRadius:14,background:"transparent",color:"inherit",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:5},
+    list:{background:"white",borderRight:"1px solid #d7e2ea",display:"flex",flexDirection:"column",minWidth:0},
+    chat:{display:"flex",flexDirection:"column",minWidth:0,background:"#eaf2f7"},
+    info:{background:"#f8fbfd",borderLeft:"1px solid #d7e2ea",padding:20,overflowY:"auto"},
+  };
+
+  return (
+    <div style={styles.app}>
+      <header style={styles.top}>
+        <div style={{fontSize:26,fontWeight:900,letterSpacing:"-.5px"}}>NAMO Talk</div>
+        <div style={{marginLeft:12,fontSize:15,color:"#a9c3d7"}}>사내 업무 메신저</div>
+        <div style={{marginLeft:"auto",fontSize:13,color:"#b9d0df",marginRight:18}}>{currentUser.name} · {currentUser.dept||"부서 미지정"}</div>
+        <button onClick={closeTalk} aria-label="닫기" style={{width:38,height:38,border:0,borderRadius:10,background:"transparent",color:"white",fontSize:28,cursor:"pointer",lineHeight:1}}>×</button>
+      </header>
+
+      <div style={styles.body}>
+        <nav style={styles.rail}>
+          {[['대화','💬'],['공지','📢'],['조직','👥'],['파일','📁'],['일정','🗓️']].map(([label,icon])=><button key={label} onClick={()=>setSection(label)} style={{...styles.railBtn,background:section===label?"#159bd3":"transparent",color:section===label?"white":"#d8e7f2"}}><span style={{fontSize:23}}>{icon}</span><span>{label}</span></button>)}
+          <div style={{marginTop:"auto",width:48,height:48,borderRadius:"50%",background:"#159bd3",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,color:"white"}}>{currentUser.name?.[0]||"사"}</div>
+        </nav>
+
+        <aside style={styles.list}>
+          <div style={{height:88,display:"flex",alignItems:"center",padding:"0 18px",borderBottom:"1px solid #dfe8ee"}}>
+            <h2 style={{fontSize:24,margin:0,fontWeight:900}}>채팅</h2>
+            <button style={{marginLeft:"auto",width:42,height:42,borderRadius:12,border:"1px solid #cfdce5",background:"white",fontSize:28,cursor:"pointer",color:"#142b3e"}}>+</button>
+          </div>
+          <div style={{padding:14,borderBottom:"1px solid #e1e9ef"}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="채팅방 또는 직원 검색" style={{width:"100%",boxSizing:"border-box",height:48,border:"1px solid #cfdce5",borderRadius:12,padding:"0 14px",fontSize:16,color:"#13263a",background:"#f8fafc",outline:"none"}} />
+          </div>
+          <div style={{padding:"16px 0",overflowY:"auto"}}>
+            <div style={{padding:"0 18px 10px",fontSize:13,fontWeight:800,color:"#8394a3"}}>업무 채널</div>
+            {visibleRooms.map(item=><button key={item.id} onClick={()=>setActiveRoom(item.id)} style={{width:"100%",border:0,background:activeRoom===item.id?"#dff1fa":"white",display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer",textAlign:"left"}}>
+              <span style={{width:48,height:48,borderRadius:16,background:"#dff1fa",color:"#087ba9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:900,flex:"0 0 auto"}}>{item.icon}</span>
+              <span style={{minWidth:0,flex:1}}>
+                <strong style={{display:"block",fontSize:17,color:"#0e1f2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</strong>
+                <span style={{display:"block",marginTop:4,fontSize:13,color:"#8796a4",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.preview}</span>
+              </span>
             </button>)}
+            <div style={{padding:"22px 18px 10px",fontSize:13,fontWeight:800,color:"#8394a3"}}>1:1 대화</div>
+            <div style={{padding:"14px 18px",color:"#9aa8b3",fontSize:14}}>회원등록현황 연동 예정</div>
           </div>
         </aside>
 
-        <section className="min-w-0 flex flex-col bg-[radial-gradient(circle_at_top,rgba(14,165,233,.08),transparent_35%)]">
-          <div className="px-5 py-4 border-b border-slate-800 bg-slate-900/40 flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xs font-black ${selectedRoom.type==="LOT"?"bg-sky-600 text-white":"bg-slate-800 text-slate-300"}`}>{selectedRoom.type==="LOT"?"LOT":"CHAT"}</div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2"><h3 className="truncate font-black text-white">{selectedRoom.name}</h3><span className="text-amber-300">★</span></div>
-              <p className="truncate text-xs text-slate-500 mt-1">{meta?`작업지시번호 ${meta.workOrder} · 생산 LOT ${meta.lot} · 제품명 ${meta.product}`:"QMES 업무 대화방"}</p>
+        <main style={styles.chat}>
+          <div style={{height:88,background:"white",borderBottom:"1px solid #d7e2ea",display:"flex",alignItems:"center",padding:"0 24px"}}>
+            <div>
+              <h3 style={{fontSize:24,margin:0,fontWeight:900,color:"#102436"}}>{room.name}</h3>
+              <div style={{marginTop:5,color:"#8a9aa7",fontSize:14}}>{room.id==="전체공지"?"전 직원 공지 채널":"부서 업무 채널"}</div>
             </div>
-            <div className="ml-auto flex items-center gap-2 text-xs text-slate-400"><span>참여자 0명</span><button className="w-8 h-8 rounded-lg hover:bg-slate-800">⌕</button><button className="w-8 h-8 rounded-lg hover:bg-slate-800">⋮</button></div>
+            <button style={{marginLeft:"auto",height:42,padding:"0 16px",border:"1px solid #cfdce5",borderRadius:12,background:"white",fontSize:15,color:"#142b3e",cursor:"pointer"}}>참여자</button>
           </div>
 
-          <div className="flex-1 min-h-[490px] max-h-[530px] overflow-y-auto p-5 space-y-4">
-            {(messages[channel] || []).length===0?<div className="h-full flex items-center justify-center text-sm text-slate-600">대화가 초기화되었습니다. 새 메시지를 입력해 주세요.</div>:(messages[channel] || []).map(message=>{
-              const mine=message.sender===currentUser.name;
-              return <div key={message.id} className={`flex gap-2.5 ${mine?"justify-end":"justify-start"}`}>
-                {!mine&&<div className="w-8 h-8 shrink-0 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">{message.sender?.[0]||"?"}</div>}
-                <div className={`max-w-[78%] ${mine?"items-end":"items-start"} flex flex-col`}>
-                  <div className="mb-1 text-[11px] text-slate-500">{message.sender}{message.dept?` · ${message.dept}`:""}</div>
-                  <div className={`rounded-2xl px-4 py-3 text-sm leading-6 shadow-lg ${mine?"rounded-tr-md bg-sky-600 text-white":"rounded-tl-md bg-slate-800 text-slate-100"}`}>
-                    <div className="whitespace-pre-wrap break-words">{message.text}</div>
-                  </div>
-                  <div className="mt-1.5 text-[10px] text-slate-600">{message.time}</div>
+          <div style={{flex:1,minHeight:0,overflowY:"auto",padding:"26px 28px"}}>
+            {(messages[activeRoom]||[]).length===0?<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"#8a9aa7",fontSize:16}}>대화가 초기화되었습니다. 새 메시지를 입력해 주세요.</div>:(messages[activeRoom]||[]).map(msg=>{
+              const mine=msg.sender===currentUser.name;
+              return <div key={msg.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:18}}>
+                <div style={{maxWidth:"68%"}}>
+                  <div style={{fontSize:13,color:"#637788",marginBottom:6,textAlign:mine?"right":"left"}}>{msg.sender}{msg.dept?` · ${msg.dept}`:""}</div>
+                  <div style={{background:mine?"#159bd3":"white",color:mine?"white":"#172b3b",borderRadius:18,padding:"13px 17px",fontSize:16,lineHeight:1.5,boxShadow:"0 1px 3px rgba(20,45,65,.12)",border:mine?"none":"1px solid #dce6ed",whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{msg.text}</div>
+                  <div style={{fontSize:12,color:"#8ca0ae",marginTop:5,textAlign:mine?"right":"left"}}>{msg.time}</div>
                 </div>
               </div>;
             })}
           </div>
 
-          <div className="border-t border-slate-800 bg-slate-900/55 p-3">
-            <div className="flex items-end gap-2">
-              <div className="flex gap-1"><button className="w-10 h-10 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-sky-500" title="파일 첨부">📎</button><button className="w-10 h-10 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-sky-500" title="사진 첨부">▧</button><button className="w-10 h-10 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-sky-500" title="사용자 호출">@</button></div>
-              <textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}} placeholder="메시지를 입력하세요. Enter 전송 / Shift+Enter 줄바꿈" className="flex-1 min-h-[42px] max-h-28 resize-y rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500" />
-              <button onClick={sendMessage} className="h-10 px-5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-black">전송</button>
+          <div style={{background:"white",borderTop:"1px solid #d7e2ea",padding:"14px 16px"}}>
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
+              {['＋','▧','☺'].map(icon=><button key={icon} style={{width:44,height:42,border:"1px solid #cfdce5",borderRadius:10,background:"white",fontSize:21,color:"#173047",cursor:"pointer"}}>{icon}</button>)}
             </div>
-            <p className="mt-2 text-[10px] text-slate-600">현재 대화는 이 브라우저에 저장됩니다. 회원등록현황 연동은 다음 단계에서 적용합니다.</p>
+            <div style={{display:"flex",gap:10,alignItems:"stretch"}}>
+              <textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}} placeholder="메시지를 입력하세요. Enter 전송 / Shift+Enter 줄바꿈" style={{flex:1,minHeight:68,maxHeight:130,resize:"vertical",boxSizing:"border-box",border:"1px solid #cfdce5",borderRadius:12,padding:"14px 16px",fontSize:17,lineHeight:1.5,color:"#111827",background:"#ffffff",caretColor:"#111827",outline:"none"}} />
+              <button onClick={sendMessage} style={{width:92,border:0,borderRadius:12,background:"#159bd3",color:"white",fontSize:18,fontWeight:900,cursor:"pointer"}}>전송</button>
+            </div>
           </div>
-        </section>
+        </main>
 
-        <aside className="border-t xl:border-t-0 xl:border-l border-slate-800 bg-slate-900/70 p-4 overflow-y-auto">
-          <div className="flex items-center justify-between mb-4"><h3 className="font-black text-white">업무 정보</h3><button className="text-xs text-sky-400 hover:text-sky-300">작업지시서 보기</button></div>
-          {meta?<div />:<div className="rounded-xl border border-dashed border-slate-800 p-8 text-center text-sm text-slate-600">회원등록현황을 참조해<br/>참여자와 대화방을 구성할 예정입니다.</div>}
+        <aside style={styles.info}>
+          <h3 style={{fontSize:20,margin:"2px 0 18px",fontWeight:900}}>채널 정보</h3>
+          <div style={{background:"white",border:"1px solid #dce6ed",borderRadius:16,padding:18}}>
+            <div style={{fontSize:13,color:"#8b9ba8"}}>현재 채널</div>
+            <div style={{fontSize:18,fontWeight:900,marginTop:6}}>{room.name}</div>
+            <div style={{height:1,background:"#e6edf2",margin:"18px 0"}} />
+            <div style={{fontSize:13,color:"#8b9ba8"}}>참여자</div>
+            <div style={{fontSize:16,fontWeight:800,marginTop:6}}>0명</div>
+          </div>
+          <div style={{marginTop:16,background:"white",border:"1px solid #dce6ed",borderRadius:16,padding:18}}>
+            <div style={{fontSize:15,fontWeight:900,marginBottom:10}}>회원등록현황 연동</div>
+            <p style={{margin:0,color:"#718493",fontSize:14,lineHeight:1.6}}>회원관리의 이름, 부서, 직급을 참조해 부서 채널과 1:1 대화 목록을 자동 구성할 예정입니다.</p>
+          </div>
+          <div style={{marginTop:16,background:"white",border:"1px solid #dce6ed",borderRadius:16,padding:18}}>
+            <div style={{fontSize:15,fontWeight:900,marginBottom:10}}>첨부파일</div>
+            <div style={{color:"#9aa8b3",fontSize:14}}>첨부파일이 없습니다.</div>
+          </div>
         </aside>
       </div>
     </div>
