@@ -18,7 +18,6 @@ const TABS = [
   { id:"ncr", label:"부적합 (8D)", icon:ShieldAlert, comp:NcrTab },
   { id:"cc", label:"고객불만 (GQMS)", icon:MessageSquareWarning, comp:ComplaintTab },
   { id:"coa", label:"출하성적서", icon:Printer, comp:CoaTab },
-  { id:"namoTalk", label:"NAMO Talk", icon:Users, comp:NamoTalkTab },
   { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },
 ];
 
@@ -45,16 +44,20 @@ function safeStorageRemove(key){
 }
 
 function QMESChemical({user,onLogout}){
-  const [tab,setTab]=useState(()=>safeStorageGet("qmes_current_tab","dash"));
+  const [tab,setTab]=useState(()=>{
+    const saved=safeStorageGet("qmes_current_tab","dash");
+    return saved==="namoTalk"?"dash":saved;
+  });
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
+  const [talkOpen,setTalkOpen]=useState(false);
 
   useEffect(()=>{ safeStorageSet("qmes_current_tab",tab); },[tab]);
   useEffect(()=>{ if(openMenu) safeStorageSet("qmes_open_menu",openMenu); else safeStorageRemove("qmes_open_menu"); },[openMenu]);
   useEffect(()=>{ const t=setInterval(()=>setClock(new Date()),1000); return()=>clearInterval(t); },[]);
 
   window.__QMES_CURRENT_USER__=user;
-  window.__QMES_CLOSE_NAMO_TALK__=()=>{ setTab("dash"); setOpenMenu(null); };
+  window.__QMES_CLOSE_NAMO_TALK__=()=>setTalkOpen(false);
 
   const visibleTabs=TABS.filter(t=>!t.adminOnly||user.role==="admin");
   useEffect(()=>{ if(!visibleTabs.some(t=>t.id===tab)) setTab("dash"); },[tab,visibleTabs.length]);
@@ -63,7 +66,7 @@ function QMESChemical({user,onLogout}){
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col" style={{fontFamily:"'Pretendard','Noto Sans KR',system-ui,sans-serif"}}>
-      <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10 backdrop-blur">
+      <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur">
         <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
           <button type="button" className="flex items-center shrink-0 rounded" onClick={()=>{setTab("dash");setOpenMenu(null);}}>
             <img src="https://namochemical.com/img/svg/img_logo.svg" alt="NAMO Chemical" className="h-[22px] md:h-[26px] w-auto max-w-[262px] object-contain" style={{filter:"brightness(0) invert(1)"}} onError={e=>{e.currentTarget.onerror=null;e.currentTarget.style.filter="none";e.currentTarget.src="/assets/namo-header-logo.svg?v=20260727-3";}} />
@@ -71,7 +74,7 @@ function QMESChemical({user,onLogout}){
           <div className="flex-1" />
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
           <button className="relative p-2 rounded hover:bg-slate-800" aria-label="알림"><Bell size={16}/><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400"/></button>
-          <button type="button" onClick={()=>{setTab("namoTalk");setOpenMenu(null);}} className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-bold transition-colors ${tab==="namoTalk"?"bg-sky-500/20 border-sky-400 text-white":"bg-sky-600/15 border-sky-500/70 text-sky-100 hover:bg-sky-500/25"}`} aria-label="NAMO Talk 열기">
+          <button type="button" onClick={()=>setTalkOpen(v=>!v)} className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-bold transition-colors ${talkOpen?"bg-sky-500/20 border-sky-400 text-white":"bg-sky-600/15 border-sky-500/70 text-sky-100 hover:bg-sky-500/25"}`} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}>
             <span aria-hidden="true">💬</span><span>NAMO Talk</span>
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
@@ -103,6 +106,7 @@ function QMESChemical({user,onLogout}){
         </div>
       </header>
       <main className="w-full px-4 lg:px-6 py-5 flex-1"><Active/></main>
+      {talkOpen&&<NamoTalkTab onClose={()=>setTalkOpen(false)}/>} 
     </div>
   );
 }
