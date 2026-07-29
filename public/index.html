@@ -28,12 +28,10 @@
       justify-content: center;
     }
 
-    /* 기존 계정 설정 중앙 모달 숨김 */
     [role="dialog"][aria-label="계정 설정"] {
       display: none !important;
     }
 
-    /* 비밀번호 변경 창은 항상 현재 화면 정중앙에 표시 */
     [role="dialog"][aria-label="비밀번호 변경"] {
       position: fixed !important;
       inset: 0 !important;
@@ -57,7 +55,6 @@
       overflow-y: auto !important;
     }
 
-    /* 사용자명 호버/터치 드롭다운 */
     #qmes-user-dropdown {
       position: fixed;
       z-index: 12000;
@@ -146,6 +143,8 @@
     (function(){
       let allowNativeAccountClick = false;
       let closeTimer = null;
+      let topMenuCloseTimer = null;
+      let lastHoveredTopButton = null;
 
       const getAccountButton = () =>
         document.querySelector('button[aria-label="계정 설정 열기"]');
@@ -228,6 +227,25 @@
         }, 0);
       };
 
+      const openTopMenuOnHover = button => {
+        clearTimeout(topMenuCloseTimer);
+        if(!button || button === lastHoveredTopButton) return;
+
+        lastHoveredTopButton = button;
+        const hasArrow = !!button.querySelector('.qmes-menu-arrow');
+        if(hasArrow) button.click();
+      };
+
+      const scheduleTopMenuClose = () => {
+        clearTimeout(topMenuCloseTimer);
+        topMenuCloseTimer = setTimeout(() => {
+          const activeArrow = document.querySelector('.qmes-top-menu-button .qmes-menu-arrow[style*="90deg"]');
+          const activeButton = activeArrow && activeArrow.closest('.qmes-top-menu-button');
+          if(activeButton) activeButton.click();
+          lastHoveredTopButton = null;
+        }, 220);
+      };
+
       document.addEventListener('click', event => {
         const accountButton = getAccountButton();
         const menu = document.getElementById('qmes-user-dropdown');
@@ -248,17 +266,30 @@
       document.addEventListener('mouseover', event => {
         const accountButton = getAccountButton();
         if(accountButton && accountButton.contains(event.target)) openMenu();
+
+        const topButton = event.target.closest('.qmes-top-menu-button');
+        if(topButton) openTopMenuOnHover(topButton);
+
+        if(event.target.closest('.qmes-top-menu-bar')){
+          clearTimeout(topMenuCloseTimer);
+        }
       }, true);
 
       document.addEventListener('mouseout', event => {
         const accountButton = getAccountButton();
-        if(!accountButton || !accountButton.contains(event.target)) return;
-        if(accountButton.contains(event.relatedTarget)) return;
-        scheduleClose();
+        if(accountButton && accountButton.contains(event.target)){
+          if(!accountButton.contains(event.relatedTarget)) scheduleClose();
+        }
+
+        const topBar = event.target.closest('.qmes-top-menu-bar');
+        if(topBar && !topBar.contains(event.relatedTarget)) scheduleTopMenuClose();
       }, true);
 
       document.addEventListener('keydown', event => {
-        if(event.key === 'Escape') closeMenu();
+        if(event.key === 'Escape'){
+          closeMenu();
+          scheduleTopMenuClose();
+        }
       });
 
       window.addEventListener('resize', () => {
