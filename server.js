@@ -434,6 +434,14 @@ async function ensureSchema() {
     ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS sender_uid TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS sender_dept TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS message_kind TEXT NOT NULL DEFAULT 'text';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS message_text TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_name TEXT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_type TEXT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_data TEXT;
   `);
 }
 
