@@ -67,3 +67,48 @@ function AttendancePanel({currentUser,users}){
     {editing&&<div style={{position:"fixed",inset:0,zIndex:80,background:"rgba(15,23,42,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}><div style={{width:"min(420px,100%)",background:"white",borderRadius:14,boxShadow:"0 20px 50px rgba(15,23,42,.28)",padding:18}}><div style={{fontSize:17,fontWeight:900}}>출퇴근 시간 수정</div><div style={{fontSize:11,color:"#64748b",marginTop:4}}>{editing.date} · {editing.name} · {editing.dept||"부서 미지정"}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:16}}><label style={{fontSize:11,fontWeight:800}}>출근시간<input type="time" value={editIn} onChange={e=>setEditIn(e.target.value)} style={{width:"100%",height:38,boxSizing:"border-box",marginTop:5,border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px"}}/></label><label style={{fontSize:11,fontWeight:800}}>퇴근시간<input type="time" value={editOut} onChange={e=>setEditOut(e.target.value)} style={{width:"100%",height:38,boxSizing:"border-box",marginTop:5,border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px"}}/></label></div><label style={{display:"block",fontSize:11,fontWeight:800,marginTop:12}}>수정 사유<textarea value={editReason} onChange={e=>setEditReason(e.target.value)} placeholder="예: 현장 출근 기록 누락" style={{width:"100%",minHeight:74,boxSizing:"border-box",marginTop:5,border:"1px solid #cbd5e1",borderRadius:8,padding:9,resize:"vertical"}}/></label><div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:14}}><button onClick={()=>setEditing(null)} style={{height:36,padding:"0 14px",border:"1px solid #cbd5e1",borderRadius:8,background:"white",fontWeight:800,cursor:"pointer"}}>취소</button><button onClick={saveEdit} style={{height:36,padding:"0 14px",border:0,borderRadius:8,background:"#0f2740",color:"white",fontWeight:900,cursor:"pointer"}}>수정 저장</button></div></div></div>}
   </div>;
 }
+
+(function installNamoTalkDragFix(){
+  if(window.__NAMO_TALK_DRAG_FIX__)return;
+  window.__NAMO_TALK_DRAG_FIX__=true;
+  const STORAGE_KEY="qmes-namo-talk-visual-offset-v1";
+  let drag=null;
+  const readOffset=()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")||{x:0,y:0};}catch(e){return{x:0,y:0};}};
+  const applyOffset=panel=>{if(!panel)return;const p=readOffset();panel.style.transform=`translate3d(${p.x}px,${p.y}px,0)`;};
+  const observer=new MutationObserver(()=>applyOffset(document.querySelector('section[aria-label="NAMO Talk"]')));
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener("pointerdown",event=>{
+    const header=event.target.closest&&event.target.closest('section[aria-label="NAMO Talk"] > header');
+    if(!header||event.target.closest("button")||window.innerWidth<=768)return;
+    const panel=header.parentElement;
+    const saved=readOffset();
+    drag={panel,startX:event.clientX,startY:event.clientY,baseX:Number(saved.x)||0,baseY:Number(saved.y)||0};
+    document.body.style.userSelect="none";
+    document.body.style.cursor="grabbing";
+    header.style.cursor="grabbing";
+    event.preventDefault();
+  },true);
+  window.addEventListener("pointermove",event=>{
+    if(!drag)return;
+    const dx=event.clientX-drag.startX;
+    const dy=event.clientY-drag.startY;
+    const rect=drag.panel.getBoundingClientRect();
+    const nextX=drag.baseX+dx;
+    const nextY=drag.baseY+dy;
+    drag.panel.style.transform=`translate3d(${nextX}px,${nextY}px,0)`;
+    drag.next={x:nextX,y:nextY};
+    event.preventDefault();
+  },{passive:false});
+  const stop=()=>{
+    if(!drag)return;
+    if(drag.next){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(drag.next));}catch(e){}}
+    const header=drag.panel.querySelector(":scope > header");
+    if(header)header.style.cursor="grab";
+    drag=null;
+    document.body.style.userSelect="";
+    document.body.style.cursor="";
+  };
+  window.addEventListener("pointerup",stop);
+  window.addEventListener("pointercancel",stop);
+  applyOffset(document.querySelector('section[aria-label="NAMO Talk"]'));
+})();
