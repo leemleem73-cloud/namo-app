@@ -53,6 +53,11 @@ function QMESChemical({user,onLogout}){
   const [talkOpen,setTalkOpen]=useState(false);
   const [profileOpen,setProfileOpen]=useState(false);
   const [myInfoOpen,setMyInfoOpen]=useState(false);
+  const [passwordOpen,setPasswordOpen]=useState(false);
+  const [currentPw,setCurrentPw]=useState("");
+  const [newPw,setNewPw]=useState("");
+  const [confirmPw,setConfirmPw]=useState("");
+  const [passwordError,setPasswordError]=useState("");
 
   useEffect(()=>{ safeStorageSet("qmes_current_tab",tab); },[tab]);
   useEffect(()=>{ if(openMenu) safeStorageSet("qmes_open_menu",openMenu); else safeStorageRemove("qmes_open_menu"); },[openMenu]);
@@ -65,6 +70,43 @@ function QMESChemical({user,onLogout}){
   useEffect(()=>{ if(!visibleTabs.some(t=>t.id===tab)) setTab("dash"); },[tab,visibleTabs.length]);
   const currentTab=TABS.find(t=>t.id===tab)||TABS[0];
   const Active=currentTab.comp;
+
+  const openPasswordModal=()=>{
+    setProfileOpen(false);
+    setCurrentPw("");
+    setNewPw("");
+    setConfirmPw("");
+    setPasswordError("");
+    setPasswordOpen(true);
+  };
+
+  const changePassword=(event)=>{
+    event.preventDefault();
+    const savedPassword=String(user.pw||user.password||"1234");
+    if(currentPw!==savedPassword){ setPasswordError("현재 비밀번호가 일치하지 않습니다."); return; }
+    if(newPw.length<4){ setPasswordError("새 비밀번호는 4자 이상 입력하세요."); return; }
+    if(newPw!==confirmPw){ setPasswordError("새 비밀번호 확인이 일치하지 않습니다."); return; }
+    try{
+      const users=JSON.parse(localStorage.getItem("qmes-users-v3")||"[]");
+      let changed=false;
+      const next=Array.isArray(users)?users.map(item=>{
+        const same=String(item.id||item.name||"")===String(user.id||user.name||"")||String(item.uid||"")===String(user.uid||"")||String(item.name||"")===String(user.name||"");
+        if(!same)return item;
+        changed=true;
+        return {...item,pw:newPw,password:newPw};
+      }):[];
+      if(!changed){ setPasswordError("회원 정보를 찾지 못했습니다. 관리자에게 문의하세요."); return; }
+      localStorage.setItem("qmes-users-v3",JSON.stringify(next));
+      user.pw=newPw;
+      user.password=newPw;
+      sessionStorage.setItem("qmes-current-user-v1",JSON.stringify(user));
+      setPasswordOpen(false);
+      alert("비밀번호가 변경되었습니다. 다음 로그인부터 새 비밀번호를 사용하세요.");
+    }catch(error){
+      console.error("[QMES] 비밀번호 변경 실패",error);
+      setPasswordError("비밀번호 저장 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col" style={{fontFamily:"'Pretendard','Noto Sans KR',system-ui,sans-serif"}}>
@@ -80,20 +122,11 @@ function QMESChemical({user,onLogout}){
             <span aria-hidden="true">💬</span><span>NAMO Talk</span>
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <div className="relative">
-              <button type="button" onClick={()=>setProfileOpen(v=>!v)} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-800" aria-expanded={profileOpen}>
-                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name[0]}</div>
-                <div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div>
-                <span className="hidden md:inline text-slate-400" style={{fontSize:12}}>▼</span>
-              </button>
-              {profileOpen&&(
-                <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden z-[80]">
-                  <button type="button" onClick={()=>{setMyInfoOpen(true);setProfileOpen(false);}} className="w-full px-4 py-3 text-left text-sm font-bold hover:bg-slate-800">내 정보</button>
-                  <button type="button" onClick={()=>{setProfileOpen(false);alert("비밀번호 변경 기능은 다음 단계에서 연결합니다.");}} className="w-full px-4 py-3 text-left text-sm font-bold hover:bg-slate-800 border-t border-slate-800">비밀번호 변경</button>
-                  {onLogout&&<button type="button" onClick={onLogout} className="w-full px-4 py-3 text-left text-sm font-bold text-red-300 hover:bg-slate-800 border-t border-slate-800">로그아웃</button>}
-                </div>
-              )}
-            </div>
+            <button type="button" onClick={()=>setProfileOpen(v=>!v)} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-800" aria-expanded={profileOpen}>
+              <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name[0]}</div>
+              <div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div>
+              <span className="hidden md:inline text-slate-400" style={{fontSize:12}}>▼</span>
+            </button>
             <button onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">백업</button>
             <button onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">복원</button>
             {user.role==="admin"&&<button onClick={()=>{setTab("members");setOpenMenu(null);}} className={`qmes-header-action px-2 py-1 rounded border ${tab==="members"?"border-sky-500/60 text-sky-300 bg-sky-500/10":"border-slate-700 text-slate-400"}`}>회원관리</button>}
@@ -120,13 +153,25 @@ function QMESChemical({user,onLogout}){
       </header>
       <main className="w-full px-4 lg:px-6 py-5 flex-1"><Active/></main>
       {talkOpen&&<NamoTalkTab onClose={()=>setTalkOpen(false)}/>} 
+
+      {profileOpen&&(
+        <div className="fixed inset-0 z-[90]" onClick={()=>setProfileOpen(false)}>
+          <div className="absolute right-4 top-[74px] w-64 rounded-2xl border border-slate-700 bg-slate-900 p-2 shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <div className="px-3 py-3 border-b border-slate-800">
+              <div className="text-base font-black">{user.name} ({user.dept})</div>
+              <div className="text-xs text-slate-400 mt-1">{user.position||"직급 미등록"}</div>
+            </div>
+            <button type="button" onClick={()=>{setMyInfoOpen(true);setProfileOpen(false);}} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">내 정보</button>
+            <button type="button" onClick={openPasswordModal} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">비밀번호 변경</button>
+            {onLogout&&<button type="button" onClick={onLogout} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold text-red-300 hover:bg-slate-800">로그아웃</button>}
+          </div>
+        </div>
+      )}
+
       {myInfoOpen&&(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={()=>setMyInfoOpen(false)}>
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={e=>e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black">내 정보</h2>
-              <button type="button" onClick={()=>setMyInfoOpen(false)} className="w-8 h-8 rounded-lg border border-slate-700 hover:bg-slate-800">×</button>
-            </div>
+            <div className="flex items-center justify-between mb-5"><h2 className="text-xl font-black">내 정보</h2><button type="button" onClick={()=>setMyInfoOpen(false)} className="w-8 h-8 rounded-lg border border-slate-700 hover:bg-slate-800">×</button></div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">이름</span><strong>{user.name}</strong></div>
               <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">부서</span><strong>{user.dept||"-"}</strong></div>
@@ -135,6 +180,22 @@ function QMESChemical({user,onLogout}){
             </div>
             <button type="button" onClick={()=>setMyInfoOpen(false)} className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black hover:bg-sky-500">확인</button>
           </div>
+        </div>
+      )}
+
+      {passwordOpen&&(
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4" onClick={()=>setPasswordOpen(false)}>
+          <form onSubmit={changePassword} className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5"><h2 className="text-xl font-black">비밀번호 변경</h2><button type="button" onClick={()=>setPasswordOpen(false)} className="w-8 h-8 rounded-lg border border-slate-700 hover:bg-slate-800">×</button></div>
+            <label className="block text-sm font-bold mb-2">현재 비밀번호</label>
+            <input type="password" value={currentPw} onChange={e=>setCurrentPw(e.target.value)} autoComplete="current-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500" />
+            <label className="block text-sm font-bold mt-4 mb-2">새 비밀번호</label>
+            <input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500" />
+            <label className="block text-sm font-bold mt-4 mb-2">새 비밀번호 확인</label>
+            <input type="password" value={confirmPw} onChange={e=>setConfirmPw(e.target.value)} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500" />
+            {passwordError&&<div className="mt-3 text-sm font-bold text-red-400">{passwordError}</div>}
+            <button type="submit" className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black hover:bg-sky-500">변경 저장</button>
+          </form>
         </div>
       )}
     </div>
