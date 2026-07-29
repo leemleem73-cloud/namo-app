@@ -35,23 +35,13 @@ const TOP_MENUS = [
 ];
 
 function safeStorageGet(key, fallback=null){
-  try {
-    const value = sessionStorage.getItem(key);
-    return value == null ? fallback : value;
-  } catch(e) {
-    return fallback;
-  }
+  try { const value=sessionStorage.getItem(key); return value==null?fallback:value; } catch(e){ return fallback; }
 }
 function safeStorageSet(key,value){
-  try {
-    sessionStorage.setItem(key,value);
-    return true;
-  } catch(e) {
-    return false;
-  }
+  try { sessionStorage.setItem(key,value); return true; } catch(e){ return false; }
 }
 function safeStorageRemove(key){
-  try { sessionStorage.removeItem(key); } catch(e) { /* 화면 상태 저장 실패는 무시 */ }
+  try { sessionStorage.removeItem(key); } catch(e) { /* 무시 */ }
 }
 
 function QMESChemical({user,onLogout}){
@@ -59,16 +49,12 @@ function QMESChemical({user,onLogout}){
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
 
-  useEffect(()=>{
-    safeStorageSet("qmes_current_tab",tab);
-  },[tab]);
-  useEffect(()=>{
-    if(openMenu) safeStorageSet("qmes_open_menu",openMenu);
-    else safeStorageRemove("qmes_open_menu");
-  },[openMenu]);
+  useEffect(()=>{ safeStorageSet("qmes_current_tab",tab); },[tab]);
+  useEffect(()=>{ if(openMenu) safeStorageSet("qmes_open_menu",openMenu); else safeStorageRemove("qmes_open_menu"); },[openMenu]);
   useEffect(()=>{ const t=setInterval(()=>setClock(new Date()),1000); return()=>clearInterval(t); },[]);
 
-  window.__QMES_CURRENT_USER__ = user;
+  window.__QMES_CURRENT_USER__=user;
+  window.__QMES_CLOSE_NAMO_TALK__=()=>{ setTab("dash"); setOpenMenu(null); };
 
   const visibleTabs=TABS.filter(t=>!t.adminOnly||user.role==="admin");
   useEffect(()=>{ if(!visibleTabs.some(t=>t.id===tab)) setTab("dash"); },[tab,visibleTabs.length]);
@@ -85,15 +71,8 @@ function QMESChemical({user,onLogout}){
           <div className="flex-1" />
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
           <button className="relative p-2 rounded hover:bg-slate-800" aria-label="알림"><Bell size={16}/><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400"/></button>
-          <button
-            type="button"
-            onClick={()=>{setTab("namoTalk");setOpenMenu(null);}}
-            className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-bold transition-colors ${tab==="namoTalk"?"bg-sky-500/20 border-sky-400 text-white shadow-[0_0_18px_rgba(14,165,233,.2)]":"bg-sky-600/15 border-sky-500/70 text-sky-100 hover:bg-sky-500/25"}`}
-            aria-label="NAMO Talk 열기"
-          >
-            <span aria-hidden="true">💬</span>
-            <span>NAMO Talk</span>
-            <span className="min-w-[19px] h-[19px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[19px] text-center">5</span>
+          <button type="button" onClick={()=>{setTab("namoTalk");setOpenMenu(null);}} className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-bold transition-colors ${tab==="namoTalk"?"bg-sky-500/20 border-sky-400 text-white":"bg-sky-600/15 border-sky-500/70 text-sky-100 hover:bg-sky-500/25"}`} aria-label="NAMO Talk 열기">
+            <span aria-hidden="true">💬</span><span>NAMO Talk</span>
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
