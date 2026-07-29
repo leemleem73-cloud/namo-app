@@ -78,8 +78,8 @@ function QMESChemical({user,onLogout}){
             <span aria-hidden="true">💬</span><span>NAMO Talk</span>
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">{user.name[0]}</div>
-            <div className="hidden md:block leading-tight"><div className="qmes-header-user-name">{user.name}</div><div className="qmes-header-user-meta">{user.dept} · <span className="font-mono">{user.uid||"U-0000"}</span></div></div>
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name[0]}</div>
+            <div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div>
             <button onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">백업</button>
             <button onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">복원</button>
             {user.role==="admin"&&<button onClick={()=>{setTab("members");setOpenMenu(null);}} className={`qmes-header-action px-2 py-1 rounded border ${tab==="members"?"border-sky-500/60 text-sky-300 bg-sky-500/10":"border-slate-700 text-slate-400"}`}>회원관리</button>}
@@ -101,7 +101,7 @@ function QMESChemical({user,onLogout}){
             const selected=TOP_MENUS.find(m=>m.id===openMenu);
             const items=(selected?.children||[]).map(id=>visibleTabs.find(t=>t.id===id)).filter(Boolean);
             if(!items.length)return null;
-            return <div className="qmes-submenu-row" role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const I=item.icon;return <button key={item.id} onClick={()=>setTab(item.id)} className={`qmes-submenu-button ${tab===item.id?"is-active":""}`}><I size={14}/><span>{item.label}</span></button>;})}</div>;
+            return <div className="qmes-submenu-row" role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const I=item.icon;return <button key={item.id} onClick={()=>setTab(item.id)} className={`qmes-submenu-button ${tab===item.id?"is-active":""}`}><I size={14}/><span>{item.label}</span></button>})}</div>;
           })()}
         </div>
       </header>
