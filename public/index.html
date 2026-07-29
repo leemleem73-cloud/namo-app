@@ -207,7 +207,6 @@
         ]
       };
       let closeTimer=null;
-      let hoverRunTimer=null;
       let currentTopButton=null;
       const getTopButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
       const buttonText=button=>button?button.textContent.replace('›','').replace('〉','').trim():'';
@@ -220,18 +219,16 @@
         menu.setAttribute('role','menu');
         document.body.appendChild(menu);
         menu.addEventListener('mouseenter',()=>clearTimeout(closeTimer));
-        menu.addEventListener('mouseleave',()=>{clearTimeout(hoverRunTimer);scheduleClose();});
+        menu.addEventListener('mouseleave',scheduleClose);
         return menu;
       };
       const closeMenu=()=>{
-        clearTimeout(hoverRunTimer);
         const menu=document.getElementById('qmes-all-menu-dropdown');
         if(menu) menu.classList.remove('is-open');
         currentTopButton=null;
       };
-      function scheduleClose(){clearTimeout(closeTimer);closeTimer=setTimeout(closeMenu,220);}
+      function scheduleClose(){clearTimeout(closeTimer);closeTimer=setTimeout(closeMenu,400);}
       const navigate=item=>{
-        clearTimeout(hoverRunTimer);
         closeMenu();
         if(item.direct){
           const button=findTopButton(item.direct);
@@ -250,7 +247,6 @@
       };
       const openFor=button=>{
         clearTimeout(closeTimer);
-        clearTimeout(hoverRunTimer);
         const label=buttonText(button);
         const items=menuMap[label];
         if(!items||!items.length) return;
@@ -265,11 +261,6 @@
           const row=document.createElement('button');
           row.type='button';
           row.textContent=item.label;
-          row.addEventListener('mouseenter',()=>{
-            clearTimeout(hoverRunTimer);
-            hoverRunTimer=setTimeout(()=>navigate(item),250);
-          });
-          row.addEventListener('mouseleave',()=>clearTimeout(hoverRunTimer));
           row.addEventListener('click',()=>navigate(item));
           menu.appendChild(row);
         });
