@@ -121,7 +121,7 @@ function QMESChemical({user,onLogout}){
             <span aria-hidden="true">💬</span><span>NAMO Talk</span>
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <button type="button" onClick={()=>setProfileOpen(v=>!v)} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-800" aria-expanded={profileOpen}>
+            <button type="button" onMouseEnter={()=>setProfileOpen(true)} onClick={()=>setProfileOpen(v=>!v)} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-800" aria-expanded={profileOpen}>
               <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name[0]}</div>
               <div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div>
               <span className="hidden md:inline text-slate-400" style={{fontSize:12}}>▼</span>
@@ -154,15 +154,13 @@ function QMESChemical({user,onLogout}){
       {talkOpen&&<NamoTalkTab onClose={()=>setTalkOpen(false)}/>} 
 
       {profileOpen&&(
-        <div className="fixed inset-0 z-[90]" onClick={()=>setProfileOpen(false)}>
-          <div className="absolute right-4 top-[74px] w-64 rounded-2xl border border-slate-700 bg-slate-900 p-2 shadow-2xl" onClick={e=>e.stopPropagation()}>
-            <div className="px-3 py-3 border-b border-slate-800">
-              <div className="text-base font-black">{user.name} ({user.dept})</div>
-              <div className="text-xs text-slate-400 mt-1">{user.position||"직급 미등록"}</div>
-            </div>
-            <button type="button" onClick={openPasswordModal} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">비밀번호 변경하기</button>
-            {onLogout&&<button type="button" onClick={onLogout} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold text-red-300 hover:bg-slate-800">로그아웃</button>}
+        <div className="fixed right-4 top-[74px] z-[90] w-64 rounded-2xl border border-slate-700 bg-slate-900 p-2 shadow-2xl" onMouseEnter={()=>setProfileOpen(true)} onMouseLeave={()=>setProfileOpen(false)}>
+          <div className="px-3 py-3 border-b border-slate-800">
+            <div className="text-base font-black">{user.name} ({user.dept})</div>
+            <div className="text-xs text-slate-400 mt-1">{user.position||"직급 미등록"}</div>
           </div>
+          <button type="button" onClick={openPasswordModal} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">비밀번호 변경하기</button>
+          {onLogout&&<button type="button" onClick={onLogout} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold text-red-300 hover:bg-slate-800">로그아웃</button>}
         </div>
       )}
 
