@@ -35,8 +35,10 @@ function QMESLogin({ onLogin }) {
 
   const submit = (event) => {
     event.preventDefault();
+
     const id = userId.trim();
     const pw = password.trim();
+
     const user = users.find((item) =>
       String(item.id || item.name || "").trim() === id ||
       String(item.uid || "").trim() === id ||
@@ -49,6 +51,7 @@ function QMESLogin({ onLogin }) {
     }
 
     const savedPassword = String(user.pw || user.password || "1234");
+
     if (pw !== savedPassword) {
       setError("비밀번호가 일치하지 않습니다.");
       return;
@@ -63,26 +66,167 @@ function QMESLogin({ onLogin }) {
       position: user.position || user.rank || user.title || "",
       role: user.role || "user",
     };
+
     saveLoginSession(normalized);
     onLogin(normalized);
   };
 
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#07162b,#0c3156)",fontFamily:"'Pretendard','Noto Sans KR',sans-serif",padding:20}}>
-      <form onSubmit={submit} style={{width:"min(420px,100%)",background:"white",borderRadius:22,padding:"36px 32px",boxShadow:"0 24px 70px rgba(0,0,0,.32)"}}>
-        <div style={{fontSize:25,fontWeight:950,color:"#0f2740",textAlign:"center"}}>나모케미칼 QMES</div>
-        <div style={{fontSize:13,color:"#64748b",textAlign:"center",marginTop:7,marginBottom:26}}>출퇴근 알림 테스트 로그인</div>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg,#07162b,#0c3156)",
+        fontFamily: "'Pretendard','Noto Sans KR',sans-serif",
+        padding: 20,
+      }}
+    >
+      <form
+        onSubmit={submit}
+        style={{
+          width: "min(420px,100%)",
+          background: "white",
+          borderRadius: 22,
+          padding: "36px 32px",
+          boxShadow: "0 24px 70px rgba(0,0,0,.32)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 25,
+            fontWeight: 950,
+            color: "#0f2740",
+            textAlign: "center",
+            marginBottom: 28,
+          }}
+        >
+          나모케미칼 QMES
+        </div>
 
-        <label style={{display:"block",fontSize:12,fontWeight:800,color:"#334155",marginBottom:6}}>아이디 또는 사번</label>
-        <input value={userId} onChange={(e)=>setUserId(e.target.value)} placeholder="예: 임흥배 또는 U-0009" autoComplete="username" style={{width:"100%",height:46,border:"1px solid #cbd5e1",borderRadius:11,padding:"0 13px",fontSize:14,boxSizing:"border-box",outline:"none"}} />
+        <label
+          style={{
+            display: "block",
+            fontSize: 12,
+            fontWeight: 800,
+            color: "#334155",
+            marginBottom: 6,
+          }}
+        >
+          아이디 또는 사번
+        </label>
 
-        <label style={{display:"block",fontSize:12,fontWeight:800,color:"#334155",marginTop:15,marginBottom:6}}>비밀번호</label>
-        <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="초기 비밀번호 1234" autoComplete="current-password" style={{width:"100%",height:46,border:"1px solid #cbd5e1",borderRadius:11,padding:"0 13px",fontSize:14,boxSizing:"border-box",outline:"none"}} />
+        <input
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          placeholder="예: 임흥배 또는 U-0009"
+          autoComplete="username"
+          style={{
+            width: "100%",
+            height: 46,
+            border: "1px solid #cbd5e1",
+            borderRadius: 11,
+            padding: "0 13px",
+            fontSize: 14,
+            boxSizing: "border-box",
+            outline: "none",
+          }}
+        />
 
-        {error && <div style={{fontSize:12,color:"#dc2626",fontWeight:700,marginTop:10}}>{error}</div>}
+        <label
+          style={{
+            display: "block",
+            fontSize: 12,
+            fontWeight: 800,
+            color: "#334155",
+            marginTop: 15,
+            marginBottom: 6,
+          }}
+        >
+          비밀번호
+        </label>
 
-        <button type="submit" style={{width:"100%",height:48,border:0,borderRadius:11,background:"#0f5d8f",color:"white",fontSize:15,fontWeight:900,marginTop:20,cursor:"pointer"}}>로그인</button>
-        <div style={{fontSize:11,color:"#94a3b8",textAlign:"center",marginTop:14}}>테스트 계정 초기 비밀번호: 1234</div>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="초기 비밀번호 1234"
+          autoComplete="current-password"
+          style={{
+            width: "100%",
+            height: 46,
+            border: "1px solid #cbd5e1",
+            borderRadius: 11,
+            padding: "0 13px",
+            fontSize: 14,
+            boxSizing: "border-box",
+            outline: "none",
+          }}
+        />
+
+        {error && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "#dc2626",
+              fontWeight: 700,
+              marginTop: 10,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            height: 48,
+            border: 0,
+            borderRadius: 11,
+            background: "#0f5d8f",
+            color: "white",
+            fontSize: 15,
+            fontWeight: 900,
+            marginTop: 20,
+            cursor: "pointer",
+          }}
+        >
+          로그인
+        </button>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: "#64748b",
+            textAlign: "center",
+            marginTop: 16,
+          }}
+        >
+          초기 비밀번호 : 1234
+        </div>
+
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: 10,
+          }}
+        >
+          <a
+            href="https://namochemical.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#0f5d8f",
+              fontSize: 13,
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            🌐 나모케미칼 홈페이지
+          </a>
+        </div>
       </form>
     </div>
   );
