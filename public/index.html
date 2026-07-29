@@ -27,6 +27,59 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* 기존 계정 설정 중앙 모달 숨김 */
+    [role="dialog"][aria-label="계정 설정"] {
+      display: none !important;
+    }
+
+    /* 사용자명 호버/터치 드롭다운 */
+    #qmes-user-dropdown {
+      position: fixed;
+      z-index: 12000;
+      width: 190px;
+      padding: 7px;
+      border: 1px solid rgba(71, 85, 105, .95);
+      border-radius: 10px;
+      background: #132238;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, .45);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-5px);
+      transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+    }
+    #qmes-user-dropdown.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    #qmes-user-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #e2e8f0;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+    #qmes-user-dropdown button:hover,
+    #qmes-user-dropdown button:focus-visible {
+      background: #243a57;
+      outline: none;
+    }
+    #qmes-user-dropdown .qmes-dropdown-logout {
+      color: #fda4af;
+      border-top: 1px solid rgba(71, 85, 105, .7);
+      border-radius: 0 0 7px 7px;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
@@ -64,5 +117,132 @@
   <script type="text/babel" data-presets="react" src="./js/namo-attendance-admin-edit.jsx?v=20260729-1"></script>
   <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260729-profile7"></script>
   <script type="text/babel" data-presets="react" src="./js/app.jsx?v=20260728-storagefix1"></script>
+
+  <script>
+    (function(){
+      let allowNativeAccountClick = false;
+      let closeTimer = null;
+
+      const getAccountButton = () =>
+        document.querySelector('button[aria-label="계정 설정 열기"]');
+
+      const getAccountDialog = () =>
+        document.querySelector('[role="dialog"][aria-label="계정 설정"]');
+
+      const ensureDropdown = () => {
+        let menu = document.getElementById('qmes-user-dropdown');
+        if(menu) return menu;
+
+        menu = document.createElement('div');
+        menu.id = 'qmes-user-dropdown';
+        menu.setAttribute('role', 'menu');
+        menu.innerHTML =
+          '<button type="button" data-action="password" role="menuitem"><span aria-hidden="true">🔒</span><span>비밀번호 변경</span></button>' +
+          '<button type="button" data-action="logout" class="qmes-dropdown-logout" role="menuitem"><span aria-hidden="true">↪</span><span>로그아웃</span></button>';
+        document.body.appendChild(menu);
+
+        menu.addEventListener('mouseenter', () => {
+          clearTimeout(closeTimer);
+          menu.classList.add('is-open');
+        });
+        menu.addEventListener('mouseleave', scheduleClose);
+
+        menu.addEventListener('click', event => {
+          const actionButton = event.target.closest('button[data-action]');
+          if(!actionButton) return;
+          runNativeAccountAction(actionButton.dataset.action);
+        });
+
+        return menu;
+      };
+
+      const positionMenu = () => {
+        const button = getAccountButton();
+        const menu = ensureDropdown();
+        if(!button) return;
+
+        const rect = button.getBoundingClientRect();
+        const menuWidth = 190;
+        const left = Math.max(10, Math.min(window.innerWidth - menuWidth - 10, rect.right - menuWidth));
+        menu.style.left = left + 'px';
+        menu.style.top = (rect.bottom + 7) + 'px';
+      };
+
+      const openMenu = () => {
+        clearTimeout(closeTimer);
+        positionMenu();
+        ensureDropdown().classList.add('is-open');
+      };
+
+      const closeMenu = () => {
+        const menu = document.getElementById('qmes-user-dropdown');
+        if(menu) menu.classList.remove('is-open');
+      };
+
+      function scheduleClose(){
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(closeMenu, 180);
+      }
+
+      const runNativeAccountAction = action => {
+        const accountButton = getAccountButton();
+        if(!accountButton) return;
+
+        closeMenu();
+        allowNativeAccountClick = true;
+        accountButton.click();
+        allowNativeAccountClick = false;
+
+        setTimeout(() => {
+          const dialog = getAccountDialog();
+          if(!dialog) return;
+
+          const buttons = Array.from(dialog.querySelectorAll('button'));
+          const targetText = action === 'password' ? '비밀번호 변경하기' : '로그아웃';
+          const target = buttons.find(button => button.textContent.trim() === targetText);
+          if(target) target.click();
+        }, 0);
+      };
+
+      document.addEventListener('click', event => {
+        const accountButton = getAccountButton();
+        const menu = document.getElementById('qmes-user-dropdown');
+
+        if(accountButton && accountButton.contains(event.target)){
+          if(allowNativeAccountClick) return;
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          if(menu && menu.classList.contains('is-open')) closeMenu();
+          else openMenu();
+          return;
+        }
+
+        if(menu && !menu.contains(event.target)) closeMenu();
+      }, true);
+
+      document.addEventListener('mouseover', event => {
+        const accountButton = getAccountButton();
+        if(accountButton && accountButton.contains(event.target)) openMenu();
+      }, true);
+
+      document.addEventListener('mouseout', event => {
+        const accountButton = getAccountButton();
+        if(!accountButton || !accountButton.contains(event.target)) return;
+        if(accountButton.contains(event.relatedTarget)) return;
+        scheduleClose();
+      }, true);
+
+      document.addEventListener('keydown', event => {
+        if(event.key === 'Escape') closeMenu();
+      });
+
+      window.addEventListener('resize', () => {
+        const menu = document.getElementById('qmes-user-dropdown');
+        if(menu && menu.classList.contains('is-open')) positionMenu();
+      });
+      window.addEventListener('scroll', closeMenu, true);
+    })();
+  </script>
 </body>
 </html>
