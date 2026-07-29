@@ -33,6 +33,30 @@
       display: none !important;
     }
 
+    /* 비밀번호 변경 창은 항상 현재 화면 정중앙에 표시 */
+    [role="dialog"][aria-label="비밀번호 변경"] {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 16px !important;
+      overflow: auto !important;
+    }
+    [role="dialog"][aria-label="비밀번호 변경"] > form {
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      margin: auto !important;
+      transform: none !important;
+      max-height: calc(100vh - 32px) !important;
+      overflow-y: auto !important;
+    }
+
     /* 사용자명 호버/터치 드롭다운 */
     #qmes-user-dropdown {
       position: fixed;
