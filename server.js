@@ -322,6 +322,23 @@ async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    CREATE TABLE IF NOT EXISTS namo_talk_messages (
+      id BIGSERIAL PRIMARY KEY,
+      room_id TEXT NOT NULL,
+      sender_name TEXT NOT NULL,
+      sender_uid TEXT DEFAULT '',
+      sender_dept TEXT DEFAULT '',
+      message_kind TEXT NOT NULL DEFAULT 'text',
+      message_text TEXT DEFAULT '',
+      file_name TEXT,
+      file_type TEXT,
+      file_data TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS namo_talk_messages_room_created_idx
+      ON namo_talk_messages (room_id, created_at);
+
 
     CREATE TABLE IF NOT EXISTS audit_logs (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1442,6 +1459,88 @@ bindCrud('equipments', (b) => ({
   status: txt(b.status) || '정상',
   remark: txt(b.remark),
 }));
+
+function mapNamoTalkMessage(row) {
+  const createdAt = new Date(row.created_at);
+  return {
+    id: row.id,
+    createdAt: createdAt.getTime(),
+    sender: row.sender_name,
+    dept: row.sender_dept || '',
+    text: row.message_text || '',
+    time: createdAt.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Seoul',
+    }),
+    kind: row.message_kind || 'text',
+    fileName: row.file_name || '',
+    fileType: row.file_type || '',
+    fileData: row.file_data || '',
+  };
+}
+
+app.get('/api/namo-talk/messages', requireLogin, async (req, res) => {
+  try {
+    const roomId = txt(req.query.roomId);
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+
+    const r = await db(
+      `SELECT id, room_id, sender_name, sender_uid, sender_dept,
+              message_kind, message_text, file_name, file_type, file_data, created_at
+       FROM namo_talk_messages
+       WHERE room_id = $1
+       ORDER BY created_at ASC, id ASC
+       LIMIT 2000`,
+      [roomId]
+    );
+
+    ok(res, r.rows.map(mapNamoTalkMessage));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const roomId = txt(b.roomId);
+    const kind = txt(b.kind) || 'text';
+    const allowedKinds = new Set(['text', 'notice', 'emoticon', 'image', 'file']);
+
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+    if (!allowedKinds.has(kind)) return fail(res, 400, '지원하지 않는 메시지 형식입니다.');
+    if (!txt(b.text) && !txt(b.fileData)) {
+      return fail(res, 400, '메시지 내용이 필요합니다.');
+    }
+
+    const user = req.session.user;
+    const r = await db(
+      `INSERT INTO namo_talk_messages
+        (room_id, sender_name, sender_uid, sender_dept, message_kind,
+         message_text, file_name, file_type, file_data)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING id, room_id, sender_name, sender_uid, sender_dept,
+                 message_kind, message_text, file_name, file_type, file_data, created_at`,
+      [
+        roomId,
+        txt(user.name) || '사용자',
+        txt(user.id),
+        txt(user.department),
+        kind,
+        txt(b.text),
+        txt(b.fileName) || null,
+        txt(b.fileType) || null,
+        txt(b.fileData) || null,
+      ]
+    );
+
+    ok(res, mapNamoTalkMessage(r.rows[0]), '메시지가 전송되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
 
 app.get('/api/backup', requireLogin, async (_req, res) => {
   try {
