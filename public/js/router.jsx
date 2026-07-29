@@ -52,7 +52,6 @@ function QMESChemical({user,onLogout}){
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
   const [talkOpen,setTalkOpen]=useState(false);
   const [profileOpen,setProfileOpen]=useState(false);
-  const [myInfoOpen,setMyInfoOpen]=useState(false);
   const [passwordOpen,setPasswordOpen]=useState(false);
   const [currentPw,setCurrentPw]=useState("");
   const [newPw,setNewPw]=useState("");
@@ -161,24 +160,8 @@ function QMESChemical({user,onLogout}){
               <div className="text-base font-black">{user.name} ({user.dept})</div>
               <div className="text-xs text-slate-400 mt-1">{user.position||"직급 미등록"}</div>
             </div>
-            <button type="button" onClick={()=>{setMyInfoOpen(true);setProfileOpen(false);}} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">내 정보</button>
-            <button type="button" onClick={openPasswordModal} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">비밀번호 변경</button>
+            <button type="button" onClick={openPasswordModal} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold hover:bg-slate-800">비밀번호 변경하기</button>
             {onLogout&&<button type="button" onClick={onLogout} className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold text-red-300 hover:bg-slate-800">로그아웃</button>}
-          </div>
-        </div>
-      )}
-
-      {myInfoOpen&&(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={()=>setMyInfoOpen(false)}>
-          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={e=>e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5"><h2 className="text-xl font-black">내 정보</h2><button type="button" onClick={()=>setMyInfoOpen(false)} className="w-8 h-8 rounded-lg border border-slate-700 hover:bg-slate-800">×</button></div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">이름</span><strong>{user.name}</strong></div>
-              <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">부서</span><strong>{user.dept||"-"}</strong></div>
-              <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">직급</span><strong>{user.position||"-"}</strong></div>
-              <div className="flex justify-between"><span className="text-slate-400">권한</span><strong>{user.role==="admin"?"관리자":"사용자"}</strong></div>
-            </div>
-            <button type="button" onClick={()=>setMyInfoOpen(false)} className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black hover:bg-sky-500">확인</button>
           </div>
         </div>
       )}
