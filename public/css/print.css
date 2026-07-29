@@ -4,7 +4,7 @@
 
 /* Work order preview: visually center the title with the logo and document metadata. */
 .qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title {
-  transform: translateY(-2px) !important;
+  transform: translateY(-8px) !important;
 }
 
 /* Work order: keep the printed header aligned with the on-screen preview.
@@ -45,7 +45,7 @@
 
   body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title,
   body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title {
-    transform: translateY(-2px) !important;
+    transform: translateY(-8px) !important;
   }
 }
 
