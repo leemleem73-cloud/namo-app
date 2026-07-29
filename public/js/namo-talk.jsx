@@ -1,6 +1,5 @@
 /* NAMO Talk: enterprise messenger + integrated attendance */
 window.__NAMO_TALK_DRAG_FIX__=true;
-const NAMO_TALK_KEY="qmes-namo-talk-v6";
 const NAMO_TALK_READ_KEY="qmes-namo-talk-read-v1";
 const NAMO_ATTENDANCE_KEY="qmes-namo-attendance-v1";
 const NAMO_ATTENDANCE_SESSION_KEY="qmes-namo-attendance-session-v1";
@@ -9,14 +8,31 @@ const NAMO_TALK_NOTIFY_KEY="qmes-namo-talk-notify-v1";
 const NAMO_TALK_MINIMIZED_KEY="qmes-namo-talk-minimized-v1";
 
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
-function loadNamoTalkMessages(){return safeParse(localStorage.getItem(NAMO_TALK_KEY),{});}
-function saveNamoTalkMessages(data){try{localStorage.setItem(NAMO_TALK_KEY,JSON.stringify(data));}catch(e){}}
 function loadNamoTalkReads(){return safeParse(localStorage.getItem(NAMO_TALK_READ_KEY),{});}
 function saveNamoTalkReads(data){try{localStorage.setItem(NAMO_TALK_READ_KEY,JSON.stringify(data));}catch(e){}}
 function getNamoTalkUsers(){try{const users=typeof loadUsers==="function"?loadUsers():[];return Array.isArray(users)?users.filter(u=>u&&u.name):[];}catch(e){return[];}}
 function makeDirectRoomId(a,b){return `dm:${[a,b].sort((x,y)=>String(x).localeCompare(String(y),"ko")).join("|")}`;}
 function loadNamoTalkPosition(){const saved=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;return {x:Math.max(16,window.innerWidth-640),y:128};}
 function saveNamoTalkPosition(position){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(position));}catch(e){}}
+
+async function fetchNamoTalkRoom(roomId){
+  const response=await fetch(`/api/namo-talk/messages?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
+  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 불러오지 못했습니다.");
+  return Array.isArray(payload.data)?payload.data:[];
+}
+
+async function postNamoTalkMessage(roomId,message){
+  const response=await fetch("/api/namo-talk/messages",{
+    method:"POST",
+    credentials:"same-origin",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({roomId,...message})
+  });
+  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 전송하지 못했습니다.");
+  return payload.data;
+}
 
 function attendanceDate(d=new Date()){const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function attendanceTime(d=new Date(),seconds=false){const p=n=>String(n).padStart(2,"0");return `${p(d.getHours())}:${p(d.getMinutes())}${seconds?`:${p(d.getSeconds())}`:""}`;}
@@ -45,7 +61,7 @@ function NamoTalkTab({onClose}){
   const directRooms=users.filter(u=>u.name!==currentUser.name).map(u=>({id:makeDirectRoomId(currentUser.name,u.name),name:u.name,type:"direct",subtitle:`${u.dept||"부서 미지정"}${u.position?` · ${u.position}`:""}`,user:u}));
   const allRooms=[...channelRooms,...directRooms];
   const [activeRoom,setActiveRoom]=useState(()=>directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
-  const [messages,setMessages]=useState(loadNamoTalkMessages);
+  const [messages,setMessages]=useState({});
   const [reads,setReads]=useState(loadNamoTalkReads);
   const [text,setText]=useState("");
   const [search,setSearch]=useState("");
@@ -56,11 +72,23 @@ function NamoTalkTab({onClose}){
   const [notifyOn,setNotifyOn]=useState(()=>localStorage.getItem(NAMO_TALK_NOTIFY_KEY)!=="0");
   const [emojiOpen,setEmojiOpen]=useState(false);
   const [toast,setToast]=useState("");
+  const [sending,setSending]=useState(false);
   const fileRef=useRef(null),scrollRef=useRef(null),panelRef=useRef(null),dragRef=useRef(null);
   const room=allRooms.find(item=>item.id===activeRoom)||allRooms[0];
 
+  const refreshRoom=async roomId=>{
+    if(!roomId)return;
+    try{
+      const rows=await fetchNamoTalkRoom(roomId);
+      setMessages(previous=>({...previous,[roomId]:rows}));
+    }catch(error){
+      console.warn("NAMO Talk refresh failed:",error.message);
+    }
+  };
+
   useEffect(()=>{const t=setInterval(()=>setUsers(getNamoTalkUsers()),3000);return()=>clearInterval(t);},[]);
-  useEffect(()=>{if(!room)return;const next={...reads,[room.id]:Date.now()};setReads(next);saveNamoTalkReads(next);},[activeRoom]);
+  useEffect(()=>{if(!room)return;const next={...reads,[room.id]:Date.now()};setReads(next);saveNamoTalkReads(next);refreshRoom(room.id);},[activeRoom]);
+  useEffect(()=>{if(!room)return;const t=setInterval(()=>refreshRoom(room.id),2000);return()=>clearInterval(t);},[activeRoom,room?.id]);
   useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[activeRoom,messages]);
   useEffect(()=>{if(!allRooms.some(item=>item.id===activeRoom)&&allRooms[0])setActiveRoom(allRooms[0].id);},[users.length]);
   useEffect(()=>{const onResize=()=>{const nextCompact=window.innerWidth<=480;setCompact(nextCompact);if(nextCompact)return;const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition(previous=>{const next={x:Math.max(8,Math.min(previous.x,window.innerWidth-width-8)),y:Math.max(8,Math.min(previous.y,window.innerHeight-height-8))};saveNamoTalkPosition(next);return next;});};window.addEventListener("resize",onResize);return()=>window.removeEventListener("resize",onResize);},[]);
@@ -69,10 +97,10 @@ function NamoTalkTab({onClose}){
   const startDrag=event=>{if(compact||event.button!==0||event.target.closest("button"))return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};document.body.style.userSelect="none";document.body.style.cursor="grabbing";event.preventDefault();};
   const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
   const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
-  const appendMessage=payload=>{if(!activeRoom)return;const next={...messages,[activeRoom]:[...(messages[activeRoom]||[]),payload]};setMessages(next);saveNamoTalkMessages(next);};
-  const sendMessage=()=>{const v=text.trim();if(!v||!room)return;appendMessage({id:Date.now(),createdAt:Date.now(),sender:currentUser.name,dept:currentUser.dept||"",text:v,time:attendanceTime(),kind:room.type==="notice"?"notice":"text"});setText("");setEmojiOpen(false);};
-  const sendEmoticon=value=>{appendMessage({id:Date.now(),createdAt:Date.now(),sender:currentUser.name,dept:currentUser.dept||"",text:value,time:attendanceTime(),kind:"emoticon"});setEmojiOpen(false);};
-  const handleFile=async e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});appendMessage({id:Date.now(),createdAt:Date.now(),sender:currentUser.name,dept:currentUser.dept||"",text:file.name,time:attendanceTime(),kind:file.type.startsWith("image/")?"image":"file",fileName:file.name,fileData:dataUrl});};
+  const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
+  const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text"});if(ok){setText("");setEmojiOpen(false);}};
+  const sendEmoticon=async value=>{const ok=await appendMessage({text:value,kind:"emoticon"});if(ok)setEmojiOpen(false);};
+  const handleFile=async e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await appendMessage({text:file.name,kind:file.type.startsWith("image/")?"image":"file",fileName:file.name,fileData:dataUrl});};
 
   const filteredChannels=channelRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
   const filteredDirects=directRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
@@ -116,10 +144,10 @@ function NamoTalkTab({onClose}){
           <div style={{flex:"0 0 auto",background:"white",padding:10,borderTop:"1px solid #cbd5e1"}}>
             <input ref={fileRef} type="file" onChange={handleFile} style={{display:"none"}}/>
             <div style={{display:"flex",alignItems:"flex-end",gap:7}}>
-              <button type="button" onClick={()=>fileRef.current?.click()} style={{height:46,flex:"0 0 auto",padding:"0 12px",border:"1px solid #94a3b8",borderRadius:9,background:"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>📎 파일</button>
-              <button type="button" onClick={()=>setEmojiOpen(v=>!v)} style={{height:46,flex:"0 0 auto",padding:"0 11px",border:"1px solid #94a3b8",borderRadius:9,background:emojiOpen?"#ede9fe":"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>😊 이모티콘</button>
+              <button type="button" onClick={()=>fileRef.current?.click()} disabled={sending} style={{height:46,flex:"0 0 auto",padding:"0 12px",border:"1px solid #94a3b8",borderRadius:9,background:"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>📎 파일</button>
+              <button type="button" onClick={()=>setEmojiOpen(v=>!v)} disabled={sending} style={{height:46,flex:"0 0 auto",padding:"0 11px",border:"1px solid #94a3b8",borderRadius:9,background:emojiOpen?"#ede9fe":"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>😊 이모티콘</button>
               <textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}} placeholder="메시지를 입력하세요" style={{flex:"1 1 auto",minWidth:0,height:60,boxSizing:"border-box",resize:"none",border:"1px solid #94a3b8",borderRadius:10,padding:"10px 11px",fontFamily:"inherit",fontSize:15,color:"#172033",outline:"none"}}/>
-              <button type="button" onClick={sendMessage} disabled={!text.trim()} style={{width:64,height:60,flex:"0 0 64px",background:text.trim()?"#0284c7":"#bae6fd",color:"white",border:0,borderRadius:10,fontSize:15,fontWeight:950,cursor:text.trim()?"pointer":"default"}}>전송</button>
+              <button type="button" onClick={sendMessage} disabled={!text.trim()||sending} style={{width:64,height:60,flex:"0 0 64px",background:text.trim()&&!sending?"#0284c7":"#bae6fd",color:"white",border:0,borderRadius:10,fontSize:15,fontWeight:950,cursor:text.trim()&&!sending?"pointer":"default"}}>{sending?"전송중":"전송"}</button>
             </div>
           </div>
         </div>
