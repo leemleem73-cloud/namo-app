@@ -3,6 +3,7 @@ const NAMO_TALK_KEY="qmes-namo-talk-v6";
 const NAMO_TALK_READ_KEY="qmes-namo-talk-read-v1";
 const NAMO_ATTENDANCE_KEY="qmes-namo-attendance-v1";
 const NAMO_ATTENDANCE_SESSION_KEY="qmes-namo-attendance-session-v1";
+const NAMO_TALK_POSITION_KEY="qmes-namo-talk-position-v1";
 
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
 function loadNamoTalkMessages(){return safeParse(localStorage.getItem(NAMO_TALK_KEY),{});}
@@ -11,6 +12,12 @@ function loadNamoTalkReads(){return safeParse(localStorage.getItem(NAMO_TALK_REA
 function saveNamoTalkReads(data){try{localStorage.setItem(NAMO_TALK_READ_KEY,JSON.stringify(data));}catch(e){}}
 function getNamoTalkUsers(){try{const users=typeof loadUsers==="function"?loadUsers():[];return Array.isArray(users)?users.filter(u=>u&&u.name):[];}catch(e){return[];}}
 function makeDirectRoomId(a,b){return `dm:${[a,b].sort((x,y)=>String(x).localeCompare(String(y),"ko")).join("|")}`;}
+function loadNamoTalkPosition(){
+  const saved=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);
+  if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;
+  return {x:Math.max(16,window.innerWidth-640),y:128};
+}
+function saveNamoTalkPosition(position){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(position));}catch(e){}}
 
 function attendanceDate(d=new Date()){const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function attendanceTime(d=new Date(),seconds=false){const p=n=>String(n).padStart(2,"0");return `${p(d.getHours())}:${p(d.getMinutes())}${seconds?`:${p(d.getSeconds())}`:""}`;}
@@ -44,8 +51,12 @@ function NamoTalkTab({onClose}){
   const [text,setText]=useState("");
   const [search,setSearch]=useState("");
   const [mode,setMode]=useState("chat");
+  const [compact,setCompact]=useState(()=>window.innerWidth<=768);
+  const [position,setPosition]=useState(loadNamoTalkPosition);
   const fileRef=useRef(null);
   const scrollRef=useRef(null);
+  const panelRef=useRef(null);
+  const dragRef=useRef(null);
   const room=allRooms.find(item=>item.id===activeRoom)||allRooms[0];
 
   useEffect(()=>{const t=setInterval(()=>setUsers(getNamoTalkUsers()),3000);return()=>clearInterval(t);},[]);
@@ -61,6 +72,66 @@ function NamoTalkTab({onClose}){
   useEffect(()=>{
     if(!allRooms.some(item=>item.id===activeRoom)&&allRooms[0])setActiveRoom(allRooms[0].id);
   },[users.length]);
+  useEffect(()=>{
+    const onResize=()=>{
+      const nextCompact=window.innerWidth<=768;
+      setCompact(nextCompact);
+      if(nextCompact)return;
+      const panel=panelRef.current;
+      const width=panel?.offsetWidth||620;
+      const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);
+      setPosition(previous=>{
+        const next={
+          x:Math.max(8,Math.min(previous.x,window.innerWidth-width-8)),
+          y:Math.max(8,Math.min(previous.y,window.innerHeight-height-8))
+        };
+        saveNamoTalkPosition(next);
+        return next;
+      });
+    };
+    window.addEventListener("resize",onResize);
+    return()=>window.removeEventListener("resize",onResize);
+  },[]);
+  useEffect(()=>{
+    const onPointerMove=event=>{
+      const drag=dragRef.current;
+      if(!drag||compact)return;
+      event.preventDefault();
+      const panel=panelRef.current;
+      const width=panel?.offsetWidth||620;
+      const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);
+      const next={
+        x:Math.max(8,Math.min(event.clientX-drag.offsetX,window.innerWidth-width-8)),
+        y:Math.max(8,Math.min(event.clientY-drag.offsetY,window.innerHeight-height-8))
+      };
+      setPosition(next);
+    };
+    const onPointerUp=()=>{
+      if(!dragRef.current)return;
+      dragRef.current=null;
+      saveNamoTalkPosition(position);
+      document.body.style.userSelect="";
+      document.body.style.cursor="";
+    };
+    window.addEventListener("pointermove",onPointerMove,{passive:false});
+    window.addEventListener("pointerup",onPointerUp);
+    window.addEventListener("pointercancel",onPointerUp);
+    return()=>{
+      window.removeEventListener("pointermove",onPointerMove);
+      window.removeEventListener("pointerup",onPointerUp);
+      window.removeEventListener("pointercancel",onPointerUp);
+    };
+  },[compact,position]);
+
+  const startDrag=event=>{
+    if(compact||event.button!==0||event.target.closest("button"))return;
+    const rect=panelRef.current?.getBoundingClientRect();
+    if(!rect)return;
+    dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};
+    document.body.style.userSelect="none";
+    document.body.style.cursor="grabbing";
+    event.preventDefault();
+  };
 
   const appendMessage=payload=>{
     if(!activeRoom)return;
@@ -86,10 +157,13 @@ function NamoTalkTab({onClose}){
   const filteredChannels=channelRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
   const filteredDirects=directRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
   const roomMessages=messages[activeRoom]||[];
+  const panelStyle=compact
+    ? {position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}
+    : {position:"fixed",left:position.x,top:position.y,width:"min(620px,calc(100vw - 16px))",height:"min(720px,calc(100vh - 16px))"};
 
-  return <section aria-label="NAMO Talk" style={{position:"fixed",top:112,right:0,bottom:0,width:"min(620px,100vw)",zIndex:40,display:"flex",flexDirection:"column",background:"#f4f7fa",color:"#172033",fontFamily:"'Pretendard','Noto Sans KR',sans-serif",boxShadow:"-10px 0 30px rgba(15,23,42,.22)",borderLeft:"2px solid #d4a017",overflow:"hidden"}}>
-    <header style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",padding:"0 12px 0 14px",background:"#0f2740",color:"white"}}>
-      <div><div style={{fontSize:18,fontWeight:900}}>NAMO Talk</div><div style={{fontSize:11,color:"#a9bfd2",marginTop:2}}>회원관리 연동 업무 메신저</div></div>
+  return <section ref={panelRef} aria-label="NAMO Talk" style={{...panelStyle,zIndex:12000,display:"flex",flexDirection:"column",background:"#f4f7fa",color:"#172033",fontFamily:"'Pretendard','Noto Sans KR',sans-serif",boxShadow:"0 18px 50px rgba(15,23,42,.32)",border:"2px solid #d4a017",borderRadius:compact?0:14,overflow:"hidden"}}>
+    <header onPointerDown={startDrag} title={compact?"NAMO Talk":"제목줄을 잡고 이동하세요"} style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",padding:"0 12px 0 14px",background:"#0f2740",color:"white",cursor:compact?"default":"grab",touchAction:"none"}}>
+      <div><div style={{fontSize:18,fontWeight:900}}>NAMO Talk <span style={{fontSize:11,color:"#ffe69a",marginLeft:5}}>{compact?"":"↔ 이동 가능"}</span></div><div style={{fontSize:11,color:"#a9bfd2",marginTop:2}}>회원관리 연동 업무 메신저</div></div>
       <div style={{marginLeft:"auto",fontSize:12,color:"#c5d5e1",marginRight:8}}>{currentUser.name}</div>
       <button onClick={()=>setMode("attendance")} style={{height:32,padding:"0 10px",border:"1px solid #d4a017",borderRadius:8,background:mode==="attendance"?"#fff3b0":"rgba(212,160,23,.15)",color:mode==="attendance"?"#7c5c00":"#ffe69a",fontWeight:900,cursor:"pointer",marginRight:6}}>근태</button>
       <button onClick={onClose} aria-label="닫기" style={{width:32,height:32,border:0,borderRadius:8,background:"rgba(255,255,255,.08)",color:"white",fontSize:22,cursor:"pointer"}}>×</button>
