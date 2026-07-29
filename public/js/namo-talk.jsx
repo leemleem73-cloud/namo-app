@@ -15,56 +15,17 @@ function makeDirectRoomId(a,b){return `dm:${[a,b].sort((x,y)=>String(x).localeCo
 function loadNamoTalkPosition(){const saved=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;return {x:Math.max(16,window.innerWidth-640),y:128};}
 function saveNamoTalkPosition(position){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(position));}catch(e){}}
 
-let namoTalkSessionIdentity="";
-let namoTalkSessionPromise=null;
-
-async function ensureNamoTalkServerSession(force=false){
-  const user=window.__QMES_CURRENT_USER__||{};
-  const identity=String(user.uid||user.id||user.name||"");
-  if(!identity||!user.name)throw new Error("QMES 로그인 정보를 확인할 수 없습니다.");
-  if(!force&&namoTalkSessionIdentity===identity)return;
-  if(namoTalkSessionPromise)return namoTalkSessionPromise;
-
-  namoTalkSessionPromise=fetch("/api/namo-talk/session",{
-    method:"POST",
-    credentials:"same-origin",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      id:user.id||"",
-      uid:user.uid||"",
-      name:user.name,
-      dept:user.dept||user.department||""
-    })
-  }).then(async response=>{
-    const payload=await response.json().catch(()=>({success:false,message:"톡 로그인 응답을 확인할 수 없습니다."}));
-    if(!response.ok||!payload.success)throw new Error(payload.message||"톡 로그인에 실패했습니다.");
-    namoTalkSessionIdentity=identity;
-  }).finally(()=>{namoTalkSessionPromise=null;});
-
-  return namoTalkSessionPromise;
-}
-
-async function fetchNamoTalkApi(url,options={}){
-  await ensureNamoTalkServerSession();
-  let response=await fetch(url,{...options,credentials:"same-origin"});
-  if(response.status===401){
-    namoTalkSessionIdentity="";
-    await ensureNamoTalkServerSession(true);
-    response=await fetch(url,{...options,credentials:"same-origin"});
-  }
-  return response;
-}
-
 async function fetchNamoTalkRoom(roomId){
-  const response=await fetchNamoTalkApi(`/api/namo-talk/messages?roomId=${encodeURIComponent(roomId)}`);
+  const response=await fetch(`/api/namo-talk/messages?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
   const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
   if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 불러오지 못했습니다.");
   return Array.isArray(payload.data)?payload.data:[];
 }
 
 async function postNamoTalkMessage(roomId,message){
-  const response=await fetchNamoTalkApi("/api/namo-talk/messages",{
+  const response=await fetch("/api/namo-talk/messages",{
     method:"POST",
+    credentials:"same-origin",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({roomId,...message})
   });
