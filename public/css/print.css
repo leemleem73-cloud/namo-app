@@ -2,6 +2,11 @@
    Print-only extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
 
+/* Work order preview: visually center the title with the logo and document metadata. */
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title {
+  transform: translateY(-2px) !important;
+}
+
 /* Work order: keep the printed header aligned with the on-screen preview.
    This selector intentionally outranks the shared IQC rule that adds 30mm top padding. */
 @media print {
@@ -36,6 +41,11 @@
     position: static !important;
     margin: 0 !important;
     transform: none !important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title {
+    transform: translateY(-2px) !important;
   }
 }
 
