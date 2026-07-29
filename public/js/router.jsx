@@ -51,6 +51,8 @@ function QMESChemical({user,onLogout}){
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
   const [talkOpen,setTalkOpen]=useState(false);
+  const [profileOpen,setProfileOpen]=useState(false);
+  const [myInfoOpen,setMyInfoOpen]=useState(false);
 
   useEffect(()=>{ safeStorageSet("qmes_current_tab",tab); },[tab]);
   useEffect(()=>{ if(openMenu) safeStorageSet("qmes_open_menu",openMenu); else safeStorageRemove("qmes_open_menu"); },[openMenu]);
@@ -78,12 +80,23 @@ function QMESChemical({user,onLogout}){
             <span aria-hidden="true">💬</span><span>NAMO Talk</span>
           </button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name[0]}</div>
-            <div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div>
+            <div className="relative">
+              <button type="button" onClick={()=>setProfileOpen(v=>!v)} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-800" aria-expanded={profileOpen}>
+                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name[0]}</div>
+                <div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div>
+                <span className="hidden md:inline text-slate-400" style={{fontSize:12}}>▼</span>
+              </button>
+              {profileOpen&&(
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden z-[80]">
+                  <button type="button" onClick={()=>{setMyInfoOpen(true);setProfileOpen(false);}} className="w-full px-4 py-3 text-left text-sm font-bold hover:bg-slate-800">내 정보</button>
+                  <button type="button" onClick={()=>{setProfileOpen(false);alert("비밀번호 변경 기능은 다음 단계에서 연결합니다.");}} className="w-full px-4 py-3 text-left text-sm font-bold hover:bg-slate-800 border-t border-slate-800">비밀번호 변경</button>
+                  {onLogout&&<button type="button" onClick={onLogout} className="w-full px-4 py-3 text-left text-sm font-bold text-red-300 hover:bg-slate-800 border-t border-slate-800">로그아웃</button>}
+                </div>
+              )}
+            </div>
             <button onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">백업</button>
             <button onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">복원</button>
             {user.role==="admin"&&<button onClick={()=>{setTab("members");setOpenMenu(null);}} className={`qmes-header-action px-2 py-1 rounded border ${tab==="members"?"border-sky-500/60 text-sky-300 bg-sky-500/10":"border-slate-700 text-slate-400"}`}>회원관리</button>}
-            {onLogout&&<button onClick={onLogout} className="qmes-header-action px-2 py-1 rounded border border-slate-700">로그아웃</button>}
           </div>
         </div>
         <div className="border-t border-white/10 qmes-top-menu-bar">
@@ -107,6 +120,23 @@ function QMESChemical({user,onLogout}){
       </header>
       <main className="w-full px-4 lg:px-6 py-5 flex-1"><Active/></main>
       {talkOpen&&<NamoTalkTab onClose={()=>setTalkOpen(false)}/>} 
+      {myInfoOpen&&(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={()=>setMyInfoOpen(false)}>
+          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-black">내 정보</h2>
+              <button type="button" onClick={()=>setMyInfoOpen(false)} className="w-8 h-8 rounded-lg border border-slate-700 hover:bg-slate-800">×</button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">이름</span><strong>{user.name}</strong></div>
+              <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">부서</span><strong>{user.dept||"-"}</strong></div>
+              <div className="flex justify-between border-b border-slate-800 pb-3"><span className="text-slate-400">직급</span><strong>{user.position||"-"}</strong></div>
+              <div className="flex justify-between"><span className="text-slate-400">권한</span><strong>{user.role==="admin"?"관리자":"사용자"}</strong></div>
+            </div>
+            <button type="button" onClick={()=>setMyInfoOpen(false)} className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black hover:bg-sky-500">확인</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
