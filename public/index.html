@@ -30,7 +30,6 @@
       bottom:auto !important; margin:auto !important; transform:none !important;
       max-height:calc(100vh - 32px) !important; overflow-y:auto !important;
     }
-
     #qmes-user-dropdown {
       position:fixed; z-index:12000; width:190px; padding:7px;
       border:1px solid rgba(71,85,105,.95); border-radius:10px; background:#132238;
@@ -47,8 +46,6 @@
     #qmes-user-dropdown .qmes-dropdown-logout {
       color:#fda4af; border-top:1px solid rgba(71,85,105,.7); border-radius:0 0 7px 7px;
     }
-
-    /* 기존 2단 서브메뉴는 숨기고 통합 호버 드롭다운 사용 */
     .qmes-submenu-row { display:none !important; }
     #qmes-all-menu-dropdown {
       position:fixed; z-index:11900; min-width:210px; max-width:280px; padding:7px;
@@ -82,7 +79,6 @@
   <div id="root"></div>
   <div id="qmes-print-root" aria-hidden="true"></div>
   <noscript>이 페이지는 JavaScript가 필요합니다.</noscript>
-
   <script type="text/babel" data-presets="react" src="./js/common.jsx?v=20260727-trace1"></script>
   <script type="text/babel" data-presets="react" src="./js/utils.jsx"></script>
   <script type="text/babel" data-presets="react" src="./js/dashboard.jsx?v=20260727-5"></script>
@@ -106,14 +102,12 @@
   <script type="text/babel" data-presets="react" src="./js/namo-attendance-admin-edit.jsx?v=20260729-1"></script>
   <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260729-profile7"></script>
   <script type="text/babel" data-presets="react" src="./js/app.jsx?v=20260728-storagefix1"></script>
-
   <script>
     (function(){
       let allowNativeAccountClick=false;
       let closeTimer=null;
       const getAccountButton=()=>document.querySelector('button[aria-label="계정 설정 열기"]');
       const getAccountDialog=()=>document.querySelector('[role="dialog"][aria-label="계정 설정"]');
-
       const ensureDropdown=()=>{
         let menu=document.getElementById('qmes-user-dropdown');
         if(menu) return menu;
@@ -131,7 +125,6 @@
         });
         return menu;
       };
-
       const positionMenu=()=>{
         const button=getAccountButton();
         const menu=ensureDropdown();
@@ -144,7 +137,6 @@
       const openMenu=()=>{clearTimeout(closeTimer);positionMenu();ensureDropdown().classList.add('is-open');};
       const closeMenu=()=>{const menu=document.getElementById('qmes-user-dropdown');if(menu)menu.classList.remove('is-open');};
       function scheduleClose(){clearTimeout(closeTimer);closeTimer=setTimeout(closeMenu,180);}
-
       const runNativeAccountAction=action=>{
         const accountButton=getAccountButton();
         if(!accountButton) return;
@@ -160,7 +152,6 @@
           if(target) target.click();
         },0);
       };
-
       document.addEventListener('click',event=>{
         const accountButton=getAccountButton();
         const menu=document.getElementById('qmes-user-dropdown');
@@ -172,7 +163,6 @@
         }
         if(menu&&!menu.contains(event.target)) closeMenu();
       },true);
-
       document.addEventListener('mouseover',event=>{
         const accountButton=getAccountButton();
         if(accountButton&&accountButton.contains(event.target)) openMenu();
@@ -186,7 +176,6 @@
       window.addEventListener('scroll',closeMenu,true);
     })();
   </script>
-
   <script>
     (function(){
       const menuMap={
@@ -217,14 +206,12 @@
           {label:'4M 변경관리',group:'부적합관리',sub:'4M 변경관리'}
         ]
       };
-
       let closeTimer=null;
+      let hoverRunTimer=null;
       let currentTopButton=null;
-
       const getTopButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
       const buttonText=button=>button?button.textContent.replace('›','').replace('〉','').trim():'';
       const findTopButton=label=>getTopButtons().find(button=>buttonText(button)===label);
-
       const ensureMenu=()=>{
         let menu=document.getElementById('qmes-all-menu-dropdown');
         if(menu) return menu;
@@ -233,18 +220,18 @@
         menu.setAttribute('role','menu');
         document.body.appendChild(menu);
         menu.addEventListener('mouseenter',()=>clearTimeout(closeTimer));
-        menu.addEventListener('mouseleave',scheduleClose);
+        menu.addEventListener('mouseleave',()=>{clearTimeout(hoverRunTimer);scheduleClose();});
         return menu;
       };
-
       const closeMenu=()=>{
+        clearTimeout(hoverRunTimer);
         const menu=document.getElementById('qmes-all-menu-dropdown');
         if(menu) menu.classList.remove('is-open');
         currentTopButton=null;
       };
       function scheduleClose(){clearTimeout(closeTimer);closeTimer=setTimeout(closeMenu,220);}
-
       const navigate=item=>{
+        clearTimeout(hoverRunTimer);
         closeMenu();
         if(item.direct){
           const button=findTopButton(item.direct);
@@ -261,9 +248,9 @@
           if(subButton) subButton.click();
         },0);
       };
-
       const openFor=button=>{
         clearTimeout(closeTimer);
+        clearTimeout(hoverRunTimer);
         const label=buttonText(button);
         const items=menuMap[label];
         if(!items||!items.length) return;
@@ -278,6 +265,11 @@
           const row=document.createElement('button');
           row.type='button';
           row.textContent=item.label;
+          row.addEventListener('mouseenter',()=>{
+            clearTimeout(hoverRunTimer);
+            hoverRunTimer=setTimeout(()=>navigate(item),250);
+          });
+          row.addEventListener('mouseleave',()=>clearTimeout(hoverRunTimer));
           row.addEventListener('click',()=>navigate(item));
           menu.appendChild(row);
         });
@@ -288,24 +280,20 @@
         menu.style.top=(rect.bottom+4)+'px';
         menu.classList.add('is-open');
       };
-
       document.addEventListener('mouseover',event=>{
         const button=event.target.closest('.qmes-top-menu-button');
         if(!button) return;
         if(button===currentTopButton) return;
         openFor(button);
       },true);
-
       document.addEventListener('mouseout',event=>{
         const topBar=event.target.closest('.qmes-top-menu-bar');
         if(topBar&&!topBar.contains(event.relatedTarget)) scheduleClose();
       },true);
-
       document.addEventListener('click',event=>{
         const menu=document.getElementById('qmes-all-menu-dropdown');
         if(menu&&!menu.contains(event.target)&&!event.target.closest('.qmes-top-menu-button')) closeMenu();
       },true);
-
       document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
       window.addEventListener('scroll',closeMenu,true);
       window.addEventListener('resize',closeMenu);
