@@ -13,7 +13,6 @@ const TABS = [
   { id:"partners", label:"거래처 현황", icon:Users, comp:PartnersTab },
   { id:"eq", label:"설비 모니터링", icon:Cpu, comp:EquipmentTab },
   { id:"trace", label:"Lot 추적", icon:GitBranch, comp:TraceTab },
-  { id:"spc", label:"SPC (Cpk)", icon:BarChart3, comp:SpcTab },
   { id:"4m", label:"4M 변경관리", icon:Repeat, comp:FourMTab },
   { id:"ncr", label:"부적합 (8D)", icon:ShieldAlert, comp:NcrTab },
   { id:"cc", label:"고객불만 (GQMS)", icon:MessageSquareWarning, comp:ComplaintTab },
@@ -33,7 +32,7 @@ const TOP_MENUS = [
     id:"qualityMenu",
     label:"품질검사",
     icon:ClipboardCheck,
-    children:["iqc","pqc","oqc","spc","lock","coa"]
+    children:["iqc","pqc","oqc","lock","coa"]
   },
   { id:"pop", label:"현장입력", icon:Tablet },
   { id:"inv", label:"재고관리", icon:Package },
@@ -188,8 +187,17 @@ function QMESChemical({user, onLogout}){
     }
   };
 
-  const changePassword = async event=>{
+  const changePassword = event=>{
     event.preventDefault();
+
+    const savedPassword = String(
+      user.pw || user.password || "1234"
+    );
+
+    if(currentPw !== savedPassword){
+      setPasswordError("현재 비밀번호가 일치하지 않습니다.");
+      return;
+    }
 
     if(newPw.length < 4){
       setPasswordError("새 비밀번호는 4자 이상 입력하세요.");
@@ -202,25 +210,6 @@ function QMESChemical({user, onLogout}){
     }
 
     try{
-      const response = await fetch("/api/auth/password", {
-        method:"PUT",
-        credentials:"same-origin",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          currentPassword:currentPw,
-          newPassword:newPw
-        })
-      });
-      const payload = await response.json().catch(()=>({
-        success:false,
-        message:"서버 응답을 확인할 수 없습니다."
-      }));
-
-      if(!response.ok || !payload.success){
-        setPasswordError(payload.message || "비밀번호 변경에 실패했습니다.");
-        return;
-      }
-
       const users = JSON.parse(
         localStorage.getItem("qmes-users-v3") || "[]"
       );
@@ -240,21 +229,34 @@ function QMESChemical({user, onLogout}){
             }
 
             changed = true;
-            const {pw, password, ...safeItem} = item;
 
             return {
-              ...safeItem,
-              passwordChanged:true
+              ...item,
+              pw:newPw,
+              password:newPw
             };
           })
         : [];
 
-      if(changed){
-        localStorage.setItem(
-          "qmes-users-v3",
-          JSON.stringify(nextUsers)
+      if(!changed){
+        setPasswordError(
+          "회원 정보를 찾지 못했습니다. 관리자에게 문의하세요."
         );
+        return;
       }
+
+      localStorage.setItem(
+        "qmes-users-v3",
+        JSON.stringify(nextUsers)
+      );
+
+      user.pw = newPw;
+      user.password = newPw;
+
+      sessionStorage.setItem(
+        "qmes-current-user-v1",
+        JSON.stringify(user)
+      );
 
       closePasswordModal();
 
