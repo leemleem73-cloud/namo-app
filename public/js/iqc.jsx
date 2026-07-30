@@ -3,6 +3,19 @@
 function IqcTab() {
   const [rows, setRows] = useState(DB.iqc);
   const today = localISODate();
+
+  useEffect(() => {
+    let active = true;
+    if (typeof qmesSyncPullInspection !== "function") return () => { active = false; };
+    qmesSyncPullInspection("iqc", DB.iqc || [])
+      .then((next) => {
+        if (!active) return;
+        DB.iqc = next;
+        setRows(next);
+      })
+      .catch((error) => console.warn("IQC 공용 동기화 실패:", error.message));
+    return () => { active = false; };
+  }, []);
   const currentMonth = today.slice(0, 7);
   const emptyForm = () => ({
     recvDate: today,
