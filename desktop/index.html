@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAMO Talk</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">N</span><div><strong>NAMO Talk</strong><small>나모케미칼 그룹웨어</small></div></div>
+      <nav id="mainNav">
+        <button class="nav-item active" data-page="home">홈</button>
+        <button class="nav-item" data-page="chat">채팅</button>
+        <button class="nav-item" data-page="organization">조직도</button>
+        <button class="nav-item" data-page="calendar">일정</button>
+        <button class="nav-item" data-page="attendance">출퇴근</button>
+        <button class="nav-item" data-page="fieldwork">외근</button>
+        <button class="nav-item" data-page="leave">연차·반차</button>
+        <button class="nav-item" data-page="settings">설정</button>
+      </nav>
+      <div class="user-card"><div class="avatar">임</div><div><strong id="userName">임흥배</strong><small id="userRole">품질부 · 부장</small></div></div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div><h1 id="pageTitle">홈</h1><p id="todayText"></p></div>
+        <div class="top-actions"><span id="connectionBadge" class="badge">서버 확인 중</span><button id="hideBtn" class="ghost">트레이로 숨기기</button></div>
+      </header>
+
+      <section id="page-home" class="page active">
+        <div class="hero"><div><p class="eyebrow">NAMOCHEMICAL</p><h2>오늘도 안전하고 정확하게</h2><p>메신저, 근태, 조직도, 일정과 휴가 결재를 한곳에서 관리합니다.</p></div><div class="clock" id="liveClock">00:00</div></div>
+        <div class="quick-grid">
+          <button class="quick-card" data-go="attendance"><strong>출근 처리</strong><span>현재 근태 상태 확인</span></button>
+          <button class="quick-card" data-go="chat"><strong>새 메시지</strong><span>직원과 대화 시작</span></button>
+          <button class="quick-card" data-go="calendar"><strong>일정 등록</strong><span>개인·부서·회사 일정</span></button>
+          <button class="quick-card" data-go="leave"><strong>휴가 신청</strong><span>연차·반차 결재 요청</span></button>
+        </div>
+        <div class="dashboard-grid"><article class="panel"><h3>오늘 일정</h3><div id="todayEvents" class="empty">등록된 일정이 없습니다.</div></article><article class="panel"><h3>결재 현황</h3><div class="status-row"><span>검토대기</span><strong id="pendingLeaveCount">0건</strong></div><div class="status-row"><span>승인완료</span><strong id="approvedLeaveCount">0건</strong></div></article></div>
+      </section>
+
+      <section id="page-chat" class="page"><div class="split"><aside class="list-panel"><div class="section-head"><h3>대화</h3><button class="small">+</button></div><input class="search" placeholder="이름 또는 부서 검색" /><div id="chatRooms" class="list"><button class="list-item selected"><span class="avatar">품</span><span><strong>품질부</strong><small>새 메시지가 없습니다.</small></span></button></div></aside><article class="chat-panel"><div class="chat-head"><strong>품질부</strong><small>부서 대화방</small></div><div id="messages" class="messages"><div class="message system">NAMO Talk 대화가 시작되었습니다.</div></div><form id="messageForm" class="message-form"><input id="messageInput" placeholder="메시지를 입력하세요" autocomplete="off" /><button type="submit">전송</button></form></article></div></section>
+
+      <section id="page-organization" class="page"><article class="panel"><div class="section-head"><h3>조직도</h3><button id="refreshOrg" class="small">새로고침</button></div><div id="organizationTree" class="org-grid"><div class="empty">조직도를 불러오는 중입니다.</div></div></article></section>
+
+      <section id="page-calendar" class="page"><div class="dashboard-grid"><article class="panel"><div class="section-head"><h3>일정 등록</h3></div><form id="calendarForm" class="form-grid"><label>제목<input name="title" required /></label><label>시작<input name="startAt" type="datetime-local" required /></label><label>종료<input name="endAt" type="datetime-local" required /></label><label>구분<select name="scope"><option value="personal">개인</option><option value="department">부서</option><option value="company">전사</option></select></label><label class="wide">장소<input name="location" /></label><label class="wide">내용<textarea name="description"></textarea></label><button class="primary wide" type="submit">일정 저장</button></form></article><article class="panel"><div class="section-head"><h3>일정 목록</h3><button id="refreshCalendar" class="small">새로고침</button></div><div id="calendarList" class="list"><div class="empty">일정을 불러오는 중입니다.</div></div></article></div></section>
+
+      <section id="page-attendance" class="page"><div class="attendance-card"><p>오늘 근태 상태</p><h2 id="attendanceStatus">미출근</h2><div class="attendance-time"><span>출근 <strong id="clockInTime">-</strong></span><span>퇴근 <strong id="clockOutTime">-</strong></span></div><div class="button-row"><button id="clockInBtn" class="primary">출근</button><button id="clockOutBtn" class="danger">퇴근</button></div></div><article class="panel"><h3>최근 출퇴근 기록</h3><div id="attendanceList" class="list"><div class="empty">기록이 없습니다.</div></div></article></section>
+
+      <section id="page-fieldwork" class="page"><div class="dashboard-grid"><article class="panel"><h3>외근 등록</h3><form id="fieldworkForm" class="form-grid"><label>방문처<input name="destination" required /></label><label>출발 예정<input name="startAt" type="datetime-local" required /></label><label class="wide">업무 목적<input name="purpose" required /></label><button class="primary wide" type="submit">외근 등록</button></form></article><article class="panel"><h3>외근 현황</h3><div id="fieldworkList" class="list"><div class="empty">외근 내역이 없습니다.</div></div></article></div></section>
+
+      <section id="page-leave" class="page"><div class="dashboard-grid"><article class="panel"><h3>휴가 신청</h3><form id="leaveForm" class="form-grid"><label>휴가 종류<select name="leaveType"><option>연차</option><option>오전 반차</option><option>오후 반차</option></select></label><label>사용일<input name="leaveDate" type="date" required /></label><label class="wide">사유<input name="reason" required /></label><button class="primary wide" type="submit">검토 요청</button></form></article><article class="panel"><div class="section-head"><h3>신청 내역</h3><button id="printLeaveBtn" class="small">PDF 출력</button></div><div id="leaveList" class="list"><div class="empty">휴가 신청 내역이 없습니다.</div></div></article></div></section>
+
+      <section id="page-settings" class="page"><article class="panel settings-panel"><h3>환경 설정</h3><form id="settingsForm" class="form-grid"><label class="wide">QMES 서버 주소<input id="serverUrl" name="serverUrl" placeholder="http://localhost:3000" /></label><label class="check wide"><input id="autoStart" name="autoStart" type="checkbox" /> Windows 시작 시 자동 실행</label><button class="primary wide" type="submit">설정 저장</button></form></article></section>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
