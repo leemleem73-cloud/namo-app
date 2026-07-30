@@ -80,29 +80,33 @@ const INVENTORY = [
 /* ──────────────────────────── 설비 ──────────────────────────── */
 
 const EQUIPMENT = [
-  { id: "HSM-01", name: "HSM (High Shear Mixer)", params: [
-    { k: "temp", label: "교반부 온도", spec: "< 70 ℃", hi: 70, unit: "℃", src: "수기 (PLC 판독값)" },
-    { k: "vis", label: "운전 상태", spec: "이상 소음·진동·누유 없을 것", visual: true, src: "수기 (육안)" },
+  { id: "TK-501", name: "TK 501", subtitle: "NMP/PVdF/SBS 바인더 용해", params: [
+    { k: "temp", label: "온도", spec: "80±5 ℃", lo: 75, hi: 85, unit: "℃", src: "PLC 패널 · 1회/Lot" },
+    { k: "rpm", label: "RPM", spec: "< 70 rpm", hi: 70, unit: "rpm", src: "PLC 패널 · 1회/Lot" },
+    { k: "time", label: "시간", spec: "작업지시서 설정시간 준수", visual: true, okLabel: "설정시간 준수", badLabel: "미달/초과", src: "작업지시서 · 1회/Lot" },
+    { k: "appearance", label: "외관", spec: "색상 변형 및 이물 없음", visual: true, okLabel: "이상 없음", badLabel: "이상 발견", src: "육안 · 1회/Lot" },
   ] },
-  { id: "TK-501", name: "바인더 반응조 TK 501", params: [
-    { k: "temp", label: "온도", spec: "80±5 ℃", lo: 75, hi: 85, unit: "℃", src: "수기 (PLC 판독값)" },
-    { k: "rpm", label: "RPM", spec: "< 70 rpm", hi: 70, unit: "rpm", src: "수기 (PLC 판독값)" },
+  { id: "TK-501A", name: "TK 501A", subtitle: "Mixer 용해", params: [
+    { k: "time", label: "시간", spec: "작업지시서 설정시간 준수", visual: true, okLabel: "설정시간 준수", badLabel: "미달/초과", src: "PLC 패널 · 1회/Lot" },
+    { k: "temp", label: "온도", spec: "< 70 ℃", hi: 70, unit: "℃", src: "PLC 패널 · 1회/Lot" },
+    { k: "rpm", label: "RPM", spec: "3,540±500 rpm", lo: 3040, hi: 4040, unit: "rpm", src: "PLC 패널 · 1회/Lot" },
+    { k: "press", label: "최대압력", spec: "≤ 6 bar", hi: 6, unit: "bar", src: "PLC 패널 · 매일" },
+    { k: "flow", label: "유량", spec: "< 20 L/min", hi: 20, unit: "L/min", src: "PLC 패널 · 1회/Lot" },
+    { k: "oring", label: "O-ring", spec: "균열·마모·경화·부식 없을 것", visual: true, okLabel: "이상 없음", badLabel: "이상 발견", src: "육안 · 설비점검표" },
   ] },
-  { id: "TK-501A", name: "슬러리 믹서 TK 501A", params: [
-    { k: "temp", label: "온도", spec: "< 70 ℃", hi: 70, unit: "℃", src: "수기 (PLC 판독값)" },
-    { k: "rpm", label: "RPM", spec: "3,540±500 rpm", lo: 3040, hi: 4040, unit: "rpm", src: "수기 (PLC 판독값)" },
+  { id: "TK-501B", name: "TK 501B", subtitle: "TK 501A ↔ TK 501B 순환", params: [
+    { k: "time", label: "순환 시간", spec: "작업지시서 설정시간 준수", visual: true, okLabel: "설정시간 준수", badLabel: "미달/초과", src: "PLC 패널 · 1회/Lot" },
+    { k: "temp", label: "순환 온도", spec: "< 70 ℃", hi: 70, unit: "℃", src: "PLC 패널 · 1회/Lot" },
   ] },
-  { id: "TK-501B", name: "슬러리 믹서 TK 501B", params: [
-    { k: "press", label: "최대압력", spec: "≤ 6 bar", hi: 6, unit: "bar", src: "수기 (PLC 판독값)" },
-    { k: "flow", label: "유량", spec: "< 20 L/min", hi: 20, unit: "L/min", src: "수기 (PLC 판독값)" },
+  { id: "FLT-01", name: "필터 유닛", subtitle: "1단 Gauss · 2단 50/10 μm", params: [
+    { k: "gauss", label: "Gauss", spec: "≥ 10,000 G (1단)", lo: 10000, unit: "G", src: "Gauss Meter · 1회/Lot" },
+    { k: "condition", label: "필터 상태", spec: "부식 및 이물질 없을 것", visual: true, okLabel: "이상 없음", badLabel: "이상 발견", src: "육안 · 필터관리기록" },
+    { k: "second", label: "2단 필터", spec: "50 μm, 10 μm 장착상태", visual: true, okLabel: "장착 정상", badLabel: "이상 발견", src: "육안 · 주1회" },
+    { k: "press", label: "최대압력", spec: "≤ 6 bar", hi: 6, unit: "bar", src: "육안 · 1회/Lot" },
   ] },
-  { id: "FLT-01", name: "필터 유닛 #1 (2단 50/10μm)", params: [
-    { k: "gauss", label: "Gauss", spec: "≥ 10,000 G", lo: 10000, unit: "G", src: "수기 (Gauss Meter 판독)" },
-    { k: "vis", label: "필터 상태 (주1회)", spec: "부식·이물 없을 것", visual: true, src: "수기 (육안)" },
-  ] },
-  { id: "DR-HVAC", name: "드라이룸 항온제습 설비", params: [
-    { k: "rh", label: "RH", spec: "≤ 0.54 %", hi: 0.54, unit: "%", src: "수기 (온습도계 판독)" },
-    { k: "dp", label: "이슬점", spec: "≤ -40 ℃", hi: -40, unit: "℃", src: "수기 (온습도계 판독)" },
+  { id: "DR-HVAC", name: "드라이룸 항온제습", subtitle: "온·습도 및 이슬점", params: [
+    { k: "rh", label: "RH", spec: "≤ 0.54 %", hi: 0.54, unit: "%", src: "온습도계 · 매일" },
+    { k: "dp", label: "이슬점", spec: "≤ -40 ℃", hi: -40, unit: "℃", src: "온습도계 · 매일" },
   ] },
 ];
 
