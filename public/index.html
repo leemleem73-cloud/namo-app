@@ -89,6 +89,13 @@
   <script type="text/babel" data-presets="react" src="./js/iqc.jsx"></script>
   <script type="text/babel" data-presets="react" src="./js/production.jsx?v=20260727-gate9"></script>
   <script type="text/babel" data-presets="react" src="./js/ipad-pop.jsx?v=20260730-ipadpop1"></script>
+  <script>
+    qmesIpadCurrentUser = function(){
+      const raw = window.__QMES_USER__ || window.__QMES_CURRENT_USER__;
+      const value = raw && typeof raw === 'object' ? String(raw.name || raw.uid || '관리자') : String(raw || '관리자');
+      return value.replace(/\s*\(U-\d+\)\s*$/i, '').trim();
+    };
+  </script>
   <script src="./js/workorder-lot-sync.js?v=20260728-1"></script>
   <script type="text/babel" data-presets="react" src="./js/api.jsx"></script>
   <script type="text/babel" data-presets="react" src="./js/lot.jsx?v=20260727-trace1"></script>
