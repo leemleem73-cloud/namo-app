@@ -67,7 +67,7 @@
 
 .qmes-ipad-home-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-top: 18px;
 }
@@ -101,6 +101,7 @@
 
 .qmes-ipad-home-card.is-pqc::before { background: #34d399; }
 .qmes-ipad-home-card.is-oqc::before { background: #a78bfa; }
+.qmes-ipad-home-card.is-equipment::before { background: #fbbf24; }
 .qmes-ipad-home-card:hover,
 .qmes-ipad-home-card:focus-visible {
   transform: translateY(-3px);
@@ -601,9 +602,30 @@
 }
 .qmes-ipad-saved button.secondary { border-color: #405c77; background: #1b3149; color: #c5d5e4; }
 
+
+.qmes-ipad-equipment {
+  margin-top: 14px;
+}
+
+.qmes-ipad-equipment .qmes-equipment-tab {
+  gap: 12px;
+}
+
+.qmes-ipad-equipment .qmes-equipment-tab button,
+.qmes-ipad-equipment .qmes-equipment-tab input,
+.qmes-ipad-equipment .qmes-equipment-tab select {
+  min-height: 48px;
+  touch-action: manipulation;
+}
+
+.qmes-ipad-equipment .qmes-equipment-tab input,
+.qmes-ipad-equipment .qmes-equipment-tab select {
+  font-size: 16px;
+}
+
 @media (max-width: 900px) {
   .qmes-ipad-pop { width: min(100% - 18px, 820px); padding-top: 12px; }
-  .qmes-ipad-home-grid { grid-template-columns: 1fr; }
+  .qmes-ipad-home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .qmes-ipad-home-card { min-height: 155px; }
   .qmes-ipad-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .qmes-ipad-item-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -617,6 +639,11 @@
   .qmes-ipad-mode-tabs { gap: 6px; }
   .qmes-ipad-mode-tabs button { min-height: 58px; flex-direction: column; gap: 2px; }
   .qmes-ipad-mode-tabs strong { font-size: 14px; }
+  .qmes-ipad-home-grid { grid-template-columns: 1fr; }
+  .qmes-ipad-home-card { min-height: 145px; }
+  .qmes-ipad-equipment { margin-top: 10px; }
+  .qmes-ipad-equipment .qmes-equipment-tab { gap: 10px; }
+  .qmes-ipad-equipment .qmes-equipment-tab button { min-height: 52px; }
   .qmes-ipad-section { padding: 14px; }
   .qmes-ipad-form-grid { grid-template-columns: 1fr; }
   .qmes-ipad-form-grid label.wide { grid-column: span 1; }
