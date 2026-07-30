@@ -87,6 +87,7 @@ function QMESChemical({user, onLogout}){
 
   const [talkOpen, setTalkOpen] = useState(false);
   const [talkTargetRoom, setTalkTargetRoom] = useState("");
+  const [namoUnread, setNamoUnread] = useState(()=>Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0));
 
   /* 계정 설정 모달 */
   const [profileOpen, setProfileOpen] = useState(false);
@@ -101,6 +102,12 @@ function QMESChemical({user, onLogout}){
   useEffect(()=>{
     safeStorageSet("qmes_current_tab", tab);
   }, [tab]);
+
+  useEffect(()=>{
+    const updateUnread=event=>setNamoUnread(Math.max(0,Number(event.detail?.count||0)));
+    window.addEventListener("namo-talk-unread",updateUnread);
+    return()=>window.removeEventListener("namo-talk-unread",updateUnread);
+  },[]);
 
   useEffect(()=>{
     if(openMenu){
@@ -318,11 +325,12 @@ function QMESChemical({user, onLogout}){
 
           <button
             type="button"
-            className="relative p-2 rounded hover:bg-slate-800"
-            aria-label="알림"
+            onClick={()=>{setTalkTargetRoom("");setTalkOpen(true);}}
+            className="relative p-2 rounded text-yellow-300 hover:bg-slate-800"
+            aria-label={`NAMO Talk 알림 ${namoUnread}건`}
           >
             <Bell size={16} />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-400" />
+            {namoUnread>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white border-2 border-slate-900">{namoUnread>99?"99+":namoUnread}</span>}
           </button>
 
           <button
