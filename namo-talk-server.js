@@ -101,16 +101,21 @@ function registerNamoTalkRoutes(app) {
       }
       await schemaReady;
       const user = req.session.user;
-      const after = Number(req.query.after || Date.now());
-      const afterDate = new Date(Number.isFinite(after) ? after : Date.now());
+      const requestedAfterId = Number(req.query.afterId);
+      const cursorResult = await pool.query('SELECT COALESCE(MAX(id), 0) AS cursor FROM namo_talk_messages');
+      const currentCursor = Number(cursorResult.rows[0]?.cursor || 0);
+      if (!Number.isFinite(requestedAfterId)) {
+        return res.json({ success: true, message: 'OK', data: [], cursor: currentCursor });
+      }
+      const afterId = Math.max(0, requestedAfterId);
       const result = await pool.query(
         `SELECT id, room_id, sender_name, sender_dept, kind, message_text, file_name, file_data,
                 reply_to_id, reply_sender, reply_text, is_pinned, edited_at, deleted_at, created_at
            FROM namo_talk_messages
-          WHERE created_at > $1 AND sender_name <> $2
-          ORDER BY created_at ASC, id ASC
+          WHERE id > $1 AND sender_name <> $2
+          ORDER BY id ASC
           LIMIT 30`,
-        [afterDate, user.name || '']
+        [afterId, user.name || '']
       );
       const departmentRoom = `dept:${user.department || ''}`;
       const visible = result.rows.filter((row) => {
@@ -118,7 +123,8 @@ function registerNamoTalkRoutes(app) {
         if (!String(row.room_id).startsWith('dm:')) return false;
         return String(row.room_id).slice(3).split('|').includes(user.name || '');
       });
-      return res.json({ success: true, message: 'OK', data: visible.map(mapMessage) });
+      const nextCursor = result.rows.length ? Number(result.rows[result.rows.length - 1].id) : afterId;
+      return res.json({ success: true, message: 'OK', data: visible.map(mapMessage), cursor: nextCursor });
     } catch (err) {
       console.error('NAMO Talk notification list failed:', err);
       return res.status(500).json({ success: false, message: err.message, data: null });
