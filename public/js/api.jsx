@@ -3,7 +3,7 @@
 function InventoryTab() {
   const short = INVENTORY.filter((i) => i.stock < i.safety);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="qmes-equipment-tab flex flex-col gap-4">
       {short.length > 0 && INVENTORY.some((i) => i.stock > 0) && (
         <div className="flex items-center gap-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3">
           <AlertTriangle size={16} className="text-amber-400 shrink-0" />
@@ -64,7 +64,12 @@ function InventoryTab() {
 /* ──────────────────────────── 설비 모니터링 ──────────────────────────── */
 
 function EquipmentTab() {
-  const TODAY = new Date().toISOString().slice(0, 10);
+  const TODAY = typeof localISODate === "function"
+    ? localISODate()
+    : (() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      })();
   if (DB.eqDate !== TODAY) { DB.eqDate = TODAY; DB.eqReadings = {}; dbSave(); } // 일일 점검표 — 날짜가 바뀌면 점검현황 초기화 (기록·알람 이력은 유지)
 
   const [eqId, setEqId] = useState(EQUIPMENT[0].id);
@@ -79,6 +84,46 @@ function EquipmentTab() {
   const [tourIdx, setTourIdx] = useState(0);
   const [tourVals, setTourVals] = useState({});
   const [tourTried, setTourTried] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [syncState, setSyncState] = useState("동기화 중");
+  const [syncError, setSyncError] = useState("");
+  const rawUser = window.__QMES_USER__ || window.__QMES_CURRENT_USER__;
+  const currentUser = rawUser && typeof rawUser === "object"
+    ? String(rawUser.name || rawUser.uid || "현재 사용자")
+    : String(rawUser || "현재 사용자");
+
+  useEffect(() => {
+    let mounted = true;
+    const refresh = async () => {
+      if (typeof qmesSyncPullEquipment !== "function") {
+        if (mounted) setSyncState("이 기기에만 저장");
+        return;
+      }
+      try {
+        if (typeof qmesSyncPushPendingEquipment === "function") await qmesSyncPushPendingEquipment();
+        const shared = await qmesSyncPullEquipment();
+        if (!mounted) return;
+        setReadings({...(shared?.readings || DB.eqReadings || {})});
+        setLogs([...(shared?.logs || DB.eqLogs || [])]);
+        setAlarms([...(shared?.alarms || DB.eqAlarms || [])]);
+        setSyncState("PC·모바일 동기화");
+        setSyncError("");
+      } catch (error) {
+        if (!mounted) return;
+        setSyncState("동기화 재시도 중");
+        setSyncError(error.message || "공용 DB 연결을 확인하세요.");
+      }
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 5000);
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      mounted = false;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
 
   const eq = EQUIPMENT.find((e) => e.id === eqId);
   const param = eq.params.find((x) => x.k === pk) || eq.params[0];
@@ -95,20 +140,89 @@ function EquipmentTab() {
 
   const selectParam = (id, k) => { setEqId(id); setPk(k); setVal(""); setVisOk(null); setTried(false); };
 
-  const save = () => {
-    if (judge == null || inputError) { setTried(true); return; }
-    const now = new Date();
+  const makeEntry = (targetEq, targetParam, display, result, now, index = 0) => {
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const display = isVisual ? (visOk ? "이상 없음" : "이상 발견") : `${trimmed} ${param.unit || ""}`.trim();
-    const nextReadings = { ...readings, [`${eq.id}:${param.k}`]: { v: display, ok: judge === "정상", time } };
-    const nextLogs = [{ time, eqName: eq.name, item: param.label, v: display, judge, by: window.__QMES_USER__ || "-" }, ...logs];
-    setReadings(nextReadings); setLogs(nextLogs);
-    DB.eqReadings = nextReadings; DB.eqLogs = nextLogs;
-    if (judge === "이탈") {
-      const nextAlarms = [{ time, eq: eq.id, msg: `${param.label} ${display} — 관리기준(${param.spec}) 이탈, 점검·조치 필요`, level: "경고" }, ...alarms];
-      setAlarms(nextAlarms); DB.eqAlarms = nextAlarms;
-    }
+    return {
+      id:`EQ-${now.getTime()}-${String(index).padStart(2, "0")}-${Math.random().toString(36).slice(2, 7)}`,
+      date:TODAY,
+      time,
+      recordedAt:now.toISOString(),
+      eqId:targetEq.id,
+      eqName:targetEq.name,
+      paramKey:targetParam.k,
+      item:targetParam.label,
+      spec:targetParam.spec,
+      source:targetParam.src,
+      v:display,
+      judge:result,
+      ok:result === "정상",
+      by:currentUser,
+      sharedSync:false
+    };
+  };
+
+  const persistEntries = async (entries) => {
+    const nextReadings = {...readings};
+    entries.forEach((entry) => {
+      nextReadings[`${entry.eqId}:${entry.paramKey}`] = {
+        v:entry.v,
+        ok:entry.ok,
+        time:entry.time,
+        by:entry.by
+      };
+    });
+    const nextLogs = [...entries, ...logs].slice(0, 3000);
+    const nextAlarms = [
+      ...entries.filter((entry) => entry.judge === "이탈").map((entry) => ({
+        id:entry.id,
+        date:entry.date,
+        time:entry.time,
+        eq:entry.eqId,
+        msg:`${entry.item} ${entry.v} — 관리기준(${entry.spec}) 이탈, 점검·조치 필요`,
+        level:"경고",
+        by:entry.by
+      })),
+      ...alarms
+    ].slice(0, 1000);
+
+    setReadings(nextReadings);
+    setLogs(nextLogs);
+    setAlarms(nextAlarms);
+    DB.eqDate = TODAY;
+    DB.eqReadings = nextReadings;
+    DB.eqLogs = nextLogs;
+    DB.eqAlarms = nextAlarms;
     dbSave();
+
+    if (typeof qmesSyncEquipmentEntry !== "function") {
+      setSyncState("이 기기에만 저장");
+      setSyncError("공용 DB 동기화 기능을 불러오지 못했습니다.");
+      return;
+    }
+
+    setSaving(true);
+    setSyncState("공용 DB 저장 중");
+    try {
+      await Promise.all(entries.map((entry) => qmesSyncEquipmentEntry(entry)));
+      const ids = new Set(entries.map((entry) => entry.id));
+      DB.eqLogs = (DB.eqLogs || []).map((entry) => ids.has(entry.id) ? {...entry, sharedSync:true} : entry);
+      dbSave();
+      setLogs([...DB.eqLogs]);
+      setSyncState("PC·모바일 동기화");
+      setSyncError("");
+    } catch (error) {
+      setSyncState("동기화 재시도 중");
+      setSyncError(error.message || "공용 DB 연결을 확인하세요.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const save = async () => {
+    if (judge == null || inputError || saving) { setTried(true); return; }
+    const now = new Date();
+    const display = isVisual ? (visOk ? "이상 없음" : "이상 발견") : `${trimmed} ${param.unit || ""}`.trim();
+    await persistEntries([makeEntry(eq, param, display, judge, now)]);
     setVal(""); setVisOk(null); setTried(false);
   };
 
@@ -121,22 +235,17 @@ function EquipmentTab() {
     const n = parseFloat(t);
     return ((x.lo == null || n >= x.lo) && (x.hi == null || n <= x.hi)) ? "정상" : "이탈";
   };
-  const tourSave = () => {
+  const tourSave = async () => {
+    if (saving) return;
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
     const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    let nr = { ...readings }; let nl = [...logs]; let na = [...alarms];
-    tourEq.params.forEach((x) => {
+    const entries = tourEq.params.map((x, index) => {
       const raw = tourVals[x.k];
-      const j = tourJudge(x, raw);
+      const result = tourJudge(x, raw);
       const display = x.visual ? (raw ? "이상 없음" : "이상 발견") : `${String(raw).trim()} ${x.unit || ""}`.trim();
-      nr[`${tourEq.id}:${x.k}`] = { v: display, ok: j === "정상", time };
-      nl = [{ time, eqName: tourEq.name, item: x.label, v: display, judge: j, by: window.__QMES_USER__ || "-" }, ...nl];
-      if (j === "이탈") na = [{ time, eq: tourEq.id, msg: `${x.label} ${display} — 관리기준(${x.spec}) 이탈, 점검·조치 필요`, level: "경고" }, ...na];
+      return makeEntry(tourEq, x, display, result, now, index);
     });
-    setReadings(nr); setLogs(nl); setAlarms(na);
-    DB.eqReadings = nr; DB.eqLogs = nl; DB.eqAlarms = na;
-    dbSave();
+    await persistEntries(entries);
     setTourVals({}); setTourTried(false);
     if (tourIdx < EQUIPMENT.length - 1) setTourIdx(tourIdx + 1);
     else { setMode("single"); setTourIdx(0); }
@@ -150,16 +259,18 @@ function EquipmentTab() {
         <div className="flex items-center gap-2.5 min-w-0">
           <ClipboardList size={15} className="text-amber-400 shrink-0" />
           <p className="text-sm text-slate-300">
-            <span className="text-amber-400 font-medium">PLC·계측기 육안 확인 → iPad 기록</span> 체제 — 판정은 시스템 자동, 이탈 시 즉시 알람. 판독값 항목은 향후 PLC 자동 수집 전환 대상입니다.
+            <span className="text-amber-400 font-medium">PLC·계측기 육안 확인 → iPad·휴대폰 현장 기록</span> 체제 — 저장 즉시 PC와 공용 DB에 반영되며, 판정과 이탈 알람은 자동 처리됩니다.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {doneParams < totalParams
             ? <Badge tone="amber">금일 점검 {doneParams}/{totalParams} — 미완료</Badge>
             : <Badge tone="green">금일 점검 완료 {doneParams}/{totalParams}</Badge>}
+          <Badge tone={syncError ? "amber" : "green"}>{syncState}</Badge>
           {mode === "single" && (
             <button onClick={() => { setMode("tour"); setTourIdx(0); setTourVals({}); setTourTried(false); }}
-              className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white transition-colors">
+              disabled={saving}
+              className="flex items-center gap-1.5 rounded px-3 py-2 text-xs font-medium bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white transition-colors">
               <RotateCw size={13} /> 순회 점검 시작
             </button>
           )}
@@ -210,9 +321,9 @@ function EquipmentTab() {
             className={`px-4 py-2.5 rounded-lg border text-sm transition-colors ${tourIdx === 0 ? "border-slate-800 text-slate-600" : "border-slate-600 text-slate-300 hover:bg-slate-800"}`}>
             ← 이전 설비
           </button>
-          <button onClick={tourSave}
-            className="px-5 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold transition-colors">
-            {tourIdx < EQUIPMENT.length - 1 ? "이 설비 기록 저장 → 다음 설비" : "이 설비 기록 저장 · 순회 완료"}
+          <button onClick={tourSave} disabled={saving}
+            className="px-5 py-3 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-sm font-bold transition-colors">
+            {saving ? "공용 DB 저장 중..." : tourIdx < EQUIPMENT.length - 1 ? "이 설비 기록 저장 → 다음 설비" : "이 설비 기록 저장 · 순회 완료"}
           </button>
         </div>
       </Panel>
@@ -221,7 +332,7 @@ function EquipmentTab() {
       {/* 개별 점검 입력 (단일 모드) */}
       {mode === "single" && (
       <Panel title="설비 점검 입력 (개별)" right={<span className="text-xs text-slate-400">관리기준: <span className="text-sky-300">{param.spec}</span> · {param.src}</span>}>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-end">
           <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
             <span className="text-[10px] text-slate-500">설비</span>
             <select value={eqId} onChange={(e) => { const ne = EQUIPMENT.find((x) => x.id === e.target.value); setEqId(ne.id); setPk(ne.params[0].k); setVal(""); setVisOk(null); }}
@@ -257,9 +368,9 @@ function EquipmentTab() {
           )}
           <div className="flex items-center gap-2">
             {judge == null ? <Badge tone="gray">대기</Badge> : judge === "정상" ? <Badge tone="green">정상</Badge> : <Badge tone="red">이탈</Badge>}
-            <button onClick={save}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 text-white">
-              <Plus size={14} /> 기록
+            <button onClick={save} disabled={saving}
+              className="flex-1 min-h-[48px] flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white">
+              <Plus size={14} /> {saving ? "저장 중..." : "기록"}
             </button>
           </div>
         </div>
@@ -274,7 +385,7 @@ function EquipmentTab() {
       )}
 
       {/* 설비 카드 — 기록값 실시간 반영, 항목 클릭 시 입력으로 연결 */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {EQUIPMENT.map((e) => {
           const rs = e.params.map((x) => readings[`${e.id}:${x.k}`]);
           const bad = rs.some((r) => r && !r.ok);
@@ -335,7 +446,7 @@ function EquipmentTab() {
             <table className="w-full text-sm min-w-[620px]">
               <thead>
                 <tr className="text-xs text-slate-400 border-b border-slate-800">
-                  <th className="text-left py-2 pr-3 font-medium">시각</th>
+                  <th className="text-left py-2 pr-3 font-medium">일시</th>
                   <th className="text-left py-2 px-3 font-medium">설비</th>
                   <th className="text-left py-2 pr-3 font-medium">관리항목</th>
                   <th className="text-left py-2 pr-3 font-medium">판독값</th>
@@ -346,7 +457,7 @@ function EquipmentTab() {
               <tbody>
                 {logs.map((l, i) => (
                   <tr key={i} className="border-b border-slate-800/60 hover:bg-slate-800/30">
-                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400">{l.time}</td>
+                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{l.date || TODAY} {l.time}</td>
                     <td className="py-2.5 pr-3 text-slate-100 text-xs">{l.eqName}</td>
                     <td className="py-2.5 pr-3 text-slate-300 text-xs">{l.item}</td>
                     <td className="py-2.5 pr-3 tabular-nums text-slate-200">{l.v}</td>
@@ -359,6 +470,12 @@ function EquipmentTab() {
           </div>
         )}
       </Panel>
+
+      {syncError && (
+        <div className="bg-amber-500/10 border border-amber-500/40 rounded-lg px-4 py-3 text-sm text-amber-200">
+          공용 DB 연결을 자동 재시도하고 있습니다. 현재 입력은 이 기기에 보관됩니다. · {syncError}
+        </div>
+      )}
 
       {/* 알람 이력 */}
       <Panel title="설비 · 공정 알람 이력" right={<Badge tone="red">{alarms.length}건</Badge>}>
