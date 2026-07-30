@@ -4,6 +4,19 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const today = new Date().toISOString().slice(0, 10);
   const isOqc = storeKey === "OQC";
   const [records, setRecords] = useState(DB.insp[storeKey] || initial);
+
+  useEffect(() => {
+    let active = true;
+    if (typeof qmesSyncPullInspection !== "function") return () => { active = false; };
+    qmesSyncPullInspection(String(storeKey || "").toLowerCase(), DB.insp[storeKey] || initial)
+      .then((next) => {
+        if (!active) return;
+        DB.insp[storeKey] = next;
+        setRecords(next);
+      })
+      .catch((error) => console.warn(`${storeKey} 공용 동기화 실패:`, error.message));
+    return () => { active = false; };
+  }, [storeKey]);
   const [form, setForm] = useState({
     date: today,
     shipDate: today,
