@@ -52,6 +52,11 @@
   body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title {
     transform: none !important;
   }
+
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title .text-xl {
+    top: -11px !important;
+  }
 }
 
 /* Work order logo only: use the exact IQC print size and position.
