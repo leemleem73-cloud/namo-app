@@ -442,7 +442,7 @@ function EquipmentTab() {
                 setTourTried(false);
               }}
               disabled={saving || tourCompletedToday}
-              title={tourCompletedToday ? "오늘 필수점검 14개 항목을 모두 완료했습니다." : "일 1회 필수 순회점검을 시작합니다."}
+              title={tourCompletedToday ? `오늘 필수점검 ${totalParams}개 항목을 모두 완료했습니다.` : "일 1회 필수 순회점검을 시작합니다."}
               className={`flex items-center gap-1.5 rounded px-3 py-2 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60 text-white transition-colors ${tourCompletedToday ? "bg-emerald-700" : "bg-sky-600 hover:bg-sky-500"}`}>
               {tourCompletedToday ? <CheckCircle2 size={13} /> : <RotateCw size={13} />}
               {tourCompletedToday ? "오늘 순회점검 완료" : doneParams > 0 ? "미점검 항목 이어서" : "순회점검 시작"}
@@ -455,7 +455,7 @@ function EquipmentTab() {
       {mode === "tour" && (
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
         right={<button onClick={() => setMode("single")} className="text-[11px] px-2.5 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">순회 종료</button>}>
-        <p className="text-xs text-slate-400 mb-3">일 1회 필수 순회점검입니다. 설비 앞에서 PLC 패널·계측기를 확인하고 오늘의 필수 관리항목 14개를 모두 기록하세요.</p>
+        <p className="text-xs text-slate-400 mb-3">일 1회 필수 순회점검입니다. 설비 앞에서 PLC 패널·계측기를 확인하고 오늘의 필수 관리항목 {totalParams}개를 모두 기록하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
             const raw = tourVals[x.k];
