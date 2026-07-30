@@ -124,7 +124,7 @@
         menu=document.createElement('div');
         menu.id='qmes-user-dropdown';
         menu.setAttribute('role','menu');
-        menu.innerHTML='<button type="button" data-action="password"><span>🔒</span><span>비밀번호 변경</span></button>'+
+        menu.innerHTML='<button type="button" data-action="password"><span>🔒</span><span>비밀번호 변경</span></button>'+ 
           '<button type="button" data-action="logout" class="qmes-dropdown-logout"><span>↪</span><span>로그아웃</span></button>';
         document.body.appendChild(menu);
         menu.addEventListener('mouseenter',()=>{clearTimeout(closeTimer);menu.classList.add('is-open');});
@@ -245,15 +245,22 @@
           if(button) button.click();
           return;
         }
+        const findSubButton=()=>Array.from(document.querySelectorAll('.qmes-submenu-button'))
+          .find(button=>button.textContent.trim()===item.sub);
+        const existingSubButton=findSubButton();
+        if(existingSubButton){
+          existingSubButton.click();
+          return;
+        }
         const groupButton=findTopButton(item.group);
         if(!groupButton) return;
-        const arrow=groupButton.querySelector('.qmes-menu-arrow');
-        const opened=arrow&&String(arrow.style.transform).includes('90deg');
-        if(!opened) groupButton.click();
-        setTimeout(()=>{
-          const subButton=Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>button.textContent.trim()===item.sub);
-          if(subButton) subButton.click();
-        },0);
+        groupButton.click();
+        requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            const subButton=findSubButton();
+            if(subButton) subButton.click();
+          });
+        });
       };
       const openFor=button=>{
         clearTimeout(closeTimer);
