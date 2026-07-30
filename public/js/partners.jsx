@@ -147,6 +147,68 @@ function PartnersTab() {
 
   return (
     <div className="space-y-5">
+      <style>{`
+        .qmes-partner-form-shell {
+          width: 92%;
+          margin: 0 auto;
+          padding: 16px;
+          border: 1px solid rgba(34,211,238,.4);
+          border-radius: 10px;
+          background: #0f1e32;
+        }
+        .qmes-partner-form-shell.is-customer { max-width: 620px; }
+        .qmes-partner-form-shell.is-supplier { max-width: 960px; }
+        .qmes-partner-form-grid {
+          display: grid;
+          gap: 7px 8px;
+          align-items: end;
+        }
+        .qmes-partner-form-grid.is-customer { grid-template-columns: minmax(0, 1fr) 150px; }
+        .qmes-partner-form-grid.is-supplier { grid-template-columns: minmax(0, 1fr) 170px 220px 140px; }
+        .qmes-partner-form-field {
+          display: flex;
+          min-width: 0;
+          flex-direction: column;
+          gap: 2px;
+          color: #cbd5e1;
+          font-size: 12px;
+          font-weight: 600;
+          line-height: 16px;
+        }
+        .qmes-partner-form-field > span {
+          min-height: 16px;
+          overflow: visible;
+          color: #cbd5e1;
+          line-height: 16px;
+          white-space: nowrap;
+        }
+        .qmes-partner-form-field input,
+        .qmes-partner-form-field select {
+          width: 100% !important;
+          min-width: 0 !important;
+          height: 30px !important;
+          min-height: 30px !important;
+          padding: 3px 8px !important;
+          box-sizing: border-box !important;
+          border: 1px solid #334155 !important;
+          border-radius: 6px !important;
+          background: #1e293b !important;
+          color: #f1f5f9 !important;
+          font-size: 12px !important;
+          line-height: 20px !important;
+          outline: none !important;
+        }
+        .qmes-partner-form-field input::placeholder { color: #64748b !important; }
+        .qmes-partner-form-field input:focus,
+        .qmes-partner-form-field select:focus { border-color: #06b6d4 !important; }
+        @media (max-width: 850px) {
+          .qmes-partner-form-grid.is-supplier { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 640px) {
+          .qmes-partner-form-grid.is-customer,
+          .qmes-partner-form-grid.is-supplier { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">거래처 현황</h2>
@@ -164,16 +226,16 @@ function PartnersTab() {
         </div>
       </div>}
 
-      {showForm && <div className={`mx-auto w-[92%] rounded-xl border border-cyan-500/40 bg-slate-900 p-5 ${activeType==="customer" ? "max-w-[760px]" : "max-w-[1120px]"}`}>
+      {showForm && <div className={`qmes-partner-form-shell ${activeType==="customer" ? "is-customer" : "is-supplier"}`}>
         <div className="mb-4"><h3 className="font-semibold text-cyan-300">{editCode ? "등록 정보 수정" : activeType === "customer" ? "신규 고객사 등록" : "신규 공급업체 등록"}</h3></div>
-        {activeType === "customer" ? <div className="grid items-end gap-2 md:grid-cols-[minmax(0,1fr)_160px]">
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>고객사명</span><input value={customerForm.name} onChange={(e)=>setCustomerForm({ ...customerForm, name:e.target.value })} placeholder="고객사명" className={inputClass}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>거래상태</span><select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select></label>
-        </div> : <div className="grid items-end gap-2 md:grid-cols-[minmax(0,1fr)_180px_240px_150px]">
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>공급업체명</span><input value={supplierForm.company} onChange={(e)=>setSupplierForm({ ...supplierForm, company:e.target.value })} placeholder="공급업체명" className={inputClass}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>원료명</span><input value={supplierForm.material} onChange={(e)=>setSupplierForm({ ...supplierForm, material:e.target.value })} placeholder="원료명" className={inputClass}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>최근 원료 LOT No.</span><input value={supplierForm.lot} onChange={(e)=>setSupplierForm({ ...supplierForm, lot:e.target.value })} placeholder="최근 원료 LOT No." className={`${inputClass} font-mono`}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>거래상태</span><select value={supplierForm.status} onChange={(e)=>setSupplierForm({ ...supplierForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select></label>
+        {activeType === "customer" ? <div className="qmes-partner-form-grid is-customer">
+          <label className="qmes-partner-form-field"><span>고객사명</span><input value={customerForm.name} onChange={(e)=>setCustomerForm({ ...customerForm, name:e.target.value })} placeholder="고객사명"/></label>
+          <label className="qmes-partner-form-field"><span>거래상태</span><select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })}><option>거래중</option><option>거래중지</option></select></label>
+        </div> : <div className="qmes-partner-form-grid is-supplier">
+          <label className="qmes-partner-form-field"><span>공급업체명</span><input value={supplierForm.company} onChange={(e)=>setSupplierForm({ ...supplierForm, company:e.target.value })} placeholder="공급업체명"/></label>
+          <label className="qmes-partner-form-field"><span>원료명</span><input value={supplierForm.material} onChange={(e)=>setSupplierForm({ ...supplierForm, material:e.target.value })} placeholder="원료명"/></label>
+          <label className="qmes-partner-form-field"><span>최근 원료 LOT No.</span><input value={supplierForm.lot} onChange={(e)=>setSupplierForm({ ...supplierForm, lot:e.target.value })} placeholder="최근 원료 LOT No." className="font-mono"/></label>
+          <label className="qmes-partner-form-field"><span>거래상태</span><select value={supplierForm.status} onChange={(e)=>setSupplierForm({ ...supplierForm, status:e.target.value })}><option>거래중</option><option>거래중지</option></select></label>
         </div>}
         <div className="mt-4 flex items-center justify-end gap-2">
           <button type="button" onClick={resetForm} className="qmes-inspection-cancel-btn">닫기</button>
