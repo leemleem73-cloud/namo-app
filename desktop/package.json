@@ -27,7 +27,8 @@
       "main.js",
       "preload.js",
       "index.html",
-      "renderer.js"
+      "renderer.js",
+      "style.css"
     ],
     "win": {
       "target": ["nsis"],
