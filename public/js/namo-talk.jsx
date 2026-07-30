@@ -6,6 +6,15 @@ const NAMO_ATTENDANCE_SESSION_KEY="qmes-namo-attendance-session-v1";
 const NAMO_TALK_POSITION_KEY="qmes-namo-talk-position-v1";
 const NAMO_TALK_NOTIFY_KEY="qmes-namo-talk-notify-v1";
 const NAMO_TALK_MINIMIZED_KEY="qmes-namo-talk-minimized-v1";
+const NAMO_TALK_STATUS_KEY="qmes-namo-talk-status-v1";
+const NAMO_TALK_STATUS_MESSAGE_KEY="qmes-namo-talk-status-message-v1";
+const NAMO_TALK_STATUS={
+  online:{label:"온라인",color:"#22c55e"},
+  away:{label:"자리 비움",color:"#eab308"},
+  busy:{label:"다른 용무 중",color:"#ef4444"},
+  meeting:{label:"회의 중",color:"#3b82f6"},
+  offline:{label:"오프라인",color:"#94a3b8"}
+};
 
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
 function loadNamoTalkReads(){return safeParse(localStorage.getItem(NAMO_TALK_READ_KEY),{});}
@@ -91,6 +100,22 @@ async function fetchNamoTalkNotifications(afterId){
   return {rows:Array.isArray(payload.data)?payload.data:[],cursor:Number(payload.cursor||afterId||0)};
 }
 
+async function fetchNamoTalkPresence(){
+  const response=await fetch("/api/namo-talk/presence",{credentials:"same-origin"});
+  handleNamoTalkAuth(response);
+  const payload=await response.json().catch(()=>({success:false,message:"상태 정보를 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"상태 정보를 불러오지 못했습니다.");
+  return Array.isArray(payload.data)?payload.data:[];
+}
+
+async function updateNamoTalkPresence(status,statusMessage,keepalive=false){
+  const response=await fetch("/api/namo-talk/presence",{method:"POST",credentials:"same-origin",keepalive,headers:{"Content-Type":"application/json"},body:JSON.stringify({status,statusMessage})});
+  handleNamoTalkAuth(response);
+  const payload=await response.json().catch(()=>({success:false,message:"상태 변경 결과를 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"상태를 변경하지 못했습니다.");
+  return payload.data;
+}
+
 function attendanceDate(d=new Date()){const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function attendanceTime(d=new Date(),seconds=false){const p=n=>String(n).padStart(2,"0");return `${p(d.getHours())}:${p(d.getMinutes())}${seconds?`:${p(d.getSeconds())}`:""}`;}
 function loadAttendance(){const local=safeParse(localStorage.getItem(NAMO_ATTENDANCE_KEY),[]);const session=safeParse(sessionStorage.getItem(NAMO_ATTENDANCE_SESSION_KEY),[]);const merged=[...local];session.forEach(row=>{const i=merged.findIndex(r=>r.date===row.date&&((r.uid&&row.uid&&r.uid===row.uid)||r.name===row.name));if(i>=0)merged[i]={...merged[i],...row};else merged.push(row);});return merged;}
@@ -163,10 +188,13 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const [position,setPosition]=useState(loadNamoTalkPosition);
   const [minimized,setMinimized]=useState(()=>localStorage.getItem(NAMO_TALK_MINIMIZED_KEY)==="1");
   const [notifyOn,setNotifyOn]=useState(()=>localStorage.getItem(NAMO_TALK_NOTIFY_KEY)!=="0");
+  const [presence,setPresence]=useState({});
+  const [myStatus,setMyStatus]=useState(()=>localStorage.getItem(NAMO_TALK_STATUS_KEY)||"online");
+  const [statusMessage,setStatusMessage]=useState(()=>localStorage.getItem(NAMO_TALK_STATUS_MESSAGE_KEY)||"");
   const [emojiOpen,setEmojiOpen]=useState(false);
   const [toast,setToast]=useState("");
   const [sending,setSending]=useState(false);
-  const fileRef=useRef(null),scrollRef=useRef(null),panelRef=useRef(null),dragRef=useRef(null),markedRef=useRef({});
+  const fileRef=useRef(null),scrollRef=useRef(null),panelRef=useRef(null),dragRef=useRef(null),markedRef=useRef({}),lastActivityRef=useRef(Date.now()),statusRef=useRef(myStatus),statusMessageRef=useRef(statusMessage);
   const room=allRooms.find(item=>item.id===activeRoom)||allRooms[0];
 
   const refreshRoom=async roomId=>{
@@ -191,6 +219,22 @@ function NamoTalkTab({onClose,initialRoom=""}){
   };
 
   useEffect(()=>{const t=setInterval(()=>setUsers(getNamoTalkUsers()),3000);return()=>clearInterval(t);},[]);
+  useEffect(()=>{statusRef.current=myStatus;},[myStatus]);
+  useEffect(()=>{statusMessageRef.current=statusMessage;},[statusMessage]);
+  useEffect(()=>{
+    let stopped=false;
+    const refresh=async()=>{try{const rows=await fetchNamoTalkPresence();if(!stopped)setPresence(Object.fromEntries(rows.map(row=>[row.name,row])));}catch(error){console.warn("NAMO Talk presence refresh failed:",error.message);}};
+    refresh();const t=setInterval(refresh,15000);return()=>{stopped=true;clearInterval(t);};
+  },[]);
+  useEffect(()=>{
+    const activity=()=>{lastActivityRef.current=Date.now();};
+    ["pointerdown","keydown","scroll"].forEach(name=>window.addEventListener(name,activity,{passive:true}));
+    const heartbeat=async()=>{const selected=statusRef.current;const message=statusMessageRef.current;const actual=selected==="online"&&Date.now()-lastActivityRef.current>=300000?"away":selected;try{await updateNamoTalkPresence(actual,message);setPresence(previous=>({...previous,[currentUser.name]:{name:currentUser.name,status:actual,statusMessage:message,lastSeen:Date.now()}}));}catch(error){console.warn("NAMO Talk presence heartbeat failed:",error.message);}};
+    heartbeat();const t=setInterval(heartbeat,30000);
+    const offline=()=>{updateNamoTalkPresence("offline",statusMessageRef.current,true).catch(()=>{});};
+    window.addEventListener("beforeunload",offline);
+    return()=>{clearInterval(t);window.removeEventListener("beforeunload",offline);["pointerdown","keydown","scroll"].forEach(name=>window.removeEventListener(name,activity));};
+  },[currentUser.name]);
   useEffect(()=>{if(!room)return;const next={...reads,[room.id]:Date.now()};setReads(next);saveNamoTalkReads(next);refreshRoom(room.id);},[activeRoom]);
   useEffect(()=>{if(!room)return;const t=setInterval(()=>refreshRoom(room.id),2000);return()=>clearInterval(t);},[activeRoom,room?.id]);
   useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[activeRoom,messages]);
@@ -201,6 +245,8 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const startDrag=event=>{if(compact||event.button!==0||event.target.closest("button"))return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};document.body.style.userSelect="none";document.body.style.cursor="grabbing";event.preventDefault();};
   const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
   const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
+  const changeStatus=async next=>{setMyStatus(next);localStorage.setItem(NAMO_TALK_STATUS_KEY,next);try{await updateNamoTalkPresence(next,statusMessage);}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
+  const saveStatusMessage=async()=>{localStorage.setItem(NAMO_TALK_STATUS_MESSAGE_KEY,statusMessage);try{await updateNamoTalkPresence(myStatus,statusMessage);setToast("상태 메시지를 저장했습니다.");}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
   const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){if(error.message!=="__NAMO_AUTH_REDIRECT__")alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
   const replaceRoomMessage=updated=>setMessages(previous=>({...previous,[activeRoom]:(previous[activeRoom]||[]).map(message=>message.id===updated.id?updated:message)}));
   const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text",replyToId:replyingTo?.id||null,replySender:replyingTo?.sender||"",replyText:String(replyingTo?.text||replyingTo?.fileName||"").slice(0,300)});if(ok){setText("");setReplyingTo(null);setEmojiOpen(false);}};
@@ -251,10 +297,17 @@ function NamoTalkTab({onClose,initialRoom=""}){
       {[["chat","대화"],["attendance","근태관리"]].map(([id,label])=><button key={id} onClick={()=>setMode(id)} style={{height:31,padding:"0 13px",border:0,borderRadius:8,background:mode===id?"#dbeafe":"transparent",color:mode===id?"#075985":"#475569",fontSize:13,fontWeight:900,cursor:"pointer"}}>{label}</button>)}
     </div>
 
+    {mode==="chat"&&<div style={{height:48,flex:"0 0 48px",display:"flex",alignItems:"center",gap:7,padding:"0 10px",background:"#f8fafc",borderBottom:"1px solid #cbd5e1"}}>
+      <strong style={{fontSize:12,color:"#475569",whiteSpace:"nowrap"}}>내 상태</strong>
+      <select value={myStatus} onChange={event=>changeStatus(event.target.value)} style={{height:32,border:"1px solid #cbd5e1",borderRadius:8,padding:"0 7px",background:"white",color:"#172033",fontSize:12,fontWeight:800}}>{Object.entries(NAMO_TALK_STATUS).map(([value,item])=><option key={value} value={value}>{item.label}</option>)}</select>
+      <input value={statusMessage} maxLength={60} onChange={event=>setStatusMessage(event.target.value)} onKeyDown={event=>{if(event.key==="Enter")saveStatusMessage();}} placeholder="상태 메시지 (예: 시험 진행 중)" style={{height:32,flex:1,minWidth:0,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px",fontSize:12,color:"#172033"}}/>
+      <button type="button" onClick={saveStatusMessage} style={{height:32,padding:"0 11px",border:0,borderRadius:8,background:"#0284c7",color:"white",fontSize:12,fontWeight:900,cursor:"pointer"}}>저장</button>
+    </div>}
+
     {mode==="attendance"?<AttendancePanel currentUser={currentUser} users={users}/>:<div style={{flex:"1 1 auto",minHeight:0,display:"flex",width:"100%",overflow:"hidden",gap:compact?0:10,padding:compact?0:10,boxSizing:"border-box",background:compact?"#f4f7fa":"#dfe7ee"}}>
       <div style={{width:compact?205:235,flex:`0 0 ${compact?205:235}px`,background:"white",borderRight:compact?"1px solid #cbd5e1":"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflowY:"auto"}}>
         <div style={{padding:9}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="채널·직원 검색" style={{width:"100%",height:38,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:9,padding:"0 10px",fontSize:14,color:"#1e293b"}}/></div>
-        <div style={{padding:7}}>{filteredChannels.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}<div style={{fontSize:12,fontWeight:900,color:"#64748b",padding:"15px 7px 7px"}}>1:1 대화</div>{filteredDirects.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}</div>
+        <div style={{padding:7}}>{filteredChannels.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}<div style={{fontSize:12,fontWeight:900,color:"#64748b",padding:"15px 7px 7px"}}>1:1 대화</div>{filteredDirects.map(item=><RoomButton key={item.id} item={item} presence={presence[item.name]} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}</div>
       </div>
 
       <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:"flex",flexDirection:"column",background:"#edf3f7",border:compact?0:"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflow:"hidden",position:"relative"}}>
@@ -292,8 +345,10 @@ function NamoTalkTab({onClose,initialRoom=""}){
   </section>;
 }
 
-function RoomButton({item,activeRoom,setActiveRoom,messages={},reads={},currentUser={}}){
+function RoomButton({item,presence,activeRoom,setActiveRoom,messages={},reads={},currentUser={}}){
   const active=activeRoom===item.id;
   const unread=(messages[item.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[item.id]||0)).length;
-  return <button type="button" onClick={()=>setActiveRoom(item.id)} style={{width:"100%",border:0,borderRadius:10,background:active?"#dbeafe":"transparent",display:"flex",alignItems:"center",gap:8,padding:"9px 8px",cursor:"pointer",textAlign:"left",marginBottom:3}}><span style={{width:32,height:32,flex:"0 0 32px",borderRadius:item.type==="direct"?"50%":9,background:active?"#0284c7":"#e8eef3",color:active?"white":"#334155",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:950}}>{item.name?.[0]||"?"}</span><span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:14,color:"#172033",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</strong><span style={{display:"block",fontSize:11,color:"#64748b",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:2}}>{item.subtitle}</span></span>{unread>0&&<span style={{minWidth:21,height:21,padding:"0 5px",borderRadius:11,background:"#ef4444",color:"white",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{unread>99?"99+":unread}</span>}</button>;
+  const status=NAMO_TALK_STATUS[presence?.status||"offline"];
+  const subtitle=item.type==="direct"?(presence?.statusMessage||`${item.subtitle} · ${status.label}`):item.subtitle;
+  return <button type="button" onClick={()=>setActiveRoom(item.id)} style={{width:"100%",border:0,borderRadius:10,background:active?"#dbeafe":"transparent",display:"flex",alignItems:"center",gap:8,padding:"9px 8px",cursor:"pointer",textAlign:"left",marginBottom:3}}><span style={{width:32,height:32,flex:"0 0 32px",position:"relative",borderRadius:item.type==="direct"?"50%":9,background:active?"#0284c7":"#e8eef3",color:active?"white":"#334155",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:950}}>{item.name?.[0]||"?"}{item.type==="direct"&&<i title={status.label} style={{position:"absolute",right:-1,bottom:-1,width:10,height:10,borderRadius:"50%",background:status.color,border:"2px solid white"}}/>}</span><span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:14,color:"#172033",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</strong><span style={{display:"block",fontSize:11,color:"#64748b",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:2}}>{subtitle}</span></span>{unread>0&&<span style={{minWidth:21,height:21,padding:"0 5px",borderRadius:11,background:"#ef4444",color:"white",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{unread>99?"99+":unread}</span>}</button>;
 }
