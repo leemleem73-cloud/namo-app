@@ -91,6 +91,7 @@ function EquipmentTab() {
   const [editVisual, setEditVisual] = useState(null);
   const [editNote, setEditNote] = useState("");
   const [editError, setEditError] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
   const [saving, setSaving] = useState(false);
   const [syncState, setSyncState] = useState("동기화 중");
   const [syncError, setSyncError] = useState("");
@@ -294,7 +295,7 @@ function EquipmentTab() {
         return;
       }
       result = editVisual ? "정상" : "이탈";
-      display = editVisual ? "이상 없음" : "이상 발견";
+      display = editVisual ? (targetParam.okLabel || "이상 없음") : (targetParam.badLabel || "이상 발견");
     } else {
       if (!/^-?\d+(\.\d+)?$/.test(raw)) {
         setEditError("판독값은 숫자로 입력하세요.");
@@ -339,7 +340,7 @@ function EquipmentTab() {
   const save = async () => {
     if (judge == null || inputError || saving) { setTried(true); return; }
     const now = new Date();
-    const display = isVisual ? (visOk ? "이상 없음" : "이상 발견") : `${trimmed} ${param.unit || ""}`.trim();
+    const display = isVisual ? (visOk ? (param.okLabel || "이상 없음") : (param.badLabel || "이상 발견")) : `${trimmed} ${param.unit || ""}`.trim();
     await persistEntries([makeEntry(eq, param, display, judge, now, 0, note)]);
     setVal(""); setVisOk(null); setNote(""); setTried(false);
   };
@@ -398,7 +399,7 @@ function EquipmentTab() {
     const entries = tourEq.params.map((x, index) => {
       const raw = tourVals[x.k];
       const result = tourJudge(x, raw);
-      const display = x.visual ? (raw ? "이상 없음" : "이상 발견") : `${String(raw).trim()} ${x.unit || ""}`.trim();
+      const display = x.visual ? (raw ? (x.okLabel || "이상 없음") : (x.badLabel || "이상 발견")) : `${String(raw).trim()} ${x.unit || ""}`.trim();
       return makeEntry(tourEq, x, display, result, now, index, tourNotes[x.k]);
     });
     await persistEntries(entries);
@@ -418,6 +419,15 @@ function EquipmentTab() {
   const firstIncompleteEqIndex = EQUIPMENT.findIndex((candidate) =>
     candidate.params.some((item) => !readings[`${candidate.id}:${item.k}`])
   );
+  const startDailyTour = () => {
+    if (tourCompletedToday || saving) return;
+    setMode("tour");
+    setTourIdx(firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0);
+    setTourVals({});
+    setTourNotes({});
+    setTourTried(false);
+    window.scrollTo({top:0, behavior:"smooth"});
+  };
 
   return (
     <div className="qmes-equipment-tab flex flex-col gap-4">
@@ -425,7 +435,7 @@ function EquipmentTab() {
         <div className="flex items-center gap-2.5 min-w-0">
           <ClipboardList size={15} className="text-amber-400 shrink-0" />
           <p className="text-sm text-slate-300">
-            <span className="text-amber-400 font-medium">PLC·계측기 육안 확인 → iPad·휴대폰 현장 기록</span> 체제 — 저장 즉시 PC와 공용 DB에 반영되며, 판정과 이탈 알람은 자동 처리됩니다.
+            <span className="text-amber-400 font-medium">관리계획서 기준 5개 설비 일일 순회점검</span> — 한 설비씩 입력하고 저장하면 다음 미완료 설비로 자동 이동합니다.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -435,14 +445,7 @@ function EquipmentTab() {
           <Badge tone={syncError ? "amber" : "green"}>{syncState}</Badge>
           {mode === "single" && (
             <button
-              onClick={() => {
-                if (tourCompletedToday) return;
-                setMode("tour");
-                setTourIdx(firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0);
-                setTourVals({});
-                setTourNotes({});
-                setTourTried(false);
-              }}
+              onClick={startDailyTour}
               disabled={saving || tourCompletedToday}
               title={tourCompletedToday ? `오늘 순회점검 ${totalEquipment}개 항목을 모두 완료했습니다.` : "일 1회 필수 순회점검을 시작합니다."}
               className={`flex items-center gap-1.5 rounded px-3 py-2 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60 text-white transition-colors ${tourCompletedToday ? "bg-emerald-700" : "bg-sky-600 hover:bg-sky-500"}`}>
@@ -456,8 +459,8 @@ function EquipmentTab() {
       {/* 순회 점검 모드 */}
       {mode === "tour" && (
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
-        right={<button onClick={() => setMode("single")} className="text-[11px] px-2.5 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">순회 종료</button>}>
-        <p className="text-xs text-slate-400 mb-3">일 1회 필수 순회점검입니다. 설비 앞에서 PLC 패널·계측기를 확인하고 오늘의 순회 대상 {totalEquipment}개 항목을 모두 완료하세요.</p>
+        right={<button onClick={() => setMode("single")} className="text-[11px] px-2.5 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">잠시 중단</button>}>
+        <p className="text-xs text-slate-400 mb-3"><strong className="text-sky-300">{tourEq.subtitle || "설비 점검"}</strong> · 관리계획서 기준값을 확인한 뒤 모든 세부항목을 입력하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
             const raw = tourVals[x.k];
@@ -471,9 +474,9 @@ function EquipmentTab() {
                 {x.visual ? (
                   <div className="flex gap-2 flex-1">
                     <button onClick={() => setTourVals({ ...tourVals, [x.k]: true })}
-                      className={`flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === true ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>이상 없음</button>
+                      className={`flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === true ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>{x.okLabel || "이상 없음"}</button>
                     <button onClick={() => setTourVals({ ...tourVals, [x.k]: false })}
-                      className={`flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === false ? "bg-red-500/20 border-red-500/60 text-red-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>이상 발견</button>
+                      className={`flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === false ? "bg-red-500/20 border-red-500/60 text-red-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>{x.badLabel || "이상 발견"}</button>
                   </div>
                 ) : (
                   <input inputMode="decimal" value={raw ?? ""} onChange={(e) => setTourVals({ ...tourVals, [x.k]: e.target.value })}
@@ -508,119 +511,34 @@ function EquipmentTab() {
       </Panel>
       )}
 
-      {/* 개별 점검 입력 (단일 모드) */}
       {mode === "single" && (
-      <Panel title="설비 점검 입력 (개별)" right={<span className="text-xs text-slate-400">관리기준: <span className="text-sky-300">{param.spec}</span> · {param.src}</span>}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-end">
-          <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
-            <span className="text-[10px] text-slate-500">설비</span>
-            <select value={eqId} onChange={(e) => { const ne = EQUIPMENT.find((x) => x.id === e.target.value); setEqId(ne.id); setPk(ne.params[0].k); setVal(""); setVisOk(null); setNote(""); }}
-              className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-              {EQUIPMENT.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] text-slate-500">관리항목</span>
-            <select value={param.k} onChange={(e) => { setPk(e.target.value); setVal(""); setVisOk(null); setNote(""); }}
-              className="bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
-              {eq.params.map((x) => <option key={x.k} value={x.k}>{x.label}</option>)}
-            </select>
-          </div>
-          {isVisual ? (
-            <div className="flex gap-2 col-span-2">
-              <button onClick={() => setVisOk(true)}
-                className={`flex-1 rounded border px-3 py-2 text-sm font-medium transition-colors ${visOk === true ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>
-                이상 없음
-              </button>
-              <button onClick={() => setVisOk(false)}
-                className={`flex-1 rounded border px-3 py-2 text-sm font-medium transition-colors ${visOk === false ? "bg-red-500/20 border-red-500/60 text-red-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>
-                이상 발견
-              </button>
-            </div>
+        <div className={`rounded-xl border p-5 text-center ${tourCompletedToday ? "border-emerald-500/40 bg-emerald-500/10" : "border-sky-500/30 bg-slate-900"}`}>
+          {tourCompletedToday ? (
+            <>
+              <CheckCircle2 size={34} className="mx-auto text-emerald-400" />
+              <h3 className="mt-2 text-lg font-bold text-emerald-200">오늘 순회점검 완료</h3>
+              <p className="mt-1 text-sm text-slate-400">5개 설비의 필수 세부항목이 모두 기록되었습니다.</p>
+            </>
           ) : (
-            <div className="flex flex-col gap-1 col-span-2">
-              <span className="text-[10px] text-slate-500">판독값 {param.unit && `(${param.unit})`}</span>
-              <input inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value)}
-                placeholder={`판독값 입력 — 기준 ${param.spec}`}
-                className="bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm tabular-nums text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-            </div>
+            <>
+              <ClipboardList size={34} className="mx-auto text-sky-400" />
+              <h3 className="mt-2 text-lg font-bold text-white">오늘 설비 순회점검</h3>
+              <p className="mt-1 text-sm text-slate-400">TK 501 → TK 501A → TK 501B → 필터 유닛 → 드라이룸 순서로 간단히 기록합니다.</p>
+              <button type="button" onClick={startDailyTour} disabled={saving}
+                className="mt-4 min-h-[56px] w-full max-w-md rounded-lg bg-sky-600 px-5 text-base font-bold text-white hover:bg-sky-500 disabled:opacity-50">
+                {doneEquipment > 0 ? `미완료 설비 이어서 (${doneEquipment}/${totalEquipment})` : "오늘 순회점검 시작"}
+              </button>
+            </>
           )}
-          <div className="flex items-center gap-2">
-            {judge == null ? <Badge tone="gray">대기</Badge> : judge === "정상" ? <Badge tone="green">정상</Badge> : <Badge tone="red">이탈</Badge>}
-            <button onClick={save} disabled={saving}
-              className="flex-1 min-h-[48px] flex items-center justify-center gap-1.5 rounded px-3 py-2 text-sm font-medium transition-colors bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white">
-              <Plus size={14} /> {saving ? "저장 중..." : "기록"}
-            </button>
-          </div>
         </div>
-        <div className="mt-2 flex flex-col gap-1">
-          <span className="text-[10px] text-slate-500">비고 (선택)</span>
-          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="점검내용·조치사항 등을 입력하세요"
-            className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
-        </div>
-        {(inputError || triedErrors.length > 0) && (
-          <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">
-            {[inputError, ...triedErrors].filter(Boolean).map((e, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> {e}</div>
-            ))}
-          </div>
-        )}
-      </Panel>
       )}
 
-      {/* 설비 카드 — 기록값 실시간 반영, 항목 클릭 시 입력으로 연결 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {EQUIPMENT.map((e) => {
-          const rs = e.params.map((x) => readings[`${e.id}:${x.k}`]);
-          const bad = rs.some((r) => r && !r.ok);
-          const done = rs.filter(Boolean).length;
-          const st = bad ? "alarm" : done > 0 ? "run" : "idle";
-          const m = statusMeta[st];
-          return (
-            <div key={e.id} className={`bg-slate-900 border ${m.ring} rounded-lg p-4`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Cpu size={16} className="text-slate-400 shrink-0" />
-                  <span className="text-sm font-medium text-slate-100 truncate">{e.name}</span>
-                </div>
-                <span className="flex items-center gap-1.5 shrink-0">
-                  <span className={`w-2 h-2 rounded-full ${m.dot} ${st === "run" ? "animate-pulse" : ""}`} />
-                  <span className={`text-xs font-medium ${m.text}`}>{st === "run" ? "점검중" : m.label}</span>
-                </span>
-              </div>
-              <div className="text-xs text-slate-500 font-mono mt-0.5">{e.id}</div>
-              <div className="mt-3">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-400">금일 점검</span>
-                  <span className="tabular-nums text-slate-200">{done} / {e.params.length}</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded overflow-hidden">
-                  <div className={`h-full rounded ${bad ? "bg-red-400" : "bg-emerald-400"}`} style={{ width: `${(done / e.params.length) * 100}%` }} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 gap-2 mt-3">
-                {e.params.map((x, i) => {
-                  const r = readings[`${e.id}:${x.k}`];
-                  return (
-                    <button key={x.k} onClick={() => selectParam(e.id, x.k)}
-                      className="flex items-center justify-between bg-slate-800/60 hover:bg-slate-800 rounded px-2.5 py-2 gap-2 text-left transition-colors">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {i === 0 ? <Thermometer size={13} className="text-amber-400 shrink-0" /> : <Gauge size={13} className="text-sky-400 shrink-0" />}
-                        <span className="text-[11px] text-slate-400 truncate">{x.label} ({x.spec})</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className={`text-xs tabular-nums ${r ? (r.ok ? "text-slate-200" : "text-red-400 font-medium") : "text-slate-500"}`}>{r ? r.v : "—"}</span>
-                        {r && <span className="text-[9px] text-slate-500 font-mono">{r.time}</span>}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
+      <button type="button" onClick={() => setShowHistory((value) => !value)}
+        className="min-h-[48px] rounded-lg border border-slate-700 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800">
+        {showHistory ? "점검 기록 닫기" : `점검 기록 ${logs.length}건 보기 · 수정/삭제`}
+      </button>
+      {showHistory && (
+        <div>
       {/* 점검 기록 */}
       <Panel title="설비 점검 기록" right={<span className="text-xs text-slate-400">{logs.length}건 · 기록자 자동 저장</span>}>
         {logs.length === 0 ? (
@@ -670,6 +588,10 @@ function EquipmentTab() {
       </Panel>
 
 
+
+        </div>
+      )}
+
       {editing && (() => {
         const editEq = EQUIPMENT.find((row) => row.id === editing.eqId);
         const editParam = editEq?.params.find((row) => row.k === editing.paramKey);
@@ -689,9 +611,9 @@ function EquipmentTab() {
                 {editParam?.visual ? (
                   <div className="grid grid-cols-2 gap-2">
                     <button type="button" onClick={() => {setEditVisual(true);setEditError("");}}
-                      className={`min-h-[54px] rounded-lg border font-bold ${editVisual === true ? "border-emerald-400 bg-emerald-500/20 text-emerald-300" : "border-slate-600 bg-slate-800 text-slate-300"}`}>이상 없음</button>
+                      className={`min-h-[54px] rounded-lg border font-bold ${editVisual === true ? "border-emerald-400 bg-emerald-500/20 text-emerald-300" : "border-slate-600 bg-slate-800 text-slate-300"}`}>{editParam.okLabel || "이상 없음"}</button>
                     <button type="button" onClick={() => {setEditVisual(false);setEditError("");}}
-                      className={`min-h-[54px] rounded-lg border font-bold ${editVisual === false ? "border-red-400 bg-red-500/20 text-red-300" : "border-slate-600 bg-slate-800 text-slate-300"}`}>이상 발견</button>
+                      className={`min-h-[54px] rounded-lg border font-bold ${editVisual === false ? "border-red-400 bg-red-500/20 text-red-300" : "border-slate-600 bg-slate-800 text-slate-300"}`}>{editParam.badLabel || "이상 발견"}</button>
                   </div>
                 ) : (
                   <label className="flex flex-col gap-1.5">
