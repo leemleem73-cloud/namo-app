@@ -2,8 +2,10 @@
 
 function qmesIpadCurrentUser() {
   const raw = window.__QMES_USER__ || window.__QMES_CURRENT_USER__;
-  if (raw && typeof raw === "object") return String(raw.name || raw.uid || "관리자");
-  return String(raw || "관리자");
+  const value = raw && typeof raw === "object"
+    ? String(raw.name || raw.uid || "관리자")
+    : String(raw || "관리자");
+  return value.replace(/\s*\(U-\d+\)\s*$/i, "").trim();
 }
 
 function qmesIpadNowTime() {
@@ -596,7 +598,7 @@ function FieldInputTab() {
       <header className="qmes-ipad-work-head">
         <button type="button" className="qmes-ipad-back" onClick={() => setMode("")}>← 검사 선택</button>
         <div><span>{meta.code}</span><h1>{meta.title} IPAD 입력</h1></div>
-        <div className="qmes-ipad-inspector">검사자 <strong>{form.inspector}</strong></div>
+        <div className="qmes-ipad-inspector">검사자 <strong>{String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")}</strong></div>
       </header>
 
       <nav className="qmes-ipad-mode-tabs">
@@ -642,7 +644,7 @@ function FieldInputTab() {
               )}
             </>
           )}
-          <label><span>검사자</span><input value={form.inspector} readOnly /></label>
+          <label><span>검사자</span><input value={String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")} readOnly /></label>
           <label className="wide"><span>비고</span><input value={form.remarks} onChange={(e) => patchForm({remarks:e.target.value})} placeholder="특이사항 입력" /></label>
         </div>
         {mode === "PQC" && lotNo && (
