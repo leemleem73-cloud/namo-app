@@ -188,17 +188,8 @@ function QMESChemical({user, onLogout}){
     }
   };
 
-  const changePassword = event=>{
+  const changePassword = async event=>{
     event.preventDefault();
-
-    const savedPassword = String(
-      user.pw || user.password || "1234"
-    );
-
-    if(currentPw !== savedPassword){
-      setPasswordError("현재 비밀번호가 일치하지 않습니다.");
-      return;
-    }
 
     if(newPw.length < 4){
       setPasswordError("새 비밀번호는 4자 이상 입력하세요.");
@@ -211,6 +202,25 @@ function QMESChemical({user, onLogout}){
     }
 
     try{
+      const response = await fetch("/api/auth/password", {
+        method:"PUT",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          currentPassword:currentPw,
+          newPassword:newPw
+        })
+      });
+      const payload = await response.json().catch(()=>({
+        success:false,
+        message:"서버 응답을 확인할 수 없습니다."
+      }));
+
+      if(!response.ok || !payload.success){
+        setPasswordError(payload.message || "비밀번호 변경에 실패했습니다.");
+        return;
+      }
+
       const users = JSON.parse(
         localStorage.getItem("qmes-users-v3") || "[]"
       );
@@ -230,34 +240,21 @@ function QMESChemical({user, onLogout}){
             }
 
             changed = true;
+            const {pw, password, ...safeItem} = item;
 
             return {
-              ...item,
-              pw:newPw,
-              password:newPw
+              ...safeItem,
+              passwordChanged:true
             };
           })
         : [];
 
-      if(!changed){
-        setPasswordError(
-          "회원 정보를 찾지 못했습니다. 관리자에게 문의하세요."
+      if(changed){
+        localStorage.setItem(
+          "qmes-users-v3",
+          JSON.stringify(nextUsers)
         );
-        return;
       }
-
-      localStorage.setItem(
-        "qmes-users-v3",
-        JSON.stringify(nextUsers)
-      );
-
-      user.pw = newPw;
-      user.password = newPw;
-
-      sessionStorage.setItem(
-        "qmes-current-user-v1",
-        JSON.stringify(user)
-      );
 
       closePasswordModal();
 
