@@ -1,0 +1,44 @@
+{
+  "name": "namo-talk-desktop",
+  "version": "0.1.0",
+  "description": "NAMO Talk Windows desktop client",
+  "main": "main.js",
+  "author": "Namo Chemical",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis"
+  },
+  "dependencies": {
+    "electron-store": "^10.0.0"
+  },
+  "devDependencies": {
+    "electron": "^32.3.3",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "kr.co.namochemical.namotalk",
+    "productName": "NAMO Talk",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.js"
+    ],
+    "win": {
+      "target": ["nsis"],
+      "artifactName": "NamoTalk_Setup_${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NAMO Talk"
+    }
+  }
+}
