@@ -28,47 +28,62 @@ function clearLoginSession() {
 }
 
 function QMESLogin({ onLogin }) {
-  const [users] = useState(loadLoginUsers);
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
 
     const id = userId.trim();
     const pw = password.trim();
 
-    const user = users.find((item) =>
-      String(item.id || item.name || "").trim() === id ||
-      String(item.uid || "").trim() === id ||
-      String(item.name || "").trim() === id
-    );
-
-    if (!user) {
-      setError("등록된 사용자를 찾을 수 없습니다.");
+    if (!id || !pw) {
+      setError("아이디와 비밀번호를 입력해 주세요.");
       return;
     }
 
-    const savedPassword = String(user.pw || user.password || "1234");
+    setSubmitting(true);
+    setError("");
 
-    if (pw !== savedPassword) {
-      setError("비밀번호가 일치하지 않습니다.");
-      return;
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loginId: id, password: pw }),
+      });
+      const payload = await response.json().catch(() => ({
+        success: false,
+        message: "서버 로그인 응답을 확인할 수 없습니다.",
+      }));
+
+      if (!response.ok || !payload.success || !payload.data?.user) {
+        setError(payload.message || "로그인에 실패했습니다.");
+        return;
+      }
+
+      const authenticated = payload.data.user;
+      const normalized = {
+        id: authenticated.id,
+        uid: authenticated.uid || "",
+        name: authenticated.name,
+        email: authenticated.email || "",
+        dept: authenticated.department || "",
+        position: authenticated.title || "",
+        role: authenticated.role || "user",
+        mustChangePassword: Boolean(authenticated.mustChangePassword),
+      };
+
+      saveLoginSession(normalized);
+      onLogin(normalized);
+    } catch (error) {
+      console.error("[QMES] 서버 로그인 실패", error);
+      setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
     }
-
-    const normalized = {
-      ...user,
-      id: user.id || user.name,
-      uid: user.uid || "",
-      name: user.name || user.id,
-      dept: user.dept || user.department || "",
-      position: user.position || user.rank || user.title || "",
-      role: user.role || "user",
-    };
-
-    saveLoginSession(normalized);
-    onLogin(normalized);
   };
 
   return (
@@ -180,6 +195,7 @@ function QMESLogin({ onLogin }) {
 
         <button
           type="submit"
+          disabled={submitting}
           style={{
             width: "100%",
             height: 48,
@@ -190,10 +206,11 @@ function QMESLogin({ onLogin }) {
             fontSize: 15,
             fontWeight: 900,
             marginTop: 20,
-            cursor: "pointer",
+            cursor: submitting ? "wait" : "pointer",
+            opacity: submitting ? 0.7 : 1,
           }}
         >
-          로그인
+          {submitting ? "로그인 확인 중..." : "로그인"}
         </button>
 
         <div
@@ -232,23 +249,149 @@ function QMESLogin({ onLogin }) {
   );
 }
 
+function QMESInitialPasswordChange({ user, onComplete, onLogout }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (newPassword.length < 4) {
+      setError("새 비밀번호는 4자 이상 입력해 주세요.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("새 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+    try {
+      const response = await fetch("/api/auth/password", {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const payload = await response.json().catch(() => ({
+        success: false,
+        message: "서버 응답을 확인할 수 없습니다.",
+      }));
+      if (!response.ok || !payload.success) {
+        setError(payload.message || "비밀번호 변경에 실패했습니다.");
+        return;
+      }
+
+      const nextUser = { ...user, mustChangePassword: false };
+      saveLoginSession(nextUser);
+      onComplete(nextUser);
+    } catch (error) {
+      console.error("[QMES] 초기 비밀번호 변경 실패", error);
+      setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#07162b,#0c3156)",fontFamily:"'Pretendard','Noto Sans KR',sans-serif",padding:20}}>
+      <form onSubmit={submit} style={{width:"min(420px,100%)",background:"white",borderRadius:22,padding:"34px 32px",boxShadow:"0 24px 70px rgba(0,0,0,.32)"}}>
+        <div style={{fontSize:23,fontWeight:950,color:"#0f2740",textAlign:"center"}}>초기 비밀번호 변경</div>
+        <p style={{fontSize:13,lineHeight:1.6,color:"#64748b",textAlign:"center",margin:"12px 0 22px"}}>{user.name}님, 안전한 사용을 위해 새 비밀번호를 설정해 주세요.</p>
+        {[
+          ["현재 비밀번호",currentPassword,setCurrentPassword,"current-password"],
+          ["새 비밀번호",newPassword,setNewPassword,"new-password"],
+          ["새 비밀번호 확인",confirmPassword,setConfirmPassword,"new-password"],
+        ].map(([label,value,setValue,autoComplete])=><label key={label} style={{display:"block",fontSize:12,fontWeight:800,color:"#334155",marginTop:13}}>{label}<input type="password" value={value} onChange={e=>setValue(e.target.value)} autoComplete={autoComplete} style={{display:"block",width:"100%",height:44,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:10,padding:"0 12px",marginTop:6,fontSize:14}}/></label>)}
+        {error&&<div style={{fontSize:12,color:"#dc2626",fontWeight:700,marginTop:11}}>{error}</div>}
+        <button type="submit" disabled={submitting} style={{width:"100%",height:47,border:0,borderRadius:11,background:"#0f5d8f",color:"white",fontSize:15,fontWeight:900,marginTop:20,cursor:submitting?"wait":"pointer",opacity:submitting ? 0.7 : 1}}>{submitting?"변경 중...":"비밀번호 변경"}</button>
+        <button type="button" onClick={onLogout} style={{width:"100%",height:40,border:0,background:"transparent",color:"#64748b",fontSize:13,fontWeight:700,marginTop:8,cursor:"pointer"}}>로그아웃</button>
+      </form>
+    </div>
+  );
+}
+
 function QMESApp() {
   const [currentUser, setCurrentUser] = useState(loadLoginSession);
+  const [checkingSession, setCheckingSession] = useState(() => Boolean(loadLoginSession()));
+
+  useEffect(() => {
+    let active = true;
+    const saved = loadLoginSession();
+
+    if (!saved) {
+      setCheckingSession(false);
+      return () => { active = false; };
+    }
+
+    fetch("/api/auth/me", { credentials: "same-origin" })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({ success: false }));
+        if (!response.ok || !payload.success || !payload.data) {
+          throw new Error("서버 로그인 세션이 만료되었습니다.");
+        }
+        return payload.data;
+      })
+      .then((authenticated) => {
+        if (!active) return;
+        const normalized = {
+          id: authenticated.id,
+          uid: authenticated.uid || "",
+          name: authenticated.name,
+          email: authenticated.email || "",
+          dept: authenticated.department || "",
+          position: authenticated.title || "",
+          role: authenticated.role || "user",
+          mustChangePassword: Boolean(authenticated.mustChangePassword),
+        };
+        saveLoginSession(normalized);
+        setCurrentUser(normalized);
+      })
+      .catch(() => {
+        if (!active) return;
+        clearLoginSession();
+        setCurrentUser(null);
+      })
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+
+    return () => { active = false; };
+  }, []);
 
   const handleLogin = (user) => {
     window.__QMES_CURRENT_USER__ = user;
     window.__QMES_USER__ = `${user.dept || ""} ${user.name} (${user.uid || ""})`;
+    setCheckingSession(false);
     setCurrentUser(user);
   };
 
   const handleLogout = () => {
+    fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    }).catch(() => {});
     clearLoginSession();
     delete window.__QMES_CURRENT_USER__;
     delete window.__QMES_USER__;
     setCurrentUser(null);
   };
 
+  if (checkingSession) {
+    return (
+      <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#07162b",color:"white",fontWeight:800}}>
+        로그인 상태 확인 중...
+      </div>
+    );
+  }
+
   if (!currentUser) return <QMESLogin onLogin={handleLogin} />;
+  if (currentUser.mustChangePassword) {
+    return <QMESInitialPasswordChange user={currentUser} onComplete={handleLogin} onLogout={handleLogout} />;
+  }
 
   window.__QMES_CURRENT_USER__ = currentUser;
   window.__QMES_USER__ = `${currentUser.dept || ""} ${currentUser.name} (${currentUser.uid || ""})`;
