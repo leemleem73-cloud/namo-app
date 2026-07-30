@@ -1,5 +1,47 @@
 /* QMES shared sync — mobile/IPAD/PC inspection and work-order records */
 (function () {
+  const employeeCodePattern = /\s*\(U-\d+\)\s*/gi;
+  const cleanEmployeeCode = (value) => String(value || "").replace(employeeCodePattern, " ").replace(/\s{2,}/g, " ").trim();
+
+  function cleanInspectorDisplay() {
+    ["__QMES_USER__", "__QMES_CURRENT_USER__"].forEach((key) => {
+      const user = window[key];
+      if (user && typeof user === "object" && user.name) user.name = cleanEmployeeCode(user.name);
+      else if (typeof user === "string") window[key] = cleanEmployeeCode(user);
+    });
+
+    document.querySelectorAll(".qmes-ipad-inspector").forEach((element) => {
+      element.childNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE && employeeCodePattern.test(node.nodeValue || "")) {
+          node.nodeValue = cleanEmployeeCode(node.nodeValue);
+        }
+      });
+      element.querySelectorAll("strong").forEach((strong) => {
+        const cleaned = cleanEmployeeCode(strong.textContent);
+        if (strong.textContent !== cleaned) strong.textContent = cleaned;
+      });
+    });
+
+    document.querySelectorAll('.qmes-ipad-form-grid input[readonly]').forEach((input) => {
+      const cleaned = cleanEmployeeCode(input.value);
+      if (input.value !== cleaned) {
+        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+        descriptor?.set?.call(input, cleaned);
+        input.dispatchEvent(new Event("input", {bubbles:true}));
+        input.dispatchEvent(new Event("change", {bubbles:true}));
+      }
+    });
+  }
+
+  const startInspectorCleaner = () => {
+    cleanInspectorDisplay();
+    const observer = new MutationObserver(cleanInspectorDisplay);
+    observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+    window.setInterval(cleanInspectorDisplay, 1000);
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startInspectorCleaner, {once:true});
+  else startInspectorCleaner();
+
   const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder"]);
 
   function normalizeType(type) {
@@ -180,6 +222,7 @@
     await Promise.all([upsert("workorder", key, workOrderTombstone), ...tombstones]);
   }
 
+  window.qmesCleanEmployeeCode = cleanEmployeeCode;
   window.qmesSyncList = list;
   window.qmesSyncUpsert = upsert;
   window.qmesSyncPullInspection = pullInspection;
