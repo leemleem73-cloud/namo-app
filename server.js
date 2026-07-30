@@ -216,6 +216,18 @@ async function ensureSchema() {
 
     DELETE FROM qmes_sessions WHERE expire <= NOW();
 
+    CREATE TABLE IF NOT EXISTS qmes_sync_records (
+      record_type TEXT NOT NULL,
+      record_key TEXT NOT NULL,
+      payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_by TEXT DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (record_type, record_key)
+    );
+
+    CREATE INDEX IF NOT EXISTS qmes_sync_records_type_updated_idx
+      ON qmes_sync_records (record_type, updated_at DESC);
+
     CREATE TABLE IF NOT EXISTS iqc (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       date DATE NOT NULL,
@@ -706,6 +718,70 @@ app.post('/api/auth/reset-password', async (req, res) => {
     await db('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, r.rows[0].id]);
 
     ok(res, null, '비밀번호가 초기화되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+const QMES_SYNC_TYPES = new Set(['iqc', 'pqc', 'oqc', 'workorder']);
+
+function qmesSyncType(req, res) {
+  const type = txt(req.params.type).toLowerCase();
+  if (!QMES_SYNC_TYPES.has(type)) {
+    fail(res, 400, '지원하지 않는 동기화 유형입니다.');
+    return null;
+  }
+  return type;
+}
+
+app.get('/api/qmes-sync/:type', requireLogin, async (req, res) => {
+  const type = qmesSyncType(req, res);
+  if (!type) return;
+  try {
+    const result = await db(
+      `SELECT record_type, record_key, payload, updated_by, updated_at
+       FROM qmes_sync_records
+       WHERE record_type = $1
+       ORDER BY updated_at DESC`,
+      [type]
+    );
+    ok(res, result.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
+  const type = qmesSyncType(req, res);
+  if (!type) return;
+  const key = txt(req.body?.key);
+  const payload = req.body?.payload;
+  if (!key || !payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return fail(res, 400, '기록 키와 저장 데이터를 확인하세요.');
+  }
+  try {
+    const before = await db(
+      'SELECT payload FROM qmes_sync_records WHERE record_type = $1 AND record_key = $2',
+      [type, key]
+    );
+    const userName = txt(req.session?.user?.name);
+    const result = await db(
+      `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+       VALUES ($1, $2, $3::jsonb, $4, NOW())
+       ON CONFLICT (record_type, record_key)
+       DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+       RETURNING record_type, record_key, payload, updated_by, updated_at`,
+      [type, key, JSON.stringify(payload), userName]
+    );
+    await auditLog(
+      req,
+      before.rowCount ? 'UPDATE' : 'CREATE',
+      'qmes_sync_records',
+      `${type}:${key}`,
+      before.rows[0]?.payload || null,
+      payload
+    );
+    ok(res, result.rows[0], '공용 DB에 저장되었습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
