@@ -112,12 +112,14 @@ function requireAdmin(req, res, next) {
 function buildSessionUser(user) {
   return {
     id: user.id,
+    uid: user.uid || '',
     name: user.name,
     email: user.email,
     role: user.role,
     department: user.department,
     title: user.title || '',
     status: user.status,
+    mustChangePassword: Boolean(user.must_change_password),
   };
 }
 
@@ -142,6 +144,7 @@ async function ensureSchema() {
       title TEXT DEFAULT '',
       role TEXT NOT NULL DEFAULT 'user',
       status TEXT NOT NULL DEFAULT 'APPROVED',
+      must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -389,6 +392,11 @@ async function ensureSchema() {
   await db(`
     ALTER TABLE users ALTER COLUMN status SET DEFAULT 'APPROVED';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS uid TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS users_uid_unique_idx
+      ON users (uid) WHERE uid IS NOT NULL AND uid <> '';
 
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
@@ -489,15 +497,27 @@ app.post('/api/auth/signup', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const email = txt(req.body.email).toLowerCase();
+    const loginId = txt(req.body.loginId || req.body.email);
     const password = txt(req.body.password);
 
-    const r = await db('SELECT * FROM users WHERE email = $1', [email]);
-    if (!r.rowCount) return fail(res, 401, '이메일 또는 비밀번호가 올바르지 않습니다.');
+    if (!loginId || !password) {
+      return fail(res, 400, '아이디와 비밀번호를 입력해 주세요.');
+    }
+
+    const r = await db(
+      `SELECT *
+       FROM users
+       WHERE LOWER(email) = LOWER($1)
+          OR LOWER(name) = LOWER($1)
+          OR LOWER(COALESCE(uid, '')) = LOWER($1)
+       LIMIT 1`,
+      [loginId]
+    );
+    if (!r.rowCount) return fail(res, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
 
     const user = r.rows[0];
     const matched = await bcrypt.compare(password, user.password_hash);
-    if (!matched) return fail(res, 401, '이메일 또는 비밀번호가 올바르지 않습니다.');
+    if (!matched) return fail(res, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
     if (user.status !== 'APPROVED') return fail(res, 403, '승인된 계정만 로그인할 수 있습니다.');
 
     req.session.user = buildSessionUser(user);
@@ -515,6 +535,32 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
   ok(res, req.session.user);
+});
+
+app.put('/api/auth/password', requireLogin, async (req, res) => {
+  try {
+    const currentPassword = txt(req.body.currentPassword);
+    const newPassword = txt(req.body.newPassword);
+    if (!currentPassword || newPassword.length < 4) {
+      return fail(res, 400, '현재 비밀번호와 4자 이상의 새 비밀번호를 입력해 주세요.');
+    }
+
+    const r = await db('SELECT password_hash FROM users WHERE id = $1', [req.session.user.id]);
+    if (!r.rowCount) return fail(res, 404, '사용자 정보를 찾을 수 없습니다.');
+
+    const matched = await bcrypt.compare(currentPassword, r.rows[0].password_hash);
+    if (!matched) return fail(res, 401, '현재 비밀번호가 일치하지 않습니다.');
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db(
+      'UPDATE users SET password_hash = $1, must_change_password = FALSE WHERE id = $2',
+      [hash, req.session.user.id]
+    );
+    req.session.user.mustChangePassword = false;
+    ok(res, null, '비밀번호가 변경되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
 });
 
 app.get('/api/users/signable', requireLogin, async (_req, res) => {
@@ -1604,9 +1650,9 @@ ensureSchema()
 
     if (!existing.rowCount) {
       await db(
-        `INSERT INTO users (name, email, password_hash, department, title, role, status)
-         VALUES ($1,$2,$3,$4,$5,'admin','APPROVED')`,
-        ['관리자', adminEmail, hash, '관리부', '관리자']
+        `INSERT INTO users (name, email, password_hash, department, title, role, status, uid)
+         VALUES ($1,$2,$3,$4,$5,'admin','APPROVED',$6)`,
+        ['관리자', adminEmail, hash, '관리부', '관리자', 'U-0001']
       );
     } else {
       // 관리자 권한 403 방지:
@@ -1619,10 +1665,47 @@ ensureSchema()
              department = $3,
              title = $4,
              role = 'admin',
-             status = 'APPROVED'
-         WHERE email = $5`,
-        [hash, '관리자', '관리부', '관리자', adminEmail]
+             status = 'APPROVED',
+             uid = $5
+         WHERE email = $6`,
+        [hash, '관리자', '관리부', '관리자', 'U-0001', adminEmail]
       );
+    }
+
+    const defaultUsers = [
+      ['U-0002', '김종혁', '대표', '대표이사'],
+      ['U-0003', '김세희', '연구소', '이사'],
+      ['U-0004', '정영기', '연구소', '이사'],
+      ['U-0005', '박지헌', '연구소', '연구원'],
+      ['U-0006', '박도훈', '생산부', '대리'],
+      ['U-0007', '문지훈', '생산부', '주임'],
+      ['U-0008', '김현진', '영업부', '과장'],
+      ['U-0009', '임흥배', '품질부', '부장'],
+      ['U-0010', '박현아', '품질부', '사원'],
+    ];
+    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || '1234';
+    const defaultHash = await bcrypt.hash(defaultPassword, 10);
+
+    for (const [uid, name, department, title] of defaultUsers) {
+      const found = await db('SELECT id FROM users WHERE name = $1 OR uid = $2 LIMIT 1', [name, uid]);
+      if (found.rowCount) {
+        await db(
+          `UPDATE users
+           SET uid = $1,
+               department = CASE WHEN COALESCE(department, '') = '' THEN $2 ELSE department END,
+               title = CASE WHEN COALESCE(title, '') = '' THEN $3 ELSE title END,
+               status = 'APPROVED'
+           WHERE id = $4`,
+          [uid, department, title, found.rows[0].id]
+        );
+      } else {
+        await db(
+          `INSERT INTO users
+            (name, email, password_hash, department, title, role, status, uid, must_change_password)
+           VALUES ($1,$2,$3,$4,$5,'user','APPROVED',$6,TRUE)`,
+          [name, `${uid.toLowerCase()}@namochemical.local`, defaultHash, department, title, uid]
+        );
+      }
     }
 
     app.listen(port, () => {
