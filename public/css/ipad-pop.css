@@ -569,6 +569,25 @@
 .qmes-ipad-saved > strong { color: #6ee7b7; font-size: 22px; }
 .qmes-ipad-saved.is-fail > strong { color: #fda4af; }
 .qmes-ipad-saved p { color: #8099b0; }
+.qmes-ipad-sync-warning {
+  display: flex;
+  width: min(520px, 100%);
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid rgba(251,113,133,.45);
+  border-radius: 12px;
+  background: rgba(190,24,93,.1);
+  color: #fecdd3;
+  font-size: 13px;
+}
+.qmes-ipad-sync-warning button {
+  min-height: 48px;
+  border-color: #be3650;
+  background: #9f2942;
+}
 .qmes-ipad-saved > div:last-child { display: flex; gap: 10px; margin-top: 18px; }
 .qmes-ipad-saved button {
   min-height: 56px;
