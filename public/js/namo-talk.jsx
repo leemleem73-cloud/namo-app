@@ -82,12 +82,13 @@ async function markNamoTalkRoomRead(roomId){
   return payload.data;
 }
 
-async function fetchNamoTalkNotifications(after){
-  const response=await fetch(`/api/namo-talk/notifications?after=${encodeURIComponent(after)}`,{credentials:"same-origin"});
+async function fetchNamoTalkNotifications(afterId){
+  const query=afterId==null?"":`?afterId=${encodeURIComponent(afterId)}`;
+  const response=await fetch(`/api/namo-talk/notifications${query}`,{credentials:"same-origin"});
   handleNamoTalkAuth(response);
   const payload=await response.json().catch(()=>({success:false,message:"알림을 확인할 수 없습니다."}));
   if(!response.ok||!payload.success)throw new Error(payload.message||"알림을 불러오지 못했습니다.");
-  return Array.isArray(payload.data)?payload.data:[];
+  return {rows:Array.isArray(payload.data)?payload.data:[],cursor:Number(payload.cursor||afterId||0)};
 }
 
 function attendanceDate(d=new Date()){const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
@@ -111,15 +112,14 @@ function NamoDrop({size=34}){
 
 function NamoTalkNotifier({talkOpen=false,onOpenRoom}){
   const [toasts,setToasts]=useState([]);
-  const lastCheckedRef=useRef(Date.now());
+  const lastMessageIdRef=useRef(null);
 
   useEffect(()=>{
     let stopped=false;
     const check=async()=>{
       try{
-        const checkedAt=Date.now();
-        const rows=await fetchNamoTalkNotifications(lastCheckedRef.current);
-        lastCheckedRef.current=checkedAt;
+        const {rows,cursor}=await fetchNamoTalkNotifications(lastMessageIdRef.current);
+        lastMessageIdRef.current=Math.max(Number(lastMessageIdRef.current||0),Number(cursor||0),...rows.map(message=>Number(message.id||0)));
         if(stopped||talkOpen||localStorage.getItem(NAMO_TALK_NOTIFY_KEY)==="0"||!rows.length)return;
         setToasts(previous=>[...previous,...rows.map(message=>({...message,toastId:`${message.id}-${Date.now()}`}))].slice(-4));
         rows.forEach(message=>window.setTimeout(()=>setToasts(previous=>previous.filter(item=>item.id!==message.id)),5000));
@@ -132,7 +132,7 @@ function NamoTalkNotifier({talkOpen=false,onOpenRoom}){
   },[talkOpen]);
 
   if(!toasts.length)return null;
-  return <div aria-live="polite" style={{position:"fixed",right:18,bottom:18,zIndex:13000,width:"min(340px,calc(100vw - 36px))",display:"flex",flexDirection:"column-reverse",gap:9,pointerEvents:"none"}}>
+  return <div aria-live="polite" style={{position:"fixed",right:18,bottom:18,zIndex:2147483000,width:"min(340px,calc(100vw - 36px))",display:"flex",flexDirection:"column-reverse",gap:9,pointerEvents:"none"}}>
     <style>{`@keyframes namoTalkToastIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}`}</style>
     {toasts.map(message=><button key={message.toastId} type="button" onClick={()=>{setToasts(previous=>previous.filter(item=>item.toastId!==message.toastId));onOpenRoom?.(message.roomId);}} style={{width:"100%",display:"flex",alignItems:"flex-start",gap:11,padding:"13px 14px",border:"1px solid #d4a017",borderRadius:13,background:"#0f2740",color:"white",boxShadow:"0 14px 36px rgba(15,23,42,.35)",textAlign:"left",cursor:"pointer",pointerEvents:"auto",animation:"namoTalkToastIn .28s ease-out"}}>
       <NamoDrop size={34}/>
@@ -231,7 +231,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   };
   const detailInfo=readDetail?receiptInfoFor(readDetail,room):null;
   const unreadCount=allRooms.reduce((sum,r)=>sum+(messages[r.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[r.id]||0)).length,0);
-  const panelStyle=compact?{position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}:{position:"fixed",left:position.x,top:position.y,width:"min(650px,calc(100vw - 16px))",height:"min(720px,calc(100vh - 16px))"};
+  const panelStyle=compact?{position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}:{position:"fixed",left:position.x,top:position.y,width:"min(820px,calc(100vw - 16px))",height:"min(720px,calc(100vh - 16px))"};
 
   if(minimized)return <button type="button" onClick={()=>setMinimize(false)} aria-label="NAMO Talk 복원" style={{position:"fixed",right:18,bottom:18,zIndex:12000,height:48,padding:"0 16px",display:"flex",alignItems:"center",gap:9,border:"2px solid #d4a017",borderRadius:16,background:"#0f2740",color:"white",boxShadow:"0 12px 28px rgba(15,23,42,.35)",fontSize:15,fontWeight:900,cursor:"pointer"}}><NamoDrop size={28}/> NAMO Talk {unreadCount>0&&<span style={{minWidth:22,height:22,padding:"0 6px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:11,background:"#ef4444",fontSize:12}}>{unreadCount}</span>}</button>;
 
@@ -251,13 +251,13 @@ function NamoTalkTab({onClose,initialRoom=""}){
       {[["chat","대화"],["attendance","근태관리"]].map(([id,label])=><button key={id} onClick={()=>setMode(id)} style={{height:31,padding:"0 13px",border:0,borderRadius:8,background:mode===id?"#dbeafe":"transparent",color:mode===id?"#075985":"#475569",fontSize:13,fontWeight:900,cursor:"pointer"}}>{label}</button>)}
     </div>
 
-    {mode==="attendance"?<AttendancePanel currentUser={currentUser} users={users}/>:<div style={{flex:"1 1 auto",minHeight:0,display:"flex",width:"100%",overflow:"hidden"}}>
-      <div style={{width:205,flex:"0 0 205px",background:"white",borderRight:"1px solid #cbd5e1",overflowY:"auto"}}>
+    {mode==="attendance"?<AttendancePanel currentUser={currentUser} users={users}/>:<div style={{flex:"1 1 auto",minHeight:0,display:"flex",width:"100%",overflow:"hidden",gap:compact?0:10,padding:compact?0:10,boxSizing:"border-box",background:compact?"#f4f7fa":"#dfe7ee"}}>
+      <div style={{width:compact?205:235,flex:`0 0 ${compact?205:235}px`,background:"white",borderRight:compact?"1px solid #cbd5e1":"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflowY:"auto"}}>
         <div style={{padding:9}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="채널·직원 검색" style={{width:"100%",height:38,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:9,padding:"0 10px",fontSize:14,color:"#1e293b"}}/></div>
         <div style={{padding:7}}>{filteredChannels.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}<div style={{fontSize:12,fontWeight:900,color:"#64748b",padding:"15px 7px 7px"}}>1:1 대화</div>{filteredDirects.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}</div>
       </div>
 
-      <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:"flex",flexDirection:"column",background:"#edf3f7",overflow:"hidden",position:"relative"}}>
+      <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:"flex",flexDirection:"column",background:"#edf3f7",border:compact?0:"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflow:"hidden",position:"relative"}}>
         <div style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",gap:10,padding:"0 14px",background:"white",borderBottom:"1px solid #cbd5e1"}}>
           <div style={{minWidth:0}}><div style={{fontSize:17,fontWeight:950,color:"#172033"}}>{room?.name||"대화"}</div><div style={{fontSize:12,color:"#64748b",fontWeight:600,marginTop:3}}>{room?.subtitle||""}</div></div>
           <input value={messageSearch} onChange={event=>setMessageSearch(event.target.value)} placeholder="메시지 검색" style={{marginLeft:"auto",width:145,height:32,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px",fontSize:12,color:"#172033",outline:"none"}}/>
