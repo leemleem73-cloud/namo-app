@@ -16,8 +16,7 @@ function AttendancePanel({currentUser,users}){
   useEffect(()=>{const t=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(t);},[]);
   const today=attendanceDate();
   const mine=records.find(r=>r.date===today&&((r.uid&&currentUser.uid&&r.uid===currentUser.uid)||r.name===currentUser.name));
-  const showNotice=(text)=>{setNotice(text);setTimeout(()=>setNotice(""),2200);};
-
+  const showNotice=text=>{setNotice(text);setTimeout(()=>setNotice(""),2200);};
   const commit=(next,message)=>{const fallback=saveAttendance(next);setRecords(next);showNotice(fallback?`${message} · 임시 저장`:message);};
   const clockIn=()=>{
     if(mine?.clockIn){showNotice(`이미 ${mine.clockIn}에 출근 처리되었습니다.`);return;}
@@ -30,7 +29,7 @@ function AttendancePanel({currentUser,users}){
     const out=attendanceTime();
     commit(records.map(r=>r===mine?{...r,clockOut:out}:r),`${out} 퇴근 처리되었습니다.`);
   };
-  const openEdit=(row)=>{setEditing(row);setEditIn(row.clockIn||"");setEditOut(row.clockOut||"");setEditReason("");};
+  const openEdit=row=>{setEditing(row);setEditIn(row.clockIn||"");setEditOut(row.clockOut||"");setEditReason("");};
   const saveEdit=()=>{
     if(!isAdmin)return;
     if(!editReason.trim()){showNotice("수정 사유를 입력해 주세요.");return;}
@@ -40,19 +39,19 @@ function AttendancePanel({currentUser,users}){
     commit(next,"근태 시간이 수정되었습니다.");
     setEditing(null);
   };
-  const deleteRecord=(row)=>{
+  const deleteRecord=row=>{
     if(!isAdmin)return;
     const ok=window.confirm(`${row.date} · ${row.name}의 출퇴근 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.`);
     if(!ok)return;
     if(editing===row)setEditing(null);
     commit(records.filter(r=>r!==row),"출퇴근 기록이 삭제되었습니다.");
   };
-
   const filtered=records.filter(r=>(!start||r.date>=start)&&(!end||r.date<=end)&&(!dept||r.dept===dept)&&(!person||r.name===person)&&(isAdmin||r.name===currentUser.name)).sort((a,b)=>b.date.localeCompare(a.date)||String(a.name).localeCompare(String(b.name),"ko"));
   const download=()=>{
     const header=["날짜","사번","이름","부서","직급","출근시간","퇴근시간","총 근무시간","근태상태","근무상태","수정여부","최종수정자","최종수정일시","수정사유","비고"];
     const lines=[header,...filtered.map(r=>[r.date,r.uid||"",r.name,r.dept||"",r.position||"",r.clockIn||"",r.clockOut||"",attendanceWork(r),attendanceStatus(r),r.workStatus||"근무",r.edited?"수정됨":"",r.lastEditedBy||"",r.lastEditedAt||"",r.lastEditReason||"",r.note||""])].map(row=>row.map(csvValue).join(","));
-    const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`NAMO_근태관리_${today}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+    const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`NAMO_근태관리_${today}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
   };
   const depts=Array.from(new Set(users.map(u=>u.dept).filter(Boolean)));
 
@@ -68,47 +67,16 @@ function AttendancePanel({currentUser,users}){
   </div>;
 }
 
-(function installNamoTalkDragFix(){
-  if(window.__NAMO_TALK_DRAG_FIX__)return;
-  window.__NAMO_TALK_DRAG_FIX__=true;
-  const STORAGE_KEY="qmes-namo-talk-visual-offset-v1";
-  let drag=null;
-  const readOffset=()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")||{x:0,y:0};}catch(e){return{x:0,y:0};}};
-  const applyOffset=panel=>{if(!panel)return;const p=readOffset();panel.style.transform=`translate3d(${p.x}px,${p.y}px,0)`;};
-  const observer=new MutationObserver(()=>applyOffset(document.querySelector('section[aria-label="NAMO Talk"]')));
-  observer.observe(document.documentElement,{childList:true,subtree:true});
-  document.addEventListener("pointerdown",event=>{
-    const header=event.target.closest&&event.target.closest('section[aria-label="NAMO Talk"] > header');
-    if(!header||event.target.closest("button")||window.innerWidth<=768)return;
-    const panel=header.parentElement;
-    const saved=readOffset();
-    drag={panel,startX:event.clientX,startY:event.clientY,baseX:Number(saved.x)||0,baseY:Number(saved.y)||0};
-    document.body.style.userSelect="none";
-    document.body.style.cursor="grabbing";
-    header.style.cursor="grabbing";
-    event.preventDefault();
-  },true);
-  window.addEventListener("pointermove",event=>{
-    if(!drag)return;
-    const dx=event.clientX-drag.startX;
-    const dy=event.clientY-drag.startY;
-    const rect=drag.panel.getBoundingClientRect();
-    const nextX=drag.baseX+dx;
-    const nextY=drag.baseY+dy;
-    drag.panel.style.transform=`translate3d(${nextX}px,${nextY}px,0)`;
-    drag.next={x:nextX,y:nextY};
-    event.preventDefault();
-  },{passive:false});
-  const stop=()=>{
-    if(!drag)return;
-    if(drag.next){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(drag.next));}catch(e){}}
-    const header=drag.panel.querySelector(":scope > header");
-    if(header)header.style.cursor="grab";
-    drag=null;
-    document.body.style.userSelect="";
-    document.body.style.cursor="";
+/* NAMO Talk 상단 메뉴는 채팅과 근태관리만 사용합니다. */
+(function removeNamoTalkOrganizationMenu(){
+  const clean=()=>{
+    const panel=document.querySelector('section[aria-label="NAMO Talk"]');
+    if(!panel)return;
+    const buttons=Array.from(panel.querySelectorAll('button'));
+    const orgButton=buttons.find(button=>button.textContent.trim()==="조직도");
+    if(orgButton)orgButton.remove();
   };
-  window.addEventListener("pointerup",stop);
-  window.addEventListener("pointercancel",stop);
-  applyOffset(document.querySelector('section[aria-label="NAMO Talk"]'));
+  const observer=new MutationObserver(clean);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  clean();
 })();
