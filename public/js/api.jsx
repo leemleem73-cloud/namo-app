@@ -142,7 +142,7 @@ function EquipmentTab() {
   const num = parseFloat(trimmed);
   const judge = isVisual
     ? (visOk == null ? null : visOk ? "정상" : "이탈")
-    : (trimmed === "" || !numOk ? null : ((param.lo == null || num >= param.lo) && (param.hi == null || num <= param.hi)) ? "정상" : "이탈");
+    : (trimmed === "" || !numOk ? null : ((param.lo == null || num >= param.lo) && (param.hi == null || (param.hiExclusive ? num < param.hi : num <= param.hi))) ? "정상" : "이탈");
   const triedErrors = [];
   if (tried && judge == null && !inputError) triedErrors.push(isVisual ? "이상 없음 / 이상 발견 중 하나를 선택하세요" : "판독값을 입력하세요");
 
@@ -302,7 +302,7 @@ function EquipmentTab() {
         return;
       }
       const number = parseFloat(raw);
-      result = ((targetParam.lo == null || number >= targetParam.lo) && (targetParam.hi == null || number <= targetParam.hi)) ? "정상" : "이탈";
+      result = ((targetParam.lo == null || number >= targetParam.lo) && (targetParam.hi == null || (targetParam.hiExclusive ? number < targetParam.hi : number <= targetParam.hi))) ? "정상" : "이탈";
       display = `${raw} ${targetParam.unit || ""}`.trim();
     }
 
@@ -352,7 +352,7 @@ function EquipmentTab() {
     const t = String(raw ?? "").trim();
     if (!/^-?\d+(\.\d+)?$/.test(t)) return null;
     const n = parseFloat(t);
-    return ((x.lo == null || n >= x.lo) && (x.hi == null || n <= x.hi)) ? "정상" : "이탈";
+    return ((x.lo == null || n >= x.lo) && (x.hi == null || (x.hiExclusive ? n < x.hi : n <= x.hi))) ? "정상" : "이탈";
   };
 
   const deleteEntry = async (entry) => {
