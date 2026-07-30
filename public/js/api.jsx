@@ -409,10 +409,12 @@ function EquipmentTab() {
     if (nextIdx >= 0) setTourIdx(nextIdx);
     else { setMode("single"); setTourIdx(0); }
   };
-  const totalParams = EQUIPMENT.reduce((a, e) => a + e.params.length, 0);
-  const doneParams = EQUIPMENT.reduce((a, e) => a + e.params.filter((x) => readings[`${e.id}:${x.k}`]).length, 0);
-  const remainingParams = Math.max(0, totalParams - doneParams);
-  const tourCompletedToday = doneParams >= totalParams;
+  const totalEquipment = EQUIPMENT.length;
+  const doneEquipment = EQUIPMENT.filter((candidate) =>
+    candidate.params.every((item) => readings[`${candidate.id}:${item.k}`])
+  ).length;
+  const remainingEquipment = Math.max(0, totalEquipment - doneEquipment);
+  const tourCompletedToday = doneEquipment >= totalEquipment;
   const firstIncompleteEqIndex = EQUIPMENT.findIndex((candidate) =>
     candidate.params.some((item) => !readings[`${candidate.id}:${item.k}`])
   );
@@ -428,8 +430,8 @@ function EquipmentTab() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {tourCompletedToday
-            ? <Badge tone="green">오늘 필수점검 {totalParams}/{totalParams} 완료</Badge>
-            : <Badge tone="amber">오늘 필수점검 {doneParams}/{totalParams} · {remainingParams}개 미점검</Badge>}
+            ? <Badge tone="green">오늘 순회점검 {totalEquipment}/{totalEquipment} 완료</Badge>
+            : <Badge tone="amber">오늘 순회점검 {doneEquipment}/{totalEquipment} · {remainingEquipment}개 미완료</Badge>}
           <Badge tone={syncError ? "amber" : "green"}>{syncState}</Badge>
           {mode === "single" && (
             <button
@@ -442,10 +444,10 @@ function EquipmentTab() {
                 setTourTried(false);
               }}
               disabled={saving || tourCompletedToday}
-              title={tourCompletedToday ? `오늘 필수점검 ${totalParams}개 항목을 모두 완료했습니다.` : "일 1회 필수 순회점검을 시작합니다."}
+              title={tourCompletedToday ? `오늘 순회점검 ${totalEquipment}개 항목을 모두 완료했습니다.` : "일 1회 필수 순회점검을 시작합니다."}
               className={`flex items-center gap-1.5 rounded px-3 py-2 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60 text-white transition-colors ${tourCompletedToday ? "bg-emerald-700" : "bg-sky-600 hover:bg-sky-500"}`}>
               {tourCompletedToday ? <CheckCircle2 size={13} /> : <RotateCw size={13} />}
-              {tourCompletedToday ? "오늘 순회점검 완료" : doneParams > 0 ? "미점검 항목 이어서" : "순회점검 시작"}
+              {tourCompletedToday ? "오늘 순회점검 완료" : doneEquipment > 0 ? "미점검 항목 이어서" : "순회점검 시작"}
             </button>
           )}
         </div>
@@ -455,7 +457,7 @@ function EquipmentTab() {
       {mode === "tour" && (
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
         right={<button onClick={() => setMode("single")} className="text-[11px] px-2.5 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">순회 종료</button>}>
-        <p className="text-xs text-slate-400 mb-3">일 1회 필수 순회점검입니다. 설비 앞에서 PLC 패널·계측기를 확인하고 오늘의 필수 관리항목 {totalParams}개를 모두 기록하세요.</p>
+        <p className="text-xs text-slate-400 mb-3">일 1회 필수 순회점검입니다. 설비 앞에서 PLC 패널·계측기를 확인하고 오늘의 순회 대상 {totalEquipment}개 항목을 모두 완료하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
             const raw = tourVals[x.k];
