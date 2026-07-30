@@ -15,8 +15,20 @@ function makeDirectRoomId(a,b){return `dm:${[a,b].sort((x,y)=>String(x).localeCo
 function loadNamoTalkPosition(){const saved=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;return {x:Math.max(16,window.innerWidth-640),y:128};}
 function saveNamoTalkPosition(position){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(position));}catch(e){}}
 
+let namoTalkAuthRedirecting=false;
+function handleNamoTalkAuth(response){
+  if(response.status!==401)return;
+  if(!namoTalkAuthRedirecting){
+    namoTalkAuthRedirecting=true;
+    try{sessionStorage.removeItem("qmes-current-user-v1");}catch(e){}
+    window.location.reload();
+  }
+  throw new Error("__NAMO_AUTH_REDIRECT__");
+}
+
 async function fetchNamoTalkRoom(roomId){
   const response=await fetch(`/api/namo-talk/messages?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
+  handleNamoTalkAuth(response);
   const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
   if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 불러오지 못했습니다.");
   return Array.isArray(payload.data)?payload.data:[];
@@ -29,6 +41,7 @@ async function postNamoTalkMessage(roomId,message){
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({roomId,...message})
   });
+  handleNamoTalkAuth(response);
   const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
   if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 전송하지 못했습니다.");
   return payload.data;
@@ -36,6 +49,7 @@ async function postNamoTalkMessage(roomId,message){
 
 async function fetchNamoTalkReadReceipts(roomId){
   const response=await fetch(`/api/namo-talk/reads?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
+  handleNamoTalkAuth(response);
   const payload=await response.json().catch(()=>({success:false,message:"읽음 정보를 확인할 수 없습니다."}));
   if(!response.ok||!payload.success)throw new Error(payload.message||"읽음 정보를 불러오지 못했습니다.");
   return Array.isArray(payload.data)?payload.data:[];
@@ -48,6 +62,7 @@ async function markNamoTalkRoomRead(roomId){
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({roomId})
   });
+  handleNamoTalkAuth(response);
   const payload=await response.json().catch(()=>({success:false,message:"읽음 처리를 확인할 수 없습니다."}));
   if(!response.ok||!payload.success)throw new Error(payload.message||"읽음 처리에 실패했습니다.");
   return payload.data;
@@ -129,7 +144,7 @@ function NamoTalkTab({onClose}){
   const startDrag=event=>{if(compact||event.button!==0||event.target.closest("button"))return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};document.body.style.userSelect="none";document.body.style.cursor="grabbing";event.preventDefault();};
   const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
   const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
-  const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
+  const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){if(error.message!=="__NAMO_AUTH_REDIRECT__")alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
   const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text"});if(ok){setText("");setEmojiOpen(false);}};
   const sendEmoticon=async value=>{const ok=await appendMessage({text:value,kind:"emoticon"});if(ok)setEmojiOpen(false);};
   const handleFile=async e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await appendMessage({text:file.name,kind:file.type.startsWith("image/")?"image":"file",fileName:file.name,fileData:dataUrl});};
