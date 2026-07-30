@@ -2,19 +2,42 @@ const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, Notification } = r
 const path = require('path');
 const fs = require('fs');
 
+const DEFAULT_SERVER_URL = 'https://qmes.namochemical.com';
+
 let mainWindow;
 let tray;
 let quitting = false;
 const configPath = path.join(app.getPath('userData'), 'config.json');
 
+function normalizeConfig(value = {}) {
+  const savedUrl = String(value.serverUrl || '').trim().replace(/\/$/, '');
+  const isLocalAddress = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(savedUrl);
+  return {
+    ...value,
+    serverUrl: !savedUrl || isLocalAddress ? DEFAULT_SERVER_URL : savedUrl,
+    autoStart: value.autoStart !== false,
+  };
+}
+
 function readConfig() {
-  try { return JSON.parse(fs.readFileSync(configPath, 'utf8')); }
-  catch (_) { return { serverUrl: 'http://localhost:3000', autoStart: true }; }
+  try {
+    const current = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const normalized = normalizeConfig(current);
+    if (JSON.stringify(current) !== JSON.stringify(normalized)) {
+      fs.writeFileSync(configPath, JSON.stringify(normalized, null, 2), 'utf8');
+    }
+    return normalized;
+  } catch (_) {
+    return { serverUrl: DEFAULT_SERVER_URL, autoStart: true };
+  }
 }
+
 function writeConfig(next) {
-  fs.writeFileSync(configPath, JSON.stringify(next, null, 2), 'utf8');
-  return next;
+  const normalized = normalizeConfig(next);
+  fs.writeFileSync(configPath, JSON.stringify(normalized, null, 2), 'utf8');
+  return normalized;
 }
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1120,
@@ -38,6 +61,7 @@ function createWindow() {
     if (!quitting) { event.preventDefault(); mainWindow.hide(); }
   });
 }
+
 function createTray() {
   const icon = nativeImage.createEmpty();
   tray = new Tray(icon);
