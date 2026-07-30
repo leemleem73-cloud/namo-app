@@ -370,10 +370,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     setTried(false);
     setShowRegisterModal(true);
   };
-  const deleteRecord = (r) => {
+  const deleteRecord = async (r) => {
     const reason = askDeleteReason(`${docName} ${r.id}`);
     if (reason === null) return;
     const groupKey = inspectionGroupKey(r);
+    const groupRows = records.filter((x) => inspectionGroupKey(x) === groupKey);
     const next = records.filter((x) => inspectionGroupKey(x) !== groupKey);
     setRecords(next); DB.insp[storeKey] = next;
     if (isOqc) {
@@ -390,7 +391,15 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       }
       if (DB.coa?.[r.lot]?.shipNo === groupKey) delete DB.coa[r.lot];
     }
-    auditLog(storeKey, "삭제", r.id, reason); dbSave();
+    auditLog(storeKey, "삭제", r.id, reason);
+    dbSave();
+    try {
+      if (typeof qmesSyncTombstoneInspection === "function") {
+        await qmesSyncTombstoneInspection(String(storeKey || "").toLowerCase(), groupKey, groupRows, reason);
+      }
+    } catch (error) {
+      window.alert(`이 PC에서는 삭제됐지만 공용 DB 삭제 표시에 실패했습니다.\n${error.message}`);
+    }
   };
 
   const recordYears = Array.from(new Set(
