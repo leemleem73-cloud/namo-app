@@ -219,7 +219,22 @@ function IqcTab() {
     setTried(false);
     setIqcModalOpen(true);
   };
-  const deleteIqc = (r) => { const reason=askDeleteReason(`수입검사 ${r.inNo}`); if(reason===null)return; const next=rows.filter(x=>x.inNo!==r.inNo); setRows(next); DB.iqc=next; auditLog("IQC","삭제",r.inNo,reason); dbSave(); };
+  const deleteIqc = async (r) => {
+    const reason = askDeleteReason(`수입검사 ${r.inNo}`);
+    if (reason === null) return;
+    const next = rows.filter((x) => x.inNo !== r.inNo);
+    setRows(next);
+    DB.iqc = next;
+    auditLog("IQC", "삭제", r.inNo, reason);
+    dbSave();
+    try {
+      if (typeof qmesSyncTombstoneInspection === "function") {
+        await qmesSyncTombstoneInspection("iqc", r.inNo, [r], reason);
+      }
+    } catch (error) {
+      window.alert(`이 PC에서는 삭제됐지만 공용 DB 삭제 표시에 실패했습니다.\n${error.message}`);
+    }
+  };
 
   const judgeSelect = (key, label) => (
     <div className="flex flex-col gap-1">
