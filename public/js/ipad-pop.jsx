@@ -162,9 +162,12 @@ function FieldInputTab() {
   useEffect(() => {
     let active = true;
     if (typeof qmesSyncPullWorkOrders !== "function") return () => { active = false; };
-    qmesSyncPullWorkOrders()
+    Promise.all([
+      qmesSyncPullWorkOrders(),
+      typeof qmesSyncPushPendingInspections === "function" ? qmesSyncPushPendingInspections() : Promise.resolve(0)
+    ])
       .then(() => { if (active) setSharedVersion((value) => value + 1); })
-      .catch((error) => console.warn("작업지시서 공용 동기화 실패:", error.message));
+      .catch((error) => console.warn("공용 데이터 동기화 실패:", error.message));
     return () => { active = false; };
   }, []);
 
@@ -482,6 +485,8 @@ function FieldInputTab() {
     setSaving(true);
     try {
       await qmesSyncUpsert(saved.syncType, saved.id, saved.syncPayload);
+      saved.syncPayload.rows.forEach((row) => { row.sharedSync = true; });
+      dbSave();
       setSaved((prev) => ({...prev, synced:true, syncError:""}));
     } catch (error) {
       setSaved((prev) => ({...prev, synced:false, syncError:error.message}));
@@ -520,6 +525,8 @@ function FieldInputTab() {
     try {
       if (typeof qmesSyncUpsert !== "function") throw new Error("공용 동기화 모듈을 불러오지 못했습니다.");
       await qmesSyncUpsert(syncType, id, syncPayload);
+      syncPayload.rows.forEach((row) => { row.sharedSync = true; });
+      dbSave();
       setSaved({id, title:modeMeta[mode].title, judge:overall, synced:true, syncType, syncPayload, syncError:""});
     } catch (error) {
       setSaved({id, title:modeMeta[mode].title, judge:overall, synced:false, syncType, syncPayload, syncError:error.message});
