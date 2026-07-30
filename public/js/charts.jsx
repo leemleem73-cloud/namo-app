@@ -36,23 +36,23 @@ function SpcTab() {
   return (
     <div className="qmes-spc-simple">
       <style>{`
-        .qmes-spc-simple { display:flex; flex-direction:column; gap:16px; color:#111827; }
-        .qmes-spc-selector { display:flex; flex-wrap:wrap; gap:8px; padding:14px; background:#fff; border:1px solid #dbe3ec; border-radius:10px; }
-        .qmes-spc-item { min-height:42px; padding:7px 12px; border:1px solid #cbd5e1; border-radius:7px; background:#fff; color:#334155; text-align:left; cursor:pointer; }
+        .qmes-spc-simple { display:flex; flex-direction:column; gap:16px; color:#e2e8f0; }
+        .qmes-spc-selector { display:flex; flex-wrap:wrap; gap:8px; padding:14px; background:#0f1e32; border:1px solid #243d58; border-radius:10px; }
+        .qmes-spc-item { min-height:42px; padding:7px 12px; border:1px solid #334155; border-radius:7px; background:#1e293b; color:#cbd5e1; text-align:left; cursor:pointer; }
         .qmes-spc-item strong { display:block; font-size:13px; line-height:1.25; }
         .qmes-spc-item small { display:block; margin-top:2px; color:#64748b; font-size:10px; line-height:1.2; }
-        .qmes-spc-item.is-active { border-color:#1d4ed8; background:#eff6ff; color:#1d4ed8; box-shadow:inset 0 0 0 1px #1d4ed8; }
+        .qmes-spc-item.is-active { border-color:#38bdf8; background:rgba(14,165,233,.15); color:#7dd3fc; box-shadow:inset 0 0 0 1px rgba(56,189,248,.3); }
         .qmes-spc-metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
-        .qmes-spc-metric { min-height:92px; padding:15px; background:#fff; border:1px solid #dbe3ec; border-radius:9px; }
-        .qmes-spc-metric-label { display:block; color:#64748b; font-size:12px; font-weight:700; }
-        .qmes-spc-metric-value { display:flex; align-items:baseline; gap:5px; margin-top:10px; color:#0f172a; }
+        .qmes-spc-metric { min-height:92px; padding:15px; background:#0f1e32; border:1px solid #243d58; border-radius:9px; }
+        .qmes-spc-metric-label { display:block; color:#94a3b8; font-size:12px; font-weight:700; }
+        .qmes-spc-metric-value { display:flex; align-items:baseline; gap:5px; margin-top:10px; color:#f8fafc; }
         .qmes-spc-metric-value strong { font-size:25px; line-height:1; }
         .qmes-spc-metric-value small { color:#64748b; font-size:11px; }
         .qmes-spc-judgment { display:flex; flex-direction:column; justify-content:center; gap:7px; }
         .qmes-spc-judgment p { margin:0; color:#64748b; font-size:10px; }
-        .qmes-spc-chart { padding:16px; background:#fff; border:1px solid #dbe3ec; border-radius:10px; }
+        .qmes-spc-chart { padding:16px; background:#0f1e32; border:1px solid #243d58; border-radius:10px; }
         .qmes-spc-chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-        .qmes-spc-chart-head h3 { margin:0; color:#0f172a; font-size:14px; font-weight:800; }
+        .qmes-spc-chart-head h3 { margin:0; color:#e2e8f0; font-size:14px; font-weight:800; }
         .qmes-spc-chart-note { margin:8px 0 0; color:#64748b; font-size:11px; line-height:1.55; }
         @media (max-width:1024px) { .qmes-spc-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media (max-width:640px) { .qmes-spc-item { flex:1 1 calc(50% - 8px); } .qmes-spc-metrics { grid-template-columns:1fr; } }
@@ -93,9 +93,9 @@ function SpcTab() {
         </div>
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={cfg.data}>
-            <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-            <XAxis dataKey="b" stroke="#64748b" fontSize={11} />
-            <YAxis stroke="#64748b" fontSize={11} domain={cfg.domain} />
+            <CartesianGrid stroke="#16283e" strokeDasharray="3 3" />
+            <XAxis dataKey="b" stroke="#8aa3c0" fontSize={11} />
+            <YAxis stroke="#8aa3c0" fontSize={11} domain={cfg.domain} />
             <Tooltip {...chartTooltip} />
             {cfg.usl != null && <ReferenceLine y={cfg.usl} stroke="#0284c7" strokeDasharray="4 4" label={{ value: `USL ${cfg.usl.toLocaleString()}`, fill: "#0369a1", fontSize: 10, position: "insideTopRight" }} />}
             {cfg.target != null && <ReferenceLine y={cfg.target} stroke="#64748b" strokeDasharray="2 4" label={{ value: `CL ${cfg.target.toLocaleString()}`, fill: "#475569", fontSize: 10, position: "insideRight" }} />}
