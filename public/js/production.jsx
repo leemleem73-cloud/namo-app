@@ -61,6 +61,15 @@ function ProductionTab() {
 
 
 function WoDocTab() {
+  const [, setSharedVersion] = useState(0);
+  useEffect(() => {
+    let active = true;
+    if (typeof qmesSyncPullWorkOrders !== "function") return () => { active = false; };
+    qmesSyncPullWorkOrders()
+      .then(() => { if (active) setSharedVersion((value) => value + 1); })
+      .catch((error) => console.warn("작업지시서 공용 동기화 실패:", error.message));
+    return () => { active = false; };
+  }, []);
   const ids = Object.keys(DB.woDocs);
   const [sel, setSel] = useState(ids[0]);
   const [edit, setEdit] = useState(false);
@@ -96,7 +105,7 @@ function WoDocTab() {
     setEdit(true);
   };
 
-  const saveActs = () => {
+  const saveActs = async () => {
     const e2 = [];
     const user = window.__QMES_USER__ || "-";
 
@@ -243,7 +252,13 @@ function WoDocTab() {
       }
     }
     dbSave();
-    setErrs([]);
+    let sharedError = "";
+    try {
+      if (typeof qmesSyncWorkOrder === "function") await qmesSyncWorkOrder(sel);
+    } catch (error) {
+      sharedError = `PC 공용 DB 저장 실패 — ${error.message}`;
+    }
+    setErrs(sharedError ? [sharedError] : []);
     setEdit(false);
   };
 
@@ -635,6 +650,9 @@ function saveWoManualStatus(lotNo, status) {
   }
 
   dbSave();
+  if (typeof qmesSyncWorkOrder === "function") {
+    qmesSyncWorkOrder(lotNo).catch((error) => console.warn("작업지시 상태 공용 동기화 실패:", error.message));
+  }
 }
 
 function woStatusTone(status) {
@@ -688,6 +706,15 @@ function IssueWoTab() {
   const [planItems, setPlanItems] = useState(blankPlanItems(firstProduct));
   const [packRows, setPackRows] = useState([blankPackRow()]);
 
+  useEffect(() => {
+    let active = true;
+    if (typeof qmesSyncPullWorkOrders !== "function") return () => { active = false; };
+    qmesSyncPullWorkOrders()
+      .then(() => { if (active) setIssued([...DB.batches]); })
+      .catch((error) => console.warn("작업지시서 공용 동기화 실패:", error.message));
+    return () => { active = false; };
+  }, []);
+
   const bom = BOM[form.product] || BOM[firstProduct];
   const isBinderWorkOrder = bom.workType === "바인더 솔루션(중간재)";
   const isIntermediateWorkOrder = isBinderWorkOrder;
@@ -715,7 +742,7 @@ function IssueWoTab() {
 
   const requestedLotNo = (form.lotNo || nextNo || "").trim();
 
-  const issue = () => {
+  const issue = async () => {
     if (!dateOk) { window.alert("생산일자를 선택하세요."); return; }
     if (!requestedLotNo || requestedLotNo === "—") { window.alert("LOT No.를 확인하세요."); return; }
     if (!editingWo && DB.batches.some((b) => b.no === requestedLotNo)) { window.alert("이미 사용 중인 LOT No.입니다."); return; }
@@ -836,6 +863,11 @@ function IssueWoTab() {
     }
     auditLog("작업지시", editingWo ? "수정" : "발행", woNo, `${form.product} / ${qtyNum}kg / ${form.prodDate}`);
     dbSave();
+    try {
+      if (typeof qmesSyncWorkOrder === "function") await qmesSyncWorkOrder(woNo);
+    } catch (error) {
+      window.alert(`작업지시서는 이 기기에 저장됐지만 PC 공용 DB 저장에 실패했습니다.\n${error.message}`);
+    }
     setEditingWo(null);
     setIssued([...DB.batches]);
     setShowIssueForm(false);
@@ -858,7 +890,7 @@ function IssueWoTab() {
     setPackRows(d.packaging?.length ? d.packaging : [blankPackRow()]);
     window.scrollTo({top:0,behavior:"smooth"});
   };
-  const deleteWo = (r) => {
+  const deleteWo = async (r) => {
     const reason=askDeleteReason(`작업지시 ${r.no}`);
     if(reason===null)return;
     const packaging = DB.woDocs[r.no]?.packaging || [];
@@ -872,6 +904,11 @@ function IssueWoTab() {
     DB.popEntries=DB.popEntries.filter(x=>x.lot!==r.no);
     auditLog("작업지시","삭제",r.no,reason);
     dbSave();
+    try {
+      if (typeof qmesSyncDeleteWorkOrder === "function") await qmesSyncDeleteWorkOrder(r.no);
+    } catch (error) {
+      window.alert(`이 기기에서는 삭제됐지만 PC 공용 DB 삭제에 실패했습니다.\n${error.message}`);
+    }
     setIssued([...DB.batches]);
   };
 
