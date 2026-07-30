@@ -723,7 +723,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-const QMES_SYNC_TYPES = new Set(['iqc', 'pqc', 'oqc', 'workorder']);
+const QMES_SYNC_TYPES = new Set(['iqc', 'pqc', 'oqc', 'workorder', 'equipment']);
 
 function qmesSyncType(req, res) {
   const type = txt(req.params.type).toLowerCase();
