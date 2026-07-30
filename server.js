@@ -342,6 +342,17 @@ async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS namo_talk_messages_room_created_idx
       ON namo_talk_messages (room_id, created_at);
 
+    CREATE TABLE IF NOT EXISTS namo_talk_reads (
+      room_id TEXT NOT NULL,
+      user_uid TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (room_id, user_uid)
+    );
+
+    CREATE INDEX IF NOT EXISTS namo_talk_reads_room_idx
+      ON namo_talk_reads (room_id, last_read_at);
+
 
     CREATE TABLE IF NOT EXISTS audit_logs (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -450,6 +461,9 @@ async function ensureSchema() {
     ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_name TEXT;
     ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_type TEXT;
     ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_data TEXT;
+
+    ALTER TABLE namo_talk_reads ADD COLUMN IF NOT EXISTS user_name TEXT DEFAULT '';
+    ALTER TABLE namo_talk_reads ADD COLUMN IF NOT EXISTS last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
   `);
 }
 
@@ -1591,6 +1605,59 @@ app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
     );
 
     ok(res, mapNamoTalkMessage(r.rows[0]), '메시지가 전송되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/reads', requireLogin, async (req, res) => {
+  try {
+    const roomId = txt(req.query.roomId);
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+
+    const r = await db(
+      `SELECT room_id, user_uid, user_name, last_read_at
+       FROM namo_talk_reads
+       WHERE room_id = $1
+       ORDER BY last_read_at DESC`,
+      [roomId]
+    );
+
+    ok(res, r.rows.map(row => ({
+      roomId: row.room_id,
+      userUid: row.user_uid,
+      userName: row.user_name,
+      readAt: new Date(row.last_read_at).getTime(),
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/reads', requireLogin, async (req, res) => {
+  try {
+    const roomId = txt(req.body?.roomId);
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+
+    const user = req.session.user;
+    const userUid = txt(user.uid || user.id);
+    const userName = txt(user.name);
+    const r = await db(
+      `INSERT INTO namo_talk_reads (room_id, user_uid, user_name, last_read_at)
+       VALUES ($1,$2,$3,NOW())
+       ON CONFLICT (room_id, user_uid)
+       DO UPDATE SET user_name = EXCLUDED.user_name, last_read_at = NOW()
+       RETURNING room_id, user_uid, user_name, last_read_at`,
+      [roomId, userUid, userName]
+    );
+    const row = r.rows[0];
+
+    ok(res, {
+      roomId: row.room_id,
+      userUid: row.user_uid,
+      userName: row.user_name,
+      readAt: new Date(row.last_read_at).getTime(),
+    });
   } catch (err) {
     fail(res, 500, err.message);
   }
