@@ -47,6 +47,24 @@ async function postNamoTalkMessage(roomId,message){
   return payload.data;
 }
 
+async function updateNamoTalkMessage(messageId,body){
+  const response=await fetch(`/api/namo-talk/messages/${messageId}`,{
+    method:"PATCH",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
+  });
+  handleNamoTalkAuth(response);
+  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지 처리에 실패했습니다.");
+  return payload.data;
+}
+
+async function deleteNamoTalkMessage(messageId){
+  const response=await fetch(`/api/namo-talk/messages/${messageId}`,{method:"DELETE",credentials:"same-origin"});
+  handleNamoTalkAuth(response);
+  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지 삭제에 실패했습니다.");
+  return payload.data;
+}
+
 async function fetchNamoTalkReadReceipts(roomId){
   const response=await fetch(`/api/namo-talk/reads?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
   handleNamoTalkAuth(response);
@@ -101,6 +119,8 @@ function NamoTalkTab({onClose}){
   const [reads,setReads]=useState(loadNamoTalkReads);
   const [text,setText]=useState("");
   const [search,setSearch]=useState("");
+  const [messageSearch,setMessageSearch]=useState("");
+  const [replyingTo,setReplyingTo]=useState(null);
   const [mode,setMode]=useState("chat");
   const [compact,setCompact]=useState(()=>window.innerWidth<=480);
   const [position,setPosition]=useState(loadNamoTalkPosition);
@@ -145,13 +165,18 @@ function NamoTalkTab({onClose}){
   const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
   const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
   const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){if(error.message!=="__NAMO_AUTH_REDIRECT__")alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
-  const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text"});if(ok){setText("");setEmojiOpen(false);}};
+  const replaceRoomMessage=updated=>setMessages(previous=>({...previous,[activeRoom]:(previous[activeRoom]||[]).map(message=>message.id===updated.id?updated:message)}));
+  const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text",replyToId:replyingTo?.id||null,replySender:replyingTo?.sender||"",replyText:String(replyingTo?.text||replyingTo?.fileName||"").slice(0,300)});if(ok){setText("");setReplyingTo(null);setEmojiOpen(false);}};
   const sendEmoticon=async value=>{const ok=await appendMessage({text:value,kind:"emoticon"});if(ok)setEmojiOpen(false);};
   const handleFile=async e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await appendMessage({text:file.name,kind:file.type.startsWith("image/")?"image":"file",fileName:file.name,fileData:dataUrl});};
+  const editMessage=async message=>{if(message.deleted)return;const next=window.prompt("수정할 메시지를 입력하세요.",message.text||"");if(next==null||!next.trim()||next.trim()===message.text)return;try{replaceRoomMessage(await updateNamoTalkMessage(message.id,{action:"edit",text:next.trim()}));}catch(error){alert(error.message);}};
+  const togglePinMessage=async message=>{try{replaceRoomMessage(await updateNamoTalkMessage(message.id,{action:"pin",pinned:!message.pinned}));}catch(error){alert(error.message);}};
+  const removeMessage=async message=>{if(!window.confirm("이 메시지를 삭제할까요?"))return;try{replaceRoomMessage(await deleteNamoTalkMessage(message.id));}catch(error){alert(error.message);}};
 
   const filteredChannels=channelRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
   const filteredDirects=directRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
   const roomMessages=messages[activeRoom]||[];
+  const visibleMessages=roomMessages.filter(message=>!messageSearch.trim()||`${message.sender} ${message.text} ${message.fileName}`.toLowerCase().includes(messageSearch.trim().toLowerCase())).sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned))||Number(a.createdAt)-Number(b.createdAt));
   const receiptInfoFor=(msg,targetRoom=room)=>{
     if(!targetRoom)return {recipients:[],read:[],unread:[]};
     let recipients=[];
@@ -196,14 +221,27 @@ function NamoTalkTab({onClose}){
       </div>
 
       <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:"flex",flexDirection:"column",background:"#edf3f7",overflow:"hidden",position:"relative"}}>
-        <div style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",padding:"0 14px",background:"white",borderBottom:"1px solid #cbd5e1"}}><div><div style={{fontSize:17,fontWeight:950,color:"#172033"}}>{room?.name||"대화"}</div><div style={{fontSize:12,color:"#64748b",fontWeight:600,marginTop:3}}>{room?.subtitle||""}</div></div></div>
+        <div style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",gap:10,padding:"0 14px",background:"white",borderBottom:"1px solid #cbd5e1"}}>
+          <div style={{minWidth:0}}><div style={{fontSize:17,fontWeight:950,color:"#172033"}}>{room?.name||"대화"}</div><div style={{fontSize:12,color:"#64748b",fontWeight:600,marginTop:3}}>{room?.subtitle||""}</div></div>
+          <input value={messageSearch} onChange={event=>setMessageSearch(event.target.value)} placeholder="메시지 검색" style={{marginLeft:"auto",width:145,height:32,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px",fontSize:12,color:"#172033",outline:"none"}}/>
+        </div>
         <div ref={scrollRef} style={{flex:"1 1 auto",minHeight:0,overflowY:"auto",padding:15}}>
           {roomMessages.length===0&&<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",color:"#64748b"}}><div><NamoDrop size={58}/><strong style={{display:"block",color:"#334155",fontSize:15,marginTop:14}}>아직 대화 내용이 없습니다.</strong></div></div>}
-          {roomMessages.map(msg=>{const mine=msg.sender===currentUser.name;const info=mine?receiptInfoFor(msg):null;const label=room?.type==="direct"?(info?.read.length?"읽음":"전송됨"):`읽음 ${info?.read.length||0}/${info?.recipients.length||0}명`;return <div key={msg.id} style={{marginBottom:14,textAlign:mine?"right":"left"}}><div style={{fontSize:12,color:"#475569",fontWeight:700,marginBottom:4}}>{msg.sender} · {msg.time||""}</div><div style={{display:"inline-block",maxWidth:"84%",background:mine?"#0284c7":"white",color:mine?"white":"#172033",borderRadius:14,padding:msg.kind==="emoticon"?"10px 14px":"10px 12px",fontSize:msg.kind==="emoticon"?30:15,lineHeight:1.55,boxShadow:"0 1px 3px rgba(15,23,42,.1)",wordBreak:"break-word"}}>{msg.kind==="image"?<img src={msg.fileData} alt={msg.fileName||"첨부 이미지"} style={{display:"block",maxWidth:"100%",maxHeight:220,borderRadius:8}}/>:msg.kind==="file"?<a href={msg.fileData} download={msg.fileName} style={{color:"inherit"}}>📎 {msg.fileName}</a>:msg.text}</div>{mine&&<div><button type="button" onClick={()=>setReadDetail(msg)} style={{border:0,background:"transparent",padding:"4px 2px 0",color:info.read.length?"#0284c7":"#64748b",fontSize:11,fontWeight:850,cursor:"pointer"}}>{label}</button></div>}</div>})}
+          {roomMessages.length>0&&visibleMessages.length===0&&<div style={{padding:30,textAlign:"center",color:"#64748b",fontSize:13,fontWeight:700}}>검색 결과가 없습니다.</div>}
+          {visibleMessages.map(msg=>{const mine=msg.sender===currentUser.name;const info=mine?receiptInfoFor(msg):null;const label=room?.type==="direct"?(info?.read.length?"읽음":"전송됨"):`읽음 ${info?.read.length||0}/${info?.recipients.length||0}명`;return <div key={msg.id} style={{marginBottom:14,textAlign:mine?"right":"left"}}>
+            <div style={{fontSize:12,color:"#475569",fontWeight:700,marginBottom:4}}>{msg.pinned?"📌 ":""}{msg.sender} · {msg.time||""}{msg.edited?" · 수정됨":""}</div>
+            <div style={{display:"inline-block",maxWidth:"84%",background:mine?"#0284c7":"white",color:mine?"white":"#172033",borderRadius:14,padding:msg.kind==="emoticon"?"10px 14px":"10px 12px",fontSize:msg.kind==="emoticon"?30:15,lineHeight:1.55,boxShadow:"0 1px 3px rgba(15,23,42,.1)",wordBreak:"break-word",opacity:msg.deleted?.72:1}}>
+              {msg.replyToId&&<div style={{marginBottom:7,padding:"6px 8px",borderRadius:7,background:mine?"rgba(255,255,255,.16)":"#f1f5f9",borderLeft:`3px solid ${mine?"#bae6fd":"#38bdf8"}`,fontSize:11,lineHeight:1.35}}><strong>{msg.replySender}</strong><div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{msg.replyText}</div></div>}
+              {msg.kind==="image"?<img src={msg.fileData} alt={msg.fileName||"첨부 이미지"} style={{display:"block",maxWidth:"100%",maxHeight:220,borderRadius:8}}/>:msg.kind==="file"?<a href={msg.fileData} download={msg.fileName} style={{color:"inherit"}}>📎 {msg.fileName}</a>:msg.text}
+            </div>
+            {!msg.deleted&&<div style={{marginTop:3}}><button type="button" onClick={()=>setReplyingTo(msg)} style={{border:0,background:"transparent",padding:"2px 4px",color:"#64748b",fontSize:11,cursor:"pointer"}}>답장</button><button type="button" onClick={()=>togglePinMessage(msg)} style={{border:0,background:"transparent",padding:"2px 4px",color:msg.pinned?"#d97706":"#64748b",fontSize:11,cursor:"pointer"}}>{msg.pinned?"고정 해제":"고정"}</button>{mine&&<><button type="button" onClick={()=>editMessage(msg)} style={{border:0,background:"transparent",padding:"2px 4px",color:"#64748b",fontSize:11,cursor:"pointer"}}>수정</button><button type="button" onClick={()=>removeMessage(msg)} style={{border:0,background:"transparent",padding:"2px 4px",color:"#dc2626",fontSize:11,cursor:"pointer"}}>삭제</button></>}</div>}
+            {mine&&<div><button type="button" onClick={()=>setReadDetail(msg)} style={{border:0,background:"transparent",padding:"2px 2px 0",color:info.read.length?"#0284c7":"#64748b",fontSize:11,fontWeight:850,cursor:"pointer"}}>{label}</button></div>}
+          </div>})}
         </div>
 
         {emojiOpen&&<div style={{position:"absolute",right:10,bottom:84,width:280,padding:12,background:"white",border:"1px solid #cbd5e1",borderRadius:14,boxShadow:"0 14px 35px rgba(15,23,42,.2)",zIndex:20}}><div style={{display:"flex",alignItems:"center",marginBottom:9}}><strong style={{fontSize:14}}>나모 이모티콘</strong><button onClick={()=>setEmojiOpen(false)} style={{marginLeft:"auto",border:0,background:"transparent",fontSize:18,cursor:"pointer"}}>×</button></div><div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:6}}>{NAMO_EMOTICONS.map((value,i)=><button key={`${value}-${i}`} onClick={()=>sendEmoticon(value)} title={value} style={{height:40,border:"1px solid #e2e8f0",borderRadius:9,background:"#f8fafc",fontSize:20,cursor:"pointer"}}>{value}</button>)}</div></div>}
         <div style={{flex:"0 0 auto",background:"white",padding:10,borderTop:"1px solid #cbd5e1"}}>
+          {replyingTo&&<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7,padding:"7px 9px",borderRadius:8,background:"#eff6ff",borderLeft:"3px solid #38bdf8",fontSize:11,color:"#334155"}}><span style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}><strong>{replyingTo.sender}</strong>에게 답장 · {replyingTo.text||replyingTo.fileName}</span><button type="button" onClick={()=>setReplyingTo(null)} style={{marginLeft:"auto",border:0,background:"transparent",fontSize:16,cursor:"pointer"}}>×</button></div>}
           <input ref={fileRef} type="file" onChange={handleFile} style={{display:"none"}}/>
           <div style={{display:"flex",alignItems:"flex-end",gap:7}}>
             <button type="button" onClick={()=>fileRef.current?.click()} disabled={sending} style={{height:46,flex:"0 0 auto",padding:"0 12px",border:"1px solid #94a3b8",borderRadius:9,background:"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>📎 파일</button>
