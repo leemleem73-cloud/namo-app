@@ -86,6 +86,14 @@ async function markNamoTalkRoomRead(roomId){
   return payload.data;
 }
 
+async function fetchNamoTalkNotifications(after){
+  const response=await fetch(`/api/namo-talk/notifications?after=${encodeURIComponent(after)}`,{credentials:"same-origin"});
+  handleNamoTalkAuth(response);
+  const payload=await response.json().catch(()=>({success:false,message:"알림을 확인할 수 없습니다."}));
+  if(!response.ok||!payload.success)throw new Error(payload.message||"알림을 불러오지 못했습니다.");
+  return Array.isArray(payload.data)?payload.data:[];
+}
+
 function attendanceDate(d=new Date()){const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function attendanceTime(d=new Date(),seconds=false){const p=n=>String(n).padStart(2,"0");return `${p(d.getHours())}:${p(d.getMinutes())}${seconds?`:${p(d.getSeconds())}`:""}`;}
 function loadAttendance(){const local=safeParse(localStorage.getItem(NAMO_ATTENDANCE_KEY),[]);const session=safeParse(sessionStorage.getItem(NAMO_ATTENDANCE_SESSION_KEY),[]);const merged=[...local];session.forEach(row=>{const i=merged.findIndex(r=>r.date===row.date&&((r.uid&&row.uid&&r.uid===row.uid)||r.name===row.name));if(i>=0)merged[i]={...merged[i],...row};else merged.push(row);});return merged;}
@@ -105,14 +113,47 @@ function NamoDrop({size=34}){
   return <span aria-hidden="true" style={{width:size,height:size,display:"inline-flex",alignItems:"center",justifyContent:"center",flex:"0 0 auto",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:"linear-gradient(145deg,#d8d4ff,#8b7cf4)",border:"1px solid rgba(255,255,255,.75)",boxShadow:"inset 0 2px 5px rgba(255,255,255,.7),0 2px 6px rgba(15,39,64,.25)",position:"relative"}}><span style={{transform:"rotate(-45deg)",fontSize:Math.max(13,size*.42),lineHeight:1}}>•ᴗ•</span></span>;
 }
 
-function NamoTalkTab({onClose}){
+function NamoTalkNotifier({talkOpen=false,onOpenRoom}){
+  const [toasts,setToasts]=useState([]);
+  const lastCheckedRef=useRef(Date.now());
+
+  useEffect(()=>{
+    let stopped=false;
+    const check=async()=>{
+      try{
+        const checkedAt=Date.now();
+        const rows=await fetchNamoTalkNotifications(lastCheckedRef.current);
+        lastCheckedRef.current=checkedAt;
+        if(stopped||talkOpen||localStorage.getItem(NAMO_TALK_NOTIFY_KEY)==="0"||!rows.length)return;
+        setToasts(previous=>[...previous,...rows.map(message=>({...message,toastId:`${message.id}-${Date.now()}`}))].slice(-4));
+        rows.forEach(message=>window.setTimeout(()=>setToasts(previous=>previous.filter(item=>item.id!==message.id)),5000));
+      }catch(error){
+        if(error.message!=="__NAMO_AUTH_REDIRECT__")console.warn("NAMO Talk notification failed:",error.message);
+      }
+    };
+    const timer=window.setInterval(check,4000);
+    return()=>{stopped=true;window.clearInterval(timer);};
+  },[talkOpen]);
+
+  if(!toasts.length)return null;
+  return <div aria-live="polite" style={{position:"fixed",right:18,bottom:18,zIndex:13000,width:"min(340px,calc(100vw - 36px))",display:"flex",flexDirection:"column-reverse",gap:9,pointerEvents:"none"}}>
+    <style>{`@keyframes namoTalkToastIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}`}</style>
+    {toasts.map(message=><button key={message.toastId} type="button" onClick={()=>{setToasts(previous=>previous.filter(item=>item.toastId!==message.toastId));onOpenRoom?.(message.roomId);}} style={{width:"100%",display:"flex",alignItems:"flex-start",gap:11,padding:"13px 14px",border:"1px solid #d4a017",borderRadius:13,background:"#0f2740",color:"white",boxShadow:"0 14px 36px rgba(15,23,42,.35)",textAlign:"left",cursor:"pointer",pointerEvents:"auto",animation:"namoTalkToastIn .28s ease-out"}}>
+      <NamoDrop size={34}/>
+      <span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:14,lineHeight:1.3}}>{message.sender}</strong><span style={{display:"block",marginTop:4,color:"#d7e3ec",fontSize:13,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{message.deleted?"삭제된 메시지입니다.":message.kind==="file"||message.kind==="image"?`📎 ${message.fileName||message.text}`:message.text}</span></span>
+      <span style={{fontSize:11,color:"#93c5fd",whiteSpace:"nowrap"}}>NAMO Talk</span>
+    </button>)}
+  </div>;
+}
+
+function NamoTalkTab({onClose,initialRoom=""}){
   const currentUser=window.__QMES_CURRENT_USER__||{name:"관리자",dept:"관리부",role:"admin",uid:"U-0001"};
   const [users,setUsers]=useState(getNamoTalkUsers);
   const departments=Array.from(new Set(users.map(u=>u.dept).filter(Boolean))).sort((a,b)=>a.localeCompare(b,"ko"));
   const channelRooms=[{id:"전체공지",name:"전체공지",type:"notice",subtitle:"전 직원 공지"},...departments.map(d=>({id:`dept:${d}`,name:d,type:"dept",subtitle:`${d} 업무 채널`}))];
   const directRooms=users.filter(u=>u.name!==currentUser.name).map(u=>({id:makeDirectRoomId(currentUser.name,u.name),name:u.name,type:"direct",subtitle:`${u.dept||"부서 미지정"}${u.position?` · ${u.position}`:""}`,user:u}));
   const allRooms=[...channelRooms,...directRooms];
-  const [activeRoom,setActiveRoom]=useState(()=>directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
+  const [activeRoom,setActiveRoom]=useState(()=>initialRoom||directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
   const [messages,setMessages]=useState({});
   const [readReceipts,setReadReceipts]=useState({});
   const [readDetail,setReadDetail]=useState(null);
