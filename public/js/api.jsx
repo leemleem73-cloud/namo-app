@@ -353,6 +353,44 @@ function EquipmentTab() {
     const n = parseFloat(t);
     return ((x.lo == null || n >= x.lo) && (x.hi == null || n <= x.hi)) ? "정상" : "이탈";
   };
+
+  const deleteEntry = async (entry) => {
+    if (!entry?.id || saving) return;
+    const label = `${entry.eqName || "설비"} · ${entry.item || "관리항목"}`;
+    const reason = typeof askDeleteReason === "function"
+      ? askDeleteReason(label)
+      : window.prompt(`${label} 삭제 사유를 입력하세요.`);
+    if (reason === null) return;
+    if (!String(reason || "").trim()) {
+      window.alert("삭제 사유를 입력해야 합니다.");
+      return;
+    }
+    if (typeof qmesSyncDeleteEquipment !== "function") {
+      window.alert("공용 DB 삭제 기능을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+
+    setSaving(true);
+    setSyncState("삭제내용 저장 중");
+    try {
+      await qmesSyncDeleteEquipment(entry, String(reason).trim());
+      const nextLogs = (DB.eqLogs || logs || []).filter((row) => row.id !== entry.id);
+      rebuildEquipmentFromLogs(nextLogs);
+      if (typeof auditLog === "function") {
+        auditLog("설비관리", "삭제", entry.id, `${label} / ${String(reason).trim()}`);
+        dbSave();
+      }
+      setSyncState("PC·모바일 동기화");
+      setSyncError("");
+    } catch (error) {
+      setSyncState("삭제 실패");
+      setSyncError(error.message || "공용 DB 연결을 확인하세요.");
+      window.alert(`삭제하지 못했습니다.\n${error.message || "공용 DB 연결을 확인하세요."}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const tourSave = async () => {
     if (saving) return;
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
@@ -365,11 +403,19 @@ function EquipmentTab() {
     });
     await persistEntries(entries);
     setTourVals({}); setTourNotes({}); setTourTried(false);
-    if (tourIdx < EQUIPMENT.length - 1) setTourIdx(tourIdx + 1);
+    const nextIdx = EQUIPMENT.findIndex((candidate, index) =>
+      index > tourIdx && candidate.params.some((item) => !DB.eqReadings[`${candidate.id}:${item.k}`])
+    );
+    if (nextIdx >= 0) setTourIdx(nextIdx);
     else { setMode("single"); setTourIdx(0); }
   };
   const totalParams = EQUIPMENT.reduce((a, e) => a + e.params.length, 0);
   const doneParams = EQUIPMENT.reduce((a, e) => a + e.params.filter((x) => readings[`${e.id}:${x.k}`]).length, 0);
+  const remainingParams = Math.max(0, totalParams - doneParams);
+  const tourCompletedToday = doneParams >= totalParams;
+  const firstIncompleteEqIndex = EQUIPMENT.findIndex((candidate) =>
+    candidate.params.some((item) => !readings[`${candidate.id}:${item.k}`])
+  );
 
   return (
     <div className="qmes-equipment-tab flex flex-col gap-4">
@@ -381,15 +427,25 @@ function EquipmentTab() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {doneParams < totalParams
-            ? <Badge tone="amber">금일 점검 {doneParams}/{totalParams} — 미완료</Badge>
-            : <Badge tone="green">금일 점검 완료 {doneParams}/{totalParams}</Badge>}
+          {tourCompletedToday
+            ? <Badge tone="green">오늘 필수점검 {totalParams}/{totalParams} 완료</Badge>
+            : <Badge tone="amber">오늘 필수점검 {doneParams}/{totalParams} · {remainingParams}개 미점검</Badge>}
           <Badge tone={syncError ? "amber" : "green"}>{syncState}</Badge>
           {mode === "single" && (
-            <button onClick={() => { setMode("tour"); setTourIdx(0); setTourVals({}); setTourNotes({}); setTourTried(false); }}
-              disabled={saving}
-              className="flex items-center gap-1.5 rounded px-3 py-2 text-xs font-medium bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white transition-colors">
-              <RotateCw size={13} /> 순회 점검 시작
+            <button
+              onClick={() => {
+                if (tourCompletedToday) return;
+                setMode("tour");
+                setTourIdx(firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0);
+                setTourVals({});
+                setTourNotes({});
+                setTourTried(false);
+              }}
+              disabled={saving || tourCompletedToday}
+              title={tourCompletedToday ? "오늘 필수점검 14개 항목을 모두 완료했습니다." : "일 1회 필수 순회점검을 시작합니다."}
+              className={`flex items-center gap-1.5 rounded px-3 py-2 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60 text-white transition-colors ${tourCompletedToday ? "bg-emerald-700" : "bg-sky-600 hover:bg-sky-500"}`}>
+              {tourCompletedToday ? <CheckCircle2 size={13} /> : <RotateCw size={13} />}
+              {tourCompletedToday ? "오늘 순회점검 완료" : doneParams > 0 ? "미점검 항목 이어서" : "순회점검 시작"}
             </button>
           )}
         </div>
@@ -399,7 +455,7 @@ function EquipmentTab() {
       {mode === "tour" && (
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
         right={<button onClick={() => setMode("single")} className="text-[11px] px-2.5 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">순회 종료</button>}>
-        <p className="text-xs text-slate-400 mb-3">설비 앞에서 PLC 패널·계측기를 육안 확인한 뒤 항목을 순서대로 기록하세요. 전 항목 기록 전에는 다음 설비로 진입할 수 없습니다.</p>
+        <p className="text-xs text-slate-400 mb-3">일 1회 필수 순회점검입니다. 설비 앞에서 PLC 패널·계측기를 확인하고 오늘의 필수 관리항목 14개를 모두 기록하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
             const raw = tourVals[x.k];
@@ -596,8 +652,12 @@ function EquipmentTab() {
                     </td>
                     <td className="py-2.5 pr-3 text-xs text-slate-300 max-w-[260px] break-words">{l.note || "—"}</td>
                     <td className="py-2.5 text-center">
-                      <button type="button" onClick={() => openEdit(l)} disabled={!l.id || saving}
-                        className="min-h-[36px] px-3 rounded border border-sky-500/50 text-sky-300 hover:bg-sky-500/10 disabled:opacity-30 text-xs font-medium">수정</button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button type="button" onClick={() => openEdit(l)} disabled={!l.id || saving}
+                          className="min-h-[36px] px-3 rounded border border-sky-500/50 text-sky-300 hover:bg-sky-500/10 disabled:opacity-30 text-xs font-medium">수정</button>
+                        <button type="button" onClick={() => deleteEntry(l)} disabled={!l.id || saving}
+                          className="min-h-[36px] px-3 rounded border border-red-500/50 text-red-300 hover:bg-red-500/10 disabled:opacity-30 text-xs font-medium">삭제</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
