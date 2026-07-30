@@ -225,6 +225,53 @@ function registerNamoTalkRoutes(app) {
       return res.status(500).json({ success: false, message: err.message, data: null });
     }
   });
+
+  app.post('/api/namo-talk/messages/:id/action', async (req, res) => {
+    try {
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.', data: null });
+      }
+      await schemaReady;
+      const id = Number(req.params.id);
+      const action = String(req.body?.action || '').trim();
+      if (!Number.isFinite(id)) {
+        return res.status(400).json({ success: false, message: '메시지 정보가 올바르지 않습니다.', data: null });
+      }
+      const current = await pool.query('SELECT * FROM namo_talk_messages WHERE id = $1', [id]);
+      const row = current.rows[0];
+      if (!row) return res.status(404).json({ success: false, message: '메시지를 찾을 수 없습니다.', data: null });
+
+      if (action === 'edit') {
+        if (row.sender_name !== (req.session.user.name || '')) {
+          return res.status(403).json({ success: false, message: '본인이 보낸 메시지만 수정할 수 있습니다.', data: null });
+        }
+        const text = String(req.body?.text || '').trim();
+        if (!text) return res.status(400).json({ success: false, message: '메시지 내용을 입력하세요.', data: null });
+        await pool.query('UPDATE namo_talk_messages SET message_text = $1, edited_at = NOW() WHERE id = $2', [text, id]);
+      } else if (action === 'pin') {
+        await pool.query('UPDATE namo_talk_messages SET is_pinned = $1 WHERE id = $2', [Boolean(req.body?.pinned), id]);
+      } else if (action === 'delete') {
+        if (row.sender_name !== (req.session.user.name || '')) {
+          return res.status(403).json({ success: false, message: '본인이 보낸 메시지만 삭제할 수 있습니다.', data: null });
+        }
+        await pool.query(
+          `UPDATE namo_talk_messages
+              SET message_text = '삭제된 메시지입니다.', file_name = '', file_data = '',
+                  kind = 'text', deleted_at = NOW(), is_pinned = FALSE
+            WHERE id = $1`,
+          [id]
+        );
+      } else {
+        return res.status(400).json({ success: false, message: '지원하지 않는 작업입니다.', data: null });
+      }
+
+      const updated = await pool.query('SELECT * FROM namo_talk_messages WHERE id = $1', [id]);
+      return res.json({ success: true, message: '처리되었습니다.', data: mapMessage(updated.rows[0]) });
+    } catch (err) {
+      console.error('NAMO Talk message action failed:', err);
+      return res.status(500).json({ success: false, message: err.message, data: null });
+    }
+  });
 }
 
 const wrappedExpress = function wrappedExpress(...args) {
