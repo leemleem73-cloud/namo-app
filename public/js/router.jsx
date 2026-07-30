@@ -86,6 +86,7 @@ function QMESChemical({user, onLogout}){
   );
 
   const [talkOpen, setTalkOpen] = useState(false);
+  const [talkTargetRoom, setTalkTargetRoom] = useState("");
 
   /* 계정 설정 모달 */
   const [profileOpen, setProfileOpen] = useState(false);
@@ -520,9 +521,17 @@ function QMESChemical({user, onLogout}){
 
       {talkOpen && (
         <NamoTalkTab
+          initialRoom={talkTargetRoom}
           onClose={()=>setTalkOpen(false)}
         />
       )}
+      <NamoTalkNotifier
+        talkOpen={talkOpen}
+        onOpenRoom={roomId=>{
+          setTalkTargetRoom(roomId);
+          setTalkOpen(true);
+        }}
+      />
 
       {/* 계정 설정 중앙 모달 */}
       {profileOpen && (
