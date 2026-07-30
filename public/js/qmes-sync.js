@@ -233,7 +233,7 @@
         date:entry.date || "",
         time:entry.time || "",
         eq:entry.eqId || "",
-        msg:`${entry.item || "관리항목"} ${entry.v || ""} — 관리기준(${entry.spec || "-"}) 이탈, 점검·조치 필요`,
+        msg:`${entry.item || "관리항목"} ${entry.v || ""} — 관리기준(${entry.spec || "-"}) 이탈, 점검·조치 필요${entry.note ? ` · 비고: ${entry.note}` : ""}`,
         level:"경고",
         by:entry.by || ""
       }));
