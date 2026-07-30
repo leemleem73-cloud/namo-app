@@ -170,6 +170,22 @@
     });
   }
 
+  async function deleteEquipmentEntry(entry, reason) {
+    const key = equipmentEntryKey(entry);
+    if (!key) throw new Error("삭제할 설비 점검 기록번호가 없습니다.");
+    const records = await list("equipment");
+    const existing = (records || []).find((record) => record.record_key === key);
+    const previous = recordPayload(existing);
+    return await upsert("equipment", key, {
+      ...previous,
+      entry:previous.entry || entry,
+      deleted:true,
+      deletedAt:new Date().toISOString(),
+      deletedBy:String(window.__QMES_USER__?.name || window.__QMES_USER__ || ""),
+      deleteReason:String(reason || "")
+    });
+  }
+
   async function pushPendingEquipment() {
     const pending = (DB.eqLogs || []).filter((entry) => equipmentEntryKey(entry) && !entry.sharedSync);
     for (const entry of pending) {
@@ -349,6 +365,7 @@
   window.qmesSyncTombstoneInspection = tombstoneInspection;
   window.qmesSyncEquipmentEntry = syncEquipmentEntry;
   window.qmesSyncPushPendingEquipment = pushPendingEquipment;
+  window.qmesSyncDeleteEquipment = deleteEquipmentEntry;
   window.qmesSyncPullEquipment = pullEquipment;
   window.qmesSyncWorkOrder = syncWorkOrder;
   window.qmesSyncPullWorkOrders = pullWorkOrders;
