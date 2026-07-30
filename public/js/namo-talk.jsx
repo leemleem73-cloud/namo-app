@@ -48,8 +48,8 @@ async function postNamoTalkMessage(roomId,message){
 }
 
 async function updateNamoTalkMessage(messageId,body){
-  const response=await fetch(`/api/namo-talk/messages/${messageId}`,{
-    method:"PATCH",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
+  const response=await fetch(`/api/namo-talk/messages/${messageId}/action`,{
+    method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
   });
   handleNamoTalkAuth(response);
   const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
@@ -58,11 +58,7 @@ async function updateNamoTalkMessage(messageId,body){
 }
 
 async function deleteNamoTalkMessage(messageId){
-  const response=await fetch(`/api/namo-talk/messages/${messageId}`,{method:"DELETE",credentials:"same-origin"});
-  handleNamoTalkAuth(response);
-  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
-  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지 삭제에 실패했습니다.");
-  return payload.data;
+  return updateNamoTalkMessage(messageId,{action:"delete"});
 }
 
 async function fetchNamoTalkReadReceipts(roomId){
