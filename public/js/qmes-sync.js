@@ -1,47 +1,5 @@
 /* QMES shared sync — mobile/IPAD/PC inspection and work-order records */
 (function () {
-  const employeeCodePattern = /\s*\(U-\d+\)\s*/gi;
-  const cleanEmployeeCode = (value) => String(value || "").replace(employeeCodePattern, " ").replace(/\s{2,}/g, " ").trim();
-
-  function cleanInspectorDisplay() {
-    ["__QMES_USER__", "__QMES_CURRENT_USER__"].forEach((key) => {
-      const user = window[key];
-      if (user && typeof user === "object" && user.name) user.name = cleanEmployeeCode(user.name);
-      else if (typeof user === "string") window[key] = cleanEmployeeCode(user);
-    });
-
-    document.querySelectorAll(".qmes-ipad-inspector").forEach((element) => {
-      element.childNodes.forEach((node) => {
-        if (node.nodeType === Node.TEXT_NODE && employeeCodePattern.test(node.nodeValue || "")) {
-          node.nodeValue = cleanEmployeeCode(node.nodeValue);
-        }
-      });
-      element.querySelectorAll("strong").forEach((strong) => {
-        const cleaned = cleanEmployeeCode(strong.textContent);
-        if (strong.textContent !== cleaned) strong.textContent = cleaned;
-      });
-    });
-
-    document.querySelectorAll('.qmes-ipad-form-grid input[readonly]').forEach((input) => {
-      const cleaned = cleanEmployeeCode(input.value);
-      if (input.value !== cleaned) {
-        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
-        descriptor?.set?.call(input, cleaned);
-        input.dispatchEvent(new Event("input", {bubbles:true}));
-        input.dispatchEvent(new Event("change", {bubbles:true}));
-      }
-    });
-  }
-
-  const startInspectorCleaner = () => {
-    cleanInspectorDisplay();
-    const observer = new MutationObserver(cleanInspectorDisplay);
-    observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
-    window.setInterval(cleanInspectorDisplay, 1000);
-  };
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startInspectorCleaner, {once:true});
-  else startInspectorCleaner();
-
   const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder"]);
 
   function normalizeType(type) {
@@ -124,6 +82,46 @@
     ];
     dbSave();
     return merged;
+  }
+
+  function pendingInspectionPayload(mode, rows) {
+    const first = rows[0] || {};
+    const lotNo = String(first.lot || "").trim();
+    return {
+      mode:String(mode || "").toUpperCase(),
+      lotNo,
+      rows,
+      lotRecord:DB.lots?.[lotNo] || null,
+      holds:(DB.holds || []).filter((row) => String(row.target || "").includes(lotNo)),
+      savedAt:new Date().toISOString(),
+      savedBy:String(first.inspector || first.by || "")
+    };
+  }
+
+  async function pushPendingInspections() {
+    const pending = [];
+    (DB.iqc || [])
+      .filter((row) => row.source === "IPAD POP" && !row.sharedSync && row.inNo)
+      .forEach((row) => pending.push({type:"iqc", key:row.inNo, rows:[row]}));
+
+    ["PQC","OQC"].forEach((mode) => {
+      const groups = new Map();
+      (DB.insp?.[mode] || [])
+        .filter((row) => row.source === "IPAD POP" && !row.sharedSync && (row.groupId || row.id))
+        .forEach((row) => {
+          const key = String(row.groupId || row.id);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(row);
+        });
+      groups.forEach((rows, key) => pending.push({type:mode.toLowerCase(), key, rows}));
+    });
+
+    for (const record of pending) {
+      await upsert(record.type, record.key, pendingInspectionPayload(record.type, record.rows));
+      record.rows.forEach((row) => { row.sharedSync = true; });
+    }
+    if (pending.length) dbSave();
+    return pending.length;
   }
 
   function workOrderSnapshot(lotNo) {
@@ -222,10 +220,10 @@
     await Promise.all([upsert("workorder", key, workOrderTombstone), ...tombstones]);
   }
 
-  window.qmesCleanEmployeeCode = cleanEmployeeCode;
   window.qmesSyncList = list;
   window.qmesSyncUpsert = upsert;
   window.qmesSyncPullInspection = pullInspection;
+  window.qmesSyncPushPendingInspections = pushPendingInspections;
   window.qmesSyncWorkOrder = syncWorkOrder;
   window.qmesSyncPullWorkOrders = pullWorkOrders;
   window.qmesSyncDeleteWorkOrder = deleteWorkOrder;
