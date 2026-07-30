@@ -1600,6 +1600,7 @@ function mapNamoTalkMessage(row) {
   const createdAt = new Date(row.created_at);
   return {
     id: row.id,
+    roomId: row.room_id,
     createdAt: createdAt.getTime(),
     sender: row.sender_name,
     dept: row.sender_dept || '',
@@ -1617,10 +1618,23 @@ function mapNamoTalkMessage(row) {
   };
 }
 
+function canAccessNamoTalkRoom(user, roomId) {
+  if (roomId === '전체공지') return true;
+  if (roomId.startsWith('dept:')) {
+    return user?.role === 'admin' || roomId === `dept:${txt(user?.department)}`;
+  }
+  if (!roomId.startsWith('dm:')) return false;
+  const members = roomId.slice(3).split('|').map(txt).filter(Boolean);
+  return members.length === 2 && members.includes(txt(user?.name));
+}
+
 app.get('/api/namo-talk/messages', requireLogin, async (req, res) => {
   try {
     const roomId = txt(req.query.roomId);
     if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+    if (!canAccessNamoTalkRoom(req.session.user, roomId)) {
+      return fail(res, 403, '접근할 수 없는 대화방입니다.');
+    }
 
     const r = await db(
       `SELECT id, room_id, sender_name, sender_uid, sender_dept,
@@ -1646,6 +1660,9 @@ app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
     const allowedKinds = new Set(['text', 'notice', 'emoticon', 'image', 'file']);
 
     if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+    if (!canAccessNamoTalkRoom(req.session.user, roomId)) {
+      return fail(res, 403, '접근할 수 없는 대화방입니다.');
+    }
     if (!allowedKinds.has(kind)) return fail(res, 400, '지원하지 않는 메시지 형식입니다.');
     if (!txt(b.text) && !txt(b.fileData)) {
       return fail(res, 400, '메시지 내용이 필요합니다.');
@@ -1678,10 +1695,57 @@ app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
   }
 });
 
+app.get('/api/namo-talk/updates', requireLogin, async (req, res) => {
+  try {
+    const since = Math.max(0, Number(req.query.since || 0));
+    const clock = await db(
+      `SELECT FLOOR(EXTRACT(EPOCH FROM clock_timestamp()) * 1000)::bigint AS server_time`
+    );
+    const serverTime = Number(clock.rows[0].server_time);
+
+    if (!since) {
+      return ok(res, { messages: [], serverTime });
+    }
+
+    const r = await db(
+      `SELECT id, room_id, sender_name, sender_uid, sender_dept,
+              message_kind, message_text, file_name, file_type, file_data, created_at
+       FROM namo_talk_messages
+       WHERE created_at > TO_TIMESTAMP($1 / 1000.0)
+         AND created_at <= TO_TIMESTAMP($2 / 1000.0)
+         AND (
+           room_id = '전체공지'
+           OR room_id = $4
+           OR ($5 = 'admin' AND room_id LIKE 'dept:%')
+           OR (
+             room_id LIKE 'dm:%'
+             AND $3 = ANY(string_to_array(SUBSTRING(room_id FROM 4), '|'))
+           )
+         )
+       ORDER BY created_at ASC, id ASC
+       LIMIT 200`,
+      [
+        since,
+        serverTime,
+        txt(req.session.user.name),
+        `dept:${txt(req.session.user.department)}`,
+        txt(req.session.user.role),
+      ]
+    );
+
+    ok(res, { messages: r.rows.map(mapNamoTalkMessage), serverTime });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
 app.get('/api/namo-talk/reads', requireLogin, async (req, res) => {
   try {
     const roomId = txt(req.query.roomId);
     if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+    if (!canAccessNamoTalkRoom(req.session.user, roomId)) {
+      return fail(res, 403, '접근할 수 없는 대화방입니다.');
+    }
 
     const r = await db(
       `SELECT room_id, user_uid, user_name, last_read_at
@@ -1706,6 +1770,9 @@ app.post('/api/namo-talk/reads', requireLogin, async (req, res) => {
   try {
     const roomId = txt(req.body?.roomId);
     if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+    if (!canAccessNamoTalkRoom(req.session.user, roomId)) {
+      return fail(res, 403, '접근할 수 없는 대화방입니다.');
+    }
 
     const user = req.session.user;
     const userUid = txt(user.uid || user.id);
