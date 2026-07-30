@@ -111,6 +111,7 @@ function qmesIpadMethod(item) {
 function FieldInputTab() {
   const today = localISODate();
   const inspector = qmesIpadCurrentUser();
+  const [sharedVersion, setSharedVersion] = useState(0);
   const [mode, setMode] = useState("");
   const [step, setStep] = useState(0);
   const [values, setValues] = useState({});
@@ -157,6 +158,15 @@ function FieldInputTab() {
   const lotNo = String(form.lot || "").trim().toUpperCase();
   const lotInfo = qmesIpadLotInfo(lotNo);
   const availableLots = Array.from(new Set((DB.batches || []).map((row) => row.no).filter(Boolean)));
+
+  useEffect(() => {
+    let active = true;
+    if (typeof qmesSyncPullWorkOrders !== "function") return () => { active = false; };
+    qmesSyncPullWorkOrders()
+      .then(() => { if (active) setSharedVersion((value) => value + 1); })
+      .catch((error) => console.warn("작업지시서 공용 동기화 실패:", error.message));
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!mode || mode === "IQC" || !lotNo) return;
@@ -451,7 +461,36 @@ function FieldInputTab() {
     return baseNo;
   };
 
-  const saveInspection = () => {
+  const makeSyncPayload = (id) => {
+    const rows = mode === "IQC"
+      ? (DB.iqc || []).filter((row) => row.inNo === id)
+      : (DB.insp?.[mode] || []).filter((row) => row.groupId === id);
+    const holds = (DB.holds || []).filter((row) => String(row.target || "").includes(lotNo));
+    return {
+      mode,
+      lotNo,
+      rows,
+      lotRecord:DB.lots?.[lotNo] || null,
+      holds,
+      savedAt:new Date().toISOString(),
+      savedBy:String(form.inspector || "").trim()
+    };
+  };
+
+  const retrySavedSync = async () => {
+    if (!saved?.syncPayload || typeof qmesSyncUpsert !== "function") return;
+    setSaving(true);
+    try {
+      await qmesSyncUpsert(saved.syncType, saved.id, saved.syncPayload);
+      setSaved((prev) => ({...prev, synced:true, syncError:""}));
+    } catch (error) {
+      setSaved((prev) => ({...prev, synced:false, syncError:error.message}));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveInspection = async () => {
     if (saving) return;
     const errors = validationErrors();
     if (errors.length) {
@@ -476,7 +515,15 @@ function FieldInputTab() {
     if (mode === "PQC") id = savePqc();
     if (mode === "OQC") id = saveOqc();
     dbSave();
-    setSaved({id, title:modeMeta[mode].title, judge:overall});
+    const syncPayload = makeSyncPayload(id);
+    const syncType = mode.toLowerCase();
+    try {
+      if (typeof qmesSyncUpsert !== "function") throw new Error("공용 동기화 모듈을 불러오지 못했습니다.");
+      await qmesSyncUpsert(syncType, id, syncPayload);
+      setSaved({id, title:modeMeta[mode].title, judge:overall, synced:true, syncType, syncPayload, syncError:""});
+    } catch (error) {
+      setSaved({id, title:modeMeta[mode].title, judge:overall, synced:false, syncType, syncPayload, syncError:error.message});
+    }
     setSaving(false);
     window.scrollTo({top:0, behavior:"smooth"});
   };
@@ -517,7 +564,13 @@ function FieldInputTab() {
           <span>{saved.title} 저장 완료</span>
           <h2>{saved.id}</h2>
           <strong>{saved.judge}</strong>
-          <p>기존 {mode} 성적서와 LOT 추적에 반영되었습니다.</p>
+          <p>{saved.synced ? `공용 DB와 기존 ${mode} 성적서에 반영되었습니다.` : "이 기기에는 저장됐지만 PC 공용 DB 저장에 실패했습니다."}</p>
+          {!saved.synced && (
+            <div className="qmes-ipad-sync-warning">
+              <strong>{saved.syncError || "공용 DB 연결을 확인하세요."}</strong>
+              <button type="button" onClick={retrySavedSync} disabled={saving}>{saving ? "재전송 중..." : "PC 공용 DB에 다시 전송"}</button>
+            </div>
+          )}
           <div>
             <button type="button" onClick={() => selectMode(mode)}>같은 검사 새로 입력</button>
             <button type="button" className="secondary" onClick={() => setMode("")}>검사 선택으로 이동</button>
