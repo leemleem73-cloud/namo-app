@@ -1,5 +1,44 @@
 /* QMES shared sync — mobile/IPAD/PC inspection and work-order records */
 (function () {
+  const employeeCodePattern = /\s*\(U-\d+\)\s*/gi;
+  const cleanEmployeeCode = (value) => String(value || "").replace(employeeCodePattern, " ").replace(/\s{2,}/g, " ").trim();
+
+  function cleanEmployeeCodesInDom(root = document) {
+    const targets = root.querySelectorAll
+      ? root.querySelectorAll(".qmes-ipad-inspector, .qmes-ipad-form-grid, .qmes-iqc-doc, .qmes-pqc-doc, .qmes-oqc-doc, .qmes-iqc-label-paper, #qmes-print-root")
+      : [];
+
+    targets.forEach((target) => {
+      const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach((node) => {
+        const original = node.nodeValue || "";
+        const cleaned = cleanEmployeeCode(original);
+        if (original !== cleaned) node.nodeValue = cleaned;
+      });
+
+      target.querySelectorAll("input, textarea").forEach((field) => {
+        const original = field.value || "";
+        const cleaned = cleanEmployeeCode(original);
+        if (original !== cleaned) field.value = cleaned;
+      });
+    });
+  }
+
+  function startEmployeeCodeCleaner() {
+    cleanEmployeeCodesInDom();
+    const observer = new MutationObserver(() => cleanEmployeeCodesInDom());
+    observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+    window.addEventListener("beforeprint", () => cleanEmployeeCodesInDom());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startEmployeeCodeCleaner, {once:true});
+  } else {
+    startEmployeeCodeCleaner();
+  }
+
   const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder"]);
 
   function normalizeType(type) {
@@ -220,6 +259,7 @@
     await Promise.all([upsert("workorder", key, workOrderTombstone), ...tombstones]);
   }
 
+  window.qmesCleanEmployeeCode = cleanEmployeeCode;
   window.qmesSyncList = list;
   window.qmesSyncUpsert = upsert;
   window.qmesSyncPullInspection = pullInspection;
