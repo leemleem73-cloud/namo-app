@@ -392,6 +392,51 @@ function EquipmentTab() {
     }
   };
 
+  const deleteAllEntries = async () => {
+    const currentLogs = [...(DB.eqLogs || logs || [])].filter((entry) => entry?.id);
+    if (!currentLogs.length || saving) return;
+
+    const confirmed = window.confirm(
+      `설비 점검 기록 ${currentLogs.length}건을 모두 삭제하시겠습니까?\n\n삭제하면 오늘 순회점검이 0/${EQUIPMENT.length}로 초기화됩니다.`
+    );
+    if (!confirmed) return;
+    const reason = window.prompt("전체기록 삭제 사유를 입력하세요.\n예: 시험 입력자료 초기화");
+    if (reason === null) return;
+    if (!String(reason || "").trim()) {
+      window.alert("전체기록 삭제 사유를 입력해야 합니다.");
+      return;
+    }
+    if (typeof qmesSyncDeleteAllEquipment !== "function") {
+      window.alert("공용 DB 전체삭제 기능을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+
+    setSaving(true);
+    setSyncState(`전체 ${currentLogs.length}건 삭제 중`);
+    try {
+      const deletedCount = await qmesSyncDeleteAllEquipment(currentLogs, String(reason).trim());
+      rebuildEquipmentFromLogs([]);
+      setMode("single");
+      setTourIdx(0);
+      setTourVals({});
+      setTourNotes({});
+      setTourTried(false);
+      if (typeof auditLog === "function") {
+        auditLog("설비관리", "전체삭제", `${deletedCount}건`, String(reason).trim());
+        dbSave();
+      }
+      setSyncState("PC·모바일 동기화");
+      setSyncError("");
+      window.alert(`설비 점검 기록 ${deletedCount}건을 삭제했습니다.\n새로고침해도 다시 생성되지 않습니다.`);
+    } catch (error) {
+      setSyncState("전체삭제 실패");
+      setSyncError(error.message || "공용 DB 연결을 확인하세요.");
+      window.alert(`전체기록을 삭제하지 못했습니다.\n${error.message || "공용 DB 연결을 확인하세요."}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const tourSave = async () => {
     if (saving) return;
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
@@ -540,9 +585,19 @@ function EquipmentTab() {
       {showHistory && (
         <div>
       {/* 점검 기록 */}
-      <Panel title="설비 점검 기록" right={<span className="text-xs text-slate-400">{logs.length}건 · 기록자 자동 저장</span>}>
+      <Panel title="설비 점검 기록" right={
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">{logs.length}건 · 기록자 자동 저장</span>
+          {logs.length > 0 && (
+            <button type="button" onClick={deleteAllEntries} disabled={saving}
+              className="min-h-[36px] rounded border border-red-500/60 px-3 text-xs font-bold text-red-300 hover:bg-red-500/10 disabled:opacity-40">
+              {saving ? "처리 중..." : "전체기록 삭제"}
+            </button>
+          )}
+        </div>
+      }>
         {logs.length === 0 ? (
-          <p className="text-sm text-slate-500">점검 기록이 없습니다 — 위 [설비 점검 입력]에서 판독값을 기록하세요. 설비 카드의 항목을 클릭해도 바로 입력으로 연결됩니다.</p>
+          <p className="text-sm text-slate-500">점검 기록이 없습니다 — 오늘 순회점검을 시작해 기록하세요.</p>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="w-full text-sm min-w-[960px]">
