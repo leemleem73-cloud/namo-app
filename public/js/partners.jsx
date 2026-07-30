@@ -158,7 +158,7 @@ function PartnersTab() {
         </div>
       </div>
 
-      {!showForm && <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="flex shrink-0 gap-2">
           <button type="button" onClick={()=>switchType("customer")} aria-pressed={activeType==="customer"} className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${activeType==="customer"?activeTab:idleTab}`}>고객사 목록</button>
           <button type="button" onClick={()=>switchType("supplier")} aria-pressed={activeType==="supplier"} className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${activeType==="supplier"?activeTab:idleTab}`}>공급업체 목록</button>
@@ -166,42 +166,40 @@ function PartnersTab() {
         <div className="min-w-0 flex-1">
           <input type="search" value={searchText} onChange={(e)=>setSearchText(e.target.value)} placeholder={activeType==="customer"?"고객사명 또는 고객사 코드 검색":"공급업체명 / 원료명 / LOT 검색"} className={inputClass}/>
         </div>
-      </div>}
+      </div>
 
-      {showForm && <div className={`mx-auto w-[92%] rounded-xl border border-cyan-500/40 bg-slate-900 p-5 ${activeType==="customer" ? "max-w-[760px]" : "max-w-[1120px]"}`}>
+      {showForm && <div className="rounded-xl border border-cyan-500/40 bg-slate-900 p-4">
         <div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-cyan-300">{editCode ? "등록 정보 수정" : activeType === "customer" ? "신규 고객사 등록" : "신규 공급업체 등록"}</h3><button onClick={resetForm} className="text-sm text-slate-400">닫기</button></div>
-        {activeType === "customer" ? <div className="grid items-end gap-2 md:grid-cols-[minmax(0,1fr)_140px_110px]">
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>고객사명</span><input value={customerForm.name} onChange={(e)=>setCustomerForm({ ...customerForm, name:e.target.value })} placeholder="고객사명" className={inputClass}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>거래상태</span><select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select></label>
-          <button onClick={saveCustomer} className="h-[38px] rounded-lg bg-cyan-600 px-4 text-sm font-semibold text-white">{editCode ? "수정 저장" : "등록"}</button>
-        </div> : <div className="grid items-end gap-2 md:grid-cols-[minmax(0,1fr)_170px_220px_130px_110px]">
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>공급업체명</span><input value={supplierForm.company} onChange={(e)=>setSupplierForm({ ...supplierForm, company:e.target.value })} placeholder="공급업체명" className={inputClass}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>원료명</span><input value={supplierForm.material} onChange={(e)=>setSupplierForm({ ...supplierForm, material:e.target.value })} placeholder="원료명" className={inputClass}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>최근 원료 LOT No.</span><input value={supplierForm.lot} onChange={(e)=>setSupplierForm({ ...supplierForm, lot:e.target.value })} placeholder="최근 원료 LOT No." className={`${inputClass} font-mono`}/></label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-300"><span>거래상태</span><select value={supplierForm.status} onChange={(e)=>setSupplierForm({ ...supplierForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select></label>
-          <button onClick={saveSupplier} className="h-[38px] rounded-lg bg-cyan-600 px-4 text-sm font-semibold text-white">{editCode ? "수정 저장" : "등록"}</button>
+        {activeType === "customer" ? <div className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
+          <input value={customerForm.name} onChange={(e)=>setCustomerForm({ ...customerForm, name:e.target.value })} placeholder="고객사명" className={inputClass}/>
+          <select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select>
+          <button onClick={saveCustomer} className="rounded-lg bg-cyan-600 px-5 py-2 font-semibold text-white">{editCode ? "수정 저장" : "등록"}</button>
+        </div> : <div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_160px_auto]">
+          <input value={supplierForm.company} onChange={(e)=>setSupplierForm({ ...supplierForm, company:e.target.value })} placeholder="공급업체명" className={inputClass}/>
+          <input value={supplierForm.material} onChange={(e)=>setSupplierForm({ ...supplierForm, material:e.target.value })} placeholder="원료명" className={inputClass}/>
+          <input value={supplierForm.lot} onChange={(e)=>setSupplierForm({ ...supplierForm, lot:e.target.value })} placeholder="최근 원료 LOT No." className={`${inputClass} font-mono`}/>
+          <select value={supplierForm.status} onChange={(e)=>setSupplierForm({ ...supplierForm, status:e.target.value })} className={inputClass}><option>거래중</option><option>거래중지</option></select>
+          <button onClick={saveSupplier} className="rounded-lg bg-cyan-600 px-5 py-2 font-semibold text-white">{editCode ? "수정 저장" : "등록"}</button>
         </div>}
       </div>}
 
       {saveMessage && <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{saveMessage}</div>}
 
-      {!showForm && <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-700 px-5 py-4">
           <div><h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3><p className="mt-1 text-xs text-slate-500">{activeType==="customer"?`등록 고객사 ${filteredCustomers.length}건`:`등록 공급업체 ${filteredSuppliers.length}건 · 원료 LOT 작업지시서 연동`}</p></div>
           {activeType === "supplier" && <button type="button" onClick={saveSupplierLots} className="rounded-md border border-cyan-500/50 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/10">LOT 저장 · 작업지시서 반영</button>}
         </div>
-        <div className="overflow-x-auto"><table className={`${activeType==="customer" ? "w-[720px] min-w-[720px]" : "w-full min-w-[980px]"} table-fixed text-sm`}>
+        <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm">
           {activeType === "customer" ? <>
-            <colgroup><col style={{width:"60px"}}/><col style={{width:"150px"}}/><col style={{width:"280px"}}/><col style={{width:"120px"}}/><col style={{width:"110px"}}/></colgroup>
-            <thead className="bg-slate-800 text-slate-300"><tr><th className="px-2 py-3">No</th><th className="px-2 py-3">고객사 코드</th><th className="px-3 py-3 text-left">고객사명</th><th className="px-2 py-3">상태</th><th className="px-2 py-3">관리</th></tr></thead>
-            <tbody>{filteredCustomers.map((item,index)=><tr key={item.code} className="border-t border-slate-800"><td className="px-2 py-3 text-center text-slate-400">{index+1}</td><td className="px-2 py-3 text-center font-mono text-sky-300">{item.code}</td><td className="px-3 py-3 font-semibold text-white">{item.name}</td><td className="px-2 py-3 text-center text-emerald-300">{item.status}</td><td className="px-2 py-3 text-center"><button onClick={()=>openCustomerEdit(item)} className={btnEdit}>수정</button></td></tr>)}</tbody>
+            <thead className="bg-slate-800 text-slate-300"><tr><th className="px-4 py-3">No</th><th className="px-4 py-3 text-left">고객사 코드</th><th className="px-4 py-3 text-left">고객사명</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">관리</th></tr></thead>
+            <tbody>{filteredCustomers.map((item,index)=><tr key={item.code} className="border-t border-slate-800"><td className="px-4 py-3 text-center text-slate-400">{index+1}</td><td className="px-4 py-3 font-mono text-sky-300">{item.code}</td><td className="px-4 py-3 font-semibold text-white">{item.name}</td><td className="px-4 py-3 text-center text-emerald-300">{item.status}</td><td className="px-4 py-3 text-center"><button onClick={()=>openCustomerEdit(item)} className={btnEdit}>수정</button></td></tr>)}</tbody>
           </> : <>
-            <colgroup><col style={{width:"55px"}}/><col style={{width:"135px"}}/><col style={{width:"190px"}}/><col style={{width:"175px"}}/><col style={{width:"245px"}}/><col style={{width:"90px"}}/><col style={{width:"90px"}}/></colgroup>
-            <thead className="bg-slate-800 text-slate-300"><tr><th className="px-2 py-3">No</th><th className="px-2 py-3">공급업체 코드</th><th className="px-3 py-3 text-left">공급업체명</th><th className="px-3 py-3 text-left">원료명</th><th className="px-3 py-3 text-left">최근 원료 LOT No.</th><th className="px-2 py-3">상태</th><th className="px-2 py-3">관리</th></tr></thead>
-            <tbody>{filteredSuppliers.map((item,index)=><tr key={item.code} className="border-t border-slate-800"><td className="px-2 py-3 text-center text-slate-400">{index+1}</td><td className="px-2 py-3 text-center font-mono text-sky-300">{item.code}</td><td className="px-3 py-3 font-semibold text-white">{item.company}</td><td className="px-3 py-3 text-white">{item.material}</td><td className="px-3 py-2"><input value={item.lot} onChange={(e)=>updateSupplierLot(item.code,e.target.value)} className="w-full rounded-md border border-slate-600 bg-slate-950 px-3 py-2 font-mono text-cyan-300"/></td><td className="px-2 py-3 text-center text-emerald-300">{item.status}</td><td className="px-2 py-3 text-center"><button onClick={()=>openSupplierEdit(item)} className={btnEdit}>수정</button></td></tr>)}</tbody>
+            <thead className="bg-slate-800 text-slate-300"><tr><th className="px-4 py-3">No</th><th className="px-4 py-3 text-left">공급업체 코드</th><th className="px-4 py-3 text-left">공급업체명</th><th className="px-4 py-3 text-left">원료명</th><th className="px-4 py-3 text-left">최근 원료 LOT No.</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">관리</th></tr></thead>
+            <tbody>{filteredSuppliers.map((item,index)=><tr key={item.code} className="border-t border-slate-800"><td className="px-4 py-3 text-center text-slate-400">{index+1}</td><td className="px-4 py-3 font-mono text-sky-300">{item.code}</td><td className="px-4 py-3 font-semibold text-white">{item.company}</td><td className="px-4 py-3 text-white">{item.material}</td><td className="px-4 py-2"><input value={item.lot} onChange={(e)=>updateSupplierLot(item.code,e.target.value)} className="w-full rounded-md border border-slate-600 bg-slate-950 px-3 py-2 font-mono text-cyan-300"/></td><td className="px-4 py-3 text-center text-emerald-300">{item.status}</td><td className="px-4 py-3 text-center"><button onClick={()=>openSupplierEdit(item)} className={btnEdit}>수정</button></td></tr>)}</tbody>
           </>}
         </table></div>
-      </div>}
+      </div>
     </div>
   );
 }
