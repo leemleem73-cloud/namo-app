@@ -239,7 +239,7 @@ function PartnersTab() {
         <div className="mb-4"><h3 className="qmes-partner-form-title font-semibold text-cyan-300">{editCode ? "등록 정보 수정" : activeType === "customer" ? "신규 고객사 등록" : "신규 공급업체 등록"}</h3></div>
         {activeType === "customer" ? <div className="qmes-partner-form-grid is-customer">
           <label className="qmes-partner-form-field"><span>고객사명</span><input value={customerForm.name} onChange={(e)=>setCustomerForm({ ...customerForm, name:e.target.value })} placeholder="고객사명"/></label>
-          <label className="qmes-partner-form-field"><span>거래상태</span><select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })}><option>거래중</option><option>거래중지</option></select></label>
+          <label className="qmes-partner-form-field"><span>거래상태</span><select value={customerForm.status} onChange={(e)=>setCustomerForm({ ...customerForm, status:e.target.value })}><option>-</option><option>거래중</option><option>거래중지</option></select></label>
         </div> : <div className="qmes-partner-form-grid is-supplier">
           <label className="qmes-partner-form-field"><span>공급업체명</span><input value={supplierForm.company} onChange={(e)=>setSupplierForm({ ...supplierForm, company:e.target.value })} placeholder="공급업체명"/></label>
           <label className="qmes-partner-form-field"><span>원료명</span><input value={supplierForm.material} onChange={(e)=>setSupplierForm({ ...supplierForm, material:e.target.value })} placeholder="원료명"/></label>
