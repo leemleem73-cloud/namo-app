@@ -33,6 +33,13 @@ const schemaReady = pool.query(`
   ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
   CREATE INDEX IF NOT EXISTS idx_namo_talk_room_created
     ON namo_talk_messages(room_id, created_at, id);
+  CREATE TABLE IF NOT EXISTS namo_talk_presence (
+    user_name TEXT PRIMARY KEY,
+    department TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'online',
+    status_message TEXT DEFAULT '',
+    last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
 `).catch((err) => {
   console.error('NAMO Talk schema initialization failed:', err.message);
 });
@@ -127,6 +134,57 @@ function registerNamoTalkRoutes(app) {
       return res.json({ success: true, message: 'OK', data: visible.map(mapMessage), cursor: nextCursor });
     } catch (err) {
       console.error('NAMO Talk notification list failed:', err);
+      return res.status(500).json({ success: false, message: err.message, data: null });
+    }
+  });
+
+  app.get('/api/namo-talk/presence', async (req, res) => {
+    try {
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.', data: null });
+      }
+      await schemaReady;
+      const result = await pool.query(
+        `SELECT user_name, department, status, status_message, last_seen
+           FROM namo_talk_presence
+          ORDER BY user_name`
+      );
+      const now = Date.now();
+      const data = result.rows.map((row) => ({
+        name: row.user_name,
+        department: row.department || '',
+        status: now - new Date(row.last_seen).getTime() > 120000 ? 'offline' : row.status,
+        statusMessage: row.status_message || '',
+        lastSeen: new Date(row.last_seen).getTime(),
+      }));
+      return res.json({ success: true, message: 'OK', data });
+    } catch (err) {
+      console.error('NAMO Talk presence list failed:', err);
+      return res.status(500).json({ success: false, message: err.message, data: null });
+    }
+  });
+
+  app.post('/api/namo-talk/presence', async (req, res) => {
+    try {
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.', data: null });
+      }
+      await schemaReady;
+      const user = req.session.user;
+      const allowed = new Set(['online', 'away', 'busy', 'meeting', 'offline']);
+      const status = allowed.has(String(req.body?.status)) ? String(req.body.status) : 'online';
+      const statusMessage = String(req.body?.statusMessage || '').trim().slice(0, 60);
+      await pool.query(
+        `INSERT INTO namo_talk_presence (user_name, department, status, status_message, last_seen)
+         VALUES ($1, $2, $3, $4, NOW())
+         ON CONFLICT (user_name) DO UPDATE
+           SET department = EXCLUDED.department, status = EXCLUDED.status,
+               status_message = EXCLUDED.status_message, last_seen = NOW()`,
+        [user.name || '', user.department || '', status, statusMessage]
+      );
+      return res.json({ success: true, message: '상태가 변경되었습니다.', data: { name: user.name || '', status, statusMessage } });
+    } catch (err) {
+      console.error('NAMO Talk presence update failed:', err);
       return res.status(500).json({ success: false, message: err.message, data: null });
     }
   });
