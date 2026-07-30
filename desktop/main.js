@@ -53,6 +53,8 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      webSecurity: false,
+      partition: 'persist:namo-talk',
     },
   });
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
