@@ -437,6 +437,144 @@ function EquipmentTab() {
     }
   };
 
+
+  const printDailyTourReport = () => {
+    const equipmentOrder = new Map(EQUIPMENT.map((item, index) => [item.id, index]));
+    const parameterOrder = new Map();
+    EQUIPMENT.forEach((item) => item.params.forEach((parameter, index) => {
+      parameterOrder.set(item.id + ":" + parameter.k, index);
+    }));
+    const todayLogs = [...(DB.eqLogs || logs || [])]
+      .filter((entry) => String(entry.date || "") === TODAY)
+      .sort((left, right) => {
+        const equipmentDiff = (equipmentOrder.get(left.eqId) ?? 999) - (equipmentOrder.get(right.eqId) ?? 999);
+        if (equipmentDiff) return equipmentDiff;
+        const parameterDiff = (parameterOrder.get(left.eqId + ":" + left.paramKey) ?? 999)
+          - (parameterOrder.get(right.eqId + ":" + right.paramKey) ?? 999);
+        return parameterDiff || String(left.time || "").localeCompare(String(right.time || ""));
+      });
+
+    if (!todayLogs.length) {
+      window.alert("금일 순회점검 기록이 없습니다.");
+      return;
+    }
+    const printWindow = window.open("", "_blank", "width=1200,height=850");
+    if (!printWindow) {
+      window.alert("인쇄 창이 차단되었습니다. 브라우저에서 팝업을 허용한 뒤 다시 시도해 주세요.");
+      return;
+    }
+
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[character]));
+    const authors = [...new Set(todayLogs.map((entry) => String(entry.by || "").trim()).filter(Boolean))];
+    const writer = authors.join(", ") || currentUser;
+    const normalCount = todayLogs.filter((entry) => entry.judge === "정상").length;
+    const deviationCount = todayLogs.filter((entry) => entry.judge === "이탈").length;
+    const checkedEquipmentCount = new Set(todayLogs.map((entry) => entry.eqId).filter(Boolean)).size;
+    const printedAt = new Date().toLocaleString("ko-KR");
+    const rows = todayLogs.map((entry, index) => `
+      <tr>
+        <td class="center">${index + 1}</td>
+        <td>${escapeHtml(entry.eqName || entry.eqId || "-")}</td>
+        <td>${escapeHtml(entry.item || "-")}</td>
+        <td>${escapeHtml(entry.spec || "-")}</td>
+        <td class="value">${escapeHtml(entry.v || "-")}</td>
+        <td class="center ${entry.judge === "정상" ? "ok" : "ng"}">${escapeHtml(entry.judge || "-")}</td>
+        <td>${escapeHtml(entry.note || "-")}</td>
+        <td>${escapeHtml(entry.by || "-")}</td>
+      </tr>`).join("");
+
+    const html = `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(TODAY)} 설비 일일 순회점검 기록</title>
+  <style>
+    @page { size: A4 landscape; margin: 9mm; }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { margin: 0; color: #111827; font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif; font-size: 10px; }
+    .toolbar { margin: 0 0 8px; padding: 7px 10px; border-radius: 6px; background: #e0f2fe; color: #075985; font-size: 11px; }
+    .report { width: 100%; }
+    h1 { margin: 3px 0 10px; text-align: center; font-size: 22px; letter-spacing: 1px; }
+    .top { display: grid; grid-template-columns: 1fr 310px; gap: 12px; align-items: stretch; margin-bottom: 8px; }
+    .meta, .approval, .summary, .records { width: 100%; border-collapse: collapse; }
+    .meta th, .meta td, .approval th, .approval td { border: 1px solid #4b5563; padding: 6px 8px; }
+    .meta th, .approval th { background: #d1d5db; font-weight: 700; text-align: center; }
+    .meta th { width: 84px; }
+    .approval th { width: 33.33%; }
+    .approval td { height: 39px; text-align: center; }
+    .summary { margin-bottom: 8px; }
+    .summary td { width: 25%; border: 1px solid #94a3b8; padding: 7px; text-align: center; background: #f8fafc; }
+    .summary strong { display: block; margin-top: 2px; font-size: 14px; }
+    .section-title { border: 1px solid #4b5563; padding: 7px; background: #c7c7c7; text-align: center; font-size: 13px; font-weight: 700; }
+    .records { table-layout: fixed; }
+    .records thead { display: table-header-group; }
+    .records th, .records td { border: 1px solid #6b7280; padding: 5px 6px; vertical-align: middle; overflow-wrap: anywhere; }
+    .records th { background: #e5e7eb; text-align: center; font-weight: 700; }
+    .records tr { break-inside: avoid; page-break-inside: avoid; }
+    .records th:nth-child(1) { width: 4%; }
+    .records th:nth-child(2) { width: 13%; }
+    .records th:nth-child(3) { width: 11%; }
+    .records th:nth-child(4) { width: 20%; }
+    .records th:nth-child(5) { width: 11%; }
+    .records th:nth-child(6) { width: 7%; }
+    .records th:nth-child(7) { width: 20%; }
+    .records th:nth-child(8) { width: 14%; }
+    .center { text-align: center; }
+    .value { text-align: center; font-weight: 700; }
+    .ok { color: #047857; background: #d1fae5; font-weight: 700; }
+    .ng { color: #b91c1c; background: #fee2e2; font-weight: 700; }
+    .footer { display: flex; justify-content: space-between; margin-top: 7px; color: #475569; font-size: 9px; }
+    @media print { .toolbar { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar">인쇄 창에서 프린터를 선택하거나 [PDF로 저장]을 선택하세요.</div>
+  <main class="report">
+    <h1>설비 일일 순회점검 기록</h1>
+    <div class="top">
+      <table class="meta">
+        <tr><th>점검일자</th><td>${escapeHtml(TODAY)}</td><th>부서</th><td>품질부</td></tr>
+        <tr><th>작성자</th><td>${escapeHtml(writer)}</td><th>점검현황</th><td>${checkedEquipmentCount}/${EQUIPMENT.length} 설비</td></tr>
+      </table>
+      <table class="approval">
+        <thead><tr><th>작성</th><th>검토</th><th>승인</th></tr></thead>
+        <tbody><tr><td>${escapeHtml(writer)}</td><td></td><td></td></tr></tbody>
+      </table>
+    </div>
+    <table class="summary">
+      <tr>
+        <td>점검 설비<strong>${checkedEquipmentCount}/${EQUIPMENT.length}</strong></td>
+        <td>전체 기록<strong>${todayLogs.length}건</strong></td>
+        <td>정상<strong>${normalCount}건</strong></td>
+        <td>이탈<strong>${deviationCount}건</strong></td>
+      </tr>
+    </table>
+    <div class="section-title">■ 금일 설비 순회점검 기록</div>
+    <table class="records">
+      <thead><tr><th>No.</th><th>설비</th><th>관리항목</th><th>관리기준</th><th>판독값</th><th>판정</th><th>비고</th><th>기록자</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">
+      <span>QMES · https://qmes.namochemical.com/</span>
+      <span>출력일시: ${escapeHtml(printedAt)}</span>
+    </div>
+  </main>
+</body>
+</html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    window.setTimeout(() => printWindow.print(), 500);
+    if (typeof auditLog === "function") {
+      auditLog("설비관리", "PDF인쇄", TODAY, `${todayLogs.length}건`);
+      dbSave();
+    }
+  };
+
   const tourSave = async () => {
     if (saving) return;
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
@@ -588,6 +726,12 @@ function EquipmentTab() {
       <Panel title="설비 점검 기록" right={
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400">{logs.length}건 · 기록자 자동 저장</span>
+          <button type="button" onClick={printDailyTourReport}
+            disabled={saving || !logs.some((entry) => String(entry.date || "") === TODAY)}
+            title="금일 순회점검 기록을 인쇄하거나 PDF로 저장합니다."
+            className="min-h-[36px] rounded border border-sky-500/60 px-3 text-xs font-bold text-sky-300 hover:bg-sky-500/10 disabled:opacity-40">
+            <span className="inline-flex items-center gap-1"><Printer size={12} /> 금일 PDF 인쇄</span>
+          </button>
           {logs.length > 0 && (
             <button type="button" onClick={deleteAllEntries} disabled={saving}
               className="min-h-[36px] rounded border border-red-500/60 px-3 text-xs font-bold text-red-300 hover:bg-red-500/10 disabled:opacity-40">
