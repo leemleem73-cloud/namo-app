@@ -15,10 +15,58 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
+class PostgresSessionStore extends session.Store {
+  constructor(dbPool) {
+    super();
+    this.dbPool = dbPool;
+  }
+
+  get(sid, callback) {
+    this.dbPool
+      .query('SELECT sess FROM qmes_sessions WHERE sid = $1 AND expire > NOW()', [sid])
+      .then(result => callback(null, result.rows[0]?.sess || null))
+      .catch(callback);
+  }
+
+  set(sid, sess, callback = () => {}) {
+    const expire = sess?.cookie?.expires
+      ? new Date(sess.cookie.expires)
+      : new Date(Date.now() + 1000 * 60 * 60 * 8);
+    this.dbPool
+      .query(
+        `INSERT INTO qmes_sessions (sid, sess, expire)
+         VALUES ($1,$2::jsonb,$3)
+         ON CONFLICT (sid)
+         DO UPDATE SET sess = EXCLUDED.sess, expire = EXCLUDED.expire`,
+        [sid, JSON.stringify(sess), expire]
+      )
+      .then(() => callback(null))
+      .catch(callback);
+  }
+
+  destroy(sid, callback = () => {}) {
+    this.dbPool
+      .query('DELETE FROM qmes_sessions WHERE sid = $1', [sid])
+      .then(() => callback(null))
+      .catch(callback);
+  }
+
+  touch(sid, sess, callback = () => {}) {
+    const expire = sess?.cookie?.expires
+      ? new Date(sess.cookie.expires)
+      : new Date(Date.now() + 1000 * 60 * 60 * 8);
+    this.dbPool
+      .query('UPDATE qmes_sessions SET expire = $1 WHERE sid = $2', [expire, sid])
+      .then(() => callback(null))
+      .catch(callback);
+  }
+}
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
+    store: new PostgresSessionStore(pool),
     secret: process.env.SESSION_SECRET || 'change-me-session-secret',
     resave: false,
     saveUninitialized: false,
@@ -30,6 +78,15 @@ app.use(
     },
   })
 );
+
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path === '/index.html' || /\.(?:js|jsx|html)$/.test(req.path)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -147,6 +204,17 @@ async function ensureSchema() {
       must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS qmes_sessions (
+      sid TEXT PRIMARY KEY,
+      sess JSONB NOT NULL,
+      expire TIMESTAMPTZ NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS qmes_sessions_expire_idx
+      ON qmes_sessions (expire);
+
+    DELETE FROM qmes_sessions WHERE expire <= NOW();
 
     CREATE TABLE IF NOT EXISTS iqc (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
