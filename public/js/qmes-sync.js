@@ -186,6 +186,42 @@
     });
   }
 
+  async function deleteAllEquipmentEntries(entries, reason) {
+    const uniqueEntries = new Map();
+    (Array.isArray(entries) ? entries : []).forEach((entry) => {
+      const key = equipmentEntryKey(entry);
+      if (key) uniqueEntries.set(key, entry);
+    });
+    if (!uniqueEntries.size) return 0;
+
+    const records = await list("equipment");
+    const existingByKey = new Map((records || []).map((record) => [String(record.record_key || ""), record]));
+    const deletedAt = new Date().toISOString();
+    const deletedBy = String(window.__QMES_USER__?.name || window.__QMES_USER__ || "");
+    const deleteReason = String(reason || "");
+    const tombstones = Array.from(uniqueEntries, ([key, entry]) => {
+      const previous = recordPayload(existingByKey.get(key));
+      return {
+        key,
+        payload:{
+          ...previous,
+          entry:previous.entry || entry,
+          deleted:true,
+          deleteScope:"all-equipment-records",
+          deletedAt,
+          deletedBy,
+          deleteReason
+        }
+      };
+    });
+
+    for (let index = 0; index < tombstones.length; index += 5) {
+      const batch = tombstones.slice(index, index + 5);
+      await Promise.all(batch.map((row) => upsert("equipment", row.key, row.payload)));
+    }
+    return tombstones.length;
+  }
+
   async function pushPendingEquipment() {
     const pending = (DB.eqLogs || []).filter((entry) => equipmentEntryKey(entry) && !entry.sharedSync);
     for (const entry of pending) {
@@ -366,6 +402,7 @@
   window.qmesSyncEquipmentEntry = syncEquipmentEntry;
   window.qmesSyncPushPendingEquipment = pushPendingEquipment;
   window.qmesSyncDeleteEquipment = deleteEquipmentEntry;
+  window.qmesSyncDeleteAllEquipment = deleteAllEquipmentEntries;
   window.qmesSyncPullEquipment = pullEquipment;
   window.qmesSyncWorkOrder = syncWorkOrder;
   window.qmesSyncPullWorkOrders = pullWorkOrders;
