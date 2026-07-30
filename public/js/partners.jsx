@@ -185,13 +185,18 @@ function PartnersTab() {
 
       {!showForm && <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-700 px-5 py-4">
-          <div><h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3><p className="mt-1 text-xs text-slate-500">{activeType==="customer"?`등록 고객사 ${filteredCustomers.length}건`:`등록 공급업체 ${filteredSuppliers.length}건 · 원료 LOT 작업지시서 연동`}</p></div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={()=>openNewFor(activeType)} className="qmes-iqc-new-btn">
-              <Plus size={16} /> {activeType === "customer" ? "고객사 등록" : "공급업체 등록"}
-            </button>
-            {activeType === "supplier" && <button type="button" onClick={saveSupplierLots} className="rounded-md border border-cyan-500/50 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/10">LOT 저장 · 작업지시서 반영</button>}
+          <div>
+            <div className="flex items-center gap-3">
+              <h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3>
+              <button type="button" onClick={()=>openNewFor(activeType)} className="qmes-iqc-new-btn">
+                <Plus size={16} /> {activeType === "customer" ? "고객사 등록" : "공급업체 등록"}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">{activeType==="customer"?`등록 고객사 ${filteredCustomers.length}건`:`등록 공급업체 ${filteredSuppliers.length}건 · 원료 LOT 작업지시서 연동`}</p>
           </div>
+          {activeType === "supplier" && <div className="flex items-center gap-2">
+            <button type="button" onClick={saveSupplierLots} className="rounded-md border border-cyan-500/50 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/10">LOT 저장 · 작업지시서 반영</button>
+          </div>}
         </div>
         <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm">
           {activeType === "customer" ? <>
