@@ -100,10 +100,6 @@ const EQUIPMENT = [
     { k: "gauss", label: "Gauss", spec: "≥ 10,000 G", lo: 10000, unit: "G", src: "수기 (Gauss Meter 판독)" },
     { k: "vis", label: "필터 상태 (주1회)", spec: "부식·이물 없을 것", visual: true, src: "수기 (육안)" },
   ] },
-  { id: "FIL-01", name: "충진기 #1 (20kg 캔)", params: [
-    { k: "wt", label: "충진중량", spec: "20 kg +0.1", lo: 20, hi: 20.1, unit: "kg", src: "수기 (전자저울 판독)" },
-    { k: "vis", label: "외관 (전수)", spec: "이물 없을 것", visual: true, src: "수기 (육안)" },
-  ] },
   { id: "DR-HVAC", name: "드라이룸 항온제습 설비", params: [
     { k: "rh", label: "RH", spec: "≤ 0.54 %", hi: 0.54, unit: "%", src: "수기 (온습도계 판독)" },
     { k: "dp", label: "이슬점", spec: "≤ -40 ℃", hi: -40, unit: "℃", src: "수기 (온습도계 판독)" },
