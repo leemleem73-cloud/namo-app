@@ -1,6 +1,6 @@
 /* QMES shared sync — mobile/IPAD/PC inspection and work-order records */
 (function () {
-  const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder"]);
+  const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder", "equipment"]);
 
   function normalizeType(type) {
     const value = String(type || "").trim().toLowerCase();
@@ -148,6 +148,104 @@
     });
   }
 
+
+  function equipmentDateKey(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function equipmentEntryKey(entry) {
+    return String(entry?.id || "").trim();
+  }
+
+  async function syncEquipmentEntry(entry) {
+    const key = equipmentEntryKey(entry);
+    if (!key) throw new Error("설비 점검 기록 번호가 없습니다.");
+    return await upsert("equipment", key, {
+      entry,
+      savedAt:new Date().toISOString(),
+      savedBy:String(entry?.by || window.__QMES_USER__?.name || window.__QMES_USER__ || "")
+    });
+  }
+
+  async function pushPendingEquipment() {
+    const pending = (DB.eqLogs || []).filter((entry) => equipmentEntryKey(entry) && !entry.sharedSync);
+    for (const entry of pending) {
+      await syncEquipmentEntry(entry);
+      entry.sharedSync = true;
+    }
+    if (pending.length) dbSave();
+    return pending.length;
+  }
+
+  async function pullEquipment() {
+    const records = await list("equipment");
+    const remoteEntries = [];
+    const sharedKeys = new Set();
+
+    (records || []).forEach((record) => {
+      const payload = recordPayload(record);
+      const entry = payload?.entry;
+      const key = equipmentEntryKey(entry) || String(record.record_key || "").trim();
+      if (key) sharedKeys.add(key);
+      if (!payload.deleted && entry && key) {
+        remoteEntries.push({
+          ...entry,
+          id:key,
+          sharedSync:true,
+          sharedUpdatedAt:record.updated_at || ""
+        });
+      }
+    });
+
+    const localEntries = (DB.eqLogs || []).filter((entry) => {
+      const key = equipmentEntryKey(entry);
+      return !key || !sharedKeys.has(key);
+    });
+    const entries = [...remoteEntries, ...localEntries].sort((a, b) => {
+      const left = String(a.recordedAt || `${a.date || ""}T${a.time || ""}`);
+      const right = String(b.recordedAt || `${b.date || ""}T${b.time || ""}`);
+      return right.localeCompare(left);
+    });
+
+    const today = equipmentDateKey();
+    const readings = {};
+    entries.forEach((entry) => {
+      if (String(entry.date || "") !== today) return;
+      const eqId = String(entry.eqId || "").trim();
+      const paramKey = String(entry.paramKey || "").trim();
+      const key = eqId && paramKey ? `${eqId}:${paramKey}` : "";
+      if (!key || readings[key]) return;
+      readings[key] = {
+        v:entry.v,
+        ok:entry.judge === "정상",
+        time:entry.time || "",
+        by:entry.by || ""
+      };
+    });
+
+    const alarms = entries
+      .filter((entry) => entry.judge === "이탈")
+      .map((entry) => ({
+        id:entry.id,
+        date:entry.date || "",
+        time:entry.time || "",
+        eq:entry.eqId || "",
+        msg:`${entry.item || "관리항목"} ${entry.v || ""} — 관리기준(${entry.spec || "-"}) 이탈, 점검·조치 필요`,
+        level:"경고",
+        by:entry.by || ""
+      }));
+
+    DB.eqDate = today;
+    DB.eqLogs = entries.slice(0, 3000);
+    DB.eqReadings = readings;
+    DB.eqAlarms = alarms.slice(0, 1000);
+    dbSave();
+    return {readings:DB.eqReadings, logs:DB.eqLogs, alarms:DB.eqAlarms};
+  }
+
   function workOrderSnapshot(lotNo) {
     const key = String(lotNo || "").trim();
     const doc = DB.woDocs?.[key] || null;
@@ -249,6 +347,9 @@
   window.qmesSyncPullInspection = pullInspection;
   window.qmesSyncPushPendingInspections = pushPendingInspections;
   window.qmesSyncTombstoneInspection = tombstoneInspection;
+  window.qmesSyncEquipmentEntry = syncEquipmentEntry;
+  window.qmesSyncPushPendingEquipment = pushPendingEquipment;
+  window.qmesSyncPullEquipment = pullEquipment;
   window.qmesSyncWorkOrder = syncWorkOrder;
   window.qmesSyncPullWorkOrders = pullWorkOrders;
   window.qmesSyncDeleteWorkOrder = deleteWorkOrder;
