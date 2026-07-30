@@ -184,6 +184,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const [messageSearch,setMessageSearch]=useState("");
   const [replyingTo,setReplyingTo]=useState(null);
   const [mode,setMode]=useState("chat");
+  const [chatRoomOpen,setChatRoomOpen]=useState(()=>Boolean(initialRoom));
   const [compact,setCompact]=useState(()=>window.innerWidth<=480);
   const [position,setPosition]=useState(loadNamoTalkPosition);
   const [minimized,setMinimized]=useState(()=>localStorage.getItem(NAMO_TALK_MINIMIZED_KEY)==="1");
@@ -239,12 +240,14 @@ function NamoTalkTab({onClose,initialRoom=""}){
   useEffect(()=>{if(!room)return;const t=setInterval(()=>refreshRoom(room.id),2000);return()=>clearInterval(t);},[activeRoom,room?.id]);
   useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[activeRoom,messages]);
   useEffect(()=>{if(!allRooms.some(item=>item.id===activeRoom)&&allRooms[0])setActiveRoom(allRooms[0].id);},[users.length]);
+  useEffect(()=>{if(initialRoom){setActiveRoom(initialRoom);setChatRoomOpen(true);}},[initialRoom]);
   useEffect(()=>{const onResize=()=>{const nextCompact=window.innerWidth<=480;setCompact(nextCompact);if(nextCompact)return;const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition(previous=>{const next={x:Math.max(8,Math.min(previous.x,window.innerWidth-width-8)),y:Math.max(8,Math.min(previous.y,window.innerHeight-height-8))};saveNamoTalkPosition(next);return next;});};window.addEventListener("resize",onResize);return()=>window.removeEventListener("resize",onResize);},[]);
   useEffect(()=>{const onPointerMove=event=>{const drag=dragRef.current;if(!drag||compact)return;event.preventDefault();const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition({x:Math.max(8,Math.min(event.clientX-drag.offsetX,window.innerWidth-width-8)),y:Math.max(8,Math.min(event.clientY-drag.offsetY,window.innerHeight-height-8))});};const onPointerUp=()=>{if(!dragRef.current)return;dragRef.current=null;saveNamoTalkPosition(position);document.body.style.userSelect="";document.body.style.cursor="";};window.addEventListener("pointermove",onPointerMove,{passive:false});window.addEventListener("pointerup",onPointerUp);window.addEventListener("pointercancel",onPointerUp);return()=>{window.removeEventListener("pointermove",onPointerMove);window.removeEventListener("pointerup",onPointerUp);window.removeEventListener("pointercancel",onPointerUp);};},[compact,position]);
 
   const startDrag=event=>{if(compact||event.button!==0||event.target.closest("button"))return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};document.body.style.userSelect="none";document.body.style.cursor="grabbing";event.preventDefault();};
   const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
   const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
+  const openChatRoom=roomId=>{setActiveRoom(roomId);setChatRoomOpen(true);};
   const changeStatus=async next=>{setMyStatus(next);localStorage.setItem(NAMO_TALK_STATUS_KEY,next);try{await updateNamoTalkPresence(next,statusMessage);}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
   const saveStatusMessage=async()=>{localStorage.setItem(NAMO_TALK_STATUS_MESSAGE_KEY,statusMessage);try{await updateNamoTalkPresence(myStatus,statusMessage);setToast("상태 메시지를 저장했습니다.");}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
   const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){if(error.message!=="__NAMO_AUTH_REDIRECT__")alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
@@ -277,7 +280,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   };
   const detailInfo=readDetail?receiptInfoFor(readDetail,room):null;
   const unreadCount=allRooms.reduce((sum,r)=>sum+(messages[r.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[r.id]||0)).length,0);
-  const panelStyle=compact?{position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}:{position:"fixed",left:position.x,top:position.y,width:"min(820px,calc(100vw - 16px))",height:"min(720px,calc(100vh - 16px))"};
+  const panelStyle=compact?{position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}:{position:"fixed",left:position.x,top:position.y,width:chatRoomOpen?"min(650px,calc(100vw - 16px))":"min(380px,calc(100vw - 16px))",height:"min(720px,calc(100vh - 16px))"};
 
   if(minimized)return <button type="button" onClick={()=>setMinimize(false)} aria-label="NAMO Talk 복원" style={{position:"fixed",right:18,bottom:18,zIndex:12000,height:48,padding:"0 16px",display:"flex",alignItems:"center",gap:9,border:"2px solid #d4a017",borderRadius:16,background:"#0f2740",color:"white",boxShadow:"0 12px 28px rgba(15,23,42,.35)",fontSize:15,fontWeight:900,cursor:"pointer"}}><NamoDrop size={28}/> NAMO Talk {unreadCount>0&&<span style={{minWidth:22,height:22,padding:"0 6px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:11,background:"#ef4444",fontSize:12}}>{unreadCount}</span>}</button>;
 
@@ -297,21 +300,22 @@ function NamoTalkTab({onClose,initialRoom=""}){
       {[["chat","대화"],["attendance","근태관리"]].map(([id,label])=><button key={id} onClick={()=>setMode(id)} style={{height:31,padding:"0 13px",border:0,borderRadius:8,background:mode===id?"#dbeafe":"transparent",color:mode===id?"#075985":"#475569",fontSize:13,fontWeight:900,cursor:"pointer"}}>{label}</button>)}
     </div>
 
-    {mode==="chat"&&<div style={{height:48,flex:"0 0 48px",display:"flex",alignItems:"center",gap:7,padding:"0 10px",background:"#f8fafc",borderBottom:"1px solid #cbd5e1"}}>
+    {mode==="chat"&&!chatRoomOpen&&<div style={{height:48,flex:"0 0 48px",display:"flex",alignItems:"center",gap:7,padding:"0 10px",background:"#f8fafc",borderBottom:"1px solid #cbd5e1"}}>
       <strong style={{fontSize:12,color:"#475569",whiteSpace:"nowrap"}}>내 상태</strong>
       <select value={myStatus} onChange={event=>changeStatus(event.target.value)} style={{height:32,border:"1px solid #cbd5e1",borderRadius:8,padding:"0 7px",background:"white",color:"#172033",fontSize:12,fontWeight:800}}>{Object.entries(NAMO_TALK_STATUS).map(([value,item])=><option key={value} value={value}>{item.label}</option>)}</select>
       <input value={statusMessage} maxLength={60} onChange={event=>setStatusMessage(event.target.value)} onKeyDown={event=>{if(event.key==="Enter")saveStatusMessage();}} placeholder="상태 메시지 (예: 시험 진행 중)" style={{height:32,flex:1,minWidth:0,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px",fontSize:12,color:"#172033"}}/>
       <button type="button" onClick={saveStatusMessage} style={{height:32,padding:"0 11px",border:0,borderRadius:8,background:"#0284c7",color:"white",fontSize:12,fontWeight:900,cursor:"pointer"}}>저장</button>
     </div>}
 
-    {mode==="attendance"?<AttendancePanel currentUser={currentUser} users={users}/>:<div style={{flex:"1 1 auto",minHeight:0,display:"flex",width:"100%",overflow:"hidden",gap:compact?0:10,padding:compact?0:10,boxSizing:"border-box",background:compact?"#f4f7fa":"#dfe7ee"}}>
-      <div style={{width:compact?205:235,flex:`0 0 ${compact?205:235}px`,background:"white",borderRight:compact?"1px solid #cbd5e1":"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflowY:"auto"}}>
+    {mode==="attendance"?<AttendancePanel currentUser={currentUser} users={users}/>:<div style={{flex:"1 1 auto",minHeight:0,display:"flex",width:"100%",overflow:"hidden",padding:compact?0:10,boxSizing:"border-box",background:compact?"#f4f7fa":"#dfe7ee"}}>
+      <div style={{display:chatRoomOpen?"none":"block",width:"100%",flex:"1 1 auto",background:"white",border:compact?0:"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflowY:"auto"}}>
         <div style={{padding:9}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="채널·직원 검색" style={{width:"100%",height:38,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:9,padding:"0 10px",fontSize:14,color:"#1e293b"}}/></div>
-        <div style={{padding:7}}>{filteredChannels.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}<div style={{fontSize:12,fontWeight:900,color:"#64748b",padding:"15px 7px 7px"}}>1:1 대화</div>{filteredDirects.map(item=><RoomButton key={item.id} item={item} presence={presence[item.name]} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}</div>
+        <div style={{padding:7}}>{filteredChannels.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={openChatRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}<div style={{fontSize:12,fontWeight:900,color:"#64748b",padding:"15px 7px 7px"}}>1:1 대화</div>{filteredDirects.map(item=><RoomButton key={item.id} item={item} presence={presence[item.name]} activeRoom={activeRoom} setActiveRoom={openChatRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}</div>
       </div>
 
-      <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:"flex",flexDirection:"column",background:"#edf3f7",border:compact?0:"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflow:"hidden",position:"relative"}}>
+      <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:chatRoomOpen?"flex":"none",flexDirection:"column",background:"#edf3f7",border:compact?0:"1px solid #cbd5e1",borderRadius:compact?0:12,boxShadow:compact?"none":"0 2px 8px rgba(15,39,64,.08)",overflow:"hidden",position:"relative"}}>
         <div style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",gap:10,padding:"0 14px",background:"white",borderBottom:"1px solid #cbd5e1"}}>
+          <button type="button" onClick={()=>setChatRoomOpen(false)} aria-label="대화 목록으로 돌아가기" title="대화 목록" style={{width:34,height:34,flex:"0 0 34px",border:"1px solid #cbd5e1",borderRadius:9,background:"#f8fafc",color:"#334155",fontSize:20,fontWeight:900,cursor:"pointer"}}>‹</button>
           <div style={{minWidth:0}}><div style={{fontSize:17,fontWeight:950,color:"#172033"}}>{room?.name||"대화"}</div><div style={{fontSize:12,color:"#64748b",fontWeight:600,marginTop:3}}>{room?.subtitle||""}</div></div>
           <input value={messageSearch} onChange={event=>setMessageSearch(event.target.value)} placeholder="메시지 검색" style={{marginLeft:"auto",width:145,height:32,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:8,padding:"0 9px",fontSize:12,color:"#172033",outline:"none"}}/>
         </div>
