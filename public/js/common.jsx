@@ -82,21 +82,21 @@ const INVENTORY = [
 const EQUIPMENT = [
   { id: "TK-501", name: "TK 501", subtitle: "NMP/PVdF/SBS 바인더 용해", params: [
     { k: "temp", label: "온도", spec: "80±5 ℃", lo: 75, hi: 85, unit: "℃", src: "PLC 패널 · 1회/Lot" },
-    { k: "rpm", label: "RPM", spec: "< 70 rpm", hi: 70, unit: "rpm", src: "PLC 패널 · 1회/Lot" },
-    { k: "time", label: "시간", spec: "작업지시서 설정시간 준수", visual: true, okLabel: "설정시간 준수", badLabel: "미달/초과", src: "작업지시서 · 1회/Lot" },
+    { k: "rpm", label: "RPM", spec: "< 70 rpm", hi: 70, hiExclusive: true, unit: "rpm", src: "PLC 패널 · 1회/Lot" },
+    { k: "time", label: "시간", spec: "≤ 300 min", hi: 300, unit: "min", src: "육안 · 1회/Lot" },
     { k: "appearance", label: "외관", spec: "색상 변형 및 이물 없음", visual: true, okLabel: "이상 없음", badLabel: "이상 발견", src: "육안 · 1회/Lot" },
   ] },
   { id: "TK-501A", name: "TK 501A", subtitle: "Mixer 용해", params: [
-    { k: "time", label: "시간", spec: "작업지시서 설정시간 준수", visual: true, okLabel: "설정시간 준수", badLabel: "미달/초과", src: "PLC 패널 · 1회/Lot" },
-    { k: "temp", label: "온도", spec: "< 70 ℃", hi: 70, unit: "℃", src: "PLC 패널 · 1회/Lot" },
+    { k: "time", label: "시간", spec: "< 80 min", hi: 80, hiExclusive: true, unit: "min", src: "PLC 패널 · 1회/Lot" },
+    { k: "temp", label: "온도", spec: "< 70 ℃", hi: 70, hiExclusive: true, unit: "℃", src: "PLC 패널 · 1회/Lot" },
     { k: "rpm", label: "RPM", spec: "3,540±500 rpm", lo: 3040, hi: 4040, unit: "rpm", src: "PLC 패널 · 1회/Lot" },
     { k: "press", label: "최대압력", spec: "≤ 6 bar", hi: 6, unit: "bar", src: "PLC 패널 · 매일" },
-    { k: "flow", label: "유량", spec: "< 20 L/min", hi: 20, unit: "L/min", src: "PLC 패널 · 1회/Lot" },
+    { k: "flow", label: "유량", spec: "< 20 L/min", hi: 20, hiExclusive: true, unit: "L/min", src: "PLC 패널 · 1회/Lot" },
     { k: "oring", label: "O-ring", spec: "균열·마모·경화·부식 없을 것", visual: true, okLabel: "이상 없음", badLabel: "이상 발견", src: "육안 · 설비점검표" },
   ] },
   { id: "TK-501B", name: "TK 501B", subtitle: "TK 501A ↔ TK 501B 순환", params: [
     { k: "time", label: "순환 시간", spec: "작업지시서 설정시간 준수", visual: true, okLabel: "설정시간 준수", badLabel: "미달/초과", src: "PLC 패널 · 1회/Lot" },
-    { k: "temp", label: "순환 온도", spec: "< 70 ℃", hi: 70, unit: "℃", src: "PLC 패널 · 1회/Lot" },
+    { k: "temp", label: "순환 온도", spec: "< 70 ℃", hi: 70, hiExclusive: true, unit: "℃", src: "PLC 패널 · 1회/Lot" },
   ] },
   { id: "FLT-01", name: "필터 유닛", subtitle: "1단 Gauss · 2단 50/10 μm", params: [
     { k: "gauss", label: "Gauss", spec: "≥ 10,000 G (1단)", lo: 10000, unit: "G", src: "Gauss Meter · 1회/Lot" },
