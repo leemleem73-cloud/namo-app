@@ -94,6 +94,37 @@ function registerNamoTalkRoutes(app) {
     }
   });
 
+  app.get('/api/namo-talk/notifications', async (req, res) => {
+    try {
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.', data: null });
+      }
+      await schemaReady;
+      const user = req.session.user;
+      const after = Number(req.query.after || Date.now());
+      const afterDate = new Date(Number.isFinite(after) ? after : Date.now());
+      const result = await pool.query(
+        `SELECT id, room_id, sender_name, sender_dept, kind, message_text, file_name, file_data,
+                reply_to_id, reply_sender, reply_text, is_pinned, edited_at, deleted_at, created_at
+           FROM namo_talk_messages
+          WHERE created_at > $1 AND sender_name <> $2
+          ORDER BY created_at ASC, id ASC
+          LIMIT 30`,
+        [afterDate, user.name || '']
+      );
+      const departmentRoom = `dept:${user.department || ''}`;
+      const visible = result.rows.filter((row) => {
+        if (row.room_id === '전체공지' || row.room_id === departmentRoom) return true;
+        if (!String(row.room_id).startsWith('dm:')) return false;
+        return String(row.room_id).slice(3).split('|').includes(user.name || '');
+      });
+      return res.json({ success: true, message: 'OK', data: visible.map(mapMessage) });
+    } catch (err) {
+      console.error('NAMO Talk notification list failed:', err);
+      return res.status(500).json({ success: false, message: err.message, data: null });
+    }
+  });
+
   app.post('/api/namo-talk/messages', async (req, res) => {
     try {
       if (!req.session || !req.session.user) {
