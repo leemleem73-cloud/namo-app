@@ -1,0 +1,609 @@
+.qmes-ipad-pop {
+  width: min(1120px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 22px 0 44px;
+  color: #e8f1fb;
+  font-family: Pretendard, system-ui, sans-serif;
+}
+
+.qmes-ipad-pop button,
+.qmes-ipad-pop input {
+  font: inherit;
+  touch-action: manipulation;
+}
+
+.qmes-ipad-hero,
+.qmes-ipad-work-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 112px;
+  padding: 22px 26px;
+  border: 1px solid #27415f;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #122841 0%, #0d1d31 68%, #113850 100%);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, .2);
+}
+
+.qmes-ipad-hero span,
+.qmes-ipad-work-head > div > span {
+  color: #38c8f1;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.qmes-ipad-hero h1,
+.qmes-ipad-work-head h1 {
+  margin: 4px 0 2px;
+  color: #fff;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+}
+
+.qmes-ipad-hero p {
+  margin: 6px 0 0;
+  color: #9eb3c9;
+  font-size: 14px;
+}
+
+.qmes-ipad-inspector {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+  border: 1px solid #355270;
+  border-radius: 12px;
+  background: rgba(9, 25, 43, .72);
+  color: #8fa7bd;
+  font-size: 13px;
+}
+
+.qmes-ipad-inspector strong {
+  display: block;
+  margin-top: 2px;
+  color: #fff;
+  font-size: 17px;
+}
+
+.qmes-ipad-home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.qmes-ipad-home-card {
+  position: relative;
+  display: flex;
+  min-height: 230px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid #2c4867;
+  border-radius: 18px;
+  background: #12243a;
+  color: #dceafb;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 16px 32px rgba(0,0,0,.18);
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.qmes-ipad-home-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 6px;
+  background: #38bdf8;
+  content: "";
+}
+
+.qmes-ipad-home-card.is-pqc::before { background: #34d399; }
+.qmes-ipad-home-card.is-oqc::before { background: #a78bfa; }
+.qmes-ipad-home-card:hover,
+.qmes-ipad-home-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: #4f83ad;
+  background: #172d47;
+  outline: none;
+}
+
+.qmes-ipad-home-code {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  color: rgba(255,255,255,.16);
+  font-size: 58px;
+  font-weight: 950;
+  letter-spacing: -.08em;
+}
+
+.qmes-ipad-home-card strong {
+  color: #fff;
+  font-size: 28px;
+}
+
+.qmes-ipad-home-card small {
+  margin-top: 5px;
+  color: #91a9c0;
+  font-size: 14px;
+}
+
+.qmes-ipad-home-card i {
+  margin-top: 22px;
+  color: #67d4f5;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.qmes-ipad-home-note {
+  margin-top: 16px;
+  padding: 15px;
+  border: 1px solid #233b57;
+  border-radius: 12px;
+  background: #0f2034;
+  color: #87a3bd;
+  text-align: center;
+  font-size: 13px;
+}
+
+.qmes-ipad-work-head {
+  min-height: 86px;
+  padding: 16px 20px;
+}
+
+.qmes-ipad-work-head h1 {
+  font-size: 24px;
+}
+
+.qmes-ipad-back {
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid #3a5775;
+  border-radius: 10px;
+  background: #162b43;
+  color: #c5d6e7;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.qmes-ipad-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.qmes-ipad-mode-tabs button {
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #2a435f;
+  border-radius: 12px;
+  background: #112239;
+  color: #90a8bf;
+  cursor: pointer;
+}
+
+.qmes-ipad-mode-tabs button.is-active {
+  border-color: #27bce9;
+  background: #12354d;
+  color: #e4f8ff;
+  box-shadow: inset 0 0 0 1px rgba(39,188,233,.2);
+}
+
+.qmes-ipad-mode-tabs small {
+  color: #4ccbed;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.qmes-ipad-mode-tabs strong { font-size: 17px; }
+
+.qmes-ipad-section {
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid #263f5b;
+  border-radius: 16px;
+  background: #102138;
+  box-shadow: 0 14px 30px rgba(0,0,0,.14);
+}
+
+.qmes-ipad-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.qmes-ipad-section-title > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: #0e7399;
+  color: #fff;
+  font-weight: 900;
+}
+
+.qmes-ipad-section-title h2 {
+  margin: 0;
+  color: #eff7ff;
+  font-size: 18px;
+}
+
+.qmes-ipad-section-title p {
+  margin: 3px 0 0;
+  color: #7892aa;
+  font-size: 12px;
+}
+
+.qmes-ipad-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.qmes-ipad-form-grid label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.qmes-ipad-form-grid label.wide { grid-column: span 2; }
+.qmes-ipad-form-grid label > span {
+  color: #a7bacd;
+  font-size: 12px;
+  font-weight: 800;
+}
+.qmes-ipad-form-grid label b { color: #fb7185; }
+
+.qmes-ipad-form-grid input,
+.qmes-ipad-triple input,
+.qmes-ipad-repeat-choice input {
+  width: 100%;
+  min-height: 54px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid #36516d;
+  border-radius: 10px;
+  background: #172d47;
+  color: #f3f8fd;
+  font-size: 16px;
+  outline: none;
+}
+
+.qmes-ipad-form-grid input:focus,
+.qmes-ipad-triple input:focus,
+.qmes-ipad-repeat-choice input:focus {
+  border-color: #2bc3ec;
+  box-shadow: 0 0 0 3px rgba(43,195,236,.12);
+}
+
+.qmes-ipad-form-grid input[readonly] {
+  color: #8ba5bd;
+  background: #13273e;
+}
+
+.qmes-ipad-form-grid input.lot {
+  color: #71daf8;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.qmes-ipad-gate {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.qmes-ipad-gate.is-open {
+  border: 1px solid rgba(52,211,153,.4);
+  background: rgba(16,185,129,.1);
+  color: #6ee7b7;
+}
+
+.qmes-ipad-gate.is-blocked {
+  border: 1px solid rgba(251,113,133,.45);
+  background: rgba(244,63,94,.1);
+  color: #fda4af;
+}
+
+.qmes-ipad-current-judge {
+  margin-left: auto;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: #223850;
+  color: #9eb3c8;
+  font-size: 13px;
+  font-weight: 900;
+}
+.qmes-ipad-current-judge.is-합격 { background: rgba(16,185,129,.15); color: #6ee7b7; }
+.qmes-ipad-current-judge.is-불합격 { background: rgba(244,63,94,.15); color: #fda4af; }
+
+.qmes-ipad-progress {
+  height: 7px;
+  overflow: hidden;
+  margin: -4px 0 14px;
+  border-radius: 999px;
+  background: #1d334b;
+}
+.qmes-ipad-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0ea5e9, #37d5bd);
+  transition: width .2s ease;
+}
+
+.qmes-ipad-item-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.qmes-ipad-item-tabs button {
+  display: grid;
+  min-height: 72px;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 5px 8px;
+  padding: 10px;
+  border: 1px solid #2d4763;
+  border-radius: 10px;
+  background: #152941;
+  color: #a7b9ca;
+  text-align: left;
+  cursor: pointer;
+}
+
+.qmes-ipad-item-tabs button > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 7px;
+  background: #233d58;
+  font-size: 11px;
+  font-weight: 900;
+}
+.qmes-ipad-item-tabs button strong { color: #e4edf7; font-size: 13px; }
+.qmes-ipad-item-tabs button small { color: #6f8aa3; font-size: 10px; }
+.qmes-ipad-item-tabs button.is-active { border-color: #32bde6; background: #15374e; }
+.qmes-ipad-item-tabs button.is-합격 > span { background: #087f5b; color: #d1fae5; }
+.qmes-ipad-item-tabs button.is-불합격 > span { background: #a62d45; color: #ffe4e6; }
+
+.qmes-ipad-measure-card {
+  padding: 18px;
+  border: 1px solid #34516e;
+  border-radius: 14px;
+  background: #142a43;
+}
+
+.qmes-ipad-measure-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.qmes-ipad-measure-head div { display: flex; flex-direction: column; gap: 4px; }
+.qmes-ipad-measure-head span { color: #fff; font-size: 20px; font-weight: 900; }
+.qmes-ipad-measure-head strong { color: #55d3f2; font-size: 14px; }
+.qmes-ipad-measure-head small {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #213a54;
+  color: #9eb2c6;
+  font-size: 11px;
+}
+
+.qmes-ipad-choice {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.qmes-ipad-choice button,
+.qmes-ipad-repeat-choice button {
+  min-height: 72px;
+  border: 1px solid #3a5774;
+  border-radius: 12px;
+  background: #1a324c;
+  color: #c8d7e5;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.qmes-ipad-choice button.is-selected,
+.qmes-ipad-repeat-choice button.is-selected {
+  border-color: #22c7ed;
+  background: #0c6585;
+  color: #fff;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.08);
+}
+
+.qmes-ipad-triple {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.qmes-ipad-triple label { display: flex; flex-direction: column; gap: 7px; }
+.qmes-ipad-triple span { color: #93aac0; font-size: 12px; font-weight: 800; }
+.qmes-ipad-triple input {
+  min-height: 72px;
+  text-align: center;
+  font-size: 25px;
+  font-variant-numeric: tabular-nums;
+}
+
+.qmes-ipad-repeat-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.qmes-ipad-repeat-choice > div {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.qmes-ipad-repeat-choice > div > span { color: #aabdd0; font-size: 13px; font-weight: 900; }
+.qmes-ipad-repeat-choice > div > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.qmes-ipad-repeat-choice button { min-height: 56px; font-size: 15px; }
+.qmes-ipad-repeat-choice input { min-height: 56px; text-align: center; font-size: 19px; }
+.qmes-ipad-overflow-all {
+  align-self: flex-end;
+  min-width: 210px;
+  min-height: 46px !important;
+  color: #67d8f6 !important;
+  font-size: 13px !important;
+}
+
+.qmes-ipad-step-actions {
+  display: grid;
+  grid-template-columns: minmax(120px, .7fr) minmax(220px, 1.3fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+.qmes-ipad-step-actions button {
+  min-height: 58px;
+  border: 1px solid #3a5571;
+  border-radius: 11px;
+  background: #1a3049;
+  color: #bdcede;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.qmes-ipad-step-actions button.primary {
+  border-color: #168cb3;
+  background: #0d6d91;
+  color: #fff;
+}
+.qmes-ipad-step-actions button.save {
+  border-color: #0ca779;
+  background: #09845f;
+  color: #fff;
+}
+.qmes-ipad-step-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .4;
+}
+
+.qmes-ipad-overall {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 14px;
+  margin-top: 14px;
+  padding: 16px 20px;
+  border: 1px solid #2a435f;
+  border-radius: 14px;
+  background: #11243a;
+}
+.qmes-ipad-overall span { color: #9aafc4; font-size: 13px; }
+.qmes-ipad-overall strong { grid-row: span 2; font-size: 24px; }
+.qmes-ipad-overall small { color: #6f8ba4; font-size: 11px; }
+.qmes-ipad-overall.is-합격 { border-color: rgba(52,211,153,.4); }
+.qmes-ipad-overall.is-합격 strong { color: #6ee7b7; }
+.qmes-ipad-overall.is-불합격 { border-color: rgba(251,113,133,.5); }
+.qmes-ipad-overall.is-불합격 strong { color: #fda4af; }
+.qmes-ipad-overall.is-대기 strong { color: #9db1c5; }
+
+.qmes-ipad-errors {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(251,113,133,.45);
+  border-radius: 12px;
+  background: rgba(190,24,93,.1);
+  color: #fecdd3;
+  font-size: 13px;
+}
+.qmes-ipad-errors strong { display: block; margin-bottom: 5px; }
+.qmes-ipad-errors p { margin: 3px 0; }
+
+.qmes-ipad-saved {
+  display: flex;
+  min-height: 520px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 34px;
+  border: 1px solid #2b4b68;
+  border-radius: 20px;
+  background: #11263d;
+  text-align: center;
+}
+.qmes-ipad-saved-icon {
+  display: grid;
+  width: 82px;
+  height: 82px;
+  margin-bottom: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: #0c8b66;
+  color: #fff;
+  font-size: 46px;
+  font-weight: 950;
+}
+.qmes-ipad-saved.is-fail .qmes-ipad-saved-icon { background: #b52e49; }
+.qmes-ipad-saved > span { color: #9fb4c8; font-size: 14px; }
+.qmes-ipad-saved h2 { margin: 8px 0; color: #fff; font-size: 28px; }
+.qmes-ipad-saved > strong { color: #6ee7b7; font-size: 22px; }
+.qmes-ipad-saved.is-fail > strong { color: #fda4af; }
+.qmes-ipad-saved p { color: #8099b0; }
+.qmes-ipad-saved > div:last-child { display: flex; gap: 10px; margin-top: 18px; }
+.qmes-ipad-saved button {
+  min-height: 56px;
+  padding: 0 20px;
+  border: 1px solid #1588ad;
+  border-radius: 11px;
+  background: #0c7397;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+.qmes-ipad-saved button.secondary { border-color: #405c77; background: #1b3149; color: #c5d5e4; }
+
+@media (max-width: 900px) {
+  .qmes-ipad-pop { width: min(100% - 18px, 820px); padding-top: 12px; }
+  .qmes-ipad-home-grid { grid-template-columns: 1fr; }
+  .qmes-ipad-home-card { min-height: 155px; }
+  .qmes-ipad-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .qmes-ipad-item-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .qmes-ipad-hero,
+  .qmes-ipad-work-head { align-items: flex-start; flex-wrap: wrap; padding: 16px; }
+  .qmes-ipad-work-head > div:nth-child(2) { order: -1; width: 100%; }
+  .qmes-ipad-inspector { padding: 9px 12px; }
+  .qmes-ipad-mode-tabs { gap: 6px; }
+  .qmes-ipad-mode-tabs button { min-height: 58px; flex-direction: column; gap: 2px; }
+  .qmes-ipad-mode-tabs strong { font-size: 14px; }
+  .qmes-ipad-section { padding: 14px; }
+  .qmes-ipad-form-grid { grid-template-columns: 1fr; }
+  .qmes-ipad-form-grid label.wide { grid-column: span 1; }
+  .qmes-ipad-triple { grid-template-columns: 1fr; }
+  .qmes-ipad-repeat-choice > div { grid-template-columns: 52px 1fr; }
+  .qmes-ipad-measure-head { flex-direction: column; }
+  .qmes-ipad-step-actions { grid-template-columns: 1fr; }
+  .qmes-ipad-saved > div:last-child { width: 100%; flex-direction: column; }
+}
