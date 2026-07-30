@@ -115,6 +115,7 @@ function FieldInputTab() {
   const inspector = qmesIpadCurrentUser();
   const [sharedVersion, setSharedVersion] = useState(0);
   const [mode, setMode] = useState("");
+  const [equipmentOpen, setEquipmentOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [values, setValues] = useState({});
   const [tried, setTried] = useState(false);
@@ -537,6 +538,21 @@ function FieldInputTab() {
     window.scrollTo({top:0, behavior:"smooth"});
   };
 
+  if (equipmentOpen) {
+    return (
+      <div className="qmes-ipad-pop">
+        <header className="qmes-ipad-work-head">
+          <button type="button" className="qmes-ipad-back" onClick={() => setEquipmentOpen(false)}>← 현장입력 선택</button>
+          <div><span>EQ</span><h1>설비점검 현장입력</h1></div>
+          <div className="qmes-ipad-inspector">기록자 <strong>{inspector}</strong></div>
+        </header>
+        <div className="qmes-ipad-equipment">
+          <EquipmentTab />
+        </div>
+      </div>
+    );
+  }
+
   if (!mode) {
     return (
       <div className="qmes-ipad-pop">
@@ -557,9 +573,15 @@ function FieldInputTab() {
               <i>입력 시작 →</i>
             </button>
           ))}
+          <button type="button" className="qmes-ipad-home-card is-equipment" onClick={() => setEquipmentOpen(true)}>
+            <span className="qmes-ipad-home-code">EQ</span>
+            <strong>설비점검</strong>
+            <small>PLC·계측기 순회점검</small>
+            <i>점검 시작 →</i>
+          </button>
         </div>
         <div className="qmes-ipad-home-note">
-          자동판정 · 기존 성적서 연동 · LOT 추적 · 부적합 자동 홀드
+          자동판정 · PC 공용 DB 동기화 · 기존 성적서 연동 · LOT 추적 · 부적합 자동 홀드
         </div>
       </div>
     );
