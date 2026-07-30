@@ -4,7 +4,7 @@
   "description": "Namo Chemical QMS",
   "main": "server.js",
   "scripts": {
-    "start": "node -r ./namo-talk-server.js server.js"
+    "start": "node -r ./namo-talk-server.js -r ./namo-groupware-server.js server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
