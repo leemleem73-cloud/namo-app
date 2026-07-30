@@ -1,224 +1,52 @@
-/* NAMO Talk: enterprise messenger + integrated attendance */
+/* NAMO Talk Cute UI - full replacement */
 window.__NAMO_TALK_DRAG_FIX__=true;
 const NAMO_TALK_READ_KEY="qmes-namo-talk-read-v1";
-const NAMO_ATTENDANCE_KEY="qmes-namo-attendance-v1";
-const NAMO_ATTENDANCE_SESSION_KEY="qmes-namo-attendance-session-v1";
-const NAMO_TALK_POSITION_KEY="qmes-namo-talk-position-v1";
-const NAMO_TALK_NOTIFY_KEY="qmes-namo-talk-notify-v1";
+const NAMO_TALK_POSITION_KEY="qmes-namo-talk-position-v2";
 const NAMO_TALK_MINIMIZED_KEY="qmes-namo-talk-minimized-v1";
-
-function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
-function loadNamoTalkReads(){return safeParse(localStorage.getItem(NAMO_TALK_READ_KEY),{});}
-function saveNamoTalkReads(data){try{localStorage.setItem(NAMO_TALK_READ_KEY,JSON.stringify(data));}catch(e){}}
-function getNamoTalkUsers(){try{const users=typeof loadUsers==="function"?loadUsers():[];return Array.isArray(users)?users.filter(u=>u&&u.name):[];}catch(e){return[];}}
+function safeParse(v,f){try{return JSON.parse(v||"")||f;}catch(e){return f;}}
+function getNamoTalkUsers(){try{const v=typeof loadUsers==="function"?loadUsers():[];return Array.isArray(v)?v.filter(u=>u&&u.name):[];}catch(e){return[];}}
 function makeDirectRoomId(a,b){return `dm:${[a,b].sort((x,y)=>String(x).localeCompare(String(y),"ko")).join("|")}`;}
-function loadNamoTalkPosition(){const saved=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;return {x:Math.max(16,window.innerWidth-640),y:128};}
-function saveNamoTalkPosition(position){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(position));}catch(e){}}
-
-let namoTalkAuthRedirecting=false;
-function handleNamoTalkAuth(response){
-  if(response.status!==401)return;
-  if(!namoTalkAuthRedirecting){
-    namoTalkAuthRedirecting=true;
-    try{sessionStorage.removeItem("qmes-current-user-v1");}catch(e){}
-    window.location.reload();
-  }
-  throw new Error("__NAMO_AUTH_REDIRECT__");
-}
-
-async function fetchNamoTalkRoom(roomId){
-  const response=await fetch(`/api/namo-talk/messages?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
-  handleNamoTalkAuth(response);
-  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
-  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 불러오지 못했습니다.");
-  return Array.isArray(payload.data)?payload.data:[];
-}
-
-async function postNamoTalkMessage(roomId,message){
-  const response=await fetch("/api/namo-talk/messages",{
-    method:"POST",
-    credentials:"same-origin",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({roomId,...message})
-  });
-  handleNamoTalkAuth(response);
-  const payload=await response.json().catch(()=>({success:false,message:"서버 응답을 확인할 수 없습니다."}));
-  if(!response.ok||!payload.success)throw new Error(payload.message||"메시지를 전송하지 못했습니다.");
-  return payload.data;
-}
-
-async function fetchNamoTalkReadReceipts(roomId){
-  const response=await fetch(`/api/namo-talk/reads?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});
-  handleNamoTalkAuth(response);
-  const payload=await response.json().catch(()=>({success:false,message:"읽음 정보를 확인할 수 없습니다."}));
-  if(!response.ok||!payload.success)throw new Error(payload.message||"읽음 정보를 불러오지 못했습니다.");
-  return Array.isArray(payload.data)?payload.data:[];
-}
-
-async function markNamoTalkRoomRead(roomId){
-  const response=await fetch("/api/namo-talk/reads",{
-    method:"POST",
-    credentials:"same-origin",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({roomId})
-  });
-  handleNamoTalkAuth(response);
-  const payload=await response.json().catch(()=>({success:false,message:"읽음 처리를 확인할 수 없습니다."}));
-  if(!response.ok||!payload.success)throw new Error(payload.message||"읽음 처리에 실패했습니다.");
-  return payload.data;
-}
-
-function attendanceDate(d=new Date()){const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
-function attendanceTime(d=new Date(),seconds=false){const p=n=>String(n).padStart(2,"0");return `${p(d.getHours())}:${p(d.getMinutes())}${seconds?`:${p(d.getSeconds())}`:""}`;}
-function loadAttendance(){const local=safeParse(localStorage.getItem(NAMO_ATTENDANCE_KEY),[]);const session=safeParse(sessionStorage.getItem(NAMO_ATTENDANCE_SESSION_KEY),[]);const merged=[...local];session.forEach(row=>{const i=merged.findIndex(r=>r.date===row.date&&((r.uid&&row.uid&&r.uid===row.uid)||r.name===row.name));if(i>=0)merged[i]={...merged[i],...row};else merged.push(row);});return merged;}
-function saveAttendance(rows){const data=JSON.stringify(rows);try{localStorage.setItem(NAMO_ATTENDANCE_KEY,data);sessionStorage.removeItem(NAMO_ATTENDANCE_SESSION_KEY);return false;}catch(e){sessionStorage.setItem(NAMO_ATTENDANCE_SESSION_KEY,data);return true;}}
-function attendanceMinutes(t){if(!t)return null;const [h,m]=t.split(":").map(Number);return h*60+m;}
-function attendanceWork(row){if(!row.clockIn||!row.clockOut)return "-";const v=Math.max(0,attendanceMinutes(row.clockOut)-attendanceMinutes(row.clockIn));return `${Math.floor(v/60)}시간 ${v%60}분`;}
-function attendanceStatus(row){if(!row.clockIn)return "미출근";if(attendanceMinutes(row.clockIn)>540)return "지각";if(row.clockOut&&attendanceMinutes(row.clockOut)<1080)return "조퇴";return "정상";}
-function csvValue(v){return `"${String(v==null?"":v).replace(/"/g,'""')}"`;}
-
-const NAMO_EMOTICONS=[
-  "💧😊","💧😍","💧😂","💧😭","💧👍","💧👏","💧🙏","💧💪",
-  "💧❤️","💧🎉","💧😳","💧😴","💧😎","💧💻","💧☕","💧📦",
-  "💧✅","💧❗","💧🤔","💧🥳","💧🙇","💧✨","💧📞","💧⏰"
-];
-
-function NamoDrop({size=34}){
-  return <span aria-hidden="true" style={{width:size,height:size,display:"inline-flex",alignItems:"center",justifyContent:"center",flex:"0 0 auto",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:"linear-gradient(145deg,#d8d4ff,#8b7cf4)",border:"1px solid rgba(255,255,255,.75)",boxShadow:"inset 0 2px 5px rgba(255,255,255,.7),0 2px 6px rgba(15,39,64,.25)",position:"relative"}}><span style={{transform:"rotate(-45deg)",fontSize:Math.max(13,size*.42),lineHeight:1}}>•ᴗ•</span></span>;
-}
-
+function loadReads(){return safeParse(localStorage.getItem(NAMO_TALK_READ_KEY),{});}
+function saveReads(v){try{localStorage.setItem(NAMO_TALK_READ_KEY,JSON.stringify(v));}catch(e){}}
+function loadPos(){const p=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:{x:18,y:88};}
+function savePos(p){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(p));}catch(e){}}
+async function talkFetch(roomId){const r=await fetch(`/api/namo-talk/messages?roomId=${encodeURIComponent(roomId)}`,{credentials:"same-origin"});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success)throw new Error(p.message||"메시지 조회 실패");return Array.isArray(p.data)?p.data:[];}
+async function talkPost(roomId,message){const r=await fetch("/api/namo-talk/messages",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({roomId,...message})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success)throw new Error(p.message||"메시지 전송 실패");return p.data;}
+const DEPT_THEME={"대표":{emoji:"👑",bg:"#fff4cf",accent:"#f59e0b"},"연구소":{emoji:"⭐",bg:"#f4edff",accent:"#8b5cf6"},"생산부":{emoji:"🌱",bg:"#eafbf1",accent:"#22c55e"},"품질부":{emoji:"💧",bg:"#e8f6ff",accent:"#0ea5e9"},"영업부":{emoji:"📦",bg:"#fff1e8",accent:"#f97316"},"경영지원부":{emoji:"☁️",bg:"#eef4ff",accent:"#6366f1"},"관리부":{emoji:"☁️",bg:"#eef4ff",accent:"#6366f1"}};
+const DEFAULT_THEME={emoji:"😊",bg:"#f3f4f6",accent:"#64748b"};
+function themeOf(dept){return DEPT_THEME[dept]||DEFAULT_THEME;}
+function Mascot({dept,size=42}){const t=themeOf(dept);return <span style={{width:size,height:size,borderRadius:"50%",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:size*.48,background:t.bg,border:`2px solid ${t.accent}33`,boxShadow:"0 4px 10px rgba(15,23,42,.08)",flex:"0 0 auto"}}>{t.emoji}</span>;}
+function NamoLogo({size=42}){return <span style={{width:size,height:size,borderRadius:"50% 50% 46% 46%",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:size*.45,background:"linear-gradient(145deg,#9bddff,#2e7cf6)",border:"2px solid white",boxShadow:"0 6px 15px rgba(37,99,235,.25)",flex:"0 0 auto"}}>😊</span>;}
+function MiniCard({title,children}){return <div style={{background:"white",border:"1px solid #dbe7f4",borderRadius:16,padding:14,boxShadow:"0 4px 14px rgba(15,23,42,.05)"}}><div style={{fontSize:13,fontWeight:950,color:"#24324a",marginBottom:10}}>{title}</div>{children}</div>;}
 function NamoTalkTab({onClose}){
-  const currentUser=window.__QMES_CURRENT_USER__||{name:"관리자",dept:"관리부",role:"admin",uid:"U-0001"};
-  const [users,setUsers]=useState(getNamoTalkUsers);
-  const departments=Array.from(new Set(users.map(u=>u.dept).filter(Boolean))).sort((a,b)=>a.localeCompare(b,"ko"));
-  const channelRooms=[{id:"전체공지",name:"전체공지",type:"notice",subtitle:"전 직원 공지"},...departments.map(d=>({id:`dept:${d}`,name:d,type:"dept",subtitle:`${d} 업무 채널`}))];
-  const directRooms=users.filter(u=>u.name!==currentUser.name).map(u=>({id:makeDirectRoomId(currentUser.name,u.name),name:u.name,type:"direct",subtitle:`${u.dept||"부서 미지정"}${u.position?` · ${u.position}`:""}`,user:u}));
-  const allRooms=[...channelRooms,...directRooms];
-  const [activeRoom,setActiveRoom]=useState(()=>directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
-  const [messages,setMessages]=useState({});
-  const [readReceipts,setReadReceipts]=useState({});
-  const [readDetail,setReadDetail]=useState(null);
-  const [reads,setReads]=useState(loadNamoTalkReads);
-  const [text,setText]=useState("");
-  const [search,setSearch]=useState("");
-  const [mode,setMode]=useState("chat");
-  const [compact,setCompact]=useState(()=>window.innerWidth<=480);
-  const [position,setPosition]=useState(loadNamoTalkPosition);
-  const [minimized,setMinimized]=useState(()=>localStorage.getItem(NAMO_TALK_MINIMIZED_KEY)==="1");
-  const [notifyOn,setNotifyOn]=useState(()=>localStorage.getItem(NAMO_TALK_NOTIFY_KEY)!=="0");
-  const [emojiOpen,setEmojiOpen]=useState(false);
-  const [toast,setToast]=useState("");
-  const [sending,setSending]=useState(false);
-  const fileRef=useRef(null),scrollRef=useRef(null),panelRef=useRef(null),dragRef=useRef(null),markedRef=useRef({});
-  const room=allRooms.find(item=>item.id===activeRoom)||allRooms[0];
-
-  const refreshRoom=async roomId=>{
-    if(!roomId)return;
-    try{
-      const [rows,receiptRows]=await Promise.all([fetchNamoTalkRoom(roomId),fetchNamoTalkReadReceipts(roomId)]);
-      setMessages(previous=>({...previous,[roomId]:rows}));
-      setReadReceipts(previous=>({...previous,[roomId]:receiptRows}));
-      const newest=rows.reduce((max,row)=>Math.max(max,Number(row.createdAt)||0),0);
-      if(newest>Number(markedRef.current[roomId]||0)){
-        markedRef.current[roomId]=newest;
-        const mine=await markNamoTalkRoomRead(roomId);
-        setReadReceipts(previous=>{
-          const current=previous[roomId]||[];
-          const next=current.filter(item=>String(item.userUid)!==String(mine.userUid)&&item.userName!==mine.userName);
-          return {...previous,[roomId]:[...next,mine]};
-        });
-      }
-    }catch(error){
-      console.warn("NAMO Talk refresh failed:",error.message);
-    }
-  };
-
-  useEffect(()=>{const t=setInterval(()=>setUsers(getNamoTalkUsers()),3000);return()=>clearInterval(t);},[]);
-  useEffect(()=>{if(!room)return;const next={...reads,[room.id]:Date.now()};setReads(next);saveNamoTalkReads(next);refreshRoom(room.id);},[activeRoom]);
-  useEffect(()=>{if(!room)return;const t=setInterval(()=>refreshRoom(room.id),2000);return()=>clearInterval(t);},[activeRoom,room?.id]);
-  useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[activeRoom,messages]);
-  useEffect(()=>{if(!allRooms.some(item=>item.id===activeRoom)&&allRooms[0])setActiveRoom(allRooms[0].id);},[users.length]);
-  useEffect(()=>{const onResize=()=>{const nextCompact=window.innerWidth<=480;setCompact(nextCompact);if(nextCompact)return;const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition(previous=>{const next={x:Math.max(8,Math.min(previous.x,window.innerWidth-width-8)),y:Math.max(8,Math.min(previous.y,window.innerHeight-height-8))};saveNamoTalkPosition(next);return next;});};window.addEventListener("resize",onResize);return()=>window.removeEventListener("resize",onResize);},[]);
-  useEffect(()=>{const onPointerMove=event=>{const drag=dragRef.current;if(!drag||compact)return;event.preventDefault();const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition({x:Math.max(8,Math.min(event.clientX-drag.offsetX,window.innerWidth-width-8)),y:Math.max(8,Math.min(event.clientY-drag.offsetY,window.innerHeight-height-8))});};const onPointerUp=()=>{if(!dragRef.current)return;dragRef.current=null;saveNamoTalkPosition(position);document.body.style.userSelect="";document.body.style.cursor="";};window.addEventListener("pointermove",onPointerMove,{passive:false});window.addEventListener("pointerup",onPointerUp);window.addEventListener("pointercancel",onPointerUp);return()=>{window.removeEventListener("pointermove",onPointerMove);window.removeEventListener("pointerup",onPointerUp);window.removeEventListener("pointercancel",onPointerUp);};},[compact,position]);
-
-  const startDrag=event=>{if(compact||event.button!==0||event.target.closest("button"))return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};document.body.style.userSelect="none";document.body.style.cursor="grabbing";event.preventDefault();};
-  const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
-  const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
-  const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){if(error.message!=="__NAMO_AUTH_REDIRECT__")alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
-  const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text"});if(ok){setText("");setEmojiOpen(false);}};
-  const sendEmoticon=async value=>{const ok=await appendMessage({text:value,kind:"emoticon"});if(ok)setEmojiOpen(false);};
-  const handleFile=async e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await appendMessage({text:file.name,kind:file.type.startsWith("image/")?"image":"file",fileName:file.name,fileData:dataUrl});};
-
-  const filteredChannels=channelRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
-  const filteredDirects=directRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
-  const roomMessages=messages[activeRoom]||[];
-  const receiptInfoFor=(msg,targetRoom=room)=>{
-    if(!targetRoom)return {recipients:[],read:[],unread:[]};
-    let recipients=[];
-    if(targetRoom.type==="notice")recipients=users.filter(user=>user.name!==msg.sender);
-    else if(targetRoom.type==="dept")recipients=users.filter(user=>user.dept===targetRoom.name&&user.name!==msg.sender);
-    else recipients=users.filter(user=>[currentUser.name,targetRoom.name].includes(user.name)&&user.name!==msg.sender);
-    const roomReceipts=readReceipts[targetRoom.id]||[];
-    const read=[],unread=[];
-    recipients.forEach(user=>{
-      const receipt=roomReceipts.find(item=>(user.uid&&String(item.userUid)===String(user.uid))||item.userName===user.name);
-      if(receipt&&Number(receipt.readAt)>=Number(msg.createdAt||0))read.push({user,receipt});
-      else unread.push(user);
-    });
-    return {recipients,read,unread};
-  };
-  const detailInfo=readDetail?receiptInfoFor(readDetail,room):null;
-  const unreadCount=allRooms.reduce((sum,r)=>sum+(messages[r.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[r.id]||0)).length,0);
-  const panelStyle=compact?{position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}:{position:"fixed",left:position.x,top:position.y,width:"min(650px,calc(100vw - 16px))",height:"min(720px,calc(100vh - 16px))"};
-
-  if(minimized)return <button type="button" onClick={()=>setMinimize(false)} aria-label="NAMO Talk 복원" style={{position:"fixed",right:18,bottom:18,zIndex:12000,height:48,padding:"0 16px",display:"flex",alignItems:"center",gap:9,border:"2px solid #d4a017",borderRadius:16,background:"#0f2740",color:"white",boxShadow:"0 12px 28px rgba(15,23,42,.35)",fontSize:15,fontWeight:900,cursor:"pointer"}}><NamoDrop size={28}/> NAMO Talk {unreadCount>0&&<span style={{minWidth:22,height:22,padding:"0 6px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:11,background:"#ef4444",fontSize:12}}>{unreadCount}</span>}</button>;
-
-  return <section ref={panelRef} aria-label="NAMO Talk" style={{...panelStyle,zIndex:12000,display:"flex",flexDirection:"column",background:"#f4f7fa",color:"#172033",fontFamily:"'Pretendard','Noto Sans KR',sans-serif",boxShadow:"0 18px 50px rgba(15,23,42,.32)",border:"2px solid #d4a017",borderRadius:compact?0:14,overflow:"hidden"}}>
-    {toast&&<div style={{position:"absolute",right:12,top:66,zIndex:50,background:"#172033",color:"white",padding:"10px 14px",borderRadius:10,fontSize:13,fontWeight:800,boxShadow:"0 8px 20px rgba(15,23,42,.25)"}}>{toast}</div>}
-    {readDetail&&<div onClick={()=>setReadDetail(null)} style={{position:"absolute",inset:0,zIndex:80,display:"flex",alignItems:"center",justifyContent:"center",padding:18,background:"rgba(15,23,42,.48)"}}><div onClick={event=>event.stopPropagation()} style={{width:"min(390px,100%)",maxHeight:"75%",overflowY:"auto",background:"white",borderRadius:15,boxShadow:"0 20px 55px rgba(15,23,42,.35)",padding:18}}><div style={{display:"flex",alignItems:"center",gap:10}}><strong style={{fontSize:18,color:"#172033"}}>읽음 확인</strong><button onClick={()=>setReadDetail(null)} style={{marginLeft:"auto",width:32,height:32,border:0,borderRadius:8,background:"#eef2f6",fontSize:20,cursor:"pointer"}}>×</button></div><div style={{marginTop:7,fontSize:13,color:"#64748b",fontWeight:700}}>읽음 {detailInfo.read.length}/{detailInfo.recipients.length}명</div><div style={{marginTop:14}}>{detailInfo.recipients.length===0?<div style={{padding:14,textAlign:"center",color:"#64748b"}}>확인 대상자가 없습니다.</div>:detailInfo.read.map(({user,receipt})=><div key={`read-${user.uid||user.name}`} style={{display:"flex",alignItems:"center",padding:"10px 4px",borderBottom:"1px solid #e2e8f0"}}><span style={{width:31,height:31,borderRadius:"50%",background:"#dcfce7",color:"#15803d",display:"inline-flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✓</span><span style={{marginLeft:10,fontWeight:850,color:"#172033"}}>{user.name}</span><span style={{marginLeft:"auto",fontSize:11,color:"#64748b"}}>{new Date(receipt.readAt).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false})}</span></div>)}</div>{detailInfo.unread.length>0&&<div style={{marginTop:15}}><div style={{fontSize:12,fontWeight:900,color:"#b45309",marginBottom:7}}>미확인 {detailInfo.unread.length}명</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{detailInfo.unread.map(user=><span key={`unread-${user.uid||user.name}`} style={{padding:"6px 9px",borderRadius:9,background:"#fff7ed",color:"#9a3412",fontSize:12,fontWeight:800}}>{user.name}</span>)}</div></div>}</div></div>}
-    <header onPointerDown={startDrag} title={compact?"NAMO Talk":"제목줄을 잡고 이동"} style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",padding:"0 12px",background:"#0f2740",color:"white",cursor:compact?"default":"grab",touchAction:"none"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}><NamoDrop size={34}/><div style={{fontSize:21,fontWeight:950,letterSpacing:"-.2px"}}>NAMO Talk</div></div>
-      <div style={{marginLeft:"auto",fontSize:13,color:"#d7e3ec",marginRight:8,fontWeight:700}}>{currentUser.name}</div>
-      <button onClick={toggleNotify} aria-label={notifyOn?"채팅 알림 끄기":"채팅 알림 켜기"} title={notifyOn?"채팅 알림 켜짐":"채팅 알림 꺼짐"} style={{width:34,height:32,border:"1px solid rgba(255,255,255,.15)",borderRadius:8,background:notifyOn?"rgba(56,189,248,.18)":"rgba(255,255,255,.07)",color:notifyOn?"#7dd3fc":"#cbd5e1",fontSize:16,cursor:"pointer",marginRight:5}}>{notifyOn?"🔔":"🔕"}</button>
-      <button onClick={()=>setMinimize(true)} aria-label="최소화" title="최소화" style={{width:34,height:32,border:0,borderRadius:8,background:"rgba(255,255,255,.07)",color:"white",fontSize:20,cursor:"pointer",marginRight:5}}>−</button>
-      <button onClick={()=>setMode("attendance")} style={{height:32,padding:"0 10px",border:"1px solid #d4a017",borderRadius:8,background:mode==="attendance"?"#fff3b0":"rgba(212,160,23,.15)",color:mode==="attendance"?"#7c5c00":"#ffe69a",fontSize:13,fontWeight:900,cursor:"pointer",marginRight:5}}>근태</button>
-      <button onClick={onClose} aria-label="닫기" style={{width:34,height:32,border:0,borderRadius:8,background:"rgba(255,255,255,.08)",color:"white",fontSize:22,cursor:"pointer"}}>×</button>
-    </header>
-
-    <div style={{height:42,flex:"0 0 42px",display:"flex",background:"white",borderBottom:"1px solid #cbd5e1",padding:"0 8px",alignItems:"center",gap:4}}>
-      {[["chat","대화"],["attendance","근태관리"]].map(([id,label])=><button key={id} onClick={()=>setMode(id)} style={{height:31,padding:"0 13px",border:0,borderRadius:8,background:mode===id?"#dbeafe":"transparent",color:mode===id?"#075985":"#475569",fontSize:13,fontWeight:900,cursor:"pointer"}}>{label}</button>)}
-    </div>
-
-    {mode==="attendance"?<AttendancePanel currentUser={currentUser} users={users}/>:<div style={{flex:"1 1 auto",minHeight:0,display:"flex",width:"100%",overflow:"hidden"}}>
-      <div style={{width:205,flex:"0 0 205px",background:"white",borderRight:"1px solid #cbd5e1",overflowY:"auto"}}>
-        <div style={{padding:9}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="채널·직원 검색" style={{width:"100%",height:38,boxSizing:"border-box",border:"1px solid #cbd5e1",borderRadius:9,padding:"0 10px",fontSize:14,color:"#1e293b"}}/></div>
-        <div style={{padding:7}}>{filteredChannels.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}<div style={{fontSize:12,fontWeight:900,color:"#64748b",padding:"15px 7px 7px"}}>1:1 대화</div>{filteredDirects.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={setActiveRoom} messages={messages} reads={reads} currentUser={currentUser}/>)}</div>
-      </div>
-
-      <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:"flex",flexDirection:"column",background:"#edf3f7",overflow:"hidden",position:"relative"}}>
-        <div style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"center",padding:"0 14px",background:"white",borderBottom:"1px solid #cbd5e1"}}><div><div style={{fontSize:17,fontWeight:950,color:"#172033"}}>{room?.name||"대화"}</div><div style={{fontSize:12,color:"#64748b",fontWeight:600,marginTop:3}}>{room?.subtitle||""}</div></div></div>
-        <div ref={scrollRef} style={{flex:"1 1 auto",minHeight:0,overflowY:"auto",padding:15}}>
-          {roomMessages.length===0&&<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",color:"#64748b"}}><div><NamoDrop size={58}/><strong style={{display:"block",color:"#334155",fontSize:15,marginTop:14}}>아직 대화 내용이 없습니다.</strong></div></div>}
-          {roomMessages.map(msg=>{const mine=msg.sender===currentUser.name;const info=mine?receiptInfoFor(msg):null;const label=room?.type==="direct"?(info?.read.length?"읽음":"전송됨"):`읽음 ${info?.read.length||0}/${info?.recipients.length||0}명`;return <div key={msg.id} style={{marginBottom:14,textAlign:mine?"right":"left"}}><div style={{fontSize:12,color:"#475569",fontWeight:700,marginBottom:4}}>{msg.sender} · {msg.time||""}</div><div style={{display:"inline-block",maxWidth:"84%",background:mine?"#0284c7":"white",color:mine?"white":"#172033",borderRadius:14,padding:msg.kind==="emoticon"?"10px 14px":"10px 12px",fontSize:msg.kind==="emoticon"?30:15,lineHeight:1.55,boxShadow:"0 1px 3px rgba(15,23,42,.1)",wordBreak:"break-word"}}>{msg.kind==="image"?<img src={msg.fileData} alt={msg.fileName||"첨부 이미지"} style={{display:"block",maxWidth:"100%",maxHeight:220,borderRadius:8}}/>:msg.kind==="file"?<a href={msg.fileData} download={msg.fileName} style={{color:"inherit"}}>📎 {msg.fileName}</a>:msg.text}</div>{mine&&<div><button type="button" onClick={()=>setReadDetail(msg)} style={{border:0,background:"transparent",padding:"4px 2px 0",color:info.read.length?"#0284c7":"#64748b",fontSize:11,fontWeight:850,cursor:"pointer"}}>{label}</button></div>}</div>})}
-        </div>
-
-        {emojiOpen&&<div style={{position:"absolute",right:10,bottom:84,width:280,padding:12,background:"white",border:"1px solid #cbd5e1",borderRadius:14,boxShadow:"0 14px 35px rgba(15,23,42,.2)",zIndex:20}}><div style={{display:"flex",alignItems:"center",marginBottom:9}}><strong style={{fontSize:14}}>나모 이모티콘</strong><button onClick={()=>setEmojiOpen(false)} style={{marginLeft:"auto",border:0,background:"transparent",fontSize:18,cursor:"pointer"}}>×</button></div><div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:6}}>{NAMO_EMOTICONS.map((value,i)=><button key={`${value}-${i}`} onClick={()=>sendEmoticon(value)} title={value} style={{height:40,border:"1px solid #e2e8f0",borderRadius:9,background:"#f8fafc",fontSize:20,cursor:"pointer"}}>{value}</button>)}</div></div>}
-        <div style={{flex:"0 0 auto",background:"white",padding:10,borderTop:"1px solid #cbd5e1"}}>
-          <input ref={fileRef} type="file" onChange={handleFile} style={{display:"none"}}/>
-          <div style={{display:"flex",alignItems:"flex-end",gap:7}}>
-            <button type="button" onClick={()=>fileRef.current?.click()} disabled={sending} style={{height:46,flex:"0 0 auto",padding:"0 12px",border:"1px solid #94a3b8",borderRadius:9,background:"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>📎 파일</button>
-            <button type="button" onClick={()=>setEmojiOpen(v=>!v)} disabled={sending} style={{height:46,flex:"0 0 auto",padding:"0 11px",border:"1px solid #94a3b8",borderRadius:9,background:emojiOpen?"#ede9fe":"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>😊 이모티콘</button>
-            <textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}} placeholder="메시지를 입력하세요" style={{flex:"1 1 auto",minWidth:0,height:60,boxSizing:"border-box",resize:"none",border:"1px solid #94a3b8",borderRadius:10,padding:"10px 11px",fontFamily:"inherit",fontSize:15,color:"#172033",outline:"none"}}/>
-            <button type="button" onClick={sendMessage} disabled={!text.trim()||sending} style={{width:64,height:60,flex:"0 0 64px",background:text.trim()&&!sending?"#0284c7":"#bae6fd",color:"white",border:0,borderRadius:10,fontSize:15,fontWeight:950,cursor:text.trim()&&!sending?"pointer":"default"}}>{sending?"전송중":"전송"}</button>
-          </div>
-        </div>
-      </div>
-    </div>}
-  </section>;
+ const me=window.__QMES_CURRENT_USER__||{name:"관리자",dept:"경영지원부",position:"시스템관리자",uid:"U-0001"};
+ const [users,setUsers]=useState(getNamoTalkUsers),[mode,setMode]=useState("chat"),[active,setActive]=useState("전체공지"),[messages,setMessages]=useState({}),[reads,setReads]=useState(loadReads),[text,setText]=useState(""),[search,setSearch]=useState(""),[emojiOpen,setEmojiOpen]=useState(false),[sending,setSending]=useState(false),[minimized,setMinimized]=useState(()=>localStorage.getItem(NAMO_TALK_MINIMIZED_KEY)==="1"),[pos,setPos]=useState(loadPos);
+ const panelRef=useRef(null),dragRef=useRef(null),scrollRef=useRef(null),fileRef=useRef(null);
+ const depts=Array.from(new Set(users.map(u=>u.dept).filter(Boolean)));
+ const rooms=[{id:"전체공지",name:"전체 공지",type:"notice",subtitle:"전 직원 공지",dept:"품질부"},...depts.map(d=>({id:`dept:${d}`,name:d,type:"dept",subtitle:`${d} 채팅방`,dept:d})),...users.filter(u=>u.name!==me.name).map(u=>({id:makeDirectRoomId(me.name,u.name),name:u.name,type:"direct",subtitle:`${u.dept||"부서"} · ${u.position||"직급"}`,dept:u.dept,user:u}))];
+ const room=rooms.find(r=>r.id===active)||rooms[0];
+ const roomMessages=messages[room?.id]||[];
+ const refresh=async id=>{if(!id)return;try{const rows=await talkFetch(id);setMessages(p=>({...p,[id]:rows}));}catch(e){console.warn(e.message);}};
+ useEffect(()=>{const t=setInterval(()=>setUsers(getNamoTalkUsers()),3000);return()=>clearInterval(t);},[]);
+ useEffect(()=>{if(!room)return;refresh(room.id);const n={...reads,[room.id]:Date.now()};setReads(n);saveReads(n);},[active]);
+ useEffect(()=>{if(!room)return;const t=setInterval(()=>refresh(room.id),2500);return()=>clearInterval(t);},[room?.id]);
+ useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[roomMessages.length,active]);
+ useEffect(()=>{const move=e=>{const d=dragRef.current;if(!d)return;const w=panelRef.current?.offsetWidth||1180,h=panelRef.current?.offsetHeight||760;setPos({x:Math.max(8,Math.min(e.clientX-d.x,window.innerWidth-w-8)),y:Math.max(8,Math.min(e.clientY-d.y,window.innerHeight-h-8))});};const up=()=>{if(!dragRef.current)return;dragRef.current=null;savePos(pos);document.body.style.userSelect="";};window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);return()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};},[pos]);
+ const startDrag=e=>{if(e.target.closest("button")||e.button!==0)return;const r=panelRef.current?.getBoundingClientRect();if(!r)return;dragRef.current={x:e.clientX-r.left,y:e.clientY-r.top};document.body.style.userSelect="none";};
+ const send=async payload=>{if(!room||sending)return;setSending(true);try{const saved=await talkPost(room.id,payload);setMessages(p=>({...p,[room.id]:[...(p[room.id]||[]),saved]}));return true;}catch(e){alert(e.message);return false;}finally{setSending(false);}};
+ const sendText=async()=>{const v=text.trim();if(!v)return;if(await send({text:v,kind:room.type==="notice"?"notice":"text"}))setText("");};
+ const onFile=async e=>{const f=e.target.files?.[0];e.target.value="";if(!f)return;if(f.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});await send({text:f.name,kind:f.type.startsWith("image/")?"image":"file",fileName:f.name,fileData:data});};
+ const q=search.trim();const filtered=rooms.filter(r=>!q||`${r.name} ${r.subtitle}`.includes(q));
+ const favorites=filtered.filter(r=>r.type!=="direct").slice(0,3),people=filtered.filter(r=>r.type==="direct");
+ const panelStyle={position:"fixed",left:pos.x,top:pos.y,width:"min(1480px,calc(100vw - 16px))",height:"min(860px,calc(100vh - 16px))"};
+ if(minimized)return <button onClick={()=>{setMinimized(false);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,"0");}} style={{position:"fixed",right:18,bottom:18,zIndex:12000,border:0,borderRadius:18,padding:"10px 16px",background:"white",boxShadow:"0 12px 35px rgba(15,23,42,.24)",display:"flex",alignItems:"center",gap:10,fontWeight:950,color:"#14305f"}}><NamoLogo size={34}/>NAMO Talk</button>;
+ return <section ref={panelRef} aria-label="NAMO Talk" style={{...panelStyle,zIndex:12000,display:"flex",flexDirection:"column",background:"#f7fbff",border:"1px solid #cfe0f3",borderRadius:22,overflow:"hidden",boxShadow:"0 28px 80px rgba(15,23,42,.3)",fontFamily:"Pretendard,sans-serif",color:"#172033"}}>
+  <header onPointerDown={startDrag} style={{height:82,display:"flex",alignItems:"center",padding:"0 22px",background:"linear-gradient(180deg,#ffffff,#f7fbff)",borderBottom:"1px solid #dbe7f4",cursor:"grab"}}><NamoLogo size={52}/><div style={{marginLeft:12}}><div style={{fontSize:27,fontWeight:1000,color:"#102a56"}}>NAMO <span style={{color:"#2d6df6"}}>Talk</span></div><div style={{fontSize:12,color:"#60708a",fontWeight:700}}>나모케미칼 전용 메신저</div></div><div style={{display:"flex",gap:8,marginLeft:70}}>{[["chat","💬 채팅"],["attendance","👤 근태관리"]].map(([id,label])=><button key={id} onClick={()=>setMode(id)} style={{height:50,padding:"0 22px",border:`1px solid ${mode===id?"#2d6df6":"#d6e1ef"}`,borderRadius:13,background:mode===id?"linear-gradient(135deg,#367af6,#1664ea)":"white",color:mode===id?"white":"#3c4b63",fontSize:16,fontWeight:950}}>{label}</button>)}</div><div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:14}}><button style={{border:0,background:"transparent",fontSize:24}}>🔔</button><button style={{border:0,background:"transparent",fontSize:24}}>⚙️</button><Mascot dept={me.dept} size={48}/><div><div style={{fontWeight:950}}>{me.name} {me.position||""}</div><div style={{fontSize:12,color:"#5f6f86",marginTop:2}}>{me.dept||"부서"} · 🟢 근무중</div></div><button onClick={()=>{setMinimized(true);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,"1");}} style={{width:34,height:34,border:0,borderRadius:10,background:"#eef4fb",fontSize:20}}>−</button><button onClick={onClose} style={{width:34,height:34,border:0,borderRadius:10,background:"#eef4fb",fontSize:20}}>×</button></div></header>
+  {mode==="attendance"?<AttendancePanel currentUser={me} users={users}/>:<div style={{flex:1,minHeight:0,display:"grid",gridTemplateColumns:"340px minmax(0,1fr) 380px",gap:16,padding:14,overflow:"hidden"}}>
+   <aside style={{display:"flex",flexDirection:"column",minHeight:0,background:"white",border:"1px solid #dbe7f4",borderRadius:16,overflow:"hidden"}}><div style={{padding:16}}><button style={{width:"100%",height:44,border:0,borderRadius:10,background:"linear-gradient(135deg,#347cf7,#1767eb)",color:"white",fontWeight:950,fontSize:15}}>✎ 새 채팅</button><div style={{display:"flex",gap:8,marginTop:12}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="채팅방·직원 검색" style={{flex:1,height:40,border:"1px solid #cfdaea",borderRadius:10,padding:"0 12px",fontSize:14}}/><button style={{width:42,border:"1px solid #cfdaea",borderRadius:10,background:"white"}}>🔎</button></div></div><div style={{flex:1,minHeight:0,overflowY:"auto",padding:"0 10px 14px"}}><div style={{fontSize:12,fontWeight:950,color:"#334155",padding:"8px 8px"}}>즐겨찾기</div>{favorites.map(r=><RoomRow key={r.id} room={r} active={active} setActive={setActive} messages={messages} reads={reads} me={me}/>) }<div style={{fontSize:12,fontWeight:950,color:"#334155",padding:"14px 8px 8px"}}>직원 목록 <span style={{float:"right",color:"#7c8ca2"}}>{people.length}명</span></div>{people.map(r=><RoomRow key={r.id} room={r} active={active} setActive={setActive} messages={messages} reads={reads} me={me}/>)}</div><div style={{padding:14,borderTop:"1px solid #e6eef6"}}><div style={{fontSize:12,fontWeight:950,marginBottom:10}}>빠른 메뉴</div><div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>{[["📢","공지"],["📄","전자결재"],["🕒","근태현황"],["📁","파일함"]].map(([i,t])=><button key={t} style={{border:"1px solid #dce7f3",borderRadius:12,background:"#fbfdff",padding:"10px 3px",fontSize:11,fontWeight:850}}><div style={{fontSize:22,marginBottom:5}}>{i}</div>{t}</button>)}</div></div></aside>
+   <main style={{display:"flex",flexDirection:"column",minWidth:0,minHeight:0,background:"white",border:"1px solid #dbe7f4",borderRadius:16,overflow:"hidden"}}><div style={{height:78,display:"flex",alignItems:"center",padding:"0 20px",borderBottom:"1px solid #e1eaf4"}}><Mascot dept={room?.dept} size={46}/><div style={{marginLeft:12}}><div style={{fontSize:18,fontWeight:1000}}>{room?.name}</div><div style={{fontSize:12,color:"#6b7a90",marginTop:3}}>{room?.subtitle}</div></div><div style={{marginLeft:"auto",fontSize:22,display:"flex",gap:16}}><button style={{border:0,background:"transparent"}}>🔍</button><button style={{border:0,background:"transparent"}}>📌</button><button style={{border:0,background:"transparent"}}>⋮</button></div></div><div ref={scrollRef} style={{flex:1,minHeight:0,overflowY:"auto",padding:20,background:"linear-gradient(180deg,#ffffff,#fbfdff)"}}>{roomMessages.length===0&&<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}><div><NamoLogo size={74}/><div style={{fontSize:18,fontWeight:1000,color:"#213a67",marginTop:18}}>아직 대화가 없어요!</div><div style={{fontSize:13,color:"#738198",marginTop:6}}>귀여운 NAMO와 함께 첫 메시지를 보내보세요 😊</div></div></div>}{roomMessages.map(m=>{const mine=m.sender===me.name;return <div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:16}}>{!mine&&<Mascot dept={room?.dept} size={38}/>}<div style={{maxWidth:"72%",marginLeft:mine?0:9}}><div style={{fontSize:11,color:"#718096",marginBottom:4,textAlign:mine?"right":"left"}}>{m.sender} · {m.time||""}</div><div style={{padding:m.kind==="emoticon"?"12px 16px":"11px 14px",borderRadius:mine?"16px 16px 4px 16px":"16px 16px 16px 4px",background:mine?"linear-gradient(135deg,#2f7df6,#1766e9)":"#eef4fb",color:mine?"white":"#24324a",fontSize:m.kind==="emoticon"?30:14,lineHeight:1.55,boxShadow:"0 4px 12px rgba(15,23,42,.07)",wordBreak:"break-word"}}>{m.kind==="image"?<img src={m.fileData} alt={m.fileName||"이미지"} style={{maxWidth:"100%",maxHeight:240,borderRadius:10}}/>:m.kind==="file"?<a href={m.fileData} download={m.fileName} style={{color:"inherit"}}>📎 {m.fileName}</a>:m.text}</div></div></div>})}</div>{emojiOpen&&<div style={{position:"absolute",right:402,bottom:100,width:280,padding:12,background:"white",border:"1px solid #d8e4f1",borderRadius:14,boxShadow:"0 18px 40px rgba(15,23,42,.18)",zIndex:20}}><div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:6}}>{["😊","😍","😂","😭","👍","👏","🙏","💪","❤️","🎉","😳","😴","😎","☕","📦","✅","❗","🤔"].map((e,i)=><button key={i} onClick={async()=>{if(await send({text:e,kind:"emoticon"}))setEmojiOpen(false);}} style={{height:38,border:"1px solid #e5edf5",borderRadius:9,background:"#fbfdff",fontSize:20}}>{e}</button>)}</div></div>}<div style={{padding:14,borderTop:"1px solid #e1eaf4",background:"white"}}><textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText();}}} placeholder="메시지를 입력하세요..." style={{width:"100%",height:62,boxSizing:"border-box",resize:"none",border:"1px solid #d6e2ef",borderRadius:13,padding:"12px 14px",fontFamily:"inherit",fontSize:14}}/><div style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}><input ref={fileRef} type="file" onChange={onFile} style={{display:"none"}}/><button onClick={()=>fileRef.current?.click()} style={{border:0,background:"transparent",fontSize:21}}>📎</button><button style={{border:0,background:"transparent",fontSize:21}}>🖼️</button><button onClick={()=>setEmojiOpen(v=>!v)} style={{border:0,background:"transparent",fontSize:21}}>😊</button><button style={{border:0,background:"transparent",fontSize:21}}>🐻</button><button onClick={sendText} disabled={!text.trim()||sending} style={{marginLeft:"auto",height:42,padding:"0 22px",border:0,borderRadius:11,background:text.trim()?"linear-gradient(135deg,#347cf7,#1767eb)":"#bdd5f8",color:"white",fontWeight:950,fontSize:15}}>✈ 전송</button></div></div></main>
+   <aside style={{display:"flex",flexDirection:"column",gap:12,minHeight:0,overflowY:"auto"}}><MiniCard title="내 프로필"><div style={{display:"flex",alignItems:"center",gap:12}}><Mascot dept={me.dept} size={68}/><div><div style={{fontSize:18,fontWeight:1000}}>{me.name} {me.position||""}</div><div style={{fontSize:13,color:"#66758c",marginTop:3}}>{me.dept||"부서"}</div><div style={{fontSize:12,color:"#16a34a",fontWeight:900,marginTop:8}}>● 근무중</div></div></div><div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:14,paddingTop:12,borderTop:"1px solid #e7eef6"}}>{[["👤","프로필"],["💬","상태메시지"],["↪","로그아웃"]].map(([i,t])=><button key={t} style={{border:0,background:"transparent",padding:6,fontSize:11,fontWeight:850}}><div style={{fontSize:21,marginBottom:4}}>{i}</div>{t}</button>)}</div></MiniCard><MiniCard title="📅 오늘 일정"><div style={{display:"grid",gap:9,fontSize:13}}><div>10:00　🔵 품질회의</div><div>14:00　🟢 안전보건 교육</div><div>16:30　🟣 IQC 결과 검토</div></div></MiniCard><MiniCard title="📢 최근 공지"><div style={{display:"grid",gap:9,fontSize:13,color:"#475569"}}><div>› 7월 안전보건 교육 일정 안내</div><div>› 하계 휴가 일정 안내</div><div>› 제품 포장 변경 안내</div></div></MiniCard><MiniCard title="📊 출퇴근 현황"><div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7,textAlign:"center"}}>{[["근무중","7명","#16a34a"],["외근중","1명","#f97316"],["회의중","0명","#2563eb"],["휴가중","1명","#475569"]].map(([a,b,c])=><div key={a} style={{padding:"10px 3px",border:"1px solid #e2eaf3",borderRadius:10}}><div style={{fontSize:11,color:c,fontWeight:900}}>{a}</div><div style={{fontSize:16,fontWeight:1000,marginTop:5,color:c}}>{b}</div></div>)}</div></MiniCard><MiniCard title={`🟢 접속 중인 직원 (${users.length})`}><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{users.slice(0,9).map(u=><Mascot key={u.uid||u.name} dept={u.dept} size={38}/>)}</div></MiniCard></aside>
+  </div>}
+ </section>;
 }
-
-function RoomButton({item,activeRoom,setActiveRoom,messages={},reads={},currentUser={}}){
-  const active=activeRoom===item.id;
-  const unread=(messages[item.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[item.id]||0)).length;
-  return <button type="button" onClick={()=>setActiveRoom(item.id)} style={{width:"100%",border:0,borderRadius:10,background:active?"#dbeafe":"transparent",display:"flex",alignItems:"center",gap:8,padding:"9px 8px",cursor:"pointer",textAlign:"left",marginBottom:3}}><span style={{width:32,height:32,flex:"0 0 32px",borderRadius:item.type==="direct"?"50%":9,background:active?"#0284c7":"#e8eef3",color:active?"white":"#334155",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:950}}>{item.name?.[0]||"?"}</span><span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:14,color:"#172033",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</strong><span style={{display:"block",fontSize:11,color:"#64748b",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:2}}>{item.subtitle}</span></span>{unread>0&&<span style={{minWidth:21,height:21,padding:"0 5px",borderRadius:11,background:"#ef4444",color:"white",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{unread>99?"99+":unread}</span>}</button>;
-}
+function RoomRow({room,active,setActive,messages,reads,me}){const t=themeOf(room.dept),unread=(messages[room.id]||[]).filter(m=>m.sender!==me.name&&(m.createdAt||m.id)>(reads[room.id]||0)).length,last=(messages[room.id]||[]).slice(-1)[0];return <button onClick={()=>setActive(room.id)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"10px 9px",border:0,borderRadius:12,background:active===room.id?"#e9f2ff":"transparent",textAlign:"left",marginBottom:4}}><Mascot dept={room.dept} size={40}/><span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:14,color:"#24324a",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{room.name}</strong><span style={{display:"block",fontSize:11,color:"#708097",marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{last?.text||room.subtitle}</span></span>{unread>0&&<span style={{minWidth:20,height:20,padding:"0 5px",borderRadius:10,background:"#ef4444",color:"white",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{unread}</span>}</button>;}
