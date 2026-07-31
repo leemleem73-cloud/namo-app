@@ -85,7 +85,9 @@ function QMESChemical({user, onLogout}){
     ()=>safeStorageGet("qmes_open_menu", null)
   );
 
-  const [talkOpen, setTalkOpen] = useState(false);
+  const [talkOpen, setTalkOpen] = useState(
+    ()=>safeStorageGet("qmes_namo_talk_open", "0") === "1"
+  );
   const [talkTargetRoom, setTalkTargetRoom] = useState("");
   const [namoUnread, setNamoUnread] = useState(()=>{try{return Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0);}catch(error){return 0;}});
 
@@ -102,6 +104,10 @@ function QMESChemical({user, onLogout}){
   useEffect(()=>{
     safeStorageSet("qmes_current_tab", tab);
   }, [tab]);
+
+  useEffect(()=>{
+    safeStorageSet("qmes_namo_talk_open", talkOpen ? "1" : "0");
+  }, [talkOpen]);
 
   useEffect(()=>{
     const updateUnread=event=>setNamoUnread(Math.max(0,Number(event.detail?.count||0)));
