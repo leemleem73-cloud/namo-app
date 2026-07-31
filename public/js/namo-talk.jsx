@@ -325,10 +325,6 @@ function NamoTalkTab({onClose,initialRoom=""}){
       <button onClick={onClose} aria-label="닫기" style={{width:34,height:32,border:0,borderRadius:8,background:"rgba(255,255,255,.08)",color:"white",fontSize:22,cursor:"pointer"}}>×</button>
     </header>
 
-    {!chatRoomOpen&&<nav aria-label="NAMO Talk 상단 메뉴" style={{height:44,flex:"0 0 44px",display:"flex",alignItems:"center",gap:4,padding:"0 8px",background:"white",borderBottom:"1px solid #cbd5e1"}}>
-      {[["employees","직원"],["conversations","대화"],["attendance","근태관리"]].map(([id,label])=><button key={id} type="button" onClick={()=>{setMode(id);setMessageListOpen(false);}} style={{height:32,padding:"0 15px",border:0,borderRadius:8,background:mode===id?"#dbeafe":"transparent",color:mode===id?"#075985":"#475569",fontSize:13,fontWeight:900,cursor:"pointer"}}>{label}{id==="conversations"&&unreadCount>0&&<span style={{marginLeft:6,minWidth:18,height:18,padding:"0 5px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:9,background:"#ef4444",color:"white",fontSize:10}}>{unreadCount>99?"99+":unreadCount}</span>}</button>)}
-    </nav>}
-
     {mode==="employees"&&!chatRoomOpen&&!messageListOpen&&<div style={{height:48,flex:"0 0 48px",display:"flex",alignItems:"center",gap:7,padding:"0 10px",background:"#f8fafc",borderBottom:"1px solid #cbd5e1"}}>
       <strong style={{fontSize:12,color:"#475569",whiteSpace:"nowrap"}}>내 상태</strong>
       <select value={myStatus} onChange={event=>changeStatus(event.target.value)} style={{height:32,border:"1px solid #cbd5e1",borderRadius:8,padding:"0 7px",background:"white",color:"#172033",fontSize:12,fontWeight:800}}>{Object.entries(NAMO_TALK_STATUS).map(([value,item])=><option key={value} value={value}>{item.label}</option>)}</select>
@@ -389,6 +385,9 @@ function NamoTalkTab({onClose,initialRoom=""}){
         </div>
       </div>
     </div>}
+    {!chatRoomOpen&&<nav aria-label="NAMO Talk 하단 메뉴" style={{height:58,flex:"0 0 58px",display:"flex",alignItems:"stretch",background:"#0f2740",borderTop:"1px solid #28435f"}}>
+      {[["employees","♙","직원"],["conversations","▣","대화"],["attendance","◷","근태관리"]].map(([id,icon,label])=><button key={id} type="button" onClick={()=>{setMode(id);setMessageListOpen(false);}} style={{position:"relative",flex:1,border:0,borderTop:`3px solid ${mode===id?"#d4a017":"transparent"}`,background:mode===id?"rgba(212,160,23,.12)":"transparent",color:mode===id?"#ffe69a":"#cbd5e1",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,fontSize:11,fontWeight:900,cursor:"pointer"}}><span aria-hidden="true" style={{fontSize:18,lineHeight:1}}>{icon}</span><span>{label}</span>{id==="conversations"&&unreadCount>0&&<span style={{position:"absolute",top:5,left:"calc(50% + 8px)",minWidth:18,height:18,padding:"0 5px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:9,background:"#ef4444",color:"white",fontSize:10,border:"2px solid #0f2740"}}>{unreadCount>99?"99+":unreadCount}</span>}</button>)}
+    </nav>}
   </section>;
 }
 
