@@ -87,7 +87,7 @@ function QMESChemical({user, onLogout}){
 
   const [talkOpen, setTalkOpen] = useState(false);
   const [talkTargetRoom, setTalkTargetRoom] = useState("");
-  const [namoUnread, setNamoUnread] = useState(()=>Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0));
+  const [namoUnread, setNamoUnread] = useState(()=>{try{return Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0);}catch(error){return 0;}});
 
   /* 계정 설정 모달 */
   const [profileOpen, setProfileOpen] = useState(false);
