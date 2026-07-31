@@ -20,22 +20,22 @@ const NAMO_TALK_STATUS={
   offline:{label:"오프라인",color:"#94a3b8"}
 };
 const NAMO_PROFILE_PRESETS=[
-  {id:"drop-blue",label:"파랑",color:"#60a5fa",mood:"happy"},
-  {id:"drop-purple",label:"보라",color:"#a78bfa",mood:"soft"},
-  {id:"drop-mint",label:"민트",color:"#34d399",mood:"happy"},
-  {id:"drop-pink",label:"분홍",color:"#f9a8d4",mood:"soft"},
-  {id:"drop-yellow",label:"노랑",color:"#fbbf24",mood:"laugh"},
-  {id:"drop-sky",label:"하늘",color:"#38bdf8",mood:"happy"},
-  {id:"drop-navy",label:"네이비",color:"#345675",mood:"focus"},
-  {id:"drop-coral",label:"코랄",color:"#fb7185",mood:"soft"},
-  {id:"drop-angry",label:"화남",color:"#f87171",mood:"angry"},
-  {id:"drop-surprise",label:"놀람",color:"#60a5fa",mood:"surprise"},
-  {id:"drop-laugh",label:"웃음",color:"#fbbf24",mood:"laugh"},
-  {id:"drop-sleepy",label:"졸림",color:"#a78bfa",mood:"sleepy"},
-  {id:"drop-curious",label:"궁금",color:"#38bdf8",mood:"curious"},
-  {id:"drop-cheer",label:"응원",color:"#34d399",mood:"cheer"},
-  {id:"drop-focus",label:"집중",color:"#64748b",mood:"focus"},
-  {id:"drop-thanks",label:"감사",color:"#f9a8d4",mood:"thanks"}
+  {id:"drop-blue",label:"오션 블루",color:"#3b82f6",color2:"#93c5fd",mood:"happy"},
+  {id:"drop-purple",label:"라벤더",color:"#8b5cf6",color2:"#c4b5fd",mood:"soft"},
+  {id:"drop-mint",label:"민트",color:"#10b981",color2:"#6ee7b7",mood:"happy"},
+  {id:"drop-pink",label:"로즈",color:"#ec4899",color2:"#f9a8d4",mood:"soft"},
+  {id:"drop-yellow",label:"레몬",color:"#f59e0b",color2:"#fde68a",mood:"laugh"},
+  {id:"drop-sky",label:"아이스 스카이",color:"#06b6d4",color2:"#a5f3fc",mood:"happy"},
+  {id:"drop-navy",label:"딥 네이비",color:"#1e3a5f",color2:"#64748b",mood:"focus"},
+  {id:"drop-coral",label:"코랄",color:"#f97360",color2:"#fdbaaa",mood:"soft"},
+  {id:"drop-angry",label:"레드 화남",color:"#dc2626",color2:"#fca5a5",mood:"angry"},
+  {id:"drop-surprise",label:"아쿠아 놀람",color:"#0ea5e9",color2:"#7dd3fc",mood:"surprise"},
+  {id:"drop-laugh",label:"망고 웃음",color:"#ea9b09",color2:"#fcd34d",mood:"laugh"},
+  {id:"drop-sleepy",label:"인디고 졸림",color:"#6366f1",color2:"#a5b4fc",mood:"sleepy"},
+  {id:"drop-curious",label:"터쿼이즈 궁금",color:"#0d9488",color2:"#5eead4",mood:"curious"},
+  {id:"drop-cheer",label:"라임 응원",color:"#65a30d",color2:"#bef264",mood:"cheer"},
+  {id:"drop-focus",label:"슬레이트 집중",color:"#334155",color2:"#94a3b8",mood:"focus"},
+  {id:"drop-thanks",label:"피치 감사",color:"#f973a6",color2:"#fed7aa",mood:"thanks"}
 ];
 
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
@@ -187,7 +187,7 @@ function NamoDrop({size=34}){
 function NamoProfileAvatar({profile,size=36,name=""}){
   if(profile?.type==="image"&&profile.value)return <img src={profile.value} alt={`${name||"사용자"} 프로필`} style={{width:size,height:size,flex:`0 0 ${size}px`,display:"block",objectFit:"cover",borderRadius:"50%",border:"2px solid white",boxShadow:"0 1px 5px rgba(15,39,64,.2)"}}/>;
   const preset=NAMO_PROFILE_PRESETS.find(item=>item.id===(profile?.value||"drop-blue"))||NAMO_PROFILE_PRESETS[0];
-  return <span aria-label={`${name||"사용자"} ${preset.label} 물방울 프로필`} style={{width:size,height:size,flex:`0 0 ${size}px`,display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:"linear-gradient(145deg,#ffffff,#eef5fa)",border:"1px solid #d5e1ea",boxShadow:"inset 0 1px 2px white,0 2px 6px rgba(15,39,64,.14)",overflow:"hidden"}}><span style={{width:size*.72,height:size*.72,position:"relative",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:`linear-gradient(145deg,#f8fdff 4%,${preset.color} 74%)`,border:"1px solid rgba(255,255,255,.85)",boxShadow:"inset 2px 2px 5px rgba(255,255,255,.88),inset -2px -2px 4px rgba(15,39,64,.12),0 2px 4px rgba(15,39,64,.2)"}}><span style={{position:"absolute",top:"15%",left:"18%",width:"22%",height:"13%",borderRadius:"50%",background:"rgba(255,255,255,.75)",filter:"blur(.2px)"}}/><NamoAvatarFace mood={preset.mood} size={size}/></span></span>;
+  return <span aria-label={`${name||"사용자"} ${preset.label} 물방울 프로필`} style={{width:size,height:size,flex:`0 0 ${size}px`,display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:`linear-gradient(145deg,#ffffff,${preset.color2}33)`,border:`1px solid ${preset.color2}88`,boxShadow:"inset 0 1px 2px white,0 2px 6px rgba(15,39,64,.14)",overflow:"hidden"}}><span style={{width:size*.72,height:size*.72,position:"relative",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:`linear-gradient(145deg,#f8fdff 3%,${preset.color2} 42%,${preset.color} 88%)`,border:"1px solid rgba(255,255,255,.85)",boxShadow:"inset 2px 2px 5px rgba(255,255,255,.88),inset -2px -2px 4px rgba(15,39,64,.15),0 2px 4px rgba(15,39,64,.22)"}}><span style={{position:"absolute",top:"15%",left:"18%",width:"22%",height:"13%",borderRadius:"50%",background:"rgba(255,255,255,.78)",filter:"blur(.2px)"}}/><NamoAvatarFace mood={preset.mood} size={size}/></span></span>;
 }
 
 function NamoAvatarFace({mood="happy",size=36}){
