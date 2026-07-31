@@ -30,7 +30,7 @@ function AttendancePanel({currentUser,users}){
     setLeaveReason("");
   };
   const updateLeaveStatus=(id,status)=>saveLeaveRequests(leaveRequests.map(request=>request.id===id?{...request,status,processedBy:currentUser.name,processedAt:new Date().toISOString()}:request),`신청 상태가 ${status}(으)로 변경되었습니다.`);
-  const cancelLeave=id=>saveLeaveRequests(leaveRequests.map(request=>request.id===id?{...request,status:"취소"}:request),"신청을 취소했습니다.");
+  const cancelLeave=id=>saveLeaveRequests(leaveRequests.filter(request=>request.id!==id),"신청을 취소했습니다.");
   const clockIn=()=>{
     if(mine?.clockIn){showNotice(`이미 ${mine.clockIn}에 출근 처리되었습니다.`);return;}
     const row={date:today,uid:currentUser.uid||currentUser.id||"",name:currentUser.name||"관리자",dept:currentUser.dept||currentUser.department||"관리부",position:currentUser.position||currentUser.rank||"",clockIn:attendanceTime(),clockOut:"",workStatus:"근무",note:"",editHistory:[]};
