@@ -104,6 +104,136 @@ button.self-start.rounded-lg.bg-red-600 svg {
   line-height: 1;
 }
 
+/* 날짜 입력 달력 아이콘 — 어두운 입력칸에서도 밝게 표시 */
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] input[type="date"],
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] input[type="date"],
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] input[type="date"],
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] input[type="date"],
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] input[type="date"] {
+  color-scheme: dark !important;
+}
+
+[role="dialog"][aria-modal="true"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.9) contrast(1.1) !important;
+  opacity: .95 !important;
+  cursor: pointer !important;
+}
+
+/* 부적합 현황 4칸 — 제목 위로 이동하고 품질검사 현황 카드와 통일 */
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 {
+  order: -2 !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #182b42 !important;
+  border-radius: 12px !important;
+  background: #0f1e32 !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child {
+  order: -1 !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card {
+  min-height: 98px !important;
+  padding: 15px 16px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(255,255,255,.055) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  text-align: center !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:last-child {
+  border-right: 0 !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut {
+  width: 6px !important;
+  height: 6px !important;
+  min-width: 6px !important;
+  margin: 0 auto 2px !important;
+  display: block !important;
+  border-radius: 999px !important;
+  background: #41c4ee !important;
+  box-shadow: 0 0 7px rgba(65,196,238,.72) !important;
+  animation: qmes-summary-dot-float 1.35s ease-in-out infinite !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(1) .qmes-hybrid-donut,
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(3) .qmes-hybrid-donut {
+  background: #f87171 !important;
+  box-shadow: 0 0 7px rgba(248,113,113,.68) !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(2) .qmes-hybrid-donut {
+  background: #fbbf24 !important;
+  box-shadow: 0 0 7px rgba(251,191,36,.68) !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(4) .qmes-hybrid-donut {
+  background: #34d399 !important;
+  box-shadow: 0 0 7px rgba(52,211,153,.68) !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut > * {
+  display: none !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-copy {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 5px !important;
+  text-align: center !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label-row,
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value-row {
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label {
+  color: #7f98b5 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value {
+  color: #f2f7fc !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  letter-spacing: -.035em !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-unit {
+  color: #7189a4 !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+
+#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-caption {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card {
+    border-bottom: 1px solid rgba(255,255,255,.055) !important;
+  }
+}
+
 @media (max-width: 767px) {
   #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {
     padding-left: 12px !important;
@@ -113,5 +243,16 @@ button.self-start.rounded-lg.bg-red-600 svg {
   [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) > div > label:nth-child(6),
   [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) > div > label:nth-child(7) {
     grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card {
+    min-height: 78px !important;
+    border-right: 0 !important;
   }
 }
