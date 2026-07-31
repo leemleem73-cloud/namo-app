@@ -433,6 +433,14 @@ async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS namo_talk_reads_room_idx
       ON namo_talk_reads (room_id, last_read_at);
 
+    CREATE TABLE IF NOT EXISTS namo_talk_presence (
+      user_name TEXT PRIMARY KEY,
+      department TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'online',
+      status_message TEXT DEFAULT '',
+      last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
 
     CREATE TABLE IF NOT EXISTS audit_logs (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1676,6 +1684,7 @@ function mapNamoTalkMessage(row) {
   const createdAt = new Date(row.created_at);
   return {
     id: row.id,
+    roomId: row.room_id,
     createdAt: createdAt.getTime(),
     sender: row.sender_name,
     dept: row.sender_dept || '',
@@ -1709,6 +1718,79 @@ app.get('/api/namo-talk/messages', requireLogin, async (req, res) => {
     );
 
     ok(res, r.rows.map(mapNamoTalkMessage));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/notifications', requireLogin, async (req, res) => {
+  try {
+    const requestedAfterId = Number(req.query.afterId);
+    const cursorResult = await db('SELECT COALESCE(MAX(id), 0) AS cursor FROM namo_talk_messages');
+    const currentCursor = Number(cursorResult.rows[0]?.cursor || 0);
+    if (!Number.isFinite(requestedAfterId)) {
+      return res.json({ success: true, message: 'OK', data: [], cursor: currentCursor });
+    }
+    const afterId = Math.max(0, requestedAfterId);
+    const user = req.session.user;
+    const userName = txt(user.name);
+    const result = await db(
+      `SELECT id, room_id, sender_name, sender_uid, sender_dept,
+              message_kind, message_text, file_name, file_type, file_data, created_at
+         FROM namo_talk_messages
+        WHERE id > $1 AND sender_name <> $2
+        ORDER BY id ASC
+        LIMIT 30`,
+      [afterId, userName]
+    );
+    const departmentRoom = `dept:${txt(user.department)}`;
+    const visible = result.rows.filter(row => {
+      if (row.room_id === '전체공지' || row.room_id === departmentRoom) return true;
+      if (!String(row.room_id).startsWith('dm:')) return false;
+      return String(row.room_id).slice(3).split('|').includes(userName);
+    });
+    const nextCursor = result.rows.length ? Number(result.rows[result.rows.length - 1].id) : afterId;
+    return res.json({ success: true, message: 'OK', data: visible.map(mapNamoTalkMessage), cursor: nextCursor });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/presence', requireLogin, async (_req, res) => {
+  try {
+    const result = await db(
+      `SELECT user_name, department, status, status_message, last_seen
+         FROM namo_talk_presence
+        ORDER BY user_name`
+    );
+    const now = Date.now();
+    ok(res, result.rows.map(row => ({
+      name: row.user_name,
+      department: row.department || '',
+      status: now - new Date(row.last_seen).getTime() > 120000 ? 'offline' : row.status,
+      statusMessage: row.status_message || '',
+      lastSeen: new Date(row.last_seen).getTime(),
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/presence', requireLogin, async (req, res) => {
+  try {
+    const user = req.session.user;
+    const allowed = new Set(['online', 'away', 'busy', 'meeting', 'offline']);
+    const status = allowed.has(txt(req.body?.status)) ? txt(req.body.status) : 'online';
+    const statusMessage = txt(req.body?.statusMessage).slice(0, 60);
+    await db(
+      `INSERT INTO namo_talk_presence (user_name, department, status, status_message, last_seen)
+       VALUES ($1,$2,$3,$4,NOW())
+       ON CONFLICT (user_name)
+       DO UPDATE SET department = EXCLUDED.department, status = EXCLUDED.status,
+                     status_message = EXCLUDED.status_message, last_seen = NOW()`,
+      [txt(user.name), txt(user.department), status, statusMessage]
+    );
+    ok(res, { name: txt(user.name), status, statusMessage }, '상태가 변경되었습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
