@@ -2,14 +2,21 @@
    Process inspection extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
 
-/* 부적합 현황카드 단순화
-   수입검사 현황처럼 카드 장식은 제거하고 항목명·숫자만 표시합니다. */
+/* ─────────────────────────────────────────────────────────────
+   부적합 현황카드
+   - 카드 색상·그래프·모서리 장식 제거
+   - 품질검사 현황처럼 작은 움직이는 색상 원만 유지
+───────────────────────────────────────────────────────────── */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card {
   animation: none !important;
   transition: none !important;
   transform: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  mask: none !important;
+  -webkit-mask: none !important;
 }
 
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:hover {
@@ -19,14 +26,26 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   background: transparent !important;
 }
 
+/* 카드 외곽선·하단 왼쪽 보라색 바·오른쪽 ㄴ자 모양을 모두 제거 */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card::before,
-html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card::after {
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card::after,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-copy::before,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-copy::after,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label-row::before,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label-row::after,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value-row::before,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value-row::after {
   display: none !important;
   content: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
   animation: none !important;
 }
 
-/* 오른쪽 원형 그래프·아이콘은 제거 */
+/* 오른쪽 원형 그래프·아이콘 제거 */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-ring,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-ring-inner,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-icon,
@@ -37,6 +56,8 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
 /* 품질검사 현황처럼 작은 움직이는 색상 원만 유지 */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut {
   display: block !important;
+  position: relative !important;
+  inset: auto !important;
   width: 6px !important;
   height: 6px !important;
   min-width: 6px !important;
@@ -46,6 +67,7 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   border-radius: 999px !important;
   background: #41c4ee !important;
   box-shadow: 0 0 7px rgba(65,196,238,.72) !important;
+  clip-path: none !important;
   animation: qmes-summary-dot-float 1.35s ease-in-out infinite !important;
 }
 
@@ -76,9 +98,11 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   align-items: center !important;
   gap: 5px !important;
   text-align: center !important;
+  background: none !important;
+  box-shadow: none !important;
 }
 
-/* 카드 글자·숫자는 모두 무채색으로 통일 */
+/* 카드 글자·숫자는 무채색으로 통일 */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label {
   color: #7f98b5 !important;
 }
@@ -98,13 +122,13 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   filter: none !important;
 }
 
-/* 현황카드 ↔ 부적합 관리 ↔ 부적합 현황 사이 간격 보정 */
+/* 부적합 관리 제목을 중심으로 위·아래 간격을 동일하게 확대 */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 {
-  margin-bottom: 8px !important;
+  margin-bottom: 18px !important;
 }
 
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child {
-  margin-bottom: 8px !important;
+  margin-bottom: 18px !important;
 }
 
 /* NAMO Talk 메시지 입력창 안내 문구 제거 */
