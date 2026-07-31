@@ -1,3 +1,200 @@
 /* QMES IQC styles.
    Incoming inspection extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* ─────────────────────────────────────────────────────────────
+   부적합·설비관리 공통 신규등록 버튼
+   수입검사 관리 제목·신규등록 버튼의 크기와 간격을 기준으로 통일
+───────────────────────────────────────────────────────────── */
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+  padding-bottom:12px !important;
+}
+
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > div {
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  width:auto !important;
+  min-width:0 !important;
+}
+
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > div > h2 {
+  margin:0 !important;
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;
+  font-size:14px !important;
+  line-height:20px !important;
+  font-weight:600 !important;
+  letter-spacing:.025em !important;
+  color:#f1f5f9 !important;
+  white-space:nowrap !important;
+}
+
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > div > p {
+  display:none !important;
+}
+
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button {
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:98px !important;
+  height:34px !important;
+  min-height:34px !important;
+  margin:0 !important;
+  padding:0 14px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  border:1px solid #dbe7f3 !important;
+  border-radius:8px !important;
+  background:transparent !important;
+  background-image:none !important;
+  color:#dbe7f3 !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;
+  font-size:12px !important;
+  line-height:1 !important;
+  font-weight:700 !important;
+  white-space:nowrap !important;
+}
+
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button:hover {
+  border-color:#ffffff !important;
+  background:#152b46 !important;
+  color:#ffffff !important;
+}
+
+/* 부적합 신규등록만 동일한 흰색 틀 안에서 빨간 글씨·아이콘으로 강조 */
+#root .flex.flex-col.gap-5 > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child:has(> button) > button {
+  color:#f87171 !important;
+}
+
+#root .flex.flex-col.gap-5 > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child:has(> button) > button:hover {
+  color:#fca5a5 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   부적합·설비관리 신규등록 팝업
+   목록 화면과 등록 화면을 완전히 분리하여 중앙 팝업으로 표시
+───────────────────────────────────────────────────────────── */
+div:has(> [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"]),
+div:has(> [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"]),
+div:has(> [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"]),
+div:has(> [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"]),
+div:has(> [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"]) {
+  position:fixed !important;
+  inset:0 !important;
+  z-index:22000 !important;
+  width:100vw !important;
+  height:100vh !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:16px !important;
+  overflow:auto !important;
+  background:rgba(2,8,20,.78) !important;
+  backdrop-filter:blur(3px) !important;
+  -webkit-backdrop-filter:blur(3px) !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"],
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"],
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"],
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"],
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] {
+  position:relative !important;
+  width:min(920px,calc(100vw - 32px)) !important;
+  max-width:920px !important;
+  max-height:calc(100vh - 32px) !important;
+  margin:auto !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  border:1px solid #304b6c !important;
+  border-radius:14px !important;
+  background:#0a1728 !important;
+  box-shadow:0 30px 90px rgba(0,0,0,.65) !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] {
+  width:min(1040px,calc(100vw - 32px)) !important;
+  max-width:1040px !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:first-child,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:first-child,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:first-child,
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:first-child,
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:first-child {
+  flex:0 0 auto !important;
+  padding:15px 18px !important;
+  border-bottom:1px solid #263b54 !important;
+  background:#0d2038 !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:nth-child(2),
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:nth-child(2),
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:nth-child(2),
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:nth-child(2),
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) {
+  min-height:0 !important;
+  flex:1 1 auto !important;
+  overflow-y:auto !important;
+  padding:18px !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:last-child,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:last-child,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:last-child,
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:last-child,
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child {
+  flex:0 0 auto !important;
+  width:100% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:8px !important;
+  padding:12px 18px !important;
+  border-top:1px solid #263b54 !important;
+  background:#0c1b2e !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:last-child button,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:last-child button,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:last-child button,
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:last-child button,
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child button {
+  min-width:78px !important;
+  height:36px !important;
+  min-height:36px !important;
+  padding:0 16px !important;
+  border-radius:7px !important;
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;
+  font-size:12px !important;
+  font-weight:700 !important;
+}
+
+@media(max-width:680px) {
+  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {
+    flex-wrap:wrap !important;
+  }
+
+  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button {
+    min-width:92px !important;
+  }
+
+  [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"],
+  [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"],
+  [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"],
+  [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"],
+  [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] {
+    width:calc(100vw - 20px) !important;
+    max-height:calc(100vh - 20px) !important;
+  }
+}
