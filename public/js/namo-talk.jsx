@@ -179,7 +179,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const [users,setUsers]=useState(getNamoTalkUsers);
   const departments=Array.from(new Set(users.map(u=>u.dept).filter(Boolean))).sort((a,b)=>a.localeCompare(b,"ko"));
   const channelRooms=[{id:"전체공지",name:"전체공지",type:"notice",subtitle:"전 직원 공지"},...departments.map(d=>({id:`dept:${d}`,name:d,type:"dept",subtitle:`${d} 업무 채널`}))];
-  const directRooms=users.filter(u=>u.name!==currentUser.name).map(u=>({id:makeDirectRoomId(currentUser.name,u.name),name:u.name,type:"direct",subtitle:`${u.dept||"부서 미지정"}${u.position?` · ${u.position}`:""}`,user:u}));
+  const directRooms=[{id:makeDirectRoomId(currentUser.name,currentUser.name),name:"나에게 보내기",presenceName:currentUser.name,type:"direct",subtitle:"메모·파일을 나에게 보관",user:currentUser,isSelf:true},...users.filter(u=>u.name!==currentUser.name).map(u=>({id:makeDirectRoomId(currentUser.name,u.name),name:u.name,presenceName:u.name,type:"direct",subtitle:`${u.dept||"부서 미지정"}${u.position?` · ${u.position}`:""}`,user:u}))];
   const allRooms=[...channelRooms,...directRooms];
   const [activeRoom,setActiveRoom]=useState(()=>initialRoom||directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
   const [messages,setMessages]=useState({});
@@ -347,7 +347,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
           <button type="button" onClick={toggleChannels} aria-expanded={channelsOpen} style={{width:"100%",height:34,marginTop:9,padding:"0 7px",display:"flex",alignItems:"center",border:0,borderRadius:8,background:"#f1f5f9",color:"#475569",fontSize:12,fontWeight:900,cursor:"pointer",textAlign:"left"}}><span style={{width:18,fontSize:13}}>{channelsOpen?"▾":"▸"}</span>업무 채널<span style={{marginLeft:"auto",fontSize:11,color:"#94a3b8"}}>{departmentRooms.length}</span></button>
           {channelsOpen&&departmentRooms.map(item=><RoomButton key={item.id} item={item} activeRoom={activeRoom} setActiveRoom={openMessageList} messages={messages} reads={reads} currentUser={currentUser}/>)}
           <button type="button" onClick={toggleDirects} aria-expanded={directsOpen} style={{width:"100%",height:34,marginTop:9,padding:"0 7px",display:"flex",alignItems:"center",border:0,borderRadius:8,background:"#f1f5f9",color:"#475569",fontSize:12,fontWeight:900,cursor:"pointer",textAlign:"left"}}><span style={{width:18,fontSize:13}}>{directsOpen?"▾":"▸"}</span>개인 대화<span style={{marginLeft:"auto",fontSize:11,color:"#94a3b8"}}>{filteredDirects.length}</span></button>
-          {directsOpen&&filteredDirects.map(item=><RoomButton key={item.id} item={item} presence={presence[item.name]} activeRoom={activeRoom} setActiveRoom={openMessageList} messages={messages} reads={reads} currentUser={currentUser}/>)}
+          {directsOpen&&filteredDirects.map(item=><RoomButton key={item.id} item={item} presence={presence[item.presenceName||item.name]} activeRoom={activeRoom} setActiveRoom={openMessageList} messages={messages} reads={reads} currentUser={currentUser}/>)}
         </div>
       </div>
 
