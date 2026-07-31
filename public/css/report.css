@@ -32,3 +32,86 @@ button.self-start.rounded-lg.bg-red-600 svg {
   height: 12px !important;
   margin-right: 3px !important;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   설비·부적합 등록 화면 세부 정렬
+   수입검사 관리의 제목·신규등록 배치를 기준으로 맞춥니다.
+───────────────────────────────────────────────────────────── */
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button {
+  min-width: 98px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* 설비대장 비고란을 넓고 길게 표시 */
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:nth-child(2) label:has(textarea),
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:nth-child(2) label:has(textarea) {
+  grid-column: 1 / -1 !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] textarea,
+[role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] textarea {
+  min-height: 150px !important;
+}
+
+/* 정기점검·교정의 점검내용 입력란 확대 */
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:nth-child(2) label:has(textarea) {
+  grid-column: 1 / -1 !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] textarea {
+  min-height: 160px !important;
+}
+
+/* 고장·수리 이력: 담당자와 조치내용을 하단 한 줄에 정렬 */
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) > div > label:nth-child(6) {
+  order: 7 !important;
+  grid-column: span 2 / span 2 !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) > div > label:nth-child(7) {
+  order: 6 !important;
+  grid-column: span 1 / span 1 !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] textarea {
+  min-height: 140px !important;
+}
+
+/* 부적합 발생내용 입력칸을 한 줄 전체 폭으로 확대 */
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:nth-child(2) section:first-of-type > div > label:nth-child(9) {
+  grid-column: 1 / -1 !important;
+}
+
+/* 일정 등록·이력 등록 문구를 저장으로 통일 */
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:last-child button:last-child,
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child button:last-child {
+  font-size: 0 !important;
+}
+
+[role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:last-child button:last-child::after,
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child button:last-child::after {
+  content: "저장";
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (max-width: 767px) {
+  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) > div > label:nth-child(6),
+  [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) > div > label:nth-child(7) {
+    grid-column: 1 / -1 !important;
+  }
+}
