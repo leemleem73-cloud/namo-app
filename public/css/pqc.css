@@ -1,3 +1,61 @@
 /* QMES PQC styles.
    Process inspection extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* 부적합 현황카드 단순화
+   수입검사 현황처럼 항목명·숫자만 표시하고 그래프, 색상, 움직임은 제거합니다. */
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:hover {
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card::before,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card::after {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
+}
+
+/* 오른쪽 그래프·원형 아이콘·움직이는 점을 모두 숨김 */
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-ring,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-ring-inner,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-icon,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-percent {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-copy {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 5px !important;
+  text-align: center !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-unit {
+  text-shadow: none !important;
+  filter: none !important;
+}
