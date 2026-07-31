@@ -447,6 +447,13 @@ async function ensureSchema() {
       last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    CREATE TABLE IF NOT EXISTS namo_talk_profiles (
+      user_name TEXT PRIMARY KEY,
+      avatar_type TEXT NOT NULL DEFAULT 'preset',
+      avatar_value TEXT NOT NULL DEFAULT 'drop-blue',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
 
     CREATE TABLE IF NOT EXISTS audit_logs (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1811,6 +1818,61 @@ app.post('/api/namo-talk/presence', requireLogin, async (req, res) => {
       [txt(user.name), txt(user.department), status, statusMessage]
     );
     ok(res, { name: txt(user.name), status, statusMessage }, '상태가 변경되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/profiles', requireLogin, async (_req, res) => {
+  try {
+    const result = await db(
+      `SELECT user_name, avatar_type, avatar_value, updated_at
+         FROM namo_talk_profiles
+        ORDER BY user_name`
+    );
+    ok(res, result.rows.map(row => ({
+      name: row.user_name,
+      type: row.avatar_type,
+      value: row.avatar_value,
+      updatedAt: new Date(row.updated_at).getTime(),
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/profiles', requireLogin, async (req, res) => {
+  try {
+    const allowedPresets = new Set([
+      'drop-blue', 'drop-purple', 'drop-mint', 'drop-pink',
+      'drop-yellow', 'drop-sky', 'drop-navy', 'drop-coral',
+    ]);
+    const type = txt(req.body?.type);
+    const value = txt(req.body?.value);
+    if (!['preset', 'image'].includes(type)) return fail(res, 400, '지원하지 않는 프로필 형식입니다.');
+    if (type === 'preset' && !allowedPresets.has(value)) return fail(res, 400, '프로필 캐릭터를 다시 선택해 주세요.');
+    if (type === 'image' && (!value.startsWith('data:image/') || value.length > 1400000)) {
+      return fail(res, 400, '프로필 이미지는 1MB 이하의 그림 파일만 사용할 수 있습니다.');
+    }
+
+    const userName = txt(req.session.user?.name);
+    const result = await db(
+      `INSERT INTO namo_talk_profiles (user_name, avatar_type, avatar_value, updated_at)
+       VALUES ($1,$2,$3,NOW())
+       ON CONFLICT (user_name)
+       DO UPDATE SET avatar_type = EXCLUDED.avatar_type,
+                     avatar_value = EXCLUDED.avatar_value,
+                     updated_at = NOW()
+       RETURNING user_name, avatar_type, avatar_value, updated_at`,
+      [userName, type, value]
+    );
+    const row = result.rows[0];
+    ok(res, {
+      name: row.user_name,
+      type: row.avatar_type,
+      value: row.avatar_value,
+      updatedAt: new Date(row.updated_at).getTime(),
+    }, '프로필을 저장했습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
