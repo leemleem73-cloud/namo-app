@@ -19,11 +19,13 @@ const NAMO_TALK_STATUS={
 };
 
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
-function loadNamoTalkReads(){return safeParse(localStorage.getItem(NAMO_TALK_READ_KEY),{});}
+function safeNamoStorageGet(key,fallback=""){try{const value=localStorage.getItem(key);return value==null?fallback:value;}catch(error){return fallback;}}
+function safeNamoStorageSet(key,value){try{localStorage.setItem(key,value);return true;}catch(error){return false;}}
+function loadNamoTalkReads(){return safeParse(safeNamoStorageGet(NAMO_TALK_READ_KEY),{});}
 function saveNamoTalkReads(data){try{localStorage.setItem(NAMO_TALK_READ_KEY,JSON.stringify(data));}catch(e){}}
 function getNamoTalkUsers(){try{const users=typeof loadUsers==="function"?loadUsers():[];return Array.isArray(users)?users.filter(u=>u&&u.name):[];}catch(e){return[];}}
 function makeDirectRoomId(a,b){return `dm:${[a,b].sort((x,y)=>String(x).localeCompare(String(y),"ko")).join("|")}`;}
-function loadNamoTalkPosition(){const saved=safeParse(localStorage.getItem(NAMO_TALK_POSITION_KEY),null);if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;return {x:Math.max(16,window.innerWidth-640),y:128};}
+function loadNamoTalkPosition(){const saved=safeParse(safeNamoStorageGet(NAMO_TALK_POSITION_KEY),null);if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y))return saved;return {x:Math.max(16,window.innerWidth-640),y:128};}
 function saveNamoTalkPosition(position){try{localStorage.setItem(NAMO_TALK_POSITION_KEY,JSON.stringify(position));}catch(e){}}
 
 let namoTalkAuthRedirecting=false;
@@ -148,11 +150,11 @@ function NamoTalkNotifier({talkOpen=false,onOpenRoom}){
         const {rows,cursor}=await fetchNamoTalkNotifications(lastMessageIdRef.current);
         lastMessageIdRef.current=Math.max(Number(lastMessageIdRef.current||0),Number(cursor||0),...rows.map(message=>Number(message.id||0)));
         if(!talkOpen&&rows.length){
-          const count=Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0)+rows.length;
-          localStorage.setItem("qmes-namo-talk-unread-v1",String(count));
+          const count=Number(safeNamoStorageGet("qmes-namo-talk-unread-v1","0"))+rows.length;
+          safeNamoStorageSet("qmes-namo-talk-unread-v1",String(count));
           window.dispatchEvent(new CustomEvent("namo-talk-unread",{detail:{count}}));
         }
-        if(stopped||talkOpen||localStorage.getItem(NAMO_TALK_NOTIFY_KEY)==="0"||!rows.length)return;
+        if(stopped||talkOpen||safeNamoStorageGet(NAMO_TALK_NOTIFY_KEY)==="0"||!rows.length)return;
         setToasts(previous=>[...previous,...rows.map(message=>({...message,toastId:`${message.id}-${Date.now()}`}))].slice(-4));
         rows.forEach(message=>window.setTimeout(()=>setToasts(previous=>previous.filter(item=>item.id!==message.id)),5000));
       }catch(error){
@@ -198,14 +200,14 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const [compact,setCompact]=useState(()=>window.innerWidth<=480);
   const [position,setPosition]=useState(loadNamoTalkPosition);
   const [panelSize,setPanelSize]=useState(null);
-  const [minimized,setMinimized]=useState(()=>localStorage.getItem(NAMO_TALK_MINIMIZED_KEY)==="1");
+  const [minimized,setMinimized]=useState(()=>safeNamoStorageGet(NAMO_TALK_MINIMIZED_KEY)==="1");
   const [maximized,setMaximized]=useState(false);
-  const [notifyOn,setNotifyOn]=useState(()=>localStorage.getItem(NAMO_TALK_NOTIFY_KEY)!=="0");
+  const [notifyOn,setNotifyOn]=useState(()=>safeNamoStorageGet(NAMO_TALK_NOTIFY_KEY)!=="0");
   const [presence,setPresence]=useState({});
-  const [myStatus,setMyStatus]=useState(()=>localStorage.getItem(NAMO_TALK_STATUS_KEY)||"online");
-  const [statusMessage,setStatusMessage]=useState(()=>localStorage.getItem(NAMO_TALK_STATUS_MESSAGE_KEY)||"");
-  const [channelsOpen,setChannelsOpen]=useState(()=>localStorage.getItem(NAMO_TALK_CHANNELS_OPEN_KEY)!=="0");
-  const [directsOpen,setDirectsOpen]=useState(()=>localStorage.getItem(NAMO_TALK_DIRECTS_OPEN_KEY)!=="0");
+  const [myStatus,setMyStatus]=useState(()=>safeNamoStorageGet(NAMO_TALK_STATUS_KEY,"online"));
+  const [statusMessage,setStatusMessage]=useState(()=>safeNamoStorageGet(NAMO_TALK_STATUS_MESSAGE_KEY));
+  const [channelsOpen,setChannelsOpen]=useState(()=>safeNamoStorageGet(NAMO_TALK_CHANNELS_OPEN_KEY)!=="0");
+  const [directsOpen,setDirectsOpen]=useState(()=>safeNamoStorageGet(NAMO_TALK_DIRECTS_OPEN_KEY)!=="0");
   const [emojiOpen,setEmojiOpen]=useState(false);
   const [toast,setToast]=useState("");
   const [sending,setSending]=useState(false);
@@ -262,13 +264,13 @@ function NamoTalkTab({onClose,initialRoom=""}){
 
   const startDrag=event=>{if(compact||maximized||event.button!==0||event.target.closest("button"))return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;dragRef.current={offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top};document.body.style.userSelect="none";document.body.style.cursor="grabbing";event.preventDefault();};
   const startResize=(event,edges)=>{if(compact||maximized||event.button!==0)return;const rect=panelRef.current?.getBoundingClientRect();if(!rect)return;resizeRef.current={edges,startX:event.clientX,startY:event.clientY,x:rect.left,y:rect.top,width:rect.width,height:rect.height};document.body.style.userSelect="none";document.body.style.cursor=getComputedStyle(event.currentTarget).cursor;event.stopPropagation();event.preventDefault();};
-  const setMinimize=value=>{setMinimized(value);localStorage.setItem(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
-  const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);localStorage.setItem(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
+  const setMinimize=value=>{setMinimized(value);safeNamoStorageSet(NAMO_TALK_MINIMIZED_KEY,value?"1":"0");};
+  const toggleNotify=async()=>{const next=!notifyOn;if(next&&"Notification" in window&&Notification.permission==="default")await Notification.requestPermission();setNotifyOn(next);safeNamoStorageSet(NAMO_TALK_NOTIFY_KEY,next?"1":"0");setToast(next?"채팅 알림을 켰습니다.":"채팅 알림을 껐습니다.");setTimeout(()=>setToast(""),1800);};
   const openChatRoom=(roomId=activeRoom,returnMode=mode)=>{setActiveRoom(roomId);setChatReturnMode(returnMode==="conversations"?"conversations":"employees");setMessageListOpen(false);setChatRoomOpen(true);};
-  const changeStatus=async next=>{setMyStatus(next);localStorage.setItem(NAMO_TALK_STATUS_KEY,next);try{await updateNamoTalkPresence(next,statusMessage);}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
-  const saveStatusMessage=async()=>{localStorage.setItem(NAMO_TALK_STATUS_MESSAGE_KEY,statusMessage);try{await updateNamoTalkPresence(myStatus,statusMessage);setToast("상태 메시지를 저장했습니다.");}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
-  const toggleChannels=()=>setChannelsOpen(previous=>{const next=!previous;localStorage.setItem(NAMO_TALK_CHANNELS_OPEN_KEY,next?"1":"0");return next;});
-  const toggleDirects=()=>setDirectsOpen(previous=>{const next=!previous;localStorage.setItem(NAMO_TALK_DIRECTS_OPEN_KEY,next?"1":"0");return next;});
+  const changeStatus=async next=>{setMyStatus(next);safeNamoStorageSet(NAMO_TALK_STATUS_KEY,next);try{await updateNamoTalkPresence(next,statusMessage);}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
+  const saveStatusMessage=async()=>{safeNamoStorageSet(NAMO_TALK_STATUS_MESSAGE_KEY,statusMessage);try{await updateNamoTalkPresence(myStatus,statusMessage);setToast("상태 메시지를 저장했습니다.");}catch(error){setToast(error.message);}setTimeout(()=>setToast(""),1800);};
+  const toggleChannels=()=>setChannelsOpen(previous=>{const next=!previous;safeNamoStorageSet(NAMO_TALK_CHANNELS_OPEN_KEY,next?"1":"0");return next;});
+  const toggleDirects=()=>setDirectsOpen(previous=>{const next=!previous;safeNamoStorageSet(NAMO_TALK_DIRECTS_OPEN_KEY,next?"1":"0");return next;});
   const appendMessage=async payload=>{if(!activeRoom||sending)return;setSending(true);try{const saved=await postNamoTalkMessage(activeRoom,payload);setMessages(previous=>({...previous,[activeRoom]:[...(previous[activeRoom]||[]),saved]}));return true;}catch(error){if(error.message!=="__NAMO_AUTH_REDIRECT__")alert(`메시지 전송 실패: ${error.message}`);return false;}finally{setSending(false);}};
   const replaceRoomMessage=updated=>setMessages(previous=>({...previous,[activeRoom]:(previous[activeRoom]||[]).map(message=>message.id===updated.id?updated:message)}));
   const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":"text",replyToId:replyingTo?.id||null,replySender:replyingTo?.sender||"",replyText:String(replyingTo?.text||replyingTo?.fileName||"").slice(0,300)});if(ok){setText("");setReplyingTo(null);setEmojiOpen(false);}};
@@ -302,7 +304,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   };
   const detailInfo=readDetail?receiptInfoFor(readDetail,room):null;
   const unreadCount=allRooms.reduce((sum,r)=>sum+(messages[r.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[r.id]||0)).length,0);
-  useEffect(()=>{localStorage.setItem("qmes-namo-talk-unread-v1",String(unreadCount));window.dispatchEvent(new CustomEvent("namo-talk-unread",{detail:{count:unreadCount}}));},[unreadCount]);
+  useEffect(()=>{safeNamoStorageSet("qmes-namo-talk-unread-v1",String(unreadCount));window.dispatchEvent(new CustomEvent("namo-talk-unread",{detail:{count:unreadCount}}));},[unreadCount]);
   const panelStyle=compact?{position:"fixed",top:112,right:0,bottom:0,left:0,width:"100vw",height:"auto"}:maximized?{position:"fixed",left:8,top:8,width:"calc(100vw - 16px)",height:"calc(100vh - 16px)"}:{position:"fixed",left:position.x,top:position.y,width:panelSize?.width||(chatRoomOpen?"min(650px,calc(100vw - 16px))":"min(430px,calc(100vw - 16px))"),height:panelSize?.height||"min(720px,calc(100vh - 16px))"};
 
   if(minimized)return <button type="button" onClick={()=>setMinimize(false)} aria-label="NAMO Talk 복원" style={{position:"fixed",right:18,bottom:18,zIndex:12000,height:48,padding:"0 16px",display:"flex",alignItems:"center",gap:9,border:"2px solid #d4a017",borderRadius:16,background:"#0f2740",color:"white",boxShadow:"0 12px 28px rgba(15,23,42,.35)",fontSize:15,fontWeight:900,cursor:"pointer"}}><NamoDrop size={28}/> NAMO Talk {unreadCount>0&&<span style={{minWidth:22,height:22,padding:"0 6px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:11,background:"#ef4444",fontSize:12}}>{unreadCount}</span>}</button>;
