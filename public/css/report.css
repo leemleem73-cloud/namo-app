@@ -1,3 +1,19 @@
 /* QMES report styles.
    Report preview and certificate extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* NAMO Talk 알림 프라이버시
+   알림창에는 발신자와 건수만 표시하고 메시지·파일명·이모티콘 내용은 숨깁니다. */
+div[aria-live="polite"][style*="2147483000"] > button > span:nth-child(2) > span {
+  display: none !important;
+}
+
+div[aria-live="polite"][style*="2147483000"] > button > span:nth-child(2)::after {
+  content: "새 메시지 1건이 있습니다.";
+  display: block;
+  margin-top: 4px;
+  color: #d7e3ec;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
