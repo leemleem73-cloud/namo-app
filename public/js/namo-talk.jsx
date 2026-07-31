@@ -175,7 +175,7 @@ const NAMO_STICKER_CATEGORIES=[
 ];
 const NAMO_STICKERS=NAMO_STICKER_CATEGORIES.flatMap((category,categoryIndex)=>category.labels.map((label,index)=>{
   const atlasIndex=categoryIndex*18+index;
-  return {id:`${category.id}-${String(index+1).padStart(2,"0")}`,category:category.id,label,x:(atlasIndex%6)*120,y:Math.floor(atlasIndex/6)*120,w:120,h:120};
+  return {id:`${category.id}-${String(index+1).padStart(2,"0")}`,category:category.id,label,x:(atlasIndex%6)*240,y:Math.floor(atlasIndex/6)*240,w:240,h:240};
 }));
 const NAMO_EMOJI_PAGE_SIZE=8;
 const NAMO_STICKER_SHEET=window.NAMO_STICKER_SHEET_DATA||"/assets/namo-emoticons-gel-20260731.webp";
@@ -211,7 +211,7 @@ function NamoSticker({sticker,width=70,withLabel=true}){
   if(!sticker)return null;
   const scale=width/sticker.w,imageHeight=Math.round(sticker.h*scale),labelSize=width>=120?Math.round(width*.12):width>=65?12:11;
   return <span role="img" aria-label={sticker.label} style={{width,height:imageHeight+(withLabel?labelSize*1.35:0),display:"inline-flex",flexDirection:"column",alignItems:"center",flex:`0 0 ${width}px`,overflow:"visible"}}>
-    <span style={{width,height:imageHeight,display:"block",backgroundImage:`url(${NAMO_STICKER_SHEET})`,backgroundRepeat:"no-repeat",backgroundSize:`${720*scale}px ${1440*scale}px`,backgroundPosition:`${-sticker.x*scale}px ${-sticker.y*scale}px`}}/>
+    <span style={{width,height:imageHeight,display:"block",backgroundImage:`url(${NAMO_STICKER_SHEET})`,backgroundRepeat:"no-repeat",backgroundSize:`${1440*scale}px ${2880*scale}px`,backgroundPosition:`${-sticker.x*scale}px ${-sticker.y*scale}px`,imageRendering:"auto"}}/>
     {withLabel&&<strong style={{width:"125%",marginTop:2,color:"#172033",fontSize:labelSize,lineHeight:1.15,fontWeight:900,textAlign:"center",whiteSpace:"nowrap",letterSpacing:"-.35px"}}>{sticker.label}</strong>}
   </span>;
 }
