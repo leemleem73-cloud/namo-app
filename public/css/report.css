@@ -17,3 +17,18 @@ div[aria-live="polite"][style*="2147483000"] > button > span:nth-child(2)::after
   line-height: 1.4;
   white-space: nowrap;
 }
+
+/* 부적합관리 신규 등록 버튼 — 현황 화면을 가리지 않도록 작게 표시 */
+button.self-start.rounded-lg.bg-red-600 {
+  min-height: 32px !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+
+button.self-start.rounded-lg.bg-red-600 svg {
+  width: 12px !important;
+  height: 12px !important;
+  margin-right: 3px !important;
+}
