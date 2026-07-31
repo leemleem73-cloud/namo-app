@@ -169,16 +169,16 @@ function csvValue(v){return `"${String(v==null?"":v).replace(/"/g,'""')}"`;}
 
 const NAMO_STICKER_CATEGORIES=[
   {id:"emotion",number:1,title:"감정 표현",side:"left",vertical:"top",labels:["좋아요!","사랑해요","축하해요!","수고했어요!","최고예요!","재밌어요!","힘내세요!","졸려요!","궁금해요!","놀랐어요!","멋져요!","감사해요!","부탁해요!","괜찮아요!","아쉬워요!","슬퍼요!","화나요!","응원해요!"]},
-  {id:"work",number:2,title:"업무·소통",side:"right",vertical:"top",labels:["Coffee Time","Lunch Time","확인 부탁","전화주세요","메일 확인","회의 시작","보고 완료","자료 공유","잠시 통화 가능?","공지 확인","작업 중","바쁩니다","확인했어요","완료!","다시 확인","작성 중","좋은 아이디어!","OK!"]},
+  {id:"work",number:2,title:"업무·소통",side:"right",vertical:"top",labels:["카페인 충전","맛점하세요","확인 부탁","전화주세요","메일 확인","회의 시작","보고 완료","자료 공유","잠시 통화 가능?","공지 확인","작업 중","바쁩니다","확인했어요","완료!","다시 확인","작성 중","좋은 아이디어!","OK!"]},
   {id:"attendance",number:3,title:"출퇴근·근태",side:"left",vertical:"bottom",labels:["출근 완료","퇴근합니다","이동 중","외근 중","재택근무","사무실 도착","지각 예정","야근 중","식사 중","휴식 중","출장 중","먼저 퇴근합니다","연차 사용","오늘도 파이팅!","컨디션 별로","몸살 기운","병가 사용","회복 중"]},
   {id:"qmes",number:4,title:"생산·품질·안전",side:"right",vertical:"bottom",labels:["생산 시작","생산 중","생산 완료","포장 완료","출하 완료","검사 중","검사 완료","LOT 확인","이상 발생","격리 조치","설비 점검","설비 수리","안전 제일","안전 점검","보호구 착용","화재 주의","정리 정돈","목표 달성"]}
 ];
 const NAMO_STICKERS=NAMO_STICKER_CATEGORIES.flatMap((category,categoryIndex)=>category.labels.map((label,index)=>{
   const atlasIndex=categoryIndex*18+index;
-  return {id:`${category.id}-${String(index+1).padStart(2,"0")}`,category:category.id,label,x:(atlasIndex%6)*120,y:Math.floor(atlasIndex/6)*135,w:120,h:135};
+  return {id:`${category.id}-${String(index+1).padStart(2,"0")}`,category:category.id,label,x:(atlasIndex%6)*120,y:Math.floor(atlasIndex/6)*120,w:120,h:120};
 }));
 const NAMO_EMOJI_PAGE_SIZE=8;
-const NAMO_STICKER_SHEET="/assets/namo-emoticons-transparent-20260731.webp";
+const NAMO_STICKER_SHEET=window.NAMO_STICKER_SHEET_DATA||"/assets/namo-emoticons-gel-20260731.webp";
 
 function NamoDrop({size=34}){
   return <span aria-hidden="true" style={{width:size,height:size,display:"inline-flex",alignItems:"center",justifyContent:"center",flex:"0 0 auto",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:"linear-gradient(145deg,#d8d4ff,#8b7cf4)",border:"1px solid rgba(255,255,255,.75)",boxShadow:"inset 0 2px 5px rgba(255,255,255,.7),0 2px 6px rgba(15,39,64,.25)",position:"relative"}}><span style={{transform:"rotate(-45deg)",fontSize:Math.max(13,size*.42),lineHeight:1}}>•ᴗ•</span></span>;
@@ -209,9 +209,9 @@ function NamoAvatarFace({mood="happy",size=36}){
 
 function NamoSticker({sticker,width=70,withLabel=true}){
   if(!sticker)return null;
-  const scale=width/sticker.w,imageHeight=Math.round(102*scale),labelSize=width>=120?Math.round(width*.12):width>=65?12:11;
+  const scale=width/sticker.w,imageHeight=Math.round(sticker.h*scale),labelSize=width>=120?Math.round(width*.12):width>=65?12:11;
   return <span role="img" aria-label={sticker.label} style={{width,height:imageHeight+(withLabel?labelSize*1.35:0),display:"inline-flex",flexDirection:"column",alignItems:"center",flex:`0 0 ${width}px`,overflow:"visible"}}>
-    <span style={{width,height:imageHeight,display:"block",position:"relative",backgroundImage:`url(${NAMO_STICKER_SHEET})`,backgroundRepeat:"no-repeat",backgroundSize:`${720*scale}px ${1620*scale}px`,backgroundPosition:`${-sticker.x*scale}px ${-sticker.y*scale}px`,filter:"drop-shadow(0 2px 2px rgba(25,82,133,.22))"}}><i style={{position:"absolute",left:"13%",top:"5%",width:"31%",height:"25%",borderRadius:"50%",background:"radial-gradient(ellipse at center,rgba(255,255,255,.34),rgba(255,255,255,0) 72%)",mixBlendMode:"screen",pointerEvents:"none"}}/><i style={{position:"absolute",left:"19%",top:"10%",width:"8%",height:"7%",borderRadius:"50%",background:"rgba(255,255,255,.48)",pointerEvents:"none"}}/></span>
+    <span style={{width,height:imageHeight,display:"block",backgroundImage:`url(${NAMO_STICKER_SHEET})`,backgroundRepeat:"no-repeat",backgroundSize:`${720*scale}px ${1440*scale}px`,backgroundPosition:`${-sticker.x*scale}px ${-sticker.y*scale}px`}}/>
     {withLabel&&<strong style={{width:"125%",marginTop:2,color:"#172033",fontSize:labelSize,lineHeight:1.15,fontWeight:900,textAlign:"center",whiteSpace:"nowrap",letterSpacing:"-.35px"}}>{sticker.label}</strong>}
   </span>;
 }
