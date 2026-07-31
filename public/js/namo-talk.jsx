@@ -20,22 +20,22 @@ const NAMO_TALK_STATUS={
   offline:{label:"오프라인",color:"#94a3b8"}
 };
 const NAMO_PROFILE_PRESETS=[
-  {id:"drop-blue",label:"오션 블루",color:"#3b82f6",color2:"#93c5fd",mood:"happy"},
-  {id:"drop-purple",label:"라벤더",color:"#8b5cf6",color2:"#c4b5fd",mood:"soft"},
-  {id:"drop-mint",label:"민트",color:"#10b981",color2:"#6ee7b7",mood:"happy"},
-  {id:"drop-pink",label:"로즈",color:"#ec4899",color2:"#f9a8d4",mood:"soft"},
-  {id:"drop-yellow",label:"레몬",color:"#f59e0b",color2:"#fde68a",mood:"laugh"},
-  {id:"drop-sky",label:"아이스 스카이",color:"#06b6d4",color2:"#a5f3fc",mood:"happy"},
-  {id:"drop-navy",label:"딥 네이비",color:"#1e3a5f",color2:"#64748b",mood:"focus"},
-  {id:"drop-coral",label:"코랄",color:"#f97360",color2:"#fdbaaa",mood:"soft"},
-  {id:"drop-angry",label:"레드 화남",color:"#dc2626",color2:"#fca5a5",mood:"angry"},
-  {id:"drop-surprise",label:"아쿠아 놀람",color:"#0ea5e9",color2:"#7dd3fc",mood:"surprise"},
-  {id:"drop-laugh",label:"망고 웃음",color:"#ea9b09",color2:"#fcd34d",mood:"laugh"},
-  {id:"drop-sleepy",label:"인디고 졸림",color:"#6366f1",color2:"#a5b4fc",mood:"sleepy"},
-  {id:"drop-curious",label:"터쿼이즈 궁금",color:"#0d9488",color2:"#5eead4",mood:"curious"},
-  {id:"drop-cheer",label:"라임 응원",color:"#65a30d",color2:"#bef264",mood:"cheer"},
-  {id:"drop-focus",label:"슬레이트 집중",color:"#334155",color2:"#94a3b8",mood:"focus"},
-  {id:"drop-thanks",label:"피치 감사",color:"#f973a6",color2:"#fed7aa",mood:"thanks"}
+  {id:"drop-blue",label:"블루 소다",color:"#3182f6",color2:"#8ed8ff",color3:"#dff7ff",accent:"#2563eb",mood:"happy"},
+  {id:"drop-purple",label:"포도 캔디",color:"#8957e5",color2:"#c7a7ff",color3:"#f0e7ff",accent:"#7c3aed",mood:"soft"},
+  {id:"drop-mint",label:"민트 멜론",color:"#12b886",color2:"#78e6bd",color3:"#e0fff4",accent:"#059669",mood:"happy"},
+  {id:"drop-pink",label:"딸기 우유",color:"#f0529c",color2:"#ff9ac8",color3:"#ffe4f0",accent:"#db2777",mood:"soft"},
+  {id:"drop-yellow",label:"레몬 푸딩",color:"#f5b51b",color2:"#ffe477",color3:"#fff8c7",accent:"#e59b08",mood:"laugh"},
+  {id:"drop-sky",label:"솜사탕 하늘",color:"#21b6d7",color2:"#85e7f5",color3:"#e3fbff",accent:"#0891b2",mood:"happy"},
+  {id:"drop-navy",label:"밤하늘 별빛",color:"#3453a4",color2:"#788cdf",color3:"#dfe5ff",accent:"#293f86",mood:"focus"},
+  {id:"drop-coral",label:"복숭아 젤리",color:"#fa725f",color2:"#ffad91",color3:"#fff0e8",accent:"#ea580c",mood:"soft"},
+  {id:"drop-angry",label:"체리 톡톡",color:"#e83c55",color2:"#ff8796",color3:"#ffe4e8",accent:"#be123c",mood:"angry"},
+  {id:"drop-surprise",label:"아쿠아 팝",color:"#159bd7",color2:"#6fdbf5",color3:"#dcf8ff",accent:"#0284c7",mood:"surprise"},
+  {id:"drop-laugh",label:"망고 스무디",color:"#f39c12",color2:"#ffd166",color3:"#fff2bd",accent:"#d97706",mood:"laugh"},
+  {id:"drop-sleepy",label:"라일락 꿈",color:"#6d68d9",color2:"#aaa6f3",color3:"#ecebff",accent:"#4f46a5",mood:"sleepy"},
+  {id:"drop-curious",label:"청포도 에이드",color:"#1fa68a",color2:"#72dfc4",color3:"#dffff5",accent:"#0f766e",mood:"curious"},
+  {id:"drop-cheer",label:"라임 스파클",color:"#73ad18",color2:"#bce85a",color3:"#efffc9",accent:"#4d7c0f",mood:"cheer"},
+  {id:"drop-focus",label:"블루베리 잼",color:"#52617d",color2:"#93a4c3",color3:"#e5eaf4",accent:"#334155",mood:"focus"},
+  {id:"drop-thanks",label:"살구 크림",color:"#f47f91",color2:"#ffc09f",color3:"#fff0da",accent:"#e85d75",mood:"thanks"}
 ];
 
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
@@ -187,7 +187,7 @@ function NamoDrop({size=34}){
 function NamoProfileAvatar({profile,size=36,name=""}){
   if(profile?.type==="image"&&profile.value)return <img src={profile.value} alt={`${name||"사용자"} 프로필`} style={{width:size,height:size,flex:`0 0 ${size}px`,display:"block",objectFit:"cover",borderRadius:"50%",border:"2px solid white",boxShadow:"0 1px 5px rgba(15,39,64,.2)"}}/>;
   const preset=NAMO_PROFILE_PRESETS.find(item=>item.id===(profile?.value||"drop-blue"))||NAMO_PROFILE_PRESETS[0];
-  return <span aria-label={`${name||"사용자"} ${preset.label} 물방울 프로필`} style={{width:size,height:size,flex:`0 0 ${size}px`,display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:`linear-gradient(145deg,#ffffff,${preset.color2}33)`,border:`1px solid ${preset.color2}88`,boxShadow:"inset 0 1px 2px white,0 2px 6px rgba(15,39,64,.14)",overflow:"hidden"}}><span style={{width:size*.82,height:size*.82,position:"relative",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:`linear-gradient(145deg,#f8fdff 3%,${preset.color2} 42%,${preset.color} 88%)`,border:"1px solid rgba(255,255,255,.85)",boxShadow:"inset 2px 2px 6px rgba(255,255,255,.92),inset -2px -3px 5px rgba(15,39,64,.14),0 2px 5px rgba(15,39,64,.2)"}}><span style={{position:"absolute",top:"12%",left:"15%",width:"26%",height:"15%",borderRadius:"50%",background:"rgba(255,255,255,.82)",filter:"blur(.2px)"}}/><NamoAvatarFace mood={preset.mood} size={size}/></span></span>;
+  return <span aria-label={`${name||"사용자"} ${preset.label} 물방울 프로필`} style={{width:size,height:size,flex:`0 0 ${size}px`,display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:`radial-gradient(circle at 30% 20%,#fff 0 18%,${preset.color3} 72%)`,border:`1.5px solid ${preset.color2}`,boxShadow:`inset 0 1px 2px white,0 2px 7px ${preset.color2}66`,overflow:"hidden"}}><span style={{width:size*.82,height:size*.82,position:"relative",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"55% 55% 60% 60% / 68% 68% 42% 42%",transform:"rotate(45deg)",background:`linear-gradient(145deg,${preset.color3} 2%,${preset.color2} 40%,${preset.color} 88%)`,border:"1px solid rgba(255,255,255,.9)",boxShadow:`inset 2px 2px 6px rgba(255,255,255,.94),inset -2px -3px 5px ${preset.accent}44,0 2px 5px ${preset.accent}55`}}><span style={{position:"absolute",top:"12%",left:"15%",width:"26%",height:"15%",borderRadius:"50%",background:"rgba(255,255,255,.86)",filter:"blur(.2px)"}}/><span style={{position:"absolute",right:"13%",top:"23%",width:"8%",height:"8%",borderRadius:"50%",background:"rgba(255,255,255,.62)"}}/><NamoAvatarFace mood={preset.mood} size={size}/></span></span>;
 }
 
 function NamoAvatarFace({mood="happy",size=36}){
