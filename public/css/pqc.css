@@ -3,7 +3,7 @@
    Current production rules remain in common.css to preserve the exact original cascade. */
 
 /* 부적합 현황카드 단순화
-   수입검사 현황처럼 항목명·숫자만 표시하고 그래프, 색상, 움직임은 제거합니다. */
+   수입검사 현황처럼 카드 장식은 제거하고 항목명·숫자만 표시합니다. */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card {
   animation: none !important;
   transition: none !important;
@@ -26,22 +26,47 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   animation: none !important;
 }
 
-/* 오른쪽 그래프·원형 아이콘·움직이는 점을 모두 숨김 */
-html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut,
+/* 오른쪽 원형 그래프·아이콘은 제거 */
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-ring,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-ring-inner,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-icon,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-percent {
   display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  min-width: 0 !important;
-  margin: 0 !important;
+}
+
+/* 품질검사 현황처럼 작은 움직이는 색상 원만 유지 */
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut {
+  display: block !important;
+  width: 6px !important;
+  height: 6px !important;
+  min-width: 6px !important;
+  margin: 0 auto 3px !important;
   padding: 0 !important;
   border: 0 !important;
-  background: none !important;
-  box-shadow: none !important;
-  animation: none !important;
+  border-radius: 999px !important;
+  background: #41c4ee !important;
+  box-shadow: 0 0 7px rgba(65,196,238,.72) !important;
+  animation: qmes-summary-dot-float 1.35s ease-in-out infinite !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(1) .qmes-hybrid-donut,
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(3) .qmes-hybrid-donut {
+  background: #f87171 !important;
+  box-shadow: 0 0 7px rgba(248,113,113,.68) !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(2) .qmes-hybrid-donut {
+  background: #fbbf24 !important;
+  box-shadow: 0 0 7px rgba(251,191,36,.68) !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card:nth-child(4) .qmes-hybrid-donut {
+  background: #34d399 !important;
+  box-shadow: 0 0 7px rgba(52,211,153,.68) !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-donut > * {
+  display: none !important;
 }
 
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-copy {
@@ -53,11 +78,33 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   text-align: center !important;
 }
 
+/* 카드 글자·숫자는 모두 무채색으로 통일 */
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label {
+  color: #7f98b5 !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value {
+  color: #f2f7fc !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-unit {
+  color: #7189a4 !important;
+}
+
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value,
 html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-unit {
   text-shadow: none !important;
   filter: none !important;
+}
+
+/* 현황카드 ↔ 부적합 관리 ↔ 부적합 현황 사이 간격 보정 */
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 {
+  margin-bottom: 8px !important;
+}
+
+html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child {
+  margin-bottom: 8px !important;
 }
 
 /* NAMO Talk 메시지 입력창 안내 문구 제거 */
