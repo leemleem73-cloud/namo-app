@@ -11,6 +11,7 @@ const NAMO_TALK_STATUS_MESSAGE_KEY="qmes-namo-talk-status-message-v1";
 const NAMO_TALK_CHANNELS_OPEN_KEY="qmes-namo-talk-channels-open-v1";
 const NAMO_TALK_DIRECTS_OPEN_KEY="qmes-namo-talk-directs-open-v1";
 const NAMO_TALK_HIDDEN_ROOMS_KEY="qmes-namo-talk-hidden-rooms-v1";
+const NAMO_TALK_VIEW_STATE_KEY="qmes-namo-talk-view-state-v1";
 const NAMO_TALK_STATUS={
   online:{label:"온라인",color:"#22c55e"},
   away:{label:"자리 비움",color:"#eab308"},
@@ -22,6 +23,8 @@ const NAMO_TALK_STATUS={
 function safeParse(v,fallback){try{return JSON.parse(v||"")||fallback;}catch(e){return fallback;}}
 function safeNamoStorageGet(key,fallback=""){try{const value=localStorage.getItem(key);return value==null?fallback:value;}catch(error){return fallback;}}
 function safeNamoStorageSet(key,value){try{localStorage.setItem(key,value);return true;}catch(error){return false;}}
+function loadNamoTalkViewState(){try{return safeParse(sessionStorage.getItem(NAMO_TALK_VIEW_STATE_KEY),{});}catch(error){return{};}}
+function saveNamoTalkViewState(value){try{sessionStorage.setItem(NAMO_TALK_VIEW_STATE_KEY,JSON.stringify(value));}catch(error){}}
 function loadNamoTalkReads(){return safeParse(safeNamoStorageGet(NAMO_TALK_READ_KEY),{});}
 function saveNamoTalkReads(data){try{localStorage.setItem(NAMO_TALK_READ_KEY,JSON.stringify(data));}catch(e){}}
 function getNamoTalkUsers(){try{const users=typeof loadUsers==="function"?loadUsers():[];return Array.isArray(users)?users.filter(u=>u&&u.name):[];}catch(e){return[];}}
@@ -186,7 +189,8 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const selfRoom={id:makeDirectRoomId(currentUser.name,currentUser.name),name:"나에게 보내기",presenceName:currentUser.name,type:"direct",subtitle:"메모·파일을 나에게 보관",user:currentUser,isSelf:true};
   const directRooms=users.filter(u=>u.name!==currentUser.name).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko")).map(u=>({id:makeDirectRoomId(currentUser.name,u.name),name:u.name,presenceName:u.name,type:"direct",subtitle:`${u.dept||"부서 미지정"}${u.position?` · ${u.position}`:""}`,user:u}));
   const allRooms=[...channelRooms,selfRoom,...directRooms];
-  const [activeRoom,setActiveRoom]=useState(()=>initialRoom||directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
+  const savedView=loadNamoTalkViewState();
+  const [activeRoom,setActiveRoom]=useState(()=>initialRoom||savedView.activeRoom||directRooms[0]?.id||channelRooms[0]?.id||"전체공지");
   const [messages,setMessages]=useState({});
   const [readReceipts,setReadReceipts]=useState({});
   const [reads,setReads]=useState(loadNamoTalkReads);
@@ -194,9 +198,9 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const [search,setSearch]=useState("");
   const [messageSearch,setMessageSearch]=useState("");
   const [replyingTo,setReplyingTo]=useState(null);
-  const [mode,setMode]=useState("employees");
-  const [chatReturnMode,setChatReturnMode]=useState("employees");
-  const [chatRoomOpen,setChatRoomOpen]=useState(()=>Boolean(initialRoom));
+  const [mode,setMode]=useState(()=>savedView.mode||"employees");
+  const [chatReturnMode,setChatReturnMode]=useState(()=>savedView.chatReturnMode||"employees");
+  const [chatRoomOpen,setChatRoomOpen]=useState(()=>Boolean(initialRoom)||Boolean(savedView.chatRoomOpen));
   const [messageListOpen,setMessageListOpen]=useState(false);
   const [compact,setCompact]=useState(()=>window.innerWidth<=480);
   const [position,setPosition]=useState(loadNamoTalkPosition);
@@ -272,6 +276,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   useEffect(()=>{if(!allRooms.some(item=>item.id===activeRoom)&&allRooms[0])setActiveRoom(allRooms[0].id);},[users.length]);
   useEffect(()=>{if(initialRoom){setActiveRoom(initialRoom);setMessageListOpen(false);setEmojiOpen(false);setChatRoomOpen(true);}},[initialRoom]);
   useEffect(()=>{if(!chatRoomOpen)setEmojiOpen(false);},[chatRoomOpen]);
+  useEffect(()=>{saveNamoTalkViewState({activeRoom,mode,chatReturnMode,chatRoomOpen});},[activeRoom,mode,chatReturnMode,chatRoomOpen]);
   useEffect(()=>{const onResize=()=>{const nextCompact=window.innerWidth<=480;setCompact(nextCompact);if(nextCompact)return;const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition(previous=>{const next={x:Math.max(8,Math.min(previous.x,window.innerWidth-width-8)),y:Math.max(8,Math.min(previous.y,window.innerHeight-height-8))};saveNamoTalkPosition(next);return next;});};window.addEventListener("resize",onResize);return()=>window.removeEventListener("resize",onResize);},[]);
   useEffect(()=>{const onPointerMove=event=>{const drag=dragRef.current;if(!drag||compact)return;event.preventDefault();const panel=panelRef.current;const width=panel?.offsetWidth||620;const height=panel?.offsetHeight||Math.min(720,window.innerHeight-140);setPosition({x:Math.max(8,Math.min(event.clientX-drag.offsetX,window.innerWidth-width-8)),y:Math.max(8,Math.min(event.clientY-drag.offsetY,window.innerHeight-height-8))});};const onPointerUp=()=>{if(!dragRef.current)return;dragRef.current=null;saveNamoTalkPosition(position);document.body.style.userSelect="";document.body.style.cursor="";};window.addEventListener("pointermove",onPointerMove,{passive:false});window.addEventListener("pointerup",onPointerUp);window.addEventListener("pointercancel",onPointerUp);return()=>{window.removeEventListener("pointermove",onPointerMove);window.removeEventListener("pointerup",onPointerUp);window.removeEventListener("pointercancel",onPointerUp);};},[compact,position]);
   useEffect(()=>{const onPointerMove=event=>{const resize=resizeRef.current;if(!resize||compact||maximized)return;event.preventDefault();const dx=event.clientX-resize.startX,dy=event.clientY-resize.startY;let x=resize.x,y=resize.y,width=resize.width,height=resize.height;if(resize.edges.includes("r"))width=Math.min(window.innerWidth-x-8,Math.max(340,resize.width+dx));if(resize.edges.includes("b"))height=Math.min(window.innerHeight-y-8,Math.max(480,resize.height+dy));if(resize.edges.includes("l")){const nextX=Math.max(8,Math.min(resize.x+dx,resize.x+resize.width-340));width=resize.width+(resize.x-nextX);x=nextX;}if(resize.edges.includes("t")){const nextY=Math.max(8,Math.min(resize.y+dy,resize.y+resize.height-480));height=resize.height+(resize.y-nextY);y=nextY;}setPosition({x,y});setPanelSize({width,height});};const onPointerUp=()=>{if(!resizeRef.current)return;resizeRef.current=null;saveNamoTalkPosition(position);document.body.style.userSelect="";document.body.style.cursor="";};window.addEventListener("pointermove",onPointerMove,{passive:false});window.addEventListener("pointerup",onPointerUp);window.addEventListener("pointercancel",onPointerUp);return()=>{window.removeEventListener("pointermove",onPointerMove);window.removeEventListener("pointerup",onPointerUp);window.removeEventListener("pointercancel",onPointerUp);};},[compact,maximized,position]);
@@ -290,32 +295,6 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const sendMessage=async()=>{const v=text.trim();if(!v||!room||sending)return;const emoticonOnly=NAMO_EMOTICONS.some(value=>v===`💧${value}`);const ok=await appendMessage({text:v,kind:room.type==="notice"?"notice":emoticonOnly?"emoticon":"text",replyToId:replyingTo?.id||null,replySender:replyingTo?.sender||"",replyText:String(replyingTo?.text||replyingTo?.fileName||"").slice(0,300)});if(ok){setText("");setReplyingTo(null);setEmojiOpen(false);}};
   const insertEmoticon=value=>{setText(previous=>`${previous}${previous&&!/\s$/.test(previous)?" ":""}💧${value}`);setEmojiOpen(false);window.requestAnimationFrame(()=>composerRef.current?.focus());};
   const handleFile=async e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>3*1024*1024){alert("첨부파일은 3MB 이하만 가능합니다.");return;}const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await appendMessage({text:file.name,kind:file.type.startsWith("image/")?"image":"file",fileName:file.name,fileData:dataUrl});};
-  const captureScreen=async()=>{
-    if(sending)return;
-    if(!navigator.mediaDevices?.getDisplayMedia){alert("이 브라우저에서는 화면 캡처를 지원하지 않습니다.");return;}
-    let stream;
-    try{
-      stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
-      const video=document.createElement("video");
-      video.srcObject=stream;
-      video.muted=true;
-      await video.play();
-      await new Promise(resolve=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
-      const maxWidth=1600;
-      const scale=Math.min(1,maxWidth/video.videoWidth);
-      const canvas=document.createElement("canvas");
-      canvas.width=Math.max(1,Math.round(video.videoWidth*scale));
-      canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
-      canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
-      const fileData=canvas.toDataURL("image/jpeg",.82);
-      const stamp=new Date().toISOString().replace(/[:.]/g,"-");
-      await appendMessage({text:"화면 캡처",kind:"image",fileName:`화면캡처_${stamp}.jpg`,fileType:"image/jpeg",fileData});
-    }catch(error){
-      if(error?.name!=="NotAllowedError")alert(`화면 캡처 실패: ${error?.message||"화면을 캡처하지 못했습니다."}`);
-    }finally{
-      stream?.getTracks().forEach(track=>track.stop());
-    }
-  };
   const editMessage=async message=>{if(message.deleted)return;const next=window.prompt("수정할 메시지를 입력하세요.",message.text||"");if(next==null||!next.trim()||next.trim()===message.text)return;try{replaceRoomMessage(await updateNamoTalkMessage(message.id,{action:"edit",text:next.trim()}));}catch(error){alert(error.message);}};
   const togglePinMessage=async message=>{try{replaceRoomMessage(await updateNamoTalkMessage(message.id,{action:"pin",pinned:!message.pinned}));}catch(error){alert(error.message);}};
   const removeMessage=async message=>{if(!window.confirm("이 메시지를 완전히 삭제할까요?\n삭제 후에는 복구할 수 없습니다."))return;try{await deleteNamoTalkMessage(message.id);setMessages(previous=>({...previous,[activeRoom]:(previous[activeRoom]||[]).filter(item=>item.id!==message.id)}));}catch(error){alert(error.message);}};
@@ -436,7 +415,6 @@ function NamoTalkTab({onClose,initialRoom=""}){
           <div style={{display:"flex",alignItems:"flex-end",gap:7}}>
             <textarea ref={composerRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}} placeholder="메시지를 입력하세요" style={{flex:"1 1 auto",minWidth:0,height:60,boxSizing:"border-box",resize:"none",border:"1px solid #94a3b8",borderRadius:10,padding:compact?"9px 8px":"10px 11px",fontFamily:"inherit",fontSize:compact?13:15,color:"#172033",outline:"none"}}/>
             <button type="button" title="파일 첨부" aria-label="파일 첨부" onClick={()=>fileRef.current?.click()} disabled={sending} style={{height:compact?42:46,width:compact?42:"auto",flex:"0 0 auto",padding:compact?0:"0 12px",border:"1px solid #94a3b8",borderRadius:9,background:"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>{compact?"📎":"📎 파일"}</button>
-            <button type="button" title="화면 캡처" aria-label="화면 캡처" onClick={captureScreen} disabled={sending} style={{height:compact?42:46,width:compact?42:"auto",flex:"0 0 auto",padding:compact?0:"0 11px",border:"1px solid #94a3b8",borderRadius:9,background:"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>{compact?"📷":"📷 캡처"}</button>
             <button type="button" title="이모티콘" aria-label="이모티콘" onClick={()=>setEmojiOpen(v=>!v)} disabled={sending} style={{height:compact?42:46,width:compact?42:"auto",flex:"0 0 auto",padding:compact?0:"0 11px",border:"1px solid #94a3b8",borderRadius:9,background:emojiOpen?"#ede9fe":"white",color:"#334155",fontSize:14,fontWeight:900,cursor:"pointer"}}>{compact?"😊":"😊 이모티콘"}</button>
             <button type="button" onClick={sendMessage} disabled={!text.trim()||sending} style={{width:compact?52:64,height:60,flex:`0 0 ${compact?52:64}px`,background:text.trim()&&!sending?"#0284c7":"#bae6fd",color:"white",border:0,borderRadius:10,fontSize:compact?13:15,fontWeight:950,cursor:text.trim()&&!sending?"pointer":"default"}}>{sending?"…":"전송"}</button>
           </div>
