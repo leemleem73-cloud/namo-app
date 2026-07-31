@@ -10,6 +10,7 @@ const NAMO_TALK_STATUS_KEY="qmes-namo-talk-status-v1";
 const NAMO_TALK_STATUS_MESSAGE_KEY="qmes-namo-talk-status-message-v1";
 const NAMO_TALK_CHANNELS_OPEN_KEY="qmes-namo-talk-channels-open-v1";
 const NAMO_TALK_DIRECTS_OPEN_KEY="qmes-namo-talk-directs-open-v1";
+const NAMO_TALK_HIDDEN_ROOMS_KEY="qmes-namo-talk-hidden-rooms-v1";
 const NAMO_TALK_STATUS={
   online:{label:"온라인",color:"#22c55e"},
   away:{label:"자리 비움",color:"#eab308"},
@@ -208,6 +209,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const [statusMessage,setStatusMessage]=useState(()=>safeNamoStorageGet(NAMO_TALK_STATUS_MESSAGE_KEY));
   const [channelsOpen,setChannelsOpen]=useState(()=>safeNamoStorageGet(NAMO_TALK_CHANNELS_OPEN_KEY)!=="0");
   const [directsOpen,setDirectsOpen]=useState(()=>safeNamoStorageGet(NAMO_TALK_DIRECTS_OPEN_KEY)!=="0");
+  const [hiddenRooms,setHiddenRooms]=useState(()=>safeParse(safeNamoStorageGet(NAMO_TALK_HIDDEN_ROOMS_KEY),{}));
   const [emojiOpen,setEmojiOpen]=useState(false);
   const [emojiPage,setEmojiPage]=useState(0);
   const [toast,setToast]=useState("");
@@ -290,12 +292,22 @@ function NamoTalkTab({onClose,initialRoom=""}){
   const editMessage=async message=>{if(message.deleted)return;const next=window.prompt("수정할 메시지를 입력하세요.",message.text||"");if(next==null||!next.trim()||next.trim()===message.text)return;try{replaceRoomMessage(await updateNamoTalkMessage(message.id,{action:"edit",text:next.trim()}));}catch(error){alert(error.message);}};
   const togglePinMessage=async message=>{try{replaceRoomMessage(await updateNamoTalkMessage(message.id,{action:"pin",pinned:!message.pinned}));}catch(error){alert(error.message);}};
   const removeMessage=async message=>{if(!window.confirm("이 메시지를 삭제할까요?"))return;try{replaceRoomMessage(await deleteNamoTalkMessage(message.id));}catch(error){alert(error.message);}};
+  const roomMessageVersion=roomId=>(messages[roomId]||[]).reduce((latest,message)=>Math.max(latest,Number(message.createdAt||message.id)||0),0);
+  const hideConversation=item=>{
+    if(!window.confirm(`'${item.name}' 대화방을 내 대화목록에서 삭제할까요?\n새 메시지가 오면 다시 표시됩니다.`))return;
+    const nextHidden={...hiddenRooms,[item.id]:roomMessageVersion(item.id)};
+    setHiddenRooms(nextHidden);
+    safeNamoStorageSet(NAMO_TALK_HIDDEN_ROOMS_KEY,JSON.stringify(nextHidden));
+    const nextReads={...reads,[item.id]:Date.now()};
+    setReads(nextReads);
+    saveNamoTalkReads(nextReads);
+  };
 
   const filteredChannels=channelRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
   const noticeRooms=filteredChannels.filter(r=>r.type==="notice");
   const departmentRooms=filteredChannels.filter(r=>r.type==="dept");
   const filteredDirects=directRooms.filter(r=>!search||`${r.name} ${r.subtitle}`.includes(search));
-  const conversationRooms=allRooms.filter(item=>(messages[item.id]||[]).length>0).sort((a,b)=>Math.max(...(messages[b.id]||[]).map(row=>Number(row.createdAt)||0),0)-Math.max(...(messages[a.id]||[]).map(row=>Number(row.createdAt)||0),0));
+  const conversationRooms=allRooms.filter(item=>(messages[item.id]||[]).length>0&&roomMessageVersion(item.id)>Number(hiddenRooms[item.id]||0)).sort((a,b)=>roomMessageVersion(b.id)-roomMessageVersion(a.id));
   const roomMessages=messages[activeRoom]||[];
   const visibleMessages=roomMessages.filter(message=>!messageSearch.trim()||`${message.sender} ${message.text} ${message.fileName}`.toLowerCase().includes(messageSearch.trim().toLowerCase())).sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned))||Number(a.createdAt)-Number(b.createdAt));
   const receiptInfoFor=(msg,targetRoom=room)=>{
@@ -315,6 +327,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
   };
   const unreadCount=allRooms.reduce((sum,r)=>{
     if(chatRoomOpen&&r.id===activeRoom)return sum;
+    if(roomMessageVersion(r.id)<=Number(hiddenRooms[r.id]||0))return sum;
     return sum+(messages[r.id]||[]).filter(m=>m.sender!==currentUser.name&&(m.createdAt||m.id)>(reads[r.id]||0)).length;
   },0);
   useEffect(()=>{safeNamoStorageSet("qmes-namo-talk-unread-v1",String(unreadCount));window.dispatchEvent(new CustomEvent("namo-talk-unread",{detail:{count:unreadCount}}));},[unreadCount]);
@@ -364,7 +377,7 @@ function NamoTalkTab({onClose,initialRoom=""}){
       </div>
 
       <div style={{display:mode==="conversations"&&!chatRoomOpen?"block":"none",width:"100%",flex:"1 1 auto",background:"white",border:"1px solid #cbd5e1",borderRadius:compact?10:12,overflowY:"auto",padding:8}}>
-        {conversationRooms.length===0?<div style={{padding:50,textAlign:"center",color:"#64748b"}}><NamoDrop size={compact?46:52}/><strong style={{display:"block",marginTop:12,fontSize:compact?13:14,color:"#334155"}}>아직 대화방이 없습니다.</strong></div>:conversationRooms.map(item=>{const latest=[...(messages[item.id]||[])].sort((a,b)=>Number(b.createdAt)-Number(a.createdAt))[0];const unread=(messages[item.id]||[]).filter(message=>message.sender!==currentUser.name&&(message.createdAt||message.id)>(reads[item.id]||0)).length;return <button key={item.id} type="button" onClick={()=>openChatRoom(item.id,"conversations")} style={{width:"100%",display:"flex",alignItems:"center",gap:compact?8:10,padding:compact?"11px 7px":"13px 9px",border:0,borderBottom:"1px solid #e2e8f0",background:"white",textAlign:"left",cursor:"pointer"}}><span style={{width:compact?36:42,height:compact?36:42,flex:`0 0 ${compact?36:42}px`,display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:item.type==="direct"?"50%":11,background:"#e8eef3",color:"#334155",fontSize:compact?13:14,fontWeight:950}}>{item.name?.[0]||"?"}</span><span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:compact?13:14,color:"#172033",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</strong><span style={{display:"block",marginTop:4,fontSize:compact?10:12,color:"#64748b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{latest?.deleted?"삭제된 메시지입니다.":latest?.fileName||latest?.text}</span></span><span style={{alignSelf:"flex-start",paddingTop:2,fontSize:9,color:"#94a3b8",whiteSpace:"nowrap"}}>{latest?.time||""}</span>{unread>0&&<span style={{minWidth:20,height:20,padding:"0 5px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:10,background:"#ef4444",color:"white",fontSize:10,fontWeight:950}}>{unread>99?"99+":unread}</span>}</button>;})}
+        {conversationRooms.length===0?<div style={{padding:50,textAlign:"center",color:"#64748b"}}><NamoDrop size={compact?46:52}/><strong style={{display:"block",marginTop:12,fontSize:compact?13:14,color:"#334155"}}>아직 대화방이 없습니다.</strong></div>:conversationRooms.map(item=>{const latest=[...(messages[item.id]||[])].sort((a,b)=>Number(b.createdAt)-Number(a.createdAt))[0];const unread=(messages[item.id]||[]).filter(message=>message.sender!==currentUser.name&&(message.createdAt||message.id)>(reads[item.id]||0)).length;return <div key={item.id} style={{display:"flex",alignItems:"center",borderBottom:"1px solid #e2e8f0",background:"white"}}><button type="button" onClick={()=>openChatRoom(item.id,"conversations")} style={{minWidth:0,flex:1,display:"flex",alignItems:"center",gap:compact?8:10,padding:compact?"11px 7px":"13px 9px",border:0,background:"transparent",textAlign:"left",cursor:"pointer"}}><span style={{width:compact?36:42,height:compact?36:42,flex:`0 0 ${compact?36:42}px`,display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:item.type==="direct"?"50%":11,background:"#e8eef3",color:"#334155",fontSize:compact?13:14,fontWeight:950}}>{item.name?.[0]||"?"}</span><span style={{minWidth:0,flex:1}}><strong style={{display:"block",fontSize:compact?13:14,color:"#172033",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</strong><span style={{display:"block",marginTop:4,fontSize:compact?10:12,color:"#64748b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{latest?.deleted?"삭제된 메시지입니다.":latest?.fileName||latest?.text}</span></span><span style={{alignSelf:"flex-start",paddingTop:2,fontSize:9,color:"#94a3b8",whiteSpace:"nowrap"}}>{latest?.time||""}</span>{unread>0&&<span style={{minWidth:20,height:20,padding:"0 5px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:10,background:"#ef4444",color:"white",fontSize:10,fontWeight:950}}>{unread>99?"99+":unread}</span>}</button><button type="button" onClick={()=>hideConversation(item)} title="내 대화목록에서 삭제" aria-label={`${item.name} 대화방 삭제`} style={{width:compact?34:38,height:38,flex:`0 0 ${compact?34:38}px`,marginRight:4,border:0,borderRadius:8,background:"transparent",color:"#94a3b8",fontSize:16,cursor:"pointer"}}>×</button></div>;})}
       </div>
 
       <div style={{flex:"1 1 auto",minWidth:0,minHeight:0,display:chatRoomOpen?"flex":"none",flexDirection:"column",background:"#ffffff",border:"1px solid #cbd5e1",borderRadius:compact?10:12,boxShadow:"0 2px 8px rgba(15,39,64,.08)",overflow:"hidden",position:"relative"}}>
