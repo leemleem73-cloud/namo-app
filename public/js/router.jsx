@@ -297,17 +297,17 @@ function QMESChemical({user, onLogout}){
             }}
           >
             <img
-              src="/assets/namo-header-logo.svg?v=20260731-white1"
+              src="https://namochemical.com/img/svg/img_logo.svg"
               alt="NAMO Chemical"
               className="h-[22px] md:h-[26px] w-auto max-w-[262px] object-contain"
               style={{
-                filter:"none"
+                filter:"brightness(0) invert(1)"
               }}
               onError={event=>{
                 event.currentTarget.onerror = null;
-                event.currentTarget.style.filter = "brightness(0) invert(1)";
+                event.currentTarget.style.filter = "none";
                 event.currentTarget.src =
-                  "https://namochemical.com/img/svg/img_logo.svg";
+                  "/assets/namo-header-logo.svg?v=20260731-white2";
               }}
             />
           </button>
