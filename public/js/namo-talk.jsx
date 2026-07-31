@@ -209,10 +209,10 @@ function NamoAvatarFace({mood="happy",size=36}){
 
 function NamoSticker({sticker,width=70,withLabel=true}){
   if(!sticker)return null;
-  const scale=width/sticker.w,imageHeight=Math.round(102*scale),labelSize=width>=120?Math.round(width*.13):width>=65?14:12;
+  const scale=width/sticker.w,imageHeight=Math.round(102*scale),labelSize=width>=120?Math.round(width*.12):width>=65?12:11;
   return <span role="img" aria-label={sticker.label} style={{width,height:imageHeight+(withLabel?labelSize*1.35:0),display:"inline-flex",flexDirection:"column",alignItems:"center",flex:`0 0 ${width}px`,overflow:"visible"}}>
-    <span style={{width,height:imageHeight,display:"block",position:"relative",backgroundImage:`url(${NAMO_STICKER_SHEET})`,backgroundRepeat:"no-repeat",backgroundSize:`${720*scale}px ${1620*scale}px`,backgroundPosition:`${-sticker.x*scale}px ${-sticker.y*scale}px`,filter:"brightness(1.18) saturate(1.3) contrast(1.1) drop-shadow(0 2px 2px rgba(20,94,160,.28))"}}><i style={{position:"absolute",left:"12%",top:"4%",width:"33%",height:"28%",borderRadius:"50%",background:"radial-gradient(ellipse at center,rgba(255,255,255,.4),rgba(255,255,255,0) 72%)",mixBlendMode:"screen",pointerEvents:"none"}}/></span>
-    {withLabel&&<strong style={{width:"125%",marginTop:1,color:"#101828",fontSize:labelSize,lineHeight:1.15,fontWeight:950,textAlign:"center",whiteSpace:"nowrap",letterSpacing:"-.35px"}}>{sticker.label}</strong>}
+    <span style={{width,height:imageHeight,display:"block",position:"relative",backgroundImage:`url(${NAMO_STICKER_SHEET})`,backgroundRepeat:"no-repeat",backgroundSize:`${720*scale}px ${1620*scale}px`,backgroundPosition:`${-sticker.x*scale}px ${-sticker.y*scale}px`,filter:"drop-shadow(0 2px 2px rgba(25,82,133,.22))"}}><i style={{position:"absolute",left:"13%",top:"5%",width:"31%",height:"25%",borderRadius:"50%",background:"radial-gradient(ellipse at center,rgba(255,255,255,.34),rgba(255,255,255,0) 72%)",mixBlendMode:"screen",pointerEvents:"none"}}/><i style={{position:"absolute",left:"19%",top:"10%",width:"8%",height:"7%",borderRadius:"50%",background:"rgba(255,255,255,.48)",pointerEvents:"none"}}/></span>
+    {withLabel&&<strong style={{width:"125%",marginTop:2,color:"#172033",fontSize:labelSize,lineHeight:1.15,fontWeight:900,textAlign:"center",whiteSpace:"nowrap",letterSpacing:"-.35px"}}>{sticker.label}</strong>}
   </span>;
 }
 
