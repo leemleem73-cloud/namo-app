@@ -1846,6 +1846,8 @@ app.post('/api/namo-talk/profiles', requireLogin, async (req, res) => {
     const allowedPresets = new Set([
       'drop-blue', 'drop-purple', 'drop-mint', 'drop-pink',
       'drop-yellow', 'drop-sky', 'drop-navy', 'drop-coral',
+      'drop-angry', 'drop-surprise', 'drop-laugh', 'drop-sleepy',
+      'drop-curious', 'drop-cheer', 'drop-focus', 'drop-thanks',
     ]);
     const type = txt(req.body?.type);
     const value = txt(req.body?.value);
@@ -1883,7 +1885,7 @@ app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
     const b = req.body || {};
     const roomId = txt(b.roomId);
     const kind = txt(b.kind) || 'text';
-    const allowedKinds = new Set(['text', 'notice', 'emoticon', 'image', 'file']);
+    const allowedKinds = new Set(['text', 'notice', 'emoticon', 'sticker', 'image', 'file']);
 
     if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
     if (!allowedKinds.has(kind)) return fail(res, 400, '지원하지 않는 메시지 형식입니다.');
