@@ -416,6 +416,7 @@ async function ensureSchema() {
       file_name TEXT,
       file_type TEXT,
       file_data TEXT,
+      deleted_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -549,6 +550,7 @@ async function ensureSchema() {
     ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_name TEXT;
     ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_type TEXT;
     ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_data TEXT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
     ALTER TABLE namo_talk_reads ADD COLUMN IF NOT EXISTS user_name TEXT DEFAULT '';
     ALTER TABLE namo_talk_reads ADD COLUMN IF NOT EXISTS last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
@@ -1699,6 +1701,7 @@ function mapNamoTalkMessage(row) {
     fileName: row.file_name || '',
     fileType: row.file_type || '',
     fileData: row.file_data || '',
+    deleted: Boolean(row.deleted_at),
   };
 }
 
@@ -1709,7 +1712,7 @@ app.get('/api/namo-talk/messages', requireLogin, async (req, res) => {
 
     const r = await db(
       `SELECT id, room_id, sender_name, sender_uid, sender_dept,
-              message_kind, message_text, file_name, file_type, file_data, created_at
+              message_kind, message_text, file_name, file_type, file_data, deleted_at, created_at
        FROM namo_talk_messages
        WHERE room_id = $1
        ORDER BY created_at ASC, id ASC
@@ -1736,7 +1739,7 @@ app.get('/api/namo-talk/notifications', requireLogin, async (req, res) => {
     const userName = txt(user.name);
     const result = await db(
       `SELECT id, room_id, sender_name, sender_uid, sender_dept,
-              message_kind, message_text, file_name, file_type, file_data, created_at
+              message_kind, message_text, file_name, file_type, file_data, deleted_at, created_at
          FROM namo_talk_messages
         WHERE id > $1 AND sender_name <> $2
         ORDER BY id ASC
@@ -1816,7 +1819,7 @@ app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
          message_text, file_name, file_type, file_data)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING id, room_id, sender_name, sender_uid, sender_dept,
-                 message_kind, message_text, file_name, file_type, file_data, created_at`,
+                 message_kind, message_text, file_name, file_type, file_data, deleted_at, created_at`,
       [
         roomId,
         txt(user.name) || '사용자',
@@ -1831,6 +1834,43 @@ app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
     );
 
     ok(res, mapNamoTalkMessage(r.rows[0]), '메시지가 전송되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/messages/:id/action', requireLogin, async (req, res) => {
+  try {
+    const messageId = Number(req.params.id);
+    const action = txt(req.body?.action);
+    if (!Number.isInteger(messageId) || messageId <= 0) {
+      return fail(res, 400, '메시지 정보가 올바르지 않습니다.');
+    }
+    if (action !== 'delete') {
+      return fail(res, 400, '지원하지 않는 메시지 처리입니다.');
+    }
+
+    const userName = txt(req.session.user?.name);
+    const result = await db(
+      `UPDATE namo_talk_messages
+          SET message_text = '',
+              file_name = NULL,
+              file_type = NULL,
+              file_data = NULL,
+              deleted_at = NOW()
+        WHERE id = $1
+          AND sender_name = $2
+          AND deleted_at IS NULL
+      RETURNING id, room_id, sender_name, sender_uid, sender_dept,
+                message_kind, message_text, file_name, file_type, file_data,
+                deleted_at, created_at`,
+      [messageId, userName]
+    );
+
+    if (!result.rowCount) {
+      return fail(res, 404, '삭제할 메시지를 찾을 수 없거나 삭제 권한이 없습니다.');
+    }
+    ok(res, mapNamoTalkMessage(result.rows[0]), '메시지가 삭제되었습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
