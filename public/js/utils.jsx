@@ -77,7 +77,8 @@ function autoJudge(check, raw) {
     const judge = text(cells[4]?.textContent);
     const inspector = text(cells[5]?.textContent);
     const shownDate = dateOnly(cells[0]?.textContent);
-    const source = Array.isArray(window.DB?.iqc) ? window.DB.iqc : [];
+    const database = typeof DB !== "undefined" && DB ? DB : {};
+    const source = Array.isArray(database.iqc) ? database.iqc : [];
 
     const candidates = source.filter((record) => {
       if (normalize(record?.lot) !== lot) return false;
