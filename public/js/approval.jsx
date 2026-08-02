@@ -31,7 +31,6 @@ function InterlockTab() {
         <Kpi icon={Unlock} label="해제 완료" value={holds.length - active - cond} unit="건" tone="text-emerald-400" />
       </div>
 
-      {/* 게이트 규칙 */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
         {GATES.map((g, i) => (
           <div key={i} className="bg-slate-900 border border-slate-800 rounded-lg p-4">
@@ -48,7 +47,6 @@ function InterlockTab() {
         ))}
       </div>
 
-      {/* 부적합 격리 Rack 현황 — 개선요청 6번: 실물 격리와 시스템 홀드 1:1 연결 */}
       <Panel title="현장 부적합 격리 Rack 현황" right={<span className="text-xs text-slate-400">Rack 입고/출고는 홀드 등록·해제와 연동 (임의 반출 시 스캔 거부)</span>}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {RACKS.map((r) => (
@@ -65,7 +63,6 @@ function InterlockTab() {
         </div>
       </Panel>
 
-      {/* 홀드 목록 */}
       <Panel title="차단(Hold) 현황 및 해제 관리" right={<span className="text-xs text-slate-400">해제는 조건 충족 + 승인권자 승인 시에만 가능 (이력 보존)</span>}>
         <div className="flex flex-col divide-y divide-slate-800/60">
           {holds.length === 0 && <p className="py-2 text-sm text-slate-500">현재 차단(Hold) 건이 없습니다 — 부적합 발생 시 자동 등록됩니다.</p>}
@@ -271,4 +268,209 @@ function InterlockTab() {
 
   window.addEventListener("storage", enrichLotTraceMaterials);
   document.addEventListener("qmes:data-updated", enrichLotTraceMaterials);
+})();
+
+/* ──────────────────────────── LOT 추적 생산실적·공정검사 상세 연동 ──────────────────────────── */
+(function installLotProductionDetailLink(){
+  if (window.__QMES_LOT_PRODUCTION_DETAIL_INSTALLED__) return;
+  const LinkedTraceTab = typeof TraceTab === "function" ? TraceTab : null;
+  if (!LinkedTraceTab) return;
+  window.__QMES_LOT_PRODUCTION_DETAIL_INSTALLED__ = true;
+
+  const firstValue = (record, keys) => {
+    for (const key of keys) {
+      const value = record && record[key];
+      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+    }
+    return "";
+  };
+  const toNumber = (value) => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    const matched = String(value ?? "").replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+    return matched ? Number(matched[0]) : null;
+  };
+  const displayValue = (value, fallback = "-") => {
+    const text = String(value ?? "").trim();
+    return text && text !== "—" ? text : fallback;
+  };
+  const dateTimeText = (value, fallbackDate, fallbackTime) => {
+    const text = String(value || "").trim();
+    if (text) {
+      const parsed = new Date(text);
+      if (!Number.isNaN(parsed.getTime()) && /T|\d{2}:\d{2}/.test(text)) {
+        return parsed.toLocaleString("ko-KR", {year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false});
+      }
+      return text;
+    }
+    return [fallbackDate, fallbackTime].filter(Boolean).join(" ") || "-";
+  };
+  const unique = (values) => Array.from(new Set(values.map((value)=>String(value || "").trim()).filter(Boolean)));
+  const toneForJudge = (value) => {
+    const text = String(value || "");
+    if (/불합격|이탈|NG|FAIL/i.test(text)) return "red";
+    if (/합격|적합|완료|OK|PASS/i.test(text)) return "green";
+    if (/검사|진행|대기|미입력/.test(text)) return "amber";
+    return "gray";
+  };
+
+  function LotProductionTracePanel(){
+    const lotIds = Object.keys(DB.lots || {});
+    const [selectedLot, setSelectedLot] = useState(lotIds[0] || "");
+    const [traceMode, setTraceMode] = useState("finished");
+    const [, setVersion] = useState(0);
+
+    useEffect(() => {
+      const handleClick = (event) => {
+        const button = event.target.closest && event.target.closest("button");
+        if (!button) return;
+        const buttonText = String(button.textContent || "").trim();
+        if (buttonText === "원료 LOT 역추적") { setTraceMode("raw"); return; }
+        if (buttonText === "완제품 LOT 조회") { setTraceMode("finished"); return; }
+        const scopeText = String(button.closest("tr")?.textContent || button.textContent || "");
+        const matchedLot = lotIds.find((lotId) => scopeText.includes(lotId));
+        if (matchedLot) {
+          setSelectedLot(matchedLot);
+          if (buttonText === "LOT 보기") setTraceMode("finished");
+        }
+      };
+      const refresh = () => setVersion((value) => value + 1);
+      document.addEventListener("click", handleClick, true);
+      document.addEventListener("qmes:data-updated", refresh);
+      window.addEventListener("storage", refresh);
+      return () => {
+        document.removeEventListener("click", handleClick, true);
+        document.removeEventListener("qmes:data-updated", refresh);
+        window.removeEventListener("storage", refresh);
+      };
+    }, [lotIds.join("|")]);
+
+    if (traceMode !== "finished") return null;
+    const activeLotId = DB.lots?.[selectedLot] ? selectedLot : lotIds[0];
+    const lot = DB.lots?.[activeLotId];
+    if (!lot) return null;
+
+    const workOrder = DB.woDocs?.[activeLotId] || Object.values(DB.woDocs || {}).find((row) =>
+      [row?.no,row?.lot,row?.lotNo,row?.workOrder].some((value)=>String(value || "").trim() === activeLotId)
+    ) || {};
+    const batch = (DB.batches || []).find((row) =>
+      [row?.no,row?.lot,row?.lotNo,row?.workOrder].some((value)=>String(value || "").trim() === activeLotId)
+    ) || {};
+    const productionStep = [...(lot.steps || [])].reverse().find((step)=>step.stage === "생산") || {};
+    const productionDate = displayValue(firstValue(workOrder,["date","productionDate","startDate","workDate"])
+      || firstValue(batch,["productionDate","startDate","date","due"])
+      || firstValue(lot,["productionDate","mfgDate"]));
+    const equipment = displayValue(firstValue(workOrder,["tank","equipment","equipmentName","machine"])
+      || firstValue(batch,["tank","equipment","equipmentName","machine"]));
+    const sourceInputs = Array.isArray(workOrder.inputs) && workOrder.inputs.length ? workOrder.inputs : (lot.materials || []);
+    const lotMaterials = lot.materials || [];
+    const materialRows = sourceInputs.map((input,index) => {
+      const inputLot = displayValue(firstValue(input,["lot","materialLot","lotNo"]), "");
+      const matched = lotMaterials.find((material) => inputLot && String(material.lot || "").trim() === inputLot)
+        || lotMaterials[index] || {};
+      const standard = toNumber(firstValue(input,["std","standardQty","planQty","targetQty"]));
+      const actual = toNumber(firstValue(input,["act","actualQty","usedQty","inputQty"])) ?? toNumber(matched.qty);
+      const remaining = toNumber(firstValue(input,["remaining","remainingQty","balanceQty"])) ?? toNumber(matched.remainingQty);
+      const worker = displayValue(firstValue(input,["by","worker","operator","inputBy"])
+        || firstValue(workOrder,["by","worker","operator","owner"])
+        || productionStep.by);
+      const usedAt = dateTimeText(firstValue(input,["inputAt","usedAt","weighedAt","updatedAt","createdAt"]),productionDate,productionStep.time);
+      const rowEquipment = displayValue(firstValue(input,["tank","equipment","equipmentName","machine"]) || equipment);
+      const judge = input.ok === false ? "공차 이탈" : input.ok === true ? "적합" : actual != null ? "기록" : "미입력";
+      return {
+        sequence:index + 1,
+        name:displayValue(input.name || matched.name),
+        lot:displayValue(inputLot || matched.lot),
+        usedAt,
+        standard,
+        actual,
+        remaining,
+        worker,
+        equipment:rowEquipment,
+        judge,
+        unit:displayValue(input.unit || "kg","kg")
+      };
+    });
+
+    const workers = unique([
+      ...materialRows.map((row)=>row.worker === "-" ? "" : row.worker),
+      ...(workOrder.conds || []).map((row)=>row.by),
+      productionStep.by,
+      firstValue(batch,["worker","operator","by"])
+    ]);
+    const pqcRows = (DB.insp?.PQC || []).filter((row)=>String(row.lot || "").trim() === activeLotId);
+    const groupKeys = unique(pqcRows.map((row)=>row.groupId || `${row.lot}|${row.date}`));
+    const latestGroupKey = groupKeys.sort((a,b) => {
+      const rowA = pqcRows.find((row)=>(row.groupId || `${row.lot}|${row.date}`) === a) || {};
+      const rowB = pqcRows.find((row)=>(row.groupId || `${row.lot}|${row.date}`) === b) || {};
+      return `${rowB.date || ""} ${rowB.time || ""}`.localeCompare(`${rowA.date || ""} ${rowA.time || ""}`);
+    })[0];
+    const latestPqcRows = latestGroupKey ? pqcRows.filter((row)=>(row.groupId || `${row.lot}|${row.date}`) === latestGroupKey) : [];
+    const pqcJudge = latestPqcRows.length
+      ? (latestPqcRows.every((row)=>row.judge === "합격") ? "합격" : "불합격")
+      : "미검사";
+    const pqcInspector = unique(latestPqcRows.map((row)=>row.inspector || row.by)).join(" · ") || "-";
+    const goodQty = toNumber(firstValue(batch,["done","actualQty","goodQty","productionQty"])) ?? toNumber(firstValue(lot,["qty","goodQty","productionQty"]));
+    const defectQty = toNumber(firstValue(batch,["defectQty","badQty","ngQty","scrapQty"]))
+      ?? toNumber(firstValue(workOrder,["defectQty","badQty","ngQty","scrapQty"]))
+      ?? toNumber(firstValue(lot,["defectQty","badQty","ngQty","scrapQty"]));
+    const explicitRate = toNumber(firstValue(batch,["defectRate","badRate","ngRate","scrapRate"])
+      || firstValue(workOrder,["defectRate","badRate","ngRate","scrapRate"])
+      || firstValue(lot,["defectRate","badRate","ngRate","scrapRate"]));
+    const defectRate = explicitRate != null ? explicitRate
+      : (defectQty != null && goodQty != null && goodQty + defectQty > 0 ? (defectQty / (goodQty + defectQty)) * 100 : null);
+    const summaryCards = [
+      ["생산일자",productionDate,"작업지시 기준"],
+      ["작업자",workers.join(" · ") || "-",`${workers.length}명`],
+      ["사용 설비",equipment,"탱크·설비"],
+      ["공정검사",pqcJudge,pqcInspector],
+      ["불량수량",defectQty == null ? "-" : `${defectQty.toLocaleString()} kg`,"생산실적 등록값"],
+      ["불량률",defectRate == null ? "-" : `${defectRate.toFixed(2)}%`,"불량수량 기준"]
+    ];
+
+    return <div className="mt-4 flex flex-col gap-4" data-qmes-lot-production-detail={activeLotId}>
+      <Panel title={`생산실적 상세 — ${activeLotId}`} right={<Badge tone={pqcJudge === "합격" ? "green" : pqcJudge === "불합격" ? "red" : "amber"}>{pqcJudge === "미검사" ? "PQC 미검사" : `PQC ${pqcJudge}`}</Badge>}>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+          {summaryCards.map(([label,value,detail])=><div key={label} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+            <div className="text-[11px] font-bold text-slate-500">{label}</div>
+            <div className="mt-1 break-words text-sm font-black text-slate-100">{value}</div>
+            <div className="mt-1 text-[10px] text-slate-600">{detail}</div>
+          </div>)}
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[1180px] text-sm">
+            <thead><tr className="border-b border-slate-700 text-xs text-slate-400">
+              {['순서','원재료','원료 LOT','투입일시','기준량','실투입량','사용 후 잔량','작업자','사용 설비','판정'].map((label)=><th key={label} className={`py-2 pr-3 font-medium ${['기준량','실투입량','사용 후 잔량'].includes(label)?'text-right':'text-left'}`}>{label}</th>)}
+            </tr></thead>
+            <tbody>
+              {materialRows.map((row)=><tr key={`${row.sequence}-${row.lot}`} className="border-b border-slate-800/70 hover:bg-slate-800/30">
+                <td className="py-3 pr-3 text-center font-black text-sky-300">{row.sequence}</td>
+                <td className="py-3 pr-3 font-bold text-white">{row.name}</td>
+                <td className="py-3 pr-3 font-mono text-xs text-violet-300">{row.lot}</td>
+                <td className="py-3 pr-3 text-xs text-slate-400">{row.usedAt}</td>
+                <td className="py-3 pr-3 text-right tabular-nums">{row.standard == null ? '-' : `${row.standard.toLocaleString()} ${row.unit}`}</td>
+                <td className="py-3 pr-3 text-right font-bold tabular-nums text-slate-100">{row.actual == null ? '-' : `${row.actual.toLocaleString()} ${row.unit}`}</td>
+                <td className="py-3 pr-3 text-right tabular-nums text-amber-300">{row.remaining == null ? '-' : `${row.remaining.toLocaleString()} ${row.unit}`}</td>
+                <td className="py-3 pr-3">{row.worker}</td>
+                <td className="py-3 pr-3">{row.equipment}</td>
+                <td className="py-3"><Badge tone={toneForJudge(row.judge)}>{row.judge}</Badge></td>
+              </tr>)}
+              {materialRows.length === 0&&<tr><td colSpan="10" className="py-10 text-center text-slate-500">작업지시의 원료 투입실적을 기록하면 순서와 상세정보가 자동 표시됩니다.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
+
+      <Panel title="공정검사(PQC) 결과" right={<span className="text-xs text-slate-500">최근 검사 {latestPqcRows.length ? `${latestPqcRows[0].date || '-'} ${latestPqcRows[0].time || ''}` : '미등록'}</span>}>
+        {latestPqcRows.length ? <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-sm">
+          <thead><tr className="border-b border-slate-700 text-xs text-slate-400"><th className="py-2 text-left">검사항목</th><th className="py-2 text-left">측정값</th><th className="py-2 text-left">판정</th><th className="py-2 text-left">검사자</th><th className="py-2 text-left">검사일시</th></tr></thead>
+          <tbody>{latestPqcRows.map((row)=><tr key={row.id} className="border-b border-slate-800"><td className="py-3 font-bold text-white">{row.check}</td><td className="py-3 text-slate-300">{row.value || '-'}</td><td className="py-3"><Badge tone={toneForJudge(row.judge)}>{row.judge || '-'}</Badge></td><td className="py-3">{row.inspector || row.by || '-'}</td><td className="py-3 text-xs text-slate-400">{[row.date,row.time].filter(Boolean).join(' ') || '-'}</td></tr>)}</tbody>
+        </table></div> : <p className="py-6 text-center text-sm text-slate-500">이 LOT의 공정검사 기록이 아직 없습니다. 생산실적 완료 후 공정검사를 등록하면 자동 연결됩니다.</p>}
+      </Panel>
+    </div>;
+  }
+
+  TraceTab = function TraceTabWithProductionDetail(){
+    return <><LinkedTraceTab/><LotProductionTracePanel/></>;
+  };
 })();
