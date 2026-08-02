@@ -59,3 +59,83 @@ function autoJudge(check, raw) {
   return "합격";
 }
 
+/* 수입검사 신규등록은 입고일자·검사일자를 각각 저장하고,
+   관리대장 목록의 대표 날짜는 입고일자를 우선 표시합니다. */
+(function installIqcReceiveDateLedgerPatch() {
+  if (window.__QMES_IQC_RECEIVE_DATE_LEDGER_PATCH__) return;
+  window.__QMES_IQC_RECEIVE_DATE_LEDGER_PATCH__ = true;
+
+  const text = (value) => String(value ?? "").trim();
+  const dateOnly = (value) => text(value).slice(0, 10);
+  const normalize = (value) => text(value).toUpperCase();
+
+  const findRecordForRow = (cells) => {
+    const lot = normalize(cells[1]?.textContent);
+    if (!lot) return null;
+    const supplier = text(cells[2]?.textContent);
+    const material = text(cells[3]?.textContent);
+    const judge = text(cells[4]?.textContent);
+    const inspector = text(cells[5]?.textContent);
+    const shownDate = dateOnly(cells[0]?.textContent);
+    const source = Array.isArray(window.DB?.iqc) ? window.DB.iqc : [];
+
+    const candidates = source.filter((record) => {
+      if (normalize(record?.lot) !== lot) return false;
+      if (supplier && supplier !== "-" && text(record?.supplier) !== supplier) return false;
+      if (material && material !== "-" && text(record?.name) !== material) return false;
+      if (judge && text(record?.judge) !== judge) return false;
+      const recordInspector = text(record?.inspector || record?.by);
+      if (inspector && inspector !== "-" && recordInspector !== inspector) return false;
+      return true;
+    });
+
+    return candidates.find((record) =>
+      dateOnly(record?.recv) === shownDate || dateOnly(record?.inspectedAt) === shownDate
+    ) || candidates[0] || source.find((record) => normalize(record?.lot) === lot) || null;
+  };
+
+  const applyReceiveDateLedger = () => {
+    const table = document.querySelector(".qmes-iqc-ledger-table");
+    if (!table) return;
+
+    const firstHeader = table.querySelector("thead th:first-child");
+    if (firstHeader && text(firstHeader.textContent) !== "입고일자") {
+      firstHeader.textContent = "입고일자";
+    }
+
+    table.querySelectorAll("tbody tr").forEach((row) => {
+      if (row.querySelector(".qmes-iqc-empty-row")) return;
+      const cells = row.querySelectorAll("td");
+      if (cells.length < 6) return;
+      const record = findRecordForRow(cells);
+      const receiveDate = dateOnly(record?.recv || record?.inspectedAt || "-") || "-";
+      if (text(cells[0].textContent) !== receiveDate) cells[0].textContent = receiveDate;
+      cells[0].title = record?.inspectedAt && dateOnly(record.inspectedAt) !== receiveDate
+        ? `검사일자 ${dateOnly(record.inspectedAt)}`
+        : "입고일자";
+    });
+  };
+
+  let animationFrame = 0;
+  const scheduleApply = () => {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    animationFrame = requestAnimationFrame(() => {
+      animationFrame = 0;
+      applyReceiveDateLedger();
+    });
+  };
+
+  const startObserver = () => {
+    const observer = new MutationObserver(scheduleApply);
+    observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    scheduleApply();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startObserver, { once: true });
+  } else {
+    startObserver();
+  }
+  document.addEventListener("qmes:data-updated", scheduleApply);
+  window.addEventListener("storage", scheduleApply);
+})();
