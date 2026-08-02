@@ -140,3 +140,76 @@ function autoJudge(check, raw) {
   document.addEventListener("qmes:data-updated", scheduleApply);
   window.addEventListener("storage", scheduleApply);
 })();
+
+/* 수입검사에서 kg로 관리되는 입고값의 명칭을 '입고중량'으로 통일합니다.
+   저장 필드(qty)는 유지하여 기존 데이터·연동에는 영향을 주지 않습니다. */
+(function installIqcReceivingWeightTerminologyPatch() {
+  if (window.__QMES_IQC_RECEIVING_WEIGHT_TERMINOLOGY_PATCH__) return;
+  window.__QMES_IQC_RECEIVING_WEIGHT_TERMINOLOGY_PATCH__ = true;
+
+  const sourceTerm = "입고수량";
+  const targetTerm = "입고중량";
+
+  const replaceText = (value) => String(value ?? "").replaceAll(sourceTerm, targetTerm);
+
+  const applyTerminology = (root = document.body) => {
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+      if (node.nodeValue && node.nodeValue.includes(sourceTerm)) {
+        node.nodeValue = replaceText(node.nodeValue);
+      }
+      node = walker.nextNode();
+    }
+
+    root.querySelectorAll?.("[placeholder],[title],[aria-label]").forEach((element) => {
+      ["placeholder", "title", "aria-label"].forEach((attribute) => {
+        const value = element.getAttribute(attribute);
+        if (value && value.includes(sourceTerm)) element.setAttribute(attribute, replaceText(value));
+      });
+    });
+  };
+
+  const NativeBlob = window.Blob;
+  if (NativeBlob && !NativeBlob.__QMES_IQC_WEIGHT_PATCH__) {
+    function QmesBlob(parts, options) {
+      const isCsv = String(options?.type || "").toLowerCase().includes("text/csv");
+      const nextParts = isCsv
+        ? (parts || []).map((part) => typeof part === "string" ? replaceText(part) : part)
+        : parts;
+      return new NativeBlob(nextParts, options);
+    }
+    QmesBlob.prototype = NativeBlob.prototype;
+    Object.setPrototypeOf(QmesBlob, NativeBlob);
+    QmesBlob.__QMES_IQC_WEIGHT_PATCH__ = true;
+    window.Blob = QmesBlob;
+  }
+
+  let frame = 0;
+  const scheduleApply = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      applyTerminology();
+    });
+  };
+
+  const start = () => {
+    const observer = new MutationObserver(scheduleApply);
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["placeholder", "title", "aria-label"]
+    });
+    scheduleApply();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
