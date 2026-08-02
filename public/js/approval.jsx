@@ -122,3 +122,153 @@ function InterlockTab() {
 /* ──────────────────────────── 현장 입력 (iPad · POP) 탭 ──────────────────────────── */
 /* 측정값 입력 즉시: 규격 자동판정 → 성적서 자동기록 → Lot 이력 반영 → 불합격 시 자동 홀드·알람 */
 
+/* ──────────────────────────── LOT 추적 원료 입고·IQC 정보 자동 연동 ──────────────────────────── */
+(function installLotTraceIqcReceivingLink(){
+  if (window.__QMES_LOT_IQC_LINK_INSTALLED__) return;
+  const LegacyTraceTab = typeof TraceTab === "function" ? TraceTab : null;
+  if (!LegacyTraceTab) return;
+  window.__QMES_LOT_IQC_LINK_INSTALLED__ = true;
+
+  const EMPTY_VALUES = new Set(["", "-", "미등록", "미검사", "확인 필요"]);
+  const PASS_VALUES = new Set(["OK", "PASS", "합격", "적합", "승인"]);
+  const FAIL_VALUES = new Set(["NG", "FAIL", "FAILED", "불합격", "부적합", "반품"]);
+
+  const firstValue = (record, keys) => {
+    for (const key of keys) {
+      const value = record && record[key];
+      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+    }
+    return "";
+  };
+
+  const usableValue = (value) => {
+    const text = String(value == null ? "" : value).trim();
+    return EMPTY_VALUES.has(text) ? "" : text;
+  };
+
+  const normalizeLot = (value) => String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/[‐‑‒–—―]/g, "-");
+
+  const normalizeDate = (value) => {
+    const text = String(value || "").trim();
+    const match = text.match(/(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})/);
+    if (!match) return text;
+    return `${match[1]}-${String(match[2]).padStart(2, "0")}-${String(match[3]).padStart(2, "0")}`;
+  };
+
+  const inspectionRows = () => {
+    const db = typeof DB !== "undefined" && DB ? DB : {};
+    const sources = [
+      db.iqc,
+      db.insp && db.insp.IQC,
+      db.iqcRecords,
+      db.inspections && db.inspections.IQC,
+      db.receipts,
+      db.receiving,
+      db.rawMaterialReceipts,
+      db.inboundMaterials,
+    ];
+    const rows = sources.filter(Array.isArray).flat();
+    const seen = new Set();
+    return rows.filter((row) => {
+      const lot = normalizeLot(firstValue(row, ["lot", "lotNo", "lotNumber", "materialLot", "rawLot", "supplierLot"]));
+      const key = `${firstValue(row, ["inNo", "receiptNo", "id"])}|${lot}|${firstValue(row, ["recv", "receivedAt", "recvDate", "inspectedAt", "date"])}`;
+      if (!lot || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
+  const partnerRows = () => {
+    const db = typeof DB !== "undefined" && DB ? DB : {};
+    return [
+      ...(Array.isArray(db.partnerSuppliers) ? db.partnerSuppliers : []),
+      ...Object.values(db.rawMaterialLots || {}),
+    ];
+  };
+
+  const judgeText = (row, fallback) => {
+    const direct = usableValue(firstValue(row, ["judge", "judgment", "iqc", "iqcResult", "inspectionResult", "result"]));
+    const normalized = direct.toUpperCase();
+    if (PASS_VALUES.has(normalized)) return "합격";
+    if (FAIL_VALUES.has(normalized)) return "불합격";
+    if (/검사중|진행중|대기/.test(direct)) return "검사중";
+    if (direct) return direct;
+
+    const checks = ["visual", "label", "weight", "coa"]
+      .map((key) => usableValue(row && row[key]))
+      .filter(Boolean);
+    if (checks.some((value) => FAIL_VALUES.has(value.toUpperCase()) || value.includes("불합격"))) return "불합격";
+    if (checks.length && checks.every((value) => PASS_VALUES.has(value.toUpperCase()) || value.includes("합격"))) return "합격";
+    return usableValue(fallback) || "미검사";
+  };
+
+  const findLatestInspection = (material, rows) => {
+    const materialLot = normalizeLot(firstValue(material, ["lot", "lotNo", "lotNumber", "materialLot", "rawLot"]));
+    const containerNo = normalizeLot(firstValue(material, ["containerNo", "container", "containerId"]));
+    if (!materialLot && !containerNo) return null;
+    const matches = rows.filter((row) => {
+      const rowLot = normalizeLot(firstValue(row, ["lot", "lotNo", "lotNumber", "materialLot", "rawLot", "supplierLot"]));
+      const rowContainer = normalizeLot(firstValue(row, ["containerNo", "container", "containerId"]));
+      return (materialLot && rowLot === materialLot) || (containerNo && rowContainer === containerNo);
+    });
+    return matches.sort((a, b) => {
+      const dateA = normalizeDate(firstValue(a, ["inspectedAt", "inspectionDate", "recv", "receivedAt", "recvDate", "date"]));
+      const dateB = normalizeDate(firstValue(b, ["inspectedAt", "inspectionDate", "recv", "receivedAt", "recvDate", "date"]));
+      return String(dateB).localeCompare(String(dateA));
+    })[0] || null;
+  };
+
+  const findPartner = (material, rows) => {
+    const materialLot = normalizeLot(firstValue(material, ["lot", "lotNo", "lotNumber", "materialLot", "rawLot"]));
+    if (!materialLot) return null;
+    return rows.find((row) => normalizeLot(firstValue(row, ["lot", "lotNo", "lotNumber", "materialLot", "rawLot"])) === materialLot) || null;
+  };
+
+  const enrichLotTraceMaterials = () => {
+    const db = typeof DB !== "undefined" && DB ? DB : null;
+    if (!db || !db.lots) return 0;
+    const iqcRows = inspectionRows();
+    const suppliers = partnerRows();
+    let changedCount = 0;
+
+    Object.values(db.lots).forEach((lot) => {
+      if (!Array.isArray(lot && lot.materials)) return;
+      lot.materials = lot.materials.map((material) => {
+        const iqc = findLatestInspection(material, iqcRows);
+        const partner = findPartner(material, suppliers);
+        const supplier = usableValue(firstValue(material, ["supplier", "supplierName", "vendor", "company"]))
+          || usableValue(firstValue(iqc, ["supplier", "supplierName", "vendor", "company", "partnerName"]))
+          || usableValue(firstValue(partner, ["supplier", "supplierName", "vendor", "company", "partnerName"]));
+        const recv = usableValue(firstValue(material, ["recv", "receivedAt", "recvDate", "receivedDate", "receiveDate", "inDate", "receiptDate"]))
+          || usableValue(firstValue(iqc, ["recv", "receivedAt", "recvDate", "receivedDate", "receiveDate", "inDate", "receiptDate", "date"]));
+        const inspection = judgeText(iqc, firstValue(material, ["iqc", "iqcResult", "inspectionResult"]));
+        const next = {
+          ...material,
+          supplier: supplier || "-",
+          recv: normalizeDate(recv) || "-",
+          iqc: inspection,
+          iqcNo: usableValue(firstValue(iqc, ["inNo", "inspectionNo", "receiptNo", "id"])) || material.iqcNo || "",
+          inspectedAt: normalizeDate(firstValue(iqc, ["inspectedAt", "inspectionDate", "recv", "receivedAt", "date"])) || material.inspectedAt || "",
+        };
+        if (next.supplier !== material.supplier || next.recv !== material.recv || next.iqc !== material.iqc || next.iqcNo !== material.iqcNo || next.inspectedAt !== material.inspectedAt) changedCount += 1;
+        return next;
+      });
+    });
+    return changedCount;
+  };
+
+  window.qmesEnrichLotTraceMaterials = enrichLotTraceMaterials;
+  enrichLotTraceMaterials();
+
+  TraceTab = function TraceTabWithIqcReceivingLink(){
+    enrichLotTraceMaterials();
+    return <LegacyTraceTab />;
+  };
+
+  window.addEventListener("storage", enrichLotTraceMaterials);
+  document.addEventListener("qmes:data-updated", enrichLotTraceMaterials);
+})();
