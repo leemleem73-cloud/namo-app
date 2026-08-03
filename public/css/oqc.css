@@ -7,3 +7,25 @@
 .qmes-oqc-entry-form .qmes-oqc-basic-row > div:has(input[placeholder^="납품처"]) {
   display: none !important;
 }
+
+/* 출하검사 기본정보는 위 4칸 / 아래 4칸으로 정렬한다.
+   1행: 출하번호·검사일자·출하일자·LOT No.
+   2행: 제품명·검사자·고객사·출하수량 */
+.qmes-oqc-entry-form .qmes-oqc-basic-row {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: end !important;
+}
+
+@media (max-width: 1100px) {
+  .qmes-oqc-entry-form .qmes-oqc-basic-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .qmes-oqc-entry-form .qmes-oqc-basic-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
