@@ -61,8 +61,8 @@
     .qmes-wo-cert .qmes-wo-basic-info-table th:first-child,
     [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table th:first-child{
       display:table-cell!important;
-      font-size:20px!important;
-      font-weight:800!important;
+      font-size:15px!important;
+      font-weight:700!important;
     }
 
     /* 원재료 표: NO·1~7은 크게, 첫 열은 좁게, 줄인 폭은 나머지 열에 균등 분배 */
