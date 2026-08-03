@@ -951,7 +951,7 @@ function IssueWoTab() {
           <button
             type="button"
             onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
-            className="w-7 h-7 rounded-md border border-slate-600 bg-slate-800 text-lg leading-none text-slate-300 hover:bg-slate-700 hover:text-white"
+            className="inline-flex w-7 h-7 p-0 items-center justify-center rounded-md border border-slate-600 bg-slate-800 text-lg leading-none text-slate-300 hover:bg-slate-700 hover:text-white"
             aria-label="작업지시 발행 화면 닫기"
             title="닫기"
           >
@@ -1044,8 +1044,8 @@ function IssueWoTab() {
             </select>
           </div>
           <div className="qmes-wo-form-field">
-            {label("작업자 (복수 시 쉼표로 — 예: 대리 박도훈, 대리 김동준)")}
-            <input value={form.worker} onChange={(e) => setForm({ ...form, worker: e.target.value })} placeholder="직급 이름, 직급 이름" className={inputCls} />
+            {label("작업자")}
+            <input value={form.worker} onChange={(e) => setForm({ ...form, worker: e.target.value })} className={inputCls} />
           </div>
         </div>
 
