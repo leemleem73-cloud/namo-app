@@ -1,3 +1,9 @@
 /* QMES OQC styles.
    Outgoing inspection extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
+
+/* 고객사와 중복되는 납품처 입력칸은 출하검사 등록 화면에서 표시하지 않는다.
+   기존 저장 데이터와 성적서·LOT 이력의 destination 값은 그대로 보존한다. */
+.qmes-oqc-entry-form .qmes-oqc-basic-row > div:has(input[placeholder^="납품처"]) {
+  display: none !important;
+}
