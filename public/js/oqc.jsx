@@ -290,7 +290,8 @@ function OqcTab() {
       const existing = resultFor(lot);
       const wo = workOrderFor(lot);
       const batch = batchFor(lot);
-      const initialTotal = Number(existing.totalQty ?? existing.productionQty ?? batch.done ?? batch.plan ?? wo.plan ?? 0);
+      const recordedTotal = Number(batch.done || wo.done || 0);
+      const initialTotal = Number(existing.totalQty ?? existing.productionQty ?? (recordedTotal > 0 ? recordedTotal : (batch.plan ?? wo.plan ?? 0)));
       const initialDefect = Number(existing.defectQty ?? batch.defectQty ?? wo.defectQty ?? 0);
       const [form, setForm] = useState({
         totalQty: String(initialTotal || ""),
@@ -448,7 +449,7 @@ function OqcTab() {
         document.addEventListener("qmes:open-production-result", open);
         return () => document.removeEventListener("qmes:open-production-result", open);
       }, []);
-      return lot ? <ProductionResultModal lot={lot} onClose={() => setLot("")} onSaved={() => setVersion((value) => value + 1)} /> : null;
+      return lot ? <ProductionResultModal key={lot} lot={lot} onClose={() => setLot("")} onSaved={() => setVersion((value) => value + 1)} /> : null;
     }
 
     function ProductionResultWorkspace(){
