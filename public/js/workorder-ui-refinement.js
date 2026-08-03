@@ -1,60 +1,516 @@
 /* QMES work-order UI refinement */
-(function(){
-"use strict";
-if(window.__QMES_WORKORDER_UI_REFINEMENT__)return;
-window.__QMES_WORKORDER_UI_REFINEMENT__=true;
-const s=document.createElement("style");
-s.id="qmes-workorder-ui-refinement-style";
-s.textContent=`
-#qmes-production-result-modal-root:empty{display:none!important}
-#qmes-production-result-modal-root:not(:empty){position:fixed!important;inset:0!important;z-index:26000!important;width:100vw!important;height:100vh!important;overflow:hidden!important}
-#qmes-production-result-modal-root:not(:empty)>div{position:absolute!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;overflow:auto!important;background:rgba(2,6,23,.82)!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]{position:relative!important;inset:auto!important;width:min(100%,820px)!important;max-height:calc(100vh - 32px)!important;margin:auto!important;transform:none!important;border:1px solid rgba(34,211,238,.4)!important;border-radius:10px!important;background:#0f1e32!important;box-shadow:0 20px 55px rgba(0,0,0,.5)!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:first-child{padding:13px 16px!important;border-bottom:1px solid #334155!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:first-child>div:first-child>div:first-child{display:none!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"] h3{margin:0!important;font-size:17px!important;line-height:24px!important;font-weight:700!important;color:#67e8f9!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:nth-child(2){padding:16px!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:nth-child(2)>.grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px 12px!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"] label{display:flex!important;flex-direction:column!important;gap:3px!important;color:#cbd5e1!important;font-size:13px!important;font-weight:600!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"] input,#qmes-production-result-modal-root [aria-label="생산실적 입력"] textarea{width:100%!important;border:1px solid #334155!important;border-radius:6px!important;background:#1e293b!important;color:#f1f5f9!important;font-size:13px!important;outline:none!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"] input{height:36px!important;padding:5px 9px!important}#qmes-production-result-modal-root [aria-label="생산실적 입력"] textarea{min-height:96px!important;padding:9px!important}
-#qmes-production-result-modal-root .qmes-production-readiness-guide{margin:0 0 14px!important;padding:10px 12px!important;border:1px solid #f59e0b!important;border-left-width:4px!important;border-radius:7px!important;background:#3a2508!important;color:#fff7ed!important;font-size:14px!important;font-weight:800!important}
-#qmes-production-result-modal-root .qmes-result-save-message{margin:0 0 14px!important;padding:10px 12px!important;border:1px solid #f87171!important;border-radius:7px!important;background:#451a1a!important;color:#fecaca!important;font-size:13px!important;font-weight:700!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child{padding:12px 16px!important;border-top:1px solid #334155!important;background:#0b1728!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button{height:36px!important;padding:0 16px!important;border-radius:6px!important;font-size:13px!important;font-weight:700!important}
-#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button:last-child{background:#0891b2!important;color:#fff!important;cursor:pointer!important;opacity:1!important}
-.qmes-issued-table-v2{width:100%!important;min-width:1500px!important;table-layout:fixed!important;border-collapse:collapse!important}
-.qmes-issued-table-v2 th,.qmes-issued-table-v2 td,.qmes-wo-list-table th,.qmes-wo-list-table td{box-sizing:border-box!important;height:46px!important;padding:9px!important;text-align:center!important;vertical-align:middle!important;letter-spacing:0!important;font-variant-numeric:tabular-nums!important}
-.qmes-issued-table-v2 th,.qmes-wo-list-table th{font-size:12px!important;font-weight:700!important;white-space:nowrap!important}.qmes-issued-table-v2 td,.qmes-wo-list-table td{font-size:13px!important}
-.qmes-issued-table-v2 th.num,.qmes-issued-table-v2 td.num,.qmes-issued-table-v2 th.center,.qmes-issued-table-v2 td.center{text-align:center!important}
-.qmes-issued-table-v2 td button,.qmes-issued-table-v2 td select,.qmes-wo-list-table td button,.qmes-wo-list-table td select{margin-left:auto!important;margin-right:auto!important;text-align:center!important}
-.qmes-issued-table-v2 td:last-child,.qmes-wo-list-table td:last-child{white-space:nowrap!important;text-align:center!important}
-.qmes-issued-table-v2 .qmes-manage-btn.edit,.qmes-issued-table-v2 [data-qmes-management-edit-hidden="1"]{display:none!important}
-.qmes-production-result-shortcut{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:29px!important;margin:2px 3px!important;border:1px solid #a855f7!important;background:rgba(126,34,206,.34)!important;color:#f3e8ff!important}.qmes-production-result-shortcut:hover{background:rgba(147,51,234,.58)!important;color:#fff!important}
-.qmes-wo-preview-edit-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:32px!important;padding:0 13px!important;border:1px solid rgba(14,165,233,.6)!important;border-radius:7px!important;background:rgba(14,165,233,.12)!important;color:#7dd3fc!important;font-size:12px!important;font-weight:800!important}
-.qmes-coa-unified-doc{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;font-size:11px!important;line-height:1.45!important;letter-spacing:0!important;color:#111827!important;padding:24px 28px!important}
-.qmes-coa-unified-doc>div:first-child{position:relative!important;display:block!important;min-height:72px!important;padding:4px 190px 14px!important;text-align:center!important;border-bottom:2px solid #111827!important}.qmes-coa-unified-doc>div:first-child>div:first-child>div:first-child{font-size:22px!important;line-height:30px!important;font-weight:800!important;letter-spacing:.02em!important}.qmes-coa-unified-doc>div:first-child>div:last-child{position:absolute!important;right:0!important;top:3px!important;width:180px!important;font-size:10px!important;line-height:17px!important;text-align:right!important}
-.qmes-coa-unified-doc>div:nth-child(2){margin-top:14px!important;padding:0!important;gap:0!important;border:1px solid #94a3b8!important;font-size:11px!important}.qmes-coa-unified-doc>div:nth-child(2)>div{min-height:34px!important;padding:7px 10px!important;border-bottom:1px solid #cbd5e1!important}.qmes-coa-unified-doc>div:nth-child(2)>div:nth-child(odd){border-right:1px solid #cbd5e1!important}.qmes-coa-unified-doc>div:nth-child(2) span:first-child{font-weight:700!important;color:#475569!important}
-.qmes-coa-unified-doc>table{width:100%!important;margin-top:14px!important;border-collapse:collapse!important;border:1px solid #64748b!important;font-size:11px!important}.qmes-coa-unified-doc>table th{padding:7px 8px!important;border:1px solid #64748b!important;background:#e2e8f0!important;font-size:11px!important;font-weight:800!important;text-align:center!important}.qmes-coa-unified-doc>table td{padding:7px 8px!important;border:1px solid #94a3b8!important;font-size:11px!important;text-align:center!important;vertical-align:middle!important}
-@media(max-width:640px){#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:nth-child(2)>.grid{grid-template-columns:1fr!important}.qmes-coa-unified-doc>div:first-child{padding:64px 0 14px!important}.qmes-coa-unified-doc>div:first-child>div:last-child{left:0!important;right:auto!important;top:0!important;width:100%!important;text-align:center!important}}
-`;
-document.head.appendChild(s);
-let scheduled=false,locked=false,oldOverflow="";
-const clean=v=>String(v??"").trim();
-const num=v=>{const n=Number(clean(v).replace(/,/g,""));return Number.isFinite(n)?n:null};
-const store=()=>{try{if(typeof DB!=="undefined"&&DB)return DB}catch(_){}return window.DB||null};
-const currentUser=()=>{const r=window.__QMES_CURRENT_USER__||window.__QMES_USER__;return clean(r&&typeof r==="object"?r.name||r.uid:r).replace(/\s*\(U-\d+\)\s*$/i,"")||"-"};
-const lotOf=d=>clean(clean(d?.querySelector("h3")?.textContent).match(/생산실적\s*입력\s*·\s*(\S+)/)?.[1]);
-const isReady=w=>{const i=Array.isArray(w?.inputs)?w.inputs:[],c=Array.isArray(w?.conds)?w.conds:[];return(!i.length||i.every(x=>x.act!=null&&clean(x.act)))&&(!c.length||c.every(x=>clean(x.act)&&clean(x.act)!=="—"))};
-const field=(d,t)=>Array.from(d?.querySelectorAll("label")||[]).find(x=>clean(x.textContent).replace(/\s+/g," ").includes(t))?.querySelector("input,textarea")||null;
-function message(d,t){const b=d?.children?.[1];if(!b)return;let x=b.querySelector(".qmes-result-save-message");if(!x){x=document.createElement("div");x.className="qmes-result-save-message";b.insertBefore(x,b.querySelector(".grid")||b.firstChild)}x.textContent=t}
-function modal(){const d=document.querySelector('#qmes-production-result-modal-root [aria-label="생산실적 입력"]');if(!d)return;const g=Array.from(d.children?.[1]?.children||[]).find(x=>clean(x.textContent).includes("원재료 실투입량과 공정조건 기록이 완료된 후"));if(g){g.classList.add("qmes-production-readiness-guide");if(!g.dataset.qmesAdjusted){g.dataset.qmesAdjusted="1";g.textContent="원재료 실투입량 또는 공정조건이 미완료 상태입니다. 생산실적은 저장되며, 상태는 ‘공정기록 확인 필요’로 표시됩니다."}}const b=d.lastElementChild?.querySelector("button:last-child");if(b&&!b.dataset.qmesSaving){if(b.textContent.trim()!=="저장")b.textContent="저장";b.disabled=false;b.removeAttribute("disabled");b.setAttribute("aria-disabled","false")}}
-function decorate(){document.querySelectorAll(".qmes-issued-table-v2 .qmes-manage-btn.edit").forEach(b=>{b.dataset.qmesManagementEditHidden="1";b.hidden=true;b.style.setProperty("display","none","important")});document.querySelectorAll(".doc-paper").forEach(p=>{const t=clean(p.textContent);if(t.includes("Certificate of Analysis (CoA)")&&t.includes("출하검사 성적서"))p.classList.add("qmes-coa-unified-doc")})}
-function preview(){const v=document.querySelector(".qmes-wo-viewer"),a=v?.querySelector(".qmes-wo-viewer-head > div:last-child"),c=a?.querySelector(".qmes-modal-close"),cert=v?.querySelector('[id^="qmes-issued-cert-"]'),lot=cert?.id.replace(/^qmes-issued-cert-/,"");if(!a||!c||!lot)return;let b=a.querySelector(".qmes-wo-preview-edit-btn");if(!b){b=document.createElement("button");b.type="button";b.className="qmes-wo-preview-edit-btn";b.textContent="수정";a.insertBefore(b,c)}b.dataset.lot=lot}
-function bodyLock(){const o=!!document.querySelector('#qmes-production-result-modal-root [aria-label="생산실적 입력"]');if(o&&!locked){oldOverflow=document.body.style.overflow;document.body.style.overflow="hidden";locked=true}else if(!o&&locked){document.body.style.overflow=oldOverflow;locked=false}}
-async function sync(lot){try{if(typeof qmesSyncWorkOrder==="function")return await qmesSyncWorkOrder(lot)}catch(e){if(typeof window.qmesSyncWorkOrder!=="function")throw e}if(typeof window.qmesSyncWorkOrder==="function")return window.qmesSyncWorkOrder(lot)}
-async function saveDraft(d,b){const S=store(),lot=lotOf(d),wo=S?.woDocs?.[lot],bi=(S?.batches||[]).findIndex(x=>clean(x?.no)===lot),batch=bi>=0?S.batches[bi]:{};if(!S||!lot||!wo)return message(d,"저장할 생산 LOT 정보를 찾을 수 없습니다.");const total=Math.max(0,num(field(d,"총 생산량")?.value)??0),defect=Math.max(0,num(field(d,"불량수량")?.value)??0),defectType=clean(field(d,"불량유형")?.value),completedInput=clean(field(d,"생산 완료일시")?.value),worker=clean(field(d,"최종 작업자")?.value),remarks=clean(field(d,"비고")?.value);if(!(total>0))return message(d,"총 생산량을 0보다 크게 입력해 주세요.");if(defect>total)return message(d,"불량수량은 총 생산량보다 클 수 없습니다.");if(defect>0&&!defectType)return message(d,"불량이 있으면 불량유형 또는 불량내용을 입력해 주세요.");if(!completedInput)return message(d,"생산 완료일시를 입력해 주세요.");if(!worker)return message(d,"최종 작업자를 입력해 주세요.");const date=new Date(completedInput),completedAt=Number.isNaN(date.getTime())?completedInput:date.toISOString(),good=Math.max(0,total-defect),rate=total?Number((defect/total*100).toFixed(2)):0,old=wo.productionResult||batch.productionResult||S.lots?.[lot]?.productionResult||{},r={lot,totalQty:total,productionQty:total,goodQty:good,defectQty:defect,defectRate:rate,defectType,defectNote:defectType,completedAt,worker,finalWorker:worker,remarks,productionRemarks:remarks,processReady:false,recordStatus:"공정기록 확인 필요",updatedAt:new Date().toISOString(),updatedBy:currentUser()};b.dataset.qmesSaving="1";b.disabled=true;b.textContent="저장 중";try{S.woDocs[lot]={...wo,productionResult:r,productionQty:total,totalQty:total,goodQty:good,defectQty:defect,defectRate:rate,defectType,completedAt,worker,finalWorker:worker,productionRemarks:remarks,done:total,status:"실적 기록중",productionRecordStatus:"공정기록 확인 필요"};if(bi>=0)S.batches[bi]={...batch,productionResult:r,done:total,productionQty:total,goodQty:good,defectQty:defect,defectRate:rate,defectType,completedAt,worker,productionRemarks:remarks,status:"진행중",productionRecordStatus:"공정기록 확인 필요"};const L=S.lots?.[lot];if(L){Object.assign(L,{productionResult:r,productionQty:total,goodQty:good,defectQty:defect,defectRate:rate,qty:good,stage:"생산"});const st={stage:"생산",name:"생산실적 입력 저장",time:completedInput.replace("T"," "),detail:`총 ${total.toLocaleString()}kg · 양품 ${good.toLocaleString()}kg · 불량 ${defect.toLocaleString()}kg · 불량률 ${rate.toFixed(2)}%${defectType?` · ${defectType}`:""}`,result:"저장 (공정기록 확인 필요)",by:worker};L.steps=[...(L.steps||[]).filter(x=>x.name!==st.name),st];if(!clean(L.status).includes("홀드"))L.status="생산실적 저장 — 공정기록 확인 필요"}try{if(typeof auditLog==="function")auditLog("생산실적",old.totalQty!=null?"수정":"등록",lot,`총 ${total}kg / 양품 ${good}kg / 불량 ${defect}kg / ${rate.toFixed(2)}% / 공정기록 확인 필요`)}catch(_){}try{if(typeof dbSave==="function")dbSave();else window.dbSave?.()}catch(_){window.dbSave?.()}let err="";try{await sync(lot)}catch(e){err=e.message||String(e)}document.dispatchEvent(new CustomEvent("qmes:data-updated",{detail:{lot,type:"production-result"}}));if(err)alert(`생산실적은 이 기기에 저장됐지만 PC 공용 DB 저장에 실패했습니다.\n${err}`);d.querySelector("div:first-child button:last-child")?.click()}catch(e){message(d,`생산실적 저장에 실패했습니다. ${e.message}`);b.disabled=false;b.textContent="저장"}finally{delete b.dataset.qmesSaving}}
-function enhance(){scheduled=false;decorate();bodyLock();modal();preview()}function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(enhance)}
-document.addEventListener("click",e=>{const edit=e.target.closest?.(".qmes-wo-preview-edit-btn");if(edit){e.preventDefault();e.stopPropagation();const lot=clean(edit.dataset.lot),row=Array.from(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(x=>clean(x.querySelector("td")?.textContent)===lot),src=row?.querySelector(".qmes-manage-btn.edit");if(!src)return alert("수정할 작업지시를 찾을 수 없습니다.");edit.closest(".qmes-wo-viewer")?.querySelector(".qmes-modal-close")?.click();return setTimeout(()=>src.click(),0)}const b=e.target.closest?.('#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button:last-child');if(!b||b.dataset.qmesSaving)return;const d=b.closest('[aria-label="생산실적 입력"]'),wo=store()?.woDocs?.[lotOf(d)]||{};if(isReady(wo))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();saveDraft(d,b)},true);
-new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});document.addEventListener("qmes:data-updated",schedule);schedule();
+(function () {
+  "use strict";
+
+  if (window.__QMES_WORKORDER_UI_REFINEMENT__) return;
+  window.__QMES_WORKORDER_UI_REFINEMENT__ = true;
+
+  const style = document.createElement("style");
+  style.id = "qmes-workorder-ui-refinement-style";
+  style.textContent = `
+    #qmes-production-result-modal-root:empty{display:none!important}
+    #qmes-production-result-modal-root:not(:empty){position:fixed!important;inset:0!important;z-index:26000!important;width:100vw!important;height:100vh!important;overflow:hidden!important}
+    #qmes-production-result-modal-root:not(:empty)>div{position:absolute!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;overflow:auto!important;background:rgba(2,6,23,.82)!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]{position:relative!important;inset:auto!important;width:min(100%,820px)!important;max-height:calc(100vh - 32px)!important;margin:auto!important;transform:none!important;border:1px solid rgba(34,211,238,.4)!important;border-radius:10px!important;background:#0f1e32!important;box-shadow:0 20px 55px rgba(0,0,0,.5)!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:first-child{padding:13px 16px!important;border-bottom:1px solid #334155!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:first-child>div:first-child>div:first-child{display:none!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] h3{margin:0!important;font-size:17px!important;line-height:24px!important;font-weight:700!important;color:#67e8f9!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:nth-child(2){padding:16px!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:nth-child(2)>.grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px 12px!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] label{display:flex!important;min-width:0!important;flex-direction:column!important;gap:3px!important;color:#cbd5e1!important;font-size:13px!important;font-weight:600!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] label:has(textarea){grid-column:1/-1!important;width:100%!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] input,
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] textarea{box-sizing:border-box!important;width:100%!important;min-width:0!important;border:1px solid #334155!important;border-radius:6px!important;background:#1e293b!important;color:#f1f5f9!important;font-size:13px!important;outline:none!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] input{height:36px!important;padding:5px 9px!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"] textarea{display:block!important;width:100%!important;min-height:112px!important;padding:10px 11px!important;resize:vertical!important}
+    #qmes-production-result-modal-root .qmes-production-readiness-guide{margin:0 0 14px!important;padding:10px 12px!important;border:1px solid #f59e0b!important;border-left-width:4px!important;border-radius:7px!important;background:#3a2508!important;color:#fff7ed!important;font-size:14px!important;font-weight:800!important}
+    #qmes-production-result-modal-root .qmes-result-save-message{margin:0 0 14px!important;padding:10px 12px!important;border:1px solid #f87171!important;border-radius:7px!important;background:#451a1a!important;color:#fecaca!important;font-size:13px!important;font-weight:700!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child{padding:12px 16px!important;border-top:1px solid #334155!important;background:#0b1728!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button{height:36px!important;padding:0 16px!important;border-radius:6px!important;font-size:13px!important;font-weight:700!important}
+    #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button:last-child{background:#0891b2!important;color:#fff!important;cursor:pointer!important;opacity:1!important}
+
+    .qmes-issued-table-v2{width:100%!important;min-width:1500px!important;table-layout:fixed!important;border-collapse:collapse!important}
+    .qmes-issued-table-v2 th,.qmes-issued-table-v2 td,.qmes-wo-list-table th,.qmes-wo-list-table td{box-sizing:border-box!important;height:46px!important;padding:9px!important;text-align:center!important;vertical-align:middle!important;letter-spacing:0!important;font-variant-numeric:tabular-nums!important}
+    .qmes-issued-table-v2 th,.qmes-wo-list-table th{font-size:12px!important;font-weight:700!important;white-space:nowrap!important}
+    .qmes-issued-table-v2 td,.qmes-wo-list-table td{font-size:13px!important}
+    .qmes-issued-table-v2 th.num,.qmes-issued-table-v2 td.num,.qmes-issued-table-v2 th.center,.qmes-issued-table-v2 td.center{text-align:center!important}
+    .qmes-issued-table-v2 td button,.qmes-issued-table-v2 td select,.qmes-wo-list-table td button,.qmes-wo-list-table td select{margin-left:auto!important;margin-right:auto!important;text-align:center!important}
+    .qmes-issued-table-v2 td:last-child,.qmes-wo-list-table td:last-child{white-space:nowrap!important;text-align:center!important}
+    .qmes-issued-table-v2 .qmes-manage-btn.edit,.qmes-issued-table-v2 [data-qmes-management-edit-hidden="1"]{display:none!important}
+    .qmes-production-result-shortcut{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:29px!important;margin:2px 3px!important;border:1px solid #a855f7!important;background:rgba(126,34,206,.34)!important;color:#f3e8ff!important}
+    .qmes-production-result-shortcut:hover{background:rgba(147,51,234,.58)!important;color:#fff!important}
+    .qmes-wo-preview-edit-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:32px!important;padding:0 13px!important;border:1px solid rgba(14,165,233,.6)!important;border-radius:7px!important;background:rgba(14,165,233,.12)!important;color:#7dd3fc!important;font-size:12px!important;font-weight:800!important}
+
+    .qmes-wo-cert .qmes-iqc2-item-cell small,
+    [id^="qmes-issued-cert-"] .qmes-iqc2-item-cell small{display:none!important}
+    .qmes-wo-cert-material-table th:first-child,
+    .qmes-wo-cert-material-table td:first-child{width:46px!important;min-width:46px!important;max-width:46px!important;white-space:nowrap!important;word-break:keep-all!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;text-align:center!important}
+
+    .qmes-coa-unified-doc{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;font-size:11px!important;line-height:1.45!important;letter-spacing:0!important;color:#111827!important;padding:24px 28px!important}
+    .qmes-coa-unified-doc>.qmes-coa-header{display:grid!important;grid-template-columns:170px minmax(0,1fr) 190px!important;align-items:center!important;gap:12px!important;min-height:82px!important;padding:4px 0 14px!important;border-bottom:2px solid #111827!important}
+    .qmes-coa-logo-wrap{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important}
+    .qmes-coa-logo{display:block!important;width:150px!important;max-width:100%!important;height:auto!important;object-fit:contain!important}
+    .qmes-coa-title-wrap{text-align:center!important}
+    .qmes-coa-title{font-size:22px!important;line-height:30px!important;font-weight:800!important;letter-spacing:.02em!important;color:#111827!important}
+    .qmes-coa-subtitle{margin-top:2px!important;font-size:10px!important;color:#64748b!important}
+    .qmes-coa-meta{font-size:10px!important;line-height:17px!important;text-align:right!important;color:#475569!important}
+    .qmes-coa-unified-doc>div:nth-child(2){margin-top:14px!important;padding:0!important;gap:0!important;border:1px solid #94a3b8!important;font-size:11px!important}
+    .qmes-coa-unified-doc>div:nth-child(2)>div{min-height:34px!important;padding:7px 10px!important;border-bottom:1px solid #cbd5e1!important}
+    .qmes-coa-unified-doc>div:nth-child(2)>div:nth-child(odd){border-right:1px solid #cbd5e1!important}
+    .qmes-coa-unified-doc>div:nth-child(2) span:first-child{font-weight:700!important;color:#475569!important}
+    .qmes-coa-unified-doc>table{width:100%!important;margin-top:14px!important;border-collapse:collapse!important;border:1px solid #64748b!important;font-size:11px!important}
+    .qmes-coa-unified-doc>table th{padding:7px 8px!important;border:1px solid #64748b!important;background:#e2e8f0!important;font-size:11px!important;font-weight:800!important;text-align:center!important}
+    .qmes-coa-unified-doc>table td{padding:7px 8px!important;border:1px solid #94a3b8!important;font-size:11px!important;text-align:center!important;vertical-align:middle!important}
+    .qmes-coa-footer{display:grid!important;grid-template-columns:minmax(0,1fr) 300px!important;align-items:end!important;gap:24px!important;margin-top:18px!important}
+    .qmes-coa-certification{font-size:10px!important;line-height:18px!important;color:#475569!important}
+    .qmes-coa-sign-table{width:300px!important;margin:0!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:10px!important}
+    .qmes-coa-sign-table th,.qmes-coa-sign-table td{height:31px!important;padding:5px!important;border:1px solid #64748b!important;text-align:center!important;vertical-align:middle!important}
+    .qmes-coa-sign-table th{background:#e2e8f0!important;font-weight:800!important;color:#334155!important}
+
+    @media(max-width:640px){
+      #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:nth-child(2)>.grid{grid-template-columns:1fr!important}
+      #qmes-production-result-modal-root [aria-label="생산실적 입력"] label:has(textarea){grid-column:1!important}
+      .qmes-coa-unified-doc>.qmes-coa-header{grid-template-columns:1fr!important;text-align:center!important}
+      .qmes-coa-logo-wrap{justify-content:center!important}
+      .qmes-coa-meta{text-align:center!important}
+      .qmes-coa-footer{grid-template-columns:1fr!important}
+      .qmes-coa-sign-table{width:100%!important}
+    }
+
+    @media print{
+      .qmes-wo-cert-material-table th:first-child,
+      .qmes-wo-cert-material-table td:first-child{writing-mode:horizontal-tb!important;white-space:nowrap!important}
+      .qmes-coa-unified-doc{box-shadow:none!important}
+    }
+  `;
+  document.head.appendChild(style);
+
+  let scheduled = false;
+  let bodyLocked = false;
+  let oldOverflow = "";
+
+  const clean = (value) => String(value ?? "").trim();
+  const numberValue = (value) => {
+    const number = Number(clean(value).replace(/,/g, ""));
+    return Number.isFinite(number) ? number : null;
+  };
+  const store = () => {
+    try {
+      if (typeof DB !== "undefined" && DB) return DB;
+    } catch (_error) {}
+    return window.DB || null;
+  };
+  const currentUser = () => {
+    const raw = window.__QMES_CURRENT_USER__ || window.__QMES_USER__;
+    return clean(raw && typeof raw === "object" ? raw.name || raw.uid : raw)
+      .replace(/\s*\(U-\d+\)\s*$/i, "") || "-";
+  };
+  const lotOf = (dialog) => clean(
+    clean(dialog?.querySelector("h3")?.textContent)
+      .match(/생산실적\s*입력\s*·\s*(\S+)/)?.[1]
+  );
+  const isReady = (workOrder) => {
+    const inputs = Array.isArray(workOrder?.inputs) ? workOrder.inputs : [];
+    const conditions = Array.isArray(workOrder?.conds) ? workOrder.conds : [];
+    return (!inputs.length || inputs.every((row) => row.act != null && clean(row.act)))
+      && (!conditions.length || conditions.every((row) => clean(row.act) && clean(row.act) !== "—"));
+  };
+  const field = (dialog, title) => Array.from(dialog?.querySelectorAll("label") || [])
+    .find((label) => clean(label.textContent).replace(/\s+/g, " ").includes(title))
+    ?.querySelector("input,textarea") || null;
+
+  function showMessage(dialog, text) {
+    const body = dialog?.children?.[1];
+    if (!body) return;
+    let message = body.querySelector(".qmes-result-save-message");
+    if (!message) {
+      message = document.createElement("div");
+      message.className = "qmes-result-save-message";
+      body.insertBefore(message, body.querySelector(".grid") || body.firstChild);
+    }
+    message.textContent = text;
+  }
+
+  function enhanceProductionModal() {
+    const dialog = document.querySelector('#qmes-production-result-modal-root [aria-label="생산실적 입력"]');
+    if (!dialog) return;
+
+    const guide = Array.from(dialog.children?.[1]?.children || [])
+      .find((element) => clean(element.textContent).includes("원재료 실투입량과 공정조건 기록이 완료된 후"));
+    if (guide) {
+      guide.classList.add("qmes-production-readiness-guide");
+      if (!guide.dataset.qmesAdjusted) {
+        guide.dataset.qmesAdjusted = "1";
+        guide.textContent = "원재료 실투입량 또는 공정조건이 미완료 상태입니다. 생산실적은 저장되며, 상태는 ‘공정기록 확인 필요’로 표시됩니다.";
+      }
+    }
+
+    const remarks = field(dialog, "비고");
+    const remarksLabel = remarks?.closest("label");
+    if (remarksLabel) remarksLabel.classList.add("qmes-production-remarks-full");
+
+    const saveButton = dialog.lastElementChild?.querySelector("button:last-child");
+    if (saveButton && !saveButton.dataset.qmesSaving) {
+      if (saveButton.textContent.trim() !== "저장") saveButton.textContent = "저장";
+      saveButton.disabled = false;
+      saveButton.removeAttribute("disabled");
+      saveButton.setAttribute("aria-disabled", "false");
+    }
+  }
+
+  function hideManagementEditButtons() {
+    document.querySelectorAll(".qmes-issued-table-v2 .qmes-manage-btn.edit").forEach((button) => {
+      button.dataset.qmesManagementEditHidden = "1";
+      button.hidden = true;
+      button.style.setProperty("display", "none", "important");
+    });
+  }
+
+  function findLogoSource() {
+    return document.querySelector(
+      ".qmes-iqc-header-logo, .qmes-wo-header-logo, .qmes-iqc-label-logo, header img"
+    );
+  }
+
+  function enhanceCoaDocument(documentElement) {
+    if (documentElement.dataset.qmesCoaUnified === "1") return;
+    documentElement.dataset.qmesCoaUnified = "1";
+    documentElement.classList.add("qmes-coa-unified-doc");
+
+    const oldHeader = documentElement.firstElementChild;
+    if (!oldHeader) return;
+
+    const titleBlock = oldHeader.firstElementChild;
+    const metaBlock = oldHeader.lastElementChild;
+    const subtitle = titleBlock?.children?.[1];
+
+    const header = document.createElement("div");
+    header.className = "qmes-coa-header";
+
+    const logoWrap = document.createElement("div");
+    logoWrap.className = "qmes-coa-logo-wrap";
+    const logoSource = findLogoSource();
+    if (logoSource?.src) {
+      const logo = document.createElement("img");
+      logo.className = "qmes-coa-logo";
+      logo.src = logoSource.src;
+      logo.alt = "나모케미칼";
+      logoWrap.appendChild(logo);
+    } else {
+      const fallback = document.createElement("strong");
+      fallback.textContent = "NAMO CHEMICAL";
+      fallback.style.color = "#0284c7";
+      fallback.style.fontSize = "18px";
+      logoWrap.appendChild(fallback);
+    }
+
+    const newTitleWrap = document.createElement("div");
+    newTitleWrap.className = "qmes-coa-title-wrap";
+    const newTitle = document.createElement("div");
+    newTitle.className = "qmes-coa-title";
+    newTitle.textContent = "출하 성적서";
+    const newSubtitle = document.createElement("div");
+    newSubtitle.className = "qmes-coa-subtitle";
+    newSubtitle.textContent = clean(subtitle?.textContent) || "Certificate of Analysis (CoA)";
+    newTitleWrap.append(newTitle, newSubtitle);
+
+    const newMeta = document.createElement("div");
+    newMeta.className = "qmes-coa-meta";
+    while (metaBlock?.firstChild) newMeta.appendChild(metaBlock.firstChild);
+
+    header.append(logoWrap, newTitleWrap, newMeta);
+    oldHeader.replaceWith(header);
+
+    const footer = Array.from(documentElement.children)
+      .find((element) => element.tagName === "DIV" && clean(element.textContent).includes("상기 Lot은"));
+    if (footer) {
+      const names = Array.from(footer.querySelectorAll(".text-slate-600"))
+        .map((element) => clean(element.textContent)).filter(Boolean);
+      const writer = names[0] || "";
+      const approver = names[1] || "";
+      footer.className = "qmes-coa-footer";
+      footer.innerHTML = `
+        <div class="qmes-coa-certification">상기 LOT은 관리계획서 및 고객 사양에 따라 검사한 결과 전 항목 적합함을 증명합니다.</div>
+        <table class="qmes-coa-sign-table" aria-label="작성 검토 승인">
+          <tbody>
+            <tr><th>작성</th><th>검토</th><th>승인</th></tr>
+            <tr><td>${writer}</td><td></td><td>${approver}</td></tr>
+          </tbody>
+        </table>`;
+    }
+  }
+
+  function cleanupWorkOrderDocument(documentElement) {
+    documentElement.querySelectorAll(".qmes-iqc2-sec").forEach((section) => {
+      const title = clean(section.querySelector(".qmes-iqc2-sec-title")?.textContent);
+      if (title === "원재료 투입 계획") section.remove();
+    });
+
+    documentElement.querySelectorAll(".qmes-wo-cert-material-table .qmes-iqc2-item-cell small")
+      .forEach((small) => small.remove());
+
+    documentElement.querySelectorAll(".qmes-wo-cert-material-table th:first-child")
+      .forEach((header) => { header.textContent = "NO"; });
+  }
+
+  function decorateDocuments() {
+    hideManagementEditButtons();
+
+    document.querySelectorAll(".doc-paper").forEach((paper) => {
+      const text = clean(paper.textContent);
+      if (text.includes("Certificate of Analysis (CoA)")
+        && (text.includes("출하검사 성적서") || text.includes("출하 성적서"))) {
+        enhanceCoaDocument(paper);
+      }
+    });
+
+    document.querySelectorAll(".qmes-wo-cert, [id^='qmes-issued-cert-']")
+      .forEach(cleanupWorkOrderDocument);
+  }
+
+  function enhancePreview() {
+    const viewer = document.querySelector(".qmes-wo-viewer");
+    const actions = viewer?.querySelector(".qmes-wo-viewer-head > div:last-child");
+    const closeButton = actions?.querySelector(".qmes-modal-close");
+    const certificate = viewer?.querySelector('[id^="qmes-issued-cert-"]');
+    const lot = certificate?.id.replace(/^qmes-issued-cert-/, "");
+    if (!actions || !closeButton || !lot) return;
+
+    let editButton = actions.querySelector(".qmes-wo-preview-edit-btn");
+    if (!editButton) {
+      editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "qmes-wo-preview-edit-btn";
+      editButton.textContent = "수정";
+      actions.insertBefore(editButton, closeButton);
+    }
+    editButton.dataset.lot = lot;
+  }
+
+  function lockBody() {
+    const open = Boolean(document.querySelector('#qmes-production-result-modal-root [aria-label="생산실적 입력"]'));
+    if (open && !bodyLocked) {
+      oldOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      bodyLocked = true;
+    } else if (!open && bodyLocked) {
+      document.body.style.overflow = oldOverflow;
+      bodyLocked = false;
+    }
+  }
+
+  async function syncWorkOrder(lot) {
+    try {
+      if (typeof qmesSyncWorkOrder === "function") return await qmesSyncWorkOrder(lot);
+    } catch (error) {
+      if (typeof window.qmesSyncWorkOrder !== "function") throw error;
+    }
+    if (typeof window.qmesSyncWorkOrder === "function") return window.qmesSyncWorkOrder(lot);
+  }
+
+  async function saveIncompleteResult(dialog, button) {
+    const database = store();
+    const lot = lotOf(dialog);
+    const workOrder = database?.woDocs?.[lot];
+    const batchIndex = (database?.batches || []).findIndex((row) => clean(row?.no) === lot);
+    const batch = batchIndex >= 0 ? database.batches[batchIndex] : {};
+    if (!database || !lot || !workOrder) {
+      showMessage(dialog, "저장할 생산 LOT 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    const total = Math.max(0, numberValue(field(dialog, "총 생산량")?.value) ?? 0);
+    const defect = Math.max(0, numberValue(field(dialog, "불량수량")?.value) ?? 0);
+    const defectType = clean(field(dialog, "불량유형")?.value);
+    const completedInput = clean(field(dialog, "생산 완료일시")?.value);
+    const worker = clean(field(dialog, "최종 작업자")?.value);
+    const remarks = clean(field(dialog, "비고")?.value);
+
+    if (!(total > 0)) return showMessage(dialog, "총 생산량을 0보다 크게 입력해 주세요.");
+    if (defect > total) return showMessage(dialog, "불량수량은 총 생산량보다 클 수 없습니다.");
+    if (defect > 0 && !defectType) return showMessage(dialog, "불량이 있으면 불량유형 또는 불량내용을 입력해 주세요.");
+    if (!completedInput) return showMessage(dialog, "생산 완료일시를 입력해 주세요.");
+    if (!worker) return showMessage(dialog, "최종 작업자를 입력해 주세요.");
+
+    const date = new Date(completedInput);
+    const completedAt = Number.isNaN(date.getTime()) ? completedInput : date.toISOString();
+    const good = Math.max(0, total - defect);
+    const rate = total ? Number((defect / total * 100).toFixed(2)) : 0;
+    const oldResult = workOrder.productionResult || batch.productionResult || database.lots?.[lot]?.productionResult || {};
+    const result = {
+      lot,
+      totalQty: total,
+      productionQty: total,
+      goodQty: good,
+      defectQty: defect,
+      defectRate: rate,
+      defectType,
+      defectNote: defectType,
+      completedAt,
+      worker,
+      finalWorker: worker,
+      remarks,
+      productionRemarks: remarks,
+      processReady: false,
+      recordStatus: "공정기록 확인 필요",
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser(),
+    };
+
+    button.dataset.qmesSaving = "1";
+    button.disabled = true;
+    button.textContent = "저장 중";
+
+    try {
+      database.woDocs[lot] = {
+        ...workOrder,
+        productionResult: result,
+        productionQty: total,
+        totalQty: total,
+        goodQty: good,
+        defectQty: defect,
+        defectRate: rate,
+        defectType,
+        completedAt,
+        worker,
+        finalWorker: worker,
+        productionRemarks: remarks,
+        done: total,
+        status: "실적 기록중",
+        productionRecordStatus: "공정기록 확인 필요",
+      };
+
+      if (batchIndex >= 0) {
+        database.batches[batchIndex] = {
+          ...batch,
+          productionResult: result,
+          done: total,
+          productionQty: total,
+          goodQty: good,
+          defectQty: defect,
+          defectRate: rate,
+          defectType,
+          completedAt,
+          worker,
+          productionRemarks: remarks,
+          status: "진행중",
+          productionRecordStatus: "공정기록 확인 필요",
+        };
+      }
+
+      const lotData = database.lots?.[lot];
+      if (lotData) {
+        Object.assign(lotData, {
+          productionResult: result,
+          productionQty: total,
+          goodQty: good,
+          defectQty: defect,
+          defectRate: rate,
+          qty: good,
+          stage: "생산",
+        });
+        const step = {
+          stage: "생산",
+          name: "생산실적 입력 저장",
+          time: completedInput.replace("T", " "),
+          detail: `총 ${total.toLocaleString()}kg · 양품 ${good.toLocaleString()}kg · 불량 ${defect.toLocaleString()}kg · 불량률 ${rate.toFixed(2)}%${defectType ? ` · ${defectType}` : ""}`,
+          result: "저장 (공정기록 확인 필요)",
+          by: worker,
+        };
+        lotData.steps = [...(lotData.steps || []).filter((row) => row.name !== step.name), step];
+        if (!clean(lotData.status).includes("홀드")) {
+          lotData.status = "생산실적 저장 — 공정기록 확인 필요";
+        }
+      }
+
+      try {
+        if (typeof auditLog === "function") {
+          auditLog(
+            "생산실적",
+            oldResult.totalQty != null ? "수정" : "등록",
+            lot,
+            `총 ${total}kg / 양품 ${good}kg / 불량 ${defect}kg / ${rate.toFixed(2)}% / 공정기록 확인 필요`
+          );
+        }
+      } catch (_error) {}
+
+      try {
+        if (typeof dbSave === "function") dbSave();
+        else window.dbSave?.();
+      } catch (_error) {
+        window.dbSave?.();
+      }
+
+      let syncError = "";
+      try {
+        await syncWorkOrder(lot);
+      } catch (error) {
+        syncError = error.message || String(error);
+      }
+
+      document.dispatchEvent(new CustomEvent("qmes:data-updated", {
+        detail: { lot, type: "production-result" },
+      }));
+      if (syncError) {
+        window.alert(`생산실적은 이 기기에 저장됐지만 PC 공용 DB 저장에 실패했습니다.\n${syncError}`);
+      }
+      dialog.querySelector("div:first-child button:last-child")?.click();
+    } catch (error) {
+      showMessage(dialog, `생산실적 저장에 실패했습니다. ${error.message}`);
+      button.disabled = false;
+      button.textContent = "저장";
+    } finally {
+      delete button.dataset.qmesSaving;
+    }
+  }
+
+  function enhance() {
+    scheduled = false;
+    decorateDocuments();
+    lockBody();
+    enhanceProductionModal();
+    enhancePreview();
+  }
+
+  function schedule() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(enhance);
+  }
+
+  document.addEventListener("click", (event) => {
+    const previewEdit = event.target.closest?.(".qmes-wo-preview-edit-btn");
+    if (previewEdit) {
+      event.preventDefault();
+      event.stopPropagation();
+      const lot = clean(previewEdit.dataset.lot);
+      const row = Array.from(document.querySelectorAll(".qmes-issued-table-v2 tbody tr"))
+        .find((item) => clean(item.querySelector("td")?.textContent) === lot);
+      const sourceButton = row?.querySelector(".qmes-manage-btn.edit");
+      if (!sourceButton) {
+        window.alert("수정할 작업지시를 찾을 수 없습니다.");
+        return;
+      }
+      previewEdit.closest(".qmes-wo-viewer")?.querySelector(".qmes-modal-close")?.click();
+      window.setTimeout(() => sourceButton.click(), 0);
+      return;
+    }
+
+    const saveButton = event.target.closest?.(
+      '#qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button:last-child'
+    );
+    if (!saveButton || saveButton.dataset.qmesSaving) return;
+    const dialog = saveButton.closest('[aria-label="생산실적 입력"]');
+    const workOrder = store()?.woDocs?.[lotOf(dialog)] || {};
+    if (isReady(workOrder)) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    saveIncompleteResult(dialog, saveButton);
+  }, true);
+
+  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener("qmes:data-updated", schedule);
+  schedule();
 })();
