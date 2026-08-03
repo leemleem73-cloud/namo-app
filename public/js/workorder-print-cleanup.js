@@ -5,39 +5,83 @@
 
   const clean=value=>String(value??"").replace(/\s+/g," ").trim();
   const style=document.createElement("style");
+  style.id="qmes-workorder-print-cleanup-style";
   style.textContent=`
+    .qmes-workorder-material-clean{table-layout:fixed!important;width:100%!important}
     .qmes-workorder-material-clean th:first-child,
     .qmes-workorder-material-clean td:first-child{
-      box-sizing:border-box!important;width:26px!important;min-width:26px!important;max-width:26px!important;
-      padding-left:1px!important;padding-right:1px!important;white-space:nowrap!important;word-break:keep-all!important;
-      writing-mode:horizontal-tb!important;text-orientation:mixed!important;text-align:center!important;font-size:10px!important;
+      box-sizing:border-box!important;
+      width:22px!important;min-width:22px!important;max-width:22px!important;
+      padding-left:0!important;padding-right:0!important;
+      white-space:nowrap!important;word-break:keep-all!important;
+      writing-mode:horizontal-tb!important;text-orientation:mixed!important;
+      text-align:center!important;vertical-align:middle!important;
+      font-size:10px!important;line-height:1!important;
     }
-    .qmes-workorder-material-clean col:first-child{width:26px!important}
+    .qmes-workorder-material-clean col:first-child{width:22px!important}
+
     .qmes-workorder-basic-clean{width:100%!important;table-layout:fixed!important}
-    .qmes-workorder-basic-clean th,.qmes-workorder-basic-clean td{
-      box-sizing:border-box!important;width:25%!important;text-align:center!important;vertical-align:middle!important;
+    .qmes-workorder-basic-clean th:first-child,
+    .qmes-workorder-basic-clean td:first-child,
+    .qmes-workorder-basic-clean col:first-child{display:none!important}
+    .qmes-workorder-basic-clean th:not(:first-child),
+    .qmes-workorder-basic-clean td:not(:first-child){
+      box-sizing:border-box!important;width:25%!important;
+      text-align:center!important;vertical-align:middle!important;
       padding-left:8px!important;padding-right:8px!important;
     }
-    .qmes-workorder-basic-clean col{width:25%!important}
+    .qmes-workorder-basic-clean col:not(:first-child){width:25%!important}
+
+    .qmes-issued-table-v2{
+      width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;
+    }
+    .qmes-issued-table-v2 th,
+    .qmes-issued-table-v2 td{
+      box-sizing:border-box!important;
+      height:46px!important;
+      padding:8px 6px!important;
+      text-align:center!important;
+      vertical-align:middle!important;
+      line-height:20px!important;
+      letter-spacing:0!important;
+      white-space:nowrap!important;
+      font-variant-numeric:tabular-nums!important;
+    }
+    .qmes-issued-table-v2 th{font-size:12px!important;font-weight:700!important}
+    .qmes-issued-table-v2 td{font-size:13px!important}
+    .qmes-issued-table-v2 td>*{margin-left:auto!important;margin-right:auto!important}
+    .qmes-issued-table-v2 td button,
+    .qmes-issued-table-v2 td select{
+      display:inline-flex!important;align-items:center!important;justify-content:center!important;
+      text-align:center!important;
+    }
+
     @media print{
       .qmes-workorder-material-clean th:first-child,
       .qmes-workorder-material-clean td:first-child{
-        width:26px!important;min-width:26px!important;max-width:26px!important;padding-left:1px!important;padding-right:1px!important;
+        width:22px!important;min-width:22px!important;max-width:22px!important;
+        padding-left:0!important;padding-right:0!important;
         writing-mode:horizontal-tb!important;white-space:nowrap!important;
       }
       .qmes-workorder-basic-clean{width:100%!important;table-layout:fixed!important}
-      .qmes-workorder-basic-clean th,.qmes-workorder-basic-clean td{width:25%!important;text-align:center!important}
+      .qmes-workorder-basic-clean th:first-child,
+      .qmes-workorder-basic-clean td:first-child,
+      .qmes-workorder-basic-clean col:first-child{display:none!important}
+      .qmes-workorder-basic-clean th:not(:first-child),
+      .qmes-workorder-basic-clean td:not(:first-child){width:25%!important;text-align:center!important}
     }
   `;
   document.head.appendChild(style);
 
   function isMaterialTable(table){
-    const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th")).map(th=>clean(th.textContent)).join("|");
+    const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th"))
+      .map(th=>clean(th.textContent)).join("|");
     return /원재료명|원료명/.test(headers)||(/LOT/.test(headers)&&/투입량|기준량|실투입/.test(headers));
   }
 
   function isBasicInfoTable(table){
-    const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th")).map(th=>clean(th.textContent));
+    const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th"))
+      .map(th=>clean(th.textContent));
     return headers.includes("작업지시번호")&&headers.some(text=>text==="LOT"||text==="LOT No.")&&headers.includes("제품명");
   }
 
@@ -51,7 +95,10 @@
       if(!block){
         let node=title.parentElement;
         while(node&&node!==root&&node!==document.body){
-          if(node.querySelector?.("table")&&clean(node.textContent).startsWith("원재료 투입 계획")){block=node;break;}
+          if(node.querySelector?.("table")&&clean(node.textContent).startsWith("원재료 투입 계획")){
+            block=node;
+            break;
+          }
           node=node.parentElement;
         }
       }
@@ -61,21 +108,10 @@
   }
 
   function cleanBasicInfoTable(table){
-    if(table.dataset.qmesBasicInfoCleaned!=="1"){
-      const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th"));
-      const workOrderIndex=headers.findIndex(header=>clean(header.textContent)==="작업지시번호");
-      if(workOrderIndex>=0){
-        headers[workOrderIndex]?.remove();
-        table.querySelectorAll("tbody tr").forEach(row=>row.children[workOrderIndex]?.remove());
-        table.querySelector("colgroup")?.children[workOrderIndex]?.remove();
-      }
-      table.dataset.qmesBasicInfoCleaned="1";
-    }
     table.classList.add("qmes-workorder-basic-clean");
     Array.from(table.querySelectorAll("thead th,tr:first-child th")).forEach(header=>{
       if(clean(header.textContent)==="LOT") header.textContent="LOT No.";
     });
-    table.querySelectorAll("colgroup col").forEach(col=>{col.style.width="25%";});
   }
 
   function cleanMaterialTable(table){
@@ -83,7 +119,7 @@
     const firstHeader=table.querySelector("thead th:first-child,tr:first-child th:first-child");
     if(firstHeader) firstHeader.textContent="NO";
     const firstCol=table.querySelector("colgroup col:first-child");
-    if(firstCol) firstCol.style.width="26px";
+    if(firstCol) firstCol.style.setProperty("width","22px","important");
     table.querySelectorAll("small,span,div").forEach(element=>{
       const text=clean(element.textContent);
       if(text==="일반원료"||text==="중간재") element.remove();
@@ -96,6 +132,7 @@
   }
 
   function cleanup(){
+    document.querySelectorAll(".qmes-issued-table-v2").forEach(table=>table.classList.add("qmes-issued-table-aligned"));
     const roots=Array.from(document.querySelectorAll(".qmes-wo-viewer,.qmes-wo-cert,[id^='qmes-issued-cert-'],#qmes-print-root"));
     roots.forEach(root=>{
       removePlan(root);
@@ -110,7 +147,10 @@
   const schedule=()=>{
     if(scheduled) return;
     scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;cleanup();});
+    requestAnimationFrame(()=>{
+      scheduled=false;
+      cleanup();
+    });
   };
 
   document.addEventListener("click",event=>{
@@ -124,7 +164,10 @@
   if(!window.__QMES_WORKORDER_PRINT_WRAPPED__){
     window.__QMES_WORKORDER_PRINT_WRAPPED__=true;
     const previousPrint=window.print.bind(window);
-    window.print=function(){cleanup();return previousPrint();};
+    window.print=function(){
+      cleanup();
+      return previousPrint();
+    };
   }
 
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
