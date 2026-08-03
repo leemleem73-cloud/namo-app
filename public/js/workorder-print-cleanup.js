@@ -84,10 +84,10 @@
     requestAnimationFrame(cleanup);
   },true);
 
-  if(!window.__QMES_NATIVE_PRINT_CLEANUP__){
-    window.__QMES_NATIVE_PRINT_CLEANUP__=true;
-    const nativePrint=window.print.bind(window);
-    window.print=function(){cleanup();return nativePrint();};
+  if(!window.__QMES_WORKORDER_PRINT_WRAPPED__){
+    window.__QMES_WORKORDER_PRINT_WRAPPED__=true;
+    const previousPrint=window.print.bind(window);
+    window.print=function(){cleanup();return previousPrint();};
   }
 
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
