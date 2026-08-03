@@ -382,7 +382,7 @@ function WoDocTab() {
         <div className="qmes-iqc2-sec qmes-iqc2-first">
           <div className="qmes-iqc2-sec-title">기본정보</div>
           <table className="qmes-iqc2-table">
-            <thead><tr><th>작업지시번호</th><th>LOT</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
+            <thead><tr><th>LOT No.</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
             <tbody><tr>
               <td className="font-mono">{doc.woNo || viewingWo || "-"}</td>
               <td className="font-mono">{sel || "-"}</td>
@@ -1477,7 +1477,6 @@ function IssueWoTab() {
                   <table className="qmes-iqc2-table">
                     <thead><tr><th>작업지시번호</th><th>LOT</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
                     <tbody><tr>
-                      <td className="font-mono">{doc.woNo || viewingWo || "-"}</td>
                       <td className="font-mono">{viewingWo || "-"}</td>
                       <td>{doc.item || batch.item || "-"}</td>
                       <td>{doc.tank || batch.tank || "-"}</td>
@@ -1509,7 +1508,7 @@ function IssueWoTab() {
                       {inputs.map((it, i) => (
                         <tr key={`issued-cert-${viewingWo}-${i}`}>
                           <td>{it.seq || i + 1}</td>
-                          <td>{it.name || "-"}<small className="block text-slate-500">{it.materialType || qmesMaterialType(it.name)}</small></td>
+                          <td>{it.name || "-"}</td>
                           <td className="font-mono">{it.materialLot || it.lot || "-"}</td>
                           <td>{it.inputStatus || "신규"}</td>
                           <td>{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
@@ -1599,7 +1598,7 @@ function IssueWoTab() {
                       {inputs.map((it, i) => (
                         <tr key={`${viewingWo}-${i}`} className="border-b border-slate-800/70">
                           <td className="text-center py-2 px-2 text-slate-400">{it.seq || i + 1}</td>
-                          <td className="py-2 px-2 text-slate-100">{it.name}<small className="block text-slate-500">{it.materialType || qmesMaterialType(it.name)}</small></td>
+                          <td className="py-2 px-2 text-slate-100">{it.name}</td>
                           <td className="py-2 px-2 font-mono text-xs text-slate-300">{it.materialLot || it.lot || "-"}</td>
                           <td className="text-center py-2 px-2">{it.inputStatus || "신규"}</td>
                           <td className="text-right py-2 px-2 tabular-nums text-sky-300">{Number(it.plan ?? it.std ?? 0).toFixed(3)} {it.unit || "kg"}</td>
