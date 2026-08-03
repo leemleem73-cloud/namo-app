@@ -4,12 +4,17 @@
  * - 거래처 현황 LOT를 보조 후보로 사용
  * - LOT 입력은 계속 수기 수정 가능
  * - 작업지시 공정/품목 기본값과 직접 수정 지원
+ * - 신규 작업지시는 양산(D) Prefix를 기본으로 사용하되 날짜·순번 자동채번 유지
+ * - 발행 내역은 작은 화면에서 가로 스크롤과 열 너비를 보장
  */
 (function () {
   "use strict";
 
   const PASS_VALUES = new Set(["OK", "PASS", "합격", "적합"]);
   const BYK_DISPLAY_NAME = "BYK180 (분산제)";
+  const DEFAULT_PRODUCT = "NBA20-HM05";
+  const DEFAULT_SITE = "D";
+  const OLD_PRODUCTS = [" NBA20-HM01", "NBA20-HM01", "NMA20-HM01"];
   const DEFAULT_SUPPLIERS = [
     { company:"코오롱", material:"PAI", lot:"PAI#27-2(2)", status:"거래중" },
     { company:"푸양광명화학", material:"NMP", lot:"20251031063", status:"거래중" },
@@ -21,8 +26,6 @@
     { company:"유니소재", material:BYK_DISPLAY_NAME, lot:"2708935", status:"거래중" },
   ];
 
-  const DEFAULT_PRODUCT = "NBA20-HM05";
-  const OLD_PRODUCTS = [" NBA20-HM01", "NBA20-HM01", "NMA20-HM01"];
   let applying = false;
   let applyRequested = false;
 
@@ -96,14 +99,14 @@
       db.iqc = db.iqc.map((row) => {
         if (normalizeMaterial(row && row.name) !== "BYK180" || row.name === BYK_DISPLAY_NAME) return row;
         changed = true;
-        return { ...row, name: BYK_DISPLAY_NAME };
+        return { ...row, name:BYK_DISPLAY_NAME };
       });
     }
     if (Array.isArray(db.partnerSuppliers)) {
       db.partnerSuppliers = db.partnerSuppliers.map((row) => {
         if (normalizeMaterial(row && row.material) !== "BYK180" || row.material === BYK_DISPLAY_NAME) return row;
         changed = true;
-        return { ...row, material: BYK_DISPLAY_NAME };
+        return { ...row, material:BYK_DISPLAY_NAME };
       });
     }
     if (changed && typeof window.dbSave === "function") {
@@ -148,10 +151,10 @@
     const db = getDb();
     const saved = Array.isArray(db.partnerSuppliers) ? db.partnerSuppliers : [];
     const rawLots = Object.values(db.rawMaterialLots || {}).map((row) => ({
-      company: row.supplier || row.company || "",
-      material: row.material || row.name || "",
-      lot: row.lot || row.lotNo || "",
-      status: row.status || "거래중",
+      company:row.supplier || row.company || "",
+      material:row.material || row.name || "",
+      lot:row.lot || row.lotNo || "",
+      status:row.status || "거래중",
     }));
     const merged = [...saved, ...rawLots, ...DEFAULT_SUPPLIERS];
     const seen = new Set();
@@ -173,7 +176,12 @@
       const received = toDateText(firstValue(record, ["recv", "receiveDate", "receivedDate", "inDate", "date", "inspectionDate"]));
       if (!lot || normalizeMaterial(material) !== key || !isPass(record)) return;
       if (cutoff && received && received > cutoff) return;
-      candidates.push({ lot, date: received || "0000-00-00", supplier: firstValue(record, ["supplier", "company", "vendor"]), source:"IQC" });
+      candidates.push({
+        lot,
+        date:received || "0000-00-00",
+        supplier:firstValue(record, ["supplier", "company", "vendor"]),
+        source:"IQC",
+      });
     });
     supplierRecords().forEach((record) => {
       if (normalizeMaterial(record.material) !== key) return;
@@ -210,6 +218,12 @@
     return true;
   }
 
+  function fieldByLabel(root, label) {
+    return Array.from((root || document).querySelectorAll(".qmes-wo-form-field")).find((field) =>
+      String(field.querySelector("span")?.textContent || "").replace(/\s+/g, " ").includes(label)
+    );
+  }
+
   function productionDate(root) {
     const dates = Array.from((root || document).querySelectorAll('.qmes-wo-form-field input[type="date"]'));
     return dates.find((input) => input.value)?.value || "";
@@ -234,9 +248,13 @@
       lotInput.insertAdjacentElement("afterend", datalist);
     }
     datalist.id = listId;
-    datalist.innerHTML = options.map((item) => `<option value="${String(item.lot).replace(/"/g, "&quot;")}">${item.source}${item.date !== "0000-00-00" ? ` · ${item.date}` : ""}${item.supplier ? ` · ${item.supplier}` : ""}</option>`).join("");
+    datalist.innerHTML = options.map((item) =>
+      `<option value="${String(item.lot).replace(/"/g, "&quot;")}">${item.source}${item.date !== "0000-00-00" ? ` · ${item.date}` : ""}${item.supplier ? ` · ${item.supplier}` : ""}</option>`
+    ).join("");
     lotInput.setAttribute("list", listId);
-    lotInput.title = options.length ? `사용 가능 LOT ${options.length}건 · IQC 우선 · 직접 입력 가능` : "사용 가능 LOT 없음 · 직접 입력 가능";
+    lotInput.title = options.length
+      ? `사용 가능 LOT ${options.length}건 · IQC 우선 · 직접 입력 가능`
+      : "사용 가능 LOT 없음 · 직접 입력 가능";
     return { lotInput, options };
   }
 
@@ -270,12 +288,6 @@
     }
   }
 
-  function productField(root) {
-    return Array.from((root || document).querySelectorAll(".qmes-wo-form-field")).find((field) =>
-      String(field.querySelector("span")?.textContent || "").includes("공정 / 품목")
-    );
-  }
-
   function commitEditableProduct(input, select) {
     const next = String(input.value || "").trim().toUpperCase().replace(/\s+/g, "");
     const current = String(select.value || DEFAULT_PRODUCT).trim();
@@ -292,7 +304,7 @@
 
   function installEditableProductField(root) {
     installDefaultProduct();
-    const field = productField(root);
+    const field = fieldByLabel(root, "공정 / 품목");
     if (!field) return;
     const select = field.querySelector("select");
     if (!select || select.dataset.qmesEditableProduct === "1") return;
@@ -322,6 +334,85 @@
     });
   }
 
+  function installDefaultProductionSite(root) {
+    const shell = (root || document).querySelector?.(".qmes-wo-issue-shell")
+      || document.querySelector(".qmes-wo-issue-shell");
+    if (!shell) return;
+    const field = fieldByLabel(shell, "생산 구분");
+    const select = field && field.querySelector("select");
+    if (!select || select.dataset.qmesDefaultSiteApplied === "1") return;
+    select.dataset.qmesDefaultSiteApplied = "1";
+    if (select.value === "C" && Array.from(select.options).some((option) => option.value === DEFAULT_SITE)) {
+      setReactSelectValue(select, DEFAULT_SITE);
+    }
+  }
+
+  function installResponsiveIssuedTableStyles() {
+    if (document.getElementById("qmes-issued-table-responsive-style")) return;
+    const style = document.createElement("style");
+    style.id = "qmes-issued-table-responsive-style";
+    style.textContent = `
+      #root .qmes-issued-table-wrap{
+        width:100%!important;
+        overflow-x:auto!important;
+        overflow-y:hidden!important;
+        scrollbar-gutter:stable!important;
+        -webkit-overflow-scrolling:touch;
+      }
+      #root .qmes-issued-table-v2{
+        width:100%!important;
+        min-width:1390px!important;
+        table-layout:fixed!important;
+        border-collapse:collapse!important;
+      }
+      #root .qmes-issued-table-v2 colgroup{display:table-column-group!important;}
+      #root .qmes-issued-table-v2 th,
+      #root .qmes-issued-table-v2 td{
+        box-sizing:border-box!important;
+        padding:8px 7px!important;
+        vertical-align:middle!important;
+        letter-spacing:0!important;
+      }
+      #root .qmes-issued-table-v2 th:nth-child(1),#root .qmes-issued-table-v2 td:nth-child(1){width:105px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(2),#root .qmes-issued-table-v2 td:nth-child(2){width:145px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(3),#root .qmes-issued-table-v2 td:nth-child(3){width:95px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(4),#root .qmes-issued-table-v2 td:nth-child(4){width:100px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(5),#root .qmes-issued-table-v2 td:nth-child(5){width:130px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(6),#root .qmes-issued-table-v2 td:nth-child(6){width:170px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(7),#root .qmes-issued-table-v2 td:nth-child(7){width:90px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(8),#root .qmes-issued-table-v2 td:nth-child(8){width:105px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(9),#root .qmes-issued-table-v2 td:nth-child(9){width:90px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(10),#root .qmes-issued-table-v2 td:nth-child(10){width:110px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(11),#root .qmes-issued-table-v2 td:nth-child(11){width:250px!important;}
+      #root .qmes-issued-table-v2 th:nth-child(5),
+      #root .qmes-issued-table-v2 td:nth-child(5),
+      #root .qmes-issued-table-v2 th:nth-child(6),
+      #root .qmes-issued-table-v2 td:nth-child(6){
+        white-space:normal!important;
+        overflow:visible!important;
+        text-overflow:clip!important;
+        word-break:keep-all!important;
+        line-height:1.3!important;
+      }
+      #root .qmes-issued-table-v2 tbody tr{height:auto!important;min-height:48px!important;}
+      #root .qmes-issued-table-v2 td:nth-child(11){overflow:visible!important;white-space:nowrap!important;}
+      #root .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
+        width:auto!important;
+        min-width:48px!important;
+        height:28px!important;
+        margin:0 2px!important;
+        padding:0 7px!important;
+        font-size:10px!important;
+      }
+      #root .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{min-width:58px!important;}
+      @media(max-width:1180px){
+        #root .qmes-issued-table-v2{min-width:1320px!important;font-size:11px!important;}
+        #root .qmes-issued-table-v2 th,#root .qmes-issued-table-v2 td{padding-left:6px!important;padding-right:6px!important;}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   document.addEventListener("change", function (event) {
     const shell = event.target.closest && event.target.closest(".qmes-wo-issue-shell");
     if (!shell) return;
@@ -337,6 +428,7 @@
   installDefaultProduct();
   standardizeBykData();
   standardizeBykOptions(document);
+  installResponsiveIssuedTableStyles();
 
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
@@ -344,6 +436,8 @@
     }));
     installDefaultProduct();
     installEditableProductField(document);
+    installDefaultProductionSite(document);
+    installResponsiveIssuedTableStyles();
     window.setTimeout(() => applyAll(true), 120);
   });
 
@@ -351,6 +445,8 @@
   window.setInterval(() => {
     installDefaultProduct();
     installEditableProductField(document);
+    installDefaultProductionSite(document);
+    installResponsiveIssuedTableStyles();
     applyAll(true);
   }, 1500);
 })();
