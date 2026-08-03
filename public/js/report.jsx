@@ -677,7 +677,8 @@ function CoaTab() {
             <span>고객사</span>
             <input value={filters.customer} onChange={(e) => { setFilters({ ...filters, customer:e.target.value }); setPage(1); }} placeholder="고객사 검색" />
           </div>
-          <button onClick={() => { setFilters({ date:"", lot:"", customer:"" }); setPage(1); }}>초기화</button>
+          <button type="button" className="qmes-coa-filter-search" onClick={() => setPage(1)}>검색</button>
+          <button type="button" onClick={() => { setFilters({ date:"", lot:"", customer:"" }); setPage(1); }}>초기화</button>
         </div>
 
         <div className="qmes-issued-table-wrap qmes-coa-issued-table-wrap">
@@ -774,7 +775,7 @@ function CoaTab() {
                     <tr key={index}>
                       <td className="tabular-nums">{index + 1}</td>
                       <td>{result.item}</td><td>{result.spec}</td><td className="tabular-nums">{result.val}</td>
-                      <td className={`font-semibold ${result.judge === "합격" ? "text-emerald-600" : result.judge === "불합격" ? "text-red-600" : "text-slate-600"}`}>{result.judge}</td>
+                      <td className={`font-semibold ${result.judge === "합격" ? "qmes-coa-pass" : result.judge === "불합격" ? "qmes-coa-fail" : ""}`}>{result.judge}</td>
                     </tr>
                   ))}
                 </tbody>
