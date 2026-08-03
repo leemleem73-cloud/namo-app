@@ -117,7 +117,7 @@ function editableProduct(){
 }
 function defaultSite(){
  const shell=document.querySelector(".qmes-wo-issue-shell"),sel=field(shell,"생산 구분")?.querySelector("select");
- if(!sel||sel.dataset.qmesDefaultSiteApplied)return;sel.dataset.qmesDefaultSiteApplied="1";
+ if(editShell(shell)||!sel||sel.dataset.qmesDefaultSiteApplied)return;sel.dataset.qmesDefaultSiteApplied="1";
  if(sel.value==="C"&&[...sel.options].some(o=>o.value===SITE))reactSelect(sel,SITE);
 }
 function styles(){
@@ -149,7 +149,8 @@ function lotExists(next,old){
 }
 function editableEditLot(){
  const shell=document.querySelector(".qmes-wo-issue-shell");if(!editShell(shell)){if(!shell&&!pending)activeEdit="";return;}
- const input=lotInput(shell);if(!input)return;if(!activeEdit)activeEdit=normLot(input.value);
+ const input=lotInput(shell);if(!input)return;const current=normLot(input.value),exists=(db().batches||[]).some(r=>normLot(r?.no)===current);
+ if(!activeEdit||(!pending&&current!==activeEdit&&exists))activeEdit=current;
  input.dataset.qmesOriginalLot=activeEdit;input.readOnly=false;input.removeAttribute("readonly");
  input.classList.remove("bg-slate-800/60","text-slate-400","cursor-not-allowed");input.classList.add("text-slate-100");
  input.title="LOT No. 직접 수정 가능 · 저장 시 LOT 추적과 검사 연결도 함께 변경됩니다.";
