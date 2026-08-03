@@ -774,7 +774,7 @@ function CoaTab() {
                     <tr key={index}>
                       <td className="tabular-nums">{index + 1}</td>
                       <td>{result.item}</td><td>{result.spec}</td><td className="tabular-nums">{result.val}</td>
-                      <td className="font-semibold text-emerald-700">{result.judge}</td>
+                      <td className={`font-semibold ${result.judge === "합격" ? "text-emerald-600" : result.judge === "불합격" ? "text-red-600" : "text-slate-600"}`}>{result.judge}</td>
                     </tr>
                   ))}
                 </tbody>
