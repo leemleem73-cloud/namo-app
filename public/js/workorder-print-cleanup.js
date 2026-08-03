@@ -83,9 +83,10 @@
       white-space:nowrap!important;
       writing-mode:horizontal-tb!important;
       text-transform:uppercase!important;
-      font-size:18px!important;
-      font-weight:700!important;
+      font-size:15px!important;
     }
+    .qmes-wo-cert-material-table th:first-child{font-weight:700!important;}
+    .qmes-wo-cert-material-table td:first-child{font-weight:400!important;}
     .qmes-wo-cert-material-table th:nth-child(2){width:17.125%!important;}
     .qmes-wo-cert-material-table th:nth-child(3){width:17.125%!important;}
     .qmes-wo-cert-material-table th:nth-child(4){width:7.125%!important;}
@@ -107,8 +108,7 @@
         white-space:nowrap!important;
         writing-mode:horizontal-tb!important;
         text-transform:uppercase!important;
-        font-size:18px!important;
-        font-weight:700!important;
+        font-size:15px!important;
       }
     }
   `;
