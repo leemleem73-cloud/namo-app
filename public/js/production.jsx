@@ -1438,7 +1438,7 @@ function IssueWoTab() {
 
         return (
           <div className="qmes-modal-backdrop" onClick={() => setViewingWo(null)}>
-            <div className={`qmes-wo-viewer ${woPreviewMode === "detail" ? "qmes-wo-detail-preview" : ""}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`qmes-wo-viewer ${woPreviewMode === "detail" ? "qmes-wo-detail-preview" : "qmes-wo-output-preview"}`} onClick={(e) => e.stopPropagation()}>
               <div className="qmes-wo-viewer-head">
                 <div>
                   <div className="text-sm font-semibold text-slate-100">작업지시서 미리보기</div>
