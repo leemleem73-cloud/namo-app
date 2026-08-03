@@ -696,10 +696,13 @@ function IssueWoTab() {
   };
   const [issuePage, setIssuePage] = useState(1);
   const issuePageSize = 10;
-  const blankPlanItems = (product) => BOM[product].items.map((it) => ({
-    ...it, materialLot: "", containerNo: "", inputStatus: "신규",
-    availableQty: "", base: "", plan: "", actual: "", remaining: null, note: ""
-  }));
+  const blankPlanItems = (product) => {
+    const safeProduct = Array.isArray(BOM[product]?.items) ? product : firstProduct;
+    return (BOM[safeProduct]?.items || []).map((it) => ({
+      ...it, materialLot: "", containerNo: "", inputStatus: "신규",
+      availableQty: "", base: "", plan: "", actual: "", remaining: null, note: ""
+    }));
+  };
   const blankPackRow = () => ({
     containerNo: "", packWeight: "", packDate: "", storageLocation: "", status: "포장계획"
   });
@@ -707,7 +710,7 @@ function IssueWoTab() {
   const [packRows, setPackRows] = useState([blankPackRow()]);
 
   const openNewIssueForm = () => {
-    const product = form.product || firstProduct;
+    const product = Array.isArray(BOM[form.product]?.items) ? form.product : firstProduct;
     const productBom = BOM[product] || BOM[firstProduct];
     setEditingWo(null);
     setForm((current) => ({
