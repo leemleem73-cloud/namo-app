@@ -1473,13 +1473,13 @@ function IssueWoTab() {
           <div className="qmes-modal-backdrop" onClick={() => setViewingWo(null)}>
             <div className={`qmes-wo-viewer ${woPreviewMode === "detail" ? "qmes-wo-detail-preview" : "qmes-wo-output-preview"}`} onClick={(e) => e.stopPropagation()}>
               <div className="qmes-wo-viewer-head">
-                <div className="pl-2">
+                <div className="pl-4">
                   <div className="text-sm font-semibold text-slate-100">작업지시서 미리보기</div>
                   <div className="text-[11px] text-slate-500 mt-0.5">
                     작업지시번호 : <span className="font-mono">{doc.woNo || viewingWo || "-"}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mr-2">
                   {woPreviewMode === "print" && (
                     <button onClick={() => printIssuedWorkOrder(viewingWo)}
                       className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
