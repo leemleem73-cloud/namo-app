@@ -2,10 +2,8 @@
  * - 생산일자 이하의 IQC 합격 LOT만 후보로 사용
  * - 최신 합격 LOT 자동 선택
  * - 거래처 현황 LOT를 보조 후보로 사용
- * - 거래처 기본 목록도 fallback으로 사용
- * - React 재렌더링 충돌 방지를 위해 행별 순차 반영
  * - LOT 입력은 계속 수기 수정 가능
- * - BYK 원료 표시명: BYK180 (분산제)
+ * - 작업지시 공정/품목 기본값과 직접 수정 지원
  */
 (function () {
   "use strict";
@@ -23,6 +21,8 @@
     { company:"유니소재", material:BYK_DISPLAY_NAME, lot:"2708935", status:"거래중" },
   ];
 
+  const DEFAULT_PRODUCT = "NBA20-HM05";
+  const OLD_PRODUCTS = [" NBA20-HM01", "NBA20-HM01", "NMA20-HM01"];
   let applying = false;
   let applyRequested = false;
 
@@ -31,6 +31,50 @@
       if (typeof DB !== "undefined" && DB) return DB;
     } catch (error) {}
     return window.DB || {};
+  }
+
+  function getBom() {
+    try {
+      return typeof BOM !== "undefined" && BOM ? BOM : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function cloneBomEntry(source) {
+    if (!source) return null;
+    return {
+      ...source,
+      tanks: Array.isArray(source.tanks) ? [...source.tanks] : [],
+      items: Array.isArray(source.items) ? source.items.map((item) => ({ ...item })) : [],
+    };
+  }
+
+  function installDefaultProduct() {
+    const bom = getBom();
+    if (!bom) return false;
+    if (!bom[DEFAULT_PRODUCT]) {
+      const sourceKey = OLD_PRODUCTS.find((name) => bom[name])
+        || Object.keys(bom).find((name) => bom[name] && bom[name].workType === "완제품");
+      const source = sourceKey ? bom[sourceKey] : null;
+      if (source) bom[DEFAULT_PRODUCT] = cloneBomEntry(source);
+    }
+    OLD_PRODUCTS.forEach((name) => {
+      if (name !== DEFAULT_PRODUCT && bom[name]) delete bom[name];
+    });
+    return Boolean(bom[DEFAULT_PRODUCT]);
+  }
+
+  function ensureEditableProduct(productName, sourceName) {
+    const bom = getBom();
+    if (!bom || !productName) return false;
+    if (bom[productName]) return true;
+    const source = bom[sourceName] || bom[DEFAULT_PRODUCT]
+      || Object.values(bom).find((entry) => entry && entry.workType === "완제품")
+      || Object.values(bom)[0];
+    if (!source) return false;
+    bom[productName] = cloneBomEntry(source);
+    return true;
   }
 
   function normalizeMaterial(value) {
@@ -48,7 +92,6 @@
   function standardizeBykData() {
     const db = getDb();
     let changed = false;
-
     if (Array.isArray(db.iqc)) {
       db.iqc = db.iqc.map((row) => {
         if (normalizeMaterial(row && row.name) !== "BYK180" || row.name === BYK_DISPLAY_NAME) return row;
@@ -56,7 +99,6 @@
         return { ...row, name: BYK_DISPLAY_NAME };
       });
     }
-
     if (Array.isArray(db.partnerSuppliers)) {
       db.partnerSuppliers = db.partnerSuppliers.map((row) => {
         if (normalizeMaterial(row && row.material) !== "BYK180" || row.material === BYK_DISPLAY_NAME) return row;
@@ -64,7 +106,6 @@
         return { ...row, material: BYK_DISPLAY_NAME };
       });
     }
-
     if (changed && typeof window.dbSave === "function") {
       try { window.dbSave(); } catch (error) { console.warn("BYK180 명칭 저장 실패", error); }
     }
@@ -126,7 +167,6 @@
     const key = normalizeMaterial(materialName);
     const cutoff = toDateText(productionDate);
     const candidates = [];
-
     iqcRecords().forEach((record) => {
       const material = firstValue(record, ["name", "material", "materialName", "rawMaterial", "item", "product"]);
       const lot = String(firstValue(record, ["lot", "lotNo", "lotNumber", "materialLot"])).trim();
@@ -135,20 +175,17 @@
       if (cutoff && received && received > cutoff) return;
       candidates.push({ lot, date: received || "0000-00-00", supplier: firstValue(record, ["supplier", "company", "vendor"]), source:"IQC" });
     });
-
     supplierRecords().forEach((record) => {
       if (normalizeMaterial(record.material) !== key) return;
       const lot = String(record.lot || "").trim();
       if (lot && !candidates.some((item) => item.lot === lot)) {
-        candidates.push({ lot, date: "0000-00-00", supplier: record.company || "", source:"거래처 현황" });
+        candidates.push({ lot, date:"0000-00-00", supplier:record.company || "", source:"거래처 현황" });
       }
     });
-
-    candidates.sort((a, b) => {
-      if (a.source !== b.source) return a.source === "IQC" ? -1 : 1;
-      return b.date.localeCompare(a.date);
-    });
-    return candidates.filter((item, index, all) => all.findIndex((x) => x.lot === item.lot) === index);
+    candidates.sort((a, b) => a.source !== b.source
+      ? (a.source === "IQC" ? -1 : 1)
+      : b.date.localeCompare(a.date));
+    return candidates.filter((item, index, all) => all.findIndex((row) => row.lot === item.lot) === index);
   }
 
   function setReactInputValue(input, value) {
@@ -156,10 +193,20 @@
     const lastValue = input.value;
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
     setter.call(input, value);
-    const tracker = input._valueTracker;
-    if (tracker) tracker.setValue(lastValue);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
+    if (input._valueTracker) input._valueTracker.setValue(lastValue);
+    input.dispatchEvent(new Event("input", { bubbles:true }));
+    input.dispatchEvent(new Event("change", { bubbles:true }));
+    return true;
+  }
+
+  function setReactSelectValue(select, value) {
+    if (!select || select.value === value) return false;
+    const lastValue = select.value;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set;
+    setter.call(select, value);
+    if (select._valueTracker) select._valueTracker.setValue(lastValue);
+    select.dispatchEvent(new Event("input", { bubbles:true }));
+    select.dispatchEvent(new Event("change", { bubbles:true }));
     return true;
   }
 
@@ -177,7 +224,6 @@
     const materialSelect = row.querySelector("td:nth-child(2) select");
     const lotInput = row.querySelector('td:nth-child(3) input[placeholder="원재료 LOT"]');
     if (!materialSelect || !lotInput) return null;
-
     const materialName = materialSelect.value || materialSelect.options[materialSelect.selectedIndex]?.textContent || "";
     const options = lotCandidates(materialName, prodDate);
     const listId = `qmes-lot-${normalizeMaterial(materialName)}-${row.rowIndex || 0}`;
@@ -203,15 +249,13 @@
     if (!shell) return;
     const date = productionDate(shell);
     if (!date) return;
-
     applying = true;
     try {
       const rowCount = materialRows(shell).length;
       for (let index = 0; index < rowCount; index += 1) {
         const currentShell = document.querySelector(".qmes-wo-issue-shell");
         if (!currentShell) break;
-        const currentRows = materialRows(currentShell);
-        const prepared = prepareRow(currentRows[index], productionDate(currentShell));
+        const prepared = prepareRow(materialRows(currentShell)[index], productionDate(currentShell));
         if (!prepared || !prepared.options.length) continue;
         if (overwriteBlankOnly && String(prepared.lotInput.value || "").trim()) continue;
         const changed = setReactInputValue(prepared.lotInput, prepared.options[0].lot);
@@ -226,6 +270,58 @@
     }
   }
 
+  function productField(root) {
+    return Array.from((root || document).querySelectorAll(".qmes-wo-form-field")).find((field) =>
+      String(field.querySelector("span")?.textContent || "").includes("공정 / 품목")
+    );
+  }
+
+  function commitEditableProduct(input, select) {
+    const next = String(input.value || "").trim().toUpperCase().replace(/\s+/g, "");
+    const current = String(select.value || DEFAULT_PRODUCT).trim();
+    if (!next) {
+      input.value = current || DEFAULT_PRODUCT;
+      return;
+    }
+    if (!ensureEditableProduct(next, current)) return;
+    if (!Array.from(select.options).some((option) => option.value === next)) {
+      select.add(new Option(next, next));
+    }
+    setReactSelectValue(select, next);
+  }
+
+  function installEditableProductField(root) {
+    installDefaultProduct();
+    const field = productField(root);
+    if (!field) return;
+    const select = field.querySelector("select");
+    if (!select || select.dataset.qmesEditableProduct === "1") return;
+    select.dataset.qmesEditableProduct = "1";
+    select.style.display = "none";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = String(select.value || DEFAULT_PRODUCT).trim() || DEFAULT_PRODUCT;
+    input.placeholder = "공정 / 품목 직접 입력";
+    input.autocomplete = "off";
+    input.className = select.className;
+    input.dataset.qmesProductInput = "1";
+    input.title = "품목코드를 직접 입력한 뒤 Enter 또는 다른 곳을 클릭하면 반영됩니다.";
+    field.appendChild(input);
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      commitEditableProduct(input, select);
+      input.blur();
+    });
+    input.addEventListener("change", () => commitEditableProduct(input, select));
+    select.addEventListener("change", () => {
+      const value = String(select.value || "").trim();
+      if (document.activeElement !== input && value) input.value = value;
+    });
+  }
+
   document.addEventListener("change", function (event) {
     const shell = event.target.closest && event.target.closest(".qmes-wo-issue-shell");
     if (!shell) return;
@@ -238,6 +334,7 @@
     }
   });
 
+  installDefaultProduct();
   standardizeBykData();
   standardizeBykOptions(document);
 
@@ -245,9 +342,15 @@
     mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
       if (node.nodeType === 1) standardizeBykOptions(node);
     }));
+    installDefaultProduct();
+    installEditableProductField(document);
     window.setTimeout(() => applyAll(true), 120);
   });
 
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-  window.setInterval(() => applyAll(true), 1500);
+  observer.observe(document.documentElement, { childList:true, subtree:true });
+  window.setInterval(() => {
+    installDefaultProduct();
+    installEditableProductField(document);
+    applyAll(true);
+  }, 1500);
 })();
