@@ -1,452 +1,218 @@
-/* QMES work-order LOT auto sync
- * - 생산일자 이하의 IQC 합격 LOT만 후보로 사용
- * - 최신 합격 LOT 자동 선택
- * - 거래처 현황 LOT를 보조 후보로 사용
- * - LOT 입력은 계속 수기 수정 가능
- * - 작업지시 공정/품목 기본값과 직접 수정 지원
- * - 신규 작업지시는 양산(D) Prefix를 기본으로 사용하되 날짜·순번 자동채번 유지
- * - 발행 내역은 작은 화면에서 가로 스크롤과 열 너비를 보장
- */
-(function () {
-  "use strict";
+/* QMES work-order LOT helpers */
+(function(){
+"use strict";
+const PASS=new Set(["OK","PASS","합격","적합"]);
+const BYK="BYK180 (분산제)",PRODUCT="NBA20-HM05",SITE="D";
+const OLD=[" NBA20-HM01","NBA20-HM01","NMA20-HM01"];
+const SUP=[
+ {company:"코오롱",material:"PAI",lot:"PAI#27-2(2)",status:"거래중"},
+ {company:"푸양광명화학",material:"NMP",lot:"20251031063",status:"거래중"},
+ {company:"모리로쿠케미칼즈",material:"NMP",lot:"2026011101",status:"거래중"},
+ {company:"강신산업",material:"Boehmite",lot:"006-8-25",status:"거래중"},
+ {company:"LG화학",material:"SBR",lot:"C3026B26A(1)",status:"거래중"},
+ {company:"SOLVAY",material:"PVDF",lot:"CSE23202TA",status:"거래중"},
+ {company:"금호석유화학",material:"SBS",lot:"W251016",status:"거래중"},
+ {company:"유니소재",material:BYK,lot:"2708935",status:"거래중"}
+];
+let applying=false,again=false,activeEdit="",pending=null;
 
-  const PASS_VALUES = new Set(["OK", "PASS", "합격", "적합"]);
-  const BYK_DISPLAY_NAME = "BYK180 (분산제)";
-  const DEFAULT_PRODUCT = "NBA20-HM05";
-  const DEFAULT_SITE = "D";
-  const OLD_PRODUCTS = [" NBA20-HM01", "NBA20-HM01", "NMA20-HM01"];
-  const DEFAULT_SUPPLIERS = [
-    { company:"코오롱", material:"PAI", lot:"PAI#27-2(2)", status:"거래중" },
-    { company:"푸양광명화학", material:"NMP", lot:"20251031063", status:"거래중" },
-    { company:"모리로쿠케미칼즈", material:"NMP", lot:"2026011101", status:"거래중" },
-    { company:"강신산업", material:"Boehmite", lot:"006-8-25", status:"거래중" },
-    { company:"LG화학", material:"SBR", lot:"C3026B26A(1)", status:"거래중" },
-    { company:"SOLVAY", material:"PVDF", lot:"CSE23202TA", status:"거래중" },
-    { company:"금호석유화학", material:"SBS", lot:"W251016", status:"거래중" },
-    { company:"유니소재", material:BYK_DISPLAY_NAME, lot:"2708935", status:"거래중" },
-  ];
+function db(){try{return typeof DB!=="undefined"&&DB?DB:(window.DB||{});}catch(_){return window.DB||{};}}
+function bom(){try{return typeof BOM!=="undefined"&&BOM?BOM:null;}catch(_){return null;}}
+function clone(v){return v?{...v,tanks:[...(v.tanks||[])],items:(v.items||[]).map(x=>({...x}))}:null;}
+function normMat(v){
+ const s=String(v||"").toUpperCase().replace(/\s+/g,"");
+ if(s.includes("BYK180")||s.includes("BYK-180")||s.includes("분산제"))return"BYK180";
+ if(s.includes("AOH30")||s.includes("BOEHMITE"))return"BOEHMITE";
+ for(const k of["PVDF","PAI","NMP","SBR","SBS"])if(s.includes(k))return k;
+ return s;
+}
+function normLot(v){return String(v||"").trim().toUpperCase().replace(/\s+/g,"");}
+function first(r,ks){for(const k of ks){const v=r&&r[k];if(v!==undefined&&v!==null&&String(v).trim()!=="")return v;}return"";}
+function dateText(v){const m=String(v||"").match(/(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})/);return m?`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`:"";}
+function field(root,label){return [...(root||document).querySelectorAll(".qmes-wo-form-field")].find(x=>String(x.querySelector("span")?.textContent||"").replace(/\s+/g," ").includes(label));}
+function reactInput(el,v){
+ if(!el||el.value===v)return false;
+ const old=el.value,set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set;
+ set.call(el,v);if(el._valueTracker)el._valueTracker.setValue(old);
+ el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));return true;
+}
+function reactSelect(el,v){
+ if(!el||el.value===v)return false;
+ const old=el.value,set=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,"value").set;
+ set.call(el,v);if(el._valueTracker)el._valueTracker.setValue(old);
+ el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));return true;
+}
 
-  let applying = false;
-  let applyRequested = false;
-
-  function getDb() {
-    try {
-      if (typeof DB !== "undefined" && DB) return DB;
-    } catch (error) {}
-    return window.DB || {};
+function ensureProduct(){
+ const b=bom();if(!b)return;
+ if(!b[PRODUCT]){
+  const k=OLD.find(x=>b[x])||Object.keys(b).find(x=>b[x]?.workType==="완제품");
+  if(k)b[PRODUCT]=clone(b[k]);
+ }
+ OLD.forEach(x=>{if(x!==PRODUCT&&b[x])delete b[x];});
+}
+function ensureProductName(name,source){
+ const b=bom();if(!b||!name)return false;if(b[name])return true;
+ const src=b[source]||b[PRODUCT]||Object.values(b).find(x=>x?.workType==="완제품")||Object.values(b)[0];
+ if(!src)return false;b[name]=clone(src);return true;
+}
+function standardizeByk(){
+ const d=db();let changed=false;
+ if(Array.isArray(d.iqc))d.iqc=d.iqc.map(r=>normMat(r?.name)==="BYK180"&&r.name!==BYK?(changed=true,{...r,name:BYK}):r);
+ if(Array.isArray(d.partnerSuppliers))d.partnerSuppliers=d.partnerSuppliers.map(r=>normMat(r?.material)==="BYK180"&&r.material!==BYK?(changed=true,{...r,material:BYK}):r);
+ document.querySelectorAll("select option").forEach(o=>{if(normMat(o.textContent)==="BYK180")o.textContent=BYK;});
+ if(changed&&typeof window.dbSave==="function")window.dbSave();
+}
+function iqcRows(){const d=db(),a=[d.iqc,d.insp?.IQC,d.iqcRecords,d.inspections?.IQC].find(Array.isArray);return a||[];}
+function supplierRows(){
+ const d=db(),raw=Object.values(d.rawMaterialLots||{}).map(r=>({company:r.supplier||r.company||"",material:r.material||r.name||"",lot:r.lot||r.lotNo||"",status:r.status||"거래중"}));
+ const seen=new Set();
+ return [...(d.partnerSuppliers||[]),...raw,...SUP].filter(r=>{
+  const k=`${normMat(r.material)}|${normLot(r.lot)}`;if(!normLot(r.lot)||seen.has(k)||String(r.status||"거래중")==="거래중지")return false;seen.add(k);return true;
+ });
+}
+function candidates(name,prodDate){
+ const key=normMat(name),cut=dateText(prodDate),out=[];
+ iqcRows().forEach(r=>{
+  const mat=first(r,["name","material","materialName","rawMaterial","item","product"]);
+  const lot=String(first(r,["lot","lotNo","lotNumber","materialLot"])).trim();
+  const recv=dateText(first(r,["recv","receiveDate","receivedDate","inDate","date","inspectionDate"]));
+  const judge=String(first(r,["judge","judgment","result","inspectionResult","status"])).trim().toUpperCase();
+  if(!lot||normMat(mat)!==key||!PASS.has(judge)||(cut&&recv&&recv>cut))return;
+  out.push({lot,date:recv||"0000-00-00",supplier:first(r,["supplier","company","vendor"]),source:"IQC"});
+ });
+ supplierRows().forEach(r=>{if(normMat(r.material)===key&&normLot(r.lot)&&!out.some(x=>x.lot===r.lot))out.push({lot:r.lot,date:"0000-00-00",supplier:r.company||"",source:"거래처 현황"});});
+ out.sort((a,b)=>a.source!==b.source?(a.source==="IQC"?-1:1):b.date.localeCompare(a.date));
+ return out.filter((x,i,a)=>a.findIndex(y=>y.lot===x.lot)===i);
+}
+function productionDate(shell){return [...shell.querySelectorAll('.qmes-wo-form-field input[type="date"]')].find(x=>x.value)?.value||"";}
+function materialRows(shell){return [...shell.querySelectorAll("table.qmes-material-table tbody tr")];}
+function prepareRow(row,date){
+ const sel=row?.querySelector("td:nth-child(2) select"),input=row?.querySelector('td:nth-child(3) input[placeholder="원재료 LOT"]');
+ if(!sel||!input)return null;
+ const name=sel.value||sel.options[sel.selectedIndex]?.textContent||"",opts=candidates(name,date),id=`qmes-lot-${normMat(name)}-${row.rowIndex||0}`;
+ let list=row.querySelector(`datalist[data-qmes-lot-list="${normMat(name)}"]`);
+ if(!list){list=document.createElement("datalist");list.dataset.qmesLotList=normMat(name);input.after(list);}
+ list.id=id;list.innerHTML=opts.map(x=>`<option value="${String(x.lot).replace(/"/g,"&quot;")}">${x.source}${x.date!=="0000-00-00"?` · ${x.date}`:""}${x.supplier?` · ${x.supplier}`:""}</option>`).join("");
+ input.setAttribute("list",id);input.title=opts.length?`사용 가능 LOT ${opts.length}건 · IQC 우선 · 직접 입력 가능`:"사용 가능 LOT 없음 · 직접 입력 가능";
+ return{input,opts};
+}
+async function applyLots(blankOnly=true){
+ if(applying){again=true;return;}const shell=document.querySelector(".qmes-wo-issue-shell");if(!shell)return;
+ const date=productionDate(shell);if(!date)return;applying=true;
+ try{
+  for(let i=0;i<materialRows(shell).length;i++){
+   const s=document.querySelector(".qmes-wo-issue-shell");if(!s)break;
+   const p=prepareRow(materialRows(s)[i],productionDate(s));if(!p||!p.opts.length||(blankOnly&&normLot(p.input.value)))continue;
+   if(reactInput(p.input,p.opts[0].lot))await new Promise(r=>setTimeout(r,80));
   }
+ }finally{applying=false;if(again){again=false;setTimeout(()=>applyLots(true),100);}}
+}
+function editableProduct(){
+ ensureProduct();const f=field(document,"공정 / 품목"),sel=f?.querySelector("select");if(!sel||sel.dataset.qmesEditableProduct)return;
+ sel.dataset.qmesEditableProduct="1";sel.style.display="none";
+ const input=document.createElement("input");input.type="text";input.value=String(sel.value||PRODUCT).trim()||PRODUCT;input.placeholder="공정 / 품목 직접 입력";input.className=sel.className;f.append(input);
+ const commit=()=>{const next=String(input.value||"").trim().toUpperCase().replace(/\s+/g,""),cur=String(sel.value||PRODUCT).trim();if(!next){input.value=cur;return;}if(!ensureProductName(next,cur))return;if(![...sel.options].some(o=>o.value===next))sel.add(new Option(next,next));reactSelect(sel,next);};
+ input.addEventListener("change",commit);input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commit();input.blur();}});
+}
+function defaultSite(){
+ const shell=document.querySelector(".qmes-wo-issue-shell"),sel=field(shell,"생산 구분")?.querySelector("select");
+ if(editShell(shell)||!sel||sel.dataset.qmesDefaultSiteApplied)return;sel.dataset.qmesDefaultSiteApplied="1";
+ if(sel.value==="C"&&[...sel.options].some(o=>o.value===SITE))reactSelect(sel,SITE);
+}
+function styles(){
+ if(document.getElementById("qmes-wo-helper-style"))return;
+ const s=document.createElement("style");s.id="qmes-wo-helper-style";s.textContent=`
+ #root .qmes-issued-table-wrap{width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch}
+ #root .qmes-issued-table-v2{width:100%!important;min-width:1390px!important;table-layout:fixed!important;border-collapse:collapse!important}
+ #root .qmes-issued-table-v2 th,#root .qmes-issued-table-v2 td{box-sizing:border-box!important;padding:8px 7px!important;vertical-align:middle!important}
+ #root .qmes-issued-table-v2 th:nth-child(1),#root .qmes-issued-table-v2 td:nth-child(1){width:105px!important}
+ #root .qmes-issued-table-v2 th:nth-child(2),#root .qmes-issued-table-v2 td:nth-child(2){width:145px!important}
+ #root .qmes-issued-table-v2 th:nth-child(3),#root .qmes-issued-table-v2 td:nth-child(3){width:95px!important}
+ #root .qmes-issued-table-v2 th:nth-child(4),#root .qmes-issued-table-v2 td:nth-child(4){width:100px!important}
+ #root .qmes-issued-table-v2 th:nth-child(5),#root .qmes-issued-table-v2 td:nth-child(5){width:130px!important;white-space:normal!important;overflow:visible!important}
+ #root .qmes-issued-table-v2 th:nth-child(6),#root .qmes-issued-table-v2 td:nth-child(6){width:170px!important;white-space:normal!important;overflow:visible!important}
+ #root .qmes-issued-table-v2 th:nth-child(7),#root .qmes-issued-table-v2 td:nth-child(7){width:90px!important}
+ #root .qmes-issued-table-v2 th:nth-child(8),#root .qmes-issued-table-v2 td:nth-child(8){width:105px!important}
+ #root .qmes-issued-table-v2 th:nth-child(9),#root .qmes-issued-table-v2 td:nth-child(9){width:90px!important}
+ #root .qmes-issued-table-v2 th:nth-child(10),#root .qmes-issued-table-v2 td:nth-child(10){width:110px!important}
+ #root .qmes-issued-table-v2 th:nth-child(11),#root .qmes-issued-table-v2 td:nth-child(11){width:250px!important;white-space:nowrap!important}
+ #root .qmes-issued-table-v2 .qmes-manage-btn{width:auto!important;min-width:48px!important;height:28px!important;margin:0 2px!important;padding:0 7px!important;font-size:10px!important}
+ `;document.head.append(s);
+}
 
-  function getBom() {
-    try {
-      return typeof BOM !== "undefined" && BOM ? BOM : null;
-    } catch (error) {
-      return null;
-    }
-  }
+function editShell(shell){return !!shell&&String(shell.textContent||"").includes("작업지시 수정");}
+function lotInput(shell){return field(shell,"LOT No.")?.querySelector('input[placeholder="LOT No."]');}
+function lotExists(next,old){
+ const d=db(),n=normLot(next),o=normLot(old);
+ return(d.batches||[]).some(r=>normLot(r?.no)===n&&normLot(r?.no)!==o)||[d.woDocs,d.lots,d.intermediateLots].some(x=>x&&Object.keys(x).some(k=>normLot(k)===n&&normLot(k)!==o));
+}
+function editableEditLot(){
+ const shell=document.querySelector(".qmes-wo-issue-shell");if(!editShell(shell)){if(!shell&&!pending)activeEdit="";return;}
+ const input=lotInput(shell);if(!input)return;const current=normLot(input.value),exists=(db().batches||[]).some(r=>normLot(r?.no)===current);
+ if(!activeEdit||(!pending&&current!==activeEdit&&exists))activeEdit=current;
+ input.dataset.qmesOriginalLot=activeEdit;input.readOnly=false;input.removeAttribute("readonly");
+ input.classList.remove("bg-slate-800/60","text-slate-400","cursor-not-allowed");input.classList.add("text-slate-100");
+ input.title="LOT No. 직접 수정 가능 · 저장 시 LOT 추적과 검사 연결도 함께 변경됩니다.";
+}
+function replaceList(a,o,n){return Array.isArray(a)?[...new Set(a.map(v=>normLot(v)===o?n:v))]:a;}
+function updateRows(a,o,n,fs){(a||[]).forEach(r=>{if(!r)return;fs.forEach(f=>{if(normLot(r[f])===o)r[f]=n;});});}
+function migrate(oldValue,newValue){
+ const d=db(),o=normLot(oldValue),n=normLot(newValue);if(!o||!n||o===n)return false;if(lotExists(n,o))throw new Error(`이미 사용 중인 LOT No.입니다: ${n}`);
+ d.batches=(d.batches||[]).map(r=>normLot(r?.no)===o?{...r,no:n}:r);
+ if(d.woDocs?.[o]){d.woDocs[n]={...d.woDocs[o],lotNo:n,no:n,wo:n};delete d.woDocs[o];}
+ if(d.lots?.[o]){d.lots[n]={...d.lots[o],lot:n,lotNo:n,wo:n};delete d.lots[o];}
+ if(d.intermediateLots?.[o]){d.intermediateLots[n]={...d.intermediateLots[o],lot:n,workOrder:n};delete d.intermediateLots[o];}
+ Object.values(d.woDocs||{}).forEach(x=>{if(!x)return;["lotNo","no","wo"].forEach(f=>{if(normLot(x[f])===o)x[f]=n;});(x.inputs||[]).forEach(r=>{if(normLot(r?.lot)===o)r.lot=n;if(normLot(r?.materialLot)===o)r.materialLot=n;});});
+ Object.values(d.lots||{}).forEach(x=>{if(!x)return;if(normLot(x.wo)===o)x.wo=n;if(normLot(x.binderLot)===o)x.binderLot=n;(x.materials||[]).forEach(r=>{if(normLot(r?.lot)===o)r.lot=n;});if(x.ship)updateRows([x.ship],o,n,["lot","lotNo","finishedLot","workOrder"]);});
+ Object.values(d.intermediateLots||{}).forEach(x=>{if(!x)return;if(normLot(x.lot)===o)x.lot=n;if(normLot(x.workOrder)===o)x.workOrder=n;x.parentLots=replaceList(x.parentLots,o,n);x.childLots=replaceList(x.childLots,o,n);});
+ Object.values(d.intermediateContainers||{}).forEach(x=>updateRows([x],o,n,["lot","workOrder","lastWorkOrder"]));
+ Object.values(d.materialRemainders||{}).forEach(x=>updateRows([x],o,n,["workOrder"]));
+ updateRows(d.insp?.PQC,o,n,["lot","lotNo","workOrder"]);updateRows(d.insp?.OQC,o,n,["lot","lotNo","workOrder"]);
+ [["popEntries",["lot","lotNo","workOrder"]],["shipments",["lot","lotNo","finishedLot","workOrder"]],["ncrs",["lot","lotNo","targetLot","workOrder"]],["nonconformities",["lot","lotNo","targetLot","workOrder"]],["audit",["lot","lotNo","target","ref","key"]],["auditLogs",["lot","lotNo","target","ref","key"]]].forEach(([k,f])=>updateRows(d[k],o,n,f));
+ (d.holds||[]).forEach(r=>{updateRows([r],o,n,["lot","lotNo","targetLot","workOrder"]);if(typeof r.target==="string")r.target=r.target.split(o).join(n);});
+ return true;
+}
+async function syncInspections(n){
+ if(typeof window.qmesSyncUpsert!=="function")return;const d=db();
+ for(const mode of["PQC","OQC"]){
+  const groups=new Map();(d.insp?.[mode]||[]).filter(r=>normLot(r?.lot||r?.lotNo)===n).forEach(r=>{const k=String(r.groupId||r.id||"").trim();if(!k)return;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r);});
+  for(const[k,rows]of groups)await window.qmesSyncUpsert(mode.toLowerCase(),k,{mode,lotNo:n,rows,lotRecord:d.lots?.[n]||null,holds:(d.holds||[]).filter(r=>String(r.target||"").includes(n)),savedAt:new Date().toISOString(),savedBy:String(window.__QMES_USER__?.name||window.__QMES_USER__||"")});
+ }
+}
+function bridges(){
+ if(typeof window.dbSave==="function"&&!window.dbSave.__lotRename){
+  const original=window.dbSave,wrapped=function(...a){if(pending&&!pending.applied){migrate(pending.oldLot,pending.newLot);pending.applied=true;}return original.apply(this,a);};
+  wrapped.__lotRename=true;window.dbSave=wrapped;try{dbSave=wrapped;}catch(_){}
+ }
+ if(typeof window.qmesSyncWorkOrder==="function"&&!window.qmesSyncWorkOrder.__lotRename){
+  const original=window.qmesSyncWorkOrder,wrapped=async function(lot){
+   const p=pending?.applied&&normLot(lot)===pending.oldLot?{...pending}:null;if(!p)return original.apply(this,arguments);
+   try{
+    const result=await original.call(this,p.newLot);await syncInspections(p.newLot);
+    if(typeof window.qmesSyncUpsert==="function")await window.qmesSyncUpsert("workorder",p.oldLot,{lotNo:p.oldLot,deleted:true,renamedTo:p.newLot,deletedAt:new Date().toISOString(),deletedBy:String(window.__QMES_USER__?.name||window.__QMES_USER__||"")});
+    return result;
+   }finally{pending=null;activeEdit="";}
+  };wrapped.__lotRename=true;window.qmesSyncWorkOrder=wrapped;try{qmesSyncWorkOrder=wrapped;}catch(_){}
+ }
+}
 
-  function cloneBomEntry(source) {
-    if (!source) return null;
-    return {
-      ...source,
-      tanks: Array.isArray(source.tanks) ? [...source.tanks] : [],
-      items: Array.isArray(source.items) ? source.items.map((item) => ({ ...item })) : [],
-    };
-  }
+document.addEventListener("click",e=>{
+ const b=e.target.closest?.("button"),shell=e.target.closest?.(".qmes-wo-issue-shell");if(!b||!editShell(shell))return;
+ if(b.classList.contains("qmes-inspection-cancel-btn")){pending=null;activeEdit="";return;}
+ if(!b.classList.contains("qmes-inspection-save-btn"))return;
+ editableEditLot();const input=lotInput(shell),oldLot=normLot(input?.dataset.qmesOriginalLot||activeEdit),newLot=normLot(input?.value);
+ if(!oldLot||!newLot||newLot!==oldLot&&lotExists(newLot,oldLot)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();alert(!newLot?"LOT No.를 확인하세요.":`이미 사용 중인 LOT No.입니다.\n${newLot}`);return;}
+ pending=newLot===oldLot?null:{oldLot,newLot,applied:false};
+},true);
+document.addEventListener("change",e=>{
+ const shell=e.target.closest?.(".qmes-wo-issue-shell");if(!shell)return;
+ if(e.target.matches('input[type="date"]')||e.target.matches("table.qmes-material-table tbody td:nth-child(2) select"))setTimeout(()=>applyLots(false),60);
+});
+document.addEventListener("focusin",e=>{if(e.target.matches?.('input[placeholder="LOT No."]'))editableEditLot();},true);
 
-  function installDefaultProduct() {
-    const bom = getBom();
-    if (!bom) return false;
-    if (!bom[DEFAULT_PRODUCT]) {
-      const sourceKey = OLD_PRODUCTS.find((name) => bom[name])
-        || Object.keys(bom).find((name) => bom[name] && bom[name].workType === "완제품");
-      const source = sourceKey ? bom[sourceKey] : null;
-      if (source) bom[DEFAULT_PRODUCT] = cloneBomEntry(source);
-    }
-    OLD_PRODUCTS.forEach((name) => {
-      if (name !== DEFAULT_PRODUCT && bom[name]) delete bom[name];
-    });
-    return Boolean(bom[DEFAULT_PRODUCT]);
-  }
-
-  function ensureEditableProduct(productName, sourceName) {
-    const bom = getBom();
-    if (!bom || !productName) return false;
-    if (bom[productName]) return true;
-    const source = bom[sourceName] || bom[DEFAULT_PRODUCT]
-      || Object.values(bom).find((entry) => entry && entry.workType === "완제품")
-      || Object.values(bom)[0];
-    if (!source) return false;
-    bom[productName] = cloneBomEntry(source);
-    return true;
-  }
-
-  function normalizeMaterial(value) {
-    const text = String(value || "").toUpperCase().replace(/\s+/g, "");
-    if (text.includes("BYK180") || text.includes("BYK-180") || text.includes("분산제")) return "BYK180";
-    if (text.includes("AOH30") || text.includes("BOEHMITE")) return "BOEHMITE";
-    if (text.includes("PVDF")) return "PVDF";
-    if (text.includes("PAI") || text.includes("바인더(PAI)")) return "PAI";
-    if (text.includes("NMP")) return "NMP";
-    if (text.includes("SBR")) return "SBR";
-    if (text.includes("SBS")) return "SBS";
-    return text;
-  }
-
-  function standardizeBykData() {
-    const db = getDb();
-    let changed = false;
-    if (Array.isArray(db.iqc)) {
-      db.iqc = db.iqc.map((row) => {
-        if (normalizeMaterial(row && row.name) !== "BYK180" || row.name === BYK_DISPLAY_NAME) return row;
-        changed = true;
-        return { ...row, name:BYK_DISPLAY_NAME };
-      });
-    }
-    if (Array.isArray(db.partnerSuppliers)) {
-      db.partnerSuppliers = db.partnerSuppliers.map((row) => {
-        if (normalizeMaterial(row && row.material) !== "BYK180" || row.material === BYK_DISPLAY_NAME) return row;
-        changed = true;
-        return { ...row, material:BYK_DISPLAY_NAME };
-      });
-    }
-    if (changed && typeof window.dbSave === "function") {
-      try { window.dbSave(); } catch (error) { console.warn("BYK180 명칭 저장 실패", error); }
-    }
-  }
-
-  function standardizeBykOptions(root) {
-    (root || document).querySelectorAll("select option").forEach((option) => {
-      if (normalizeMaterial(option.textContent) === "BYK180") option.textContent = BYK_DISPLAY_NAME;
-    });
-  }
-
-  function firstValue(record, keys) {
-    for (const key of keys) {
-      const value = record && record[key];
-      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
-    }
-    return "";
-  }
-
-  function toDateText(value) {
-    const raw = String(value || "").trim();
-    const match = raw.match(/(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})/);
-    if (!match) return "";
-    return `${match[1]}-${String(match[2]).padStart(2, "0")}-${String(match[3]).padStart(2, "0")}`;
-  }
-
-  function isPass(record) {
-    const value = firstValue(record, ["judge", "judgment", "result", "inspectionResult", "status"]);
-    return PASS_VALUES.has(String(value || "").trim().toUpperCase());
-  }
-
-  function iqcRecords() {
-    const db = getDb();
-    const candidates = [db.iqc, db.insp && db.insp.IQC, db.iqcRecords, db.inspections && db.inspections.IQC];
-    const rows = candidates.find(Array.isArray);
-    return Array.isArray(rows) ? rows : [];
-  }
-
-  function supplierRecords() {
-    const db = getDb();
-    const saved = Array.isArray(db.partnerSuppliers) ? db.partnerSuppliers : [];
-    const rawLots = Object.values(db.rawMaterialLots || {}).map((row) => ({
-      company:row.supplier || row.company || "",
-      material:row.material || row.name || "",
-      lot:row.lot || row.lotNo || "",
-      status:row.status || "거래중",
-    }));
-    const merged = [...saved, ...rawLots, ...DEFAULT_SUPPLIERS];
-    const seen = new Set();
-    return merged.filter((row) => {
-      const key = `${normalizeMaterial(row.material)}|${String(row.lot || "").trim().toUpperCase()}`;
-      if (!String(row.lot || "").trim() || seen.has(key)) return false;
-      seen.add(key);
-      return String(row.status || "거래중") !== "거래중지";
-    });
-  }
-
-  function lotCandidates(materialName, productionDate) {
-    const key = normalizeMaterial(materialName);
-    const cutoff = toDateText(productionDate);
-    const candidates = [];
-    iqcRecords().forEach((record) => {
-      const material = firstValue(record, ["name", "material", "materialName", "rawMaterial", "item", "product"]);
-      const lot = String(firstValue(record, ["lot", "lotNo", "lotNumber", "materialLot"])).trim();
-      const received = toDateText(firstValue(record, ["recv", "receiveDate", "receivedDate", "inDate", "date", "inspectionDate"]));
-      if (!lot || normalizeMaterial(material) !== key || !isPass(record)) return;
-      if (cutoff && received && received > cutoff) return;
-      candidates.push({
-        lot,
-        date:received || "0000-00-00",
-        supplier:firstValue(record, ["supplier", "company", "vendor"]),
-        source:"IQC",
-      });
-    });
-    supplierRecords().forEach((record) => {
-      if (normalizeMaterial(record.material) !== key) return;
-      const lot = String(record.lot || "").trim();
-      if (lot && !candidates.some((item) => item.lot === lot)) {
-        candidates.push({ lot, date:"0000-00-00", supplier:record.company || "", source:"거래처 현황" });
-      }
-    });
-    candidates.sort((a, b) => a.source !== b.source
-      ? (a.source === "IQC" ? -1 : 1)
-      : b.date.localeCompare(a.date));
-    return candidates.filter((item, index, all) => all.findIndex((row) => row.lot === item.lot) === index);
-  }
-
-  function setReactInputValue(input, value) {
-    if (!input || input.value === value) return false;
-    const lastValue = input.value;
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-    setter.call(input, value);
-    if (input._valueTracker) input._valueTracker.setValue(lastValue);
-    input.dispatchEvent(new Event("input", { bubbles:true }));
-    input.dispatchEvent(new Event("change", { bubbles:true }));
-    return true;
-  }
-
-  function setReactSelectValue(select, value) {
-    if (!select || select.value === value) return false;
-    const lastValue = select.value;
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set;
-    setter.call(select, value);
-    if (select._valueTracker) select._valueTracker.setValue(lastValue);
-    select.dispatchEvent(new Event("input", { bubbles:true }));
-    select.dispatchEvent(new Event("change", { bubbles:true }));
-    return true;
-  }
-
-  function fieldByLabel(root, label) {
-    return Array.from((root || document).querySelectorAll(".qmes-wo-form-field")).find((field) =>
-      String(field.querySelector("span")?.textContent || "").replace(/\s+/g, " ").includes(label)
-    );
-  }
-
-  function productionDate(root) {
-    const dates = Array.from((root || document).querySelectorAll('.qmes-wo-form-field input[type="date"]'));
-    return dates.find((input) => input.value)?.value || "";
-  }
-
-  function materialRows(root) {
-    return Array.from((root || document).querySelectorAll("table.qmes-material-table tbody tr"));
-  }
-
-  function prepareRow(row, prodDate) {
-    if (!row) return null;
-    const materialSelect = row.querySelector("td:nth-child(2) select");
-    const lotInput = row.querySelector('td:nth-child(3) input[placeholder="원재료 LOT"]');
-    if (!materialSelect || !lotInput) return null;
-    const materialName = materialSelect.value || materialSelect.options[materialSelect.selectedIndex]?.textContent || "";
-    const options = lotCandidates(materialName, prodDate);
-    const listId = `qmes-lot-${normalizeMaterial(materialName)}-${row.rowIndex || 0}`;
-    let datalist = row.querySelector(`datalist[data-qmes-lot-list="${normalizeMaterial(materialName)}"]`);
-    if (!datalist) {
-      datalist = document.createElement("datalist");
-      datalist.dataset.qmesLotList = normalizeMaterial(materialName);
-      lotInput.insertAdjacentElement("afterend", datalist);
-    }
-    datalist.id = listId;
-    datalist.innerHTML = options.map((item) =>
-      `<option value="${String(item.lot).replace(/"/g, "&quot;")}">${item.source}${item.date !== "0000-00-00" ? ` · ${item.date}` : ""}${item.supplier ? ` · ${item.supplier}` : ""}</option>`
-    ).join("");
-    lotInput.setAttribute("list", listId);
-    lotInput.title = options.length
-      ? `사용 가능 LOT ${options.length}건 · IQC 우선 · 직접 입력 가능`
-      : "사용 가능 LOT 없음 · 직접 입력 가능";
-    return { lotInput, options };
-  }
-
-  async function applyAll(overwriteBlankOnly) {
-    if (applying) {
-      applyRequested = true;
-      return;
-    }
-    const shell = document.querySelector(".qmes-wo-issue-shell");
-    if (!shell) return;
-    const date = productionDate(shell);
-    if (!date) return;
-    applying = true;
-    try {
-      const rowCount = materialRows(shell).length;
-      for (let index = 0; index < rowCount; index += 1) {
-        const currentShell = document.querySelector(".qmes-wo-issue-shell");
-        if (!currentShell) break;
-        const prepared = prepareRow(materialRows(currentShell)[index], productionDate(currentShell));
-        if (!prepared || !prepared.options.length) continue;
-        if (overwriteBlankOnly && String(prepared.lotInput.value || "").trim()) continue;
-        const changed = setReactInputValue(prepared.lotInput, prepared.options[0].lot);
-        if (changed) await new Promise((resolve) => window.setTimeout(resolve, 90));
-      }
-    } finally {
-      applying = false;
-      if (applyRequested) {
-        applyRequested = false;
-        window.setTimeout(() => applyAll(true), 120);
-      }
-    }
-  }
-
-  function commitEditableProduct(input, select) {
-    const next = String(input.value || "").trim().toUpperCase().replace(/\s+/g, "");
-    const current = String(select.value || DEFAULT_PRODUCT).trim();
-    if (!next) {
-      input.value = current || DEFAULT_PRODUCT;
-      return;
-    }
-    if (!ensureEditableProduct(next, current)) return;
-    if (!Array.from(select.options).some((option) => option.value === next)) {
-      select.add(new Option(next, next));
-    }
-    setReactSelectValue(select, next);
-  }
-
-  function installEditableProductField(root) {
-    installDefaultProduct();
-    const field = fieldByLabel(root, "공정 / 품목");
-    if (!field) return;
-    const select = field.querySelector("select");
-    if (!select || select.dataset.qmesEditableProduct === "1") return;
-    select.dataset.qmesEditableProduct = "1";
-    select.style.display = "none";
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = String(select.value || DEFAULT_PRODUCT).trim() || DEFAULT_PRODUCT;
-    input.placeholder = "공정 / 품목 직접 입력";
-    input.autocomplete = "off";
-    input.className = select.className;
-    input.dataset.qmesProductInput = "1";
-    input.title = "품목코드를 직접 입력한 뒤 Enter 또는 다른 곳을 클릭하면 반영됩니다.";
-    field.appendChild(input);
-
-    input.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter") return;
-      event.preventDefault();
-      commitEditableProduct(input, select);
-      input.blur();
-    });
-    input.addEventListener("change", () => commitEditableProduct(input, select));
-    select.addEventListener("change", () => {
-      const value = String(select.value || "").trim();
-      if (document.activeElement !== input && value) input.value = value;
-    });
-  }
-
-  function installDefaultProductionSite(root) {
-    const shell = (root || document).querySelector?.(".qmes-wo-issue-shell")
-      || document.querySelector(".qmes-wo-issue-shell");
-    if (!shell) return;
-    const field = fieldByLabel(shell, "생산 구분");
-    const select = field && field.querySelector("select");
-    if (!select || select.dataset.qmesDefaultSiteApplied === "1") return;
-    select.dataset.qmesDefaultSiteApplied = "1";
-    if (select.value === "C" && Array.from(select.options).some((option) => option.value === DEFAULT_SITE)) {
-      setReactSelectValue(select, DEFAULT_SITE);
-    }
-  }
-
-  function installResponsiveIssuedTableStyles() {
-    if (document.getElementById("qmes-issued-table-responsive-style")) return;
-    const style = document.createElement("style");
-    style.id = "qmes-issued-table-responsive-style";
-    style.textContent = `
-      #root .qmes-issued-table-wrap{
-        width:100%!important;
-        overflow-x:auto!important;
-        overflow-y:hidden!important;
-        scrollbar-gutter:stable!important;
-        -webkit-overflow-scrolling:touch;
-      }
-      #root .qmes-issued-table-v2{
-        width:100%!important;
-        min-width:1390px!important;
-        table-layout:fixed!important;
-        border-collapse:collapse!important;
-      }
-      #root .qmes-issued-table-v2 colgroup{display:table-column-group!important;}
-      #root .qmes-issued-table-v2 th,
-      #root .qmes-issued-table-v2 td{
-        box-sizing:border-box!important;
-        padding:8px 7px!important;
-        vertical-align:middle!important;
-        letter-spacing:0!important;
-      }
-      #root .qmes-issued-table-v2 th:nth-child(1),#root .qmes-issued-table-v2 td:nth-child(1){width:105px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(2),#root .qmes-issued-table-v2 td:nth-child(2){width:145px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(3),#root .qmes-issued-table-v2 td:nth-child(3){width:95px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(4),#root .qmes-issued-table-v2 td:nth-child(4){width:100px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(5),#root .qmes-issued-table-v2 td:nth-child(5){width:130px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(6),#root .qmes-issued-table-v2 td:nth-child(6){width:170px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(7),#root .qmes-issued-table-v2 td:nth-child(7){width:90px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(8),#root .qmes-issued-table-v2 td:nth-child(8){width:105px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(9),#root .qmes-issued-table-v2 td:nth-child(9){width:90px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(10),#root .qmes-issued-table-v2 td:nth-child(10){width:110px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(11),#root .qmes-issued-table-v2 td:nth-child(11){width:250px!important;}
-      #root .qmes-issued-table-v2 th:nth-child(5),
-      #root .qmes-issued-table-v2 td:nth-child(5),
-      #root .qmes-issued-table-v2 th:nth-child(6),
-      #root .qmes-issued-table-v2 td:nth-child(6){
-        white-space:normal!important;
-        overflow:visible!important;
-        text-overflow:clip!important;
-        word-break:keep-all!important;
-        line-height:1.3!important;
-      }
-      #root .qmes-issued-table-v2 tbody tr{height:auto!important;min-height:48px!important;}
-      #root .qmes-issued-table-v2 td:nth-child(11){overflow:visible!important;white-space:nowrap!important;}
-      #root .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
-        width:auto!important;
-        min-width:48px!important;
-        height:28px!important;
-        margin:0 2px!important;
-        padding:0 7px!important;
-        font-size:10px!important;
-      }
-      #root .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{min-width:58px!important;}
-      @media(max-width:1180px){
-        #root .qmes-issued-table-v2{min-width:1320px!important;font-size:11px!important;}
-        #root .qmes-issued-table-v2 th,#root .qmes-issued-table-v2 td{padding-left:6px!important;padding-right:6px!important;}
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  document.addEventListener("change", function (event) {
-    const shell = event.target.closest && event.target.closest(".qmes-wo-issue-shell");
-    if (!shell) return;
-    if (event.target.matches('input[type="date"]')) {
-      window.setTimeout(() => applyAll(false), 60);
-      return;
-    }
-    if (event.target.matches("table.qmes-material-table tbody td:nth-child(2) select")) {
-      window.setTimeout(() => applyAll(false), 60);
-    }
-  });
-
-  installDefaultProduct();
-  standardizeBykData();
-  standardizeBykOptions(document);
-  installResponsiveIssuedTableStyles();
-
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
-      if (node.nodeType === 1) standardizeBykOptions(node);
-    }));
-    installDefaultProduct();
-    installEditableProductField(document);
-    installDefaultProductionSite(document);
-    installResponsiveIssuedTableStyles();
-    window.setTimeout(() => applyAll(true), 120);
-  });
-
-  observer.observe(document.documentElement, { childList:true, subtree:true });
-  window.setInterval(() => {
-    installDefaultProduct();
-    installEditableProductField(document);
-    installDefaultProductionSite(document);
-    installResponsiveIssuedTableStyles();
-    applyAll(true);
-  }, 1500);
+function install(){ensureProduct();standardizeByk();editableProduct();defaultSite();styles();bridges();editableEditLot();}
+install();
+new MutationObserver(()=>{install();setTimeout(()=>applyLots(true),100);}).observe(document.documentElement,{childList:true,subtree:true});
+setInterval(()=>{install();applyLots(true);},1500);
 })();
