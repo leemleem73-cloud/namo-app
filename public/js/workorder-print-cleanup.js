@@ -41,22 +41,16 @@
       text-align:center!important;
     }
 
-    /* 기본정보: 작업지시번호 숨김, LOT No. 표기, 나머지 4칸 균등 배치 */
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table,
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table{
+    /* 기본정보: LOT No.·제품명·설비명·작업자 4칸 균등 배치 */
+    .qmes-wo-cert .qmes-wo-basic-info-table,
+    [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table{
       width:100%!important;
       table-layout:fixed!important;
     }
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table th:first-child,
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table td:first-child,
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table th:first-child,
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table td:first-child{
-      display:none!important;
-    }
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table th:not(:first-child),
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table td:not(:first-child),
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table th:not(:first-child),
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table td:not(:first-child){
+    .qmes-wo-cert .qmes-wo-basic-info-table th,
+    .qmes-wo-cert .qmes-wo-basic-info-table td,
+    [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table th,
+    [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table td{
       box-sizing:border-box!important;
       width:25%!important;
       text-align:center!important;
@@ -64,75 +58,57 @@
       padding-left:8px!important;
       padding-right:8px!important;
     }
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table th:nth-child(2),
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table th:nth-child(2){
-      font-size:0!important;
+    .qmes-wo-cert .qmes-wo-basic-info-table th:first-child,
+    [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table th:first-child{
+      display:table-cell!important;
+      font-size:20px!important;
+      font-weight:800!important;
     }
-    .qmes-wo-cert .qmes-iqc2-first .qmes-iqc2-table th:nth-child(2)::after,
-    [id^="qmes-issued-cert-"] .qmes-iqc2-first .qmes-iqc2-table th:nth-child(2)::after{
-      content:"LOT No.";
-      font-size:11px!important;
+
+    /* 원재료 표: NO·1~7은 크게, 첫 열은 좁게, 줄인 폭은 나머지 열에 균등 분배 */
+    .qmes-wo-cert-material-table{
+      width:100%!important;
+      table-layout:fixed!important;
+    }
+    .qmes-wo-cert-material-table th:first-child,
+    .qmes-wo-cert-material-table td:first-child{
+      box-sizing:border-box!important;
+      width:4%!important;
+      min-width:4%!important;
+      max-width:4%!important;
+      padding-left:2px!important;
+      padding-right:2px!important;
+      text-align:center!important;
+      vertical-align:middle!important;
+      white-space:nowrap!important;
+      writing-mode:horizontal-tb!important;
+      text-transform:uppercase!important;
+      font-size:18px!important;
       font-weight:700!important;
-      line-height:1.4!important;
     }
-
-    /* 미리보기: NO 및 숫자 1~7 첫 열 축소 */
-    .qmes-wo-viewer.qmes-wo-detail-preview .qmes-wo-cert-material-table{
-      width:100%!important;
-      table-layout:fixed!important;
-    }
-    .qmes-wo-viewer.qmes-wo-detail-preview .qmes-wo-cert-material-table th:first-child,
-    .qmes-wo-viewer.qmes-wo-detail-preview .qmes-wo-cert-material-table td:first-child{
-      box-sizing:border-box!important;
-      width:22px!important;
-      min-width:22px!important;
-      max-width:22px!important;
-      padding-left:0!important;
-      padding-right:0!important;
-      text-align:center!important;
-      vertical-align:middle!important;
-      white-space:nowrap!important;
-      writing-mode:horizontal-tb!important;
-      text-transform:uppercase!important;
-      font-size:10px!important;
-    }
-
-    /* 인쇄 버튼 화면과 실제 인쇄물: NO 첫 열을 미리보기보다 조금 넓게 */
-    .qmes-wo-viewer:not(.qmes-wo-detail-preview) .qmes-wo-cert-material-table,
-    #qmes-print-root .qmes-wo-cert-material-table{
-      width:100%!important;
-      table-layout:fixed!important;
-    }
-    .qmes-wo-viewer:not(.qmes-wo-detail-preview) .qmes-wo-cert-material-table th:first-child,
-    .qmes-wo-viewer:not(.qmes-wo-detail-preview) .qmes-wo-cert-material-table td:first-child,
-    #qmes-print-root .qmes-wo-cert-material-table th:first-child,
-    #qmes-print-root .qmes-wo-cert-material-table td:first-child{
-      box-sizing:border-box!important;
-      width:34px!important;
-      min-width:34px!important;
-      max-width:34px!important;
-      padding-left:3px!important;
-      padding-right:3px!important;
-      text-align:center!important;
-      vertical-align:middle!important;
-      white-space:nowrap!important;
-      writing-mode:horizontal-tb!important;
-      text-transform:uppercase!important;
-      font-size:10px!important;
-    }
+    .qmes-wo-cert-material-table th:nth-child(2){width:17.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(3){width:17.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(4){width:7.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(5){width:10.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(6){width:10.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(7){width:12.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(8){width:8.125%!important;}
+    .qmes-wo-cert-material-table th:nth-child(9){width:14.125%!important;}
 
     @media print{
       .qmes-wo-cert-material-table th:first-child,
       .qmes-wo-cert-material-table td:first-child{
-        width:34px!important;
-        min-width:34px!important;
-        max-width:34px!important;
-        padding-left:3px!important;
-        padding-right:3px!important;
+        width:4%!important;
+        min-width:4%!important;
+        max-width:4%!important;
+        padding-left:2px!important;
+        padding-right:2px!important;
         text-align:center!important;
         white-space:nowrap!important;
         writing-mode:horizontal-tb!important;
         text-transform:uppercase!important;
+        font-size:18px!important;
+        font-weight:700!important;
       }
     }
   `;
