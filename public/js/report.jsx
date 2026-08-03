@@ -629,97 +629,172 @@ function InspectionReportsTab() {
 /* ──────────────────────────── 출하성적서 (CoA) 탭 ──────────────────────────── */
 
 function CoaTab() {
-  const ids = Object.keys(DB.coa);
-  const [sel, setSel] = useState(ids[0]);
-  const c = DB.coa[sel];
-
-  if (!c) {
-    return (
-      <Panel title="출하성적서 (CoA)">
-        <p className="text-sm text-slate-500">발행 가능한 성적서가 없습니다 — 출하검사(OQC) 전 항목 합격 Lot이 생기면 자동으로 발행 대상에 표시됩니다.</p>
-      </Panel>
-    );
-  }
+  const entries = Object.entries(DB.coa || {})
+    .map(([lot, coa]) => ({ lot, coa:coa || {} }))
+    .sort((a, b) => String(b.coa.ship || "").localeCompare(String(a.coa.ship || "")) || b.lot.localeCompare(a.lot));
+  const [filters, setFilters] = useState({ date:"", lot:"", customer:"" });
+  const [page, setPage] = useState(1);
+  const [viewing, setViewing] = useState(null);
+  const [previewMode, setPreviewMode] = useState("detail");
+  const pageSize = 10;
+  const filtered = entries.filter(({ lot, coa }) => {
+    const dateOk = !filters.date || String(coa.ship || "").slice(0, 10) === filters.date;
+    const lotOk = !filters.lot || lot.toLowerCase().includes(filters.lot.trim().toLowerCase());
+    const customerOk = !filters.customer || String(coa.customer || "").toLowerCase().includes(filters.customer.trim().toLowerCase());
+    return dateOk && lotOk && customerOk;
+  });
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const selected = viewing ? DB.coa?.[viewing] : null;
+  const openPreview = (lot, mode) => {
+    setViewing(lot);
+    setPreviewMode(mode);
+  };
+  const printCoa = () => {
+    const source = document.getElementById(`qmes-coa-cert-${viewing}`);
+    if (source) printDoc(source);
+  };
 
   return (
     <div className="flex flex-col gap-4">
-      <Panel title="출하성적서 발행" right={
-        <button onClick={printDoc} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded px-3 py-1.5 text-xs font-medium transition-colors">
-          <Printer size={13} /> 인쇄
-        </button>
-      }>
-        <div className="flex flex-wrap gap-2">
-          {ids.map((id) => (
-            <button key={id} onClick={() => setSel(id)}
-              className={`px-3 py-1.5 rounded border text-xs font-mono transition-colors ${
-                sel === id ? "bg-sky-500/15 border-sky-500/50 text-sky-300" : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500"
-              }`}>
-              {id}
-            </button>
-          ))}
-          <span className="text-[11px] text-slate-500 self-center ml-1">OQC 전 항목 합격 Lot만 발행 가능합니다.</span>
+      <Panel title="출하성적서 발행 내역" right={<span className="text-xs text-slate-400">{filtered.length}건</span>}>
+        <div className="qmes-coa-issued-note">
+          <span>OQC 전 항목 합격 건은 자동으로 발행 내역에 등록됩니다.</span>
+          <em>날짜·LOT No.·고객사로 조회한 뒤 미리보기 또는 출력하세요.</em>
         </div>
+        <div className="qmes-issued-filter qmes-coa-issued-filter">
+          <div>
+            <span>발행일</span>
+            <input type="date" value={filters.date} onChange={(e) => { setFilters({ ...filters, date:e.target.value }); setPage(1); }} />
+          </div>
+          <div>
+            <span>LOT No.</span>
+            <input value={filters.lot} onChange={(e) => { setFilters({ ...filters, lot:e.target.value }); setPage(1); }} placeholder="LOT 검색" />
+          </div>
+          <div>
+            <span>고객사</span>
+            <input value={filters.customer} onChange={(e) => { setFilters({ ...filters, customer:e.target.value }); setPage(1); }} placeholder="고객사 검색" />
+          </div>
+          <button onClick={() => { setFilters({ date:"", lot:"", customer:"" }); setPage(1); }}>초기화</button>
+        </div>
+
+        <div className="qmes-issued-table-wrap qmes-coa-issued-table-wrap">
+          <table className="qmes-coa-issued-table w-full text-sm">
+            <thead>
+              <tr className="text-xs text-slate-400 border-b border-slate-800">
+                <th>발행일</th>
+                <th>성적서번호</th>
+                <th>LOT No.</th>
+                <th>제품명</th>
+                <th>고객사</th>
+                <th>출하수량</th>
+                <th>출하번호</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paged.map(({ lot, coa }) => (
+                <tr key={lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
+                  <td>{coa.ship || "-"}</td>
+                  <td className="font-mono">{coa.no || `COA-${lot}`}</td>
+                  <td className="font-mono"><button onClick={() => openPreview(lot, "detail")} className="text-sky-300 hover:text-sky-200 hover:underline">{lot}</button></td>
+                  <td title={coa.product || "-"}>{coa.product || "-"}</td>
+                  <td title={coa.customer || "-"}>{coa.customer || "-"}</td>
+                  <td className="tabular-nums">{coa.qty || "-"}</td>
+                  <td className="font-mono">{coa.shipNo || "-"}</td>
+                  <td className="whitespace-nowrap">
+                    <button onClick={() => openPreview(lot, "detail")} className="qmes-manage-btn view">미리보기</button>
+                    <button onClick={() => openPreview(lot, "print")} className="qmes-manage-btn print">출력</button>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan="8" className="py-8 text-center text-slate-500">검색 조건에 맞는 출하성적서가 없습니다.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {filtered.length > pageSize && (
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <button onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={safePage === 1}
+              className="px-3 py-1.5 rounded border border-slate-700 text-xs text-slate-300 disabled:opacity-40">이전</button>
+            <span className="text-xs text-slate-400">{safePage} / {pageCount}</span>
+            <button onClick={() => setPage((value) => Math.min(pageCount, value + 1))} disabled={safePage === pageCount}
+              className="px-3 py-1.5 rounded border border-slate-700 text-xs text-slate-300 disabled:opacity-40">다음</button>
+          </div>
+        )}
       </Panel>
 
-      {/* 성적서 (인쇄 양식) */}
-      <div className="doc-paper bg-white text-slate-900 rounded-lg p-6 md:p-8 shadow-xl max-w-4xl mx-auto w-full">
-        <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
-          <div>
-            <div className="text-xl font-bold tracking-wide">출하검사 성적서</div>
-            <div className="text-xs text-slate-500 mt-0.5">Certificate of Analysis (CoA)</div>
-          </div>
-          <div className="text-right text-xs text-slate-600">
-            <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
-            <div>성적서번호 : <span className="font-mono">{c.no}</span></div>
-            <div>발행일: {c.ship}</div>
+      {viewing && selected && (
+        <div className="qmes-modal-backdrop" onClick={() => setViewing(null)}>
+          <div className={`qmes-wo-viewer qmes-coa-viewer ${previewMode === "print" ? "qmes-wo-output-preview" : "qmes-wo-detail-preview"}`} onClick={(e) => e.stopPropagation()}>
+            <div className="qmes-wo-viewer-head">
+              <div>
+                <div className="text-sm font-semibold text-slate-100">출하성적서 미리보기</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">성적서번호 : <span className="font-mono">{selected.no || `COA-${viewing}`}</span></div>
+              </div>
+              <div className="flex items-center gap-2">
+                {previewMode === "print" && (
+                  <button onClick={printCoa} className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
+                    <Printer size={13} /> 인쇄
+                  </button>
+                )}
+                <button onClick={() => setViewing(null)} className="qmes-modal-close">×</button>
+              </div>
+            </div>
+
+            <div id={`qmes-coa-cert-${viewing}`} className="doc-paper qmes-coa-unified-doc bg-white text-slate-900 rounded-lg p-6 shadow-xl max-w-4xl mx-auto w-full">
+              <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
+                <div>
+                  <div className="text-xl font-bold tracking-wide">출하검사 성적서</div>
+                  <div className="text-xs text-slate-500 mt-0.5">Certificate of Analysis (CoA)</div>
+                </div>
+                <div className="text-right text-xs text-slate-600">
+                  <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
+                  <div>성적서번호 : <span className="font-mono">{selected.no || `COA-${viewing}`}</span></div>
+                  <div>발행일 : {selected.ship || "-"}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm py-4 border-b border-slate-300">
+                <div className="flex justify-between"><span className="text-slate-500">고객사</span><span className="font-medium">{selected.customer || "-"}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">제품명</span><span className="font-medium">{selected.product || "-"}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">LOT No.</span><span className="font-mono font-medium">{viewing}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">수량</span><span className="font-medium tabular-nums">{selected.qty || "-"}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">제조일</span><span className="tabular-nums">{selected.mfg || "-"}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">출하번호</span><span className="font-mono">{selected.shipNo || "-"}</span></div>
+              </div>
+
+              <table className="w-full text-sm mt-4">
+                <thead><tr><th>NO</th><th>검사 항목</th><th>규격</th><th>측정 결과</th><th>판정</th></tr></thead>
+                <tbody>
+                  {(selected.results || []).map((result, index) => (
+                    <tr key={index}>
+                      <td className="tabular-nums">{index + 1}</td>
+                      <td>{result.item}</td><td>{result.spec}</td><td className="tabular-nums">{result.val}</td>
+                      <td className="font-semibold text-emerald-700">{result.judge}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="flex items-end justify-between mt-6">
+                <div className="text-xs text-slate-500 leading-relaxed">
+                  상기 Lot은 관리계획서(NMC-C-220-01) 및 고객 사양에 따라<br />검사한 결과 전 항목 적합함을 증명합니다.
+                </div>
+                <div className="flex gap-6 text-center text-xs">
+                  <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검사</div><div className="mt-1 text-slate-600">이수민</div></div>
+                  <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">김세희</div></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm py-4 border-b border-slate-300">
-          <div className="flex justify-between"><span className="text-slate-500">고객사</span><span className="font-medium">{c.customer}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">제품명</span><span className="font-medium">{c.product}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">Lot 번호</span><span className="font-mono font-medium">{sel}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">수량</span><span className="font-medium tabular-nums">{c.qty}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">제조일</span><span className="tabular-nums">{c.mfg}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">출하번호</span><span className="font-mono">{c.shipNo}</span></div>
-        </div>
-
-        <table className="w-full text-sm mt-4">
-          <thead>
-            <tr className="text-xs text-slate-500 border-b-2 border-slate-900">
-              <th className="text-left py-2 pr-3 font-semibold w-10">NO</th>
-              <th className="text-left py-2 pr-3 font-semibold">검사 항목</th>
-              <th className="text-left py-2 pr-3 font-semibold">규격</th>
-              <th className="text-left py-2 pr-3 font-semibold">측정 결과</th>
-              <th className="text-center py-2 font-semibold w-16">판정</th>
-            </tr>
-          </thead>
-          <tbody>
-            {c.results.map((r, i) => (
-              <tr key={i} className="border-b border-slate-200">
-                <td className="py-2 pr-3 text-slate-500 tabular-nums">{i + 1}</td>
-                <td className="py-2 pr-3 font-medium">{r.item}</td>
-                <td className="py-2 pr-3 text-slate-600">{r.spec}</td>
-                <td className="py-2 pr-3 tabular-nums">{r.val}</td>
-                <td className="py-2 text-center font-semibold text-emerald-600">{r.judge}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="flex items-end justify-between mt-6">
-          <div className="text-xs text-slate-500 leading-relaxed">
-            상기 Lot은 관리계획서(NMC-C-220-01) 및 고객 사양에 따라<br />검사한 결과 전 항목 적합함을 증명합니다.
-          </div>
-          <div className="flex gap-6 text-center text-xs">
-            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검사</div><div className="mt-1 text-slate-600">이수민</div></div>
-            <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">김세희</div></div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
 
 /* ──────────────────────────── 수입검사 (IQC) 탭 ──────────────────────────── */
-
