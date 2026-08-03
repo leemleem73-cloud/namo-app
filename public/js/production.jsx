@@ -945,7 +945,20 @@ function IssueWoTab() {
 
       {showIssueForm && (
       <div className="qmes-wo-issue-shell">
-      <Panel title={editingWo ? "작업지시 수정" : "신규 작업지시 발행"} right={<span className="text-xs text-slate-400">LOT No. 자동 채번: <span className="font-mono text-sky-300">{nextNo}</span></span>}>
+      <Panel title={editingWo ? "작업지시 수정" : "신규 작업지시 발행"} right={
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-400">LOT No. 자동 채번: <span className="font-mono text-sky-300">{nextNo}</span></span>
+          <button
+            type="button"
+            onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
+            className="w-7 h-7 rounded-md border border-slate-600 bg-slate-800 text-lg leading-none text-slate-300 hover:bg-slate-700 hover:text-white"
+            aria-label="작업지시 발행 화면 닫기"
+            title="닫기"
+          >
+            ×
+          </button>
+        </div>
+      }>
         <div className="qmes-wo-form-grid">
           <div className="qmes-wo-form-field">
             {label("작업구분")}
