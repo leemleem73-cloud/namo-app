@@ -12589,3 +12589,57 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
     transform:translateY(10px)!important;
   }
 }
+
+/* Source style block 194 */
+/* 작업지시서 출력 글씨와 원재료 No/상태 열 간격 최종 보정 */
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-header-meta{
+  font-size:13px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sec-title{
+  font-size:13.5px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  font-size:12.5px!important;
+  line-height:1.35!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-remarks,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sign-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sign-table td{
+  font-size:12.5px!important;
+}
+
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(1){width:8%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2){width:12%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(1),
+.qmes-wo-cert .qmes-wo-cert-material-table td:nth-child(1),
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4),
+.qmes-wo-cert .qmes-wo-cert-material-table td:nth-child(4){
+  padding-left:7px!important;
+  padding-right:7px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc-header-meta{
+    font-size:13px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-sec-title{
+    font-size:13.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table td{
+    font-size:12.5px!important;
+    line-height:1.35!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-remarks,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-sign-table th,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-sign-table td{
+    font-size:12.5px!important;
+  }
+}
