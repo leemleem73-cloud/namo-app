@@ -381,11 +381,10 @@ function WoDocTab() {
 
         <div className="qmes-iqc2-sec qmes-iqc2-first">
           <div className="qmes-iqc2-sec-title">기본정보</div>
-          <table className="qmes-iqc2-table">
+          <table className="qmes-iqc2-table qmes-wo-basic-info-table">
             <thead><tr><th>LOT No.</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
             <tbody><tr>
-              <td className="font-mono">{doc.woNo || viewingWo || "-"}</td>
-              <td className="font-mono">{sel || "-"}</td>
+              <td>{sel || doc.woNo || viewingWo || "-"}</td>
               <td>{w.item || "-"}</td>
               <td>{w.tank || "-"}</td>
               <td>{w.workers || w.worker || "-"}</td>
@@ -677,6 +676,7 @@ function IssueWoTab() {
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [issueSearch, setIssueSearch] = useState({ lot: "", item: "", date: "" });
   const [statusVersion, setStatusVersion] = useState(0);
+  const issueFormRef = React.useRef(null);
 
   const openWorkOrderPreview = (lotNo, mode = "detail") => {
     setWoPreviewMode(mode);
@@ -705,6 +705,29 @@ function IssueWoTab() {
   });
   const [planItems, setPlanItems] = useState(blankPlanItems(firstProduct));
   const [packRows, setPackRows] = useState([blankPackRow()]);
+
+  const openNewIssueForm = () => {
+    const product = form.product || firstProduct;
+    const productBom = BOM[product] || BOM[firstProduct];
+    setEditingWo(null);
+    setForm((current) => ({
+      ...current,
+      workType:productBom.workType,
+      product,
+      tank:productBom.tanks[0],
+      prodDate:"",
+      lotNo:"",
+      qty:""
+    }));
+    setPlanItems(blankPlanItems(product));
+    setPackRows([blankPackRow()]);
+    setShowIssueForm(true);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        issueFormRef.current?.scrollIntoView({ behavior:"auto", block:"start" });
+      });
+    });
+  };
 
   useEffect(() => {
     let active = true;
@@ -930,13 +953,7 @@ function IssueWoTab() {
         <h2 className="text-[22px] font-bold text-slate-100">작업지시 관리</h2>
         <button
           type="button"
-          onClick={() => {
-            setEditingWo(null);
-            setForm({ ...form, prodDate:"", lotNo:"", qty:"" });
-            setPlanItems(blankPlanItems(form.product));
-            setPackRows([blankPackRow()]);
-            setShowIssueForm(true);
-          }}
+          onClick={openNewIssueForm}
           className="qmes-iqc-new-btn"
         >
           <Plus size={16} /> 신규 발행
@@ -944,7 +961,7 @@ function IssueWoTab() {
       </div>
 
       {showIssueForm && (
-      <div className="qmes-wo-issue-shell">
+      <div ref={issueFormRef} className="qmes-wo-issue-shell">
       <Panel title={editingWo ? "작업지시 수정" : "신규 작업지시 발행"} right={
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">LOT No. 자동 채번: <span className="font-mono text-sky-300">{nextNo}</span></span>
@@ -1487,10 +1504,10 @@ function IssueWoTab() {
 
                 <div className="qmes-iqc2-sec qmes-iqc2-first">
                   <div className="qmes-iqc2-sec-title">기본정보</div>
-                  <table className="qmes-iqc2-table">
-                    <thead><tr><th>작업지시번호</th><th>LOT</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
+                  <table className="qmes-iqc2-table qmes-wo-basic-info-table">
+                    <thead><tr><th>LOT No.</th><th>제품명</th><th>설비명</th><th>작업자</th></tr></thead>
                     <tbody><tr>
-                      <td className="font-mono">{viewingWo || "-"}</td>
+                      <td>{viewingWo || "-"}</td>
                       <td>{doc.item || batch.item || "-"}</td>
                       <td>{doc.tank || batch.tank || "-"}</td>
                       <td>{doc.workers || batch.worker || "-"}</td>
