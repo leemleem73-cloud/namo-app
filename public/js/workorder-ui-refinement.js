@@ -1,6 +1,8 @@
 /* QMES work-order UI refinement
  * - force production-result entry into a centered viewport modal
  * - simplify production-result form like the partner registration form
+ * - improve production readiness guide visibility
+ * - align issued-history headers and data cells consistently
  * - remove the issued-history edit action and keep edit inside preview
  */
 (function () {
@@ -72,6 +74,14 @@
     #qmes-production-result-modal-root [role="dialog"][aria-label="생산실적 입력"] textarea:focus{
       border-color:#06b6d4!important;
     }
+    #qmes-production-result-modal-root .qmes-production-readiness-guide{
+      display:flex!important;align-items:center!important;min-height:44px!important;
+      margin:0 0 14px!important;padding:10px 12px!important;
+      border:1px solid #f59e0b!important;border-left-width:4px!important;border-radius:7px!important;
+      background:#3a2508!important;color:#fff7ed!important;
+      font-size:14px!important;font-weight:800!important;line-height:21px!important;
+      letter-spacing:-.01em!important;text-shadow:0 1px 1px rgba(0,0,0,.35)!important;
+    }
     #qmes-production-result-modal-root [role="dialog"][aria-label="생산실적 입력"]>div:last-child{
       padding:12px 16px!important;border-top:1px solid #334155!important;background:#0b1728!important;
     }
@@ -82,8 +92,57 @@
     #qmes-production-result-modal-root [role="dialog"][aria-label="생산실적 입력"]>div:last-child button:last-child{
       background:#0891b2!important;color:#fff!important;
     }
+
+    .qmes-issued-table-wrap{
+      overflow-x:auto!important;
+      scrollbar-gutter:stable!important;
+    }
+    .qmes-issued-table-v2{
+      width:100%!important;min-width:1500px!important;table-layout:fixed!important;
+      border-collapse:collapse!important;
+    }
+    .qmes-issued-table-v2 th,
+    .qmes-issued-table-v2 td{
+      box-sizing:border-box!important;
+      padding:10px 9px!important;
+      vertical-align:middle!important;
+    }
+    .qmes-issued-table-v2 thead th{
+      height:42px!important;
+      line-height:18px!important;
+      font-size:12px!important;
+      font-weight:700!important;
+      white-space:nowrap!important;
+    }
+    .qmes-issued-table-v2 tbody td{
+      height:48px!important;
+      line-height:20px!important;
+      font-size:13px!important;
+    }
+    .qmes-issued-table-v2 th:nth-child(1),.qmes-issued-table-v2 td:nth-child(1){width:130px!important}
+    .qmes-issued-table-v2 th:nth-child(2),.qmes-issued-table-v2 td:nth-child(2){width:180px!important}
+    .qmes-issued-table-v2 th:nth-child(3),.qmes-issued-table-v2 td:nth-child(3){width:175px!important}
+    .qmes-issued-table-v2 th:nth-child(4),.qmes-issued-table-v2 td:nth-child(4){width:105px!important}
+    .qmes-issued-table-v2 th:nth-child(5),.qmes-issued-table-v2 td:nth-child(5){width:105px!important}
+    .qmes-issued-table-v2 th:nth-child(6),.qmes-issued-table-v2 td:nth-child(6){width:110px!important}
+    .qmes-issued-table-v2 th:nth-child(7),.qmes-issued-table-v2 td:nth-child(7){width:110px!important}
+    .qmes-issued-table-v2 th:nth-child(8),.qmes-issued-table-v2 td:nth-child(8){width:90px!important}
+    .qmes-issued-table-v2 th:nth-child(9),.qmes-issued-table-v2 td:nth-child(9){width:150px!important}
+    .qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:105px!important}
+    .qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:240px!important}
+    .qmes-issued-table-v2 th.num,.qmes-issued-table-v2 td.num{text-align:right!important}
+    .qmes-issued-table-v2 th.center,.qmes-issued-table-v2 td.center{text-align:center!important}
+    .qmes-issued-table-v2 td:last-child{
+      white-space:nowrap!important;text-align:center!important;
+    }
+    .qmes-issued-table-v2 td:last-child .qmes-manage-btn,
+    .qmes-issued-table-v2 td:last-child .qmes-production-result-shortcut{
+      display:inline-flex!important;align-items:center!important;justify-content:center!important;
+      min-height:28px!important;margin:2px!important;vertical-align:middle!important;
+    }
     .qmes-issued-table-v2 .qmes-manage-btn.edit,
     .qmes-issued-table-v2 [data-qmes-management-edit-hidden="1"]{display:none!important}
+
     .qmes-wo-preview-edit-btn{
       display:inline-flex!important;align-items:center!important;justify-content:center!important;
       height:32px!important;padding:0 13px!important;border:1px solid rgba(14,165,233,.6)!important;
@@ -145,10 +204,22 @@
     }
   }
 
+  function markReadinessGuide(dialog) {
+    const body = dialog?.children?.[1];
+    if (!body) return;
+    Array.from(body.children).forEach((element) => {
+      const text = String(element.textContent || "").replace(/\s+/g, " ").trim();
+      if (text.includes("원재료 실투입량과 공정조건 기록이 완료된 후")) {
+        element.classList.add("qmes-production-readiness-guide");
+      }
+    });
+  }
+
   function simplifyResultModal() {
     const dialog = document.querySelector('#qmes-production-result-modal-root [role="dialog"][aria-label="생산실적 입력"]');
     if (!dialog) return;
     dialog.dataset.qmesSimpleResultForm = "1";
+    markReadinessGuide(dialog);
     const footer = dialog.lastElementChild;
     const saveButton = footer?.querySelector("button:last-child");
     if (saveButton && saveButton.textContent.trim() !== "저장 중" && saveButton.textContent.trim() !== "저장") {
