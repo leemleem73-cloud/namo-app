@@ -635,7 +635,6 @@ function CoaTab() {
   const [filters, setFilters] = useState({ date:"", lot:"", customer:"" });
   const [page, setPage] = useState(1);
   const [viewing, setViewing] = useState(null);
-  const [previewMode, setPreviewMode] = useState("detail");
   const pageSize = 10;
   const filtered = entries.filter(({ lot, coa }) => {
     const dateOk = !filters.date || String(coa.ship || "").slice(0, 10) === filters.date;
@@ -647,10 +646,7 @@ function CoaTab() {
   const safePage = Math.min(page, pageCount);
   const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
   const selected = viewing ? DB.coa?.[viewing] : null;
-  const openPreview = (lot, mode) => {
-    setViewing(lot);
-    setPreviewMode(mode);
-  };
+  const openOutput = (lot) => setViewing(lot);
   const printCoa = () => {
     const source = document.getElementById(`qmes-coa-cert-${viewing}`);
     if (source) printDoc(source);
@@ -661,7 +657,7 @@ function CoaTab() {
       <Panel title="출하성적서 발행 내역" right={<span className="text-xs text-slate-400">{filtered.length}건</span>}>
         <div className="qmes-coa-issued-note">
           <span>OQC 전 항목 합격 건은 자동으로 발행 내역에 등록됩니다.</span>
-          <em>날짜·LOT No.·고객사로 조회한 뒤 미리보기 또는 출력하세요.</em>
+          <em>날짜·LOT No.·고객사로 조회한 뒤 출력하세요.</em>
         </div>
         <div className="qmes-issued-filter qmes-coa-issued-filter">
           <div>
@@ -698,14 +694,13 @@ function CoaTab() {
                 <tr key={lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td>{coa.ship || "-"}</td>
                   <td className="font-mono">{coa.no || `COA-${lot}`}</td>
-                  <td className="font-mono"><button onClick={() => openPreview(lot, "detail")} className="text-sky-300 hover:text-sky-200 hover:underline">{lot}</button></td>
+                  <td className="font-mono"><button onClick={() => openOutput(lot)} className="text-sky-300 hover:text-sky-200 hover:underline">{lot}</button></td>
                   <td title={coa.product || "-"}>{coa.product || "-"}</td>
                   <td title={coa.customer || "-"}>{coa.customer || "-"}</td>
                   <td className="tabular-nums">{coa.qty || "-"}</td>
                   <td className="font-mono">{coa.shipNo || "-"}</td>
                   <td className="whitespace-nowrap">
-                    <button onClick={() => openPreview(lot, "detail")} className="qmes-manage-btn view">미리보기</button>
-                    <button onClick={() => openPreview(lot, "print")} className="qmes-manage-btn print">출력</button>
+                    <button onClick={() => openOutput(lot)} className="qmes-manage-btn print">출력</button>
                   </td>
                 </tr>
               ))}
@@ -729,30 +724,30 @@ function CoaTab() {
 
       {viewing && selected && (
         <div className="qmes-modal-backdrop" onClick={() => setViewing(null)}>
-          <div className={`qmes-wo-viewer qmes-coa-viewer ${previewMode === "print" ? "qmes-wo-output-preview" : "qmes-wo-detail-preview"}`} onClick={(e) => e.stopPropagation()}>
+          <div className="qmes-wo-viewer qmes-coa-viewer qmes-wo-output-preview" onClick={(e) => e.stopPropagation()}>
             <div className="qmes-wo-viewer-head">
               <div>
-                <div className="text-sm font-semibold text-slate-100">출하성적서 미리보기</div>
+                <div className="text-sm font-semibold text-slate-100">출하성적서 출력</div>
                 <div className="text-[11px] text-slate-500 mt-0.5">성적서번호 : <span className="font-mono">{selected.no || `COA-${viewing}`}</span></div>
               </div>
               <div className="flex items-center gap-2">
-                {previewMode === "print" && (
-                  <button onClick={printCoa} className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
-                    <Printer size={13} /> 인쇄
-                  </button>
-                )}
+                <button onClick={printCoa} className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
+                  <Printer size={13} /> 인쇄
+                </button>
                 <button onClick={() => setViewing(null)} className="qmes-modal-close">×</button>
               </div>
             </div>
 
-            <div id={`qmes-coa-cert-${viewing}`} className="doc-paper qmes-coa-unified-doc bg-white text-slate-900 rounded-lg p-6 shadow-xl max-w-4xl mx-auto w-full">
-              <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
-                <div>
-                  <div className="text-xl font-bold tracking-wide">출하검사 성적서</div>
-                  <div className="text-xs text-slate-500 mt-0.5">Certificate of Analysis (CoA)</div>
+            <div id={`qmes-coa-cert-${viewing}`} className="doc-paper qmes-coa-unified-doc qmes-coa-paper bg-white text-slate-900 rounded-lg p-6 shadow-xl mx-auto w-full">
+              <div className="qmes-coa-header">
+                <div className="qmes-coa-logo-wrap">
+                  <img className="qmes-coa-logo" src="./logo.png" alt="나모케미칼(주) 로고" />
                 </div>
-                <div className="text-right text-xs text-slate-600">
-                  <div className="font-bold text-slate-900 text-sm">나모케미칼㈜</div>
+                <div className="qmes-coa-title-wrap">
+                  <div className="qmes-coa-title">출하 성적서</div>
+                  <div className="qmes-coa-subtitle">Certificate of Analysis (CoA)</div>
+                </div>
+                <div className="qmes-coa-meta">
                   <div>성적서번호 : <span className="font-mono">{selected.no || `COA-${viewing}`}</span></div>
                   <div>발행일 : {selected.ship || "-"}</div>
                 </div>
@@ -780,14 +775,12 @@ function CoaTab() {
                 </tbody>
               </table>
 
-              <div className="flex items-end justify-between mt-6">
-                <div className="text-xs text-slate-500 leading-relaxed">
-                  상기 Lot은 관리계획서(NMC-C-220-01) 및 고객 사양에 따라<br />검사한 결과 전 항목 적합함을 증명합니다.
-                </div>
-                <div className="flex gap-6 text-center text-xs">
-                  <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">검사</div><div className="mt-1 text-slate-600">이수민</div></div>
-                  <div><div className="border border-slate-400 w-16 h-14 rounded flex items-end justify-center pb-1 text-slate-400">승인</div><div className="mt-1 text-slate-600">김세희</div></div>
-                </div>
+              <div className="qmes-coa-footer">
+                <div className="qmes-coa-certification">상기 LOT은 관리계획서 및 고객 사양에 따라 검사한 결과 전 항목 적합함을 증명합니다.</div>
+                <table className="qmes-coa-sign-table"><tbody>
+                  <tr><th>작성</th><th>검토</th><th>승인</th></tr>
+                  <tr><td></td><td></td><td></td></tr>
+                </tbody></table>
               </div>
             </div>
           </div>
