@@ -8,14 +8,25 @@
   style.textContent=`
     .qmes-workorder-material-clean th:first-child,
     .qmes-workorder-material-clean td:first-child{
-      box-sizing:border-box!important;width:32px!important;min-width:32px!important;max-width:32px!important;
-      padding-left:3px!important;padding-right:3px!important;white-space:nowrap!important;word-break:keep-all!important;
-      writing-mode:horizontal-tb!important;text-orientation:mixed!important;text-align:center!important;
+      box-sizing:border-box!important;width:26px!important;min-width:26px!important;max-width:26px!important;
+      padding-left:1px!important;padding-right:1px!important;white-space:nowrap!important;word-break:keep-all!important;
+      writing-mode:horizontal-tb!important;text-orientation:mixed!important;text-align:center!important;font-size:10px!important;
     }
-    .qmes-workorder-material-clean col:first-child{width:32px!important}
+    .qmes-workorder-material-clean col:first-child{width:26px!important}
+    .qmes-workorder-basic-clean{width:100%!important;table-layout:fixed!important}
+    .qmes-workorder-basic-clean th,.qmes-workorder-basic-clean td{
+      box-sizing:border-box!important;width:25%!important;text-align:center!important;vertical-align:middle!important;
+      padding-left:8px!important;padding-right:8px!important;
+    }
+    .qmes-workorder-basic-clean col{width:25%!important}
     @media print{
       .qmes-workorder-material-clean th:first-child,
-      .qmes-workorder-material-clean td:first-child{width:32px!important;min-width:32px!important;max-width:32px!important;writing-mode:horizontal-tb!important;white-space:nowrap!important}
+      .qmes-workorder-material-clean td:first-child{
+        width:26px!important;min-width:26px!important;max-width:26px!important;padding-left:1px!important;padding-right:1px!important;
+        writing-mode:horizontal-tb!important;white-space:nowrap!important;
+      }
+      .qmes-workorder-basic-clean{width:100%!important;table-layout:fixed!important}
+      .qmes-workorder-basic-clean th,.qmes-workorder-basic-clean td{width:25%!important;text-align:center!important}
     }
   `;
   document.head.appendChild(style);
@@ -23,6 +34,11 @@
   function isMaterialTable(table){
     const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th")).map(th=>clean(th.textContent)).join("|");
     return /원재료명|원료명/.test(headers)||(/LOT/.test(headers)&&/투입량|기준량|실투입/.test(headers));
+  }
+
+  function isBasicInfoTable(table){
+    const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th")).map(th=>clean(th.textContent));
+    return headers.includes("작업지시번호")&&headers.some(text=>text==="LOT"||text==="LOT No.")&&headers.includes("제품명");
   }
 
   function removePlan(root){
@@ -44,12 +60,30 @@
     });
   }
 
+  function cleanBasicInfoTable(table){
+    if(table.dataset.qmesBasicInfoCleaned!=="1"){
+      const headers=Array.from(table.querySelectorAll("thead th,tr:first-child th"));
+      const workOrderIndex=headers.findIndex(header=>clean(header.textContent)==="작업지시번호");
+      if(workOrderIndex>=0){
+        headers[workOrderIndex]?.remove();
+        table.querySelectorAll("tbody tr").forEach(row=>row.children[workOrderIndex]?.remove());
+        table.querySelector("colgroup")?.children[workOrderIndex]?.remove();
+      }
+      table.dataset.qmesBasicInfoCleaned="1";
+    }
+    table.classList.add("qmes-workorder-basic-clean");
+    Array.from(table.querySelectorAll("thead th,tr:first-child th")).forEach(header=>{
+      if(clean(header.textContent)==="LOT") header.textContent="LOT No.";
+    });
+    table.querySelectorAll("colgroup col").forEach(col=>{col.style.width="25%";});
+  }
+
   function cleanMaterialTable(table){
     table.classList.add("qmes-workorder-material-clean");
     const firstHeader=table.querySelector("thead th:first-child,tr:first-child th:first-child");
     if(firstHeader) firstHeader.textContent="NO";
     const firstCol=table.querySelector("colgroup col:first-child");
-    if(firstCol) firstCol.style.width="32px";
+    if(firstCol) firstCol.style.width="26px";
     table.querySelectorAll("small,span,div").forEach(element=>{
       const text=clean(element.textContent);
       if(text==="일반원료"||text==="중간재") element.remove();
@@ -65,7 +99,10 @@
     const roots=Array.from(document.querySelectorAll(".qmes-wo-viewer,.qmes-wo-cert,[id^='qmes-issued-cert-'],#qmes-print-root"));
     roots.forEach(root=>{
       removePlan(root);
-      root.querySelectorAll("table").forEach(table=>{if(isMaterialTable(table)) cleanMaterialTable(table);});
+      root.querySelectorAll("table").forEach(table=>{
+        if(isBasicInfoTable(table)) cleanBasicInfoTable(table);
+        if(isMaterialTable(table)) cleanMaterialTable(table);
+      });
     });
   }
 
