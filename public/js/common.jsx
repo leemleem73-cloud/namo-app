@@ -280,7 +280,8 @@ function printDoc(sourceEl) {
   const MARGIN = 8 * MM_TO_PX; /* 상하좌우 8mm 여백 */
   const availW = PAGE_W - MARGIN * 2;
   const availH = PAGE_H - MARGIN * 2;
-  const scale = Math.min(availW / rect.width, 1);
+  const centerCoaOnA4 = source.classList.contains("qmes-coa-unified-doc");
+  const scale = Math.min(availW / rect.width, centerCoaOnA4 ? availH / rect.height : 1, 1);
 
   /* 복제본을 화면 폭 그대로 두고 zoom으로 축소 → transform과 달리 실제 박스 크기가 줄어들어 인쇄 시 페이지 나눔이 정상 동작함 */
   clone.style.setProperty("width", rect.width + "px", "important");
@@ -295,9 +296,12 @@ function printDoc(sourceEl) {
   const extraTop = (source.classList.contains("qmes-iqc-doc") ||
                     source.classList.contains("qmes-pqc-doc") ||
                     source.classList.contains("qmes-oqc-doc")) ? 12 * MM_TO_PX : 0;
+  const stageTop = centerCoaOnA4
+    ? Math.max(MARGIN, (PAGE_H - rect.height * scale) / 2)
+    : MARGIN + extraTop;
   stage.style.setProperty("width", (rect.width * scale) + "px", "important");
   stage.style.setProperty("height", "auto", "important");
-  stage.style.setProperty("margin", (MARGIN + extraTop) + "px auto 0", "important");
+  stage.style.setProperty("margin", stageTop + "px auto 0", "important");
   stage.style.setProperty("overflow", "visible", "important");
   stage.appendChild(clone);
 
