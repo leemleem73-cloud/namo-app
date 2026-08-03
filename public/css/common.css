@@ -12743,36 +12743,29 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 }
 
 /* Source style block 196 */
-/* 작업지시서 영문·번호 가독성과 원재료 표 열 너비 보정 */
-.qmes-wo-cert .qmes-wo-basic-info-table th:first-child,
-.qmes-wo-cert .qmes-wo-basic-info-table td:first-child,
-.qmes-wo-cert .qmes-wo-cert-material-table th:first-child,
-.qmes-wo-cert .qmes-wo-cert-material-table td:first-child{
-  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
-  font-size:16px!important;
-  line-height:1.4!important;
-}
-.qmes-wo-cert .qmes-wo-basic-info-table th:first-child,
-.qmes-wo-cert .qmes-wo-cert-material-table th:first-child{
-  font-weight:700!important;
-}
-.qmes-wo-cert .qmes-wo-basic-info-table td:first-child,
-.qmes-wo-cert .qmes-wo-cert-material-table td:first-child{
-  font-weight:600!important;
-}
-
+/* 작업지시서 원재료 표 열 너비 보정 — 글씨는 다른 표 셀과 동일한 공통 규칙 사용 */
 .qmes-wo-cert .qmes-wo-cert-material-table{
   table-layout:fixed!important;
 }
-.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(1){width:8%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(1){width:5%!important;}
 .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2){width:17%!important;}
 .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(3){width:17%!important;}
-.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4){width:8%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4){width:7%!important;}
 .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(5){width:10%!important;}
 .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(6){width:10%!important;}
 .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(7){width:12%!important;}
-.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8){width:9%!important;}
-.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(9){width:9%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8){width:8%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(9){width:14%!important;}
+.qmes-wo-cert .qmes-wo-cert-material-table td:nth-child(9){
+  height:auto!important;
+  min-height:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:keep-all!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.4!important;
+}
 
 /* 작업지시서 로고 확대 */
 .qmes-wo-output-preview .qmes-wo-cert .qmes-wo-header{
