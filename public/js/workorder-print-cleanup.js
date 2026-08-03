@@ -97,6 +97,14 @@
     .qmes-wo-cert-material-table th:nth-child(9){width:14.125%!important;}
 
     @media print{
+      body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert{
+        position:absolute!important;
+        top:50%!important;
+        left:50%!important;
+        margin:0!important;
+        transform:translate(-50%,-50%) scale(.82)!important;
+        transform-origin:center center!important;
+      }
       .qmes-wo-cert-material-table th:first-child,
       .qmes-wo-cert-material-table td:first-child{
         width:4%!important;
