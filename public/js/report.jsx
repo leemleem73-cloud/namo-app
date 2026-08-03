@@ -651,6 +651,11 @@ function CoaTab() {
     const source = document.getElementById(`qmes-coa-cert-${viewing}`);
     if (source) printDoc(source);
   };
+  const formatShipQty = (value) => {
+    const text = String(value ?? "").trim();
+    if (!text || text === "-") return "-";
+    return `${text.replace(/\s*kg$/i, "").trim()} kg`;
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -684,7 +689,7 @@ function CoaTab() {
                 <th>LOT No.</th>
                 <th>제품명</th>
                 <th>고객사</th>
-                <th>출하수량</th>
+                <th>출하량</th>
                 <th>출하번호</th>
                 <th>관리</th>
               </tr>
@@ -697,7 +702,7 @@ function CoaTab() {
                   <td className="font-mono"><button onClick={() => openOutput(lot)} className="text-sky-300 hover:text-sky-200 hover:underline">{lot}</button></td>
                   <td title={coa.product || "-"}>{coa.product || "-"}</td>
                   <td title={coa.customer || "-"}>{coa.customer || "-"}</td>
-                  <td className="tabular-nums">{coa.qty || "-"}</td>
+                  <td className="tabular-nums">{formatShipQty(coa.qty)}</td>
                   <td className="font-mono">{coa.shipNo || "-"}</td>
                   <td className="whitespace-nowrap">
                     <button onClick={() => openOutput(lot)} className="qmes-manage-btn print">출력</button>
@@ -726,11 +731,11 @@ function CoaTab() {
         <div className="qmes-modal-backdrop" onClick={() => setViewing(null)}>
           <div className="qmes-wo-viewer qmes-coa-viewer qmes-wo-output-preview" onClick={(e) => e.stopPropagation()}>
             <div className="qmes-wo-viewer-head">
-              <div>
+              <div style={{ transform: "translateX(20px)" }}>
                 <div className="text-sm font-semibold text-slate-100">출하성적서 출력</div>
                 <div className="text-[11px] text-slate-500 mt-0.5">성적서번호 : <span className="font-mono">{selected.no || `COA-${viewing}`}</span></div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" style={{ transform: "translateX(-20px)" }}>
                 <button onClick={printCoa} className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
                   <Printer size={13} /> 인쇄
                 </button>
@@ -757,7 +762,7 @@ function CoaTab() {
                 <div className="flex justify-between"><span className="text-slate-500">고객사</span><span className="font-medium">{selected.customer || "-"}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">제품명</span><span className="font-medium">{selected.product || "-"}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">LOT No.</span><span className="font-mono font-medium">{viewing}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">수량</span><span className="font-medium tabular-nums">{selected.qty || "-"}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">출하량</span><span className="font-medium tabular-nums">{formatShipQty(selected.qty)}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">제조일</span><span className="tabular-nums">{selected.mfg || "-"}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">출하번호</span><span className="font-mono">{selected.shipNo || "-"}</span></div>
               </div>
@@ -769,7 +774,7 @@ function CoaTab() {
                     <tr key={index}>
                       <td className="tabular-nums">{index + 1}</td>
                       <td>{result.item}</td><td>{result.spec}</td><td className="tabular-nums">{result.val}</td>
-                      <td className="font-semibold text-emerald-700">{result.judge}</td>
+                      <td className={`font-semibold ${result.judge === "합격" ? "text-emerald-600" : result.judge === "불합격" ? "text-red-600" : "text-slate-600"}`}>{result.judge}</td>
                     </tr>
                   ))}
                 </tbody>
