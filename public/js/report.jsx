@@ -731,11 +731,11 @@ function CoaTab() {
         <div className="qmes-modal-backdrop" onClick={() => setViewing(null)}>
           <div className="qmes-wo-viewer qmes-coa-viewer qmes-wo-output-preview" onClick={(e) => e.stopPropagation()}>
             <div className="qmes-wo-viewer-head">
-              <div>
+              <div style={{ transform: "translateX(20px)" }}>
                 <div className="text-sm font-semibold text-slate-100">출하성적서 출력</div>
                 <div className="text-[11px] text-slate-500 mt-0.5">성적서번호 : <span className="font-mono">{selected.no || `COA-${viewing}`}</span></div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" style={{ transform: "translateX(-20px)" }}>
                 <button onClick={printCoa} className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs text-white inline-flex items-center gap-1.5">
                   <Printer size={13} /> 인쇄
                 </button>
