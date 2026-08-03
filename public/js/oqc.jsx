@@ -52,7 +52,7 @@ function OqcTab() {
     }
   };
   const schedule = () => {
-    if (scheduled) return;
+    if (scheduled || !document.querySelector(".qmes-pqc-page, .qmes-oqc-page")) return;
     scheduled = true;
     requestAnimationFrame(reorder);
   };
@@ -508,7 +508,12 @@ function OqcTab() {
           const rowText = cleanText(row.textContent);
           const lot = lotIds.find((id) => rowText.includes(id)) || cleanText(row.querySelector("td")?.textContent);
           const cell = row.querySelector("td:last-child");
-          if (!lot || !DB.woDocs?.[lot] || !cell || cell.querySelector("[data-qmes-production-result]")) return;
+          if (!lot || !DB.woDocs?.[lot] || !cell) return;
+          const existingButton = cell.querySelector("[data-qmes-production-result]");
+          if (existingButton) {
+            existingButton.textContent = resultFor(lot).totalQty != null ? "실적수정" : "실적입력";
+            return;
+          }
           const button = document.createElement("button");
           button.type = "button";
           button.dataset.qmesProductionResult = lot;
@@ -523,7 +528,7 @@ function OqcTab() {
         });
       };
       const schedule = () => {
-        if (scheduled) return;
+        if (scheduled || !document.querySelector(".qmes-wo-list-table, .qmes-issued-table-v2")) return;
         scheduled = true;
         requestAnimationFrame(enhance);
       };
