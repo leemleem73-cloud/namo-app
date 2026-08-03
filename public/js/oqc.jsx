@@ -248,7 +248,7 @@ function OqcTab() {
   let attempts = 0;
   const timer = window.setInterval(() => {
     attempts += 1;
-    if (typeof ProductionTab !== "function" || typeof WoDocTab !== "function") {
+    if (typeof ProductionTab !== "function") {
       if (attempts >= 400) window.clearInterval(timer);
       return;
     }
@@ -260,7 +260,6 @@ function OqcTab() {
     if (window.__QMES_PRODUCTION_RESULTS_INSTALLED__) return;
     window.__QMES_PRODUCTION_RESULTS_INSTALLED__ = true;
     const LegacyProductionTab = ProductionTab;
-    const LegacyWoDocTab = WoDocTab;
 
     const cleanText = (value) => String(value ?? "").trim();
     const toNumber = (value) => {
@@ -500,46 +499,57 @@ function OqcTab() {
       </Panel>;
     }
 
-    function WorkOrderResultBridge(){
-      useEffect(() => {
-        let scheduled = false;
-        const enhance = () => {
-          scheduled = false;
-          document.querySelectorAll(".qmes-wo-list-table tbody tr").forEach((row) => {
-            const lot = cleanText(row.querySelector("td")?.textContent);
-            const cell = row.querySelector("td:last-child");
-            if (!lot || !cell || cell.querySelector("[data-qmes-production-result]")) return;
-            const button = document.createElement("button");
-            button.type = "button";
-            button.dataset.qmesProductionResult = lot;
-            button.textContent = "실적입력";
-            button.className = "ml-1 rounded border border-emerald-500/50 bg-emerald-500/10 px-2 py-1 text-[11px] font-black text-emerald-300 hover:bg-emerald-500/20";
-            button.addEventListener("click", (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              document.dispatchEvent(new CustomEvent("qmes:open-production-result", {detail:{lot}}));
-            });
-            cell.appendChild(button);
+    function installWorkOrderResultButtons(){
+      let scheduled = false;
+      const enhance = () => {
+        scheduled = false;
+        const lotIds = Object.keys(DB.woDocs || {}).sort((a,b) => b.length - a.length);
+        document.querySelectorAll(".qmes-wo-list-table tbody tr, .qmes-issued-table-v2 tbody tr").forEach((row) => {
+          const rowText = cleanText(row.textContent);
+          const lot = lotIds.find((id) => rowText.includes(id)) || cleanText(row.querySelector("td")?.textContent);
+          const cell = row.querySelector("td:last-child");
+          if (!lot || !DB.woDocs?.[lot] || !cell || cell.querySelector("[data-qmes-production-result]")) return;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.qmesProductionResult = lot;
+          button.textContent = resultFor(lot).totalQty != null ? "실적수정" : "실적입력";
+          button.className = "qmes-production-result-shortcut ml-1 rounded border border-emerald-500/50 bg-emerald-500/10 px-2 py-1 text-[11px] font-black text-emerald-300 hover:bg-emerald-500/20";
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            document.dispatchEvent(new CustomEvent("qmes:open-production-result", {detail:{lot}}));
           });
-        };
-        const schedule = () => {
-          if (scheduled) return;
-          scheduled = true;
-          requestAnimationFrame(enhance);
-        };
-        schedule();
-        const observer = new MutationObserver(schedule);
-        observer.observe(document.documentElement, {childList:true, subtree:true});
-        return () => observer.disconnect();
-      }, []);
-      return null;
+          cell.appendChild(button);
+        });
+      };
+      const schedule = () => {
+        if (scheduled) return;
+        scheduled = true;
+        requestAnimationFrame(enhance);
+      };
+      schedule();
+      const observer = new MutationObserver(schedule);
+      observer.observe(document.documentElement, {childList:true, subtree:true});
+      document.addEventListener("qmes:data-updated", schedule);
     }
 
     ProductionTab = function ProductionTabWithResults(){
-      return <div className="flex flex-col gap-4"><LegacyProductionTab/><ProductionResultWorkspace/><ProductionResultController/></div>;
+      const [, setVersion] = useState(0);
+      useEffect(() => {
+        const refresh = () => setVersion((value) => value + 1);
+        document.addEventListener("qmes:data-updated", refresh);
+        return () => document.removeEventListener("qmes:data-updated", refresh);
+      }, []);
+      return <div className="flex flex-col gap-4"><LegacyProductionTab/><ProductionResultWorkspace/></div>;
     };
-    WoDocTab = function WoDocTabWithResults(){
-      return <><LegacyWoDocTab/><WorkOrderResultBridge/><ProductionResultController/></>;
-    };
+
+    installWorkOrderResultButtons();
+    let modalHost = document.getElementById("qmes-production-result-modal-root");
+    if (!modalHost) {
+      modalHost = document.createElement("div");
+      modalHost.id = "qmes-production-result-modal-root";
+      document.body.appendChild(modalHost);
+    }
+    ReactDOM.createRoot(modalHost).render(<ProductionResultController/>);
   }
 })();
