@@ -12643,3 +12643,101 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
     font-size:12.5px!important;
   }
 }
+
+/* Source style block 195 */
+/* 작업지시서를 수입·공정·출하 성적서와 같은 글꼴·크기로 통일 */
+.qmes-wo-cert,
+.qmes-wo-output-preview .qmes-wo-cert{
+  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+}
+.qmes-wo-cert .font-mono{
+  font-family:inherit!important;
+}
+.qmes-wo-cert .qmes-wo-basic-info-table{
+  table-layout:fixed!important;
+}
+.qmes-wo-cert .qmes-wo-basic-info-table th,
+.qmes-wo-cert .qmes-wo-basic-info-table td{
+  width:25%!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+  font-size:32px!important;
+  font-weight:800!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-centered-title .text-xs{
+  font-size:12.5px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc-header-meta{
+  font-size:13.5px!important;
+  line-height:1.55!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sec-title{
+  font-size:15.5px!important;
+  font-weight:800!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table th,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table td{
+  font-size:15px!important;
+  line-height:1.4!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-table thead th{
+  font-weight:700!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-remarks,
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sign-table td{
+  font-size:15px!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-sign-table th{
+  font-size:14.5px!important;
+  font-weight:700!important;
+}
+.qmes-wo-output-preview .qmes-wo-cert .qmes-iqc2-doc-footer{
+  font-size:13px!important;
+}
+
+@media print{
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert{
+    font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .font-mono{
+    font-family:inherit!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc-centered-title .text-xl{
+    font-size:32px!important;
+    font-weight:800!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc-centered-title .text-xs{
+    font-size:12.5px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc-header-meta{
+    font-size:13.5px!important;
+    line-height:1.55!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-sec-title{
+    font-size:15.5px!important;
+    font-weight:800!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table td{
+    font-size:15px!important;
+    line-height:1.4!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-table thead th{
+    font-weight:700!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-remarks,
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-sign-table td{
+    font-size:15px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-sign-table th{
+    font-size:14.5px!important;
+    font-weight:700!important;
+  }
+  body.print-doc #qmes-print-root .qmes-screen-print-copy.qmes-wo-cert .qmes-iqc2-doc-footer{
+    font-size:13px!important;
+  }
+}
