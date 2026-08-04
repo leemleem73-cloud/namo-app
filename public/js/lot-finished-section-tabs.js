@@ -11,6 +11,9 @@
   const clean=value=>String(value??"").replace(/\s+/g," ").trim();
   const titleElements=()=>Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span"))
     .filter(element=>!element.closest(`#${NAV_ID}`));
+  const titleMatches=(text,prefix)=>prefix.endsWith("—")
+    ? text.startsWith(prefix)&&text.length<=prefix.length+80
+    : text===prefix;
 
   const panelOf=element=>{
     let node=element;
@@ -19,14 +22,14 @@
       if(/rounded/.test(classes)&&/border/.test(classes)) return node;
       node=node.parentElement;
     }
-    return element?.parentElement||null;
+    return null;
   };
 
   const panelsByPrefix=prefixes=>{
     const found=[];
     titleElements().forEach(element=>{
       const text=clean(element.textContent);
-      if(!prefixes.some(prefix=>text===prefix||text.startsWith(prefix))) return;
+      if(!prefixes.some(prefix=>titleMatches(text,prefix))) return;
       const panel=panelOf(element);
       if(panel&&!found.includes(panel)) found.push(panel);
     });
