@@ -119,4 +119,22 @@
     }
   `;
   document.head.appendChild(style);
+
+  /* 출하성적서는 새 인쇄 양식을 만들기 전까지 인쇄 대상에서 완전히 제거한다. */
+  function removeCoaPrintCopy(){
+    const printRoot=document.getElementById("qmes-print-root");
+    if(!printRoot) return;
+    Array.from(printRoot.children).forEach(node=>{
+      const text=(node.textContent||"").replace(/\s+/g," ");
+      const isCoa=node.classList?.contains("qmes-coa-unified-doc") ||
+        (text.includes("Certificate of Analysis") && (text.includes("출하 성적서") || text.includes("출하검사 성적서")));
+      if(isCoa) node.remove();
+    });
+  }
+
+  const printRoot=document.getElementById("qmes-print-root");
+  if(printRoot){
+    new MutationObserver(removeCoaPrintCopy).observe(printRoot,{childList:true});
+  }
+  window.addEventListener("beforeprint",removeCoaPrintCopy);
 })();
