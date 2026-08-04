@@ -41,7 +41,6 @@
       text-align:center!important;
     }
 
-    /* 기본정보: LOT No.·제품명·설비명·작업자 4칸 균등 배치 */
     .qmes-wo-cert .qmes-wo-basic-info-table,
     [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table{
       width:100%!important;
@@ -65,7 +64,6 @@
       font-weight:700!important;
     }
 
-    /* 원재료 표: NO·1~7은 크게, 첫 열은 좁게, 줄인 폭은 나머지 열에 균등 분배 */
     .qmes-wo-cert-material-table{
       width:100%!important;
       table-layout:fixed!important;
@@ -118,41 +116,47 @@
         text-transform:uppercase!important;
         font-size:15px!important;
       }
-
-      /* 출하성적서 기본정보: 기존 고정선을 모두 해제한 뒤 인쇄용 표를 새로 구성 */
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2){
-        display:grid!important;
-        grid-template-columns:repeat(2,minmax(0,1fr))!important;
-        gap:0!important;
-        border:1px solid #94a3b8!important;
-        box-shadow:none!important;
-        background:#fff!important;
-        background-image:none!important;
-      }
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div{
-        box-sizing:border-box!important;
-        border:0!important;
-        box-shadow:none!important;
-        background-image:none!important;
-      }
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-child(odd){
-        border-right:1px solid #94a3b8!important;
-      }
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:not(:nth-last-child(-n+2)){
-        border-bottom:1px solid #94a3b8!important;
-      }
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div > span:first-child{
-        border:0!important;
-        border-right:1px solid #94a3b8!important;
-        box-shadow:none!important;
-        background-image:none!important;
-      }
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div > span:last-child{
-        border:0!important;
-        box-shadow:none!important;
-        background-image:none!important;
-      }
     }
   `;
   document.head.appendChild(style);
+
+  function applyCoaPrintBorders(root){
+    const doc=root?.matches?.(".qmes-coa-unified-doc")?root:root?.querySelector?.(".qmes-coa-unified-doc");
+    if(!doc) return;
+    const info=doc.children?.[1];
+    if(!info||info.children.length<2) return;
+    const line="#94a3b8";
+    const important=(el,prop,value)=>el?.style?.setProperty(prop,value,"important");
+
+    important(info,"display","grid");
+    important(info,"grid-template-columns","repeat(2,minmax(0,1fr))");
+    important(info,"gap","0");
+    important(info,"border",`1px solid ${line}`);
+    important(info,"box-shadow","none");
+    important(info,"background-image","none");
+
+    Array.from(info.children).forEach((cell,index,all)=>{
+      important(cell,"border","0");
+      important(cell,"box-shadow","none");
+      important(cell,"background-image","none");
+      if(index%2===0) important(cell,"border-right",`1px solid ${line}`);
+      if(index<all.length-2) important(cell,"border-bottom",`1px solid ${line}`);
+
+      const label=cell.firstElementChild;
+      const value=cell.lastElementChild;
+      important(label,"border","0");
+      important(label,"border-right",`1px solid ${line}`);
+      important(label,"box-shadow","none");
+      important(label,"background-image","none");
+      important(value,"border","0");
+      important(value,"box-shadow","none");
+      important(value,"background-image","none");
+    });
+  }
+
+  const printRoot=document.getElementById("qmes-print-root");
+  if(printRoot){
+    new MutationObserver(()=>applyCoaPrintBorders(printRoot)).observe(printRoot,{childList:true,subtree:true});
+  }
+  window.addEventListener("beforeprint",()=>applyCoaPrintBorders(printRoot));
 })();
