@@ -119,45 +119,4 @@
     }
   `;
   document.head.appendChild(style);
-
-  function applyCoaPrintBorders(root){
-    const doc=root?.matches?.(".qmes-coa-unified-doc")?root:root?.querySelector?.(".qmes-coa-unified-doc");
-    if(!doc) return;
-    const info=doc.children?.[1];
-    if(!info||info.children.length<2) return;
-    const line="#000000";
-    const important=(el,prop,value)=>el?.style?.setProperty(prop,value,"important");
-
-    important(info,"display","grid");
-    important(info,"grid-template-columns","repeat(2,minmax(0,1fr))");
-    important(info,"gap","0");
-    important(info,"border",`1px solid ${line}`);
-    important(info,"border-color",line);
-    important(info,"box-shadow","none");
-    important(info,"background-image","none");
-
-    Array.from(info.children).forEach((cell,index,all)=>{
-      important(cell,"border","0");
-      important(cell,"box-shadow","none");
-      important(cell,"background-image","none");
-      if(index%2===0) important(cell,"border-right",`1px solid ${line}`);
-      if(index<all.length-2) important(cell,"border-bottom",`1px solid ${line}`);
-
-      const label=cell.firstElementChild;
-      const value=cell.lastElementChild;
-      important(label,"border","0");
-      important(label,"border-right",`1px solid ${line}`);
-      important(label,"box-shadow","none");
-      important(label,"background-image","none");
-      important(value,"border","0");
-      important(value,"box-shadow","none");
-      important(value,"background-image","none");
-    });
-  }
-
-  const printRoot=document.getElementById("qmes-print-root");
-  if(printRoot){
-    new MutationObserver(()=>applyCoaPrintBorders(printRoot)).observe(printRoot,{childList:true,subtree:true});
-  }
-  window.addEventListener("beforeprint",()=>applyCoaPrintBorders(printRoot));
 })();
