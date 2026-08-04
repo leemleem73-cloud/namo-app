@@ -1,20 +1,23 @@
 (function(){
   "use strict";
-  if(window.__QMES_LOT_FINISHED_SECTION_TABS__) return;
-  window.__QMES_LOT_FINISHED_SECTION_TABS__=true;
-
-  const NAV_ID="qmes-lot-finished-section-tabs";
-  const STYLE_ID="qmes-lot-finished-section-tabs-style";
-  const STORAGE_KEY="qmes-lot-finished-section";
-  const VALID_KEYS=["materials","production","pqc","quality"];
-
+  const NAV_ID="qmes-lot-equipment-style-tabs";
+  const STYLE_ID="qmes-lot-equipment-style-tabs-style";
+  const STORE_KEY="qmes-lot-detail-view";
+  const ITEMS=[
+    ["materials","투입원료"],
+    ["production","생산실적"],
+    ["pqc","공정검사"],
+    ["oqc","출하검사"],
+    ["quality","부적합 이력"]
+  ];
   const clean=value=>String(value??"").replace(/\s+/g," ").trim();
-  const titleElements=()=>Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span"))
-    .filter(element=>!element.closest(`#${NAV_ID}`));
-  const titleMatches=(text,prefix)=>prefix.endsWith("—")
-    ? text.startsWith(prefix)&&text.length<=prefix.length+80
-    : text===prefix;
-
+  const allTextElements=()=>Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,h6,div,span"));
+  const exactOrStarts=(element,labels)=>{
+    const text=clean(element.textContent);
+    if(text.length>120) return false;
+    return labels.some(label=>text===label||text.startsWith(label));
+  };
+  const findTitle=labels=>allTextElements().find(element=>exactOrStarts(element,labels));
   const panelOf=element=>{
     let node=element;
     while(node&&node!==document.body){
@@ -22,208 +25,94 @@
       if(/rounded/.test(classes)&&/border/.test(classes)) return node;
       node=node.parentElement;
     }
-    return null;
+    return element?.parentElement||null;
   };
-
-  const panelsByPrefix=prefixes=>{
-    const found=[];
-    titleElements().forEach(element=>{
-      const text=clean(element.textContent);
-      if(!prefixes.some(prefix=>titleMatches(text,prefix))) return;
+  const findPanels=labels=>{
+    const panels=[];
+    allTextElements().forEach(element=>{
+      if(!exactOrStarts(element,labels)) return;
       const panel=panelOf(element);
-      if(panel&&!found.includes(panel)) found.push(panel);
+      if(panel&&!panels.includes(panel)) panels.push(panel);
     });
-    return found;
+    return panels;
   };
-
-  const activeSection=()=>{
-    try{
-      const stored=sessionStorage.getItem(STORAGE_KEY);
-      return VALID_KEYS.includes(stored)?stored:"materials";
-    }catch(_error){
-      return "materials";
-    }
+  const setVisible=(element,visible)=>{
+    if(!element) return;
+    element.dataset.qmesLotTabManaged="true";
+    element.style.setProperty("display",visible?"":"none",visible?"":"important");
+    if(visible){element.style.removeProperty("display");element.removeAttribute("aria-hidden");}
+    else element.setAttribute("aria-hidden","true");
   };
-
-  const saveSection=key=>{
-    try{sessionStorage.setItem(STORAGE_KEY,key);}
-    catch(_error){}
+  const currentKey=()=>{
+    try{return ITEMS.some(([key])=>key===sessionStorage.getItem(STORE_KEY))?sessionStorage.getItem(STORE_KEY):"materials";}
+    catch(_error){return "materials";}
   };
+  const saveKey=key=>{try{sessionStorage.setItem(STORE_KEY,key);}catch(_error){}};
 
   function installStyle(){
     if(document.getElementById(STYLE_ID)) return;
     const style=document.createElement("style");
     style.id=STYLE_ID;
     style.textContent=`
-      #${NAV_ID}{
-        box-sizing:border-box;
-        width:100%;
-        margin-top:16px;
-        padding:12px;
-        border:1px solid rgba(51,65,85,.95);
-        border-radius:12px;
-        background:rgba(15,23,42,.78);
-      }
-      #${NAV_ID} .qmes-lot-finished-section-grid{
-        display:grid;
-        grid-template-columns:repeat(4,minmax(0,1fr));
-        gap:8px;
-      }
-      #${NAV_ID} [role="button"]{
-        box-sizing:border-box;
-        display:flex;
-        min-height:46px;
-        align-items:center;
-        justify-content:center;
-        padding:10px 12px;
-        border:1px solid rgba(71,85,105,.95);
-        border-radius:9px;
-        background:#1e293b;
-        color:#94a3b8;
-        font-size:13px;
-        font-weight:800;
-        line-height:1.3;
-        text-align:center;
-        cursor:pointer;
-        user-select:none;
-        transition:border-color .12s ease,background .12s ease,color .12s ease;
-      }
-      #${NAV_ID} [role="button"]:hover,
-      #${NAV_ID} [role="button"]:focus-visible{
-        border-color:rgba(56,189,248,.75);
-        color:#e0f2fe;
-        outline:none;
-      }
-      #${NAV_ID} [role="button"].is-active{
-        border-color:#38bdf8;
-        background:rgba(14,165,233,.16);
-        color:#fff;
-        box-shadow:inset 0 0 0 1px rgba(56,189,248,.16);
-      }
-      @media(max-width:900px){
-        #${NAV_ID} .qmes-lot-finished-section-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-      }
-      @media(max-width:520px){
-        #${NAV_ID}{padding:9px;}
-        #${NAV_ID} [role="button"]{min-height:43px;padding:9px 7px;font-size:12px;}
-      }
+      #${NAV_ID}{width:100%;margin:16px 0 0;padding:0;border-bottom:1px solid #334155;}
+      #${NAV_ID} .qmes-lot-tab-row{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;}
+      #${NAV_ID} button{min-width:118px;padding:11px 16px;border:1px solid #334155;border-bottom:0;border-radius:9px 9px 0 0;background:#172033;color:#94a3b8;font-size:13px;font-weight:800;cursor:pointer;}
+      #${NAV_ID} button:hover{background:#1e293b;color:#e2e8f0;}
+      #${NAV_ID} button.is-active{background:#26364e;border-color:#475569;color:#fff;box-shadow:inset 0 3px 0 #38bdf8;}
+      @media(max-width:760px){#${NAV_ID} .qmes-lot-tab-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}#${NAV_ID} button{min-width:0;border-bottom:1px solid #334155;border-radius:8px;}}
     `;
     document.head.appendChild(style);
   }
 
-  const setVisible=(element,visible)=>{
-    if(!element) return;
-    element.dataset.qmesFinishedTabManaged="true";
-    if(visible){
-      element.style.removeProperty("display");
-      element.removeAttribute("aria-hidden");
-    }else{
-      element.style.setProperty("display","none","important");
-      element.setAttribute("aria-hidden","true");
-    }
-  };
-
-  const restoreManaged=()=>{
-    document.querySelectorAll('[data-qmes-finished-tab-managed="true"]').forEach(element=>{
-      element.style.removeProperty("display");
-      element.removeAttribute("aria-hidden");
-      delete element.dataset.qmesFinishedTabManaged;
-    });
-  };
-
   function createNav(){
     const nav=document.createElement("div");
     nav.id=NAV_ID;
-    nav.setAttribute("aria-label","완제품 LOT 상세 구간");
-
-    const grid=document.createElement("div");
-    grid.className="qmes-lot-finished-section-grid";
-    const items=[
-      ["materials","투입원료"],
-      ["production","생산실적 상세"],
-      ["pqc","공정검사(PQC)"],
-      ["quality","품질상태·부적합 이력"]
-    ];
-
-    items.forEach(([key,label])=>{
-      const item=document.createElement("div");
-      item.setAttribute("role","button");
-      item.setAttribute("tabindex","0");
-      item.dataset.section=key;
-      item.textContent=label;
-      const activate=()=>{
-        saveSection(key);
-        applyFinishedSections();
-      };
-      item.addEventListener("click",activate);
-      item.addEventListener("keydown",event=>{
-        if(event.key!=="Enter"&&event.key!==" ") return;
-        event.preventDefault();
-        activate();
-      });
-      grid.appendChild(item);
+    nav.setAttribute("aria-label","완제품 LOT 상세 메뉴");
+    const row=document.createElement("div");
+    row.className="qmes-lot-tab-row";
+    ITEMS.forEach(([key,label])=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.dataset.key=key;
+      button.textContent=label;
+      button.addEventListener("click",()=>{saveKey(key);apply();});
+      row.appendChild(button);
     });
-
-    nav.appendChild(grid);
+    nav.appendChild(row);
     return nav;
   }
 
-  function ensureNav(summaryPanel,firstDetailPanel){
-    let nav=document.getElementById(NAV_ID);
-    if(!nav) nav=createNav();
-
-    const parent=firstDetailPanel?.parentElement||summaryPanel?.parentElement;
-    if(!parent) return nav;
-    if(firstDetailPanel){
-      if(nav.parentElement!==parent||nav.nextElementSibling!==firstDetailPanel){
-        parent.insertBefore(nav,firstDetailPanel);
-      }
-    }else if(summaryPanel&&nav.previousElementSibling!==summaryPanel){
-      summaryPanel.insertAdjacentElement("afterend",nav);
-    }
-    return nav;
-  }
-
-  function applyFinishedSections(){
+  function apply(){
     installStyle();
-
-    const summaryPanels=panelsByPrefix(["완제품 LOT —"]);
-    const summaryPanel=summaryPanels[0]||null;
+    const summaryTitle=findTitle(["완제품 LOT —","완제품 LOT -","완제품 LOT –","Lot 이력 —","LOT 이력 —"]);
+    const summaryPanel=panelOf(summaryTitle);
     if(!summaryPanel){
       document.getElementById(NAV_ID)?.remove();
-      restoreManaged();
+      document.querySelectorAll('[data-qmes-lot-tab-managed="true"]').forEach(element=>setVisible(element,true));
       return;
     }
 
-    const materialPanels=panelsByPrefix(["투입 원료","중간재 연결"]);
-    const productionPanels=panelsByPrefix(["생산실적 상세 —"]);
-    const pqcPanels=panelsByPrefix(["공정검사(PQC) 결과"]);
-    const oqcPanels=panelsByPrefix(["출하검사(OQC)·출하정보 —"]);
-    const qualityPanels=panelsByPrefix(["품질 상태·부적합 이력 —"]);
-    const firstDetailPanel=[
-      ...materialPanels,...productionPanels,...pqcPanels,...oqcPanels,...qualityPanels
-    ].find(Boolean)||null;
-    const nav=ensureNav(summaryPanel,firstDetailPanel);
-    const selected=activeSection();
+    const materials=findPanels(["투입 원료","투입원료","중간재 연결","중간재 포장·잔량 추적","투입 원재료 역추적"]);
+    const production=findPanels(["생산실적 상세 —","생산실적 상세","생산실적"]);
+    const pqc=findPanels(["공정검사(PQC) 결과","공정검사(PQC)","공정검사"]);
+    const oqc=findPanels(["출하검사(OQC)·출하정보 —","출하검사(OQC)","출하검사"]);
+    const quality=findPanels(["품질 상태·부적합 이력 —","품질상태·부적합 이력","부적합 이력"]);
+    const details=[...materials,...production,...pqc,...oqc,...quality];
+    const firstDetail=details.find(Boolean);
+    let nav=document.getElementById(NAV_ID)||createNav();
+    const parent=firstDetail?.parentElement||summaryPanel.parentElement;
+    if(parent&&firstDetail&&(nav.parentElement!==parent||nav.nextElementSibling!==firstDetail)) parent.insertBefore(nav,firstDetail);
+    else if(summaryPanel&&nav.previousElementSibling!==summaryPanel) summaryPanel.insertAdjacentElement("afterend",nav);
 
-    nav?.querySelectorAll('[role="button"][data-section]').forEach(item=>{
-      const current=item.dataset.section===selected;
-      item.classList.toggle("is-active",current);
-      item.setAttribute("aria-pressed",current?"true":"false");
-    });
-
-    materialPanels.forEach(panel=>setVisible(panel,selected==="materials"));
-    productionPanels.forEach(panel=>setVisible(panel,selected==="production"));
-    pqcPanels.forEach(panel=>setVisible(panel,selected==="pqc"));
-    oqcPanels.forEach(panel=>setVisible(panel,selected==="quality"));
-    qualityPanels.forEach(panel=>setVisible(panel,selected==="quality"));
-
-    document.querySelectorAll("[data-qmes-lot-production-detail]").forEach(wrapper=>{
-      setVisible(wrapper,selected==="production"||selected==="pqc");
-      productionPanels.forEach(panel=>setVisible(panel,selected==="production"));
-      pqcPanels.forEach(panel=>setVisible(panel,selected==="pqc"));
-    });
-    document.querySelectorAll("[data-qmes-lot-oqc-shipment]").forEach(wrapper=>setVisible(wrapper,selected==="quality"));
+    const selected=currentKey();
+    nav.querySelectorAll("button[data-key]").forEach(button=>button.classList.toggle("is-active",button.dataset.key===selected));
+    materials.forEach(panel=>setVisible(panel,selected==="materials"));
+    production.forEach(panel=>setVisible(panel,selected==="production"));
+    pqc.forEach(panel=>setVisible(panel,selected==="pqc"));
+    oqc.forEach(panel=>setVisible(panel,selected==="oqc"));
+    quality.forEach(panel=>setVisible(panel,selected==="quality"));
+    document.querySelectorAll("[data-qmes-lot-production-detail]").forEach(wrapper=>setVisible(wrapper,selected==="production"||selected==="pqc"));
+    document.querySelectorAll("[data-qmes-lot-oqc-shipment]").forEach(wrapper=>setVisible(wrapper,selected==="oqc"));
     document.querySelectorAll("[data-qmes-lot-quality-hold]").forEach(wrapper=>setVisible(wrapper,selected==="quality"));
   }
 
@@ -231,30 +120,12 @@
   const schedule=()=>{
     if(scheduled) return;
     scheduled=true;
-    requestAnimationFrame(()=>{
-      scheduled=false;
-      applyFinishedSections();
-    });
+    requestAnimationFrame(()=>{scheduled=false;apply();});
   };
-
-  document.addEventListener("click",event=>{
-    const button=event.target.closest?.("button");
-    if(!button) return;
-    const text=clean(button.textContent);
-    if(text==="완제품 LOT 조회"||text==="원료 LOT 역추적"||text==="LOT 보기"){
-      setTimeout(schedule,0);
-    }
-  },true);
+  document.addEventListener("click",schedule,true);
   document.addEventListener("qmes:data-updated",schedule);
   window.addEventListener("storage",schedule);
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
-
-  let attempts=0;
-  const readyTimer=setInterval(()=>{
-    attempts+=1;
-    schedule();
-    if(document.querySelector('[data-qmes-lot-quality-hold]')||attempts>=400){
-      clearInterval(readyTimer);
-    }
-  },50);
+  setInterval(schedule,1000);
+  schedule();
 })();
