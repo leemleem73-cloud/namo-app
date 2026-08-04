@@ -88,15 +88,21 @@
   }
 }
 
-/* CoA print: restore the original bottom borders under manufacture date and shipment number. */
+/* CoA print only: restore the missing bottom line under the manufacture-date
+   and shipment-number label cells without changing the on-screen output. */
 @media print {
   body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) {
-    position: relative !important;
     border: 1px solid #000 !important;
     box-shadow: none !important;
   }
 
   body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2) {
     border-bottom: 1px solid #000 !important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2) > span:first-child,
+  body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2) > span:last-child {
+    border-bottom: 1px solid #000 !important;
+    box-sizing: border-box !important;
   }
 }
