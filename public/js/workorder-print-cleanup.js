@@ -119,9 +119,36 @@
         font-size:15px!important;
       }
 
-      /* 출하성적서 인쇄는 출력 화면의 마지막 행 테두리 상태를 그대로 사용 */
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2){
-        border-bottom:0!important;
+      /* 출하성적서 기본정보: 기존 고정선을 모두 해제한 뒤 인쇄용 표를 새로 구성 */
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2){
+        display:grid!important;
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:0!important;
+        border:1px solid #94a3b8!important;
+        box-shadow:none!important;
+        background:#fff!important;
+        background-image:none!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div{
+        box-sizing:border-box!important;
+        border:0!important;
+        box-shadow:none!important;
+        background-image:none!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-child(odd){
+        border-right:1px solid #94a3b8!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:not(:nth-last-child(-n+2)){
+        border-bottom:1px solid #94a3b8!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div > span:first-child{
+        border:0!important;
+        border-right:1px solid #94a3b8!important;
+        box-shadow:none!important;
+        background-image:none!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div > span:last-child{
+        border:0!important;
         box-shadow:none!important;
         background-image:none!important;
       }
