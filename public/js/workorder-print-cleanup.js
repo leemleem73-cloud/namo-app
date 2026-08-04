@@ -96,6 +96,12 @@
     .qmes-wo-cert-material-table th:nth-child(8){width:8.125%!important;}
     .qmes-wo-cert-material-table th:nth-child(9){width:14.125%!important;}
 
+    /* 출하성적서: 제조일·출하번호 칸을 텍스트 기준으로 직접 지정 */
+    .qmes-coa-print-bottom-cell{
+      border-bottom:1px solid #94a3b8!important;
+      box-shadow:inset 0 -1px 0 #94a3b8!important;
+    }
+
     @media print{
       body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert{
         position:absolute!important;
@@ -118,7 +124,28 @@
         text-transform:uppercase!important;
         font-size:15px!important;
       }
+      body.print-doc #qmes-print-root .qmes-coa-print-bottom-cell{
+        border-bottom:1px solid #64748b!important;
+        box-shadow:inset 0 -1px 0 #64748b!important;
+        -webkit-print-color-adjust:exact!important;
+        print-color-adjust:exact!important;
+      }
     }
   `;
   document.head.appendChild(style);
+
+  function markCoaBottomCells(root=document){
+    root.querySelectorAll?.(".qmes-coa-unified-doc").forEach(doc=>{
+      const info=doc.querySelector(":scope > div:nth-child(2)");
+      if(!info) return;
+      Array.from(info.children).forEach(cell=>{
+        const label=(cell.querySelector("span:first-child")?.textContent||"").replace(/\s+/g,"").trim();
+        if(label==="제조일"||label==="출하번호") cell.classList.add("qmes-coa-print-bottom-cell");
+      });
+    });
+  }
+
+  markCoaBottomCells();
+  new MutationObserver(()=>markCoaBottomCells()).observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener("beforeprint",()=>markCoaBottomCells(document));
 })();
