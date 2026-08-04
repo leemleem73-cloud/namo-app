@@ -17,6 +17,47 @@
     return element?.parentElement||null;
   };
 
+  const textWithoutSelf=element=>{
+    if(!element) return "";
+    const clone=element.cloneNode(true);
+    clone.querySelector("#qmes-lot-completeness-panel")?.remove();
+    return clean(clone.textContent);
+  };
+
+  const getDb=()=>{
+    try{
+      if(typeof DB!=="undefined") return DB;
+    }catch(_error){}
+    return window.DB||{};
+  };
+
+  const sameLot=(value,lotNo)=>clean(value).toUpperCase()===clean(lotNo).toUpperCase();
+
+  function shipmentEvidence(lotNo,pageText,forwardText,shipmentPanelText){
+    const db=getDb();
+    const lot=db?.lots?.[lotNo]||{};
+    const batch=(db?.batches||[]).find(row=>
+      [row?.no,row?.lot,row?.lotNo,row?.workOrder].some(value=>sameLot(value,lotNo))
+    )||{};
+    const shipment=lot?.ship||batch?.ship||{};
+    const coa=db?.coa?.[lotNo]||{};
+
+    const hasStoredShipment=Boolean(clean(
+      shipment?.shipNo||shipment?.customer||shipment?.shipDate||shipment?.date||
+      coa?.shipNo||coa?.customer||coa?.ship
+    ));
+    const panelSaysComplete=/출하상태\s*출하완료/.test(shipmentPanelText)
+      || /출하완료/.test(shipmentPanelText)&&/출하번호|출하일자|고객사/.test(shipmentPanelText);
+    const lotSaysComplete=/출하완료/.test(clean(lot?.status));
+    const legacyForwardComplete=Boolean(forwardText)
+      && !/아직 출하되지 않은|출하대기|미출하|출하차단/.test(forwardText)
+      && /고객사|출하번호|출하일/.test(forwardText);
+    const escapedLot=clean(lotNo).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    const pageSaysComplete=new RegExp(`출하검사\\(OQC\\)·출하정보 — ${escapedLot}[\\s\\S]{0,900}출하상태\\s*출하완료`).test(pageText);
+
+    return hasStoredShipment||panelSaysComplete||lotSaysComplete||legacyForwardComplete||pageSaysComplete;
+  }
+
   const toneMeta={
     complete:{label:"완료",dot:"#34d399",bg:"rgba(16,185,129,.10)",border:"rgba(16,185,129,.35)",text:"#6ee7b7"},
     review:{label:"확인 필요",dot:"#fbbf24",bg:"rgba(245,158,11,.10)",border:"rgba(245,158,11,.35)",text:"#fcd34d"},
@@ -34,26 +75,29 @@
     </div>`;
   }
 
-  function assess(root,backwardPanel,forwardPanel){
-    const pageText=clean(root.textContent);
+  function assess(lotNo,root,backwardPanel,forwardPanel,shipmentPanel){
+    const pageText=textWithoutSelf(document.body);
+    const rootText=textWithoutSelf(root);
     const backwardText=clean(backwardPanel?.textContent);
     const forwardText=clean(forwardPanel?.textContent);
+    const shipmentPanelText=clean(shipmentPanel?.textContent);
+    const combinedText=`${rootText} ${shipmentPanelText}`;
     const materialRows=backwardPanel?.querySelectorAll("tbody tr").length||0;
     const iqcReview=/미검사|검사중|불합격/.test(backwardText);
-    const hasProduction=/생산실적 상세|실투입량|양품수량|불량률/.test(pageText);
-    const productionReview=/공정기록 확인 필요|생산실적 없음|실적 미등록/.test(pageText);
-    const hasPqc=/공정검사\s*\(PQC\)|PQC 판정|최근 공정검사/.test(pageText);
-    const pqcReview=/PQC[^\n]{0,30}(미검사|미등록|불합격)|공정검사[^\n]{0,30}(없음|미등록)/.test(pageText);
-    const hasOqc=/출하검사\s*\(OQC\)|OQC 판정|성적서 확인·출력/.test(pageText);
-    const oqcReview=/OQC[^\n]{0,30}(미검사|미등록|불합격)|출하검사[^\n]{0,30}(없음|미등록)/.test(pageText);
-    const shipped=forwardText&&!/아직 출하되지 않은|출하대기|미출하/.test(forwardText);
+    const hasProduction=/생산실적 상세|실투입량|양품수량|불량률/.test(combinedText);
+    const productionReview=/공정기록 확인 필요|생산실적 없음|실적 미등록/.test(combinedText);
+    const hasPqc=/공정검사\s*\(PQC\)|PQC 판정|최근 공정검사/.test(combinedText);
+    const pqcReview=/PQC[^\n]{0,30}(미검사|미등록|불합격)|공정검사[^\n]{0,30}(없음|미등록)/.test(combinedText);
+    const hasOqc=/출하검사\s*\(OQC\)|OQC 판정|성적서 확인·출력/.test(shipmentPanelText||combinedText);
+    const oqcReview=/OQC[^\n]{0,30}(미검사|미등록|불합격)|출하검사[^\n]{0,30}(없음|미등록)/.test(shipmentPanelText||combinedText);
+    const shipped=shipmentEvidence(lotNo,pageText,forwardText,shipmentPanelText);
 
     return [
       {label:"원재료·IQC",state:materialRows===0?"pending":iqcReview?"review":"complete",detail:materialRows===0?"투입 원재료 기록이 없습니다.":iqcReview?"미검사·검사중·불합격 원료를 확인하세요.":`${materialRows}개 원재료의 수입검사 연결 완료`},
       {label:"생산실적",state:!hasProduction?"pending":productionReview?"review":"complete",detail:!hasProduction?"생산량·실투입량 기록을 입력하세요.":productionReview?"미완료 공정기록을 확인하세요.":"생산량·작업자·설비·불량 현황 연결 완료"},
       {label:"공정검사(PQC)",state:!hasPqc?"pending":pqcReview?"review":"complete",detail:!hasPqc?"공정검사 기록이 없습니다.":pqcReview?"미검사 또는 불합격 항목을 확인하세요.":"공정검사 측정값과 판정 연결 완료"},
       {label:"출하검사(OQC)",state:!hasOqc?"pending":oqcReview?"review":"complete",detail:!hasOqc?"출하검사 기록이 없습니다.":oqcReview?"미검사 또는 불합격 항목을 확인하세요.":"출하검사 결과와 성적서 연결 완료"},
-      {label:"출하정보",state:shipped?"complete":"pending",detail:shipped?"고객사·출하일·출하번호 연결 완료":"OQC 합격 후 출하정보가 표시됩니다."}
+      {label:"출하정보",state:shipped?"complete":"pending",detail:shipped?"출하번호·고객사·출하일 연결 완료":"OQC 합격 후 출하정보가 표시됩니다."}
     ];
   }
 
@@ -72,7 +116,10 @@
     const lotTitle=Array.from(root.querySelectorAll("h1,h2,h3,h4"))
       .map(element=>clean(element.textContent)).find(text=>/^Lot 이력 — /i.test(text))||"";
     const lotNo=lotTitle.replace(/^Lot 이력 — /i,"")||"선택 LOT";
-    const items=assess(root,backwardPanel,forwardPanel);
+    const shipmentTitle=Array.from(document.querySelectorAll("h1,h2,h3,h4"))
+      .find(element=>clean(element.textContent)===`출하검사(OQC)·출하정보 — ${lotNo}`);
+    const shipmentPanel=panelOf(shipmentTitle);
+    const items=assess(lotNo,root,backwardPanel,forwardPanel,shipmentPanel);
     const completeCount=items.filter(item=>item.state==="complete").length;
     const signature=JSON.stringify([lotNo,...items.map(item=>`${item.label}:${item.state}:${item.detail}`)]);
 
@@ -108,6 +155,8 @@
   };
 
   document.addEventListener("click",schedule,true);
+  document.addEventListener("qmes:data-updated",schedule);
+  window.addEventListener("storage",schedule);
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
   schedule();
 })();
