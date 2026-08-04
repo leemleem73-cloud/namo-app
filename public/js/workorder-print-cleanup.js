@@ -130,4 +130,13 @@
     lotShipmentSync.dataset.qmesLotShipmentSync="true";
     document.head.appendChild(lotShipmentSync);
   }
+
+  /* 완제품 LOT 상세를 구간별 메뉴로 분리한다. */
+  if(!document.querySelector('script[data-qmes-lot-finished-section-tabs]')){
+    const lotFinishedSectionTabs=document.createElement("script");
+    lotFinishedSectionTabs.src="./js/lot-finished-section-tabs.js?v=20260804-1";
+    lotFinishedSectionTabs.async=false;
+    lotFinishedSectionTabs.dataset.qmesLotFinishedSectionTabs="true";
+    document.head.appendChild(lotFinishedSectionTabs);
+  }
 })();
