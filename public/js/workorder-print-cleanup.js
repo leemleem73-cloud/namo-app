@@ -125,7 +125,7 @@
   /* LOT 추적 화면의 이력 완결성 점검 기능을 별도 파일로 안전하게 연결한다. */
   if(!document.querySelector('script[data-qmes-lot-completeness]')){
     const lotCompleteness=document.createElement("script");
-    lotCompleteness.src="./js/lot-trace-completeness.js?v=20260804-1";
+    lotCompleteness.src="./js/lot-trace-completeness.js?v=20260804-2";
     lotCompleteness.async=false;
     lotCompleteness.dataset.qmesLotCompleteness="true";
     document.head.appendChild(lotCompleteness);
