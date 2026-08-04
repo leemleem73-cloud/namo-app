@@ -315,7 +315,7 @@
       renderCustomerIssueNotes();
       if(changed){
         setTimeout(()=>{
-          try{document.dispatchEvent(new CustomEvent("qmes:data-updated")));}
+          try{document.dispatchEvent(new CustomEvent("qmes:data-updated"));}
           catch(_error){}
         },0);
       }
