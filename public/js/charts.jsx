@@ -1,4 +1,4 @@
-/* QMES charts + LOT trace */
+/* QMES charts + LOT trace — simple separated tabs v20260804 */
 
 function cpkGrade(cpk) {
   if (cpk >= 1.67) return { label: "우수 (≥1.67)", tone: "green" };
@@ -141,7 +141,7 @@ function SpcTab() {
           </div>
 
           <nav className="grid grid-cols-2 gap-2 rounded-xl border border-slate-700 bg-slate-900 p-2 md:grid-cols-4">
-            {tabs.map(([key, label, count]) => <button key={key} onClick={() => setDetailTab(key)} className={`rounded-lg px-3 py-3 text-sm font-black ${detailTab === key ? "bg-sky-500/20 text-sky-200 ring-1 ring-sky-400" : "bg-slate-800 text-slate-400"}`}>{label} <span className="ml-1 text-xs">{count}</span></button>)}
+            {tabs.map(([key, label, count]) => <button key={key} type="button" aria-pressed={detailTab === key} onClick={() => setDetailTab(key)} className={`rounded-lg px-3 py-3 text-sm font-black ${detailTab === key ? "bg-sky-500/20 text-sky-200 ring-1 ring-sky-400" : "bg-slate-800 text-slate-400"}`}>{label} <span className="ml-1 text-xs">({count})</span></button>)}
           </nav>
 
           {detailTab === "materials" && <Panel title="투입원료" right={<span className="text-xs text-slate-400">총 {filteredMaterials.length}건</span>}><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-sm"><thead><tr className="border-b border-slate-700 text-xs text-slate-400"><th className="py-2 text-left">원료 LOT</th><th className="text-left">품명</th><th className="text-left">공급사</th><th className="text-right">투입량</th><th className="text-left">수입검사</th></tr></thead><tbody>{filteredMaterials.map((m,i) => <tr key={`${m.lot}-${i}`} className="border-b border-slate-800"><td className="py-3 font-mono font-black text-violet-300">{m.lot || "-"}</td><td>{m.name || "-"}</td><td>{m.supplier || "-"}</td><td className="text-right">{m.qty || "-"}</td><td><Badge tone={String(m.iqc || "").includes("합격") ? "green" : "amber"}>{m.iqc || "미검사"}</Badge></td></tr>)}</tbody></table>{!filteredMaterials.length && <div className="py-8 text-center text-sm text-slate-500">해당 기간의 투입원료가 없습니다.</div>}</div></Panel>}
