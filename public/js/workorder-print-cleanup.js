@@ -139,7 +139,7 @@
         margin-top:18px!important;
       }
       body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2){
-        border-bottom:0!important;
+        border-bottom:1px solid #94a3b8!important;
       }
       body.print-doc #qmes-print-root .qmes-coa-unified-doc > table{
         margin-top:46px!important;
