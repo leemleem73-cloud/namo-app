@@ -1,5 +1,16 @@
 (function(){
   "use strict";
+  if(!document.querySelector('script[data-qmes-lot-finished-section-tabs-direct]')){
+    const script=document.createElement("script");
+    script.src="./js/lot-finished-section-tabs.js?v=20260804-4";
+    script.async=false;
+    script.dataset.qmesLotFinishedSectionTabsDirect="true";
+    document.head.appendChild(script);
+  }
+})();
+
+(function(){
+  "use strict";
   if(window.__QMES_LOT_SHIPMENT_SYNC__) return;
   window.__QMES_LOT_SHIPMENT_SYNC__=true;
 
