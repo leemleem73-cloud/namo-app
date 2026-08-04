@@ -88,11 +88,15 @@
   }
 }
 
-/* CoA print: force one continuous bottom line under manufacture date and shipment number. */
+/* CoA print: restore the original bottom borders under manufacture date and shipment number. */
 @media print {
   body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) {
     position: relative !important;
-    border-bottom: 1px solid #94a3b8 !important;
-    box-shadow: inset 0 -1px 0 #94a3b8 !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2) {
+    border-bottom: 1px solid #000 !important;
   }
 }
