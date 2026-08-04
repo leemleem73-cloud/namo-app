@@ -47,7 +47,7 @@
       }
       body.print-doc #qmes-print-root .qmes-coa-unified-doc>.qmes-coa-header{min-height:24mm!important;padding:1mm 0 5mm!important}
       body.print-doc #qmes-print-root .qmes-coa-unified-doc>.qmes-coa-header>*{transform:translateY(-2mm)!important}
-      body.print-doc #qmes-print-root .qmes-coa-unified-doc>div:nth-child(2){margin-top:5mm!important;border-bottom:0!important}
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc>div:nth-child(2){margin-top:5mm!important}
       body.print-doc #qmes-print-root .qmes-coa-unified-doc>div:nth-child(2)>div:nth-last-child(-n+2){border-bottom:1px solid #94a3b8!important}
       body.print-doc #qmes-print-root .qmes-coa-unified-doc>table{margin-top:12mm!important}
       body.print-doc #qmes-print-root .qmes-coa-footer{grid-template-columns:minmax(0,1fr) 110mm!important;gap:8mm!important;margin-top:15mm!important}
