@@ -122,12 +122,12 @@
   `;
   document.head.appendChild(style);
 
-  /* LOT 추적 화면의 이력 완결성 점검 기능을 별도 파일로 안전하게 연결한다. */
-  if(!document.querySelector('script[data-qmes-lot-completeness]')){
-    const lotCompleteness=document.createElement("script");
-    lotCompleteness.src="./js/lot-trace-completeness.js?v=20260804-2";
-    lotCompleteness.async=false;
-    lotCompleteness.dataset.qmesLotCompleteness="true";
-    document.head.appendChild(lotCompleteness);
+  /* LOT 추적의 실제 출하상태 연동과 중복 화면 정리를 연결한다. */
+  if(!document.querySelector('script[data-qmes-lot-shipment-sync]')){
+    const lotShipmentSync=document.createElement("script");
+    lotShipmentSync.src="./js/lot-shipment-sync.js?v=20260804-1";
+    lotShipmentSync.async=false;
+    lotShipmentSync.dataset.qmesLotShipmentSync="true";
+    document.head.appendChild(lotShipmentSync);
   }
 })();
