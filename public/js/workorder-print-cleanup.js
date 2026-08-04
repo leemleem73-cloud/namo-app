@@ -119,29 +119,13 @@
         font-size:15px!important;
       }
 
-      /* 출하성적서: 브라우저 인쇄 화면에서만 제조일·출하번호 하단선 표시 */
-      body.print-doc #qmes-print-root .qmes-coa-print-bottom-cell{
-        border-bottom:1px solid #64748b!important;
-        box-shadow:inset 0 -1px 0 #64748b!important;
-        -webkit-print-color-adjust:exact!important;
-        print-color-adjust:exact!important;
+      /* 출하성적서 인쇄는 출력 화면의 마지막 행 테두리 상태를 그대로 사용 */
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2){
+        border-bottom:0!important;
+        box-shadow:none!important;
+        background-image:none!important;
       }
     }
   `;
   document.head.appendChild(style);
-
-  function markCoaBottomCells(root=document){
-    root.querySelectorAll?.(".qmes-coa-unified-doc").forEach(doc=>{
-      const info=doc.querySelector(":scope > div:nth-child(2)");
-      if(!info) return;
-      Array.from(info.children).forEach(cell=>{
-        const label=(cell.querySelector("span:first-child")?.textContent||"").replace(/\s+/g,"").trim();
-        if(label==="제조일"||label==="출하번호") cell.classList.add("qmes-coa-print-bottom-cell");
-      });
-    });
-  }
-
-  markCoaBottomCells();
-  new MutationObserver(()=>markCoaBottomCells()).observe(document.documentElement,{childList:true,subtree:true});
-  window.addEventListener("beforeprint",()=>markCoaBottomCells(document));
 })();
