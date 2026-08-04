@@ -4,12 +4,15 @@
   window.__QMES_LOT_SHIPMENT_SYNC__=true;
 
   const clean=value=>String(value??"").replace(/\s+/g," ").trim();
+  const compact=value=>clean(value).replace(/[\s·\-_/()[\]{}:：]/g,"").toLowerCase();
   const lotKey=value=>clean(value).toUpperCase();
   const holdLike=value=>/홀드|격리|차단/.test(clean(value));
   const first=(...values)=>values.map(clean).find(Boolean)||"";
   const sameLot=(value,lotNo)=>lotKey(value)===lotKey(lotNo);
   const dateKey=row=>[
-    row?.shipDate,row?.shipmentDate,row?.outDate,row?.deliveryDate,row?.date,row?.time
+    row?.shipDate,row?.shipmentDate,row?.outDate,row?.deliveryDate,
+    row?.receivedDate,row?.receiptDate,row?.claimDate,row?.returnDate,
+    row?.date,row?.createdAt,row?.updatedAt,row?.time
   ].map(clean).join(" ");
 
   const getDb=()=>{
@@ -169,17 +172,135 @@
     return null;
   };
 
+  const findExactText=text=>Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span"))
+    .find(element=>clean(element.textContent)===text);
+
   function removeDuplicatePanels(){
     document.getElementById("qmes-lot-completeness-panel")?.remove();
 
-    const legacyTitle=Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span"))
-      .find(element=>clean(element.textContent)==="출하 정보 (Forward Trace)");
+    const legacyTitle=findExactText("출하 정보 (Forward Trace)");
     const legacyPanel=panelOf(legacyTitle);
     if(legacyPanel){
       legacyPanel.style.display="none";
       legacyPanel.setAttribute("aria-hidden","true");
       legacyPanel.dataset.qmesDuplicateHidden="true";
     }
+  }
+
+  const SECTION_BUTTONS=["투입원료","생산실적","공정검사","출하정보"];
+  const isSectionButton=button=>{
+    const text=compact(button?.textContent);
+    return SECTION_BUTTONS.some(label=>text===label||text.startsWith(label));
+  };
+
+  function removeTraceSectionButtons(){
+    const traceTitle=findExactText("LOT 통합 추적");
+    const tracePanel=panelOf(traceTitle);
+    const traceRoot=tracePanel?.parentElement||tracePanel;
+    if(!traceRoot) return;
+
+    const hiddenButtons=[];
+    traceRoot.querySelectorAll("button").forEach(button=>{
+      if(!isSectionButton(button)) return;
+      button.hidden=true;
+      button.style.setProperty("display","none","important");
+      button.setAttribute("aria-hidden","true");
+      button.dataset.qmesLotSectionHidden="true";
+      hiddenButtons.push(button);
+    });
+
+    hiddenButtons.forEach(button=>{
+      const parent=button.parentElement;
+      if(!parent||parent===traceRoot) return;
+      const directButtons=Array.from(parent.children).filter(child=>child.tagName==="BUTTON");
+      const otherContent=Array.from(parent.children).some(child=>
+        child.tagName!=="BUTTON"&&(child.matches?.("input,select,textarea,table")||clean(child.textContent))
+      );
+      if(directButtons.length&&!otherContent&&directButtons.every(isSectionButton)){
+        parent.style.setProperty("display","none","important");
+        parent.setAttribute("aria-hidden","true");
+        parent.dataset.qmesLotSectionGroupHidden="true";
+      }
+    });
+  }
+
+  const CUSTOMER_STORE_KEYS=[
+    "complaints","customerComplaints","customerClaims","claims","cc",
+    "returns","returnRecords","recalls","customerIssues"
+  ];
+
+  const toRows=value=>{
+    if(Array.isArray(value)) return value;
+    if(value&&typeof value==="object") return Object.values(value);
+    return [];
+  };
+
+  const recordLots=record=>{
+    const arrayFields=["affectedLots","relatedLots","lots","lotList","targetLots","returnLots"];
+    return Array.from(new Set([
+      record?.lot,record?.lotNo,record?.productLot,record?.sourceLot,
+      record?.targetLot,record?.affectedLot,record?.batch,record?.batchNo,
+      record?.returnLot,record?.shipmentLot,
+      ...arrayFields.flatMap(key=>Array.isArray(record?.[key])?record[key]:[])
+    ].map(lotKey).filter(Boolean)));
+  };
+
+  function customerIssueRows(db){
+    return CUSTOMER_STORE_KEYS.flatMap(key=>
+      toRows(db?.[key]).map(row=>({...row,__qmesSource:key}))
+    );
+  }
+
+  function renderCustomerIssueNotes(){
+    const db=getDb();
+    if(!db) return;
+    const rows=customerIssueRows(db);
+
+    document.querySelectorAll("[data-qmes-lot-quality-hold]").forEach(wrapper=>{
+      const lotNo=lotKey(wrapper.dataset.qmesLotQualityHold);
+      const matched=rows
+        .filter(row=>recordLots(row).includes(lotNo))
+        .sort((a,b)=>dateKey(b).localeCompare(dateKey(a)));
+      let note=wrapper.querySelector(".qmes-lot-customer-issue-note");
+
+      if(!matched.length){
+        note?.remove();
+        return;
+      }
+
+      const latest=matched[0]||{};
+      const status=first(
+        latest.status,latest.state,latest.result,latest.progress,latest.disposition
+      )||"확인 필요";
+      const issueNo=first(
+        latest.no,latest.id,latest.claimNo,latest.complaintNo,latest.returnNo
+      );
+      const customer=first(
+        latest.customer,latest.client,latest.company,latest.partner
+      );
+
+      if(!note){
+        note=document.createElement("div");
+        note.className="qmes-lot-customer-issue-note";
+        wrapper.appendChild(note);
+      }
+      note.style.cssText="box-sizing:border-box;margin-top:10px;padding:10px 12px;border:1px solid rgba(244,63,94,.38);border-radius:8px;background:rgba(244,63,94,.08);font-size:12px;line-height:1.55;color:#cbd5e1";
+      note.replaceChildren();
+
+      const title=document.createElement("div");
+      title.style.cssText="font-weight:800;color:#fda4af";
+      title.textContent=`고객불만·반품 이력 ${matched.length}건`;
+
+      const detail=document.createElement("div");
+      detail.style.cssText="margin-top:3px;color:#94a3b8";
+      detail.textContent=[
+        issueNo?`최근 번호 ${issueNo}`:"",
+        customer?`고객사 ${customer}`:"",
+        `상태 ${status}`
+      ].filter(Boolean).join(" · ");
+
+      note.append(title,detail);
+    });
   }
 
   let scheduled=false;
@@ -190,6 +311,8 @@
       scheduled=false;
       const changed=syncShipmentData();
       removeDuplicatePanels();
+      removeTraceSectionButtons();
+      renderCustomerIssueNotes();
       if(changed){
         setTimeout(()=>{
           try{document.dispatchEvent(new CustomEvent("qmes:data-updated"));}
