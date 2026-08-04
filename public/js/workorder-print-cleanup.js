@@ -125,13 +125,14 @@
     if(!doc) return;
     const info=doc.children?.[1];
     if(!info||info.children.length<2) return;
-    const line="#94a3b8";
+    const line="#000000";
     const important=(el,prop,value)=>el?.style?.setProperty(prop,value,"important");
 
     important(info,"display","grid");
     important(info,"grid-template-columns","repeat(2,minmax(0,1fr))");
     important(info,"gap","0");
     important(info,"border",`1px solid ${line}`);
+    important(info,"border-color",line);
     important(info,"box-shadow","none");
     important(info,"background-image","none");
 
