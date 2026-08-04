@@ -12,6 +12,12 @@
   top: -8px !important;
 }
 
+/* LOT trace: the new tabbed detail is followed by legacy production/PQC blocks.
+   Keep the selected tab detail only and suppress every stale sibling appended after it. */
+.flex.flex-col.gap-4:has(> nav > button:nth-child(4)) > nav + div ~ * {
+  display: none !important;
+}
+
 /* Work order: keep the printed header aligned with the on-screen preview. */
 @media print {
   body.print-doc #qmes-print-root > .doc-paper.qmes-iqc-doc.qmes-wo-cert,
@@ -48,7 +54,7 @@
   }
 
   body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc-centered-title .text-xl,
-  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-iqc-centered-title .text-xl {
+  body.print-doc #qmes-print-root .qmes-screen-print-copy .qmes-wo-cert .qmes-iqc-centered-title .text-xl {
     top: -11px !important;
   }
 }
