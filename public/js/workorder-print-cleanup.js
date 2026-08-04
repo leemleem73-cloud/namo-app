@@ -116,6 +116,45 @@
         text-transform:uppercase!important;
         font-size:15px!important;
       }
+
+      /* 출하성적서: 출력 버튼 화면의 크기·간격·테두리를 그대로 인쇄 복제본에 사용 */
+      body.print-doc #qmes-print-root > .qmes-coa-unified-doc,
+      body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-coa-unified-doc{
+        box-sizing:border-box!important;
+        width:960px!important;
+        max-width:calc(100% - 32px)!important;
+        min-height:auto!important;
+        margin:16px auto!important;
+        padding:34px 38px!important;
+        box-shadow:none!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > .qmes-coa-header{
+        min-height:88px!important;
+        padding:4px 0 16px!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > .qmes-coa-header > *{
+        transform:translateY(-8px)!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2){
+        margin-top:18px!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(-n+2){
+        border-bottom:0!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-unified-doc > table{
+        margin-top:46px!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-footer{
+        grid-template-columns:minmax(0,1fr) 470px!important;
+        gap:34px!important;
+        margin-top:56px!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-sign-table{
+        width:470px!important;
+      }
+      body.print-doc #qmes-print-root .qmes-coa-sign-table td{
+        height:96px!important;
+      }
     }
   `;
   document.head.appendChild(style);
