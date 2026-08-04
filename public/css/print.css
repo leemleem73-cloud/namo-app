@@ -87,3 +87,16 @@
     transform-origin: left center !important;
   }
 }
+
+/* CoA print: add the bottom line only beneath the manufacturing-date cell. */
+@media print {
+  body.print-doc #qmes-print-root > .doc-paper.qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(2),
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.doc-paper.qmes-coa-unified-doc > div:nth-child(2) > div:nth-last-child(2) {
+    border-bottom: 1px solid #94a3b8 !important;
+  }
+
+  body.print-doc #qmes-print-root > .doc-paper.qmes-coa-unified-doc > div:nth-child(2) > div:last-child,
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.doc-paper.qmes-coa-unified-doc > div:nth-child(2) > div:last-child {
+    border-bottom: 0 !important;
+  }
+}
