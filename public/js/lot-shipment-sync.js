@@ -74,11 +74,18 @@
       representative.shipmentStatus,representative.shipStatus,representative.status
     ].map(clean).join(" ");
     const explicitComplete=/출하완료|출고완료|납품완료|배송완료/.test(statusText);
-    const hasShipment=Boolean(
-      explicitComplete||shipDate||
-      (customer&&(shipNo||qty!=null))||
-      (coa.ship&&coa.customer)
-    );
+    const storedShipment=Boolean(first(
+      current.shipNo,current.customer,current.shipDate,current.date,
+      batchShip.shipNo,batchShip.customer,batchShip.shipDate,batchShip.date,
+      coa.shipNo,coa.customer,coa.ship
+    ));
+    const oqcShipment=Boolean(first(
+      representative.shipDate,representative.shipmentDate,
+      representative.outDate,representative.deliveryDate
+    ))||/출하완료|출고완료|납품완료|배송완료/.test([
+      representative.shipmentStatus,representative.shipStatus,representative.status
+    ].map(clean).join(" "));
+    const hasShipment=explicitComplete||storedShipment||oqcShipment;
 
     if(!hasShipment) return null;
 
