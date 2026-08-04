@@ -12,9 +12,12 @@
   top: -8px !important;
 }
 
-/* LOT trace: the new tabbed detail is followed by legacy production/PQC blocks.
-   Keep the selected tab detail only and suppress every stale sibling appended after it. */
-.flex.flex-col.gap-4:has(> nav > button:nth-child(4)) > nav + div ~ * {
+/* LOT trace: current React tabs already render materials, production, inspection,
+   and shipment independently. Suppress only the legacy wrappers injected by the
+   older shipment/detail synchronization script. */
+[data-qmes-lot-production-detail],
+[data-qmes-lot-oqc-shipment],
+[data-qmes-lot-quality-hold] {
   display: none !important;
 }
 
