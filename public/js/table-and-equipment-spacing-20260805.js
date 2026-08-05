@@ -41,12 +41,16 @@
       justify-content:center!important;
     }
 
+    /* 고객사/공급업체 제목+검색+등록 행 */
+    .qmes-partner-header-card{margin-bottom:20px!important;}
     .qmes-partner-header-row{
       display:flex!important;
       align-items:center!important;
       justify-content:space-between!important;
       gap:16px!important;
       min-height:52px!important;
+      padding-top:8px!important;
+      padding-bottom:8px!important;
     }
     .qmes-partner-header-actions{
       display:flex!important;
@@ -56,6 +60,7 @@
       margin-left:auto!important;
       width:auto!important;
     }
+    .qmes-partner-header-actions>button{align-self:center!important;margin-top:0!important;margin-bottom:0!important;}
     .qmes-partner-search-row{
       display:flex!important;
       align-items:center!important;
@@ -91,14 +96,18 @@
     .qmes-partner-search-button svg{width:17px!important;height:17px!important;pointer-events:none!important;}
     .qmes-partner-old-search-card{display:none!important;}
 
-    /* 설비대장 현황 위 중복 테두리선 제거 */
-    .qmes-equipment-register-panel{
+    /* 설비 현황 상단에 겹쳐 보이는 중복 선 제거 */
+    .qmes-equipment-register-panel,
+    .qmes-equipment-register-header,
+    .qmes-equipment-table-wrap,
+    .qmes-equipment-table-wrap>table,
+    .qmes-equipment-table-wrap>div:first-child{
       border-top:0!important;
       box-shadow:none!important;
     }
-    .qmes-equipment-register-header{
-      border-top:0!important;
-    }
+    .qmes-equipment-register-panel::before,
+    .qmes-equipment-register-header::before,
+    .qmes-equipment-table-wrap::before{display:none!important;content:none!important;}
 
     .qmes-ncr-action-pair{
       display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
@@ -128,8 +137,29 @@
     const headerTop=header.getBoundingClientRect().top;
     return Array.from(document.querySelectorAll(selector)).find(input=>{
       const rect=input.getBoundingClientRect();
-      return rect.top<headerTop&&headerTop-rect.bottom>=0&&headerTop-rect.bottom<320;
+      return rect.top<headerTop&&headerTop-rect.bottom>=0&&headerTop-rect.bottom<420;
     });
+  }
+
+  function makeSearchButton(searchRow,searchInput){
+    let button=Array.from(searchRow.querySelectorAll("button")).find(btn=>/검색/.test(clean(btn.textContent))||btn.getAttribute("aria-label")==="검색");
+    if(!button){
+      button=document.createElement("button");
+      button.type="button";
+      button.addEventListener("click",()=>{
+        const form=searchInput.closest("form");
+        if(form?.requestSubmit){form.requestSubmit();return;}
+        searchInput.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",code:"Enter",bubbles:true}));
+        searchInput.dispatchEvent(new KeyboardEvent("keyup",{key:"Enter",code:"Enter",bubbles:true}));
+        searchInput.dispatchEvent(new Event("change",{bubbles:true}));
+      });
+      searchRow.appendChild(button);
+    }
+    button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>';
+    button.setAttribute("aria-label","검색");
+    button.setAttribute("title","검색");
+    button.classList.add("qmes-partner-search-button");
+    return button;
   }
 
   function movePartnerSearch(){
@@ -138,8 +168,10 @@
       {title:"공급업체 목록",register:"공급업체 등록"}
     ].forEach(cfg=>{
       const titleEl=texts().find(el=>clean(el.textContent)===cfg.title);
+      if(!titleEl) return;
       const panel=panelOf(titleEl);
-      if(!titleEl||!panel) return;
+      if(!panel) return;
+      panel.classList.add("qmes-partner-header-card");
       panel.querySelectorAll("table").forEach(table=>table.classList.add("qmes-partner-centered-table"));
 
       const header=findHeader(titleEl,cfg.register,panel);
@@ -154,8 +186,9 @@
       }
 
       const registerButton=Array.from(header.querySelectorAll("button")).find(btn=>clean(btn.textContent)===cfg.register);
-      const searchInput=findSearchInput(header);
-      if(!searchInput||searchInput.dataset.qmesMovedPartnerSearch==="true") return;
+      let searchInput=header.querySelector('input[type="search"],input[placeholder*="검색"],input[placeholder*="고객사명"],input[placeholder*="공급업체명"],input[placeholder*="원료명"],input[placeholder*="LOT"]');
+      if(!searchInput) searchInput=findSearchInput(header);
+      if(!searchInput) return;
 
       let searchRow=searchInput.parentElement;
       while(searchRow&&searchRow!==document.body){
@@ -173,14 +206,7 @@
       }
 
       searchRow.classList.add("qmes-partner-search-row");
-      let searchButton=Array.from(searchRow.querySelectorAll("button")).find(btn=>/검색/.test(clean(btn.textContent)));
-      if(searchButton){
-        searchButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>';
-        searchButton.setAttribute("aria-label","검색");
-        searchButton.setAttribute("title","검색");
-        searchButton.classList.add("qmes-partner-search-button");
-      }
-
+      makeSearchButton(searchRow,searchInput);
       actions.appendChild(searchRow);
       if(registerButton) actions.appendChild(registerButton);
       searchInput.dataset.qmesMovedPartnerSearch="true";
@@ -195,11 +221,17 @@
       const panel=panelOf(el);
       if(!panel) return;
       panel.classList.add("qmes-equipment-register-panel");
-      panel.querySelectorAll("table").forEach(table=>table.classList.add("qmes-equipment-centered-table"));
+      panel.querySelectorAll("table").forEach(table=>{
+        table.classList.add("qmes-equipment-centered-table");
+        const wrap=table.parentElement;
+        if(wrap) wrap.classList.add("qmes-equipment-table-wrap");
+      });
       let header=el.parentElement;
       while(header&&header!==panel){
         if(header.querySelector("button")){
           header.classList.add("qmes-equipment-register-header");
+          const next=header.nextElementSibling;
+          if(next) next.classList.add("qmes-equipment-table-wrap");
           break;
         }
         header=header.parentElement;
