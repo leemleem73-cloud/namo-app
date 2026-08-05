@@ -41,7 +41,6 @@
       text-align:center!important;
     }
 
-    /* 기본정보: LOT No.·제품명·설비명·작업자 4칸 균등 배치 */
     .qmes-wo-cert .qmes-wo-basic-info-table,
     [id^="qmes-issued-cert-"] .qmes-wo-basic-info-table{
       width:100%!important;
@@ -65,7 +64,6 @@
       font-weight:700!important;
     }
 
-    /* 원재료 표: NO·1~7은 크게, 첫 열은 좁게, 줄인 폭은 나머지 열에 균등 분배 */
     .qmes-wo-cert-material-table{
       width:100%!important;
       table-layout:fixed!important;
@@ -121,4 +119,12 @@
     }
   `;
   document.head.appendChild(style);
+
+  if(!document.querySelector('script[data-qmes-lot-shipment-status-sync]')){
+    const script=document.createElement("script");
+    script.src="./js/lot-shipment-status-sync.js?v=20260805-1";
+    script.async=false;
+    script.dataset.qmesLotShipmentStatusSync="true";
+    document.head.appendChild(script);
+  }
 })();
