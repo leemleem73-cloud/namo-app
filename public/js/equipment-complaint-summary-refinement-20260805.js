@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V7__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V7__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V8__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V8__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v7-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v8-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -31,86 +31,53 @@
       gap:12px!important;
       align-items:stretch!important;
     }
-    .qmes-complaint-outer-removed{
+
+    /* 창 자체는 유지하고 보라색 테두리와 장식만 제거한다. */
+    .qmes-complaint-card-frame{
       width:100%!important;
       min-width:0!important;
       max-width:none!important;
-      height:auto!important;
-      min-height:0!important;
-      margin:0!important;
-      padding:0!important;
-      border:0!important;
+      box-sizing:border-box!important;
+      border-color:#2c4058!important;
       outline:0!important;
-      border-radius:0!important;
-      background:transparent!important;
-      background-color:transparent!important;
       background-image:none!important;
       box-shadow:none!important;
-      filter:none!important;
       clip-path:none!important;
       mask:none!important;
       -webkit-mask:none!important;
-      overflow:visible!important;
     }
-    .qmes-complaint-outer-removed::before,
-    .qmes-complaint-outer-removed::after{
+    .qmes-complaint-card-frame::before,
+    .qmes-complaint-card-frame::after{
       content:none!important;
       display:none!important;
       border:0!important;
       background:none!important;
-      box-shadow:none!important;
-    }
-    .qmes-complaint-outer-removed > svg,
-    .qmes-complaint-outer-removed > img,
-    .qmes-complaint-outer-removed > [role="img"],
-    .qmes-complaint-outer-removed > [class*="icon" i],
-    .qmes-complaint-outer-removed > [class*="alert" i],
-    .qmes-complaint-outer-removed > div:has(> svg):not(.qmes-complaint-inner-kept),
-    .qmes-complaint-outer-removed > span:has(> svg):not(.qmes-complaint-inner-kept){
-      display:none!important;
-    }
-    .qmes-complaint-inner-kept{
-      position:relative!important;
-      inset:auto!important;
-      width:100%!important;
-      max-width:none!important;
-      min-width:0!important;
-      min-height:68px!important;
-      margin:0!important;
-      padding:7px 14px!important;
-      box-sizing:border-box!important;
-      display:flex!important;
-      flex-direction:column!important;
-      align-items:center!important;
-      justify-content:center!important;
-      gap:2px!important;
-      border:1px solid #2c4058!important;
-      border-radius:8px!important;
-      background:#111f33!important;
       background-image:none!important;
       box-shadow:none!important;
       clip-path:none!important;
-      transform:none!important;
-      overflow:hidden!important;
-      color:#fff!important;
-      text-align:center!important;
     }
-    .qmes-complaint-inner-kept::before,
-    .qmes-complaint-inner-kept::after{
-      content:none!important;
+    .qmes-complaint-card-frame > svg,
+    .qmes-complaint-card-frame > img,
+    .qmes-complaint-card-frame > [role="img"],
+    .qmes-complaint-card-frame > [class*="icon" i],
+    .qmes-complaint-card-frame > [class*="alert" i],
+    .qmes-complaint-card-frame .qmes-complaint-decoration-hide{
       display:none!important;
     }
-    .qmes-complaint-inner-kept,
-    .qmes-complaint-inner-kept *{
-      color:#fff!important;
+
+    .qmes-complaint-content-kept,
+    .qmes-complaint-content-kept *{
       text-align:center!important;
       text-align-last:center!important;
     }
-    .qmes-complaint-inner-kept svg,
-    .qmes-complaint-inner-kept img,
-    .qmes-complaint-inner-kept [role="img"],
-    .qmes-complaint-inner-kept [class*="icon" i]{
+    .qmes-complaint-content-kept::before,
+    .qmes-complaint-content-kept::after{
+      content:none!important;
       display:none!important;
+      border:0!important;
+      background:none!important;
+      background-image:none!important;
+      box-shadow:none!important;
     }
 
     .qmes-ncr-content-font,
@@ -155,47 +122,57 @@
     return /rounded|border|card|panel/i.test(classes)||parseFloat(css.borderTopWidth)>0||parseFloat(css.borderRadius)>0;
   }
 
-  function findInner(labelNode){
+  function findContent(labelNode){
     let node=labelNode?.parentElement;
     while(node&&node!==document.body){
       const rect=node.getBoundingClientRect();
       const text=clean(node.textContent);
-      if(text.length<150&&rect.width>=80&&rect.height>=28&&rect.height<=160&&isCardLike(node)) return node;
+      if(text.length<150&&rect.width>=80&&rect.height>=28&&rect.height<=180&&isCardLike(node)) return node;
       node=node.parentElement;
     }
     return labelNode?.parentElement||null;
   }
 
-  function findOuter(inner,label){
-    let node=inner?.parentElement;
+  function findFrame(content,label){
+    let node=content?.parentElement;
     while(node&&node!==document.body){
       const rect=node.getBoundingClientRect();
       const text=clean(node.textContent);
       const includesOther=complaintLabels.some(other=>other!==label&&text.includes(other));
-      if(!includesOther&&text.length<240&&rect.width>=inner.getBoundingClientRect().width&&rect.height>=inner.getBoundingClientRect().height&&isCardLike(node)) return node;
+      if(!includesOther&&text.length<260&&rect.width>=content.getBoundingClientRect().width&&rect.height>=content.getBoundingClientRect().height&&isCardLike(node)) return node;
       node=node.parentElement;
     }
-    return null;
+    return content;
   }
 
-  function simplifyCard(label){
+  function markComplaintCard(label){
     const labelNode=findLabel(label);
-    const inner=findInner(labelNode);
-    const outer=findOuter(inner,label);
-    if(!labelNode||!inner||!outer||inner===outer) return null;
+    const content=findContent(labelNode);
+    const frame=findFrame(content,label);
+    if(!labelNode||!content||!frame) return null;
 
-    inner.classList.add("qmes-complaint-inner-kept");
-    outer.classList.add("qmes-complaint-outer-removed");
+    frame.classList.add("qmes-complaint-card-frame");
+    content.classList.add("qmes-complaint-content-kept");
 
-    Array.from(outer.children).forEach(child=>{
-      if(child===inner||child.contains(inner)||inner.contains(child)) return;
+    frame.querySelectorAll("svg,img,[role='img'],[class*='icon' i],[class*='alert' i]").forEach(element=>{
+      if(element.closest("button,input,select,textarea")) return;
+      element.classList.add("qmes-complaint-decoration-hide");
+      element.setAttribute("aria-hidden","true");
+    });
+
+    Array.from(frame.children).forEach(child=>{
+      if(child===content||child.contains(content)||content.contains(child)) return;
       const text=clean(child.textContent);
-      if(!text||child.querySelector?.("svg,img")||/^[!⚠❗]+$/.test(text)){
-        child.style.setProperty("display","none","important");
+      const css=getComputedStyle(child);
+      const hasIcon=Boolean(child.querySelector?.("svg,img,[role='img']"));
+      const decorativeShape=(parseFloat(css.width)<=80&&parseFloat(css.height)<=80&&!text);
+      if(hasIcon||decorativeShape||/^[!⚠❗]+$/.test(text)){
+        child.classList.add("qmes-complaint-decoration-hide");
         child.setAttribute("aria-hidden","true");
       }
     });
-    return outer;
+
+    return frame;
   }
 
   function commonParent(cards){
@@ -209,9 +186,8 @@
   }
 
   function markComplaint(){
-    const bodyText=clean(document.body.textContent);
-    if(!bodyText.includes("초동 회신 준수율")) return;
-    const cards=complaintLabels.map(simplifyCard).filter(Boolean);
+    if(!clean(document.body.textContent).includes("초동 회신 준수율")) return;
+    const cards=complaintLabels.map(markComplaintCard).filter(Boolean);
     if(cards.length!==4) return;
     const row=commonParent(cards);
     if(row) row.classList.add("qmes-complaint-summary-row-clean");
@@ -243,12 +219,9 @@
     const scope=findNcrScope();
     if(!reference||!scope) return;
     const css=getComputedStyle(reference);
-    const size=css.fontSize||"14px";
-    const weight=css.fontWeight||"500";
-    const family=css.fontFamily||"inherit";
-    scope.style.setProperty("--qmes-ncr-font-size",size);
-    scope.style.setProperty("--qmes-ncr-font-weight",weight);
-    scope.style.setProperty("--qmes-ncr-font-family",family);
+    scope.style.setProperty("--qmes-ncr-font-size",css.fontSize||"14px");
+    scope.style.setProperty("--qmes-ncr-font-weight",css.fontWeight||"500");
+    scope.style.setProperty("--qmes-ncr-font-family",css.fontFamily||"inherit");
     scope.querySelectorAll("tbody td,[role='rowgroup'] [role='cell'],input,select,textarea,button").forEach(element=>element.classList.add("qmes-ncr-content-font"));
   }
 
