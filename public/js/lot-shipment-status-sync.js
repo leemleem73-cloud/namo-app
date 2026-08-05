@@ -30,7 +30,7 @@
   }
   if(!document.querySelector('script[data-qmes-equipment-layout-refinement-20260805]')){
     const script=document.createElement("script");
-    script.src="./js/equipment-layout-refinement-20260805.js?v=20260805-2";
+    script.src="./js/equipment-layout-refinement-20260805.js?v=20260805-3";
     script.async=false;
     script.dataset.qmesEquipmentLayoutRefinement20260805="true";
     document.head.appendChild(script);
