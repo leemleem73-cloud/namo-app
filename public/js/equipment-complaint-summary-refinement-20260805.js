@@ -29,12 +29,18 @@
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
+      gap:6px!important;
+      min-height:138px!important;
+      padding:16px!important;
       text-align:center!important;
       border:0!important;
+      border-radius:10px!important;
       outline:0!important;
       background:#0f1e32!important;
-      box-shadow:none!important;
       background-image:none!important;
+      box-shadow:none!important;
+      clip-path:none!important;
+      overflow:hidden!important;
     }
     .qmes-complaint-summary-card::before,
     .qmes-complaint-summary-card::after{
@@ -44,6 +50,7 @@
       outline:0!important;
       background:none!important;
       box-shadow:none!important;
+      clip-path:none!important;
     }
     .qmes-complaint-summary-card,
     .qmes-complaint-summary-card *{
@@ -52,6 +59,12 @@
       justify-content:center!important;
     }
     .qmes-complaint-summary-card *{color:#ffffff!important;}
+    .qmes-complaint-summary-card > *{
+      position:static!important;
+      margin-left:auto!important;
+      margin-right:auto!important;
+      transform:none!important;
+    }
     .qmes-complaint-summary-card svg,
     .qmes-complaint-summary-card img,
     .qmes-complaint-summary-card [role="img"],
@@ -89,57 +102,59 @@
     });
   }
 
-  function complaintSummaryScope(){
-    const anchor=exactNodes(document,"초동 회신 준수율")[0];
-    if(!anchor) return null;
-    let scope=anchor.parentElement;
-    while(scope&&scope!==document.body){
-      const text=clean(scope.textContent);
-      const hasReceived=text.includes("당월 접수");
-      const hasProgress=text.includes("진행중")||text.includes("진행 중");
-      const hasDone=text.includes("완료");
-      const hasReply=text.includes("초동 회신 준수율");
-      const rect=scope.getBoundingClientRect();
-      if(hasReceived&&hasProgress&&hasDone&&hasReply&&rect.height<500) return scope;
-      scope=scope.parentElement;
+  function complaintLabelNode(prefix){
+    return elements(document).find(el=>{
+      const text=clean(el.textContent);
+      return text===prefix||text.startsWith(prefix+" ")||text.startsWith(prefix+"(")||text.startsWith(prefix+" (");
+    });
+  }
+
+  function findComplaintCard(labelNode){
+    let current=labelNode;
+    while(current&&current!==document.body){
+      const rect=current.getBoundingClientRect();
+      const css=getComputedStyle(current);
+      const text=clean(current.textContent);
+      const visualCard=css.backgroundColor!=="rgba(0, 0, 0, 0)"||css.clipPath!=="none"||parseFloat(css.borderTopWidth)>0;
+      if(text&&visualCard&&rect.width>=220&&rect.width<=520&&rect.height>=100&&rect.height<=230) return current;
+      current=current.parentElement;
     }
     return null;
   }
 
   function hideComplaintDecorations(card){
-    card.querySelectorAll("svg,img,[role='img'],[class*='icon'],[class*='Icon']").forEach(node=>{
-      node.classList.add("qmes-complaint-decoration");
-    });
-    Array.from(card.children).forEach(child=>{
+    card.querySelectorAll("svg,img,[role='img'],[class*='icon'],[class*='Icon']").forEach(node=>node.classList.add("qmes-complaint-decoration"));
+    Array.from(card.querySelectorAll("div,span")).forEach(child=>{
+      if(child===card) return;
       const text=clean(child.textContent);
       const css=getComputedStyle(child);
       const rect=child.getBoundingClientRect();
-      const decorative=!text&&(
-        css.position==="absolute"||
-        parseFloat(css.borderLeftWidth)>0||
-        parseFloat(css.borderRightWidth)>0||
-        parseFloat(css.borderTopWidth)>0||
-        parseFloat(css.borderBottomWidth)>0
-      )&&rect.width<100&&rect.height<100;
-      if(decorative) child.classList.add("qmes-complaint-decoration");
+      const smallDecoration=!text&&rect.width<=130&&rect.height<=130&&(
+        css.position==="absolute"||css.clipPath!=="none"||
+        parseFloat(css.borderLeftWidth)>0||parseFloat(css.borderRightWidth)>0||
+        parseFloat(css.borderTopWidth)>0||parseFloat(css.borderBottomWidth)>0||
+        css.backgroundImage!=="none"
+      );
+      if(smallDecoration) child.classList.add("qmes-complaint-decoration");
     });
   }
 
   function markComplaintOnly(){
-    document.querySelectorAll(".qmes-complaint-summary-card,.qmes-summary-simple-card").forEach(card=>{
-      card.classList.remove("qmes-complaint-summary-card","qmes-summary-simple-card");
-    });
+    document.querySelectorAll(".qmes-complaint-summary-card").forEach(card=>card.classList.remove("qmes-complaint-summary-card"));
 
-    const scope=complaintSummaryScope();
-    if(!scope) return;
-    ["당월 접수","진행중","진행 중","완료","초동 회신 준수율"].forEach(label=>{
-      exactNodes(scope,label).forEach(el=>{
-        const card=nearestCard(el,scope.parentElement||document.body);
-        if(card&&scope.contains(card)){
-          card.classList.add("qmes-complaint-summary-card");
-          hideComplaintDecorations(card);
-        }
-      });
+    const labels=["당월 접수","진행중","완료","초동 회신 준수율"];
+    const nodes=labels.map(complaintLabelNode);
+    if(nodes.some(node=>!node)) return;
+
+    const cards=nodes.map(findComplaintCard);
+    if(cards.some(card=>!card)) return;
+
+    const unique=[...new Set(cards)];
+    if(unique.length!==4) return;
+
+    unique.forEach(card=>{
+      card.classList.add("qmes-complaint-summary-card");
+      hideComplaintDecorations(card);
     });
   }
 
