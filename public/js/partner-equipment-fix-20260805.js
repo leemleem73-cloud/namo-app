@@ -78,7 +78,8 @@
   }
 
   function fixEquipmentLine(){
-    all().filter(el=>clean(el.textContent)==="설비대장 현황").forEach(title=>{
+    const targetTitles=["설비대장 현황","정기점검 현황","정기점검·교정 현황","고장·수리 현황","고장수리 현황","고장·수리 이력"];
+    all().filter(el=>targetTitles.includes(clean(el.textContent))).forEach(title=>{
       let panel=title;
       while(panel&&panel!==document.body){
         const cls=String(panel.className||"");
@@ -89,7 +90,6 @@
 
       const panelTop=panel.getBoundingClientRect().top;
 
-      /* 카드 바로 위 형제 또는 얇은 빈 노드 제거 */
       let level=panel;
       for(let depth=0;depth<5&&level&&level!==document.body;depth+=1){
         const prev=level.previousElementSibling;
