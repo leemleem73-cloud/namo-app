@@ -1,5 +1,16 @@
 (function(){
   "use strict";
+  if(!document.querySelector('script[data-qmes-ui-refinement-20260805]')){
+    const script=document.createElement("script");
+    script.src="./js/qmes-ui-refinement-20260805.js?v=20260805-3";
+    script.async=false;
+    script.dataset.qmesUiRefinement20260805="true";
+    document.head.appendChild(script);
+  }
+})();
+
+(function(){
+  "use strict";
   if(window.__QMES_LOT_SHIPMENT_STATUS_SYNC__) return;
   window.__QMES_LOT_SHIPMENT_STATUS_SYNC__=true;
 
