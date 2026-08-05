@@ -31,10 +31,11 @@
       margin-left:auto!important;margin-right:auto!important;text-align:center!important;text-align-last:center!important;
     }
 
-    /* 검색창 아래 목록과의 간격을 확실히 유지 */
-    .qmes-partner-search-row{margin-bottom:22px!important;}
-    .qmes-partner-table-spaced{margin-top:22px!important;}
-    .qmes-partner-table-wrap-spaced{padding-top:22px!important;}
+    /* 고객사/공급업체 큰 제목칸과 바로 아래 검색창 사이 간격 */
+    .qmes-partner-header-spaced{margin-bottom:20px!important;}
+    .qmes-partner-search-row{margin-top:0!important;margin-bottom:0!important;}
+    .qmes-partner-table-spaced{margin-top:0!important;}
+    .qmes-partner-table-wrap-spaced{padding-top:0!important;}
 
     .qmes-ncr-action-pair{
       display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
@@ -49,27 +50,31 @@
   document.head.appendChild(style);
 
   function markPartnerTables(){
-    const titles=["고객사 목록","공급업체 목록"];
-    allText().forEach(element=>{
-      if(!titles.includes(clean(element.textContent))) return;
-      const panel=panelOf(element);
-      if(!panel) return;
-      const table=panel.querySelector("table");
-      if(table){
-        table.classList.add("qmes-partner-centered-table","qmes-partner-table-spaced");
-        const wrap=table.parentElement;
-        if(wrap&&wrap!==panel) wrap.classList.add("qmes-partner-table-wrap-spaced");
-      }
+    const configs=[
+      {title:"고객사 목록",button:"고객사 등록"},
+      {title:"공급업체 목록",button:"공급업체 등록"}
+    ];
 
-      const searchInput=panel.querySelector('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객"], input[placeholder*="공급"]');
-      if(searchInput){
-        let row=searchInput.parentElement;
-        while(row&&row.parentElement!==panel&&row.parentElement){
-          if(row.nextElementSibling&&(row.nextElementSibling.matches?.("table")||row.nextElementSibling.querySelector?.("table"))) break;
-          row=row.parentElement;
+    configs.forEach(({title,button})=>{
+      allText().forEach(element=>{
+        if(clean(element.textContent)!==title) return;
+        const panel=panelOf(element);
+        if(!panel) return;
+
+        const table=panel.querySelector("table");
+        if(table) table.classList.add("qmes-partner-centered-table");
+
+        /* 제목과 등록 버튼을 함께 감싸는 상단 큰 칸을 찾아 아래 여백 적용 */
+        let header=element.parentElement;
+        while(header&&header!==panel){
+          const hasRegister=Array.from(header.querySelectorAll("button")).some(btn=>clean(btn.textContent)===button);
+          if(hasRegister){
+            header.classList.add("qmes-partner-header-spaced");
+            break;
+          }
+          header=header.parentElement;
         }
-        row?.classList.add("qmes-partner-search-row");
-      }
+      });
     });
   }
 
