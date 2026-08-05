@@ -17,21 +17,31 @@
 
     .qmes-complaint-iqc-card{
       position:relative!important;display:flex!important;flex-direction:column!important;
-      align-items:center!important;justify-content:center!important;gap:3px!important;
-      min-height:82px!important;height:82px!important;padding:8px 14px!important;box-sizing:border-box!important;
+      align-items:center!important;justify-content:center!important;gap:2px!important;
+      min-height:72px!important;height:72px!important;padding:6px 12px!important;box-sizing:border-box!important;
       border:1px solid #24364d!important;border-left:1px solid #24364d!important;
+      border-right:1px solid #24364d!important;border-top:1px solid #24364d!important;border-bottom:1px solid #24364d!important;
       border-radius:8px!important;outline:0!important;
       background:#0f1e32!important;background-color:#0f1e32!important;background-image:none!important;
       box-shadow:none!important;clip-path:none!important;filter:none!important;overflow:hidden!important;
     }
-    .qmes-complaint-iqc-card::before,.qmes-complaint-iqc-card::after{
-      display:none!important;content:none!important;border:0!important;background:none!important;
-      box-shadow:none!important;clip-path:none!important;filter:none!important;
+    .qmes-complaint-iqc-card::before,.qmes-complaint-iqc-card::after,
+    .qmes-complaint-iqc-card *::before,.qmes-complaint-iqc-card *::after{
+      display:none!important;content:none!important;border:0!important;outline:0!important;
+      background:none!important;background-image:none!important;box-shadow:none!important;
+      clip-path:none!important;filter:none!important;
     }
     .qmes-complaint-iqc-card,.qmes-complaint-iqc-card *{
       color:#fff!important;text-align:center!important;text-align-last:center!important;justify-content:center!important;
+      border-color:transparent!important;background-image:none!important;box-shadow:none!important;clip-path:none!important;filter:none!important;
     }
-    .qmes-complaint-iqc-card> *{position:static!important;margin-left:auto!important;margin-right:auto!important;transform:none!important;}
+    .qmes-complaint-iqc-card{
+      border:1px solid #24364d!important;background:#0f1e32!important;
+    }
+    .qmes-complaint-iqc-card> *{
+      position:static!important;margin-left:auto!important;margin-right:auto!important;transform:none!important;
+      background:transparent!important;background-color:transparent!important;background-image:none!important;
+    }
     .qmes-complaint-iqc-card svg,.qmes-complaint-iqc-card img,.qmes-complaint-iqc-card [role="img"],
     .qmes-complaint-iqc-card [class*="icon"],.qmes-complaint-iqc-card [class*="Icon"],
     .qmes-complaint-iqc-card .qmes-complaint-hide{display:none!important;}
@@ -66,37 +76,41 @@
       const r=node.getBoundingClientRect();
       const text=clean(node.textContent);
       const otherLabels=labels.filter(x=>x!==label).filter(x=>text.includes(x));
-      if(r.width>=240&&r.width<=600&&r.height>=90&&r.height<=240&&otherLabels.length===0) return node;
+      if(r.width>=240&&r.width<=600&&r.height>=70&&r.height<=240&&otherLabels.length===0) return node;
       node=node.parentElement;
     }
     return null;
   }
 
   function simplify(card){
-    /* 원본 위치 정보가 살아 있을 때 장식부터 식별한다. */
     card.querySelectorAll("svg,img,[role='img'],[class*='icon'],[class*='Icon']").forEach(el=>el.classList.add("qmes-complaint-hide"));
-    Array.from(card.querySelectorAll("div,span,i,b")).forEach(el=>{
+
+    Array.from(card.querySelectorAll("div,span,i,b,small")).forEach(el=>{
       if(el===card) return;
       const r=el.getBoundingClientRect();
       const css=getComputedStyle(el);
       const text=clean(el.textContent);
       const absolute=css.position==="absolute"||css.position==="fixed";
-      const thinLine=r.width<=12||r.height<=12;
-      const cornerShape=r.width<=90&&r.height<=90;
-      const visual=css.clipPath!=="none"||css.backgroundImage!=="none"||
+      const decorative=!text&&(
+        absolute||r.width<=150||r.height<=18||css.clipPath!=="none"||css.backgroundImage!=="none"||
         parseFloat(css.borderTopWidth)>0||parseFloat(css.borderRightWidth)>0||
-        parseFloat(css.borderBottomWidth)>0||parseFloat(css.borderLeftWidth)>0;
-      if((absolute&&(thinLine||cornerShape)&&visual)||(!text&&thinLine&&visual)){
-        el.classList.add("qmes-complaint-hide");
+        parseFloat(css.borderBottomWidth)>0||parseFloat(css.borderLeftWidth)>0
+      );
+      if(decorative) el.classList.add("qmes-complaint-hide");
+      else {
+        el.style.setProperty("background","transparent","important");
+        el.style.setProperty("background-image","none","important");
+        el.style.setProperty("box-shadow","none","important");
+        el.style.setProperty("clip-path","none","important");
+        el.style.setProperty("border-color","transparent","important");
       }
     });
 
     card.classList.add("qmes-complaint-iqc-card");
-    card.style.setProperty("height","82px","important");
-    card.style.setProperty("min-height","82px","important");
-    card.style.setProperty("padding","8px 14px","important");
+    card.style.setProperty("height","72px","important");
+    card.style.setProperty("min-height","72px","important");
+    card.style.setProperty("padding","6px 12px","important");
     card.style.setProperty("border","1px solid #24364d","important");
-    card.style.setProperty("border-left","1px solid #24364d","important");
     card.style.setProperty("background","#0f1e32","important");
     card.style.setProperty("background-image","none","important");
     card.style.setProperty("clip-path","none","important");
