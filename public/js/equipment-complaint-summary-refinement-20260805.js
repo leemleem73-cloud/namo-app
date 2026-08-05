@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V10__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V10__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V11__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V11__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v10-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v11-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -35,36 +35,38 @@
     .qmes-complaint-card-frame,
     .qmes-complaint-card-frame:hover,
     .qmes-complaint-card-frame:focus,
-    .qmes-complaint-card-frame:focus-within,
-    .qmes-complaint-card-frame *{
+    .qmes-complaint-card-frame:focus-within{
       box-sizing:border-box!important;
-      border:0!important;
-      border-color:transparent!important;
+      width:100%!important;
+      min-width:0!important;
+      min-height:88px!important;
+      height:88px!important;
+      max-height:88px!important;
+      margin:0!important;
+      padding:10px 12px!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+      justify-content:center!important;
+      overflow:visible!important;
+      border:1px solid rgba(71,85,105,.72)!important;
+      border-radius:10px!important;
       outline:0!important;
-      background:transparent!important;
-      background-color:transparent!important;
+      background:#0f1d31!important;
       background-image:none!important;
       box-shadow:none!important;
       filter:none!important;
       transform:none!important;
       transition:none!important;
-    }
-    .qmes-complaint-card-frame{
-      width:100%!important;
-      min-width:0!important;
-      max-width:none!important;
-      height:72px!important;
-      min-height:72px!important;
-      max-height:72px!important;
-      display:flex!important;
-      flex-direction:column!important;
-      align-items:center!important;
-      justify-content:center!important;
-      padding:8px 10px!important;
-      margin:0!important;
-      overflow:hidden!important;
-      color:#fff!important;
       cursor:default!important;
+    }
+    .qmes-complaint-card-frame:hover,
+    .qmes-complaint-card-frame:focus,
+    .qmes-complaint-card-frame:focus-within{
+      border-color:rgba(71,85,105,.72)!important;
+      background:#0f1d31!important;
+      box-shadow:none!important;
+      transform:none!important;
     }
     .qmes-complaint-card-frame::before,
     .qmes-complaint-card-frame::after,
@@ -81,35 +83,70 @@
     .qmes-complaint-decoration-hide{
       display:none!important;
     }
-    .qmes-complaint-content-kept,
-    .qmes-complaint-content-kept:hover,
-    .qmes-complaint-content-kept *{
+
+    .qmes-complaint-content-kept{
       width:100%!important;
       min-width:0!important;
+      min-height:64px!important;
+      margin:0!important;
+      padding:0!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+      justify-content:center!important;
+      gap:5px!important;
+      overflow:visible!important;
+      color:#fff!important;
+      text-align:center!important;
+      text-align-last:center!important;
+      transform:none!important;
+    }
+    .qmes-complaint-content-kept *{
       margin:0!important;
       padding:0!important;
       color:#fff!important;
       text-align:center!important;
       text-align-last:center!important;
-      line-height:1.2!important;
       transform:none!important;
+      overflow:visible!important;
     }
-    .qmes-complaint-content-kept{
-      height:56px!important;
-      min-height:56px!important;
-      max-height:56px!important;
-      display:flex!important;
-      flex-direction:column!important;
-      align-items:center!important;
-      justify-content:center!important;
-      gap:4px!important;
-    }
-    .qmes-complaint-content-kept>div,
-    .qmes-complaint-content-kept>span{
-      display:flex!important;
-      align-items:center!important;
-      justify-content:center!important;
+    .qmes-complaint-label{
+      width:100%!important;
       min-height:18px!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      font-size:12px!important;
+      font-weight:600!important;
+      line-height:18px!important;
+      white-space:nowrap!important;
+    }
+    .qmes-complaint-value-row{
+      width:100%!important;
+      min-height:28px!important;
+      display:flex!important;
+      flex-direction:row!important;
+      align-items:baseline!important;
+      justify-content:center!important;
+      gap:3px!important;
+      font-size:20px!important;
+      font-weight:800!important;
+      line-height:28px!important;
+      white-space:nowrap!important;
+    }
+    .qmes-complaint-value-row *{
+      display:inline!important;
+      width:auto!important;
+      min-width:0!important;
+      min-height:0!important;
+      font-size:inherit!important;
+      line-height:inherit!important;
+      white-space:nowrap!important;
+    }
+    .qmes-complaint-value-row span:last-child{
+      font-size:12px!important;
+      font-weight:500!important;
+      line-height:18px!important;
     }
 
     .qmes-ncr-content-font,
@@ -185,13 +222,11 @@
 
     frame.classList.add("qmes-complaint-card-frame");
     content.classList.add("qmes-complaint-content-kept");
-    labelNode.style.setProperty("margin","0","important");
-    labelNode.style.setProperty("padding","0","important");
-    labelNode.style.setProperty("line-height","18px","important");
-    labelNode.style.setProperty("min-height","18px","important");
-    labelNode.style.setProperty("display","flex","important");
-    labelNode.style.setProperty("align-items","center","important");
-    labelNode.style.setProperty("justify-content","center","important");
+    labelNode.classList.add("qmes-complaint-label");
+
+    const valueCandidates=Array.from(content.children).filter(child=>child!==labelNode&&!child.contains(labelNode));
+    const valueRow=valueCandidates.find(child=>/\d|—/.test(clean(child.textContent)))||valueCandidates[valueCandidates.length-1];
+    if(valueRow) valueRow.classList.add("qmes-complaint-value-row");
 
     frame.querySelectorAll("svg,img,[role='img'],[class*='icon' i],[class*='alert' i]").forEach(element=>{
       element.classList.add("qmes-complaint-decoration-hide");
@@ -253,9 +288,8 @@
   let queued=false;
   function apply(){queued=false;markEquipment();markComplaint();unifyNcrTypography();}
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(apply));}
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
+  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
   document.addEventListener("click",schedule,true);
-  document.addEventListener("mousemove",schedule,{passive:true});
   document.addEventListener("qmes:data-updated",schedule);
   window.addEventListener("resize",schedule);
   window.addEventListener("load",schedule);
