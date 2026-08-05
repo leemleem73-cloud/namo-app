@@ -37,7 +37,7 @@
   }
   if(!document.querySelector('script[data-qmes-partner-equipment-fix-20260805]')){
     const script=document.createElement("script");
-    script.src="./js/partner-equipment-fix-20260805.js?v=20260805-1";
+    script.src="./js/partner-equipment-fix-20260805.js?v=20260805-2";
     script.async=false;
     script.dataset.qmesPartnerEquipmentFix20260805="true";
     document.head.appendChild(script);
