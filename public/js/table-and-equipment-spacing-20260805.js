@@ -44,6 +44,15 @@
       text-align-last:center!important;
     }
 
+    /* 거래처 검색창과 하단 목록 표 사이 간격 통일 */
+    .qmes-partner-search-row{
+      margin-bottom:18px!important;
+    }
+    .qmes-partner-search-row + table,
+    .qmes-partner-search-row + div:has(table){
+      margin-top:0!important;
+    }
+
     /* 부적합 관리 버튼 두 개를 같은 줄에 가까이 배치 */
     .qmes-ncr-action-pair{
       display:inline-flex!important;
@@ -72,8 +81,20 @@
     allText().forEach(element=>{
       if(!titles.includes(clean(element.textContent))) return;
       const panel=panelOf(element);
-      const table=panel?.querySelector("table");
+      if(!panel) return;
+      const table=panel.querySelector("table");
       if(table) table.classList.add("qmes-partner-centered-table");
+
+      const searchInput=panel.querySelector('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객"], input[placeholder*="공급"]');
+      if(searchInput){
+        let row=searchInput.parentElement;
+        while(row&&row.parentElement!==panel&&row.parentElement){
+          const next=row.nextElementSibling;
+          if(next&&(next.matches?.("table")||next.querySelector?.("table"))) break;
+          row=row.parentElement;
+        }
+        row?.classList.add("qmes-partner-search-row");
+      }
     });
   }
 
