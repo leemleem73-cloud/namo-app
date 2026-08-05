@@ -17,9 +17,10 @@
 
     .qmes-complaint-iqc-card{
       position:relative!important;display:flex!important;flex-direction:column!important;
-      align-items:center!important;justify-content:center!important;gap:6px!important;
-      min-height:118px!important;padding:16px!important;box-sizing:border-box!important;
-      border:1px solid #24364d!important;border-radius:10px!important;outline:0!important;
+      align-items:center!important;justify-content:center!important;gap:3px!important;
+      min-height:82px!important;height:82px!important;padding:8px 14px!important;box-sizing:border-box!important;
+      border:1px solid #24364d!important;border-left:1px solid #24364d!important;
+      border-radius:8px!important;outline:0!important;
       background:#0f1e32!important;background-color:#0f1e32!important;background-image:none!important;
       box-shadow:none!important;clip-path:none!important;filter:none!important;overflow:hidden!important;
     }
@@ -56,11 +57,10 @@
     return text===label;
   }
 
-  function findLabel(label){
-    return all().find(el=>labelMatch(clean(el.textContent),label));
-  }
+  function findLabel(label){return all().find(el=>labelMatch(clean(el.textContent),label));}
 
   function findCard(labelNode,label){
+    if(!labelNode) return null;
     let node=labelNode;
     while(node&&node!==document.body){
       const r=node.getBoundingClientRect();
@@ -73,33 +73,40 @@
   }
 
   function simplify(card){
-    card.classList.add("qmes-complaint-iqc-card");
-    card.style.setProperty("border","1px solid #24364d","important");
-    card.style.setProperty("background","#0f1e32","important");
-    card.style.setProperty("background-image","none","important");
-    card.style.setProperty("clip-path","none","important");
-    card.style.setProperty("box-shadow","none","important");
-
+    /* 원본 위치 정보가 살아 있을 때 장식부터 식별한다. */
     card.querySelectorAll("svg,img,[role='img'],[class*='icon'],[class*='Icon']").forEach(el=>el.classList.add("qmes-complaint-hide"));
-    Array.from(card.querySelectorAll("div,span,i")).forEach(el=>{
+    Array.from(card.querySelectorAll("div,span,i,b")).forEach(el=>{
       if(el===card) return;
       const r=el.getBoundingClientRect();
       const css=getComputedStyle(el);
       const text=clean(el.textContent);
-      const decorative=!text&&r.width<=150&&r.height<=150&&(
-        css.position==="absolute"||css.clipPath!=="none"||css.backgroundImage!=="none"||
+      const absolute=css.position==="absolute"||css.position==="fixed";
+      const thinLine=r.width<=12||r.height<=12;
+      const cornerShape=r.width<=90&&r.height<=90;
+      const visual=css.clipPath!=="none"||css.backgroundImage!=="none"||
         parseFloat(css.borderTopWidth)>0||parseFloat(css.borderRightWidth)>0||
-        parseFloat(css.borderBottomWidth)>0||parseFloat(css.borderLeftWidth)>0
-      );
-      if(decorative) el.classList.add("qmes-complaint-hide");
+        parseFloat(css.borderBottomWidth)>0||parseFloat(css.borderLeftWidth)>0;
+      if((absolute&&(thinLine||cornerShape)&&visual)||(!text&&thinLine&&visual)){
+        el.classList.add("qmes-complaint-hide");
+      }
     });
+
+    card.classList.add("qmes-complaint-iqc-card");
+    card.style.setProperty("height","82px","important");
+    card.style.setProperty("min-height","82px","important");
+    card.style.setProperty("padding","8px 14px","important");
+    card.style.setProperty("border","1px solid #24364d","important");
+    card.style.setProperty("border-left","1px solid #24364d","important");
+    card.style.setProperty("background","#0f1e32","important");
+    card.style.setProperty("background-image","none","important");
+    card.style.setProperty("clip-path","none","important");
+    card.style.setProperty("box-shadow","none","important");
   }
 
   function markComplaint(){
     const bodyText=clean(document.body.textContent);
     if(!bodyText.includes("고객불만 접수")||!bodyText.includes("초동 회신 준수율")) return;
 
-    document.querySelectorAll(".qmes-complaint-iqc-card").forEach(el=>el.classList.remove("qmes-complaint-iqc-card"));
     const cards=labels.map(label=>findCard(findLabel(label),label));
     if(cards.some(card=>!card)||new Set(cards).size!==4) return;
     cards.forEach(simplify);
