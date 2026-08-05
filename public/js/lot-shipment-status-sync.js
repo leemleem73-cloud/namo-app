@@ -23,14 +23,14 @@
   }
   if(!document.querySelector('script[data-qmes-table-equipment-spacing-20260805]')){
     const script=document.createElement("script");
-    script.src="./js/table-and-equipment-spacing-20260805.js?v=20260805-4";
+    script.src="./js/table-and-equipment-spacing-20260805.js?v=20260805-5";
     script.async=false;
     script.dataset.qmesTableEquipmentSpacing20260805="true";
     document.head.appendChild(script);
   }
   if(!document.querySelector('script[data-qmes-equipment-layout-refinement-20260805]')){
     const script=document.createElement("script");
-    script.src="./js/equipment-layout-refinement-20260805.js?v=20260805-3";
+    script.src="./js/equipment-layout-refinement-20260805.js?v=20260805-4";
     script.async=false;
     script.dataset.qmesEquipmentLayoutRefinement20260805="true";
     document.head.appendChild(script);
