@@ -15,80 +15,34 @@
   <link rel="stylesheet" href="./css/report.css" />
   <link rel="stylesheet" href="./css/print.css?v=20260727-2" />
   <style>
-    /* 작업지시서 출력 기본정보의 LOT No. 표제 가독성 보정 */
-    .qmes-wo-cert .qmes-wo-basic-info-table thead th:first-child {
-      font-size:15px !important;
-      font-weight:700 !important;
-    }
+    .qmes-wo-cert .qmes-wo-basic-info-table thead th:first-child {font-size:15px!important;font-weight:700!important;}
     .qmes-wo-cert .qmes-wo-cert-material-table th:first-child,
-    .qmes-wo-cert .qmes-wo-cert-material-table td:first-child {
-      width:4% !important;
-      padding-left:2px !important;
-      padding-right:2px !important;
-      font-size:15px !important;
-    }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:first-child { font-weight:700 !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table td:first-child { font-weight:400 !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2) { width:17.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(3) { width:17.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4) { width:7.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(5) { width:10.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(6) { width:10.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(7) { width:12.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8) { width:8.125% !important; }
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(9) { width:14.125% !important; }
-    .qmes-wo-form-field:has(> input[placeholder="원료 계획량 합계"]) { display:none !important; }
-    section[aria-label="NAMO Talk"] button { white-space:nowrap; }
-    section[aria-label="NAMO Talk"] input[type="file"] + div > button {
-      min-width:62px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
-    }
-    [role="dialog"][aria-label="계정 설정"] { display:none !important; }
-    [role="dialog"][aria-label="비밀번호 변경"] {
-      position:fixed !important; inset:0 !important; width:100vw !important; height:100vh !important;
-      display:flex !important; align-items:center !important; justify-content:center !important;
-      padding:16px !important; overflow:auto !important;
-    }
-    [role="dialog"][aria-label="비밀번호 변경"] > form {
-      position:relative !important; top:auto !important; left:auto !important; right:auto !important;
-      bottom:auto !important; margin:auto !important; transform:none !important;
-      max-height:calc(100vh - 32px) !important; overflow-y:auto !important;
-    }
-    #qmes-user-dropdown {
-      position:fixed; z-index:12000; width:190px; padding:7px;
-      border:1px solid rgba(71,85,105,.95); border-radius:10px; background:#132238;
-      box-shadow:0 14px 35px rgba(0,0,0,.45); opacity:0; visibility:hidden;
-      transform:translateY(-5px); transition:opacity .15s ease,transform .15s ease,visibility .15s ease;
-    }
-    #qmes-user-dropdown.is-open { opacity:1; visibility:visible; transform:translateY(0); }
-    #qmes-user-dropdown button {
-      display:flex; align-items:center; gap:9px; width:100%; min-height:42px; padding:9px 12px;
-      border:0; border-radius:7px; background:transparent; color:#e2e8f0; font:inherit;
-      font-size:14px; font-weight:700; text-align:left; cursor:pointer;
-    }
-    #qmes-user-dropdown button:hover,#qmes-user-dropdown button:focus-visible { background:#243a57; outline:none; }
-    #qmes-user-dropdown .qmes-dropdown-logout {
-      color:#fda4af; border-top:1px solid rgba(71,85,105,.7); border-radius:0 0 7px 7px;
-    }
-    .qmes-submenu-row { display:none !important; }
-    #qmes-all-menu-dropdown {
-      position:fixed; z-index:11900; min-width:210px; max-width:280px; padding:7px;
-      border:1px solid rgba(71,85,105,.95); border-radius:10px; background:#132238;
-      box-shadow:0 14px 35px rgba(0,0,0,.45); opacity:0; visibility:hidden;
-      transform:translateY(-5px); transition:opacity .12s ease,transform .12s ease,visibility .12s ease;
-    }
-    #qmes-all-menu-dropdown.is-open { opacity:1; visibility:visible; transform:translateY(0); }
-    #qmes-all-menu-dropdown .qmes-hover-title {
-      padding:8px 11px 7px; color:#7dd3fc; font-size:12px; font-weight:900;
-      border-bottom:1px solid rgba(71,85,105,.7); margin-bottom:4px;
-    }
-    #qmes-all-menu-dropdown button {
-      display:flex; align-items:center; width:100%; min-height:39px; padding:9px 11px;
-      border:0; border-radius:7px; background:transparent; color:#e2e8f0;
-      font:inherit; font-size:13px; font-weight:750; text-align:left; cursor:pointer;
-    }
-    #qmes-all-menu-dropdown button:hover,#qmes-all-menu-dropdown button:focus-visible {
-      background:#243a57; color:#fff; outline:none;
-    }
+    .qmes-wo-cert .qmes-wo-cert-material-table td:first-child {width:4%!important;padding-left:2px!important;padding-right:2px!important;font-size:15px!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:first-child {font-weight:700!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table td:first-child {font-weight:400!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2) {width:17.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(3) {width:17.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4) {width:7.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(5) {width:10.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(6) {width:10.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(7) {width:12.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8) {width:8.125%!important;}
+    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(9) {width:14.125%!important;}
+    .qmes-wo-form-field:has(> input[placeholder="원료 계획량 합계"]) {display:none!important;}
+    [role="dialog"][aria-label="계정 설정"] {display:none!important;}
+    [role="dialog"][aria-label="비밀번호 변경"] {position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;overflow:auto!important;}
+    [role="dialog"][aria-label="비밀번호 변경"] > form {position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;margin:auto!important;transform:none!important;max-height:calc(100vh - 32px)!important;overflow-y:auto!important;}
+    #qmes-user-dropdown {position:fixed;z-index:12000;width:190px;padding:7px;border:1px solid rgba(71,85,105,.95);border-radius:10px;background:#132238;box-shadow:0 14px 35px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .15s ease,transform .15s ease,visibility .15s ease;}
+    #qmes-user-dropdown.is-open {opacity:1;visibility:visible;transform:translateY(0);}
+    #qmes-user-dropdown button {display:flex;align-items:center;gap:9px;width:100%;min-height:42px;padding:9px 12px;border:0;border-radius:7px;background:transparent;color:#e2e8f0;font:inherit;font-size:14px;font-weight:700;text-align:left;cursor:pointer;}
+    #qmes-user-dropdown button:hover,#qmes-user-dropdown button:focus-visible {background:#243a57;outline:none;}
+    #qmes-user-dropdown .qmes-dropdown-logout {color:#fda4af;border-top:1px solid rgba(71,85,105,.7);border-radius:0 0 7px 7px;}
+    .qmes-submenu-row {display:none!important;}
+    #qmes-all-menu-dropdown {position:fixed;z-index:11900;min-width:210px;max-width:280px;padding:7px;border:1px solid rgba(71,85,105,.95);border-radius:10px;background:#132238;box-shadow:0 14px 35px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .12s ease,transform .12s ease,visibility .12s ease;}
+    #qmes-all-menu-dropdown.is-open {opacity:1;visibility:visible;transform:translateY(0);}
+    #qmes-all-menu-dropdown .qmes-hover-title {padding:8px 11px 7px;color:#7dd3fc;font-size:12px;font-weight:900;border-bottom:1px solid rgba(71,85,105,.7);margin-bottom:4px;}
+    #qmes-all-menu-dropdown button {display:flex;align-items:center;width:100%;min-height:39px;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:#e2e8f0;font:inherit;font-size:13px;font-weight:750;text-align:left;cursor:pointer;}
+    #qmes-all-menu-dropdown button:hover,#qmes-all-menu-dropdown button:focus-visible {background:#243a57;color:#fff;outline:none;}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
@@ -102,6 +56,24 @@
   <div id="root"></div>
   <div id="qmes-print-root" aria-hidden="true"></div>
   <noscript>이 페이지는 JavaScript가 필요합니다.</noscript>
+  <script>
+    (function purgeNamoTalkData(){
+      const exactKeys=[
+        "qmes_namo_talk_open","qmes_namo_talk_tab","qmes_namo_talk_room",
+        "qmes-namo-talk-unread-v1","qmes-namo-talk-read-v1",
+        "qmes-namo-talk-messages-v1","qmes-namo-talk-rooms-v1",
+        "qmes-namo-talk-profile-v1","qmes-namo-attendance-v1"
+      ];
+      const related=/namo[-_ ]?(?:talk|chat|message|room|attendance|emoticon|sticker)/i;
+      [window.localStorage,window.sessionStorage].forEach(storage=>{
+        try{
+          const keys=[];
+          for(let index=0;index<storage.length;index+=1){const key=storage.key(index);if(key)keys.push(key);}
+          Array.from(new Set([...exactKeys,...keys.filter(key=>related.test(key))])).forEach(key=>storage.removeItem(key));
+        }catch(error){/* 저장소 접근 불가 시 무시 */}
+      });
+    })();
+  </script>
   <script type="text/babel" data-presets="react" src="./js/common.jsx?v=20260803-coa2"></script>
   <script type="text/babel" data-presets="react" src="./js/utils.jsx"></script>
   <script src="./js/qmes-sync.js?v=20260730-equipment4"></script>
@@ -113,10 +85,10 @@
   <script type="text/babel" data-presets="react" src="./js/production.jsx?v=20260804-wo-heading3"></script>
   <script type="text/babel" data-presets="react" src="./js/ipad-pop.jsx?v=20260730-equipment1"></script>
   <script>
-    qmesIpadCurrentUser = function(){
-      const raw = window.__QMES_USER__ || window.__QMES_CURRENT_USER__;
-      const value = raw && typeof raw === 'object' ? String(raw.name || raw.uid || '관리자') : String(raw || '관리자');
-      return value.replace(/\s*\(U-\d+\)\s*$/i, '').trim();
+    qmesIpadCurrentUser=function(){
+      const raw=window.__QMES_USER__||window.__QMES_CURRENT_USER__;
+      const value=raw&&typeof raw==='object'?String(raw.name||raw.uid||'관리자'):String(raw||'관리자');
+      return value.replace(/\s*\(U-\d+\)\s*$/i,'').trim();
     };
   </script>
   <script src="./js/workorder-lot-sync.js?v=20260728-1"></script>
@@ -132,11 +104,8 @@
   <script type="text/babel" data-presets="react" src="./js/admin/members-bootstrap.jsx?v=20260728-1"></script>
   <script type="text/babel" data-presets="react" src="./js/admin/members.jsx?v=20260728-3"></script>
   <script type="text/babel" data-presets="react" src="./js/clean-management-modals.jsx?v=20260731-clean1"></script>
-  <script>var useRef = React.useRef;</script>
-  <script src="./assets/namo-emoticons-gel-20260731.js?v=2"></script>
-  <script type="text/babel" data-presets="react" src="./js/namo-talk.jsx?v=20260731-talk33"></script>
-  <script type="text/babel" data-presets="react" src="./js/namo-attendance-admin-edit.jsx?v=20260731-attendance4"></script>
-  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260731-router5"></script>
+  <script>var useRef=React.useRef;</script>
+  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260806-no-talk"></script>
   <script type="text/babel" data-presets="react" src="./js/app.jsx?v=20260730-serverauth1"></script>
   <script>
     (function(){
@@ -146,191 +115,55 @@
       const getAccountDialog=()=>document.querySelector('[role="dialog"][aria-label="계정 설정"]');
       const ensureDropdown=()=>{
         let menu=document.getElementById('qmes-user-dropdown');
-        if(menu) return menu;
-        menu=document.createElement('div');
-        menu.id='qmes-user-dropdown';
-        menu.setAttribute('role','menu');
-        menu.innerHTML='<button type="button" data-action="password"><span>🔒</span><span>비밀번호 변경</span></button>'+ 
-          '<button type="button" data-action="logout" class="qmes-dropdown-logout"><span>↪</span><span>로그아웃</span></button>';
+        if(menu)return menu;
+        menu=document.createElement('div');menu.id='qmes-user-dropdown';menu.setAttribute('role','menu');
+        menu.innerHTML='<button type="button" data-action="password"><span>🔒</span><span>비밀번호 변경</span></button><button type="button" data-action="logout" class="qmes-dropdown-logout"><span>↪</span><span>로그아웃</span></button>';
         document.body.appendChild(menu);
         menu.addEventListener('mouseenter',()=>{clearTimeout(closeTimer);menu.classList.add('is-open');});
         menu.addEventListener('mouseleave',scheduleClose);
-        menu.addEventListener('click',event=>{
-          const actionButton=event.target.closest('button[data-action]');
-          if(actionButton) runNativeAccountAction(actionButton.dataset.action);
-        });
+        menu.addEventListener('click',event=>{const actionButton=event.target.closest('button[data-action]');if(actionButton)runNativeAccountAction(actionButton.dataset.action);});
         return menu;
       };
-      const positionMenu=()=>{
-        const button=getAccountButton();
-        const menu=ensureDropdown();
-        if(!button) return;
-        const rect=button.getBoundingClientRect();
-        const left=Math.max(10,Math.min(window.innerWidth-200,rect.right-190));
-        menu.style.left=left+'px';
-        menu.style.top=(rect.bottom+7)+'px';
-      };
+      const positionMenu=()=>{const button=getAccountButton(),menu=ensureDropdown();if(!button)return;const rect=button.getBoundingClientRect();menu.style.left=Math.max(10,Math.min(window.innerWidth-200,rect.right-190))+'px';menu.style.top=(rect.bottom+7)+'px';};
       const openMenu=()=>{clearTimeout(closeTimer);positionMenu();ensureDropdown().classList.add('is-open');};
-      const closeMenu=()=>{const menu=document.getElementById('qmes-user-dropdown');if(menu)menu.classList.remove('is-open');};
+      const closeMenu=()=>document.getElementById('qmes-user-dropdown')?.classList.remove('is-open');
       function scheduleClose(){clearTimeout(closeTimer);closeTimer=setTimeout(closeMenu,180);}
-      const runNativeAccountAction=action=>{
-        const accountButton=getAccountButton();
-        if(!accountButton) return;
-        closeMenu();
-        allowNativeAccountClick=true;
-        accountButton.click();
-        allowNativeAccountClick=false;
-        setTimeout(()=>{
-          const dialog=getAccountDialog();
-          if(!dialog) return;
-          const targetText=action==='password'?'비밀번호 변경하기':'로그아웃';
-          const target=Array.from(dialog.querySelectorAll('button')).find(button=>button.textContent.trim()===targetText);
-          if(target) target.click();
-        },0);
-      };
-      document.addEventListener('click',event=>{
-        const accountButton=getAccountButton();
-        const menu=document.getElementById('qmes-user-dropdown');
-        if(accountButton&&accountButton.contains(event.target)){
-          if(allowNativeAccountClick) return;
-          event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-          if(menu&&menu.classList.contains('is-open')) closeMenu(); else openMenu();
-          return;
-        }
-        if(menu&&!menu.contains(event.target)) closeMenu();
-      },true);
-      document.addEventListener('mouseover',event=>{
-        const accountButton=getAccountButton();
-        if(accountButton&&accountButton.contains(event.target)) openMenu();
-      },true);
-      document.addEventListener('mouseout',event=>{
-        const accountButton=getAccountButton();
-        if(accountButton&&accountButton.contains(event.target)&&!accountButton.contains(event.relatedTarget)) scheduleClose();
-      },true);
+      const runNativeAccountAction=action=>{const accountButton=getAccountButton();if(!accountButton)return;closeMenu();allowNativeAccountClick=true;accountButton.click();allowNativeAccountClick=false;setTimeout(()=>{const dialog=getAccountDialog();if(!dialog)return;const targetText=action==='password'?'비밀번호 변경하기':'로그아웃';Array.from(dialog.querySelectorAll('button')).find(button=>button.textContent.trim()===targetText)?.click();},0);};
+      document.addEventListener('click',event=>{const accountButton=getAccountButton(),menu=document.getElementById('qmes-user-dropdown');if(accountButton&&accountButton.contains(event.target)){if(allowNativeAccountClick)return;event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();if(menu?.classList.contains('is-open'))closeMenu();else openMenu();return;}if(menu&&!menu.contains(event.target))closeMenu();},true);
+      document.addEventListener('mouseover',event=>{const accountButton=getAccountButton();if(accountButton&&accountButton.contains(event.target))openMenu();},true);
+      document.addEventListener('mouseout',event=>{const accountButton=getAccountButton();if(accountButton&&accountButton.contains(event.target)&&!accountButton.contains(event.relatedTarget))scheduleClose();},true);
       document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
-      window.addEventListener('resize',()=>{const menu=document.getElementById('qmes-user-dropdown');if(menu&&menu.classList.contains('is-open'))positionMenu();});
+      window.addEventListener('resize',()=>{const menu=document.getElementById('qmes-user-dropdown');if(menu?.classList.contains('is-open'))positionMenu();});
       window.addEventListener('scroll',closeMenu,true);
     })();
   </script>
   <script>
     (function(){
       const menuMap={
-        '대시보드':[
-          {label:'종합 대시보드',direct:'대시보드'},
-          {label:'SPC 대시보드',group:'품질검사',sub:'SPC (Cpk)'}
-        ],
-        '생산관리':[
-          {label:'생산 진행',group:'생산관리',sub:'생산 (배치)'},
-          {label:'작업지시서',group:'생산관리',sub:'작업지시서'}
-        ],
-        '품질검사':[
-          {label:'수입검사 (IQC)',group:'품질검사',sub:'수입검사 (IQC)'},
-          {label:'공정검사 (PQC)',group:'품질검사',sub:'공정검사 (PQC)'},
-          {label:'출하검사 (OQC)',group:'품질검사',sub:'출하검사 (OQC)'},
-          {label:'SPC (Cpk)',group:'품질검사',sub:'SPC (Cpk)'},
-          {label:'품질 인터락',group:'품질검사',sub:'품질 인터락 (차단)'},
-          {label:'출하성적서',group:'품질검사',sub:'출하성적서'}
-        ],
+        '대시보드':[{label:'종합 대시보드',direct:'대시보드'},{label:'SPC 대시보드',group:'품질검사',sub:'SPC (Cpk)'}],
+        '생산관리':[{label:'생산 진행',group:'생산관리',sub:'생산 (배치)'},{label:'작업지시서',group:'생산관리',sub:'작업지시서'}],
+        '품질검사':[{label:'수입검사 (IQC)',group:'품질검사',sub:'수입검사 (IQC)'},{label:'공정검사 (PQC)',group:'품질검사',sub:'공정검사 (PQC)'},{label:'출하검사 (OQC)',group:'품질검사',sub:'출하검사 (OQC)'},{label:'SPC (Cpk)',group:'품질검사',sub:'SPC (Cpk)'},{label:'품질 인터락',group:'품질검사',sub:'품질 인터락 (차단)'},{label:'출하성적서',group:'품질검사',sub:'출하성적서'}],
         '현장입력':[{label:'현장 입력 (iPad)',direct:'현장입력'}],
         '재고관리':[{label:'원재료 재고',direct:'재고관리'}],
         '거래처 현황':[{label:'거래처 현황',direct:'거래처 현황'}],
         '설비관리':[{label:'설비 모니터링',direct:'설비관리'}],
         'LOT 추적':[{label:'LOT 추적',direct:'LOT 추적'}],
-        '부적합관리':[
-          {label:'부적합 (8D)',group:'부적합관리',sub:'부적합 (8D)'},
-          {label:'고객불만 (GQMS)',group:'부적합관리',sub:'고객불만 (GQMS)'},
-          {label:'4M 변경관리',group:'부적합관리',sub:'4M 변경관리'}
-        ]
+        '부적합관리':[{label:'부적합 (8D)',group:'부적합관리',sub:'부적합 (8D)'},{label:'고객불만 (GQMS)',group:'부적합관리',sub:'고객불만 (GQMS)'},{label:'4M 변경관리',group:'부적합관리',sub:'4M 변경관리'}]
       };
-      let closeTimer=null;
-      let currentTopButton=null;
+      let closeTimer=null,currentTopButton=null;
       const getTopButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
       const buttonText=button=>button?button.textContent.replace('›','').replace('〉','').trim():'';
       const findTopButton=label=>getTopButtons().find(button=>buttonText(button)===label);
-      const ensureMenu=()=>{
-        let menu=document.getElementById('qmes-all-menu-dropdown');
-        if(menu) return menu;
-        menu=document.createElement('div');
-        menu.id='qmes-all-menu-dropdown';
-        menu.setAttribute('role','menu');
-        document.body.appendChild(menu);
-        menu.addEventListener('mouseenter',()=>clearTimeout(closeTimer));
-        menu.addEventListener('mouseleave',scheduleClose);
-        return menu;
-      };
-      const closeMenu=()=>{
-        const menu=document.getElementById('qmes-all-menu-dropdown');
-        if(menu) menu.classList.remove('is-open');
-        currentTopButton=null;
-      };
+      const ensureMenu=()=>{let menu=document.getElementById('qmes-all-menu-dropdown');if(menu)return menu;menu=document.createElement('div');menu.id='qmes-all-menu-dropdown';menu.setAttribute('role','menu');document.body.appendChild(menu);menu.addEventListener('mouseenter',()=>clearTimeout(closeTimer));menu.addEventListener('mouseleave',scheduleClose);return menu;};
+      const closeMenu=()=>{document.getElementById('qmes-all-menu-dropdown')?.classList.remove('is-open');currentTopButton=null;};
       function scheduleClose(){clearTimeout(closeTimer);closeTimer=setTimeout(closeMenu,400);}
-      const navigate=item=>{
-        closeMenu();
-        if(item.direct){
-          const button=findTopButton(item.direct);
-          if(button) button.click();
-          return;
-        }
-        const findSubButton=()=>Array.from(document.querySelectorAll('.qmes-submenu-button'))
-          .find(button=>button.textContent.trim()===item.sub);
-        const existingSubButton=findSubButton();
-        if(existingSubButton){
-          existingSubButton.click();
-          return;
-        }
-        const groupButton=findTopButton(item.group);
-        if(!groupButton) return;
-        groupButton.click();
-        requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-            const subButton=findSubButton();
-            if(subButton) subButton.click();
-          });
-        });
-      };
-      const openFor=button=>{
-        clearTimeout(closeTimer);
-        const label=buttonText(button);
-        const items=menuMap[label];
-        if(!items||!items.length) return;
-        currentTopButton=button;
-        const menu=ensureMenu();
-        menu.innerHTML='';
-        const title=document.createElement('div');
-        title.className='qmes-hover-title';
-        title.textContent=label;
-        menu.appendChild(title);
-        items.forEach(item=>{
-          const row=document.createElement('button');
-          row.type='button';
-          row.textContent=item.label;
-          row.addEventListener('click',()=>navigate(item));
-          menu.appendChild(row);
-        });
-        const rect=button.getBoundingClientRect();
-        const width=Math.max(210,Math.min(280,menu.offsetWidth||230));
-        const left=Math.max(8,Math.min(window.innerWidth-width-8,rect.left));
-        menu.style.left=left+'px';
-        menu.style.top=(rect.bottom+4)+'px';
-        menu.classList.add('is-open');
-      };
-      document.addEventListener('mouseover',event=>{
-        const button=event.target.closest('.qmes-top-menu-button');
-        if(!button) return;
-        if(button===currentTopButton) return;
-        openFor(button);
-      },true);
-      document.addEventListener('mouseout',event=>{
-        const topBar=event.target.closest('.qmes-top-menu-bar');
-        if(topBar&&!topBar.contains(event.relatedTarget)) scheduleClose();
-      },true);
-      document.addEventListener('click',event=>{
-        const menu=document.getElementById('qmes-all-menu-dropdown');
-        if(menu&&!menu.contains(event.target)&&!event.target.closest('.qmes-top-menu-button')) closeMenu();
-      },true);
+      const navigate=item=>{closeMenu();if(item.direct){findTopButton(item.direct)?.click();return;}const findSubButton=()=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>button.textContent.trim()===item.sub);const existing=findSubButton();if(existing){existing.click();return;}const groupButton=findTopButton(item.group);if(!groupButton)return;groupButton.click();requestAnimationFrame(()=>requestAnimationFrame(()=>findSubButton()?.click()));};
+      const openFor=button=>{clearTimeout(closeTimer);const label=buttonText(button),items=menuMap[label];if(!items?.length)return;currentTopButton=button;const menu=ensureMenu();menu.innerHTML='';const title=document.createElement('div');title.className='qmes-hover-title';title.textContent=label;menu.appendChild(title);items.forEach(item=>{const row=document.createElement('button');row.type='button';row.textContent=item.label;row.addEventListener('click',()=>navigate(item));menu.appendChild(row);});const rect=button.getBoundingClientRect(),width=Math.max(210,Math.min(280,menu.offsetWidth||230));menu.style.left=Math.max(8,Math.min(window.innerWidth-width-8,rect.left))+'px';menu.style.top=(rect.bottom+4)+'px';menu.classList.add('is-open');};
+      document.addEventListener('mouseover',event=>{const button=event.target.closest('.qmes-top-menu-button');if(button&&button!==currentTopButton)openFor(button);},true);
+      document.addEventListener('mouseout',event=>{const topBar=event.target.closest('.qmes-top-menu-bar');if(topBar&&!topBar.contains(event.relatedTarget))scheduleClose();},true);
+      document.addEventListener('click',event=>{const menu=document.getElementById('qmes-all-menu-dropdown');if(menu&&!menu.contains(event.target)&&!event.target.closest('.qmes-top-menu-button'))closeMenu();},true);
       document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
-      window.addEventListener('scroll',closeMenu,true);
-      window.addEventListener('resize',closeMenu);
+      window.addEventListener('scroll',closeMenu,true);window.addEventListener('resize',closeMenu);
     })();
   </script>
 </body>
