@@ -17,7 +17,6 @@
   const style=document.createElement("style");
   style.id="qmes-lot-detail-alignment-20260805-style";
   style.textContent=`
-    /* 생산실적의 발행 상태 배지는 글자 크기만큼만 표시 */
     .qmes-production-table tbody td:last-child{
       text-align:center!important;
       white-space:nowrap!important;
@@ -38,7 +37,6 @@
       flex:none!important;
     }
 
-    /* LOT 상세 공통: 제목과 내용의 좌우 간격 및 가운데 정렬 통일 */
     .qmes-lot-detail-centered table{
       width:100%!important;
       table-layout:fixed!important;
@@ -55,9 +53,7 @@
       font-weight:700!important;
       white-space:nowrap!important;
     }
-    .qmes-lot-detail-centered td{
-      word-break:keep-all!important;
-    }
+    .qmes-lot-detail-centered td{word-break:keep-all!important;}
     .qmes-lot-detail-centered td > *,
     .qmes-lot-detail-centered th > *{
       margin-left:auto!important;
@@ -66,7 +62,6 @@
       justify-content:center!important;
     }
 
-    /* 생산실적·공정검사 행 */
     .qmes-lot-detail-centered .qmes-lot-detail-row{
       grid-template-columns:120px minmax(0,1fr) auto!important;
       align-items:center!important;
@@ -78,11 +73,41 @@
       text-align:center!important;
       justify-self:center!important;
     }
-    .qmes-lot-detail-centered .qmes-lot-detail-row > div{
-      width:100%!important;
-    }
+    .qmes-lot-detail-centered .qmes-lot-detail-row > div{width:100%!important;}
 
-    /* 출하정보 카드 */
+    /* LOT 생산실적: 작업지시·상태·내용을 한 줄로 가로 배치 */
+    .qmes-lot-production-horizontal .qmes-lot-detail-row{
+      display:flex!important;
+      flex-direction:row!important;
+      flex-wrap:nowrap!important;
+      align-items:center!important;
+      justify-content:flex-start!important;
+      gap:18px!important;
+      width:100%!important;
+      padding:11px 12px!important;
+      text-align:left!important;
+    }
+    .qmes-lot-production-horizontal .qmes-lot-detail-row > *{
+      width:auto!important;
+      min-width:0!important;
+      flex:0 0 auto!important;
+      justify-self:auto!important;
+      margin:0!important;
+      text-align:left!important;
+      white-space:nowrap!important;
+    }
+    .qmes-lot-production-horizontal .qmes-lot-detail-row > *:nth-child(2){
+      flex:1 1 auto!important;
+      white-space:normal!important;
+    }
+    .qmes-lot-production-horizontal .qmes-lot-detail-row button,
+    .qmes-lot-production-horizontal .qmes-lot-detail-row [class*="rounded"]{
+      width:max-content!important;
+      min-width:0!important;
+      flex:none!important;
+    }
+    .qmes-lot-production-owner-hidden{display:none!important;}
+
     .qmes-lot-detail-centered .qmes-lot-shipment-grid{
       align-items:stretch!important;
       gap:10px!important;
@@ -108,17 +133,29 @@
     const headings=Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span"));
     const titles=["투입원료","생산실적","공정검사(PQC) 결과","출하정보"];
     headings.forEach(element=>{
-      if(!titles.includes(clean(element.textContent))) return;
+      const titleText=clean(element.textContent);
+      if(!titles.includes(titleText)) return;
       const panel=panelOf(element);
       if(!panel) return;
       panel.classList.add("qmes-lot-detail-centered");
 
-      if(clean(element.textContent)==="생산실적"||clean(element.textContent)==="공정검사(PQC) 결과"){
+      if(titleText==="생산실적"||titleText==="공정검사(PQC) 결과"){
         Array.from(panel.querySelectorAll("div.grid")).forEach(row=>{
           if(row.children.length===3) row.classList.add("qmes-lot-detail-row");
         });
       }
-      if(clean(element.textContent)==="출하정보"){
+
+      if(titleText==="생산실적"){
+        panel.classList.add("qmes-lot-production-horizontal");
+        Array.from(panel.querySelectorAll("div,span,p,small"))
+          .filter(node=>{
+            const text=clean(node.textContent);
+            return text.length<80 && /담당\s*품질부\s*박현아\s*\(U-0010\)/.test(text);
+          })
+          .forEach(node=>node.classList.add("qmes-lot-production-owner-hidden"));
+      }
+
+      if(titleText==="출하정보"){
         const grid=Array.from(panel.querySelectorAll("div.grid")).find(node=>node.children.length>=2&&node.children.length<=5);
         if(grid) grid.classList.add("qmes-lot-shipment-grid");
       }
