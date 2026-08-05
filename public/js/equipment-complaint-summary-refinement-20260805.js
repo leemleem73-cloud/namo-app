@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V6__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V6__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V7__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V7__=true;
 
-  const clean=v=>String(v||"").replace(/\s+/g," ").trim();
+  const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
-  const labels=["당월 접수","진행중","완료","초동 회신 준수율"];
+  const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-20260805-style-v6";
+  style.id="qmes-equipment-complaint-summary-refinement-v7-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -24,50 +24,60 @@
       justify-content:center!important;
     }
 
-    .qmes-complaint-summary-row-wide{
+    .qmes-complaint-summary-row-clean{
       width:100%!important;
       display:grid!important;
       grid-template-columns:repeat(4,minmax(0,1fr))!important;
       gap:12px!important;
       align-items:stretch!important;
     }
-    .qmes-complaint-outer-clean{
-      position:relative!important;
+    .qmes-complaint-outer-removed{
       width:100%!important;
-      max-width:none!important;
       min-width:0!important;
-      height:68px!important;
-      min-height:68px!important;
-      padding:0!important;
+      max-width:none!important;
+      height:auto!important;
+      min-height:0!important;
       margin:0!important;
+      padding:0!important;
       border:0!important;
       outline:0!important;
+      border-radius:0!important;
       background:transparent!important;
+      background-color:transparent!important;
       background-image:none!important;
       box-shadow:none!important;
-      clip-path:none!important;
       filter:none!important;
+      clip-path:none!important;
+      mask:none!important;
+      -webkit-mask:none!important;
       overflow:visible!important;
     }
-    .qmes-complaint-outer-clean::before,
-    .qmes-complaint-outer-clean::after{
-      display:none!important;
+    .qmes-complaint-outer-removed::before,
+    .qmes-complaint-outer-removed::after{
       content:none!important;
+      display:none!important;
       border:0!important;
       background:none!important;
       box-shadow:none!important;
-      clip-path:none!important;
     }
-    .qmes-complaint-inner-large{
+    .qmes-complaint-outer-removed > svg,
+    .qmes-complaint-outer-removed > img,
+    .qmes-complaint-outer-removed > [role="img"],
+    .qmes-complaint-outer-removed > [class*="icon" i],
+    .qmes-complaint-outer-removed > [class*="alert" i],
+    .qmes-complaint-outer-removed > div:has(> svg):not(.qmes-complaint-inner-kept),
+    .qmes-complaint-outer-removed > span:has(> svg):not(.qmes-complaint-inner-kept){
+      display:none!important;
+    }
+    .qmes-complaint-inner-kept{
       position:relative!important;
       inset:auto!important;
       width:100%!important;
       max-width:none!important;
       min-width:0!important;
-      height:68px!important;
       min-height:68px!important;
       margin:0!important;
-      padding:6px 16px!important;
+      padding:7px 14px!important;
       box-sizing:border-box!important;
       display:flex!important;
       flex-direction:column!important;
@@ -82,33 +92,24 @@
       clip-path:none!important;
       transform:none!important;
       overflow:hidden!important;
+      color:#fff!important;
+      text-align:center!important;
     }
-    .qmes-complaint-inner-large::before,
-    .qmes-complaint-inner-large::after{
-      display:none!important;
+    .qmes-complaint-inner-kept::before,
+    .qmes-complaint-inner-kept::after{
       content:none!important;
-      border:0!important;
-      background:none!important;
-      box-shadow:none!important;
-      clip-path:none!important;
+      display:none!important;
     }
-    .qmes-complaint-inner-large,
-    .qmes-complaint-inner-large *{
+    .qmes-complaint-inner-kept,
+    .qmes-complaint-inner-kept *{
       color:#fff!important;
       text-align:center!important;
       text-align-last:center!important;
-      justify-content:center!important;
-      align-items:center!important;
-      margin-left:auto!important;
-      margin-right:auto!important;
-      transform:none!important;
     }
-    .qmes-complaint-inner-large svg,
-    .qmes-complaint-inner-large img,
-    .qmes-complaint-inner-large [role="img"],
-    .qmes-complaint-inner-large [class*="icon"],
-    .qmes-complaint-inner-large [class*="Icon"],
-    .qmes-complaint-hide{
+    .qmes-complaint-inner-kept svg,
+    .qmes-complaint-inner-kept img,
+    .qmes-complaint-inner-kept [role="img"],
+    .qmes-complaint-inner-kept [class*="icon" i]{
       display:none!important;
     }
 
@@ -118,19 +119,19 @@
       font-weight:var(--qmes-ncr-font-weight,500)!important;
       font-family:var(--qmes-ncr-font-family,inherit)!important;
     }
+    @media(max-width:760px){
+      .qmes-complaint-summary-row-clean{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+    }
   `;
   document.head.appendChild(style);
 
   function markEquipment(){
     ["등록 설비","30일 이내 일정","기한 초과","미완료 수리"].forEach(label=>{
-      all().filter(el=>clean(el.textContent)===label).forEach(el=>{
-        let node=el;
+      all().filter(element=>clean(element.textContent)===label).forEach(element=>{
+        let node=element;
         while(node&&node!==document.body){
-          const r=node.getBoundingClientRect();
-          if(r.width>120&&r.height>45&&r.height<220){
-            node.classList.add("qmes-equipment-summary-card");
-            break;
-          }
+          const rect=node.getBoundingClientRect();
+          if(rect.width>120&&rect.height>45&&rect.height<220){node.classList.add("qmes-equipment-summary-card");break;}
           node=node.parentElement;
         }
       });
@@ -143,51 +144,57 @@
     return text===label;
   }
 
-  function findLabel(label){return all().find(el=>labelMatch(clean(el.textContent),label));}
+  function findLabel(label){
+    return all().find(element=>labelMatch(clean(element.textContent),label));
+  }
 
-  function findOuterCard(labelNode,label){
-    if(!labelNode) return null;
-    let node=labelNode;
+  function isCardLike(element){
+    if(!element||element===document.body) return false;
+    const classes=String(element.className||"");
+    const css=getComputedStyle(element);
+    return /rounded|border|card|panel/i.test(classes)||parseFloat(css.borderTopWidth)>0||parseFloat(css.borderRadius)>0;
+  }
+
+  function findInner(labelNode){
+    let node=labelNode?.parentElement;
     while(node&&node!==document.body){
-      const r=node.getBoundingClientRect();
+      const rect=node.getBoundingClientRect();
       const text=clean(node.textContent);
-      const otherLabels=labels.filter(x=>x!==label).filter(x=>text.includes(x));
-      if(r.width>=180&&r.width<=800&&r.height>=60&&r.height<=300&&otherLabels.length===0) return node;
+      if(text.length<150&&rect.width>=80&&rect.height>=28&&rect.height<=160&&isCardLike(node)) return node;
+      node=node.parentElement;
+    }
+    return labelNode?.parentElement||null;
+  }
+
+  function findOuter(inner,label){
+    let node=inner?.parentElement;
+    while(node&&node!==document.body){
+      const rect=node.getBoundingClientRect();
+      const text=clean(node.textContent);
+      const includesOther=complaintLabels.some(other=>other!==label&&text.includes(other));
+      if(!includesOther&&text.length<240&&rect.width>=inner.getBoundingClientRect().width&&rect.height>=inner.getBoundingClientRect().height&&isCardLike(node)) return node;
       node=node.parentElement;
     }
     return null;
   }
 
-  function findInnerCard(outer,labelNode){
-    let node=labelNode;
-    let candidate=null;
-    while(node&&node!==outer){
-      const r=node.getBoundingClientRect();
-      const text=clean(node.textContent);
-      if(text&&r.width>=80&&r.height>=24&&r.height<=180) candidate=node;
-      node=node.parentElement;
-    }
-    return candidate||labelNode.parentElement||labelNode;
-  }
-
-  function simplifyComplaintCard(label){
+  function simplifyCard(label){
     const labelNode=findLabel(label);
-    const outer=findOuterCard(labelNode,label);
-    if(!labelNode||!outer) return null;
-    const inner=findInnerCard(outer,labelNode);
-    if(!inner) return null;
+    const inner=findInner(labelNode);
+    const outer=findOuter(inner,label);
+    if(!labelNode||!inner||!outer||inner===outer) return null;
 
-    outer.classList.add("qmes-complaint-outer-clean");
-    inner.classList.add("qmes-complaint-inner-large");
-    outer.style.setProperty("width","100%","important");
-    outer.style.setProperty("max-width","none","important");
-    inner.style.setProperty("width","100%","important");
-    inner.style.setProperty("max-width","none","important");
-    inner.style.setProperty("display","flex","important");
-    inner.style.setProperty("flex-direction","column","important");
-    inner.style.setProperty("align-items","center","important");
-    inner.style.setProperty("justify-content","center","important");
-    inner.style.setProperty("text-align","center","important");
+    inner.classList.add("qmes-complaint-inner-kept");
+    outer.classList.add("qmes-complaint-outer-removed");
+
+    Array.from(outer.children).forEach(child=>{
+      if(child===inner||child.contains(inner)||inner.contains(child)) return;
+      const text=clean(child.textContent);
+      if(!text||child.querySelector?.("svg,img")||/^[!⚠❗]+$/.test(text)){
+        child.style.setProperty("display","none","important");
+        child.setAttribute("aria-hidden","true");
+      }
+    });
     return outer;
   }
 
@@ -203,38 +210,29 @@
 
   function markComplaint(){
     const bodyText=clean(document.body.textContent);
-    if(!bodyText.includes("고객불만 접수")||!bodyText.includes("초동 회신 준수율")) return;
-    const cards=labels.map(simplifyComplaintCard).filter(Boolean);
+    if(!bodyText.includes("초동 회신 준수율")) return;
+    const cards=complaintLabels.map(simplifyCard).filter(Boolean);
     if(cards.length!==4) return;
     const row=commonParent(cards);
-    if(row){
-      row.classList.add("qmes-complaint-summary-row-wide");
-      row.style.setProperty("width","100%","important");
-      row.style.setProperty("display","grid","important");
-      row.style.setProperty("grid-template-columns","repeat(4,minmax(0,1fr))","important");
-      row.style.setProperty("gap","12px","important");
-    }
+    if(row) row.classList.add("qmes-complaint-summary-row-clean");
   }
 
   function findIsolationInput(){
-    const label=all().find(el=>clean(el.textContent)==="격리 위치"||clean(el.textContent)==="격리위치");
+    const label=all().find(element=>["격리 위치","격리위치"].includes(clean(element.textContent)));
     if(!label) return null;
     let scope=label.parentElement;
-    for(let i=0;scope&&i<5;i++,scope=scope.parentElement){
+    for(let index=0;scope&&index<5;index+=1,scope=scope.parentElement){
       const control=scope.querySelector("input,textarea,select");
       if(control) return control;
     }
     return null;
   }
 
-  function findNcrStatusScope(){
-    const title=all().find(el=>clean(el.textContent)==="부적합 현황");
-    if(!title) return null;
-    let scope=title.parentElement;
+  function findNcrScope(){
+    const title=all().find(element=>clean(element.textContent)==="부적합 현황");
+    let scope=title?.parentElement;
     while(scope&&scope!==document.body){
-      const rect=scope.getBoundingClientRect();
-      const hasRows=Boolean(scope.querySelector("table,tbody,[role='table'],[role='rowgroup']"));
-      if(hasRows&&rect.width>500) return scope;
+      if(scope.querySelector("table,tbody,[role='table'],[role='rowgroup']")&&scope.getBoundingClientRect().width>500) return scope;
       scope=scope.parentElement;
     }
     return null;
@@ -242,7 +240,7 @@
 
   function unifyNcrTypography(){
     const reference=findIsolationInput();
-    const scope=findNcrStatusScope();
+    const scope=findNcrScope();
     if(!reference||!scope) return;
     const css=getComputedStyle(reference);
     const size=css.fontSize||"14px";
@@ -251,12 +249,7 @@
     scope.style.setProperty("--qmes-ncr-font-size",size);
     scope.style.setProperty("--qmes-ncr-font-weight",weight);
     scope.style.setProperty("--qmes-ncr-font-family",family);
-    scope.querySelectorAll("tbody td,[role='rowgroup'] [role='cell'],input,select,textarea,button").forEach(el=>{
-      el.classList.add("qmes-ncr-content-font");
-      el.style.setProperty("font-size",size,"important");
-      el.style.setProperty("font-weight",weight,"important");
-      el.style.setProperty("font-family",family,"important");
-    });
+    scope.querySelectorAll("tbody td,[role='rowgroup'] [role='cell'],input,select,textarea,button").forEach(element=>element.classList.add("qmes-ncr-content-font"));
   }
 
   let queued=false;
