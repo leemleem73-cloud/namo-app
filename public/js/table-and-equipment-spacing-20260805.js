@@ -31,11 +31,8 @@
       margin-left:auto!important;margin-right:auto!important;text-align:center!important;text-align-last:center!important;
     }
 
-    /* 고객사/공급업체 큰 제목칸과 바로 아래 검색창 사이 간격 */
-    .qmes-partner-header-spaced{margin-bottom:20px!important;}
-    .qmes-partner-search-row{margin-top:0!important;margin-bottom:0!important;}
-    .qmes-partner-table-spaced{margin-top:0!important;}
-    .qmes-partner-table-wrap-spaced{padding-top:0!important;}
+    /* 위쪽 검색창과 아래 고객사/공급업체 큰 제목칸 사이 간격 */
+    .qmes-partner-header-spaced{margin-top:20px!important;margin-bottom:0!important;}
 
     .qmes-ncr-action-pair{
       display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
@@ -64,7 +61,6 @@
         const table=panel.querySelector("table");
         if(table) table.classList.add("qmes-partner-centered-table");
 
-        /* 제목과 등록 버튼을 함께 감싸는 상단 큰 칸을 찾아 아래 여백 적용 */
         let header=element.parentElement;
         while(header&&header!==panel){
           const hasRegister=Array.from(header.querySelectorAll("button")).some(btn=>clean(btn.textContent)===button);
