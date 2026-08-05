@@ -18,58 +18,30 @@
   const style=document.createElement("style");
   style.id="qmes-table-equipment-spacing-20260805-style";
   style.textContent=`
-    /* 고객사·공급업체 목록: NO~관리 제목/내용 좌우 여백과 가운데 정렬 통일 */
-    table.qmes-partner-centered-table{
-      width:100%!important;
-      table-layout:fixed!important;
-    }
+    table.qmes-partner-centered-table{width:100%!important;table-layout:fixed!important;}
     table.qmes-partner-centered-table th,
     table.qmes-partner-centered-table td{
-      box-sizing:border-box!important;
-      padding:10px 8px!important;
-      text-align:center!important;
-      vertical-align:middle!important;
-      line-height:20px!important;
+      box-sizing:border-box!important;padding:10px 8px!important;text-align:center!important;
+      vertical-align:middle!important;line-height:20px!important;
     }
-    table.qmes-partner-centered-table th{
-      font-weight:700!important;
-      white-space:nowrap!important;
-    }
+    table.qmes-partner-centered-table th{font-weight:700!important;white-space:nowrap!important;}
     table.qmes-partner-centered-table td button,
     table.qmes-partner-centered-table td select,
     table.qmes-partner-centered-table td input{
-      margin-left:auto!important;
-      margin-right:auto!important;
-      text-align:center!important;
-      text-align-last:center!important;
+      margin-left:auto!important;margin-right:auto!important;text-align:center!important;text-align-last:center!important;
     }
 
-    /* 거래처 검색창과 하단 목록 표 사이 간격 통일 */
-    .qmes-partner-search-row{
-      margin-bottom:18px!important;
-    }
-    .qmes-partner-search-row + table,
-    .qmes-partner-search-row + div:has(table){
-      margin-top:0!important;
-    }
+    /* 검색창 아래 목록과의 간격을 확실히 유지 */
+    .qmes-partner-search-row{margin-bottom:22px!important;}
+    .qmes-partner-table-spaced{margin-top:22px!important;}
+    .qmes-partner-table-wrap-spaced{padding-top:22px!important;}
 
-    /* 부적합 관리 버튼 두 개를 같은 줄에 가까이 배치 */
     .qmes-ncr-action-pair{
-      display:inline-flex!important;
-      align-items:center!important;
-      justify-content:center!important;
-      gap:6px!important;
-      width:auto!important;
-      margin:0 auto!important;
-      white-space:nowrap!important;
+      display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+      width:auto!important;margin:0 auto!important;white-space:nowrap!important;
     }
-    .qmes-ncr-action-pair>button{
-      flex:0 0 auto!important;
-      margin:0!important;
-      min-height:34px!important;
-    }
+    .qmes-ncr-action-pair>button{flex:0 0 auto!important;margin:0!important;min-height:34px!important;}
 
-    /* 설비관리 상단 카드 ↔ 일일점검 ↔ 관리계획서 세로 간격 통일 */
     .qmes-equipment-kpi-block{margin-bottom:20px!important;}
     .qmes-equipment-daily-block{margin-top:20px!important;margin-bottom:20px!important;}
     .qmes-equipment-plan-block{margin-top:20px!important;}
@@ -83,14 +55,17 @@
       const panel=panelOf(element);
       if(!panel) return;
       const table=panel.querySelector("table");
-      if(table) table.classList.add("qmes-partner-centered-table");
+      if(table){
+        table.classList.add("qmes-partner-centered-table","qmes-partner-table-spaced");
+        const wrap=table.parentElement;
+        if(wrap&&wrap!==panel) wrap.classList.add("qmes-partner-table-wrap-spaced");
+      }
 
       const searchInput=panel.querySelector('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객"], input[placeholder*="공급"]');
       if(searchInput){
         let row=searchInput.parentElement;
         while(row&&row.parentElement!==panel&&row.parentElement){
-          const next=row.nextElementSibling;
-          if(next&&(next.matches?.("table")||next.querySelector?.("table"))) break;
+          if(row.nextElementSibling&&(row.nextElementSibling.matches?.("table")||row.nextElementSibling.querySelector?.("table"))) break;
           row=row.parentElement;
         }
         row?.classList.add("qmes-partner-search-row");
