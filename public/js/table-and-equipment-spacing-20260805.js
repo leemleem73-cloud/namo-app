@@ -31,8 +31,37 @@
       margin-left:auto!important;margin-right:auto!important;text-align:center!important;text-align-last:center!important;
     }
 
-    /* 위쪽 검색창과 아래 고객사/공급업체 큰 제목칸 사이 간격 */
-    .qmes-partner-header-spaced{margin-top:20px!important;margin-bottom:0!important;}
+    /* 위쪽 검색 영역의 큰 박스를 없애고 한 줄 검색 영역으로 정리 */
+    .qmes-partner-search-inline{
+      display:flex!important;
+      flex-direction:row!important;
+      flex-wrap:nowrap!important;
+      align-items:center!important;
+      gap:8px!important;
+      width:100%!important;
+      min-height:0!important;
+      margin:0 0 18px 0!important;
+      padding:0!important;
+      border:0!important;
+      border-radius:0!important;
+      background:transparent!important;
+      box-shadow:none!important;
+    }
+    .qmes-partner-search-inline input,
+    .qmes-partner-search-inline select,
+    .qmes-partner-search-inline button{
+      margin-top:0!important;
+      margin-bottom:0!important;
+    }
+    .qmes-partner-search-inline input{
+      flex:1 1 auto!important;
+      min-width:0!important;
+    }
+    .qmes-partner-search-inline button,
+    .qmes-partner-search-inline select{
+      flex:0 0 auto!important;
+    }
+    .qmes-partner-header-spaced{margin-top:0!important;margin-bottom:0!important;}
 
     .qmes-ncr-action-pair{
       display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
@@ -69,6 +98,32 @@
             break;
           }
           header=header.parentElement;
+        }
+
+        if(!header||header===panel) return;
+
+        /* 제목칸 위쪽에서 검색 input을 포함한 가장 가까운 형제 영역을 찾아 큰 박스 스타일 제거 */
+        let candidate=header.previousElementSibling;
+        while(candidate){
+          const searchInput=candidate.querySelector?.('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객"], input[placeholder*="공급"]');
+          if(searchInput){
+            candidate.classList.add("qmes-partner-search-inline");
+            break;
+          }
+          candidate=candidate.previousElementSibling;
+        }
+
+        /* 같은 패널 안에 검색 영역이 중첩된 구조도 대응 */
+        if(!candidate){
+          const searchInput=panel.querySelector('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객"], input[placeholder*="공급"]');
+          if(searchInput){
+            let row=searchInput.parentElement;
+            while(row&&row!==panel&&row.parentElement!==panel){
+              if(row.querySelectorAll("input,select,button").length>=1) break;
+              row=row.parentElement;
+            }
+            row?.classList.add("qmes-partner-search-inline");
+          }
         }
       });
     });
