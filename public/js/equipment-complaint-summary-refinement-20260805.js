@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V8__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V8__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V9__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V9__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v8-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v9-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -32,52 +32,68 @@
       align-items:stretch!important;
     }
 
-    /* 창 자체는 유지하고 보라색 테두리와 장식만 제거한다. */
-    .qmes-complaint-card-frame{
-      width:100%!important;
-      min-width:0!important;
-      max-width:none!important;
-      box-sizing:border-box!important;
-      border-color:#2c4058!important;
+    /* 고객불만 상단 4칸은 글자와 숫자만 남긴다. */
+    .qmes-complaint-card-frame,
+    .qmes-complaint-card-frame *{
+      border-color:transparent!important;
       outline:0!important;
+      background:transparent!important;
+      background-color:transparent!important;
       background-image:none!important;
       box-shadow:none!important;
+      filter:none!important;
       clip-path:none!important;
       mask:none!important;
       -webkit-mask:none!important;
     }
+    .qmes-complaint-card-frame{
+      width:100%!important;
+      min-width:0!important;
+      max-width:none!important;
+      min-height:68px!important;
+      box-sizing:border-box!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      padding:6px 10px!important;
+      overflow:visible!important;
+    }
     .qmes-complaint-card-frame::before,
-    .qmes-complaint-card-frame::after{
+    .qmes-complaint-card-frame::after,
+    .qmes-complaint-card-frame *::before,
+    .qmes-complaint-card-frame *::after{
       content:none!important;
       display:none!important;
       border:0!important;
       background:none!important;
       background-image:none!important;
       box-shadow:none!important;
-      clip-path:none!important;
     }
-    .qmes-complaint-card-frame > svg,
-    .qmes-complaint-card-frame > img,
-    .qmes-complaint-card-frame > [role="img"],
-    .qmes-complaint-card-frame > [class*="icon" i],
-    .qmes-complaint-card-frame > [class*="alert" i],
+    .qmes-complaint-card-frame svg,
+    .qmes-complaint-card-frame img,
+    .qmes-complaint-card-frame [role="img"],
+    .qmes-complaint-card-frame [class*="icon" i],
+    .qmes-complaint-card-frame [class*="alert" i],
     .qmes-complaint-card-frame .qmes-complaint-decoration-hide{
       display:none!important;
     }
-
     .qmes-complaint-content-kept,
     .qmes-complaint-content-kept *{
+      color:#fff!important;
       text-align:center!important;
       text-align-last:center!important;
+      margin-left:auto!important;
+      margin-right:auto!important;
     }
-    .qmes-complaint-content-kept::before,
-    .qmes-complaint-content-kept::after{
-      content:none!important;
-      display:none!important;
-      border:0!important;
-      background:none!important;
-      background-image:none!important;
-      box-shadow:none!important;
+    .qmes-complaint-content-kept{
+      width:100%!important;
+      min-height:56px!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+      justify-content:center!important;
+      gap:2px!important;
+      padding:0!important;
     }
 
     .qmes-ncr-content-font,
@@ -155,7 +171,6 @@
     content.classList.add("qmes-complaint-content-kept");
 
     frame.querySelectorAll("svg,img,[role='img'],[class*='icon' i],[class*='alert' i]").forEach(element=>{
-      if(element.closest("button,input,select,textarea")) return;
       element.classList.add("qmes-complaint-decoration-hide");
       element.setAttribute("aria-hidden","true");
     });
@@ -163,10 +178,8 @@
     Array.from(frame.children).forEach(child=>{
       if(child===content||child.contains(content)||content.contains(child)) return;
       const text=clean(child.textContent);
-      const css=getComputedStyle(child);
       const hasIcon=Boolean(child.querySelector?.("svg,img,[role='img']"));
-      const decorativeShape=(parseFloat(css.width)<=80&&parseFloat(css.height)<=80&&!text);
-      if(hasIcon||decorativeShape||/^[!⚠❗]+$/.test(text)){
+      if(hasIcon||!text||/^[!⚠❗]+$/.test(text)){
         child.classList.add("qmes-complaint-decoration-hide");
         child.setAttribute("aria-hidden","true");
       }
