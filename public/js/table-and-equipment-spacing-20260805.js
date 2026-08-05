@@ -31,49 +31,33 @@
       margin-left:auto!important;margin-right:auto!important;text-align:center!important;text-align-last:center!important;
     }
 
-    /* 고객사/공급업체 검색창: 폭 축소 + 아래 목록 칸과 간격 확대 */
+    /* 검색창은 작게, 아래 고객사/공급업체 목록 카드와는 확실히 분리 */
     .qmes-partner-search-inline{
-      display:flex!important;
-      flex-direction:row!important;
-      flex-wrap:nowrap!important;
-      align-items:center!important;
-      justify-content:flex-start!important;
-      gap:8px!important;
-      width:fit-content!important;
-      max-width:100%!important;
-      min-height:0!important;
-      margin:0 0 30px 0!important;
-      padding:0!important;
-      border:0!important;
-      border-radius:0!important;
-      background:transparent!important;
-      box-shadow:none!important;
+      display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+      align-items:center!important;justify-content:flex-start!important;gap:8px!important;
+      width:fit-content!important;max-width:100%!important;min-height:0!important;
+      margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+      background:transparent!important;box-shadow:none!important;
     }
     .qmes-partner-search-inline input,
     .qmes-partner-search-inline select,
-    .qmes-partner-search-inline button{
-      margin-top:0!important;
-      margin-bottom:0!important;
-    }
+    .qmes-partner-search-inline button{margin-top:0!important;margin-bottom:0!important;}
     .qmes-partner-search-inline input{
-      flex:0 0 360px!important;
-      width:360px!important;
-      max-width:360px!important;
-      min-width:260px!important;
+      flex:0 0 320px!important;width:320px!important;max-width:320px!important;min-width:240px!important;
     }
     .qmes-partner-search-inline button,
-    .qmes-partner-search-inline select{
-      flex:0 0 auto!important;
+    .qmes-partner-search-inline select{flex:0 0 auto!important;}
+
+    /* 이 여백이 실제 검색창과 아래 목록 큰 칸 사이 간격 */
+    .qmes-partner-header-spaced{
+      margin-top:30px!important;
+      margin-bottom:0!important;
     }
-    .qmes-partner-header-spaced{margin-top:0!important;margin-bottom:0!important;}
 
     @media (max-width:760px){
       .qmes-partner-search-inline{width:100%!important;}
       .qmes-partner-search-inline input{
-        flex:1 1 auto!important;
-        width:auto!important;
-        max-width:none!important;
-        min-width:0!important;
+        flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
       }
     }
 
@@ -114,28 +98,21 @@
           header=header.parentElement;
         }
 
-        if(!header||header===panel) return;
+        const selector='input[type="search"], input[placeholder*="검색"], input[placeholder*="고객사명"], input[placeholder*="공급업체명"], input[placeholder*="원료명"], input[placeholder*="LOT"]';
+        const searchInput=panel.querySelector(selector)||Array.from(document.querySelectorAll(selector)).find(input=>{
+          const inputTop=input.getBoundingClientRect().top;
+          const headerTop=header?.getBoundingClientRect().top??Infinity;
+          return inputTop<headerTop&&headerTop-inputTop<240;
+        });
 
-        let candidate=header.previousElementSibling;
-        while(candidate){
-          const searchInput=candidate.querySelector?.('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객사명"], input[placeholder*="공급업체명"], input[placeholder*="원료명"], input[placeholder*="LOT"]');
-          if(searchInput){
-            candidate.classList.add("qmes-partner-search-inline");
-            break;
+        if(searchInput){
+          let row=searchInput.parentElement;
+          while(row&&row!==document.body){
+            const controls=row.querySelectorAll?.("input,select,button").length||0;
+            if(controls>=1&&controls<=8) break;
+            row=row.parentElement;
           }
-          candidate=candidate.previousElementSibling;
-        }
-
-        if(!candidate){
-          const searchInput=panel.querySelector('input[type="search"], input[placeholder*="검색"], input[placeholder*="고객사명"], input[placeholder*="공급업체명"], input[placeholder*="원료명"], input[placeholder*="LOT"]');
-          if(searchInput){
-            let row=searchInput.parentElement;
-            while(row&&row!==panel&&row.parentElement!==panel){
-              if(row.querySelectorAll("input,select,button").length>=1) break;
-              row=row.parentElement;
-            }
-            row?.classList.add("qmes-partner-search-inline");
-          }
+          row?.classList.add("qmes-partner-search-inline");
         }
       });
     });
