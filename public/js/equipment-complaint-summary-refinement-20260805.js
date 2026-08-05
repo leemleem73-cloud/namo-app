@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V5__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V5__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V6__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V6__=true;
 
   const clean=v=>String(v||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const labels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-20260805-style-v5";
+  style.id="qmes-equipment-complaint-summary-refinement-20260805-style-v6";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -24,9 +24,18 @@
       justify-content:center!important;
     }
 
+    .qmes-complaint-summary-row-wide{
+      width:100%!important;
+      display:grid!important;
+      grid-template-columns:repeat(4,minmax(0,1fr))!important;
+      gap:12px!important;
+      align-items:stretch!important;
+    }
     .qmes-complaint-outer-clean{
       position:relative!important;
       width:100%!important;
+      max-width:none!important;
+      min-width:0!important;
       height:68px!important;
       min-height:68px!important;
       padding:0!important;
@@ -53,6 +62,8 @@
       position:relative!important;
       inset:auto!important;
       width:100%!important;
+      max-width:none!important;
+      min-width:0!important;
       height:68px!important;
       min-height:68px!important;
       margin:0!important;
@@ -141,7 +152,7 @@
       const r=node.getBoundingClientRect();
       const text=clean(node.textContent);
       const otherLabels=labels.filter(x=>x!==label).filter(x=>text.includes(x));
-      if(r.width>=220&&r.width<=750&&r.height>=80&&r.height<=300&&otherLabels.length===0) return node;
+      if(r.width>=180&&r.width<=800&&r.height>=60&&r.height<=300&&otherLabels.length===0) return node;
       node=node.parentElement;
     }
     return null;
@@ -153,7 +164,7 @@
     while(node&&node!==outer){
       const r=node.getBoundingClientRect();
       const text=clean(node.textContent);
-      if(text&&r.width>=100&&r.height>=30&&r.height<=160) candidate=node;
+      if(text&&r.width>=80&&r.height>=24&&r.height<=180) candidate=node;
       node=node.parentElement;
     }
     return candidate||labelNode.parentElement||labelNode;
@@ -168,48 +179,41 @@
 
     outer.classList.add("qmes-complaint-outer-clean");
     inner.classList.add("qmes-complaint-inner-large");
-
-    outer.querySelectorAll("svg,img,[role='img'],[class*='icon'],[class*='Icon']").forEach(el=>el.classList.add("qmes-complaint-hide"));
-    Array.from(outer.querySelectorAll("div,span,i,b"))
-      .filter(el=>el!==outer&&el!==inner&&!inner.contains(el))
-      .forEach(el=>{
-        const r=el.getBoundingClientRect();
-        const css=getComputedStyle(el);
-        const text=clean(el.textContent);
-        const decorative=!text||css.position==="absolute"||css.clipPath!=="none"||css.backgroundImage!=="none";
-        if(decorative&&r.width<=220&&r.height<=220) el.classList.add("qmes-complaint-hide");
-      });
-
-    Array.from(outer.children).forEach(child=>{
-      if(child===inner||child.contains(inner)||inner.contains(child)) return;
-      child.classList.add("qmes-complaint-hide");
-    });
-
     outer.style.setProperty("width","100%","important");
-    outer.style.setProperty("height","68px","important");
-    outer.style.setProperty("min-height","68px","important");
-    outer.style.setProperty("border","0","important");
-    outer.style.setProperty("background","transparent","important");
-    outer.style.setProperty("background-image","none","important");
-    outer.style.setProperty("box-shadow","none","important");
-    outer.style.setProperty("clip-path","none","important");
-
+    outer.style.setProperty("max-width","none","important");
     inner.style.setProperty("width","100%","important");
-    inner.style.setProperty("height","68px","important");
-    inner.style.setProperty("min-height","68px","important");
-    inner.style.setProperty("padding","6px 16px","important");
-    inner.style.setProperty("border","1px solid #2c4058","important");
-    inner.style.setProperty("background","#111f33","important");
-    inner.style.setProperty("background-image","none","important");
-    inner.style.setProperty("box-shadow","none","important");
-    inner.style.setProperty("clip-path","none","important");
+    inner.style.setProperty("max-width","none","important");
+    inner.style.setProperty("display","flex","important");
+    inner.style.setProperty("flex-direction","column","important");
+    inner.style.setProperty("align-items","center","important");
+    inner.style.setProperty("justify-content","center","important");
+    inner.style.setProperty("text-align","center","important");
     return outer;
+  }
+
+  function commonParent(cards){
+    if(cards.length!==4) return null;
+    let node=cards[0].parentElement;
+    while(node&&node!==document.body){
+      if(cards.every(card=>node.contains(card))) return node;
+      node=node.parentElement;
+    }
+    return null;
   }
 
   function markComplaint(){
     const bodyText=clean(document.body.textContent);
     if(!bodyText.includes("고객불만 접수")||!bodyText.includes("초동 회신 준수율")) return;
-    labels.forEach(simplifyComplaintCard);
+    const cards=labels.map(simplifyComplaintCard).filter(Boolean);
+    if(cards.length!==4) return;
+    const row=commonParent(cards);
+    if(row){
+      row.classList.add("qmes-complaint-summary-row-wide");
+      row.style.setProperty("width","100%","important");
+      row.style.setProperty("display","grid","important");
+      row.style.setProperty("grid-template-columns","repeat(4,minmax(0,1fr))","important");
+      row.style.setProperty("gap","12px","important");
+    }
   }
 
   function findIsolationInput(){
@@ -244,11 +248,9 @@
     const size=css.fontSize||"14px";
     const weight=css.fontWeight||"500";
     const family=css.fontFamily||"inherit";
-
     scope.style.setProperty("--qmes-ncr-font-size",size);
     scope.style.setProperty("--qmes-ncr-font-weight",weight);
     scope.style.setProperty("--qmes-ncr-font-family",family);
-
     scope.querySelectorAll("tbody td,[role='rowgroup'] [role='cell'],input,select,textarea,button").forEach(el=>{
       el.classList.add("qmes-ncr-content-font");
       el.style.setProperty("font-size",size,"important");
@@ -260,7 +262,6 @@
   let queued=false;
   function apply(){queued=false;markEquipment();markComplaint();unifyNcrTypography();}
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
-
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
   document.addEventListener("click",schedule,true);
   document.addEventListener("qmes:data-updated",schedule);
