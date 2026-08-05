@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V9__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V9__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V10__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V10__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v9-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v10-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -32,9 +32,13 @@
       align-items:stretch!important;
     }
 
-    /* 고객불만 상단 4칸은 글자와 숫자만 남긴다. */
     .qmes-complaint-card-frame,
+    .qmes-complaint-card-frame:hover,
+    .qmes-complaint-card-frame:focus,
+    .qmes-complaint-card-frame:focus-within,
     .qmes-complaint-card-frame *{
+      box-sizing:border-box!important;
+      border:0!important;
       border-color:transparent!important;
       outline:0!important;
       background:transparent!important;
@@ -42,21 +46,25 @@
       background-image:none!important;
       box-shadow:none!important;
       filter:none!important;
-      clip-path:none!important;
-      mask:none!important;
-      -webkit-mask:none!important;
+      transform:none!important;
+      transition:none!important;
     }
     .qmes-complaint-card-frame{
       width:100%!important;
       min-width:0!important;
       max-width:none!important;
-      min-height:68px!important;
-      box-sizing:border-box!important;
+      height:72px!important;
+      min-height:72px!important;
+      max-height:72px!important;
       display:flex!important;
+      flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
-      padding:6px 10px!important;
-      overflow:visible!important;
+      padding:8px 10px!important;
+      margin:0!important;
+      overflow:hidden!important;
+      color:#fff!important;
+      cursor:default!important;
     }
     .qmes-complaint-card-frame::before,
     .qmes-complaint-card-frame::after,
@@ -64,36 +72,44 @@
     .qmes-complaint-card-frame *::after{
       content:none!important;
       display:none!important;
-      border:0!important;
-      background:none!important;
-      background-image:none!important;
-      box-shadow:none!important;
     }
     .qmes-complaint-card-frame svg,
     .qmes-complaint-card-frame img,
     .qmes-complaint-card-frame [role="img"],
     .qmes-complaint-card-frame [class*="icon" i],
     .qmes-complaint-card-frame [class*="alert" i],
-    .qmes-complaint-card-frame .qmes-complaint-decoration-hide{
+    .qmes-complaint-decoration-hide{
       display:none!important;
     }
     .qmes-complaint-content-kept,
+    .qmes-complaint-content-kept:hover,
     .qmes-complaint-content-kept *{
+      width:100%!important;
+      min-width:0!important;
+      margin:0!important;
+      padding:0!important;
       color:#fff!important;
       text-align:center!important;
       text-align-last:center!important;
-      margin-left:auto!important;
-      margin-right:auto!important;
+      line-height:1.2!important;
+      transform:none!important;
     }
     .qmes-complaint-content-kept{
-      width:100%!important;
+      height:56px!important;
       min-height:56px!important;
+      max-height:56px!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
-      gap:2px!important;
-      padding:0!important;
+      gap:4px!important;
+    }
+    .qmes-complaint-content-kept>div,
+    .qmes-complaint-content-kept>span{
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      min-height:18px!important;
     }
 
     .qmes-ncr-content-font,
@@ -169,22 +185,18 @@
 
     frame.classList.add("qmes-complaint-card-frame");
     content.classList.add("qmes-complaint-content-kept");
+    labelNode.style.setProperty("margin","0","important");
+    labelNode.style.setProperty("padding","0","important");
+    labelNode.style.setProperty("line-height","18px","important");
+    labelNode.style.setProperty("min-height","18px","important");
+    labelNode.style.setProperty("display","flex","important");
+    labelNode.style.setProperty("align-items","center","important");
+    labelNode.style.setProperty("justify-content","center","important");
 
     frame.querySelectorAll("svg,img,[role='img'],[class*='icon' i],[class*='alert' i]").forEach(element=>{
       element.classList.add("qmes-complaint-decoration-hide");
       element.setAttribute("aria-hidden","true");
     });
-
-    Array.from(frame.children).forEach(child=>{
-      if(child===content||child.contains(content)||content.contains(child)) return;
-      const text=clean(child.textContent);
-      const hasIcon=Boolean(child.querySelector?.("svg,img,[role='img']"));
-      if(hasIcon||!text||/^[!⚠❗]+$/.test(text)){
-        child.classList.add("qmes-complaint-decoration-hide");
-        child.setAttribute("aria-hidden","true");
-      }
-    });
-
     return frame;
   }
 
@@ -240,10 +252,12 @@
 
   let queued=false;
   function apply(){queued=false;markEquipment();markComplaint();unifyNcrTypography();}
-  function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
+  function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(apply));}
+  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
   document.addEventListener("click",schedule,true);
+  document.addEventListener("mousemove",schedule,{passive:true});
   document.addEventListener("qmes:data-updated",schedule);
   window.addEventListener("resize",schedule);
+  window.addEventListener("load",schedule);
   schedule();
 })();
