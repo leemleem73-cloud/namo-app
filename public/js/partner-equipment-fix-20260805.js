@@ -9,56 +9,37 @@
   const style=document.createElement("style");
   style.id="qmes-partner-equipment-fix-20260805-style";
   style.textContent=`
-    /* 위쪽 고객사/공급업체 탭 묶음과 아래 목록 카드 사이의 실제 바깥 간격 */
-    .qmes-partner-tabs-separated{
-      margin-bottom:20px!important;
-    }
+    .qmes-partner-tabs-separated{margin-bottom:20px!important;}
 
-    /* 검색창 내부 돋보기 */
     .qmes-partner-search-row{position:relative!important;}
-    .qmes-partner-search-row input{
-      padding-right:40px!important;
-      text-align:center!important;
-    }
+    .qmes-partner-search-row input{padding-right:40px!important;text-align:center!important;}
     .qmes-partner-search-row input::placeholder{text-align:center!important;}
     .qmes-partner-search-button{
-      position:absolute!important;
-      right:4px!important;
-      top:50%!important;
-      transform:translateY(-50%)!important;
-      width:32px!important;
-      min-width:32px!important;
-      height:32px!important;
-      padding:0!important;
-      margin:0!important;
-      border:0!important;
-      background:transparent!important;
-      box-shadow:none!important;
-      z-index:3!important;
+      position:absolute!important;right:4px!important;top:50%!important;
+      transform:translateY(-50%)!important;width:32px!important;min-width:32px!important;
+      height:32px!important;padding:0!important;margin:0!important;border:0!important;
+      background:transparent!important;box-shadow:none!important;z-index:3!important;
     }
     .qmes-partner-search-button svg{width:17px!important;height:17px!important;}
 
-    /* 설비대장 현황의 둥근 카드 위에 따로 남은 선 제거 */
-    .qmes-equipment-panel-parent-line-off,
-    .qmes-equipment-panel-parent-line-off::before,
-    .qmes-equipment-panel-parent-line-off::after{
-      border-top:0!important;
+    /* 둥근 현황 카드는 유지하고, 그 위쪽 레이아웃에서 발생하는 선만 제거 */
+    .qmes-equipment-line-source-off{
+      border-top-width:0!important;
+      border-bottom-width:0!important;
       box-shadow:none!important;
+      background-image:none!important;
     }
-    .qmes-equipment-panel-parent-line-off::before,
-    .qmes-equipment-panel-parent-line-off::after{
+    .qmes-equipment-line-source-off::before,
+    .qmes-equipment-line-source-off::after{
       display:none!important;
       content:none!important;
-    }
-    .qmes-equipment-extra-line-hidden{
-      display:none!important;
       border:0!important;
       box-shadow:none!important;
-      height:0!important;
-      min-height:0!important;
-      margin:0!important;
-      padding:0!important;
-      overflow:hidden!important;
+      background:none!important;
+    }
+    .qmes-equipment-extra-line-hidden{
+      display:none!important;border:0!important;box-shadow:none!important;
+      height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;
     }
   `;
   document.head.appendChild(style);
@@ -73,29 +54,31 @@
   }
 
   function fixPartnerTabGap(){
-    const customerCandidates=all().filter(el=>clean(el.textContent)==="고객사 목록");
-    const supplierCandidates=all().filter(el=>clean(el.textContent)==="공급업체 목록");
-
+    const customers=all().filter(el=>clean(el.textContent)==="고객사 목록");
+    const suppliers=all().filter(el=>clean(el.textContent)==="공급업체 목록");
     let best=null;
-    customerCandidates.forEach(customer=>{
-      supplierCandidates.forEach(supplier=>{
-        const common=nearestCommonParent(customer,supplier);
-        if(!common) return;
-        const rect=common.getBoundingClientRect();
-        const customerRect=customer.getBoundingClientRect();
-        const supplierRect=supplier.getBoundingClientRect();
-        const sameRow=Math.abs(customerRect.top-supplierRect.top)<12;
-        const compact=rect.height>25&&rect.height<180;
-        if(sameRow&&compact&&!best) best=common;
-      });
-    });
-
+    customers.forEach(customer=>suppliers.forEach(supplier=>{
+      const common=nearestCommonParent(customer,supplier);
+      if(!common) return;
+      const rect=common.getBoundingClientRect();
+      const a=customer.getBoundingClientRect();
+      const b=supplier.getBoundingClientRect();
+      if(Math.abs(a.top-b.top)<12&&rect.height>25&&rect.height<180&&!best) best=common;
+    }));
     if(best) best.classList.add("qmes-partner-tabs-separated");
   }
 
+  function isVisibleLineSource(node,targetTop){
+    if(!node||node===document.body) return false;
+    const rect=node.getBoundingClientRect();
+    const css=getComputedStyle(node);
+    const near=rect.bottom<=targetTop+3&&targetTop-rect.bottom<45;
+    const hasLine=parseFloat(css.borderTopWidth)>0||parseFloat(css.borderBottomWidth)>0||css.boxShadow!=="none";
+    return near&&hasLine;
+  }
+
   function fixEquipmentLine(){
-    const titles=all().filter(el=>clean(el.textContent)==="설비대장 현황");
-    titles.forEach(title=>{
+    all().filter(el=>clean(el.textContent)==="설비대장 현황").forEach(title=>{
       let panel=title;
       while(panel&&panel!==document.body){
         const cls=String(panel.className||"");
@@ -104,34 +87,37 @@
       }
       if(!panel||panel===document.body) return;
 
-      /* 카드 자체의 둥근 테두리는 유지하고 바깥 부모의 위 선만 제거 */
-      const parent=panel.parentElement;
-      if(parent) parent.classList.add("qmes-equipment-panel-parent-line-off");
+      const panelTop=panel.getBoundingClientRect().top;
 
-      /* 카드 직전에 별도 구분선 노드가 있으면 그 노드만 숨김 */
-      let prev=panel.previousElementSibling;
-      if(prev){
-        const text=clean(prev.textContent);
-        const rect=prev.getBoundingClientRect();
-        const style=getComputedStyle(prev);
-        const lineLike=!text&&(
-          rect.height<=16||
-          parseFloat(style.borderTopWidth)>0||
-          parseFloat(style.borderBottomWidth)>0
-        );
-        if(lineLike) prev.classList.add("qmes-equipment-extra-line-hidden");
-      }
-
-      /* 바깥 부모의 첫 번째 빈 구분선도 제거 */
-      if(parent){
-        Array.from(parent.children).forEach(child=>{
-          if(child===panel) return;
-          const rect=child.getBoundingClientRect();
-          const text=clean(child.textContent);
-          if(!text&&rect.bottom<=panel.getBoundingClientRect().top&&rect.height<=16){
-            child.classList.add("qmes-equipment-extra-line-hidden");
+      /* 카드 바로 위 형제 또는 얇은 빈 노드 제거 */
+      let level=panel;
+      for(let depth=0;depth<5&&level&&level!==document.body;depth+=1){
+        const prev=level.previousElementSibling;
+        if(prev){
+          const rect=prev.getBoundingClientRect();
+          const empty=!clean(prev.textContent);
+          if(empty&&rect.height<=18){
+            prev.classList.add("qmes-equipment-extra-line-hidden");
+          }else if(isVisibleLineSource(prev,panelTop)){
+            prev.classList.add("qmes-equipment-line-source-off");
           }
-        });
+        }
+
+        const parent=level.parentElement;
+        if(parent&&parent!==document.body){
+          const css=getComputedStyle(parent);
+          if(parseFloat(css.borderTopWidth)>0||parseFloat(css.borderBottomWidth)>0||css.boxShadow!=="none"){
+            parent.classList.add("qmes-equipment-line-source-off");
+          }
+          Array.from(parent.children).forEach(child=>{
+            if(child===level||child.contains(panel)||panel.contains(child)) return;
+            const rect=child.getBoundingClientRect();
+            if(rect.bottom<=panelTop+3&&panelTop-rect.bottom<45&&isVisibleLineSource(child,panelTop)){
+              child.classList.add("qmes-equipment-line-source-off");
+            }
+          });
+        }
+        level=parent;
       }
     });
   }
