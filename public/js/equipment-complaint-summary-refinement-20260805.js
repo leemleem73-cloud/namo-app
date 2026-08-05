@@ -24,18 +24,24 @@
     }
 
     .qmes-complaint-summary-card{
+      position:relative!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
       text-align:center!important;
-      border-color:#334155!important;
+      border:0!important;
+      outline:0!important;
       background:#0f1e32!important;
       box-shadow:none!important;
+      background-image:none!important;
     }
     .qmes-complaint-summary-card::before,
     .qmes-complaint-summary-card::after{
-      border-color:transparent!important;
+      display:none!important;
+      content:none!important;
+      border:0!important;
+      outline:0!important;
       background:none!important;
       box-shadow:none!important;
     }
@@ -46,7 +52,14 @@
       justify-content:center!important;
     }
     .qmes-complaint-summary-card *{color:#ffffff!important;}
-    .qmes-complaint-summary-card [class*="border-"]{border-color:#334155!important;}
+    .qmes-complaint-summary-card svg,
+    .qmes-complaint-summary-card img,
+    .qmes-complaint-summary-card [role="img"],
+    .qmes-complaint-summary-card [class*="icon"],
+    .qmes-complaint-summary-card [class*="Icon"],
+    .qmes-complaint-summary-card .qmes-complaint-decoration{
+      display:none!important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -93,6 +106,25 @@
     return null;
   }
 
+  function hideComplaintDecorations(card){
+    card.querySelectorAll("svg,img,[role='img'],[class*='icon'],[class*='Icon']").forEach(node=>{
+      node.classList.add("qmes-complaint-decoration");
+    });
+    Array.from(card.children).forEach(child=>{
+      const text=clean(child.textContent);
+      const css=getComputedStyle(child);
+      const rect=child.getBoundingClientRect();
+      const decorative=!text&&(
+        css.position==="absolute"||
+        parseFloat(css.borderLeftWidth)>0||
+        parseFloat(css.borderRightWidth)>0||
+        parseFloat(css.borderTopWidth)>0||
+        parseFloat(css.borderBottomWidth)>0
+      )&&rect.width<100&&rect.height<100;
+      if(decorative) child.classList.add("qmes-complaint-decoration");
+    });
+  }
+
   function markComplaintOnly(){
     document.querySelectorAll(".qmes-complaint-summary-card,.qmes-summary-simple-card").forEach(card=>{
       card.classList.remove("qmes-complaint-summary-card","qmes-summary-simple-card");
@@ -103,7 +135,10 @@
     ["당월 접수","진행중","진행 중","완료","초동 회신 준수율"].forEach(label=>{
       exactNodes(scope,label).forEach(el=>{
         const card=nearestCard(el,scope.parentElement||document.body);
-        if(card&&scope.contains(card)) card.classList.add("qmes-complaint-summary-card");
+        if(card&&scope.contains(card)){
+          card.classList.add("qmes-complaint-summary-card");
+          hideComplaintDecorations(card);
+        }
       });
     });
   }
