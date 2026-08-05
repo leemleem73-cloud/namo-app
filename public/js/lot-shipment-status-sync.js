@@ -2,9 +2,23 @@
   "use strict";
   if(!document.querySelector('script[data-qmes-ui-refinement-20260805]')){
     const script=document.createElement("script");
-    script.src="./js/qmes-ui-refinement-20260805.js?v=20260805-4";
+    script.src="./js/qmes-ui-refinement-20260805.js?v=20260805-5";
     script.async=false;
     script.dataset.qmesUiRefinement20260805="true";
+    document.head.appendChild(script);
+  }
+  if(!document.querySelector('script[data-qmes-lot-detail-alignment-20260805]')){
+    const script=document.createElement("script");
+    script.src="./js/lot-detail-alignment-20260805.js?v=20260805-2";
+    script.async=false;
+    script.dataset.qmesLotDetailAlignment20260805="true";
+    document.head.appendChild(script);
+  }
+  if(!document.querySelector('script[data-qmes-ncr-separate-action-buttons]')){
+    const script=document.createElement("script");
+    script.src="./js/ncr-separate-action-buttons.js?v=20260805-1";
+    script.async=false;
+    script.dataset.qmesNcrSeparateActionButtons="true";
     document.head.appendChild(script);
   }
 })();
