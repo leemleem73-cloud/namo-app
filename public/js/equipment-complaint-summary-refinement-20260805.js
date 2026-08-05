@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V2__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V2__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V3__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_20260805_V3__=true;
 
   const clean=v=>String(v||"").replace(/\s+/g," ").trim();
-  const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5"));
+  const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const labels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-20260805-style-v2";
+  style.id="qmes-equipment-complaint-summary-refinement-20260805-style-v3";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -77,6 +77,18 @@
       text-align:center!important;
       white-space:nowrap!important;
     }
+
+    .qmes-ncr-content-font,
+    .qmes-ncr-content-font input,
+    .qmes-ncr-content-font select,
+    .qmes-ncr-content-font textarea,
+    .qmes-ncr-content-font button,
+    .qmes-ncr-content-font span,
+    .qmes-ncr-content-font div{
+      font-size:var(--qmes-ncr-font-size,14px)!important;
+      font-weight:var(--qmes-ncr-font-weight,500)!important;
+      font-family:var(--qmes-ncr-font-family,inherit)!important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -140,7 +152,6 @@
   function rebuildCard(card,label){
     if(card.dataset.qmesPlainComplaintCard===label) return;
     const value=extractValue(card,label);
-
     while(card.firstChild) card.removeChild(card.firstChild);
 
     const labelEl=document.createElement("div");
@@ -154,7 +165,6 @@
     card.append(labelEl,valueEl);
     card.className="qmes-complaint-plain-card";
     card.dataset.qmesPlainComplaintCard=label;
-
     card.removeAttribute("style");
     card.style.setProperty("height","72px","important");
     card.style.setProperty("min-height","72px","important");
@@ -168,14 +178,60 @@
   function markComplaint(){
     const bodyText=clean(document.body.textContent);
     if(!bodyText.includes("고객불만 접수")||!bodyText.includes("초동 회신 준수율")) return;
-
     const pairs=labels.map(label=>({label,card:findCard(findLabel(label),label)}));
     if(pairs.some(item=>!item.card)||new Set(pairs.map(item=>item.card)).size!==4) return;
     pairs.forEach(item=>rebuildCard(item.card,item.label));
   }
 
+  function findIsolationInput(){
+    const label=all().find(el=>clean(el.textContent)==="격리 위치"||clean(el.textContent)==="격리위치");
+    if(!label) return null;
+    let scope=label.parentElement;
+    for(let i=0;scope&&i<4;i++,scope=scope.parentElement){
+      const control=scope.querySelector("input,textarea,select");
+      if(control) return control;
+    }
+    return null;
+  }
+
+  function findNcrStatusScope(){
+    const title=all().find(el=>clean(el.textContent)==="부적합 현황");
+    if(!title) return null;
+    let scope=title.parentElement;
+    while(scope&&scope!==document.body){
+      const rect=scope.getBoundingClientRect();
+      const hasTable=Boolean(scope.querySelector("table,tbody,[role='table'],[role='rowgroup']"));
+      if(hasTable&&rect.width>500) return scope;
+      scope=scope.parentElement;
+    }
+    return null;
+  }
+
+  function unifyNcrTypography(){
+    const reference=findIsolationInput();
+    const scope=findNcrStatusScope();
+    if(!reference||!scope) return;
+    const css=getComputedStyle(reference);
+    const size=css.fontSize||"14px";
+    const weight=css.fontWeight||"500";
+    const family=css.fontFamily||"inherit";
+
+    scope.style.setProperty("--qmes-ncr-font-size",size);
+    scope.style.setProperty("--qmes-ncr-font-weight",weight);
+    scope.style.setProperty("--qmes-ncr-font-family",family);
+
+    scope.querySelectorAll("tbody td,[role='rowgroup'] [role='cell'],input,select,textarea").forEach(el=>{
+      el.classList.add("qmes-ncr-content-font");
+    });
+  }
+
   let queued=false;
-  function apply(){queued=false;markEquipment();markComplaint();}
+  function apply(){
+    queued=false;
+    markEquipment();
+    markComplaint();
+    unifyNcrTypography();
+  }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
 
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
