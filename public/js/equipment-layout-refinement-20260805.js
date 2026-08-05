@@ -7,8 +7,22 @@
   const style=document.createElement("style");
   style.id="qmes-equipment-layout-refinement-20260805-style";
   style.textContent=`
-    .qmes-equipment-kpi-block{margin-bottom:18px!important;}
-    .qmes-equipment-nav-block{margin-top:18px!important;margin-bottom:18px!important;}
+    /* 설비관리 제목 아래 중복 구분선 제거 */
+    .qmes-equipment-main-title{
+      border-bottom:0!important;
+      padding-bottom:0!important;
+    }
+
+    /* 등록 설비 카드와 하단 메뉴 사이를 아래 콘텐츠 간격만큼 분리 */
+    .qmes-equipment-kpi-block{
+      margin-bottom:24px!important;
+    }
+    .qmes-equipment-nav-block{
+      margin-top:0!important;
+      margin-bottom:24px!important;
+    }
+
+    /* 설비대장·정기점검·고장수리 신규등록 버튼 세로 중앙 정렬 */
     .qmes-equipment-section-title{
       align-items:center!important;
       min-height:54px!important;
@@ -40,12 +54,31 @@
     }
     if(!root||root===document.body) return;
 
+    /* 최상단 설비관리 제목 행의 하단선만 제거 */
+    let mainTitleRow=equipmentTitle.parentElement;
+    while(mainTitleRow&&mainTitleRow!==root){
+      const classes=String(mainTitleRow.className||"");
+      if(classes.includes("border-b")){
+        mainTitleRow.classList.add("qmes-equipment-main-title");
+        break;
+      }
+      mainTitleRow=mainTitleRow.parentElement;
+    }
+
     const navButtons=Array.from(root.querySelectorAll("button")).filter(button=>["일일점검","설비대장","정기점검·교정","고장·수리 이력"].includes(clean(button.textContent)));
     if(navButtons.length>=4){
       const nav=navButtons[0].parentElement;
       nav?.classList.add("qmes-equipment-nav-block");
-      const previous=nav?.previousElementSibling;
-      if(previous) previous.classList.add("qmes-equipment-kpi-block");
+
+      /* 메뉴 바로 위에서 '등록 설비' 수치를 포함하는 KPI 카드 묶음을 직접 찾음 */
+      let previous=nav?.previousElementSibling;
+      while(previous&&previous!==equipmentTitle.parentElement){
+        if(clean(previous.textContent).includes("등록 설비")){
+          previous.classList.add("qmes-equipment-kpi-block");
+          break;
+        }
+        previous=previous.previousElementSibling;
+      }
     }
 
     ["설비대장","정기점검·교정","고장·수리 이력"].forEach(titleText=>{
