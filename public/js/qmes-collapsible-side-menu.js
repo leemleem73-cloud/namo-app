@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V1__) return;
-  window.__QMES_SYNC_SIDEBAR_V1__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V2__) return;
+  window.__QMES_SYNC_SIDEBAR_V2__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -17,11 +17,12 @@
   };
   const groups=Object.keys(menuMap);
   const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
-  const topLabel=b=>clean(b?.textContent);
-  const findTop=label=>topButtons().find(b=>topLabel(b)===label);
+  const topLabel=button=>clean(button?.querySelector('span')?.textContent||button?.textContent);
+  const findTop=label=>topButtons().find(button=>topLabel(button)===label);
 
-  ['qmes-left-menu','qmes-left-native-menu','qmes-context-side-menu','qmes-stable-sidebar','qmes-safe-sidebar'].forEach(id=>document.getElementById(id)?.remove());
-  ['qmes-left-menu-style','qmes-left-native-menu-style','qmes-context-side-menu-style','qmes-stable-sidebar-style','qmes-safe-sidebar-style','qmes-top-submenu-fix-style','qmes-restore-vertical-dropdown-style'].forEach(id=>document.getElementById(id)?.remove());
+  ['qmes-sync-sidebar','qmes-sync-hamburger','qmes-left-menu','qmes-left-native-menu','qmes-context-side-menu','qmes-stable-sidebar','qmes-safe-sidebar'].forEach(id=>document.getElementById(id)?.remove());
+  ['qmes-sync-sidebar-style','qmes-left-menu-style','qmes-left-native-menu-style','qmes-context-side-menu-style','qmes-stable-sidebar-style','qmes-safe-sidebar-style','qmes-top-submenu-fix-style','qmes-restore-vertical-dropdown-style'].forEach(id=>document.getElementById(id)?.remove());
+  document.body?.classList.remove('qmes-side-open');
 
   const style=document.createElement('style');
   style.id='qmes-sync-sidebar-style';
@@ -41,7 +42,7 @@
     #qmes-sync-sidebar .qmes-side-item:hover{background:#f4f7fa;color:#172033}
     #qmes-sync-sidebar .qmes-side-item.is-active{background:#edf4ff;color:#175cd3}
     #qmes-sync-sidebar .qmes-side-item.is-active:before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:#2563eb}
-    #qmes-sync-hamburger{position:fixed;left:12px;top:var(--qmes-hamburger-top,82px);z-index:10990;width:36px;height:36px;border:1px solid #dce2e8;border-radius:8px;background:#fff;color:#334155;box-shadow:0 2px 7px rgba(15,23,42,.06);font-size:19px;line-height:1;cursor:pointer}
+    #qmes-sync-hamburger{position:fixed;left:var(--qmes-hamburger-left,12px);top:var(--qmes-hamburger-top,82px);z-index:10990;width:34px;height:34px;padding:0;border:1px solid #dce2e8;border-radius:8px;background:#fff;color:#334155;box-shadow:0 2px 7px rgba(15,23,42,.06);font-size:18px;line-height:32px;text-align:center;cursor:pointer}
     body.qmes-side-open #qmes-sync-hamburger{display:none}
     body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:220px!important;width:calc(100% - 220px)!important;box-sizing:border-box;transition:margin-left .18s ease,width .18s ease}
     @media(max-width:900px){#qmes-sync-sidebar{width:190px}body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important}}
@@ -53,19 +54,133 @@
   side.innerHTML='<div class="qmes-side-head"><div class="qmes-side-title"></div><button class="qmes-side-close" type="button" aria-label="메뉴 접기">×</button></div><div class="qmes-side-items"></div>';
   document.body.appendChild(side);
   const hamburger=document.createElement('button');
-  hamburger.id='qmes-sync-hamburger';hamburger.type='button';hamburger.setAttribute('aria-label','메뉴 열기');hamburger.textContent='☰';document.body.appendChild(hamburger);
+  hamburger.id='qmes-sync-hamburger';
+  hamburger.type='button';
+  hamburger.setAttribute('aria-label','메뉴 열기');
+  hamburger.textContent='☰';
+  document.body.appendChild(hamburger);
 
-  let currentGroup='';let activeLabel='';let internal=false;
-  function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar')||document.querySelector('.qmes-top-menu');const bottom=bar?Math.round(bar.getBoundingClientRect().bottom):72;document.documentElement.style.setProperty('--qmes-side-top',bottom+'px');document.documentElement.style.setProperty('--qmes-hamburger-top',(bottom+10)+'px');}
-  function render(group){if(!menuMap[group])return;currentGroup=group;side.querySelector('.qmes-side-title').textContent=group;const wrap=side.querySelector('.qmes-side-items');wrap.replaceChildren();menuMap[group].forEach((item,i)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.index=i;b.textContent=item.label;wrap.appendChild(b);});setPositions();}
-  function open(group){render(group);document.body.classList.add('qmes-side-open');}
-  function close(){document.body.classList.remove('qmes-side-open');}
-  function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label));}
-  function navigate(item){if(!item)return;if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0);}activeLabel=item.label;render(currentGroup);return;}const existing=findSub(item.sub);if(existing){activeLabel=item.label;render(currentGroup);existing.click();return;}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>{const sub=findSub(item.sub);if(sub){activeLabel=item.label;render(currentGroup);sub.click();}}));}
+  let currentGroup='';
+  let activeLabel='';
+  let internal=false;
 
-  side.addEventListener('click',e=>{if(e.target.closest('.qmes-side-close')){close();return;}const b=e.target.closest('.qmes-side-item');if(!b)return;navigate(menuMap[currentGroup]?.[Number(b.dataset.index)]);});
-  hamburger.addEventListener('click',()=>{if(currentGroup)open(currentGroup);});
-  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const label=groups.find(g=>topLabel(top)===g);if(!label)return;open(label);},false);
-  document.addEventListener('click',e=>{const drop=e.target.closest('#qmes-all-menu-dropdown button');if(!drop)return;activeLabel=clean(drop.textContent);if(currentGroup)render(currentGroup);},true);
-  window.addEventListener('resize',setPositions);window.addEventListener('load',setPositions);setPositions();
+  function setPositions(){
+    const bar=document.querySelector('.qmes-top-menu-bar')||document.querySelector('.qmes-top-menu');
+    const bottom=bar?Math.round(bar.getBoundingClientRect().bottom):72;
+    document.documentElement.style.setProperty('--qmes-side-top',bottom+'px');
+    const dash=findTop('대시보드');
+    if(dash){
+      const rect=dash.getBoundingClientRect();
+      const size=34;
+      document.documentElement.style.setProperty('--qmes-hamburger-left',Math.max(6,Math.round(rect.left-size-8))+'px');
+      document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(rect.top+(rect.height-size)/2)+'px');
+    }
+  }
+
+  function render(group){
+    if(!menuMap[group])return;
+    currentGroup=group;
+    side.querySelector('.qmes-side-title').textContent=group;
+    const wrap=side.querySelector('.qmes-side-items');
+    wrap.replaceChildren();
+    menuMap[group].forEach((item,index)=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');
+      button.dataset.index=String(index);
+      button.textContent=item.label;
+      wrap.appendChild(button);
+    });
+    setPositions();
+  }
+
+  function open(group){
+    if(!menuMap[group])return;
+    render(group);
+    document.body.classList.add('qmes-side-open');
+  }
+
+  function close(){
+    document.body.classList.remove('qmes-side-open');
+    setPositions();
+  }
+
+  function findSub(label){
+    return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===clean(label));
+  }
+
+  function navigate(item){
+    if(!item)return;
+    if(item.direct){
+      const top=findTop(item.direct);
+      if(top){
+        internal=true;
+        top.click();
+        setTimeout(()=>{internal=false;},0);
+      }
+      activeLabel=item.label;
+      render(currentGroup);
+      return;
+    }
+    const existing=findSub(item.sub);
+    if(existing){
+      activeLabel=item.label;
+      render(currentGroup);
+      existing.click();
+      return;
+    }
+    const top=findTop(item.group);
+    if(!top)return;
+    internal=true;
+    top.click();
+    setTimeout(()=>{internal=false;},0);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const sub=findSub(item.sub);
+      if(sub){
+        activeLabel=item.label;
+        render(currentGroup);
+        sub.click();
+      }
+    }));
+  }
+
+  side.addEventListener('click',event=>{
+    if(event.target.closest('.qmes-side-close')){close();return;}
+    const button=event.target.closest('.qmes-side-item');
+    if(!button)return;
+    navigate(menuMap[currentGroup]?.[Number(button.dataset.index)]);
+  });
+
+  hamburger.addEventListener('click',()=>{
+    if(currentGroup) open(currentGroup);
+    else open('대시보드');
+  });
+
+  document.addEventListener('click',event=>{
+    if(internal)return;
+    const top=event.target.closest('.qmes-top-menu-button');
+    if(!top)return;
+    const label=groups.find(group=>topLabel(top)===group);
+    if(!label)return;
+    open(label);
+  },true);
+
+  document.addEventListener('click',event=>{
+    const dropdownButton=event.target.closest('#qmes-all-menu-dropdown button');
+    if(!dropdownButton)return;
+    activeLabel=clean(dropdownButton.textContent);
+    if(currentGroup)render(currentGroup);
+  },true);
+
+  document.addEventListener('click',event=>{
+    const logoButton=event.target.closest('header button');
+    if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;
+    activeLabel='';
+    currentGroup='대시보드';
+    close();
+  },true);
+
+  window.addEventListener('resize',setPositions);
+  window.addEventListener('load',setPositions);
+  requestAnimationFrame(setPositions);
 })();
