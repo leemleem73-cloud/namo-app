@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V12__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V12__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V13__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V13__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v12-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v13-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -24,14 +24,20 @@
       justify-content:center!important;
     }
 
+    /* 네 칸을 하나의 연결된 둥근 박스로 표시 */
     .qmes-complaint-summary-row-clean{
       width:100%!important;
       display:grid!important;
       grid-template-columns:repeat(4,minmax(0,1fr))!important;
-      gap:2px!important;
+      gap:0!important;
       align-items:stretch!important;
       padding:0!important;
       margin:0!important;
+      overflow:hidden!important;
+      border:1px solid #475569!important;
+      border-radius:10px!important;
+      background:transparent!important;
+      box-shadow:none!important;
     }
 
     .qmes-complaint-card-frame,
@@ -53,8 +59,9 @@
       align-items:center!important;
       justify-content:center!important;
       overflow:visible!important;
-      border:1px solid #475569!important;
-      border-radius:10px!important;
+      border:0!important;
+      border-right:1px solid #475569!important;
+      border-radius:0!important;
       outline:0!important;
       background:transparent!important;
       background-color:transparent!important;
@@ -66,6 +73,9 @@
       animation:none!important;
       color:#fff!important;
       cursor:default!important;
+    }
+    .qmes-complaint-card-frame:last-child{
+      border-right:0!important;
     }
 
     .qmes-complaint-card-frame *,
@@ -175,8 +185,9 @@
     @media(max-width:760px){
       .qmes-complaint-summary-row-clean{
         grid-template-columns:repeat(2,minmax(0,1fr))!important;
-        gap:2px!important;
       }
+      .qmes-complaint-card-frame:nth-child(2){border-right:0!important;}
+      .qmes-complaint-card-frame:nth-child(-n+2){border-bottom:1px solid #475569!important;}
     }
   `;
   document.head.appendChild(style);
@@ -187,10 +198,7 @@
         let node=element;
         while(node&&node!==document.body){
           const rect=node.getBoundingClientRect();
-          if(rect.width>120&&rect.height>45&&rect.height<220){
-            node.classList.add("qmes-equipment-summary-card");
-            break;
-          }
+          if(rect.width>120&&rect.height>45&&rect.height<220){node.classList.add("qmes-equipment-summary-card");break;}
           node=node.parentElement;
         }
       });
@@ -203,9 +211,7 @@
     return text===label;
   }
 
-  function findLabel(label){
-    return all().find(element=>labelMatch(clean(element.textContent),label));
-  }
+  function findLabel(label){return all().find(element=>labelMatch(clean(element.textContent),label));}
 
   function isCardLike(element){
     if(!element||element===document.body) return false;
@@ -309,17 +315,8 @@
   }
 
   let queued=false;
-  function apply(){
-    queued=false;
-    markEquipment();
-    markComplaint();
-    unifyNcrTypography();
-  }
-  function schedule(){
-    if(queued) return;
-    queued=true;
-    requestAnimationFrame(()=>requestAnimationFrame(apply));
-  }
+  function apply(){queued=false;markEquipment();markComplaint();unifyNcrTypography();}
+  function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(apply));}
 
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
   document.addEventListener("click",schedule,true);
