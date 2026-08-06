@@ -16,7 +16,7 @@
   }
   if(!document.querySelector('script[data-qmes-collapsible-side-menu]')){
     const script=document.createElement("script");
-    script.src="./js/qmes-collapsible-side-menu.js?v=20260806-1";
+    script.src="./js/qmes-collapsible-side-menu.js?v=20260806-4";
     script.async=false;
     script.dataset.qmesCollapsibleSideMenu="true";
     document.head.appendChild(script);
