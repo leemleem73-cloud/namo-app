@@ -1,30 +1,34 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V5__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V5__=true;
+  if(window.__QMES_CONTEXT_SIDE_MENU_V6__) return;
+  window.__QMES_CONTEXT_SIDE_MENU_V6__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
-    "생산관리":["생산계획","생산실적","작업지시서","중간배치"],
-    "품질검사":["수입검사","공정검사","출하검사","출하성적서","품질 인터락","SPC"],
-    "재고관리":["재고 현황","입출고 관리","재고관리"],
-    "거래처 현황":["고객사 목록","공급업체 목록","거래처 현황"],
-    "설비관리":["일일점검","설비대장","정기점검·교정","고장·수리 이력","설비관리"],
-    "LOT 추적":["LOT 추적"],
+    "생산관리":["생산실적","작업지시 발행","작업지시서","중간배치"],
+    "품질검사":["수입검사","공정검사","출하검사","SPC","품질 인터락","출하성적서"],
+    "현장입력":["현장입력"],
+    "재고관리":["재고관리"],
+    "거래처 현황":["고객사 목록","공급업체 목록"],
+    "설비관리":["일일점검","설비대장","정기점검·교정","고장·수리 이력"],
+    "LOT 추적":["완제품 추적","원료 역추적"],
     "부적합관리":["부적합","고객불만","4M 변경관리"]
   };
 
   const aliases={
     "SPC":"SPC 대시보드",
+    "작업지시 발행":"작업지시 발행",
     "품질 인터락":"품질 인터락",
-    "재고 현황":"재고관리",
-    "입출고 관리":"재고관리",
+    "현장입력":"현장입력",
+    "재고관리":"재고관리",
     "고객사 목록":"거래처 현황",
     "공급업체 목록":"거래처 현황",
     "일일점검":"설비관리",
     "설비대장":"설비관리",
     "정기점검·교정":"설비관리",
-    "고장·수리 이력":"설비관리"
+    "고장·수리 이력":"설비관리",
+    "완제품 추적":"LOT 추적",
+    "원료 역추적":"LOT 추적"
   };
 
   const topLabels=Object.keys(groups);
@@ -68,9 +72,7 @@
   let navigating=false;
 
   function itemsFor(group){
-    const configured=groups[group]||[];
-    const available=configured.filter(label=>hasControl(label));
-    return available.length?available:configured;
+    return groups[group]||[];
   }
 
   function render(){
@@ -113,7 +115,7 @@
   }
 
   function hideLegacyDropdowns(){
-    Array.from(document.body.querySelectorAll("div,section,ul,nav" )).forEach(node=>{
+    Array.from(document.body.querySelectorAll("div,section,ul,nav")).forEach(node=>{
       if(node===aside||aside.contains(node)||node.contains(aside))return;
       const text=clean(node.textContent);
       if(!text)return;
@@ -123,10 +125,7 @@
       const rect=node.getBoundingClientRect();
       const floating=css.position==="absolute"||css.position==="fixed"||Number(css.zIndex)>20;
       const compact=rect.width>80&&rect.width<900&&rect.height>20&&rect.height<700;
-      const topMenu=node.closest(".qmes-top-menu");
-      if((floating&&compact)||topMenu){
-        node.dataset.qmesLegacyDropdownHidden="true";
-      }
+      if((floating&&compact)||node.closest(".qmes-top-menu")) node.dataset.qmesLegacyDropdownHidden="true";
     });
   }
 
