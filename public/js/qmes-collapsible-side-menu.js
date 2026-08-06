@@ -3,6 +3,14 @@
   if(window.__QMES_COLLAPSIBLE_SIDE_MENU_V2__) return;
   window.__QMES_COLLAPSIBLE_SIDE_MENU_V2__=true;
 
+  if(!document.querySelector('script[data-qmes-lot-iqc-nav-fix]')){
+    const script=document.createElement("script");
+    script.src="./js/qmes-lot-iqc-navigation-fix.js?v=20260806-3";
+    script.async=false;
+    script.dataset.qmesLotIqcNavFix="true";
+    document.head.appendChild(script);
+  }
+
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const items=[
     ["종합 대시보드","대시보드",null],
