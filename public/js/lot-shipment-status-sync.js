@@ -63,6 +63,13 @@
     script.dataset.qmesEquipmentComplaintSummaryRefinement20260805="true";
     document.head.appendChild(script);
   }
+  if(!document.querySelector('script[data-qmes-partner-equipment-action-fix]')){
+    const script=document.createElement("script");
+    script.src="./js/partner-equipment-action-fix-20260806.js?v=20260806-1";
+    script.async=false;
+    script.dataset.qmesPartnerEquipmentActionFix="true";
+    document.head.appendChild(script);
+  }
 })();
 
 (function(){
