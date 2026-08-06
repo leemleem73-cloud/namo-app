@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V3__) return;
-  window.__QMES_SYNC_SIDEBAR_V3__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V4__) return;
+  window.__QMES_SYNC_SIDEBAR_V4__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -28,7 +28,17 @@
   style.id='qmes-sync-sidebar-style';
   style.textContent=`
     .qmes-submenu-row{display:none!important}
-    .qmes-top-menu{padding-left:52px!important;box-sizing:border-box!important}
+    .qmes-top-menu{
+      padding-left:52px!important;
+      box-sizing:border-box!important;
+      transition:transform .18s ease,width .18s ease!important;
+      transform:translateX(0)!important;
+      width:100%!important;
+    }
+    body.qmes-side-open .qmes-top-menu{
+      transform:translateX(220px)!important;
+      width:calc(100% - 220px)!important;
+    }
     .qmes-top-menu .qmes-top-menu-item:first-child{flex-shrink:0!important;min-width:112px!important}
     .qmes-top-menu .qmes-top-menu-item:first-child .qmes-top-menu-button{min-width:112px!important;white-space:nowrap!important;overflow:visible!important}
     .qmes-top-menu-button span{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap!important}
@@ -82,7 +92,7 @@
       width:32px!important;
       height:32px!important;
       padding:0!important;
-      border:1px solid rgba(148,163,184,.35)!important;
+      border:1px solid rgba(148,163,184,.28)!important;
       border-radius:7px!important;
       background:#132238!important;
       color:#cbd5e1!important;
@@ -91,7 +101,7 @@
       line-height:1!important;
       cursor:pointer!important;
     }
-    #qmes-sync-hamburger:hover{background:#1e3048!important;color:#fff!important;border-color:rgba(148,163,184,.55)!important}
+    #qmes-sync-hamburger:hover{background:#1e3048!important;color:#fff!important;border-color:rgba(148,163,184,.48)!important}
     body.qmes-side-open #qmes-sync-hamburger{display:none!important}
 
     body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{
@@ -102,6 +112,7 @@
     }
     @media(max-width:900px){
       #qmes-sync-sidebar{width:190px!important}
+      body.qmes-side-open .qmes-top-menu{transform:translateX(190px)!important;width:calc(100% - 190px)!important}
       body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important}
     }
   `;
@@ -125,15 +136,24 @@
   let internal=false;
 
   function setPositions(){
-    const bar=document.querySelector('.qmes-top-menu-bar')||document.querySelector('.qmes-top-menu');
-    const bottom=bar?Math.round(bar.getBoundingClientRect().bottom):72;
-    document.documentElement.style.setProperty('--qmes-side-top',bottom+'px');
+    const menuBar=document.querySelector('.qmes-top-menu-bar');
+    const nav=document.querySelector('.qmes-top-menu');
     const dash=findTop('대시보드');
-    if(dash){
-      const rect=dash.getBoundingClientRect();
+    if(menuBar){
+      const barRect=menuBar.getBoundingClientRect();
+      document.documentElement.style.setProperty('--qmes-side-top',Math.round(barRect.top)+'px');
+    }else if(nav){
+      const navRect=nav.getBoundingClientRect();
+      document.documentElement.style.setProperty('--qmes-side-top',Math.round(navRect.top)+'px');
+    }
+    if(nav&&dash){
+      const navRect=nav.getBoundingClientRect();
+      const dashRect=dash.getBoundingClientRect();
       const size=32;
-      document.documentElement.style.setProperty('--qmes-hamburger-left',Math.max(8,Math.round(rect.left-size-10))+'px');
-      document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(rect.top+(rect.height-size)/2)+'px');
+      const slotWidth=52;
+      const slotLeft=navRect.left;
+      document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(slotLeft+(slotWidth-size)/2)+'px');
+      document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dashRect.top+(dashRect.height-size)/2)+'px');
     }
   }
 
@@ -163,6 +183,7 @@
     side.style.setProperty('opacity','1','important');
     side.style.setProperty('pointer-events','auto','important');
     side.style.setProperty('transform','translate3d(0,0,0)','important');
+    requestAnimationFrame(setPositions);
   }
 
   function close(){
@@ -172,7 +193,7 @@
     side.style.removeProperty('opacity');
     side.style.removeProperty('pointer-events');
     side.style.removeProperty('transform');
-    setPositions();
+    requestAnimationFrame(setPositions);
   }
 
   function findSub(label){
