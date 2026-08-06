@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SAFE_SIDEBAR_V1__) return;
-  window.__QMES_SAFE_SIDEBAR_V1__=true;
+  if(window.__QMES_SAFE_SIDEBAR_V2__) return;
+  window.__QMES_SAFE_SIDEBAR_V2__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
@@ -29,12 +29,6 @@
   ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu","qmes-stable-sidebar","qmes-safe-sidebar"].forEach(id=>document.getElementById(id)?.remove());
   ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style","qmes-native-dropdown-left-style","qmes-stable-sidebar-style","qmes-safe-sidebar-style"].forEach(id=>document.getElementById(id)?.remove());
   document.body.classList.remove("qmes-context-side-enabled","qmes-stable-sidebar-open","qmes-safe-sidebar-open");
-  document.querySelectorAll("[data-qmes-native-dropdown-left],[data-qmes-sidebar-source],[data-qmes-legacy-dropdown-hidden]").forEach(node=>{
-    node.removeAttribute("data-qmes-native-dropdown-left");
-    node.removeAttribute("data-qmes-sidebar-source");
-    node.removeAttribute("data-qmes-legacy-dropdown-hidden");
-    node.removeAttribute("style");
-  });
 
   const style=document.createElement("style");
   style.id="qmes-safe-sidebar-style";
@@ -47,7 +41,7 @@
     #qmes-safe-sidebar .qmes-safe-item.is-active{background:#edf4ff!important;color:#175cd3!important}
     #qmes-safe-sidebar .qmes-safe-item.is-active:before{content:""!important;position:absolute!important;left:0!important;top:9px!important;bottom:9px!important;width:3px!important;border-radius:3px!important;background:#2563eb!important}
     body.qmes-safe-sidebar-open #root>div>main,body.qmes-safe-sidebar-open #root main,body.qmes-safe-sidebar-open main,body.qmes-safe-sidebar-open .qmes-main-content,body.qmes-safe-sidebar-open .qmes-content{margin-left:218px!important;width:calc(100% - 218px)!important;box-sizing:border-box!important;transition:margin-left .15s ease,width .15s ease!important}
-    [data-qmes-safe-native-menu='true']{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    [data-qmes-native-dropdown-hidden='true']{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
     @media(max-width:900px){#qmes-safe-sidebar{width:184px!important}body.qmes-safe-sidebar-open #root>div>main,body.qmes-safe-sidebar-open #root main,body.qmes-safe-sidebar-open main,body.qmes-safe-sidebar-open .qmes-main-content,body.qmes-safe-sidebar-open .qmes-content{margin-left:184px!important;width:calc(100% - 184px)!important}}
   `;
   document.head.appendChild(style);
@@ -60,11 +54,22 @@
 
   let currentGroup="";
   let activeItem="";
+  const sourceMap=new Map();
 
   function navBottom(){
     const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(node=>topLabels.filter(label=>clean(node.textContent).includes(label)).length>=3);
     return nav?Math.max(0,Math.round(nav.getBoundingClientRect().bottom)):88;
   }
+
+  function nativeControls(){
+    return Array.from(document.querySelectorAll("button,a,[role='button'],[role='menuitem']")).filter(node=>!sidebar.contains(node));
+  }
+
+  function topControl(label){
+    return nativeControls().find(node=>clean(node.textContent)===label)||null;
+  }
+
+  function candidates(label){return aliases[label]||[label];}
 
   function render(group){
     if(!groups[group])return;
@@ -84,29 +89,6 @@
     document.body.classList.add("qmes-safe-sidebar-open");
   }
 
-  function allNativeControls(){
-    return Array.from(document.querySelectorAll("button,a,[role='button'],[role='menuitem']")).filter(node=>!sidebar.contains(node));
-  }
-
-  function topControl(label){
-    return allNativeControls().find(node=>clean(node.textContent)===label)||null;
-  }
-
-  function labelCandidates(label){
-    return aliases[label]||[label];
-  }
-
-  function findNativeItem(label){
-    const controls=allNativeControls();
-    for(const candidate of labelCandidates(label)){
-      const matches=controls.filter(node=>clean(node.textContent)===candidate);
-      const menuMatch=matches.find(node=>node.closest("[role='menu'],[class*='dropdown'],[class*='submenu'],[class*='sub-menu'],.absolute"));
-      if(menuMatch)return menuMatch;
-      if(matches.length)return matches[matches.length-1];
-    }
-    return null;
-  }
-
   function openNativeMenu(group){
     const top=topControl(group);
     if(!top)return;
@@ -114,46 +96,71 @@
     try{top.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,cancelable:true,view:window}));}catch(_){ }
   }
 
-  function markNativeDropdowns(){
-    const labels=groups[currentGroup]||[];
-    document.querySelectorAll("[data-qmes-safe-native-menu='true']").forEach(node=>node.removeAttribute("data-qmes-safe-native-menu"));
-    Array.from(document.querySelectorAll("body *")).forEach(node=>{
-      if(!(node instanceof HTMLElement)||sidebar.contains(node))return;
+  function dropdownsFor(group){
+    const labels=groups[group]||[];
+    return Array.from(document.querySelectorAll("body *")).filter(node=>{
+      if(!(node instanceof HTMLElement)||sidebar.contains(node))return false;
+      if(node.matches("dialog,[role='dialog']")||node.closest("dialog,[role='dialog']"))return false;
       const css=getComputedStyle(node);
-      if(!["absolute","fixed"].includes(css.position))return;
+      if(!["absolute","fixed"].includes(css.position))return false;
       const text=clean(node.textContent);
-      const count=labels.filter(label=>text.includes(label)).length;
-      if(count>=2)node.dataset.qmesSafeNativeMenu="true";
+      return labels.filter(label=>text.includes(label)).length>=2;
     });
   }
 
+  function captureAndHide(group){
+    const dropdowns=dropdownsFor(group);
+    const labels=groups[group]||[];
+    labels.forEach(label=>{
+      for(const candidate of candidates(label)){
+        const target=dropdowns.flatMap(node=>Array.from(node.querySelectorAll("button,a,[role='button'],[role='menuitem']"))).find(node=>clean(node.textContent)===candidate);
+        if(target){sourceMap.set(`${group}::${label}`,target);break;}
+      }
+    });
+    dropdowns.forEach(node=>node.dataset.qmesNativeDropdownHidden="true");
+  }
+
+  function prepare(group){
+    render(group);
+    openNativeMenu(group);
+    setTimeout(()=>captureAndHide(group),25);
+    setTimeout(()=>captureAndHide(group),80);
+  }
+
   function activate(label,attempt=0){
+    const key=`${currentGroup}::${label}`;
+    const target=sourceMap.get(key);
+    if(target&&document.contains(target)){
+      activeItem=label;
+      render(currentGroup);
+      target.click();
+      return;
+    }
     openNativeMenu(currentGroup);
     setTimeout(()=>{
-      const target=findNativeItem(label);
-      if(target){
+      captureAndHide(currentGroup);
+      const retry=sourceMap.get(key);
+      if(retry&&document.contains(retry)){
         activeItem=label;
         render(currentGroup);
-        target.click();
-        return;
+        retry.click();
+      }else if(attempt<5){
+        activate(label,attempt+1);
       }
-      if(attempt<4)activate(label,attempt+1);
-    },55);
+    },60);
   }
 
   sidebar.addEventListener("click",event=>{
     const button=event.target.closest(".qmes-safe-item");
     if(!button)return;
+    event.preventDefault();
     activate(button.dataset.label,0);
   });
 
   function handleTop(control){
     const label=clean(control.textContent);
     if(!topLabels.includes(label))return;
-    render(label);
-    openNativeMenu(label);
-    setTimeout(markNativeDropdowns,30);
-    setTimeout(markNativeDropdowns,90);
+    prepare(label);
   }
 
   document.addEventListener("mouseover",event=>{
@@ -165,6 +172,10 @@
     const control=event.target.closest("button,a,[role='button']");
     if(control&&!sidebar.contains(control))setTimeout(()=>handleTop(control),0);
   },false);
+
+  new MutationObserver(()=>{
+    if(currentGroup)requestAnimationFrame(()=>captureAndHide(currentGroup));
+  }).observe(document.body,{childList:true,subtree:true});
 
   window.addEventListener("resize",()=>document.documentElement.style.setProperty("--qmes-safe-sidebar-top",`${navBottom()}px`));
 })();
