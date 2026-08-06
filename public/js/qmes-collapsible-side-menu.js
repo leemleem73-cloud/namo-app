@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V7__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V7__=true;
+  if(window.__QMES_CONTEXT_SIDE_MENU_V8__) return;
+  window.__QMES_CONTEXT_SIDE_MENU_V8__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
@@ -15,22 +15,9 @@
     "부적합관리":["부적합","고객불만","4M 변경관리"]
   };
 
-  const aliases={
-    "SPC":"SPC 대시보드",
-    "고객사 목록":"거래처 현황",
-    "공급업체 목록":"거래처 현황",
-    "일일점검":"설비관리",
-    "설비대장":"설비관리",
-    "정기점검·교정":"설비관리",
-    "고장·수리 이력":"설비관리",
-    "완제품 추적":"LOT 추적",
-    "원료 역추적":"LOT 추적"
-  };
-
+  const aliases={"SPC":"SPC 대시보드"};
   const topLabels=Object.keys(groups);
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
-  const controls=()=>Array.from(document.querySelectorAll("button,a,[role='button']"));
-  const exactButton=label=>controls().find(node=>clean(node.textContent)===label);
 
   ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu"].forEach(id=>document.getElementById(id)?.remove());
   ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style"].forEach(id=>document.getElementById(id)?.remove());
@@ -55,6 +42,9 @@
   document.body.appendChild(aside);
   document.body.classList.add("qmes-context-side-enabled");
 
+  const nativeControls=()=>Array.from(document.querySelectorAll("button,a,[role='button']")).filter(node=>!aside.contains(node));
+  const exactNative=label=>nativeControls().find(node=>clean(node.textContent)===label);
+
   let currentGroup=sessionStorage.getItem("qmes_context_group")||"대시보드";
   let currentItem=sessionStorage.getItem("qmes_context_item")||groups[currentGroup]?.[0]||"";
   let navigating=false;
@@ -74,6 +64,13 @@
     });
   }
 
+  function clickNative(label){
+    const target=exactNative(label)||exactNative(aliases[label]);
+    if(!target)return false;
+    target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
+    return true;
+  }
+
   function navigate(label){
     if(navigating)return;
     navigating=true;
@@ -81,29 +78,20 @@
     sessionStorage.setItem("qmes_context_group",currentGroup);
     sessionStorage.setItem("qmes_context_item",currentItem);
     render();
-    const top=exactButton(currentGroup);
-    if(top)top.click();
+
+    const top=exactNative(currentGroup);
+    if(top)top.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
+
     setTimeout(()=>{
-      const target=exactButton(label)||exactButton(aliases[label]);
-      if(target&&target!==top)target.click();
+      clickNative(label);
       navigating=false;
-    },100);
+    },180);
   }
 
   function hideLegacyDropdowns(){
     document.querySelectorAll("[role='menu'],[class*='dropdown'],[class*='submenu'],[class*='sub-menu']").forEach(node=>{
       if(node===aside||aside.contains(node))return;
       node.dataset.qmesLegacyDropdownHidden="true";
-    });
-    Array.from(document.body.querySelectorAll("div,section,ul,nav")).forEach(node=>{
-      if(node===aside||aside.contains(node)||node.contains(aside))return;
-      const css=getComputedStyle(node);
-      const rect=node.getBoundingClientRect();
-      if(!["absolute","fixed"].includes(css.position))return;
-      if(rect.width<80||rect.width>900||rect.height<20||rect.height>700)return;
-      const text=clean(node.textContent);
-      const hasSeveral=Object.values(groups).flat().filter(label=>text.includes(label)).length>=2;
-      if(hasSeveral)node.dataset.qmesLegacyDropdownHidden="true";
     });
   }
 
