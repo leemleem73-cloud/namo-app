@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V14__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V14__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V15__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V15__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v14-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v15-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -24,13 +24,10 @@
       justify-content:center!important;
     }
 
-    @keyframes qmes-complaint-dot-slide{
-      0%{left:8%;}
-      100%{left:92%;}
-    }
-
     .qmes-complaint-summary-row-clean{
       position:relative!important;
+      isolation:isolate!important;
+      box-sizing:border-box!important;
       width:100%!important;
       display:grid!important;
       grid-template-columns:repeat(4,minmax(0,1fr))!important;
@@ -41,24 +38,21 @@
       overflow:hidden!important;
       border:1px solid #475569!important;
       border-radius:10px!important;
-      background:transparent!important;
+      background-color:transparent!important;
+      background-image:
+        linear-gradient(to bottom,#475569,#475569),
+        linear-gradient(to bottom,#475569,#475569),
+        linear-gradient(to bottom,#475569,#475569)!important;
+      background-repeat:no-repeat!important;
+      background-position:25% 0,50% 0,75% 0!important;
+      background-size:1px 100%,1px 100%,1px 100%!important;
       box-shadow:none!important;
     }
-    .qmes-complaint-summary-row-clean::before{
-      content:""!important;
-      display:block!important;
-      position:absolute!important;
-      z-index:3!important;
-      top:7px!important;
-      left:8%;
-      width:5px!important;
-      height:5px!important;
-      border:0!important;
-      border-radius:50%!important;
-      background:#94a3b8!important;
-      opacity:.55!important;
-      pointer-events:none!important;
-      animation:qmes-complaint-dot-slide 8s ease-in-out infinite alternate!important;
+    .qmes-complaint-summary-row-clean::before,
+    .qmes-complaint-summary-row-clean::after{
+      content:none!important;
+      display:none!important;
+      animation:none!important;
     }
 
     .qmes-complaint-card-frame,
@@ -67,7 +61,6 @@
     .qmes-complaint-card-frame:focus,
     .qmes-complaint-card-frame:focus-visible,
     .qmes-complaint-card-frame:focus-within{
-      position:relative!important;
       box-sizing:border-box!important;
       width:100%!important;
       min-width:0!important;
@@ -75,7 +68,7 @@
       min-height:88px!important;
       max-height:88px!important;
       margin:0!important;
-      padding:12px 10px 10px!important;
+      padding:10px!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
@@ -95,20 +88,6 @@
       color:#fff!important;
       cursor:default!important;
     }
-    .qmes-complaint-card-frame:not(:last-child)::after{
-      content:""!important;
-      display:block!important;
-      position:absolute!important;
-      z-index:2!important;
-      top:0!important;
-      right:0!important;
-      bottom:0!important;
-      width:1px!important;
-      height:auto!important;
-      border:0!important;
-      background:#475569!important;
-      pointer-events:none!important;
-    }
 
     .qmes-complaint-card-frame *,
     .qmes-complaint-card-frame *:hover,
@@ -126,6 +105,7 @@
       color:#fff!important;
     }
     .qmes-complaint-card-frame::before,
+    .qmes-complaint-card-frame::after,
     .qmes-complaint-card-frame *::before,
     .qmes-complaint-card-frame *::after{
       content:none!important;
@@ -145,16 +125,14 @@
       box-sizing:border-box!important;
       width:100%!important;
       min-width:0!important;
-      height:64px!important;
       min-height:64px!important;
-      max-height:64px!important;
       margin:0!important;
       padding:0!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
-      gap:4px!important;
+      gap:5px!important;
       overflow:visible!important;
       text-align:center!important;
       text-align-last:center!important;
@@ -213,13 +191,15 @@
       font-family:var(--qmes-ncr-font-family,inherit)!important;
     }
 
-    @media(prefers-reduced-motion:reduce){
-      .qmes-complaint-summary-row-clean::before{animation:none!important;left:50%!important;}
-    }
     @media(max-width:760px){
-      .qmes-complaint-summary-row-clean{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-      .qmes-complaint-card-frame:nth-child(2)::after{display:none!important;}
-      .qmes-complaint-card-frame:nth-child(-n+2){border-bottom:1px solid #475569!important;}
+      .qmes-complaint-summary-row-clean{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        background-image:
+          linear-gradient(to bottom,#475569,#475569),
+          linear-gradient(to right,#475569,#475569)!important;
+        background-position:50% 0,0 50%!important;
+        background-size:1px 100%,100% 1px!important;
+      }
     }
   `;
   document.head.appendChild(style);
