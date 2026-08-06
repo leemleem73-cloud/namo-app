@@ -14,6 +14,13 @@
     script.dataset.qmesLotDetailAlignment20260805="true";
     document.head.appendChild(script);
   }
+  if(!document.querySelector('script[data-qmes-iqc-ledger-order-pagination-20260806]')){
+    const script=document.createElement("script");
+    script.src="./js/iqc-ledger-order-pagination-20260806.js?v=20260806-1";
+    script.async=false;
+    script.dataset.qmesIqcLedgerOrderPagination20260806="true";
+    document.head.appendChild(script);
+  }
   if(!document.querySelector('script[data-qmes-collapsible-side-menu]')){
     const script=document.createElement("script");
     script.src="./js/qmes-collapsible-side-menu.js?v=20260806-6";
