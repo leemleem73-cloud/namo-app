@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_LOT_DETAIL_LINK_V17__) return;
-  window.__QMES_LOT_DETAIL_LINK_V17__=true;
+  if(window.__QMES_LOT_DETAIL_LINK_V18__) return;
+  window.__QMES_LOT_DETAIL_LINK_V18__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,small,strong,td,th,button,a"));
@@ -17,7 +17,7 @@
   };
 
   const style=document.createElement("style");
-  style.id="qmes-lot-detail-link-v17-style";
+  style.id="qmes-lot-detail-link-v18-style";
   style.textContent=`
     .qmes-production-table tbody td:last-child{text-align:center!important;white-space:nowrap!important;}
     .qmes-production-table tbody td:last-child>*{display:inline-flex!important;width:fit-content!important;max-width:100%!important;min-height:24px!important;margin:0 auto!important;padding:3px 7px!important;align-items:center!important;justify-content:center!important;}
@@ -32,9 +32,8 @@
     .qmes-lot-production-horizontal .qmes-lot-detail-row>*{width:auto!important;min-width:0!important;max-width:100%!important;flex:0 1 auto!important;margin:0!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important;}
     .qmes-lot-production-horizontal .qmes-lot-detail-row>*:last-child{flex:1 1 240px!important;}
     .qmes-lot-production-hidden{display:none!important;}
-    .qmes-lot-linked-target{cursor:pointer!important;position:relative!important;}
+    .qmes-lot-linked-target{cursor:pointer!important;}
     .qmes-lot-linked-target:hover{text-decoration:underline!important;text-underline-offset:3px!important;}
-    .qmes-lot-linked-badge{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;margin-left:7px!important;padding:2px 7px!important;border:1px solid #475569!important;border-radius:999px!important;background:#0f172a!important;color:#cbd5e1!important;font-size:10px!important;font-weight:700!important;line-height:16px!important;vertical-align:middle!important;}
     .qmes-lot-shipment-grid{align-items:stretch!important;gap:10px!important;}
     .qmes-lot-shipment-grid>div{display:flex!important;min-height:68px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:9px 8px!important;text-align:center!important;}
   `;
@@ -89,9 +88,6 @@
     const open=event=>{event.preventDefault();event.stopPropagation();window.qmesOpenLotLinkedModule(tab,query);};
     node.addEventListener("click",open,true);
     node.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" ")open(event);});
-    if(!node.querySelector(":scope > .qmes-lot-linked-badge")){
-      const badge=document.createElement("span");badge.className="qmes-lot-linked-badge";badge.textContent="바로가기";node.appendChild(badge);
-    }
   }
 
   function linkRawMaterials(){
@@ -100,8 +96,8 @@
       const panel=panelOf(heading);if(!panel)return;
       Array.from(panel.querySelectorAll("tbody tr")).forEach(row=>{
         const cells=Array.from(row.querySelectorAll("td"));if(!cells.length)return;
-        const lotCell=cells.find(cell=>/^[A-Z0-9_-]{4,}$/i.test(clean(cell.textContent).replace(/바로가기/g,"")))||cells[0];
-        const lot=clean(lotCell?.textContent).replace(/바로가기/g,"").trim();
+        const lotCell=cells.find(cell=>/^[A-Z0-9_-]{4,}$/i.test(clean(cell.textContent)))||cells[0];
+        const lot=clean(lotCell?.textContent).trim();
         if(lot) addLink(lotCell,"iqc",lot,"수입검사");
         const iqcCell=cells.find(cell=>/수입검사|합격|불합격|미검사/.test(clean(cell.textContent)));
         if(iqcCell&&lot) addLink(iqcCell,"iqc",lot,"수입검사");
