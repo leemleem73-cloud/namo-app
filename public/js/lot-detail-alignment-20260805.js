@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_LOT_IQC_LINK_V27__) return;
-  window.__QMES_LOT_IQC_LINK_V27__=true;
+  if(window.__QMES_LOT_IQC_LINK_V28__) return;
+  window.__QMES_LOT_IQC_LINK_V28__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const getStore=key=>{try{return sessionStorage.getItem(key)||"";}catch(_){return "";}};
@@ -10,7 +10,7 @@
   const clearLink=()=>["qmes_lot_link_pending","qmes_lot_link_material_lot","qmes_lot_link_material_name","qmes_lot_link_supplier"].forEach(removeStore);
 
   const style=document.createElement("style");
-  style.id="qmes-lot-iqc-link-v27-style";
+  style.id="qmes-lot-iqc-link-v28-style";
   style.textContent=`
     .qmes-lot-iqc-cell-inner{display:inline-flex!important;align-items:center!important;gap:7px!important;white-space:nowrap!important}
     .qmes-lot-iqc-link-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:58px!important;height:26px!important;padding:0 9px!important;border:1px solid #475569!important;border-radius:7px!important;background:#172033!important;color:#dbe7f3!important;font-size:10px!important;font-weight:800!important;cursor:pointer!important}
@@ -42,11 +42,10 @@
     });
   }
 
-  function clickMenu(text){return Array.from(document.querySelectorAll("button")).find(button=>!button.closest("#qmes-side-menu")&&clean(button.textContent).replace(/[›▶▼]/g,"").trim()===text);}
   function moveToIqc(){
-    const quality=clickMenu("품질검사");
-    if(quality){quality.click();setTimeout(()=>{const iqc=Array.from(document.querySelectorAll("button")).find(button=>!button.closest("#qmes-side-menu")&&/수입검사/.test(clean(button.textContent))&&!/바로가기/.test(clean(button.textContent)));if(iqc)iqc.click();else{setStore("qmes_current_tab","iqc");location.reload();}},180);}
-    else{setStore("qmes_current_tab","iqc");location.reload();}
+    setStore("qmes_current_tab","iqc");
+    setStore("qmes_open_menu","qualityMenu");
+    window.location.reload();
   }
 
   function searchInput(){return Array.from(document.querySelectorAll("input[type='search'],input[type='text'],input:not([type])")).find(node=>/검색/.test(String(node.placeholder||"")));}
@@ -67,10 +66,10 @@
 
   document.addEventListener("click",event=>{
     const button=event.target.closest?.(".qmes-lot-iqc-link-btn");if(!button)return;
-    event.preventDefault();event.stopPropagation();
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     setStore("qmes_lot_link_pending","1");setStore("qmes_lot_link_material_lot",button.dataset.lot);setStore("qmes_lot_link_material_name",button.dataset.name);setStore("qmes_lot_link_supplier",button.dataset.supplier);
-    setTimeout(moveToIqc,0);[350,650,1000,1500].forEach(delay=>setTimeout(showContext,delay));
-  });
+    moveToIqc();
+  },true);
 
   let queued=false;function apply(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;addLinks();showContext();});}
   new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});window.addEventListener("load",apply);document.addEventListener("qmes:data-updated",apply);apply();
