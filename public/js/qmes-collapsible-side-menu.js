@@ -1,27 +1,39 @@
 (function(){
   "use strict";
-  if(window.__QMES_LEFT_MENU_V2__) return;
-  window.__QMES_LEFT_MENU_V2__=true;
+  if(window.__QMES_LEFT_MENU_V3__) return;
+  window.__QMES_LEFT_MENU_V3__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
+
   const GROUPS={
-    "대시보드":["종합 대시보드","SPC 대시보드"],
-    "생산관리":["생산실적","작업지시 발행","작업지시서","중간배치"],
-    "품질검사":["수입검사","공정검사","출하검사","SPC","품질 인터락","출하성적서"],
-    "현장입력":["현장입력"],
-    "재고관리":["재고관리"],
-    "거래처 현황":["고객사 목록","공급업체 목록"],
-    "설비관리":["일일점검","설비대장","정기점검·교정","고장·수리 이력"],
-    "LOT 추적":["완제품 추적","원료 역추적"],
-    "부적합관리":["부적합","고객불만","4M 변경관리"]
+    "대시보드":[
+      {label:"종합 대시보드",mode:"direct",top:"대시보드"},
+      {label:"SPC 대시보드",mode:"submenu",top:"품질검사",target:"SPC (Cpk)"}
+    ],
+    "생산관리":[
+      {label:"생산실적",mode:"submenu",top:"생산관리",target:"생산 (배치)"},
+      {label:"작업지시서",mode:"submenu",top:"생산관리",target:"작업지시서"}
+    ],
+    "품질검사":[
+      {label:"수입검사",mode:"submenu",top:"품질검사",target:"수입검사 (IQC)"},
+      {label:"공정검사",mode:"submenu",top:"품질검사",target:"공정검사 (PQC)"},
+      {label:"출하검사",mode:"submenu",top:"품질검사",target:"출하검사 (OQC)"},
+      {label:"SPC",mode:"submenu",top:"품질검사",target:"SPC (Cpk)"},
+      {label:"품질 인터락",mode:"submenu",top:"품질검사",target:"품질 인터락 (차단)"},
+      {label:"출하성적서",mode:"submenu",top:"품질검사",target:"출하성적서"}
+    ],
+    "현장입력":[{label:"현장입력",mode:"direct",top:"현장입력"}],
+    "재고관리":[{label:"재고관리",mode:"direct",top:"재고관리"}],
+    "거래처 현황":[{label:"거래처 현황",mode:"direct",top:"거래처 현황"}],
+    "설비관리":[{label:"설비관리",mode:"direct",top:"설비관리"}],
+    "LOT 추적":[{label:"LOT 추적",mode:"direct",top:"LOT 추적"}],
+    "부적합관리":[
+      {label:"부적합",mode:"submenu",top:"부적합관리",target:"부적합 (8D)"},
+      {label:"고객불만",mode:"submenu",top:"부적합관리",target:"고객불만 (GQMS)"},
+      {label:"4M 변경관리",mode:"submenu",top:"부적합관리",target:"4M 변경관리"}
+    ]
   };
   const TOP_LABELS=Object.keys(GROUPS);
-  const aliases={
-    "작업지시 발행":["작업지시 발행","작업지시"],
-    "완제품 추적":["완제품 추적","LOT 추적"],
-    "원료 역추적":["원료 역추적","역추적"],
-    "부적합":["부적합","부적합 관리"]
-  };
 
   ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu","qmes-stable-sidebar","qmes-safe-sidebar","qmes-left-native-menu","qmes-left-menu"].forEach(id=>document.getElementById(id)?.remove());
   ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style","qmes-native-dropdown-left-style","qmes-stable-sidebar-style","qmes-safe-sidebar-style","qmes-left-native-menu-style","qmes-left-menu-style"].forEach(id=>document.getElementById(id)?.remove());
@@ -40,7 +52,7 @@
     #qmes-left-menu .qmes-left-item:hover{background:#f3f6f9!important;color:#172033!important}
     #qmes-left-menu .qmes-left-item.is-active{background:#edf4ff!important;color:#175cd3!important}
     #qmes-left-menu .qmes-left-item.is-active:before{content:""!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;border-radius:3px!important;background:#2563eb!important}
-    [data-qmes-left-menu-source='true']{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    .qmes-submenu-row{display:none!important}
     @media(max-width:1050px){#qmes-left-menu{left:8px!important;width:172px!important}}
   `;
   document.head.appendChild(style);
@@ -54,107 +66,83 @@
   let currentTop="";
   let locked=false;
   let activeItem="";
-  let syntheticHoverDepth=0;
+  let internalClick=false;
 
   function navBottom(){
-    const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(node=>TOP_LABELS.filter(label=>clean(node.textContent).includes(label)).length>=3);
+    const nav=document.querySelector(".qmes-top-menu");
     return nav?Math.max(0,Math.round(nav.getBoundingClientRect().bottom)+10):92;
   }
 
-  function allControls(){
-    return Array.from(document.querySelectorAll("button,a,[role='button'],[role='menuitem']")).filter(node=>!side.contains(node));
-  }
-
-  function findTop(label){
-    return allControls().find(node=>clean(node.textContent)===label)||null;
-  }
-
-  function fireHover(node){
-    if(!node)return;
-    syntheticHoverDepth+=1;
-    try{
-      try{node.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,cancelable:true,pointerType:"mouse"}));}catch(_){ }
-      node.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,cancelable:true,view:window}));
-    }finally{
-      syntheticHoverDepth=Math.max(0,syntheticHoverDepth-1);
-    }
-  }
+  function topButtons(){return Array.from(document.querySelectorAll(".qmes-top-menu .qmes-top-menu-button"));}
+  function findTop(label){return topButtons().find(node=>clean(node.textContent).includes(label))||null;}
 
   function render(group){
-    if(!GROUPS[group])return;
+    const items=GROUPS[group];
+    if(!items)return;
     currentTop=group;
     side.querySelector(".qmes-left-title").textContent=group;
     const wrap=side.querySelector(".qmes-left-items");
     wrap.replaceChildren();
-    GROUPS[group].forEach(label=>{
+    items.forEach((item,index)=>{
       const btn=document.createElement("button");
       btn.type="button";
-      btn.className="qmes-left-item"+(label===activeItem?" is-active":"");
-      btn.dataset.label=label;
-      btn.textContent=label;
+      btn.className="qmes-left-item"+(item.label===activeItem?" is-active":"");
+      btn.dataset.index=String(index);
+      btn.textContent=item.label;
       wrap.appendChild(btn);
     });
     document.documentElement.style.setProperty("--qmes-left-top",`${navBottom()}px`);
     side.classList.add("is-open");
   }
 
-  function floatingMenusFor(group){
-    const labels=GROUPS[group]||[];
-    return Array.from(document.querySelectorAll("body *")).filter(node=>{
-      if(!(node instanceof HTMLElement)||side.contains(node))return false;
-      if(node.matches("dialog,[role='dialog']")||node.closest("dialog,[role='dialog']"))return false;
-      const css=getComputedStyle(node);
-      if(css.display==="none"||css.visibility==="hidden")return false;
-      const rect=node.getBoundingClientRect();
-      if(rect.width<70||rect.height<20||rect.width>700||rect.height>750)return false;
-      const text=clean(node.textContent);
-      return labels.filter(label=>text.includes(label)).length>=Math.min(2,labels.length);
-    });
+  function nativeTopClick(label){
+    const top=findTop(label);
+    if(!top)return false;
+    internalClick=true;
+    top.click();
+    setTimeout(()=>{internalClick=false;},0);
+    return true;
   }
 
-  function hideNativeDropdown(group){
-    document.querySelectorAll("[data-qmes-left-menu-source='true']").forEach(node=>node.removeAttribute("data-qmes-left-menu-source"));
-    floatingMenusFor(group).forEach(node=>node.dataset.qmesLeftMenuSource="true");
+  function findSubButton(label){
+    return Array.from(document.querySelectorAll(".qmes-submenu-row button.qmes-submenu-button,.qmes-submenu-row button"))
+      .find(node=>clean(node.textContent)===label)||null;
   }
 
-  function showGroup(group,{lock=false,triggerNative=true}={}){
-    if(lock)locked=true;
-    if(!lock&&locked&&group!==currentTop)return;
-    render(group);
-    if(triggerNative){
-      const top=findTop(group);
-      fireHover(top);
-      setTimeout(()=>hideNativeDropdown(group),25);
-      setTimeout(()=>hideNativeDropdown(group),80);
+  function activate(item,attempt=0){
+    if(!item)return;
+
+    if(item.mode==="direct"){
+      if(nativeTopClick(item.top)){
+        activeItem=item.label;
+        render(currentTop);
+      }
+      return;
     }
-  }
 
-  function findTarget(group,label){
-    const names=aliases[label]||[label];
-    const menus=floatingMenusFor(group);
-    const scoped=menus.flatMap(menu=>Array.from(menu.querySelectorAll("button,a,[role='button'],[role='menuitem']")));
-    for(const name of names){
-      const found=scoped.find(node=>clean(node.textContent)===name);
-      if(found)return found;
+    const existing=findSubButton(item.target);
+    if(existing){
+      activeItem=item.label;
+      render(currentTop);
+      existing.click();
+      return;
     }
-    return null;
-  }
 
-  function activate(label,attempt=0){
-    if(!currentTop)return;
-    const top=findTop(currentTop);
-    document.querySelectorAll("[data-qmes-left-menu-source='true']").forEach(node=>node.removeAttribute("data-qmes-left-menu-source"));
-    fireHover(top);
+    const top=findTop(item.top);
+    if(!top)return;
+    internalClick=true;
+    top.click();
+    setTimeout(()=>{internalClick=false;},0);
+
     setTimeout(()=>{
-      const target=findTarget(currentTop,label);
+      const target=findSubButton(item.target);
       if(target){
-        activeItem=label;
+        activeItem=item.label;
         render(currentTop);
         target.click();
-        setTimeout(()=>hideNativeDropdown(currentTop),0);
-        return;
+      }else if(attempt<5){
+        activate(item,attempt+1);
       }
-      if(attempt<8){activate(label,attempt+1);return;}
     },45);
   }
 
@@ -162,22 +150,26 @@
     const btn=event.target.closest(".qmes-left-item");
     if(!btn)return;
     event.preventDefault();
-    activate(btn.dataset.label,0);
+    const item=GROUPS[currentTop]?.[Number(btn.dataset.index)||0];
+    activate(item,0);
   });
 
   document.addEventListener("mouseover",event=>{
-    if(syntheticHoverDepth>0||event.isTrusted===false)return;
-    const control=event.target.closest("button,a,[role='button']");
-    if(!control||side.contains(control))return;
-    const label=clean(control.textContent);
-    if(TOP_LABELS.includes(label))showGroup(label,{lock:false,triggerNative:true});
+    if(locked)return;
+    const control=event.target.closest(".qmes-top-menu-button");
+    if(!control)return;
+    const label=TOP_LABELS.find(name=>clean(control.textContent).includes(name));
+    if(label)render(label);
   },true);
 
   document.addEventListener("click",event=>{
-    const control=event.target.closest("button,a,[role='button']");
-    if(!control||side.contains(control))return;
-    const label=clean(control.textContent);
-    if(TOP_LABELS.includes(label))setTimeout(()=>showGroup(label,{lock:true,triggerNative:true}),0);
+    if(internalClick)return;
+    const control=event.target.closest(".qmes-top-menu-button");
+    if(!control)return;
+    const label=TOP_LABELS.find(name=>clean(control.textContent).includes(name));
+    if(!label)return;
+    locked=true;
+    render(label);
   },false);
 
   window.addEventListener("resize",()=>document.documentElement.style.setProperty("--qmes-left-top",`${navBottom()}px`));
