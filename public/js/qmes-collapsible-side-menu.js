@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V8__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V8__=true;
+  if(window.__QMES_CONTEXT_SIDE_MENU_V9__) return;
+  window.__QMES_CONTEXT_SIDE_MENU_V9__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
@@ -15,7 +15,14 @@
     "부적합관리":["부적합","고객불만","4M 변경관리"]
   };
 
-  const aliases={"SPC":"SPC 대시보드"};
+  const aliases={
+    "SPC":["SPC","SPC 대시보드"],
+    "작업지시 발행":["작업지시 발행","작업지시"],
+    "완제품 추적":["완제품 추적","LOT 추적"],
+    "원료 역추적":["원료 역추적","역추적"],
+    "부적합":["부적합","부적합 관리"]
+  };
+
   const topLabels=Object.keys(groups);
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
 
@@ -44,6 +51,18 @@
 
   const nativeControls=()=>Array.from(document.querySelectorAll("button,a,[role='button']")).filter(node=>!aside.contains(node));
   const exactNative=label=>nativeControls().find(node=>clean(node.textContent)===label);
+  const labelsFor=label=>aliases[label]||[label];
+  const findNative=label=>{
+    for(const candidate of labelsFor(label)){
+      const exact=exactNative(candidate);
+      if(exact)return exact;
+    }
+    for(const candidate of labelsFor(label)){
+      const partial=nativeControls().find(node=>clean(node.textContent).includes(candidate));
+      if(partial)return partial;
+    }
+    return null;
+  };
 
   let currentGroup=sessionStorage.getItem("qmes_context_group")||"대시보드";
   let currentItem=sessionStorage.getItem("qmes_context_item")||groups[currentGroup]?.[0]||"";
@@ -64,11 +83,33 @@
     });
   }
 
-  function clickNative(label){
-    const target=exactNative(label)||exactNative(aliases[label]);
-    if(!target)return false;
-    target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
+  function fire(node,type){
+    if(!node)return;
+    node.dispatchEvent(new MouseEvent(type,{bubbles:true,cancelable:true,view:window}));
+  }
+
+  function openNativeGroup(){
+    const top=findNative(currentGroup);
+    if(!top)return false;
+    fire(top,"mouseenter");
+    fire(top,"mouseover");
+    fire(top,"pointerenter");
+    if(typeof top.click==="function")top.click();
+    else fire(top,"click");
     return true;
+  }
+
+  function activateNative(label,attempt=0){
+    const target=findNative(label);
+    if(target){
+      if(typeof target.click==="function")target.click();
+      else fire(target,"click");
+      return true;
+    }
+    if(attempt>=6)return false;
+    openNativeGroup();
+    setTimeout(()=>activateNative(label,attempt+1),80);
+    return false;
   }
 
   function navigate(label){
@@ -78,14 +119,11 @@
     sessionStorage.setItem("qmes_context_group",currentGroup);
     sessionStorage.setItem("qmes_context_item",currentItem);
     render();
-
-    const top=exactNative(currentGroup);
-    if(top)top.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
-
+    openNativeGroup();
     setTimeout(()=>{
-      clickNative(label);
-      navigating=false;
-    },180);
+      activateNative(label,0);
+      setTimeout(()=>{navigating=false;},650);
+    },120);
   }
 
   function hideLegacyDropdowns(){
