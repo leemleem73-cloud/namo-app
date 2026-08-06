@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SAFE_SIDEBAR_V2__) return;
-  window.__QMES_SAFE_SIDEBAR_V2__=true;
+  if(window.__QMES_SAFE_SIDEBAR_V3__) return;
+  window.__QMES_SAFE_SIDEBAR_V3__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
@@ -14,7 +14,6 @@
     "LOT 추적":["완제품 추적","원료 역추적"],
     "부적합관리":["부적합","고객불만","4M 변경관리"]
   };
-
   const aliases={
     "SPC":["SPC","SPC 대시보드"],
     "작업지시 발행":["작업지시 발행","작업지시"],
@@ -22,13 +21,13 @@
     "원료 역추적":["원료 역추적","역추적"],
     "부적합":["부적합","부적합 관리"]
   };
-
-  const clean=value=>String(value||"").replace(/\s+/g," ").trim();
+  const clean=v=>String(v||"").replace(/\s+/g," ").trim();
   const topLabels=Object.keys(groups);
 
-  ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu","qmes-stable-sidebar","qmes-safe-sidebar"].forEach(id=>document.getElementById(id)?.remove());
-  ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style","qmes-native-dropdown-left-style","qmes-stable-sidebar-style","qmes-safe-sidebar-style"].forEach(id=>document.getElementById(id)?.remove());
-  document.body.classList.remove("qmes-context-side-enabled","qmes-stable-sidebar-open","qmes-safe-sidebar-open");
+  ["qmes-safe-sidebar","qmes-stable-sidebar","qmes-context-side-menu","qmes-side-menu"].forEach(id=>document.getElementById(id)?.remove());
+  ["qmes-safe-sidebar-style","qmes-stable-sidebar-style","qmes-context-side-menu-style","qmes-native-dropdown-left-style"].forEach(id=>document.getElementById(id)?.remove());
+  document.body.classList.remove("qmes-safe-sidebar-open","qmes-stable-sidebar-open","qmes-context-side-enabled");
+  document.querySelectorAll("[data-qmes-native-dropdown-hidden]").forEach(node=>node.removeAttribute("data-qmes-native-dropdown-hidden"));
 
   const style=document.createElement("style");
   style.id="qmes-safe-sidebar-style";
@@ -48,28 +47,22 @@
 
   const sidebar=document.createElement("aside");
   sidebar.id="qmes-safe-sidebar";
-  sidebar.setAttribute("aria-label","하위 메뉴");
   sidebar.innerHTML='<div class="qmes-safe-title"></div><div class="qmes-safe-items"></div>';
   document.body.appendChild(sidebar);
 
   let currentGroup="";
   let activeItem="";
-  const sourceMap=new Map();
+  let locked=false;
+  let navigating=false;
+
+  const nativeControls=()=>Array.from(document.querySelectorAll("button,a,[role='button'],[role='menuitem']")).filter(n=>!sidebar.contains(n));
+  const topControl=label=>nativeControls().find(n=>clean(n.textContent)===label)||null;
+  const names=label=>aliases[label]||[label];
 
   function navBottom(){
-    const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(node=>topLabels.filter(label=>clean(node.textContent).includes(label)).length>=3);
+    const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(n=>topLabels.filter(x=>clean(n.textContent).includes(x)).length>=3);
     return nav?Math.max(0,Math.round(nav.getBoundingClientRect().bottom)):88;
   }
-
-  function nativeControls(){
-    return Array.from(document.querySelectorAll("button,a,[role='button'],[role='menuitem']")).filter(node=>!sidebar.contains(node));
-  }
-
-  function topControl(label){
-    return nativeControls().find(node=>clean(node.textContent)===label)||null;
-  }
-
-  function candidates(label){return aliases[label]||[label];}
 
   function render(group){
     if(!groups[group])return;
@@ -78,12 +71,12 @@
     const wrap=sidebar.querySelector(".qmes-safe-items");
     wrap.replaceChildren();
     groups[group].forEach(label=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="qmes-safe-item"+(label===activeItem?" is-active":"");
-      button.dataset.label=label;
-      button.textContent=label;
-      wrap.appendChild(button);
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="qmes-safe-item"+(label===activeItem?" is-active":"");
+      b.dataset.label=label;
+      b.textContent=label;
+      wrap.appendChild(b);
     });
     document.documentElement.style.setProperty("--qmes-safe-sidebar-top",`${navBottom()}px`);
     document.body.classList.add("qmes-safe-sidebar-open");
@@ -91,12 +84,13 @@
 
   function openNativeMenu(group){
     const top=topControl(group);
-    if(!top)return;
+    if(!top)return false;
     top.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,cancelable:true,view:window}));
     try{top.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,cancelable:true,view:window}));}catch(_){ }
+    return true;
   }
 
-  function dropdownsFor(group){
+  function dropdownNodes(group){
     const labels=groups[group]||[];
     return Array.from(document.querySelectorAll("body *")).filter(node=>{
       if(!(node instanceof HTMLElement)||sidebar.contains(node))return false;
@@ -108,46 +102,37 @@
     });
   }
 
-  function captureAndHide(group){
-    const dropdowns=dropdownsFor(group);
-    const labels=groups[group]||[];
-    labels.forEach(label=>{
-      for(const candidate of candidates(label)){
-        const target=dropdowns.flatMap(node=>Array.from(node.querySelectorAll("button,a,[role='button'],[role='menuitem']"))).find(node=>clean(node.textContent)===candidate);
-        if(target){sourceMap.set(`${group}::${label}`,target);break;}
-      }
-    });
-    dropdowns.forEach(node=>node.dataset.qmesNativeDropdownHidden="true");
+  function hideDropdowns(group){
+    dropdownNodes(group).forEach(node=>node.dataset.qmesNativeDropdownHidden="true");
   }
 
-  function prepare(group){
-    render(group);
-    openNativeMenu(group);
-    setTimeout(()=>captureAndHide(group),25);
-    setTimeout(()=>captureAndHide(group),80);
+  function findLiveTarget(group,label){
+    const dropdowns=dropdownNodes(group);
+    const controls=dropdowns.flatMap(node=>Array.from(node.querySelectorAll("button,a,[role='button'],[role='menuitem']")));
+    for(const candidate of names(label)){
+      const exact=controls.find(node=>clean(node.textContent)===candidate);
+      if(exact)return exact;
+    }
+    return null;
   }
 
   function activate(label,attempt=0){
-    const key=`${currentGroup}::${label}`;
-    const target=sourceMap.get(key);
-    if(target&&document.contains(target)){
-      activeItem=label;
-      render(currentGroup);
-      target.click();
-      return;
-    }
+    if(navigating)return;
+    navigating=true;
     openNativeMenu(currentGroup);
     setTimeout(()=>{
-      captureAndHide(currentGroup);
-      const retry=sourceMap.get(key);
-      if(retry&&document.contains(retry)){
+      const target=findLiveTarget(currentGroup,label);
+      if(target){
         activeItem=label;
         render(currentGroup);
-        retry.click();
-      }else if(attempt<5){
-        activate(label,attempt+1);
+        target.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
+        setTimeout(()=>hideDropdowns(currentGroup),0);
+        navigating=false;
+        return;
       }
-    },60);
+      navigating=false;
+      if(attempt<6)setTimeout(()=>activate(label,attempt+1),70);
+    },70);
   }
 
   sidebar.addEventListener("click",event=>{
@@ -157,24 +142,31 @@
     activate(button.dataset.label,0);
   });
 
-  function handleTop(control){
+  document.addEventListener("mouseover",event=>{
+    if(locked)return;
+    const control=event.target.closest("button,a,[role='button']");
+    if(!control||sidebar.contains(control))return;
     const label=clean(control.textContent);
     if(!topLabels.includes(label))return;
-    prepare(label);
-  }
-
-  document.addEventListener("mouseover",event=>{
-    const control=event.target.closest("button,a,[role='button']");
-    if(control&&!sidebar.contains(control))handleTop(control);
+    render(label);
+    openNativeMenu(label);
+    setTimeout(()=>hideDropdowns(label),40);
   },true);
 
   document.addEventListener("click",event=>{
     const control=event.target.closest("button,a,[role='button']");
-    if(control&&!sidebar.contains(control))setTimeout(()=>handleTop(control),0);
+    if(!control||sidebar.contains(control))return;
+    const label=clean(control.textContent);
+    if(!topLabels.includes(label))return;
+    locked=true;
+    activeItem="";
+    render(label);
+    openNativeMenu(label);
+    setTimeout(()=>hideDropdowns(label),40);
   },false);
 
   new MutationObserver(()=>{
-    if(currentGroup)requestAnimationFrame(()=>captureAndHide(currentGroup));
+    if(currentGroup)setTimeout(()=>hideDropdowns(currentGroup),0);
   }).observe(document.body,{childList:true,subtree:true});
 
   window.addEventListener("resize",()=>document.documentElement.style.setProperty("--qmes-safe-sidebar-top",`${navBottom()}px`));
