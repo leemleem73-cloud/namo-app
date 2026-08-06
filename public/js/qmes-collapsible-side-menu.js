@@ -1,174 +1,81 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V9__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V9__=true;
+  if(window.__QMES_NATIVE_DROPDOWN_LEFT_V1__) return;
+  window.__QMES_NATIVE_DROPDOWN_LEFT_V1__=true;
 
-  const groups={
-    "대시보드":["종합 대시보드","SPC 대시보드"],
-    "생산관리":["생산실적","작업지시 발행","작업지시서","중간배치"],
-    "품질검사":["수입검사","공정검사","출하검사","SPC","품질 인터락","출하성적서"],
-    "현장입력":["현장입력"],
-    "재고관리":["재고관리"],
-    "거래처 현황":["고객사 목록","공급업체 목록"],
-    "설비관리":["일일점검","설비대장","정기점검·교정","고장·수리 이력"],
-    "LOT 추적":["완제품 추적","원료 역추적"],
-    "부적합관리":["부적합","고객불만","4M 변경관리"]
-  };
-
-  const aliases={
-    "SPC":["SPC","SPC 대시보드"],
-    "작업지시 발행":["작업지시 발행","작업지시"],
-    "완제품 추적":["완제품 추적","LOT 추적"],
-    "원료 역추적":["원료 역추적","역추적"],
-    "부적합":["부적합","부적합 관리"]
-  };
-
-  const topLabels=Object.keys(groups);
-  const clean=value=>String(value||"").replace(/\s+/g," ").trim();
-
+  /* 이전에 추가했던 별도 왼쪽 메뉴와 화면 밀기 설정만 제거한다. */
   ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu"].forEach(id=>document.getElementById(id)?.remove());
   ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style"].forEach(id=>document.getElementById(id)?.remove());
+  document.body.classList.remove("qmes-context-side-enabled");
+
+  document.querySelectorAll("[data-qmes-legacy-dropdown-hidden]").forEach(node=>{
+    node.removeAttribute("data-qmes-legacy-dropdown-hidden");
+    ["display","visibility","opacity","pointer-events","width","height","min-width","min-height","overflow","margin","padding","border"].forEach(name=>node.style.removeProperty(name));
+  });
 
   const style=document.createElement("style");
-  style.id="qmes-context-side-menu-style";
+  style.id="qmes-native-dropdown-left-style";
   style.textContent=`
-    #qmes-context-side-menu{position:fixed!important;left:0!important;top:88px!important;bottom:0!important;z-index:999999!important;width:190px!important;display:block!important;padding:16px 12px 24px!important;overflow-y:auto!important;border-right:1px solid #2b4159!important;background:#0b1728!important;color:#e2e8f0!important;box-sizing:border-box!important}
-    #qmes-context-side-menu .qmes-context-title{padding:2px 8px 13px!important;margin-bottom:8px!important;border-bottom:1px solid #2b4159!important;color:#fff!important;font-size:15px!important;font-weight:900!important}
-    #qmes-context-side-menu .qmes-context-item{display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;margin:3px 0!important;padding:9px 11px!important;border:1px solid transparent!important;border-radius:8px!important;background:transparent!important;color:#aebfd1!important;font-size:13px!important;font-weight:700!important;text-align:left!important;cursor:pointer!important;box-sizing:border-box!important}
-    #qmes-context-side-menu .qmes-context-item:hover{border-color:#334e68!important;background:#14263b!important;color:#fff!important}
-    #qmes-context-side-menu .qmes-context-item.is-active{border-color:#2563eb!important;background:#1d4ed8!important;color:#fff!important}
-    body.qmes-context-side-enabled #root>div>main,body.qmes-context-side-enabled #root main,body.qmes-context-side-enabled main,body.qmes-context-side-enabled .qmes-main-content,body.qmes-context-side-enabled .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important;box-sizing:border-box!important}
-    .qmes-top-menu [role='menu'],.qmes-top-menu [class*='dropdown'],.qmes-top-menu [class*='submenu'],.qmes-top-menu [class*='sub-menu'],.qmes-top-menu .absolute,[data-qmes-legacy-dropdown-hidden='true']{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;min-width:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}
-    @media(max-width:900px){#qmes-context-side-menu{width:160px!important}body.qmes-context-side-enabled #root>div>main,body.qmes-context-side-enabled #root main,body.qmes-context-side-enabled main,body.qmes-context-side-enabled .qmes-main-content,body.qmes-context-side-enabled .qmes-content{margin-left:160px!important;width:calc(100% - 160px)!important}}
+    [data-qmes-native-dropdown-left='true']{
+      position:fixed!important;
+      left:12px!important;
+      right:auto!important;
+      top:var(--qmes-menu-top,88px)!important;
+      bottom:auto!important;
+      transform:none!important;
+      z-index:999999!important;
+      max-height:calc(100vh - var(--qmes-menu-top,88px) - 16px)!important;
+      overflow-y:auto!important;
+    }
   `;
   document.head.appendChild(style);
 
-  const aside=document.createElement("aside");
-  aside.id="qmes-context-side-menu";
-  aside.innerHTML='<div class="qmes-context-title"></div><div class="qmes-context-items"></div>';
-  document.body.appendChild(aside);
-  document.body.classList.add("qmes-context-side-enabled");
+  const clean=value=>String(value||"").replace(/\s+/g," ").trim();
+  const topLabels=["대시보드","생산관리","품질검사","현장입력","재고관리","거래처 현황","설비관리","LOT 추적","부적합관리"];
 
-  const nativeControls=()=>Array.from(document.querySelectorAll("button,a,[role='button']")).filter(node=>!aside.contains(node));
-  const exactNative=label=>nativeControls().find(node=>clean(node.textContent)===label);
-  const labelsFor=label=>aliases[label]||[label];
-  const findNative=label=>{
-    for(const candidate of labelsFor(label)){
-      const exact=exactNative(candidate);
-      if(exact)return exact;
-    }
-    for(const candidate of labelsFor(label)){
-      const partial=nativeControls().find(node=>clean(node.textContent).includes(candidate));
-      if(partial)return partial;
-    }
-    return null;
-  };
-
-  let currentGroup=sessionStorage.getItem("qmes_context_group")||"대시보드";
-  let currentItem=sessionStorage.getItem("qmes_context_item")||groups[currentGroup]?.[0]||"";
-  let navigating=false;
-
-  function render(){
-    if(!groups[currentGroup]) currentGroup="대시보드";
-    aside.querySelector(".qmes-context-title").textContent=currentGroup;
-    const wrap=aside.querySelector(".qmes-context-items");
-    wrap.replaceChildren();
-    groups[currentGroup].forEach(label=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="qmes-context-item"+(label===currentItem?" is-active":"");
-      button.textContent=label;
-      button.dataset.label=label;
-      wrap.appendChild(button);
-    });
+  function menuTop(){
+    const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(node=>topLabels.filter(label=>clean(node.textContent).includes(label)).length>=3);
+    return nav?Math.max(0,Math.round(nav.getBoundingClientRect().bottom)+6):88;
   }
 
-  function fire(node,type){
-    if(!node)return;
-    node.dispatchEvent(new MouseEvent(type,{bubbles:true,cancelable:true,view:window}));
-  }
+  function isNativeDropdown(node){
+    if(!(node instanceof HTMLElement))return false;
+    if(node.id==="qmes-context-side-menu"||node.closest("#qmes-context-side-menu"))return false;
+    if(node.matches("dialog,[role='dialog']")||node.closest("dialog,[role='dialog']"))return false;
 
-  function openNativeGroup(){
-    const top=findNative(currentGroup);
-    if(!top)return false;
-    fire(top,"mouseenter");
-    fire(top,"mouseover");
-    fire(top,"pointerenter");
-    if(typeof top.click==="function")top.click();
-    else fire(top,"click");
+    const css=getComputedStyle(node);
+    if(!["absolute","fixed"].includes(css.position))return false;
+    if(css.display==="none"||css.visibility==="hidden")return false;
+
+    const rect=node.getBoundingClientRect();
+    if(rect.width<90||rect.width>700||rect.height<24||rect.height>700)return false;
+
+    const controls=Array.from(node.querySelectorAll("button,a,[role='menuitem'],[role='button']"));
+    if(controls.length<1)return false;
+
+    const text=clean(node.textContent);
+    const modalLike=/저장|취소|닫기|신규등록|수정|삭제/.test(text)&&controls.length<=3;
+    if(modalLike)return false;
+
     return true;
   }
 
-  function activateNative(label,attempt=0){
-    const target=findNative(label);
-    if(target){
-      if(typeof target.click==="function")target.click();
-      else fire(target,"click");
-      return true;
-    }
-    if(attempt>=6)return false;
-    openNativeGroup();
-    setTimeout(()=>activateNative(label,attempt+1),80);
-    return false;
-  }
-
-  function navigate(label){
-    if(navigating)return;
-    navigating=true;
-    currentItem=label;
-    sessionStorage.setItem("qmes_context_group",currentGroup);
-    sessionStorage.setItem("qmes_context_item",currentItem);
-    render();
-    openNativeGroup();
-    setTimeout(()=>{
-      activateNative(label,0);
-      setTimeout(()=>{navigating=false;},650);
-    },120);
-  }
-
-  function hideLegacyDropdowns(){
-    document.querySelectorAll("[role='menu'],[class*='dropdown'],[class*='submenu'],[class*='sub-menu']").forEach(node=>{
-      if(node===aside||aside.contains(node))return;
-      node.dataset.qmesLegacyDropdownHidden="true";
+  function moveVisibleDropdowns(){
+    const top=menuTop();
+    document.documentElement.style.setProperty("--qmes-menu-top",`${top}px`);
+    document.querySelectorAll("body *").forEach(node=>{
+      if(isNativeDropdown(node)) node.dataset.qmesNativeDropdownLeft="true";
     });
   }
 
-  aside.addEventListener("click",event=>{
-    const button=event.target.closest(".qmes-context-item");
-    if(!button)return;
-    event.preventDefault();
-    event.stopPropagation();
-    navigate(button.dataset.label);
-  });
-
-  document.addEventListener("click",event=>{
-    if(navigating)return;
+  document.addEventListener("mouseover",event=>{
     const control=event.target.closest("button,a,[role='button']");
-    if(!control||aside.contains(control))return;
-    const label=clean(control.textContent);
-    if(topLabels.includes(label)){
-      currentGroup=label;
-      currentItem=groups[label][0]||"";
-      sessionStorage.setItem("qmes_context_group",currentGroup);
-      sessionStorage.setItem("qmes_context_item",currentItem);
-      render();
-      setTimeout(hideLegacyDropdowns,0);
+    if(control&&topLabels.includes(clean(control.textContent))){
+      requestAnimationFrame(moveVisibleDropdowns);
+      setTimeout(moveVisibleDropdowns,30);
     }
   },true);
 
-  function alignTop(){
-    const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(node=>topLabels.some(label=>clean(node.textContent).includes(label)));
-    if(nav)aside.style.setProperty("top",`${Math.max(0,Math.round(nav.getBoundingClientRect().bottom))}px`,"important");
-  }
-
-  function keepMounted(){
-    if(!document.body.contains(aside))document.body.appendChild(aside);
-    alignTop();
-    hideLegacyDropdowns();
-  }
-
-  render();
-  keepMounted();
-  window.addEventListener("resize",keepMounted);
-  new MutationObserver(()=>requestAnimationFrame(keepMounted)).observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener("resize",moveVisibleDropdowns);
+  new MutationObserver(()=>requestAnimationFrame(moveVisibleDropdowns)).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style","hidden"]});
 })();
