@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_LOT_DETAIL_LINK_V18__) return;
-  window.__QMES_LOT_DETAIL_LINK_V18__=true;
+  if(window.__QMES_LOT_DETAIL_LINK_V19__) return;
+  window.__QMES_LOT_DETAIL_LINK_V19__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,small,strong,td,th,button,a"));
@@ -9,15 +9,17 @@
   const getStore=key=>{try{return sessionStorage.getItem(key)||"";}catch(error){return "";}};
   const removeStore=key=>{try{sessionStorage.removeItem(key);}catch(error){}};
 
-  window.qmesOpenLotLinkedModule=function(tab,query){
+  window.qmesOpenLotLinkedModule=function(tab,query,meta={}){
     setStore("qmes_current_tab",tab);
     setStore("qmes_lot_link_tab",tab);
     setStore("qmes_lot_link_query",String(query||"").trim());
+    setStore("qmes_lot_link_material_name",String(meta.materialName||"").trim());
+    setStore("qmes_lot_link_material_lot",String(meta.materialLot||query||"").trim());
     window.location.reload();
   };
 
   const style=document.createElement("style");
-  style.id="qmes-lot-detail-link-v18-style";
+  style.id="qmes-lot-detail-link-v19-style";
   style.textContent=`
     .qmes-production-table tbody td:last-child{text-align:center!important;white-space:nowrap!important;}
     .qmes-production-table tbody td:last-child>*{display:inline-flex!important;width:fit-content!important;max-width:100%!important;min-height:24px!important;margin:0 auto!important;padding:3px 7px!important;align-items:center!important;justify-content:center!important;}
@@ -34,8 +36,12 @@
     .qmes-lot-production-hidden{display:none!important;}
     .qmes-lot-linked-target{cursor:pointer!important;}
     .qmes-lot-linked-target:hover{text-decoration:underline!important;text-underline-offset:3px!important;}
+    .qmes-lot-linked-badge{display:inline-flex!important;align-items:center!important;justify-content:center!important;margin-left:7px!important;padding:2px 7px!important;border:1px solid #475569!important;border-radius:999px!important;background:#0f172a!important;color:#cbd5e1!important;font-size:10px!important;font-weight:700!important;line-height:16px!important;vertical-align:middle!important;white-space:nowrap!important;}
     .qmes-lot-shipment-grid{align-items:stretch!important;gap:10px!important;}
     .qmes-lot-shipment-grid>div{display:flex!important;min-height:68px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:9px 8px!important;text-align:center!important;}
+    .qmes-linked-material-context{display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;flex-wrap:wrap!important;margin:0 0 14px!important;padding:11px 16px!important;border:1px solid #334155!important;border-radius:10px!important;background:#0f172a!important;color:#e2e8f0!important;}
+    .qmes-linked-material-context strong{color:#7dd3fc!important;font-weight:800!important;}
+    .qmes-linked-material-context span{font-size:13px!important;}
   `;
   document.head.appendChild(style);
 
@@ -78,16 +84,26 @@
     return title?.[1]||"";
   }
 
-  function addLink(node,tab,query,label){
+  function addLink(node,tab,query,label,options={}){
     if(!node||node.dataset.qmesLotLinked) return;
     node.dataset.qmesLotLinked="1";
     node.classList.add("qmes-lot-linked-target");
     node.setAttribute("role","button");
     node.setAttribute("tabindex","0");
     node.title=`${label} 화면에서 ${query} 조회`;
-    const open=event=>{event.preventDefault();event.stopPropagation();window.qmesOpenLotLinkedModule(tab,query);};
+    const open=event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      window.qmesOpenLotLinkedModule(tab,query,options.meta||{});
+    };
     node.addEventListener("click",open,true);
     node.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" ")open(event);});
+    if(options.showBadge&&!node.querySelector(":scope > .qmes-lot-linked-badge")){
+      const badge=document.createElement("span");
+      badge.className="qmes-lot-linked-badge";
+      badge.textContent="바로가기";
+      node.appendChild(badge);
+    }
   }
 
   function linkRawMaterials(){
@@ -96,11 +112,17 @@
       const panel=panelOf(heading);if(!panel)return;
       Array.from(panel.querySelectorAll("tbody tr")).forEach(row=>{
         const cells=Array.from(row.querySelectorAll("td"));if(!cells.length)return;
-        const lotCell=cells.find(cell=>/^[A-Z0-9_-]{4,}$/i.test(clean(cell.textContent)))||cells[0];
-        const lot=clean(lotCell?.textContent).trim();
-        if(lot) addLink(lotCell,"iqc",lot,"수입검사");
+        const lotCell=cells.find(cell=>/^[A-Z0-9_-]{4,}$/i.test(clean(cell.textContent).replace(/바로가기/g,"")))||cells[0];
+        const lot=clean(lotCell?.textContent).replace(/바로가기/g,"").trim();
+        const name=clean(cells[1]?.textContent).replace(/바로가기/g,"").trim();
+        const meta={materialLot:lot,materialName:name};
+        if(lot) addLink(lotCell,"iqc",lot,"수입검사",{meta});
+
+        const qtyCell=cells[6]||cells.find(cell=>/\d/.test(clean(cell.textContent))&&/kg|g|t|EA|L|매|장|캔/i.test(clean(cell.textContent)));
+        if(qtyCell&&lot) addLink(qtyCell,"iqc",lot,"수입검사",{showBadge:true,meta});
+
         const iqcCell=cells.find(cell=>/수입검사|합격|불합격|미검사/.test(clean(cell.textContent)));
-        if(iqcCell&&lot) addLink(iqcCell,"iqc",lot,"수입검사");
+        if(iqcCell&&lot) addLink(iqcCell,"iqc",lot,"수입검사",{showBadge:true,meta});
       });
     });
   }
@@ -134,9 +156,26 @@
     linkRawMaterials();linkProcessPanels();
   }
 
+  function showLinkedMaterialContext(){
+    if(getStore("qmes_current_tab")!=="iqc") return;
+    const lot=getStore("qmes_lot_link_material_lot");
+    const name=getStore("qmes_lot_link_material_name");
+    if(!lot&&!name)return;
+    if(document.getElementById("qmes-linked-material-context"))return;
+    const searchInput=Array.from(document.querySelectorAll("input[type='text'],input:not([type])")).find(item=>/LOT|원재료|입고번호|검색/.test(String(item.placeholder||"")));
+    if(!searchInput)return;
+    let anchor=searchInput.parentElement;
+    while(anchor?.parentElement&&anchor.getBoundingClientRect().width<450)anchor=anchor.parentElement;
+    const box=document.createElement("div");
+    box.id="qmes-linked-material-context";
+    box.className="qmes-linked-material-context";
+    box.innerHTML=`<span>원재료 LOT <strong>${lot||"-"}</strong></span><span>품명 <strong>${name||"-"}</strong></span>`;
+    anchor.parentElement?.insertBefore(box,anchor);
+  }
+
   function applyLinkedSearch(){
     const tab=getStore("qmes_lot_link_tab"),query=getStore("qmes_lot_link_query");
-    if(!tab||!query||getStore("qmes_current_tab")!==tab)return;
+    if(!tab||!query||getStore("qmes_current_tab")!==tab){showLinkedMaterialContext();return;}
     const placeholders={iqc:/LOT|원재료|입고번호/,pqc:/LOT|배치|작업지시/,oqc:/LOT|출하|고객/,woIssue:/LOT|작업지시/};
     const candidates=Array.from(document.querySelectorAll("input[type='text'],input:not([type])"));
     const input=candidates.find(item=>placeholders[tab]?.test(String(item.placeholder||"")))||candidates.find(item=>/검색/.test(String(item.placeholder||"")));
@@ -146,7 +185,9 @@
     input.dispatchEvent(new Event("input",{bubbles:true}));
     input.dispatchEvent(new Event("change",{bubbles:true}));
     input.focus();
-    removeStore("qmes_lot_link_tab");removeStore("qmes_lot_link_query");
+    showLinkedMaterialContext();
+    removeStore("qmes_lot_link_tab");
+    removeStore("qmes_lot_link_query");
   }
 
   let queued=false;
