@@ -9,7 +9,7 @@
   }
   if(!document.querySelector('script[data-qmes-lot-detail-alignment-20260805]')){
     const script=document.createElement("script");
-    script.src="./js/lot-detail-alignment-20260805.js?v=20260806-27";
+    script.src="./js/lot-detail-alignment-20260805.js?v=20260806-28";
     script.async=false;
     script.dataset.qmesLotDetailAlignment20260805="true";
     document.head.appendChild(script);
