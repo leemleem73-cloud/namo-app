@@ -1,23 +1,37 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V2__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V2__=true;
+  if(window.__QMES_CONTEXT_SIDE_MENU_V3__) return;
+  window.__QMES_CONTEXT_SIDE_MENU_V3__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
-    "생산관리":["생산실적","작업지시서","중간배치"],
-    "품질검사":["수입검사","공정검사","출하검사","출하성적서"],
-    "재고관리":["재고관리"],
-    "거래처 현황":["거래처 현황"],
-    "설비관리":["설비관리"],
+    "생산관리":["생산계획","생산실적","작업지시서","중간배치"],
+    "품질검사":["수입검사","공정검사","출하검사","출하성적서","품질 인터락","SPC"],
+    "재고관리":["재고 현황","입출고 관리","재고관리"],
+    "거래처 현황":["고객사 목록","공급업체 목록","거래처 현황"],
+    "설비관리":["일일점검","설비대장","정기점검·교정","고장·수리 이력","설비관리"],
     "LOT 추적":["LOT 추적"],
     "부적합관리":["부적합","고객불만","4M 변경관리"]
   };
+
+  const aliases={
+    "SPC":"SPC 대시보드",
+    "품질 인터락":"품질 인터락",
+    "재고 현황":"재고관리",
+    "입출고 관리":"재고관리",
+    "고객사 목록":"거래처 현황",
+    "공급업체 목록":"거래처 현황",
+    "일일점검":"설비관리",
+    "설비대장":"설비관리",
+    "정기점검·교정":"설비관리",
+    "고장·수리 이력":"설비관리"
+  };
+
   const topLabels=Object.keys(groups);
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
-  const visible=node=>!!(node&&node.getClientRects().length&&getComputedStyle(node).visibility!=="hidden");
-  const controls=()=>Array.from(document.querySelectorAll("button,a,[role='button']")).filter(visible);
+  const controls=()=>Array.from(document.querySelectorAll("button,a,[role='button']"));
   const exactButton=label=>controls().find(node=>clean(node.textContent)===label);
+  const hasControl=label=>Boolean(exactButton(label)||exactButton(aliases[label]));
 
   ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu"].forEach(id=>document.getElementById(id)?.remove());
   ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style"].forEach(id=>document.getElementById(id)?.remove());
@@ -35,6 +49,14 @@
     body.qmes-context-side-enabled main,
     body.qmes-context-side-enabled .qmes-main-content,
     body.qmes-context-side-enabled .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important;box-sizing:border-box!important}
+
+    /* 상단 메뉴 마우스 오버 드롭다운 숨김 */
+    .qmes-top-menu [role='menu'],
+    .qmes-top-menu [class*='dropdown'],
+    .qmes-top-menu [class*='submenu'],
+    .qmes-top-menu [class*='sub-menu'],
+    .qmes-top-menu .absolute{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
     @media(max-width:900px){#qmes-context-side-menu{width:160px!important}body.qmes-context-side-enabled #root>div>main,body.qmes-context-side-enabled #root main,body.qmes-context-side-enabled main,body.qmes-context-side-enabled .qmes-main-content,body.qmes-context-side-enabled .qmes-content{margin-left:160px!important;width:calc(100% - 160px)!important}}
   `;
   document.head.appendChild(style);
@@ -50,13 +72,19 @@
   let currentItem=sessionStorage.getItem("qmes_context_item")||groups[currentGroup]?.[0]||"";
   let navigating=false;
 
+  function itemsFor(group){
+    const configured=groups[group]||[];
+    const available=configured.filter(label=>hasControl(label));
+    return available.length?available:configured;
+  }
+
   function render(){
     if(!groups[currentGroup]) currentGroup="대시보드";
     const title=aside.querySelector(".qmes-context-title");
     const items=aside.querySelector(".qmes-context-items");
     title.textContent=currentGroup;
     items.replaceChildren();
-    groups[currentGroup].forEach(label=>{
+    itemsFor(currentGroup).forEach(label=>{
       const button=document.createElement("button");
       button.type="button";
       button.className="qmes-context-item"+(label===currentItem?" is-active":"");
@@ -76,7 +104,7 @@
     const top=exactButton(currentGroup);
     if(top)top.click();
     setTimeout(()=>{
-      const target=exactButton(label);
+      const target=exactButton(label)||exactButton(aliases[label]);
       if(target&&target!==top)target.click();
       navigating=false;
     },120);
@@ -97,7 +125,7 @@
     const label=clean(control.textContent);
     if(topLabels.includes(label)){
       currentGroup=label;
-      currentItem=groups[label][0]||"";
+      currentItem=itemsFor(label)[0]||"";
       sessionStorage.setItem("qmes_context_group",currentGroup);
       sessionStorage.setItem("qmes_context_item",currentItem);
       setTimeout(render,0);
@@ -128,6 +156,7 @@
     aside.style.setProperty("visibility","visible","important");
     aside.style.setProperty("opacity","1","important");
     alignTop();
+    render();
   }
 
   render();
