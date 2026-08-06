@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V3__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V3__=true;
+  if(window.__QMES_CONTEXT_SIDE_MENU_V4__) return;
+  window.__QMES_CONTEXT_SIDE_MENU_V4__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
@@ -50,7 +50,6 @@
     body.qmes-context-side-enabled .qmes-main-content,
     body.qmes-context-side-enabled .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important;box-sizing:border-box!important}
 
-    /* 상단 메뉴 마우스 오버 드롭다운 숨김 */
     .qmes-top-menu [role='menu'],
     .qmes-top-menu [class*='dropdown'],
     .qmes-top-menu [class*='submenu'],
@@ -94,6 +93,13 @@
     });
   }
 
+  function previewGroup(group){
+    if(!groups[group]||group===currentGroup)return;
+    currentGroup=group;
+    currentItem=itemsFor(group)[0]||"";
+    render();
+  }
+
   function navigate(label){
     if(navigating)return;
     navigating=true;
@@ -117,6 +123,13 @@
     event.stopPropagation();
     navigate(button.dataset.label);
   });
+
+  document.addEventListener("mouseover",event=>{
+    const control=event.target.closest("button,a,[role='button']");
+    if(!control||aside.contains(control))return;
+    const label=clean(control.textContent);
+    if(topLabels.includes(label)) previewGroup(label);
+  },true);
 
   document.addEventListener("click",event=>{
     if(navigating)return;
@@ -156,7 +169,6 @@
     aside.style.setProperty("visibility","visible","important");
     aside.style.setProperty("opacity","1","important");
     alignTop();
-    render();
   }
 
   render();
