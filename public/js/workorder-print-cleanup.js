@@ -203,6 +203,15 @@
   `;
   document.head.appendChild(style);
 
+  if(!document.querySelector('script[data-qmes-module-bootstrap]')){
+    const bootstrap=document.createElement("script");
+    bootstrap.src="./js/qmes-module-bootstrap.js?v=20260806-rc1";
+    bootstrap.async=false;
+    bootstrap.dataset.qmesModuleBootstrap="true";
+    bootstrap.onerror=()=>console.warn("[QMES] RC1 통합 모듈 로드 실패");
+    document.head.appendChild(bootstrap);
+  }
+
   if(!document.querySelector('script[data-qmes-lot-shipment-status-sync]')){
     const script=document.createElement("script");
     script.src="./js/lot-shipment-status-sync.js?v=20260805-1";
