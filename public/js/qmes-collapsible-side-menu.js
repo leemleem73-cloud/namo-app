@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_CONTEXT_SIDE_MENU_V4__) return;
-  window.__QMES_CONTEXT_SIDE_MENU_V4__=true;
+  if(window.__QMES_CONTEXT_SIDE_MENU_V5__) return;
+  window.__QMES_CONTEXT_SIDE_MENU_V5__=true;
 
   const groups={
     "대시보드":["종합 대시보드","SPC 대시보드"],
@@ -28,6 +28,7 @@
   };
 
   const topLabels=Object.keys(groups);
+  const allSubLabels=[...new Set(Object.values(groups).flat())];
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const controls=()=>Array.from(document.querySelectorAll("button,a,[role='button']"));
   const exactButton=label=>controls().find(node=>clean(node.textContent)===label);
@@ -49,13 +50,8 @@
     body.qmes-context-side-enabled main,
     body.qmes-context-side-enabled .qmes-main-content,
     body.qmes-context-side-enabled .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important;box-sizing:border-box!important}
-
-    .qmes-top-menu [role='menu'],
-    .qmes-top-menu [class*='dropdown'],
-    .qmes-top-menu [class*='submenu'],
-    .qmes-top-menu [class*='sub-menu'],
-    .qmes-top-menu .absolute{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
-
+    .qmes-top-menu [role='menu'],.qmes-top-menu [class*='dropdown'],.qmes-top-menu [class*='submenu'],.qmes-top-menu [class*='sub-menu'],.qmes-top-menu .absolute,
+    [data-qmes-legacy-dropdown-hidden='true']{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;min-width:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}
     @media(max-width:900px){#qmes-context-side-menu{width:160px!important}body.qmes-context-side-enabled #root>div>main,body.qmes-context-side-enabled #root main,body.qmes-context-side-enabled main,body.qmes-context-side-enabled .qmes-main-content,body.qmes-context-side-enabled .qmes-content{margin-left:160px!important;width:calc(100% - 160px)!important}}
   `;
   document.head.appendChild(style);
@@ -116,6 +112,24 @@
     },120);
   }
 
+  function hideLegacyDropdowns(){
+    Array.from(document.body.querySelectorAll("div,section,ul,nav" )).forEach(node=>{
+      if(node===aside||aside.contains(node)||node.contains(aside))return;
+      const text=clean(node.textContent);
+      if(!text)return;
+      const matches=allSubLabels.filter(label=>text.includes(label));
+      if(matches.length<2)return;
+      const css=getComputedStyle(node);
+      const rect=node.getBoundingClientRect();
+      const floating=css.position==="absolute"||css.position==="fixed"||Number(css.zIndex)>20;
+      const compact=rect.width>80&&rect.width<900&&rect.height>20&&rect.height<700;
+      const topMenu=node.closest(".qmes-top-menu");
+      if((floating&&compact)||topMenu){
+        node.dataset.qmesLegacyDropdownHidden="true";
+      }
+    });
+  }
+
   aside.addEventListener("click",event=>{
     const button=event.target.closest(".qmes-context-item");
     if(!button)return;
@@ -129,6 +143,7 @@
     if(!control||aside.contains(control))return;
     const label=clean(control.textContent);
     if(topLabels.includes(label)) previewGroup(label);
+    requestAnimationFrame(hideLegacyDropdowns);
   },true);
 
   document.addEventListener("click",event=>{
@@ -169,6 +184,7 @@
     aside.style.setProperty("visibility","visible","important");
     aside.style.setProperty("opacity","1","important");
     alignTop();
+    hideLegacyDropdowns();
   }
 
   render();
