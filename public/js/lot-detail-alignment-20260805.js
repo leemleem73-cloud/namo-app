@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_LOT_IQC_LINK_V25__) return;
-  window.__QMES_LOT_IQC_LINK_V25__ = true;
+  if(window.__QMES_LOT_IQC_LINK_V26__) return;
+  window.__QMES_LOT_IQC_LINK_V26__ = true;
 
   const clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
   const getStore = (key) => { try { return sessionStorage.getItem(key) || ""; } catch (_) { return ""; } };
@@ -10,7 +10,7 @@
   const clearLinkStore = () => ["qmes_lot_link_pending","qmes_lot_link_material_lot","qmes_lot_link_material_name","qmes_lot_link_supplier"].forEach(removeStore);
 
   const style = document.createElement("style");
-  style.id = "qmes-lot-iqc-link-v25-style";
+  style.id = "qmes-lot-iqc-link-v26-style";
   style.textContent = `
     .qmes-lot-iqc-cell-inner{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;white-space:nowrap!important}
     .qmes-lot-iqc-link-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:58px!important;height:26px!important;padding:0 9px!important;border:1px solid #475569!important;border-radius:7px!important;background:#172033!important;color:#dbe7f3!important;font-size:10px!important;font-weight:800!important;cursor:pointer!important}
@@ -61,26 +61,30 @@
   }
 
   function switchToIqc(){
-    const candidates = Array.from(document.querySelectorAll("button,[role='button'],a"));
-    const target = candidates.find((node) => clean(node.textContent) === "수입검사") ||
-      candidates.find((node) => /수입검사/.test(clean(node.textContent)) && !/바로가기/.test(clean(node.textContent)));
-    if(target){
-      target.click();
-      return;
+    const qualityMenu = Array.from(document.querySelectorAll("button"))
+      .find((node) => clean(node.textContent).replace(/[›▶▼]/g, "").trim() === "품질검사");
+    if(qualityMenu){
+      qualityMenu.click();
+      return true;
+    }
+    const iqcMenu = Array.from(document.querySelectorAll("button,[role='button'],a"))
+      .find((node) => /수입검사/.test(clean(node.textContent)) && !/바로가기/.test(clean(node.textContent)));
+    if(iqcMenu){
+      iqcMenu.click();
+      return true;
     }
     setStore("qmes_current_tab", "iqc");
     window.location.reload();
+    return false;
   }
 
   function addMaterialLinks(){
     const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span"))
       .filter((node) => /투입 원재료|Backward Trace|투입원료/.test(clean(node.textContent)));
-
     headings.forEach((heading) => {
       const panel = panelOf(heading);
       if(!panel) return;
       renameHeaders(panel);
-
       Array.from(panel.querySelectorAll("tbody tr")).forEach((row) => {
         const cells = Array.from(row.cells || []);
         if(!cells.length) return;
@@ -90,13 +94,11 @@
         const supplier = clean(cells[indexes.supplier]?.textContent);
         const iqcCell = cells[indexes.iqc] || cells[cells.length - 1];
         if(!lot || !iqcCell) return;
-
         iqcCell.querySelectorAll(".qmes-lot-linked-badge,.qmes-lot-iqc-link-btn").forEach((node) => node.remove());
         iqcCell.classList.remove("qmes-lot-linked-target");
         iqcCell.removeAttribute("role");
         iqcCell.removeAttribute("tabindex");
         delete iqcCell.dataset.qmesLotLinked;
-
         let inner = iqcCell.querySelector(":scope > .qmes-lot-iqc-cell-inner");
         if(!inner){
           inner = document.createElement("span");
@@ -104,7 +106,6 @@
           while(iqcCell.firstChild) inner.appendChild(iqcCell.firstChild);
           iqcCell.appendChild(inner);
         }
-
         const button = document.createElement("button");
         button.type = "button";
         button.className = "qmes-lot-iqc-link-btn";
@@ -140,18 +141,16 @@
   }
 
   function showContext(){
-    if(readPending() !== "1") return false;
+    if(getStore("qmes_lot_link_pending") !== "1") return false;
     const lot = getStore("qmes_lot_link_material_lot");
     if(!lot) return false;
     const input = Array.from(document.querySelectorAll("input[type='search'],input[type='text'],input:not([type])"))
       .find((node) => /검색/.test(String(node.placeholder || "")));
     if(!input) return false;
-
     setSearch(lot);
     document.getElementById("qmes-linked-material-context")?.remove();
     let anchor = input.parentElement;
     while(anchor?.parentElement && anchor.getBoundingClientRect().width < 450) anchor = anchor.parentElement;
-
     const name = getStore("qmes_lot_link_material_name");
     const supplier = getStore("qmes_lot_link_supplier");
     const box = document.createElement("div");
@@ -165,21 +164,18 @@
     return true;
   }
 
-  function readPending(){ return getStore("qmes_lot_link_pending"); }
-
   document.addEventListener("click", (event) => {
     const button = event.target.closest?.(".qmes-lot-iqc-link-btn");
     if(!button) return;
     event.preventDefault();
     event.stopPropagation();
+    event.stopImmediatePropagation();
     setStore("qmes_lot_link_pending", "1");
     setStore("qmes_lot_link_material_lot", button.dataset.lot);
     setStore("qmes_lot_link_material_name", button.dataset.name);
     setStore("qmes_lot_link_supplier", button.dataset.supplier);
     switchToIqc();
-    setTimeout(showContext, 100);
-    setTimeout(showContext, 350);
-    setTimeout(showContext, 800);
+    [80,180,350,650,1000].forEach((delay) => setTimeout(showContext, delay));
   }, true);
 
   let queued = false;
@@ -192,7 +188,6 @@
       showContext();
     }));
   }
-
   new MutationObserver(apply).observe(document.documentElement, { childList:true, subtree:true });
   window.addEventListener("load", apply);
   document.addEventListener("qmes:data-updated", apply);
