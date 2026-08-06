@@ -15,6 +15,24 @@
   };
   const lotKey = (materialName, lot) => `${normalize(materialName)}|${String(lot || "").trim().toUpperCase()}`;
 
+  function ensureAuditService(callback){
+    if (typeof global.qmesRecordLotValidation === "function") {
+      callback?.();
+      return;
+    }
+    const existing = document.querySelector('script[data-qmes-audit-trail-service]');
+    if (existing) {
+      existing.addEventListener("load", () => callback?.(), { once:true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "./js/audit-trail-service.js?v=20260806-audit1";
+    script.dataset.qmesAuditTrailService = "true";
+    script.onload = () => callback?.();
+    script.onerror = () => console.warn("[QMES] Audit Trail 서비스 로드 실패");
+    document.head.appendChild(script);
+  }
+
   function buildUsageByLot(){
     const usage = new Map();
     const workOrders = global.DB?.woDocs && typeof global.DB.woDocs === "object"
@@ -125,29 +143,41 @@
 
   function validateWorkOrderLots(workOrderNo){
     const workOrder = global.DB?.woDocs?.[workOrderNo];
-    if (!workOrder) return { workOrderNo, found:false, ok:false, errors:["작업지시를 찾을 수 없습니다."], materials:[] };
-    const materials = (Array.isArray(workOrder.inputs) ? workOrder.inputs : []).map((input, index) => {
-      const lot = String(input.materialLot || input.lot || "").trim().toUpperCase();
-      const requiredKg = quantityToKg(input.act ?? input.std ?? 0, input.unit || "kg");
-      const ledger = buildMaterialLotLedger(input.name);
-      const row = ledger.find((item) => item.lot === lot);
-      let error = "";
-      if (!lot) error = "LOT 미입력";
-      else if (!row) error = "IQC 합격 LOT 아님";
-      else if (row.status === "홀드") error = "홀드 LOT";
-      else if (row.status === "소진") error = "소진 LOT";
-      else if (row.remainingKg < requiredKg) error = `잔량 부족 (${row.remainingKg.toLocaleString()}kg)`;
-      return { index, materialName:input.name, lot, requiredKg, ledger:row || null, ok:!error, error };
+    const result = !workOrder
+      ? { workOrderNo, found:false, ok:false, errors:["작업지시를 찾을 수 없습니다."], materials:[] }
+      : (() => {
+          const materials = (Array.isArray(workOrder.inputs) ? workOrder.inputs : []).map((input, index) => {
+            const lot = String(input.materialLot || input.lot || "").trim().toUpperCase();
+            const requiredKg = quantityToKg(input.act ?? input.std ?? 0, input.unit || "kg");
+            const ledger = buildMaterialLotLedger(input.name);
+            const row = ledger.find((item) => item.lot === lot);
+            let error = "";
+            if (!lot) error = "LOT 미입력";
+            else if (!row) error = "IQC 합격 LOT 아님";
+            else if (row.status === "홀드") error = "홀드 LOT";
+            else if (row.status === "소진") error = "소진 LOT";
+            else if (row.remainingKg < requiredKg) error = `잔량 부족 (${row.remainingKg.toLocaleString()}kg)`;
+            return { index, materialName:input.name, lot, requiredKg, ledger:row || null, ok:!error, error };
+          });
+          return {
+            workOrderNo,
+            found:true,
+            ok:materials.every((row) => row.ok),
+            errors:materials.filter((row) => !row.ok).map((row) => `${row.materialName}: ${row.error}`),
+            materials
+          };
+        })();
+
+    ensureAuditService(() => {
+      if (typeof global.qmesRecordLotValidation === "function") {
+        global.qmesRecordLotValidation(workOrderNo, result);
+      }
     });
-    return {
-      workOrderNo,
-      found:true,
-      ok:materials.every((row) => row.ok),
-      errors:materials.filter((row) => !row.ok).map((row) => `${row.materialName}: ${row.error}`),
-      materials
-    };
+    global.dispatchEvent(new CustomEvent("qmes:lot-validation", { detail:result }));
+    return result;
   }
 
+  ensureAuditService();
   global.qmesBuildMaterialLotLedger = buildMaterialLotLedger;
   global.qmesRecommendMaterialLots = recommendMaterialLots;
   global.qmesRecommendWorkOrderLots = recommendWorkOrderLots;
