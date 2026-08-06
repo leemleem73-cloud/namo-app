@@ -1,198 +1,101 @@
-/* QMES module: inventory — enterprise chemical inventory with IQC aggregation. */
+/* QMES module: inventory — chemical inventory from IQC receipts and work-order consumption. */
 (function installEnterpriseInventory(){
-  const normalizeName = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, "");
-
-  const quantityToKg = (value) => {
-    const text = String(value ?? "").replace(/,/g, "").trim();
-    const match = text.match(/^(-?\d+(?:\.\d+)?)\s*(kg|g|t)?$/i);
-    if (!match) return 0;
-    const amount = Number(match[1]);
-    const unit = String(match[2] || "kg").toLowerCase();
-    if (!Number.isFinite(amount)) return 0;
-    if (unit === "g") return amount / 1000;
-    if (unit === "t") return amount * 1000;
-    return amount;
+  const norm = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, "");
+  const num = (v) => {
+    const m = String(v ?? "").replace(/,/g, "").trim().match(/^(-?\d+(?:\.\d+)?)\s*(kg|g|t)?$/i);
+    if (!m) return 0;
+    const n = Number(m[1]);
+    const u = String(m[2] || "kg").toLowerCase();
+    return u === "g" ? n / 1000 : u === "t" ? n * 1000 : n;
   };
 
-  const buildInventoryRows = () => {
+  const buildRows = () => {
     const masters = Array.isArray(INVENTORY) ? INVENTORY : [];
     const iqcRows = Array.isArray(DB?.iqc) ? DB.iqc : [];
-    const aggregate = new Map();
+    const woDocs = DB?.woDocs && typeof DB.woDocs === "object" ? Object.values(DB.woDocs) : [];
+    const receipt = new Map();
+    const usage = new Map();
 
-    iqcRows.forEach((row) => {
-      const key = normalizeName(row.name);
+    iqcRows.forEach((r) => {
+      const key = norm(r.name);
       if (!key) return;
-      const qtyKg = quantityToKg(row.qty);
-      const judge = String(row.judge || "").trim();
-      const current = aggregate.get(key) || {
-        passedKg: 0,
-        pendingKg: 0,
-        lots: new Set(),
-        suppliers: new Set(),
-        lastReceivedAt: "",
-      };
-
-      if (judge === "합격") {
-        current.passedKg += qtyKg;
-        if (row.lot) current.lots.add(String(row.lot).trim());
-      } else if (judge === "검사중" || !judge) {
-        current.pendingKg += qtyKg;
-      }
-
-      if (row.supplier && row.supplier !== "-") current.suppliers.add(String(row.supplier).trim());
-      const recv = String(row.recv || row.inspectedAt || "").slice(0, 10);
-      if (recv && recv > current.lastReceivedAt) current.lastReceivedAt = recv;
-      aggregate.set(key, current);
+      const a = receipt.get(key) || { passed:0, pending:0, lots:new Set(), suppliers:new Set(), last:"", name:r.name, code:r.code };
+      const qty = num(r.qty);
+      const judge = String(r.judge || "").trim();
+      if (judge === "합격") { a.passed += qty; if (r.lot) a.lots.add(String(r.lot).trim()); }
+      else if (judge === "검사중" || !judge) a.pending += qty;
+      if (r.supplier && r.supplier !== "-") a.suppliers.add(String(r.supplier).trim());
+      const date = String(r.recv || r.inspectedAt || "").slice(0,10);
+      if (date > a.last) a.last = date;
+      receipt.set(key, a);
     });
 
-    const masterKeys = new Set(masters.map((item) => normalizeName(item.name)));
-    const extraMaterials = [];
-    aggregate.forEach((value, key) => {
-      if (masterKeys.has(key)) return;
-      const source = iqcRows.find((row) => normalizeName(row.name) === key);
-      extraMaterials.push({
-        code: source?.code && source.code !== "-" ? source.code : `IQC-${String(extraMaterials.length + 1).padStart(3, "0")}`,
-        name: source?.name || key,
-        stock: 0,
-        safety: 0,
-        unit: "kg",
-        loc: "미지정",
-        cond: "기준정보 등록 필요",
+    woDocs.forEach((wo) => {
+      (Array.isArray(wo?.inputs) ? wo.inputs : []).forEach((r) => {
+        const key = norm(r.name);
+        if (!key || r.act == null || r.act === "") return;
+        usage.set(key, (usage.get(key) || 0) + num(`${r.act} ${r.unit || "kg"}`));
       });
     });
 
-    return [...masters, ...extraMaterials].map((item) => {
-      const iqc = aggregate.get(normalizeName(item.name));
-      const available = iqc ? iqc.passedKg : Number(item.stock || 0);
-      const inspectionPending = iqc ? iqc.pendingKg : 0;
-      const safety = Number(item.safety || 0);
-      const connected = Boolean(iqc || Number(item.stock || 0) > 0);
-      const ratio = safety > 0 ? Math.min((available / safety) * 100, 100) : (available > 0 ? 100 : 0);
-      const status = !connected
-        ? "미연동"
-        : available <= 0
-          ? "부족"
-          : safety <= 0
-            ? "정상"
-            : available < safety * 0.5
-              ? "부족"
-              : available < safety
-                ? "주의"
-                : "정상";
-      return {
-        ...item,
-        unit: "kg",
-        available,
-        inspectionPending,
-        safety,
-        lotCount: iqc ? iqc.lots.size : Number(item.lotCount || 0),
-        suppliers: iqc ? Array.from(iqc.suppliers) : [],
-        lastReceivedAt: iqc?.lastReceivedAt || item.lastReceivedAt || "-",
-        connected,
-        ratio,
-        status,
-      };
+    const known = new Set(masters.map((m) => norm(m.name)));
+    const extras = [];
+    receipt.forEach((a, key) => {
+      if (!known.has(key)) extras.push({ code:a.code && a.code !== "-" ? a.code : `IQC-${String(extras.length+1).padStart(3,"0")}`, name:a.name || key, stock:0, safety:0, loc:"미지정", cond:"기준정보 등록 필요" });
+    });
+
+    return [...masters, ...extras].map((m) => {
+      const key = norm(m.name);
+      const r = receipt.get(key);
+      const received = r ? r.passed : Number(m.stock || 0);
+      const used = usage.get(key) || 0;
+      const available = Math.max(0, Number((received - used).toFixed(3)));
+      const safety = Number(m.safety || 0);
+      const connected = Boolean(r || received > 0 || used > 0);
+      const ratio = safety > 0 ? Math.min(100, available / safety * 100) : (available > 0 ? 100 : 0);
+      const status = !connected ? "미연동" : available <= 0 ? "부족" : safety > 0 && available < safety * .5 ? "부족" : safety > 0 && available < safety ? "주의" : "정상";
+      return { ...m, unit:"kg", received, used, available, pending:r?.pending || 0, safety, lotCount:r?.lots.size || 0, suppliers:r ? [...r.suppliers] : [], last:r?.last || "-", connected, ratio, status };
     });
   };
 
-  window.InventoryTab = function InventoryTab() {
-    const [query, setQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState("전체 상태");
-    const [locationFilter, setLocationFilter] = useState("전체 창고");
-    const [revision, setRevision] = useState(0);
-    const [refreshedAt, setRefreshedAt] = useState(() => new Date());
+  window.qmesBuildInventoryRows = buildRows;
 
-    useEffect(() => {
-      const refresh = () => {
-        setRevision((value) => value + 1);
-        setRefreshedAt(new Date());
-      };
-      const timer = window.setInterval(refresh, 5000);
-      window.addEventListener("focus", refresh);
-      window.addEventListener("storage", refresh);
-      window.addEventListener("qmes:data-updated", refresh);
-      return () => {
-        window.clearInterval(timer);
-        window.removeEventListener("focus", refresh);
-        window.removeEventListener("storage", refresh);
-        window.removeEventListener("qmes:data-updated", refresh);
-      };
-    }, []);
+  window.InventoryTab = function InventoryTab(){
+    const [query,setQuery] = useState("");
+    const [status,setStatus] = useState("전체 상태");
+    const [location,setLocation] = useState("전체 창고");
+    const [rev,setRev] = useState(0);
+    const [updated,setUpdated] = useState(new Date());
+    useEffect(()=>{
+      const refresh=()=>{setRev(v=>v+1);setUpdated(new Date());};
+      const timer=setInterval(refresh,5000);
+      addEventListener("focus",refresh); addEventListener("storage",refresh); addEventListener("qmes:data-updated",refresh);
+      return()=>{clearInterval(timer);removeEventListener("focus",refresh);removeEventListener("storage",refresh);removeEventListener("qmes:data-updated",refresh);};
+    },[]);
 
-    const materials = React.useMemo(buildInventoryRows, [revision]);
-    const locations = ["전체 창고", ...Array.from(new Set(materials.map((item) => item.loc).filter(Boolean)))];
-    const normalizedQuery = query.trim().toLowerCase();
-    const filtered = materials.filter((item) => {
-      const searchable = [item.code, item.name, item.loc, item.cond, ...(item.suppliers || [])];
-      const matchesQuery = !normalizedQuery || searchable.some((value) => String(value || "").toLowerCase().includes(normalizedQuery));
-      return matchesQuery
-        && (statusFilter === "전체 상태" || item.status === statusFilter)
-        && (locationFilter === "전체 창고" || item.loc === locationFilter);
-    });
-
-    const normalCount = materials.filter((item) => item.status === "정상").length;
-    const warningCount = materials.filter((item) => item.status === "주의").length;
-    const shortageCount = materials.filter((item) => item.status === "부족").length;
-    const unlinkedCount = materials.filter((item) => item.status === "미연동").length;
-    const totalAvailable = materials.reduce((sum, item) => sum + item.available, 0);
-    const totalPending = materials.reduce((sum, item) => sum + item.inspectionPending, 0);
-
-    const kpis = [
-      { label:"전체 자재", value:materials.length, unit:"품목", icon:Package, tone:"sky", detail:"원재료 · 첨가제 마스터" },
-      { label:"사용가능 재고", value:totalAvailable.toLocaleString(undefined,{maximumFractionDigits:3}), unit:"kg", icon:Warehouse, tone:"emerald", detail:"IQC 합격 입고 합계" },
-      { label:"IQC 대기", value:totalPending.toLocaleString(undefined,{maximumFractionDigits:3}), unit:"kg", icon:ClipboardCheck, tone:"sky", detail:"검사 완료 전 사용 불가" },
-      { label:"주의 · 부족", value:warningCount + shortageCount, unit:"품목", icon:AlertTriangle, tone:"amber", detail:"구매 검토 대상" },
-      { label:"데이터 미연동", value:unlinkedCount, unit:"품목", icon:CircleDot, tone:"slate", detail:"IQC 입고 실적 없음" },
+    const rows=React.useMemo(buildRows,[rev]);
+    const locations=["전체 창고",...new Set(rows.map(r=>r.loc).filter(Boolean))];
+    const q=query.trim().toLowerCase();
+    const list=rows.filter(r=>(!q||[r.code,r.name,r.loc,r.cond,...r.suppliers].some(v=>String(v||"").toLowerCase().includes(q)))&&(status==="전체 상태"||r.status===status)&&(location==="전체 창고"||r.loc===location));
+    const totalAvailable=rows.reduce((s,r)=>s+r.available,0), totalPending=rows.reduce((s,r)=>s+r.pending,0), totalUsed=rows.reduce((s,r)=>s+r.used,0);
+    const risk=rows.filter(r=>r.status==="주의"||r.status==="부족").length, unlinked=rows.filter(r=>r.status==="미연동").length;
+    const badge=(s)=>s==="정상"?<Badge tone="green">사용 가능</Badge>:s==="주의"?<Badge tone="amber">안전재고 주의</Badge>:s==="부족"?<Badge tone="red">재고 부족</Badge>:<Badge tone="slate">데이터 미연동</Badge>;
+    const cards=[
+      ["전체 자재",rows.length,"품목",Package,"원재료 마스터"],
+      ["사용가능 재고",totalAvailable.toLocaleString(undefined,{maximumFractionDigits:3}),"kg",Warehouse,"합격 입고 - 실투입"],
+      ["누적 실투입",totalUsed.toLocaleString(undefined,{maximumFractionDigits:3}),"kg",Factory,"작업지시 실적 합계"],
+      ["IQC 대기",totalPending.toLocaleString(undefined,{maximumFractionDigits:3}),"kg",ClipboardCheck,"검사 완료 전 사용 불가"],
+      ["주의 · 부족",risk,"품목",AlertTriangle,unlinked?`미연동 ${unlinked}품목 포함 별도 확인`:"구매 검토 대상"]
     ];
-    const toneClasses = {
-      sky:"border-sky-500/25 bg-sky-500/[0.06] text-sky-300",
-      emerald:"border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300",
-      amber:"border-amber-500/25 bg-amber-500/[0.06] text-amber-300",
-      slate:"border-slate-600/70 bg-slate-800/50 text-slate-300",
-    };
-    const statusBadge = (status) => {
-      if (status === "정상") return <Badge tone="green">사용 가능</Badge>;
-      if (status === "주의") return <Badge tone="amber">안전재고 주의</Badge>;
-      if (status === "부족") return <Badge tone="red">재고 부족</Badge>;
-      return <Badge tone="slate">데이터 미연동</Badge>;
-    };
 
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-sky-400 uppercase"><Warehouse size={14}/> Chemical Inventory Control</div>
-            <h2 className="text-xl font-black text-slate-100 mt-1">원재료 재고관리</h2>
-            <p className="text-xs text-slate-500 mt-1">IQC 판정에 따라 사용가능 재고와 검사대기 재고를 자동 집계합니다.</p>
-          </div>
-          <div className="text-[11px] text-slate-500 text-right">
-            <div>기준 시각 {refreshedAt.toLocaleString("ko-KR")}</div>
-            <div className="mt-0.5">현재 사용가능 재고는 IQC 합격 입고 기준이며 작업지시 투입 차감은 다음 연계 단계입니다.</div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
-          {kpis.map((item) => { const Icon=item.icon; return <div key={item.label} className={`rounded-xl border p-4 ${toneClasses[item.tone]}`}><div className="flex items-start justify-between gap-3"><div><div className="text-[11px] font-bold text-slate-400">{item.label}</div><div className="mt-2 flex items-end gap-1.5"><span className="text-2xl font-black text-slate-100 tabular-nums">{item.value}</span><span className="text-[11px] text-slate-500 mb-1">{item.unit}</span></div></div><div className="w-9 h-9 rounded-lg border border-current/20 flex items-center justify-center bg-black/10"><Icon size={17}/></div></div><div className="mt-3 pt-3 border-t border-white/5 text-[10px] text-slate-500">{item.detail}</div></div>; })}
-        </div>
-
-        {(warningCount + shortageCount) > 0 && <div className="flex items-start gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3"><AlertTriangle size={17} className="text-amber-400 mt-0.5 shrink-0"/><div><div className="text-sm font-bold text-amber-200">안전재고 검토 대상 {warningCount + shortageCount}품목</div><div className="text-xs text-amber-200/60 mt-1">IQC 합격 입고 기준입니다. 작업지시 실투입 차감 연계 후 최종 발주 판단에 사용하세요.</div></div></div>}
-
-        <Panel title="원재료 · 부자재 재고 현황" right={<span className="text-xs text-slate-400">조회 {filtered.length} / 전체 {materials.length}품목</span>}>
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,1fr)_190px_220px_auto] gap-2 mb-4">
-            <label className="relative block"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="자재코드, 품명, 공급사, 창고 검색" className="w-full h-10 rounded-lg border border-slate-700 bg-slate-950/60 pl-9 pr-3 text-xs text-slate-200 outline-none focus:border-sky-500"/></label>
-            <label className="relative block"><Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"/><select value={statusFilter} onChange={(event)=>setStatusFilter(event.target.value)} className="w-full h-10 appearance-none rounded-lg border border-slate-700 bg-slate-950/60 pl-9 pr-3 text-xs text-slate-200 outline-none focus:border-sky-500">{["전체 상태","정상","주의","부족","미연동"].map((value)=><option key={value}>{value}</option>)}</select></label>
-            <select value={locationFilter} onChange={(event)=>setLocationFilter(event.target.value)} className="h-10 rounded-lg border border-slate-700 bg-slate-950/60 px-3 text-xs text-slate-200 outline-none focus:border-sky-500">{locations.map((value)=><option key={value}>{value}</option>)}</select>
-            <button type="button" onClick={()=>{setRevision((value)=>value+1);setRefreshedAt(new Date());}} className="h-10 px-4 rounded-lg border border-slate-700 bg-slate-800/70 hover:bg-slate-700 text-xs font-bold text-slate-200 inline-flex items-center justify-center gap-2"><RotateCw size={14}/> 새로고침</button>
-          </div>
-
-          <div className="overflow-x-auto -mx-4 px-4"><table className="w-full text-sm min-w-[1220px]"><thead><tr className="text-[11px] text-slate-400 border-y border-slate-800 bg-slate-950/40"><th className="text-left py-3 px-3 font-semibold">자재코드</th><th className="text-left py-3 px-3 font-semibold">품명</th><th className="text-right py-3 px-3 font-semibold">사용가능 재고</th><th className="text-right py-3 px-3 font-semibold">IQC 대기</th><th className="text-right py-3 px-3 font-semibold">안전재고</th><th className="text-left py-3 px-3 font-semibold w-40">재고 수준</th><th className="text-center py-3 px-3 font-semibold">LOT</th><th className="text-left py-3 px-3 font-semibold">최근 입고</th><th className="text-left py-3 px-3 font-semibold">공급사</th><th className="text-left py-3 px-3 font-semibold">보관위치</th><th className="text-left py-3 px-3 font-semibold">보관조건</th><th className="text-left py-3 px-3 font-semibold">상태</th></tr></thead><tbody>
-            {filtered.map((item)=><tr key={`${item.code}-${item.name}`} className="border-b border-slate-800/70 hover:bg-sky-500/[0.035] transition-colors"><td className="py-3 px-3 font-mono text-xs font-bold text-sky-300">{item.code}</td><td className="py-3 px-3"><div className="font-semibold text-slate-100">{item.name}</div><div className="text-[10px] text-slate-600 mt-1">원재료 마스터</div></td><td className="py-3 px-3 text-right tabular-nums"><div className="font-bold text-slate-100">{item.available.toLocaleString(undefined,{maximumFractionDigits:3})} <span className="text-[10px] text-slate-500">kg</span></div>{!item.connected&&<div className="text-[10px] text-slate-600 mt-1">실적 연동 전</div>}</td><td className="py-3 px-3 text-right tabular-nums text-slate-400">{item.inspectionPending.toLocaleString(undefined,{maximumFractionDigits:3})} <span className="text-[10px] text-slate-600">kg</span></td><td className="py-3 px-3 text-right tabular-nums text-slate-300">{item.safety.toLocaleString()} <span className="text-[10px] text-slate-600">kg</span></td><td className="py-3 px-3"><div className="flex items-center justify-between text-[10px] mb-1.5"><span className="text-slate-500">안전재고 대비</span><span className="text-slate-400">{item.connected?`${Math.round(item.ratio)}%`:"-"}</span></div><div className="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div className={`h-full rounded-full ${item.status==="정상"?"bg-emerald-400":item.status==="주의"?"bg-amber-400":item.status==="부족"?"bg-rose-400":"bg-slate-700"}`} style={{width:`${item.connected?Math.max(item.ratio,3):0}%`}}/></div></td><td className="py-3 px-3 text-center tabular-nums text-slate-300">{item.lotCount||"-"}</td><td className="py-3 px-3 text-xs text-slate-400">{item.lastReceivedAt}</td><td className="py-3 px-3 text-xs text-slate-400">{item.suppliers?.length?item.suppliers.join(", "):"-"}</td><td className="py-3 px-3 text-xs text-slate-300">{item.loc}</td><td className="py-3 px-3 text-xs text-slate-400">{item.cond}</td><td className="py-3 px-3">{statusBadge(item.status)}</td></tr>)}
-            {filtered.length===0&&<tr><td colSpan="12" className="py-14 text-center"><Boxes size={28} className="mx-auto text-slate-700"/><div className="text-sm font-semibold text-slate-400 mt-3">조건에 맞는 재고가 없습니다.</div><div className="text-xs text-slate-600 mt-1">검색어 또는 필터 조건을 변경해 주세요.</div></td></tr>}
-          </tbody></table></div>
-
-          <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3 text-[11px]"><div className="rounded-lg border border-slate-800 bg-slate-950/30 px-4 py-3 text-slate-500"><span className="font-bold text-slate-300">재고 계산 기준</span><span className="ml-3">사용가능: IQC 합격 입고 합계 · IQC 대기: 검사중 입고 합계 · 불합격: 재고 제외</span></div><div className="rounded-lg border border-slate-800 bg-slate-950/30 px-4 py-3 text-slate-500"><span className="font-bold text-slate-300">케미칼 보관 기준</span><span className="ml-3">창고 25±5℃ · 습도 50% 이하 · 드라이룸 RH 0.54% 이하 / DP -40℃ · FIFO 관리</span></div></div>
-        </Panel>
-      </div>
-    );
+    return <div className="flex flex-col gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3"><div><div className="flex items-center gap-2 text-[11px] font-semibold tracking-[.18em] text-sky-400 uppercase"><Warehouse size={14}/> Chemical Inventory Control</div><h2 className="text-xl font-black text-slate-100 mt-1">원재료 재고관리</h2><p className="text-xs text-slate-500 mt-1">IQC 합격 입고에서 작업지시 실투입량을 차감하여 사용가능 재고를 계산합니다.</p></div><div className="text-[11px] text-slate-500 text-right">기준 시각 {updated.toLocaleString("ko-KR")}<div className="mt-1">불합격 입고는 제외되며 작업지시 수정 시 현재 실적 기준으로 재계산됩니다.</div></div></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">{cards.map(([label,value,unit,Icon,detail])=><div key={label} className="rounded-xl border border-slate-700 bg-slate-900/60 p-4"><div className="flex justify-between"><div><div className="text-[11px] font-bold text-slate-400">{label}</div><div className="mt-2"><span className="text-2xl font-black text-slate-100 tabular-nums">{value}</span> <span className="text-[11px] text-slate-500">{unit}</span></div></div><Icon size={18} className="text-sky-300"/></div><div className="mt-3 pt-3 border-t border-slate-800 text-[10px] text-slate-500">{detail}</div></div>)}</div>
+      <Panel title="원재료 · 부자재 재고 현황" right={<span className="text-xs text-slate-400">조회 {list.length} / 전체 {rows.length}품목</span>}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px_210px_auto] gap-2 mb-4"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="자재코드, 품명, 공급사, 창고 검색" className="h-10 rounded-lg border border-slate-700 bg-slate-950/60 px-3 text-xs text-slate-200"/><select value={status} onChange={e=>setStatus(e.target.value)} className="h-10 rounded-lg border border-slate-700 bg-slate-950/60 px-3 text-xs text-slate-200">{["전체 상태","정상","주의","부족","미연동"].map(v=><option key={v}>{v}</option>)}</select><select value={location} onChange={e=>setLocation(e.target.value)} className="h-10 rounded-lg border border-slate-700 bg-slate-950/60 px-3 text-xs text-slate-200">{locations.map(v=><option key={v}>{v}</option>)}</select><button onClick={()=>{setRev(v=>v+1);setUpdated(new Date());}} className="h-10 px-4 rounded-lg border border-slate-700 bg-slate-800 text-xs font-bold text-slate-200">새로고침</button></div>
+        <div className="overflow-x-auto -mx-4 px-4"><table className="w-full text-sm min-w-[1250px]"><thead><tr className="text-[11px] text-slate-400 border-y border-slate-800 bg-slate-950/40"><th className="text-left p-3">자재코드</th><th className="text-left p-3">품명</th><th className="text-right p-3">합격 입고</th><th className="text-right p-3">실투입</th><th className="text-right p-3">사용가능</th><th className="text-right p-3">IQC 대기</th><th className="text-right p-3">안전재고</th><th className="text-left p-3 w-36">재고 수준</th><th className="text-center p-3">LOT</th><th className="text-left p-3">최근 입고</th><th className="text-left p-3">공급사</th><th className="text-left p-3">보관위치</th><th className="text-left p-3">상태</th></tr></thead><tbody>{list.map(r=><tr key={`${r.code}-${r.name}`} className="border-b border-slate-800/70 hover:bg-sky-500/[.035]"><td className="p-3 font-mono text-xs font-bold text-sky-300">{r.code}</td><td className="p-3 font-semibold text-slate-100">{r.name}</td><td className="p-3 text-right tabular-nums text-slate-400">{r.received.toLocaleString(undefined,{maximumFractionDigits:3})}</td><td className="p-3 text-right tabular-nums text-rose-300">{r.used.toLocaleString(undefined,{maximumFractionDigits:3})}</td><td className="p-3 text-right tabular-nums font-bold text-slate-100">{r.available.toLocaleString(undefined,{maximumFractionDigits:3})} <span className="text-[10px] text-slate-500">kg</span></td><td className="p-3 text-right text-slate-400">{r.pending.toLocaleString(undefined,{maximumFractionDigits:3})}</td><td className="p-3 text-right text-slate-400">{r.safety.toLocaleString()}</td><td className="p-3"><div className="flex justify-between text-[10px] text-slate-500 mb-1"><span>안전재고 대비</span><span>{r.connected?`${Math.round(r.ratio)}%`:"-"}</span></div><div className="h-1.5 bg-slate-800 rounded overflow-hidden"><div className={`h-full ${r.status==="정상"?"bg-emerald-400":r.status==="주의"?"bg-amber-400":r.status==="부족"?"bg-rose-400":"bg-slate-700"}`} style={{width:`${r.connected?Math.max(r.ratio,3):0}%`}}/></div></td><td className="p-3 text-center">{r.lotCount||"-"}</td><td className="p-3 text-xs text-slate-400">{r.last}</td><td className="p-3 text-xs text-slate-400">{r.suppliers.length?r.suppliers.join(", "):"-"}</td><td className="p-3 text-xs text-slate-300">{r.loc}</td><td className="p-3">{badge(r.status)}</td></tr>)}{!list.length&&<tr><td colSpan="13" className="py-14 text-center text-slate-500">조건에 맞는 재고가 없습니다.</td></tr>}</tbody></table></div>
+        <div className="mt-4 text-[11px] text-slate-500 rounded-lg border border-slate-800 bg-slate-950/30 px-4 py-3"><b className="text-slate-300">계산 기준</b><span className="ml-3">사용가능 재고 = IQC 합격 입고량 - 전체 작업지시 현재 실투입량 · IQC 검사중 및 불합격 수량은 사용가능 재고에서 제외</span></div>
+      </Panel>
+    </div>;
   };
 })();
