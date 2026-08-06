@@ -1,14 +1,14 @@
 (function(){
   "use strict";
-  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V11__) return;
-  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V11__=true;
+  if(window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V12__) return;
+  window.__QMES_EQUIPMENT_COMPLAINT_SUMMARY_REFINEMENT_V12__=true;
 
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const all=(root=document)=>Array.from(root.querySelectorAll("div,section,article,span,p,h1,h2,h3,h4,h5,label,th,td"));
   const complaintLabels=["당월 접수","진행중","완료","초동 회신 준수율"];
 
   const style=document.createElement("style");
-  style.id="qmes-equipment-complaint-summary-refinement-v11-style";
+  style.id="qmes-equipment-complaint-summary-refinement-v12-style";
   style.textContent=`
     .qmes-equipment-summary-card,
     .qmes-equipment-summary-card *{
@@ -28,46 +28,62 @@
       width:100%!important;
       display:grid!important;
       grid-template-columns:repeat(4,minmax(0,1fr))!important;
-      gap:12px!important;
+      gap:2px!important;
       align-items:stretch!important;
+      padding:0!important;
+      margin:0!important;
     }
 
     .qmes-complaint-card-frame,
     .qmes-complaint-card-frame:hover,
+    .qmes-complaint-card-frame:active,
     .qmes-complaint-card-frame:focus,
+    .qmes-complaint-card-frame:focus-visible,
     .qmes-complaint-card-frame:focus-within{
       box-sizing:border-box!important;
       width:100%!important;
       min-width:0!important;
-      min-height:88px!important;
       height:88px!important;
+      min-height:88px!important;
       max-height:88px!important;
       margin:0!important;
-      padding:10px 12px!important;
+      padding:10px!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
       overflow:visible!important;
-      border:1px solid rgba(71,85,105,.72)!important;
+      border:1px solid #475569!important;
       border-radius:10px!important;
       outline:0!important;
-      background:#0f1d31!important;
+      background:transparent!important;
+      background-color:transparent!important;
       background-image:none!important;
       box-shadow:none!important;
       filter:none!important;
       transform:none!important;
       transition:none!important;
+      animation:none!important;
+      color:#fff!important;
       cursor:default!important;
     }
-    .qmes-complaint-card-frame:hover,
-    .qmes-complaint-card-frame:focus,
-    .qmes-complaint-card-frame:focus-within{
-      border-color:rgba(71,85,105,.72)!important;
-      background:#0f1d31!important;
+
+    .qmes-complaint-card-frame *,
+    .qmes-complaint-card-frame *:hover,
+    .qmes-complaint-card-frame *:active,
+    .qmes-complaint-card-frame *:focus{
+      background:transparent!important;
+      background-color:transparent!important;
+      background-image:none!important;
+      border-color:transparent!important;
       box-shadow:none!important;
+      filter:none!important;
       transform:none!important;
+      transition:none!important;
+      animation:none!important;
+      color:#fff!important;
     }
+
     .qmes-complaint-card-frame::before,
     .qmes-complaint-card-frame::after,
     .qmes-complaint-card-frame *::before,
@@ -75,6 +91,7 @@
       content:none!important;
       display:none!important;
     }
+
     .qmes-complaint-card-frame svg,
     .qmes-complaint-card-frame img,
     .qmes-complaint-card-frame [role="img"],
@@ -96,39 +113,36 @@
       justify-content:center!important;
       gap:5px!important;
       overflow:visible!important;
-      color:#fff!important;
       text-align:center!important;
       text-align-last:center!important;
-      transform:none!important;
     }
-    .qmes-complaint-content-kept *{
-      margin:0!important;
-      padding:0!important;
-      color:#fff!important;
-      text-align:center!important;
-      text-align-last:center!important;
-      transform:none!important;
-      overflow:visible!important;
-    }
+
     .qmes-complaint-label{
       width:100%!important;
-      min-height:18px!important;
+      min-height:20px!important;
+      margin:0!important;
+      padding:0!important;
       display:flex!important;
       align-items:center!important;
       justify-content:center!important;
+      text-align:center!important;
       font-size:12px!important;
       font-weight:600!important;
-      line-height:18px!important;
+      line-height:20px!important;
       white-space:nowrap!important;
     }
+
     .qmes-complaint-value-row{
       width:100%!important;
       min-height:28px!important;
+      margin:0!important;
+      padding:0!important;
       display:flex!important;
       flex-direction:row!important;
       align-items:baseline!important;
       justify-content:center!important;
       gap:3px!important;
+      text-align:center!important;
       font-size:20px!important;
       font-weight:800!important;
       line-height:28px!important;
@@ -139,6 +153,8 @@
       width:auto!important;
       min-width:0!important;
       min-height:0!important;
+      margin:0!important;
+      padding:0!important;
       font-size:inherit!important;
       line-height:inherit!important;
       white-space:nowrap!important;
@@ -155,8 +171,12 @@
       font-weight:var(--qmes-ncr-font-weight,500)!important;
       font-family:var(--qmes-ncr-font-family,inherit)!important;
     }
+
     @media(max-width:760px){
-      .qmes-complaint-summary-row-clean{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+      .qmes-complaint-summary-row-clean{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:2px!important;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -167,7 +187,10 @@
         let node=element;
         while(node&&node!==document.body){
           const rect=node.getBoundingClientRect();
-          if(rect.width>120&&rect.height>45&&rect.height<220){node.classList.add("qmes-equipment-summary-card");break;}
+          if(rect.width>120&&rect.height>45&&rect.height<220){
+            node.classList.add("qmes-equipment-summary-card");
+            break;
+          }
           node=node.parentElement;
         }
       });
@@ -286,8 +309,18 @@
   }
 
   let queued=false;
-  function apply(){queued=false;markEquipment();markComplaint();unifyNcrTypography();}
-  function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(apply));}
+  function apply(){
+    queued=false;
+    markEquipment();
+    markComplaint();
+    unifyNcrTypography();
+  }
+  function schedule(){
+    if(queued) return;
+    queued=true;
+    requestAnimationFrame(()=>requestAnimationFrame(apply));
+  }
+
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
   document.addEventListener("click",schedule,true);
   document.addEventListener("qmes:data-updated",schedule);
