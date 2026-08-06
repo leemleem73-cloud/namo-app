@@ -1,12 +1,21 @@
 (function(){
   "use strict";
-  if(window.__QMES_IQC_PERSISTENCE_PAGINATION_FIX__) return;
-  window.__QMES_IQC_PERSISTENCE_PAGINATION_FIX__=true;
+  if(window.__QMES_IQC_PERSISTENCE_PAGINATION_FIX_V2__) return;
+  window.__QMES_IQC_PERSISTENCE_PAGINATION_FIX_V2__=true;
 
-  const PAGE_SIZE=10;
+  const PAGE_SIZE=5;
   const clean=value=>String(value||"").trim();
   const rowKey=row=>clean(row?.inNo)||[clean(row?.recv),clean(row?.lot),clean(row?.name),clean(row?.supplier)].join("|");
   const dateValue=row=>clean(row?.recv||row?.inspectedAt||"");
+
+  const style=document.createElement("style");
+  style.id="qmes-iqc-auto-select-width-fix";
+  style.textContent=`
+    .qmes-iqc-inno-row{display:grid!important;grid-template-columns:92px minmax(0,1fr)!important;gap:8px!important;align-items:center!important}
+    .qmes-iqc-inno-row select{width:92px!important;min-width:92px!important;padding-left:12px!important;padding-right:28px!important;text-align:left!important;text-overflow:clip!important;white-space:nowrap!important;overflow:visible!important}
+    .qmes-iqc-inno-row option{white-space:nowrap!important}
+  `;
+  document.head.appendChild(style);
 
   function mergeRows(remoteRows,localRows){
     const map=new Map();
