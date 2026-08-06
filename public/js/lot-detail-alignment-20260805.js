@@ -1,29 +1,213 @@
 (function(){
-"use strict";
-if(window.__QMES_LOT_LINK_V22__)return;window.__QMES_LOT_LINK_V22__=true;
-const clean=v=>String(v||"").replace(/\s+/g," ").trim();
-const all=(r=document)=>Array.from(r.querySelectorAll("div,section,article,span,p,small,strong,td,th,button,a"));
-const get=k=>{try{return sessionStorage.getItem(k)||""}catch(e){return""}},set=(k,v)=>{try{sessionStorage.setItem(k,String(v||""))}catch(e){}};
-const clear=()=>["qmes_lot_link_tab","qmes_lot_link_query","qmes_lot_link_material_lot","qmes_lot_link_material_name","qmes_lot_link_supplier"].forEach(k=>{try{sessionStorage.removeItem(k)}catch(e){}});
-window.qmesOpenLotLinkedModule=(tab,query,meta={})=>{set("qmes_current_tab",tab);set("qmes_lot_link_tab",tab);set("qmes_lot_link_query",query);set("qmes_lot_link_material_lot",meta.materialLot||query);set("qmes_lot_link_material_name",meta.materialName);set("qmes_lot_link_supplier",meta.supplier);location.reload()};
-const style=document.createElement("style");style.textContent=`
-.qmes-iqc-inno-row{display:grid!important;grid-template-columns:82px minmax(0,1fr)!important;gap:8px!important}.qmes-iqc-inno-row select{width:82px!important;min-width:82px!important;padding-left:10px!important;padding-right:26px!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important}
-.qmes-lot-production-panel .qmes-lot-detail-row{display:grid!important;grid-template-columns:120px minmax(0,1fr) 128px!important;align-items:center!important;gap:12px!important;padding:11px 12px!important;box-sizing:border-box!important}.qmes-lot-production-panel .qmes-lot-detail-row>*{min-width:0!important;text-align:center!important;justify-self:center!important}.qmes-workorder-issue-cell{grid-column:3!important;width:118px!important;max-width:118px!important;justify-self:end!important;white-space:nowrap!important}.qmes-workorder-issue-cell>*{display:inline-flex!important;width:100%!important;min-height:30px!important;align-items:center!important;justify-content:center!important}.qmes-lot-production-hidden{display:none!important}
-.qmes-lot-linked-target{cursor:pointer!important}.qmes-lot-linked-target:hover{text-decoration:underline!important;text-underline-offset:3px!important}.qmes-lot-linked-badge{display:inline-flex!important;margin-left:7px!important;padding:2px 7px!important;border:1px solid #475569!important;border-radius:999px!important;background:#0f172a!important;color:#cbd5e1!important;font-size:10px!important;font-weight:700!important;white-space:nowrap!important}
-.qmes-linked-material-context{display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;flex-wrap:wrap!important;margin:0 0 14px!important;padding:11px 16px!important;border:1px solid #334155!important;border-radius:10px!important;background:#0f172a!important;color:#e2e8f0!important}.qmes-linked-material-context strong{color:#7dd3fc!important}.qmes-linked-material-actions{display:inline-flex!important;gap:7px!important}.qmes-linked-material-actions button{height:30px!important;padding:4px 11px!important;border:1px solid #475569!important;border-radius:7px!important;background:#1e293b!important;color:#fff!important;font-size:12px!important;font-weight:800!important}
-`;
-document.head.appendChild(style);
-function panelOf(el){let n=el;while(n&&n!==document.body){const c=String(n.className||""),r=n.getBoundingClientRect();if((/rounded/.test(c)&&/border/.test(c))||(r.width>400&&n.querySelector("h1,h2,h3,h4,h5")))return n;n=n.parentElement}return null}
-function hideProduction(scope){all(scope).forEach(n=>{if(n.children.length)return;const t=clean(n.textContent);if(/^(?:\d{4}[-./]\d{1,2}[-./]\d{1,2}\s*)?\d{1,2}:\d{2}(?::\d{2})?$/.test(t))n.classList.add("qmes-lot-production-hidden");if(/품질부\s*박현아(?:\s*\(U-0010\))?/i.test(t)){const x=clean(t.replace(/품질부\s*박현아(?:\s*\(U-0010\))?/ig,"").replace(/^담당\s*:?$/,""));if(x&&x!=="담당")n.textContent=x;else n.classList.add("qmes-lot-production-hidden")}})}
-function arrangeProduction(){all().filter(n=>clean(n.textContent)==="생산실적").forEach(h=>{const p=panelOf(h);if(!p)return;p.classList.add("qmes-lot-production-panel");Array.from(p.querySelectorAll("div.grid")).forEach(row=>{if(row.children.length<2)return;row.classList.add("qmes-lot-detail-row");hideProduction(row);const issue=Array.from(row.children).find(c=>/작업지시/.test(clean(c.textContent))&&/발행/.test(clean(c.textContent)));if(issue){issue.classList.add("qmes-workorder-issue-cell");row.appendChild(issue)}});hideProduction(p)})}
-function renameHeaders(p){Array.from(p.querySelectorAll("thead th")).forEach(th=>{const t=clean(th.textContent);if(/원료\s*Lot/i.test(t)||t==="원료 LOT")th.textContent="LOT No.";else if(t==="품명")th.textContent="원재료명";else if(t==="공급사")th.textContent="업체명"})}
-function indexes(row){const hs=Array.from(row.closest("table")?.querySelectorAll("thead th")||[]).map(h=>clean(h.textContent));const f=(re,d)=>{const i=hs.findIndex(x=>re.test(x));return i<0?d:i};return{lot:f(/LOT No\.|원료\s*LOT/i,0),name:f(/원재료명|^품명$/,1),supplier:f(/업체명|공급사/,5),iqc:f(/수입검사/,row.cells.length-1)}}
-function addLink(cell,lot,meta){if(!cell||cell.dataset.qmesLotLinked)return;cell.dataset.qmesLotLinked="1";cell.classList.add("qmes-lot-linked-target");cell.setAttribute("role","button");cell.tabIndex=0;const open=e=>{e.preventDefault();e.stopPropagation();qmesOpenLotLinkedModule("iqc",lot,meta)};cell.addEventListener("click",open,true);cell.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" ")open(e)});const b=document.createElement("span");b.className="qmes-lot-linked-badge";b.textContent="바로가기";cell.appendChild(b)}
-function linkMaterials(){all().filter(n=>/투입 원재료|Backward Trace|투입원료/.test(clean(n.textContent))).forEach(h=>{const p=panelOf(h);if(!p)return;renameHeaders(p);Array.from(p.querySelectorAll("tbody tr")).forEach(row=>{row.querySelectorAll(".qmes-lot-linked-badge").forEach(b=>b.remove());const c=Array.from(row.cells);if(!c.length)return;const i=indexes(row),lot=clean(c[i.lot]?.textContent),name=clean(c[i.name]?.textContent),supplier=clean(c[i.supplier]?.textContent),iqc=c[i.iqc]||c[c.length-1];if(lot)addLink(iqc,lot,{materialLot:lot,materialName:name,supplier})})})}
-function sortIqc(){if(get("qmes_current_tab")!=="iqc")return;const table=document.querySelector(".qmes-iqc-ledger-table"),body=table?.tBodies?.[0];if(!body)return;const rows=Array.from(body.rows).filter(r=>r.cells.length>1&&!r.querySelector(".qmes-iqc-empty-row"));const value=r=>clean(r.cells[0]?.textContent).replace(/\./g,"-");rows.sort((a,b)=>value(b).localeCompare(value(a))||clean(b.cells[1]?.textContent).localeCompare(clean(a.cells[1]?.textContent),"ko",{numeric:true}));rows.forEach(r=>body.appendChild(r))}
-function findIqcRow(lot){return Array.from(document.querySelectorAll(".qmes-iqc-ledger-table tbody tr")).find(r=>clean(r.cells[1]?.textContent)===lot||clean(r.textContent).includes(lot))}
-function action(lot,label){const r=findIqcRow(lot),b=Array.from(r?.querySelectorAll("button")||[]).find(x=>clean(x.textContent).includes(label));if(b)b.click();else alert(`${label} 버튼을 찾을 수 없습니다.`)}
-function context(){if(get("qmes_current_tab")!=="iqc")return false;const lot=get("qmes_lot_link_material_lot"),name=get("qmes_lot_link_material_name"),supplier=get("qmes_lot_link_supplier");if(!lot)return false;const input=Array.from(document.querySelectorAll("input[type='text'],input[type='search'],input:not([type])")).find(x=>/검색/.test(String(x.placeholder||"")));if(!input)return false;if(document.getElementById("qmes-linked-material-context"))return true;let a=input.parentElement;while(a?.parentElement&&a.getBoundingClientRect().width<450)a=a.parentElement;const box=document.createElement("div");box.id="qmes-linked-material-context";box.className="qmes-linked-material-context";box.innerHTML=`<span>LOT No. <strong>${lot}</strong></span><span>원재료명 <strong>${name||"-"}</strong></span><span>업체명 <strong>${supplier||"-"}</strong></span><span class="qmes-linked-material-actions"><button data-a="출력">출력</button><button data-a="라벨">라벨</button></span>`;box.querySelector('[data-a="출력"]').onclick=()=>action(lot,"출력");box.querySelector('[data-a="라벨"]').onclick=()=>action(lot,"라벨");a.parentElement?.insertBefore(box,a);clear();return true}
-function linkedSearch(){const tab=get("qmes_lot_link_tab"),q=get("qmes_lot_link_query");if(!tab||!q||get("qmes_current_tab")!==tab)return;const input=Array.from(document.querySelectorAll("input[type='text'],input[type='search'],input:not([type])")).find(x=>/검색/.test(String(x.placeholder||"")));if(!input)return;const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")?.set;if(setter)setter.call(input,q);else input.value=q;input.dispatchEvent(new Event("input",{bubbles:true}));input.dispatchEvent(new Event("change",{bubbles:true}));if(tab==="iqc")context();else clear()}
-let queued=false;function run(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;arrangeProduction();linkMaterials();sortIqc();linkedSearch()}))}new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,characterData:true});document.addEventListener("click",run,true);window.addEventListener("load",run);run();
+  "use strict";
+  if(window.__QMES_LOT_IQC_LINK_V24__) return;
+  window.__QMES_LOT_IQC_LINK_V24__ = true;
+
+  const clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  const getStore = (key) => { try { return sessionStorage.getItem(key) || ""; } catch (_) { return ""; } };
+  const setStore = (key, value) => { try { sessionStorage.setItem(key, String(value || "")); } catch (_) {} };
+  const clearLinkStore = () => {
+    ["qmes_lot_link_tab","qmes_lot_link_query","qmes_lot_link_material_lot","qmes_lot_link_material_name","qmes_lot_link_supplier"].forEach((key) => {
+      try { sessionStorage.removeItem(key); } catch (_) {}
+    });
+  };
+
+  const style = document.createElement("style");
+  style.id = "qmes-lot-iqc-link-v24-style";
+  style.textContent = `
+    .qmes-lot-iqc-cell-inner{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;white-space:nowrap!important}
+    .qmes-lot-iqc-link-btn{flex:0 0 auto!important;min-width:58px!important;height:25px!important;padding:2px 8px!important;border:1px solid #475569!important;border-radius:6px!important;background:#172033!important;color:#dbe7f3!important;font-size:10px!important;font-weight:800!important;line-height:19px!important;cursor:pointer!important}
+    .qmes-lot-iqc-link-btn:hover{border-color:#94a3b8!important;background:#1e293b!important;color:#fff!important}
+    .qmes-lot-linked-badge{display:none!important}
+    .qmes-iqc-inno-row{display:grid!important;grid-template-columns:86px minmax(0,1fr)!important;gap:8px!important}
+    .qmes-iqc-inno-row select{width:86px!important;min-width:86px!important;padding-left:10px!important;padding-right:25px!important;text-overflow:clip!important;white-space:nowrap!important}
+    .qmes-linked-material-context{display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;flex-wrap:wrap!important;margin:0 0 14px!important;padding:11px 16px!important;border:1px solid #334155!important;border-radius:10px!important;background:#0f172a!important;color:#e2e8f0!important}
+    .qmes-linked-material-context strong{color:#7dd3fc!important;font-weight:800!important}
+    .qmes-linked-material-actions{display:inline-flex!important;gap:7px!important}
+    .qmes-linked-material-actions button{height:30px!important;padding:4px 11px!important;border:1px solid #475569!important;border-radius:7px!important;background:#1e293b!important;color:#fff!important;font-size:12px!important;font-weight:800!important;cursor:pointer!important}
+    .qmes-lot-production-hidden{display:none!important}
+    .qmes-lot-production-panel .qmes-lot-detail-row{display:grid!important;grid-template-columns:120px minmax(0,1fr) 128px!important;align-items:center!important;gap:12px!important;padding:11px 12px!important;box-sizing:border-box!important}
+    .qmes-lot-production-panel .qmes-lot-detail-row>*{min-width:0!important;text-align:center!important;justify-self:center!important}
+    .qmes-workorder-issue-cell{grid-column:3!important;width:118px!important;max-width:118px!important;justify-self:end!important;white-space:nowrap!important}
+  `;
+  document.head.appendChild(style);
+
+  function panelOf(element) {
+    let node = element;
+    while (node && node !== document.body) {
+      const classes = String(node.className || "");
+      const rect = node.getBoundingClientRect();
+      if ((/rounded/.test(classes) && /border/.test(classes)) || (rect.width > 400 && node.querySelector("h1,h2,h3,h4,h5"))) return node;
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  function renameMaterialHeaders(panel) {
+    Array.from(panel.querySelectorAll("thead th")).forEach((th) => {
+      const text = clean(th.textContent);
+      if (/원료\s*Lot/i.test(text) || text === "원료 LOT") th.textContent = "LOT No.";
+      else if (text === "품명") th.textContent = "원재료명";
+      else if (text === "공급사") th.textContent = "업체명";
+    });
+  }
+
+  function columnIndexes(row) {
+    const headers = Array.from(row.closest("table")?.querySelectorAll("thead th") || []).map((th) => clean(th.textContent));
+    const find = (pattern, fallback) => {
+      const index = headers.findIndex((text) => pattern.test(text));
+      return index >= 0 ? index : fallback;
+    };
+    return {
+      lot: find(/LOT No\.|원료\s*LOT/i, 0),
+      name: find(/원재료명|^품명$/, 1),
+      supplier: find(/업체명|공급사/, 5),
+      iqc: find(/수입검사/, row.cells.length - 1)
+    };
+  }
+
+  function openIqc(lot, name, supplier) {
+    setStore("qmes_current_tab", "iqc");
+    setStore("qmes_lot_link_tab", "iqc");
+    setStore("qmes_lot_link_query", lot);
+    setStore("qmes_lot_link_material_lot", lot);
+    setStore("qmes_lot_link_material_name", name);
+    setStore("qmes_lot_link_supplier", supplier);
+    window.location.reload();
+  }
+
+  function applyMaterialLinks() {
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span")).filter((node) => /투입 원재료|Backward Trace|투입원료/.test(clean(node.textContent)));
+    headings.forEach((heading) => {
+      const panel = panelOf(heading);
+      if (!panel) return;
+      renameMaterialHeaders(panel);
+      Array.from(panel.querySelectorAll("tbody tr")).forEach((row) => {
+        const cells = Array.from(row.cells || []);
+        if (!cells.length) return;
+        const indexes = columnIndexes(row);
+        const lot = clean(cells[indexes.lot]?.textContent);
+        const name = clean(cells[indexes.name]?.textContent);
+        const supplier = clean(cells[indexes.supplier]?.textContent);
+        const iqcCell = cells[indexes.iqc] || cells[cells.length - 1];
+        if (!iqcCell || !lot) return;
+
+        iqcCell.querySelectorAll(".qmes-lot-iqc-link-btn").forEach((button) => button.remove());
+        let inner = iqcCell.querySelector(":scope > .qmes-lot-iqc-cell-inner");
+        if (!inner) {
+          inner = document.createElement("div");
+          inner.className = "qmes-lot-iqc-cell-inner";
+          while (iqcCell.firstChild) inner.appendChild(iqcCell.firstChild);
+          iqcCell.appendChild(inner);
+        }
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "qmes-lot-iqc-link-btn";
+        button.textContent = "바로가기";
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          openIqc(lot, name, supplier);
+        });
+        inner.appendChild(button);
+      });
+    });
+  }
+
+  function applyProductionLayout() {
+    Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span")).filter((node) => clean(node.textContent) === "생산실적").forEach((heading) => {
+      const panel = panelOf(heading);
+      if (!panel) return;
+      panel.classList.add("qmes-lot-production-panel");
+      Array.from(panel.querySelectorAll("div.grid")).forEach((row) => {
+        if (row.children.length < 2) return;
+        row.classList.add("qmes-lot-detail-row");
+        Array.from(row.querySelectorAll("div,span,p,small,strong")).filter((node) => !node.children.length).forEach((node) => {
+          const text = clean(node.textContent);
+          if (/^(?:\d{4}[-./]\d{1,2}[-./]\d{1,2}\s*)?\d{1,2}:\d{2}(?::\d{2})?$/.test(text)) node.classList.add("qmes-lot-production-hidden");
+          if (/품질부\s*박현아(?:\s*\(U-0010\))?/i.test(text)) node.classList.add("qmes-lot-production-hidden");
+        });
+        const issue = Array.from(row.children).find((child) => /작업지시/.test(clean(child.textContent)) && /발행/.test(clean(child.textContent)));
+        if (issue) {
+          issue.classList.add("qmes-workorder-issue-cell");
+          row.appendChild(issue);
+        }
+      });
+    });
+  }
+
+  function sortIqcLatest() {
+    if (getStore("qmes_current_tab") !== "iqc") return;
+    const body = document.querySelector(".qmes-iqc-ledger-table tbody");
+    if (!body) return;
+    const rows = Array.from(body.rows).filter((row) => row.cells.length > 1 && !row.querySelector(".qmes-iqc-empty-row"));
+    const date = (row) => clean(row.cells[0]?.textContent).replace(/\./g, "-");
+    rows.sort((a, b) => date(b).localeCompare(date(a)) || clean(b.cells[1]?.textContent).localeCompare(clean(a.cells[1]?.textContent), "ko", { numeric: true }));
+    rows.forEach((row) => body.appendChild(row));
+  }
+
+  function findIqcRow(lot) {
+    return Array.from(document.querySelectorAll(".qmes-iqc-ledger-table tbody tr")).find((row) => clean(row.cells[1]?.textContent) === lot || clean(row.textContent).includes(lot));
+  }
+
+  function clickIqcAction(lot, label) {
+    const row = findIqcRow(lot);
+    const button = Array.from(row?.querySelectorAll("button") || []).find((item) => clean(item.textContent).includes(label));
+    if (button) button.click();
+    else window.alert(`${label} 버튼을 찾을 수 없습니다.`);
+  }
+
+  function showLinkedContext() {
+    if (getStore("qmes_current_tab") !== "iqc") return false;
+    const lot = getStore("qmes_lot_link_material_lot");
+    const name = getStore("qmes_lot_link_material_name");
+    const supplier = getStore("qmes_lot_link_supplier");
+    if (!lot) return false;
+    const input = Array.from(document.querySelectorAll("input[type='text'],input[type='search'],input:not([type])")).find((item) => /검색/.test(String(item.placeholder || "")));
+    if (!input) return false;
+    if (document.getElementById("qmes-linked-material-context")) return true;
+
+    let anchor = input.parentElement;
+    while (anchor?.parentElement && anchor.getBoundingClientRect().width < 450) anchor = anchor.parentElement;
+    const box = document.createElement("div");
+    box.id = "qmes-linked-material-context";
+    box.className = "qmes-linked-material-context";
+    box.innerHTML = `<span>LOT No. <strong>${lot}</strong></span><span>원재료명 <strong>${name || "-"}</strong></span><span>업체명 <strong>${supplier || "-"}</strong></span><span class="qmes-linked-material-actions"><button type="button" data-action="출력">출력</button><button type="button" data-action="라벨">라벨</button></span>`;
+    box.querySelector('[data-action="출력"]').addEventListener("click", () => clickIqcAction(lot, "출력"));
+    box.querySelector('[data-action="라벨"]').addEventListener("click", () => clickIqcAction(lot, "라벨"));
+    anchor.parentElement?.insertBefore(box, anchor);
+    clearLinkStore();
+    return true;
+  }
+
+  function applyLinkedSearch() {
+    const tab = getStore("qmes_lot_link_tab");
+    const query = getStore("qmes_lot_link_query");
+    if (tab !== "iqc" || !query || getStore("qmes_current_tab") !== "iqc") return;
+    const input = Array.from(document.querySelectorAll("input[type='text'],input[type='search'],input:not([type])")).find((item) => /검색/.test(String(item.placeholder || "")));
+    if (!input) return;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    if (setter) setter.call(input, query); else input.value = query;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    showLinkedContext();
+  }
+
+  let queued = false;
+  function apply() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      queued = false;
+      applyMaterialLinks();
+      applyProductionLayout();
+      sortIqcLatest();
+      applyLinkedSearch();
+    }));
+  }
+
+  new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  document.addEventListener("click", apply, true);
+  window.addEventListener("load", apply);
+  apply();
 })();
