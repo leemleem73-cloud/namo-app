@@ -1,48 +1,71 @@
 (function(){
   "use strict";
-  if(window.__QMES_RESTORE_VERTICAL_TOP_DROPDOWN_V1__) return;
-  window.__QMES_RESTORE_VERTICAL_TOP_DROPDOWN_V1__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V1__) return;
+  window.__QMES_SYNC_SIDEBAR_V1__=true;
 
-  // 왼쪽/가로형 메뉴 실험 요소 제거
-  ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu","qmes-stable-sidebar","qmes-safe-sidebar","qmes-left-native-menu","qmes-left-menu"].forEach(id=>document.getElementById(id)?.remove());
-  ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style","qmes-native-dropdown-left-style","qmes-stable-sidebar-style","qmes-safe-sidebar-style","qmes-left-native-menu-style","qmes-left-menu-style","qmes-top-submenu-fix-style"].forEach(id=>document.getElementById(id)?.remove());
-  document.body?.classList.remove("qmes-context-side-enabled","qmes-stable-sidebar-open","qmes-safe-sidebar-open");
+  const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
+  const menuMap={
+    '대시보드':[{label:'종합 대시보드',direct:'대시보드'},{label:'SPC 대시보드',group:'품질검사',sub:'SPC (Cpk)'}],
+    '생산관리':[{label:'생산 진행',group:'생산관리',sub:'생산 (배치)'},{label:'작업지시서',group:'생산관리',sub:'작업지시서'}],
+    '품질검사':[{label:'수입검사 (IQC)',group:'품질검사',sub:'수입검사 (IQC)'},{label:'공정검사 (PQC)',group:'품질검사',sub:'공정검사 (PQC)'},{label:'출하검사 (OQC)',group:'품질검사',sub:'출하검사 (OQC)'},{label:'SPC (Cpk)',group:'품질검사',sub:'SPC (Cpk)'},{label:'품질 인터락',group:'품질검사',sub:'품질 인터락 (차단)'},{label:'출하성적서',group:'품질검사',sub:'출하성적서'}],
+    '현장입력':[{label:'현장 입력 (iPad)',direct:'현장입력'}],
+    '재고관리':[{label:'원재료 재고',direct:'재고관리'}],
+    '거래처 현황':[{label:'거래처 현황',direct:'거래처 현황'}],
+    '설비관리':[{label:'설비 모니터링',direct:'설비관리'}],
+    'LOT 추적':[{label:'LOT 추적',direct:'LOT 추적'}],
+    '부적합관리':[{label:'부적합 (8D)',group:'부적합관리',sub:'부적합 (8D)'},{label:'고객불만 (GQMS)',group:'부적합관리',sub:'고객불만 (GQMS)'},{label:'4M 변경관리',group:'부적합관리',sub:'4M 변경관리'}]
+  };
+  const groups=Object.keys(menuMap);
+  const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
+  const topLabel=b=>clean(b?.textContent);
+  const findTop=label=>topButtons().find(b=>topLabel(b)===label);
 
-  // React 기본 가로 하위행은 예전처럼 숨김 유지
-  const style=document.createElement("style");
-  style.id="qmes-restore-vertical-dropdown-style";
+  ['qmes-left-menu','qmes-left-native-menu','qmes-context-side-menu','qmes-stable-sidebar','qmes-safe-sidebar'].forEach(id=>document.getElementById(id)?.remove());
+  ['qmes-left-menu-style','qmes-left-native-menu-style','qmes-context-side-menu-style','qmes-stable-sidebar-style','qmes-safe-sidebar-style','qmes-top-submenu-fix-style','qmes-restore-vertical-dropdown-style'].forEach(id=>document.getElementById(id)?.remove());
+
+  const style=document.createElement('style');
+  style.id='qmes-sync-sidebar-style';
   style.textContent=`
     .qmes-submenu-row{display:none!important}
     .qmes-top-menu-button span{display:inline!important;visibility:visible!important;opacity:1!important}
     #qmes-all-menu-dropdown{display:block!important}
     #qmes-all-menu-dropdown:not(.is-open){opacity:0!important;visibility:hidden!important;pointer-events:none!important}
     #qmes-all-menu-dropdown.is-open{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+    #qmes-sync-sidebar{position:fixed;left:0;top:var(--qmes-side-top,72px);bottom:0;width:220px;background:#fff;border-right:1px solid #e4e8ee;box-shadow:3px 0 12px rgba(15,23,42,.05);z-index:11000;transform:translateX(-100%);transition:transform .18s ease;box-sizing:border-box;padding:12px 10px;overflow:auto}
+    body.qmes-side-open #qmes-sync-sidebar{transform:translateX(0)}
+    #qmes-sync-sidebar .qmes-side-head{display:flex;align-items:center;justify-content:space-between;padding:5px 8px 11px;border-bottom:1px solid #edf0f4;margin-bottom:7px}
+    #qmes-sync-sidebar .qmes-side-title{font-size:14px;font-weight:800;color:#172033}
+    #qmes-sync-sidebar .qmes-side-close{width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#64748b;font-size:19px;cursor:pointer}
+    #qmes-sync-sidebar .qmes-side-close:hover{background:#f1f5f9;color:#172033}
+    #qmes-sync-sidebar .qmes-side-item{position:relative;display:flex;align-items:center;width:100%;min-height:40px;padding:9px 10px 9px 14px;margin:2px 0;border:0;border-radius:7px;background:transparent;color:#475569;font-size:13px;font-weight:700;text-align:left;cursor:pointer}
+    #qmes-sync-sidebar .qmes-side-item:hover{background:#f4f7fa;color:#172033}
+    #qmes-sync-sidebar .qmes-side-item.is-active{background:#edf4ff;color:#175cd3}
+    #qmes-sync-sidebar .qmes-side-item.is-active:before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:#2563eb}
+    #qmes-sync-hamburger{position:fixed;left:12px;top:var(--qmes-hamburger-top,82px);z-index:10990;width:36px;height:36px;border:1px solid #dce2e8;border-radius:8px;background:#fff;color:#334155;box-shadow:0 2px 7px rgba(15,23,42,.06);font-size:19px;line-height:1;cursor:pointer}
+    body.qmes-side-open #qmes-sync-hamburger{display:none}
+    body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:220px!important;width:calc(100% - 220px)!important;box-sizing:border-box;transition:margin-left .18s ease,width .18s ease}
+    @media(max-width:900px){#qmes-sync-sidebar{width:190px}body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important}}
   `;
   document.head.appendChild(style);
 
-  function restore(){
-    document.querySelectorAll(".qmes-top-menu-button span").forEach(span=>{
-      span.style.removeProperty("display");
-      span.style.removeProperty("visibility");
-      span.style.removeProperty("opacity");
-    });
-    const menu=document.getElementById("qmes-all-menu-dropdown");
-    if(menu){
-      menu.style.removeProperty("display");
-      menu.style.removeProperty("visibility");
-      menu.style.removeProperty("opacity");
-      menu.style.removeProperty("pointer-events");
-    }
-  }
+  const side=document.createElement('aside');
+  side.id='qmes-sync-sidebar';
+  side.innerHTML='<div class="qmes-side-head"><div class="qmes-side-title"></div><button class="qmes-side-close" type="button" aria-label="메뉴 접기">×</button></div><div class="qmes-side-items"></div>';
+  document.body.appendChild(side);
+  const hamburger=document.createElement('button');
+  hamburger.id='qmes-sync-hamburger';hamburger.type='button';hamburger.setAttribute('aria-label','메뉴 열기');hamburger.textContent='☰';document.body.appendChild(hamburger);
 
-  let scheduled=false;
-  const schedule=()=>{
-    if(scheduled)return;
-    scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;restore();});
-  };
+  let currentGroup='';let activeLabel='';let internal=false;
+  function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar')||document.querySelector('.qmes-top-menu');const bottom=bar?Math.round(bar.getBoundingClientRect().bottom):72;document.documentElement.style.setProperty('--qmes-side-top',bottom+'px');document.documentElement.style.setProperty('--qmes-hamburger-top',(bottom+10)+'px');}
+  function render(group){if(!menuMap[group])return;currentGroup=group;side.querySelector('.qmes-side-title').textContent=group;const wrap=side.querySelector('.qmes-side-items');wrap.replaceChildren();menuMap[group].forEach((item,i)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.index=i;b.textContent=item.label;wrap.appendChild(b);});setPositions();}
+  function open(group){render(group);document.body.classList.add('qmes-side-open');}
+  function close(){document.body.classList.remove('qmes-side-open');}
+  function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label));}
+  function navigate(item){if(!item)return;if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0);}activeLabel=item.label;render(currentGroup);return;}const existing=findSub(item.sub);if(existing){activeLabel=item.label;render(currentGroup);existing.click();return;}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>{const sub=findSub(item.sub);if(sub){activeLabel=item.label;render(currentGroup);sub.click();}}));}
 
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
-  window.addEventListener("load",schedule);
-  schedule();
+  side.addEventListener('click',e=>{if(e.target.closest('.qmes-side-close')){close();return;}const b=e.target.closest('.qmes-side-item');if(!b)return;navigate(menuMap[currentGroup]?.[Number(b.dataset.index)]);});
+  hamburger.addEventListener('click',()=>{if(currentGroup)open(currentGroup);});
+  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const label=groups.find(g=>topLabel(top)===g);if(!label)return;open(label);},false);
+  document.addEventListener('click',e=>{const drop=e.target.closest('#qmes-all-menu-dropdown button');if(!drop)return;activeLabel=clean(drop.textContent);if(currentGroup)render(currentGroup);},true);
+  window.addEventListener('resize',setPositions);window.addEventListener('load',setPositions);setPositions();
 })();
