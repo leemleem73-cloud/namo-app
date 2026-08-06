@@ -1,5 +1,26 @@
 (function(){
   "use strict";
+
+  // 왼쪽 메뉴 실험 기능 제거 및 원래 상단 드롭다운 복구
+  ["qmes-side-toggle","qmes-side-overlay","qmes-side-menu","qmes-context-side-menu"].forEach(id=>document.getElementById(id)?.remove());
+  ["qmes-side-menu-v4-style","qmes-side-menu-v5-style","qmes-context-side-menu-style"].forEach(id=>document.getElementById(id)?.remove());
+  document.body?.classList.remove("qmes-context-side-enabled");
+  document.querySelectorAll("[data-qmes-legacy-dropdown-hidden='true']").forEach(node=>{
+    node.removeAttribute("data-qmes-legacy-dropdown-hidden");
+    node.style.removeProperty("display");
+    node.style.removeProperty("visibility");
+    node.style.removeProperty("opacity");
+    node.style.removeProperty("pointer-events");
+    node.style.removeProperty("width");
+    node.style.removeProperty("height");
+    node.style.removeProperty("min-width");
+    node.style.removeProperty("min-height");
+    node.style.removeProperty("overflow");
+    node.style.removeProperty("margin");
+    node.style.removeProperty("padding");
+    node.style.removeProperty("border");
+  });
+
   const load=(selector,src,datasetKey)=>{
     if(document.querySelector(selector))return;
     const script=document.createElement("script");
@@ -12,7 +33,6 @@
   load('script[data-qmes-ui-refinement-20260805]',"./js/qmes-ui-refinement-20260805.js?v=20260805-5","qmesUiRefinement20260805");
   load('script[data-qmes-lot-detail-alignment-20260805]',"./js/lot-detail-alignment-20260805.js?v=20260806-31","qmesLotDetailAlignment20260805");
   load('script[data-qmes-iqc-persistence-pagination-fix]',"./js/iqc-persistence-pagination-fix-20260806.js?v=20260806-6","qmesIqcPersistencePaginationFix");
-  load('script[data-qmes-collapsible-side-menu]',"./js/qmes-collapsible-side-menu.js?v=20260806-15","qmesCollapsibleSideMenu");
   load('script[data-qmes-ncr-separate-action-buttons]',"./js/ncr-separate-action-buttons.js?v=20260806-2","qmesNcrSeparateActionButtons");
   load('script[data-qmes-table-equipment-spacing-20260805]',"./js/table-and-equipment-spacing-20260805.js?v=20260805-10","qmesTableEquipmentSpacing20260805");
   load('script[data-qmes-equipment-layout-refinement-20260805]',"./js/equipment-layout-refinement-20260805.js?v=20260805-4","qmesEquipmentLayoutRefinement20260805");
