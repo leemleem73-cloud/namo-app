@@ -124,6 +124,38 @@
     box.__timer = setTimeout(() => { box.hidden = true; }, 7000);
   }
 
+  function dashboardMetrics(){
+    const rows = typeof global.qmesBuildInventoryRows === "function" ? global.qmesBuildInventoryRows() : [];
+    const workOrders = Object.values(global.DB?.woDocs || {});
+    const iqc = Array.isArray(global.DB?.iqc) ? global.DB.iqc : [];
+    const holds = Array.isArray(global.DB?.holds) ? global.DB.holds : [];
+    const today = new Date().toISOString().slice(0,10);
+    const todayAudit = typeof global.qmesListAudit === "function" ? global.qmesListAudit({ dateFrom:today, dateTo:today }).length : 0;
+    const allLots = rows.flatMap((row) => typeof global.qmesBuildMaterialLotLedger === "function" ? global.qmesBuildMaterialLotLedger(row.name) : []);
+    const soon = new Date(); soon.setDate(soon.getDate() + 30);
+    return [
+      ["진행 중 작업", workOrders.filter((w) => !["완료","생산완료","출하완료"].some((s) => String(w.status || "").includes(s))).length, "건", "생산"],
+      ["재고 부족", rows.filter((r) => r.status === "부족").length, "품목", "재고"],
+      ["IQC 대기", iqc.filter((r) => !r.judge || r.judge === "검사중").length, "건", "품질"],
+      ["Hold LOT", allLots.filter((r) => r.status === "홀드").length || holds.filter((h) => String(h.status || "").includes("차단")).length, "LOT", "LOT"],
+      ["유효기간 임박", allLots.filter((r) => r.expiryDate !== "-" && new Date(r.expiryDate) >= new Date(today) && new Date(r.expiryDate) <= soon).length, "LOT", "FEFO"],
+      ["금일 Audit", todayAudit, "건", "Audit"]
+    ];
+  }
+
+  function attachDashboardKpis(){
+    const processGrid = document.querySelector(".qmes-dashboard-process-grid");
+    if (!processGrid) return;
+    let host = document.getElementById("qmes-live-integration-kpis");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "qmes-live-integration-kpis";
+      host.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px;";
+      processGrid.insertAdjacentElement("afterend", host);
+    }
+    host.innerHTML = dashboardMetrics().map(([label,value,unit,group]) => `<div style="border:1px solid #334155;border-radius:12px;background:rgba(15,23,42,.72);padding:13px 14px"><div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:.08em">${group}</div><div style="font-size:12px;font-weight:800;color:#cbd5e1;margin-top:4px">${label}</div><div style="font-size:24px;font-weight:950;color:#f8fafc;margin-top:6px">${Number(value||0).toLocaleString()} <span style="font-size:10px;color:#64748b">${unit}</span></div></div>`).join("");
+  }
+
   function attachUi(){
     const saveButtons = Array.from(document.querySelectorAll("button")).filter((button) => /실적.*저장|저장.*실적|작업.*완료|완료.*저장/.test(String(button.textContent || "").replace(/\s+/g, "")));
     saveButtons.forEach((button) => {
@@ -159,6 +191,7 @@
       });
       anchor.insertAdjacentElement("afterend", button);
     });
+    attachDashboardKpis();
   }
 
   ensureService(() => attachUi());
@@ -166,6 +199,8 @@
   observer.observe(document.documentElement, { childList:true, subtree:true });
   global.addEventListener("qmes:modules-ready", attachUi);
   global.addEventListener("qmes:data-updated", attachUi);
+  global.addEventListener("qmes:audit-recorded", attachDashboardKpis);
+  setInterval(attachDashboardKpis, 5000);
 
   global.qmesGetWorkOrderLotRecommendation = getRecommendation;
   global.qmesApplyRecommendedLots = applyRecommendedLots;
