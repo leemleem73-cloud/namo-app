@@ -26,11 +26,12 @@
         if (!lot || input.act == null || input.act === "") return;
         const key = lotKey(input.name, lot);
         const current = usage.get(key) || { usedKg:0, workOrders:[] };
-        current.usedKg += quantityToKg(input.act, input.unit || "kg");
+        const usedKg = quantityToKg(input.act, input.unit || "kg");
+        current.usedKg += usedKg;
         current.workOrders.push({
           workOrderNo,
           item:workOrder.item || "-",
-          usedKg:quantityToKg(input.act, input.unit || "kg"),
+          usedKg,
           updatedAt:workOrder.updatedAt || ""
         });
         usage.set(key, current);
@@ -87,16 +88,68 @@
         selected.push({ ...row, allocateKg:Number(allocateKg.toFixed(3)) });
         remainingNeed = Number((remainingNeed - allocateKg).toFixed(3));
       });
+    const required = Number(requiredKg || 0);
     return {
       materialName,
-      requiredKg:Number(requiredKg || 0),
-      allocatedKg:Number((Number(requiredKg || 0) - remainingNeed).toFixed(3)),
+      requiredKg:required,
+      allocatedKg:Number((required - remainingNeed).toFixed(3)),
       shortageKg:remainingNeed,
       lots:selected,
       complete:remainingNeed <= 0
     };
   }
 
+  function recommendWorkOrderLots(workOrderNo){
+    const workOrder = global.DB?.woDocs?.[workOrderNo];
+    if (!workOrder) return { workOrderNo, found:false, complete:false, materials:[], shortageCount:0 };
+    const materials = (Array.isArray(workOrder.inputs) ? workOrder.inputs : []).map((input, index) => {
+      const requiredKg = quantityToKg(input.act ?? input.std ?? 0, input.unit || "kg");
+      const recommendation = recommendMaterialLots(input.name, requiredKg);
+      return {
+        index,
+        code:input.code || "-",
+        materialName:input.name,
+        requiredKg,
+        currentLot:String(input.materialLot || input.lot || "").trim().toUpperCase(),
+        recommendation
+      };
+    });
+    return {
+      workOrderNo,
+      found:true,
+      complete:materials.every((row) => row.recommendation.complete),
+      shortageCount:materials.filter((row) => !row.recommendation.complete).length,
+      materials
+    };
+  }
+
+  function validateWorkOrderLots(workOrderNo){
+    const workOrder = global.DB?.woDocs?.[workOrderNo];
+    if (!workOrder) return { workOrderNo, found:false, ok:false, errors:["작업지시를 찾을 수 없습니다."], materials:[] };
+    const materials = (Array.isArray(workOrder.inputs) ? workOrder.inputs : []).map((input, index) => {
+      const lot = String(input.materialLot || input.lot || "").trim().toUpperCase();
+      const requiredKg = quantityToKg(input.act ?? input.std ?? 0, input.unit || "kg");
+      const ledger = buildMaterialLotLedger(input.name);
+      const row = ledger.find((item) => item.lot === lot);
+      let error = "";
+      if (!lot) error = "LOT 미입력";
+      else if (!row) error = "IQC 합격 LOT 아님";
+      else if (row.status === "홀드") error = "홀드 LOT";
+      else if (row.status === "소진") error = "소진 LOT";
+      else if (row.remainingKg < requiredKg) error = `잔량 부족 (${row.remainingKg.toLocaleString()}kg)`;
+      return { index, materialName:input.name, lot, requiredKg, ledger:row || null, ok:!error, error };
+    });
+    return {
+      workOrderNo,
+      found:true,
+      ok:materials.every((row) => row.ok),
+      errors:materials.filter((row) => !row.ok).map((row) => `${row.materialName}: ${row.error}`),
+      materials
+    };
+  }
+
   global.qmesBuildMaterialLotLedger = buildMaterialLotLedger;
   global.qmesRecommendMaterialLots = recommendMaterialLots;
+  global.qmesRecommendWorkOrderLots = recommendWorkOrderLots;
+  global.qmesValidateWorkOrderLots = validateWorkOrderLots;
 })(window);
