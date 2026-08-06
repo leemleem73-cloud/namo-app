@@ -14,14 +14,112 @@
   min-width: 0;
 }
 
+/* ECOUNT-style left function panel.
+   The menu contents and navigation remain controlled by the existing
+   qmes-all-menu-dropdown script in index.html. */
+#qmes-all-menu-dropdown {
+  position: fixed !important;
+  z-index: 11900 !important;
+  left: 0 !important;
+  top: 116px !important;
+  bottom: 0 !important;
+  width: 286px !important;
+  min-width: 286px !important;
+  max-width: 286px !important;
+  max-height: none !important;
+  padding: 12px 10px 18px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(71, 85, 105, 0.9) !important;
+  border-radius: 0 !important;
+  background: #101f33 !important;
+  box-shadow: 12px 0 30px rgba(0, 0, 0, 0.34) !important;
+  transform: translateX(-102%) !important;
+  transition: transform 0.18s ease, visibility 0.18s ease, opacity 0.18s ease !important;
+}
+
+#qmes-all-menu-dropdown.is-open {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(0) !important;
+}
+
+#qmes-all-menu-dropdown .qmes-hover-title {
+  position: sticky !important;
+  top: -12px !important;
+  z-index: 1 !important;
+  margin: -12px -10px 10px !important;
+  padding: 17px 18px 14px !important;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.9) !important;
+  background: #13243a !important;
+  color: #7dd3fc !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+#qmes-all-menu-dropdown button {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-height: 45px !important;
+  margin: 3px 0 !important;
+  padding: 11px 34px 11px 15px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #dbeafe !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+  text-align: left !important;
+}
+
+#qmes-all-menu-dropdown button::after {
+  content: '›';
+  position: absolute;
+  right: 14px;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 1;
+}
+
+#qmes-all-menu-dropdown button:hover,
+#qmes-all-menu-dropdown button:focus-visible {
+  border-color: rgba(56, 189, 248, 0.38) !important;
+  background: #203a59 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
+#qmes-all-menu-dropdown button:hover::after,
+#qmes-all-menu-dropdown button:focus-visible::after {
+  color: #38bdf8;
+}
+
+.qmes-top-menu-button {
+  cursor: pointer !important;
+}
+
 @media (max-width: 1023px) {
   .qmes-dashboard-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #qmes-all-menu-dropdown {
+    top: 106px !important;
+    width: min(82vw, 286px) !important;
+    min-width: min(82vw, 286px) !important;
+    max-width: min(82vw, 286px) !important;
   }
 }
 
 @media (max-width: 639px) {
   .qmes-dashboard-kpi-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  #qmes-all-menu-dropdown {
+    top: 96px !important;
   }
 }
