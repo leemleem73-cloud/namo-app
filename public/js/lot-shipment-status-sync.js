@@ -16,7 +16,7 @@
   }
   if(!document.querySelector('script[data-qmes-iqc-persistence-pagination-fix]')){
     const script=document.createElement("script");
-    script.src="./js/iqc-persistence-pagination-fix-20260806.js?v=20260806-5";
+    script.src="./js/iqc-persistence-pagination-fix-20260806.js?v=20260806-6";
     script.async=false;
     script.dataset.qmesIqcPersistencePaginationFix="true";
     document.head.appendChild(script);
