@@ -54,6 +54,7 @@
   let currentTop="";
   let locked=false;
   let activeItem="";
+  let syntheticHoverDepth=0;
 
   function navBottom(){
     const nav=document.querySelector(".qmes-top-menu")||Array.from(document.querySelectorAll("nav,header")).find(node=>TOP_LABELS.filter(label=>clean(node.textContent).includes(label)).length>=3);
@@ -70,8 +71,13 @@
 
   function fireHover(node){
     if(!node)return;
-    try{node.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,cancelable:true,pointerType:"mouse"}));}catch(_){ }
-    node.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,cancelable:true,view:window}));
+    syntheticHoverDepth+=1;
+    try{
+      try{node.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,cancelable:true,pointerType:"mouse"}));}catch(_){ }
+      node.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,cancelable:true,view:window}));
+    }finally{
+      syntheticHoverDepth=Math.max(0,syntheticHoverDepth-1);
+    }
   }
 
   function render(group){
@@ -111,14 +117,16 @@
     floatingMenusFor(group).forEach(node=>node.dataset.qmesLeftMenuSource="true");
   }
 
-  function showGroup(group,{lock=false}={}){
+  function showGroup(group,{lock=false,triggerNative=true}={}){
     if(lock)locked=true;
     if(!lock&&locked&&group!==currentTop)return;
     render(group);
-    const top=findTop(group);
-    fireHover(top);
-    setTimeout(()=>hideNativeDropdown(group),25);
-    setTimeout(()=>hideNativeDropdown(group),80);
+    if(triggerNative){
+      const top=findTop(group);
+      fireHover(top);
+      setTimeout(()=>hideNativeDropdown(group),25);
+      setTimeout(()=>hideNativeDropdown(group),80);
+    }
   }
 
   function findTarget(group,label){
@@ -158,17 +166,18 @@
   });
 
   document.addEventListener("mouseover",event=>{
+    if(syntheticHoverDepth>0||event.isTrusted===false)return;
     const control=event.target.closest("button,a,[role='button']");
     if(!control||side.contains(control))return;
     const label=clean(control.textContent);
-    if(TOP_LABELS.includes(label))showGroup(label,{lock:false});
+    if(TOP_LABELS.includes(label))showGroup(label,{lock:false,triggerNative:true});
   },true);
 
   document.addEventListener("click",event=>{
     const control=event.target.closest("button,a,[role='button']");
     if(!control||side.contains(control))return;
     const label=clean(control.textContent);
-    if(TOP_LABELS.includes(label))setTimeout(()=>showGroup(label,{lock:true}),0);
+    if(TOP_LABELS.includes(label))setTimeout(()=>showGroup(label,{lock:true,triggerNative:true}),0);
   },false);
 
   window.addEventListener("resize",()=>document.documentElement.style.setProperty("--qmes-left-top",`${navBottom()}px`));
