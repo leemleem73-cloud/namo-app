@@ -1,58 +1,52 @@
 (function(){
   "use strict";
-  if(window.__QMES_LOT_IQC_LINK_V24__) return;
-  window.__QMES_LOT_IQC_LINK_V24__ = true;
+  if(window.__QMES_LOT_IQC_LINK_V25__) return;
+  window.__QMES_LOT_IQC_LINK_V25__ = true;
 
   const clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
   const getStore = (key) => { try { return sessionStorage.getItem(key) || ""; } catch (_) { return ""; } };
   const setStore = (key, value) => { try { sessionStorage.setItem(key, String(value || "")); } catch (_) {} };
-  const clearLinkStore = () => {
-    ["qmes_lot_link_tab","qmes_lot_link_query","qmes_lot_link_material_lot","qmes_lot_link_material_name","qmes_lot_link_supplier"].forEach((key) => {
-      try { sessionStorage.removeItem(key); } catch (_) {}
-    });
-  };
+  const removeStore = (key) => { try { sessionStorage.removeItem(key); } catch (_) {} };
+  const clearLinkStore = () => ["qmes_lot_link_pending","qmes_lot_link_material_lot","qmes_lot_link_material_name","qmes_lot_link_supplier"].forEach(removeStore);
 
   const style = document.createElement("style");
-  style.id = "qmes-lot-iqc-link-v24-style";
+  style.id = "qmes-lot-iqc-link-v25-style";
   style.textContent = `
-    .qmes-lot-iqc-cell-inner{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;white-space:nowrap!important}
-    .qmes-lot-iqc-link-btn{flex:0 0 auto!important;min-width:58px!important;height:25px!important;padding:2px 8px!important;border:1px solid #475569!important;border-radius:6px!important;background:#172033!important;color:#dbe7f3!important;font-size:10px!important;font-weight:800!important;line-height:19px!important;cursor:pointer!important}
+    .qmes-lot-iqc-cell-inner{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;white-space:nowrap!important}
+    .qmes-lot-iqc-link-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:58px!important;height:26px!important;padding:0 9px!important;border:1px solid #475569!important;border-radius:7px!important;background:#172033!important;color:#dbe7f3!important;font-size:10px!important;font-weight:800!important;cursor:pointer!important}
     .qmes-lot-iqc-link-btn:hover{border-color:#94a3b8!important;background:#1e293b!important;color:#fff!important}
     .qmes-lot-linked-badge{display:none!important}
-    .qmes-iqc-inno-row{display:grid!important;grid-template-columns:86px minmax(0,1fr)!important;gap:8px!important}
-    .qmes-iqc-inno-row select{width:86px!important;min-width:86px!important;padding-left:10px!important;padding-right:25px!important;text-overflow:clip!important;white-space:nowrap!important}
+    .qmes-iqc-inno-row{display:grid!important;grid-template-columns:92px minmax(0,1fr)!important;gap:8px!important}
+    .qmes-iqc-inno-row select{width:92px!important;min-width:92px!important;padding-left:10px!important;padding-right:28px!important;text-overflow:clip!important;white-space:nowrap!important;overflow:visible!important}
     .qmes-linked-material-context{display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;flex-wrap:wrap!important;margin:0 0 14px!important;padding:11px 16px!important;border:1px solid #334155!important;border-radius:10px!important;background:#0f172a!important;color:#e2e8f0!important}
     .qmes-linked-material-context strong{color:#7dd3fc!important;font-weight:800!important}
     .qmes-linked-material-actions{display:inline-flex!important;gap:7px!important}
     .qmes-linked-material-actions button{height:30px!important;padding:4px 11px!important;border:1px solid #475569!important;border-radius:7px!important;background:#1e293b!important;color:#fff!important;font-size:12px!important;font-weight:800!important;cursor:pointer!important}
-    .qmes-lot-production-hidden{display:none!important}
-    .qmes-lot-production-panel .qmes-lot-detail-row{display:grid!important;grid-template-columns:120px minmax(0,1fr) 128px!important;align-items:center!important;gap:12px!important;padding:11px 12px!important;box-sizing:border-box!important}
-    .qmes-lot-production-panel .qmes-lot-detail-row>*{min-width:0!important;text-align:center!important;justify-self:center!important}
-    .qmes-workorder-issue-cell{grid-column:3!important;width:118px!important;max-width:118px!important;justify-self:end!important;white-space:nowrap!important}
   `;
   document.head.appendChild(style);
 
-  function panelOf(element) {
+  function panelOf(element){
     let node = element;
-    while (node && node !== document.body) {
+    while(node && node !== document.body){
       const classes = String(node.className || "");
       const rect = node.getBoundingClientRect();
-      if ((/rounded/.test(classes) && /border/.test(classes)) || (rect.width > 400 && node.querySelector("h1,h2,h3,h4,h5"))) return node;
+      if((/rounded/.test(classes) && /border/.test(classes)) || (rect.width > 400 && node.querySelector("h1,h2,h3,h4,h5"))) return node;
       node = node.parentElement;
     }
     return null;
   }
 
-  function renameMaterialHeaders(panel) {
+  function renameHeaders(panel){
     Array.from(panel.querySelectorAll("thead th")).forEach((th) => {
       const text = clean(th.textContent);
-      if (/원료\s*Lot/i.test(text) || text === "원료 LOT") th.textContent = "LOT No.";
-      else if (text === "품명") th.textContent = "원재료명";
-      else if (text === "공급사") th.textContent = "업체명";
+      if(/원료\s*Lot/i.test(text) || text === "원료 LOT") th.textContent = "LOT No.";
+      else if(text === "품명") th.textContent = "원재료명";
+      else if(text === "공급사") th.textContent = "업체명";
+      else if(text === "입고일시") th.textContent = "입고일자";
     });
   }
 
-  function columnIndexes(row) {
+  function columnIndexes(row){
     const headers = Array.from(row.closest("table")?.querySelectorAll("thead th") || []).map((th) => clean(th.textContent));
     const find = (pattern, fallback) => {
       const index = headers.findIndex((text) => pattern.test(text));
@@ -66,109 +60,100 @@
     };
   }
 
-  function openIqc(lot, name, supplier) {
+  function switchToIqc(){
+    const candidates = Array.from(document.querySelectorAll("button,[role='button'],a"));
+    const target = candidates.find((node) => clean(node.textContent) === "수입검사") ||
+      candidates.find((node) => /수입검사/.test(clean(node.textContent)) && !/바로가기/.test(clean(node.textContent)));
+    if(target){
+      target.click();
+      return;
+    }
     setStore("qmes_current_tab", "iqc");
-    setStore("qmes_lot_link_tab", "iqc");
-    setStore("qmes_lot_link_query", lot);
-    setStore("qmes_lot_link_material_lot", lot);
-    setStore("qmes_lot_link_material_name", name);
-    setStore("qmes_lot_link_supplier", supplier);
     window.location.reload();
   }
 
-  function applyMaterialLinks() {
-    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span")).filter((node) => /투입 원재료|Backward Trace|투입원료/.test(clean(node.textContent)));
+  function addMaterialLinks(){
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span"))
+      .filter((node) => /투입 원재료|Backward Trace|투입원료/.test(clean(node.textContent)));
+
     headings.forEach((heading) => {
       const panel = panelOf(heading);
-      if (!panel) return;
-      renameMaterialHeaders(panel);
+      if(!panel) return;
+      renameHeaders(panel);
+
       Array.from(panel.querySelectorAll("tbody tr")).forEach((row) => {
         const cells = Array.from(row.cells || []);
-        if (!cells.length) return;
+        if(!cells.length) return;
         const indexes = columnIndexes(row);
         const lot = clean(cells[indexes.lot]?.textContent);
         const name = clean(cells[indexes.name]?.textContent);
         const supplier = clean(cells[indexes.supplier]?.textContent);
         const iqcCell = cells[indexes.iqc] || cells[cells.length - 1];
-        if (!iqcCell || !lot) return;
+        if(!lot || !iqcCell) return;
 
-        iqcCell.querySelectorAll(".qmes-lot-iqc-link-btn").forEach((button) => button.remove());
+        iqcCell.querySelectorAll(".qmes-lot-linked-badge,.qmes-lot-iqc-link-btn").forEach((node) => node.remove());
+        iqcCell.classList.remove("qmes-lot-linked-target");
+        iqcCell.removeAttribute("role");
+        iqcCell.removeAttribute("tabindex");
+        delete iqcCell.dataset.qmesLotLinked;
+
         let inner = iqcCell.querySelector(":scope > .qmes-lot-iqc-cell-inner");
-        if (!inner) {
-          inner = document.createElement("div");
+        if(!inner){
+          inner = document.createElement("span");
           inner.className = "qmes-lot-iqc-cell-inner";
-          while (iqcCell.firstChild) inner.appendChild(iqcCell.firstChild);
+          while(iqcCell.firstChild) inner.appendChild(iqcCell.firstChild);
           iqcCell.appendChild(inner);
         }
+
         const button = document.createElement("button");
         button.type = "button";
         button.className = "qmes-lot-iqc-link-btn";
         button.textContent = "바로가기";
-        button.addEventListener("click", (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          openIqc(lot, name, supplier);
-        });
+        button.dataset.lot = lot;
+        button.dataset.name = name;
+        button.dataset.supplier = supplier;
         inner.appendChild(button);
       });
     });
   }
 
-  function applyProductionLayout() {
-    Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,div,span")).filter((node) => clean(node.textContent) === "생산실적").forEach((heading) => {
-      const panel = panelOf(heading);
-      if (!panel) return;
-      panel.classList.add("qmes-lot-production-panel");
-      Array.from(panel.querySelectorAll("div.grid")).forEach((row) => {
-        if (row.children.length < 2) return;
-        row.classList.add("qmes-lot-detail-row");
-        Array.from(row.querySelectorAll("div,span,p,small,strong")).filter((node) => !node.children.length).forEach((node) => {
-          const text = clean(node.textContent);
-          if (/^(?:\d{4}[-./]\d{1,2}[-./]\d{1,2}\s*)?\d{1,2}:\d{2}(?::\d{2})?$/.test(text)) node.classList.add("qmes-lot-production-hidden");
-          if (/품질부\s*박현아(?:\s*\(U-0010\))?/i.test(text)) node.classList.add("qmes-lot-production-hidden");
-        });
-        const issue = Array.from(row.children).find((child) => /작업지시/.test(clean(child.textContent)) && /발행/.test(clean(child.textContent)));
-        if (issue) {
-          issue.classList.add("qmes-workorder-issue-cell");
-          row.appendChild(issue);
-        }
-      });
-    });
+  function setSearch(lot){
+    const input = Array.from(document.querySelectorAll("input[type='search'],input[type='text'],input:not([type])"))
+      .find((node) => /검색/.test(String(node.placeholder || "")));
+    if(!input) return false;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    if(setter) setter.call(input, lot); else input.value = lot;
+    input.dispatchEvent(new Event("input", { bubbles:true }));
+    input.dispatchEvent(new Event("change", { bubbles:true }));
+    return true;
   }
 
-  function sortIqcLatest() {
-    if (getStore("qmes_current_tab") !== "iqc") return;
-    const body = document.querySelector(".qmes-iqc-ledger-table tbody");
-    if (!body) return;
-    const rows = Array.from(body.rows).filter((row) => row.cells.length > 1 && !row.querySelector(".qmes-iqc-empty-row"));
-    const date = (row) => clean(row.cells[0]?.textContent).replace(/\./g, "-");
-    rows.sort((a, b) => date(b).localeCompare(date(a)) || clean(b.cells[1]?.textContent).localeCompare(clean(a.cells[1]?.textContent), "ko", { numeric: true }));
-    rows.forEach((row) => body.appendChild(row));
+  function findIqcRow(lot){
+    return Array.from(document.querySelectorAll(".qmes-iqc-ledger-table tbody tr"))
+      .find((row) => clean(row.cells?.[1]?.textContent) === lot || clean(row.textContent).includes(lot));
   }
 
-  function findIqcRow(lot) {
-    return Array.from(document.querySelectorAll(".qmes-iqc-ledger-table tbody tr")).find((row) => clean(row.cells[1]?.textContent) === lot || clean(row.textContent).includes(lot));
-  }
-
-  function clickIqcAction(lot, label) {
+  function clickIqcAction(lot, label){
     const row = findIqcRow(lot);
     const button = Array.from(row?.querySelectorAll("button") || []).find((item) => clean(item.textContent).includes(label));
-    if (button) button.click();
-    else window.alert(`${label} 버튼을 찾을 수 없습니다.`);
+    if(button) button.click();
   }
 
-  function showLinkedContext() {
-    if (getStore("qmes_current_tab") !== "iqc") return false;
+  function showContext(){
+    if(readPending() !== "1") return false;
     const lot = getStore("qmes_lot_link_material_lot");
+    if(!lot) return false;
+    const input = Array.from(document.querySelectorAll("input[type='search'],input[type='text'],input:not([type])"))
+      .find((node) => /검색/.test(String(node.placeholder || "")));
+    if(!input) return false;
+
+    setSearch(lot);
+    document.getElementById("qmes-linked-material-context")?.remove();
+    let anchor = input.parentElement;
+    while(anchor?.parentElement && anchor.getBoundingClientRect().width < 450) anchor = anchor.parentElement;
+
     const name = getStore("qmes_lot_link_material_name");
     const supplier = getStore("qmes_lot_link_supplier");
-    if (!lot) return false;
-    const input = Array.from(document.querySelectorAll("input[type='text'],input[type='search'],input:not([type])")).find((item) => /검색/.test(String(item.placeholder || "")));
-    if (!input) return false;
-    if (document.getElementById("qmes-linked-material-context")) return true;
-
-    let anchor = input.parentElement;
-    while (anchor?.parentElement && anchor.getBoundingClientRect().width < 450) anchor = anchor.parentElement;
     const box = document.createElement("div");
     box.id = "qmes-linked-material-context";
     box.className = "qmes-linked-material-context";
@@ -180,34 +165,36 @@
     return true;
   }
 
-  function applyLinkedSearch() {
-    const tab = getStore("qmes_lot_link_tab");
-    const query = getStore("qmes_lot_link_query");
-    if (tab !== "iqc" || !query || getStore("qmes_current_tab") !== "iqc") return;
-    const input = Array.from(document.querySelectorAll("input[type='text'],input[type='search'],input:not([type])")).find((item) => /검색/.test(String(item.placeholder || "")));
-    if (!input) return;
-    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-    if (setter) setter.call(input, query); else input.value = query;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-    showLinkedContext();
-  }
+  function readPending(){ return getStore("qmes_lot_link_pending"); }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest?.(".qmes-lot-iqc-link-btn");
+    if(!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setStore("qmes_lot_link_pending", "1");
+    setStore("qmes_lot_link_material_lot", button.dataset.lot);
+    setStore("qmes_lot_link_material_name", button.dataset.name);
+    setStore("qmes_lot_link_supplier", button.dataset.supplier);
+    switchToIqc();
+    setTimeout(showContext, 100);
+    setTimeout(showContext, 350);
+    setTimeout(showContext, 800);
+  }, true);
 
   let queued = false;
-  function apply() {
-    if (queued) return;
+  function apply(){
+    if(queued) return;
     queued = true;
     requestAnimationFrame(() => requestAnimationFrame(() => {
       queued = false;
-      applyMaterialLinks();
-      applyProductionLayout();
-      sortIqcLatest();
-      applyLinkedSearch();
+      addMaterialLinks();
+      showContext();
     }));
   }
 
-  new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-  document.addEventListener("click", apply, true);
+  new MutationObserver(apply).observe(document.documentElement, { childList:true, subtree:true });
   window.addEventListener("load", apply);
+  document.addEventListener("qmes:data-updated", apply);
   apply();
 })();
