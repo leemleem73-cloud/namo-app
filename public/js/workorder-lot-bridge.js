@@ -105,76 +105,76 @@
     host.innerHTML = dashboardMetrics().map(([label,value,unit,group]) => `<div style="border:1px solid #334155;border-radius:12px;background:rgba(15,23,42,.72);padding:13px 14px"><div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:.08em">${group}</div><div style="font-size:12px;font-weight:800;color:#cbd5e1;margin-top:4px">${label}</div><div style="font-size:24px;font-weight:950;color:#f8fafc;margin-top:6px">${Number(value||0).toLocaleString()} <span style="font-size:10px;color:#64748b">${unit}</span></div></div>`).join("");
   }
 
-  const inspectionState = {
-    IQC:{ initialized:false, snapshot:new Map() },
-    PQC:{ initialized:false, snapshot:new Map() },
-    OQC:{ initialized:false, snapshot:new Map() }
-  };
-
-  function rowKey(moduleName, row, index){
-    if (moduleName === "IQC") return String(row.inNo || row.lot || index);
-    return String(row.id || `${row.lot || "-"}|${row.date || row.shipDate || "-"}|${row.check || row.item || index}`);
-  }
-
-  function inspectionRows(moduleName){
-    if (moduleName === "IQC") return Array.isArray(global.DB?.iqc) ? global.DB.iqc : [];
-    return Array.isArray(global.DB?.insp?.[moduleName]) ? global.DB.insp[moduleName] : [];
-  }
-
-  function inspectionAction(moduleName, row){
-    const judge = String(row?.judge || "검사중");
-    if (moduleName === "OQC" && judge === "합격") return "SHIP_RELEASE";
-    if (judge === "합격") return "PASS";
-    if (judge === "불합격") return "HOLD";
-    return "UPDATE";
-  }
-
-  function inspectionEntity(moduleName){
-    return moduleName === "IQC" ? "MATERIAL_LOT" : moduleName === "PQC" ? "PROCESS_LOT" : "FINISHED_LOT";
-  }
+  const inspectionState = { IQC:{ initialized:false, snapshot:new Map() }, PQC:{ initialized:false, snapshot:new Map() }, OQC:{ initialized:false, snapshot:new Map() } };
+  function rowKey(moduleName, row, index){ return moduleName === "IQC" ? String(row.inNo || row.lot || index) : String(row.id || `${row.lot || "-"}|${row.date || row.shipDate || "-"}|${row.check || row.item || index}`); }
+  function inspectionRows(moduleName){ return moduleName === "IQC" ? (Array.isArray(global.DB?.iqc) ? global.DB.iqc : []) : (Array.isArray(global.DB?.insp?.[moduleName]) ? global.DB.insp[moduleName] : []); }
+  function inspectionAction(moduleName, row){ const judge = String(row?.judge || "검사중"); if (moduleName === "OQC" && judge === "합격") return "SHIP_RELEASE"; if (judge === "합격") return "PASS"; if (judge === "불합격") return "HOLD"; return "UPDATE"; }
+  function inspectionEntity(moduleName){ return moduleName === "IQC" ? "MATERIAL_LOT" : moduleName === "PQC" ? "PROCESS_LOT" : "FINISHED_LOT"; }
 
   function syncInspectionAudit(moduleName){
     const state = inspectionState[moduleName];
-    const rows = inspectionRows(moduleName);
-    const current = new Map(rows.map((row, index) => [rowKey(moduleName, row, index), clone(row)]));
+    const current = new Map(inspectionRows(moduleName).map((row, index) => [rowKey(moduleName, row, index), clone(row)]));
     if (!state.initialized) { state.snapshot = current; state.initialized = true; return; }
     let changed = false;
-
     current.forEach((after, key) => {
       const before = state.snapshot.get(key);
       const entityId = after.lot || after.inNo || key;
       if (!before) {
         changed = true;
-        if (typeof global.qmesRecordAudit === "function") global.qmesRecordAudit({
-          module:moduleName, action:inspectionAction(moduleName, after), entityType:inspectionEntity(moduleName), entityId,
-          reason:`${moduleName} 신규 등록 · ${after.judge || "검사중"}`, after,
-          metadata:{ recordId:after.id || after.inNo, check:after.check || after.item, customer:after.customer, shipQty:after.shipQty }
-        });
+        if (typeof global.qmesRecordAudit === "function") global.qmesRecordAudit({ module:moduleName, action:inspectionAction(moduleName, after), entityType:inspectionEntity(moduleName), entityId, reason:`${moduleName} 신규 등록 · ${after.judge || "검사중"}`, after, metadata:{ recordId:after.id || after.inNo, check:after.check || after.item, customer:after.customer, shipQty:after.shipQty } });
       } else if (JSON.stringify(before) !== JSON.stringify(after)) {
         changed = true;
-        if (typeof global.qmesRecordChange === "function") global.qmesRecordChange({
-          module:moduleName, action:inspectionAction(moduleName, after), entityType:inspectionEntity(moduleName), entityId,
-          reason:`${moduleName} 결과 변경 · ${before.judge || "검사중"} → ${after.judge || "검사중"}`, before, after,
-          metadata:{ recordId:after.id || after.inNo, check:after.check || after.item, customer:after.customer, shipQty:after.shipQty }
-        });
+        if (typeof global.qmesRecordChange === "function") global.qmesRecordChange({ module:moduleName, action:inspectionAction(moduleName, after), entityType:inspectionEntity(moduleName), entityId, reason:`${moduleName} 결과 변경 · ${before.judge || "검사중"} → ${after.judge || "검사중"}`, before, after, metadata:{ recordId:after.id || after.inNo, check:after.check || after.item, customer:after.customer, shipQty:after.shipQty } });
       }
     });
-
     state.snapshot.forEach((before, key) => {
       if (!current.has(key)) {
         changed = true;
-        if (typeof global.qmesRecordAudit === "function") global.qmesRecordAudit({
-          module:moduleName, action:"DELETE", entityType:inspectionEntity(moduleName), entityId:before.lot || before.inNo || key,
-          reason:`${moduleName} 검사 기록 삭제`, before, metadata:{ recordId:before.id || before.inNo }
-        });
+        if (typeof global.qmesRecordAudit === "function") global.qmesRecordAudit({ module:moduleName, action:"DELETE", entityType:inspectionEntity(moduleName), entityId:before.lot || before.inNo || key, reason:`${moduleName} 검사 기록 삭제`, before, metadata:{ recordId:before.id || before.inNo } });
       }
     });
-
-    if (changed) {
-      global.dispatchEvent(new CustomEvent("qmes:data-updated", { detail:{ module:moduleName } }));
-      attachDashboardKpis();
-    }
+    if (changed) { global.dispatchEvent(new CustomEvent("qmes:data-updated", { detail:{ module:moduleName } })); attachDashboardKpis(); }
     state.snapshot = current;
+  }
+
+  function runIntegrationChecks(){
+    const checks = [];
+    const add = (id, ok, detail) => checks.push({ id, ok:Boolean(ok), detail:String(detail || "") });
+    const db = global.DB || {};
+    add("db", Boolean(global.DB), "DB 전역 객체");
+    add("inventory-api", typeof global.qmesBuildInventoryRows === "function", "재고 집계 API");
+    add("lot-ledger-api", typeof global.qmesBuildMaterialLotLedger === "function", "LOT 원장 API");
+    add("lot-recommend-api", typeof global.qmesRecommendWorkOrderLots === "function", "작업지시 LOT 추천 API");
+    add("lot-validation-api", typeof global.qmesValidateWorkOrderLots === "function", "작업 완료 전 LOT 검증 API");
+    add("audit-api", typeof global.qmesRecordAudit === "function" && typeof global.qmesListAudit === "function", "Audit 기록/조회 API");
+    add("workorders", db.woDocs && typeof db.woDocs === "object", `${Object.keys(db.woDocs || {}).length}건`);
+    add("iqc", Array.isArray(db.iqc), `${Array.isArray(db.iqc) ? db.iqc.length : 0}건`);
+    add("pqc", Array.isArray(db.insp?.PQC), `${Array.isArray(db.insp?.PQC) ? db.insp.PQC.length : 0}건`);
+    add("oqc", Array.isArray(db.insp?.OQC), `${Array.isArray(db.insp?.OQC) ? db.insp.OQC.length : 0}건`);
+    add("holds", Array.isArray(db.holds), `${Array.isArray(db.holds) ? db.holds.length : 0}건`);
+    add("lots", db.lots && typeof db.lots === "object", `${Object.keys(db.lots || {}).length}건`);
+
+    if (typeof global.qmesBuildInventoryRows === "function") {
+      try {
+        const rows = global.qmesBuildInventoryRows();
+        add("inventory-build", Array.isArray(rows), `${Array.isArray(rows) ? rows.length : 0}품목`);
+      } catch (error) { add("inventory-build", false, error.message); }
+    }
+
+    const sampleWorkOrderNo = Object.keys(db.woDocs || {})[0];
+    if (sampleWorkOrderNo && typeof global.qmesRecommendWorkOrderLots === "function") {
+      try {
+        const recommendation = global.qmesRecommendWorkOrderLots(sampleWorkOrderNo);
+        add("recommendation-run", recommendation?.found === true, `${sampleWorkOrderNo} · 부족 ${recommendation?.shortageCount || 0}품목`);
+      } catch (error) { add("recommendation-run", false, error.message); }
+    } else add("recommendation-run", true, "작업지시 데이터 없음 — 실행 생략");
+
+    const failed = checks.filter((row) => !row.ok);
+    const result = { ok:failed.length === 0, total:checks.length, passed:checks.length - failed.length, failed:failed.length, checks, at:new Date().toISOString() };
+    global.__QMES_INTEGRATION_CHECK__ = result;
+    global.dispatchEvent(new CustomEvent("qmes:integration-check", { detail:result }));
+    console.table(checks);
+    return result;
   }
 
   function attachUi(){
@@ -190,7 +190,6 @@
         event.preventDefault(); event.stopImmediatePropagation(); showNotice(`LOT 검증 실패\n${validation.errors.join("\n")}`, "error");
       }, true);
     });
-
     const editButtons = Array.from(document.querySelectorAll("button")).filter((button) => /실적.*입력|수정|편집/.test(String(button.textContent || "").replace(/\s+/g, "")));
     editButtons.forEach((anchor) => {
       if (anchor.parentElement?.querySelector("[data-qmes-lot-recommend-button]")) return;
@@ -215,12 +214,8 @@
   global.addEventListener("qmes:modules-ready", attachUi);
   global.addEventListener("qmes:data-updated", attachUi);
   global.addEventListener("qmes:audit-recorded", attachDashboardKpis);
-  setInterval(() => {
-    attachDashboardKpis();
-    syncInspectionAudit("IQC");
-    syncInspectionAudit("PQC");
-    syncInspectionAudit("OQC");
-  }, 2000);
+  setInterval(() => { attachDashboardKpis(); syncInspectionAudit("IQC"); syncInspectionAudit("PQC"); syncInspectionAudit("OQC"); }, 2000);
+  setTimeout(runIntegrationChecks, 2500);
 
   global.qmesGetWorkOrderLotRecommendation = getRecommendation;
   global.qmesApplyRecommendedLots = applyRecommendedLots;
@@ -230,4 +225,5 @@
   global.qmesSyncIqcAudit = () => syncInspectionAudit("IQC");
   global.qmesSyncPqcAudit = () => syncInspectionAudit("PQC");
   global.qmesSyncOqcAudit = () => syncInspectionAudit("OQC");
+  global.qmesRunIntegrationChecks = runIntegrationChecks;
 })(window);
