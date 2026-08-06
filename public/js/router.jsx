@@ -82,11 +82,12 @@ function QMESChemical({user,onLogout}){
     const handleKeyDown=event=>{
       if(event.key!=="Escape") return;
       if(passwordOpen){setPasswordOpen(false);return;}
-      if(profileOpen) setProfileOpen(false);
+      if(profileOpen){setProfileOpen(false);return;}
+      if(openMenu) setOpenMenu(null);
     };
     window.addEventListener("keydown",handleKeyDown);
     return()=>window.removeEventListener("keydown",handleKeyDown);
-  },[profileOpen,passwordOpen]);
+  },[profileOpen,passwordOpen,openMenu]);
 
   window.__QMES_CURRENT_USER__=user;
   const visibleTabs=TABS.filter(tabItem=>!tabItem.adminOnly||user.role==="admin");
@@ -96,6 +97,12 @@ function QMESChemical({user,onLogout}){
 
   const currentTab=TABS.find(tabItem=>tabItem.id===tab)||TABS[0];
   const Active=currentTab.comp;
+  const selectedMenu=TOP_MENUS.find(menu=>menu.id===openMenu)||null;
+  const selectedMenuItems=selectedMenu
+    ? (selectedMenu.children||[selectedMenu.id]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean)
+    : [];
+  const sidebarOpen=Boolean(selectedMenu&&selectedMenu.id!=="dash"&&selectedMenuItems.length);
+
   const closeAccountModal=()=>setProfileOpen(false);
   const openPasswordModal=()=>{
     setProfileOpen(false);
@@ -109,6 +116,20 @@ function QMESChemical({user,onLogout}){
   const handleLogout=()=>{
     setProfileOpen(false);
     if(typeof onLogout==="function") onLogout();
+  };
+  const selectTopMenu=menu=>{
+    if(menu.id==="dash"){
+      setTab("dash");
+      setOpenMenu(null);
+      return;
+    }
+    const items=(menu.children||[menu.id]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);
+    setOpenMenu(menu.id);
+    if(items.length&&!items.some(item=>item.id===tab)) setTab(items[0].id);
+  };
+  const selectSideItem=item=>{
+    setTab(item.id);
+    if(window.innerWidth<900) setOpenMenu(null);
   };
 
   const changePassword=async event=>{
@@ -169,41 +190,50 @@ function QMESChemical({user,onLogout}){
           <nav className="qmes-top-menu">
             {TOP_MENUS.map(menu=>{
               const MenuIcon=menu.icon;
-              const children=(menu.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);
-              const direct=!menu.children;
-              const active=direct?tab===menu.id:children.some(item=>item.id===tab);
+              const children=(menu.children||[menu.id]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);
+              const active=menu.id==="dash"?tab==="dash":children.some(item=>item.id===tab);
               const opened=openMenu===menu.id;
               return (
                 <div key={menu.id} className="qmes-top-menu-item">
-                  <button type="button" onClick={()=>{
-                    if(direct){setTab(menu.id);setOpenMenu(null);}
-                    else{setOpenMenu(opened?null:menu.id);if(!active&&children.length)setTab(children[0].id);}
-                  }} className={`qmes-top-menu-button ${active?"is-active":""}`}>
+                  <button type="button" onClick={()=>selectTopMenu(menu)} className={`qmes-top-menu-button ${active?"is-active":""} ${opened?"is-open":""}`} aria-expanded={menu.id==="dash"?undefined:opened}>
                     <MenuIcon size={15}/><span>{menu.label}</span>
-                    {!direct&&<ChevronRight size={12} className="qmes-menu-arrow" style={{transform:opened?"rotate(90deg)":"rotate(0deg)"}}/>}
+                    {menu.id!=="dash"&&<ChevronRight size={12} className="qmes-menu-arrow" style={{transform:opened?"rotate(90deg)":"rotate(0deg)"}}/>}
                   </button>
                 </div>
               );
             })}
           </nav>
-          {openMenu&&(()=>{
-            const selected=TOP_MENUS.find(menu=>menu.id===openMenu);
-            const items=(selected?.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);
-            if(!items.length)return null;
-            return (
-              <div className="qmes-submenu-row" role="menu">
-                <div className="qmes-submenu-title">{selected.label}</div>
-                {items.map(item=>{
-                  const ItemIcon=item.icon;
-                  return <button type="button" key={item.id} onClick={()=>setTab(item.id)} className={`qmes-submenu-button ${tab===item.id?"is-active":""}`}><ItemIcon size={14}/><span>{item.label}</span></button>;
-                })}
-              </div>
-            );
-          })()}
         </div>
       </header>
 
-      <main className="w-full px-4 lg:px-6 py-5 flex-1"><Active/></main>
+      <div className={`qmes-workspace ${sidebarOpen?"has-side-menu":""}`}>
+        {sidebarOpen&&(
+          <>
+            <button type="button" className="qmes-side-menu-backdrop" aria-label="왼쪽 메뉴 닫기" onClick={()=>setOpenMenu(null)} />
+            <aside className="qmes-side-menu" aria-label={`${selectedMenu.label} 전체 기능`}>
+              <div className="qmes-side-menu-head">
+                <div className="qmes-side-menu-heading">
+                  {React.createElement(selectedMenu.icon,{size:18})}
+                  <span>{selectedMenu.label}</span>
+                </div>
+                <button type="button" className="qmes-side-menu-close" onClick={()=>setOpenMenu(null)} aria-label="왼쪽 메뉴 닫기">×</button>
+              </div>
+              <div className="qmes-side-menu-caption">전체 기능</div>
+              <nav className="qmes-side-menu-list">
+                {selectedMenuItems.map(item=>{
+                  const ItemIcon=item.icon;
+                  return (
+                    <button type="button" key={item.id} onClick={()=>selectSideItem(item)} className={`qmes-side-menu-button ${tab===item.id?"is-active":""}`}>
+                      <ItemIcon size={16}/><span>{item.label}</span><ChevronRight size={15}/>
+                    </button>
+                  );
+                })}
+              </nav>
+            </aside>
+          </>
+        )}
+        <main className="qmes-main-content w-full px-4 lg:px-6 py-5 flex-1"><Active/></main>
+      </div>
 
       {profileOpen&&(
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4" onClick={closeAccountModal} role="dialog" aria-modal="true" aria-label="계정 설정">
