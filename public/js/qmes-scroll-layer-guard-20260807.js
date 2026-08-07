@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V8__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V8__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V9__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V9__=true;
 
   const PREVIEW_SELECTOR=[
     '.qmes-modal-backdrop .qmes-coa-viewer',
@@ -21,65 +21,48 @@
     #qmes-user-dropdown{z-index:130!important;}
     #qmes-sync-hamburger{z-index:140!important;}
     #qmes-sync-sidebar{z-index:150!important;}
-
     [role="dialog"],dialog,.fixed.inset-0,[class*="modal"],[class*="preview"],[class*="print-preview"]{z-index:500!important;}
 
-    html.qmes-preview-scroll-lock,body.qmes-preview-scroll-lock{
-      overflow:hidden!important;
-      overscroll-behavior:none!important;
-      height:100%!important;
-    }
+    html.qmes-preview-scroll-lock,body.qmes-preview-scroll-lock{overflow:hidden!important;overscroll-behavior:none!important;height:100%!important;}
     body.qmes-preview-scroll-lock #root{overscroll-behavior:none!important;}
 
+    /* One uniform preview background. */
     .qmes-modal-backdrop{
-      position:fixed!important;
-      inset:0!important;
-      width:100vw!important;
-      height:100dvh!important;
-      overflow-y:auto!important;
-      overflow-x:hidden!important;
-      overscroll-behavior:contain!important;
-      isolation:isolate!important;
-      background:#07111f!important;
-      z-index:2147483000!important;
+      position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+      overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;
+      isolation:isolate!important;background:#0b1728!important;z-index:2147483000!important;
     }
-
     .qmes-modal-backdrop .qmes-coa-viewer,
     .qmes-modal-backdrop .qmes-wo-output-preview,
     .qmes-modal-backdrop .qmes-label-viewer{
-      max-height:none!important;
-      overflow:visible!important;
-      position:relative!important;
-      z-index:2147483001!important;
+      max-height:none!important;overflow:visible!important;position:relative!important;z-index:2147483001!important;
+      background:#0b1728!important;
     }
 
-    /* Fixed preview header uses the viewer's native #0b1728 so it does not look like a darker strip. */
+    /* Keep title/report no/print/close bar fixed and exactly the same color as its surroundings. */
     .qmes-modal-backdrop .qmes-coa-viewer > :first-child,
     .qmes-modal-backdrop .qmes-wo-viewer-head{
-      position:sticky!important;
-      top:0!important;
-      z-index:2147483003!important;
-      flex-shrink:0!important;
-      background:#0b1728!important;
-      background-color:#0b1728!important;
-      opacity:1!important;
+      position:sticky!important;top:0!important;z-index:2147483640!important;flex-shrink:0!important;
+      background:#0b1728!important;background-color:#0b1728!important;opacity:1!important;
+      isolation:isolate!important;
     }
 
     @media print{
       html,body{overflow:visible!important;height:auto!important;background:#fff!important;}
       body > #root{display:none!important;visibility:hidden!important;}
-      body > #qmes-print-root{
-        display:block!important;visibility:visible!important;position:static!important;
-        inset:auto!important;width:auto!important;height:auto!important;overflow:visible!important;background:#fff!important;
-      }
-      .qmes-modal-backdrop .qmes-coa-viewer > :first-child,
-      .qmes-modal-backdrop .qmes-wo-viewer-head{position:static!important;}
+      body > #qmes-print-root{display:block!important;visibility:visible!important;position:static!important;inset:auto!important;width:auto!important;height:auto!important;overflow:visible!important;background:#fff!important;}
+      .qmes-modal-backdrop .qmes-coa-viewer > :first-child,.qmes-modal-backdrop .qmes-wo-viewer-head{position:static!important;}
       header,.qmes-top-menu-bar,.qmes-top-menu{isolation:auto!important;}
     }
   `;
   document.getElementById('qmes-scroll-layer-guard-style')?.remove();
   document.head.appendChild(style);
 
+  function fixLabels(){
+    document.querySelectorAll('.qmes-iqc2-table th').forEach((th)=>{
+      if((th.textContent||'').trim()==='불합수량') th.textContent='불량수량';
+    });
+  }
   function reinforce(){
     const header=document.querySelector('header');
     const bar=document.querySelector('.qmes-top-menu-bar');
@@ -87,6 +70,7 @@
     if(header)header.style.setProperty('z-index','40','important');
     if(bar)bar.style.setProperty('z-index','41','important');
     if(menu)menu.style.setProperty('z-index','42','important');
+    fixLabels();
   }
   function syncPreviewScrollLock(){
     const isOpen=!!document.querySelector(PREVIEW_SELECTOR);
@@ -94,25 +78,12 @@
     document.body?.classList.toggle('qmes-preview-scroll-lock',isOpen);
   }
   let queued=false;
-  function queueSync(){
-    if(queued)return; queued=true;
-    requestAnimationFrame(()=>{queued=false;reinforce();syncPreviewScrollLock();});
-  }
+  function queueSync(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;reinforce();syncPreviewScrollLock();});}
   const observer=new MutationObserver(queueSync);
   const startObserver=()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true});queueSync();};
   reinforce();requestAnimationFrame(reinforce);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserver,{once:true});else startObserver();
-  window.addEventListener('load',queueSync);
-  document.addEventListener('qmes:data-updated',queueSync);
-  window.addEventListener('beforeprint',()=>{
-    document.documentElement.classList.remove('qmes-preview-scroll-lock');
-    document.body?.classList.remove('qmes-preview-scroll-lock');
-    document.documentElement.classList.add('qmes-printing-now');
-    document.body?.classList.add('qmes-printing-now');
-  });
-  window.addEventListener('afterprint',()=>{
-    document.documentElement.classList.remove('qmes-printing-now');
-    document.body?.classList.remove('qmes-printing-now');
-    queueSync();
-  });
+  window.addEventListener('load',queueSync);document.addEventListener('qmes:data-updated',queueSync);
+  window.addEventListener('beforeprint',()=>{fixLabels();document.documentElement.classList.remove('qmes-preview-scroll-lock');document.body?.classList.remove('qmes-preview-scroll-lock');document.documentElement.classList.add('qmes-printing-now');document.body?.classList.add('qmes-printing-now');});
+  window.addEventListener('afterprint',()=>{document.documentElement.classList.remove('qmes-printing-now');document.body?.classList.remove('qmes-printing-now');queueSync();});
 })();
