@@ -66,75 +66,29 @@ main:has(.qmes-dashboard-process-grid),.qmes-main:has(.qmes-dashboard-process-gr
 
 /* Lock the original production KPI typography so refresh cannot resize it. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card *{
-  color:#27313b!important;
-  fill:#27313b!important;
-  transition:none!important;
-  animation:none!important;
-  transform:none!important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-label{
-  font-size:17px!important;
-  line-height:1.2!important;
-  font-weight:800!important;
-  letter-spacing:-.02em!important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-value{
-  font-size:38px!important;
-  line-height:1!important;
-  font-weight:850!important;
-  letter-spacing:-.035em!important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-unit{
-  font-size:14px!important;
-  line-height:1.2!important;
-  font-weight:700!important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-text-kpi-caption{
-  font-size:12px!important;
-  line-height:1.3!important;
-  font-weight:600!important;
-}
-@media(max-width:760px){
-  :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-label{font-size:15px!important;}
-  :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-value{font-size:31px!important;}
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card *{color:#27313b!important;fill:#27313b!important;transition:none!important;animation:none!important;transform:none!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-label{font-size:17px!important;line-height:1.2!important;font-weight:800!important;letter-spacing:-.02em!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-value{font-size:38px!important;line-height:1!important;font-weight:850!important;letter-spacing:-.035em!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-unit{font-size:14px!important;line-height:1.2!important;font-weight:700!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-text-kpi-caption{font-size:12px!important;line-height:1.3!important;font-weight:600!important;}
+@media(max-width:760px){:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-label{font-size:15px!important;}:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card .qmes-hybrid-value{font-size:31px!important;}}
 
 /* Sharpen the six dashboard panel title rows without changing their layout. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child{
-  color:#17202a!important;
-  opacity:1!important;
-  filter:none!important;
-  text-shadow:none!important;
-  -webkit-font-smoothing:antialiased;
-  text-rendering:geometricPrecision;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child{color:#17202a!important;opacity:1!important;filter:none!important;text-shadow:none!important;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child h1,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child h2,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child h3,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h1,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h2,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h3{
-  color:#17202a!important;
-  font-weight:700!important;
-  opacity:1!important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h3{color:#17202a!important;font-weight:800!important;opacity:1!important;}
 
-/* Empty-state messages: neutral surface and stronger text. */
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-empty-success{
-  color:#334155!important;
-  font-weight:700!important;
-  opacity:1!important;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:first-child .qmes-dashboard-empty{
-  color:#334155!important;
-  font-weight:700!important;
-  opacity:1!important;
-}
+/* Empty-state text is bold and the real-time alarm body uses exactly the same neutral surface as its panel. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-empty{color:#334155!important;font-weight:800!important;opacity:1!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:last-child > .p-4,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:last-child > .p-4 > ul,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:last-child .qmes-dashboard-empty-success{background:#f9fbfd!important;background-color:#f9fbfd!important;border:0!important;box-shadow:none!important;outline:0!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-empty-success{color:#334155!important;font-weight:800!important;opacity:1!important;}
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
