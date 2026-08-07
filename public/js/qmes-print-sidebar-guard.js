@@ -1,7 +1,9 @@
 (function(){
   "use strict";
-  if(window.__QMES_PRINT_SIDEBAR_GUARD_V3__) return;
-  window.__QMES_PRINT_SIDEBAR_GUARD_V3__=true;
+  if(window.__QMES_PRINT_SIDEBAR_GUARD_V4__) return;
+  window.__QMES_PRINT_SIDEBAR_GUARD_V4__=true;
+
+  document.getElementById('qmes-print-sidebar-guard-style')?.remove();
 
   const style=document.createElement('style');
   style.id='qmes-print-sidebar-guard-style';
@@ -71,6 +73,12 @@
   const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
   const printRoot=()=>document.getElementById('qmes-print-root');
 
+  function restoreTopMenus(){
+    document.querySelectorAll('.qmes-top-menu,.qmes-top-menu-bar,#qmes-all-menu-dropdown,.qmes-submenu,.qmes-submenu-button').forEach(node=>{
+      ['display','visibility','opacity','pointer-events'].forEach(prop=>node.style.removeProperty(prop));
+    });
+  }
+
   function scrubPrintRoot(){
     const root=printRoot();
     if(!root) return;
@@ -84,12 +92,18 @@
   const endPrint=()=>{
     printClickActive=false;
     document.body?.classList.remove('qmes-printing');
+    restoreTopMenus();
   };
+
+  restoreTopMenus();
+  requestAnimationFrame(restoreTopMenus);
+  setTimeout(restoreTopMenus,80);
 
   window.addEventListener('beforeprint',startPrint);
   window.addEventListener('afterprint',endPrint);
   window.addEventListener('focus',()=>{
     if(printClickActive) setTimeout(endPrint,250);
+    else restoreTopMenus();
   });
 
   if(window.matchMedia){
@@ -101,6 +115,7 @@
 
   const observer=new MutationObserver(()=>{
     scrubPrintRoot();
+    if(!document.body?.classList.contains('qmes-printing')) restoreTopMenus();
     if(document.body?.classList.contains('print-doc')||document.body?.classList.contains('print-label')||document.body?.classList.contains('qmes-screen-exact-print')){
       const side=document.getElementById('qmes-sync-sidebar');
       const hamburger=document.getElementById('qmes-sync-hamburger');
