@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V6__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V6__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V7__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V7__=true;
 
   const PREVIEW_SELECTOR=[
     '.qmes-modal-backdrop .qmes-coa-viewer',
@@ -17,30 +17,20 @@
     header{z-index:40!important;isolation:isolate!important;}
     .qmes-top-menu-bar{z-index:41!important;isolation:isolate!important;}
     .qmes-top-menu{z-index:42!important;isolation:isolate!important;}
-
     #qmes-all-menu-dropdown{z-index:120!important;}
     #qmes-user-dropdown{z-index:130!important;}
     #qmes-sync-hamburger{z-index:140!important;}
     #qmes-sync-sidebar{z-index:150!important;}
 
-    [role="dialog"],dialog,
-    .fixed.inset-0,
-    [class*="modal"],
-    [class*="preview"],
-    [class*="print-preview"]{z-index:500!important;}
+    [role="dialog"],dialog,.fixed.inset-0,[class*="modal"],[class*="preview"],[class*="print-preview"]{z-index:500!important;}
 
-    html.qmes-preview-scroll-lock,
-    body.qmes-preview-scroll-lock{
+    html.qmes-preview-scroll-lock,body.qmes-preview-scroll-lock{
       overflow:hidden!important;
       overscroll-behavior:none!important;
       height:100%!important;
     }
+    body.qmes-preview-scroll-lock #root{overscroll-behavior:none!important;}
 
-    body.qmes-preview-scroll-lock #root{
-      overscroll-behavior:none!important;
-    }
-
-    /* The backdrop owns viewport scrolling. Background controls can never bleed through. */
     .qmes-modal-backdrop{
       position:fixed!important;
       inset:0!important;
@@ -51,51 +41,38 @@
       overscroll-behavior:contain!important;
       isolation:isolate!important;
       background:#07111f!important;
-      background-clip:padding-box!important;
       z-index:2147483000!important;
     }
 
-    /* Do not make the viewer itself a scroll container.
-       Keeping header and paper in normal flow prevents the paper from covering the top toolbar. */
     .qmes-modal-backdrop .qmes-coa-viewer,
     .qmes-modal-backdrop .qmes-wo-output-preview,
     .qmes-modal-backdrop .qmes-label-viewer{
       max-height:none!important;
       overflow:visible!important;
-      overscroll-behavior:auto!important;
       position:relative!important;
       z-index:2147483001!important;
     }
 
-    /* Restore the preview toolbar to normal document flow. */
-    .qmes-modal-backdrop .qmes-wo-viewer-head,
-    .qmes-modal-backdrop [class*="toolbar"]{
-      position:relative!important;
-      top:auto!important;
-      z-index:2147483002!important;
+    /* Inspection report preview header: same behavior as work-order preview.
+       Title/report no/print/close stay visible while only the report content moves. */
+    .qmes-modal-backdrop .qmes-coa-viewer > :first-child,
+    .qmes-modal-backdrop .qmes-wo-viewer-head{
+      position:sticky!important;
+      top:0!important;
+      z-index:2147483003!important;
       flex-shrink:0!important;
+      background:#07111f!important;
     }
 
     @media print{
-      html,body{
-        overflow:visible!important;
-        height:auto!important;
-        background:#fff!important;
-      }
-      body > #root{
-        display:none!important;
-        visibility:hidden!important;
-      }
+      html,body{overflow:visible!important;height:auto!important;background:#fff!important;}
+      body > #root{display:none!important;visibility:hidden!important;}
       body > #qmes-print-root{
-        display:block!important;
-        visibility:visible!important;
-        position:static!important;
-        inset:auto!important;
-        width:auto!important;
-        height:auto!important;
-        overflow:visible!important;
-        background:#fff!important;
+        display:block!important;visibility:visible!important;position:static!important;
+        inset:auto!important;width:auto!important;height:auto!important;overflow:visible!important;background:#fff!important;
       }
+      .qmes-modal-backdrop .qmes-coa-viewer > :first-child,
+      .qmes-modal-backdrop .qmes-wo-viewer-head{position:static!important;}
       header,.qmes-top-menu-bar,.qmes-top-menu{isolation:auto!important;}
     }
   `;
@@ -110,37 +87,22 @@
     if(bar)bar.style.setProperty('z-index','41','important');
     if(menu)menu.style.setProperty('z-index','42','important');
   }
-
   function syncPreviewScrollLock(){
     const isOpen=!!document.querySelector(PREVIEW_SELECTOR);
     document.documentElement.classList.toggle('qmes-preview-scroll-lock',isOpen);
     document.body?.classList.toggle('qmes-preview-scroll-lock',isOpen);
   }
-
   let queued=false;
   function queueSync(){
-    if(queued) return;
-    queued=true;
-    requestAnimationFrame(()=>{
-      queued=false;
-      reinforce();
-      syncPreviewScrollLock();
-    });
+    if(queued)return; queued=true;
+    requestAnimationFrame(()=>{queued=false;reinforce();syncPreviewScrollLock();});
   }
-
   const observer=new MutationObserver(queueSync);
-  const startObserver=()=>{
-    if(document.body) observer.observe(document.body,{childList:true,subtree:true});
-    queueSync();
-  };
-
-  reinforce();
-  requestAnimationFrame(reinforce);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startObserver,{once:true});
-  else startObserver();
+  const startObserver=()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true});queueSync();};
+  reinforce();requestAnimationFrame(reinforce);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserver,{once:true});else startObserver();
   window.addEventListener('load',queueSync);
   document.addEventListener('qmes:data-updated',queueSync);
-
   window.addEventListener('beforeprint',()=>{
     document.documentElement.classList.remove('qmes-preview-scroll-lock');
     document.body?.classList.remove('qmes-preview-scroll-lock');
