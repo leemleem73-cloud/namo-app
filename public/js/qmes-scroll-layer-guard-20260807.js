@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V11__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V11__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V12__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V12__=true;
 
   const REPORT_BACKDROP='.qmes-modal-backdrop:has(.qmes-iqc2-paper)';
   const REPORT_SELECTOR=`${REPORT_BACKDROP} .qmes-wo-viewer`;
@@ -21,7 +21,7 @@
       overflow:hidden!important;overscroll-behavior:none!important;height:100%!important;
     }
 
-    /* IQC/PQC/OQC only: full-screen preview shell. Work-order preview is untouched. */
+    /* IQC/PQC/OQC only. Work-order preview is intentionally untouched. */
     ${REPORT_BACKDROP}{
       position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
       margin:0!important;padding:0!important;overflow:hidden!important;
@@ -32,30 +32,47 @@
     ${REPORT_SELECTOR}{
       position:relative!important;width:100vw!important;max-width:none!important;height:100dvh!important;
       min-height:100dvh!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
-      box-shadow:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;
-      background:#0b1728!important;z-index:2147483001!important;
+      box-shadow:none!important;overflow:hidden!important;background:#0b1728!important;z-index:2147483001!important;
+    }
+
+    /* Toolbar is outside the scrolling layer, so it cannot move. */
+    ${REPORT_SELECTOR} > .qmes-wo-viewer-head{
+      position:relative!important;top:auto!important;left:auto!important;right:auto!important;
+      z-index:2147483640!important;margin:0!important;padding:20px 28px 12px!important;
+      height:88px!important;min-height:88px!important;box-sizing:border-box!important;
+      background:#0b1728!important;background-color:#0b1728!important;opacity:1!important;
+      isolation:isolate!important;flex-shrink:0!important;
+    }
+
+    /* The paper itself is the only scrolling layer. */
+    ${REPORT_SELECTOR} > .qmes-iqc2-paper{
+      position:absolute!important;
+      top:88px!important;
+      left:0!important;
+      right:0!important;
+      bottom:0!important;
+      z-index:1!important;
+      margin:0!important;
+      padding-top:12px!important;
+      padding-bottom:28px!important;
+      overflow-y:auto!important;
+      overflow-x:hidden!important;
+      overscroll-behavior:contain!important;
       scrollbar-gutter:stable!important;
     }
 
-    /* Only this top row stays fixed: preview title/report no + print + close. */
-    ${REPORT_SELECTOR} > .qmes-wo-viewer-head{
-      position:sticky!important;top:0!important;left:0!important;right:0!important;
-      z-index:2147483640!important;margin:0!important;padding:20px 28px 12px!important;
-      min-height:88px!important;box-sizing:border-box!important;
-      background:#0b1728!important;background-color:#0b1728!important;opacity:1!important;
-      isolation:isolate!important;
-    }
-
-    /* The certificate itself scrolls underneath the fixed row. */
-    ${REPORT_SELECTOR} .qmes-iqc2-paper{
-      position:relative!important;z-index:1!important;margin:12px auto 28px!important;
+    /* Keep the actual white document centered inside its scroll layer. */
+    ${REPORT_SELECTOR} > .qmes-iqc2-paper > *:first-child{
+      margin-left:auto!important;
+      margin-right:auto!important;
     }
 
     @media print{
       html,body{overflow:visible!important;height:auto!important;background:#fff!important;}
       body > #root{display:none!important;visibility:hidden!important;}
       body > #qmes-print-root{display:block!important;visibility:visible!important;position:static!important;inset:auto!important;width:auto!important;height:auto!important;overflow:visible!important;background:#fff!important;}
-      ${REPORT_SELECTOR} > .qmes-wo-viewer-head{position:static!important;margin:0!important;padding:0!important;min-height:0!important;}
+      ${REPORT_SELECTOR} > .qmes-wo-viewer-head{position:static!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;}
+      ${REPORT_SELECTOR} > .qmes-iqc2-paper{position:static!important;overflow:visible!important;padding:0!important;}
       header,.qmes-top-menu-bar,.qmes-top-menu{isolation:auto!important;}
     }
   `;
