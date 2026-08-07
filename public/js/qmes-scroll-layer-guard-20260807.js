@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V7__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V7__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V8__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V8__=true;
 
   const PREVIEW_SELECTOR=[
     '.qmes-modal-backdrop .qmes-coa-viewer',
@@ -53,15 +53,16 @@
       z-index:2147483001!important;
     }
 
-    /* Inspection report preview header: same behavior as work-order preview.
-       Title/report no/print/close stay visible while only the report content moves. */
+    /* Fixed preview header uses the viewer's native #0b1728 so it does not look like a darker strip. */
     .qmes-modal-backdrop .qmes-coa-viewer > :first-child,
     .qmes-modal-backdrop .qmes-wo-viewer-head{
       position:sticky!important;
       top:0!important;
       z-index:2147483003!important;
       flex-shrink:0!important;
-      background:#07111f!important;
+      background:#0b1728!important;
+      background-color:#0b1728!important;
+      opacity:1!important;
     }
 
     @media print{
