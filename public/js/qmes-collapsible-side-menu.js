@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V12__) return;
-  window.__QMES_SYNC_SIDEBAR_V12__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V13__) return;
+  window.__QMES_SYNC_SIDEBAR_V13__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -42,18 +42,23 @@
 
   const side=document.createElement('aside');side.id='qmes-sync-sidebar';side.innerHTML='<div class="qmes-side-head"><div class="qmes-side-title"></div><button class="qmes-side-close" type="button">×</button></div><div class="qmes-side-items"></div>';document.body.appendChild(side);
   const hamburger=document.createElement('button');hamburger.id='qmes-sync-hamburger';hamburger.type='button';hamburger.textContent='☰';document.body.appendChild(hamburger);
-  let currentGroup='',activeLabel='',groupHighlight=false,internal=false;const head=()=>side.querySelector('.qmes-side-head');
-  function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),nav=document.querySelector('.qmes-top-menu'),dash=findTop('대시보드');if(bar)document.documentElement.style.setProperty('--qmes-side-top',Math.round(bar.getBoundingClientRect().bottom)+'px');if(nav&&dash){const nr=nav.getBoundingClientRect(),dr=dash.getBoundingClientRect(),size=32,slot=52;document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(nr.left+(slot-size)/2)+'px');document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready');}}
+  let currentGroup='',activeLabel='',groupHighlight=false,internal=false,topMenuPinned=false;const head=()=>side.querySelector('.qmes-side-head');
+  const topDropdown=()=>document.getElementById('qmes-all-menu-dropdown');
+  function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),nav=document.querySelector('.qmes-top-menu'),dash=findTop('대시보드');if(bar)document.documentElement.style.setProperty('--qmes-side-top',Math.round(bar.getBoundingClientRect().bottom)+'px');if(nav&&dash){const nr=nav.getBoundingClientRect(),dr=dash.getBoundingClientRect(),size=32,slot=52;document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(nr.left+(slot-size)/2)+'px');document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready')}}
   function settle(){setPositions();requestAnimationFrame(setPositions);setTimeout(setPositions,80);setTimeout(setPositions,220)}
   function render(group){if(!menuMap[group])return;currentGroup=group;side.querySelector('.qmes-side-title').textContent=group;head().classList.toggle('is-group-active',groupHighlight);const wrap=side.querySelector('.qmes-side-items');wrap.replaceChildren();menuMap[group].forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)})}
   function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;render(group);document.body.classList.add('qmes-side-open');side.style.setProperty('display','block','important');side.style.setProperty('visibility','visible','important');side.style.setProperty('opacity','1','important');side.style.setProperty('pointer-events','auto','important');side.style.setProperty('transform','translate3d(0,0,0)','important');settle()}
   function close(){document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));settle()}
+  function keepTopMenuOpen(){if(!topMenuPinned)return;const menu=topDropdown();if(!menu)return;menu.classList.add('is-open');menu.style.removeProperty('visibility');menu.style.removeProperty('opacity');menu.style.removeProperty('pointer-events')}
   function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label))}
   function selectItem(item){groupHighlight=false;activeLabel=item.label;render(currentGroup)}
   function navigate(item){if(!item)return;selectItem(item);if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0)}return}const sub=findSub(item.sub);if(sub){sub.click();return}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()))}
   side.addEventListener('click',e=>{if(e.target.closest('.qmes-side-close')){close();return}const b=e.target.closest('.qmes-side-item');if(b)navigate(menuMap[currentGroup]?.[Number(b.dataset.index)])});hamburger.addEventListener('click',()=>{activeLabel='';open(currentGroup||'대시보드',{titleHighlight:true})});
-  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;activeLabel='';open(group,{titleHighlight:true})},true);
-  document.addEventListener('click',e=>{const b=e.target.closest('#qmes-all-menu-dropdown button');if(!b)return;groupHighlight=false;activeLabel=clean(b.textContent);if(currentGroup)render(currentGroup)},true);
-  document.addEventListener('click',e=>{const logo=e.target.closest('header button');if(!logo||!logo.querySelector('img[alt="NAMO Chemical"]'))return;currentGroup='대시보드';activeLabel='';groupHighlight=false;close()},true);
+
+  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;topMenuPinned=true;activeLabel='';open(group,{titleHighlight:true});setTimeout(keepTopMenuOpen,0);setTimeout(keepTopMenuOpen,80)},true);
+  document.addEventListener('click',e=>{const b=e.target.closest('#qmes-all-menu-dropdown button');if(!b)return;topMenuPinned=true;groupHighlight=false;activeLabel=clean(b.textContent);if(currentGroup)render(currentGroup);setTimeout(keepTopMenuOpen,0);setTimeout(keepTopMenuOpen,80);setTimeout(keepTopMenuOpen,180)},true);
+  document.addEventListener('click',e=>{if(e.target.closest('.qmes-top-menu-button')||e.target.closest('#qmes-all-menu-dropdown')||e.target.closest('#qmes-sync-sidebar'))return;topMenuPinned=false;topDropdown()?.classList.remove('is-open')},false);
+  document.addEventListener('click',e=>{const logo=e.target.closest('header button');if(!logo||!logo.querySelector('img[alt="NAMO Chemical"]'))return;topMenuPinned=false;topDropdown()?.classList.remove('is-open');currentGroup='대시보드';activeLabel='';groupHighlight=false;close()},true);
+
   const boot=()=>{setPositions();if(!hamburger.classList.contains('is-ready'))requestAnimationFrame(boot)};window.addEventListener('resize',settle);window.addEventListener('load',settle);document.fonts?.ready?.then(settle).catch(()=>{});requestAnimationFrame(boot);
 })();
