@@ -49,11 +49,17 @@ main:has(.qmes-dashboard-process-grid),
   box-shadow: 0 2px 6px rgba(15,23,42,.11) !important;
 }
 
-/* Six dashboard detail panels: one unified soft blue-gray tone. */
+/* Six dashboard detail panels: unified blue-gray header, slightly brighter content body. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > *,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > * {
   background-color: #f2f6fb !important;
   border-color: #bdcde0 !important;
+}
+
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > * > .p-4,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > * > .p-4 {
+  background-color: #f9fbfd !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
 }
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-100,
