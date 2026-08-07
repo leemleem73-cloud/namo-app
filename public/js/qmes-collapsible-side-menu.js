@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V14__) return;
-  window.__QMES_SYNC_SIDEBAR_V14__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V15__) return;
+  window.__QMES_SYNC_SIDEBAR_V15__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -45,11 +45,11 @@
   const hamburger=document.createElement('button');hamburger.id='qmes-sync-hamburger';hamburger.type='button';hamburger.textContent='☰';document.body.appendChild(hamburger);
   let currentGroup='',activeLabel='',groupHighlight=false,internal=false,topMenuPinned=false;const head=()=>side.querySelector('.qmes-side-head');
   const topDropdown=()=>document.getElementById('qmes-all-menu-dropdown');
-  function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),nav=document.querySelector('.qmes-top-menu'),dash=findTop('대시보드');if(bar)document.documentElement.style.setProperty('--qmes-side-top',Math.round(bar.getBoundingClientRect().bottom)+'px');if(nav&&dash){const nr=nav.getBoundingClientRect(),dr=dash.getBoundingClientRect(),size=32,slot=52;document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(nr.left+(slot-size)/2)+'px');document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready')}}
+  function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),dash=findTop('대시보드');if(bar){const br=bar.getBoundingClientRect();document.documentElement.style.setProperty('--qmes-side-top',Math.round(br.bottom)+'px');document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(br.left+10)+'px')}if(dash){const dr=dash.getBoundingClientRect(),size=32;document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready')}}
   function settle(){setPositions();requestAnimationFrame(setPositions);setTimeout(setPositions,80);setTimeout(setPositions,220)}
   function render(group){if(!menuMap[group])return;currentGroup=group;side.querySelector('.qmes-side-title').textContent=group;head().classList.toggle('is-group-active',groupHighlight);const wrap=side.querySelector('.qmes-side-items');wrap.replaceChildren();menuMap[group].forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)})}
   function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;render(group);document.body.classList.add('qmes-side-open');side.style.setProperty('display','block','important');side.style.setProperty('visibility','visible','important');side.style.setProperty('opacity','1','important');side.style.setProperty('pointer-events','auto','important');side.style.setProperty('transform','translate3d(0,0,0)','important');settle()}
-  function close(){document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));settle()}
+  function close(){document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));setPositions()}
   function pinTopMenu(){topMenuPinned=true;const menu=topDropdown();if(menu)menu.classList.add('qmes-force-pinned')}
   function unpinTopMenu(){topMenuPinned=false;topDropdown()?.classList.remove('qmes-force-pinned')}
   function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label))}
