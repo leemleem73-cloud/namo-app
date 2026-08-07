@@ -126,25 +126,64 @@ body > #root header .qmes-top-menu-button:hover { background: #f1f5f9 !important
 body > #root header .qmes-top-menu-button.is-active { background: #eef6ff !important; color: #111111 !important; }
 body > #root header .qmes-top-menu-button.is-active svg { color: #111111 !important; }
 
-/* Header hamburger: no colored button shell; keep only a dark icon. */
-#qmes-sync-hamburger {
+/* Header hamburger: neutral from first paint, regardless of open/closed state. */
+#qmes-sync-hamburger,
+.qmes-sync-hamburger,
+.qmes-hamburger,
+button[data-qmes-hamburger],
+button[aria-label*="메뉴"],
+button[title*="메뉴"] {
   background: transparent !important;
   background-color: transparent !important;
+  background-image: none !important;
   border-color: transparent !important;
   box-shadow: none !important;
   color: #1f2937 !important;
 }
 #qmes-sync-hamburger:hover,
+#qmes-sync-hamburger:focus,
 #qmes-sync-hamburger:focus-visible,
-#qmes-sync-hamburger:active {
-  background: #f3f4f6 !important;
+#qmes-sync-hamburger:active,
+#qmes-sync-hamburger.is-open,
+#qmes-sync-hamburger.active,
+.qmes-sync-hamburger:hover,
+.qmes-sync-hamburger:focus,
+.qmes-sync-hamburger:active,
+.qmes-hamburger:hover,
+.qmes-hamburger:focus,
+.qmes-hamburger:active,
+button[data-qmes-hamburger]:hover,
+button[data-qmes-hamburger]:focus,
+button[data-qmes-hamburger]:active,
+button[aria-label*="메뉴"]:hover,
+button[aria-label*="메뉴"]:focus,
+button[aria-label*="메뉴"]:active,
+button[title*="메뉴"]:hover,
+button[title*="메뉴"]:focus,
+button[title*="메뉴"]:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   border-color: transparent !important;
   box-shadow: none !important;
   color: #111827 !important;
 }
 #qmes-sync-hamburger svg,
 #qmes-sync-hamburger span,
-#qmes-sync-hamburger i { color: #1f2937 !important; stroke: #1f2937 !important; }
+#qmes-sync-hamburger i,
+.qmes-sync-hamburger svg,
+.qmes-sync-hamburger span,
+.qmes-sync-hamburger i,
+.qmes-hamburger svg,
+.qmes-hamburger span,
+.qmes-hamburger i,
+button[data-qmes-hamburger] svg,
+button[aria-label*="메뉴"] svg,
+button[title*="메뉴"] svg {
+  color: #1f2937 !important;
+  stroke: #1f2937 !important;
+  fill: none !important;
+}
 
 /* Continue the same header divider through the left menu-search area. */
 #qmes-sync-sidebar,
