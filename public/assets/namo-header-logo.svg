@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 64" role="img" aria-labelledby="title desc">
-  <title id="title">NAMO Chemical</title>
-  <desc id="desc">White NM NAMO Chemical wordmark</desc>
-  <g fill="#ffffff">
-    <text x="0" y="48"
-      font-family="Arial Black, Arial, Helvetica, sans-serif"
-      font-size="48" font-weight="900" font-style="italic"
-      letter-spacing="-6">NM</text>
-    <text x="82" y="44"
-      font-family="Arial, Helvetica, sans-serif"
-      font-size="32" font-weight="700"
-      letter-spacing="-0.4"
-      textLength="273" lengthAdjust="spacingAndGlyphs">NAMO Chemical</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 464 96" role="img" aria-labelledby="title desc">
+  <title id="title">나모케미칼(주) NAMO Chemical Co., Ltd.</title>
+  <desc id="desc">NAMO Chemical official-style logo with blue and green NM symbol and black company wordmark</desc>
+  <rect width="464" height="96" fill="#ffffff"/>
+  <g transform="translate(4 14)">
+    <path d="M0 0h22l17 55V0h19v68H35L19 18v50H0z" fill="#1f2b8f"/>
+    <path d="M22 0h20l17 54L76 0h20v68H76V18L59 68H42z" fill="#73be28"/>
+    <path d="M42 0h18l17 54L94 0h19v68H94V18L77 68H59z" fill="#263692"/>
+    <path d="M94 0h20v68H94z" fill="#75bf2a"/>
+  </g>
+  <g fill="#050505">
+    <text x="130" y="49" font-family="Arial, 'Noto Sans KR', sans-serif" font-size="34" font-weight="900" letter-spacing="-2">나모케미칼(주)</text>
+    <text x="132" y="77" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" letter-spacing="-0.5">NAMO Chemical Co., Ltd.</text>
   </g>
 </svg>
