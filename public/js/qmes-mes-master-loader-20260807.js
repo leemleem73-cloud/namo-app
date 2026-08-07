@@ -1,11 +1,12 @@
-/* QMES Stage 12 operational loader
- * Loads item/recipe master, work-order bridge, then work-order recipe UI helper.
+/* QMES Stage 13 operational loader
+ * Loads item/recipe master, work-order bridges, then the conflict-safe runtime UI.
  */
 (function(){
   const files=[
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
-    "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1"
+    "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
+    "./js/workorder-recipe-runtime-ui-20260807.js?v=20260807-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
