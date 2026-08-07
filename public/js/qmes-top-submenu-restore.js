@@ -51,13 +51,23 @@
     }
     #qmes-all-menu-dropdown.is-open{display:block;}
     #qmes-all-menu-dropdown .qmes-hover-title{
-      padding:10px 12px;
+      position:relative;
+      padding:10px 12px 10px 16px;
       margin:0;
-      border-bottom:1px solid #dbe3ec;
-      background:#eaf5ff;
-      color:#334155;
+      border-bottom:1px solid #d8e8f8;
+      background:#dcecff;
+      color:#175cd3;
       font-size:12px;
       font-weight:800;
+    }
+    #qmes-all-menu-dropdown .qmes-hover-title:before{
+      content:'';
+      position:absolute;
+      left:0;
+      top:7px;
+      bottom:7px;
+      width:4px;
+      background:#2563eb;
     }
     #qmes-all-menu-dropdown button{
       width:100%;
