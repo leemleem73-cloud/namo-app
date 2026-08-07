@@ -1,10 +1,11 @@
-/* QMES Stage 11 operational loader
- * Loads item/recipe master first, then work-order recipe bridge.
+/* QMES Stage 12 operational loader
+ * Loads item/recipe master, work-order bridge, then work-order recipe UI helper.
  */
 (function(){
   const files=[
     "./js/item-recipe-master-20260807.js?v=20260807-1",
-    "./js/workorder-recipe-bridge-20260807.js?v=20260807-1"
+    "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
+    "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
