@@ -78,6 +78,16 @@ main:has(.qmes-dashboard-process-grid),
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-violet-400,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-purple-400 { background-color: #7c3aed !important; }
 
+/* Darker USL/LSL specification boundaries on dashboard charts. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#38bdf8"] {
+  stroke: #0b6fa4 !important;
+  stroke-width: 2.4 !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) svg text[fill="#7dd3fc"] {
+  fill: #075985 !important;
+  font-weight: 700 !important;
+}
+
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) textarea {
