@@ -64,9 +64,43 @@ main:has(.qmes-dashboard-process-grid),.qmes-main:has(.qmes-dashboard-process-gr
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#6b7280"]{stroke:#38bdf8!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line text{fill:#075985!important;font-weight:700!important;}
 
-/* Keep the three production KPI titles/values unchanged and dark. */
+/* Keep production KPI typography stable during refresh; preserve its existing sizes. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card *{color:#27313b!important;fill:#27313b!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card *{
+  color:#27313b!important;
+  fill:#27313b!important;
+  transition:none!important;
+  animation:none!important;
+  transform:none!important;
+}
+
+/* Sharpen the six dashboard panel title rows without changing their layout. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child{
+  color:#17202a!important;
+  opacity:1!important;
+  filter:none!important;
+  text-shadow:none!important;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child h1,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child h2,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>* > :first-child h3,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h1,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h2,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>* > :first-child h3{
+  color:#17202a!important;
+  font-weight:700!important;
+  opacity:1!important;
+}
+
+/* Make the empty real-time alarm message clearly readable. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-empty-success{
+  color:#334155!important;
+  font-weight:600!important;
+  opacity:1!important;
+}
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
