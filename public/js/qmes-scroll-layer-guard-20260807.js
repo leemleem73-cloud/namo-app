@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V5__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V5__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V6__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V6__=true;
 
   const PREVIEW_SELECTOR=[
     '.qmes-modal-backdrop .qmes-coa-viewer',
@@ -40,14 +40,14 @@
       overscroll-behavior:none!important;
     }
 
-    /* Report preview is always the absolute top application layer.
-       This prevents background pagination/sticky controls from bleeding over the paper. */
+    /* The backdrop owns viewport scrolling. Background controls can never bleed through. */
     .qmes-modal-backdrop{
       position:fixed!important;
       inset:0!important;
       width:100vw!important;
       height:100dvh!important;
-      overflow:auto!important;
+      overflow-y:auto!important;
+      overflow-x:hidden!important;
       overscroll-behavior:contain!important;
       isolation:isolate!important;
       background:#07111f!important;
@@ -55,27 +55,27 @@
       z-index:2147483000!important;
     }
 
+    /* Do not make the viewer itself a scroll container.
+       Keeping header and paper in normal flow prevents the paper from covering the top toolbar. */
     .qmes-modal-backdrop .qmes-coa-viewer,
     .qmes-modal-backdrop .qmes-wo-output-preview,
     .qmes-modal-backdrop .qmes-label-viewer{
-      max-height:calc(100dvh - 24px)!important;
-      overflow-y:auto!important;
-      overscroll-behavior:contain!important;
-      -webkit-overflow-scrolling:touch;
+      max-height:none!important;
+      overflow:visible!important;
+      overscroll-behavior:auto!important;
       position:relative!important;
       z-index:2147483001!important;
     }
 
-    [role="dialog"] [class*="toolbar"],
-    [class*="preview"] [class*="toolbar"],
-    [class*="print-preview"] [class*="toolbar"],
-    .qmes-modal-backdrop .qmes-wo-viewer-head{
-      position:sticky;
-      top:0;
+    /* Restore the preview toolbar to normal document flow. */
+    .qmes-modal-backdrop .qmes-wo-viewer-head,
+    .qmes-modal-backdrop [class*="toolbar"]{
+      position:relative!important;
+      top:auto!important;
       z-index:2147483002!important;
+      flex-shrink:0!important;
     }
 
-    /* While the browser builds print preview, only the dedicated print root is allowed to exist. */
     @media print{
       html,body{
         overflow:visible!important;
