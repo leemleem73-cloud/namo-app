@@ -18,7 +18,6 @@
   .qmes-dashboard-kpi-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* 2026-08-07: soft light dashboard with clearer card separation. */
 main:has(.qmes-dashboard-process-grid),
 .qmes-main:has(.qmes-dashboard-process-grid),
 .qmes-content:has(.qmes-dashboard-process-grid) {
@@ -49,12 +48,17 @@ main:has(.qmes-dashboard-process-grid),
   box-shadow: 0 2px 6px rgba(15,23,42,.11) !important;
 }
 
-/* Production KPI row: soft sky-blue cards, dark text and full center alignment. */
+/* Production KPI row: CARD = light sky blue / TEXT = dark. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card {
-  background-color: #e7f4fb !important;
-  border-color: #a9cfe3 !important;
-  color: #1f2937 !important;
+  background: #dff1fb !important;
+  background-color: #dff1fb !important;
+  border-color: #9fc8dd !important;
+  color: #233746 !important;
   text-align: center !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card::before,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card::after {
+  background: transparent !important;
 }
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-copy {
   width: 100% !important;
@@ -67,15 +71,13 @@ main:has(.qmes-dashboard-process-grid),
   justify-content: center !important;
   text-align: center !important;
 }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-label,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-value,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-unit,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-caption {
-  color: #243746 !important;
-  text-align: center !important;
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card * {
+  color: #233746 !important;
 }
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-caption {
   width: 100% !important;
+  text-align: center !important;
 }
 
 /* Six dashboard detail panels: unified blue-gray header, slightly brighter content body. */
