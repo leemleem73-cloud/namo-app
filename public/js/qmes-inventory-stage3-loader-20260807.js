@@ -3,7 +3,8 @@
   const files=[
     "./js/inventory-live-20260807.js?v=20260807-1",
     "./js/finished-goods-inventory-20260807.js?v=20260807-1",
-    "./js/inventory-stage3-view-20260807.js?v=20260807-1"
+    "./js/inventory-lot-validation-20260807.js?v=20260807-1",
+    "./js/inventory-stage3-view-20260807.js?v=20260807-2"
   ];
   function exists(src){
     const base=src.split("?")[0];
@@ -16,7 +17,7 @@
     const s=document.createElement("script");
     s.src=src;s.async=false;
     s.onload=()=>next(i+1);
-    s.onerror=()=>console.error("[QMES] 재고 3단계 로드 실패",src);
+    s.onerror=()=>console.error("[QMES] 재고 모듈 로드 실패",src);
     document.head.appendChild(s);
   }
   const start=()=>next(0);
