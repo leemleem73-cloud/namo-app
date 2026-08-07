@@ -6,7 +6,7 @@
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
-    "./js/qmes-top-submenu-restore.js?v=20260807-1"
+    "./js/qmes-top-submenu-restore.js?v=20260807-2"
   ];
   function exists(src){
     const base=src.split("?")[0];
