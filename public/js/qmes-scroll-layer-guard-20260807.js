@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V4__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V4__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V5__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V5__=true;
 
   const PREVIEW_SELECTOR=[
     '.qmes-modal-backdrop .qmes-coa-viewer',
@@ -27,8 +27,7 @@
     .fixed.inset-0,
     [class*="modal"],
     [class*="preview"],
-    [class*="print-preview"],
-    .qmes-modal-backdrop{z-index:500!important;}
+    [class*="print-preview"]{z-index:500!important;}
 
     html.qmes-preview-scroll-lock,
     body.qmes-preview-scroll-lock{
@@ -41,6 +40,8 @@
       overscroll-behavior:none!important;
     }
 
+    /* Report preview is always the absolute top application layer.
+       This prevents background pagination/sticky controls from bleeding over the paper. */
     .qmes-modal-backdrop{
       position:fixed!important;
       inset:0!important;
@@ -51,6 +52,7 @@
       isolation:isolate!important;
       background:#07111f!important;
       background-clip:padding-box!important;
+      z-index:2147483000!important;
     }
 
     .qmes-modal-backdrop .qmes-coa-viewer,
@@ -61,7 +63,7 @@
       overscroll-behavior:contain!important;
       -webkit-overflow-scrolling:touch;
       position:relative!important;
-      z-index:1!important;
+      z-index:2147483001!important;
     }
 
     [role="dialog"] [class*="toolbar"],
@@ -70,7 +72,7 @@
     .qmes-modal-backdrop .qmes-wo-viewer-head{
       position:sticky;
       top:0;
-      z-index:3;
+      z-index:2147483002!important;
     }
 
     /* While the browser builds print preview, only the dedicated print root is allowed to exist. */
