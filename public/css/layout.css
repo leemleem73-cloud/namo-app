@@ -185,7 +185,6 @@ body > #root header > div:first-child {
   background: #ffffff !important;
 }
 
-/* The current header already loads NAMO's official logo; remove the dark-header white filter. */
 body > #root header > div:first-child button img[alt="NAMO Chemical"] {
   filter: none !important;
   height: 44px !important;
@@ -244,4 +243,29 @@ body > #root header .qmes-top-menu-button.is-active {
 
 body > #root header .qmes-top-menu-button.is-active svg {
   color: #111111 !important;
+}
+
+/* Header hamburger: no colored button shell; keep only a dark icon. */
+#qmes-sync-hamburger {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #1f2937 !important;
+}
+
+#qmes-sync-hamburger:hover,
+#qmes-sync-hamburger:focus-visible,
+#qmes-sync-hamburger:active {
+  background: #f3f4f6 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #111827 !important;
+}
+
+#qmes-sync-hamburger svg,
+#qmes-sync-hamburger span,
+#qmes-sync-hamburger i {
+  color: #1f2937 !important;
+  stroke: #1f2937 !important;
 }
