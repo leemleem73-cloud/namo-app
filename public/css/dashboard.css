@@ -49,6 +49,35 @@ main:has(.qmes-dashboard-process-grid),
   box-shadow: 0 2px 6px rgba(15,23,42,.11) !important;
 }
 
+/* Production KPI row: soft sky-blue cards, dark text and full center alignment. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card {
+  background-color: #e7f4fb !important;
+  border-color: #a9cfe3 !important;
+  color: #1f2937 !important;
+  text-align: center !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-copy {
+  width: 100% !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-label-row,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-value-row {
+  width: 100% !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-label,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-value,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-unit,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-caption {
+  color: #243746 !important;
+  text-align: center !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-caption {
+  width: 100% !important;
+}
+
 /* Six dashboard detail panels: unified blue-gray header, slightly brighter content body. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > *,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > * {
