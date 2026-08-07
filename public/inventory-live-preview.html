@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QMES 실시간 재고 연동 미리보기</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#020617}
+    iframe{display:block;width:100%;height:100%;border:0;background:#020617}
+  </style>
+</head>
+<body>
+  <iframe id="qmes" src="./index.html" title="나모케미칼 QMES"></iframe>
+  <script>
+    (function(){
+      const frame=document.getElementById('qmes');
+      frame.addEventListener('load',()=>{
+        try{
+          const doc=frame.contentDocument;
+          const win=frame.contentWindow;
+          if(!doc||!win)return;
+          if(doc.querySelector('script[data-qmes-live-inventory-preview]'))return;
+          const script=doc.createElement('script');
+          script.src='./js/qmes-live-inventory-loader-20260807.js?v=20260807-1';
+          script.async=false;
+          script.dataset.qmesLiveInventoryPreview='true';
+          script.onload=()=>console.info('[QMES preview] 실시간 재고 연동 로드 완료');
+          script.onerror=()=>console.error('[QMES preview] 실시간 재고 연동 로드 실패');
+          doc.head.appendChild(script);
+        }catch(error){
+          console.error('[QMES preview] 재고 연동 주입 실패',error);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
