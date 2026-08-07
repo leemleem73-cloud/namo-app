@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V5__) return;
-  window.__QMES_SYNC_SIDEBAR_V5__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V6__) return;
+  window.__QMES_SYNC_SIDEBAR_V6__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -38,10 +38,11 @@
     #qmes-all-menu-dropdown.is-open{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
     #qmes-sync-sidebar{display:block!important;position:fixed!important;left:0!important;top:var(--qmes-side-top,72px)!important;bottom:0!important;width:220px!important;box-sizing:border-box!important;padding:12px 10px!important;overflow-y:auto!important;background:#fff!important;border-right:1px solid #e4e8ee!important;box-shadow:3px 0 12px rgba(15,23,42,.08)!important;z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:transform .18s ease,opacity .12s ease!important}
     body.qmes-side-open #qmes-sync-sidebar{transform:translate3d(0,0,0)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
-    #qmes-sync-sidebar .qmes-side-head{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:5px 8px 11px!important;border-bottom:1px solid #edf0f4!important;margin-bottom:7px!important}
-    #qmes-sync-sidebar .qmes-side-title{font-size:14px!important;font-weight:800!important;color:#172033!important}
-    #qmes-sync-sidebar .qmes-side-close{width:28px!important;height:28px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#64748b!important;font-size:19px!important;cursor:pointer!important}
-    #qmes-sync-sidebar .qmes-side-close:hover{background:#f1f5f9!important;color:#172033!important}
+    #qmes-sync-sidebar .qmes-side-head{position:relative!important;display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:42px!important;padding:4px 8px 8px 14px!important;margin-bottom:7px!important;border-bottom:1px solid #dbe7f7!important;border-radius:8px!important;background:#edf4ff!important;box-sizing:border-box!important;overflow:hidden!important}
+    #qmes-sync-sidebar .qmes-side-head:before{content:''!important;position:absolute!important;left:0!important;top:7px!important;bottom:7px!important;width:3px!important;border-radius:3px!important;background:#2563eb!important}
+    #qmes-sync-sidebar .qmes-side-title{font-size:14px!important;font-weight:800!important;color:#175cd3!important;line-height:20px!important;padding:0!important;margin:0!important;text-align:left!important}
+    #qmes-sync-sidebar .qmes-side-close{width:28px!important;height:28px!important;flex:0 0 28px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#64748b!important;font-size:19px!important;cursor:pointer!important}
+    #qmes-sync-sidebar .qmes-side-close:hover{background:#dfeaff!important;color:#175cd3!important}
     #qmes-sync-sidebar .qmes-side-item{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;padding:9px 10px 9px 14px!important;margin:2px 0!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#475569!important;font-size:13px!important;font-weight:700!important;text-align:left!important;cursor:pointer!important}
     #qmes-sync-sidebar .qmes-side-item:hover{background:#f4f7fa!important;color:#172033!important}
     #qmes-sync-sidebar .qmes-side-item.is-active{background:#edf4ff!important;color:#175cd3!important}
