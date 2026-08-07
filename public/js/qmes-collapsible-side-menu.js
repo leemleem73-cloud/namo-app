@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V12_2__) return;
-  window.__QMES_SYNC_SIDEBAR_V12_2__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V12_3__) return;
+  window.__QMES_SYNC_SIDEBAR_V12_3__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -58,7 +58,27 @@
   function navigate(item){if(!item)return;selectItem(item);if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0)}return}const sub=findSub(item.sub);if(sub){sub.click();return}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()))}
   side.addEventListener('click',e=>{if(e.target.closest('.qmes-side-close')){close();return}const b=e.target.closest('.qmes-side-item');if(b)navigate(menuMap[currentGroup]?.[Number(b.dataset.index)])});hamburger.addEventListener('click',()=>{activeLabel='';open(currentGroup||'대시보드',{titleHighlight:true})});
   document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;activeLabel='';open(group,{titleHighlight:true})},true);
-  document.addEventListener('click',e=>{const b=e.target.closest('#qmes-all-menu-dropdown button');if(!b)return;groupHighlight=false;activeLabel=clean(b.textContent);if(currentGroup)render(currentGroup)},true);
+
+  function syncDropdownSelection(label){
+    const normalized=clean(label);
+    const group=groups.find(g=>menuMap[g].some(item=>clean(item.label)===normalized));
+    if(!group)return;
+    currentGroup=group;
+    groupHighlight=false;
+    activeLabel=menuMap[group].find(item=>clean(item.label)===normalized)?.label||normalized;
+    render(group);
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('#qmes-all-menu-dropdown button');
+    if(!b)return;
+    const label=clean(b.textContent);
+    syncDropdownSelection(label);
+    requestAnimationFrame(()=>syncDropdownSelection(label));
+    setTimeout(()=>syncDropdownSelection(label),0);
+    setTimeout(()=>syncDropdownSelection(label),60);
+    setTimeout(()=>syncDropdownSelection(label),160);
+  },true);
+
   document.addEventListener('click',e=>{const logo=e.target.closest('header button');if(!logo||!logo.querySelector('img[alt="NAMO Chemical"]'))return;currentGroup='대시보드';activeLabel='';groupHighlight=false;close()},true);
   const boot=()=>{setPositions();if(!hamburger.classList.contains('is-ready'))requestAnimationFrame(boot)};window.addEventListener('resize',settle);window.addEventListener('load',settle);document.fonts?.ready?.then(settle).catch(()=>{});requestAnimationFrame(boot);
 })();
