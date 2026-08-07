@@ -32,6 +32,7 @@
     ]
   };
 
+  document.getElementById('qmes-top-submenu-restore-style')?.remove();
   const style=document.createElement('style');
   style.id='qmes-top-submenu-restore-style';
   style.textContent=`
@@ -41,17 +42,19 @@
       display:none;
       min-width:210px;
       max-width:280px;
-      padding:7px;
+      padding:0;
+      overflow:hidden;
       border:1px solid #dbe3ec;
-      border-radius:10px;
+      border-radius:0;
       background:#fff;
-      box-shadow:0 10px 28px rgba(15,23,42,.14);
+      box-shadow:0 8px 20px rgba(15,23,42,.12);
     }
     #qmes-all-menu-dropdown.is-open{display:block;}
     #qmes-all-menu-dropdown .qmes-hover-title{
-      padding:8px 10px 7px;
-      margin-bottom:4px;
-      border-bottom:1px solid #e8eef5;
+      padding:10px 12px;
+      margin:0;
+      border-bottom:1px solid #dbe3ec;
+      background:#eaf5ff;
       color:#334155;
       font-size:12px;
       font-weight:800;
@@ -59,25 +62,35 @@
     #qmes-all-menu-dropdown button{
       width:100%;
       display:block;
-      padding:9px 10px;
+      padding:9px 12px;
       border:0;
-      border-radius:7px;
-      background:transparent;
+      border-radius:0;
+      background:#fff;
       color:#334155;
       font-size:12px;
       line-height:18px;
       text-align:left;
       cursor:pointer;
     }
-    #qmes-all-menu-dropdown button:hover{background:#eef7ff;color:#0369a1;}
+    #qmes-all-menu-dropdown button:hover,
+    #qmes-all-menu-dropdown button:focus-visible{
+      background:#eef7ff;
+      color:#0369a1;
+      outline:none;
+    }
   `;
   document.head.appendChild(style);
 
   let currentButton=null;
   let closeTimer=null;
+  let hoverFrame=null;
   const clean=v=>String(v||'').replace(/[›〉]/g,'').replace(/\s+/g,' ').trim();
   const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
   const findTopButton=label=>topButtons().find(button=>clean(button.textContent)===label);
+
+  function cancelClose(){
+    if(closeTimer){clearTimeout(closeTimer);closeTimer=null;}
+  }
 
   function ensureMenu(){
     let menu=document.getElementById('qmes-all-menu-dropdown');
@@ -86,36 +99,31 @@
     menu.id='qmes-all-menu-dropdown';
     menu.setAttribute('role','menu');
     document.body.appendChild(menu);
-    menu.addEventListener('mouseenter',()=>clearTimeout(closeTimer));
-    menu.addEventListener('mouseleave',()=>scheduleClose());
+    menu.addEventListener('mouseenter',cancelClose);
+    menu.addEventListener('mouseleave',scheduleClose);
     return menu;
   }
 
   function closeMenu(){
-    clearTimeout(closeTimer);
+    cancelClose();
     document.getElementById('qmes-all-menu-dropdown')?.classList.remove('is-open');
     currentButton=null;
   }
 
   function scheduleClose(){
-    clearTimeout(closeTimer);
-    closeTimer=setTimeout(closeMenu,350);
+    cancelClose();
+    closeTimer=setTimeout(closeMenu,180);
   }
 
   function clickSub(item){
     const findSub=()=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===item.sub);
     if(item.direct){
       closeMenu();
-      const direct=findTopButton(item.direct);
-      if(direct) direct.click();
+      findTopButton(item.direct)?.click();
       return;
     }
     const existing=findSub();
-    if(existing){
-      existing.click();
-      closeMenu();
-      return;
-    }
+    if(existing){existing.click();closeMenu();return;}
     const group=findTopButton(item.group);
     if(!group) return;
     group.click();
@@ -127,16 +135,16 @@
 
   function positionMenu(button,menu){
     const rect=button.getBoundingClientRect();
-    const width=Math.max(210,Math.min(280,menu.getBoundingClientRect().width||230));
+    const width=Math.max(210,Math.min(280,menu.offsetWidth||230));
     menu.style.left=Math.max(8,Math.min(window.innerWidth-width-8,rect.left))+'px';
-    menu.style.top=(rect.bottom+4)+'px';
+    menu.style.top=rect.bottom+'px';
   }
 
-  function openFor(button){
+  function renderMenu(button){
     const label=clean(button.textContent);
     const items=menuMap[label];
     if(!items?.length) return;
-    clearTimeout(closeTimer);
+    cancelClose();
     currentButton=button;
     const menu=ensureMenu();
     menu.innerHTML='';
@@ -148,31 +156,41 @@
       const row=document.createElement('button');
       row.type='button';
       row.textContent=item.label;
-      row.addEventListener('click',event=>{
-        event.stopPropagation();
-        clickSub(item);
-      });
+      row.addEventListener('click',event=>{event.stopPropagation();clickSub(item);});
       menu.appendChild(row);
     });
     menu.classList.add('is-open');
     positionMenu(button,menu);
-    requestAnimationFrame(()=>positionMenu(button,menu));
-    setTimeout(()=>positionMenu(button,menu),80);
+  }
+
+  function openFor(button){
+    cancelClose();
+    if(button===currentButton&&document.getElementById('qmes-all-menu-dropdown')?.classList.contains('is-open')) return;
+    if(hoverFrame) cancelAnimationFrame(hoverFrame);
+    hoverFrame=requestAnimationFrame(()=>{
+      hoverFrame=null;
+      renderMenu(button);
+    });
   }
 
   document.addEventListener('click',event=>{
     const button=event.target.closest('.qmes-top-menu-button');
-    if(button){
-      requestAnimationFrame(()=>openFor(button));
-      return;
-    }
+    if(button){openFor(button);return;}
     const menu=document.getElementById('qmes-all-menu-dropdown');
     if(menu&&!menu.contains(event.target)) closeMenu();
   },false);
 
-  document.addEventListener('mouseover',event=>{
+  document.addEventListener('pointerover',event=>{
     const button=event.target.closest('.qmes-top-menu-button');
-    if(button&&button!==currentButton) openFor(button);
+    if(button) openFor(button);
+  },true);
+
+  document.addEventListener('pointerout',event=>{
+    const button=event.target.closest('.qmes-top-menu-button');
+    if(!button) return;
+    const next=event.relatedTarget;
+    if(next&&((next.closest&&next.closest('.qmes-top-menu-button'))||(next.closest&&next.closest('#qmes-all-menu-dropdown')))) return;
+    scheduleClose();
   },true);
 
   window.addEventListener('resize',()=>{
