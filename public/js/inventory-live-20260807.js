@@ -246,11 +246,6 @@
     );
   }
 
-  try {
-    InventoryTab = LiveInventoryTab;
-    global.InventoryTab = LiveInventoryTab;
-    console.info("[QMES] 실시간 재고 연동 활성화");
-  } catch (error) {
-    console.error("[QMES] 실시간 재고 화면 연결 실패", error);
-  }
+  global.InventoryTab = LiveInventoryTab;
+  console.info("[QMES] 실시간 재고 연동 활성화");
 })(window);
