@@ -59,10 +59,14 @@ main:has(.qmes-dashboard-process-grid),.qmes-main:has(.qmes-dashboard-process-gr
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-violet-400,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-purple-400{background-color:#7c3aed!important;}
 
-/* SPC specification reference lines/labels only: restore blue. */
+/* SPC specification reference lines/labels only: blue. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#4b5563"]{stroke:#0b6fa4!important;stroke-width:2.4!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#6b7280"]{stroke:#38bdf8!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line text{fill:#075985!important;font-weight:700!important;}
+
+/* Keep the three production KPI titles/values unchanged and dark. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card *{color:#27313b!important;fill:#27313b!important;}
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
