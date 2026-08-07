@@ -1,6 +1,7 @@
 /* QMES inventory stage 3 loader */
 (function(){
   const files=[
+    "./js/inventory-shared-sync-20260807.js?v=20260807-1",
     "./js/inventory-live-20260807.js?v=20260807-1",
     "./js/finished-goods-inventory-20260807.js?v=20260807-1",
     "./js/inventory-lot-validation-20260807.js?v=20260807-1",
