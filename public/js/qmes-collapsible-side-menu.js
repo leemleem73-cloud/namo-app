@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V12_4__) return;
-  window.__QMES_SYNC_SIDEBAR_V12_4__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V12_5__) return;
+  window.__QMES_SYNC_SIDEBAR_V12_5__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -25,7 +25,11 @@
   document.body?.classList.remove('qmes-side-open');
 
   const style=document.createElement('style');style.id='qmes-sync-sidebar-style';style.textContent=`
+    .qmes-top-menu-bar,.qmes-top-menu{background:#fff!important}
     .qmes-top-menu{padding-left:52px!important;box-sizing:border-box!important;transition:transform .18s ease,width .18s ease!important;transform:translateX(0)!important;width:100%!important}
+    .qmes-top-menu-button,.qmes-top-menu-button span,.qmes-top-menu-button i,.qmes-top-menu-button b{color:#3f4650!important}
+    .qmes-top-menu-button svg{color:#3f4650!important;fill:currentColor!important;stroke:currentColor!important}
+    .qmes-top-menu-button svg path,.qmes-top-menu-button svg line,.qmes-top-menu-button svg polyline,.qmes-top-menu-button svg polygon,.qmes-top-menu-button svg circle{stroke:currentColor!important}
     body.qmes-side-open .qmes-top-menu{transform:translateX(220px)!important;width:calc(100% - 220px)!important}
     .qmes-top-menu .qmes-top-menu-item:first-child{flex-shrink:0!important;min-width:112px!important}.qmes-top-menu .qmes-top-menu-item:first-child .qmes-top-menu-button{min-width:112px!important;white-space:nowrap!important;overflow:visible!important}.qmes-top-menu-button span{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap!important}
     #qmes-sync-sidebar{display:block!important;position:fixed!important;left:0!important;top:var(--qmes-side-top,40px)!important;bottom:0!important;width:220px!important;box-sizing:border-box!important;padding:0 10px 12px!important;overflow-y:auto!important;background:#fff!important;border-right:1px solid #e4e8ee!important;box-shadow:3px 0 12px rgba(15,23,42,.08)!important;z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:transform .18s ease,opacity .12s ease!important}
@@ -57,14 +61,48 @@
   const searchInput=side.querySelector('.qmes-side-search-input');
   function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),dash=findTop('대시보드');if(bar){const br=bar.getBoundingClientRect();document.documentElement.style.setProperty('--qmes-side-top',Math.round(br.top)+'px');document.documentElement.style.setProperty('--qmes-side-search-height',Math.max(38,Math.round(br.height))+'px');document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(br.left+10)+'px')}if(dash){const dr=dash.getBoundingClientRect(),size=32;document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready')}}
   function settle(){setPositions();requestAnimationFrame(setPositions);setTimeout(setPositions,80);setTimeout(setPositions,220)}
-  function render(group){if(!menuMap[group])return;currentGroup=group;side.querySelector('.qmes-side-title').textContent=group;head().classList.toggle('is-group-active',groupHighlight);const wrap=side.querySelector('.qmes-side-items');wrap.replaceChildren();const q=clean(searchQuery).toLowerCase();const visible=menuMap[group].map((item,index)=>({item,index})).filter(({item})=>!q||clean(item.label).toLowerCase().includes(q));if(!visible.length){const empty=document.createElement('div');empty.className='qmes-side-empty';empty.textContent='검색 결과 없음';wrap.appendChild(empty);return}visible.forEach(({item,index})=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)})}
+  function render(group){
+    if(!menuMap[group])return;
+    currentGroup=group;
+    const wrap=side.querySelector('.qmes-side-items');
+    wrap.replaceChildren();
+    const q=clean(searchQuery).toLowerCase();
+    if(q){
+      side.querySelector('.qmes-side-title').textContent='찾기';
+      head().classList.remove('is-group-active');
+      const visible=[];
+      groups.forEach(g=>menuMap[g].forEach((item,index)=>{
+        const haystack=(clean(g)+' '+clean(item.label)).toLowerCase();
+        if(haystack.includes(q))visible.push({group:g,item,index});
+      }));
+      if(!visible.length){const empty=document.createElement('div');empty.className='qmes-side-empty';empty.textContent='검색 결과 없음';wrap.appendChild(empty);return}
+      visible.forEach(({group:g,item,index})=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label&&currentGroup===g?' is-active':'');b.dataset.group=g;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)});
+      return;
+    }
+    side.querySelector('.qmes-side-title').textContent=group;
+    head().classList.toggle('is-group-active',groupHighlight);
+    menuMap[group].forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.group=group;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)});
+  }
   function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;searchQuery='';if(searchInput)searchInput.value='';render(group);document.body.classList.add('qmes-side-open');side.style.setProperty('display','block','important');side.style.setProperty('visibility','visible','important');side.style.setProperty('opacity','1','important');side.style.setProperty('pointer-events','auto','important');side.style.setProperty('transform','translate3d(0,0,0)','important');settle()}
   function close(){setPositions();document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));setPositions()}
   function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label))}
   function selectItem(item){groupHighlight=false;activeLabel=item.label;render(currentGroup)}
   function navigate(item){if(!item)return;selectItem(item);if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0)}return}const sub=findSub(item.sub);if(sub){sub.click();return}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()))}
-  side.addEventListener('click',e=>{if(e.target.closest('.qmes-side-close')){close();return}if(e.target.closest('.qmes-side-search-icon')){searchInput?.focus();return}const b=e.target.closest('.qmes-side-item');if(b)navigate(menuMap[currentGroup]?.[Number(b.dataset.index)])});
-  searchInput?.addEventListener('input',()=>{searchQuery=searchInput.value||'';render(currentGroup)});
+  side.addEventListener('click',e=>{
+    if(e.target.closest('.qmes-side-close')){close();return}
+    if(e.target.closest('.qmes-side-search-icon')){searchInput?.focus();return}
+    const b=e.target.closest('.qmes-side-item');
+    if(!b)return;
+    const group=b.dataset.group||currentGroup;
+    const item=menuMap[group]?.[Number(b.dataset.index)];
+    if(!item)return;
+    currentGroup=group;
+    searchQuery='';
+    if(searchInput)searchInput.value='';
+    render(group);
+    navigate(item);
+  });
+  searchInput?.addEventListener('input',()=>{searchQuery=searchInput.value||'';render(currentGroup||'대시보드')});
   searchInput?.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const first=side.querySelector('.qmes-side-item');if(first)first.click()});
   hamburger.addEventListener('click',()=>{activeLabel='';open(currentGroup||'대시보드',{titleHighlight:true})});
   document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;activeLabel='';open(group,{titleHighlight:true})},true);
