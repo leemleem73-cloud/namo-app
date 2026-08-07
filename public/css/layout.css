@@ -46,131 +46,46 @@
 }
 
 /* Work order material table: align headers, inputs, values and buttons */
-.qmes-wo-material-compact {
-  table-layout: fixed;
-}
-
+.qmes-wo-material-compact { table-layout: fixed; }
 .qmes-wo-material-compact th,
-.qmes-wo-material-compact td {
-  box-sizing: border-box;
-  vertical-align: middle !important;
-}
-
-.qmes-wo-material-compact thead th {
-  height: 34px;
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
-  line-height: 1.2;
-}
-
-.qmes-wo-material-compact tbody tr:not(:last-child) {
-  height: 62px;
-}
-
-.qmes-wo-material-compact tbody td {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-}
-
+.qmes-wo-material-compact td { box-sizing: border-box; vertical-align: middle !important; }
+.qmes-wo-material-compact thead th { height: 34px; padding-top: 6px !important; padding-bottom: 6px !important; line-height: 1.2; }
+.qmes-wo-material-compact tbody tr:not(:last-child) { height: 62px; }
+.qmes-wo-material-compact tbody td { padding-top: 8px !important; padding-bottom: 8px !important; }
 .qmes-wo-material-compact input,
 .qmes-wo-material-compact select,
-.qmes-wo-material-compact button {
-  box-sizing: border-box;
-}
-
+.qmes-wo-material-compact button { box-sizing: border-box; }
 .qmes-wo-material-compact tbody td > input,
 .qmes-wo-material-compact tbody td > select,
-.qmes-wo-material-compact .qmes-qty-input {
-  height: 34px !important;
-  min-height: 34px !important;
-  margin: 0 !important;
-}
-
-.qmes-wo-material-compact .qmes-qty-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  margin: 0;
-}
-
-.qmes-wo-material-compact .qmes-qty-input {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.qmes-wo-material-compact .qmes-qty-unit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: 0 0 18px;
-  height: 34px;
-  line-height: 34px;
-  white-space: nowrap;
-}
-
+.qmes-wo-material-compact .qmes-qty-input { height: 34px !important; min-height: 34px !important; margin: 0 !important; }
+.qmes-wo-material-compact .qmes-qty-wrap { display: flex; align-items: center; gap: 6px; min-height: 34px; margin: 0; }
+.qmes-wo-material-compact .qmes-qty-input { flex: 1 1 auto; min-width: 0; }
+.qmes-wo-material-compact .qmes-qty-unit { display: inline-flex; align-items: center; justify-content: flex-start; flex: 0 0 18px; height: 34px; line-height: 34px; white-space: nowrap; }
 .qmes-wo-material-compact tbody td:nth-child(1),
 .qmes-wo-material-compact tbody td:nth-child(7),
 .qmes-wo-material-compact tbody td:nth-child(8),
-.qmes-wo-material-compact tbody td:nth-child(9) {
-  vertical-align: middle !important;
-}
-
+.qmes-wo-material-compact tbody td:nth-child(9) { vertical-align: middle !important; }
 .qmes-wo-material-compact tbody td:nth-child(2),
 .qmes-wo-material-compact tbody td:nth-child(3),
 .qmes-wo-material-compact tbody td:nth-child(4),
 .qmes-wo-material-compact tbody td:nth-child(5),
 .qmes-wo-material-compact tbody td:nth-child(6),
-.qmes-wo-material-compact tbody td:nth-child(10) {
-  vertical-align: top !important;
-}
-
+.qmes-wo-material-compact tbody td:nth-child(10) { vertical-align: top !important; }
 .qmes-wo-material-compact tbody td:nth-child(2) > select,
 .qmes-wo-material-compact tbody td:nth-child(3) > input,
 .qmes-wo-material-compact tbody td:nth-child(4) > select,
 .qmes-wo-material-compact tbody td:nth-child(5) .qmes-qty-wrap,
 .qmes-wo-material-compact tbody td:nth-child(6) .qmes-qty-wrap,
-.qmes-wo-material-compact tbody td:nth-child(10) > div {
-  margin-top: 0 !important;
-}
-
+.qmes-wo-material-compact tbody td:nth-child(10) > div { margin-top: 0 !important; }
 .qmes-wo-material-compact tbody td:nth-child(2) > span,
-.qmes-wo-material-compact tbody td:nth-child(3) > div {
-  display: flex;
-  align-items: center;
-  height: 16px;
-  min-height: 16px;
-  margin-top: 3px !important;
-  line-height: 16px;
-}
-
-.qmes-wo-material-compact tbody td:nth-child(10) > div {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.qmes-wo-material-compact tbody td:nth-child(10) input {
-  height: 34px !important;
-  min-height: 34px !important;
-}
-
-.qmes-wo-material-compact tbody td:nth-child(10) button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 34px !important;
-  min-height: 34px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  white-space: nowrap;
-}
+.qmes-wo-material-compact tbody td:nth-child(3) > div { display: flex; align-items: center; height: 16px; min-height: 16px; margin-top: 3px !important; line-height: 16px; }
+.qmes-wo-material-compact tbody td:nth-child(10) > div { display: flex; align-items: flex-start; gap: 8px; }
+.qmes-wo-material-compact tbody td:nth-child(10) input { height: 34px !important; min-height: 34px !important; }
+.qmes-wo-material-compact tbody td:nth-child(10) button { display: inline-flex; align-items: center; justify-content: center; height: 34px !important; min-height: 34px !important; padding-top: 0 !important; padding-bottom: 0 !important; white-space: nowrap; }
 
 /* Work order preview/print: judgment belongs to inspection records, not the work order */
 .qmes-wo-cert-material-table th:nth-child(8),
-.qmes-wo-cert-material-table td:nth-child(8) {
-  display: none !important;
-}
+.qmes-wo-cert-material-table td:nth-child(8) { display: none !important; }
 
 /* 2026-08-07: QMES main header — official NAMO color logo + white header */
 body > #root header {
@@ -180,11 +95,7 @@ body > #root header {
   border-color: #d7dee8 !important;
   color: #111111 !important;
 }
-
-body > #root header > div:first-child {
-  background: #ffffff !important;
-}
-
+body > #root header > div:first-child { background: #ffffff !important; }
 body > #root header > div:first-child button img[alt="NAMO Chemical"] {
   filter: none !important;
   height: 44px !important;
@@ -192,58 +103,28 @@ body > #root header > div:first-child button img[alt="NAMO Chemical"] {
   max-width: 300px !important;
   object-fit: contain !important;
 }
-
 body > #root header .qmes-header-clock,
 body > #root header .qmes-header-action,
 body > #root header .qmes-header-controls button,
 body > #root header .qmes-header-controls button div,
-body > #root header .qmes-header-controls button span {
-  color: #111111 !important;
-}
-
-body > #root header .qmes-header-controls button:hover {
-  background: #f1f5f9 !important;
-}
-
-body > #root header .qmes-header-controls > button > div:first-child {
-  background: #eef2f7 !important;
-  color: #111111 !important;
-}
-
-body > #root header .qmes-header-action {
-  border-color: #cbd5e1 !important;
-  background: #ffffff !important;
-}
-
+body > #root header .qmes-header-controls button span { color: #111111 !important; }
+body > #root header .qmes-header-controls button:hover { background: #f1f5f9 !important; }
+body > #root header .qmes-header-controls > button > div:first-child { background: #eef2f7 !important; color: #111111 !important; }
+body > #root header .qmes-header-action { border-color: #cbd5e1 !important; background: #ffffff !important; }
 body > #root header .qmes-top-menu-bar {
+  position: relative !important;
   background: #ffffff !important;
-  border-top-color: #d7dee8 !important;
+  border-top: 1px solid #d7dee8 !important;
   border-bottom-color: #d7dee8 !important;
+  box-shadow: inset 0 1px 0 #d7dee8 !important;
 }
-
-body > #root header .qmes-top-menu {
-  background: #ffffff !important;
-}
-
+body > #root header .qmes-top-menu { background: #ffffff !important; }
 body > #root header .qmes-top-menu-button,
 body > #root header .qmes-top-menu-button svg,
-body > #root header .qmes-top-menu-button .qmes-menu-arrow {
-  color: #111111 !important;
-}
-
-body > #root header .qmes-top-menu-button:hover {
-  background: #f1f5f9 !important;
-  color: #111111 !important;
-}
-
-body > #root header .qmes-top-menu-button.is-active {
-  background: #eef6ff !important;
-  color: #111111 !important;
-}
-
-body > #root header .qmes-top-menu-button.is-active svg {
-  color: #111111 !important;
-}
+body > #root header .qmes-top-menu-button .qmes-menu-arrow { color: #111111 !important; }
+body > #root header .qmes-top-menu-button:hover { background: #f1f5f9 !important; color: #111111 !important; }
+body > #root header .qmes-top-menu-button.is-active { background: #eef6ff !important; color: #111111 !important; }
+body > #root header .qmes-top-menu-button.is-active svg { color: #111111 !important; }
 
 /* Header hamburger: no colored button shell; keep only a dark icon. */
 #qmes-sync-hamburger {
@@ -253,7 +134,6 @@ body > #root header .qmes-top-menu-button.is-active svg {
   box-shadow: none !important;
   color: #1f2937 !important;
 }
-
 #qmes-sync-hamburger:hover,
 #qmes-sync-hamburger:focus-visible,
 #qmes-sync-hamburger:active {
@@ -262,10 +142,14 @@ body > #root header .qmes-top-menu-button.is-active svg {
   box-shadow: none !important;
   color: #111827 !important;
 }
-
 #qmes-sync-hamburger svg,
 #qmes-sync-hamburger span,
-#qmes-sync-hamburger i {
-  color: #1f2937 !important;
-  stroke: #1f2937 !important;
+#qmes-sync-hamburger i { color: #1f2937 !important; stroke: #1f2937 !important; }
+
+/* Continue the same header divider through the left menu-search area. */
+#qmes-sync-sidebar,
+.qmes-sync-sidebar,
+[class*="qmes-menu-search"],
+[class*="qmes-sidebar-search"] {
+  border-top: 1px solid #d7dee8 !important;
 }
