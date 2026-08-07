@@ -85,6 +85,7 @@ main:has(.qmes-dashboard-process-grid),.qmes-main:has(.qmes-dashboard-process-gr
 
 /* Empty-state text is bold and the real-time alarm body uses exactly the same neutral surface as its panel. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-empty{color:#334155!important;font-weight:800!important;opacity:1!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:first-child .qmes-dashboard-empty{color:#111827!important;font-weight:800!important;opacity:1!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:last-child > .p-4,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:last-child > .p-4 > ul,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*:last-child .qmes-dashboard-empty-success{background:#f9fbfd!important;background-color:#f9fbfd!important;border:0!important;box-shadow:none!important;outline:0!important;}
