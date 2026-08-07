@@ -45,14 +45,10 @@
     #qmes-sync-sidebar .qmes-side-close{width:28px!important;height:28px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#6b7f93!important;font-size:19px!important;cursor:pointer!important}#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-close{color:#64748b!important}
     #qmes-sync-sidebar .qmes-side-item{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;padding:9px 10px 9px 14px!important;margin:2px 0!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#475569!important;font-size:13px!important;font-weight:700!important;text-align:left!important;cursor:pointer!important}#qmes-sync-sidebar .qmes-side-item:hover{background:#f4f7fa!important;color:#172033!important}#qmes-sync-sidebar .qmes-side-item.is-active{background:#edf4ff!important;color:#175cd3!important}#qmes-sync-sidebar .qmes-side-item.is-active:before{content:''!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;background:#2563eb!important}
     #qmes-sync-sidebar .qmes-side-empty{padding:18px 12px!important;color:#94a3b8!important;font-size:12px!important;text-align:center!important}
-    #qmes-sync-hamburger{display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:var(--qmes-hamburger-left,10px)!important;top:var(--qmes-hamburger-top,0px)!important;z-index:12040!important;width:32px!important;height:32px!important;padding:0!important;border:1px solid rgba(148,163,184,.28)!important;border-radius:7px!important;background:#132238!important;color:#cbd5e1!important;box-shadow:none!important;font-size:18px!important;line-height:1!important;cursor:pointer!important;visibility:hidden!important;opacity:0!important}#qmes-sync-hamburger.is-ready{visibility:visible!important;opacity:1!important}body.qmes-side-open #qmes-sync-hamburger{display:none!important}
+    #qmes-sync-hamburger{display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:var(--qmes-hamburger-left,10px)!important;top:var(--qmes-hamburger-top,0px)!important;z-index:12040!important;width:32px!important;height:32px!important;padding:0!important;border:1px solid #d8dee7!important;border-radius:7px!important;background:#fff!important;color:#263548!important;box-shadow:none!important;font-size:18px!important;line-height:1!important;cursor:pointer!important;visibility:hidden!important;opacity:0!important}#qmes-sync-hamburger.is-ready{visibility:visible!important;opacity:1!important}body.qmes-side-open #qmes-sync-hamburger{display:none!important}
     body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:220px!important;width:calc(100% - 220px)!important;box-sizing:border-box!important;transition:margin-left .18s ease,width .18s ease!important}
     @media(max-width:900px){#qmes-sync-sidebar{width:190px!important}body.qmes-side-open .qmes-top-menu{transform:translateX(190px)!important;width:calc(100% - 190px)!important}body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important}}
-    @media print{
-      #qmes-sync-sidebar,#qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important}
-      body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:0!important;width:100%!important}
-      body.qmes-side-open .qmes-top-menu{transform:none!important;width:100%!important}
-    }
+    @media print{#qmes-sync-sidebar,#qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important}body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:0!important;width:100%!important}body.qmes-side-open .qmes-top-menu{transform:none!important;width:100%!important}}
   `;document.head.appendChild(style);
 
   const side=document.createElement('aside');side.id='qmes-sync-sidebar';side.innerHTML='<div class="qmes-side-search"><div class="qmes-side-search-box"><input class="qmes-side-search-input" type="search" placeholder="찾기" aria-label="왼쪽 메뉴 찾기"><button class="qmes-side-search-icon" type="button" aria-label="찾기">⌕</button></div></div><div class="qmes-side-head"><div class="qmes-side-title"></div><button class="qmes-side-close" type="button">×</button></div><div class="qmes-side-items"></div>';document.body.appendChild(side);
@@ -61,73 +57,15 @@
   const searchInput=side.querySelector('.qmes-side-search-input');
   function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),dash=findTop('대시보드');if(bar){const br=bar.getBoundingClientRect();document.documentElement.style.setProperty('--qmes-side-top',Math.round(br.top)+'px');document.documentElement.style.setProperty('--qmes-side-search-height',Math.max(38,Math.round(br.height))+'px');document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(br.left+10)+'px')}if(dash){const dr=dash.getBoundingClientRect(),size=32;document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready')}}
   function settle(){setPositions();requestAnimationFrame(setPositions);setTimeout(setPositions,80);setTimeout(setPositions,220)}
-  function render(group){
-    if(!menuMap[group])return;
-    currentGroup=group;
-    const wrap=side.querySelector('.qmes-side-items');
-    wrap.replaceChildren();
-    const q=clean(searchQuery).toLowerCase();
-    if(q){
-      side.querySelector('.qmes-side-title').textContent='찾기';
-      head().classList.remove('is-group-active');
-      const visible=[];
-      groups.forEach(g=>menuMap[g].forEach((item,index)=>{
-        const haystack=(clean(g)+' '+clean(item.label)).toLowerCase();
-        if(haystack.includes(q))visible.push({group:g,item,index});
-      }));
-      if(!visible.length){const empty=document.createElement('div');empty.className='qmes-side-empty';empty.textContent='검색 결과 없음';wrap.appendChild(empty);return}
-      visible.forEach(({group:g,item,index})=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label&&currentGroup===g?' is-active':'');b.dataset.group=g;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)});
-      return;
-    }
-    side.querySelector('.qmes-side-title').textContent=group;
-    head().classList.toggle('is-group-active',groupHighlight);
-    menuMap[group].forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.group=group;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)});
-  }
+  function render(group){if(!menuMap[group])return;currentGroup=group;const wrap=side.querySelector('.qmes-side-items');wrap.replaceChildren();const q=clean(searchQuery).toLowerCase();if(q){side.querySelector('.qmes-side-title').textContent='찾기';head().classList.remove('is-group-active');const visible=[];groups.forEach(g=>menuMap[g].forEach((item,index)=>{const haystack=(clean(g)+' '+clean(item.label)).toLowerCase();if(haystack.includes(q))visible.push({group:g,item,index})}));if(!visible.length){const empty=document.createElement('div');empty.className='qmes-side-empty';empty.textContent='검색 결과 없음';wrap.appendChild(empty);return}visible.forEach(({group:g,item,index})=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label&&currentGroup===g?' is-active':'');b.dataset.group=g;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)});return}side.querySelector('.qmes-side-title').textContent=group;head().classList.toggle('is-group-active',groupHighlight);menuMap[group].forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.group=group;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)})}
   function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;searchQuery='';if(searchInput)searchInput.value='';render(group);document.body.classList.add('qmes-side-open');side.style.setProperty('display','block','important');side.style.setProperty('visibility','visible','important');side.style.setProperty('opacity','1','important');side.style.setProperty('pointer-events','auto','important');side.style.setProperty('transform','translate3d(0,0,0)','important');settle()}
   function close(){setPositions();document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));setPositions()}
   function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label))}
   function selectItem(item){groupHighlight=false;activeLabel=item.label;render(currentGroup)}
   function navigate(item){if(!item)return;selectItem(item);if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0)}return}const sub=findSub(item.sub);if(sub){sub.click();return}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()))}
-  side.addEventListener('click',e=>{
-    if(e.target.closest('.qmes-side-close')){close();return}
-    if(e.target.closest('.qmes-side-search-icon')){searchInput?.focus();return}
-    const b=e.target.closest('.qmes-side-item');
-    if(!b)return;
-    const group=b.dataset.group||currentGroup;
-    const item=menuMap[group]?.[Number(b.dataset.index)];
-    if(!item)return;
-    currentGroup=group;
-    searchQuery='';
-    if(searchInput)searchInput.value='';
-    render(group);
-    navigate(item);
-  });
-  searchInput?.addEventListener('input',()=>{searchQuery=searchInput.value||'';render(currentGroup||'대시보드')});
-  searchInput?.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const first=side.querySelector('.qmes-side-item');if(first)first.click()});
-  hamburger.addEventListener('click',()=>{activeLabel='';open(currentGroup||'대시보드',{titleHighlight:true})});
-  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;activeLabel='';open(group,{titleHighlight:true})},true);
-
-  function syncDropdownSelection(label){
-    const normalized=clean(label);
-    const group=groups.find(g=>menuMap[g].some(item=>clean(item.label)===normalized));
-    if(!group)return;
-    currentGroup=group;
-    groupHighlight=false;
-    activeLabel=menuMap[group].find(item=>clean(item.label)===normalized)?.label||normalized;
-    searchQuery='';if(searchInput)searchInput.value='';
-    render(group);
-  }
-  document.addEventListener('click',e=>{
-    const b=e.target.closest('#qmes-all-menu-dropdown button');
-    if(!b)return;
-    const label=clean(b.textContent);
-    syncDropdownSelection(label);
-    requestAnimationFrame(()=>syncDropdownSelection(label));
-    setTimeout(()=>syncDropdownSelection(label),0);
-    setTimeout(()=>syncDropdownSelection(label),60);
-    setTimeout(()=>syncDropdownSelection(label),160);
-  },true);
-
-  document.addEventListener('click',e=>{const logo=e.target.closest('header button');if(!logo||!logo.querySelector('img[alt="NAMO Chemical"]'))return;currentGroup='대시보드';activeLabel='';groupHighlight=false;close()},true);
-  const boot=()=>{setPositions();if(!hamburger.classList.contains('is-ready'))requestAnimationFrame(boot)};window.addEventListener('resize',settle);window.addEventListener('load',settle);document.fonts?.ready?.then(settle).catch(()=>{});requestAnimationFrame(boot);
+  side.addEventListener('click',e=>{if(e.target.closest('.qmes-side-close')){close();return}if(e.target.closest('.qmes-side-search-icon')){searchInput?.focus();return}const b=e.target.closest('.qmes-side-item');if(!b)return;const group=b.dataset.group||currentGroup;const item=menuMap[group]?.[Number(b.dataset.index)];if(!item)return;currentGroup=group;searchQuery='';if(searchInput)searchInput.value='';navigate(item)});
+  searchInput?.addEventListener('input',()=>{searchQuery=searchInput.value;render(currentGroup||groups[0])});
+  hamburger.addEventListener('click',()=>{const group=currentGroup||groups[0];open(group,{titleHighlight:groupHighlight})});
+  document.addEventListener('click',e=>{const top=e.target.closest('.qmes-top-menu-button');if(!top||internal)return;const label=topLabel(top);if(menuMap[label]){activeLabel='';open(label,{titleHighlight:true})}},true);
+  window.addEventListener('resize',settle);settle();
 })();
