@@ -52,16 +52,21 @@ main:has(.qmes-dashboard-process-grid),
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card {
   background: #f1f3f5 !important;
   background-color: #f1f3f5 !important;
-  border-color: #c7cdd4 !important;
+  border: 1px solid #c7cdd4 !important;
+  border-left: 1px solid #c7cdd4 !important;
   color: #27313b !important;
   text-align: center !important;
   min-height: 0 !important;
   padding-top: 10px !important;
   padding-bottom: 10px !important;
+  box-shadow: 0 3px 10px rgba(15,23,42,.14) !important;
 }
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card::before,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card::after {
+  content: none !important;
+  display: none !important;
   background: transparent !important;
+  box-shadow: none !important;
 }
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-copy {
   width: 100% !important;
