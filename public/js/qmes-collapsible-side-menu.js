@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V12_1__) return;
-  window.__QMES_SYNC_SIDEBAR_V12_1__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V12_2__) return;
+  window.__QMES_SYNC_SIDEBAR_V12_2__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -38,6 +38,11 @@
     #qmes-sync-hamburger{display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:var(--qmes-hamburger-left,10px)!important;top:var(--qmes-hamburger-top,0px)!important;z-index:12040!important;width:32px!important;height:32px!important;padding:0!important;border:1px solid rgba(148,163,184,.28)!important;border-radius:7px!important;background:#132238!important;color:#cbd5e1!important;box-shadow:none!important;font-size:18px!important;line-height:1!important;cursor:pointer!important;visibility:hidden!important;opacity:0!important}#qmes-sync-hamburger.is-ready{visibility:visible!important;opacity:1!important}body.qmes-side-open #qmes-sync-hamburger{display:none!important}
     body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:220px!important;width:calc(100% - 220px)!important;box-sizing:border-box!important;transition:margin-left .18s ease,width .18s ease!important}
     @media(max-width:900px){#qmes-sync-sidebar{width:190px!important}body.qmes-side-open .qmes-top-menu{transform:translateX(190px)!important;width:calc(100% - 190px)!important}body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important}}
+    @media print{
+      #qmes-sync-sidebar,#qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important}
+      body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:0!important;width:100%!important}
+      body.qmes-side-open .qmes-top-menu{transform:none!important;width:100%!important}
+    }
   `;document.head.appendChild(style);
 
   const side=document.createElement('aside');side.id='qmes-sync-sidebar';side.innerHTML='<div class="qmes-side-head"><div class="qmes-side-title"></div><button class="qmes-side-close" type="button">×</button></div><div class="qmes-side-items"></div>';document.body.appendChild(side);
