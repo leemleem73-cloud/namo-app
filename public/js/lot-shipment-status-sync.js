@@ -22,7 +22,7 @@
   load('script[data-qmes-lot-detail-alignment-20260805]',"./js/lot-detail-alignment-20260805.js?v=20260806-31","qmesLotDetailAlignment20260805");
   load('script[data-qmes-iqc-persistence-pagination-fix]',"./js/iqc-persistence-pagination-fix-20260806.js?v=20260806-6","qmesIqcPersistencePaginationFix");
   load('script[data-qmes-left-native-menu]',"./js/qmes-collapsible-side-menu.js?v=20260807-24","qmesLeftNativeMenu");
-  load('script[data-qmes-print-sidebar-guard]',"./js/qmes-print-sidebar-guard.js?v=20260807-4","qmesPrintSidebarGuard");
+  load('script[data-qmes-print-sidebar-guard]',"./js/qmes-print-sidebar-guard.js?v=20260807-5","qmesPrintSidebarGuard");
   load('script[data-qmes-ncr-separate-action-buttons]',"./js/ncr-separate-action-buttons.js?v=20260806-2","qmesNcrSeparateActionButtons");
   load('script[data-qmes-table-equipment-spacing-20260805]',"./js/table-and-equipment-spacing-20260805.js?v=20260805-10","qmesTableEquipmentSpacing20260805");
   load('script[data-qmes-equipment-layout-refinement-20260805]',"./js/equipment-layout-refinement-20260805.js?v=20260805-4","qmesEquipmentLayoutRefinement20260805");
