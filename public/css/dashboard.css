@@ -2,36 +2,27 @@
    Dashboard and KPI extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
 
-/* Dashboard KPI layout: explicit grid because responsive utility variants
-   are not guaranteed to exist in the extracted production CSS. */
 .qmes-dashboard-kpi-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.qmes-dashboard-kpi-grid > * {
-  min-width: 0;
-}
+.qmes-dashboard-kpi-grid > * { min-width: 0; }
 
 @media (max-width: 1023px) {
-  .qmes-dashboard-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .qmes-dashboard-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 639px) {
-  .qmes-dashboard-kpi-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  .qmes-dashboard-kpi-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* 2026-08-07: soft light dashboard theme.
-   Use a very light blue-gray canvas so white cards remain clearly separated. */
+/* 2026-08-07: soft light dashboard with clearer card separation. */
 main:has(.qmes-dashboard-process-grid),
 .qmes-main:has(.qmes-dashboard-process-grid),
 .qmes-content:has(.qmes-dashboard-process-grid) {
-  background: #f3f6f9 !important;
+  background: #edf2f6 !important;
   color: #1f2937 !important;
 }
 
@@ -40,55 +31,61 @@ main:has(.qmes-dashboard-process-grid),
   background-color: transparent !important;
 }
 
-/* Process strip cards */
+/* Process cards */
 .qmes-dashboard-process-grid .qmes-process-card {
   background: #ffffff !important;
-  border-color: #d7e0e9 !important;
-  box-shadow: 0 1px 4px rgba(15,23,42,.08) !important;
+  border-color: #c7d2dd !important;
+  box-shadow: 0 2px 6px rgba(15,23,42,.10) !important;
 }
 .qmes-dashboard-process-grid .qmes-process-no,
-.qmes-dashboard-process-grid .qmes-process-key {
-  color: #64748b !important;
-}
-.qmes-dashboard-process-grid .qmes-process-name {
-  color: #1f2937 !important;
-}
-.qmes-dashboard-process-grid .qmes-process-card svg {
-  color: #64748b !important;
-}
+.qmes-dashboard-process-grid .qmes-process-key { color: #64748b !important; }
+.qmes-dashboard-process-grid .qmes-process-name { color: #1f2937 !important; }
+.qmes-dashboard-process-grid .qmes-process-card svg { color: #64748b !important; }
 
-/* KPI cards and dashboard panels stay white against the soft canvas. */
+/* KPI cards and panels */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > *,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-900,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-800 {
   background-color: #ffffff !important;
-  border-color: #d7e0e9 !important;
-  box-shadow: 0 1px 4px rgba(15,23,42,.08) !important;
+  border-color: #c7d2dd !important;
+  box-shadow: 0 2px 6px rgba(15,23,42,.10) !important;
 }
 
-/* Neutral dashboard typography only. Accent/status utility colors remain untouched. */
+/* Neutral typography */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-100,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-200 {
-  color: #1f2937 !important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-300 {
-  color: #334155 !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-200 { color: #1f2937 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-300 { color: #334155 !important; }
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-400,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-500 {
-  color: #64748b !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-500 { color: #64748b !important; }
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-800,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-700,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-600 {
-  border-color: #d7e0e9 !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-600 { border-color: #c7d2dd !important; }
+
+/* Muted dashboard accents for light background: same meaning, less neon. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-sky-400 { color: #0369a1 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-cyan-400 { color: #0e7490 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-emerald-400 { color: #047857 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-green-400 { color: #15803d !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-amber-400 { color: #b45309 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-orange-400 { color: #c2410c !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-red-400 { color: #b91c1c !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-violet-400,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-purple-400 { color: #6d28d9 !important; }
+
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-sky-400 { background-color: #0284c7 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-cyan-400 { background-color: #0891b2 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-emerald-400,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-green-400 { background-color: #059669 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-amber-400 { background-color: #d97706 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-red-400 { background-color: #dc2626 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-violet-400,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-purple-400 { background-color: #7c3aed !important; }
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) textarea {
   background-color: #ffffff !important;
   color: #1f2937 !important;
-  border-color: #cbd5e1 !important;
+  border-color: #bfcbd7 !important;
 }
