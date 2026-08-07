@@ -171,3 +171,77 @@
 .qmes-wo-cert-material-table td:nth-child(8) {
   display: none !important;
 }
+
+/* 2026-08-07: QMES main header — official NAMO color logo + white header */
+body > #root header {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #d7dee8 !important;
+  color: #111111 !important;
+}
+
+body > #root header > div:first-child {
+  background: #ffffff !important;
+}
+
+/* The current header already loads NAMO's official logo; remove the dark-header white filter. */
+body > #root header > div:first-child button img[alt="NAMO Chemical"] {
+  filter: none !important;
+  height: 44px !important;
+  width: auto !important;
+  max-width: 300px !important;
+  object-fit: contain !important;
+}
+
+body > #root header .qmes-header-clock,
+body > #root header .qmes-header-action,
+body > #root header .qmes-header-controls button,
+body > #root header .qmes-header-controls button div,
+body > #root header .qmes-header-controls button span {
+  color: #111111 !important;
+}
+
+body > #root header .qmes-header-controls button:hover {
+  background: #f1f5f9 !important;
+}
+
+body > #root header .qmes-header-controls > button > div:first-child {
+  background: #eef2f7 !important;
+  color: #111111 !important;
+}
+
+body > #root header .qmes-header-action {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+body > #root header .qmes-top-menu-bar {
+  background: #ffffff !important;
+  border-top-color: #d7dee8 !important;
+  border-bottom-color: #d7dee8 !important;
+}
+
+body > #root header .qmes-top-menu {
+  background: #ffffff !important;
+}
+
+body > #root header .qmes-top-menu-button,
+body > #root header .qmes-top-menu-button svg,
+body > #root header .qmes-top-menu-button .qmes-menu-arrow {
+  color: #111111 !important;
+}
+
+body > #root header .qmes-top-menu-button:hover {
+  background: #f1f5f9 !important;
+  color: #111111 !important;
+}
+
+body > #root header .qmes-top-menu-button.is-active {
+  background: #eef6ff !important;
+  color: #111111 !important;
+}
+
+body > #root header .qmes-top-menu-button.is-active svg {
+  color: #111111 !important;
+}
