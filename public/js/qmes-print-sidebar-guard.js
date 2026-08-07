@@ -1,16 +1,21 @@
 (function(){
   "use strict";
-  if(window.__QMES_PRINT_SIDEBAR_GUARD_V2__) return;
-  window.__QMES_PRINT_SIDEBAR_GUARD_V2__=true;
+  if(window.__QMES_PRINT_SIDEBAR_GUARD_V3__) return;
+  window.__QMES_PRINT_SIDEBAR_GUARD_V3__=true;
 
   const style=document.createElement('style');
   style.id='qmes-print-sidebar-guard-style';
   style.textContent=`
     body.qmes-printing #qmes-sync-sidebar,
     body.qmes-printing #qmes-sync-hamburger,
-    body.qmes-printing .qmes-top-menu,
-    body.qmes-printing .qmes-top-menu-bar,
-    body.qmes-printing #qmes-all-menu-dropdown{
+    body.print-doc #qmes-sync-sidebar,
+    body.print-doc #qmes-sync-hamburger,
+    body.print-label #qmes-sync-sidebar,
+    body.print-label #qmes-sync-hamburger,
+    body.qmes-screen-exact-print #qmes-sync-sidebar,
+    body.qmes-screen-exact-print #qmes-sync-hamburger,
+    #qmes-print-root #qmes-sync-sidebar,
+    #qmes-print-root #qmes-sync-hamburger{
       display:none!important;
       visibility:hidden!important;
       opacity:0!important;
@@ -19,7 +24,19 @@
     body.qmes-printing main,
     body.qmes-printing #root>div>main,
     body.qmes-printing .qmes-main,
-    body.qmes-printing .qmes-content{
+    body.qmes-printing .qmes-content,
+    body.print-doc main,
+    body.print-doc #root>div>main,
+    body.print-doc .qmes-main,
+    body.print-doc .qmes-content,
+    body.print-label main,
+    body.print-label #root>div>main,
+    body.print-label .qmes-main,
+    body.print-label .qmes-content,
+    body.qmes-screen-exact-print main,
+    body.qmes-screen-exact-print #root>div>main,
+    body.qmes-screen-exact-print .qmes-main,
+    body.qmes-screen-exact-print .qmes-content{
       margin-left:0!important;
       width:100%!important;
       max-width:none!important;
@@ -27,10 +44,7 @@
     }
     @media print{
       #qmes-sync-sidebar,
-      #qmes-sync-hamburger,
-      .qmes-top-menu,
-      .qmes-top-menu-bar,
-      #qmes-all-menu-dropdown{
+      #qmes-sync-hamburger{
         display:none!important;
         visibility:hidden!important;
         opacity:0!important;
@@ -55,7 +69,18 @@
 
   let printClickActive=false;
   const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
-  const startPrint=()=>document.body?.classList.add('qmes-printing');
+  const printRoot=()=>document.getElementById('qmes-print-root');
+
+  function scrubPrintRoot(){
+    const root=printRoot();
+    if(!root) return;
+    root.querySelectorAll('#qmes-sync-sidebar,#qmes-sync-hamburger').forEach(node=>node.remove());
+  }
+
+  const startPrint=()=>{
+    document.body?.classList.add('qmes-printing');
+    scrubPrintRoot();
+  };
   const endPrint=()=>{
     printClickActive=false;
     document.body?.classList.remove('qmes-printing');
@@ -74,6 +99,17 @@
     else if(media.addListener) media.addListener(onChange);
   }
 
+  const observer=new MutationObserver(()=>{
+    scrubPrintRoot();
+    if(document.body?.classList.contains('print-doc')||document.body?.classList.contains('print-label')||document.body?.classList.contains('qmes-screen-exact-print')){
+      const side=document.getElementById('qmes-sync-sidebar');
+      const hamburger=document.getElementById('qmes-sync-hamburger');
+      if(side) side.style.setProperty('display','none','important');
+      if(hamburger) hamburger.style.setProperty('display','none','important');
+    }
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+
   document.addEventListener('click',event=>{
     const target=event.target.closest('button,a,[role="button"]');
     if(!target)return;
@@ -81,8 +117,10 @@
     if(/^(인쇄|출력|인쇄하기|출력하기)$/.test(text)||/(^|\s)(인쇄|출력)(\s|$)/.test(text)){
       printClickActive=true;
       startPrint();
-      requestAnimationFrame(startPrint);
-      setTimeout(startPrint,0);
+      requestAnimationFrame(()=>{startPrint();scrubPrintRoot();});
+      setTimeout(()=>{startPrint();scrubPrintRoot();},0);
+      setTimeout(scrubPrintRoot,80);
+      setTimeout(scrubPrintRoot,220);
       return;
     }
     if(printClickActive&&/^(닫기|취소|돌아가기)$/.test(text)) endPrint();
