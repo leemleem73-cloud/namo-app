@@ -1,1 +1,1 @@
-PLACEHOLDER
+/* QMES module: dashboard — extracted from index.html without logic changes. */
