@@ -49,6 +49,32 @@ main:has(.qmes-dashboard-process-grid),
   box-shadow: 0 2px 6px rgba(15,23,42,.11) !important;
 }
 
+/* Six dashboard detail panels: subtle pastel separation without washing out charts. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > :nth-child(1) {
+  background-color: #f0f7fb !important;
+  border-color: #b8cfde !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > :nth-child(2) {
+  background-color: #f2f8f8 !important;
+  border-color: #bad3d4 !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > :nth-child(3) {
+  background-color: #f5f2fa !important;
+  border-color: #cbc2dc !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > :nth-child(1) {
+  background-color: #f2f6fb !important;
+  border-color: #bdcde0 !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > :nth-child(2) {
+  background-color: #fbf3f1 !important;
+  border-color: #dfc4bd !important;
+}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > :nth-child(3) {
+  background-color: #fbf7ef !important;
+  border-color: #ded0b7 !important;
+}
+
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-100,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-200 { color: #1f2937 !important; }
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-300 { color: #334155 !important; }
