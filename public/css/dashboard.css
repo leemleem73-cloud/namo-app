@@ -26,16 +26,15 @@
   }
 }
 
-/* 2026-08-07: dashboard-only light theme.
-   Keep status/accent colors intact while moving the shell, cards and neutral text to white/dark tones. */
+/* 2026-08-07: soft light dashboard theme.
+   Use a very light blue-gray canvas so white cards remain clearly separated. */
 main:has(.qmes-dashboard-process-grid),
 .qmes-main:has(.qmes-dashboard-process-grid),
 .qmes-content:has(.qmes-dashboard-process-grid) {
-  background: #ffffff !important;
+  background: #f3f6f9 !important;
   color: #1f2937 !important;
 }
 
-/* Dashboard root area */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) > div,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) > section {
   background-color: transparent !important;
@@ -44,8 +43,8 @@ main:has(.qmes-dashboard-process-grid),
 /* Process strip cards */
 .qmes-dashboard-process-grid .qmes-process-card {
   background: #ffffff !important;
-  border-color: #dbe3ec !important;
-  box-shadow: 0 1px 3px rgba(15,23,42,.07) !important;
+  border-color: #d7e0e9 !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,.08) !important;
 }
 .qmes-dashboard-process-grid .qmes-process-no,
 .qmes-dashboard-process-grid .qmes-process-key {
@@ -57,15 +56,14 @@ main:has(.qmes-dashboard-process-grid),
 .qmes-dashboard-process-grid .qmes-process-card svg {
   color: #64748b !important;
 }
-/* Do not override .qmes-process-status-label / status dots: their state colors are meaningful. */
 
-/* KPI cards and dashboard panels */
+/* KPI cards and dashboard panels stay white against the soft canvas. */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > *,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-900,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-800 {
   background-color: #ffffff !important;
-  border-color: #dbe3ec !important;
-  box-shadow: 0 1px 3px rgba(15,23,42,.07) !important;
+  border-color: #d7e0e9 !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,.08) !important;
 }
 
 /* Neutral dashboard typography only. Accent/status utility colors remain untouched. */
@@ -76,21 +74,17 @@ main:has(.qmes-dashboard-process-grid),
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-300 {
   color: #334155 !important;
 }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-400 {
-  color: #64748b !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-400,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-500 {
   color: #64748b !important;
 }
 
-/* Neutral borders/dividers inside dashboard */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-800,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-700,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-600 {
-  border-color: #dbe3ec !important;
+  border-color: #d7e0e9 !important;
 }
 
-/* Form controls or table surfaces that appear on dashboard */
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) textarea {
