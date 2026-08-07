@@ -2,153 +2,68 @@
    Dashboard and KPI extension point.
    Current production rules remain in common.css to preserve the exact original cascade. */
 
-.qmes-dashboard-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-}
+.qmes-dashboard-kpi-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
+.qmes-dashboard-kpi-grid > * { min-width:0; }
+@media (max-width:1023px){.qmes-dashboard-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media (max-width:639px){.qmes-dashboard-kpi-grid{grid-template-columns:minmax(0,1fr);}}
 
-.qmes-dashboard-kpi-grid > * { min-width: 0; }
+main:has(.qmes-dashboard-process-grid),.qmes-main:has(.qmes-dashboard-process-grid),.qmes-content:has(.qmes-dashboard-process-grid){background:#e5ebf1!important;color:#1f2937!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid)>div,:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid)>section{background-color:transparent!important;}
+.qmes-dashboard-process-grid .qmes-process-card{background:#fff!important;border-color:#bcc8d4!important;box-shadow:0 2px 6px rgba(15,23,42,.11)!important;}
+.qmes-dashboard-process-grid .qmes-process-no,.qmes-dashboard-process-grid .qmes-process-key{color:#64748b!important;}
+.qmes-dashboard-process-grid .qmes-process-name{color:#1f2937!important;}
+.qmes-dashboard-process-grid .qmes-process-card svg{color:#64748b!important;}
 
-@media (max-width: 1023px) {
-  .qmes-dashboard-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (max-width: 639px) {
-  .qmes-dashboard-kpi-grid { grid-template-columns: minmax(0, 1fr); }
-}
-
-main:has(.qmes-dashboard-process-grid),
-.qmes-main:has(.qmes-dashboard-process-grid),
-.qmes-content:has(.qmes-dashboard-process-grid) {
-  background: #e5ebf1 !important;
-  color: #1f2937 !important;
-}
-
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) > div,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) > section {
-  background-color: transparent !important;
-}
-
-.qmes-dashboard-process-grid .qmes-process-card {
-  background: #ffffff !important;
-  border-color: #bcc8d4 !important;
-  box-shadow: 0 2px 6px rgba(15,23,42,.11) !important;
-}
-.qmes-dashboard-process-grid .qmes-process-no,
-.qmes-dashboard-process-grid .qmes-process-key { color: #64748b !important; }
-.qmes-dashboard-process-grid .qmes-process-name { color: #1f2937 !important; }
-.qmes-dashboard-process-grid .qmes-process-card svg { color: #64748b !important; }
-
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > *,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>*,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-900,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-800 {
-  background-color: #ffffff !important;
-  border-color: #bcc8d4 !important;
-  box-shadow: 0 2px 6px rgba(15,23,42,.11) !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-slate-800{background-color:#fff!important;border-color:#bcc8d4!important;box-shadow:0 2px 6px rgba(15,23,42,.11)!important;}
 
-/* Production KPI row: compact light-gray cards with dark centered text. */
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card {
-  background: #f1f3f5 !important;
-  background-color: #f1f3f5 !important;
-  border: 1px solid #c7cdd4 !important;
-  border-left: 1px solid #c7cdd4 !important;
-  color: #27313b !important;
-  text-align: center !important;
-  min-height: 0 !important;
-  padding-top: 10px !important;
-  padding-bottom: 10px !important;
-  box-shadow: 0 3px 10px rgba(15,23,42,.14) !important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card::before,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card::after {
-  content: none !important;
-  display: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-copy {
-  width: 100% !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  gap: 2px !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card{background:#f1f3f5!important;background-color:#f1f3f5!important;border:1px solid #c7cdd4!important;border-left:1px solid #c7cdd4!important;color:#27313b!important;text-align:center!important;min-height:0!important;padding-top:10px!important;padding-bottom:10px!important;box-shadow:0 3px 10px rgba(15,23,42,.14)!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card::before,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card::after{content:none!important;display:none!important;background:transparent!important;box-shadow:none!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-copy{width:100%!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:2px!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-label-row,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-value-row {
-  width: 100% !important;
-  justify-content: center !important;
-  text-align: center !important;
-  margin-top: 1px !important;
-  margin-bottom: 1px !important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid > .qmes-text-kpi-card * {
-  color: #27313b !important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-caption {
-  width: 100% !important;
-  text-align: center !important;
-  margin-top: 2px !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-hybrid-value-row{width:100%!important;justify-content:center!important;text-align:center!important;margin-top:1px!important;margin-bottom:1px!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid>.qmes-text-kpi-card *{color:#27313b!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid .qmes-text-kpi-caption{width:100%!important;text-align:center!important;margin-top:2px!important;}
 
-/* Six dashboard detail panels: unified blue-gray header, slightly brighter content body. */
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > *,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > * {
-  background-color: #f2f6fb !important;
-  border-color: #bdcde0 !important;
-}
-
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid > * > .p-4,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid + .grid + .grid > * > .p-4 {
-  background-color: #f9fbfd !important;
-  border-radius: 0 0 0.5rem 0.5rem !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>*,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*{background-color:#f2f6fb!important;border-color:#bdcde0!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid>*>.p-4,
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .qmes-dashboard-kpi-grid+.grid+.grid>*>.p-4{background-color:#f9fbfd!important;border-radius:0 0 .5rem .5rem!important;}
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-100,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-200 { color: #1f2937 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-300 { color: #334155 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-200{color:#1f2937!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-300{color:#334155!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-400,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-500 { color: #64748b !important; }
-
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-slate-500{color:#64748b!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-800,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-700,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-600 { border-color: #bcc8d4 !important; }
-
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-sky-400 { color: #0369a1 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-cyan-400 { color: #0e7490 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-emerald-400 { color: #047857 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-green-400 { color: #15803d !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-amber-400 { color: #b45309 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-orange-400 { color: #c2410c !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-red-400 { color: #b91c1c !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .border-slate-600{border-color:#bcc8d4!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-sky-400{color:#0369a1!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-cyan-400{color:#0e7490!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-emerald-400{color:#047857!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-green-400{color:#15803d!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-amber-400{color:#b45309!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-orange-400{color:#c2410c!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-red-400{color:#b91c1c!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-violet-400,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-purple-400 { color: #6d28d9 !important; }
-
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-sky-400 { background-color: #0284c7 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-cyan-400 { background-color: #0891b2 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .text-purple-400{color:#6d28d9!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-sky-400{background-color:#0284c7!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-cyan-400{background-color:#0891b2!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-emerald-400,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-green-400 { background-color: #059669 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-amber-400 { background-color: #d97706 !important; }
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-red-400 { background-color: #dc2626 !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-green-400{background-color:#059669!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-amber-400{background-color:#d97706!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-red-400{background-color:#dc2626!important;}
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-violet-400,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-purple-400 { background-color: #7c3aed !important; }
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .bg-purple-400{background-color:#7c3aed!important;}
 
-/* Darker USL/LSL specification boundaries on dashboard charts. */
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#38bdf8"] {
-  stroke: #0b6fa4 !important;
-  stroke-width: 2.4 !important;
-}
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) svg text[fill="#7dd3fc"] {
-  fill: #075985 !important;
-  font-weight: 700 !important;
-}
+/* SPC specification reference lines/labels only: restore blue. */
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#4b5563"]{stroke:#0b6fa4!important;stroke-width:2.4!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line-line[stroke="#6b7280"]{stroke:#38bdf8!important;}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) .recharts-reference-line text{fill:#075985!important;font-weight:700!important;}
 
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) input,
 :where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) select,
-:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) textarea {
-  background-color: #ffffff !important;
-  color: #1f2937 !important;
-  border-color: #b8c5d1 !important;
-}
+:where(main,.qmes-main,.qmes-content):has(.qmes-dashboard-process-grid) textarea{background-color:#fff!important;color:#1f2937!important;border-color:#b8c5d1!important;}
