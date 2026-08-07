@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V3__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V3__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V4__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V4__=true;
 
   const PREVIEW_SELECTOR=[
     '.qmes-modal-backdrop .qmes-coa-viewer',
@@ -14,18 +14,15 @@
   const style=document.createElement('style');
   style.id='qmes-scroll-layer-guard-style';
   style.textContent=`
-    /* Normal page content/sticky rows stay below the application shell. */
     header{z-index:40!important;isolation:isolate!important;}
     .qmes-top-menu-bar{z-index:41!important;isolation:isolate!important;}
     .qmes-top-menu{z-index:42!important;isolation:isolate!important;}
 
-    /* Menus sit above the shell. */
     #qmes-all-menu-dropdown{z-index:120!important;}
     #qmes-user-dropdown{z-index:130!important;}
     #qmes-sync-hamburger{z-index:140!important;}
     #qmes-sync-sidebar{z-index:150!important;}
 
-    /* Preview / print / modal layers must always remain above the shell. */
     [role="dialog"],dialog,
     .fixed.inset-0,
     [class*="modal"],
@@ -33,7 +30,6 @@
     [class*="print-preview"],
     .qmes-modal-backdrop{z-index:500!important;}
 
-    /* The active preview owns the viewport. Background page must never scroll through it. */
     html.qmes-preview-scroll-lock,
     body.qmes-preview-scroll-lock{
       overflow:hidden!important;
@@ -48,9 +44,12 @@
     .qmes-modal-backdrop{
       position:fixed!important;
       inset:0!important;
+      width:100vw!important;
+      height:100dvh!important;
       overflow:auto!important;
       overscroll-behavior:contain!important;
       isolation:isolate!important;
+      background:#07111f!important;
       background-clip:padding-box!important;
     }
 
@@ -65,7 +64,6 @@
       z-index:1!important;
     }
 
-    /* If a preview has its own toolbar, keep the action buttons visible while scrolling. */
     [role="dialog"] [class*="toolbar"],
     [class*="preview"] [class*="toolbar"],
     [class*="print-preview"] [class*="toolbar"],
@@ -75,9 +73,27 @@
       z-index:3;
     }
 
+    /* While the browser builds print preview, only the dedicated print root is allowed to exist. */
     @media print{
-      html.qmes-preview-scroll-lock,
-      body.qmes-preview-scroll-lock{overflow:visible!important;height:auto!important;}
+      html,body{
+        overflow:visible!important;
+        height:auto!important;
+        background:#fff!important;
+      }
+      body > #root{
+        display:none!important;
+        visibility:hidden!important;
+      }
+      body > #qmes-print-root{
+        display:block!important;
+        visibility:visible!important;
+        position:static!important;
+        inset:auto!important;
+        width:auto!important;
+        height:auto!important;
+        overflow:visible!important;
+        background:#fff!important;
+      }
       header,.qmes-top-menu-bar,.qmes-top-menu{isolation:auto!important;}
     }
   `;
@@ -122,9 +138,16 @@
   else startObserver();
   window.addEventListener('load',queueSync);
   document.addEventListener('qmes:data-updated',queueSync);
+
   window.addEventListener('beforeprint',()=>{
     document.documentElement.classList.remove('qmes-preview-scroll-lock');
     document.body?.classList.remove('qmes-preview-scroll-lock');
+    document.documentElement.classList.add('qmes-printing-now');
+    document.body?.classList.add('qmes-printing-now');
   });
-  window.addEventListener('afterprint',queueSync);
+  window.addEventListener('afterprint',()=>{
+    document.documentElement.classList.remove('qmes-printing-now');
+    document.body?.classList.remove('qmes-printing-now');
+    queueSync();
+  });
 })();
