@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V7__) return;
-  window.__QMES_SYNC_SIDEBAR_V7__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V8__) return;
+  window.__QMES_SYNC_SIDEBAR_V8__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -36,9 +36,9 @@
     #qmes-all-menu-dropdown{display:block!important}
     #qmes-all-menu-dropdown:not(.is-open){opacity:0!important;visibility:hidden!important;pointer-events:none!important}
     #qmes-all-menu-dropdown.is-open{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
-    #qmes-sync-sidebar{display:block!important;position:fixed!important;left:0!important;top:var(--qmes-side-top,72px)!important;bottom:0!important;width:220px!important;box-sizing:border-box!important;padding:12px 10px!important;overflow-y:auto!important;background:#fff!important;border-right:1px solid #e4e8ee!important;box-shadow:3px 0 12px rgba(15,23,42,.08)!important;z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:transform .18s ease,opacity .12s ease!important}
+    #qmes-sync-sidebar{display:block!important;position:fixed!important;left:0!important;top:var(--qmes-side-top,72px)!important;bottom:0!important;width:220px!important;box-sizing:border-box!important;padding:0 10px 12px!important;overflow-y:auto!important;background:#fff!important;border-right:1px solid #e4e8ee!important;box-shadow:3px 0 12px rgba(15,23,42,.08)!important;z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:transform .18s ease,opacity .12s ease!important}
     body.qmes-side-open #qmes-sync-sidebar{transform:translate3d(0,0,0)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
-    #qmes-sync-sidebar .qmes-side-head{position:relative!important;display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:42px!important;padding:5px 8px 9px 14px!important;margin-bottom:7px!important;border:0!important;border-radius:8px!important;background:#26384f!important;box-sizing:border-box!important;overflow:hidden!important}
+    #qmes-sync-sidebar .qmes-side-head{position:relative!important;display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:48px!important;padding:8px 18px 8px 24px!important;margin:0 -10px 8px!important;border:0!important;border-radius:0!important;background:#0f172a!important;box-sizing:border-box!important;overflow:hidden!important}
     #qmes-sync-sidebar .qmes-side-head:before{display:none!important;content:none!important}
     #qmes-sync-sidebar .qmes-side-title{font-size:14px!important;font-weight:800!important;color:#fff!important;line-height:20px!important;padding:0!important;margin:0!important;text-align:left!important}
     #qmes-sync-sidebar .qmes-side-close{width:28px!important;height:28px!important;flex:0 0 28px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#cbd5e1!important;font-size:19px!important;cursor:pointer!important}
@@ -74,7 +74,7 @@
   function navigate(item){if(!item)return;if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>{internal=false;},0);}activeLabel=item.label;render(currentGroup);return;}const existing=findSub(item.sub);if(existing){activeLabel=item.label;render(currentGroup);existing.click();return;}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>{internal=false;},0);requestAnimationFrame(()=>requestAnimationFrame(()=>{const sub=findSub(item.sub);if(sub){activeLabel=item.label;render(currentGroup);sub.click();}}));}
   side.addEventListener('click',event=>{if(event.target.closest('.qmes-side-close')){close();return;}const button=event.target.closest('.qmes-side-item');if(!button)return;navigate(menuMap[currentGroup]?.[Number(button.dataset.index)]);});
   hamburger.addEventListener('click',()=>open(currentGroup||'대시보드'));
-  document.addEventListener('click',event=>{if(internal)return;const top=event.target.closest('.qmes-top-menu-button');if(!top)return;const label=groups.find(group=>topLabel(top)===group);if(!label)return;open(label);settlePositions();},true);
+  document.addEventListener('click',event=>{if(internal)return;const top=event.target.closest('.qmes-top-menu-button');if(!top)return;const label=groups.find(group=>topLabel(top)===group);if(!label)return;activeLabel='';open(label);settlePositions();},true);
   document.addEventListener('mouseover',event=>{const top=event.target.closest('.qmes-top-menu-button');if(top)setTimeout(positionDropdown,0);},true);
   document.addEventListener('click',event=>{const dropdownButton=event.target.closest('#qmes-all-menu-dropdown button');if(!dropdownButton)return;activeLabel=clean(dropdownButton.textContent);if(currentGroup)render(currentGroup);},true);
   document.addEventListener('click',event=>{const logoButton=event.target.closest('header button');if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;activeLabel='';currentGroup='대시보드';close();setTimeout(()=>{currentGroup='대시보드';settlePositions();},220);},true);
