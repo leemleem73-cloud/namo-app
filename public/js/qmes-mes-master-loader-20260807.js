@@ -10,7 +10,7 @@
     "./js/qmes-top-submenu-restore.js?v=20260807-2",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
-    "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-1"
+    "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2"
   ];
   function exists(src){
     const base=src.split("?")[0];
