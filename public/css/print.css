@@ -112,3 +112,45 @@
     print-color-adjust: exact !important;
   }
 }
+
+/* Global one-page print guard.
+   Chrome can round an exact 297mm layout a fraction of a millimetre beyond A4,
+   producing a blank second sheet. Reserve a tiny safety gap and clip only the
+   page-box overflow; document layout itself is otherwise unchanged. */
+@media print {
+  @page {
+    size: A4 portrait !important;
+    margin: 0 !important;
+  }
+
+  html,
+  body.print-doc,
+  body.qmes-screen-exact-print {
+    width: 210mm !important;
+    height: 296mm !important;
+    min-height: 0 !important;
+    max-height: 296mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.print-doc #qmes-print-root,
+  body.qmes-screen-exact-print #qmes-print-root {
+    width: 210mm !important;
+    height: 296mm !important;
+    min-height: 0 !important;
+    max-height: 296mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    break-after: avoid-page !important;
+    page-break-after: avoid !important;
+  }
+
+  body.print-doc #qmes-print-root > *,
+  body.qmes-screen-exact-print #qmes-print-root > * {
+    break-after: avoid-page !important;
+    page-break-after: avoid !important;
+  }
+}
