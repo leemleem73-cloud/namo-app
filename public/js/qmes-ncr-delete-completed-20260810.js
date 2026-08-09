@@ -33,6 +33,11 @@
       border-color:rgba(239,68,68,.8)!important;
       color:#fecaca!important;
     }
+    .qmes-ncr-row-removing{
+      opacity:0!important;
+      transform:translateY(-4px)!important;
+      transition:opacity .12s ease,transform .12s ease!important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -81,22 +86,31 @@
     return true;
   }
 
-  function deleteNcr(no){
+  function updateVisibleTotal(table){
+    if(!table) return;
+    const panel = table.closest("section,div");
+    if(!panel) return;
+    const count = table.querySelectorAll("tbody tr").length;
+    Array.from(panel.querySelectorAll("span")).forEach(node => {
+      if(/^총\s*\d+건$/.test(clean(node.textContent))) node.textContent = `총 ${count}건`;
+    });
+  }
+
+  function deleteNcr(no,row){
     const db = readDb();
     if(!db || !Array.isArray(db.ncrs)) {
       alert("부적합 저장 데이터를 찾지 못했습니다. 새로고침 후 다시 시도해 주세요.");
       return;
     }
-    const record = db.ncrs.find(row => clean(row?.no) === no);
+    const record = db.ncrs.find(item => clean(item?.no) === no);
     if(!record) {
       alert("이미 삭제되었거나 저장 데이터를 찾지 못했습니다.");
-      location.reload();
       return;
     }
     const ok = confirm(`${no} 부적합 기록을 삭제할까요?\n잘못 저장한 기록을 되돌리는 용도이며, 연결된 홀드 기록도 함께 정리됩니다.`);
     if(!ok) return;
 
-    db.ncrs = db.ncrs.filter(row => clean(row?.no) !== no);
+    db.ncrs = db.ncrs.filter(item => clean(item?.no) !== no);
     db.holds = Array.isArray(db.holds) ? db.holds.filter(hold => clean(hold?.ncr) !== no) : [];
 
     if(db.lots && typeof db.lots === "object") {
@@ -115,7 +129,18 @@
     }
 
     saveDb(db);
-    location.reload();
+
+    /* Do not reload the whole QMES app after delete.
+       The persisted record is already gone, so remove only the visible row immediately.
+       Navigating away/back naturally remounts the React list from the updated DB. */
+    const table = row?.closest?.("table") || null;
+    if(row && row.isConnected) {
+      row.classList.add("qmes-ncr-row-removing");
+      window.setTimeout(() => {
+        if(row.isConnected) row.remove();
+        updateVisibleTotal(table);
+      },120);
+    }
   }
 
   /* Capture the native React click before it changes component state.
@@ -161,7 +186,7 @@
         button.addEventListener("click", event => {
           event.preventDefault();
           event.stopPropagation();
-          deleteNcr(no);
+          deleteNcr(no,row);
         });
         actionCell.appendChild(button);
       });
