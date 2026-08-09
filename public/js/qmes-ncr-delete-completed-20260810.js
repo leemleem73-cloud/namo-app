@@ -1,15 +1,15 @@
-/* QMES NCR completed-row delete action.
-   Replaces the management-cell dash with a real delete button and removes the saved NCR + linked hold data. */
-(function installNcrCompletedDelete(){
+/* QMES NCR stable actions.
+   Prevents the NCR close action from colliding with React rerender, and provides delete for completed rows. */
+(function installNcrStableActions(){
   "use strict";
-  if(window.__QMES_NCR_COMPLETED_DELETE__) return;
-  window.__QMES_NCR_COMPLETED_DELETE__ = true;
+  if(window.__QMES_NCR_STABLE_ACTIONS__) return;
+  window.__QMES_NCR_STABLE_ACTIONS__ = true;
 
   const DB_KEY = "qmes-local-shipment-dashboard-v8-clean";
   const clean = value => String(value || "").replace(/\s+/g," ").trim();
 
   const style = document.createElement("style");
-  style.id = "qmes-ncr-completed-delete-style";
+  style.id = "qmes-ncr-stable-actions-style";
   style.textContent = `
     .qmes-ncr-delete-button{
       display:inline-flex!important;
@@ -50,6 +50,37 @@
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   }
 
+  function ncrNumberFromRow(row){
+    if(!row) return "";
+    const cells = Array.from(row.querySelectorAll("td"));
+    const first = clean(cells[0]?.textContent);
+    if(/^NCR-/i.test(first)) return first;
+    const found = cells.map(cell => clean(cell.textContent)).find(value => /^NCR-/i.test(value));
+    return found || "";
+  }
+
+  function stableClose(no){
+    const db = readDb();
+    if(!db || !Array.isArray(db.ncrs)) return false;
+    let changed = false;
+    db.ncrs = db.ncrs.map(row => {
+      if(clean(row?.no) !== no) return row;
+      changed = true;
+      return {...row,status:"유효성 확인",d:7};
+    });
+    if(!changed) return false;
+    db.holds = Array.isArray(db.holds)
+      ? db.holds.map(hold => clean(hold?.ncr) === no && clean(hold?.status) === "차단중"
+          ? {...hold,status:"해제 요청중 (승인 대기)"}
+          : hold)
+      : [];
+    saveDb(db);
+    try {
+      sessionStorage.setItem("qmes-ncr-flash", `${no} 조치 완료 처리 · 품질 인터락에서 홀드 해제 승인이 필요합니다.`);
+    } catch(error) {}
+    return true;
+  }
+
   function deleteNcr(no){
     const db = readDb();
     if(!db || !Array.isArray(db.ncrs)) {
@@ -84,11 +115,27 @@
     }
 
     saveDb(db);
-    try {
-      window.dispatchEvent(new CustomEvent("qmes:data-updated", {detail:{source:"ncr-delete",no}}));
-    } catch(error) {}
     location.reload();
   }
+
+  /* Capture the native React click before it changes component state.
+     We persist the same state change, then reload cleanly so React never reconciles against externally decorated cells. */
+  document.addEventListener("click", event => {
+    const button = event.target?.closest?.("button");
+    if(!button || clean(button.textContent) !== "조치 완료") return;
+    const row = button.closest("tr");
+    const no = ncrNumberFromRow(row);
+    if(!no) return;
+    const tableText = clean(button.closest("table")?.textContent);
+    if(!tableText.includes("부적합") && !tableText.includes("관련 LOT")) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+    if(stableClose(no)) {
+      location.reload();
+    }
+  }, true);
 
   function decorate(){
     document.querySelectorAll("table").forEach(table => {
@@ -133,7 +180,6 @@
 
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
   window.addEventListener("qmes:data-updated", schedule);
-  document.addEventListener("click", schedule, true);
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, {once:true});
   else schedule();
 })();
