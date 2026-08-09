@@ -1,9 +1,70 @@
 /* QMES module: api — extracted from index.html without logic changes. */
 
+function InventoryRealtimeSummary() {
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setVersion((value) => value + 1);
+    const events = [
+      "qmes:data-updated",
+      "qmes:data-changed",
+      "qmes:inventory-stage3-ready",
+      "qmes:inventory-lot-validation-ready",
+      "focus",
+    ];
+    events.forEach((eventName) => window.addEventListener(eventName, refresh));
+    return () => events.forEach((eventName) => window.removeEventListener(eventName, refresh));
+  }, []);
+
+  const number = (value) => {
+    const parsed = Number(String(value ?? "").replace(/,/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const format = (value) => number(value).toLocaleString("ko-KR", { maximumFractionDigits: 3 });
+  const lotRows = typeof window.qmesBuildInventoryLotRows === "function"
+    ? (window.qmesBuildInventoryLotRows() || [])
+    : [];
+  const current = lotRows.reduce((sum, row) => sum + number(row?.remaining), 0);
+  const hold = lotRows.filter((row) => row?.hold).reduce((sum, row) => sum + number(row?.remaining), 0);
+  const available = Math.max(0, current - hold);
+  const lots = lotRows.filter((row) => number(row?.remaining) > 0).length;
+  const validation = typeof window.qmesValidateInventoryLotFlow === "function"
+    ? window.qmesValidateInventoryLotFlow()
+    : null;
+  const errors = number(validation?.counts?.errors);
+  const warnings = number(validation?.counts?.warnings);
+  const cards = [
+    ["현재고 합계", `${format(current)} kg`],
+    ["가용재고", `${format(available)} kg`],
+    ["홀드재고", `${format(hold)} kg`],
+    ["재고 LOT 수", `${lots} LOT`],
+  ];
+
+  return (
+    <section data-version={version} className="rounded-xl border border-sky-900/70 bg-sky-950/30 p-4">
+      <div className="text-sm font-black text-sky-300 mb-3">실시간 재고 요약 · QMES 연동</div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {cards.map(([label, value]) => (
+          <div key={label} className="rounded-lg border border-slate-700 bg-slate-900/50 p-3">
+            <div className="text-xs text-slate-400">{label}</div>
+            <div className="text-lg font-black mt-1">{value}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-3 mt-3 text-xs text-slate-400">
+        <span>LOT 수불 자동검증</span>
+        <b className={errors ? "text-amber-300" : "text-emerald-300"}>오류 {errors}건</b>
+        <span>경고 {warnings}건</span>
+      </div>
+    </section>
+  );
+}
+
 function InventoryTab() {
   const short = INVENTORY.filter((i) => i.stock < i.safety);
   return (
     <div className="flex flex-col gap-4">
+      <InventoryRealtimeSummary />
       {short.length > 0 && INVENTORY.some((i) => i.stock > 0) && (
         <div className="flex items-center gap-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3">
           <AlertTriangle size={16} className="text-amber-400 shrink-0" />
