@@ -16,6 +16,11 @@
       id:"workorder-lot-bridge",
       src:"./js/workorder-lot-bridge.js?v=20260806-bridge2",
       ready:()=>typeof global.qmesCompleteWorkOrderSafely === "function"
+    },
+    {
+      id:"pqc-hide-new-button",
+      src:"./js/pqc-hide-new-button-20260810.js?v=20260810-1",
+      ready:()=>global.__QMES_PQC_NEW_BUTTON_HIDDEN__ === true
     }
   ];
 
