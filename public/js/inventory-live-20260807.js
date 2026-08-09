@@ -143,9 +143,34 @@
     ];
   }
 
+  function dynamicMaterialCode(value){
+    const source=upper(value);
+    const readable=source.replace(/[^A-Z0-9]+/g,"").slice(0,12);
+    if(readable) return `RM-${readable}`;
+    let hash=0;
+    for(let index=0;index<source.length;index+=1) hash=((hash*31)+source.charCodeAt(index))>>>0;
+    return `RM-IQC-${hash.toString(36).toUpperCase()}`;
+  }
+
   function buildInventoryRows(){
     const lots = buildLotLedger();
-    return baseInventory().map((base) => {
+    const bases=baseInventory().map((row)=>({...row}));
+    const knownKeys=new Set(bases.map((row)=>materialKey(row.name)));
+    lots.forEach((lot)=>{
+      if(!lot.materialKey || knownKeys.has(lot.materialKey)) return;
+      bases.push({
+        code:dynamicMaterialCode(lot.name),
+        name:lot.name,
+        stock:0,
+        safety:0,
+        unit:lot.materialKey==="CAN20"?"EA":"kg",
+        loc:"미지정",
+        cond:"-",
+        autoRegistered:true
+      });
+      knownKeys.add(lot.materialKey);
+    });
+    return bases.map((base) => {
       const key = materialKey(base.name);
       const matched = lots.filter((lot) => lot.materialKey === key);
       const linked = matched.length > 0;
