@@ -25,6 +25,23 @@
     s.onerror=()=>console.error("[QMES] 재고 모듈 로드 실패",src);
     document.head.appendChild(s);
   }
-  const start=()=>next(0);
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+  let started=false;
+  function authenticated(){
+    return Boolean(window.__QMES_CURRENT_USER__ || window.__QMES_USER__);
+  }
+  function start(){
+    if(started || !authenticated()) return;
+    started=true;
+    next(0);
+  }
+  function waitForLogin(){
+    start();
+    if(started) return;
+    const timer=setInterval(()=>{
+      start();
+      if(started) clearInterval(timer);
+    },250);
+    window.addEventListener("qmes:auth-ready",start,{once:true});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",waitForLogin,{once:true});else waitForLogin();
 })();
