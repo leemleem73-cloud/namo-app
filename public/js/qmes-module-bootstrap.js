@@ -18,9 +18,9 @@
       ready:()=>typeof global.qmesCompleteWorkOrderSafely === "function"
     },
     {
-      id:"pqc-hide-new-button",
-      src:"./js/pqc-hide-new-button-20260810.js?v=20260810-1",
-      ready:()=>global.__QMES_PQC_NEW_BUTTON_HIDDEN__ === true
+      id:"inspection-remove-new-buttons",
+      src:"./js/inspection-remove-new-buttons-20260810.js?v=20260810-1",
+      ready:()=>global.__QMES_INSPECTION_NEW_BUTTONS_REMOVED__ === true
     }
   ];
 
