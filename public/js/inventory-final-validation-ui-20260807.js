@@ -4,6 +4,52 @@
   if(!global.React||typeof global.InventoryTab!=="function") return;
   const BaseInventoryTab=global.InventoryTab;
   const h=global.React.createElement;
+  const number=value=>{const parsed=Number(String(value??"").replace(/,/g,""));return Number.isFinite(parsed)?parsed:0;};
+  const format=value=>number(value).toLocaleString("ko-KR",{maximumFractionDigits:3});
+
+  function CurrentInventorySummary(){
+    const [version,setVersion]=global.React.useState(0);
+    global.React.useEffect(()=>{
+      const refresh=()=>setVersion(value=>value+1);
+      const events=["qmes:data-updated","qmes:data-changed","qmes:inventory-lot-validation-ready","qmes:finished-goods-inventory-ready","focus"];
+      events.forEach(eventName=>global.addEventListener(eventName,refresh));
+      return()=>events.forEach(eventName=>global.removeEventListener(eventName,refresh));
+    },[]);
+
+    const rows=typeof global.qmesBuildInventoryLotRows==="function"
+      ? (global.qmesBuildInventoryLotRows()||[])
+      : [];
+    const current=rows.reduce((sum,row)=>sum+number(row?.remaining),0);
+    const hold=rows.filter(row=>row?.hold).reduce((sum,row)=>sum+number(row?.remaining),0);
+    const available=Math.max(0,current-hold);
+    const lots=rows.filter(row=>number(row?.remaining)>0).length;
+    const validation=typeof global.qmesValidateInventoryLotFlow==="function"
+      ? global.qmesValidateInventoryLotFlow()
+      : null;
+    const errors=number(validation?.counts?.errors);
+    const warnings=number(validation?.counts?.warnings);
+    const cards=[
+      ["현재고 합계",`${format(current)} kg`],
+      ["가용재고",`${format(available)} kg`],
+      ["홀드재고",`${format(hold)} kg`],
+      ["재고 LOT 수",`${lots} LOT`],
+    ];
+
+    return h("section",{id:"qmes-inventory-final-safe","data-version":version,className:"rounded-xl border border-sky-900/70 bg-sky-950/30 p-4"},
+      h("div",{className:"text-sm font-black text-sky-300 mb-3"},"실시간 재고 요약 · QMES 연동"),
+      h("div",{className:"qf-grid grid grid-cols-2 lg:grid-cols-4 gap-3"},
+        cards.map(([label,value])=>h("div",{key:label,className:"qf-card rounded-lg border border-slate-700 bg-slate-900/50 p-3"},
+          h("div",{className:"qf-label text-xs text-slate-400"},label),
+          h("div",{className:"qf-value text-lg font-black mt-1"},value)
+        ))
+      ),
+      h("div",{className:"qf-foot flex gap-3 mt-3 text-xs text-slate-400"},
+        h("span",null,"LOT 수불 자동검증"),
+        h("b",{className:errors?"text-amber-300":"text-emerald-300"},`오류 ${errors}건`),
+        h("span",null,`경고 ${warnings}건`)
+      )
+    );
+  }
 
   function EnhancedInventoryTab(){
     const result=typeof global.qmesRunFinalInventoryValidation==="function"
@@ -29,7 +75,7 @@
             : h("div",{className:"rounded-lg border border-emerald-800/60 bg-emerald-950/20 px-3 py-3 text-sm text-emerald-200"},"원재료 입고부터 완제품 출하까지 LOT 수불이 일치합니다.")
         )
       : null;
-    return h("div",{className:"flex flex-col gap-4"},panel,h(BaseInventoryTab));
+    return h("div",{className:"flex flex-col gap-4"},h(CurrentInventorySummary),panel,h(BaseInventoryTab));
   }
 
   try{

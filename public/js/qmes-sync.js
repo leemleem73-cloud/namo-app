@@ -15,6 +15,17 @@
       ...options
     });
     const payload = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      try { sessionStorage.removeItem("qmes-current-user-v1"); } catch (_error) {}
+      delete window.__QMES_CURRENT_USER__;
+      delete window.__QMES_USER__;
+      if (!window.__QMES_AUTH_RELOAD_PENDING__) {
+        window.__QMES_AUTH_RELOAD_PENDING__ = true;
+        window.dispatchEvent(new CustomEvent("qmes:auth-expired"));
+        setTimeout(() => window.location.reload(), 50);
+      }
+      throw new Error(payload.message || "로그인 세션이 만료되었습니다.");
+    }
     if (!response.ok || payload.success === false) {
       throw new Error(payload.message || `공용 DB 요청 실패 (${response.status})`);
     }
