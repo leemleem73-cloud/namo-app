@@ -61,11 +61,23 @@ function InventoryRealtimeSummary() {
 }
 
 function InventoryTab() {
-  const short = INVENTORY.filter((i) => i.stock < i.safety);
+  const [inventoryVersion, setInventoryVersion] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setInventoryVersion((value) => value + 1);
+    const events = ["qmes:data-updated", "qmes:data-changed", "qmes:inventory-stage3-ready", "focus"];
+    events.forEach((eventName) => window.addEventListener(eventName, refresh));
+    return () => events.forEach((eventName) => window.removeEventListener(eventName, refresh));
+  }, []);
+
+  const inventoryRows = typeof window.qmesBuildInventoryRows === "function"
+    ? (window.qmesBuildInventoryRows() || [])
+    : INVENTORY;
+  const short = inventoryRows.filter((i) => i.stock < i.safety);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" data-inventory-version={inventoryVersion}>
       <InventoryRealtimeSummary />
-      {short.length > 0 && INVENTORY.some((i) => i.stock > 0) && (
+      {short.length > 0 && inventoryRows.some((i) => i.stock > 0) && (
         <div className="flex items-center gap-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3">
           <AlertTriangle size={16} className="text-amber-400 shrink-0" />
           <p className="text-sm text-amber-200">
@@ -73,7 +85,7 @@ function InventoryTab() {
           </p>
         </div>
       )}
-      <Panel title="원재료 · 부자재 재고 현황" right={<span className="text-xs text-slate-400">총 {INVENTORY.length}개 품목</span>}>
+      <Panel title="원재료 · 부자재 재고 현황" right={<span className="text-xs text-slate-400">총 {inventoryRows.length}개 품목</span>}>
         <div className="overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm min-w-[760px]">
             <thead>
@@ -89,7 +101,7 @@ function InventoryTab() {
               </tr>
             </thead>
             <tbody>
-              {INVENTORY.map((i) => {
+              {inventoryRows.map((i) => {
                 const ratio = Math.min((i.stock / (i.safety * 2)) * 100, 100);
                 const low = i.stock < i.safety;
                 return (
