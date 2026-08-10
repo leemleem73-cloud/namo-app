@@ -1,14 +1,6 @@
 (function qmesIpadEquipmentEm(){
-  var selectedNav='일일점검';
-  var NAV_LABELS=['일일점검','설비대장','정기점검·교정','정기점검 교정','고장·수리 이력','고장수리 이력'];
-  function normalizeNav(text){
-    var compact=String(text||'').replace(/\s+/g,' ').trim();
-    if(compact==='정기점검 교정') return '정기점검·교정';
-    if(compact==='고장수리 이력') return '고장·수리 이력';
-    return compact;
-  }
   function loadRuntimeStyle(){
-    var version='20260810-6';
+    var version='20260810-5';
     var existing=document.querySelector('script[data-qmes-ipad-runtime-style]');
     if(existing){if(!existing.src.includes('v='+version)) existing.src='./js/ipad-pop-runtime-style-20260810.js?v='+version;return;}
     var script=document.createElement('script');script.src='./js/ipad-pop-runtime-style-20260810.js?v='+version;script.defer=true;script.setAttribute('data-qmes-ipad-runtime-style','1');document.head.appendChild(script);
@@ -22,34 +14,12 @@
       .qmes-ipad-equipment .qmes-equipment-summary-value{display:inline-flex!important;align-items:baseline!important;justify-content:center!important;gap:5px!important;}
       .qmes-ipad-equipment .qmes-equipment-summary-number{font-size:30px!important;font-weight:950!important;color:#111827!important;line-height:1!important;}
       .qmes-ipad-equipment .qmes-equipment-summary-unit{font-size:16px!important;font-weight:800!important;color:#475569!important;line-height:1!important;}
-      .qmes-ipad-equipment .qmes-equipment-nav-block>button{font-size:17px!important;font-weight:900!important;background:#fff!important;color:#1f2937!important;border:1px solid #cbd5e1!important;box-shadow:none!important;}
-      .qmes-ipad-equipment .qmes-equipment-nav-block>button.qmes-equipment-nav-selected,
-      .qmes-ipad-equipment .qmes-equipment-nav-block>button.qmes-equipment-nav-selected:hover,
-      .qmes-ipad-equipment .qmes-equipment-nav-block>button.qmes-equipment-nav-selected:focus-visible{
-        background:#e0f2fe!important;
-        border:2px solid #38bdf8!important;
-        color:#0f172a!important;
-        box-shadow:0 0 0 2px rgba(56,189,248,.12)!important;
-      }
+      .qmes-ipad-equipment .qmes-equipment-nav-block>button{font-size:17px!important;font-weight:900!important;}
+      .qmes-ipad-equipment .qmes-equipment-nav-block>button.is-active,.qmes-ipad-equipment .qmes-equipment-nav-block>button[aria-selected="true"],.qmes-ipad-equipment .qmes-equipment-nav-block>button.qmes-equipment-nav-selected{background:#e0f2fe!important;border-color:#38bdf8!important;color:#0f172a!important;box-shadow:0 0 0 1px rgba(56,189,248,.18)!important;}
       .qmes-ipad-equipment .qmes-equipment-complete-status{background:#fff!important;border:1.5px solid #22c55e!important;color:#16a34a!important;box-shadow:none!important;}
       .qmes-ipad-equipment .qmes-equipment-complete-status *{color:#16a34a!important;stroke:#16a34a!important;}
       .qmes-ipad-equipment .qmes-equipment-complete-status svg{color:#16a34a!important;stroke:#16a34a!important;}
     `;
-  }
-  function markNavigation(panel){
-    var buttons=Array.from(panel.querySelectorAll('button')).filter(function(button){return NAV_LABELS.includes(normalizeNav(button.textContent));});
-    if(!buttons.length) return;
-    var parent=buttons[0].parentElement;
-    if(parent) parent.classList.add('qmes-equipment-nav-block');
-    buttons.forEach(function(button){
-      var label=normalizeNav(button.textContent);
-      button.classList.toggle('qmes-equipment-nav-selected',label===selectedNav);
-      button.setAttribute('aria-selected',label===selectedNav?'true':'false');
-      if(!button.dataset.qmesEmNavBound){
-        button.dataset.qmesEmNavBound='1';
-        button.addEventListener('click',function(){selectedNav=normalizeNav(button.textContent);requestAnimationFrame(apply);});
-      }
-    });
   }
   function stabilizeDailyTourHeader(panel){
     var marker=Array.from(panel.querySelectorAll('p')).find(function(p){return p.textContent.includes('관리계획서 기준 5개 설비 일일 순회점검');});if(!marker)return;
@@ -70,6 +40,6 @@
     panel.querySelectorAll('div,span,p,small,strong').forEach(function(el){if(el.children.length===0){var text=el.textContent.replace(/\s+/g,'').trim();if(text==='일일점검'||text==='설비기본정보')el.classList.add('qmes-equipment-subcaption-hidden');}});
     ['등록 설비','30일 이내 일정','기한 초과','미완료 수리'].forEach(function(label){panel.querySelectorAll('div,span,p,strong').forEach(function(el){if(el.children.length===0&&el.textContent.trim()===label){var card=el.parentElement;if(!card)return;card.classList.add('qmes-equipment-summary-card');card.style.setProperty('text-align','center','important');card.querySelectorAll('*').forEach(function(x){x.style.setProperty('box-shadow','none','important');});Array.from(card.children||[]).forEach(function(child){var t=child.textContent.replace(/\s+/g,'').trim();if(/^\d+(대|건)$/.test(t)){child.classList.add('qmes-equipment-summary-value');child.style.setProperty('background','transparent','important');child.style.setProperty('border','0','important');child.style.setProperty('box-shadow','none','important');child.style.setProperty('padding','0','important');child.querySelectorAll('*').forEach(function(x){x.style.setProperty('background','transparent','important');x.style.setProperty('border','0','important');x.style.setProperty('box-shadow','none','important');x.style.setProperty('padding','0','important');});}});}})});});
   }
-  function apply(){ensureEquipmentFixStyle();document.querySelectorAll('.qmes-ipad-home-card.is-equipment .qmes-ipad-home-code').forEach(function(el){if(el.textContent.trim()==='EQ')el.textContent='EM';});document.querySelectorAll('.qmes-ipad-equipment').forEach(function(panel){var root=panel.closest('.qmes-ipad-pop');var code=root&&root.querySelector('.qmes-ipad-work-head > div:nth-child(2) > span');if(code&&code.textContent.trim()==='EQ')code.textContent='EM';markNavigation(panel);stabilizeDailyTourHeader(panel);cleanSummary(panel);panel.querySelectorAll('h1,h2,h3,h4,h5,strong,span,p,div').forEach(function(el){if(el.children.length===0&&el.textContent.trim()==='설비대장')el.classList.add('qmes-equipment-registry-title');});panel.querySelectorAll('button').forEach(function(button){if(button.textContent.replace(/\s+/g,'').includes('신규등록'))button.classList.add('qmes-equipment-new-register');});});}
+  function apply(){ensureEquipmentFixStyle();document.querySelectorAll('.qmes-ipad-home-card.is-equipment .qmes-ipad-home-code').forEach(function(el){if(el.textContent.trim()==='EQ')el.textContent='EM';});document.querySelectorAll('.qmes-ipad-equipment').forEach(function(panel){var root=panel.closest('.qmes-ipad-pop');var code=root&&root.querySelector('.qmes-ipad-work-head > div:nth-child(2) > span');if(code&&code.textContent.trim()==='EQ')code.textContent='EM';stabilizeDailyTourHeader(panel);cleanSummary(panel);panel.querySelectorAll('h1,h2,h3,h4,h5,strong,span,p,div').forEach(function(el){if(el.children.length===0&&el.textContent.trim()==='설비대장')el.classList.add('qmes-equipment-registry-title');});panel.querySelectorAll('button').forEach(function(button){if(button.textContent.replace(/\s+/g,'').includes('신규등록'))button.classList.add('qmes-equipment-new-register');});});}
   loadRuntimeStyle();apply();var scheduled=false;new MutationObserver(function(){if(scheduled)return;scheduled=true;requestAnimationFrame(function(){scheduled=false;apply();});}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 })();
