@@ -69,6 +69,89 @@
       .qmes-ipad-equipment .qmes-equipment-complete-status svg{
         color:#16a34a!important;stroke:#16a34a!important;
       }
+
+      /* 설비·공정 알람 이력 — 제목을 직접 찾아 부여한 전용 클래스만 사용 */
+      .qmes-ipad-equipment .qmes-equipment-alarm-panel{
+        overflow:hidden!important;
+        border:1px solid #d7e0e8!important;
+        border-radius:12px!important;
+        background:#fff!important;
+        box-shadow:none!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-panel .qmes-equipment-alarm-title{
+        color:#0f2f63!important;
+        font-size:20px!important;
+        font-weight:900!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-table-head{
+        display:grid!important;
+        grid-template-columns:150px 140px 160px minmax(0,1fr)!important;
+        align-items:center!important;
+        min-height:56px!important;
+        margin:0 14px!important;
+        padding:0 26px!important;
+        border:1px solid #d7e0e8!important;
+        border-radius:7px!important;
+        background:#f8fafc!important;
+        color:#111827!important;
+        font-size:15px!important;
+        font-weight:850!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-list{
+        display:flex!important;
+        flex-direction:column!important;
+        width:100%!important;
+        margin:0!important;
+        padding:0 14px!important;
+        background:#fff!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-row{
+        display:grid!important;
+        grid-template-columns:150px 140px 160px minmax(0,1fr)!important;
+        align-items:center!important;
+        gap:0!important;
+        min-height:82px!important;
+        padding:0 26px!important;
+        border:0!important;
+        border-bottom:1px solid #d7e0e8!important;
+        background:#fff!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-row:last-child{border-bottom:0!important;}
+      .qmes-ipad-equipment .qmes-equipment-alarm-row:hover{background:#fbfdff!important;}
+      .qmes-ipad-equipment .qmes-equipment-alarm-row>*,
+      .qmes-ipad-equipment .qmes-equipment-alarm-row span{
+        width:auto!important;max-width:none!important;margin:0!important;padding:0!important;
+        color:#111827!important;font-family:Pretendard,system-ui,sans-serif!important;
+        font-size:15px!important;line-height:1.45!important;font-weight:600!important;
+        white-space:normal!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-row .qmes-equipment-alarm-level{
+        display:inline-flex!important;align-items:center!important;justify-content:center!important;
+        justify-self:start!important;width:88px!important;height:42px!important;
+        border:1.5px solid #ff8a1f!important;border-radius:6px!important;
+        background:#fff!important;color:#ff6b00!important;-webkit-text-fill-color:#ff6b00!important;
+        font-size:16px!important;font-weight:900!important;box-shadow:none!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-time,
+      .qmes-ipad-equipment .qmes-equipment-alarm-eq{
+        font-family:Pretendard,system-ui,sans-serif!important;
+        font-size:15px!important;color:#111827!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-message{
+        font-size:15px!important;color:#111827!important;font-weight:600!important;
+      }
+      .qmes-ipad-equipment .qmes-equipment-alarm-empty{
+        min-height:72px!important;padding:0 26px!important;display:flex!important;align-items:center!important;
+        color:#64748b!important;font-size:14px!important;
+      }
+      @media(max-width:900px){
+        .qmes-ipad-equipment .qmes-equipment-alarm-table-head{display:none!important;}
+        .qmes-ipad-equipment .qmes-equipment-alarm-row{
+          grid-template-columns:100px 80px minmax(100px,1fr)!important;
+          gap:8px!important;padding:14px 12px!important;min-height:0!important;
+        }
+        .qmes-ipad-equipment .qmes-equipment-alarm-message{grid-column:1/-1!important;}
+      }
     `;
   }
 
@@ -238,6 +321,50 @@
     });
   }
 
+  function markAlarmPanel(panel){
+    var title=Array.from(panel.querySelectorAll('h1,h2,h3,h4,h5,strong,div,span')).find(function(el){
+      return el.children.length===0&&el.textContent.replace(/\s+/g,' ').trim()==='설비 · 공정 알람 이력';
+    });
+    if(!title) return;
+
+    var box=title.parentElement;
+    while(box&&box!==panel&&!box.querySelector('ul')) box=box.parentElement;
+    if(!box||box===panel) return;
+
+    box.classList.add('qmes-equipment-alarm-panel');
+    title.classList.add('qmes-equipment-alarm-title');
+
+    var list=box.querySelector('ul');
+    if(!list) return;
+    list.classList.add('qmes-equipment-alarm-list');
+
+    var head=box.querySelector('.qmes-equipment-alarm-table-head');
+    if(!head){
+      head=document.createElement('div');
+      head.className='qmes-equipment-alarm-table-head';
+      ['경고','시간','DR','조치 필요'].forEach(function(label){
+        var cell=document.createElement('span');
+        cell.textContent=label;
+        head.appendChild(cell);
+      });
+      list.parentElement.insertBefore(head,list);
+    }
+
+    Array.from(list.children).forEach(function(row){
+      if(row.children.length<4){
+        row.classList.add('qmes-equipment-alarm-empty');
+        return;
+      }
+      row.classList.remove('qmes-equipment-alarm-empty');
+      row.classList.add('qmes-equipment-alarm-row');
+      var children=Array.from(row.children);
+      children[0].classList.add('qmes-equipment-alarm-level');
+      children[1].classList.add('qmes-equipment-alarm-time');
+      children[2].classList.add('qmes-equipment-alarm-eq');
+      children[3].classList.add('qmes-equipment-alarm-message');
+    });
+  }
+
   function apply(){
     ensureEquipmentFixStyle();
     document.querySelectorAll('.qmes-ipad-home-card.is-equipment .qmes-ipad-home-code').forEach(function(el){
@@ -252,6 +379,7 @@
       markEquipmentMenu(panel);
       stabilizeDailyTourHeader(panel);
       cleanSummary(panel);
+      markAlarmPanel(panel);
 
       panel.querySelectorAll('h1,h2,h3,h4,h5,strong,span,p,div').forEach(function(el){
         if(el.children.length===0&&el.textContent.trim()==='설비대장'){
