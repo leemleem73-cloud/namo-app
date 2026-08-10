@@ -198,6 +198,7 @@
       return {
         ...base,
         loc:storageLocation(base.name)||base.loc||"미지정",
+        cond:"25±5℃ · 습도 50%↓",
         stock:Number(stock.toFixed(3)),
         availableStock:Number(availableStock.toFixed(3)),
         holdStock:Number(holdStock.toFixed(3)),

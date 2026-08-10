@@ -130,7 +130,7 @@ function InventoryTab() {
           </table>
         </div>
         <p className="text-[11px] text-slate-500 mt-3">
-          창고 25±5℃ · 습도 50% 이하, 드라이룸 RH 0.54% 이하 / DP -40℃ · 선입선출(FIFO) 관리 — 관리계획서 공정 30 기준.
+          모든 원재료·부자재·완제품 공통 보관기준: 25±5℃ · 습도 50%↓ · 선입선출(FIFO) 관리.
         </p>
       </Panel>
       <Panel
