@@ -84,6 +84,230 @@
   display:none!important;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   2026-08-11 일일점검 화면 정리
+   - 기존 React 기능/이벤트는 유지
+   - 설비 현장입력 내부에서만 적용하여 타 화면과 충돌 방지
+   ───────────────────────────────────────────────────────────── */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab{
+  gap:14px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+
+/* 상단 관리계획 안내 + 상태 버튼 바 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div:first-child{
+  min-height:70px!important;
+  padding:14px 18px!important;
+  border:1px solid #d5dee8!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div:first-child p,
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div:first-child p span{
+  color:#334155!important;
+  font-size:14px!important;
+  line-height:1.45!important;
+  font-weight:600!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div:first-child svg{
+  color:#f59e0b!important;
+  stroke:#f59e0b!important;
+}
+
+/* 오늘 설비 순회점검 카드 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center{
+  min-height:190px!important;
+  padding:24px 24px 20px!important;
+  border:1px solid #d7e0e8!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center h3{
+  color:#0f172a!important;
+  font-size:21px!important;
+  font-weight:900!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center p{
+  color:#475569!important;
+  font-size:14px!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center>svg{
+  width:34px!important;
+  height:34px!important;
+  color:#38bdf8!important;
+  stroke:#38bdf8!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center>button{
+  min-height:52px!important;
+  max-width:440px!important;
+  border:1px solid #d6dee6!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  box-shadow:0 3px 10px rgba(15,23,42,.04)!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center>button:hover{
+  background:#f8fafc!important;
+  border-color:#b8c5d1!important;
+}
+
+/* 점검기록 보기 버튼 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>button{
+  min-height:54px!important;
+  border:1px solid #d7e0e8!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:15px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>button:hover{
+  background:#f8fafc!important;
+}
+
+/* 알람 이력: 기존 UL/LI 구조를 4열 테이블처럼 사용 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child{
+  overflow:hidden!important;
+  border:1px solid #d7e0e8!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child>div:first-child{
+  min-height:58px!important;
+  padding:0 16px!important;
+  border-bottom:0!important;
+  background:#fff!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child h2,
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child h3,
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child strong{
+  color:#0f2f63!important;
+  font-size:20px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  margin:0!important;
+  padding:56px 14px 0!important;
+  border-top:0!important;
+  background:#fff!important;
+}
+/* 실제 테이블 헤더와 동일한 한 줄 헤더 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul::before{
+  content:"경고                         시간                         DR                                              조치 필요";
+  position:absolute!important;
+  top:0!important;
+  left:14px!important;
+  right:14px!important;
+  height:56px!important;
+  display:flex!important;
+  align-items:center!important;
+  padding:0 34px!important;
+  box-sizing:border-box!important;
+  border:1px solid #d7e0e8!important;
+  border-radius:7px!important;
+  background:#f8fafc!important;
+  color:#111827!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  white-space:pre!important;
+  word-spacing:0!important;
+  letter-spacing:-.01em!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li{
+  display:grid!important;
+  grid-template-columns:150px 140px 160px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:0!important;
+  min-height:82px!important;
+  padding:0 26px!important;
+  border:0!important;
+  border-bottom:1px solid #d7e0e8!important;
+  background:#fff!important;
+  color:#111827!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li:last-child{
+  border-bottom:0!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li:hover{
+  background:#fbfdff!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span{
+  width:auto!important;
+  max-width:none!important;
+  padding:0!important;
+  margin:0!important;
+  color:#111827!important;
+  font-family:Pretendard,system-ui,sans-serif!important;
+  font-size:15px!important;
+  line-height:1.45!important;
+  font-weight:600!important;
+  white-space:normal!important;
+}
+/* 첫 번째 span은 Badge 내부 텍스트일 수 있으므로 전체 badge 스타일도 함께 고정 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child{
+  justify-self:start!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child,
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child *{
+  color:#f97316!important;
+  -webkit-text-fill-color:#f97316!important;
+  font-size:15px!important;
+  font-weight:900!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child{
+  min-width:88px!important;
+  min-height:40px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0 18px!important;
+  box-sizing:border-box!important;
+  border:1.5px solid #fb923c!important;
+  border-radius:6px!important;
+  background:#fff7ed!important;
+  box-shadow:none!important;
+}
+/* 시간 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span:nth-of-type(1){
+  color:#111827!important;
+  font-variant-numeric:tabular-nums!important;
+}
+/* DR */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span:nth-of-type(2){
+  color:#111827!important;
+  font-weight:700!important;
+}
+/* 조치 필요 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span:nth-of-type(3){
+  color:#111827!important;
+  font-size:15px!important;
+  font-weight:600!important;
+}
+
+@media(max-width:1180px){
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul::before{
+    content:"경고                    시간                    DR                                조치 필요";
+    font-size:14px!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li{
+    grid-template-columns:125px 110px 130px minmax(0,1fr)!important;
+    padding:0 18px!important;
+  }
+}
+
 @media(max-width:900px){
   .qmes-ipad-equipment .qmes-equipment-management-layout{
     grid-template-columns:1fr!important;
@@ -104,5 +328,11 @@
   .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{
     justify-content:center!important;
     text-align:center!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child{
+    overflow-x:auto!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul{
+    min-width:760px!important;
   }
 }
