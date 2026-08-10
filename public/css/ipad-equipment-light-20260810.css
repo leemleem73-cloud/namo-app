@@ -48,4 +48,6 @@
 
 .qmes-ipad-home-card.is-equipment::before{background:#fbbf24!important;}
 .qmes-ipad-home-card.is-equipment .qmes-ipad-home-code{color:#d97706!important;}
+/* EM 설비점검 현장입력 상단 제목: EM만 주황색 */
+.qmes-ipad-pop:has(.qmes-ipad-equipment) .qmes-ipad-work-head > div:nth-child(2) > span{color:#d97706!important;-webkit-text-fill-color:#d97706!important;}
 @media(max-width:700px){.qmes-ipad-equipment{padding:16px!important;border-radius:15px!important;}.qmes-ipad-equipment .qmes-equipment-nav-block{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}.qmes-ipad-equipment .qmes-equipment-nav-block>button{min-height:46px!important;height:46px!important;font-size:13px!important;}}
