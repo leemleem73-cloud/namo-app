@@ -73,6 +73,9 @@ function InventoryTab() {
   const inventoryRows = typeof window.qmesBuildInventoryRows === "function"
     ? (window.qmesBuildInventoryRows() || [])
     : INVENTORY;
+  const finishedRows = typeof window.qmesBuildFinishedGoodsRows === "function"
+    ? (window.qmesBuildFinishedGoodsRows() || [])
+    : [];
   const short = inventoryRows.filter((i) => i.stock < i.safety);
   return (
     <div className="flex flex-col gap-4" data-inventory-version={inventoryVersion}>
@@ -128,6 +131,46 @@ function InventoryTab() {
         </div>
         <p className="text-[11px] text-slate-500 mt-3">
           창고 25±5℃ · 습도 50% 이하, 드라이룸 RH 0.54% 이하 / DP -40℃ · 선입선출(FIFO) 관리 — 관리계획서 공정 30 기준.
+        </p>
+      </Panel>
+      <Panel
+        title="완제품 재고 현황"
+        right={<span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-300">초록색 B구역 · 총 {finishedRows.length} LOT</span>}
+      >
+        <div className="overflow-x-auto -mx-4 px-4">
+          <table className="w-full text-sm min-w-[900px]">
+            <thead>
+              <tr className="text-xs text-slate-400 border-b border-slate-800">
+                <th className="text-left py-2 pr-3 font-medium">완제품 LOT</th>
+                <th className="text-left py-2 pr-3 font-medium">품목</th>
+                <th className="text-right py-2 pr-3 font-medium">생산량</th>
+                <th className="text-right py-2 pr-3 font-medium">출하량</th>
+                <th className="text-right py-2 pr-3 font-medium">현재고</th>
+                <th className="text-left py-2 pr-3 font-medium">보관구역</th>
+                <th className="text-left py-2 pr-3 font-medium">보관조건</th>
+                <th className="text-left py-2 font-medium">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {finishedRows.length > 0 ? finishedRows.map((row) => (
+                <tr key={row.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
+                  <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{row.lot}</td>
+                  <td className="py-2.5 pr-3 text-slate-100">{row.item}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums">{Number(row.produced || 0).toLocaleString()} {row.unit || "kg"}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{Number(row.shipped || 0).toLocaleString()} {row.unit || "kg"}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums font-semibold text-emerald-300">{Number(row.remaining || 0).toLocaleString()} {row.unit || "kg"}</td>
+                  <td className="py-2.5 pr-3 text-xs font-bold text-emerald-300">B구역 (B-1-1~B-3-2)</td>
+                  <td className="py-2.5 pr-3 text-xs text-slate-400">25±5℃ · 습도 50%↓</td>
+                  <td className="py-2.5"><Badge tone={row.status === "출하완료" ? "green" : "blue"}>{row.status || "재고"}</Badge></td>
+                </tr>
+              )) : (
+                <tr><td colSpan="8" className="py-8 text-center text-slate-500">생산 완료된 완제품 재고가 없습니다.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[11px] text-slate-500 mt-3">
+          완제품은 초록색 B구역(B-1-1~B-3-2)에 보관하며, 현황판 손글씨가 아닌 현장 랙 표찰을 기준으로 관리합니다.
         </p>
       </Panel>
     </div>
