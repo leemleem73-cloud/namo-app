@@ -113,8 +113,19 @@ function InventoryTab() {
         </div>
       )}
       <Panel title="원재료 · 부자재 재고 현황" right={<span className="text-xs text-slate-400">총 {inventoryRows.length}개 품목</span>}>
-        <div className="overflow-x-auto -mx-4 px-4">
-          <table className="w-full text-sm min-w-[760px]">
+        <div className="overflow-x-auto px-2">
+          <div className="mx-auto max-w-[1480px]">
+          <table className="w-full table-fixed text-sm min-w-[1080px]">
+            <colgroup>
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "18%" }} />
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "6%" }} />
+            </colgroup>
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="text-left py-2 pr-3 font-medium">자재코드</th>
@@ -152,8 +163,9 @@ function InventoryTab() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
-        <p className="text-[11px] text-slate-500 mt-3">
+        <p className="mx-auto max-w-[1480px] px-2 text-[11px] text-slate-500 mt-3">
           모든 원재료·부자재·완제품 공통 보관기준: 25±5℃ · 습도 50%↓ · 선입선출(FIFO) 관리.
         </p>
       </Panel>
