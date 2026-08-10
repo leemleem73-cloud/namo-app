@@ -145,6 +145,7 @@
 
   function storageLocation(value){
     const source=upper(value).replace(/[\s_-]+/g,"");
+    if(source === "PAI" || source.includes("PAI")) return "A-1-2";
     if(source.includes("KTR201")) return "A-6-1";
     if(source.includes("SOLEF5140")) return "A-3-2";
     if(source.includes("BYK180") || source.includes("분산제")) return "A-3-2 / A-4-1";
