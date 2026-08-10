@@ -10,6 +10,39 @@
 }
 .qmes-ipad-equipment > *{color:#1f2937!important;}
 
+/* 공통 Panel/Tailwind 네이비 테마 강제 해제 — EM 내부에만 적용 */
+.qmes-ipad-equipment [class*="bg-slate-"],
+.qmes-ipad-equipment .bg-slate-950,
+.qmes-ipad-equipment .bg-slate-900,
+.qmes-ipad-equipment .bg-slate-800,
+.qmes-ipad-equipment .bg-slate-800\/30,
+.qmes-ipad-equipment .bg-slate-800\/40,
+.qmes-ipad-equipment .bg-slate-900\/50,
+.qmes-ipad-equipment .bg-slate-950\/40{
+  background:#ffffff!important;
+  background-color:#ffffff!important;
+}
+.qmes-ipad-equipment [class*="border-slate-"],
+.qmes-ipad-equipment .border-slate-900,
+.qmes-ipad-equipment .border-slate-800,
+.qmes-ipad-equipment .border-slate-700,
+.qmes-ipad-equipment .border-slate-600{
+  border-color:#d9e0e7!important;
+}
+.qmes-ipad-equipment [class*="text-slate-100"],
+.qmes-ipad-equipment [class*="text-slate-200"],
+.qmes-ipad-equipment [class*="text-slate-300"]{
+  color:#111827!important;
+}
+.qmes-ipad-equipment [class*="text-slate-400"],
+.qmes-ipad-equipment [class*="text-slate-500"],
+.qmes-ipad-equipment [class*="text-slate-600"]{
+  color:#64748b!important;
+}
+.qmes-ipad-equipment [class*="hover:bg-slate-"]:hover{
+  background:#f8fafc!important;
+}
+
 /* EM 내부 영역은 큰 흰색 패널 안의 정돈된 서브 영역으로 표시 */
 .qmes-ipad-equipment section,
 .qmes-ipad-equipment .panel,
