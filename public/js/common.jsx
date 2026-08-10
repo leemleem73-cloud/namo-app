@@ -74,7 +74,6 @@ const INVENTORY = [
   { code: "RM-SBS", name: "SBS", stock: 0, safety: 300, unit: "kg", loc: "드라이룸 DR-02", cond: "RH 0.54%↓" },
   { code: "RM-PVDF", name: "PVdF", stock: 0, safety: 400, unit: "kg", loc: "드라이룸 DR-02", cond: "RH 0.54%↓" },
   { code: "RM-SBR", name: "SBR", stock: 0, safety: 300, unit: "kg", loc: "원재료창고 A-03", cond: "25±5℃ · 습도 50%↓" },
-  { code: "PK-CAN20", name: "포장용기 20kg 캔", stock: 0, safety: 400, unit: "EA", loc: "부자재창고 C-02", cond: "-" },
 ];
 
 /* ──────────────────────────── 설비 ──────────────────────────── */
