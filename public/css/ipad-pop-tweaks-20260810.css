@@ -2,12 +2,26 @@
 .qmes-ipad-mode-tabs button{gap:11px!important;}
 .qmes-ipad-mode-tabs small{font-size:22px!important;font-weight:950!important;}
 .qmes-ipad-mode-tabs strong{font-size:19px!important;font-weight:900!important;}
-.qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title > span{
+.qmes-ipad-work-head > div:nth-child(2) > span{font-size:24px!important;font-weight:900!important;}
+.qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title > span,
+.qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title > span{
+  width:44px!important;
+  height:44px!important;
+  border-radius:12px!important;
   background:#122841!important;
   border:1px solid #27415f!important;
   color:#fff!important;
+  font-size:18px!important;
+  font-weight:950!important;
   box-shadow:0 4px 10px rgba(18,40,65,.22)!important;
 }
+.qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title{min-height:46px!important;align-items:center!important;}
+.qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title > div:not(.qmes-ipad-current-judge){display:flex!important;align-items:center!important;min-height:44px!important;}
+.qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title h2{font-size:21px!important;line-height:44px!important;font-weight:900!important;}
+.qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title p{font-size:12px!important;line-height:1.2!important;margin-left:10px!important;}
+.qmes-ipad-form-grid input.lot::placeholder{font-size:13px!important;letter-spacing:-.02em!important;}
+.qmes-ipad-form-grid > label:last-child{grid-column:1 / -1!important;}
+.qmes-ipad-form-grid > label:last-child input{width:100%!important;}
 .qmes-ipad-triple input.is-spec-ng,
 .qmes-ipad-repeat-choice input.is-spec-ng{
   color:#dc2626!important;
@@ -24,4 +38,6 @@
 @media (max-width:620px){
   .qmes-ipad-mode-tabs small{font-size:19px!important;}
   .qmes-ipad-mode-tabs strong{font-size:17px!important;}
+  .qmes-ipad-work-head > div:nth-child(2) > span{font-size:21px!important;}
+  .qmes-ipad-form-grid > label:last-child{grid-column:1!important;}
 }
