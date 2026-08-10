@@ -78,9 +78,10 @@
   min-width:0!important;
   width:100%!important;
 }
+/* 상단 설비 관리 아래의 등록 설비/30일 이내 일정/기한 초과/미완료 수리 4칸은 제거하고,
+   각 메뉴 아래의 실제 관리/점검 내용은 그대로 유지한다. */
 .qmes-ipad-equipment .qmes-equipment-management-summary{
-  width:100%!important;
-  margin:0!important;
+  display:none!important;
 }
 
 @media(max-width:900px){
