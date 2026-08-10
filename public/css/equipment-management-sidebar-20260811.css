@@ -7,6 +7,10 @@
   width:100%!important;
   min-width:0!important;
 }
+/* 좌측 세로 메뉴가 생성된 뒤 남아 있는 기존 가로 설비 메뉴는 숨긴다. */
+.qmes-ipad-equipment .qmes-equipment-nav-block:not(.qmes-equipment-management-sidebar){
+  display:none!important;
+}
 .qmes-ipad-equipment .qmes-equipment-management-sidebar{
   position:sticky!important;
   top:14px!important;
