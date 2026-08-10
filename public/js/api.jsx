@@ -62,6 +62,10 @@ function InventoryRealtimeSummary() {
 
 function InventoryTab() {
   const [inventoryVersion, setInventoryVersion] = useState(0);
+  const [packagingQty, setPackagingQty] = useState(0);
+  const [packagingInput, setPackagingInput] = useState("0");
+  const [packagingSaving, setPackagingSaving] = useState(false);
+  const [packagingMessage, setPackagingMessage] = useState("");
 
   useEffect(() => {
     const refresh = () => setInventoryVersion((value) => value + 1);
@@ -70,27 +74,72 @@ function InventoryTab() {
     return () => events.forEach((eventName) => window.removeEventListener(eventName, refresh));
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    if (typeof window.qmesSyncList !== "function") return () => { active = false; };
+    window.qmesSyncList("inventory")
+      .then((records) => {
+        if (!active) return;
+        const record = (records || []).find((row) => row.record_key === "packaging-can-20kg");
+        const quantity = Math.max(0, Number(record?.payload?.quantity || 0));
+        setPackagingQty(quantity);
+        setPackagingInput(String(quantity));
+      })
+      .catch((error) => {
+        if (active) setPackagingMessage(error?.message || "포장용기 수량을 불러오지 못했습니다.");
+      });
+    return () => { active = false; };
+  }, [inventoryVersion]);
+
+  const savePackagingQty = async () => {
+    const quantity = Number(packagingInput);
+    if (!Number.isFinite(quantity) || quantity < 0) {
+      setPackagingMessage("0 이상의 수량을 입력해 주세요.");
+      return;
+    }
+    if (typeof window.qmesSyncUpsert !== "function") {
+      setPackagingMessage("재고 동기화 준비 후 다시 저장해 주세요.");
+      return;
+    }
+    setPackagingSaving(true);
+    setPackagingMessage("");
+    try {
+      await window.qmesSyncUpsert("inventory", "packaging-can-20kg", {
+        item: "포장용기 20kg 캔",
+        quantity,
+        unit: "EA",
+        storageZone: "B구역 (B-1-1~B-3-2)",
+        storageCondition: "25±5℃ · 습도 50%↓",
+        updatedAt: new Date().toISOString(),
+        updatedBy: String(window.__QMES_CURRENT_USER__?.name || ""),
+      });
+      setPackagingQty(quantity);
+      setPackagingInput(String(quantity));
+      setPackagingMessage("저장 완료");
+      window.dispatchEvent(new CustomEvent("qmes:data-updated"));
+    } catch (error) {
+      setPackagingMessage(error?.message || "포장용기 수량 저장에 실패했습니다.");
+    } finally {
+      setPackagingSaving(false);
+    }
+  };
+
   const inventoryRows = typeof window.qmesBuildInventoryRows === "function"
     ? (window.qmesBuildInventoryRows() || [])
     : INVENTORY;
   const finishedRows = typeof window.qmesBuildFinishedGoodsRows === "function"
     ? (window.qmesBuildFinishedGoodsRows() || [])
     : [];
-  const packagingLots = typeof window.qmesBuildInventoryLotRows === "function"
-    ? (window.qmesBuildInventoryLotRows() || []).filter((row) => row.materialKey === "CAN20")
-    : [];
-  const packagingRows = packagingLots.length > 0
-    ? packagingLots.map((row) => ({
-        lot: row.lot || "-",
-        item: "포장용기 20kg 캔",
-        produced: Number(row.received || 0),
-        shipped: Number(row.used || 0),
-        remaining: Number(row.remaining || 0),
-        unit: "EA",
-        status: Number(row.remaining || 0) > 0 ? "재고" : "소진",
-        packaging: true,
-      }))
-    : [{ lot: "-", item: "포장용기 20kg 캔", produced: 0, shipped: 0, remaining: 0, unit: "EA", status: "재고", packaging: true }];
+  const packagingRows = [{
+    lot: "수기",
+    item: "포장용기 20kg 캔",
+    produced: 0,
+    shipped: 0,
+    remaining: packagingQty,
+    unit: "EA",
+    status: packagingQty > 0 ? "재고" : "재고없음",
+    packaging: true,
+  }];
   const finishedDisplayRows = [...finishedRows, ...packagingRows];
   const short = inventoryRows.filter((i) => i.stock < i.safety);
   return (
@@ -172,9 +221,35 @@ function InventoryTab() {
                 <tr key={row.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{row.lot}</td>
                   <td className="py-2.5 pr-3 text-slate-100">{row.item}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums">{Number(row.produced || 0).toLocaleString()} {row.unit || "kg"}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{Number(row.shipped || 0).toLocaleString()} {row.unit || "kg"}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums font-semibold text-emerald-300">{Number(row.remaining || 0).toLocaleString()} {row.unit || "kg"}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums">{row.packaging ? "-" : `${Number(row.produced || 0).toLocaleString()} ${row.unit || "kg"}`}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-300">{row.packaging ? "-" : `${Number(row.shipped || 0).toLocaleString()} ${row.unit || "kg"}`}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums font-semibold text-emerald-300">
+                    {row.packaging ? (
+                      <div className="flex items-center justify-end gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={packagingInput}
+                          onChange={(event) => setPackagingInput(event.target.value)}
+                          className="w-24 rounded-md border border-slate-600 bg-slate-950 px-2 py-1 text-right text-slate-100"
+                          aria-label="포장용기 20kg 캔 현재고"
+                        />
+                        <span className="text-xs text-slate-400">EA</span>
+                        <button
+                          type="button"
+                          onClick={savePackagingQty}
+                          disabled={packagingSaving}
+                          className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+                        >
+                          {packagingSaving ? "저장 중" : "저장"}
+                        </button>
+                        {packagingMessage && <span className="text-[11px] text-slate-400">{packagingMessage}</span>}
+                      </div>
+                    ) : (
+                      <>{Number(row.remaining || 0).toLocaleString()} {row.unit || "kg"}</>
+                    )}
+                  </td>
                   <td className="py-2.5 pr-3 text-xs font-bold text-emerald-300">B구역 (B-1-1~B-3-2)</td>
                   <td className="py-2.5 pr-3 text-xs text-slate-400">25±5℃ · 습도 50%↓</td>
                   <td className="py-2.5"><Badge tone={row.status === "출하완료" ? "green" : "blue"}>{row.status || "재고"}</Badge></td>
