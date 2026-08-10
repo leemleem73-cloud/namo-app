@@ -5,12 +5,15 @@
 .qmes-ipad-work-head > div:nth-child(2) > span{display:inline-block!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;font-size:24px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;font-kerning:normal!important;font-feature-settings:"kern" 1!important;color:#5f7182!important;}
 body > #root > div:has(.qmes-ipad-pop){
   background:
-    radial-gradient(ellipse at 12% 18%,rgba(77,91,104,.48) 0%,rgba(77,91,104,.18) 24%,transparent 48%),
-    radial-gradient(ellipse at 72% 14%,rgba(154,162,169,.34) 0%,rgba(154,162,169,.13) 22%,transparent 46%),
-    radial-gradient(ellipse at 43% 58%,rgba(63,77,89,.40) 0%,rgba(63,77,89,.14) 27%,transparent 52%),
-    radial-gradient(ellipse at 88% 72%,rgba(185,190,194,.36) 0%,rgba(185,190,194,.12) 25%,transparent 50%),
-    radial-gradient(ellipse at 20% 88%,rgba(34,51,67,.48) 0%,rgba(34,51,67,.18) 25%,transparent 49%),
-    linear-gradient(135deg,#0b1d30 0%,#1f3343 28%,#53616d 56%,#858d94 78%,#b8bdc1 100%)!important;
+    radial-gradient(ellipse at 5% 12%,rgba(146,153,160,.30) 0%,rgba(146,153,160,.12) 18%,transparent 40%),
+    radial-gradient(ellipse at 18% 42%,rgba(111,121,131,.30) 0%,rgba(111,121,131,.10) 22%,transparent 46%),
+    radial-gradient(ellipse at 8% 82%,rgba(128,137,145,.24) 0%,rgba(128,137,145,.09) 20%,transparent 44%),
+    radial-gradient(ellipse at 42% 18%,rgba(70,84,97,.36) 0%,rgba(70,84,97,.13) 24%,transparent 49%),
+    radial-gradient(ellipse at 70% 8%,rgba(166,173,179,.30) 0%,rgba(166,173,179,.11) 21%,transparent 44%),
+    radial-gradient(ellipse at 58% 60%,rgba(80,93,104,.34) 0%,rgba(80,93,104,.11) 24%,transparent 49%),
+    radial-gradient(ellipse at 91% 68%,rgba(190,195,199,.34) 0%,rgba(190,195,199,.12) 23%,transparent 48%),
+    radial-gradient(ellipse at 76% 94%,rgba(126,136,145,.25) 0%,rgba(126,136,145,.08) 22%,transparent 45%),
+    linear-gradient(152deg,#0c1f31 0%,#1d3142 24%,#465762 48%,#788289 73%,#b7bcc0 100%)!important;
   background-color:#53616d!important;
   background-attachment:fixed!important;
 }
