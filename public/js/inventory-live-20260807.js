@@ -130,7 +130,9 @@
 
   function baseInventory(){
     try {
-      if (typeof INVENTORY !== "undefined" && Array.isArray(INVENTORY)) return INVENTORY;
+      if (typeof INVENTORY !== "undefined" && Array.isArray(INVENTORY)) {
+        return INVENTORY.filter((row) => materialKey(row?.name) !== "CAN20" && String(row?.code || "") !== "PK-CAN20");
+      }
     } catch (_error) {}
     return [
       { code:"RM-NMP", name:"NMP", stock:0, safety:2400, unit:"kg", loc:"위험물창고 D-01", cond:"밀폐 · 25±5℃" },
