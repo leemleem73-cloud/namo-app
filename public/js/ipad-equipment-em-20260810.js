@@ -7,6 +7,13 @@
       var root=panel.closest('.qmes-ipad-pop');
       var code=root && root.querySelector('.qmes-ipad-work-head > div:nth-child(2) > span');
       if(code && code.textContent.trim()==='EQ') code.textContent='EM';
+
+      panel.querySelectorAll('h1,h2,h3,h4,h5,strong,span,p,div').forEach(function(el){
+        if(el.children.length===0 && el.textContent.trim()==='설비대장') el.classList.add('qmes-equipment-registry-title');
+      });
+      panel.querySelectorAll('button').forEach(function(button){
+        if(button.textContent.replace(/\s+/g,'').includes('신규등록')) button.classList.add('qmes-equipment-new-register');
+      });
     });
   }
   apply();
