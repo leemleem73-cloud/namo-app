@@ -40,17 +40,12 @@
       .${SPIN_CLASS} button:first-child{border-bottom:1px solid #cbd3da!important;}
       .${SPIN_CLASS} button:hover,.${SPIN_CLASS} button:focus-visible{background:#e5eaf0!important;color:#17212b!important;outline:none!important;}
       .qmes-ipad-pop input[data-qmes-list-id]{
-        color-scheme:light!important;
-        background:#fff!important;
-        color:#111827!important;
+        color-scheme:light!important;background:#fff!important;color:#111827!important;
       }
       .qmes-ipad-pop input[data-qmes-list-id]::placeholder,
       .qmes-ipad-pop input.lot::placeholder{
-        font-family:Pretendard,system-ui,sans-serif!important;
-        font-size:16px!important;
-        font-weight:400!important;
-        letter-spacing:0!important;
-        color:#94a3b8!important;
+        font-family:Pretendard,system-ui,sans-serif!important;font-size:16px!important;
+        font-weight:400!important;letter-spacing:0!important;color:#94a3b8!important;
       }
       .qmes-ipad-custom-list-field{position:relative!important;}
       .${DROPDOWN_CLASS}{
@@ -59,6 +54,7 @@
         padding:5px;background:#fff!important;color:#111827!important;
         border:1px solid #cbd5e1;border-radius:10px;
         box-shadow:0 10px 26px rgba(15,23,42,.18);
+        color-scheme:light!important;
       }
       .${DROPDOWN_CLASS}.is-open{display:block!important;}
       .${DROPDOWN_CLASS} button{
@@ -72,7 +68,7 @@
         background:#f1f5f9!important;color:#000!important;outline:none!important;
       }
       .${DROPDOWN_CLASS} .qmes-ipad-empty-option{
-        padding:10px;color:#64748b;background:#fff;font-size:13px;text-align:left;
+        padding:10px;color:#64748b!important;background:#fff!important;font-size:13px;text-align:left;
       }
     `;
     document.head.appendChild(style);
@@ -90,10 +86,7 @@
     const raw = window.prompt("추가할 원자재명을 입력하세요.");
     if (raw === null) return;
     const name = String(raw).trim();
-    if (!name) {
-      window.alert("원자재명을 입력하세요.");
-      return;
-    }
+    if (!name) { window.alert("원자재명을 입력하세요."); return; }
 
     const defaults = typeof window.IQC_MATERIALS !== "undefined" && Array.isArray(window.IQC_MATERIALS)
       ? window.IQC_MATERIALS
@@ -108,22 +101,16 @@
       if (typeof window.dbSave === "function") window.dbSave();
       else if (typeof dbSave === "function") dbSave();
     }
-
     const list = document.getElementById("qmes-ipad-materials");
     if (list && !Array.from(list.options).some((option) => option.value.toLowerCase() === selected.toLowerCase())) {
-      const option = document.createElement("option");
-      option.value = selected;
-      list.appendChild(option);
+      const option = document.createElement("option"); option.value = selected; list.appendChild(option);
     }
-
     setReactInputValue(input, selected);
     input.focus();
-    input.dispatchEvent(new Event("focus", { bubbles:true }));
   }
 
   function numberStepFor(labelText) {
-    if (/입고중량|출하량|출하수량/.test(labelText)) return 1;
-    if (/검사수량|불량수량/.test(labelText)) return 1;
+    if (/입고중량|출하량|출하수량|검사수량|불량수량/.test(labelText)) return 1;
     return null;
   }
 
@@ -138,21 +125,16 @@
   }
 
   function enhanceMaterial() {
-    const input = document.querySelector('.qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"]');
+    const input = document.querySelector('.qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-materials"]');
     if (!input) return;
     const label = input.closest("label");
     if (!label || label.querySelector(`.${BUTTON_CLASS}`)) return;
-
     label.classList.add("qmes-ipad-material-field");
     const button = document.createElement("button");
-    button.type = "button";
-    button.className = BUTTON_CLASS;
-    button.textContent = "+ 추가";
+    button.type = "button"; button.className = BUTTON_CLASS; button.textContent = "+ 추가";
     button.setAttribute("aria-label", "원자재명 추가");
     button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      addMaterial(input);
+      event.preventDefault(); event.stopPropagation(); addMaterial(input);
     });
     label.appendChild(button);
   }
@@ -161,74 +143,62 @@
     const list = document.getElementById(listId);
     if (!list) return [];
     return Array.from(list.querySelectorAll("option"))
-      .map((option) => String(option.value || option.textContent || "").trim())
-      .filter(Boolean);
+      .map((option) => String(option.value || option.textContent || "").trim()).filter(Boolean);
+  }
+
+  function getDropdown(input) {
+    return input.closest("label")?.querySelector(`.${DROPDOWN_CLASS}`) || null;
   }
 
   function renderDropdown(input, dropdown) {
+    if (!input || !dropdown) return;
     const listId = input.dataset.qmesListId;
     const query = String(input.value || "").trim().toLowerCase();
     const values = [...new Set(getListValues(listId))]
-      .filter((value) => !query || value.toLowerCase().includes(query))
-      .slice(0, 40);
-
+      .filter((value) => !query || value.toLowerCase().includes(query)).slice(0, 40);
     dropdown.innerHTML = "";
     if (!values.length) {
       const empty = document.createElement("div");
-      empty.className = "qmes-ipad-empty-option";
-      empty.textContent = "일치하는 목록이 없습니다.";
-      dropdown.appendChild(empty);
-      return;
+      empty.className = "qmes-ipad-empty-option"; empty.textContent = "일치하는 목록이 없습니다.";
+      dropdown.appendChild(empty); return;
     }
-
     values.forEach((value) => {
       const option = document.createElement("button");
-      option.type = "button";
-      option.textContent = value;
-      option.addEventListener("mousedown", (event) => event.preventDefault());
-      option.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setReactInputValue(input, value);
-        dropdown.classList.remove("is-open");
-        input.focus();
-      });
+      option.type = "button"; option.textContent = value; option.dataset.qmesOptionValue = value;
       dropdown.appendChild(option);
     });
   }
 
-  function enhanceCustomListInput(input) {
-    if (!input || input.dataset.qmesCustomList === "1") return;
-    const listId = input.getAttribute("list");
-    if (!listId || !/^(qmes-ipad-materials|qmes-ipad-lots)$/.test(listId)) return;
+  function syncCustomListInput(input) {
+    if (!input) return;
+    const nativeListId = input.getAttribute("list");
+    const currentListId = input.dataset.qmesListId || "";
+    const targetListId = nativeListId && /^(qmes-ipad-materials|qmes-ipad-lots)$/.test(nativeListId)
+      ? nativeListId : currentListId;
+    if (!/^(qmes-ipad-materials|qmes-ipad-lots)$/.test(targetListId)) return;
 
+    /* React may reuse this DOM input when IQC/PQC/OQC changes. Always overwrite the old list identity. */
+    if (nativeListId) {
+      input.dataset.qmesListId = nativeListId;
+      input.removeAttribute("list");
+    }
     input.dataset.qmesCustomList = "1";
-    input.dataset.qmesListId = listId;
-    input.removeAttribute("list");
 
     const label = input.closest("label");
     if (!label) return;
     label.classList.add("qmes-ipad-custom-list-field");
-
-    const dropdown = document.createElement("div");
-    dropdown.className = DROPDOWN_CLASS;
-    dropdown.setAttribute("role", "listbox");
-    label.appendChild(dropdown);
-
-    const open = () => {
-      renderDropdown(input, dropdown);
-      dropdown.classList.add("is-open");
-    };
-    input.addEventListener("focus", open);
-    input.addEventListener("click", open);
-    input.addEventListener("input", open);
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") dropdown.classList.remove("is-open");
-    });
+    let dropdown = label.querySelector(`.${DROPDOWN_CLASS}`);
+    if (!dropdown) {
+      dropdown = document.createElement("div");
+      dropdown.className = DROPDOWN_CLASS;
+      dropdown.setAttribute("role", "listbox");
+      label.appendChild(dropdown);
+    }
+    dropdown.dataset.qmesForList = input.dataset.qmesListId;
   }
 
   function enhanceCustomLists() {
-    document.querySelectorAll('.qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-lots"]').forEach(enhanceCustomListInput);
+    document.querySelectorAll('.qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-lots"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-lots"]').forEach(syncCustomListInput);
   }
 
   function enhanceNumbers() {
@@ -238,52 +208,67 @@
       if (!/입고중량|검사수량|불량수량|출하량|출하수량/.test(title)) return;
       const input = label.querySelector("input");
       if (!input || input.type === "date") return;
-
       label.classList.add("qmes-ipad-number-field");
-      const stepper = document.createElement("span");
-      stepper.className = SPIN_CLASS;
-      stepper.setAttribute("aria-hidden", "false");
-
-      const up = document.createElement("button");
-      up.type = "button";
-      up.textContent = "▲";
-      up.setAttribute("aria-label", `${title} 증가`);
-      up.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        stepNumber(input, 1, title);
-      });
-
-      const down = document.createElement("button");
-      down.type = "button";
-      down.textContent = "▼";
-      down.setAttribute("aria-label", `${title} 감소`);
-      down.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        stepNumber(input, -1, title);
-      });
-
-      stepper.append(up, down);
+      const stepper = document.createElement("span"); stepper.className = SPIN_CLASS;
+      const makeButton = (text, delta) => {
+        const button = document.createElement("button"); button.type = "button"; button.textContent = text;
+        button.setAttribute("aria-label", `${title} ${delta > 0 ? "증가" : "감소"}`);
+        button.addEventListener("click", (event) => {
+          event.preventDefault(); event.stopPropagation(); stepNumber(input, delta, title);
+        });
+        return button;
+      };
+      stepper.append(makeButton("▲", 1), makeButton("▼", -1));
       label.appendChild(stepper);
     });
   }
 
-  function enhance() {
-    ensureStyle();
-    enhanceMaterial();
-    enhanceCustomLists();
-    enhanceNumbers();
+  function openCustomList(input) {
+    if (!input?.matches('.qmes-ipad-pop input[data-qmes-list-id]')) return;
+    const dropdown = getDropdown(input);
+    if (!dropdown) return;
+    renderDropdown(input, dropdown);
+    dropdown.classList.add("is-open");
   }
 
+  document.addEventListener("focusin", (event) => openCustomList(event.target));
+  document.addEventListener("click", (event) => {
+    const input = event.target.closest?.('.qmes-ipad-pop input[data-qmes-list-id]');
+    if (input) openCustomList(input);
+
+    const option = event.target.closest?.(`.${DROPDOWN_CLASS} button[data-qmes-option-value]`);
+    if (option) {
+      event.preventDefault(); event.stopPropagation();
+      const label = option.closest("label");
+      const targetInput = label?.querySelector('input[data-qmes-list-id]');
+      if (targetInput) {
+        setReactInputValue(targetInput, option.dataset.qmesOptionValue || "");
+        option.closest(`.${DROPDOWN_CLASS}`)?.classList.remove("is-open");
+        targetInput.focus();
+      }
+    }
+  });
+  document.addEventListener("input", (event) => openCustomList(event.target));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && event.target?.matches?.('.qmes-ipad-pop input[data-qmes-list-id]')) {
+      getDropdown(event.target)?.classList.remove("is-open");
+    }
+  });
   document.addEventListener("pointerdown", (event) => {
     document.querySelectorAll(`.${DROPDOWN_CLASS}.is-open`).forEach((dropdown) => {
       if (!dropdown.parentElement?.contains(event.target)) dropdown.classList.remove("is-open");
     });
   });
 
+  function enhance() {
+    ensureStyle();
+    enhanceCustomLists();
+    enhanceMaterial();
+    enhanceNumbers();
+  }
+
   const observer = new MutationObserver(enhance);
-  observer.observe(document.documentElement, { childList:true, subtree:true });
+  observer.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:["list"] });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enhance, { once:true });
   else enhance();
 })();
