@@ -13,6 +13,7 @@
 .qmes-ipad-hero span,.qmes-ipad-work-head > div > span { color:#38c8f1; font-size:12px; font-weight:900; letter-spacing:.12em; }
 .qmes-ipad-hero h1,.qmes-ipad-work-head h1 { margin:4px 0 2px; color:#fff; font-size:clamp(24px,3vw,34px); line-height:1.15; }
 .qmes-ipad-hero h1 { color:#111827; font-weight:900; }
+.qmes-ipad-work-head h1 { color:#111827; font-weight:900; }
 .qmes-ipad-hero p { margin:6px 0 0; color:#9eb3c9; font-size:14px; }
 .qmes-ipad-inspector { flex:0 0 auto; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; color:#475569; font-size:13px; box-shadow:0 8px 22px rgba(15,23,42,.14); }
 .qmes-ipad-inspector strong { display:block; margin-top:2px; color:#111827; font-size:17px; }
@@ -32,12 +33,14 @@
 
 .qmes-ipad-work-head { min-height:86px; padding:16px 20px; }
 .qmes-ipad-work-head h1 { font-size:24px; }
-.qmes-ipad-back { min-height:48px; padding:0 16px; border:1px solid #3a5775; border-radius:10px; background:#162b43; color:#c5d6e7; font-weight:800; cursor:pointer; }
+.qmes-ipad-back { min-height:48px; padding:0 16px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#1f2937; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,.08); }
+.qmes-ipad-back:hover,.qmes-ipad-back:focus-visible { background:#f8fafc; border-color:#94a3b8; outline:none; }
 .qmes-ipad-mode-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0; }
-.qmes-ipad-mode-tabs button { display:flex; min-height:66px; align-items:center; justify-content:center; gap:10px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; color:#1f2937; cursor:pointer; }
-.qmes-ipad-mode-tabs button.is-active { border-color:#27bce9; background:#effaff; color:#111827; box-shadow:inset 0 0 0 1px rgba(39,188,233,.2); }
-.qmes-ipad-mode-tabs small { color:#0284c7; font-size:11px; font-weight:900; }
-.qmes-ipad-mode-tabs strong { font-size:17px; }
+.qmes-ipad-mode-tabs button { display:flex; min-height:66px; align-items:center; justify-content:center; gap:10px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; color:#1f2937; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,.08); }
+.qmes-ipad-mode-tabs button:hover,.qmes-ipad-mode-tabs button:focus-visible { background:#f8fafc; border-color:#94a3b8; outline:none; }
+.qmes-ipad-mode-tabs button.is-active { border-color:#0284c7; background:#e0f2fe; color:#0f172a; box-shadow:0 5px 14px rgba(2,132,199,.14), inset 0 0 0 1px rgba(2,132,199,.18); }
+.qmes-ipad-mode-tabs small { color:#0369a1; font-size:11px; font-weight:900; }
+.qmes-ipad-mode-tabs strong { color:#111827; font-size:17px; }
 .qmes-ipad-section { margin-top:14px; padding:20px; border:1px solid #cbd5e1; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.10); color:#1f2937; }
 .qmes-ipad-section-title { display:flex; align-items:center; gap:12px; margin-bottom:17px; }
 .qmes-ipad-section-title > span { display:grid; width:38px; height:38px; flex:0 0 auto; place-items:center; border-radius:10px; background:#0e7399; color:#fff; font-weight:900; }
@@ -57,18 +60,22 @@
 .qmes-ipad-gate.is-open { border:1px solid rgba(5,150,105,.35); background:#ecfdf5; color:#047857; }
 .qmes-ipad-gate.is-blocked { border:1px solid rgba(225,29,72,.35); background:#fff1f2; color:#be123c; }
 .qmes-ipad-current-judge { margin-left:auto; padding:8px 13px; border-radius:999px; background:#f1f5f9; color:#334155; font-size:13px; font-weight:900; }
-.qmes-ipad-current-judge.is-합격 { background:#ecfdf5; color:#047857; }
-.qmes-ipad-current-judge.is-불합격 { background:#fff1f2; color:#be123c; }
+.qmes-ipad-current-judge.is-합격 { background:#dcfce7; color:#15803d; }
+.qmes-ipad-current-judge.is-불합격 { background:#fee2e2; color:#dc2626; }
 .qmes-ipad-progress { height:7px; overflow:hidden; margin:-4px 0 14px; border-radius:999px; background:#e2e8f0; }
 .qmes-ipad-progress i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#0ea5e9,#37d5bd); transition:width .2s ease; }
 .qmes-ipad-item-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
-.qmes-ipad-item-tabs button { display:grid; min-height:72px; grid-template-columns:24px 1fr; align-items:center; gap:5px 8px; padding:10px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#334155; text-align:left; cursor:pointer; }
+.qmes-ipad-item-tabs button { display:grid; min-height:72px; grid-template-columns:24px 1fr; align-items:center; gap:5px 8px; padding:10px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#334155; text-align:left; cursor:pointer; box-shadow:0 3px 9px rgba(15,23,42,.06); }
 .qmes-ipad-item-tabs button > span { display:grid; width:24px; height:24px; grid-row:span 2; place-items:center; border-radius:7px; background:#e2e8f0; color:#334155; font-size:11px; font-weight:900; }
 .qmes-ipad-item-tabs button strong { color:#111827; font-size:13px; }
 .qmes-ipad-item-tabs button small { color:#64748b; font-size:10px; }
-.qmes-ipad-item-tabs button.is-active { border-color:#32bde6; background:#f0faff; }
-.qmes-ipad-item-tabs button.is-합격 > span { background:#087f5b; color:#d1fae5; }
-.qmes-ipad-item-tabs button.is-불합격 > span { background:#a62d45; color:#ffe4e6; }
+.qmes-ipad-item-tabs button.is-active { border-color:#0284c7; background:#e0f2fe; }
+.qmes-ipad-item-tabs button.is-합격 { border-color:#86efac; background:#f0fdf4; }
+.qmes-ipad-item-tabs button.is-합격 > span { background:#16a34a; color:#fff; }
+.qmes-ipad-item-tabs button.is-합격 small { color:#15803d; }
+.qmes-ipad-item-tabs button.is-불합격 { border-color:#fca5a5; background:#fef2f2; }
+.qmes-ipad-item-tabs button.is-불합격 > span { background:#dc2626; color:#fff; }
+.qmes-ipad-item-tabs button.is-불합격 small { color:#b91c1c; }
 .qmes-ipad-measure-card { padding:18px; border:1px solid #cbd5e1; border-radius:14px; background:#fff; }
 .qmes-ipad-measure-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
 .qmes-ipad-measure-head div { display:flex; flex-direction:column; gap:4px; }
@@ -77,7 +84,8 @@
 .qmes-ipad-measure-head small { padding:7px 10px; border-radius:8px; background:#f1f5f9; color:#334155; font-size:11px; }
 .qmes-ipad-choice { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 .qmes-ipad-choice button,.qmes-ipad-repeat-choice button { min-height:72px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; color:#1f2937; font-size:18px; font-weight:900; cursor:pointer; }
-.qmes-ipad-choice button.is-selected,.qmes-ipad-repeat-choice button.is-selected { border-color:#22c7ed; background:#0c6585; color:#fff; box-shadow:inset 0 0 0 2px rgba(255,255,255,.08); }
+.qmes-ipad-choice button.is-selected:first-child,.qmes-ipad-repeat-choice button.is-selected:first-child { border-color:#16a34a; background:#16a34a; color:#fff; box-shadow:0 4px 12px rgba(22,163,74,.18); }
+.qmes-ipad-choice button.is-selected:last-child,.qmes-ipad-repeat-choice button.is-selected:last-child { border-color:#dc2626; background:#dc2626; color:#fff; box-shadow:0 4px 12px rgba(220,38,38,.18); }
 .qmes-ipad-triple { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 .qmes-ipad-triple label { display:flex; flex-direction:column; gap:7px; }
 .qmes-ipad-triple span { color:#334155; font-size:12px; font-weight:800; }
@@ -98,21 +106,21 @@
 .qmes-ipad-overall span { color:#334155; font-size:13px; }
 .qmes-ipad-overall strong { grid-row:span 2; font-size:24px; }
 .qmes-ipad-overall small { color:#64748b; font-size:11px; }
-.qmes-ipad-overall.is-합격 { border-color:rgba(5,150,105,.35); }
-.qmes-ipad-overall.is-합격 strong { color:#047857; }
-.qmes-ipad-overall.is-불합격 { border-color:rgba(225,29,72,.4); }
-.qmes-ipad-overall.is-불합격 strong { color:#be123c; }
+.qmes-ipad-overall.is-합격 { border-color:#86efac; background:#f0fdf4; }
+.qmes-ipad-overall.is-합격 strong { color:#15803d; }
+.qmes-ipad-overall.is-불합격 { border-color:#fca5a5; background:#fef2f2; }
+.qmes-ipad-overall.is-불합격 strong { color:#dc2626; }
 .qmes-ipad-overall.is-대기 strong { color:#334155; }
 .qmes-ipad-errors { margin-top:12px; padding:14px 16px; border:1px solid rgba(225,29,72,.35); border-radius:12px; background:#fff1f2; color:#be123c; font-size:13px; }
 .qmes-ipad-errors strong { display:block; margin-bottom:5px; }
 .qmes-ipad-errors p { margin:3px 0; }
 .qmes-ipad-saved { display:flex; min-height:520px; flex-direction:column; align-items:center; justify-content:center; padding:34px; border:1px solid #cbd5e1; border-radius:20px; background:#fff; color:#1f2937; text-align:center; }
-.qmes-ipad-saved-icon { display:grid; width:82px; height:82px; margin-bottom:18px; place-items:center; border-radius:50%; background:#0c8b66; color:#fff; font-size:46px; font-weight:950; }
-.qmes-ipad-saved.is-fail .qmes-ipad-saved-icon { background:#b52e49; }
+.qmes-ipad-saved-icon { display:grid; width:82px; height:82px; margin-bottom:18px; place-items:center; border-radius:50%; background:#16a34a; color:#fff; font-size:46px; font-weight:950; }
+.qmes-ipad-saved.is-fail .qmes-ipad-saved-icon { background:#dc2626; }
 .qmes-ipad-saved > span { color:#475569; font-size:14px; }
 .qmes-ipad-saved h2 { margin:8px 0; color:#111827; font-size:28px; }
-.qmes-ipad-saved > strong { color:#047857; font-size:22px; }
-.qmes-ipad-saved.is-fail > strong { color:#be123c; }
+.qmes-ipad-saved > strong { color:#15803d; font-size:22px; }
+.qmes-ipad-saved.is-fail > strong { color:#dc2626; }
 .qmes-ipad-saved p { color:#475569; }
 .qmes-ipad-sync-warning { display:flex; width:min(520px,100%); box-sizing:border-box; flex-direction:column; gap:10px; margin-top:12px; padding:14px; border:1px solid rgba(225,29,72,.35); border-radius:12px; background:#fff1f2; color:#be123c; font-size:13px; }
 .qmes-ipad-sync-warning button { min-height:48px; border-color:#be3650; background:#9f2942; color:#fff; }
