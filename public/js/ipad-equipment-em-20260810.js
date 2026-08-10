@@ -56,10 +56,10 @@
         font-size:17px!important;font-weight:900!important;
       }
       .qmes-ipad-equipment .qmes-equipment-nav-block>button.qmes-equipment-nav-selected{
-        background:#e0f2fe!important;
-        border-color:#0284c7!important;
+        background:#f7fcff!important;
+        border:1.5px solid #22c7f2!important;
         color:#0f172a!important;
-        box-shadow:none!important;
+        box-shadow:0 0 0 2px rgba(34,199,242,.12)!important;
       }
       .qmes-ipad-equipment .qmes-equipment-complete-status{
         background:#fff!important;border:1.5px solid #22c55e!important;
@@ -195,7 +195,14 @@
       var shouldHide=hiddenSubcaptions.some(function(label){
         return raw===label||compact===label.replace(/\s+/g,'');
       });
-      if(shouldHide){
+      var isEquipmentDescription=(
+        compact.includes('일일점검')&&
+        compact.includes('설비기본정보')&&
+        compact.includes('정기점검')&&
+        compact.includes('고장')&&
+        compact.includes('관리합니다')
+      );
+      if(shouldHide||isEquipmentDescription){
         el.classList.add('qmes-equipment-subcaption-hidden');
       }
     });
