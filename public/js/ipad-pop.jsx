@@ -72,7 +72,7 @@ function qmesIpadItems(mode) {
     { key:"입도(Dmax)", label:"입도(Dmax)", type:"triple" },
     { key:"접착력", label:"접착력", type:"triple" },
     { key:"절연저항", label:"절연저항", type:"resistance3", choices:["Overflow","직접입력"] },
-    { key:"수분", label:"수분", type:"triple" },
+    { key:"수분", label:"수분율", type:"triple" },
     { key:"전해액 안정성", label:"전해액 안정성", type:"choice3", choices:["미탈리","탈리"] }
   ];
 }
@@ -126,7 +126,7 @@ function FieldInputTab() {
     lot:"", product:"", material:"", supplier:"",
     qty:"", inspectQty:"1", defectQty:"0",
     customer:"", shipQty:"", destination:"",
-    inspector, remarks:""
+    inspector:"", remarks:""
   });
 
   const modeMeta = {
@@ -147,7 +147,7 @@ function FieldInputTab() {
       lot:"", product:"", material:"", supplier:"",
       qty:"", inspectQty:"1", defectQty:"0",
       customer:"", shipQty:"", destination:"",
-      inspector, remarks:""
+      inspector:"", remarks:""
     });
     window.scrollTo({top:0, behavior:"smooth"});
   };
@@ -647,7 +647,7 @@ function FieldInputTab() {
               <label><span>입고중량 (kg) <b>*</b></span><input inputMode="decimal" value={form.qty} onChange={(e) => patchForm({qty:e.target.value})} placeholder="0" /></label>
               <label><span>검사수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.inspectQty} onChange={(e) => patchForm({inspectQty:e.target.value})} /></label>
               <label><span>불량수량 (EA)</span><input inputMode="numeric" value={form.defectQty} onChange={(e) => patchForm({defectQty:e.target.value})} /></label>
-              <label><span>검사자</span><input value={String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")} readOnly /></label>
+              <label><span>검사자</span><input value={form.inspector} onChange={(e) => patchForm({inspector:e.target.value})} placeholder="검사자 입력" /></label>
             </>
           ) : (
             <>
@@ -667,7 +667,7 @@ function FieldInputTab() {
               )}
             </>
           )}
-          {mode !== "IQC" && <label><span>검사자</span><input value={String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")} readOnly /></label>}
+          {mode !== "IQC" && <label><span>검사자</span><input value={form.inspector} onChange={(e) => patchForm({inspector:e.target.value})} placeholder="검사자 입력" /></label>}
           <label className="wide"><span>비고</span><input value={form.remarks} onChange={(e) => patchForm({remarks:e.target.value})} placeholder="특이사항 입력" /></label>
         </div>
         {mode === "PQC" && lotNo && (
