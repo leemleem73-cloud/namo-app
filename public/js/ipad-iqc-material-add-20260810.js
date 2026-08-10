@@ -222,36 +222,6 @@
     });
   }
 
-  function labelTitle(label) {
-    return String(label?.querySelector("span")?.textContent || "")
-      .replace(/\*/g, "").replace(/\s+/g, " ").trim();
-  }
-
-  function enhancePqcBasicOrder() {
-    const active = document.querySelector(".qmes-ipad-pop .qmes-ipad-mode-tabs button.is-active");
-    if (!active || !/PQC|공정검사/.test(String(active.textContent || ""))) return;
-
-    const grid = document.querySelector(".qmes-ipad-pop .qmes-ipad-section .qmes-ipad-form-grid");
-    if (!grid) return;
-    const labels = Array.from(grid.querySelectorAll(":scope > label"));
-    const find = (pattern) => labels.find((label) => pattern.test(labelTitle(label)));
-
-    const inspectDate = find(/^검사일자$/);
-    const lot = find(/^생산 LOT$/i);
-    const product = find(/^제품명$/);
-    const inspector = find(/^검사자$/);
-    const remarks = find(/^비고$/);
-    if (!inspectDate || !lot || !product || !inspector || !remarks) return;
-
-    inspectDate.classList.remove("wide");
-    lot.classList.remove("wide");
-    product.classList.remove("wide");
-    inspector.classList.remove("wide");
-    remarks.classList.add("wide");
-
-    [inspectDate, lot, product, inspector, remarks].forEach((label) => grid.appendChild(label));
-  }
-
   function openCustomList(input) {
     if (!input?.matches('.qmes-ipad-pop input[data-qmes-list-id]')) return;
     const dropdown = getDropdown(input);
@@ -294,11 +264,10 @@
     enhanceCustomLists();
     enhanceMaterial();
     enhanceNumbers();
-    enhancePqcBasicOrder();
   }
 
   const observer = new MutationObserver(enhance);
-  observer.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:["list","class"] });
+  observer.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:["list"] });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enhance, { once:true });
   else enhance();
 })();
