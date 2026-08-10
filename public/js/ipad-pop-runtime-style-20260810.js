@@ -30,6 +30,9 @@ body > #root > div:has(.qmes-ipad-pop){
 .qmes-ipad-equipment .qmes-equipment-registry-title{color:#111!important;font-weight:900!important;}
 .qmes-ipad-equipment button.qmes-equipment-new-register{background:#fff!important;color:#111!important;border:1.5px solid #111!important;font-weight:900!important;box-shadow:0 2px 7px rgba(15,23,42,.08)!important;}
 .qmes-ipad-equipment button.qmes-equipment-new-register *{color:#111!important;}
+.qmes-ipad-equipment .qmes-equipment-tour-complete-title{font-size:18px!important;line-height:1.35!important;font-weight:800!important;margin-top:8px!important;}
+.qmes-ipad-equipment .qmes-equipment-tour-complete-badge{font-size:12px!important;line-height:1.2!important;font-weight:700!important;}
+.qmes-ipad-equipment .qmes-equipment-tour-complete-button{font-size:12px!important;line-height:1.2!important;font-weight:700!important;}
 @media(max-width:620px){
  .qmes-ipad-pop .qmes-ipad-hero h1{font-size:28px!important;}
  .qmes-ipad-pop .qmes-ipad-home-code{font-size:48px!important;}
@@ -40,6 +43,7 @@ body > #root > div:has(.qmes-ipad-pop){
  .qmes-ipad-pop .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title h2{font-size:22px!important;}
  .qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:15px!important;}
  .qmes-ipad-pop .qmes-ipad-item-tabs button strong,.qmes-ipad-pop .qmes-ipad-item-tabs button:nth-child(4) strong::after{font-size:16px!important;}
+ .qmes-ipad-equipment .qmes-equipment-tour-complete-title{font-size:18px!important;}
 }`;
   function ensureStyle(){
     var style=document.getElementById(STYLE_ID);
@@ -49,10 +53,18 @@ body > #root > div:has(.qmes-ipad-pop){
   function markEquipment(){
     document.querySelectorAll('.qmes-ipad-equipment').forEach(function(panel){
       panel.querySelectorAll('h1,h2,h3,h4,h5,strong,span,p,div').forEach(function(el){
-        if(el.children.length===0 && el.textContent.trim()==='설비대장') el.classList.add('qmes-equipment-registry-title');
+        var text=el.textContent.trim();
+        if(el.children.length===0 && text==='설비대장') el.classList.add('qmes-equipment-registry-title');
+        if(el.children.length===0 && text==='오늘 순회점검 완료'){
+          if(el.tagName==='H3') el.classList.add('qmes-equipment-tour-complete-title');
+          else el.classList.add('qmes-equipment-tour-complete-badge');
+        }
+        if(el.children.length===0 && /^오늘 순회점검\s*\d+\/\d+\s*완료$/.test(text)) el.classList.add('qmes-equipment-tour-complete-badge');
       });
       panel.querySelectorAll('button').forEach(function(button){
-        if(button.textContent.replace(/\s+/g,'').includes('신규등록')) button.classList.add('qmes-equipment-new-register');
+        var compact=button.textContent.replace(/\s+/g,'');
+        if(compact.includes('신규등록')) button.classList.add('qmes-equipment-new-register');
+        if(compact==='오늘순회점검완료') button.classList.add('qmes-equipment-tour-complete-button');
       });
     });
   }
