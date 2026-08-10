@@ -1,7 +1,7 @@
 (function qmesIpadEquipmentAlarmSpacing(){
   "use strict";
-  if(window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810_V2__) return;
-  window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810_V2__=true;
+  if(window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810_V3__) return;
+  window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810_V3__=true;
 
   var STYLE_ID='qmes-ipad-equipment-alarm-spacing-20260810-style';
 
@@ -14,8 +14,10 @@
     }
     style.textContent=`
       .qmes-ipad-equipment .qmes-em-alarm-history-line{
-        width:100%!important;
+        width:88%!important;
         max-width:none!important;
+        margin-left:auto!important;
+        margin-right:auto!important;
         display:flex!important;
         align-items:center!important;
         justify-content:space-between!important;
