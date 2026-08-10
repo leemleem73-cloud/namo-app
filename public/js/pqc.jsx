@@ -71,6 +71,22 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const date = String(row?.date || row?.shipDate || "").slice(0, 10);
     return lot || date ? `${lot}|${date}` : String(row?.id || "").replace(/-\d+$/, "");
   };
+  const inspectionMeasurements = (row) => {
+    if (!row) return [];
+    const values = Array.isArray(row.measurements)
+      ? row.measurements
+      : String(row.value || "").split("/");
+    return values.map((value) => String(value || "").trim()).filter(Boolean);
+  };
+  const pqcGroupComplete = (rows) => ["점도", "고형분", "입도(Dmax)", "외관"].every((item) => {
+    const row = (rows || []).find((entry) => entry.check === item);
+    const values = inspectionMeasurements(row);
+    return item === "외관" ? values.length >= 1 : values.length >= 3;
+  });
+  const inspectionGroupJudge = (rows) => {
+    if (!isOqc && !pqcGroupComplete(rows)) return "검사대기";
+    return rows.length > 0 && rows.every((row) => row.judge === "합격") ? "합격" : "불합격";
+  };
   const buildInspectionGroups = (sourceRows) => {
     const map = new Map();
     (sourceRows || []).forEach((row) => {
@@ -81,7 +97,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     return Array.from(map.entries()).map(([key, rows]) => ({
       key, rows,
       representative: rows[0],
-      judge: rows.length > 0 && rows.every((row) => row.judge === "합격") ? "합격" : "불합격"
+      judge: inspectionGroupJudge(rows)
     }));
   };
   const currentMonth = today.slice(0, 7);
@@ -89,7 +105,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const todayGroups = buildInspectionGroups(records.filter((r) => String(r.date || r.shipDate || "").slice(0, 10) === today));
   const pass = monthGroups.filter((g) => g.judge === "합격").length;
   const fail = monthGroups.filter((g) => g.judge === "불합격").length;
-  const rate = monthGroups.length ? ((pass / monthGroups.length) * 100).toFixed(1) : "—";
+  const judged = pass + fail;
+  const rate = judged ? ((pass / judged) * 100).toFixed(1) : "—";
   const spec = QC_ITEMS[form.check];
   const isNumericItem = spec.lo != null || spec.hi != null;
   const pendingMeasurement = String(measurementInput || "").trim();
@@ -663,7 +680,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               )}
               {displayRecords.map((r) => {
                 const groupRows = getInspectionGroupRows(r);
-                const groupJudge = groupRows.length > 0 && groupRows.every((x)=>x.judge==="합격") ? "합격" : "불합격";
+                const groupJudge = inspectionGroupJudge(groupRows);
                 return (
                 <tr key={r.id} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 px-3 font-mono text-xs text-sky-300 truncate" title={r.groupId || r.id}>{r.groupId || String(r.id || "").replace(/-\d+$/, "")}</td>
@@ -673,7 +690,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   <td className="py-2.5 px-3 text-slate-300 tabular-nums">
                     <button type="button" className="qmes-pqc-value-preview-btn" onClick={()=>setMeasurementPreviewRows(groupRows)}>측정값 보기</button>
                   </td>
-                  <td className="py-2.5 px-3"><Badge tone={groupJudge === "합격" ? "green" : "red"}>{groupJudge}</Badge></td>
+                  <td className="py-2.5 px-3"><Badge tone={groupJudge === "합격" ? "green" : groupJudge === "불합격" ? "red" : "yellow"}>{groupJudge}</Badge></td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector || "-"}>{r.inspector || "-"}</td>
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-3 text-center whitespace-nowrap">
