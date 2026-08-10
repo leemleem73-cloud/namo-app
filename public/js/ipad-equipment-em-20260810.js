@@ -182,10 +182,20 @@
   }
 
   function cleanSummary(panel){
+    var hiddenSubcaptions=[
+      '일일점검','설비기본정보','설비 기본정보',
+      '정기점검','정기점검교정','정기점검 교정','정기점검·교정',
+      '고장수리','고장수리이력','고장수리 이력','고장·수리 이력'
+    ];
+
     panel.querySelectorAll('div,span,p,small,strong').forEach(function(el){
       if(el.children.length!==0) return;
-      var text=el.textContent.replace(/\s+/g,'').trim();
-      if(text==='일일점검'||text==='설비기본정보'){
+      var raw=el.textContent.trim();
+      var compact=raw.replace(/\s+/g,'');
+      var shouldHide=hiddenSubcaptions.some(function(label){
+        return raw===label||compact===label.replace(/\s+/g,'');
+      });
+      if(shouldHide){
         el.classList.add('qmes-equipment-subcaption-hidden');
       }
     });
