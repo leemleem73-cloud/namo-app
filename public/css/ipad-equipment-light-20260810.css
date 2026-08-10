@@ -1,7 +1,16 @@
-.qmes-ipad-equipment{margin-top:14px;color:#1f2937!important;}
+.qmes-ipad-equipment{
+  margin-top:14px!important;
+  padding:24px!important;
+  border:1px solid #d6dee6!important;
+  border-radius:18px!important;
+  background:linear-gradient(90deg,#ffffff 0%,#fbfbfc 55%,#f5f6f7 100%)!important;
+  color:#1f2937!important;
+  box-shadow:0 12px 30px rgba(15,23,42,.10)!important;
+  overflow:hidden!important;
+}
 .qmes-ipad-equipment > *{color:#1f2937!important;}
 
-/* EM 내부: 설비관리 4칸, 일일/정기점검, 교정 현황, 고장·수리 이력까지 흰색 계열로 통일 */
+/* EM 내부 영역은 큰 흰색 패널 안의 정돈된 서브 영역으로 표시 */
 .qmes-ipad-equipment section,
 .qmes-ipad-equipment .panel,
 .qmes-ipad-equipment .card,
@@ -12,11 +21,10 @@
 .qmes-ipad-equipment [class*="summary"],
 .qmes-ipad-equipment [class*="stat"],
 .qmes-ipad-equipment [class*="metric"]{
-  background:linear-gradient(90deg,#ffffff 0%,#fbfbfc 45%,#f4f5f6 100%)!important;
-  background-color:#fff!important;
-  border-color:#cbd5e1!important;
+  background:#fff!important;
+  border-color:#e1e7ed!important;
   color:#1f2937!important;
-  box-shadow:0 8px 22px rgba(15,23,42,.08)!important;
+  box-shadow:0 3px 10px rgba(15,23,42,.045)!important;
 }
 .qmes-ipad-equipment h1,.qmes-ipad-equipment h2,.qmes-ipad-equipment h3,.qmes-ipad-equipment h4,
 .qmes-ipad-equipment strong,.qmes-ipad-equipment label,.qmes-ipad-equipment th{color:#111827!important;}
@@ -32,12 +40,16 @@
   border-color:#2bc3ec!important;box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;outline:none!important;
 }
 .qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500){
-  border-color:#cbd5e1!important;background:#fff!important;color:#1f2937!important;box-shadow:0 4px 12px rgba(15,23,42,.06)!important;
+  border-color:#d5dde5!important;background:#fff!important;color:#1f2937!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;
 }
 .qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500):hover{
-  background:#f8fafc!important;border-color:#94a3b8!important;
+  background:#f8fafc!important;border-color:#aebbc7!important;
 }
 
 /* 현장입력 첫 화면 EM 카드는 기존 노란 포인트 유지 */
 .qmes-ipad-home-card.is-equipment::before{background:#fbbf24!important;}
 .qmes-ipad-home-card.is-equipment .qmes-ipad-home-code{color:#d97706!important;}
+
+@media(max-width:700px){
+  .qmes-ipad-equipment{padding:16px!important;border-radius:15px!important;}
+}
