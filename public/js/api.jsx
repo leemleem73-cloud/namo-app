@@ -66,6 +66,10 @@ function InventoryTab() {
   const [packagingInput, setPackagingInput] = useState("0");
   const [packagingSaving, setPackagingSaving] = useState(false);
   const [packagingMessage, setPackagingMessage] = useState("");
+  const [finishedManualRecords, setFinishedManualRecords] = useState([]);
+  const [finishedDraft, setFinishedDraft] = useState({ item: "", lot: "", quantity: "" });
+  const [finishedSaving, setFinishedSaving] = useState(false);
+  const [finishedMessage, setFinishedMessage] = useState("");
 
   useEffect(() => {
     const refresh = () => setInventoryVersion((value) => value + 1);
@@ -84,6 +88,11 @@ function InventoryTab() {
         const quantity = Math.max(0, Number(record?.payload?.quantity || 0));
         setPackagingQty(quantity);
         setPackagingInput(String(quantity));
+        setFinishedManualRecords(
+          (records || [])
+            .filter((row) => row?.payload?.kind === "finished-goods" && row?.payload?.lot)
+            .map((row) => ({ ...row.payload, recordKey: row.record_key }))
+        );
       })
       .catch((error) => {
         if (active) setPackagingMessage(error?.message || "포장용기 수량을 불러오지 못했습니다.");
@@ -124,12 +133,82 @@ function InventoryTab() {
     }
   };
 
+  const saveFinishedGoods = async () => {
+    const item = String(finishedDraft.item || "").trim();
+    const lot = String(finishedDraft.lot || "").trim();
+    const quantity = Number(finishedDraft.quantity);
+    if (!item || !lot || !Number.isFinite(quantity) || quantity <= 0) {
+      setFinishedMessage("품목명, LOT, 생산수량을 정확히 입력해 주세요.");
+      return;
+    }
+    if (typeof window.qmesSyncUpsert !== "function") {
+      setFinishedMessage("재고 동기화 준비 후 다시 저장해 주세요.");
+      return;
+    }
+    setFinishedSaving(true);
+    setFinishedMessage("");
+    try {
+      const payload = {
+        kind: "finished-goods",
+        item,
+        lot,
+        producedQty: quantity,
+        unit: "kg",
+        storageZone: "B구역 (B-1-1~B-3-2)",
+        storageCondition: "25±5℃ · 습도 50%↓",
+        updatedAt: new Date().toISOString(),
+        updatedBy: String(window.__QMES_CURRENT_USER__?.name || ""),
+      };
+      await window.qmesSyncUpsert("inventory", `finished-goods:${lot}`, payload);
+      setFinishedManualRecords((rows) => [
+        { ...payload, recordKey: `finished-goods:${lot}` },
+        ...rows.filter((row) => String(row.lot) !== lot),
+      ]);
+      setFinishedDraft({ item: "", lot: "", quantity: "" });
+      setFinishedMessage("완제품 등록 완료");
+      window.dispatchEvent(new CustomEvent("qmes:data-updated"));
+    } catch (error) {
+      setFinishedMessage(error?.message || "완제품 등록에 실패했습니다.");
+    } finally {
+      setFinishedSaving(false);
+    }
+  };
+
+  const oqcShipmentQty = (lot) => {
+    const target = String(lot || "").trim().toUpperCase();
+    const rows = Array.isArray(DB?.insp?.OQC) ? DB.insp.OQC : [];
+    const unique = new Map();
+    rows.forEach((row, index) => {
+      const rowLot = String(row?.lot || row?.lotNo || "").trim().toUpperCase();
+      if (!target || rowLot !== target) return;
+      const judge = String(row?.judge || row?.result || row?.status || "").trim();
+      if (judge && !/합격|PASS|OK|적합|출하완료/i.test(judge)) return;
+      const quantity = Number(row?.shipQty ?? row?.outgoingQty ?? row?.deliveryQty ?? row?.qty ?? 0);
+      if (!(quantity > 0)) return;
+      const key = String(row?.shipNo || row?.shipmentNo || row?.outNo || row?.id || `${rowLot}|${row?.date || ""}|${quantity}|${index}`);
+      unique.set(key, quantity);
+    });
+    return Array.from(unique.values()).reduce((sum, quantity) => sum + quantity, 0);
+  };
+
   const inventoryRows = typeof window.qmesBuildInventoryRows === "function"
     ? (window.qmesBuildInventoryRows() || [])
     : INVENTORY;
-  const finishedRows = typeof window.qmesBuildFinishedGoodsRows === "function"
-    ? (window.qmesBuildFinishedGoodsRows() || [])
-    : [];
+  const finishedRows = finishedManualRecords.map((record) => {
+    const produced = Math.max(0, Number(record.producedQty || 0));
+    const shipped = oqcShipmentQty(record.lot);
+    const remaining = Math.max(0, Number((produced - shipped).toFixed(3)));
+    return {
+      lot: record.lot,
+      item: record.item,
+      produced,
+      shipped,
+      remaining,
+      unit: record.unit || "kg",
+      status: remaining <= 0 && shipped > 0 ? "출하완료" : shipped > 0 ? "부분출하" : "재고",
+      manual: true,
+    };
+  });
   const packagingRows = [{
     lot: "수기",
     item: "포장용기 20kg 캔",
@@ -202,6 +281,48 @@ function InventoryTab() {
         title="완제품 재고 현황"
         right={<span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-300">초록색 B구역 · 총 {finishedDisplayRows.length}건</span>}
       >
+        <div className="mb-4 rounded-lg border border-emerald-900/70 bg-emerald-950/20 p-3">
+          <div className="mb-2 text-xs font-bold text-emerald-300">완제품 생산 수기 등록</div>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="text-xs text-slate-400">품목명
+              <input
+                value={finishedDraft.item}
+                onChange={(event) => setFinishedDraft((draft) => ({ ...draft, item: event.target.value }))}
+                className="mt-1 block w-48 rounded-md border border-slate-600 bg-slate-950 px-2 py-1.5 text-slate-100"
+                placeholder="완제품 품목명"
+              />
+            </label>
+            <label className="text-xs text-slate-400">LOT
+              <input
+                value={finishedDraft.lot}
+                onChange={(event) => setFinishedDraft((draft) => ({ ...draft, lot: event.target.value }))}
+                className="mt-1 block w-44 rounded-md border border-slate-600 bg-slate-950 px-2 py-1.5 text-slate-100"
+                placeholder="완제품 LOT"
+              />
+            </label>
+            <label className="text-xs text-slate-400">생산수량(kg)
+              <input
+                type="number"
+                min="0"
+                step="0.001"
+                value={finishedDraft.quantity}
+                onChange={(event) => setFinishedDraft((draft) => ({ ...draft, quantity: event.target.value }))}
+                className="mt-1 block w-32 rounded-md border border-slate-600 bg-slate-950 px-2 py-1.5 text-right text-slate-100"
+                placeholder="0"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={saveFinishedGoods}
+              disabled={finishedSaving}
+              className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+            >
+              {finishedSaving ? "저장 중" : "완제품 등록"}
+            </button>
+            {finishedMessage && <span className="pb-2 text-xs text-slate-400">{finishedMessage}</span>}
+          </div>
+          <p className="mt-2 text-[11px] text-slate-500">수기 생산수량에서 동일 LOT의 합격 출하검사(OQC) 수량을 자동 차감합니다.</p>
+        </div>
         <div className="overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
@@ -218,7 +339,7 @@ function InventoryTab() {
             </thead>
             <tbody>
               {finishedDisplayRows.map((row) => (
-                <tr key={row.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
+                <tr key={`${row.packaging ? "packaging" : "finished"}:${row.lot}`} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{row.lot}</td>
                   <td className="py-2.5 pr-3 text-slate-100">{row.item}</td>
                   <td className="py-2.5 pr-3 text-right tabular-nums">{row.packaging ? "-" : `${Number(row.produced || 0).toLocaleString()} ${row.unit || "kg"}`}</td>
