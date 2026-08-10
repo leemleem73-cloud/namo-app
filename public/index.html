@@ -64,7 +64,7 @@
       [window.localStorage,window.sessionStorage].forEach(storage=>{try{const keys=[];for(let index=0;index<storage.length;index+=1){const key=storage.key(index);if(key)keys.push(key);}Array.from(new Set([...exactKeys,...keys.filter(key=>related.test(key))])).forEach(key=>storage.removeItem(key));}catch(error){}});
     })();
   </script>
-  <script type="text/babel" data-presets="react" src="./js/common.jsx?v=20260803-coa2"></script>
+  <script type="text/babel" data-presets="react" src="./js/common.jsx?v=20260810-remove-packaging1"></script>
   <script type="text/babel" data-presets="react" src="./js/utils.jsx"></script>
   <script src="./js/qmes-sync.js?v=20260810-equipment5"></script>
   <script type="text/babel" data-presets="react" src="./js/dashboard.jsx?v=20260727-5"></script>
