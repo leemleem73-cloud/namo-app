@@ -636,17 +636,18 @@ function FieldInputTab() {
         <div className="qmes-ipad-form-grid">
           {mode === "IQC" ? (
             <>
+              <label><span>입고일자</span><input type="date" value={form.recvDate} onChange={(e) => patchForm({recvDate:e.target.value})} /></label>
               <label><span>원자재명 <b>*</b></span><input value={form.material} onChange={(e) => patchForm({material:e.target.value})} placeholder="원자재명 입력" list="qmes-ipad-materials" /></label>
               <datalist id="qmes-ipad-materials">
                 {[...new Set([...(typeof IQC_MATERIALS !== "undefined" ? IQC_MATERIALS : []), ...(DB.iqcMaterials || [])])].map((name) => <option key={name} value={name} />)}
               </datalist>
-              <label><span>공급사</span><input value={form.supplier} onChange={(e) => patchForm({supplier:e.target.value})} placeholder="공급사명 입력" /></label>
-              <label className="wide"><span>원재료 LOT <b>*</b></span><input className="lot" value={form.lot} onChange={(e) => patchForm({lot:e.target.value.toUpperCase()})} placeholder="바코드 스캔 또는 LOT 직접 입력" /></label>
-              <label><span>입고일자</span><input type="date" value={form.recvDate} onChange={(e) => patchForm({recvDate:e.target.value})} /></label>
+              <label><span>업체명</span><input value={form.supplier} onChange={(e) => patchForm({supplier:e.target.value})} placeholder="업체명 입력" /></label>
+              <label><span>원재료 LOT <b>*</b></span><input className="lot" value={form.lot} onChange={(e) => patchForm({lot:e.target.value.toUpperCase()})} placeholder="바코드 스캔 또는 LOT 직접 입력" /></label>
               <label><span>검사일자</span><input type="date" value={form.inspectDate} onChange={(e) => patchForm({inspectDate:e.target.value})} /></label>
-              <label><span>입고수량 (kg) <b>*</b></span><input inputMode="decimal" value={form.qty} onChange={(e) => patchForm({qty:e.target.value})} placeholder="0" /></label>
+              <label><span>입고중량 (kg) <b>*</b></span><input inputMode="decimal" value={form.qty} onChange={(e) => patchForm({qty:e.target.value})} placeholder="0" /></label>
               <label><span>검사수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.inspectQty} onChange={(e) => patchForm({inspectQty:e.target.value})} /></label>
               <label><span>불량수량 (EA)</span><input inputMode="numeric" value={form.defectQty} onChange={(e) => patchForm({defectQty:e.target.value})} /></label>
+              <label><span>검사자</span><input value={String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")} readOnly /></label>
             </>
           ) : (
             <>
@@ -666,7 +667,7 @@ function FieldInputTab() {
               )}
             </>
           )}
-          <label><span>검사자</span><input value={String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")} readOnly /></label>
+          {mode !== "IQC" && <label><span>검사자</span><input value={String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")} readOnly /></label>}
           <label className="wide"><span>비고</span><input value={form.remarks} onChange={(e) => patchForm({remarks:e.target.value})} placeholder="특이사항 입력" /></label>
         </div>
         {mode === "PQC" && lotNo && (
