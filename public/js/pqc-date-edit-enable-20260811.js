@@ -26,6 +26,12 @@
     return fields.length ? String(fields[0].value||"").trim() : "";
   }
 
+  function forceDateValue(input,date){
+    if(!input || !date) return;
+    const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;
+    if(setter) setter.call(input,date); else input.value=date;
+  }
+
   function syncEditedDate(groupId, date){
     if(!groupId || !date || typeof DB === "undefined" || !DB.insp || !Array.isArray(DB.insp.PQC)) return Promise.resolve(false);
     const rows=DB.insp.PQC.filter((row)=>String(row.groupId||row.id||"").trim()===groupId || String(row.id||"").replace(/-\d+$/,"")===groupId);
@@ -61,11 +67,19 @@
     input.removeAttribute('readonly');
     input.removeAttribute('title');
 
+    if(pendingDate && pendingGroupId===getGroupId(modal) && input.value!==pendingDate){
+      forceDateValue(input,pendingDate);
+    }
+
     if(!input.dataset.qmesPqcDateBound){
       input.dataset.qmesPqcDateBound="1";
       const remember=()=>{
-        pendingDate=String(input.value||"").trim();
+        const chosen=String(input.value||"").trim();
+        if(!chosen) return;
+        pendingDate=chosen;
         pendingGroupId=getGroupId(modal);
+        setTimeout(()=>forceDateValue(input,pendingDate),0);
+        global.requestAnimationFrame(()=>forceDateValue(input,pendingDate));
       };
       input.addEventListener('input',remember,true);
       input.addEventListener('change',remember,true);
@@ -81,13 +95,13 @@
         setTimeout(()=>{
           syncEditedDate(groupId,chosenDate)
             .then((ok)=>{
-              if(ok) setTimeout(()=>global.location.reload(),80);
+              if(ok) setTimeout(()=>global.location.reload(),100);
             })
             .catch((error)=>{
               console.error("PQC 검사일자 공용 DB 반영 실패:",error);
               global.alert(`검사일자는 이 PC에 반영됐지만 공용 DB 저장에 실패했습니다.\n${error.message||error}`);
             });
-        },60);
+        },120);
       },true);
     }
   }
