@@ -138,6 +138,7 @@
     const labels=Array.from(table.querySelectorAll("thead th")).map((th)=>text(th.textContent));
     const safetyIndex=labels.indexOf("안전재고");
     const currentIndex=labels.indexOf("현재고");
+    const statusIndex=labels.indexOf("상태");
     const rows=rawRows();
     const byCode=new Map(rows.map((row)=>[text(row.code),row]));
 
@@ -160,6 +161,16 @@
           cell.appendChild(input);
         }
         if(document.activeElement!==input) input.value=String(number(row.safety));
+      });
+    }
+
+    if(statusIndex>=0){
+      table.querySelectorAll("tbody tr").forEach((tr)=>{
+        const cell=tr.cells?.[statusIndex];
+        if(!cell) return;
+        const value=text(cell.textContent);
+        cell.classList.toggle("qmes-status-normal",value==="정상");
+        cell.classList.toggle("qmes-status-shortage",value==="부족");
       });
     }
 
@@ -241,6 +252,16 @@
     .qmes-safety-stock-input-v2[data-state="saving"]{border-color:#fbbf24}
     .qmes-safety-stock-input-v2[data-state="saved"]{border-color:#34d399}
     .qmes-safety-stock-input-v2[data-state="error"]{border-color:#fb7185}
+    table.qmes-raw-inventory-balanced td.qmes-status-normal span,
+    td.qmes-status-normal span{
+      color:#6ee7b7!important;background:rgba(16,185,129,.16)!important;
+      border-color:rgba(52,211,153,.62)!important;box-shadow:0 0 14px rgba(16,185,129,.1)!important
+    }
+    table.qmes-raw-inventory-balanced td.qmes-status-shortage span,
+    td.qmes-status-shortage span{
+      color:#fda4af!important;background:rgba(225,29,72,.17)!important;
+      border-color:rgba(251,113,133,.68)!important;box-shadow:0 0 14px rgba(225,29,72,.1)!important
+    }
     .qmes-inventory-total-foot td{padding:11px 8px;border-top:1px solid rgba(125,211,252,.35);background:rgba(30,64,105,.2)}
     .qmes-inventory-total-foot .qmes-total-label{color:#d6e7f5;font-size:14px;font-weight:900;text-align:right}
     .qmes-inventory-total-foot .qmes-total-value{color:#7dd3fc;font-size:15px;font-weight:900;text-align:right;white-space:nowrap}
