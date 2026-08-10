@@ -143,6 +143,20 @@
     ];
   }
 
+  function storageLocation(value){
+    const source=upper(value).replace(/[\s_-]+/g,"");
+    if(source.includes("KTR201")) return "A-6-1";
+    if(source.includes("SOLEF5140")) return "A-3-2";
+    if(source.includes("BYK180") || source.includes("분산제")) return "A-3-2 / A-4-1";
+    if(source.includes("AOH30") || source.includes("BOEHMITE")) return "A-4-1 / A-4-2";
+    if(source.includes("PVDF")) return "A-1-1 / A-3-1";
+    if(source.includes("SBS")) return "A-1-1";
+    if(source.includes("SBR")) return "A-2-1 / A-2-2";
+    if(source.includes("NMP")) return "A-5-1 / A-5-2 / A-6-2";
+    if(source.includes("NBA20HM05")) return "B-2-1 / B-3-1";
+    return "";
+  }
+
   function dynamicMaterialCode(value){
     const source=upper(value);
     const readable=source.replace(/[^A-Z0-9]+/g,"").slice(0,12);
@@ -164,7 +178,7 @@
         stock:0,
         safety:0,
         unit:lot.materialKey==="CAN20"?"EA":"kg",
-        loc:"미지정",
+        loc:storageLocation(lot.name)||"미지정",
         cond:"-",
         autoRegistered:true
       });
@@ -181,6 +195,7 @@
       const availableStock = Math.max(0, stock - holdStock);
       return {
         ...base,
+        loc:storageLocation(base.name)||base.loc||"미지정",
         stock:Number(stock.toFixed(3)),
         availableStock:Number(availableStock.toFixed(3)),
         holdStock:Number(holdStock.toFixed(3)),
