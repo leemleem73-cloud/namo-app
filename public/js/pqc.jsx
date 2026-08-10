@@ -477,8 +477,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <div className="qmes-pqc-entry-form">
               <div className="qmes-pqc-basic-row">
                 <div><label>공정번호</label><input value={previewNo} readOnly /></div>
-                <div><label>생산일자</label><input type="date" value={form.date} readOnly title="작업지시 LOT 생산일자 자동 연동" /></div>
-                <div><label>LOT No.</label><input value={form.lot} onChange={(e)=>{const lot=e.target.value;const matched=(DB.batches||[]).find((b)=>b.no===lot);setForm({...form,lot,product:matched?.itemName||matched?.item||form.product,date:matched?.due||DB.woDocs?.[lot]?.date||form.date});}} placeholder="LOT No. 입력" /></div>
+                <div><label>검사일자</label><input type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})} /></div>
+                <div><label>LOT No.</label><input value={form.lot} onChange={(e)=>setForm({...form,lot:e.target.value})} placeholder="LOT No. 입력" /></div>
                 <div><label>제품명</label><input value={form.product} onChange={(e)=>setForm({...form,product:e.target.value})} placeholder="제품명 입력" /></div>
                 <div><label>검사자</label><input value={form.inspector || ""} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 이름 입력" /></div>
               </div>
@@ -647,7 +647,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="py-2 px-3 font-medium whitespace-nowrap">{numberLabel}</th>
-                <th className="py-2 px-3 font-medium whitespace-nowrap">{isOqc ? "검사일자" : "생산일자"}</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">검사일자</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">LOT No.</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">제품명</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">측정값</th>
@@ -707,7 +707,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               <div><span>{isOqc ? "출하번호" : "공정번호"}</span><strong>{measurementPreviewRows[0].groupId || String(measurementPreviewRows[0].id || "").replace(/-\d+$/, "")}</strong></div>
               <div><span>LOT No.</span><strong>{measurementPreviewRows[0].lot || "-"}</strong></div>
               <div><span>제품명</span><strong>{measurementPreviewRows[0].product || "-"}</strong></div>
-              <div><span>{isOqc ? "검사일자" : "생산일자"}</span><strong>{measurementPreviewRows[0].date || "-"}</strong></div>
+              <div><span>검사일자</span><strong>{measurementPreviewRows[0].date || "-"}</strong></div>
               <div><span>검사자</span><strong>{measurementPreviewRows[0].inspector || "-"}</strong></div>
               {isOqc && <div><span>고객사</span><strong>{measurementPreviewRows[0].customer || DB.lots?.[measurementPreviewRows[0].lot]?.ship?.customer || "-"}</strong></div>}
               {isOqc && <div><span>출하수량</span><strong>{Number(measurementPreviewRows[0].shipQty || DB.lots?.[measurementPreviewRows[0].lot]?.ship?.qty || 0).toLocaleString()} kg</strong></div>}
