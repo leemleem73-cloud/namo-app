@@ -76,6 +76,22 @@ function InventoryTab() {
   const finishedRows = typeof window.qmesBuildFinishedGoodsRows === "function"
     ? (window.qmesBuildFinishedGoodsRows() || [])
     : [];
+  const packagingLots = typeof window.qmesBuildInventoryLotRows === "function"
+    ? (window.qmesBuildInventoryLotRows() || []).filter((row) => row.materialKey === "CAN20")
+    : [];
+  const packagingRows = packagingLots.length > 0
+    ? packagingLots.map((row) => ({
+        lot: row.lot || "-",
+        item: "포장용기 20kg 캔",
+        produced: Number(row.received || 0),
+        shipped: Number(row.used || 0),
+        remaining: Number(row.remaining || 0),
+        unit: "EA",
+        status: Number(row.remaining || 0) > 0 ? "재고" : "소진",
+        packaging: true,
+      }))
+    : [{ lot: "-", item: "포장용기 20kg 캔", produced: 0, shipped: 0, remaining: 0, unit: "EA", status: "재고", packaging: true }];
+  const finishedDisplayRows = [...finishedRows, ...packagingRows];
   const short = inventoryRows.filter((i) => i.stock < i.safety);
   return (
     <div className="flex flex-col gap-4" data-inventory-version={inventoryVersion}>
@@ -135,7 +151,7 @@ function InventoryTab() {
       </Panel>
       <Panel
         title="완제품 재고 현황"
-        right={<span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-300">초록색 B구역 · 총 {finishedRows.length} LOT</span>}
+        right={<span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-300">초록색 B구역 · 총 {finishedDisplayRows.length}건</span>}
       >
         <div className="overflow-x-auto -mx-4 px-4">
           <table className="w-full text-sm min-w-[900px]">
@@ -152,7 +168,7 @@ function InventoryTab() {
               </tr>
             </thead>
             <tbody>
-              {finishedRows.length > 0 ? finishedRows.map((row) => (
+              {finishedDisplayRows.map((row) => (
                 <tr key={row.lot} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{row.lot}</td>
                   <td className="py-2.5 pr-3 text-slate-100">{row.item}</td>
@@ -163,9 +179,7 @@ function InventoryTab() {
                   <td className="py-2.5 pr-3 text-xs text-slate-400">25±5℃ · 습도 50%↓</td>
                   <td className="py-2.5"><Badge tone={row.status === "출하완료" ? "green" : "blue"}>{row.status || "재고"}</Badge></td>
                 </tr>
-              )) : (
-                <tr><td colSpan="8" className="py-8 text-center text-slate-500">생산 완료된 완제품 재고가 없습니다.</td></tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
