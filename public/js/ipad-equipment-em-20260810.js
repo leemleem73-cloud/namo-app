@@ -1,4 +1,12 @@
 (function qmesIpadEquipmentEm(){
+  function loadRuntimeStyle(){
+    if(document.querySelector('script[data-qmes-ipad-runtime-style]')) return;
+    var script=document.createElement('script');
+    script.src='./js/ipad-pop-runtime-style-20260810.js?v=20260810-1';
+    script.defer=true;
+    script.setAttribute('data-qmes-ipad-runtime-style','1');
+    document.head.appendChild(script);
+  }
   function apply(){
     document.querySelectorAll('.qmes-ipad-home-card.is-equipment .qmes-ipad-home-code').forEach(function(el){
       if(el.textContent.trim()==='EQ') el.textContent='EM';
@@ -16,6 +24,7 @@
       });
     });
   }
+  loadRuntimeStyle();
   apply();
   var scheduled=false;
   new MutationObserver(function(){
