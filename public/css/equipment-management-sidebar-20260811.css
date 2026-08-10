@@ -1,0 +1,103 @@
+/* 현장입력 > 설비 종합관리: 원본 React 구조용 좌측 세로 메뉴 */
+.qmes-ipad-equipment .qmes-equipment-management-layout{
+  display:grid!important;
+  grid-template-columns:210px minmax(0,1fr)!important;
+  gap:18px!important;
+  align-items:start!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar{
+  position:sticky!important;
+  top:14px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  grid-template-columns:none!important;
+  width:210px!important;
+  max-width:210px!important;
+  min-width:210px!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #d7e0e8!important;
+  border-radius:12px!important;
+  background:#f8fafc!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar-title{
+  padding:5px 8px 9px!important;
+  font-size:16px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  color:#111827!important;
+  text-align:left!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:50px!important;
+  min-height:50px!important;
+  margin:0!important;
+  padding:0 14px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#1f2937!important;
+  -webkit-text-fill-color:#1f2937!important;
+  font-size:15px!important;
+  font-weight:850!important;
+  line-height:1.2!important;
+  text-align:left!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover{
+  background:#f1f5f9!important;
+  border-color:#94a3b8!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active,
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button[aria-selected="true"]{
+  background:#e8eef3!important;
+  border:1.5px solid #647f94!important;
+  color:#102a3d!important;
+  -webkit-text-fill-color:#102a3d!important;
+  box-shadow:inset 4px 0 0 #284e68!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:14px!important;
+  min-width:0!important;
+  width:100%!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-summary{
+  width:100%!important;
+  margin:0!important;
+}
+
+@media(max-width:900px){
+  .qmes-ipad-equipment .qmes-equipment-management-layout{
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-sidebar{
+    position:relative!important;
+    top:auto!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-sidebar-title{
+    grid-column:1/-1!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{
+    justify-content:center!important;
+    text-align:center!important;
+  }
+}
