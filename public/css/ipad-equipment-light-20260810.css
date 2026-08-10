@@ -1,0 +1,35 @@
+.qmes-ipad-equipment{margin-top:14px;color:#1f2937!important;}
+.qmes-ipad-equipment > *{color:#1f2937!important;}
+.qmes-ipad-equipment section,
+.qmes-ipad-equipment .panel,
+.qmes-ipad-equipment .card,
+.qmes-ipad-equipment .qmes-card,
+.qmes-ipad-equipment [class*="panel"],
+.qmes-ipad-equipment [class*="card"]{
+  background:linear-gradient(90deg,#ffffff 0%,#fbfbfc 45%,#f4f5f6 100%)!important;
+  background-color:#fff!important;
+  border-color:#cbd5e1!important;
+  color:#1f2937!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.08)!important;
+}
+.qmes-ipad-equipment h1,.qmes-ipad-equipment h2,.qmes-ipad-equipment h3,.qmes-ipad-equipment h4,
+.qmes-ipad-equipment strong,.qmes-ipad-equipment label,.qmes-ipad-equipment th{color:#111827!important;}
+.qmes-ipad-equipment p,.qmes-ipad-equipment span,.qmes-ipad-equipment td,.qmes-ipad-equipment small{color:#475569;}
+.qmes-ipad-equipment table{background:#fff!important;color:#1f2937!important;}
+.qmes-ipad-equipment thead,.qmes-ipad-equipment thead tr,.qmes-ipad-equipment th{background:#f3f4f6!important;border-color:#d1d5db!important;}
+.qmes-ipad-equipment tbody tr,.qmes-ipad-equipment td{background:#fff!important;border-color:#e5e7eb!important;}
+.qmes-ipad-equipment tbody tr:hover,.qmes-ipad-equipment tbody tr:hover td{background:#f8fafc!important;}
+.qmes-ipad-equipment input,.qmes-ipad-equipment select,.qmes-ipad-equipment textarea{
+  background:#fff!important;color:#111827!important;border-color:#b8c4d0!important;
+}
+.qmes-ipad-equipment input:focus,.qmes-ipad-equipment select:focus,.qmes-ipad-equipment textarea:focus{
+  border-color:#2bc3ec!important;box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;outline:none!important;
+}
+.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500){
+  border-color:#cbd5e1!important;background:#fff!important;color:#1f2937!important;box-shadow:0 4px 12px rgba(15,23,42,.06)!important;
+}
+.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500):hover{
+  background:#f8fafc!important;border-color:#94a3b8!important;
+}
+.qmes-ipad-home-card.is-equipment::before{background:#94a3b8!important;}
+.qmes-ipad-home-card.is-equipment .qmes-ipad-home-code{color:#64748b!important;}
