@@ -1,5 +1,72 @@
 /* QMES module: production — extracted from index.html without logic changes. */
 
+function qmesCreatePqcDraftForIssuedWorkOrder(lotNo) {
+  const key = String(lotNo || "").trim();
+  if (!key) return null;
+
+  DB.insp = DB.insp || {};
+  DB.insp.PQC = Array.isArray(DB.insp.PQC) ? DB.insp.PQC : [];
+  if (DB.insp.PQC.some((row) => String(row.lot || "").trim() === key)) return null;
+
+  const workOrder = DB.woDocs?.[key] || {};
+  const batch = (DB.batches || []).find((row) => String(row.no || "").trim() === key) || {};
+  const inspectionDate = String(workOrder.date || batch.due || new Date().toISOString().slice(0, 10)).slice(0, 10);
+  const groupId = `PQC-${inspectionDate.replace(/-/g, "").slice(2)}-${key.replace(/[^A-Za-z0-9]/g, "")}`;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const product = String(workOrder.item || batch.item || DB.lots?.[key]?.itemName || DB.lots?.[key]?.item || "").trim();
+  const rows = ["점도", "고형분", "입도(Dmax)", "외관"].map((check, index) => ({
+    id:`${groupId}-${index + 1}`,
+    groupId,
+    date:inspectionDate,
+    shipDate:"",
+    time,
+    lot:key,
+    product,
+    check,
+    value:"",
+    measurements:[],
+    average:null,
+    judge:"검사대기",
+    note:`${QC_ITEMS?.[check]?.stage || "공정"}`,
+    remarks:"작업지시서 발행 후 공정검사 성적서 자동 발행",
+    inspector:"",
+    source:"WORK ORDER ISSUE AUTO",
+    sharedSync:false
+  }));
+
+  DB.insp.PQC = [...rows, ...DB.insp.PQC];
+  auditLog("PQC", "자동발행", groupId, `${key} / 작업지시서 발행 / 검사대기`);
+
+  const lot = DB.lots?.[key];
+  if (lot) {
+    lot.steps = Array.isArray(lot.steps) ? lot.steps : [];
+    if (!lot.steps.some((step) => step.name === "공정검사 성적서 자동 발행")) {
+      lot.steps = [...lot.steps, {
+        stage:"생산",
+        name:"공정검사 성적서 자동 발행",
+        time,
+        detail:`작업지시서 발행 · 검사일자 ${inspectionDate}`,
+        result:"검사대기",
+        by:"SYSTEM"
+      }];
+    }
+  }
+
+  return {
+    type:"pqc",
+    key:groupId,
+    rows,
+    payload:{
+      mode:"PQC",
+      lotNo:key,
+      rows,
+      savedAt:now.toISOString(),
+      savedBy:"SYSTEM"
+    }
+  };
+}
+
 function ProductionTab() {
   const list = DB.batches;
   const stTone = { 발행: "violet", 진행중: "blue", 완료: "green", 대기: "amber", 계획: "gray" };
@@ -887,12 +954,18 @@ function IssueWoTab() {
         updatedAt:new Date().toISOString(), by:window.__QMES_USER__ || "-"
       };
     }
+    const autoPqc = qmesCreatePqcDraftForIssuedWorkOrder(woNo);
     auditLog("작업지시", editingWo ? "수정" : "발행", woNo, `${form.product} / ${qtyNum}kg / ${form.prodDate}`);
     dbSave();
     try {
       if (typeof qmesSyncWorkOrder === "function") await qmesSyncWorkOrder(woNo);
+      if (autoPqc && typeof qmesSyncUpsert === "function") {
+        await qmesSyncUpsert(autoPqc.type, autoPqc.key, autoPqc.payload);
+        autoPqc.rows.forEach((row) => { row.sharedSync = true; });
+        dbSave();
+      }
     } catch (error) {
-      window.alert(`작업지시서는 이 기기에 저장됐지만 PC 공용 DB 저장에 실패했습니다.\n${error.message}`);
+      window.alert(`작업지시서 또는 자동 발행된 공정검사 성적서의 PC 공용 DB 저장에 실패했습니다.\n${error.message}`);
     }
     setEditingWo(null);
     setIssued([...DB.batches]);
