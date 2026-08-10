@@ -1,6 +1,6 @@
 .qmes-ipad-back{font-weight:900!important;}
 .qmes-ipad-mode-tabs button{gap:11px!important;}
-.qmes-ipad-mode-tabs small{font-size:22px!important;font-weight:950!important;}
+.qmes-ipad-mode-tabs small{font-size:22px!important;font-weight:950!important;letter-spacing:0!important;word-spacing:0!important;}
 .qmes-ipad-mode-tabs strong{font-size:19px!important;font-weight:900!important;}
 .qmes-ipad-work-head > div:nth-child(2) > span{font-size:24px!important;font-weight:900!important;color:#5f7182!important;}
 body > #root > div:has(.qmes-ipad-pop){
@@ -100,7 +100,7 @@ body > #root > div:has(.qmes-ipad-pop){
   box-shadow:0 0 0 3px rgba(220,38,38,.12)!important;
 }
 @media (max-width:620px){
-  .qmes-ipad-mode-tabs small{font-size:19px!important;}
+  .qmes-ipad-mode-tabs small{font-size:19px!important;letter-spacing:0!important;word-spacing:0!important;}
   .qmes-ipad-mode-tabs strong{font-size:17px!important;}
   .qmes-ipad-work-head > div:nth-child(2) > span{font-size:21px!important;color:#5f7182!important;}
   .qmes-ipad-form-grid > label:last-child{grid-column:1!important;}
