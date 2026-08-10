@@ -193,9 +193,22 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
   const roundCount = Math.min(5, Math.max(3, ...reportRows.map((x) => Array.isArray(x.rec && x.rec.measurements) ? x.rec.measurements.length : 0)));
   const ITEM_UNITS = { "외관": "외관", "점도": "점도", "고형분": "고형분", "입도(Dmax)": "입도" };
   const AVG_DECIMALS = { "점도": 0, "고형분": 1, "입도(Dmax)": 2 };
+  const inspectionValues = (row) => {
+    if (!row) return [];
+    const values = Array.isArray(row.measurements)
+      ? row.measurements
+      : String(row.value || "").split("/");
+    return values.map((value) => String(value || "").trim()).filter(Boolean);
+  };
+  const reportComplete = isIqc || reportKeys.every((key) => {
+    const values = inspectionValues(latestByItem[key]);
+    if (type === "PQC") return key === "외관" ? values.length >= 1 : values.length >= 3;
+    return values.length >= 1;
+  });
   const finalJudge = isIqc ? record.judge
+    : !reportComplete ? "검사대기"
     : reportKeys.every((k) => latestByItem[k]?.judge === "합격") ? "합격"
-    : reportKeys.some((k) => latestByItem[k]?.judge === "불합격") ? "불합격" : "검사중";
+    : "불합격";
 
   return (
     <div className="qmes-modal-backdrop" onClick={onClose}>
