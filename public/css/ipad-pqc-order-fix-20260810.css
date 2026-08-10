@@ -1,16 +1,16 @@
 /* Field-input basic info order. Scope strictly by the active IQC/PQC mode button so reused DOM/list metadata cannot leak order styles between modes. */
 
-/* IQC — preserve the intended native order exactly. */
+/* IQC — 1행 입고일자/원자재명/업체명, 2행 원재료 LOT/검사일자/검사자, 3행 입고중량/검사수량/불량수량, 마지막 비고. */
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(1){order:1!important;grid-column:span 1!important;}
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(2){order:2!important;grid-column:span 1!important;}
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(3){order:3!important;grid-column:span 1!important;}
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(4){order:4!important;grid-column:span 1!important;}
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(5){order:5!important;grid-column:span 1!important;}
-.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(6){order:6!important;grid-column:span 1!important;}
-.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(7){order:7!important;grid-column:span 1!important;}
-.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(8){order:8!important;grid-column:span 1!important;}
-.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(9){order:9!important;grid-column:span 1!important;}
-.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:last-child{grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(9){order:6!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(6){order:7!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(7){order:8!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(8){order:9!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(10){order:10!important;grid-column:1 / -1!important;}
 
 /* PQC — 검사일자 / 생산 LOT / 제품명, then 검사자 / 비고. */
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label:nth-of-type(1){order:2!important;grid-column:span 1!important;}
