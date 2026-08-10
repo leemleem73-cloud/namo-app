@@ -5,15 +5,17 @@
 .qmes-ipad-work-head > div:nth-child(2) > span{display:inline-block!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;font-size:24px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;font-kerning:normal!important;font-feature-settings:"kern" 1!important;color:#5f7182!important;}
 body > #root > div:has(.qmes-ipad-pop){
   background:
-    radial-gradient(ellipse at 5% 12%,rgba(146,153,160,.30) 0%,rgba(146,153,160,.12) 18%,transparent 40%),
-    radial-gradient(ellipse at 18% 42%,rgba(111,121,131,.30) 0%,rgba(111,121,131,.10) 22%,transparent 46%),
-    radial-gradient(ellipse at 8% 82%,rgba(128,137,145,.24) 0%,rgba(128,137,145,.09) 20%,transparent 44%),
-    radial-gradient(ellipse at 42% 18%,rgba(70,84,97,.36) 0%,rgba(70,84,97,.13) 24%,transparent 49%),
-    radial-gradient(ellipse at 70% 8%,rgba(166,173,179,.30) 0%,rgba(166,173,179,.11) 21%,transparent 44%),
-    radial-gradient(ellipse at 58% 60%,rgba(80,93,104,.34) 0%,rgba(80,93,104,.11) 24%,transparent 49%),
-    radial-gradient(ellipse at 91% 68%,rgba(190,195,199,.34) 0%,rgba(190,195,199,.12) 23%,transparent 48%),
-    radial-gradient(ellipse at 76% 94%,rgba(126,136,145,.25) 0%,rgba(126,136,145,.08) 22%,transparent 45%),
-    linear-gradient(152deg,#0c1f31 0%,#1d3142 24%,#465762 48%,#788289 73%,#b7bcc0 100%)!important;
+    radial-gradient(ellipse at 4% 10%,rgba(168,175,181,.42) 0%,rgba(168,175,181,.17) 20%,transparent 42%),
+    radial-gradient(ellipse at 15% 38%,rgba(135,145,154,.38) 0%,rgba(135,145,154,.14) 23%,transparent 47%),
+    radial-gradient(ellipse at 7% 76%,rgba(154,162,169,.34) 0%,rgba(154,162,169,.12) 22%,transparent 46%),
+    radial-gradient(ellipse at 28% 92%,rgba(116,127,137,.28) 0%,rgba(116,127,137,.10) 21%,transparent 44%),
+    radial-gradient(ellipse at 43% 20%,rgba(67,82,96,.36) 0%,rgba(67,82,96,.13) 24%,transparent 49%),
+    radial-gradient(ellipse at 59% 58%,rgba(86,99,111,.34) 0%,rgba(86,99,111,.11) 25%,transparent 50%),
+    radial-gradient(ellipse at 82% 14%,rgba(35,54,71,.38) 0%,rgba(35,54,71,.15) 23%,transparent 47%),
+    radial-gradient(ellipse at 94% 46%,rgba(24,45,64,.44) 0%,rgba(24,45,64,.17) 24%,transparent 49%),
+    radial-gradient(ellipse at 84% 88%,rgba(47,65,81,.36) 0%,rgba(47,65,81,.13) 23%,transparent 47%),
+    radial-gradient(ellipse at 72% 76%,rgba(178,184,189,.24) 0%,rgba(178,184,189,.08) 21%,transparent 44%),
+    linear-gradient(158deg,#283947 0%,#334653 18%,#56636d 40%,#7d858c 62%,#5f6e7a 80%,#273b4d 100%)!important;
   background-color:#53616d!important;
   background-attachment:fixed!important;
 }
