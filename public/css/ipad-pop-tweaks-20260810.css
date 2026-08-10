@@ -7,6 +7,26 @@ body > #root > div:has(.qmes-ipad-pop){
   background:linear-gradient(90deg,#071a2f 0%,#10263a 22%,#34414d 48%,#70777e 72%,#b8bcc0 100%)!important;
   background-color:#34414d!important;
 }
+.qmes-ipad-hero,
+.qmes-ipad-home-card,
+.qmes-ipad-home-note,
+.qmes-ipad-work-head,
+.qmes-ipad-mode-tabs button,
+.qmes-ipad-section,
+.qmes-ipad-item-tabs button,
+.qmes-ipad-measure-card,
+.qmes-ipad-overall{
+  background:linear-gradient(90deg,#ffffff 0%,#fbfbfc 38%,#f4f5f6 72%,#eceef0 100%)!important;
+  background-color:#f6f7f8!important;
+}
+.qmes-ipad-home-card:hover,.qmes-ipad-home-card:focus-visible,
+.qmes-ipad-mode-tabs button:hover,.qmes-ipad-mode-tabs button:focus-visible{
+  background:linear-gradient(90deg,#ffffff 0%,#f8fafc 52%,#eef1f4 100%)!important;
+}
+.qmes-ipad-mode-tabs button.is-active,
+.qmes-ipad-item-tabs button.is-active{
+  background:linear-gradient(90deg,#eef9ff 0%,#f4f8fb 58%,#e9edf1 100%)!important;
+}
 .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title > span,
 .qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title > span{
   width:44px!important;
