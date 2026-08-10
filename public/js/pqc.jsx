@@ -71,6 +71,22 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const date = String(row?.date || row?.shipDate || "").slice(0, 10);
     return lot || date ? `${lot}|${date}` : String(row?.id || "").replace(/-\d+$/, "");
   };
+  const inspectionMeasurements = (row) => {
+    if (!row) return [];
+    const values = Array.isArray(row.measurements)
+      ? row.measurements
+      : String(row.value || "").split("/");
+    return values.map((value) => String(value || "").trim()).filter(Boolean);
+  };
+  const pqcGroupComplete = (rows) => ["점도", "고형분", "입도(Dmax)", "외관"].every((item) => {
+    const row = (rows || []).find((entry) => entry.check === item);
+    const values = inspectionMeasurements(row);
+    return item === "외관" ? values.length >= 1 : values.length >= 3;
+  });
+  const inspectionGroupJudge = (rows) => {
+    if (!isOqc && !pqcGroupComplete(rows)) return "검사대기";
+    return rows.length > 0 && rows.every((row) => row.judge === "합격") ? "합격" : "불합격";
+  };
   const buildInspectionGroups = (sourceRows) => {
     const map = new Map();
     (sourceRows || []).forEach((row) => {
@@ -81,7 +97,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     return Array.from(map.entries()).map(([key, rows]) => ({
       key, rows,
       representative: rows[0],
-      judge: rows.length > 0 && rows.every((row) => row.judge === "합격") ? "합격" : "불합격"
+      judge: inspectionGroupJudge(rows)
     }));
   };
   const currentMonth = today.slice(0, 7);
@@ -89,7 +105,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const todayGroups = buildInspectionGroups(records.filter((r) => String(r.date || r.shipDate || "").slice(0, 10) === today));
   const pass = monthGroups.filter((g) => g.judge === "합격").length;
   const fail = monthGroups.filter((g) => g.judge === "불합격").length;
-  const rate = monthGroups.length ? ((pass / monthGroups.length) * 100).toFixed(1) : "—";
+  const judged = pass + fail;
+  const rate = judged ? ((pass / judged) * 100).toFixed(1) : "—";
   const spec = QC_ITEMS[form.check];
   const isNumericItem = spec.lo != null || spec.hi != null;
   const pendingMeasurement = String(measurementInput || "").trim();
@@ -477,7 +494,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <div className="qmes-pqc-entry-form">
               <div className="qmes-pqc-basic-row">
                 <div><label>공정번호</label><input value={previewNo} readOnly /></div>
-                <div><label>생산일자</label><input type="date" value={form.date} readOnly title="작업지시 LOT 생산일자 자동 연동" /></div>
+                <div><label>검사일자</label><input type="date" value={form.date} readOnly title="작업지시 LOT 생산일자 자동 연동" /></div>
                 <div><label>LOT No.</label><input value={form.lot} onChange={(e)=>{const lot=e.target.value;const matched=(DB.batches||[]).find((b)=>b.no===lot);setForm({...form,lot,product:matched?.itemName||matched?.item||form.product,date:matched?.due||DB.woDocs?.[lot]?.date||form.date});}} placeholder="LOT No. 입력" /></div>
                 <div><label>제품명</label><input value={form.product} onChange={(e)=>setForm({...form,product:e.target.value})} placeholder="제품명 입력" /></div>
                 <div><label>검사자</label><input value={form.inspector || ""} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 이름 입력" /></div>
@@ -647,7 +664,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
                 <th className="py-2 px-3 font-medium whitespace-nowrap">{numberLabel}</th>
-                <th className="py-2 px-3 font-medium whitespace-nowrap">{isOqc ? "검사일자" : "생산일자"}</th>
+                <th className="py-2 px-3 font-medium whitespace-nowrap">검사일자</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">LOT No.</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">제품명</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">측정값</th>
@@ -663,7 +680,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               )}
               {displayRecords.map((r) => {
                 const groupRows = getInspectionGroupRows(r);
-                const groupJudge = groupRows.length > 0 && groupRows.every((x)=>x.judge==="합격") ? "합격" : "불합격";
+                const groupJudge = inspectionGroupJudge(groupRows);
                 return (
                 <tr key={r.id} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                   <td className="py-2.5 px-3 font-mono text-xs text-sky-300 truncate" title={r.groupId || r.id}>{r.groupId || String(r.id || "").replace(/-\d+$/, "")}</td>
@@ -673,7 +690,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   <td className="py-2.5 px-3 text-slate-300 tabular-nums">
                     <button type="button" className="qmes-pqc-value-preview-btn" onClick={()=>setMeasurementPreviewRows(groupRows)}>측정값 보기</button>
                   </td>
-                  <td className="py-2.5 px-3"><Badge tone={groupJudge === "합격" ? "green" : "red"}>{groupJudge}</Badge></td>
+                  <td className="py-2.5 px-3"><Badge tone={groupJudge === "합격" ? "green" : groupJudge === "불합격" ? "red" : "yellow"}>{groupJudge}</Badge></td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector || "-"}>{r.inspector || "-"}</td>
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-3 text-center whitespace-nowrap">
@@ -707,7 +724,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               <div><span>{isOqc ? "출하번호" : "공정번호"}</span><strong>{measurementPreviewRows[0].groupId || String(measurementPreviewRows[0].id || "").replace(/-\d+$/, "")}</strong></div>
               <div><span>LOT No.</span><strong>{measurementPreviewRows[0].lot || "-"}</strong></div>
               <div><span>제품명</span><strong>{measurementPreviewRows[0].product || "-"}</strong></div>
-              <div><span>{isOqc ? "검사일자" : "생산일자"}</span><strong>{measurementPreviewRows[0].date || "-"}</strong></div>
+              <div><span>검사일자</span><strong>{measurementPreviewRows[0].date || "-"}</strong></div>
               <div><span>검사자</span><strong>{measurementPreviewRows[0].inspector || "-"}</strong></div>
               {isOqc && <div><span>고객사</span><strong>{measurementPreviewRows[0].customer || DB.lots?.[measurementPreviewRows[0].lot]?.ship?.customer || "-"}</strong></div>}
               {isOqc && <div><span>출하수량</span><strong>{Number(measurementPreviewRows[0].shipQty || DB.lots?.[measurementPreviewRows[0].lot]?.ship?.qty || 0).toLocaleString()} kg</strong></div>}
