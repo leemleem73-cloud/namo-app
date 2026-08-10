@@ -11,7 +11,7 @@
       .qmes-ipad-material-field{position:relative!important;}
       .qmes-ipad-material-field>input{padding-right:72px!important;}
       .${BUTTON_CLASS}{
-        position:absolute;right:7px;bottom:7px;z-index:3;
+        position:absolute;right:7px;bottom:11px;z-index:3;
         min-width:56px;height:32px;padding:0 9px;
         border:1px solid #a8b6c3;border-radius:8px;
         background:linear-gradient(180deg,#f8fafc 0%,#e8edf2 100%);
@@ -25,7 +25,7 @@
       .qmes-ipad-number-field{position:relative!important;}
       .qmes-ipad-number-field>input{padding-right:38px!important;}
       .${SPIN_CLASS}{
-        position:absolute;right:5px;bottom:5px;z-index:3;
+        position:absolute;right:5px;bottom:8px;z-index:3;
         width:29px;height:38px;display:grid;grid-template-rows:1fr 1fr;
         overflow:hidden;border:1px solid #b8c4cf;border-radius:7px;
         background:#f4f6f8;box-shadow:0 1px 3px rgba(15,23,42,.06);
@@ -38,6 +38,21 @@
       }
       .${SPIN_CLASS} button:first-child{border-bottom:1px solid #cbd3da!important;}
       .${SPIN_CLASS} button:hover,.${SPIN_CLASS} button:focus-visible{background:#e5eaf0!important;color:#17212b!important;outline:none!important;}
+      .qmes-ipad-pop input[list="qmes-ipad-materials"],
+      .qmes-ipad-pop input[list="qmes-ipad-lots"]{
+        color-scheme:light!important;
+        background:#fff!important;
+        color:#111827!important;
+      }
+      .qmes-ipad-pop input[list="qmes-ipad-materials"]::placeholder,
+      .qmes-ipad-pop input[list="qmes-ipad-lots"]::placeholder,
+      .qmes-ipad-pop input.lot::placeholder{
+        font-family:Pretendard,system-ui,sans-serif!important;
+        font-size:16px!important;
+        font-weight:400!important;
+        letter-spacing:0!important;
+        color:#94a3b8!important;
+      }
     `;
     document.head.appendChild(style);
   }
