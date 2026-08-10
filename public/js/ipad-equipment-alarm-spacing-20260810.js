@@ -1,9 +1,10 @@
 (function qmesIpadEquipmentAlarmSpacing(){
   "use strict";
-  if(window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810__) return;
-  window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810__=true;
+  if(window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810_V2__) return;
+  window.__QMES_IPAD_EQUIPMENT_ALARM_SPACING_20260810_V2__=true;
 
   var STYLE_ID='qmes-ipad-equipment-alarm-spacing-20260810-style';
+
   function ensureStyle(){
     var style=document.getElementById(STYLE_ID);
     if(!style){
@@ -18,11 +19,15 @@
         display:flex!important;
         align-items:center!important;
         justify-content:space-between!important;
-        column-gap:28px!important;
+        gap:0!important;
       }
       .qmes-ipad-equipment .qmes-em-alarm-history-line>*{
         margin-left:0!important;
         margin-right:0!important;
+        flex:0 0 auto!important;
+      }
+      .qmes-ipad-equipment .qmes-em-alarm-history-line>*:last-child{
+        min-width:0!important;
       }
     `;
   }
@@ -35,32 +40,30 @@
     });
   }
 
-  function lowestCommonAncestor(nodes, boundary){
-    if(!nodes.length) return null;
-    var node=nodes[0].parentElement;
-    while(node && node!==boundary.parentElement){
-      if(nodes.every(function(target){return node.contains(target);})) return node;
+  function findRowFromWarning(warning,panel){
+    var node=warning.parentElement;
+    while(node && node!==panel){
+      var text=clean(node.textContent);
+      var rect=node.getBoundingClientRect();
+      var hasTime=/\b\d{1,2}:\d{2}\b/.test(text);
+      var hasDetail=text.includes('관리기준') && text.includes('조치 필요');
+      if(hasTime && hasDetail && rect.height>20 && rect.height<100){
+        return node;
+      }
       node=node.parentElement;
     }
     return null;
   }
 
   function mark(panel){
-    var leaves=leafCandidates(panel);
-    var warning=leaves.find(function(el){return clean(el.textContent)==='경고';});
-    var dr=leaves.find(function(el){return /^DR[-· ]/i.test(clean(el.textContent)) || clean(el.textContent)==='DR-HVAC';});
-    var detail=leaves.find(function(el){var text=clean(el.textContent);return text.includes('관리기준')&&text.includes('조치 필요');});
-    var time=leaves.find(function(el){return /^\d{1,2}:\d{2}$/.test(clean(el.textContent));});
-    if(!warning || !dr || !detail) return;
+    var warnings=leafCandidates(panel).filter(function(el){
+      return clean(el.textContent)==='경고';
+    });
 
-    var nodes=[warning,dr,detail];
-    if(time) nodes.splice(1,0,time);
-    var row=lowestCommonAncestor(nodes,panel);
-    if(!row || row===panel) return;
-
-    var rect=row.getBoundingClientRect();
-    if(rect.height>120) return;
-    row.classList.add('qmes-em-alarm-history-line');
+    warnings.forEach(function(warning){
+      var row=findRowFromWarning(warning,panel);
+      if(row) row.classList.add('qmes-em-alarm-history-line');
+    });
   }
 
   function apply(){
