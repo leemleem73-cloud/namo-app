@@ -114,17 +114,17 @@ function InventoryTab() {
       )}
       <Panel title="원재료 · 부자재 재고 현황" right={<span className="text-xs text-slate-400">총 {inventoryRows.length}개 품목</span>}>
         <div className="overflow-x-auto px-2">
-          <div className="mx-auto max-w-[1480px]">
-          <table className="w-full table-fixed text-sm min-w-[1080px]">
+          <div style={{ width: "1220px", maxWidth: "100%", margin: "0 auto" }}>
+          <table className="table-fixed text-sm" style={{ width: "1220px", minWidth: "1220px" }}>
             <colgroup>
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "9%" }} />
-              <col style={{ width: "9%" }} />
-              <col style={{ width: "12%" }} />
-              <col style={{ width: "18%" }} />
-              <col style={{ width: "16%" }} />
-              <col style={{ width: "6%" }} />
+              <col style={{ width: "140px" }} />
+              <col style={{ width: "200px" }} />
+              <col style={{ width: "100px" }} />
+              <col style={{ width: "100px" }} />
+              <col style={{ width: "160px" }} />
+              <col style={{ width: "210px" }} />
+              <col style={{ width: "230px" }} />
+              <col style={{ width: "80px" }} />
             </colgroup>
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-800">
@@ -165,7 +165,7 @@ function InventoryTab() {
           </table>
           </div>
         </div>
-        <p className="mx-auto max-w-[1480px] px-2 text-[11px] text-slate-500 mt-3">
+        <p className="px-2 text-[11px] text-slate-500 mt-3" style={{ width: "1220px", maxWidth: "100%", margin: "0 auto" }}>
           모든 원재료·부자재·완제품 공통 보관기준: 25±5℃ · 습도 50%↓ · 선입선출(FIFO) 관리.
         </p>
       </Panel>
