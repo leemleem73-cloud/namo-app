@@ -4,8 +4,8 @@
 .qmes-ipad-mode-tabs strong{font-size:19px!important;font-weight:900!important;}
 .qmes-ipad-work-head > div:nth-child(2) > span{font-size:24px!important;font-weight:900!important;}
 body > #root > div:has(.qmes-ipad-pop){
-  background:linear-gradient(90deg,#18222d 0%,#202a34 52%,#2b333b 100%)!important;
-  background-color:#202a34!important;
+  background:linear-gradient(90deg,#0f2033 0%,#1b2a3a 34%,#343b43 68%,#565b61 100%)!important;
+  background-color:#343b43!important;
 }
 .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title > span,
 .qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title > span{
