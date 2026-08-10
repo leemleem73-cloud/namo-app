@@ -26,6 +26,10 @@
 /* 설비대장/정기점검/고장수리 화면 제목과 신규등록 영역 */
 .qmes-ipad-equipment [class*="header"],.qmes-ipad-equipment [class*="toolbar"],.qmes-ipad-equipment [class*="title"]{color:#111827!important;}
 .qmes-ipad-equipment [class*="header"] h1,.qmes-ipad-equipment [class*="header"] h2,.qmes-ipad-equipment [class*="header"] h3,.qmes-ipad-equipment [class*="toolbar"] h1,.qmes-ipad-equipment [class*="toolbar"] h2,.qmes-ipad-equipment [class*="toolbar"] h3{color:#111827!important;}
+.qmes-ipad-equipment .qmes-equipment-registry-title{color:#000!important;font-weight:900!important;}
+.qmes-ipad-equipment .qmes-equipment-new-register{color:#000!important;border:1.5px solid #111!important;background:#fff!important;font-weight:900!important;box-shadow:none!important;}
+.qmes-ipad-equipment .qmes-equipment-new-register *{color:#000!important;}
+.qmes-ipad-equipment .qmes-equipment-new-register:hover{background:#f5f5f5!important;border-color:#000!important;}
 
 /* 버튼을 눌러 열리는 등록/수정 화면과 모달도 흰색 */
 .qmes-ipad-equipment [role="dialog"],.qmes-ipad-equipment [class*="modal"],.qmes-ipad-equipment [class*="dialog"],.qmes-ipad-equipment [class*="drawer"],.qmes-ipad-equipment [class*="form"]{background:#fff!important;background-color:#fff!important;color:#111827!important;border-color:#d9e0e7!important;}
