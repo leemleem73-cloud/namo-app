@@ -6,21 +6,31 @@
 .qmes-ipad-equipment > *{color:#1f2937!important;}
 .qmes-ipad-equipment [class*="bg-slate-"],.qmes-ipad-equipment .bg-slate-950,.qmes-ipad-equipment .bg-slate-900,.qmes-ipad-equipment .bg-slate-800,.qmes-ipad-equipment .bg-slate-700{background:#fff!important;background-color:#fff!important;}
 .qmes-ipad-equipment [class*="border-slate-"],.qmes-ipad-equipment .border-slate-900,.qmes-ipad-equipment .border-slate-800,.qmes-ipad-equipment .border-slate-700,.qmes-ipad-equipment .border-slate-600{border-color:#d9e0e7!important;}
-.qmes-ipad-equipment [class*="text-slate-100"],.qmes-ipad-equipment [class*="text-slate-200"],.qmes-ipad-equipment [class*="text-slate-300"]{color:#111827!important;}
-.qmes-ipad-equipment [class*="text-slate-400"],.qmes-ipad-equipment [class*="text-slate-500"],.qmes-ipad-equipment [class*="text-slate-600"]{color:#64748b!important;}
+.qmes-ipad-equipment [class*="text-slate-100"],.qmes-ipad-equipment [class*="text-slate-200"],.qmes-ipad-equipment [class*="text-slate-300"],.qmes-ipad-equipment [class*="text-white"]{color:#111827!important;}
+.qmes-ipad-equipment [class*="text-slate-400"],.qmes-ipad-equipment [class*="text-slate-500"],.qmes-ipad-equipment [class*="text-slate-600"]{color:#475569!important;}
 .qmes-ipad-equipment [class*="hover:bg-slate-"]:hover{background:#f8fafc!important;}
 .qmes-ipad-equipment section,.qmes-ipad-equipment .panel,.qmes-ipad-equipment .card,.qmes-ipad-equipment .qmes-card,.qmes-ipad-equipment [class*="panel"],.qmes-ipad-equipment [class*="card"],.qmes-ipad-equipment [class*="tile"],.qmes-ipad-equipment [class*="summary"],.qmes-ipad-equipment [class*="stat"],.qmes-ipad-equipment [class*="metric"]{background:#fff!important;background-color:#fff!important;border-color:#e1e7ed!important;color:#1f2937!important;box-shadow:0 3px 10px rgba(15,23,42,.045)!important;}
 .qmes-ipad-equipment [class*="text-2xl"],.qmes-ipad-equipment [class*="text-3xl"],.qmes-ipad-equipment [class*="text-4xl"],.qmes-ipad-equipment [class*="stat"] strong,.qmes-ipad-equipment [class*="metric"] strong,.qmes-ipad-equipment [class*="summary"] strong{color:#111827!important;}
-.qmes-ipad-equipment h1,.qmes-ipad-equipment h2,.qmes-ipad-equipment h3,.qmes-ipad-equipment h4,.qmes-ipad-equipment strong,.qmes-ipad-equipment label,.qmes-ipad-equipment th{color:#111827!important;}
+.qmes-ipad-equipment h1,.qmes-ipad-equipment h2,.qmes-ipad-equipment h3,.qmes-ipad-equipment h4,.qmes-ipad-equipment h5,.qmes-ipad-equipment strong,.qmes-ipad-equipment label,.qmes-ipad-equipment th{color:#111827!important;}
 .qmes-ipad-equipment p,.qmes-ipad-equipment span,.qmes-ipad-equipment td,.qmes-ipad-equipment small{color:#475569;}
 .qmes-ipad-equipment table{background:#fff!important;color:#1f2937!important;}
-.qmes-ipad-equipment thead,.qmes-ipad-equipment thead tr,.qmes-ipad-equipment th{background:#f3f4f6!important;border-color:#d1d5db!important;}
-.qmes-ipad-equipment tbody tr,.qmes-ipad-equipment td{background:#fff!important;border-color:#e5e7eb!important;}
+.qmes-ipad-equipment thead,.qmes-ipad-equipment thead tr,.qmes-ipad-equipment th{background:#f3f4f6!important;border-color:#d1d5db!important;color:#111827!important;}
+.qmes-ipad-equipment tbody tr,.qmes-ipad-equipment td{background:#fff!important;border-color:#e5e7eb!important;color:#1f2937!important;}
 .qmes-ipad-equipment tbody tr:hover,.qmes-ipad-equipment tbody tr:hover td{background:#f8fafc!important;}
 .qmes-ipad-equipment input,.qmes-ipad-equipment select,.qmes-ipad-equipment textarea{background:#fff!important;color:#111827!important;border-color:#b8c4d0!important;}
 .qmes-ipad-equipment input:focus,.qmes-ipad-equipment select:focus,.qmes-ipad-equipment textarea:focus{border-color:#2bc3ec!important;box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;outline:none!important;}
-.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500){border-color:#d5dde5!important;background:#fff!important;color:#1f2937!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;}
+.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500){border-color:#cbd5df!important;background:#fff!important;color:#111827!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;}
+.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500) *{color:#111827!important;}
 .qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500):hover{background:#f8fafc!important;border-color:#aebbc7!important;}
+
+/* 설비대장/정기점검/고장수리 화면 제목과 신규등록 영역 */
+.qmes-ipad-equipment [class*="header"],.qmes-ipad-equipment [class*="toolbar"],.qmes-ipad-equipment [class*="title"]{color:#111827!important;}
+.qmes-ipad-equipment [class*="header"] h1,.qmes-ipad-equipment [class*="header"] h2,.qmes-ipad-equipment [class*="header"] h3,.qmes-ipad-equipment [class*="toolbar"] h1,.qmes-ipad-equipment [class*="toolbar"] h2,.qmes-ipad-equipment [class*="toolbar"] h3{color:#111827!important;}
+
+/* 버튼을 눌러 열리는 등록/수정 화면과 모달도 흰색 */
+.qmes-ipad-equipment [role="dialog"],.qmes-ipad-equipment [class*="modal"],.qmes-ipad-equipment [class*="dialog"],.qmes-ipad-equipment [class*="drawer"],.qmes-ipad-equipment [class*="form"]{background:#fff!important;background-color:#fff!important;color:#111827!important;border-color:#d9e0e7!important;}
+.qmes-ipad-equipment [role="dialog"]>div,.qmes-ipad-equipment [class*="modal"]>div,.qmes-ipad-equipment [class*="dialog"]>div,.qmes-ipad-equipment [class*="drawer"]>div{background:#fff!important;background-color:#fff!important;color:#111827!important;border-color:#e1e7ed!important;}
+.qmes-ipad-equipment [role="dialog"] h1,.qmes-ipad-equipment [role="dialog"] h2,.qmes-ipad-equipment [role="dialog"] h3,.qmes-ipad-equipment [role="dialog"] label,.qmes-ipad-equipment [class*="modal"] h1,.qmes-ipad-equipment [class*="modal"] h2,.qmes-ipad-equipment [class*="modal"] h3,.qmes-ipad-equipment [class*="modal"] label{color:#111827!important;}
 
 /* EM 상단 4개 업무 버튼: 동일 폭 + 균등 간격 */
 .qmes-ipad-equipment .qmes-equipment-nav-block{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;max-width:none!important;gap:14px!important;margin:0 0 24px!important;}
