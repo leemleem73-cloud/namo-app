@@ -138,8 +138,7 @@
       { code:"RM-AOH30", name:"AOH30 (Boehmite)", stock:0, safety:1800, unit:"kg", loc:"원재료창고 A-01", cond:"25±5℃ · 습도 50%↓" },
       { code:"RM-SBS", name:"SBS", stock:0, safety:300, unit:"kg", loc:"드라이룸 DR-02", cond:"RH 0.54%↓" },
       { code:"RM-PVDF", name:"PVdF", stock:0, safety:400, unit:"kg", loc:"드라이룸 DR-02", cond:"RH 0.54%↓" },
-      { code:"RM-SBR", name:"SBR", stock:0, safety:300, unit:"kg", loc:"원재료창고 A-03", cond:"25±5℃ · 습도 50%↓" },
-      { code:"PK-CAN20", name:"포장용기 20kg 캔", stock:0, safety:400, unit:"EA", loc:"부자재창고 C-02", cond:"-" }
+      { code:"RM-SBR", name:"SBR", stock:0, safety:300, unit:"kg", loc:"원재료창고 A-03", cond:"25±5℃ · 습도 50%↓" }
     ];
   }
 
@@ -172,7 +171,7 @@
     const bases=baseInventory().map((row)=>({...row}));
     const knownKeys=new Set(bases.map((row)=>materialKey(row.name)));
     lots.forEach((lot)=>{
-      if(!lot.materialKey || knownKeys.has(lot.materialKey)) return;
+      if(!lot.materialKey || lot.materialKey==="CAN20" || knownKeys.has(lot.materialKey)) return;
       bases.push({
         code:dynamicMaterialCode(lot.name),
         name:lot.name,
