@@ -3,7 +3,17 @@
 .qmes-ipad-mode-tabs small,.qmes-ipad-mode-tabs button>small{display:inline-block!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;font-size:22px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;font-kerning:normal!important;font-feature-settings:"kern" 1!important;}
 .qmes-ipad-mode-tabs strong{font-size:19px!important;font-weight:900!important;}
 .qmes-ipad-work-head > div:nth-child(2) > span{display:inline-block!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;font-size:24px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;font-kerning:normal!important;font-feature-settings:"kern" 1!important;color:#5f7182!important;}
-body > #root > div:has(.qmes-ipad-pop){background:linear-gradient(90deg,#071a2f 0%,#10263a 22%,#34414d 48%,#70777e 72%,#b8bcc0 100%)!important;background-color:#34414d!important;}
+body > #root > div:has(.qmes-ipad-pop){
+  background:
+    radial-gradient(ellipse at 12% 18%,rgba(77,91,104,.48) 0%,rgba(77,91,104,.18) 24%,transparent 48%),
+    radial-gradient(ellipse at 72% 14%,rgba(154,162,169,.34) 0%,rgba(154,162,169,.13) 22%,transparent 46%),
+    radial-gradient(ellipse at 43% 58%,rgba(63,77,89,.40) 0%,rgba(63,77,89,.14) 27%,transparent 52%),
+    radial-gradient(ellipse at 88% 72%,rgba(185,190,194,.36) 0%,rgba(185,190,194,.12) 25%,transparent 50%),
+    radial-gradient(ellipse at 20% 88%,rgba(34,51,67,.48) 0%,rgba(34,51,67,.18) 25%,transparent 49%),
+    linear-gradient(135deg,#0b1d30 0%,#1f3343 28%,#53616d 56%,#858d94 78%,#b8bdc1 100%)!important;
+  background-color:#53616d!important;
+  background-attachment:fixed!important;
+}
 .qmes-ipad-hero,.qmes-ipad-home-card,.qmes-ipad-home-note,.qmes-ipad-work-head,.qmes-ipad-section,.qmes-ipad-item-tabs button,.qmes-ipad-measure-card,.qmes-ipad-overall{background:linear-gradient(90deg,#ffffff 0%,#fbfbfc 38%,#f4f5f6 72%,#eceef0 100%)!important;background-color:#f6f7f8!important;}
 .qmes-ipad-home-card:hover,.qmes-ipad-home-card:focus-visible{background:linear-gradient(90deg,#ffffff 0%,#f8fafc 52%,#eef1f4 100%)!important;}
 .qmes-ipad-mode-tabs button{background:linear-gradient(90deg,#f5f7f9 0%,#eef2f5 55%,#e8edf1 100%)!important;border-color:#cbd5dd!important;color:#27313b!important;box-shadow:0 4px 10px rgba(15,23,42,.07)!important;}
