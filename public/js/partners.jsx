@@ -103,7 +103,12 @@ function PartnersTab() {
     resetForm();
   };
   const openNewFor = (type) => {
-    switchType(type);
+    setActiveType(type);
+    setSearchText("");
+    setSaveMessage("");
+    setEditCode(null);
+    setCustomerForm({ name:"", status:"거래중" });
+    setSupplierForm({ company:"", material:"", lot:"", status:"거래중" });
     setShowForm(true);
     window.scrollTo({ top:0, behavior:"smooth" });
   };
@@ -146,8 +151,31 @@ function PartnersTab() {
   const idleTab = "border-slate-700 bg-slate-950 text-slate-400 hover:border-slate-500 hover:text-slate-200";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 qmes-partners-page">
       <style>{`
+        .qmes-partner-register-btn {
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          gap:6px;
+          min-height:34px;
+          padding:7px 12px;
+          border:1px solid #0891b2;
+          border-radius:7px;
+          background:#0e7490;
+          color:#ffffff;
+          font-size:13px;
+          font-weight:800;
+          line-height:1;
+          cursor:pointer;
+          box-shadow:0 2px 8px rgba(8,145,178,.18);
+        }
+        .qmes-partner-register-btn:hover,.qmes-partner-register-btn:focus-visible {
+          background:#0891b2;
+          border-color:#22d3ee;
+          color:#fff;
+          outline:none;
+        }
         .qmes-partner-form-shell {
           width: 92%;
           margin: 0 auto;
@@ -158,65 +186,18 @@ function PartnersTab() {
         }
         .qmes-partner-form-shell.is-customer { max-width: 740px; }
         .qmes-partner-form-shell.is-supplier { max-width: 1080px; }
-        .qmes-partner-form-title {
-          font-size: 17px;
-          line-height: 24px;
-        }
-        .qmes-partner-form-grid {
-          display: grid;
-          gap: 7px 8px;
-          align-items: end;
-        }
-        .qmes-partner-form-grid.is-customer { grid-template-columns: minmax(0, 1fr) 150px; }
-        .qmes-partner-form-grid.is-supplier { grid-template-columns: minmax(0, 1fr) 170px 220px 140px; }
-        .qmes-partner-form-field {
-          display: flex;
-          min-width: 0;
-          flex-direction: column;
-          gap: 2px;
-          color: #cbd5e1;
-          font-size: 13px;
-          font-weight: 600;
-          line-height: 18px;
-        }
-        .qmes-partner-form-field > span {
-          min-height: 18px;
-          overflow: visible;
-          color: #cbd5e1;
-          line-height: 18px;
-          white-space: nowrap;
-        }
-        .qmes-partner-form-field input,
-        .qmes-partner-form-field select {
-          width: 100% !important;
-          min-width: 0 !important;
-          height: 34px !important;
-          min-height: 34px !important;
-          padding: 5px 9px !important;
-          box-sizing: border-box !important;
-          border: 1px solid #334155 !important;
-          border-radius: 6px !important;
-          background: #1e293b !important;
-          color: #f1f5f9 !important;
-          font-size: 13px !important;
-          line-height: 22px !important;
-          outline: none !important;
-        }
-        .qmes-partner-form-field input::placeholder { color: #64748b !important; }
-        .qmes-partner-form-field input:focus,
-        .qmes-partner-form-field select:focus { border-color: #06b6d4 !important; }
-        .qmes-partner-form-actions button {
-          min-width: 72px;
-          min-height: 36px;
-          font-size: 13px !important;
-        }
-        @media (max-width: 850px) {
-          .qmes-partner-form-grid.is-supplier { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-        @media (max-width: 640px) {
-          .qmes-partner-form-grid.is-customer,
-          .qmes-partner-form-grid.is-supplier { grid-template-columns: 1fr; }
-        }
+        .qmes-partner-form-title { font-size:17px; line-height:24px; }
+        .qmes-partner-form-grid { display:grid; gap:7px 8px; align-items:end; }
+        .qmes-partner-form-grid.is-customer { grid-template-columns:minmax(0,1fr) 150px; }
+        .qmes-partner-form-grid.is-supplier { grid-template-columns:minmax(0,1fr) 170px 220px 140px; }
+        .qmes-partner-form-field { display:flex; min-width:0; flex-direction:column; gap:2px; color:#cbd5e1; font-size:13px; font-weight:600; line-height:18px; }
+        .qmes-partner-form-field > span { min-height:18px; overflow:visible; color:#cbd5e1; line-height:18px; white-space:nowrap; }
+        .qmes-partner-form-field input,.qmes-partner-form-field select { width:100%!important; min-width:0!important; height:34px!important; min-height:34px!important; padding:5px 9px!important; box-sizing:border-box!important; border:1px solid #334155!important; border-radius:6px!important; background:#1e293b!important; color:#f1f5f9!important; font-size:13px!important; line-height:22px!important; outline:none!important; }
+        .qmes-partner-form-field input::placeholder { color:#64748b!important; }
+        .qmes-partner-form-field input:focus,.qmes-partner-form-field select:focus { border-color:#06b6d4!important; }
+        .qmes-partner-form-actions button { min-width:72px; min-height:36px; font-size:13px!important; }
+        @media (max-width:850px) { .qmes-partner-form-grid.is-supplier { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media (max-width:640px) { .qmes-partner-form-grid.is-customer,.qmes-partner-form-grid.is-supplier { grid-template-columns:1fr; } }
       `}</style>
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
@@ -259,7 +240,7 @@ function PartnersTab() {
           <div>
             <div className="flex items-center gap-3">
               <h3 className="font-semibold text-cyan-300">{activeType==="customer"?"고객사 목록":"공급업체 목록"}</h3>
-              <button type="button" onClick={()=>openNewFor(activeType)} className="qmes-iqc-new-btn">
+              <button type="button" onClick={()=>openNewFor(activeType)} className="qmes-partner-register-btn" data-qmes-partner-register="true">
                 <Plus size={16} /> {activeType === "customer" ? "고객사 등록" : "공급업체 등록"}
               </button>
             </div>
