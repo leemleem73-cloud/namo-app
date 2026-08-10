@@ -1,88 +1,42 @@
 .qmes-ipad-equipment{
-  margin-top:14px!important;
-  padding:24px!important;
-  border:1px solid #d6dee6!important;
-  border-radius:18px!important;
-  background:linear-gradient(90deg,#ffffff 0%,#fbfbfc 55%,#f5f6f7 100%)!important;
-  color:#1f2937!important;
-  box-shadow:0 12px 30px rgba(15,23,42,.10)!important;
-  overflow:hidden!important;
+  margin-top:14px!important;padding:24px!important;border:1px solid #d6dee6!important;border-radius:18px!important;
+  background:#fff!important;background-color:#fff!important;color:#1f2937!important;
+  box-shadow:0 12px 30px rgba(15,23,42,.10)!important;overflow:hidden!important;
 }
 .qmes-ipad-equipment > *{color:#1f2937!important;}
 
-/* 공통 Panel/Tailwind 네이비 테마 강제 해제 — EM 내부에만 적용 */
-.qmes-ipad-equipment [class*="bg-slate-"],
-.qmes-ipad-equipment .bg-slate-950,
-.qmes-ipad-equipment .bg-slate-900,
-.qmes-ipad-equipment .bg-slate-800,
-.qmes-ipad-equipment .bg-slate-800\/30,
-.qmes-ipad-equipment .bg-slate-800\/40,
-.qmes-ipad-equipment .bg-slate-900\/50,
-.qmes-ipad-equipment .bg-slate-950\/40{
-  background:#ffffff!important;
-  background-color:#ffffff!important;
+/* EM 전체 내부 배경: 네이비 강제값 해제 */
+.qmes-ipad-equipment [class*="bg-slate-"],.qmes-ipad-equipment .bg-slate-950,.qmes-ipad-equipment .bg-slate-900,.qmes-ipad-equipment .bg-slate-800,.qmes-ipad-equipment .bg-slate-700{
+  background:#fff!important;background-color:#fff!important;
 }
-.qmes-ipad-equipment [class*="border-slate-"],
-.qmes-ipad-equipment .border-slate-900,
-.qmes-ipad-equipment .border-slate-800,
-.qmes-ipad-equipment .border-slate-700,
-.qmes-ipad-equipment .border-slate-600{
-  border-color:#d9e0e7!important;
-}
-.qmes-ipad-equipment [class*="text-slate-100"],
-.qmes-ipad-equipment [class*="text-slate-200"],
-.qmes-ipad-equipment [class*="text-slate-300"]{
-  color:#111827!important;
-}
-.qmes-ipad-equipment [class*="text-slate-400"],
-.qmes-ipad-equipment [class*="text-slate-500"],
-.qmes-ipad-equipment [class*="text-slate-600"]{
-  color:#64748b!important;
-}
-.qmes-ipad-equipment [class*="hover:bg-slate-"]:hover{
-  background:#f8fafc!important;
+.qmes-ipad-equipment [class*="border-slate-"],.qmes-ipad-equipment .border-slate-900,.qmes-ipad-equipment .border-slate-800,.qmes-ipad-equipment .border-slate-700,.qmes-ipad-equipment .border-slate-600{border-color:#d9e0e7!important;}
+.qmes-ipad-equipment [class*="text-slate-100"],.qmes-ipad-equipment [class*="text-slate-200"],.qmes-ipad-equipment [class*="text-slate-300"]{color:#111827!important;}
+.qmes-ipad-equipment [class*="text-slate-400"],.qmes-ipad-equipment [class*="text-slate-500"],.qmes-ipad-equipment [class*="text-slate-600"]{color:#64748b!important;}
+.qmes-ipad-equipment [class*="hover:bg-slate-"]:hover{background:#f8fafc!important;}
+
+/* 설비관리부터 하단 이력까지 바깥/안쪽 패널 모두 흰색 */
+.qmes-ipad-equipment section,.qmes-ipad-equipment .panel,.qmes-ipad-equipment .card,.qmes-ipad-equipment .qmes-card,
+.qmes-ipad-equipment [class*="panel"],.qmes-ipad-equipment [class*="card"],.qmes-ipad-equipment [class*="tile"],.qmes-ipad-equipment [class*="summary"],.qmes-ipad-equipment [class*="stat"],.qmes-ipad-equipment [class*="metric"]{
+  background:#fff!important;background-color:#fff!important;border-color:#e1e7ed!important;color:#1f2937!important;box-shadow:0 3px 10px rgba(15,23,42,.045)!important;
 }
 
-/* EM 내부 영역은 큰 흰색 패널 안의 정돈된 서브 영역으로 표시 */
-.qmes-ipad-equipment section,
-.qmes-ipad-equipment .panel,
-.qmes-ipad-equipment .card,
-.qmes-ipad-equipment .qmes-card,
-.qmes-ipad-equipment [class*="panel"],
-.qmes-ipad-equipment [class*="card"],
-.qmes-ipad-equipment [class*="tile"],
-.qmes-ipad-equipment [class*="summary"],
-.qmes-ipad-equipment [class*="stat"],
-.qmes-ipad-equipment [class*="metric"]{
-  background:#fff!important;
-  border-color:#e1e7ed!important;
-  color:#1f2937!important;
-  box-shadow:0 3px 10px rgba(15,23,42,.045)!important;
+/* 설비관리 상단 4칸의 큰 숫자는 검정 */
+.qmes-ipad-equipment [class*="text-2xl"],.qmes-ipad-equipment [class*="text-3xl"],.qmes-ipad-equipment [class*="text-4xl"],
+.qmes-ipad-equipment [class*="stat"] strong,.qmes-ipad-equipment [class*="metric"] strong,.qmes-ipad-equipment [class*="summary"] strong{
+  color:#111827!important;
 }
-.qmes-ipad-equipment h1,.qmes-ipad-equipment h2,.qmes-ipad-equipment h3,.qmes-ipad-equipment h4,
-.qmes-ipad-equipment strong,.qmes-ipad-equipment label,.qmes-ipad-equipment th{color:#111827!important;}
+.qmes-ipad-equipment h1,.qmes-ipad-equipment h2,.qmes-ipad-equipment h3,.qmes-ipad-equipment h4,.qmes-ipad-equipment strong,.qmes-ipad-equipment label,.qmes-ipad-equipment th{color:#111827!important;}
 .qmes-ipad-equipment p,.qmes-ipad-equipment span,.qmes-ipad-equipment td,.qmes-ipad-equipment small{color:#475569;}
 .qmes-ipad-equipment table{background:#fff!important;color:#1f2937!important;}
 .qmes-ipad-equipment thead,.qmes-ipad-equipment thead tr,.qmes-ipad-equipment th{background:#f3f4f6!important;border-color:#d1d5db!important;}
 .qmes-ipad-equipment tbody tr,.qmes-ipad-equipment td{background:#fff!important;border-color:#e5e7eb!important;}
 .qmes-ipad-equipment tbody tr:hover,.qmes-ipad-equipment tbody tr:hover td{background:#f8fafc!important;}
-.qmes-ipad-equipment input,.qmes-ipad-equipment select,.qmes-ipad-equipment textarea{
-  background:#fff!important;color:#111827!important;border-color:#b8c4d0!important;
-}
-.qmes-ipad-equipment input:focus,.qmes-ipad-equipment select:focus,.qmes-ipad-equipment textarea:focus{
-  border-color:#2bc3ec!important;box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;outline:none!important;
-}
-.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500){
-  border-color:#d5dde5!important;background:#fff!important;color:#1f2937!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;
-}
-.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500):hover{
-  background:#f8fafc!important;border-color:#aebbc7!important;
-}
+.qmes-ipad-equipment input,.qmes-ipad-equipment select,.qmes-ipad-equipment textarea{background:#fff!important;color:#111827!important;border-color:#b8c4d0!important;}
+.qmes-ipad-equipment input:focus,.qmes-ipad-equipment select:focus,.qmes-ipad-equipment textarea:focus{border-color:#2bc3ec!important;box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;outline:none!important;}
+.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500){border-color:#d5dde5!important;background:#fff!important;color:#1f2937!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;}
+.qmes-ipad-equipment button:not(.bg-red-500):not(.bg-rose-500):not(.bg-emerald-500):not(.bg-green-500):hover{background:#f8fafc!important;border-color:#aebbc7!important;}
 
 /* 현장입력 첫 화면 EM 카드는 기존 노란 포인트 유지 */
 .qmes-ipad-home-card.is-equipment::before{background:#fbbf24!important;}
 .qmes-ipad-home-card.is-equipment .qmes-ipad-home-code{color:#d97706!important;}
-
-@media(max-width:700px){
-  .qmes-ipad-equipment{padding:16px!important;border-radius:15px!important;}
-}
+@media(max-width:700px){.qmes-ipad-equipment{padding:16px!important;border-radius:15px!important;}}
