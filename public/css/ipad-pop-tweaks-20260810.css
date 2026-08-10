@@ -75,8 +75,8 @@ body > #root > div:has(.qmes-ipad-pop){
 .qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(5){order:4!important;}
 .qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(6){order:5!important;}
 .qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(7){display:none!important;}
-.qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(8){order:7!important;}
-.qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(9){order:8!important;grid-column:1 / -1!important;}
+.qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(8){order:7!important;grid-column:span 1!important;}
+.qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(9){order:8!important;grid-column:span 2!important;}
 .qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(6) > span{font-size:0!important;}
 .qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(6) > span::before{content:"출하량 (kg) ";font-size:13px!important;font-weight:800!important;color:#1f2937!important;}
 .qmes-ipad-form-grid:has(input[placeholder="고객사명"]) > label:nth-of-type(6) > span > b{font-size:13px!important;}
