@@ -64,7 +64,7 @@
       [window.localStorage,window.sessionStorage].forEach(storage=>{try{const keys=[];for(let index=0;index<storage.length;index+=1){const key=storage.key(index);if(key)keys.push(key);}Array.from(new Set([...exactKeys,...keys.filter(key=>related.test(key))])).forEach(key=>storage.removeItem(key));}catch(error){}});
     })();
   </script>
-  <script type="text/babel" data-presets="react" src="./js/common.jsx?v=20260803-coa2"></script>
+  <script type="text/babel" data-presets="react" src="./js/common.jsx?v=20260810-remove-packaging1"></script>
   <script type="text/babel" data-presets="react" src="./js/utils.jsx"></script>
   <script src="./js/qmes-sync.js?v=20260810-equipment5"></script>
   <script type="text/babel" data-presets="react" src="./js/dashboard.jsx?v=20260727-5"></script>
@@ -79,7 +79,7 @@
   <script src="./js/workorder-lot-sync.js?v=20260728-1"></script>
   <script src="./js/workorder-ui-refinement.js?v=20260804-coa19"></script>
   <script src="./js/workorder-print-cleanup.js?v=20260803-5"></script>
-  <script type="text/babel" data-presets="react" src="./js/api.jsx?v=20260810-storage-condition1"></script>
+  <script type="text/babel" data-presets="react" src="./js/api.jsx?v=20260810-inventory-flicker-fix1"></script>
   <script type="text/babel" data-presets="react" src="./js/lot.jsx?v=20260727-trace1"></script>
   <script type="text/babel" data-presets="react" src="./js/charts.jsx?v=20260804-lot-tabs-final"></script>
   <script type="text/babel" data-presets="react" src="./js/approval.jsx"></script>

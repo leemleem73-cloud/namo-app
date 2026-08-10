@@ -70,9 +70,33 @@ function InventoryTab() {
     return () => events.forEach((eventName) => window.removeEventListener(eventName, refresh));
   }, []);
 
+  const fallbackStorageLocation = (name) => {
+    const key = String(name || "").toUpperCase().replace(/[^A-Z0-9가-힣]/g, "");
+    if (key.includes("NMP")) return "A-5-1 / A-5-2 / A-6-2";
+    if (key.includes("BYK180") || key.includes("분산제")) return "A-3-2 / A-4-1";
+    if (key.includes("AOH30") || key.includes("BOEHMITE")) return "A-4-1 / A-4-2";
+    if (key.includes("PVDF")) return "A-1-1 / A-3-1";
+    if (key.includes("SBS")) return "A-1-1";
+    if (key.includes("SBR")) return "A-2-1 / A-2-2";
+    if (key.includes("PAI")) return "A-1-2";
+    if (key.includes("KTR201")) return "A-6-1";
+    if (key.includes("SOLEF5140")) return "A-3-2";
+    if (key.includes("NBA20HM05")) return "B-2-1 / B-3-1";
+    return "미지정";
+  };
+  const fallbackInventoryRows = (Array.isArray(INVENTORY) ? INVENTORY : [])
+    .filter((row) => {
+      const nameKey = String(row?.name || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      return nameKey !== "CAN20" && String(row?.code || "") !== "PK-CAN20";
+    })
+    .map((row) => ({
+      ...row,
+      loc: fallbackStorageLocation(row?.name),
+      cond: "25±5℃ · 습도 50%↓",
+    }));
   const inventoryRows = typeof window.qmesBuildInventoryRows === "function"
     ? (window.qmesBuildInventoryRows() || [])
-    : INVENTORY;
+    : fallbackInventoryRows;
   const finishedRows = typeof window.qmesBuildFinishedGoodsRows === "function"
     ? (window.qmesBuildFinishedGoodsRows() || [])
     : [];
