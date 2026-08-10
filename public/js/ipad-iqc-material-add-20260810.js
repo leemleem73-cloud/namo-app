@@ -2,6 +2,7 @@
   const STYLE_ID = "qmes-ipad-iqc-material-add-style";
   const BUTTON_CLASS = "qmes-ipad-material-add-btn";
   const SPIN_CLASS = "qmes-ipad-number-stepper";
+  const DROPDOWN_CLASS = "qmes-ipad-custom-dropdown";
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -38,20 +39,40 @@
       }
       .${SPIN_CLASS} button:first-child{border-bottom:1px solid #cbd3da!important;}
       .${SPIN_CLASS} button:hover,.${SPIN_CLASS} button:focus-visible{background:#e5eaf0!important;color:#17212b!important;outline:none!important;}
-      .qmes-ipad-pop input[list="qmes-ipad-materials"],
-      .qmes-ipad-pop input[list="qmes-ipad-lots"]{
+      .qmes-ipad-pop input[data-qmes-list-id]{
         color-scheme:light!important;
         background:#fff!important;
         color:#111827!important;
       }
-      .qmes-ipad-pop input[list="qmes-ipad-materials"]::placeholder,
-      .qmes-ipad-pop input[list="qmes-ipad-lots"]::placeholder,
+      .qmes-ipad-pop input[data-qmes-list-id]::placeholder,
       .qmes-ipad-pop input.lot::placeholder{
         font-family:Pretendard,system-ui,sans-serif!important;
         font-size:16px!important;
         font-weight:400!important;
         letter-spacing:0!important;
         color:#94a3b8!important;
+      }
+      .qmes-ipad-custom-list-field{position:relative!important;}
+      .${DROPDOWN_CLASS}{
+        position:absolute;left:0;right:0;top:100%;z-index:1000;
+        display:none;max-height:230px;overflow-y:auto;margin-top:5px;
+        padding:5px;background:#fff!important;color:#111827!important;
+        border:1px solid #cbd5e1;border-radius:10px;
+        box-shadow:0 10px 26px rgba(15,23,42,.18);
+      }
+      .${DROPDOWN_CLASS}.is-open{display:block!important;}
+      .${DROPDOWN_CLASS} button{
+        display:block!important;width:100%!important;min-height:38px!important;
+        padding:8px 10px!important;margin:0!important;border:0!important;border-radius:7px!important;
+        background:#fff!important;color:#111827!important;
+        font-family:Pretendard,system-ui,sans-serif!important;font-size:14px!important;font-weight:600!important;
+        text-align:left!important;cursor:pointer!important;box-shadow:none!important;
+      }
+      .${DROPDOWN_CLASS} button:hover,.${DROPDOWN_CLASS} button:focus-visible{
+        background:#f1f5f9!important;color:#000!important;outline:none!important;
+      }
+      .${DROPDOWN_CLASS} .qmes-ipad-empty-option{
+        padding:10px;color:#64748b;background:#fff;font-size:13px;text-align:left;
       }
     `;
     document.head.appendChild(style);
@@ -97,6 +118,7 @@
 
     setReactInputValue(input, selected);
     input.focus();
+    input.dispatchEvent(new Event("focus", { bubbles:true }));
   }
 
   function numberStepFor(labelText) {
@@ -116,7 +138,7 @@
   }
 
   function enhanceMaterial() {
-    const input = document.querySelector('.qmes-ipad-pop input[list="qmes-ipad-materials"]');
+    const input = document.querySelector('.qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"]');
     if (!input) return;
     const label = input.closest("label");
     if (!label || label.querySelector(`.${BUTTON_CLASS}`)) return;
@@ -133,6 +155,80 @@
       addMaterial(input);
     });
     label.appendChild(button);
+  }
+
+  function getListValues(listId) {
+    const list = document.getElementById(listId);
+    if (!list) return [];
+    return Array.from(list.querySelectorAll("option"))
+      .map((option) => String(option.value || option.textContent || "").trim())
+      .filter(Boolean);
+  }
+
+  function renderDropdown(input, dropdown) {
+    const listId = input.dataset.qmesListId;
+    const query = String(input.value || "").trim().toLowerCase();
+    const values = [...new Set(getListValues(listId))]
+      .filter((value) => !query || value.toLowerCase().includes(query))
+      .slice(0, 40);
+
+    dropdown.innerHTML = "";
+    if (!values.length) {
+      const empty = document.createElement("div");
+      empty.className = "qmes-ipad-empty-option";
+      empty.textContent = "일치하는 목록이 없습니다.";
+      dropdown.appendChild(empty);
+      return;
+    }
+
+    values.forEach((value) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.textContent = value;
+      option.addEventListener("mousedown", (event) => event.preventDefault());
+      option.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setReactInputValue(input, value);
+        dropdown.classList.remove("is-open");
+        input.focus();
+      });
+      dropdown.appendChild(option);
+    });
+  }
+
+  function enhanceCustomListInput(input) {
+    if (!input || input.dataset.qmesCustomList === "1") return;
+    const listId = input.getAttribute("list");
+    if (!listId || !/^(qmes-ipad-materials|qmes-ipad-lots)$/.test(listId)) return;
+
+    input.dataset.qmesCustomList = "1";
+    input.dataset.qmesListId = listId;
+    input.removeAttribute("list");
+
+    const label = input.closest("label");
+    if (!label) return;
+    label.classList.add("qmes-ipad-custom-list-field");
+
+    const dropdown = document.createElement("div");
+    dropdown.className = DROPDOWN_CLASS;
+    dropdown.setAttribute("role", "listbox");
+    label.appendChild(dropdown);
+
+    const open = () => {
+      renderDropdown(input, dropdown);
+      dropdown.classList.add("is-open");
+    };
+    input.addEventListener("focus", open);
+    input.addEventListener("click", open);
+    input.addEventListener("input", open);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") dropdown.classList.remove("is-open");
+    });
+  }
+
+  function enhanceCustomLists() {
+    document.querySelectorAll('.qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-lots"]').forEach(enhanceCustomListInput);
   }
 
   function enhanceNumbers() {
@@ -176,8 +272,15 @@
   function enhance() {
     ensureStyle();
     enhanceMaterial();
+    enhanceCustomLists();
     enhanceNumbers();
   }
+
+  document.addEventListener("pointerdown", (event) => {
+    document.querySelectorAll(`.${DROPDOWN_CLASS}.is-open`).forEach((dropdown) => {
+      if (!dropdown.parentElement?.contains(event.target)) dropdown.classList.remove("is-open");
+    });
+  });
 
   const observer = new MutationObserver(enhance);
   observer.observe(document.documentElement, { childList:true, subtree:true });
