@@ -30,21 +30,14 @@
         overflow:hidden;border:1px solid #b8c4cf;border-radius:7px;
         background:#f4f6f8;box-shadow:0 1px 3px rgba(15,23,42,.06);
       }
-      .${SPIN_CLASS}.is-shipment{
-        width:58px;height:34px;grid-template-columns:1fr 1fr;grid-template-rows:1fr;
-        bottom:10px;border-radius:8px;
-      }
       .${SPIN_CLASS} button{
         min-width:0!important;width:100%!important;height:19px!important;min-height:0!important;
         padding:0!important;margin:0!important;border:0!important;border-radius:0!important;
         background:transparent!important;color:#536273!important;font-size:9px!important;
         line-height:18px!important;cursor:pointer!important;box-shadow:none!important;
       }
-      .${SPIN_CLASS}:not(.is-shipment) button:first-child{border-bottom:1px solid #cbd3da!important;}
-      .${SPIN_CLASS}.is-shipment button{height:32px!important;font-size:11px!important;line-height:32px!important;}
-      .${SPIN_CLASS}.is-shipment button:first-child{border-right:1px solid #cbd3da!important;}
+      .${SPIN_CLASS} button:first-child{border-bottom:1px solid #cbd3da!important;}
       .${SPIN_CLASS} button:hover,.${SPIN_CLASS} button:focus-visible{background:#e5eaf0!important;color:#17212b!important;outline:none!important;}
-      .qmes-ipad-number-field:has(.${SPIN_CLASS}.is-shipment)>input{padding-right:68px!important;}
       .qmes-ipad-pop input[list="qmes-ipad-materials"],
       .qmes-ipad-pop input[list="qmes-ipad-lots"]{
         color-scheme:light!important;
@@ -152,7 +145,7 @@
 
       label.classList.add("qmes-ipad-number-field");
       const stepper = document.createElement("span");
-      stepper.className = `${SPIN_CLASS}${/출하량|출하수량/.test(title) ? " is-shipment" : ""}`;
+      stepper.className = SPIN_CLASS;
       stepper.setAttribute("aria-hidden", "false");
 
       const up = document.createElement("button");
