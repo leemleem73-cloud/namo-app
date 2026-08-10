@@ -1,13 +1,25 @@
-/* PQC field-input basic info order after native datalist is converted to the custom white dropdown. */
-.qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(1){order:2!important;grid-column:span 1!important;}
-.qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(2){order:3!important;grid-column:span 1!important;}
-.qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(3){order:1!important;grid-column:span 1!important;}
-.qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(4){order:4!important;grid-column:span 1!important;}
-.qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(5){order:5!important;grid-column:span 2!important;}
+/* Field-input basic info order. Scope strictly by the active IQC/PQC mode button so reused DOM/list metadata cannot leak order styles between modes. */
+
+/* IQC — preserve the intended native order exactly. */
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(1){order:1!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(2){order:2!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(3){order:3!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(4){order:4!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(5){order:5!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(6){order:6!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(7){order:7!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(8){order:8!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(9){order:9!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:last-child{grid-column:span 1!important;}
+
+/* PQC — 검사일자 / 생산 LOT / 제품명, then 검사자 / 비고. */
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label:nth-of-type(1){order:2!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label:nth-of-type(2){order:3!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label:nth-of-type(3){order:1!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label:nth-of-type(4){order:4!important;grid-column:span 1!important;}
+.qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label:nth-of-type(5){order:5!important;grid-column:span 2!important;}
+
 @media (max-width:620px){
-  .qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(1),
-  .qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(2),
-  .qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(3),
-  .qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(4),
-  .qmes-ipad-form-grid:has(input[data-qmes-list-id="qmes-ipad-lots"]):not(:has(input[placeholder="고객사명"])) > label:nth-of-type(5){grid-column:1!important;}
+  .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label,
+  .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(2).is-active) .qmes-ipad-form-grid > label{grid-column:1!important;}
 }
