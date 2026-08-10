@@ -40,7 +40,9 @@ body > #root > div:has(.qmes-ipad-pop){
 .qmes-ipad-mode-tabs button small{color:#53697b!important;}
 .qmes-ipad-mode-tabs button strong{color:#202a33!important;}
 .qmes-ipad-item-tabs button.is-active{
-  background:linear-gradient(90deg,#eef9ff 0%,#f4f8fb 58%,#e9edf1 100%)!important;
+  background:linear-gradient(90deg,#ffffff 0%,#fbfdff 55%,#f5f9fc 100%)!important;
+  border-color:#2bc3ec!important;
+  box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;
 }
 .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title > span,
 .qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title > span{
