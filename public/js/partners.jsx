@@ -30,11 +30,35 @@ function PartnersTab() {
   };
   const standardMaterialName = (name) => normalizeMaterial(name) === "BYK180" ? "BYK180 (분산제)" : String(name || "").trim();
   const nextCode = (prefix, rows) => `${prefix}${String(Math.max(0, ...rows.map((r)=>Number(String(r.code||"").replace(/\D/g,""))||0)) + 1).padStart(3,"0")}`;
+  const PARTNER_FORM_OPEN_KEY = "qmes_partner_form_open";
+  const PARTNER_FORM_TYPE_KEY = "qmes_partner_form_type";
+  const readStoredType = () => {
+    try {
+      const value = sessionStorage.getItem(PARTNER_FORM_TYPE_KEY);
+      return value === "supplier" ? "supplier" : "customer";
+    } catch (error) { return "customer"; }
+  };
+  const readStoredOpen = () => {
+    try { return sessionStorage.getItem(PARTNER_FORM_OPEN_KEY) === "1"; }
+    catch (error) { return false; }
+  };
+  const rememberForm = (type) => {
+    try {
+      sessionStorage.setItem(PARTNER_FORM_TYPE_KEY, type);
+      sessionStorage.setItem(PARTNER_FORM_OPEN_KEY, "1");
+    } catch (error) {}
+  };
+  const forgetForm = () => {
+    try {
+      sessionStorage.removeItem(PARTNER_FORM_OPEN_KEY);
+      sessionStorage.removeItem(PARTNER_FORM_TYPE_KEY);
+    } catch (error) {}
+  };
 
-  const [activeType, setActiveType] = React.useState("customer");
+  const [activeType, setActiveType] = React.useState(readStoredType);
   const [searchText, setSearchText] = React.useState("");
   const [saveMessage, setSaveMessage] = React.useState("");
-  const [showForm, setShowForm] = React.useState(false);
+  const [showForm, setShowForm] = React.useState(readStoredOpen);
   const [editCode, setEditCode] = React.useState(null);
   const [customerForm, setCustomerForm] = React.useState({ name:"", status:"거래중" });
   const [supplierForm, setSupplierForm] = React.useState({ company:"", material:"", lot:"", status:"거래중" });
@@ -91,6 +115,7 @@ function PartnersTab() {
   };
 
   const resetForm = () => {
+    forgetForm();
     setEditCode(null);
     setCustomerForm({ name:"", status:"거래중" });
     setSupplierForm({ company:"", material:"", lot:"", status:"거래중" });
@@ -103,6 +128,7 @@ function PartnersTab() {
     resetForm();
   };
   const openNewFor = (type) => {
+    rememberForm(type);
     setActiveType(type);
     setSearchText("");
     setSaveMessage("");
@@ -112,8 +138,8 @@ function PartnersTab() {
     setShowForm(true);
     window.scrollTo({ top:0, behavior:"smooth" });
   };
-  const openCustomerEdit = (row) => { setActiveType("customer"); setEditCode(row.code); setCustomerForm({ name:row.name, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
-  const openSupplierEdit = (row) => { setActiveType("supplier"); setEditCode(row.code); setSupplierForm({ company:row.company, material:row.material, lot:row.lot, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
+  const openCustomerEdit = (row) => { rememberForm("customer"); setActiveType("customer"); setEditCode(row.code); setCustomerForm({ name:row.name, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
+  const openSupplierEdit = (row) => { rememberForm("supplier"); setActiveType("supplier"); setEditCode(row.code); setSupplierForm({ company:row.company, material:row.material, lot:row.lot, status:row.status }); setShowForm(true); window.scrollTo({top:0,behavior:"smooth"}); };
 
   const saveCustomer = () => {
     const name = customerForm.name.trim();
