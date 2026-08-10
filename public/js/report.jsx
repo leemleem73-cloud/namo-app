@@ -326,7 +326,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
               <div className="qmes-iqc2-sec qmes-iqc2-first">
                 <div className="qmes-iqc2-sec-title">기본정보</div>
                 <table className="qmes-iqc2-table">
-                  <thead><tr><th>{type === "PQC" ? "공정번호" : "출하번호"}</th><th>LOT No.</th><th>제품명</th><th>{type === "PQC" ? "생산일자" : "검사일자"}</th><th>검사자</th></tr></thead>
+                  <thead><tr><th>{type === "PQC" ? "공정번호" : "출하번호"}</th><th>LOT No.</th><th>제품명</th><th>검사일자</th><th>검사자</th></tr></thead>
                   <tbody><tr>
                     <td className="font-mono">{record.id || "-"}</td>
                     <td className="font-mono">{record.lot || "-"}</td>
