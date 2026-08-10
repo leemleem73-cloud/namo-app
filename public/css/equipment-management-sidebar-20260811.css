@@ -1,101 +1,147 @@
-/* 현장입력 > 설비 종합관리: 원본 React 구조용 좌측 세로 메뉴 */
+/* 현장입력 > 설비 관리 전용 레이아웃
+   2026-08-11: 중복/후처리 선택자를 줄이고 실제 설비 화면 클래스만 사용 */
+
+/* ── 전체 레이아웃 ── */
 .qmes-ipad-equipment .qmes-equipment-management-layout{
   display:grid!important;
-  grid-template-columns:210px minmax(0,1fr)!important;
-  gap:18px!important;
-  align-items:start!important;
+  grid-template-columns:232px minmax(0,1fr)!important;
+  gap:24px!important;
+  align-items:stretch!important;
   width:100%!important;
   min-width:0!important;
 }
-/* 좌측 세로 메뉴가 생성된 뒤 남아 있는 기존 가로 설비 메뉴는 숨긴다. */
+
+/* 기존 가로 메뉴가 남아 있으면 숨김 */
 .qmes-ipad-equipment .qmes-equipment-nav-block:not(.qmes-equipment-management-sidebar){
   display:none!important;
 }
-.qmes-ipad-equipment .qmes-equipment-management-sidebar{
+
+/* ── 이미지 스타일의 좌측 사이드바 ── */
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{
   position:sticky!important;
-  top:14px!important;
+  top:0!important;
   display:flex!important;
   flex-direction:column!important;
   grid-template-columns:none!important;
-  width:210px!important;
-  max-width:210px!important;
-  min-width:210px!important;
-  gap:8px!important;
+  width:232px!important;
+  min-width:232px!important;
+  max-width:232px!important;
+  min-height:620px!important;
+  gap:4px!important;
   margin:0!important;
-  padding:12px!important;
+  padding:0 16px 24px 0!important;
   box-sizing:border-box!important;
-  border:1px solid #d7e0e8!important;
-  border-radius:12px!important;
-  background:#f8fafc!important;
+  border:0!important;
+  border-right:1px solid #dce4ec!important;
+  border-radius:0!important;
+  background:#fff!important;
   box-shadow:none!important;
 }
+
 .qmes-ipad-equipment .qmes-equipment-management-sidebar-title{
-  padding:5px 8px 9px!important;
-  font-size:16px!important;
-  line-height:1.25!important;
+  display:flex!important;
+  align-items:center!important;
+  min-height:72px!important;
+  margin:0 0 10px!important;
+  padding:0 18px!important;
+  border-bottom:1px solid #e2e8f0!important;
+  color:#0f172a!important;
+  font-size:22px!important;
+  line-height:1!important;
   font-weight:900!important;
-  color:#111827!important;
+  letter-spacing:-.02em!important;
   text-align:left!important;
 }
+
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{
+  position:relative!important;
   display:flex!important;
   align-items:center!important;
   justify-content:flex-start!important;
   width:100%!important;
   min-width:0!important;
   max-width:none!important;
-  height:50px!important;
-  min-height:50px!important;
+  height:62px!important;
+  min-height:62px!important;
   margin:0!important;
-  padding:0 14px!important;
-  border:1px solid #cbd5e1!important;
-  border-radius:9px!important;
-  background:#fff!important;
-  color:#1f2937!important;
-  -webkit-text-fill-color:#1f2937!important;
-  font-size:15px!important;
-  font-weight:850!important;
+  padding:0 16px 0 48px!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:#172033!important;
+  -webkit-text-fill-color:#172033!important;
+  font-size:16px!important;
+  font-weight:800!important;
   line-height:1.2!important;
+  letter-spacing:-.015em!important;
   text-align:left!important;
   box-shadow:none!important;
+  transition:background-color .15s ease,color .15s ease!important;
 }
+
+/* 메뉴 아이콘: 별도 DOM/이벤트 추가 없이 가벼운 선형 아이콘 */
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::before{
+  content:""!important;
+  position:absolute!important;
+  left:17px!important;
+  top:50%!important;
+  width:18px!important;
+  height:18px!important;
+  transform:translateY(-50%)!important;
+  border:2px solid currentColor!important;
+  border-radius:4px!important;
+  box-sizing:border-box!important;
+  opacity:.9!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::after{
+  content:""!important;
+  position:absolute!important;
+  left:21px!important;
+  top:50%!important;
+  width:10px!important;
+  height:2px!important;
+  transform:translateY(-50%)!important;
+  background:currentColor!important;
+  box-shadow:0 -4px 0 currentColor,0 4px 0 currentColor!important;
+  opacity:.9!important;
+}
+
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover{
-  background:#f1f5f9!important;
-  border-color:#94a3b8!important;
+  background:#f6f9fc!important;
+  color:#0f3b67!important;
+  -webkit-text-fill-color:#0f3b67!important;
 }
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active,
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button[aria-selected="true"]{
-  background:#e8eef3!important;
-  border:1.5px solid #647f94!important;
-  color:#102a3d!important;
-  -webkit-text-fill-color:#102a3d!important;
-  box-shadow:inset 4px 0 0 #284e68!important;
+  background:#eef4ff!important;
+  color:#1265d8!important;
+  -webkit-text-fill-color:#1265d8!important;
+  border:0!important;
+  box-shadow:none!important;
 }
+
 .qmes-ipad-equipment .qmes-equipment-management-content{
   display:flex!important;
   flex-direction:column!important;
   gap:14px!important;
   min-width:0!important;
   width:100%!important;
+  padding-right:2px!important;
 }
-/* 상단 설비 관리 아래의 등록 설비/30일 이내 일정/기한 초과/미완료 수리 4칸은 제거하고,
-   각 메뉴 아래의 실제 관리/점검 내용은 그대로 유지한다. */
+
+/* 사용하지 않는 상단 4개 요약칸 제거 */
 .qmes-ipad-equipment .qmes-equipment-management-summary{
   display:none!important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   2026-08-11 일일점검 화면 정리
-   - 기존 React 기능/이벤트는 유지
-   - 설비 현장입력 내부에서만 적용하여 타 화면과 충돌 방지
-   ───────────────────────────────────────────────────────────── */
+/* ── 일일점검 본문 ── */
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab{
   gap:14px!important;
   width:100%!important;
   min-width:0!important;
 }
 
-/* 상단 관리계획 안내 + 상태 버튼 바 */
+/* 관리계획 안내 바 */
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div:first-child{
   min-height:70px!important;
   padding:14px 18px!important;
@@ -156,7 +202,7 @@
   border-color:#b8c5d1!important;
 }
 
-/* 점검기록 보기 버튼 */
+/* 점검 기록 보기 */
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>button{
   min-height:54px!important;
   border:1px solid #d7e0e8!important;
@@ -171,140 +217,138 @@
   background:#f8fafc!important;
 }
 
-/* 알람 이력: 기존 UL/LI 구조를 4열 테이블처럼 사용 */
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child{
+/* ── 설비·공정 알람 이력
+   JS가 제목을 직접 찾아 qmes-equipment-alarm-* 클래스를 부여한다. ── */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel{
   overflow:hidden!important;
   border:1px solid #d7e0e8!important;
   border-radius:12px!important;
   background:#fff!important;
   box-shadow:none!important;
 }
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child>div:first-child{
-  min-height:58px!important;
-  padding:0 16px!important;
-  border-bottom:0!important;
-  background:#fff!important;
-}
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child h2,
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child h3,
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child strong{
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-title{
   color:#0f2f63!important;
   font-size:20px!important;
-  line-height:1.25!important;
   font-weight:900!important;
 }
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul{
-  position:relative!important;
+
+/* 헤더/데이터가 완전히 동일한 4열 폭과 좌우 패딩을 사용 */
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-table-head,
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-row{
+  grid-template-columns:150px 140px 160px minmax(0,1fr)!important;
+  padding-left:26px!important;
+  padding-right:26px!important;
+  box-sizing:border-box!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-table-head{
+  display:grid!important;
+  align-items:center!important;
+  min-height:56px!important;
+  margin:0 14px!important;
+  border:1px solid #d7e0e8!important;
+  border-radius:7px!important;
+  background:#f8fafc!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-table-head>span{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  color:#111827!important;
+  font-size:15px!important;
+  font-weight:850!important;
+  line-height:1!important;
+  text-align:center!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-list{
   display:flex!important;
   flex-direction:column!important;
   width:100%!important;
   margin:0!important;
-  padding:56px 14px 0!important;
-  border-top:0!important;
+  padding:0 14px!important;
   background:#fff!important;
 }
-/* 실제 테이블 헤더와 동일한 한 줄 헤더 */
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul::before{
-  content:"경고                         시간                         DR                                              조치 필요";
-  position:absolute!important;
-  top:0!important;
-  left:14px!important;
-  right:14px!important;
-  height:56px!important;
-  display:flex!important;
-  align-items:center!important;
-  padding:0 34px!important;
-  box-sizing:border-box!important;
-  border:1px solid #d7e0e8!important;
-  border-radius:7px!important;
-  background:#f8fafc!important;
-  color:#111827!important;
-  font-size:15px!important;
-  line-height:1!important;
-  font-weight:850!important;
-  white-space:pre!important;
-  word-spacing:0!important;
-  letter-spacing:-.01em!important;
-}
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li{
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-row{
   display:grid!important;
-  grid-template-columns:150px 140px 160px minmax(0,1fr)!important;
   align-items:center!important;
   gap:0!important;
   min-height:82px!important;
-  padding:0 26px!important;
   border:0!important;
   border-bottom:1px solid #d7e0e8!important;
   background:#fff!important;
-  color:#111827!important;
 }
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li:last-child{
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-row:last-child{
   border-bottom:0!important;
 }
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li:hover{
-  background:#fbfdff!important;
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-level{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  justify-self:center!important;
+  width:88px!important;
+  height:42px!important;
+  border:1.5px solid #ff8a1f!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#ff6b00!important;
+  -webkit-text-fill-color:#ff6b00!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  box-shadow:none!important;
 }
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span{
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-time,
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-eq{
+  justify-self:center!important;
+  width:auto!important;
+  margin:0!important;
+  padding:0!important;
+  color:#111827!important;
+  font-family:Pretendard,system-ui,sans-serif!important;
+  font-size:15px!important;
+  font-weight:600!important;
+  text-align:center!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-message{
+  justify-self:stretch!important;
   width:auto!important;
   max-width:none!important;
-  padding:0!important;
   margin:0!important;
+  padding:0 0 0 8px!important;
   color:#111827!important;
   font-family:Pretendard,system-ui,sans-serif!important;
   font-size:15px!important;
   line-height:1.45!important;
   font-weight:600!important;
+  text-align:left!important;
   white-space:normal!important;
 }
-/* 첫 번째 span은 Badge 내부 텍스트일 수 있으므로 전체 badge 스타일도 함께 고정 */
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child{
-  justify-self:start!important;
-}
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child,
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child *{
-  color:#f97316!important;
-  -webkit-text-fill-color:#f97316!important;
-  font-size:15px!important;
-  font-weight:900!important;
-}
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>:first-child{
-  min-width:88px!important;
-  min-height:40px!important;
-  display:inline-flex!important;
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-empty{
+  min-height:72px!important;
+  padding:0 26px!important;
+  display:flex!important;
   align-items:center!important;
-  justify-content:center!important;
-  padding:0 18px!important;
-  box-sizing:border-box!important;
-  border:1.5px solid #fb923c!important;
-  border-radius:6px!important;
-  background:#fff7ed!important;
-  box-shadow:none!important;
-}
-/* 시간 */
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span:nth-of-type(1){
-  color:#111827!important;
-  font-variant-numeric:tabular-nums!important;
-}
-/* DR */
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span:nth-of-type(2){
-  color:#111827!important;
-  font-weight:700!important;
-}
-/* 조치 필요 */
-.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li>span:nth-of-type(3){
-  color:#111827!important;
-  font-size:15px!important;
-  font-weight:600!important;
+  color:#64748b!important;
+  font-size:14px!important;
 }
 
 @media(max-width:1180px){
-  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul::before{
-    content:"경고                    시간                    DR                                조치 필요";
-    font-size:14px!important;
+  .qmes-ipad-equipment .qmes-equipment-management-layout{
+    grid-template-columns:210px minmax(0,1fr)!important;
+    gap:18px!important;
   }
-  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul>li{
+  .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{
+    width:210px!important;
+    min-width:210px!important;
+    max-width:210px!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-table-head,
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-row{
     grid-template-columns:125px 110px 130px minmax(0,1fr)!important;
-    padding:0 18px!important;
+    padding-left:18px!important;
+    padding-right:18px!important;
   }
 }
 
@@ -313,26 +357,39 @@
     grid-template-columns:1fr!important;
     gap:12px!important;
   }
-  .qmes-ipad-equipment .qmes-equipment-management-sidebar{
+  .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{
     position:relative!important;
     top:auto!important;
     display:grid!important;
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
     width:100%!important;
-    max-width:none!important;
     min-width:0!important;
+    max-width:none!important;
+    min-height:0!important;
+    padding:0!important;
+    border-right:0!important;
+    border-bottom:1px solid #dce4ec!important;
   }
   .qmes-ipad-equipment .qmes-equipment-management-sidebar-title{
     grid-column:1/-1!important;
+    min-height:58px!important;
+    padding:0 8px!important;
   }
   .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{
-    justify-content:center!important;
-    text-align:center!important;
+    height:54px!important;
+    min-height:54px!important;
   }
-  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child{
-    overflow-x:auto!important;
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-table-head{
+    display:none!important;
   }
-  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>section:last-child ul{
-    min-width:760px!important;
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-row{
+    grid-template-columns:100px 80px minmax(100px,1fr)!important;
+    gap:8px!important;
+    min-height:0!important;
+    padding:14px 12px!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-alarm-panel .qmes-equipment-alarm-message{
+    grid-column:1/-1!important;
+    padding-left:0!important;
   }
 }
