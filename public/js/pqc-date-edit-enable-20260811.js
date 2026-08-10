@@ -27,12 +27,12 @@
   }
 
   function syncEditedDate(groupId, date){
-    if(!groupId || !date || !global.DB || !DB.insp || !Array.isArray(DB.insp.PQC)) return Promise.resolve(false);
+    if(!groupId || !date || typeof DB === "undefined" || !DB.insp || !Array.isArray(DB.insp.PQC)) return Promise.resolve(false);
     const rows=DB.insp.PQC.filter((row)=>String(row.groupId||row.id||"").trim()===groupId || String(row.id||"").replace(/-\d+$/,"")===groupId);
     if(!rows.length) return Promise.resolve(false);
 
     rows.forEach((row)=>{ row.date=date; row.sharedSync=true; });
-    if(typeof global.dbSave==="function") global.dbSave();
+    if(typeof dbSave==="function") dbSave();
 
     const first=rows[0]||{};
     const lotNo=String(first.lot||"").trim();
@@ -46,8 +46,8 @@
       savedBy:String(first.inspector||global.__QMES_USER__?.name||global.__QMES_USER__||"")
     };
 
-    if(typeof global.qmesSyncUpsert==="function") {
-      return global.qmesSyncUpsert("pqc", groupId, payload).then(()=>true);
+    if(typeof qmesSyncUpsert==="function") {
+      return qmesSyncUpsert("pqc", groupId, payload).then(()=>true);
     }
     return Promise.resolve(true);
   }
