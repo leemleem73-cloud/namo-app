@@ -1,0 +1,17 @@
+.qmes-ipad-back{font-weight:900!important;}
+.qmes-ipad-mode-tabs button{gap:11px!important;}
+.qmes-ipad-mode-tabs small{font-size:13px!important;font-weight:950!important;}
+.qmes-ipad-mode-tabs strong{font-size:19px!important;font-weight:900!important;}
+.qmes-ipad-triple input.is-spec-ng,
+.qmes-ipad-repeat-choice input.is-spec-ng{
+  color:#dc2626!important;
+  border-color:#ef4444!important;
+  background:#fff7f7!important;
+  font-weight:900!important;
+  box-shadow:inset 0 0 0 1px rgba(220,38,38,.08)!important;
+}
+.qmes-ipad-triple input.is-spec-ng:focus,
+.qmes-ipad-repeat-choice input.is-spec-ng:focus{
+  border-color:#dc2626!important;
+  box-shadow:0 0 0 3px rgba(220,38,38,.12)!important;
+}
