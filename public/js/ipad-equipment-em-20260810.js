@@ -1,4 +1,14 @@
 (function qmesIpadEquipmentEm(){
+  var selectedEquipmentMenu='일일점검';
+  var EQUIPMENT_MENU_LABELS=['일일점검','설비대장','정기점검·교정','정기점검 교정','고장·수리 이력','고장수리 이력'];
+
+  function normalizeEquipmentMenu(text){
+    var value=String(text||'').replace(/\s+/g,' ').trim();
+    if(value==='정기점검 교정') return '정기점검·교정';
+    if(value==='고장수리 이력') return '고장·수리 이력';
+    return value;
+  }
+
   function loadRuntimeStyle(){
     var version='20260810-5';
     var existing=document.querySelector('script[data-qmes-ipad-runtime-style]');
@@ -45,11 +55,11 @@
       .qmes-ipad-equipment .qmes-equipment-nav-block>button{
         font-size:17px!important;font-weight:900!important;
       }
-      .qmes-ipad-equipment .qmes-equipment-nav-block>button.is-active,
-      .qmes-ipad-equipment .qmes-equipment-nav-block>button[aria-selected="true"],
       .qmes-ipad-equipment .qmes-equipment-nav-block>button.qmes-equipment-nav-selected{
-        background:#e0f2fe!important;border-color:#38bdf8!important;color:#0f172a!important;
-        box-shadow:0 0 0 1px rgba(56,189,248,.18)!important;
+        background:#e0f2fe!important;
+        border-color:#0284c7!important;
+        color:#0f172a!important;
+        box-shadow:none!important;
       }
       .qmes-ipad-equipment .qmes-equipment-complete-status{
         background:#fff!important;border:1.5px solid #22c55e!important;
@@ -60,6 +70,27 @@
         color:#16a34a!important;stroke:#16a34a!important;
       }
     `;
+  }
+
+  function markEquipmentMenu(panel){
+    var buttons=Array.from(panel.querySelectorAll('button')).filter(function(button){
+      return EQUIPMENT_MENU_LABELS.includes(button.textContent.replace(/\s+/g,' ').trim());
+    });
+    if(!buttons.length) return;
+
+    var nav=buttons[0].parentElement;
+    if(nav) nav.classList.add('qmes-equipment-nav-block');
+
+    buttons.forEach(function(button){
+      var label=normalizeEquipmentMenu(button.textContent);
+      button.classList.toggle('qmes-equipment-nav-selected',label===selectedEquipmentMenu);
+      if(button.dataset.qmesEquipmentMenuBound==='1') return;
+      button.dataset.qmesEquipmentMenuBound='1';
+      button.addEventListener('click',function(){
+        selectedEquipmentMenu=normalizeEquipmentMenu(button.textContent);
+        requestAnimationFrame(apply);
+      });
+    });
   }
 
   function stabilizeDailyTourHeader(panel){
@@ -201,6 +232,7 @@
       var code=root&&root.querySelector('.qmes-ipad-work-head > div:nth-child(2) > span');
       if(code&&code.textContent.trim()==='EQ') code.textContent='EM';
 
+      markEquipmentMenu(panel);
       stabilizeDailyTourHeader(panel);
       cleanSummary(panel);
 
