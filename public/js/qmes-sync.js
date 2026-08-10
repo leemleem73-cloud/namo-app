@@ -1,6 +1,6 @@
 /* QMES shared sync — mobile/IPAD/PC inspection and work-order records */
 (function () {
-  const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder", "equipment", "inventory"]);
+  const allowedTypes = new Set(["iqc", "pqc", "oqc", "workorder", "equipment"]);
 
   function normalizeType(type) {
     const value = String(type || "").trim().toLowerCase();
