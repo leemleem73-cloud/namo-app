@@ -173,7 +173,8 @@
     const count=Math.max(1,labels.length);
     const before=Math.max(1,currentIndex);
     const after=Math.max(1,count-before-1);
-    foot.innerHTML=`<tr><td colspan="${before}" class="qmes-total-label">총 합계</td><td class="qmes-total-value">${format(total)} kg</td><td colspan="${after}"></td></tr>`;
+    const totalMarkup=`<tr><td colspan="${before}" class="qmes-total-label">총 합계</td><td class="qmes-total-value">${format(total)} kg</td><td colspan="${after}"></td></tr>`;
+    if(foot.innerHTML!==totalMarkup) foot.innerHTML=totalMarkup;
 
     const heading=Array.from(document.querySelectorAll("h1,h2,h3,h4")).find((node)=>text(node.textContent).includes("원재료")&&text(node.textContent).includes("재고 현황"));
     const header=heading?.parentElement;
