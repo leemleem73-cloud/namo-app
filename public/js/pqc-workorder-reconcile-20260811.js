@@ -1,8 +1,26 @@
-/* QMES: ensure one PQC draft exists for every issued work order. */
+/* QMES: ensure one PQC draft exists for every issued work order and sort data safely. */
 (function reconcileWorkOrderPqc(global){
   "use strict";
-  if(global.__QMES_PQC_WO_RECONCILE_20260811_V3__) return;
-  global.__QMES_PQC_WO_RECONCILE_20260811_V3__=true;
+  if(global.__QMES_PQC_WO_RECONCILE_20260811_V4__) return;
+  global.__QMES_PQC_WO_RECONCILE_20260811_V4__=true;
+
+  function sortPqcDataToWorkOrderOrder(){
+    if(typeof DB === "undefined" || !Array.isArray(DB.batches) || !DB.insp || !Array.isArray(DB.insp.PQC)) return false;
+    const order=new Map(DB.batches.map((row,index)=>[String(row.no||"").trim(),index]));
+    const rows=DB.insp.PQC.map((row,index)=>({row,index}));
+    rows.sort((a,b)=>{
+      const ai=order.has(String(a.row.lot||"").trim()) ? order.get(String(a.row.lot||"").trim()) : Number.MAX_SAFE_INTEGER;
+      const bi=order.has(String(b.row.lot||"").trim()) ? order.get(String(b.row.lot||"").trim()) : Number.MAX_SAFE_INTEGER;
+      if(ai!==bi) return ai-bi;
+      return a.index-b.index;
+    });
+    const sorted=rows.map((entry)=>entry.row);
+    const before=DB.insp.PQC.map((row)=>String(row.id||row.groupId||"")).join("|");
+    const after=sorted.map((row)=>String(row.id||row.groupId||"")).join("|");
+    if(before===after) return false;
+    DB.insp.PQC=sorted;
+    return true;
+  }
 
   async function reconcile(){
     if(typeof DB === "undefined" || !DB.woDocs || !DB.insp) return;
@@ -31,10 +49,12 @@
       }
     }
 
+    if(sortPqcDataToWorkOrderOrder()) changed=true;
+
     if(changed && typeof dbSave === "function") {
       dbSave();
       global.dispatchEvent(new Event("qmes-pqc-reconciled"));
-      console.info("[QMES] 작업지시별 공정검사 성적서 누락 보정 완료");
+      console.info("[QMES] 작업지시별 공정검사 성적서 누락/순서 보정 완료");
     }
   }
 
