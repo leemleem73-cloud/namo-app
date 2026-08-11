@@ -959,8 +959,8 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
           </div>
           <input aria-label="점검 기록 조회 일자" type="date" value={historyDate}
             onChange={(event) => setHistoryDate(event.target.value || TODAY)}
-            className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-sky-500" />
-          <div className="min-w-[120px] text-right text-xs font-bold text-slate-300">
+            className="qmes-equipment-history-date rounded-lg border border-slate-600 bg-white text-sm font-bold text-slate-800 outline-none focus:border-sky-500" />
+          <div className="qmes-equipment-history-count text-xs font-bold">
             점검 {historyLogs.length}건
           </div>
         </div>
