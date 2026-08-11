@@ -576,3 +576,32 @@ html body .qmes-ipad-equipment .qmes-equipment-history-row-action{
   font-size:11px!important;
   line-height:1!important;
 }
+
+
+/* 점검 기록 뒤로가기 = 순회점검 뒤로가기 동일 디자인 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-back{
+  width:84px!important;
+  min-width:84px!important;
+  max-width:84px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 8px!important;
+  border:1px solid #94a3b8!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:750!important;
+  box-shadow:none!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-back:hover,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-back:focus-visible{
+  border-color:#64748b!important;
+  background:#f8fafc!important;
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  box-shadow:0 0 0 2px rgba(100,116,139,.12)!important;
+}
