@@ -340,7 +340,7 @@ function EquipmentTab() {
         date:entry.date,
         time:entry.time,
         eq:entry.eqId,
-        msg:`${entry.item} ${entry.v} — 관리기준(${entry.spec}) 이탈, 점검·조치 필요${entry.note ? ` · 비고: ${entry.note}` : ""}`,
+        msg:`${entry.item} ${entry.v} — 관리기준(${entry.spec}) 이탈, 점검·조치 필요`,
         level:"경고",
         by:entry.by
       })),
