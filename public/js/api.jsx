@@ -215,6 +215,14 @@ function InventoryTab() {
 
 /* ──────────────────────────── 설비 모니터링 ──────────────────────────── */
 
+function qmesPlayTourButtonSpread(event) {
+  const button = event.currentTarget;
+  button.classList.remove("qmes-tour-click-spread");
+  void button.offsetWidth;
+  button.classList.add("qmes-tour-click-spread");
+  window.setTimeout(() => button.classList.remove("qmes-tour-click-spread"), 600);
+}
+
 function EquipmentTab() {
   const TODAY = typeof localISODate === "function"
     ? localISODate()
@@ -805,7 +813,7 @@ function EquipmentTab() {
       {mode === "tour" && (
       <div className="qmes-equipment-tour-screen">
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
-        right={<button onClick={() => setMode("single")} className="qmes-equipment-tour-pause text-[11px] px-2.5 py-1.5 rounded border transition-colors">잠시 중단</button>}>
+        right={<button onPointerDown={qmesPlayTourButtonSpread} onClick={() => setMode("single")} className="qmes-equipment-tour-pause text-[11px] px-2.5 py-1.5 rounded border transition-colors">잠시 중단</button>}>
         <p className="text-xs text-slate-400 mb-3"><strong className="text-sky-300">{tourEq.subtitle || "설비 점검"}</strong> · 관리계획서 기준값을 확인한 뒤 모든 세부항목을 입력하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
@@ -819,10 +827,10 @@ function EquipmentTab() {
                 </div>
                 {x.visual ? (
                   <div className="flex gap-2 flex-1">
-                    <button onClick={() => setTourVals({ ...tourVals, [x.k]: true })}
+                    <button onPointerDown={qmesPlayTourButtonSpread} onClick={() => setTourVals({ ...tourVals, [x.k]: true })}
                       aria-pressed={raw === true}
                       className={`qmes-equipment-tour-ok flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === true ? "is-selected" : ""}`}>{x.okLabel || "이상 없음"}</button>
-                    <button onClick={() => setTourVals({ ...tourVals, [x.k]: false })}
+                    <button onPointerDown={qmesPlayTourButtonSpread} onClick={() => setTourVals({ ...tourVals, [x.k]: false })}
                       aria-pressed={raw === false}
                       className={`qmes-equipment-tour-bad flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === false ? "is-selected" : ""}`}>{x.badLabel || "이상 발견"}</button>
                   </div>
@@ -848,12 +856,12 @@ function EquipmentTab() {
         )}
         <div className="flex items-center justify-between mt-3">
           <button onClick={() => { if (tourIdx > 0) { setTourIdx(tourIdx - 1); setTourVals({}); setTourNotes({}); setTourTried(false); } }}
-            className={`px-4 py-2.5 rounded-lg border text-sm transition-colors ${tourIdx === 0 ? "border-slate-800 text-slate-600" : "border-slate-600 text-slate-300 hover:bg-slate-800"}`}>
+            className={`qmes-equipment-tour-prev px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors ${tourIdx === 0 ? "is-disabled" : ""}`}>
             ← 이전 설비
           </button>
           <button onClick={tourSave} disabled={saving}
-            className="px-5 py-3 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-sm font-bold transition-colors">
-            {saving ? "공용 DB 저장 중..." : tourIdx < EQUIPMENT.length - 1 ? "이 설비 기록 저장 → 다음 설비" : "이 설비 기록 저장 · 순회 완료"}
+            className="qmes-equipment-tour-next px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors disabled:opacity-50">
+            {saving ? "저장 중..." : tourIdx < EQUIPMENT.length - 1 ? "다음 설비 →" : "순회 완료"}
           </button>
         </div>
       </Panel>
