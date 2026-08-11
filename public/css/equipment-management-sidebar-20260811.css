@@ -316,7 +316,12 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   white-space:nowrap!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back{
-  min-height:28px!important;
+  width:84px!important;
+  min-width:84px!important;
+  max-width:84px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
   padding:0 8px!important;
   border:1px solid #94a3b8!important;
   background:#fff!important;
@@ -336,8 +341,13 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   box-shadow:0 0 0 2px rgba(100,116,139,.12)!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause{
+  width:84px!important;
+  min-width:84px!important;
+  max-width:84px!important;
+  height:30px!important;
   min-height:30px!important;
-  padding:0 10px!important;
+  max-height:30px!important;
+  padding:0 8px!important;
   font-size:11px!important;
   line-height:1!important;
 }
