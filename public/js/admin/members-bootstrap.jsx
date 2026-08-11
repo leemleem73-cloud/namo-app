@@ -67,27 +67,18 @@
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{width:136px!important;min-width:136px!important;max-width:136px!important;padding:0 6px 20px 0!important;background:#fff!important;box-shadow:none!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar .${TITLE_CLASS}{display:flex!important;align-items:center!important;width:100%!important;min-height:42px!important;margin:0 0 8px!important;padding:0 10px!important;box-sizing:border-box!important;border:1px solid #d7eaf8!important;border-radius:6px!important;background:#eaf6ff!important;box-shadow:none!important;color:#0f5f9f!important;font-size:15px!important;line-height:1.2!important;font-weight:900!important;text-align:left!important;}
 
-      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div{
-        display:flex!important;
-        flex-direction:column!important;
-        align-items:center!important;
-        justify-content:center!important;
-        text-align:center!important;
-        min-height:0!important;
-        padding:9px 12px!important;
-        box-shadow:0 2px 7px rgba(15,23,42,.08)!important;
-      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;min-height:0!important;padding:9px 12px!important;box-shadow:0 2px 7px rgba(15,23,42,.08)!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:first-child{color:#111827!important;-webkit-text-fill-color:#111827!important;font-size:16px!important;line-height:1.2!important;font-weight:900!important;text-align:center!important;width:100%!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2){margin-top:4px!important;color:#000!important;-webkit-text-fill-color:#000!important;font-size:30px!important;line-height:1!important;font-weight:950!important;text-align:center!important;width:100%!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2)>span{color:#000!important;-webkit-text-fill-color:#000!important;font-size:15px!important;font-weight:800!important;}
 
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button,
-      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:focus,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:focus-visible,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button[aria-selected="true"],
-      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.qmes-equipment-nav-selected{display:flex!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;min-height:48px!important;margin:0!important;padding:0 8px!important;border:0!important;border-width:0!important;border-style:none!important;border-color:transparent!important;border-radius:0!important;outline:0!important;background:transparent!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;filter:none!important;appearance:none!important;-webkit-appearance:none!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.qmes-equipment-nav-selected{display:flex!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;min-height:48px!important;margin:0!important;padding:0 8px!important;border:0!important;border-width:0!important;border-style:none!important;border-color:transparent!important;border-radius:0!important;outline:0!important;background:transparent!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;filter:none!important;appearance:none!important;-webkit-appearance:none!important;transition:background-color .16s ease,color .16s ease,box-shadow .16s ease!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover{background:#eef7ff!important;background-color:#eef7ff!important;color:#0f5f9f!important;-webkit-text-fill-color:#0f5f9f!important;box-shadow:inset 3px 0 0 #38bdf8!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::before,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::after{content:none!important;display:none!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{color:#334155!important;-webkit-text-fill-color:#334155!important;}
@@ -104,6 +95,13 @@
       let title = sidebar.querySelector(`.${TITLE_CLASS}`);
       if (!title) { title = document.createElement("div"); title.className = TITLE_CLASS; title.textContent = "설비점검"; sidebar.insertBefore(title, sidebar.firstChild); }
       sidebar.querySelectorAll(":scope > button").forEach((button) => {
+        if (button.matches(":hover")) {
+          button.style.setProperty("background", "#eef7ff", "important");
+          button.style.setProperty("background-color", "#eef7ff", "important");
+          button.style.setProperty("box-shadow", "inset 3px 0 0 #38bdf8", "important");
+          button.style.setProperty("color", "#0f5f9f", "important");
+          return;
+        }
         ["background","background-color","background-image","border","border-radius","box-shadow","outline","filter"].forEach((property) => {
           button.style.setProperty(property, property === "border-radius" ? "0" : property === "border" ? "0" : property === "background" || property === "background-color" ? "transparent" : "none", "important");
         });
