@@ -105,7 +105,7 @@
   searchInput?.addEventListener('input',()=>{searchQuery=searchInput.value||'';render(currentGroup||'대시보드')});
   searchInput?.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const first=side.querySelector('.qmes-side-item');if(first)first.click()});
   hamburger.addEventListener('click',()=>{activeLabel='';open(currentGroup||'대시보드',{titleHighlight:true})});
-  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;activeLabel='';open(group,{titleHighlight:true})},true);
+  document.addEventListener('click',e=>{if(internal)return;const top=e.target.closest('.qmes-top-menu-button');if(!top)return;const group=groups.find(g=>topLabel(top)===g);if(!group)return;activeLabel='';if(window.__QMES_FIELD_SHORTCUT_NAVIGATING__){requestAnimationFrame(()=>open(group,{titleHighlight:true}));return}open(group,{titleHighlight:true})},true);
 
   function syncDropdownSelection(label){
     const normalized=clean(label);
