@@ -73,30 +73,31 @@
     const style = document.createElement('style');
     style.id = 'qmes-inspector-header-input-style';
     style.textContent = `
-      /* 수입·공정·출하검사 상단 검사자: 설비점검 상단과 동일한 이름 입력 방식 */
+      /* 수입·공정·출하검사 상단 검사자: 설비점검과 동일하게 부서는 밖, 이름만 입력 */
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector{
         display:flex!important;
         align-items:center!important;
         justify-content:center!important;
-        gap:7px!important;
+        gap:8px!important;
       }
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-ipad-inspector-label,
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-dept{
         display:inline-flex!important;
         align-items:center!important;
-        height:36px!important;
-        color:#334155!important;
-        -webkit-text-fill-color:#334155!important;
-        font-size:13px!important;
+        height:38px!important;
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        font-size:16px!important;
         line-height:1!important;
-        font-weight:800!important;
+        font-weight:850!important;
         white-space:nowrap!important;
       }
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name{
         width:132px!important;
         min-width:132px!important;
         max-width:132px!important;
-        height:36px!important;
-        min-height:36px!important;
+        height:38px!important;
+        min-height:38px!important;
         padding:0 10px!important;
         box-sizing:border-box!important;
         border:1px solid #cbd5e1!important;
@@ -104,7 +105,7 @@
         background:#fff!important;
         color:#0f172a!important;
         -webkit-text-fill-color:#0f172a!important;
-        font-size:13px!important;
+        font-size:14px!important;
         line-height:1!important;
         font-weight:700!important;
         text-align:center!important;
@@ -121,7 +122,7 @@
       }
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector > strong:not(.qmes-field-inspector-dept){display:none!important;}
 
-      /* 검사 상세영역의 중복 검사자 입력은 숨기고 상단 입력만 사용 */
+      /* 상세영역의 중복 검사자 입력은 숨기고 상단 입력만 사용 */
       .qmes-ipad-form-grid label.qmes-field-inspector-duplicate{display:none!important;}
 
       /* 순회점검에는 별도 검사자 입력을 표시하지 않음 */
@@ -180,6 +181,8 @@
       const oldStrong = box.querySelector('strong');
       if (oldStrong) box.insertBefore(dept, oldStrong);
       else box.appendChild(dept);
+    } else {
+      dept.textContent = '품질부';
     }
 
     let headerInput = box.querySelector('.qmes-field-inspector-name');
@@ -201,9 +204,11 @@
     if (previousMode !== mode) {
       header.dataset.qmesInspectorMode = mode;
       headerInput.value = '';
-      if (sourceInput) setReactInputValue(sourceInput, '');
-    } else if (document.activeElement !== headerInput && sourceInput && headerInput.value !== sourceInput.value) {
-      headerInput.value = sourceInput.value || '';
+    }
+
+    /* 자동 로그인 이름/부서가 입력칸으로 다시 들어오지 않게 상단 입력을 기준값으로 유지 */
+    if (sourceInput && sourceInput.value !== headerInput.value) {
+      setReactInputValue(sourceInput, headerInput.value);
     }
 
     const oldStrong = Array.from(box.querySelectorAll(':scope > strong')).find((node) => !node.classList.contains('qmes-field-inspector-dept'));
