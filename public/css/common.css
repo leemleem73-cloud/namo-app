@@ -9916,6 +9916,10 @@ select.qmes-label-judge-select option[value="불합격"]{
   margin-left:auto!important;
   margin-right:auto!important;
 }
+.qmes-pqc-record-table td:nth-child(6) > span.inline-flex{
+  font-size:11px!important;
+  line-height:1.2!important;
+}
 /* 공정검사 등록 기본정보 입력칸도 왼쪽 고정 해제 후 전체 폭 균등 배치 */
 .qmes-pqc-entry-form .qmes-pqc-basic-row{
   width:100%!important;
