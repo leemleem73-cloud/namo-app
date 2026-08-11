@@ -146,3 +146,33 @@
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
   window.addEventListener('load',schedule,{once:true});
 })();
+
+(function refineDailyTourStartButton(){
+  const STYLE_ID = 'qmes-equipment-tour-start-safe-style';
+  function ensureStyle(){
+    let style = document.getElementById(STYLE_ID);
+    if(!style){ style = document.createElement('style'); style.id = STYLE_ID; document.head.appendChild(style); }
+    style.textContent = `
+      html body .qmes-ipad-equipment button.qmes-equipment-tour-start-safe{background:#16a34a!important;background-color:#16a34a!important;border:1.5px solid #16a34a!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-weight:800!important;box-shadow:0 2px 7px rgba(22,163,74,.18)!important;}
+      html body .qmes-ipad-equipment button.qmes-equipment-tour-start-safe:hover{background:#15803d!important;background-color:#15803d!important;border-color:#15803d!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 3px 10px rgba(22,163,74,.24)!important;}
+    `;
+  }
+  function apply(){
+    ensureStyle();
+    document.querySelectorAll('.qmes-ipad-equipment').forEach((panel) => {
+      const buttons = Array.from(panel.querySelectorAll('button'));
+      const upper = buttons.find((button) => (button.textContent || '').replace(/\s+/g,' ').trim() === '순회점검 시작' && !button.classList.contains('qmes-equipment-tour-start-safe'));
+      const lower = buttons.find((button) => (button.textContent || '').replace(/\s+/g,' ').trim() === '오늘 순회점검 시작');
+      if(upper) upper.style.setProperty('display','none','important');
+      if(lower){
+        lower.textContent = '순회점검 시작';
+        lower.classList.add('qmes-equipment-tour-start-safe');
+      }
+    });
+  }
+  let scheduled = false;
+  const schedule = () => { if(scheduled) return; scheduled = true; requestAnimationFrame(() => { scheduled = false; apply(); }); };
+  apply();
+  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+  window.addEventListener('load',schedule,{once:true});
+})();
