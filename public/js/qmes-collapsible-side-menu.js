@@ -59,8 +59,25 @@
   const hamburger=document.createElement('button');hamburger.id='qmes-sync-hamburger';hamburger.type='button';hamburger.textContent='☰';document.body.appendChild(hamburger);
   let currentGroup='',activeLabel='',groupHighlight=false,internal=false,searchQuery='';const head=()=>side.querySelector('.qmes-side-head');
   const searchInput=side.querySelector('.qmes-side-search-input');
+  function syncMainLayout(){
+    const main=document.querySelector('#root>div>main');
+    if(!main)return;
+    if(document.body.classList.contains('qmes-side-open')){
+      const width=window.matchMedia('(max-width:900px)').matches?'190px':'220px';
+      main.dataset.qmesSidebarShift='true';
+      main.style.setProperty('margin-left',width,'important');
+      main.style.setProperty('width','calc(100% - '+width+')','important');
+      main.style.setProperty('box-sizing','border-box','important');
+      main.style.setProperty('transition','margin-left .18s ease,width .18s ease','important');
+      return;
+    }
+    if(main.dataset.qmesSidebarShift==='true'){
+      ['margin-left','width','box-sizing','transition'].forEach(p=>main.style.removeProperty(p));
+      delete main.dataset.qmesSidebarShift;
+    }
+  }
   function setPositions(){const bar=document.querySelector('.qmes-top-menu-bar'),dash=findTop('대시보드');if(bar){const br=bar.getBoundingClientRect();document.documentElement.style.setProperty('--qmes-side-top',Math.round(br.top)+'px');document.documentElement.style.setProperty('--qmes-side-search-height',Math.max(38,Math.round(br.height))+'px');document.documentElement.style.setProperty('--qmes-hamburger-left',Math.round(br.left+10)+'px')}if(dash){const dr=dash.getBoundingClientRect(),size=32;document.documentElement.style.setProperty('--qmes-hamburger-top',Math.round(dr.top+(dr.height-size)/2)+'px');hamburger.classList.add('is-ready')}}
-  function settle(){setPositions();requestAnimationFrame(setPositions);setTimeout(setPositions,80);setTimeout(setPositions,220)}
+  function settle(){setPositions();syncMainLayout();requestAnimationFrame(()=>{setPositions();syncMainLayout()});setTimeout(()=>{setPositions();syncMainLayout()},80);setTimeout(()=>{setPositions();syncMainLayout()},220)}
   function render(group){
     if(!menuMap[group])return;
     currentGroup=group;
@@ -83,8 +100,8 @@
     head().classList.toggle('is-group-active',groupHighlight);
     menuMap[group].forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.group=group;b.dataset.index=index;b.textContent=item.label;wrap.appendChild(b)});
   }
-  function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;searchQuery='';if(searchInput)searchInput.value='';render(group);document.body.classList.add('qmes-side-open');side.style.setProperty('display','block','important');side.style.setProperty('visibility','visible','important');side.style.setProperty('opacity','1','important');side.style.setProperty('pointer-events','auto','important');side.style.setProperty('transform','translate3d(0,0,0)','important');settle()}
-  function close(){setPositions();document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));setPositions()}
+  function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;searchQuery='';if(searchInput)searchInput.value='';render(group);['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));document.body.classList.add('qmes-side-open');syncMainLayout();settle()}
+  function close(){setPositions();document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));syncMainLayout();setPositions()}
   function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label))}
   function selectItem(item){groupHighlight=false;activeLabel=item.label;render(currentGroup)}
   function navigate(item){if(!item)return;selectItem(item);if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0)}return}const sub=findSub(item.sub);if(sub){sub.click();return}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()))}
@@ -129,5 +146,6 @@
   },true);
 
   document.addEventListener('click',e=>{const logo=e.target.closest('header button');if(!logo||!logo.querySelector('img[alt="NAMO Chemical"]'))return;currentGroup='대시보드';activeLabel='';groupHighlight=false;close()},true);
-  const boot=()=>{setPositions();if(!hamburger.classList.contains('is-ready'))requestAnimationFrame(boot)};window.addEventListener('resize',settle);window.addEventListener('load',settle);document.fonts?.ready?.then(settle).catch(()=>{});requestAnimationFrame(boot);
+  const layoutObserver=new MutationObserver(()=>syncMainLayout());layoutObserver.observe(document.body,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
+  const boot=()=>{setPositions();syncMainLayout();if(!hamburger.classList.contains('is-ready'))requestAnimationFrame(boot)};window.addEventListener('resize',settle);window.addEventListener('load',settle);document.fonts?.ready?.then(settle).catch(()=>{});requestAnimationFrame(boot);
 })();
