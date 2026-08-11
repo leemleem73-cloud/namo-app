@@ -214,7 +214,7 @@
 
   if(!document.querySelector('script[data-qmes-lot-shipment-status-sync]')){
     const script=document.createElement("script");
-    script.src="./js/lot-shipment-status-sync.js?v=20260805-1";
+    script.src="./js/lot-shipment-status-sync.js?v=20260811-printguard1";
     script.async=false;
     script.dataset.qmesLotShipmentStatusSync="true";
     document.head.appendChild(script);
