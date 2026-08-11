@@ -63,3 +63,19 @@
     console.warn("[QMES] 초기 회원 등록 실패", error);
   }
 })();
+
+/* 설비관리 최종 컴포넌트 고정 — 뒤쪽 구형 스크립트가 EquipmentTab을 다시 덮어쓰는 문제 방지 */
+(function finalizeEquipmentManagementTab(){
+  if (typeof EquipmentTab !== "function") return;
+  const latestEquipmentTab = EquipmentTab;
+  window.__QMES_FINAL_EQUIPMENT_TAB__ = latestEquipmentTab;
+
+  const restoreLatestEquipmentTab = () => {
+    if (typeof window.__QMES_FINAL_EQUIPMENT_TAB__ === "function") {
+      EquipmentTab = window.__QMES_FINAL_EQUIPMENT_TAB__;
+    }
+  };
+
+  window.setTimeout(restoreLatestEquipmentTab, 0);
+  window.addEventListener("load", restoreLatestEquipmentTab, { once:true });
+})();
