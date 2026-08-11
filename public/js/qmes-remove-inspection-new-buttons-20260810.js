@@ -20,6 +20,9 @@
     const topButton = topFieldInputButton();
     if (topButton) topButton.click();
     activatePendingMode();
+    setTimeout(activatePendingMode, 50);
+    setTimeout(activatePendingMode, 150);
+    setTimeout(activatePendingMode, 300);
   }
 
   function activatePendingMode(){
