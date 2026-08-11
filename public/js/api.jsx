@@ -830,8 +830,8 @@ function EquipmentTab() {
   };
 
   return (
-    <div className="qmes-equipment-tab flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-lg px-4 py-3">
+    <div className={`qmes-equipment-tab qmes-equipment-mode-${mode} flex flex-col gap-4`}>
+      <div className="qmes-equipment-daily-guide-source flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-lg px-4 py-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <ClipboardList size={15} className="text-amber-400 shrink-0" />
           <p className="text-sm text-slate-300">
@@ -921,18 +921,18 @@ function EquipmentTab() {
       )}
 
       {mode === "single" && (
-        <div className={`rounded-xl border p-5 text-center ${tourCompletedToday ? "border-emerald-500/40 bg-emerald-500/10" : "border-sky-500/30 bg-slate-900"}`}>
+        <div className={`qmes-equipment-home-card rounded-xl border p-5 text-center ${tourCompletedToday ? "border-emerald-500/40 bg-emerald-500/10" : "border-sky-500/30 bg-slate-900"}`}>
           {tourCompletedToday ? (
             <>
-              <CheckCircle2 size={34} className="mx-auto text-emerald-400" />
-              <h3 className="mt-2 text-lg font-bold text-emerald-200">오늘 순회점검 완료</h3>
-              <p className="mt-1 text-sm text-slate-400">5개 설비의 필수 세부항목이 모두 기록되었습니다.</p>
+              <CheckCircle2 size={34} className="qmes-equipment-home-icon mx-auto text-emerald-400" />
+              <h3 className="qmes-equipment-home-title mt-2 text-lg font-bold text-emerald-200">오늘 순회점검 완료</h3>
+              <p className="qmes-equipment-home-description mt-1 text-sm text-slate-400">5개 설비의 필수 세부항목이 모두 기록되었습니다.</p>
             </>
           ) : (
             <>
-              <ClipboardList size={34} className="mx-auto text-sky-400" />
-              <h3 className="mt-2 text-lg font-bold text-white">오늘 설비 순회점검</h3>
-              <p className="mt-1 text-sm text-slate-400">TK 501 → TK 501A → TK 501B → 필터 유닛 → 드라이룸 순서로 간단히 기록합니다.</p>
+              <ClipboardList size={34} className="qmes-equipment-home-icon mx-auto text-sky-400" />
+              <h3 className="qmes-equipment-home-title mt-2 text-lg font-bold text-white">오늘 설비 순회점검</h3>
+              <p className="qmes-equipment-home-description mt-1 text-sm text-slate-400">TK 501 → TK 501A → TK 501B → 필터 유닛 → 드라이룸 순서로 간단히 기록합니다.</p>
             </>
           )}
           <div className="qmes-equipment-home-actions mt-4 flex items-center justify-center gap-2.5">
