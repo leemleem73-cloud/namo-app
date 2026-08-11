@@ -1031,16 +1031,13 @@ function EquipmentTab() {
 
       {/* 알람 이력 */}
       {mode === "single" && (
-      <Panel title="설비 · 공정 알람 이력" right={
-        <div className="qmes-equipment-alarm-month-tools flex items-center gap-2">
-          <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-            조회 월
-            <input type="month" value={historyMonth} onChange={(event) => setHistoryMonth(event.target.value || TODAY.slice(0, 7))}
-              className="h-[34px] rounded-md border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 outline-none focus:border-sky-500" />
-          </label>
-          <span className="qmes-equipment-alarm-count-target">{historyAlarms.length}건</span>
-        </div>
-      }>
+      <Panel title={
+        <span className="qmes-equipment-alarm-title-tools">
+          <span>설비 · 공정 알람 이력</span>
+          <input aria-label="알람 이력 조회 월" type="month" value={historyMonth}
+            onChange={(event) => setHistoryMonth(event.target.value || TODAY.slice(0, 7))} />
+        </span>
+      } right={<span className="qmes-equipment-alarm-count-target qmes-equipment-alarm-count">{historyAlarms.length}건</span>}>
         <ul className="flex flex-col divide-y divide-slate-800/60">
           {historyAlarms.length === 0 && <li className="py-1 text-sm text-slate-500">선택한 월의 알람 이력이 없습니다.</li>}
           {historyAlarms.map((a, i) => (
