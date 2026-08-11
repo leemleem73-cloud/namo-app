@@ -950,8 +950,8 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
       {mode === "history" && (
         <div className="qmes-equipment-history-toolbar flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
           <button type="button" onClick={() => setMode("single")}
-            className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">
-            ← 설비점검
+            className="qmes-equipment-history-back min-h-[34px] rounded-lg border border-slate-600 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">
+            ← 뒤로가기
           </button>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-black text-white">날짜별 점검 기록</div>
@@ -974,12 +974,12 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
           <button type="button" onClick={printDailyTourReport}
             disabled={saving || !logs.some((entry) => String(entry.date || "") === TODAY)}
             title="금일 순회점검 기록을 인쇄하거나 PDF로 저장합니다."
-            className="min-h-[36px] rounded border border-sky-500/60 px-3 text-xs font-bold text-sky-300 hover:bg-sky-500/10 disabled:opacity-40">
-            <span className="inline-flex items-center gap-1"><Printer size={12} /> 금일 PDF 인쇄</span>
+            className="qmes-equipment-history-print min-h-[30px] rounded border border-sky-500/60 px-2.5 text-xs font-bold text-sky-300 hover:bg-sky-500/10 disabled:opacity-40">
+            <span className="inline-flex items-center gap-1"><Printer size={11} /> 인쇄</span>
           </button>
           {logs.length > 0 && (
             <button type="button" onClick={deleteAllEntries} disabled={saving}
-              className="min-h-[36px] rounded border border-red-500/60 px-3 text-xs font-bold text-red-300 hover:bg-red-500/10 disabled:opacity-40">
+              className="qmes-equipment-history-delete-all min-h-[30px] rounded border border-red-500/60 px-2.5 text-xs font-bold text-red-300 hover:bg-red-500/10 disabled:opacity-40">
               {saving ? "처리 중..." : "전체기록 삭제"}
             </button>
           )}
@@ -988,24 +988,24 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
         {historyLogs.length === 0 ? (
           <p className="text-sm text-slate-500">선택한 날짜의 점검 기록이 없습니다.</p>
         ) : (
-          <div className="overflow-x-auto -mx-4 px-4">
-            <table className="w-full text-sm min-w-[960px]">
+          <div className="qmes-equipment-history-table-wrap overflow-x-auto -mx-4 px-4">
+            <table className="qmes-equipment-history-table w-full text-sm min-w-[880px]">
               <thead>
                 <tr className="text-xs text-slate-400 border-b border-slate-800">
-                  <th className="text-left py-2 pr-3 font-medium">일시</th>
+                  <th className="qmes-equipment-history-time-head text-center py-2 pr-3 font-medium">일시</th>
                   <th className="text-left py-2 px-3 font-medium">설비</th>
                   <th className="text-left py-2 pr-3 font-medium">관리항목</th>
                   <th className="text-left py-2 pr-3 font-medium">판독값</th>
                   <th className="text-left py-2 pr-3 font-medium">판정</th>
                   <th className="text-center py-2 pr-3 font-medium">점검자</th>
                   <th className="text-left py-2 pr-3 font-medium">비고</th>
-                  <th className="text-center py-2 font-medium">관리</th>
+                  <th className="qmes-equipment-history-manage-head text-center py-2 font-medium">관리</th>
                 </tr>
               </thead>
               <tbody>
                 {historyLogs.map((l, i) => (
                   <tr key={l.id || i} className="border-b border-slate-800/60 hover:bg-slate-800/30">
-                    <td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{l.date || TODAY} {l.time}</td>
+                    <td className="qmes-equipment-history-time-cell py-2.5 pr-3 text-center text-xs text-slate-400 whitespace-nowrap">{l.date || TODAY} {l.time}</td>
                     <td className="py-2.5 pr-3 text-slate-100 text-xs">{l.eqName}</td>
                     <td className="py-2.5 pr-3 text-slate-300 text-xs">{l.item}</td>
                     <td className="py-2.5 pr-3 tabular-nums text-slate-200">{l.v}</td>
@@ -1015,12 +1015,12 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
                       {l.editedBy && <div className="mt-0.5 text-[10px] text-sky-400">수정: {l.editedBy}</div>}
                     </td>
                     <td className="py-2.5 pr-3 text-xs text-slate-300 max-w-[260px] break-words">{l.note || "—"}</td>
-                    <td className="py-2.5 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
+                    <td className="qmes-equipment-history-manage-cell py-2 text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <button type="button" onClick={() => openEdit(l)} disabled={!l.id || saving}
-                          className="min-h-[36px] px-3 rounded border border-sky-500/50 text-sky-300 hover:bg-sky-500/10 disabled:opacity-30 text-xs font-medium">수정</button>
+                          className="qmes-equipment-history-row-action is-edit min-h-[30px] px-2 rounded border border-sky-500/50 text-sky-300 hover:bg-sky-500/10 disabled:opacity-30 text-[11px] font-medium">수정</button>
                         <button type="button" onClick={() => deleteEntry(l)} disabled={!l.id || saving}
-                          className="min-h-[36px] px-3 rounded border border-red-500/50 text-red-300 hover:bg-red-500/10 disabled:opacity-30 text-xs font-medium">삭제</button>
+                          className="qmes-equipment-history-row-action is-delete min-h-[30px] px-2 rounded border border-red-500/50 text-red-300 hover:bg-red-500/10 disabled:opacity-30 text-[11px] font-medium">삭제</button>
                       </div>
                     </td>
                   </tr>
