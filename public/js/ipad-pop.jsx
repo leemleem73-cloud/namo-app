@@ -38,12 +38,12 @@ function qmesIpadEmptyValues(mode) {
   }
   return {
     "외관":["","",""],
-    "점도":["","",""],
-    "고형분":["","",""],
     "입도(Dmax)":["","",""],
+    "점도":["","",""],
+    "수분":["","",""],
+    "고형분":["","",""],
     "접착력":["","",""],
     "절연저항":["","",""],
-    "수분":["","",""],
     "전해액 안정성":["","",""]
   };
 }
@@ -66,12 +66,12 @@ function qmesIpadItems(mode) {
   }
   return [
     { key:"외관", label:"외관", type:"choice3", choices:["이상없음","이상있음"] },
-    { key:"점도", label:"점도", type:"triple" },
-    { key:"고형분", label:"고형분", type:"triple" },
     { key:"입도(Dmax)", label:"입도(Dmax)", type:"triple" },
+    { key:"점도", label:"점도", type:"triple" },
+    { key:"수분", label:"수분율", type:"triple" },
+    { key:"고형분", label:"고형분", type:"triple" },
     { key:"접착력", label:"접착력", type:"triple" },
     { key:"절연저항", label:"절연저항", type:"resistance3", choices:["Overflow","직접입력"] },
-    { key:"수분", label:"수분율", type:"triple" },
     { key:"전해액 안정성", label:"전해액 안정성", type:"choice3", choices:["미탈리","탈리"] }
   ];
 }
