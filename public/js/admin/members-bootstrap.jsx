@@ -131,7 +131,8 @@
   function apply(){
     ensureStyle();
     document.querySelectorAll('.qmes-ipad-equipment .qmes-equipment-alarm-title').forEach((title) => {
-      const row = title.parentElement;
+      const heading = title.closest('h3') || title;
+      const row = heading.parentElement;
       if(!row) return;
       row.classList.add('qmes-equipment-alarm-header-row');
       Array.from(row.querySelectorAll('span,div,strong,p,small')).forEach((el) => {
