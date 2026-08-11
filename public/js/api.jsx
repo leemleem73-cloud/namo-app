@@ -805,7 +805,7 @@ function EquipmentTab() {
       {mode === "tour" && (
       <div className="qmes-equipment-tour-screen">
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
-        right={<button onClick={() => setMode("single")} className="text-[11px] px-2.5 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">잠시 중단</button>}>
+        right={<button onClick={() => setMode("single")} className="qmes-equipment-tour-pause text-[11px] px-2.5 py-1.5 rounded border transition-colors">잠시 중단</button>}>
         <p className="text-xs text-slate-400 mb-3"><strong className="text-sky-300">{tourEq.subtitle || "설비 점검"}</strong> · 관리계획서 기준값을 확인한 뒤 모든 세부항목을 입력하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
@@ -820,9 +820,11 @@ function EquipmentTab() {
                 {x.visual ? (
                   <div className="flex gap-2 flex-1">
                     <button onClick={() => setTourVals({ ...tourVals, [x.k]: true })}
-                      className={`flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === true ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>{x.okLabel || "이상 없음"}</button>
+                      aria-pressed={raw === true}
+                      className={`qmes-equipment-tour-ok flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === true ? "is-selected" : ""}`}>{x.okLabel || "이상 없음"}</button>
                     <button onClick={() => setTourVals({ ...tourVals, [x.k]: false })}
-                      className={`flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === false ? "bg-red-500/20 border-red-500/60 text-red-300" : "bg-slate-800 border-slate-700 text-slate-300"}`}>{x.badLabel || "이상 발견"}</button>
+                      aria-pressed={raw === false}
+                      className={`qmes-equipment-tour-bad flex-1 rounded border px-3 py-2.5 text-sm font-medium transition-colors ${raw === false ? "is-selected" : ""}`}>{x.badLabel || "이상 발견"}</button>
                   </div>
                 ) : (
                   <input inputMode="decimal" value={raw ?? ""} onChange={(e) => setTourVals({ ...tourVals, [x.k]: e.target.value })}
