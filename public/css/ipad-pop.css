@@ -191,10 +191,11 @@
   box-sizing:border-box!important;
 }
 .qmes-ipad-equipment-inspector{
-  display:flex!important;
+  display:grid!important;
+  grid-template-columns:max-content max-content 100px!important;
   align-items:center!important;
   justify-content:center!important;
-  gap:6px!important;
+  column-gap:6px!important;
   padding:0 12px!important;
   color:#111827!important;
   text-align:center!important;
@@ -216,15 +217,7 @@
   text-align:center!important;
 }
 .qmes-ipad-equipment-inspector-row{
-  display:flex!important;
-  flex:0 0 auto!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:6px!important;
-  min-width:0!important;
-  height:32px!important;
-  margin:0!important;
-  text-align:center!important;
+  display:contents!important;
 }
 .qmes-ipad-equipment-inspector-row strong{
   display:inline-flex!important;
@@ -247,10 +240,10 @@
   min-height:32px!important;
   padding:0 9px!important;
   align-self:center!important;
-  margin-top:0!important;
-  margin-bottom:0!important;
-  position:relative!important;
-  top:0!important;
+  justify-self:center!important;
+  margin:0!important;
+  position:static!important;
+  top:auto!important;
   transform:none!important;
   vertical-align:middle!important;
   box-sizing:border-box!important;
