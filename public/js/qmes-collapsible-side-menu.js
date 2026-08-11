@@ -102,6 +102,7 @@
   }
   function open(group,{titleHighlight=true}={}){if(!menuMap[group])return;groupHighlight=titleHighlight;searchQuery='';if(searchInput)searchInput.value='';render(group);['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));document.body.classList.add('qmes-side-open');syncMainLayout();settle()}
   function close(){setPositions();document.body.classList.remove('qmes-side-open');['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));syncMainLayout();setPositions()}
+  window.qmesSetGlobalSidebarGroup=group=>{if(menuMap[group])open(group,{titleHighlight:true})};
   function findSub(label){return Array.from(document.querySelectorAll('.qmes-submenu-button')).find(b=>clean(b.textContent)===clean(label))}
   function selectItem(item){groupHighlight=false;activeLabel=item.label;render(currentGroup)}
   function navigate(item){if(!item)return;selectItem(item);if(item.direct){const top=findTop(item.direct);if(top){internal=true;top.click();setTimeout(()=>internal=false,0)}return}const sub=findSub(item.sub);if(sub){sub.click();return}const top=findTop(item.group);if(!top)return;internal=true;top.click();setTimeout(()=>internal=false,0);requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()))}
