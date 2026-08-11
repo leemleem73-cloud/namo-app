@@ -1,8 +1,11 @@
-/* QMES: refresh live inventory immediately after work-order deletion. */
+/* QMES: refresh live inventory immediately after work-order deletion.
+ * Important: do NOT re-pull IQC here. Inventory restoration must use the
+ * already loaded receipt ledger and simply remove the deleted work-order usage.
+ */
 (function installWorkOrderInventoryDeleteRefresh(global){
   "use strict";
-  if(global.__QMES_WO_INVENTORY_DELETE_REFRESH_20260812__) return;
-  global.__QMES_WO_INVENTORY_DELETE_REFRESH_20260812__=true;
+  if(global.__QMES_WO_INVENTORY_DELETE_REFRESH_20260812_V2__) return;
+  global.__QMES_WO_INVENTORY_DELETE_REFRESH_20260812_V2__=true;
 
   function text(value){return String(value??"").trim();}
 
@@ -42,25 +45,30 @@
 
   function installWrapper(){
     const original=global.qmesSyncDeleteWorkOrder;
-    if(typeof original!=="function" || original.__qmesInventoryDeleteRefresh) return false;
+    if(typeof original!=="function" || original.__qmesInventoryDeleteRefreshV2) return false;
 
     const wrapped=async function(lotNo){
       const key=text(lotNo);
+
+      /* production.jsx already deletes the work order locally before this call.
+       * Re-assert that state, then refresh the inventory UI from the existing IQC ledger.
+       */
       purgeLocalWorkOrder(key);
       emit(key);
+
       try{
         return await original.apply(this,arguments);
       }finally{
         purgeLocalWorkOrder(key);
         emit(key);
-        if(typeof global.qmesSyncInventorySourceData==="function"){
-          try{await global.qmesSyncInventorySourceData();}catch(_error){}
-          purgeLocalWorkOrder(key);
-          emit(key);
-        }
+        /* Deliberately no qmesSyncInventorySourceData() call here.
+         * Pulling IQC during deletion can replace local receipt rows and make stock drop.
+         */
+        global.setTimeout(()=>{purgeLocalWorkOrder(key);emit(key);},50);
+        global.setTimeout(()=>{purgeLocalWorkOrder(key);emit(key);},250);
       }
     };
-    wrapped.__qmesInventoryDeleteRefresh=true;
+    wrapped.__qmesInventoryDeleteRefreshV2=true;
     wrapped.__qmesOriginal=original;
     global.qmesSyncDeleteWorkOrder=wrapped;
     return true;
