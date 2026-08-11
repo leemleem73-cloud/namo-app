@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V12_6__) return;
-  window.__QMES_SYNC_SIDEBAR_V12_6__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V12_7__) return;
+  window.__QMES_SYNC_SIDEBAR_V12_7__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
@@ -46,12 +46,12 @@
     #qmes-sync-sidebar .qmes-side-item{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;padding:9px 10px 9px 14px!important;margin:2px 0!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#475569!important;font-size:13px!important;font-weight:700!important;text-align:left!important;cursor:pointer!important}#qmes-sync-sidebar .qmes-side-item:hover{background:#f4f7fa!important;color:#172033!important}#qmes-sync-sidebar .qmes-side-item.is-active{background:#edf4ff!important;color:#175cd3!important}#qmes-sync-sidebar .qmes-side-item.is-active:before{content:''!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;background:#2563eb!important}
     #qmes-sync-sidebar .qmes-side-empty{padding:18px 12px!important;color:#94a3b8!important;font-size:12px!important;text-align:center!important}
     #qmes-sync-hamburger{display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:var(--qmes-hamburger-left,10px)!important;top:var(--qmes-hamburger-top,0px)!important;z-index:12040!important;width:32px!important;height:32px!important;padding:0!important;border:1px solid #d8dee7!important;border-radius:7px!important;background:#fff!important;color:#263548!important;box-shadow:none!important;font-size:18px!important;line-height:1!important;cursor:pointer!important;visibility:hidden!important;opacity:0!important}#qmes-sync-hamburger.is-ready{visibility:visible!important;opacity:1!important}#qmes-sync-hamburger:hover,#qmes-sync-hamburger:focus-visible,#qmes-sync-hamburger:active{background:#fff!important;color:#263548!important;border-color:#d8dee7!important;box-shadow:none!important}body.qmes-side-open #qmes-sync-hamburger{display:none!important}
-    body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:220px!important;width:calc(100% - 220px)!important;box-sizing:border-box!important;transition:margin-left .18s ease,width .18s ease!important}
-    @media(max-width:900px){#qmes-sync-sidebar{width:190px!important}body.qmes-side-open .qmes-top-menu{transform:translateX(190px)!important;width:calc(100% - 190px)!important}body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:190px!important;width:calc(100% - 190px)!important}}
-    body.qmes-side-open main:has(.qmes-ipad-equipment),body.qmes-side-open #root>div>main:has(.qmes-ipad-equipment){margin-left:0!important;width:100%!important;}
+    body.qmes-side-open #root>div>main{margin-left:220px!important;width:calc(100% - 220px)!important;box-sizing:border-box!important;transition:margin-left .18s ease,width .18s ease!important}
+    @media(max-width:900px){#qmes-sync-sidebar{width:190px!important}body.qmes-side-open .qmes-top-menu{transform:translateX(190px)!important;width:calc(100% - 190px)!important}body.qmes-side-open #root>div>main{margin-left:190px!important;width:calc(100% - 190px)!important}}
+    body.qmes-side-open #root>div>main:has(.qmes-ipad-equipment){margin-left:0!important;width:100%!important;}
     @media print{
       #qmes-sync-sidebar,#qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important}
-      body.qmes-side-open main,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-main,body.qmes-side-open .qmes-content{margin-left:0!important;width:100%!important}
+      body.qmes-side-open #root>div>main{margin-left:0!important;width:100%!important}
       body.qmes-side-open .qmes-top-menu{transform:none!important;width:100%!important}
     }
   `;document.head.appendChild(style);
