@@ -49,11 +49,18 @@
     const marker=Array.from(panel.querySelectorAll('p')).find(p=>compact(p.textContent).includes('관리계획서 기준 5개 설비 일일 순회점검'));
     if(!marker)return;
     const left=marker.parentElement;const row=left&&left.parentElement;if(!row)return;row.classList.add('qmes-daily-guide-only');
-    const existing=row.previousElementSibling;if(existing&&existing.classList&&existing.classList.contains(WRAP_CLASS))existing.remove();
+    const existing=row.previousElementSibling;
     const rowText=compact(row.textContent);const allButtons=Array.from(panel.querySelectorAll('button'));
     const progressSource=allButtons.find(b=>/오늘\s*순회점검/.test(compact(b.textContent))&&/\d+\s*\/\s*\d+/.test(compact(b.textContent)));
     const syncSource=allButtons.find(b=>compact(b.textContent).includes('PC·모바일 동기화')||compact(b.textContent).includes('PC · 모바일 동기화'));
     const progressText=compact(progressSource?progressSource.textContent:rowText);const progress=extractProgress(progressText);const pending=extractPending(progressText+' '+rowText);
+    if(existing&&existing.classList&&existing.classList.contains(WRAP_CLASS)){
+      const values=existing.querySelectorAll('.qmes-daily-status-value');
+      if(values[0]&&values[0].textContent!==progress)values[0].textContent=progress;
+      if(values[1]&&values[1].textContent!=='동기화 완료')values[1].textContent='동기화 완료';
+      if(values[2]&&values[2].textContent!==pending)values[2].textContent=pending;
+      return;
+    }
     const wrap=document.createElement('div');wrap.className=WRAP_CLASS;
     const progressCard=makeCard('progress','오늘 순회점검',progress,'진행률',false);
     const syncCard=makeCard('sync','PC · 모바일 동기화','동기화 완료','실시간 연동',true);
