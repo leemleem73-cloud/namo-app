@@ -574,7 +574,6 @@ function FieldInputTab() {
             <h1>현장검사 POP</h1>
             <p>검사 종류를 선택하면 기존 성적서에 바로 저장됩니다.</p>
           </div>
-          <div className="qmes-ipad-inspector qmes-ipad-home-inspector"><span className="qmes-ipad-inspector-label">검사자 :</span><strong>{inspector}</strong></div>
         </header>
         <div className="qmes-ipad-home-grid">
           {Object.entries(modeMeta).map(([key, meta]) => (
