@@ -259,7 +259,7 @@
   background:#fff!important;
   color:#111827!important;
   font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
-  font-size:13px!important;
+  font-size:16px!important;
   line-height:30px!important;
   font-weight:700!important;
   text-align:center!important;
@@ -267,7 +267,7 @@
 }
 .qmes-ipad-equipment-inspector-row input::placeholder{
   color:#94a3b8!important;
-  font-size:12px!important;
+  font-size:16px!important;
   font-weight:600!important;
 }
 .qmes-ipad-equipment-inspector-row input:focus{
