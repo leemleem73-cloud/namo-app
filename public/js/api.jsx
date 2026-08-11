@@ -215,7 +215,7 @@ function InventoryTab() {
 
 /* ──────────────────────────── 설비 모니터링 ──────────────────────────── */
 
-function EquipmentTab() {
+function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
   const TODAY = typeof localISODate === "function"
     ? localISODate()
     : (() => {
@@ -248,10 +248,8 @@ function EquipmentTab() {
   const [saving, setSaving] = useState(false);
   const [syncState, setSyncState] = useState("동기화 중");
   const [syncError, setSyncError] = useState("");
-  const rawUser = window.__QMES_USER__ || window.__QMES_CURRENT_USER__;
-  const currentUser = rawUser && typeof rawUser === "object"
-    ? String(rawUser.name || rawUser.uid || "현재 사용자")
-    : String(rawUser || "현재 사용자");
+  const currentUser = String(inspectorName || "").trim();
+  const currentDepartment = String(inspectorDept || "생산부").trim() || "생산부";
 
   useEffect(() => {
     let mounted = true;
@@ -688,7 +686,7 @@ function EquipmentTab() {
     <h1>설비 일일 순회점검 기록</h1>
     <div class="top">
       <table class="meta">
-        <tr><th>점검일자</th><td>${escapeHtml(TODAY)}</td><th>부서</th><td>품질부</td></tr>
+        <tr><th>점검일자</th><td>${escapeHtml(TODAY)}</td><th>부서</th><td>${escapeHtml(currentDepartment)}</td></tr>
         <tr><th>작성자</th><td>${escapeHtml(writer)}</td><th>점검현황</th><td>${checkedEquipmentCount}/${EQUIPMENT.length} 설비</td></tr>
       </table>
       <table class="approval">
@@ -706,7 +704,7 @@ function EquipmentTab() {
     </table>
     <div class="section-title">■ 금일 설비 순회점검 기록</div>
     <table class="records">
-      <thead><tr><th>No.</th><th>설비</th><th>관리항목</th><th>관리기준</th><th>판독값</th><th>판정</th><th>비고</th><th>기록자</th></tr></thead>
+      <thead><tr><th>No.</th><th>설비</th><th>관리항목</th><th>관리기준</th><th>판독값</th><th>판정</th><th>비고</th><th>점검자</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="footer">
@@ -779,6 +777,7 @@ function EquipmentTab() {
 
   const tourSave = async () => {
     if (saving) return;
+    if (!currentUser) { window.alert("점검자 이름을 입력해 주세요."); return; }
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
     const now = new Date();
     const entries = tourEq.params.map((x, index) => {
@@ -971,7 +970,7 @@ function EquipmentTab() {
       {/* 점검 기록 */}
       <Panel title="설비 점검 기록" right={
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">{historyLogs.length}건 · 기록자 자동 저장</span>
+          <span className="text-xs text-slate-400">{historyLogs.length}건 · 점검자 직접 입력</span>
           <button type="button" onClick={printDailyTourReport}
             disabled={saving || !logs.some((entry) => String(entry.date || "") === TODAY)}
             title="금일 순회점검 기록을 인쇄하거나 PDF로 저장합니다."
@@ -998,7 +997,7 @@ function EquipmentTab() {
                   <th className="text-left py-2 pr-3 font-medium">관리항목</th>
                   <th className="text-left py-2 pr-3 font-medium">판독값</th>
                   <th className="text-left py-2 pr-3 font-medium">판정</th>
-                  <th className="text-left py-2 pr-3 font-medium">기록자</th>
+                  <th className="text-center py-2 pr-3 font-medium">점검자</th>
                   <th className="text-left py-2 pr-3 font-medium">비고</th>
                   <th className="text-center py-2 font-medium">관리</th>
                 </tr>
@@ -1011,7 +1010,7 @@ function EquipmentTab() {
                     <td className="py-2.5 pr-3 text-slate-300 text-xs">{l.item}</td>
                     <td className="py-2.5 pr-3 tabular-nums text-slate-200">{l.v}</td>
                     <td className="py-2.5 pr-3"><Badge tone={l.judge === "정상" ? "green" : "red"}>{l.judge}</Badge></td>
-                    <td className="py-2.5 pr-3 text-xs text-slate-400">
+                    <td className="py-2.5 pr-3 text-center text-xs text-slate-400">
                       <div>{l.by}</div>
                       {l.editedBy && <div className="mt-0.5 text-[10px] text-sky-400">수정: {l.editedBy}</div>}
                     </td>
