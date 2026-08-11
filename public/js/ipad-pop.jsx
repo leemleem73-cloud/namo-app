@@ -546,7 +546,7 @@ function FieldInputTab() {
           <button type="button" className="qmes-ipad-back" onClick={() => setEquipmentOpen(false)}>← 현장입력 선택</button>
           <div><span>EQ</span><h1>설비점검 현장입력</h1></div>
           <div className="qmes-ipad-inspector qmes-ipad-equipment-inspector">
-            <span className="qmes-ipad-inspector-label">점검자</span>
+            <span className="qmes-ipad-inspector-label">점검자 :</span>
             <div className="qmes-ipad-equipment-inspector-row">
               <strong>생산부</strong>
               <input
