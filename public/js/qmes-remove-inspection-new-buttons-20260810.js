@@ -1,6 +1,8 @@
 /* QMES inspection UI shortcut — replace only IQC/PQC/OQC 신규등록 with 현장검사 바로가기. */
 (function installInspectionFieldShortcut(global){
   const TARGET_KEY = 'qmes_field_shortcut_mode';
+  let retryTimer = 0;
+  let retryUntil = 0;
 
   function buttonText(button){
     return String(button?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -15,34 +17,67 @@
     return Array.from(document.querySelectorAll('.qmes-top-menu-button')).find((button) => buttonText(button).includes('현장입력')) || null;
   }
 
+  function pendingMode(){
+    try { return sessionStorage.getItem(TARGET_KEY) || ''; } catch (error) { return ''; }
+  }
+
+  function clearPendingMode(){
+    try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = 0;
+    }
+    retryUntil = 0;
+  }
+
+  function schedulePendingModeRetry(){
+    if (retryTimer || !pendingMode()) return;
+    if (!retryUntil) retryUntil = Date.now() + 3000;
+    if (Date.now() > retryUntil) {
+      clearPendingMode();
+      return;
+    }
+    retryTimer = setTimeout(() => {
+      retryTimer = 0;
+      if (!activatePendingMode()) schedulePendingModeRetry();
+    }, 60);
+  }
+
   function openTargetMode(mode){
     try { sessionStorage.setItem(TARGET_KEY, mode); } catch (error) {}
+    retryUntil = Date.now() + 3000;
+
     const topButton = topFieldInputButton();
-    if (topButton) topButton.click();
-    activatePendingMode();
-    setTimeout(activatePendingMode, 50);
-    setTimeout(activatePendingMode, 150);
-    setTimeout(activatePendingMode, 300);
+    if (topButton) {
+      topButton.click();
+    } else {
+      const directHome = document.querySelector('.qmes-ipad-home-card, .qmes-ipad-mode-tabs');
+      if (!directHome) schedulePendingModeRetry();
+    }
+
+    if (!activatePendingMode()) schedulePendingModeRetry();
   }
 
   function activatePendingMode(){
-    let mode = '';
-    try { mode = sessionStorage.getItem(TARGET_KEY) || ''; } catch (error) {}
-    if (!['IQC','PQC','OQC'].includes(mode)) return;
+    const mode = pendingMode();
+    if (!['IQC','PQC','OQC'].includes(mode)) return false;
 
     const homeCard = document.querySelector(`.qmes-ipad-home-card.is-${mode.toLowerCase()}`);
     if (homeCard) {
-      try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
+      clearPendingMode();
       homeCard.click();
-      return;
+      return true;
     }
 
     const modeButton = Array.from(document.querySelectorAll('.qmes-ipad-mode-tabs button'))
       .find((button) => buttonText(button).includes(mode));
     if (modeButton) {
-      try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
+      clearPendingMode();
       modeButton.click();
+      return true;
     }
+
+    return false;
   }
 
   function makeShortcutButton(sourceButton, mode){
@@ -70,7 +105,7 @@
     document.querySelectorAll('.qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'OQC'));
 
-    activatePendingMode();
+    if (!activatePendingMode()) schedulePendingModeRetry();
   }
 
   let scheduled = false;
