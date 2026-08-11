@@ -35,7 +35,6 @@ body > #root > div:has(.qmes-ipad-pop){
 .qmes-ipad-pop .qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title h2{font-size:21px!important;font-weight:900!important;line-height:44px!important;}
 .qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:16px!important;font-weight:900!important;line-height:1.35!important;color:#17212b!important;}
 .qmes-ipad-pop .qmes-ipad-item-tabs button strong{font-size:18px!important;font-weight:900!important;}
-.qmes-ipad-pop .qmes-ipad-item-tabs button:nth-child(4) strong::after{font-size:18px!important;font-weight:900!important;}
 
 /* 설비대장 제목 + 신규등록 버튼: 검정 글씨/검정 테두리로 고정 */
 .qmes-ipad-equipment .qmes-equipment-registry-title{color:#111!important;font-weight:900!important;}
@@ -56,5 +55,5 @@ body > #root > div:has(.qmes-ipad-pop){
   .qmes-ipad-pop .qmes-ipad-mode-tabs strong{font-size:17px!important;}
   .qmes-ipad-pop .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title h2{font-size:22px!important;}
   .qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:15px!important;}
-  .qmes-ipad-pop .qmes-ipad-item-tabs button strong,.qmes-ipad-pop .qmes-ipad-item-tabs button:nth-child(4) strong::after{font-size:16px!important;}
+  .qmes-ipad-pop .qmes-ipad-item-tabs button strong{font-size:16px!important;}
 }
