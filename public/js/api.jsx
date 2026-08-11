@@ -401,7 +401,7 @@ function EquipmentTab() {
         date:entry.date || "",
         time:entry.time || "",
         eq:entry.eqId || "",
-        msg:`${entry.item || "관리항목"} ${entry.v || ""} — 관리기준(${entry.spec || "-"}) 이탈, 점검·조치 필요${entry.note ? ` · 비고: ${entry.note}` : ""}`,
+        msg:`${entry.item || "관리항목"} ${entry.v || ""} — 관리기준(${entry.spec || "-"}) 이탈, 점검·조치 필요`,
         level:"경고",
         by:entry.by || ""
       }))
@@ -1107,7 +1107,7 @@ function EquipmentTab() {
               <Badge tone="amber">{a.level}</Badge>
               <span className="text-xs font-mono text-slate-500 w-24 shrink-0 pt-0.5">{String(a.date || "").slice(5)} {a.time}</span>
               <span className="text-xs text-slate-400 w-24 shrink-0 pt-0.5 font-mono">{a.eq}</span>
-              <span className="text-sm text-slate-200">{a.msg}</span>
+              <span className="text-sm text-slate-200">{String(a.msg || "").replace(/\s*·\s*비고:.*$/, "")}</span>
             </li>
           ))}
         </ul>
