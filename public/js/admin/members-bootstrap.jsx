@@ -123,6 +123,26 @@
         font-weight:900!important;
         text-align:left!important;
       }
+      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:first-child{
+        color:#111827!important;
+        -webkit-text-fill-color:#111827!important;
+        font-size:16px!important;
+        line-height:1.3!important;
+        font-weight:900!important;
+      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2){
+        color:#000!important;
+        -webkit-text-fill-color:#000!important;
+        font-size:30px!important;
+        line-height:1.1!important;
+        font-weight:950!important;
+      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2)>span{
+        color:#000!important;
+        -webkit-text-fill-color:#000!important;
+        font-size:15px!important;
+        font-weight:800!important;
+      }
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover,
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:focus,
