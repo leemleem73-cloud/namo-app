@@ -63,7 +63,7 @@
     let style = document.getElementById(STYLE_ID);
     if (!style) { style = document.createElement("style"); style.id = STYLE_ID; document.head.appendChild(style); }
     style.textContent = `
-      html body .qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:136px minmax(0,1fr)!important;gap:10px!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:136px minmax(0,1fr) 136px!important;gap:10px!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{width:136px!important;min-width:136px!important;max-width:136px!important;padding:0 6px 20px 0!important;background:#fff!important;box-shadow:none!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar .${TITLE_CLASS}{display:flex!important;align-items:center!important;width:100%!important;min-height:42px!important;margin:0 0 8px!important;padding:0 10px!important;box-sizing:border-box!important;border:1px solid #d7eaf8!important;border-radius:6px!important;background:#eaf6ff!important;box-shadow:none!important;color:#0f5f9f!important;font-size:15px!important;line-height:1.2!important;font-weight:900!important;text-align:left!important;}
 
@@ -124,8 +124,8 @@
     if(!style){ style = document.createElement("style"); style.id = STYLE_ID; document.head.appendChild(style); }
     style.textContent = `
       html body .qmes-ipad-equipment .qmes-equipment-alarm-header-row{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:46px!important;margin:0 14px!important;padding:0 26px!important;box-sizing:border-box!important;}
-      html body .qmes-ipad-equipment .qmes-equipment-alarm-title{margin:0!important;padding:0!important;font-size:16px!important;line-height:1.2!important;font-weight:850!important;color:#0f2f63!important;}
-      html body .qmes-ipad-equipment .qmes-equipment-alarm-count{margin:0!important;padding:0!important;font-size:14px!important;line-height:1.2!important;font-weight:800!important;color:#334155!important;white-space:nowrap!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-alarm-title{margin:0!important;padding:0!important;font-size:17px!important;line-height:1.2!important;font-weight:850!important;color:#0f2f63!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-alarm-count{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:64px!important;min-width:64px!important;height:34px!important;margin:0!important;padding:0 10px!important;box-sizing:border-box!important;border-radius:7px!important;font-size:14px!important;line-height:1!important;font-weight:850!important;color:#334155!important;white-space:nowrap!important;}
     `;
   }
   function apply(){
