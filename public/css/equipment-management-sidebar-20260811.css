@@ -5,14 +5,22 @@
 /* 좌측 메뉴: 좁고 단순한 텍스트 메뉴 */
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{position:sticky!important;top:0!important;display:flex!important;flex-direction:column!important;width:150px!important;min-width:150px!important;max-width:150px!important;min-height:620px!important;gap:2px!important;margin:0!important;padding:0 8px 20px 0!important;box-sizing:border-box!important;border:0!important;border-right:1px solid #dce4ec!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;align-self:stretch!important;}
 .qmes-ipad-equipment .qmes-equipment-management-sidebar-title{display:none!important;}
-.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;height:50px!important;min-height:50px!important;margin:0!important;padding:0 8px!important;border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;color:#334155!important;-webkit-text-fill-color:#334155!important;font-size:15px!important;font-weight:800!important;line-height:1.2!important;text-align:left!important;outline:0!important;box-shadow:none!important;}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;height:50px!important;min-height:50px!important;margin:0!important;padding:0 8px!important;border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;color:#334155!important;-webkit-text-fill-color:#334155!important;font-size:15px!important;font-weight:800!important;line-height:1.2!important;text-align:left!important;outline:0!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;}
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::before,.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::after{content:none!important;display:none!important;width:0!important;height:0!important;border:0!important;background:none!important;box-shadow:none!important;}
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover{border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;color:#1265d8!important;-webkit-text-fill-color:#1265d8!important;box-shadow:none!important;}
-/* 런타임 JS가 qmes-equipment-nav-selected를 다시 붙여도 네모 박스가 생기지 않도록 우선순위 고정 */
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active,
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button[aria-selected="true"],
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.qmes-equipment-nav-selected,
 .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active.qmes-equipment-nav-selected{border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;color:#1265d8!important;-webkit-text-fill-color:#1265d8!important;box-shadow:none!important;outline:0!important;}
+/* 메뉴 글자 주변에 남는 기존 네모칸/아이콘/장식까지 완전 제거 */
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>span,
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>i,
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>em,
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>[class*="icon"],
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>[class*="badge"]{border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;box-shadow:none!important;outline:0!important;padding:0!important;margin:0!important;}
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>svg,
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>i,
+.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button>[aria-hidden="true"]{display:none!important;width:0!important;height:0!important;margin:0!important;padding:0!important;}
 
 /* 오른쪽 본문 */
 .qmes-ipad-equipment .qmes-equipment-management-content{display:flex!important;flex-direction:column!important;gap:14px!important;min-width:0!important;width:100%!important;max-width:100%!important;grid-column:2!important;padding:0!important;box-sizing:border-box!important;overflow:hidden!important;}
@@ -23,7 +31,6 @@
 .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:first-child{color:#64748b!important;font-size:12px!important;font-weight:800!important;}
 .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2){margin-top:5px!important;color:#0f172a!important;font-size:22px!important;font-weight:900!important;}
 .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div span{color:#64748b!important;font-size:12px!important;}
-/* 원래 일일점검 내부에 있던 중복 요약 네 칸은 제거 */
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab .qmes-equipment-summary-card{display:none!important;}
 
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab{gap:14px!important;width:100%!important;min-width:0!important;max-width:100%!important;}
