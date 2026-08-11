@@ -26,7 +26,7 @@ function qmesIpadLotInfo(lotNo) {
 
 function qmesIpadEmptyValues(mode) {
   if (mode === "IQC") {
-    return { visual:"", label:"", weight:"", coa:"" };
+    return { visual:"", label:"", weight:"" };
   }
   if (mode === "PQC") {
     return {
@@ -53,8 +53,7 @@ function qmesIpadItems(mode) {
     return [
       { key:"visual", label:"외관", spec:"이상 없을 것", type:"choice", choices:["합격","불합격"] },
       { key:"label", label:"라벨", spec:"표기사항 일치", type:"choice", choices:["합격","불합격"] },
-      { key:"weight", label:"중량", spec:"입고표기와 일치", type:"choice", choices:["합격","불합격"] },
-      { key:"coa", label:"CoA 확인", spec:"성적서 확인", type:"choice", choices:["합격","불합격"] }
+      { key:"weight", label:"중량", spec:"입고표기와 일치", type:"choice", choices:["합격","불합격"] }
     ];
   }
   if (mode === "PQC") {
@@ -269,7 +268,6 @@ function FieldInputTab() {
       visual:values.visual,
       label:values.label,
       weight:values.weight,
-      coa:values.coa,
       remarks:String(form.remarks || "").trim(),
       judge:overall,
       note:overall === "불합격" ? "즉시 격리 → 사용차단 → 업체 통보" : "",
