@@ -79,3 +79,114 @@
   window.setTimeout(restoreLatestEquipmentTab, 0);
   window.addEventListener("load", restoreLatestEquipmentTab, { once:true });
 })();
+
+/* 현장입력 > 설비 좌측 메뉴 최종 정리
+   - 일일점검 바로 위 '설비점검' 제목 추가
+   - 구형 런타임 선택 스타일의 흰색 버튼 박스 제거 */
+(function refineEquipmentSidebar(){
+  const STYLE_ID = "qmes-equipment-sidebar-flat-final";
+  const TITLE_CLASS = "qmes-equipment-sidebar-check-title";
+
+  function ensureStyle(){
+    let style = document.getElementById(STYLE_ID);
+    if (!style) {
+      style = document.createElement("style");
+      style.id = STYLE_ID;
+      document.head.appendChild(style);
+    }
+    style.textContent = `
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{
+        background:#fff!important;
+        box-shadow:none!important;
+      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar .${TITLE_CLASS}{
+        display:block!important;
+        margin:0 0 8px!important;
+        padding:2px 8px 12px!important;
+        border:0!important;
+        border-bottom:1px solid #e2e8f0!important;
+        background:transparent!important;
+        box-shadow:none!important;
+        color:#0f172a!important;
+        font-size:18px!important;
+        line-height:1.2!important;
+        font-weight:900!important;
+        text-align:left!important;
+      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:hover,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:focus,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button:focus-visible,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button[aria-selected="true"],
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.qmes-equipment-nav-selected{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        width:100%!important;
+        min-height:48px!important;
+        margin:0!important;
+        padding:0 8px!important;
+        border:0!important;
+        border-width:0!important;
+        border-style:none!important;
+        border-color:transparent!important;
+        border-radius:0!important;
+        outline:0!important;
+        background:transparent!important;
+        background-color:transparent!important;
+        background-image:none!important;
+        box-shadow:none!important;
+        filter:none!important;
+        appearance:none!important;
+        -webkit-appearance:none!important;
+      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::before,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button::after{
+        content:none!important;
+        display:none!important;
+      }
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button{color:#334155!important;-webkit-text-fill-color:#334155!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.is-active,
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button[aria-selected="true"],
+      html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.qmes-equipment-nav-selected{
+        color:#1265d8!important;
+        -webkit-text-fill-color:#1265d8!important;
+      }
+    `;
+  }
+
+  function apply(){
+    ensureStyle();
+    document.querySelectorAll(".qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block").forEach((sidebar) => {
+      let title = sidebar.querySelector(`.${TITLE_CLASS}`);
+      if (!title) {
+        title = document.createElement("div");
+        title.className = TITLE_CLASS;
+        title.textContent = "설비점검";
+        sidebar.insertBefore(title, sidebar.firstChild);
+      }
+
+      sidebar.querySelectorAll(":scope > button").forEach((button) => {
+        ["background","background-color","background-image","border","border-radius","box-shadow","outline","filter"].forEach((property) => {
+          button.style.setProperty(property, property === "border-radius" ? "0" : property === "border" ? "0" : property === "background" || property === "background-color" ? "transparent" : "none", "important");
+        });
+      });
+    });
+  }
+
+  let scheduled = false;
+  const scheduleApply = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      apply();
+    });
+  };
+
+  apply();
+  const observer = new MutationObserver(scheduleApply);
+  observer.observe(document.documentElement, { childList:true, subtree:true });
+  window.addEventListener("load", scheduleApply, { once:true });
+})();
