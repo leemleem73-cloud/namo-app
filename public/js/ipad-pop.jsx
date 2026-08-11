@@ -629,7 +629,7 @@ function FieldInputTab() {
 
   return (
     <div className="qmes-ipad-pop">
-      <header className="qmes-ipad-work-head">
+      <header className="qmes-ipad-work-head qmes-ipad-inspection-head">
         <button type="button" className="qmes-ipad-back" onClick={() => setMode("")}>← 검사 선택</button>
         <div><span>{meta.code}</span><h1>{meta.title} IPAD 입력</h1></div>
         <div className="qmes-ipad-inspector qmes-ipad-field-inspector"><span className="qmes-ipad-inspector-label">검사자 :</span><strong>{String(form.inspector || "").replace(/\s*\(U-\d+\)\s*$/i, "")}</strong></div>
