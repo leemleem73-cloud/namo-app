@@ -183,10 +183,10 @@
 .qmes-ipad-inspection-head > .qmes-ipad-back,
 .qmes-ipad-equipment-inspector,
 .qmes-ipad-field-inspector{
-  flex:0 0 300px!important;
-  width:300px!important;
+  flex:0 0 250px!important;
+  width:250px!important;
   height:48px!important;
-  min-width:300px!important;
+  min-width:250px!important;
   min-height:48px!important;
   box-sizing:border-box!important;
 }
@@ -242,7 +242,7 @@
   white-space:nowrap!important;
 }
 .qmes-ipad-equipment-inspector-row input{
-  width:112px!important;
+  width:100px!important;
   height:32px!important;
   min-height:32px!important;
   padding:0 9px!important;
