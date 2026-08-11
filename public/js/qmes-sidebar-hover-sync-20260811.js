@@ -20,7 +20,8 @@
     '부적합관리': ['부적합 (8D)', '고객불만 (GQMS)', '4M 변경관리']
   };
 
-  let hoverOpened = false;
+  let hoverActive = false;
+  let wasManuallyOpen = false;
   let closeTimer = 0;
 
   function getTopLabel(button) {
@@ -31,9 +32,14 @@
     return document.getElementById('qmes-sync-sidebar');
   }
 
-  function renderGroup(group) {
+  function showMatchingSidebar(group) {
     const side = sidebar();
-    if (!side || !menuMap[group]) return false;
+    if (!side || !menuMap[group]) return;
+
+    if (!hoverActive) {
+      wasManuallyOpen = document.body.classList.contains('qmes-side-open');
+      hoverActive = true;
+    }
 
     const title = side.querySelector('.qmes-side-title');
     const head = side.querySelector('.qmes-side-head');
@@ -63,53 +69,46 @@
     side.style.setProperty('opacity', '1', 'important');
     side.style.setProperty('pointer-events', 'auto', 'important');
     side.style.setProperty('transform', 'translate3d(0,0,0)', 'important');
-    return true;
   }
 
-  function openFromHover(group) {
-    clearTimeout(closeTimer);
-    const wasOpen = document.body.classList.contains('qmes-side-open');
-    if (renderGroup(group)) hoverOpened = !wasOpen || hoverOpened;
-  }
-
-  function scheduleClose() {
+  function finishTopHover() {
     clearTimeout(closeTimer);
     closeTimer = window.setTimeout(() => {
-      const side = sidebar();
-      const topBar = document.querySelector('.qmes-top-menu-bar, .qmes-top-menu');
-      if (side?.matches(':hover') || topBar?.matches(':hover')) return;
-      if (!hoverOpened) return;
+      const top = document.querySelector('.qmes-top-menu');
+      if (top && top.matches(':hover')) return;
 
-      hoverOpened = false;
-      document.body.classList.remove('qmes-side-open');
-      if (side) {
-        ['display', 'visibility', 'opacity', 'pointer-events', 'transform'].forEach(prop => side.style.removeProperty(prop));
+      const side = sidebar();
+      hoverActive = false;
+
+      if (!wasManuallyOpen) {
+        document.body.classList.remove('qmes-side-open');
+        if (side) {
+          ['display', 'visibility', 'opacity', 'pointer-events', 'transform'].forEach(prop => side.style.removeProperty(prop));
+        }
       }
-    }, 140);
+
+      wasManuallyOpen = false;
+    }, 80);
   }
 
   document.addEventListener('mouseover', event => {
     const button = event.target.closest('.qmes-top-menu-button');
     if (!button) return;
+
+    clearTimeout(closeTimer);
     const group = getTopLabel(button);
     if (!menuMap[group]) return;
-    openFromHover(group);
+
+    showMatchingSidebar(group);
   }, true);
 
   document.addEventListener('mouseout', event => {
-    const fromTop = event.target.closest?.('.qmes-top-menu-button, .qmes-top-menu, .qmes-top-menu-bar');
-    const fromSide = event.target.closest?.('#qmes-sync-sidebar');
-    if (!fromTop && !fromSide) return;
-    scheduleClose();
-  }, true);
+    const topMenu = event.target.closest?.('.qmes-top-menu');
+    if (!topMenu) return;
 
-  document.addEventListener('mouseover', event => {
-    if (event.target.closest?.('#qmes-sync-sidebar')) clearTimeout(closeTimer);
-  }, true);
+    const next = event.relatedTarget;
+    if (next && topMenu.contains(next)) return;
 
-  document.addEventListener('click', event => {
-    if (event.target.closest('#qmes-sync-hamburger')) hoverOpened = false;
-    if (event.target.closest('#qmes-sync-sidebar .qmes-side-item')) hoverOpened = false;
-    if (event.target.closest('#qmes-sync-sidebar .qmes-side-close')) hoverOpened = false;
+    finishTopHover();
   }, true);
 })();
