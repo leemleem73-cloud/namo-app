@@ -1,8 +1,8 @@
-/* QMES inspection UI shortcut — replace only IQC/PQC/OQC 신규등록 with 현장검사 바로가기. */
+/* QMES inspection UI shortcut — one click opens the requested field-inspection mode. */
 (function installInspectionFieldShortcut(global){
+  'use strict';
   const TARGET_KEY = 'qmes_field_shortcut_mode';
-  let retryTimer = 0;
-  let retryUntil = 0;
+  const TAB_KEY = 'qmes_current_tab';
 
   function buttonText(button){
     return String(button?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -13,71 +13,44 @@
     return text === '신규등록' || text.endsWith(' 신규등록') || text.includes('신규등록');
   }
 
-  function topFieldInputButton(){
-    return Array.from(document.querySelectorAll('.qmes-top-menu-button')).find((button) => buttonText(button).includes('현장입력')) || null;
+  function readTarget(){
+    try { return String(sessionStorage.getItem(TARGET_KEY) || '').toUpperCase(); }
+    catch(error) { return ''; }
   }
 
-  function pendingMode(){
-    try { return sessionStorage.getItem(TARGET_KEY) || ''; } catch (error) { return ''; }
+  function clearTarget(){
+    try { sessionStorage.removeItem(TARGET_KEY); } catch(error) {}
   }
 
-  function clearPendingMode(){
-    try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
-    if (retryTimer) {
-      clearTimeout(retryTimer);
-      retryTimer = 0;
-    }
-    retryUntil = 0;
-  }
+  function activateTargetMode(){
+    const mode = readTarget();
+    if (!['IQC','PQC','OQC'].includes(mode)) return false;
 
-  function schedulePendingModeRetry(){
-    if (retryTimer || !pendingMode()) return;
-    if (!retryUntil) retryUntil = Date.now() + 3000;
-    if (Date.now() > retryUntil) {
-      clearPendingMode();
-      return;
-    }
-    retryTimer = setTimeout(() => {
-      retryTimer = 0;
-      if (!activatePendingMode()) schedulePendingModeRetry();
-    }, 60);
+    const card = document.querySelector(`.qmes-ipad-home-card.is-${mode.toLowerCase()}`);
+    if (!card) return false;
+
+    clearTarget();
+    card.click();
+    return true;
   }
 
   function openTargetMode(mode){
-    try { sessionStorage.setItem(TARGET_KEY, mode); } catch (error) {}
-    retryUntil = Date.now() + 3000;
+    const target = String(mode || '').toUpperCase();
+    if (!['IQC','PQC','OQC'].includes(target)) return;
 
-    const topButton = topFieldInputButton();
-    if (topButton) {
-      topButton.click();
-    } else {
-      const directHome = document.querySelector('.qmes-ipad-home-card, .qmes-ipad-mode-tabs');
-      if (!directHome) schedulePendingModeRetry();
-    }
+    try {
+      sessionStorage.setItem(TARGET_KEY, target);
+      sessionStorage.setItem(TAB_KEY, 'pop');
+    } catch(error) {}
 
-    if (!activatePendingMode()) schedulePendingModeRetry();
-  }
-
-  function activatePendingMode(){
-    const mode = pendingMode();
-    if (!['IQC','PQC','OQC'].includes(mode)) return false;
-
-    const homeCard = document.querySelector(`.qmes-ipad-home-card.is-${mode.toLowerCase()}`);
-    if (homeCard) {
-      clearPendingMode();
-      homeCard.click();
-      return true;
-    }
-
-    const modeButton = Array.from(document.querySelectorAll('.qmes-ipad-mode-tabs button'))
-      .find((button) => buttonText(button).includes(mode));
-    if (modeButton) {
-      clearPendingMode();
-      modeButton.click();
-      return true;
-    }
-
-    return false;
+    /*
+     * Do not simulate clicks on React top-menu buttons here.
+     * That caused the intermediate production/quality screens and required
+     * multiple user clicks. Reloading with qmes_current_tab=pop lets the
+     * router mount FieldInputTab directly; the observer below then selects
+     * the requested IQC/PQC/OQC card as soon as it exists.
+     */
+    global.location.reload();
   }
 
   function makeShortcutButton(sourceButton, mode){
@@ -98,14 +71,10 @@
   function replaceButtons(){
     document.querySelectorAll('.qmes-iqc-page .qmes-iqc-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'IQC'));
-
     document.querySelectorAll('.qmes-pqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'PQC'));
-
     document.querySelectorAll('.qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'OQC'));
-
-    if (!activatePendingMode()) schedulePendingModeRetry();
   }
 
   let scheduled = false;
@@ -115,16 +84,18 @@
     requestAnimationFrame(() => {
       scheduled = false;
       replaceButtons();
+      activateTargetMode();
     });
   }
 
   const observer = new MutationObserver(schedule);
   function start(){
     replaceButtons();
-    observer.observe(document.documentElement, { childList:true, subtree:true });
+    activateTargetMode();
+    observer.observe(document.documentElement, {childList:true, subtree:true});
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
   else start();
 
   global.qmesOpenFieldInputShortcut = openTargetMode;
