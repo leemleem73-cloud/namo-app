@@ -173,3 +173,20 @@ html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="dat
   }
 }
 
+
+
+/* 순회점검 입력 화면 — NMP 안내문과 동일한 Pretendard 서체 */
+.qmes-ipad-equipment .qmes-equipment-tour-screen,
+.qmes-ipad-equipment .qmes-equipment-tour-screen button,
+.qmes-ipad-equipment .qmes-equipment-tour-screen input,
+.qmes-ipad-equipment .qmes-equipment-tour-screen strong,
+.qmes-ipad-equipment .qmes-equipment-tour-screen span,
+.qmes-ipad-equipment .qmes-equipment-tour-screen p,
+.qmes-ipad-equipment .qmes-equipment-tour-screen div,
+.qmes-ipad-equipment .qmes-equipment-tour-screen h1,
+.qmes-ipad-equipment .qmes-equipment-tour-screen h2,
+.qmes-ipad-equipment .qmes-equipment-tour-screen h3{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-style:normal!important;
+  letter-spacing:-.15px!important;
+}
