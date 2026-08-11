@@ -1,4 +1,4 @@
-/* QMES iPad IQC UI visibility fix: stronger active tab + normalize CoA label. */
+/* QMES iPad inspection UI visibility fix: stronger active tab + mode-specific item 4 label. */
 (function(global){
   "use strict";
   if(global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811__) return;
@@ -38,29 +38,31 @@
     document.head.appendChild(style);
   }
 
-  function normalizeCoaLabel(){
-    const tabs=document.querySelectorAll('.qmes-ipad-item-tabs button');
-    tabs.forEach((button,index)=>{
-      if(index!==3) return;
-      const strong=button.querySelector('strong');
-      if(!strong) return;
-      const text=String(strong.textContent||'').replace(/\s+/g,' ').trim();
-      if(/coa\s*확인/i.test(text)) strong.textContent='CoA 확인';
-    });
+  function activeMode(){
+    const active=document.querySelector('.qmes-ipad-mode-tabs button.is-active');
+    return String(active?.textContent||'').toUpperCase();
   }
 
-  function apply(){
-    ensureStyle();
-    normalizeCoaLabel();
+  function normalizeFourthLabel(){
+    const button=document.querySelectorAll('.qmes-ipad-item-tabs button')[3];
+    if(!button) return;
+    const strong=button.querySelector('strong');
+    if(!strong) return;
+    const mode=activeMode();
+    if(mode.includes('PQC') || mode.includes('공정검사')) strong.textContent='외관';
+    else if(mode.includes('IQC') || mode.includes('수입검사')) strong.textContent='CoA 확인';
   }
 
+  function apply(){ ensureStyle(); normalizeFourthLabel(); }
   let queued=false;
   function schedule(){
     if(queued) return;
     queued=true;
     requestAnimationFrame(()=>{queued=false;apply();});
   }
-
+  document.addEventListener('click',function(event){
+    if(event.target.closest?.('.qmes-ipad-mode-tabs button')) setTimeout(schedule,0);
+  },true);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',schedule,{once:true});
   else schedule();
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
