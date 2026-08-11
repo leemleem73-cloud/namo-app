@@ -2,7 +2,7 @@
   var selectedEquipmentMenu='일일점검';
   var EQUIPMENT_MENU_LABELS=['일일점검','설비대장','정기점검·교정','정기점검 교정','고장·수리 이력','고장수리 이력'];
   function normalizeEquipmentMenu(text){var value=String(text||'').replace(/\s+/g,' ').trim();if(value==='정기점검 교정') return '정기점검·교정';if(value==='고장수리 이력') return '고장·수리 이력';return value;}
-  function loadRuntimeStyle(){var version='20260810-5';var existing=document.querySelector('script[data-qmes-ipad-runtime-style]');if(existing){if(!existing.src.includes('v='+version)) existing.src='./js/ipad-pop-runtime-style-20260810.js?v='+version;return;}var script=document.createElement('script');script.src='./js/ipad-pop-runtime-style-20260810.js?v='+version;script.defer=true;script.setAttribute('data-qmes-ipad-runtime-style','1');document.head.appendChild(script);}
+  function loadRuntimeStyle(){var version='20260810-6';var existing=document.querySelector('script[data-qmes-ipad-runtime-style]');if(existing){if(!existing.src.includes('v='+version)) existing.src='./js/ipad-pop-runtime-style-20260810.js?v='+version;return;}var script=document.createElement('script');script.src='./js/ipad-pop-runtime-style-20260810.js?v='+version;script.defer=true;script.setAttribute('data-qmes-ipad-runtime-style','1');document.head.appendChild(script);}
   function ensureEquipmentFixStyle(){var id='qmes-equipment-em-direct-fix';var style=document.getElementById(id);if(!style){style=document.createElement('style');style.id=id;document.head.appendChild(style);}style.textContent=`
     .qmes-ipad-equipment .qmes-equipment-subcaption-hidden{display:none!important;}
     .qmes-ipad-equipment .qmes-equipment-summary-card,.qmes-ipad-equipment .qmes-equipment-summary-card *{box-shadow:none!important;}
