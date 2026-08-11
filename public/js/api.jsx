@@ -243,7 +243,7 @@ function EquipmentTab() {
   const [editVisual, setEditVisual] = useState(null);
   const [editNote, setEditNote] = useState("");
   const [editError, setEditError] = useState("");
-  const [historyMonth, setHistoryMonth] = useState(TODAY.slice(0, 7));
+  const [historyDate, setHistoryDate] = useState(TODAY);
   const [saving, setSaving] = useState(false);
   const [syncState, setSyncState] = useState("동기화 중");
   const [syncError, setSyncError] = useState("");
@@ -755,10 +755,10 @@ function EquipmentTab() {
     candidate.params.some((item) => !readings[`${candidate.id}:${item.k}`])
   );
   const historyLogs = [...logs]
-    .filter((entry) => String(entry.date || "").slice(0, 7) === historyMonth)
+    .filter((entry) => String(entry.date || "") === historyDate)
     .sort((left, right) => String(right.recordedAt || `${right.date || ""}T${right.time || ""}`).localeCompare(String(left.recordedAt || `${left.date || ""}T${left.time || ""}`)));
   const historyAlarms = [...alarms]
-    .filter((entry) => String(entry.date || "").slice(0, 7) === historyMonth)
+    .filter((entry) => String(entry.date || "") === historyDate)
     .sort((left, right) => String(`${right.date || ""}T${right.time || ""}`).localeCompare(String(`${left.date || ""}T${left.time || ""}`)));
   const openMonthlyHistory = () => {
     setMode("history");
@@ -891,14 +891,12 @@ function EquipmentTab() {
             ← 설비점검
           </button>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-black text-white">월별 점검 기록</div>
-            <div className="mt-0.5 text-xs text-slate-400">선택한 월의 점검 기록만 표시합니다.</div>
+            <div className="text-sm font-black text-white">날짜별 점검 기록</div>
+            <div className="mt-0.5 text-xs text-slate-400">선택한 날짜의 점검 기록만 표시합니다.</div>
           </div>
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-300">
-            조회 월
-            <input type="month" value={historyMonth} onChange={(event) => setHistoryMonth(event.target.value || TODAY.slice(0, 7))}
-              className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-sky-500" />
-          </label>
+          <input aria-label="점검 기록 조회 일자" type="date" value={historyDate}
+            onChange={(event) => setHistoryDate(event.target.value || TODAY)}
+            className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-sky-500" />
           <div className="min-w-[120px] text-right text-xs font-bold text-slate-300">
             점검 {historyLogs.length}건
           </div>
@@ -925,7 +923,7 @@ function EquipmentTab() {
         </div>
       }>
         {historyLogs.length === 0 ? (
-          <p className="text-sm text-slate-500">선택한 월의 점검 기록이 없습니다.</p>
+          <p className="text-sm text-slate-500">선택한 날짜의 점검 기록이 없습니다.</p>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="w-full text-sm min-w-[960px]">
@@ -1034,12 +1032,12 @@ function EquipmentTab() {
       <Panel title={
         <span className="qmes-equipment-alarm-title-tools">
           <span>설비 · 공정 알람 이력</span>
-          <input aria-label="알람 이력 조회 월" type="month" value={historyMonth}
-            onChange={(event) => setHistoryMonth(event.target.value || TODAY.slice(0, 7))} />
+          <input aria-label="알람 이력 조회 일자" type="date" value={historyDate}
+            onChange={(event) => setHistoryDate(event.target.value || TODAY)} />
         </span>
       } right={<span className="qmes-equipment-alarm-count-target qmes-equipment-alarm-count">{historyAlarms.length}건</span>}>
         <ul className="flex flex-col divide-y divide-slate-800/60">
-          {historyAlarms.length === 0 && <li className="py-1 text-sm text-slate-500">선택한 월의 알람 이력이 없습니다.</li>}
+          {historyAlarms.length === 0 && <li className="py-1 text-sm text-slate-500">선택한 날짜의 알람 이력이 없습니다.</li>}
           {historyAlarms.map((a, i) => (
             <li key={i} className="flex items-start gap-3 py-2.5">
               <Badge tone="amber">{a.level}</Badge>
