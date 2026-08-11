@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_PRINT_SIDEBAR_GUARD_V5__) return;
-  window.__QMES_PRINT_SIDEBAR_GUARD_V5__=true;
+  if(window.__QMES_PRINT_SIDEBAR_GUARD_V6__) return;
+  window.__QMES_PRINT_SIDEBAR_GUARD_V6__=true;
 
   document.getElementById('qmes-print-sidebar-guard-style')?.remove();
 
@@ -138,10 +138,10 @@
   window.addEventListener('beforeprint',startPrint);
   window.addEventListener('afterprint',endPrint);
   window.addEventListener('focus',()=>{
-    if(printClickActive) setTimeout(endPrint,180);
-    else {
-      restoreTopMenus();
-      if(!window.matchMedia?.('print')?.matches) restoreSidebarLayout();
+    restoreTopMenus();
+    if(!window.matchMedia?.('print')?.matches){
+      if(document.body?.classList.contains('qmes-printing')) setTimeout(endPrint,80);
+      else restoreSidebarLayout();
     }
   });
 
@@ -169,15 +169,19 @@
     const target=event.target.closest('button,a,[role="button"]');
     if(!target)return;
     const text=clean(target.textContent||target.getAttribute('aria-label')||target.getAttribute('title'));
-    if(/^(인쇄|출력|인쇄하기|출력하기)$/.test(text)||/(^|\s)(인쇄|출력)(\s|$)/.test(text)){
-      printClickActive=true;
-      startPrint();
-      requestAnimationFrame(()=>{startPrint();scrubPrintRoot();});
-      setTimeout(()=>{startPrint();scrubPrintRoot();},0);
-      setTimeout(scrubPrintRoot,80);
-      setTimeout(scrubPrintRoot,220);
+    const isPrintControl=/^(인쇄|출력|인쇄하기|출력하기)$/.test(text)||/(^|\s)(인쇄|출력)(\s|$)/.test(text);
+    const isCloseControl=/^(닫기|취소|돌아가기|×|X)$/.test(text);
+    if(isPrintControl){
+      /*
+       * 출력/인쇄 문구만으로 인쇄 상태를 시작하지 않는다.
+       * 많은 버튼은 먼저 화면 미리보기를 열기 때문에 실제 beforeprint가
+       * 발생할 때만 startPrint가 실행되어야 한다.
+       */
+      requestAnimationFrame(()=>{
+        if(!window.matchMedia?.('print')?.matches&&document.body?.classList.contains('qmes-printing')) endPrint();
+      });
       return;
     }
-    if(printClickActive&&/^(닫기|취소|돌아가기)$/.test(text)) endPrint();
+    if(isCloseControl&&!window.matchMedia?.('print')?.matches&&document.body?.classList.contains('qmes-printing')) endPrint();
   },true);
 })();
