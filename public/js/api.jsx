@@ -757,6 +757,7 @@ function EquipmentTab() {
   const startDailyTour = () => {
     if (tourCompletedToday || saving) return;
     setMode("tour");
+    setShowHistory(false);
     setTourIdx(firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0);
     setTourVals({});
     setTourNotes({});
@@ -868,11 +869,13 @@ function EquipmentTab() {
         </div>
       )}
 
+      {mode === "single" && (
       <button type="button" onClick={() => setShowHistory((value) => !value)}
         className="min-h-[48px] rounded-lg border border-slate-700 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800">
         {showHistory ? "점검 기록 닫기" : `점검 기록 ${logs.length}건 보기 · 수정/삭제`}
       </button>
-      {showHistory && (
+      )}
+      {mode === "single" && showHistory && (
         <div>
       {/* 점검 기록 */}
       <Panel title="설비 점검 기록" right={
@@ -943,7 +946,7 @@ function EquipmentTab() {
         </div>
       )}
 
-      {editing && (() => {
+      {mode === "single" && editing && (() => {
         const editEq = EQUIPMENT.find((row) => row.id === editing.eqId);
         const editParam = editEq?.params.find((row) => row.k === editing.paramKey);
         return (
@@ -991,13 +994,14 @@ function EquipmentTab() {
         );
       })()}
 
-      {syncError && (
+      {mode === "single" && syncError && (
         <div className="bg-amber-500/10 border border-amber-500/40 rounded-lg px-4 py-3 text-sm text-amber-200">
           공용 DB 연결을 자동 재시도하고 있습니다. 현재 입력은 이 기기에 보관됩니다. · {syncError}
         </div>
       )}
 
       {/* 알람 이력 */}
+      {mode === "single" && (
       <Panel title="설비 · 공정 알람 이력" right={<Badge tone="red">{alarms.length}건</Badge>}>
         <ul className="flex flex-col divide-y divide-slate-800/60">
           {alarms.length === 0 && <li className="py-1 text-sm text-slate-500">알람 이력이 없습니다 — 관리기준 이탈 기록 시 자동 발생합니다.</li>}
@@ -1011,6 +1015,7 @@ function EquipmentTab() {
           ))}
         </ul>
       </Panel>
+      )}
     </div>
   );
 }
