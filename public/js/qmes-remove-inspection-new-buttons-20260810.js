@@ -72,12 +72,71 @@
     const style = document.createElement('style');
     style.id = 'qmes-inspector-header-input-style';
     style.textContent = `
-      .qmes-ipad-inspection-head .qmes-ipad-field-inspector{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;}
+      /* 수입·공정·출하 검사자 = 설비점검 점검자와 동일한 크기/간격 */
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector{
+        display:grid!important;
+        grid-template-columns:max-content max-content 100px!important;
+        align-items:center!important;
+        justify-content:center!important;
+        column-gap:6px!important;
+        flex:0 0 250px!important;
+        width:250px!important;
+        min-width:250px!important;
+        height:48px!important;
+        min-height:48px!important;
+        padding:0 12px!important;
+        box-sizing:border-box!important;
+        text-align:center!important;
+        white-space:nowrap!important;
+      }
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-ipad-inspector-label,
-      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-dept{display:inline-flex!important;align-items:center!important;height:38px!important;color:#0f172a!important;-webkit-text-fill-color:#0f172a!important;font-size:16px!important;line-height:1!important;font-weight:850!important;white-space:nowrap!important;}
-      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name{width:132px!important;min-width:132px!important;max-width:132px!important;height:38px!important;min-height:38px!important;padding:0 10px!important;box-sizing:border-box!important;border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#0f172a!important;-webkit-text-fill-color:#0f172a!important;font-size:14px!important;line-height:1!important;font-weight:700!important;text-align:center!important;outline:none!important;}
-      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name::placeholder{color:#94a3b8!important;-webkit-text-fill-color:#94a3b8!important;opacity:1!important;}
-      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name:focus{border-color:#60a5fa!important;box-shadow:0 0 0 2px rgba(96,165,250,.14)!important;}
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-dept{
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        width:auto!important;
+        height:32px!important;
+        margin:0!important;
+        color:#111827!important;
+        -webkit-text-fill-color:#111827!important;
+        font-size:16px!important;
+        line-height:32px!important;
+        font-weight:850!important;
+        letter-spacing:0!important;
+        word-spacing:0!important;
+        text-align:center!important;
+        white-space:nowrap!important;
+      }
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name{
+        width:100px!important;
+        min-width:100px!important;
+        max-width:100px!important;
+        height:32px!important;
+        min-height:32px!important;
+        max-height:32px!important;
+        padding:0 9px!important;
+        align-self:center!important;
+        box-sizing:border-box!important;
+        border:1px solid #cbd5e1!important;
+        border-radius:7px!important;
+        background:#fff!important;
+        color:#111827!important;
+        -webkit-text-fill-color:#111827!important;
+        font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+        font-size:16px!important;
+        line-height:30px!important;
+        font-weight:700!important;
+        text-align:center!important;
+        outline:none!important;
+      }
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name::placeholder{
+        color:#94a3b8!important;
+        -webkit-text-fill-color:#94a3b8!important;
+        font-size:16px!important;
+        font-weight:600!important;
+        opacity:1!important;
+      }
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name:focus{border-color:#38bdf8!important;box-shadow:0 0 0 3px rgba(56,189,248,.16)!important;}
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector > strong:not(.qmes-field-inspector-dept){display:none!important;}
       .qmes-ipad-form-grid label.qmes-field-inspector-duplicate{display:none!important;}
       .qmes-equipment-tour-screen .qmes-equipment-tour-inspector{display:none!important;}
