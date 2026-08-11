@@ -116,6 +116,7 @@ function FieldInputTab() {
   const [sharedVersion, setSharedVersion] = useState(0);
   const [mode, setMode] = useState("");
   const [equipmentOpen, setEquipmentOpen] = useState(false);
+  const [equipmentInspector, setEquipmentInspector] = useState("");
   const [step, setStep] = useState(0);
   const [values, setValues] = useState({});
   const [tried, setTried] = useState(false);
@@ -544,10 +545,21 @@ function FieldInputTab() {
         <header className="qmes-ipad-work-head">
           <button type="button" className="qmes-ipad-back" onClick={() => setEquipmentOpen(false)}>← 현장입력 선택</button>
           <div><span>EQ</span><h1>설비점검 현장입력</h1></div>
-          <div className="qmes-ipad-inspector">기록자 <strong>{inspector}</strong></div>
+          <div className="qmes-ipad-inspector qmes-ipad-equipment-inspector">
+            <span className="qmes-ipad-inspector-label">점검자</span>
+            <div className="qmes-ipad-equipment-inspector-row">
+              <strong>생산부</strong>
+              <input
+                value={equipmentInspector}
+                onChange={(event) => setEquipmentInspector(event.target.value)}
+                placeholder="이름 입력"
+                aria-label="설비 점검자 이름"
+              />
+            </div>
+          </div>
         </header>
         <div className="qmes-ipad-equipment">
-          <EquipmentTab />
+          <EquipmentTab inspectorName={equipmentInspector} inspectorDept="생산부" />
         </div>
       </div>
     );
@@ -562,7 +574,7 @@ function FieldInputTab() {
             <h1>현장검사 POP</h1>
             <p>검사 종류를 선택하면 기존 성적서에 바로 저장됩니다.</p>
           </div>
-          <div className="qmes-ipad-inspector">검사자 <strong>{inspector}</strong></div>
+          <div className="qmes-ipad-inspector qmes-ipad-home-inspector"><span className="qmes-ipad-inspector-label">검사자</span><strong>{inspector}</strong></div>
         </header>
         <div className="qmes-ipad-home-grid">
           {Object.entries(modeMeta).map(([key, meta]) => (
