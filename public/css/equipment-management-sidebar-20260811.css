@@ -305,3 +305,53 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   line-height:1.4!important;
   font-weight:600!important;
 }
+
+
+/* 순회점검 상단: 작은 뒤로가기 + 잠시 중단 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-head-actions{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  white-space:nowrap!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back{
+  min-height:28px!important;
+  padding:0 8px!important;
+  border:1px solid #94a3b8!important;
+  background:#fff!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:750!important;
+  box-shadow:none!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back:hover,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back:focus-visible{
+  border-color:#64748b!important;
+  background:#f8fafc!important;
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  box-shadow:0 0 0 2px rgba(100,116,139,.12)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause{
+  min-height:30px!important;
+  padding:0 10px!important;
+  font-size:11px!important;
+  line-height:1!important;
+}
+
+/* 알람 이력: 조치 필요 제목과 내용의 왼쪽 기준선 통일 */
+html body .qmes-ipad-equipment .qmes-equipment-alarm-table-head>span:last-child{
+  justify-content:flex-start!important;
+  padding-left:14px!important;
+  box-sizing:border-box!important;
+  text-align:left!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-message{
+  justify-self:stretch!important;
+  padding-left:14px!important;
+  box-sizing:border-box!important;
+  text-align:left!important;
+}
