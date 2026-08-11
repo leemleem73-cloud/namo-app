@@ -950,7 +950,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
       {mode === "history" && (
         <div className="qmes-equipment-history-toolbar flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
           <button type="button" onClick={() => setMode("single")}
-            className="qmes-equipment-history-back min-h-[34px] rounded-lg border border-slate-600 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">
+            className="qmes-equipment-history-back qmes-equipment-tour-back rounded border transition-colors">
             ← 뒤로가기
           </button>
           <div className="min-w-0 flex-1">
