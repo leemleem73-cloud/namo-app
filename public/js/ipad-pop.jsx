@@ -542,7 +542,7 @@ function FieldInputTab() {
   if (equipmentOpen) {
     return (
       <div className="qmes-ipad-pop">
-        <header className="qmes-ipad-work-head">
+        <header className="qmes-ipad-work-head qmes-ipad-equipment-head">
           <button type="button" className="qmes-ipad-back" onClick={() => setEquipmentOpen(false)}>← 현장입력 선택</button>
           <div><span>EQ</span><h1>설비점검 현장입력</h1></div>
           <div className="qmes-ipad-inspector qmes-ipad-equipment-inspector">
