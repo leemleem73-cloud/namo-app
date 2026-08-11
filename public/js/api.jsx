@@ -238,6 +238,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
   const [tourNotes, setTourNotes] = useState({});
   const [tourDrafts, setTourDrafts] = useState({});
   const [tourTried, setTourTried] = useState(false);
+  const [tourInspector, setTourInspector] = useState("");
   const [note, setNote] = useState("");
   const [editing, setEditing] = useState(null);
   const [editValue, setEditValue] = useState("");
@@ -299,7 +300,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
 
   const selectParam = (id, k) => { setEqId(id); setPk(k); setVal(""); setVisOk(null); setNote(""); setTried(false); };
 
-  const makeEntry = (targetEq, targetParam, display, result, now, index = 0, entryNote = "") => {
+  const makeEntry = (targetEq, targetParam, display, result, now, index = 0, entryNote = "", entryBy = currentUser) => {
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     return {
       id:`EQ-${now.getTime()}-${String(index).padStart(2, "0")}-${Math.random().toString(36).slice(2, 7)}`,
@@ -316,7 +317,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
       judge:result,
       ok:result === "정상",
       note:String(entryNote || "").trim(),
-      by:currentUser,
+      by:String(entryBy || "").trim(),
       sharedSync:false
     };
   };
@@ -777,14 +778,15 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
 
   const tourSave = async () => {
     if (saving) return;
-    if (!currentUser) { window.alert("점검자 이름을 입력해 주세요."); return; }
+    const resolvedTourInspector = String(tourInspector || "").trim();
+    if (!resolvedTourInspector) { setTourTried(true); return; }
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
     const now = new Date();
     const entries = tourEq.params.map((x, index) => {
       const raw = tourVals[x.k];
       const result = tourJudge(x, raw);
       const display = x.visual ? (raw ? (x.okLabel || "이상 없음") : (x.badLabel || "이상 발견")) : `${String(raw).trim()} ${x.unit || ""}`.trim();
-      return makeEntry(tourEq, x, display, result, now, index, tourNotes[x.k]);
+      return makeEntry(tourEq, x, display, result, now, index, tourNotes[x.k], resolvedTourInspector);
     });
     await persistEntries(entries);
     const nextDrafts = {
@@ -823,6 +825,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
     const startIdx = firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0;
     const freshDrafts = {};
     setMode("tour");
+    setTourInspector(currentUser);
     setTourDrafts(freshDrafts);
     openTourIndex(startIdx, freshDrafts);
     window.scrollTo({top:0, behavior:"smooth"});
@@ -865,6 +868,18 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
             <button onClick={() => setMode("single")} className="qmes-equipment-tour-pause rounded border transition-colors">잠시 중단</button>
           </div>
         }>
+        <div className="qmes-equipment-tour-inspector">
+          <span className="qmes-equipment-tour-inspector-label">검사자 :</span>
+          <strong className="qmes-equipment-tour-inspector-dept">생산부</strong>
+          <input
+            value={tourInspector}
+            onChange={(event) => setTourInspector(event.target.value)}
+            placeholder="이름 입력"
+            aria-label="순회점검 검사자 이름"
+            aria-invalid={tourTried && !String(tourInspector || "").trim()}
+            className={`qmes-equipment-tour-inspector-input ${tourTried && !String(tourInspector || "").trim() ? "is-required-empty" : ""}`}
+          />
+        </div>
         <p className="text-xs text-slate-400 mb-3"><strong className="text-sky-300">{tourEq.subtitle || "설비 점검"}</strong> · 관리계획서 기준값을 확인한 뒤 모든 세부항목을 입력하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
@@ -888,7 +903,9 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
                 ) : (
                   <input inputMode="decimal" value={raw ?? ""} onChange={(e) => setTourVals({ ...tourVals, [x.k]: e.target.value })}
                     placeholder={`판독값 입력 ${x.unit ? `(${x.unit})` : ""}`}
-                    className="qmes-equipment-tour-reading flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-center tabular-nums text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                    aria-invalid={j === "이탈"}
+                    title={j === "이탈" ? `스펙 이탈 · 기준 ${x.spec}` : undefined}
+                    className={`qmes-equipment-tour-reading flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-center tabular-nums text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 ${j === "이탈" ? "is-spec-out" : ""}`} />
                 )}
                 <input value={tourNotes[x.k] || ""} onChange={(e) => setTourNotes({...tourNotes, [x.k]:e.target.value})}
                   placeholder="비고 (선택)"
@@ -900,9 +917,9 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
             );
           })}
         </div>
-        {tourTried && tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null) && (
+        {tourTried && (!String(tourInspector || "").trim() || tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) && (
           <div className="mt-2 bg-red-500/10 border border-red-500/40 rounded px-3 py-2">
-            <div className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> 미기록 또는 형식 오류 항목이 있습니다 — 전 항목 기록 전 다음 설비 진입 금지</div>
+            <div className="flex items-center gap-2 text-xs text-red-300"><XCircle size={13} className="shrink-0" /> {!String(tourInspector || "").trim() ? "검사자 이름을 입력해 주세요." : "미기록 또는 형식 오류 항목이 있습니다 — 전 항목 기록 전 다음 설비 진입 금지"}</div>
           </div>
         )}
         <div className="flex items-center justify-between mt-3">
@@ -953,9 +970,9 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
             className="qmes-equipment-history-back qmes-equipment-tour-back rounded border transition-colors">
             ← 뒤로가기
           </button>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-black text-white">날짜별 점검 기록</div>
-            <div className="mt-0.5 text-xs text-slate-400">선택한 날짜의 점검 기록만 표시합니다.</div>
+          <div className="qmes-equipment-history-toolbar-copy min-w-0 flex-1">
+            <div className="qmes-equipment-history-toolbar-title text-sm font-black text-white">날짜별 점검 기록</div>
+            <div className="qmes-equipment-history-toolbar-description mt-0.5 text-xs text-slate-400">선택한 날짜의 점검 기록만 표시합니다.</div>
           </div>
           <input aria-label="점검 기록 조회 일자" type="date" value={historyDate}
             onChange={(event) => setHistoryDate(event.target.value || TODAY)}
@@ -968,7 +985,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
       {mode === "history" && (
         <div>
       {/* 점검 기록 */}
-      <Panel title="설비 점검 기록" right={
+      <Panel className="qmes-equipment-history-panel" title="설비 점검 기록" right={
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400">{historyLogs.length}건 · 점검자 직접 입력</span>
           <button type="button" onClick={printDailyTourReport}
@@ -1117,4 +1134,3 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
 }
 
 /* ──────────────────────────── Lot 추적 탭 ──────────────────────────── */
-
