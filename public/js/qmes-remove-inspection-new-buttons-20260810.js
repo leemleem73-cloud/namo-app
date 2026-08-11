@@ -1,6 +1,6 @@
-/* QMES inspection UI shortcut — one user click opens the requested field-inspection mode. */
+/* QMES inspection UI shortcut — replace only IQC/PQC/OQC 신규등록 with 현장검사 바로가기. */
 (function installInspectionFieldShortcut(global){
-  'use strict';
+  const TARGET_KEY = 'qmes_field_shortcut_mode';
 
   function buttonText(button){
     return String(button?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -12,55 +12,37 @@
   }
 
   function topFieldInputButton(){
-    return Array.from(document.querySelectorAll('.qmes-top-menu-button'))
-      .find((button) => buttonText(button) === '현장입력') || null;
-  }
-
-  function waitAndOpenMode(mode){
-    const selector = `.qmes-ipad-home-card.is-${String(mode).toLowerCase()}`;
-    let finished = false;
-    let observer = null;
-    let timer = null;
-
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      if (observer) observer.disconnect();
-      if (timer) clearTimeout(timer);
-    };
-
-    const tryOpen = () => {
-      if (finished) return true;
-      const card = document.querySelector(selector);
-      if (!card) return false;
-      finish();
-      card.click();
-      return true;
-    };
-
-    if (tryOpen()) return;
-
-    observer = new MutationObserver(() => { tryOpen(); });
-    observer.observe(document.documentElement, {childList:true, subtree:true});
-    timer = setTimeout(finish, 2500);
+    return Array.from(document.querySelectorAll('.qmes-top-menu-button')).find((button) => buttonText(button).includes('현장입력')) || null;
   }
 
   function openTargetMode(mode){
-    const target = String(mode || '').toUpperCase();
-    if (!['IQC','PQC','OQC'].includes(target)) return;
-
-    /* Start waiting first, then let React navigate to the field-input tab. */
-    waitAndOpenMode(target);
-
+    try { sessionStorage.setItem(TARGET_KEY, mode); } catch (error) {}
     const topButton = topFieldInputButton();
-    if (topButton) {
-      topButton.click();
+    if (topButton) topButton.click();
+    activatePendingMode();
+    setTimeout(activatePendingMode, 50);
+    setTimeout(activatePendingMode, 150);
+    setTimeout(activatePendingMode, 300);
+  }
+
+  function activatePendingMode(){
+    let mode = '';
+    try { mode = sessionStorage.getItem(TARGET_KEY) || ''; } catch (error) {}
+    if (!['IQC','PQC','OQC'].includes(mode)) return;
+
+    const homeCard = document.querySelector(`.qmes-ipad-home-card.is-${mode.toLowerCase()}`);
+    if (homeCard) {
+      try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
+      homeCard.click();
       return;
     }
 
-    /* If already on the field-input screen, waitAndOpenMode will handle it. */
-    const currentCard = document.querySelector(`.qmes-ipad-home-card.is-${target.toLowerCase()}`);
-    if (currentCard) currentCard.click();
+    const modeButton = Array.from(document.querySelectorAll('.qmes-ipad-mode-tabs button'))
+      .find((button) => buttonText(button).includes(mode));
+    if (modeButton) {
+      try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
+      modeButton.click();
+    }
   }
 
   function makeShortcutButton(sourceButton, mode){
@@ -81,10 +63,14 @@
   function replaceButtons(){
     document.querySelectorAll('.qmes-iqc-page .qmes-iqc-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'IQC'));
+
     document.querySelectorAll('.qmes-pqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'PQC'));
+
     document.querySelectorAll('.qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut="true"])')
       .forEach((button) => makeShortcutButton(button, 'OQC'));
+
+    activatePendingMode();
   }
 
   let scheduled = false;
@@ -100,10 +86,10 @@
   const observer = new MutationObserver(schedule);
   function start(){
     replaceButtons();
-    observer.observe(document.documentElement, {childList:true, subtree:true});
+    observer.observe(document.documentElement, { childList:true, subtree:true });
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
   else start();
 
   global.qmesOpenFieldInputShortcut = openTargetMode;
