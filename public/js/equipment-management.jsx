@@ -42,13 +42,13 @@
   function EquipmentSummaryNumber({value}){
     const [visible,setVisible]=React.useState(true);
     React.useEffect(()=>{
-      const timer=window.setInterval(()=>setVisible(current=>!current),500);
+      const timer=window.setInterval(()=>setVisible(current=>!current),1200);
       return ()=>window.clearInterval(timer);
     },[]);
     return <strong
       className="qmes-equipment-summary-number"
       data-qmes-react-blink="1"
-      style={{visibility:visible?"visible":"hidden"}}
+      style={{opacity:visible?1:0.16,transition:"opacity 1.2s ease-in-out"}}
     >{value}</strong>;
   }
 
