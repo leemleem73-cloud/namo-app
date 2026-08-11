@@ -14,7 +14,9 @@
 .qmes-ipad-hero h1,.qmes-ipad-work-head h1 { margin:4px 0 2px; color:#fff; font-size:clamp(24px,3vw,34px); line-height:1.15; }
 .qmes-ipad-hero h1 { color:#111827; font-weight:900; }
 .qmes-ipad-work-head h1 { color:#111827; font-weight:900; }
-.qmes-ipad-hero p { margin:6px 0 0; color:#9eb3c9; font-size:14px; }
+.qmes-ipad-hero{justify-content:center!important;text-align:center!important;}
+.qmes-ipad-hero>div:first-child{display:flex!important;flex-direction:column!important;align-items:center!important;width:100%!important;text-align:center!important;}
+.qmes-ipad-hero p { margin:6px 0 0; color:#9eb3c9; font-size:14px; text-align:center!important; }
 .qmes-ipad-inspector { flex:0 0 auto; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; color:#475569; font-size:13px; box-shadow:0 8px 22px rgba(15,23,42,.14); }
 .qmes-ipad-inspector strong { display:block; margin-top:2px; color:#111827; font-size:17px; }
 
