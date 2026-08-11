@@ -45,7 +45,7 @@ html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment
 
 /* 알람 이력 */
 .qmes-ipad-equipment .qmes-equipment-alarm-panel{overflow:hidden!important;border:1px solid #d7e0e8!important;border-radius:12px!important;background:#fff!important;box-shadow:none!important;}
-.qmes-ipad-equipment .qmes-equipment-alarm-title{color:#0f2f63!important;font-size:20px!important;font-weight:900!important;}
+.qmes-ipad-equipment .qmes-equipment-alarm-title{color:#0f2f63!important;font-size:16px!important;font-weight:900!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-table-head,.qmes-ipad-equipment .qmes-equipment-alarm-row{grid-template-columns:150px 140px 160px minmax(0,1fr)!important;padding-left:26px!important;padding-right:26px!important;box-sizing:border-box!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-table-head{display:grid!important;align-items:center!important;min-height:56px!important;margin:0 14px!important;border:1px solid #d7e0e8!important;border-radius:7px!important;background:#f8fafc!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-table-head>span{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;padding:0!important;color:#111827!important;font-size:15px!important;font-weight:850!important;text-align:center!important;}
