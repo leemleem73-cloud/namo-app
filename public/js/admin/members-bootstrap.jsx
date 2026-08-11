@@ -18,19 +18,16 @@
   function normalizeAndSeed(users) {
     const source = Array.isArray(users) ? users : [];
     const byName = new Map();
-
     source.forEach((user) => {
       const normalizedName = user.name === "admin" || user.id === "admin" ? "관리자" : (user.name || user.id || "").trim();
       if (!normalizedName) return;
       const normalized = { ...user, id: normalizedName, name: normalizedName, role: normalizedName === "관리자" ? "admin" : "user" };
       if (!byName.has(normalizedName)) byName.set(normalizedName, normalized);
     });
-
     seedUsers.forEach((seed) => {
       const current = byName.get(seed.name);
       byName.set(seed.name, current ? { ...seed, ...current, id: seed.name, name: seed.name, uid: seed.uid, dept: current.dept || seed.dept, position: current.position || seed.position, role: seed.role } : { ...seed });
     });
-
     const seededNames = new Set(seedUsers.map((u) => u.name));
     const seeded = seedUsers.map((seed) => byName.get(seed.name));
     const extras = Array.from(byName.values()).filter((u) => !seededNames.has(u.name)).map((u) => ({ ...u, role: "user" }));
@@ -76,11 +73,12 @@
         align-items:center!important;
         justify-content:center!important;
         text-align:center!important;
-        min-height:92px!important;
-        box-shadow:0 3px 10px rgba(15,23,42,.10)!important;
+        min-height:0!important;
+        padding:9px 12px!important;
+        box-shadow:0 2px 7px rgba(15,23,42,.08)!important;
       }
-      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:first-child{color:#111827!important;-webkit-text-fill-color:#111827!important;font-size:16px!important;line-height:1.3!important;font-weight:900!important;text-align:center!important;width:100%!important;}
-      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2){color:#000!important;-webkit-text-fill-color:#000!important;font-size:30px!important;line-height:1.1!important;font-weight:950!important;text-align:center!important;width:100%!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:first-child{color:#111827!important;-webkit-text-fill-color:#111827!important;font-size:16px!important;line-height:1.2!important;font-weight:900!important;text-align:center!important;width:100%!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2){margin-top:4px!important;color:#000!important;-webkit-text-fill-color:#000!important;font-size:30px!important;line-height:1!important;font-weight:950!important;text-align:center!important;width:100%!important;}
       html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>div>div:nth-child(2)>span{color:#000!important;-webkit-text-fill-color:#000!important;font-size:15px!important;font-weight:800!important;}
 
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button,
