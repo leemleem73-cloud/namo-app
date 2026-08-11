@@ -58,10 +58,10 @@ function qmesIpadItems(mode) {
   }
   if (mode === "PQC") {
     return [
-      { key:"점도", label:"점도", type:"triple" },
-      { key:"고형분", label:"고형분", type:"triple" },
+      { key:"외관", label:"외관", type:"choice", choices:["이상없음","이상있음"] },
       { key:"입도(Dmax)", label:"입도(Dmax)", type:"triple" },
-      { key:"외관", label:"외관", type:"choice", choices:["이상없음","이상있음"] }
+      { key:"점도", label:"점도", type:"triple" },
+      { key:"고형분", label:"고형분", type:"triple" }
     ];
   }
   return [
