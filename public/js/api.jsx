@@ -953,9 +953,9 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
             className="qmes-equipment-history-back qmes-equipment-tour-back rounded border transition-colors">
             ← 뒤로가기
           </button>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-black text-white">날짜별 점검 기록</div>
-            <div className="mt-0.5 text-xs text-slate-400">선택한 날짜의 점검 기록만 표시합니다.</div>
+          <div className="qmes-equipment-history-toolbar-copy min-w-0 flex-1">
+            <div className="qmes-equipment-history-toolbar-title text-sm font-black text-white">날짜별 점검 기록</div>
+            <div className="qmes-equipment-history-toolbar-description mt-0.5 text-xs text-slate-400">선택한 날짜의 점검 기록만 표시합니다.</div>
           </div>
           <input aria-label="점검 기록 조회 일자" type="date" value={historyDate}
             onChange={(event) => setHistoryDate(event.target.value || TODAY)}
@@ -968,7 +968,7 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
       {mode === "history" && (
         <div>
       {/* 점검 기록 */}
-      <Panel title="설비 점검 기록" right={
+      <Panel className="qmes-equipment-history-panel" title="설비 점검 기록" right={
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400">{historyLogs.length}건 · 점검자 직접 입력</span>
           <button type="button" onClick={printDailyTourReport}
@@ -1117,4 +1117,3 @@ function EquipmentTab({inspectorName = "", inspectorDept = "생산부"} = {}) {
 }
 
 /* ──────────────────────────── Lot 추적 탭 ──────────────────────────── */
-
