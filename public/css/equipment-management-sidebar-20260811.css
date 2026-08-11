@@ -605,3 +605,40 @@ html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-hist
   -webkit-text-fill-color:#475569!important;
   box-shadow:0 0 0 2px rgba(100,116,139,.12)!important;
 }
+
+
+/* 점검 기록 날짜·건수 크기 정리 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-date{
+  width:142px!important;
+  min-width:142px!important;
+  max-width:142px!important;
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  padding:0 8px!important;
+  box-sizing:border-box!important;
+  font-size:13px!important;
+  line-height:1!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-count{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:78px!important;
+  height:30px!important;
+  min-height:30px!important;
+  margin:0!important;
+  padding:0 10px!important;
+  box-sizing:border-box!important;
+  border:1px solid #bfdbfe!important;
+  border-radius:7px!important;
+  background:#eff6ff!important;
+  color:#1d4ed8!important;
+  -webkit-text-fill-color:#1d4ed8!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:800!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
