@@ -236,6 +236,7 @@ function EquipmentTab() {
   const [tourIdx, setTourIdx] = useState(0);
   const [tourVals, setTourVals] = useState({});
   const [tourNotes, setTourNotes] = useState({});
+  const [tourDrafts, setTourDrafts] = useState({});
   const [tourTried, setTourTried] = useState(false);
   const [note, setNote] = useState("");
   const [editing, setEditing] = useState(null);
@@ -727,6 +728,55 @@ function EquipmentTab() {
     }
   };
 
+  const getTourState = (index, drafts = tourDrafts) => {
+    const targetEq = EQUIPMENT[index];
+    if (!targetEq) return { vals:{}, notes:{} };
+    const cached = drafts[targetEq.id];
+    if (cached) return { vals:{...(cached.vals || {})}, notes:{...(cached.notes || {})} };
+    const vals = {};
+    const notes = {};
+    targetEq.params.forEach((item) => {
+      const saved = (DB.eqReadings || {})[`${targetEq.id}:${item.k}`];
+      if (saved && saved.v != null) {
+        const display = String(saved.v).trim();
+        if (item.visual) {
+          if (display === String(item.okLabel || "이상 없음")) vals[item.k] = true;
+          else if (display === String(item.badLabel || "이상 발견")) vals[item.k] = false;
+          else if (typeof saved.ok === "boolean") vals[item.k] = saved.ok;
+        } else {
+          const numeric = display.match(/^-?\d+(?:\.\d+)?/);
+          if (numeric) vals[item.k] = numeric[0];
+        }
+      }
+      const savedLog = (DB.eqLogs || []).find((entry) =>
+        String(entry.date || "") === TODAY &&
+        entry.eqId === targetEq.id &&
+        entry.paramKey === item.k
+      );
+      if (savedLog && savedLog.note) notes[item.k] = savedLog.note;
+    });
+    return { vals, notes };
+  };
+
+  const openTourIndex = (index, drafts = tourDrafts) => {
+    const restored = getTourState(index, drafts);
+    setTourIdx(index);
+    setTourVals(restored.vals);
+    setTourNotes(restored.notes);
+    setTourTried(false);
+  };
+
+  const moveToPreviousTourEquipment = () => {
+    if (tourIdx <= 0) return;
+    const currentEq = EQUIPMENT[tourIdx];
+    const nextDrafts = {
+      ...tourDrafts,
+      [currentEq.id]: { vals:{...tourVals}, notes:{...tourNotes} }
+    };
+    setTourDrafts(nextDrafts);
+    openTourIndex(tourIdx - 1, nextDrafts);
+  };
+
   const tourSave = async () => {
     if (saving) return;
     if (tourEq.params.some((x) => tourJudge(x, tourVals[x.k]) == null)) { setTourTried(true); return; }
@@ -738,12 +788,17 @@ function EquipmentTab() {
       return makeEntry(tourEq, x, display, result, now, index, tourNotes[x.k]);
     });
     await persistEntries(entries);
-    setTourVals({}); setTourNotes({}); setTourTried(false);
+    const nextDrafts = {
+      ...tourDrafts,
+      [tourEq.id]: { vals:{...tourVals}, notes:{...tourNotes} }
+    };
+    setTourDrafts(nextDrafts);
+    setTourTried(false);
     const nextIdx = EQUIPMENT.findIndex((candidate, index) =>
       index > tourIdx && candidate.params.some((item) => !DB.eqReadings[`${candidate.id}:${item.k}`])
     );
-    if (nextIdx >= 0) setTourIdx(nextIdx);
-    else { setMode("single"); setTourIdx(0); }
+    if (nextIdx >= 0) openTourIndex(nextIdx, nextDrafts);
+    else { setMode("single"); setTourIdx(0); setTourVals({}); setTourNotes({}); setTourDrafts({}); }
   };
   const totalEquipment = EQUIPMENT.length;
   const doneEquipment = EQUIPMENT.filter((candidate) =>
@@ -766,11 +821,11 @@ function EquipmentTab() {
   };
   const startDailyTour = () => {
     if (tourCompletedToday || saving) return;
+    const startIdx = firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0;
+    const freshDrafts = {};
     setMode("tour");
-    setTourIdx(firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0);
-    setTourVals({});
-    setTourNotes({});
-    setTourTried(false);
+    setTourDrafts(freshDrafts);
+    openTourIndex(startIdx, freshDrafts);
     window.scrollTo({top:0, behavior:"smooth"});
   };
 
@@ -847,7 +902,7 @@ function EquipmentTab() {
           </div>
         )}
         <div className="flex items-center justify-between mt-3">
-          <button onClick={() => { if (tourIdx > 0) { setTourIdx(tourIdx - 1); setTourVals({}); setTourNotes({}); setTourTried(false); } }}
+          <button onClick={moveToPreviousTourEquipment}
             className={`qmes-equipment-tour-prev px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors ${tourIdx === 0 ? "is-disabled" : ""}`}>
             ← 이전 설비
           </button>
