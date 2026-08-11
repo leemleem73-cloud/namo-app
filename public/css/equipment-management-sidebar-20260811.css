@@ -355,3 +355,16 @@ html body .qmes-ipad-equipment .qmes-equipment-alarm-message{
   box-sizing:border-box!important;
   text-align:left!important;
 }
+
+
+/* 알람 이력 조치 필요: 제목과 내용을 같은 중앙선에 정렬 */
+html body .qmes-ipad-equipment .qmes-equipment-alarm-table-head>span:last-child{
+  justify-content:center!important;
+  padding-left:0!important;
+  text-align:center!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-message{
+  justify-self:center!important;
+  padding-left:0!important;
+  text-align:center!important;
+}
