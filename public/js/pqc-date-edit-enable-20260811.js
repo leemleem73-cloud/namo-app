@@ -1,8 +1,8 @@
 /* QMES PQC inspection-date and process-number edit/save patch, 2026-08-11 */
 (function enablePqcInspectionDateEdit(global){
   "use strict";
-  if(global.__QMES_PQC_DATE_EDIT_ENABLE_20260811_V2__) return;
-  global.__QMES_PQC_DATE_EDIT_ENABLE_20260811_V2__=true;
+  if(global.__QMES_PQC_DATE_EDIT_ENABLE_20260811_V3__) return;
+  global.__QMES_PQC_DATE_EDIT_ENABLE_20260811_V3__=true;
 
   let pendingDate="";
   let originalGroupId="";
@@ -88,6 +88,7 @@
     if(oldGroupId!==newGroupId && typeof qmesSyncTombstoneInspection==="function") {
       await qmesSyncTombstoneInspection("pqc",oldGroupId,oldRows,"검사일자 변경에 따른 공정번호 변경");
     }
+    global.dispatchEvent(new CustomEvent("qmes-pqc-record-updated",{detail:{oldGroupId,newGroupId,date,lotNo}}));
     return true;
   }
 
@@ -107,8 +108,8 @@
       if(pendingGroupId && processInput.value!==pendingGroupId) forceInputValue(processInput,pendingGroupId);
     }
 
-    if(!dateInput.dataset.qmesPqcDateBoundV2){
-      dateInput.dataset.qmesPqcDateBoundV2="1";
+    if(!dateInput.dataset.qmesPqcDateBoundV3){
+      dateInput.dataset.qmesPqcDateBoundV3="1";
       const remember=()=>{
         const chosen=String(dateInput.value||"").trim();
         if(!chosen) return;
@@ -125,8 +126,8 @@
     }
 
     const saveBtn=modal.querySelector('.qmes-inspection-save-btn');
-    if(saveBtn && !saveBtn.dataset.qmesPqcDateBoundV2){
-      saveBtn.dataset.qmesPqcDateBoundV2="1";
+    if(saveBtn && !saveBtn.dataset.qmesPqcDateBoundV3){
+      saveBtn.dataset.qmesPqcDateBoundV3="1";
       saveBtn.addEventListener('click',()=>{
         const chosenDate=String(pendingDate || dateInput.value || "").trim();
         const oldId=String(originalGroupId || processInput.value || "").trim();
@@ -134,7 +135,12 @@
         if(!chosenDate || !oldId || !newId) return;
         setTimeout(()=>{
           syncEditedRecord(oldId,newId,chosenDate)
-            .then((ok)=>{ if(ok) setTimeout(()=>global.location.reload(),120); })
+            .then((ok)=>{
+              if(!ok) return;
+              pendingDate="";
+              originalGroupId="";
+              pendingGroupId="";
+            })
             .catch((error)=>{
               console.error("PQC 검사일자/공정번호 공용 DB 반영 실패:",error);
               global.alert(`검사일자와 공정번호 저장 중 오류가 발생했습니다.\n${error.message||error}`);
