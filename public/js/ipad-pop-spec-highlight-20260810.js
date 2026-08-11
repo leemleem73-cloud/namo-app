@@ -22,3 +22,23 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){refresh(document);});
   else refresh(document);
 })();
+
+/* Direct IQC/PQC/OQC entry: consume the shortcut request from inside the POP component lifecycle. */
+(function installFieldShortcutModeConsumer(){
+  'use strict';
+  if(window.__QMES_FIELD_SHORTCUT_MODE_CONSUMER__ || typeof FieldInputTab !== 'function') return;
+  window.__QMES_FIELD_SHORTCUT_MODE_CONSUMER__=true;
+  const OriginalFieldInputTab=FieldInputTab;
+  FieldInputTab=function QmesFieldInputTabWithDirectMode(){
+    React.useEffect(function(){
+      let mode='';
+      try{mode=String(sessionStorage.getItem('qmes_field_shortcut_mode')||'').toUpperCase();}catch(error){}
+      if(!['IQC','PQC','OQC'].includes(mode)) return;
+      const card=document.querySelector('.qmes-ipad-home-card.is-'+mode.toLowerCase());
+      if(!card) return;
+      try{sessionStorage.removeItem('qmes_field_shortcut_mode');}catch(error){}
+      card.click();
+    },[]);
+    return React.createElement(OriginalFieldInputTab);
+  };
+})();
