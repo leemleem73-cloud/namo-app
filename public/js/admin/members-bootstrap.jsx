@@ -80,9 +80,7 @@
   window.addEventListener("load", restoreLatestEquipmentTab, { once:true });
 })();
 
-/* 현장입력 > 설비 좌측 메뉴 최종 정리
-   - 일일점검 바로 위 '설비점검' 제목 추가
-   - 구형 런타임 선택 스타일의 흰색 버튼 박스 제거 */
+/* 현장입력 > 설비 좌측 메뉴 최종 정리 */
 (function refineEquipmentSidebar(){
   const STYLE_ID = "qmes-equipment-sidebar-flat-final";
   const TITLE_CLASS = "qmes-equipment-sidebar-check-title";
@@ -95,20 +93,32 @@
       document.head.appendChild(style);
     }
     style.textContent = `
+      html body .qmes-ipad-equipment .qmes-equipment-management-layout{
+        grid-template-columns:136px minmax(0,1fr)!important;
+        gap:10px!important;
+      }
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{
+        width:136px!important;
+        min-width:136px!important;
+        max-width:136px!important;
+        padding:0 6px 20px 0!important;
         background:#fff!important;
         box-shadow:none!important;
       }
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar .${TITLE_CLASS}{
-        display:block!important;
+        display:flex!important;
+        align-items:center!important;
+        width:100%!important;
+        min-height:42px!important;
         margin:0 0 8px!important;
-        padding:2px 8px 12px!important;
-        border:0!important;
-        border-bottom:1px solid #e2e8f0!important;
-        background:transparent!important;
+        padding:0 10px!important;
+        box-sizing:border-box!important;
+        border:1px solid #d7eaf8!important;
+        border-radius:6px!important;
+        background:#eaf6ff!important;
         box-shadow:none!important;
-        color:#0f172a!important;
-        font-size:18px!important;
+        color:#0f5f9f!important;
+        font-size:15px!important;
         line-height:1.2!important;
         font-weight:900!important;
         text-align:left!important;
@@ -152,6 +162,11 @@
       html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block>button.qmes-equipment-nav-selected{
         color:#1265d8!important;
         -webkit-text-fill-color:#1265d8!important;
+      }
+      @media(max-width:900px){
+        html body .qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:1fr!important;gap:12px!important;}
+        html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{width:100%!important;min-width:0!important;max-width:none!important;padding:0!important;}
+        html body .qmes-ipad-equipment .qmes-equipment-management-sidebar .${TITLE_CLASS}{grid-column:1/-1!important;}
       }
     `;
   }
