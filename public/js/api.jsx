@@ -243,7 +243,7 @@ function EquipmentTab() {
   const [editVisual, setEditVisual] = useState(null);
   const [editNote, setEditNote] = useState("");
   const [editError, setEditError] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
+  const [historyMonth, setHistoryMonth] = useState(TODAY.slice(0, 7));
   const [saving, setSaving] = useState(false);
   const [syncState, setSyncState] = useState("동기화 중");
   const [syncError, setSyncError] = useState("");
@@ -754,10 +754,19 @@ function EquipmentTab() {
   const firstIncompleteEqIndex = EQUIPMENT.findIndex((candidate) =>
     candidate.params.some((item) => !readings[`${candidate.id}:${item.k}`])
   );
+  const historyLogs = [...logs]
+    .filter((entry) => String(entry.date || "").slice(0, 7) === historyMonth)
+    .sort((left, right) => String(right.recordedAt || `${right.date || ""}T${right.time || ""}`).localeCompare(String(left.recordedAt || `${left.date || ""}T${left.time || ""}`)));
+  const historyAlarms = [...alarms]
+    .filter((entry) => String(entry.date || "").slice(0, 7) === historyMonth)
+    .sort((left, right) => String(`${right.date || ""}T${right.time || ""}`).localeCompare(String(`${left.date || ""}T${left.time || ""}`)));
+  const openMonthlyHistory = () => {
+    setMode("history");
+    window.scrollTo({top:0, behavior:"smooth"});
+  };
   const startDailyTour = () => {
     if (tourCompletedToday || saving) return;
     setMode("tour");
-    setShowHistory(false);
     setTourIdx(firstIncompleteEqIndex >= 0 ? firstIncompleteEqIndex : 0);
     setTourVals({});
     setTourNotes({});
@@ -860,27 +869,47 @@ function EquipmentTab() {
               <ClipboardList size={34} className="mx-auto text-sky-400" />
               <h3 className="mt-2 text-lg font-bold text-white">오늘 설비 순회점검</h3>
               <p className="mt-1 text-sm text-slate-400">TK 501 → TK 501A → TK 501B → 필터 유닛 → 드라이룸 순서로 간단히 기록합니다.</p>
-              <button type="button" onClick={startDailyTour} disabled={saving}
-                className="mt-4 min-h-[56px] w-full max-w-md rounded-lg bg-sky-600 px-5 text-base font-bold text-white hover:bg-sky-500 disabled:opacity-50">
-                {doneEquipment > 0 ? `미완료 설비 이어서 (${doneEquipment}/${totalEquipment})` : "오늘 순회점검 시작"}
-              </button>
             </>
           )}
+          <div className="qmes-equipment-home-actions mt-4 flex items-center justify-center gap-2.5">
+            <button type="button" onClick={startDailyTour} disabled={saving || tourCompletedToday}
+              className="qmes-equipment-tour-start-safe min-h-[40px] rounded-lg px-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50">
+              {tourCompletedToday ? "오늘 순회점검 완료" : doneEquipment > 0 ? `미완료 설비 이어서 (${doneEquipment}/${totalEquipment})` : "오늘 순회점검 시작"}
+            </button>
+            <button type="button" onClick={openMonthlyHistory}
+              className="qmes-equipment-history-open min-h-[40px] rounded-lg border border-sky-300 bg-white px-4 text-sm font-bold text-sky-700 hover:bg-sky-50">
+              점검 기록
+            </button>
+          </div>
         </div>
       )}
 
-      {mode === "single" && (
-      <button type="button" onClick={() => setShowHistory((value) => !value)}
-        className="min-h-[48px] rounded-lg border border-slate-700 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800">
-        {showHistory ? "점검 기록 닫기" : `점검 기록 ${logs.length}건 보기 · 수정/삭제`}
-      </button>
+      {mode === "history" && (
+        <div className="qmes-equipment-history-toolbar flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
+          <button type="button" onClick={() => setMode("single")}
+            className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">
+            ← 설비점검
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-black text-white">월별 점검 기록</div>
+            <div className="mt-0.5 text-xs text-slate-400">선택한 월의 점검 기록과 설비·공정 알람만 표시합니다.</div>
+          </div>
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-300">
+            조회 월
+            <input type="month" value={historyMonth} onChange={(event) => setHistoryMonth(event.target.value || TODAY.slice(0, 7))}
+              className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-sky-500" />
+          </label>
+          <div className="min-w-[120px] text-right text-xs font-bold text-slate-300">
+            점검 {historyLogs.length}건 · 알람 {historyAlarms.length}건
+          </div>
+        </div>
       )}
-      {mode === "single" && showHistory && (
+      {mode === "history" && (
         <div>
       {/* 점검 기록 */}
       <Panel title="설비 점검 기록" right={
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">{logs.length}건 · 기록자 자동 저장</span>
+          <span className="text-xs text-slate-400">{historyLogs.length}건 · 기록자 자동 저장</span>
           <button type="button" onClick={printDailyTourReport}
             disabled={saving || !logs.some((entry) => String(entry.date || "") === TODAY)}
             title="금일 순회점검 기록을 인쇄하거나 PDF로 저장합니다."
@@ -895,8 +924,8 @@ function EquipmentTab() {
           )}
         </div>
       }>
-        {logs.length === 0 ? (
-          <p className="text-sm text-slate-500">점검 기록이 없습니다 — 오늘 순회점검을 시작해 기록하세요.</p>
+        {historyLogs.length === 0 ? (
+          <p className="text-sm text-slate-500">선택한 월의 점검 기록이 없습니다.</p>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="w-full text-sm min-w-[960px]">
@@ -913,7 +942,7 @@ function EquipmentTab() {
                 </tr>
               </thead>
               <tbody>
-                {logs.map((l, i) => (
+                {historyLogs.map((l, i) => (
                   <tr key={l.id || i} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                     <td className="py-2.5 pr-3 text-xs font-mono text-slate-400 whitespace-nowrap">{l.date || TODAY} {l.time}</td>
                     <td className="py-2.5 pr-3 text-slate-100 text-xs">{l.eqName}</td>
@@ -946,7 +975,7 @@ function EquipmentTab() {
         </div>
       )}
 
-      {mode === "single" && editing && (() => {
+      {mode === "history" && editing && (() => {
         const editEq = EQUIPMENT.find((row) => row.id === editing.eqId);
         const editParam = editEq?.params.find((row) => row.k === editing.paramKey);
         return (
@@ -1001,14 +1030,14 @@ function EquipmentTab() {
       )}
 
       {/* 알람 이력 */}
-      {mode === "single" && (
-      <Panel title="설비 · 공정 알람 이력" right={<Badge tone="red">{alarms.length}건</Badge>}>
+      {mode === "history" && (
+      <Panel title="설비 · 공정 알람 이력" right={<Badge tone="red">{historyAlarms.length}건</Badge>}>
         <ul className="flex flex-col divide-y divide-slate-800/60">
-          {alarms.length === 0 && <li className="py-1 text-sm text-slate-500">알람 이력이 없습니다 — 관리기준 이탈 기록 시 자동 발생합니다.</li>}
-          {alarms.map((a, i) => (
+          {historyAlarms.length === 0 && <li className="py-1 text-sm text-slate-500">선택한 월의 알람 이력이 없습니다.</li>}
+          {historyAlarms.map((a, i) => (
             <li key={i} className="flex items-start gap-3 py-2.5">
               <Badge tone="amber">{a.level}</Badge>
-              <span className="text-xs font-mono text-slate-500 w-12 shrink-0 pt-0.5">{a.time}</span>
+              <span className="text-xs font-mono text-slate-500 w-24 shrink-0 pt-0.5">{String(a.date || "").slice(5)} {a.time}</span>
               <span className="text-xs text-slate-400 w-24 shrink-0 pt-0.5 font-mono">{a.eq}</span>
               <span className="text-sm text-slate-200">{a.msg}</span>
             </li>
