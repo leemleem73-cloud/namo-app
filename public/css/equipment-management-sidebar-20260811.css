@@ -260,7 +260,7 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   content:""!important;
   position:absolute!important;
   inset:-2px!important;
-  z-index:-1!important;
+  z-index:2!important;
   border:2px solid currentColor!important;
   border-radius:inherit!important;
   opacity:0;
