@@ -199,7 +199,7 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   color:#b45309!important;
   -webkit-text-fill-color:#b45309!important;
   font-weight:800!important;
-  box-shadow:0 0 0 2px rgba(245,158,11,.10),0 2px 7px rgba(245,158,11,.16)!important;
+  box-shadow:0 0 0 2px rgba(245,158,11,.12),0 2px 7px rgba(245,158,11,.18)!important;animation:qmesTourPauseGlow 2.2s ease-in-out infinite!important;will-change:filter!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause:hover,
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause:focus-visible{
@@ -213,7 +213,7 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   color:#15803d!important;
   -webkit-text-fill-color:#15803d!important;
   font-weight:800!important;
-  box-shadow:0 0 0 2px rgba(34,197,94,.08)!important;
+  box-shadow:0 0 0 2px rgba(34,197,94,.12)!important;animation:qmesTourOkGlow 2.2s ease-in-out infinite!important;will-change:filter!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok:hover,
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok:focus-visible,
@@ -231,7 +231,7 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   color:#dc2626!important;
   -webkit-text-fill-color:#dc2626!important;
   font-weight:800!important;
-  box-shadow:0 0 0 2px rgba(239,68,68,.08)!important;
+  box-shadow:0 0 0 2px rgba(239,68,68,.12)!important;animation:qmesTourBadGlow 2.2s ease-in-out infinite!important;will-change:filter!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad:hover,
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad:focus-visible,
@@ -242,4 +242,17 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   color:#b91c1c!important;
   -webkit-text-fill-color:#b91c1c!important;
   box-shadow:0 0 0 3px rgba(239,68,68,.16),0 4px 12px rgba(220,38,38,.18)!important;
+}
+
+@keyframes qmesTourPauseGlow{
+  0%,100%{filter:drop-shadow(0 0 1px rgba(245,158,11,.18))}
+  50%{filter:drop-shadow(0 0 7px rgba(245,158,11,.52))}
+}
+@keyframes qmesTourOkGlow{
+  0%,100%{filter:drop-shadow(0 0 1px rgba(34,197,94,.16))}
+  50%{filter:drop-shadow(0 0 7px rgba(34,197,94,.48))}
+}
+@keyframes qmesTourBadGlow{
+  0%,100%{filter:drop-shadow(0 0 1px rgba(239,68,68,.16))}
+  50%{filter:drop-shadow(0 0 7px rgba(239,68,68,.48))}
 }
