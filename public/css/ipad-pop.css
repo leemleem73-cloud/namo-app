@@ -195,7 +195,7 @@
   align-items:center!important;
   justify-content:center!important;
   gap:6px!important;
-  padding:7px 12px!important;
+  padding:0 12px!important;
   color:#111827!important;
   text-align:center!important;
   white-space:nowrap!important;
@@ -246,6 +246,13 @@
   height:32px!important;
   min-height:32px!important;
   padding:0 9px!important;
+  align-self:center!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+  position:relative!important;
+  top:0!important;
+  transform:none!important;
+  vertical-align:middle!important;
   box-sizing:border-box!important;
   border:1px solid #cbd5e1!important;
   border-radius:7px!important;
