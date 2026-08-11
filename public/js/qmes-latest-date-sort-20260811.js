@@ -1,5 +1,5 @@
 /* QMES global latest-date-first table ordering — 2026-08-11
- * Applies to rendered ledger/history tables that expose a date column.
+ * Applies to rendered ledger/history/inspection-result tables that expose a date column.
  * Work-order issue history is intentionally excluded because it already owns its ordering.
  */
 (function () {
@@ -7,7 +7,8 @@
 
   var DATE_HEADERS = [
     '일자', '날짜', '등록일', '등록일자', '작성일', '작성일자', '발행일', '발행일자',
-    '생산일', '생산일자', '검사일', '검사일자', '입고일', '입고일자', '출고일', '출고일자',
+    '생산일', '생산일자', '검사일', '검사일자', '검사일시', '검사날짜', '성적일', '성적일자',
+    '시험일', '시험일자', '측정일', '측정일자', '입고일', '입고일자', '출고일', '출고일자',
     '출하일', '출하일자', '작업일', '작업일자', '교육일', '교육일자', '점검일', '점검일자',
     '교정일', '교정일자', '평가일', '평가일자', '발생일', '발생일자', '처리일', '처리일자'
   ];
@@ -29,9 +30,9 @@
   function dateValue(raw) {
     var value = String(raw || '').trim();
     if (!value) return Number.NEGATIVE_INFINITY;
-    var m = value.match(/(20\d{2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{1,2})/);
+    var m = value.match(/(20\d{2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{1,2})(?:\s+(\d{1,2}):?(\d{2})?)?/);
     if (!m) return Number.NEGATIVE_INFINITY;
-    return Number(m[1]) * 10000 + Number(m[2]) * 100 + Number(m[3]);
+    return Number(m[1]) * 100000000 + Number(m[2]) * 1000000 + Number(m[3]) * 10000 + Number(m[4] || 0) * 100 + Number(m[5] || 0);
   }
 
   function isWorkOrderTable(table) {
@@ -45,6 +46,7 @@
     for (var i = 0; i < headers.length; i += 1) {
       var key = normalize(headers[i].textContent);
       if (DATE_HEADER_SET.has(key)) return i;
+      if (/^(검사|성적|시험|측정).*(일|일자|일시|날짜)$/.test(key)) return i;
     }
     return -1;
   }
