@@ -141,11 +141,40 @@
 @media (max-width:900px) { .qmes-ipad-pop { width:min(100% - 18px,820px); padding-top:12px; } .qmes-ipad-home-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .qmes-ipad-home-card { min-height:155px; } .qmes-ipad-form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .qmes-ipad-item-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:620px) { .qmes-ipad-hero,.qmes-ipad-work-head { align-items:flex-start; flex-wrap:wrap; padding:16px; } .qmes-ipad-work-head > div:nth-child(2) { order:-1; width:100%; justify-content:flex-start; } .qmes-ipad-inspector { padding:9px 12px; } .qmes-ipad-mode-tabs { gap:6px; } .qmes-ipad-mode-tabs button { min-height:58px; flex-direction:column; gap:2px; } .qmes-ipad-mode-tabs strong { font-size:17px; } .qmes-ipad-mode-tabs small { font-size:13px; } .qmes-ipad-home-grid { grid-template-columns:1fr; } .qmes-ipad-home-card { min-height:145px; } .qmes-ipad-equipment { margin-top:10px; } .qmes-ipad-equipment .qmes-equipment-tab { gap:10px; } .qmes-ipad-equipment .qmes-equipment-tab button { min-height:52px; } .qmes-ipad-section { padding:14px; } .qmes-ipad-form-grid { grid-template-columns:1fr; } .qmes-ipad-form-grid label.wide { grid-column:span 1; } .qmes-ipad-triple { grid-template-columns:1fr; } .qmes-ipad-repeat-choice > div { grid-template-columns:52px 1fr; } .qmes-ipad-measure-head { flex-direction:column; } .qmes-ipad-step-actions { grid-template-columns:1fr; } .qmes-ipad-saved > div:last-child { width:100%; flex-direction:column; } }
 
-/* 현장검사 POP 검사자 제목 중앙 정렬 */
-.qmes-ipad-home-inspector{
-  text-align:center!important;
+/* 현장검사 POP 검사자: 한 줄·진한 회색 */
+.qmes-ipad-home-inspector,
+.qmes-ipad-field-inspector{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  min-height:44px!important;
+  padding:10px 16px!important;
+  text-align:left!important;
+  white-space:nowrap!important;
 }
-.qmes-ipad-inspector .qmes-ipad-inspector-label{
+.qmes-ipad-home-inspector .qmes-ipad-inspector-label,
+.qmes-ipad-field-inspector .qmes-ipad-inspector-label{
+  display:inline!important;
+  width:auto!important;
+  margin:0!important;
+  color:#334155!important;
+  font-size:14px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  text-align:left!important;
+}
+.qmes-ipad-home-inspector strong,
+.qmes-ipad-field-inspector strong{
+  display:inline!important;
+  margin:0!important;
+  color:#1f2937!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  white-space:nowrap!important;
+}
+.qmes-ipad-equipment-inspector .qmes-ipad-inspector-label{
   display:block!important;
   width:100%!important;
   margin:0!important;
