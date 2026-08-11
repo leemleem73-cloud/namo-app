@@ -860,7 +860,12 @@ function EquipmentTab() {
       {mode === "tour" && (
       <div className="qmes-equipment-tour-screen">
       <Panel title={`순회 점검 ${tourIdx + 1} / ${EQUIPMENT.length} — ${tourEq.name}`}
-        right={<button onClick={() => setMode("single")} className="qmes-equipment-tour-pause text-[11px] px-2.5 py-1.5 rounded border transition-colors">← 뒤로가기</button>}>
+        right={
+          <div className="qmes-equipment-tour-head-actions">
+            <button onClick={() => setMode("single")} className="qmes-equipment-tour-back rounded border transition-colors">← 뒤로가기</button>
+            <button onClick={() => setMode("single")} className="qmes-equipment-tour-pause rounded border transition-colors">잠시 중단</button>
+          </div>
+        }>
         <p className="text-xs text-slate-400 mb-3"><strong className="text-sky-300">{tourEq.subtitle || "설비 점검"}</strong> · 관리계획서 기준값을 확인한 뒤 모든 세부항목을 입력하세요.</p>
         <div className="flex flex-col gap-2.5">
           {tourEq.params.map((x) => {
