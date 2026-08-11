@@ -92,36 +92,3 @@
   global.qmesOpenFieldInputShortcut = openTargetMode;
   global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__ = true;
 })(window);
-
-/* 현장입력 > 설비: 구형 중복 요약 4칸만 제거. 현재 설비관리 본문의 4칸은 유지한다. */
-(function removeLegacyEquipmentSummary(){
-  const LABELS = ['등록 설비','30일 이내 일정','기한 초과','미완료 수리'];
-  const norm = (value) => String(value || '').replace(/\s+/g,' ').trim();
-
-  function removeLegacy(){
-    document.querySelectorAll('.qmes-ipad-equipment').forEach((panel) => {
-      const candidates = Array.from(panel.querySelectorAll('div,section,article')).filter((node) => {
-        if (node.closest('.qmes-equipment-management-content')) return false;
-        const value = norm(node.textContent);
-        return LABELS.every((label) => value.includes(label));
-      });
-      candidates.sort((a,b) => a.querySelectorAll('*').length - b.querySelectorAll('*').length);
-      const legacy = candidates[0];
-      if (legacy) legacy.remove();
-    });
-  }
-
-  let queued = false;
-  const run = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      removeLegacy();
-    });
-  };
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once:true });
-  else run();
-  new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true});
-})();
