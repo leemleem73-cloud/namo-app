@@ -116,3 +116,33 @@
   observer.observe(document.documentElement, { childList:true, subtree:true });
   window.addEventListener("load", scheduleApply, { once:true });
 })();
+
+(function refineEquipmentAlarmHeader(){
+  const STYLE_ID = "qmes-equipment-alarm-header-align";
+  function ensureStyle(){
+    let style = document.getElementById(STYLE_ID);
+    if(!style){ style = document.createElement("style"); style.id = STYLE_ID; document.head.appendChild(style); }
+    style.textContent = `
+      html body .qmes-ipad-equipment .qmes-equipment-alarm-header-row{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:46px!important;margin:0 14px!important;padding:0 26px!important;box-sizing:border-box!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-alarm-title{margin:0!important;padding:0!important;font-size:16px!important;line-height:1.2!important;font-weight:850!important;color:#0f2f63!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-alarm-count{margin:0!important;padding:0!important;font-size:14px!important;line-height:1.2!important;font-weight:800!important;color:#334155!important;white-space:nowrap!important;}
+    `;
+  }
+  function apply(){
+    ensureStyle();
+    document.querySelectorAll('.qmes-ipad-equipment .qmes-equipment-alarm-title').forEach((title) => {
+      const row = title.parentElement;
+      if(!row) return;
+      row.classList.add('qmes-equipment-alarm-header-row');
+      Array.from(row.querySelectorAll('span,div,strong,p,small')).forEach((el) => {
+        if(el === title || el.children.length) return;
+        if(/^\s*\d+\s*건\s*$/.test(el.textContent || '')) el.classList.add('qmes-equipment-alarm-count');
+      });
+    });
+  }
+  let scheduled = false;
+  const schedule = () => { if(scheduled) return; scheduled = true; requestAnimationFrame(() => { scheduled = false; apply(); }); };
+  apply();
+  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+  window.addEventListener('load',schedule,{once:true});
+})();
