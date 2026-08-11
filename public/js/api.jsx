@@ -812,10 +812,10 @@ function EquipmentTab() {
             const raw = tourVals[x.k];
             const j = tourJudge(x, raw);
             return (
-              <div key={x.k} className="flex flex-col md:flex-row md:items-center gap-2 bg-slate-800/50 border border-slate-700/60 rounded-lg px-3 py-2.5">
+              <div key={x.k} className="qmes-equipment-tour-item-row flex flex-col md:flex-row md:items-center gap-2 bg-slate-800/50 border border-slate-700/60 rounded-lg px-3 py-2.5">
                 <div className="md:w-64 shrink-0">
-                  <div className="text-sm text-slate-100">{x.label}</div>
-                  <div className="text-[11px] text-slate-500">기준 {x.spec} · {x.src}</div>
+                  <div className="qmes-equipment-tour-item-label text-sm text-slate-100">{x.label}</div>
+                  <div className="qmes-equipment-tour-item-spec text-[11px] text-slate-500">기준 {x.spec} · {x.src}</div>
                 </div>
                 {x.visual ? (
                   <div className="flex gap-2 flex-1">
@@ -829,11 +829,11 @@ function EquipmentTab() {
                 ) : (
                   <input inputMode="decimal" value={raw ?? ""} onChange={(e) => setTourVals({ ...tourVals, [x.k]: e.target.value })}
                     placeholder={`판독값 입력 ${x.unit ? `(${x.unit})` : ""}`}
-                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-base text-center tabular-nums text-slate-100 placeholder-slate-500 placeholder:text-sm focus:outline-none focus:border-sky-500" />
+                    className="qmes-equipment-tour-reading flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-center tabular-nums text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
                 )}
                 <input value={tourNotes[x.k] || ""} onChange={(e) => setTourNotes({...tourNotes, [x.k]:e.target.value})}
                   placeholder="비고 (선택)"
-                  className="md:w-56 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                  className="qmes-equipment-tour-note md:w-56 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
                 <div className="md:w-16 text-center shrink-0">
                   {j == null ? <Badge tone="gray">대기</Badge> : j === "정상" ? <Badge tone="green">정상</Badge> : <Badge tone="red">이탈</Badge>}
                 </div>
