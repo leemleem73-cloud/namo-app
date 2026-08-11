@@ -1,8 +1,6 @@
-/* QMES inspection UI shortcut — one click opens the requested field-inspection mode. */
+/* QMES inspection UI shortcut — one user click opens the requested field-inspection mode. */
 (function installInspectionFieldShortcut(global){
   'use strict';
-  const TARGET_KEY = 'qmes_field_shortcut_mode';
-  const TAB_KEY = 'qmes_current_tab';
 
   function buttonText(button){
     return String(button?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -13,44 +11,56 @@
     return text === '신규등록' || text.endsWith(' 신규등록') || text.includes('신규등록');
   }
 
-  function readTarget(){
-    try { return String(sessionStorage.getItem(TARGET_KEY) || '').toUpperCase(); }
-    catch(error) { return ''; }
+  function topFieldInputButton(){
+    return Array.from(document.querySelectorAll('.qmes-top-menu-button'))
+      .find((button) => buttonText(button) === '현장입력') || null;
   }
 
-  function clearTarget(){
-    try { sessionStorage.removeItem(TARGET_KEY); } catch(error) {}
-  }
+  function waitAndOpenMode(mode){
+    const selector = `.qmes-ipad-home-card.is-${String(mode).toLowerCase()}`;
+    let finished = false;
+    let observer = null;
+    let timer = null;
 
-  function activateTargetMode(){
-    const mode = readTarget();
-    if (!['IQC','PQC','OQC'].includes(mode)) return false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (observer) observer.disconnect();
+      if (timer) clearTimeout(timer);
+    };
 
-    const card = document.querySelector(`.qmes-ipad-home-card.is-${mode.toLowerCase()}`);
-    if (!card) return false;
+    const tryOpen = () => {
+      if (finished) return true;
+      const card = document.querySelector(selector);
+      if (!card) return false;
+      finish();
+      card.click();
+      return true;
+    };
 
-    clearTarget();
-    card.click();
-    return true;
+    if (tryOpen()) return;
+
+    observer = new MutationObserver(() => { tryOpen(); });
+    observer.observe(document.documentElement, {childList:true, subtree:true});
+    timer = setTimeout(finish, 2500);
   }
 
   function openTargetMode(mode){
     const target = String(mode || '').toUpperCase();
     if (!['IQC','PQC','OQC'].includes(target)) return;
 
-    try {
-      sessionStorage.setItem(TARGET_KEY, target);
-      sessionStorage.setItem(TAB_KEY, 'pop');
-    } catch(error) {}
+    /* Start waiting first, then let React navigate to the field-input tab. */
+    waitAndOpenMode(target);
 
-    /*
-     * Do not simulate clicks on React top-menu buttons here.
-     * That caused the intermediate production/quality screens and required
-     * multiple user clicks. Reloading with qmes_current_tab=pop lets the
-     * router mount FieldInputTab directly; the observer below then selects
-     * the requested IQC/PQC/OQC card as soon as it exists.
-     */
-    global.location.reload();
+    const topButton = topFieldInputButton();
+    if (topButton) {
+      topButton.click();
+      return;
+    }
+
+    /* If already on the field-input screen, waitAndOpenMode will handle it. */
+    const currentCard = document.querySelector(`.qmes-ipad-home-card.is-${target.toLowerCase()}`);
+    if (currentCard) currentCard.click();
   }
 
   function makeShortcutButton(sourceButton, mode){
@@ -84,14 +94,12 @@
     requestAnimationFrame(() => {
       scheduled = false;
       replaceButtons();
-      activateTargetMode();
     });
   }
 
   const observer = new MutationObserver(schedule);
   function start(){
     replaceButtons();
-    activateTargetMode();
     observer.observe(document.documentElement, {childList:true, subtree:true});
   }
 
