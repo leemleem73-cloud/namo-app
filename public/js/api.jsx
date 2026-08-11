@@ -892,7 +892,7 @@ function EquipmentTab() {
           </button>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-black text-white">월별 점검 기록</div>
-            <div className="mt-0.5 text-xs text-slate-400">선택한 월의 점검 기록과 설비·공정 알람만 표시합니다.</div>
+            <div className="mt-0.5 text-xs text-slate-400">선택한 월의 점검 기록만 표시합니다.</div>
           </div>
           <label className="flex items-center gap-2 text-xs font-bold text-slate-300">
             조회 월
@@ -900,7 +900,7 @@ function EquipmentTab() {
               className="min-h-[38px] rounded-lg border border-slate-600 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-sky-500" />
           </label>
           <div className="min-w-[120px] text-right text-xs font-bold text-slate-300">
-            점검 {historyLogs.length}건 · 알람 {historyAlarms.length}건
+            점검 {historyLogs.length}건
           </div>
         </div>
       )}
@@ -1030,8 +1030,17 @@ function EquipmentTab() {
       )}
 
       {/* 알람 이력 */}
-      {mode === "history" && (
-      <Panel title="설비 · 공정 알람 이력" right={<Badge tone="red">{historyAlarms.length}건</Badge>}>
+      {mode === "single" && (
+      <Panel title="설비 · 공정 알람 이력" right={
+        <div className="qmes-equipment-alarm-month-tools flex items-center gap-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+            조회 월
+            <input type="month" value={historyMonth} onChange={(event) => setHistoryMonth(event.target.value || TODAY.slice(0, 7))}
+              className="h-[34px] rounded-md border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 outline-none focus:border-sky-500" />
+          </label>
+          <span className="qmes-equipment-alarm-count-target">{historyAlarms.length}건</span>
+        </div>
+      }>
         <ul className="flex flex-col divide-y divide-slate-800/60">
           {historyAlarms.length === 0 && <li className="py-1 text-sm text-slate-500">선택한 월의 알람 이력이 없습니다.</li>}
           {historyAlarms.map((a, i) => (
