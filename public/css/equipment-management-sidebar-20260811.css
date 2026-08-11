@@ -270,3 +270,38 @@ html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-
   opacity:.45!important;
   cursor:not-allowed!important;
 }
+
+
+/* 순회점검 항목·기준 문구를 NMP 안내문 서체로 통일 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-label,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-spec{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-style:normal!important;
+  letter-spacing:-.15px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-label{
+  font-size:14px!important;
+  line-height:1.35!important;
+  font-weight:700!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-spec{
+  font-size:12px!important;
+  line-height:1.35!important;
+  font-weight:600!important;
+}
+
+/* 판독값·비고 입력 글자와 placeholder 크기 통일 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-note{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-size:14px!important;
+  line-height:1.4!important;
+  font-weight:600!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading::placeholder,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-note::placeholder{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-size:14px!important;
+  line-height:1.4!important;
+  font-weight:600!important;
+}
