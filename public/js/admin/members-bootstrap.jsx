@@ -125,7 +125,7 @@
     style.textContent = `
       html body .qmes-ipad-equipment .qmes-equipment-alarm-header-row{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:46px!important;margin:0 14px!important;padding:0 26px!important;box-sizing:border-box!important;}
       html body .qmes-ipad-equipment .qmes-equipment-alarm-title{margin:0!important;padding:0!important;font-size:17px!important;line-height:1.2!important;font-weight:850!important;color:#0f2f63!important;}
-      html body .qmes-ipad-equipment .qmes-equipment-alarm-count{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:64px!important;min-width:64px!important;height:34px!important;margin:0!important;padding:0 10px!important;box-sizing:border-box!important;border-radius:7px!important;font-size:14px!important;line-height:1!important;font-weight:850!important;color:#334155!important;white-space:nowrap!important;}
+      html body .qmes-ipad-equipment .qmes-equipment-alarm-count{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:58px!important;min-width:58px!important;height:30px!important;margin:0!important;padding:0 9px!important;box-sizing:border-box!important;border:1px solid #fecdd3!important;border-radius:8px!important;background:#fff1f2!important;color:#e11d48!important;-webkit-text-fill-color:#e11d48!important;font-size:13px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;box-shadow:none!important;}
     `;
   }
   function apply(){
