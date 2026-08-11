@@ -16,15 +16,17 @@
   }
 
   function openTargetMode(mode){
-    try { sessionStorage.setItem(TARGET_KEY, mode); } catch (error) {}
-    const topButton = topFieldInputButton();
-    if (topButton) {
-      global.__QMES_FIELD_SHORTCUT_NAVIGATING__ = true;
-      try { topButton.click(); }
-      finally {
-        setTimeout(() => { global.__QMES_FIELD_SHORTCUT_NAVIGATING__ = false; }, 0);
-      }
+    const target = String(mode || '').toUpperCase();
+    if (!['IQC','PQC','OQC'].includes(target)) return;
+    try { sessionStorage.setItem(TARGET_KEY, target); } catch (error) {}
+
+    if (global.__QMES_FIELD_NAVIGATION_READY__) {
+      global.dispatchEvent(new CustomEvent('qmes:open-field-inspection', { detail:{ mode:target } }));
+    } else {
+      const topButton = topFieldInputButton();
+      if (topButton) topButton.click();
     }
+
     activatePendingMode();
     setTimeout(activatePendingMode, 50);
     setTimeout(activatePendingMode, 150);
