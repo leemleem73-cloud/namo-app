@@ -23,6 +23,7 @@
   let hoverActive = false;
   let wasManuallyOpen = false;
   let closeTimer = 0;
+  let lastHoveredItem = '';
 
   function getTopLabel(button) {
     return clean(button && (button.querySelector('span')?.textContent || button.textContent));
@@ -63,6 +64,7 @@
       });
     }
 
+    lastHoveredItem = '';
     document.body.classList.add('qmes-side-open');
     side.style.setProperty('display', 'block', 'important');
     side.style.setProperty('visibility', 'visible', 'important');
@@ -84,6 +86,7 @@
 
       const side = sidebar();
       hoverActive = false;
+      lastHoveredItem = '';
 
       if (!wasManuallyOpen) {
         document.body.classList.remove('qmes-side-open');
@@ -107,15 +110,25 @@
     showMatchingSidebar(group);
   }, true);
 
-  document.addEventListener('mouseenter', event => {
-    if (event.target.closest?.('#qmes-sync-sidebar')) clearTimeout(closeTimer);
-  }, true);
-
   document.addEventListener('mouseover', event => {
-    if (event.target.closest?.('#qmes-sync-sidebar')) clearTimeout(closeTimer);
+    const item = event.target.closest?.('#qmes-sync-sidebar .qmes-side-item');
+    if (!item) return;
+
+    clearTimeout(closeTimer);
+    const key = `${item.dataset.group || ''}:${item.dataset.index || ''}:${clean(item.textContent)}`;
+    if (key === lastHoveredItem) return;
+    lastHoveredItem = key;
+
+    item.click();
   }, true);
 
   document.addEventListener('mouseout', event => {
+    const item = event.target.closest?.('#qmes-sync-sidebar .qmes-side-item');
+    if (item) {
+      const next = event.relatedTarget;
+      if (!next || !item.contains(next)) lastHoveredItem = '';
+    }
+
     const fromTop = event.target.closest?.('.qmes-top-menu');
     const fromSide = event.target.closest?.('#qmes-sync-sidebar');
     if (!fromTop && !fromSide) return;
@@ -127,13 +140,5 @@
     }
 
     scheduleClose();
-  }, true);
-
-  document.addEventListener('click', event => {
-    if (event.target.closest('#qmes-sync-sidebar .qmes-side-item')) {
-      clearTimeout(closeTimer);
-      hoverActive = false;
-      wasManuallyOpen = true;
-    }
   }, true);
 })();
