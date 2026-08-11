@@ -201,29 +201,36 @@
   white-space:nowrap!important;
 }
 .qmes-ipad-equipment-inspector .qmes-ipad-inspector-label{
-  display:inline!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
   width:auto!important;
+  height:32px!important;
   margin:0!important;
   color:#111827!important;
   font-size:15px!important;
-  line-height:1!important;
+  line-height:32px!important;
   font-weight:850!important;
   letter-spacing:0!important;
   word-spacing:0!important;
-  text-align:left!important;
+  text-align:center!important;
 }
 .qmes-ipad-equipment-inspector-row{
   display:flex!important;
-  flex:1 1 auto!important;
+  flex:0 0 auto!important;
   align-items:center!important;
   justify-content:center!important;
   gap:6px!important;
   min-width:0!important;
-  margin-top:0!important;
+  height:32px!important;
+  margin:0!important;
   text-align:center!important;
 }
 .qmes-ipad-equipment-inspector-row strong{
-  display:inline-block!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:32px!important;
   margin:0!important;
   color:#111827!important;
   font-size:15px!important;
@@ -246,7 +253,7 @@
   color:#111827!important;
   font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
   font-size:13px!important;
-  line-height:1!important;
+  line-height:30px!important;
   font-weight:700!important;
   text-align:center!important;
   outline:none!important;
