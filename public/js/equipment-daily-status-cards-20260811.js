@@ -8,22 +8,18 @@
     if(!style){style=document.createElement('style');style.id=STYLE_ID;document.head.appendChild(style);}
     style.textContent=`
       html body .qmes-ipad-equipment .${WRAP_CLASS}{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;margin:0 0 12px 0!important;width:100%!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-card{display:grid!important;grid-template-columns:52px minmax(0,1fr)!important;align-items:center!important;gap:12px!important;min-height:86px!important;padding:12px 14px!important;border:1px solid #d9e2ec!important;border-radius:10px!important;background:#fff!important;background-color:#fff!important;box-sizing:border-box!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;text-align:left!important;overflow:hidden!important;}
+      html body .qmes-ipad-equipment .qmes-daily-status-card{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;min-height:86px!important;padding:12px 14px!important;border:1px solid #d9e2ec!important;border-radius:10px!important;background:#fff!important;background-color:#fff!important;box-sizing:border-box!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important;text-align:center!important;overflow:hidden!important;}
       html body .qmes-ipad-equipment .qmes-daily-status-card *{box-sizing:border-box!important;background-image:none!important;}
       html body .qmes-ipad-equipment button.qmes-daily-status-card{width:100%!important;margin:0!important;font:inherit!important;cursor:pointer!important;appearance:none!important;-webkit-appearance:none!important;outline:0!important;}
       html body .qmes-ipad-equipment button.qmes-daily-status-card:hover{background:#f8fbff!important;background-color:#f8fbff!important;border-color:#b9d7fb!important;box-shadow:0 4px 11px rgba(37,99,235,.08)!important;transform:translateY(-1px)!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-icon{display:flex!important;align-items:center!important;justify-content:center!important;width:50px!important;height:50px!important;border:0!important;border-radius:10px!important;box-shadow:none!important;padding:0!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-icon svg{display:block!important;width:27px!important;height:27px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important;background:transparent!important;box-shadow:none!important;border:0!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-card.is-progress .qmes-daily-status-icon{background:#edf9f1!important;background-color:#edf9f1!important;color:#16a34a!important;-webkit-text-fill-color:#16a34a!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-card.is-sync .qmes-daily-status-icon{background:#eff6ff!important;background-color:#eff6ff!important;color:#2563eb!important;-webkit-text-fill-color:#2563eb!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-card.is-pending .qmes-daily-status-icon{background:#fff4e8!important;background-color:#fff4e8!important;color:#f97316!important;-webkit-text-fill-color:#f97316!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-body{min-width:0!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-title{margin:0 0 3px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:13px!important;font-weight:800!important;line-height:1.2!important;color:#111827!important;-webkit-text-fill-color:#111827!important;white-space:nowrap!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-value{margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:20px!important;font-weight:900!important;line-height:1.12!important;letter-spacing:-.3px!important;white-space:nowrap!important;}
+      html body .qmes-ipad-equipment .qmes-daily-status-icon{display:none!important;}
+      html body .qmes-ipad-equipment .qmes-daily-status-body{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;text-align:center!important;}
+      html body .qmes-ipad-equipment .qmes-daily-status-title{width:100%!important;margin:0 0 3px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:13px!important;font-weight:800!important;line-height:1.2!important;color:#111827!important;-webkit-text-fill-color:#111827!important;white-space:nowrap!important;text-align:center!important;}
+      html body .qmes-ipad-equipment .qmes-daily-status-value{width:100%!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:20px!important;font-weight:900!important;line-height:1.12!important;letter-spacing:-.3px!important;white-space:nowrap!important;text-align:center!important;}
       html body .qmes-ipad-equipment .qmes-daily-status-card.is-progress .qmes-daily-status-value{color:#16a34a!important;-webkit-text-fill-color:#16a34a!important;}
       html body .qmes-ipad-equipment .qmes-daily-status-card.is-sync .qmes-daily-status-value{color:#2563eb!important;-webkit-text-fill-color:#2563eb!important;}
       html body .qmes-ipad-equipment .qmes-daily-status-card.is-pending .qmes-daily-status-value{color:#f97316!important;-webkit-text-fill-color:#f97316!important;}
-      html body .qmes-ipad-equipment .qmes-daily-status-sub{margin:3px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:11px!important;font-weight:650!important;line-height:1.2!important;color:#64748b!important;-webkit-text-fill-color:#64748b!important;white-space:nowrap!important;}
+      html body .qmes-ipad-equipment .qmes-daily-status-sub{width:100%!important;margin:3px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:11px!important;font-weight:650!important;line-height:1.2!important;color:#64748b!important;-webkit-text-fill-color:#64748b!important;white-space:nowrap!important;text-align:center!important;}
 
       html body .qmes-ipad-equipment .qmes-equipment-tour-status-row.qmes-daily-guide-only{display:flex!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;min-height:54px!important;margin:0!important;padding:0 18px!important;border:1px solid #dbe5ee!important;border-radius:10px!important;background:#f8fafc!important;background-color:#f8fafc!important;box-sizing:border-box!important;box-shadow:0 1px 3px rgba(15,23,42,.025)!important;overflow:hidden!important;}
       html body .qmes-ipad-equipment .qmes-equipment-tour-status-row.qmes-daily-guide-only>div:first-child{display:flex!important;align-items:center!important;flex:1 1 100%!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;}
@@ -38,19 +34,14 @@
   function compact(text){return String(text||'').replace(/\s+/g,' ').trim();}
   function extractProgress(text){const match=String(text||'').match(/(\d+)\s*\/\s*(\d+)/);return match?`${match[1]} / ${match[2]}`:'0 / 5';}
   function extractPending(text){const match=String(text||'').match(/(\d+)\s*(?:개\s*)?미완료/);if(match)return `${match[1]}건`;const p=String(text||'').match(/미완료[^0-9]*(\d+)/);return p?`${p[1]}건`:'0건';}
-  function iconSvg(kind){
-    if(kind==='progress') return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="4" width="10" height="16" rx="2"></rect><path d="M9 4.5h6"></path><path d="M9.5 9h5"></path><path d="M9.5 13h5"></path><path d="M9.5 17h3.5"></path></svg>';
-    if(kind==='sync') return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"></rect><path d="M10 6h4"></path><circle cx="12" cy="18" r=".7"></circle></svg>';
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 20h4"></path></svg>';
-  }
+
   function makeCard(kind,title,value,sub,asButton){
     const el=document.createElement(asButton?'button':'div');if(asButton)el.type='button';el.className=`qmes-daily-status-card is-${kind}`;
-    const iconEl=document.createElement('div');iconEl.className='qmes-daily-status-icon';iconEl.innerHTML=iconSvg(kind);
     const body=document.createElement('div');body.className='qmes-daily-status-body';
     const titleEl=document.createElement('div');titleEl.className='qmes-daily-status-title';titleEl.textContent=title;
     const valueEl=document.createElement('div');valueEl.className='qmes-daily-status-value';valueEl.textContent=value;
     const subEl=document.createElement('div');subEl.className='qmes-daily-status-sub';subEl.textContent=sub;
-    body.append(titleEl,valueEl,subEl);el.append(iconEl,body);return el;
+    body.append(titleEl,valueEl,subEl);el.append(body);return el;
   }
 
   function apply(panel){
