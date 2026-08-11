@@ -40,16 +40,7 @@
   const smallButton="qmes-equipment-small-button rounded-md border px-3 py-1.5 text-xs font-bold transition";
 
   function EquipmentSummaryNumber({value}){
-    const [visible,setVisible]=React.useState(true);
-    React.useEffect(()=>{
-      const timer=window.setInterval(()=>setVisible(current=>!current),1200);
-      return ()=>window.clearInterval(timer);
-    },[]);
-    return <strong
-      className="qmes-equipment-summary-number"
-      data-qmes-react-blink="1"
-      style={{opacity:visible?1:0.16,transition:"opacity 1.2s ease-in-out"}}
-    >{value}</strong>;
+    return <strong className="qmes-equipment-summary-number">{value}</strong>;
   }
 
   function EquipmentManagementTab(){
