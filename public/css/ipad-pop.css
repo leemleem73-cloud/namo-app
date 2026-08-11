@@ -176,33 +176,46 @@
   font-weight:850!important;
   white-space:nowrap!important;
 }
-.qmes-ipad-equipment-inspector .qmes-ipad-inspector-label{
-  display:block!important;
-  width:100%!important;
-  margin:0!important;
-  text-align:center!important;
-}
-
 /* 설비점검: 점검자·생산부·직접 입력 */
 .qmes-ipad-equipment-inspector{
-  min-width:250px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  min-width:300px!important;
+  min-height:44px!important;
   padding:10px 14px!important;
-  text-align:center!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.qmes-ipad-equipment-inspector .qmes-ipad-inspector-label{
+  display:inline!important;
+  width:auto!important;
+  margin:0!important;
+  color:#334155!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+  text-align:left!important;
 }
 .qmes-ipad-equipment-inspector-row{
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
-  gap:8px!important;
-  margin-top:5px!important;
+  gap:6px!important;
+  margin-top:0!important;
 }
 .qmes-ipad-equipment-inspector-row strong{
   display:inline-block!important;
   margin:0!important;
-  color:#334155!important;
-  font-size:13px!important;
+  color:#1f2937!important;
+  font-size:15px!important;
   line-height:32px!important;
   font-weight:850!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
   white-space:nowrap!important;
 }
 .qmes-ipad-equipment-inspector-row input{
