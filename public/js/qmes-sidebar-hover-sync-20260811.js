@@ -71,11 +71,16 @@
     side.style.setProperty('transform', 'translate3d(0,0,0)', 'important');
   }
 
-  function finishTopHover() {
+  function pointerIsInInteractiveArea() {
+    const top = document.querySelector('.qmes-top-menu');
+    const side = sidebar();
+    return Boolean((top && top.matches(':hover')) || (side && side.matches(':hover')));
+  }
+
+  function scheduleClose() {
     clearTimeout(closeTimer);
     closeTimer = window.setTimeout(() => {
-      const top = document.querySelector('.qmes-top-menu');
-      if (top && top.matches(':hover')) return;
+      if (pointerIsInInteractiveArea()) return;
 
       const side = sidebar();
       hoverActive = false;
@@ -88,7 +93,7 @@
       }
 
       wasManuallyOpen = false;
-    }, 80);
+    }, 180);
   }
 
   document.addEventListener('mouseover', event => {
@@ -102,13 +107,33 @@
     showMatchingSidebar(group);
   }, true);
 
+  document.addEventListener('mouseenter', event => {
+    if (event.target.closest?.('#qmes-sync-sidebar')) clearTimeout(closeTimer);
+  }, true);
+
+  document.addEventListener('mouseover', event => {
+    if (event.target.closest?.('#qmes-sync-sidebar')) clearTimeout(closeTimer);
+  }, true);
+
   document.addEventListener('mouseout', event => {
-    const topMenu = event.target.closest?.('.qmes-top-menu');
-    if (!topMenu) return;
+    const fromTop = event.target.closest?.('.qmes-top-menu');
+    const fromSide = event.target.closest?.('#qmes-sync-sidebar');
+    if (!fromTop && !fromSide) return;
 
     const next = event.relatedTarget;
-    if (next && topMenu.contains(next)) return;
+    if (next && (next.closest?.('.qmes-top-menu') || next.closest?.('#qmes-sync-sidebar'))) {
+      clearTimeout(closeTimer);
+      return;
+    }
 
-    finishTopHover();
+    scheduleClose();
+  }, true);
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('#qmes-sync-sidebar .qmes-side-item')) {
+      clearTimeout(closeTimer);
+      hoverActive = false;
+      wasManuallyOpen = true;
+    }
   }, true);
 })();
