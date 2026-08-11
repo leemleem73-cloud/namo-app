@@ -18,7 +18,13 @@
   function openTargetMode(mode){
     try { sessionStorage.setItem(TARGET_KEY, mode); } catch (error) {}
     const topButton = topFieldInputButton();
-    if (topButton) topButton.click();
+    if (topButton) {
+      global.__QMES_FIELD_SHORTCUT_NAVIGATING__ = true;
+      try { topButton.click(); }
+      finally {
+        setTimeout(() => { global.__QMES_FIELD_SHORTCUT_NAVIGATING__ = false; }, 0);
+      }
+    }
     activatePendingMode();
     setTimeout(activatePendingMode, 50);
     setTimeout(activatePendingMode, 150);
