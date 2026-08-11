@@ -75,6 +75,22 @@ function QMESChemical({user,onLogout}){
     else safeStorageRemove("qmes_open_menu");
   },[openMenu]);
   useEffect(()=>{
+    const handleFieldShortcut=event=>{
+      const mode=String(event?.detail?.mode||"").toUpperCase();
+      if(!["IQC","PQC","OQC"].includes(mode)) return;
+      try{sessionStorage.setItem("qmes_field_shortcut_mode",mode);}catch(error){}
+      setOpenMenu(null);
+      setTab("pop");
+      requestAnimationFrame(()=>window.qmesSetGlobalSidebarGroup?.("현장입력"));
+    };
+    window.__QMES_FIELD_NAVIGATION_READY__=true;
+    window.addEventListener("qmes:open-field-inspection",handleFieldShortcut);
+    return()=>{
+      window.removeEventListener("qmes:open-field-inspection",handleFieldShortcut);
+      window.__QMES_FIELD_NAVIGATION_READY__=false;
+    };
+  },[]);
+  useEffect(()=>{
     const timer=setInterval(()=>setClock(new Date()),1000);
     return()=>clearInterval(timer);
   },[]);
