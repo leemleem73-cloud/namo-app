@@ -153,8 +153,8 @@
     let style = document.getElementById(STYLE_ID);
     if(!style){ style = document.createElement('style'); style.id = STYLE_ID; document.head.appendChild(style); }
     style.textContent = `
-      html body .qmes-ipad-equipment button.qmes-equipment-tour-start-safe{background:#16a34a!important;background-color:#16a34a!important;border:1.5px solid #16a34a!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-weight:800!important;box-shadow:0 2px 7px rgba(22,163,74,.18)!important;}
-      html body .qmes-ipad-equipment button.qmes-equipment-tour-start-safe:hover{background:#15803d!important;background-color:#15803d!important;border-color:#15803d!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 3px 10px rgba(22,163,74,.24)!important;}
+      html body .qmes-ipad-equipment button.qmes-equipment-tour-start-safe{display:flex!important;align-items:center!important;justify-content:center!important;width:168px!important;min-width:168px!important;max-width:168px!important;height:40px!important;min-height:40px!important;margin-left:auto!important;margin-right:auto!important;padding:0 14px!important;background:#ecfdf5!important;background-color:#ecfdf5!important;border:1.5px solid #86efac!important;border-radius:8px!important;color:#15803d!important;-webkit-text-fill-color:#15803d!important;font-size:13px!important;font-weight:850!important;line-height:1!important;white-space:nowrap!important;box-shadow:0 2px 7px rgba(22,163,74,.10)!important;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,color .16s ease!important;}
+      html body .qmes-ipad-equipment button.qmes-equipment-tour-start-safe:hover{background:#dcfce7!important;background-color:#dcfce7!important;border-color:#4ade80!important;color:#166534!important;-webkit-text-fill-color:#166534!important;box-shadow:0 3px 9px rgba(22,163,74,.16)!important;}
     `;
   }
   function apply(){
@@ -165,7 +165,7 @@
       const lower = buttons.find((button) => (button.textContent || '').replace(/\s+/g,' ').trim() === '오늘 순회점검 시작');
       if(upper) upper.style.setProperty('display','none','important');
       if(lower){
-        lower.textContent = '순회점검 시작';
+        lower.textContent = '↻ 순회점검 시작';
         lower.classList.add('qmes-equipment-tour-start-safe');
       }
     });
