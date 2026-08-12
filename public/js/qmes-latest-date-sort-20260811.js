@@ -253,3 +253,100 @@
   else scheduleFix();
   new MutationObserver(scheduleFix).observe(document.documentElement,{childList:true,subtree:true});
 })();
+
+/* 2026-08-13 IQC 입고일자-입고번호 불일치 자동 복구 */
+(function installIqcIncomingNumberRepair(){
+  'use strict';
+  if (window.__QMES_IQC_INNO_REPAIR_20260813__) return;
+  window.__QMES_IQC_INNO_REPAIR_20260813__ = true;
+
+  function findField(modal, labelText){
+    var fields = Array.from(modal.querySelectorAll('.qmes-iqc-field'));
+    return fields.find(function(field){
+      var span = field.querySelector(':scope > span');
+      return String(span && span.textContent || '').trim() === labelText;
+    }) || null;
+  }
+
+  function dateCode(dateValue){
+    var m = String(dateValue || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? (m[1].slice(2) + m[2] + m[3]) : '';
+  }
+
+  function buildNumber(oldNumber, recvDate){
+    var code = dateCode(recvDate);
+    if (!code) return oldNumber;
+    var suffix = (String(oldNumber || '').match(/-(\d{4})$/) || [])[1] || '0001';
+    var candidate = 'IQC-' + code + '-' + suffix;
+    var used = new Set((window.DB && Array.isArray(DB.iqc) ? DB.iqc : []).map(function(r){ return String(r.inNo || ''); }));
+    if (!used.has(candidate) || candidate === oldNumber) return candidate;
+    for (var i = 1; i <= 9999; i += 1) {
+      candidate = 'IQC-' + code + '-' + String(i).padStart(4,'0');
+      if (!used.has(candidate)) return candidate;
+    }
+    return oldNumber;
+  }
+
+  function inspectModal(){
+    var modal = document.querySelector('.qmes-iqc-modal[role="dialog"]');
+    if (!modal) return;
+    var title = String(modal.querySelector('.qmes-iqc-modal-head strong') && modal.querySelector('.qmes-iqc-modal-head strong').textContent || '');
+    if (title.indexOf('수입검사 수정') < 0) return;
+    var inNoField = findField(modal, '입고번호');
+    var recvField = findField(modal, '입고일자');
+    var inNoInput = inNoField && inNoField.querySelector('input');
+    var recvInput = recvField && recvField.querySelector('input[type="date"]');
+    if (!inNoInput || !recvInput) return;
+    var oldNumber = String(inNoInput.value || '').trim();
+    var expectedCode = dateCode(recvInput.value);
+    var currentCode = (oldNumber.match(/^IQC-(\d{6})-/) || [])[1] || '';
+    if (!expectedCode || expectedCode === currentCode) return;
+    var repaired = buildNumber(oldNumber, recvInput.value);
+    inNoInput.value = repaired;
+    inNoInput.setAttribute('value', repaired);
+    modal.dataset.qmesOldIqcInNo = oldNumber;
+    modal.dataset.qmesRepairedIqcInNo = repaired;
+  }
+
+  document.addEventListener('click', function(event){
+    var button = event.target && event.target.closest && event.target.closest('.qmes-iqc-modal-save');
+    if (!button) return;
+    var modal = button.closest('.qmes-iqc-modal');
+    if (!modal) return;
+    inspectModal();
+    var oldNumber = modal.dataset.qmesOldIqcInNo || '';
+    var repaired = modal.dataset.qmesRepairedIqcInNo || '';
+    if (!oldNumber || !repaired || oldNumber === repaired) return;
+    setTimeout(function(){
+      try {
+        if (!window.DB || !Array.isArray(DB.iqc)) return;
+        var changed = false;
+        DB.iqc = DB.iqc.map(function(row){
+          if (String(row.inNo || '') !== oldNumber) return row;
+          changed = true;
+          return Object.assign({}, row, { inNo: repaired });
+        });
+        if (!changed) return;
+        if (typeof window.dbSave === 'function') window.dbSave();
+        if (typeof window.qmesSyncTombstoneInspection === 'function') {
+          window.qmesSyncTombstoneInspection('iqc', oldNumber, [], '입고일자와 입고번호 날짜 불일치 자동 복구: ' + oldNumber + ' → ' + repaired).catch(function(error){
+            console.warn('IQC 기존 입고번호 공용DB 정리 실패:', error && error.message);
+          });
+        }
+        setTimeout(function(){ window.location.reload(); }, 250);
+      } catch (error) {
+        console.warn('IQC 입고번호 자동 복구 실패:', error && error.message);
+      }
+    }, 0);
+  }, true);
+
+  var queued = false;
+  function scheduleRepair(){
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function(){ queued = false; inspectModal(); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleRepair, {once:true});
+  else scheduleRepair();
+  new MutationObserver(scheduleRepair).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['value']});
+})();
