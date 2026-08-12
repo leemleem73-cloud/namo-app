@@ -2,7 +2,7 @@
 (function(){
   const files=[
     "./js/inventory-shared-sync-20260807.js?v=20260807-1",
-    "./js/inventory-live-20260807.js?v=20260810-storage-condition1",
+    "./js/inventory-live-20260807.js?v=20260812-mix1",
     "./js/finished-goods-inventory-20260807.js?v=20260807-1",
     "./js/inventory-lot-validation-20260807.js?v=20260807-1",
     "./js/inventory-final-validation-20260807.js?v=20260807-1",
