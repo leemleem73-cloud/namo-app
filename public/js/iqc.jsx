@@ -146,12 +146,21 @@ function IqcTab() {
     return "합격";
   };
 
-  const generatedInNo = nextInspectionNo("IQC", form.recvDate, rows, "inNo");
-  const displayedInNo = editingInNo || (form.inNoMode === "auto" ? generatedInNo : form.manualInNo);
-  const inNoOk = editingInNo || (form.inNoMode === "auto"
-    ? /^IQC-\d{6}-\d{4}$/.test(generatedInNo)
-    : form.manualInNo.trim().length >= 2);
-  const duplicateInNo = !editingInNo && rows.some((r) => String(r.inNo || "").toUpperCase() === String(displayedInNo || "").trim().toUpperCase());
+  const editingRecord = editingInNo ? rows.find((r) => r.inNo === editingInNo) : null;
+  const editingRecvDate = String(editingRecord?.recv || "").slice(0, 10);
+  const editDateChanged = Boolean(editingInNo && form.recvDate && editingRecvDate && form.recvDate !== editingRecvDate);
+  const numberSourceRows = editingInNo ? rows.filter((r) => r.inNo !== editingInNo) : rows;
+  const generatedInNo = nextInspectionNo("IQC", form.recvDate, numberSourceRows, "inNo");
+  const displayedInNo = editingInNo
+    ? (editDateChanged ? generatedInNo : editingInNo)
+    : (form.inNoMode === "auto" ? generatedInNo : form.manualInNo);
+  const inNoOk = form.inNoMode === "auto"
+    ? /^IQC-\d{6}-\d{4}$/.test(String(displayedInNo || ""))
+    : String(displayedInNo || "").trim().length >= 2;
+  const duplicateInNo = rows.some((r) =>
+    r.inNo !== editingInNo &&
+    String(r.inNo || "").toUpperCase() === String(displayedInNo || "").trim().toUpperCase()
+  );
   const lotOk = form.lot.trim().length >= 2;
   const qtyPattern = /^\d+(\.\d+)?(?:\s?(kg|g|t|EA|L|매|장|캔))?$/i;
   const qtyOk = qtyPattern.test(form.qty.trim());
@@ -181,6 +190,7 @@ function IqcTab() {
   const addRow = () => {
     if (!iqcReady) { setTried(true); return; }
     const recv = form.recvDate;
+    const previousInNo = editingInNo;
     const inNo = String(displayedInNo).trim();
     const rowData = {
       inNo, recv, inspectedAt: form.inspectDate, lot: form.lot.trim(), code: "-", name: form.name,
@@ -200,6 +210,15 @@ function IqcTab() {
     }
     auditLog("IQC", editingInNo ? "수정" : "등록", rowData.inNo, `${rowData.lot} / ${rowData.judge}`);
     dbSave();
+    if (previousInNo && previousInNo !== inNo && typeof qmesSyncTombstoneInspection === "function") {
+      const oldRecord = rows.find((r) => r.inNo === previousInNo);
+      qmesSyncTombstoneInspection(
+        "iqc",
+        previousInNo,
+        oldRecord ? [oldRecord] : [],
+        `입고일자 변경으로 입고번호 변경: ${previousInNo} → ${inNo}`
+      ).catch((error) => console.warn("IQC 기존 입고번호 정리 실패:", error.message));
+    }
     setEditingInNo(null);
     setForm(emptyForm());
     setTried(false);
