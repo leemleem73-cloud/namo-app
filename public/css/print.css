@@ -21,6 +21,29 @@
   display: none !important;
 }
 
+/* OQC certificate preview: keep the whole A4-like page inside the visible content area.
+   Older shared certificate rules can leave the OQC paper offset to the left. */
+#root .doc-paper.qmes-oqc-doc {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  transform: none !important;
+  width: min(100%, 56rem) !important;
+  max-width: 56rem !important;
+  min-width: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+
+#root .doc-paper.qmes-oqc-doc .qmes-iqc-centered-header,
+#root .doc-paper.qmes-oqc-doc .qmes-iqc-header-logo-wrap,
+#root .doc-paper.qmes-oqc-doc .qmes-iqc-centered-title,
+#root .doc-paper.qmes-oqc-doc .qmes-iqc-header-meta {
+  transform: none !important;
+}
+
 /* Work order: keep the printed header aligned with the on-screen preview. */
 @media print {
   body.print-doc #qmes-print-root > .doc-paper.qmes-iqc-doc.qmes-wo-cert,
@@ -110,6 +133,34 @@
     border-bottom: 1px solid #000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+}
+
+/* OQC print clone: always start from the left edge of the printable A4 page. */
+@media print {
+  body.print-doc #qmes-print-root > .doc-paper.qmes-oqc-doc,
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.doc-paper.qmes-oqc-doc,
+  body.qmes-screen-exact-print #qmes-print-root > .doc-paper.qmes-oqc-doc,
+  body.qmes-screen-exact-print #qmes-print-root > .qmes-screen-print-copy.doc-paper.qmes-oqc-doc {
+    position: relative !important;
+    left: 0 !important;
+    right: auto !important;
+    top: 0 !important;
+    transform: none !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 5mm 7mm 4mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc-centered-header,
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc-header-logo-wrap,
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc-centered-title,
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc-header-meta {
+    transform: none !important;
   }
 }
 
