@@ -1,65 +1,87 @@
-/* QMES inventory/work-order link - 2026-08-12
- * Safe narrow fix: no window.DB accessor/redefinition.
- * Publish the current lexical DB object to inventory modules only when needed,
- * then refresh inventory after work-order changes/deletion.
+/* QMES inventory runtime bridge - 2026-08-12
+ * Safe fix: never redefine DB with getters/accessors.
+ * Before inventory code runs, point window.DB at the current lexical DB object.
+ * This keeps IQC receipts and work-order consumption on the same live object.
  */
-(function installInventoryWorkOrderLink(global){
+(function installInventoryRuntimeBridge(global){
   "use strict";
-  if(global.__QMES_INVENTORY_WO_LINK_20260812__) return;
-  global.__QMES_INVENTORY_WO_LINK_20260812__=true;
+  if(global.__QMES_INVENTORY_RUNTIME_BRIDGE_20260812__) return;
+  global.__QMES_INVENTORY_RUNTIME_BRIDGE_20260812__=true;
 
   function publishCurrentDb(){
     try{
       if(typeof DB!=="undefined" && DB){
         global.DB=DB;
-        return true;
+        return DB;
       }
     }catch(_error){}
-    return false;
+    return null;
   }
 
-  function emit(lotNo,source){
-    const detail={source:source||"inventory-workorder-link",lotNo:String(lotNo||"").trim()};
+  function emit(source,lotNo){
+    const detail={source:source||"inventory-runtime-bridge",lotNo:String(lotNo||"").trim()};
     try{global.dispatchEvent(new CustomEvent("qmes:data-updated",{detail}));}catch(_error){}
     try{document.dispatchEvent(new CustomEvent("qmes:data-updated",{detail}));}catch(_error){}
   }
 
-  function refresh(lotNo,source){
-    publishCurrentDb();
-    emit(lotNo,source);
+  function wrapInventoryComponent(){
+    const original=global.InventoryTab;
+    if(typeof original!=="function" || original.__qmesLiveDbBridge) return false;
+    const wrapped=function InventoryTabLiveDbBridge(props){
+      publishCurrentDb();
+      return original(props);
+    };
+    wrapped.__qmesLiveDbBridge=true;
+    wrapped.__qmesOriginal=original;
+    global.InventoryTab=wrapped;
+    return true;
   }
 
-  function installDeleteWrapper(){
-    const original=global.qmesSyncDeleteWorkOrder;
-    if(typeof original!=="function" || original.__qmesInventoryLink) return false;
+  function wrapBuilder(name){
+    const original=global[name];
+    if(typeof original!=="function" || original.__qmesLiveDbBridge) return false;
+    const wrapped=function(){
+      publishCurrentDb();
+      return original.apply(this,arguments);
+    };
+    wrapped.__qmesLiveDbBridge=true;
+    wrapped.__qmesOriginal=original;
+    global[name]=wrapped;
+    return true;
+  }
 
+  function wrapDelete(){
+    const original=global.qmesSyncDeleteWorkOrder;
+    if(typeof original!=="function" || original.__qmesLiveDbBridge) return false;
     const wrapped=async function(lotNo){
-      refresh(lotNo,"workorder-delete-before");
-      try{
-        return await original.apply(this,arguments);
-      }finally{
-        refresh(lotNo,"workorder-delete-after");
-        global.setTimeout(()=>refresh(lotNo,"workorder-delete-after-delay"),120);
+      publishCurrentDb();
+      try{return await original.apply(this,arguments);}
+      finally{
+        publishCurrentDb();
+        emit("workorder-delete",lotNo);
+        global.setTimeout(()=>{publishCurrentDb();emit("workorder-delete-delay",lotNo);},120);
       }
     };
-    wrapped.__qmesInventoryLink=true;
+    wrapped.__qmesLiveDbBridge=true;
     wrapped.__qmesOriginal=original;
     global.qmesSyncDeleteWorkOrder=wrapped;
     return true;
   }
 
-  publishCurrentDb();
-
-  ["qmes:workorders-updated","qmes:inventory-stage3-ready","focus"].forEach((eventName)=>{
-    global.addEventListener(eventName,()=>refresh("",`workorder-link-${eventName}`));
-  });
-  document.addEventListener("qmes:workorders-updated",()=>refresh("","workorder-link-document"));
-
-  if(!installDeleteWrapper()){
-    const timer=global.setInterval(()=>{
-      publishCurrentDb();
-      if(installDeleteWrapper()) global.clearInterval(timer);
-    },100);
-    global.setTimeout(()=>global.clearInterval(timer),10000);
+  function installAll(){
+    publishCurrentDb();
+    wrapInventoryComponent();
+    wrapBuilder("qmesBuildInventoryRows");
+    wrapBuilder("qmesBuildInventoryLotRows");
+    wrapDelete();
   }
+
+  installAll();
+  const timer=global.setInterval(installAll,150);
+  global.setTimeout(()=>global.clearInterval(timer),12000);
+
+  ["focus","qmes:auth-ready","qmes:inventory-stage3-ready","qmes:workorders-updated","qmes:data-updated"].forEach((eventName)=>{
+    global.addEventListener(eventName,()=>publishCurrentDb());
+  });
+  document.addEventListener("qmes:data-updated",publishCurrentDb);
 })(window);
