@@ -192,39 +192,3 @@ button[title*="메뉴"] svg {
 [class*="qmes-sidebar-search"] {
   border-top: 1px solid #d7dee8 !important;
 }
-
-/* 2026-08-12: restore only the top navigation row */
-body > #root header .qmes-top-menu-bar {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-height: 44px !important;
-  overflow: visible !important;
-}
-body > #root header .qmes-top-menu {
-  display: flex !important;
-  align-items: stretch !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-height: 44px !important;
-  width: 100% !important;
-}
-body > #root header .qmes-top-menu-item {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-body > #root header .qmes-top-menu-button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-height: 44px !important;
-  white-space: nowrap !important;
-}
-body > #root header .qmes-top-menu-button span {
-  display: inline !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
