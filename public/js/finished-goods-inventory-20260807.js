@@ -1,6 +1,7 @@
-/* QMES finished goods inventory integration - 2026-08-07
+/* QMES finished goods inventory integration - 2026-08-12
  * Calculates finished-goods stock from completed production minus shipped quantity.
- * Shipment records are deduplicated across OQC and LOT shipment snapshots.
+ * IMPORTANT: one OQC certificate contains multiple inspection rows, but shipment
+ * quantity must be counted only once per OQC group/certificate.
  */
 (function installFinishedGoodsInventory(global){
   "use strict";
@@ -17,8 +18,22 @@
   function sameLot(a,b){ return upper(a)===upper(b) && upper(a)!==""; }
   function completedStatus(value){ return /완료|생산완료|출하완료/.test(text(value)); }
   function normalizeDate(value){ return text(value).slice(0,10); }
+
+  function oqcGroupKey(row,index){
+    const group=upper(row?.groupId);
+    if(group) return `OQC-GROUP|${group}`;
+    const shipNo=upper(row?.shipNo||row?.shipmentNo||row?.outNo);
+    if(shipNo) return `OQC-SHIP|${shipNo}`;
+    const lot=upper(row?.lot||row?.lotNo);
+    const date=normalizeDate(row?.shipDate||row?.shipmentDate||row?.outDate||row?.deliveryDate||row?.date);
+    const customer=upper(row?.customer||row?.client||row?.cust);
+    const amount=qty(row?.shipQty??row?.qty);
+    return `OQC-FALLBACK|${lot}|${date}|${customer}|${amount.toFixed(3)}|${index}`;
+  }
+
   function shipmentKey(row){
-    const explicit=upper(row?.id||row?.shipNo||row?.shipmentNo||row?.outNo);
+    if(row?.groupKey) return row.groupKey;
+    const explicit=upper(row?.shipNo||row?.shipmentNo||row?.outNo||row?.id);
     if(explicit)return `ID|${explicit}`;
     return [upper(row?.lot),normalizeDate(row?.date),upper(row?.customer),Number(row?.qty||0).toFixed(3)].join("|");
   }
@@ -26,16 +41,29 @@
   function shipmentRows(){
     const db=global.DB||{};
     const candidates=[];
-    (Array.isArray(db.insp?.OQC)?db.insp.OQC:[]).forEach((row)=>{
+
+    /* OQC has one row per inspection item. Count shipment only once per groupId. */
+    const oqcSeen=new Set();
+    (Array.isArray(db.insp?.OQC)?db.insp.OQC:[]).forEach((row,index)=>{
       const lot=text(row?.lot||row?.lotNo);
       const amount=qty(row?.shipQty??row?.qty);
       const hasShip=Boolean(text(row?.shipDate||row?.shipmentDate||row?.outDate||row?.deliveryDate||row?.shipNo||row?.customer)) || /출하완료|출고완료/.test(text(row?.status||row?.shipmentStatus||row?.shipStatus));
-      if(lot && amount>0 && hasShip) candidates.push({
-        id:text(row?.shipNo||row?.shipmentNo||row?.outNo||row?.id),
+      if(!lot || !(amount>0) || !hasShip) return;
+      const groupKey=oqcGroupKey(row,index);
+      if(oqcSeen.has(groupKey)) return;
+      oqcSeen.add(groupKey);
+      candidates.push({
+        id:text(row?.shipNo||row?.shipmentNo||row?.outNo||row?.groupId||row?.id),
         shipNo:text(row?.shipNo||row?.shipmentNo||row?.outNo),
-        lot,qty:amount,source:"OQC",customer:text(row?.customer||row?.client||row?.cust),date:normalizeDate(row?.shipDate||row?.shipmentDate||row?.outDate||row?.deliveryDate)
+        groupKey,
+        lot,
+        qty:amount,
+        source:"OQC",
+        customer:text(row?.customer||row?.client||row?.cust),
+        date:normalizeDate(row?.shipDate||row?.shipmentDate||row?.outDate||row?.deliveryDate||row?.date)
       });
     });
+
     Object.entries(db.lots||{}).forEach(([lotNo,lot])=>{
       const ship=lot?.ship||{};
       const amount=qty(ship?.shipQty??ship?.qty);
@@ -48,9 +76,23 @@
 
     const unique=new Map();
     candidates.forEach((row)=>{
-      const key=shipmentKey(row);
-      const existing=unique.get(key);
-      if(!existing || (existing.source==="LOT" && row.source==="OQC")) unique.set(key,row);
+      /* LOT snapshot and OQC certificate can describe the same shipment. */
+      const lotDateQty=[upper(row.lot),normalizeDate(row.date),Number(row.qty||0).toFixed(3)].join("|");
+      const sameShipment=Array.from(unique.values()).find((existing)=>
+        upper(existing.lot)===upper(row.lot) &&
+        normalizeDate(existing.date)===normalizeDate(row.date) &&
+        Number(existing.qty||0).toFixed(3)===Number(row.qty||0).toFixed(3)
+      );
+      if(sameShipment){
+        if(sameShipment.source==="LOT" && row.source==="OQC"){
+          for(const [key,value] of unique.entries()){
+            if(value===sameShipment){ unique.delete(key); break; }
+          }
+          unique.set(shipmentKey(row),row);
+        }
+        return;
+      }
+      unique.set(shipmentKey(row)||lotDateQty,row);
     });
     return Array.from(unique.values());
   }
