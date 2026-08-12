@@ -1,8 +1,10 @@
-/* QMES: keep work orders and PQC records in latest date order and normalize PQC process numbers. */
+/* QMES: keep work orders and PQC records in latest date order, normalize PQC numbers,
+ * and prevent duplicate pending PQC groups for the same production LOT.
+ */
 (function reconcileWorkOrderPqc(global){
   "use strict";
-  if(global.__QMES_PQC_WO_RECONCILE_20260811_V8__) return;
-  global.__QMES_PQC_WO_RECONCILE_20260811_V8__=true;
+  if(global.__QMES_PQC_WO_RECONCILE_20260811_V9__) return;
+  global.__QMES_PQC_WO_RECONCILE_20260811_V9__=true;
 
   function sortRowsByDate(rows,dateGetter,idGetter){
     if(!Array.isArray(rows)) return rows;
@@ -26,6 +28,56 @@
     return String(row?.id||`ROW-${index}`).replace(/-\d+$/,"");
   }
 
+  function isPendingGroup(rows){
+    return Array.isArray(rows) && rows.length>0 && rows.every((row)=>{
+      const source=String(row?.source||"").toUpperCase();
+      const value=String(row?.value||"").trim();
+      const inspector=String(row?.inspector||"").trim();
+      return !source.includes("IPAD") && !value && !inspector;
+    });
+  }
+
+  function dedupePqcByLot(rows){
+    if(!Array.isArray(rows)||rows.length===0) return rows||[];
+    const groups=new Map();
+    rows.forEach((row,index)=>{
+      const key=pqcGroupKey(row,index);
+      if(!groups.has(key)) groups.set(key,[]);
+      groups.get(key).push(row);
+    });
+
+    const byLot=new Map();
+    groups.forEach((groupRows,key)=>{
+      const lot=String(groupRows[0]?.lot||"").trim();
+      if(!lot) return;
+      if(!byLot.has(lot)) byLot.set(lot,[]);
+      byLot.get(lot).push({key,rows:groupRows,pending:isPendingGroup(groupRows)});
+    });
+
+    const drop=new Set();
+    byLot.forEach((lotGroups)=>{
+      const completed=lotGroups.filter((g)=>!g.pending);
+      const pending=lotGroups.filter((g)=>g.pending);
+      if(completed.length>0){
+        pending.forEach((g)=>drop.add(g.key));
+        return;
+      }
+      if(pending.length>1){
+        pending.sort((a,b)=>{
+          const ad=String(a.rows[0]?.date||"");
+          const bd=String(b.rows[0]?.date||"");
+          if(ad!==bd) return bd.localeCompare(ad);
+          return String(a.key).localeCompare(String(b.key));
+        });
+        pending.slice(1).forEach((g)=>drop.add(g.key));
+      }
+    });
+
+    if(drop.size===0) return rows;
+    console.info("[QMES] 중복 PQC 검사대기 제거:",Array.from(drop));
+    return rows.filter((row,index)=>!drop.has(pqcGroupKey(row,index)));
+  }
+
   function normalizePqcProcessNumbers(rows){
     if(!Array.isArray(rows)||!rows.length) return rows;
     const groups=new Map();
@@ -34,14 +86,12 @@
       if(!groups.has(key)) groups.set(key,{key,date:String(row?.date||row?.shipDate||"").slice(0,10),rows:[],firstIndex:index});
       groups.get(key).rows.push(row);
     });
-
     const byDate=new Map();
     groups.forEach((group)=>{
       const date=group.date||"0000-00-00";
       if(!byDate.has(date)) byDate.set(date,[]);
       byDate.get(date).push(group);
     });
-
     byDate.forEach((dateGroups,date)=>{
       dateGroups.sort((a,b)=>{
         const am=String(a.key).match(/^PQC-\d{6}-(\d{4})$/i);
@@ -71,8 +121,9 @@
   }
 
   function normalizeAndSortPqcRows(rows){
-    normalizePqcProcessNumbers(rows);
-    return sortRowsByDate(rows,(row)=>row?.date||row?.shipDate,(row)=>row?.groupId||row?.id);
+    const deduped=dedupePqcByLot(rows);
+    normalizePqcProcessNumbers(deduped);
+    return sortRowsByDate(deduped,(row)=>row?.date||row?.shipDate,(row)=>row?.groupId||row?.id);
   }
 
   function sortPqcNow(){
@@ -109,9 +160,10 @@
 
   async function reconcile(){
     if(typeof DB === "undefined" || !DB.woDocs || !DB.insp) return;
-    DB.insp.PQC=Array.isArray(DB.insp.PQC)?DB.insp.PQC:[];
+    DB.insp.PQC=Array.isArray(DB.insp.PQC)?dedupePqcByLot(DB.insp.PQC):[];
     let changed=false;
     for(const lotNo of Object.keys(DB.woDocs||{}).filter(Boolean)){
+      /* A LOT with any PQC history must never receive another automatic pending draft. */
       if(DB.insp.PQC.some((row)=>String(row.lot||"").trim()===String(lotNo).trim())) continue;
       const created=typeof qmesCreatePqcDraftForIssuedWorkOrder==="function"?qmesCreatePqcDraftForIssuedWorkOrder(lotNo):null;
       if(!created) continue;
