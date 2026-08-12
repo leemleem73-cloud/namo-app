@@ -14,6 +14,8 @@
 
   function materialKey(value){
     const v = upper(value);
+    /* 사내 SBS+PVdF 혼합재는 원재료 SBS/PVdF와 반드시 별도 재고로 관리 */
+    if (v.includes("SBS") && v.includes("PVDF")) return "SBS_PVDF_MIX";
     if (v.includes("BYK180") || v.includes("BYK-180") || v.includes("분산제")) return "BYK180";
     if (v.includes("AOH30") || v.includes("BOEHMITE")) return "AOH30";
     if (v.includes("PVDF")) return "PVDF";
@@ -65,7 +67,16 @@
         const lot = text(input?.materialLot || input?.lot);
         const act = quantity(input?.act, input?.unit || "kg");
         if (!lot || !(act > 0)) return;
-        const key = lotKey(input?.name, lot);
+        /* 작업지시 비고에 SBS+PVdF가 있으면 혼합재 사용으로 구분 */
+        const materialDescriptor = [
+          input?.name,
+          input?.materialName,
+          input?.note,
+          input?.remarks,
+          input?.remark,
+          input?.memo
+        ].map(text).filter(Boolean).join(" ");
+        const key = lotKey(materialDescriptor || input?.name, lot);
         const current = usage.get(key) || { used:0, workOrders:[] };
         current.used += act;
         current.workOrders.push({ workOrderNo, used:act, item:text(workOrder?.item) });
@@ -131,7 +142,11 @@
   function baseInventory(){
     try {
       if (typeof INVENTORY !== "undefined" && Array.isArray(INVENTORY)) {
-        return INVENTORY.filter((row) => materialKey(row?.name) !== "CAN20" && String(row?.code || "") !== "PK-CAN20");
+        const rows=INVENTORY.filter((row) => materialKey(row?.name) !== "CAN20" && String(row?.code || "") !== "PK-CAN20");
+        if(!rows.some((row)=>materialKey(row?.name)==="SBS_PVDF_MIX")) {
+          rows.push({ code:"RM-SBSPVDF-MIX", name:"SBS+PVdF 혼합재", stock:0, safety:0, unit:"kg", loc:"미지정", cond:"25±5℃ · 습도 50%↓" });
+        }
+        return rows;
       }
     } catch (_error) {}
     return [
@@ -140,12 +155,14 @@
       { code:"RM-AOH30", name:"AOH30 (Boehmite)", stock:0, safety:1800, unit:"kg", loc:"원재료창고 A-01", cond:"25±5℃ · 습도 50%↓" },
       { code:"RM-SBS", name:"SBS", stock:0, safety:300, unit:"kg", loc:"드라이룸 DR-02", cond:"RH 0.54%↓" },
       { code:"RM-PVDF", name:"PVdF", stock:0, safety:400, unit:"kg", loc:"드라이룸 DR-02", cond:"RH 0.54%↓" },
-      { code:"RM-SBR", name:"SBR", stock:0, safety:300, unit:"kg", loc:"원재료창고 A-03", cond:"25±5℃ · 습도 50%↓" }
+      { code:"RM-SBR", name:"SBR", stock:0, safety:300, unit:"kg", loc:"원재료창고 A-03", cond:"25±5℃ · 습도 50%↓" },
+      { code:"RM-SBSPVDF-MIX", name:"SBS+PVdF 혼합재", stock:0, safety:0, unit:"kg", loc:"미지정", cond:"25±5℃ · 습도 50%↓" }
     ];
   }
 
   function storageLocation(value){
     const source=upper(value).replace(/[\s_-]+/g,"");
+    if(materialKey(value)==="SBS_PVDF_MIX") return "미지정";
     if(source === "PAI" || source.includes("PAI")) return "A-1-2";
     if(source.includes("KTR201")) return "A-6-1";
     if(source.includes("SOLEF5140")) return "A-3-2";
@@ -160,6 +177,7 @@
   }
 
   function dynamicMaterialCode(value){
+    if(materialKey(value)==="SBS_PVDF_MIX") return "RM-SBSPVDF-MIX";
     const source=upper(value);
     const readable=source.replace(/[^A-Z0-9]+/g,"").slice(0,12);
     if(readable) return `RM-${readable}`;
@@ -284,7 +302,7 @@
       alert,
       h(Panel, { title:"원재료 · 부자재 재고 현황", right:h("span", { className:"text-xs text-slate-400" }, `실시간 연동 ${linkedCount}/${rows.length}품목`) },
         table,
-        h("p", { className:"text-[11px] text-slate-500 mt-3" }, "현재고 = IQC 합격 입고량 - 작업지시 실투입량 · 가용재고 = 현재고 - 홀드 잔량 · LOT 단위 자동 집계")
+        h("p", { className:"text-[11px] text-slate-500 mt-3" }, "현재고 = IQC 합격 입고량 - 작업지시 실투입량 · SBS+PVdF 사내 혼합재는 원재료 SBS/PVdF와 별도 재고 · LOT 단위 자동 집계")
       )
     );
   }
