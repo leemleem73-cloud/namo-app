@@ -323,18 +323,18 @@ function IqcTab() {
                 <col style={{width:"15%"}} /><col style={{width:"9%"}} /><col style={{width:"10%"}} /><col style={{width:"23%"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th>검사일</th><th>LOT No.</th><th>업체명</th><th>원재료명</th><th>판정</th><th>검사자</th><th className="text-center">관리</th>
+                <th>입고일자</th><th>원재료명</th><th>업체명</th><th>LOT No.</th><th>검사자</th><th>판정</th><th className="text-center">관리</th>
               </tr></thead>
               <tbody>
                 {filteredRows.length === 0 && <tr><td colSpan={7} className="qmes-iqc-empty-row">검색 조건에 맞는 수입출하검사 검사 기록이 없습니다.</td></tr>}
                 {filteredRows.map((r) => (
                   <tr key={r.inNo || r.lot}>
-                    <td className="qmes-date-cell">{(r.inspectedAt || r.recv || "-").slice(0,10)}</td>
-                    <td className="qmes-lot-cell" title={r.lot}>{r.lot || "-"}</td>
-                    <td title={r.supplier}>{r.supplier || "-"}</td>
+                    <td className="qmes-date-cell">{(r.recv || "-").slice(0,10)}</td>
                     <td title={r.name}>{r.name || "-"}</td>
-                    <td><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge></td>
+                    <td title={r.supplier}>{r.supplier || "-"}</td>
+                    <td className="qmes-lot-cell" title={r.lot}>{r.lot || "-"}</td>
                     <td>{r.inspector || r.by || "-"}</td>
+                    <td><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge></td>
                     <td className="qmes-iqc-manage-cell">
                       <div className="qmes-iqc-manage-inline">
                         <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
