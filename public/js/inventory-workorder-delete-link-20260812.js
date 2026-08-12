@@ -24,6 +24,22 @@
     try{document.dispatchEvent(new CustomEvent("qmes:data-updated",{detail}));}catch(_error){}
   }
 
+  function purgeDeletedWorkOrder(lotNo){
+    const db=publishCurrentDb();
+    const key=String(lotNo||"").trim();
+    if(!db || !key) return;
+    if(db.woDocs) delete db.woDocs[key];
+    if(Array.isArray(db.batches)) db.batches=db.batches.filter((row)=>String(row?.no||"").trim()!==key);
+    if(db.lots) delete db.lots[key];
+    if(db.intermediateLots) delete db.intermediateLots[key];
+    if(db.materialRemainders && typeof db.materialRemainders==="object"){
+      Object.keys(db.materialRemainders).forEach((remainderKey)=>{
+        if(String(db.materialRemainders[remainderKey]?.workOrder||"").trim()===key) delete db.materialRemainders[remainderKey];
+      });
+    }
+    try{if(typeof dbSave==="function") dbSave();}catch(_error){}
+  }
+
   function wrapInventoryComponent(){
     const original=global.InventoryTab;
     if(typeof original!=="function" || original.__qmesLiveDbBridge) return false;
@@ -57,14 +73,31 @@
       publishCurrentDb();
       try{return await original.apply(this,arguments);}
       finally{
-        publishCurrentDb();
+        purgeDeletedWorkOrder(lotNo);
         emit("workorder-delete",lotNo);
-        global.setTimeout(()=>{publishCurrentDb();emit("workorder-delete-delay",lotNo);},120);
+        global.setTimeout(()=>{purgeDeletedWorkOrder(lotNo);emit("workorder-delete-delay",lotNo);},120);
       }
     };
     wrapped.__qmesLiveDbBridge=true;
     wrapped.__qmesOriginal=original;
     global.qmesSyncDeleteWorkOrder=wrapped;
+    return true;
+  }
+
+  function wrapPullWorkOrders(){
+    const original=global.qmesSyncPullWorkOrders;
+    if(typeof original!=="function" || original.__qmesLiveDbBridge) return false;
+    const wrapped=async function(){
+      publishCurrentDb();
+      try{return await original.apply(this,arguments);}
+      finally{
+        publishCurrentDb();
+        emit("workorders-pulled","");
+      }
+    };
+    wrapped.__qmesLiveDbBridge=true;
+    wrapped.__qmesOriginal=original;
+    global.qmesSyncPullWorkOrders=wrapped;
     return true;
   }
 
@@ -74,6 +107,7 @@
     wrapBuilder("qmesBuildInventoryRows");
     wrapBuilder("qmesBuildInventoryLotRows");
     wrapDelete();
+    wrapPullWorkOrders();
   }
 
   installAll();
