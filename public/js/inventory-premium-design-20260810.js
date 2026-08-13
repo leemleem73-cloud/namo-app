@@ -28,6 +28,38 @@
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell *{background:transparent!important;background-color:transparent!important;color:#ff7f8f!important;border:0!important;box-shadow:none!important}
     .qmes-fg-empty-card{display:none!important}
     .qmes-fg-two-kpi{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+    /* 2026-08-13 inventory four-page visual normalization */
+    .qmes-inventory-premium-scope [data-inventory-page] > div:nth-child(2) > div{
+      background:#10243a!important;color:#fff!important;border:0!important;box-shadow:none!important;
+    }
+    .qmes-inventory-premium-scope [data-inventory-page] > div:nth-child(2) > div > div,
+    .qmes-inventory-premium-scope [data-inventory-page] > div:nth-child(2) > div > div *{
+      color:#fff!important;
+    }
+    .qmes-inventory-premium-scope [data-inventory-page="ship"] > div:nth-child(2){
+      background:#10243a!important;border:0!important;box-shadow:none!important;
+    }
+    .qmes-inventory-premium-scope [data-inventory-page="ship"] input,
+    .qmes-inventory-premium-scope [data-inventory-page="ship"] select{
+      background:#fff!important;color:#111827!important;border:1px solid #d7dee7!important;box-shadow:none!important;
+    }
+    .qmes-inventory-premium-scope [data-inventory-page="ship"] input::placeholder{color:#94a3b8!important}
+    .qmes-inventory-premium-scope [data-inventory-page="ship"] > div:nth-child(2) > div:last-child{
+      background:#0b1d30!important;color:#cbd5e1!important;border:0!important;
+    }
+    .qmes-inventory-premium-scope [data-inventory-page="ship"] > div:nth-child(2) > div:last-child *{color:#cbd5e1!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell{
+      background:transparent!important;color:#ff8795!important;
+    }
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell::before{
+      content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#ff8795;margin-right:7px;vertical-align:2px;
+    }
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tfoot,
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tfoot tr,
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tfoot td{
+      background:#10243a!important;color:#fff!important;border:0!important;box-shadow:none!important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -87,7 +119,7 @@
       });
       Array.from(main.querySelectorAll("div")).forEach((div) => {
         const t = text(div); if (!t || t.length > 80) return;
-        if (t.includes("관리 품목") || t.includes("가용재고 합계") || t.includes("안전재고 부족") || t.includes("완제품 총 현재고") || t.includes("출고 가능 LOT")) {
+        if (t.includes("관리 품목") || t.includes("가용재고 합계") || t.includes("안전재고 부족") || t.includes("재고 LOT") || t.includes("완제품 총 현재고") || t.includes("출고 가능 LOT")) {
           const r = div.getBoundingClientRect?.(); if (r && r.width > 180 && r.height > 50) div.classList.add("qmes-premium-kpi-card");
         }
       });
