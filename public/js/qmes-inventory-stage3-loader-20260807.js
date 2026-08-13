@@ -6,7 +6,7 @@
     "./js/finished-goods-inventory-20260807.js?v=20260807-1",
     "./js/inventory-lot-validation-20260807.js?v=20260807-1",
     "./js/inventory-final-validation-20260807.js?v=20260807-1",
-    "./js/inventory-stage3-view-20260807.js?v=20260807-2",
+    "./js/inventory-stage3-view-20260807.js?v=20260813-split2",
     "./js/inventory-final-validation-ui-20260807.js?v=20260807-1",
     "./js/inventory-ui-final-safe-20260807-v3.js?v=20260807-1",
     "./js/dashboard-inventory-unified-sync-20260807.js?v=20260810-dashboard-stable1",
@@ -27,21 +27,11 @@
     document.head.appendChild(s);
   }
   let started=false;
-  function authenticated(){
-    return Boolean(window.__QMES_CURRENT_USER__ || window.__QMES_USER__);
-  }
-  function start(){
-    if(started || !authenticated()) return;
-    started=true;
-    next(0);
-  }
+  function authenticated(){return Boolean(window.__QMES_CURRENT_USER__ || window.__QMES_USER__);}
+  function start(){if(started || !authenticated()) return;started=true;next(0);}
   function waitForLogin(){
-    start();
-    if(started) return;
-    const timer=setInterval(()=>{
-      start();
-      if(started) clearInterval(timer);
-    },250);
+    start();if(started) return;
+    const timer=setInterval(()=>{start();if(started) clearInterval(timer);},250);
     window.addEventListener("qmes:auth-ready",start,{once:true});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",waitForLogin,{once:true});else waitForLogin();
