@@ -1,33 +1,99 @@
 /* QMES premium inventory design - current inventory screens */
 (function installPremiumInventoryDesign(global) {
   "use strict";
-  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V7__) return;
-  global.__QMES_PREMIUM_INVENTORY_DESIGN_V7__ = true;
+  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V8__) return;
+  global.__QMES_PREMIUM_INVENTORY_DESIGN_V8__ = true;
 
   const style = document.createElement("style");
-  style.id = "qmes-premium-inventory-design-v7";
+  style.id = "qmes-premium-inventory-design-v8";
   style.textContent = `
     .qmes-inventory-premium-scope{color:#fff!important}
-    .qmes-inventory-premium-scope .qmes-premium-kpi-card{border:0!important;border-radius:14px!important;background:linear-gradient(145deg,#10243d 0%,#0b1b30 100%)!important;box-shadow:none!important;color:#fff!important;overflow:hidden!important;position:relative!important}
+
+    .qmes-inventory-premium-scope .qmes-premium-kpi-card{
+      border:0!important;
+      border-radius:8px!important;
+      background:#10243a!important;
+      box-shadow:none!important;
+      color:#fff!important;
+      overflow:hidden!important;
+    }
     .qmes-inventory-premium-scope .qmes-premium-kpi-card:before{display:none!important}
     .qmes-inventory-premium-scope .qmes-premium-kpi-card,.qmes-inventory-premium-scope .qmes-premium-kpi-card *{color:#fff!important}
 
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;background:#0c1e33!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead,.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead tr{background:#f8fafc!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead th{color:#111827!important;font-weight:800!important;border:0!important;padding-top:13px!important;padding-bottom:13px!important;text-shadow:none!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr{background:#0d2138!important;transition:background .15s ease!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr:nth-child(even){background:#10263f!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr:hover{background:#163451!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td{color:#fff!important;border:0!important;padding-top:14px!important;padding-bottom:14px!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td:first-child{color:#fff!important;font-weight:800!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table input,.qmes-inventory-premium-scope table.qmes-premium-inventory-table select{background:#07192b!important;border:0!important;color:#fff!important;border-radius:8px!important;box-shadow:none!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-slate-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-gray-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-sky-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-emerald-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-amber-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-rose-"]{color:#fff!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-slate-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-gray-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-sky-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-emerald-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-amber-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-rose-"]{color:#111827!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table{
+      width:100%!important;
+      border-collapse:collapse!important;
+      border-spacing:0!important;
+      background:#10243a!important;
+      border:0!important;
+      border-radius:0!important;
+      overflow:hidden!important;
+      box-shadow:none!important;
+    }
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead,
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead tr{background:#f4f6f8!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead th{
+      color:#111827!important;
+      font-weight:700!important;
+      border:0!important;
+      padding-top:12px!important;
+      padding-bottom:12px!important;
+      text-shadow:none!important;
+    }
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr,
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr:nth-child(even){
+      background:#10243a!important;
+    }
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr:hover{background:#142a43!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td{
+      color:#fff!important;
+      border:0!important;
+      padding-top:13px!important;
+      padding-bottom:13px!important;
+    }
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td:first-child{color:#fff!important;font-weight:700!important}
 
-    .qmes-inventory-premium-scope .qmes-premium-panel{border:0!important;border-radius:14px!important;background:linear-gradient(145deg,#102139 0%,#0b1b2e 100%)!important;box-shadow:none!important;overflow:hidden!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table input,
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table select{
+      background:#0b1d30!important;
+      border:0!important;
+      color:#fff!important;
+      border-radius:6px!important;
+      box-shadow:none!important;
+    }
+
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-slate-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-gray-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-sky-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-emerald-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-amber-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-rose-"]{color:#fff!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-slate-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-gray-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-sky-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-emerald-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-amber-"],
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-rose-"]{color:#111827!important}
+
+    .qmes-inventory-premium-scope .qmes-premium-panel{
+      border:0!important;
+      border-radius:8px!important;
+      background:#10243a!important;
+      box-shadow:none!important;
+      overflow:hidden!important;
+    }
     .qmes-inventory-premium-scope .qmes-premium-panel *{border-color:transparent!important}
-    .qmes-inventory-premium-scope .qmes-premium-panel h1,.qmes-inventory-premium-scope .qmes-premium-panel h2,.qmes-inventory-premium-scope .qmes-premium-panel h3,.qmes-inventory-premium-scope .qmes-premium-panel p{color:#fff!important}
-    .qmes-inventory-premium-scope .qmes-premium-danger-cell{background:rgba(127,29,29,.20)!important;color:#fff!important;border:0!important}
+    .qmes-inventory-premium-scope .qmes-premium-panel h1,
+    .qmes-inventory-premium-scope .qmes-premium-panel h2,
+    .qmes-inventory-premium-scope .qmes-premium-panel h3,
+    .qmes-inventory-premium-scope .qmes-premium-panel p{color:#fff!important}
+
+    .qmes-inventory-premium-scope .qmes-premium-danger-cell{
+      background:transparent!important;
+      color:#ff8b9b!important;
+      border:0!important;
+      font-weight:700!important;
+    }
   `;
   document.head.appendChild(style);
 
