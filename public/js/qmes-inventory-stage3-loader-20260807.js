@@ -7,6 +7,7 @@
     "./js/inventory-lot-validation-20260807.js?v=20260807-1",
     "./js/inventory-final-validation-20260807.js?v=20260807-1",
     "./js/inventory-stage3-view-20260807.js?v=20260813-split2",
+    "./js/inventory-qmes-page-theme-20260813.js?v=20260813-1",
     "./js/inventory-final-validation-ui-20260807.js?v=20260807-1",
     "./js/inventory-ui-final-safe-20260807-v3.js?v=20260807-1",
     "./js/dashboard-inventory-unified-sync-20260807.js?v=20260810-dashboard-stable1",
