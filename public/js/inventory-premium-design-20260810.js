@@ -1,11 +1,11 @@
 /* QMES premium inventory design - current inventory screens */
 (function installPremiumInventoryDesign(global) {
   "use strict";
-  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V9__) return;
-  global.__QMES_PREMIUM_INVENTORY_DESIGN_V9__ = true;
+  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V10__) return;
+  global.__QMES_PREMIUM_INVENTORY_DESIGN_V10__ = true;
 
   const style = document.createElement("style");
-  style.id = "qmes-premium-inventory-design-v9";
+  style.id = "qmes-premium-inventory-design-v10";
   style.textContent = `
     .qmes-inventory-premium-scope{color:#fff!important}
     .qmes-inventory-premium-scope .qmes-premium-kpi-card{border:0!important;border-radius:8px!important;background:#10243a!important;box-shadow:none!important;color:#fff!important;overflow:hidden!important}
@@ -26,6 +26,7 @@
     .qmes-inventory-premium-scope .qmes-premium-panel h1,.qmes-inventory-premium-scope .qmes-premium-panel h2,.qmes-inventory-premium-scope .qmes-premium-panel h3,.qmes-inventory-premium-scope .qmes-premium-panel p{color:#fff!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell{background:transparent!important;background-color:transparent!important;color:#ff7f8f!important;border:0!important;box-shadow:none!important;font-weight:700!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell *{background:transparent!important;background-color:transparent!important;color:#ff7f8f!important;border:0!important;box-shadow:none!important}
+    .qmes-fg-history-empty-card{display:none!important}
   `;
   document.head.appendChild(style);
 
@@ -46,16 +47,28 @@
     }
     return null;
   }
+  function hideEmptyHistoryCards(main) {
+    if (!main || !text(main).includes('완제품 출고내역')) return;
+    const table = Array.from(main.querySelectorAll('table')).find(t => text(t.tHead).includes('출고번호') && text(t.tHead).includes('LOT'));
+    if (!table) return;
+    const tableRect = table.getBoundingClientRect();
+    Array.from(main.querySelectorAll('div')).forEach(div => {
+      if (div === main || div.contains(table) || table.contains(div)) return;
+      if (text(div) !== '') return;
+      const r = div.getBoundingClientRect?.();
+      if (!r) return;
+      if (r.top < tableRect.top && r.bottom <= tableRect.top && r.width > 300 && r.height > 55 && r.height < 180) {
+        const cs = getComputedStyle(div);
+        if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') div.classList.add('qmes-fg-history-empty-card');
+      }
+    });
+  }
   function alignTopDropdown(button) {
     const dropdown = document.getElementById('qmes-all-menu-dropdown');
     const top = button && document.contains(button) ? button : lastTopMenuButton;
     if (!top || !dropdown) return;
     const r = top.getBoundingClientRect();
-    dropdown.style.setProperty('position','fixed','important');
-    dropdown.style.setProperty('left',Math.round(r.left)+'px','important');
-    dropdown.style.setProperty('top',Math.round(r.bottom+2)+'px','important');
-    dropdown.style.setProperty('right','auto','important');
-    dropdown.style.setProperty('transform','none','important');
+    dropdown.style.setProperty('position','fixed','important'); dropdown.style.setProperty('left',Math.round(r.left)+'px','important'); dropdown.style.setProperty('top',Math.round(r.bottom+2)+'px','important'); dropdown.style.setProperty('right','auto','important'); dropdown.style.setProperty('transform','none','important');
   }
   function apply() {
     const main = document.querySelector("#root>div>main") || document.querySelector("main");
@@ -74,6 +87,7 @@
           const r = div.getBoundingClientRect?.(); if (r && r.width > 180 && r.height > 50) div.classList.add("qmes-premium-kpi-card");
         }
       });
+      hideEmptyHistoryCards(main);
     }
     alignTopDropdown();
   }
