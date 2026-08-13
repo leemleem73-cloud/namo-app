@@ -1,11 +1,11 @@
 /* QMES premium inventory design - current inventory screens */
 (function installPremiumInventoryDesign(global) {
   "use strict";
-  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V10__) return;
-  global.__QMES_PREMIUM_INVENTORY_DESIGN_V10__ = true;
+  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V11__) return;
+  global.__QMES_PREMIUM_INVENTORY_DESIGN_V11__ = true;
 
   const style = document.createElement("style");
-  style.id = "qmes-premium-inventory-design-v10";
+  style.id = "qmes-premium-inventory-design-v11";
   style.textContent = `
     .qmes-inventory-premium-scope{color:#fff!important}
     .qmes-inventory-premium-scope .qmes-premium-kpi-card{border:0!important;border-radius:8px!important;background:#10243a!important;box-shadow:none!important;color:#fff!important;overflow:hidden!important}
@@ -26,7 +26,8 @@
     .qmes-inventory-premium-scope .qmes-premium-panel h1,.qmes-inventory-premium-scope .qmes-premium-panel h2,.qmes-inventory-premium-scope .qmes-premium-panel h3,.qmes-inventory-premium-scope .qmes-premium-panel p{color:#fff!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell{background:transparent!important;background-color:transparent!important;color:#ff7f8f!important;border:0!important;box-shadow:none!important;font-weight:700!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td.qmes-premium-danger-cell *{background:transparent!important;background-color:transparent!important;color:#ff7f8f!important;border:0!important;box-shadow:none!important}
-    .qmes-fg-history-empty-card{display:none!important}
+    .qmes-fg-empty-card{display:none!important}
+    .qmes-fg-two-kpi{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   `;
   document.head.appendChild(style);
 
@@ -47,20 +48,23 @@
     }
     return null;
   }
-  function hideEmptyHistoryCards(main) {
-    if (!main || !text(main).includes('완제품 출고내역')) return;
-    const table = Array.from(main.querySelectorAll('table')).find(t => text(t.tHead).includes('출고번호') && text(t.tHead).includes('LOT'));
+  function hideEmptyCardsBeforeTable(main, pageNeedle, tableMatcher) {
+    if (!main || !text(main).includes(pageNeedle)) return;
+    const table = Array.from(main.querySelectorAll('table')).find(tableMatcher);
     if (!table) return;
     const tableRect = table.getBoundingClientRect();
-    Array.from(main.querySelectorAll('div')).forEach(div => {
-      if (div === main || div.contains(table) || table.contains(div)) return;
-      if (text(div) !== '') return;
+    const candidates = Array.from(main.querySelectorAll('div')).filter(div => {
+      if (div === main || div.contains(table) || table.contains(div) || text(div) !== '') return false;
       const r = div.getBoundingClientRect?.();
-      if (!r) return;
-      if (r.top < tableRect.top && r.bottom <= tableRect.top && r.width > 300 && r.height > 55 && r.height < 180) {
-        const cs = getComputedStyle(div);
-        if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') div.classList.add('qmes-fg-history-empty-card');
-      }
+      if (!r) return false;
+      if (!(r.top < tableRect.top && r.bottom <= tableRect.top && r.width > 250 && r.height > 55 && r.height < 180)) return false;
+      const cs = getComputedStyle(div);
+      return cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent';
+    });
+    candidates.forEach(div => {
+      div.classList.add('qmes-fg-empty-card');
+      const parent = div.parentElement;
+      if (parent && Array.from(parent.children).some(el => text(el).includes('완제품 총 현재고')) && Array.from(parent.children).some(el => text(el).includes('출고 가능 LOT'))) parent.classList.add('qmes-fg-two-kpi');
     });
   }
   function alignTopDropdown(button) {
@@ -87,7 +91,8 @@
           const r = div.getBoundingClientRect?.(); if (r && r.width > 180 && r.height > 50) div.classList.add("qmes-premium-kpi-card");
         }
       });
-      hideEmptyHistoryCards(main);
+      hideEmptyCardsBeforeTable(main,'완제품 출고내역',t => text(t.tHead).includes('출고번호') && text(t.tHead).includes('LOT'));
+      hideEmptyCardsBeforeTable(main,'완제품 재고 현황',t => text(t.tHead).includes('완제품 LOT') && text(t.tHead).includes('현재고'));
     }
     alignTopDropdown();
   }
