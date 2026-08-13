@@ -21,7 +21,12 @@
       {label:'출하성적서',group:'품질검사',sub:'출하성적서'}
     ],
     '현장입력':[{label:'현장 입력 (iPad)',direct:'현장입력'}],
-    '재고관리':[{label:'원재료 재고',direct:'재고관리'}],
+    '재고관리':[
+      {label:'원재료·부자재 재고',direct:'재고관리',inventoryView:'raw'},
+      {label:'완제품 재고 현황',direct:'재고관리',inventoryView:'fg'},
+      {label:'완제품 출고관리',direct:'재고관리',inventoryView:'ship'},
+      {label:'완제품 출고내역',direct:'재고관리',inventoryView:'history'}
+    ],
     '거래처 현황':[{label:'거래처 현황',direct:'거래처 현황'}],
     '설비관리':[{label:'설비 모니터링',direct:'설비관리'}],
     'LOT 추적':[{label:'LOT 추적',direct:'LOT 추적'}],
@@ -125,7 +130,21 @@
     closeTimer=setTimeout(closeMenu,180);
   }
 
+  function openInventoryView(view){
+    const top=findTopButton('재고관리');
+    closeMenu();
+    if(top) top.click();
+    const apply=()=>window.dispatchEvent(new CustomEvent('qmes:inventory-view',{detail:{view}}));
+    requestAnimationFrame(()=>requestAnimationFrame(apply));
+    setTimeout(apply,80);
+    setTimeout(apply,180);
+  }
+
   function clickSub(item){
+    if(item.inventoryView){
+      openInventoryView(item.inventoryView);
+      return;
+    }
     const findSub=()=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===item.sub);
     if(item.direct){
       closeMenu();
@@ -166,6 +185,7 @@
       const row=document.createElement('button');
       row.type='button';
       row.textContent=item.label;
+      if(item.inventoryView) row.dataset.inventoryView=item.inventoryView;
       row.addEventListener('click',event=>{event.stopPropagation();clickSub(item);});
       menu.appendChild(row);
     });
