@@ -1,11 +1,11 @@
 /* QMES premium inventory design - current inventory screens */
 (function installPremiumInventoryDesign(global) {
   "use strict";
-  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V5__) return;
-  global.__QMES_PREMIUM_INVENTORY_DESIGN_V5__ = true;
+  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V6__) return;
+  global.__QMES_PREMIUM_INVENTORY_DESIGN_V6__ = true;
 
   const style = document.createElement("style");
-  style.id = "qmes-premium-inventory-design-v5";
+  style.id = "qmes-premium-inventory-design-v6";
   style.textContent = `
     .qmes-inventory-premium-scope{color:#fff!important}
     .qmes-inventory-premium-scope .qmes-premium-kpi-card{border:0!important;border-radius:14px!important;background:linear-gradient(145deg,#10243d 0%,#0b1b30 100%)!important;box-shadow:none!important;color:#fff!important;overflow:hidden!important;position:relative!important}
@@ -13,8 +13,8 @@
     .qmes-inventory-premium-scope .qmes-premium-kpi-card,.qmes-inventory-premium-scope .qmes-premium-kpi-card *{color:#fff!important}
 
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;background:#0c1e33!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead,.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead tr{background:linear-gradient(180deg,#173858 0%,#122d49 100%)!important}
-    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead th{color:#fff!important;font-weight:800!important;border:0!important;padding-top:13px!important;padding-bottom:13px!important;text-shadow:none!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead,.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead tr{background:#f8fafc!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead th{color:#111827!important;font-weight:800!important;border:0!important;padding-top:13px!important;padding-bottom:13px!important;text-shadow:none!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr{background:#0d2138!important;transition:background .15s ease!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr:nth-child(even){background:#10263f!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody tr:hover{background:#163451!important}
@@ -22,6 +22,7 @@
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table tbody td:first-child{color:#fff!important;font-weight:800!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table input,.qmes-inventory-premium-scope table.qmes-premium-inventory-table select{background:#07192b!important;border:0!important;color:#fff!important;border-radius:8px!important;box-shadow:none!important}
     .qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-slate-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-gray-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-sky-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-emerald-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-amber-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table [class*="text-rose-"]{color:#fff!important}
+    .qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-slate-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-gray-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-sky-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-emerald-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-amber-"],.qmes-inventory-premium-scope table.qmes-premium-inventory-table thead [class*="text-rose-"]{color:#111827!important}
 
     .qmes-inventory-premium-scope .qmes-premium-panel{border:0!important;border-radius:14px!important;background:linear-gradient(145deg,#102139 0%,#0b1b2e 100%)!important;box-shadow:none!important;overflow:hidden!important}
     .qmes-inventory-premium-scope .qmes-premium-panel *{border-color:transparent!important}
