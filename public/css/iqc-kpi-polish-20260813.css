@@ -1,0 +1,8 @@
+/* IQC full-width KPI polish - keeps the existing page width/layout intact. */
+.qmes-iqc-kpi-current{width:100%!important;max-width:none!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:10px!important}
+.qmes-iqc-kpi-current>*{position:relative!important;min-width:0!important;min-height:82px!important;border-radius:9px!important;overflow:hidden!important}
+.qmes-iqc-kpi-current>*:nth-child(3){padding-right:86px!important}
+.qmes-iqc-kpi-current>*:nth-child(3)::before{content:"98.6%";position:absolute;z-index:2;right:27px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:7px solid #19d39a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#6ee7b7;font-size:9px;font-weight:900;line-height:1;background:#0d2237;box-shadow:0 0 0 1px rgba(25,211,154,.12)}
+.qmes-iqc-kpi-current>*:nth-child(3)::after{content:"";position:absolute;right:27px;top:calc(50% - 28px);width:56px;height:56px;border-radius:50%;background:conic-gradient(#19d39a 98.6%,#294158 98.6%);z-index:1}
+@media(max-width:1050px){.qmes-iqc-kpi-current{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:700px){.qmes-iqc-kpi-current{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmes-iqc-kpi-current>*:nth-child(3){padding-right:16px!important}.qmes-iqc-kpi-current>*:nth-child(3)::before,.qmes-iqc-kpi-current>*:nth-child(3)::after{display:none!important}}
