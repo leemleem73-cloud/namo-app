@@ -1,29 +1,59 @@
-/* IQC local recovery guard — 2026-08-13
- * Recovers IQC rows from same-origin browser storage and prevents shared sync from
- * replacing a larger local IQC set with a smaller remote set.
- * No remote writes are performed by this file.
+/* IQC local recovery guard — 2026-08-13 safe revision
+ * Only uses DB.iqc and the explicit recovery snapshot created by this script.
+ * It no longer scans unrelated local/session storage objects.
+ * It also normalizes legacy IQC rows so the IQC screen cannot crash on missing fields.
  */
 (function(){
   'use strict';
-  if(window.__QMES_IQC_LOCAL_RECOVERY_20260813__) return;
-  window.__QMES_IQC_LOCAL_RECOVERY_20260813__ = true;
+  if(window.__QMES_IQC_LOCAL_RECOVERY_20260813_SAFE__) return;
+  window.__QMES_IQC_LOCAL_RECOVERY_20260813_SAFE__ = true;
 
   const clean = (v) => String(v == null ? '' : v).trim();
   const rowKey = (row) => clean(row?.inNo) || [clean(row?.recv),clean(row?.lot),clean(row?.name),clean(row?.supplier)].join('|');
   const dateValue = (row) => clean(row?.recv || row?.inspectedAt || '');
 
-  function looksLikeIqcRow(row){
-    return row && typeof row === 'object' && (
-      clean(row.inNo).startsWith('IQC-') ||
-      (clean(row.lot) && (clean(row.name) || clean(row.supplier)) && (clean(row.recv) || clean(row.inspectedAt)))
-    );
+  function isRealIqcRow(row){
+    if(!row || typeof row !== 'object' || Array.isArray(row)) return false;
+    const hasIqcNo = /^IQC-\d{6}-\d{4}$/.test(clean(row.inNo));
+    const hasLegacyCore = /^\d{4}-\d{2}-\d{2}/.test(clean(row.recv || row.inspectedAt)) && clean(row.lot) && (clean(row.name) || clean(row.supplier));
+    return Boolean(hasIqcNo || hasLegacyCore);
+  }
+
+  function normalizeRow(row){
+    const visual = clean(row.visual) || '합격';
+    const label = clean(row.label) || '합격';
+    const weight = clean(row.weight) || '합격';
+    const coa = clean(row.coa) || '합격';
+    const judge = clean(row.judge) || ([visual,label,weight,coa].includes('불합격') ? '불합격' : '합격');
+    return {
+      ...row,
+      inNo: clean(row.inNo),
+      recv: clean(row.recv || row.inspectedAt).slice(0,10),
+      inspectedAt: clean(row.inspectedAt || row.recv).slice(0,10),
+      lot: clean(row.lot),
+      name: clean(row.name) || '-',
+      supplier: clean(row.supplier) || '-',
+      qty: clean(row.qty),
+      inspectQty: clean(row.inspectQty),
+      defectQty: clean(row.defectQty || '0'),
+      visual,
+      label,
+      weight,
+      coa,
+      inspector: clean(row.inspector || row.by),
+      by: clean(row.by || row.inspector),
+      remarks: clean(row.remarks || row.note),
+      note: clean(row.note),
+      judge
+    };
   }
 
   function mergeRows(){
     const map = new Map();
     Array.from(arguments).forEach((list) => {
-      (Array.isArray(list) ? list : []).forEach((row) => {
-        if(!looksLikeIqcRow(row)) return;
+      (Array.isArray(list) ? list : []).forEach((raw) => {
+        if(!isRealIqcRow(raw)) return;
+        const row = normalizeRow(raw);
         const key = rowKey(row);
         if(!key) return;
         map.set(key, {...(map.get(key) || {}), ...row});
@@ -32,81 +62,47 @@
     return [...map.values()].sort((a,b) => dateValue(b).localeCompare(dateValue(a)) || rowKey(b).localeCompare(rowKey(a)));
   }
 
-  function collectFromValue(value, found, depth){
-    if(depth > 4 || value == null) return;
-    if(Array.isArray(value)){
-      if(value.some(looksLikeIqcRow)) found.push(value.filter(looksLikeIqcRow));
-      value.slice(0,50).forEach((item) => collectFromValue(item, found, depth + 1));
-      return;
-    }
-    if(typeof value !== 'object') return;
-    if(Array.isArray(value.iqc) && value.iqc.some(looksLikeIqcRow)) found.push(value.iqc.filter(looksLikeIqcRow));
-    Object.keys(value).slice(0,80).forEach((key) => {
-      if(key === 'iqc') return;
-      collectFromValue(value[key], found, depth + 1);
-    });
-  }
-
-  function scanStorage(storage){
-    const found = [];
-    if(!storage) return found;
+  function readRecoverySnapshot(){
     try{
-      for(let i=0;i<storage.length;i+=1){
-        const key = storage.key(i);
-        if(!key) continue;
-        const raw = storage.getItem(key);
-        if(!raw || raw.length < 10) continue;
-        try{
-          const parsed = JSON.parse(raw);
-          collectFromValue(parsed, found, 0);
-        }catch(_error){}
-      }
-    }catch(_error){}
-    return found;
+      const raw = localStorage.getItem('qmes-iqc-recovery-snapshot-20260813');
+      if(!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed?.iqc) ? parsed.iqc : [];
+    }catch(_error){ return []; }
   }
 
   function recoverLocal(){
     if(!window.DB) return [];
-    const candidates = [Array.isArray(DB.iqc) ? DB.iqc : []];
-    scanStorage(window.localStorage).forEach((rows) => candidates.push(rows));
-    scanStorage(window.sessionStorage).forEach((rows) => candidates.push(rows));
-    const merged = mergeRows.apply(null, candidates);
-    if(merged.length > (Array.isArray(DB.iqc) ? DB.iqc.length : 0)){
-      DB.iqc = merged;
-      try{
-        localStorage.setItem('qmes-iqc-recovery-snapshot-20260813', JSON.stringify({savedAt:new Date().toISOString(), iqc:merged}));
-      }catch(_error){}
-      try{ if(typeof window.dbSave === 'function') window.dbSave(); }catch(_error){}
-      window.dispatchEvent(new CustomEvent('qmes:data-updated', {detail:{type:'iqc-recovery', count:merged.length}}));
-    }
+    const current = Array.isArray(DB.iqc) ? DB.iqc : [];
+    const snapshot = readRecoverySnapshot();
+    const merged = mergeRows(current, snapshot);
+    DB.iqc = merged;
+    try{
+      localStorage.setItem('qmes-iqc-recovery-snapshot-20260813', JSON.stringify({savedAt:new Date().toISOString(), iqc:merged}));
+    }catch(_error){}
+    try{ if(typeof window.dbSave === 'function') window.dbSave(); }catch(_error){}
     return merged;
   }
 
   function wrapPull(){
     const original = window.qmesSyncPullInspection;
-    if(typeof original !== 'function' || original.__qmesIqcLocalRecoveryWrapped) return false;
+    if(typeof original !== 'function' || original.__qmesIqcLocalRecoverySafeWrapped) return false;
     const wrapped = async function(type, localRows){
       const normalized = String(type || '').toLowerCase();
       if(normalized !== 'iqc') return original.apply(this, arguments);
-      const recoveredBefore = recoverLocal();
-      const localSnapshot = mergeRows(localRows, recoveredBefore, Array.isArray(window.DB?.iqc) ? window.DB.iqc : []);
-      const remoteMerged = await original.call(this, type, localSnapshot);
-      const recoveredAfter = recoverLocal();
-      const finalRows = mergeRows(remoteMerged, localSnapshot, recoveredAfter, Array.isArray(window.DB?.iqc) ? window.DB.iqc : []);
+      const protectedLocal = mergeRows(localRows, recoverLocal(), Array.isArray(window.DB?.iqc) ? window.DB.iqc : []);
+      const remoteMerged = await original.call(this, type, protectedLocal);
+      const finalRows = mergeRows(remoteMerged, protectedLocal, readRecoverySnapshot());
       if(window.DB) window.DB.iqc = finalRows;
       try{ if(typeof window.dbSave === 'function') window.dbSave(); }catch(_error){}
       return finalRows;
     };
-    wrapped.__qmesIqcLocalRecoveryWrapped = true;
+    wrapped.__qmesIqcLocalRecoverySafeWrapped = true;
     window.qmesSyncPullInspection = wrapped;
     return true;
   }
 
-  function install(){
-    recoverLocal();
-    wrapPull();
-  }
-
+  function install(){ recoverLocal(); wrapPull(); }
   install();
   let tries = 0;
   const timer = setInterval(() => {
