@@ -1,11 +1,11 @@
 /* QMES premium inventory design - current inventory screens */
 (function installPremiumInventoryDesign(global) {
   "use strict";
-  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V6__) return;
-  global.__QMES_PREMIUM_INVENTORY_DESIGN_V6__ = true;
+  if (global.__QMES_PREMIUM_INVENTORY_DESIGN_V7__) return;
+  global.__QMES_PREMIUM_INVENTORY_DESIGN_V7__ = true;
 
   const style = document.createElement("style");
-  style.id = "qmes-premium-inventory-design-v6";
+  style.id = "qmes-premium-inventory-design-v7";
   style.textContent = `
     .qmes-inventory-premium-scope{color:#fff!important}
     .qmes-inventory-premium-scope .qmes-premium-kpi-card{border:0!important;border-radius:14px!important;background:linear-gradient(145deg,#10243d 0%,#0b1b30 100%)!important;box-shadow:none!important;color:#fff!important;overflow:hidden!important;position:relative!important}
@@ -32,6 +32,7 @@
   document.head.appendChild(style);
 
   const text = (node) => String(node?.textContent || "").replace(/\s+/g, " ").trim();
+  let lastTopMenuButton = null;
 
   function isInventoryPage(main) {
     if (!main) return false;
@@ -51,9 +52,9 @@
     return null;
   }
 
-  function alignInventoryDropdown() {
-    const top = Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn => text(btn) === '재고관리');
+  function alignTopDropdown(button) {
     const dropdown = document.getElementById('qmes-all-menu-dropdown');
+    const top = button && document.contains(button) ? button : lastTopMenuButton;
     if (!top || !dropdown) return;
     const r = top.getBoundingClientRect();
     dropdown.style.setProperty('position','fixed','important');
@@ -85,7 +86,7 @@
         }
       });
     }
-    alignInventoryDropdown();
+    alignTopDropdown();
   }
 
   let queued = false;
@@ -95,25 +96,19 @@
     global.requestAnimationFrame(() => { queued = false; apply(); });
   }
 
-  document.addEventListener('mouseover', (event) => {
+  function rememberTopMenu(event) {
     const top = event.target.closest?.('.qmes-top-menu-button');
-    if (top && text(top) === '재고관리') {
-      setTimeout(alignInventoryDropdown,0);
-      setTimeout(alignInventoryDropdown,50);
-      setTimeout(alignInventoryDropdown,150);
-    }
-  }, true);
-  document.addEventListener('click', (event) => {
-    const top = event.target.closest?.('.qmes-top-menu-button');
-    if (top && text(top) === '재고관리') {
-      setTimeout(alignInventoryDropdown,0);
-      setTimeout(alignInventoryDropdown,80);
-      setTimeout(alignInventoryDropdown,220);
-    }
-  }, true);
+    if (!top) return;
+    lastTopMenuButton = top;
+    [0,30,80,160,260].forEach(ms => setTimeout(() => alignTopDropdown(top), ms));
+  }
+
+  document.addEventListener('mouseover', rememberTopMenu, true);
+  document.addEventListener('mouseenter', rememberTopMenu, true);
+  document.addEventListener('click', rememberTopMenu, true);
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true }); else schedule();
   [0,50,150,300,600,1000,1800].forEach(ms => setTimeout(schedule, ms));
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter:['class','aria-current','style'] });
-  ["qmes:data-updated","qmes:inventory-stage3-ready","qmes:finished-goods-inventory-ready","qmes:inventory-view","load","pageshow","focus","resize"].forEach(name => global.addEventListener(name, schedule));
+  ["qmes:data-updated","qmes:inventory-stage3-ready","qmes:finished-goods-inventory-ready","qmes:inventory-view","load","pageshow","focus","resize","scroll"].forEach(name => global.addEventListener(name, schedule));
 })(window);
