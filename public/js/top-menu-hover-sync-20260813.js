@@ -1,8 +1,8 @@
-/* QMES top-menu hover dropdowns synced with left sidebar */
+/* QMES top-menu hover bar synced with left sidebar */
 (function(){
   'use strict';
-  if(window.__QMES_TOP_HOVER_SYNC_20260813__) return;
-  window.__QMES_TOP_HOVER_SYNC_20260813__=true;
+  if(window.__QMES_TOP_HOVER_BAR_20260813__) return;
+  window.__QMES_TOP_HOVER_BAR_20260813__=true;
 
   const menuMap={
     '대시보드':['종합 대시보드','SPC 대시보드'],
@@ -17,104 +17,86 @@
   };
 
   const clean=v=>String(v||'').replace(/[›〉]/g,'').replace(/\s+/g,' ').trim();
-  let hideTimer=null;
+  let hideTimer=null,currentGroup='';
 
   function ensureStyle(){
-    if(document.getElementById('qmes-top-hover-sync-style')) return;
+    if(document.getElementById('qmes-top-hover-bar-style'))return;
     const style=document.createElement('style');
-    style.id='qmes-top-hover-sync-style';
+    style.id='qmes-top-hover-bar-style';
     style.textContent=`
-      #qmes-top-hover-sync{position:fixed;z-index:13060;min-width:220px;padding:7px;border:1px solid #d8e1eb;border-radius:8px;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.18);display:none}
-      #qmes-top-hover-sync.is-open{display:block}
-      #qmes-top-hover-sync .qmes-hover-title{padding:8px 11px 7px;color:#175cd3;font-size:12px;font-weight:900;border-bottom:1px solid #e2e8f0;margin-bottom:4px}
-      #qmes-top-hover-sync button{display:block;width:100%;min-height:39px;padding:9px 12px;border:0;border-radius:6px;background:#fff;color:#334155;font:inherit;font-size:13px;font-weight:700;text-align:left;cursor:pointer}
-      #qmes-top-hover-sync button:hover{background:#edf4ff;color:#175cd3}
+      #qmes-top-hover-bar{position:fixed;left:0;right:0;z-index:12030;min-height:44px;padding:6px 14px 6px var(--qmes-hover-left,0px);box-sizing:border-box;background:#08182a;border-top:1px solid #18334f;border-bottom:1px solid #31506d;display:none;align-items:center;gap:7px;overflow-x:auto;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+      #qmes-top-hover-bar.is-open{display:flex}
+      #qmes-top-hover-bar button{flex:0 0 auto;min-height:32px;padding:6px 12px;border:1px solid #31506d;border-radius:7px;background:#10253d;color:#cbd8e6;font:inherit;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
+      #qmes-top-hover-bar button:hover,#qmes-top-hover-bar button.is-active{background:#173652;border-color:#4a7598;color:#fff}
+      body.qmes-side-open #qmes-top-hover-bar{padding-left:234px}
+      @media(max-width:900px){body.qmes-side-open #qmes-top-hover-bar{padding-left:204px}}
     `;
     document.head.appendChild(style);
   }
 
-  function ensureBox(){
+  function ensureBar(){
     ensureStyle();
-    let box=document.getElementById('qmes-top-hover-sync');
-    if(box) return box;
-    box=document.createElement('div');
-    box.id='qmes-top-hover-sync';
-    box.addEventListener('mouseenter',()=>{if(hideTimer)clearTimeout(hideTimer)});
-    box.addEventListener('mouseleave',scheduleHide);
-    document.body.appendChild(box);
-    return box;
+    let bar=document.getElementById('qmes-top-hover-bar');
+    if(bar)return bar;
+    bar=document.createElement('div');bar.id='qmes-top-hover-bar';
+    bar.addEventListener('mouseenter',()=>{if(hideTimer)clearTimeout(hideTimer)});
+    bar.addEventListener('mouseleave',scheduleHide);
+    document.body.appendChild(bar);
+    return bar;
   }
 
-  function show(group,topButton){
-    const items=menuMap[group];
-    if(!items?.length) return;
-    if(hideTimer) clearTimeout(hideTimer);
-    const box=ensureBox();
-    box.replaceChildren();
-    const title=document.createElement('div');
-    title.className='qmes-hover-title';
-    title.textContent=group;
-    box.appendChild(title);
+  function getTopBarBottom(){
+    const menu=document.querySelector('.qmes-top-menu-bar')||document.querySelector('.qmes-top-menu');
+    if(menu){const r=menu.getBoundingClientRect();return Math.round(r.bottom);}
+    return 84;
+  }
+
+  function show(group){
+    const items=menuMap[group];if(!items?.length)return;
+    currentGroup=group;
+    if(hideTimer)clearTimeout(hideTimer);
+    const bar=ensureBar();
+    bar.replaceChildren();
     items.forEach(label=>{
-      const btn=document.createElement('button');
-      btn.type='button';
-      btn.dataset.group=group;
-      btn.dataset.label=label;
-      btn.textContent=label;
-      box.appendChild(btn);
+      const btn=document.createElement('button');btn.type='button';btn.dataset.group=group;btn.dataset.label=label;btn.textContent=label;bar.appendChild(btn);
     });
-    const r=topButton.getBoundingClientRect();
-    box.style.left=Math.round(r.left)+'px';
-    box.style.top=Math.round(r.bottom+2)+'px';
-    box.classList.add('is-open');
+    bar.style.top=getTopBarBottom()+'px';
+    bar.classList.add('is-open');
   }
 
-  function hide(){ensureBox().classList.remove('is-open')}
-  function scheduleHide(){if(hideTimer)clearTimeout(hideTimer);hideTimer=setTimeout(hide,140)}
-
-  function findTop(group){
-    return Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn=>clean(btn.textContent)===group);
-  }
+  function hide(){const bar=ensureBar();bar.classList.remove('is-open');currentGroup='';}
+  function scheduleHide(){if(hideTimer)clearTimeout(hideTimer);hideTimer=setTimeout(hide,180)}
+  function findTop(group){return Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn=>clean(btn.textContent)===group)}
 
   function clickSidebarItem(group,label){
-    try{window.qmesSetGlobalSidebarGroup?.(group);}catch(_e){}
+    try{window.qmesSetGlobalSidebarGroup?.(group)}catch(_e){}
     const tryClick=()=>{
-      const side=document.getElementById('qmes-sync-sidebar');
-      if(!side) return false;
-      const buttons=Array.from(side.querySelectorAll('.qmes-side-item'));
-      const exact=buttons.find(btn=>clean(btn.textContent)===label);
-      if(exact){exact.click();return true;}
-      return false;
+      const side=document.getElementById('qmes-sync-sidebar');if(!side)return false;
+      const exact=Array.from(side.querySelectorAll('.qmes-side-item')).find(btn=>clean(btn.textContent)===label);
+      if(exact){exact.click();return true}return false;
     };
-    if(tryClick()) return;
-    setTimeout(tryClick,50);
-    setTimeout(tryClick,140);
+    if(tryClick())return;setTimeout(tryClick,60);setTimeout(tryClick,160);
   }
 
   document.addEventListener('mouseover',event=>{
-    const top=event.target.closest?.('.qmes-top-menu-button');
-    if(!top) return;
-    const group=clean(top.textContent);
-    if(menuMap[group]) show(group,top);
+    const top=event.target.closest?.('.qmes-top-menu-button');if(!top)return;
+    const group=clean(top.textContent);if(menuMap[group])show(group);
   },true);
 
   document.addEventListener('mouseout',event=>{
-    const top=event.target.closest?.('.qmes-top-menu-button');
-    if(!top) return;
+    const top=event.target.closest?.('.qmes-top-menu-button');if(!top)return;
     const group=clean(top.textContent);
-    if(menuMap[group]&&!top.contains(event.relatedTarget)) scheduleHide();
+    if(menuMap[group]&&!top.contains(event.relatedTarget))scheduleHide();
   },true);
 
   document.addEventListener('click',event=>{
-    const item=event.target.closest?.('#qmes-top-hover-sync button[data-group][data-label]');
-    if(!item) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const group=item.dataset.group;
-    const label=item.dataset.label;
-    const top=findTop(group);
-    if(top) top.click();
-    setTimeout(()=>clickSidebarItem(group,label),50);
+    const item=event.target.closest?.('#qmes-top-hover-bar button[data-group][data-label]');if(!item)return;
+    event.preventDefault();event.stopPropagation();
+    const group=item.dataset.group,label=item.dataset.label;
+    const top=findTop(group);if(top)top.click();
+    setTimeout(()=>clickSidebarItem(group,label),60);
     hide();
   },true);
+
+  window.addEventListener('resize',()=>{if(currentGroup)ensureBar().style.top=getTopBarBottom()+'px'});
 })();
