@@ -22,10 +22,34 @@
   const VIEW_KEY="qmes_inventory_v2_view";
   let productExpanded=false;
   let scheduled=false;
+  let inventoryOpenIntentAt=0;
 
   const clean=value=>String(value||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const pages=()=>Array.isArray(window.qmesInventoryV2CompletePages)?window.qmesInventoryV2CompletePages:[];
   const activeView=()=>{try{return sessionStorage.getItem(VIEW_KEY)||"overview";}catch(_error){return "overview";}};
+  const isInventoryTop=node=>{
+    const top=node?.closest?.(".qmes-top-menu-button");
+    return !!top&&clean(top.textContent)==="재고관리";
+  };
+
+  /* The shared sidebar API can be called by hover helpers elsewhere in the app.
+     For inventory, only a real click/touch or keyboard activation is allowed to open it. */
+  document.addEventListener("pointerdown",event=>{
+    if(isInventoryTop(event.target))inventoryOpenIntentAt=Date.now();
+  },true);
+  document.addEventListener("keydown",event=>{
+    if((event.key==="Enter"||event.key===" ")&&isInventoryTop(event.target))inventoryOpenIntentAt=Date.now();
+  },true);
+  const originalSetGlobalSidebarGroup=window.qmesSetGlobalSidebarGroup;
+  if(typeof originalSetGlobalSidebarGroup==="function"&&!originalSetGlobalSidebarGroup.__qmesInventoryHoverGuard){
+    const guarded=function(group){
+      if(clean(group)==="재고관리"&&Date.now()-inventoryOpenIntentAt>900)return;
+      return originalSetGlobalSidebarGroup.apply(this,arguments);
+    };
+    guarded.__qmesInventoryHoverGuard=true;
+    guarded.__qmesOriginal=originalSetGlobalSidebarGroup;
+    window.qmesSetGlobalSidebarGroup=guarded;
+  }
 
   function schedule(){
     if(scheduled)return;
