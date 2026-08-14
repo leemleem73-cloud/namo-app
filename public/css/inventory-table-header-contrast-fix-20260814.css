@@ -1,0 +1,17 @@
+/* Inventory v2 table header contrast fix — 2026-08-14 */
+.qmes-inventory-v2 .qmes-inv2-table-wrap .qmes-inv2-table > thead > tr > th {
+  background-color: #163149 !important;
+  border-bottom-color: #40617e !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  text-shadow: 0 1px 1px rgba(2, 8, 23, .65) !important;
+}
+
+.qmes-inventory-v2 .qmes-inv2-table-wrap .qmes-inv2-table > thead > tr > th * {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  opacity: 1 !important;
+}
