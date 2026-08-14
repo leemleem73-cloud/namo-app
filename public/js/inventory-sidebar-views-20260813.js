@@ -7,6 +7,17 @@
   if(window.__QMES_INVENTORY_DEDICATED_PAGES__)return;
   window.__QMES_INVENTORY_DEDICATED_PAGES__=true;
 
+  /* Unified Inventory v2 replaces these legacy visual runtimes. Pre-mark them as
+     installed so their MutationObservers/listeners do not start on this page. */
+  window.__QMES_RAW_INVENTORY_BALANCED_LAYOUT__=true;
+  window.__QMES_RAW_INVENTORY_BALANCED_LAYOUT_V2__=true;
+  window.__QMES_MATERIAL_CODE_TYPOGRAPHY__=true;
+  window.__QMES_RAW_INVENTORY_COLOR_UNIFORMITY__=true;
+  window.__QMES_FINISHED_INVENTORY_TYPOGRAPHY__=true;
+  window.__QMES_PREMIUM_INVENTORY_DESIGN_V11__=true;
+  window.__QMES_INVENTORY_STABLE_INITIAL_VIEW_20260810__=true;
+  window.__QMES_CENTERED_INVENTORY_LAYOUT_20260810__=true;
+
   const PRODUCT_VIEWS=new Set(["finished","finished-ship","finished-history"]);
   const VIEW_KEY="qmes_inventory_v2_view";
   let productExpanded=false;
@@ -125,10 +136,8 @@
   const style=document.createElement("style");
   style.id="qmes-inventory-menu-hierarchy-style-20260814";
   style.textContent=`
-    /* Inventory entries use the exact same marker behavior as every other shared sidebar item. */
     #qmes-sync-sidebar .qmes-side-item[data-inventory-v2-view]::before{content:none!important;display:none!important}
     #qmes-sync-sidebar .qmes-side-item[data-inventory-v2-view].is-active::before{content:''!important;display:block!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;height:auto!important;margin:0!important;border-radius:0!important;background:#2563eb!important;box-shadow:none!important}
-
     #qmes-sync-sidebar .qmes-inventory-product-parent-side{justify-content:space-between!important}
     #qmes-sync-sidebar .qmes-inventory-product-parent-side>span:first-child{display:inline!important}
     #qmes-sync-sidebar .qmes-inventory-product-parent-side.is-active::before{content:''!important;display:block!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;height:auto!important;margin:0!important;border-radius:0!important;background:#2563eb!important;box-shadow:none!important}
@@ -147,11 +156,20 @@
   `;
   document.head.appendChild(style);
 
-  /* Short bounded bootstrap only; no continuous DOM observer or long polling. */
   let attempts=0;
   const timer=setInterval(()=>{
     attempts+=1;
     syncAll();
     if(pages().length||attempts>=8)clearInterval(timer);
   },150);
+
+  /* Load the final field-input correction after all older field/equipment patches. */
+  window.addEventListener('load',()=>{
+    if(document.querySelector('script[data-qmes-field-final-restore]'))return;
+    const script=document.createElement('script');
+    script.src='./js/field-input-ui-final-restore-20260814.js?v=20260814-1';
+    script.defer=true;
+    script.dataset.qmesFieldFinalRestore='1';
+    document.head.appendChild(script);
+  },{once:true});
 })();
