@@ -1,5 +1,6 @@
 /* QMES partner registration hard recovery — 2026-08-14
  * Always opens a native modal from the visible register button.
+ * Works with both current and older partner screens by matching visible button text.
  * Does NOT block the original React click handler.
  */
 (function(global){
@@ -7,7 +8,7 @@
   if(global.__QMES_PARTNER_REGISTER_HARD_RECOVERY__) return;
   global.__QMES_PARTNER_REGISTER_HARD_RECOVERY__=true;
 
-  const text=value=>String(value??'').trim();
+  const text=value=>String(value??'').replace(/\s+/g,' ').trim();
   const normalizeMaterial=name=>{
     const value=text(name).toUpperCase().replace(/\s+/g,'');
     if(value.includes('BYK180')||value.includes('BYK-180')||value.includes('분산제')) return 'BYK180 (분산제)';
@@ -24,7 +25,7 @@
   function openModal(type){
     closeModal();
     const supplier=type==='supplier';
-    const overlay=document.createElement('div');overlay.id='qmes-partner-register-hard-modal';overlay.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,6,23,.82);backdrop-filter:blur(3px)';
+    const overlay=document.createElement('div');overlay.id='qmes-partner-register-hard-modal';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',supplier?'신규 공급업체 등록':'신규 고객사 등록');overlay.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,6,23,.82);backdrop-filter:blur(3px)';
     const box=document.createElement('div');box.style.cssText=`width:min(${supplier?'760':'520'}px,96vw);max-height:90vh;overflow:auto;border:1px solid #475569;border-radius:14px;background:#111f33;box-shadow:0 24px 70px rgba(0,0,0,.58);font-family:Pretendard,sans-serif`;
     const head=document.createElement('div');head.style.cssText='display:flex;align-items:center;padding:16px 18px;border-bottom:1px solid #334155';
     const title=document.createElement('strong');title.textContent=supplier?'신규 공급업체 등록':'신규 고객사 등록';title.style.cssText='color:#f8fafc;font-size:17px;font-weight:900';
@@ -58,11 +59,19 @@
     foot.append(cancel,save);box.append(head,body,foot);overlay.append(box);overlay.addEventListener('mousedown',event=>{if(event.target===overlay)closeModal();});document.body.append(overlay);requestAnimationFrame(()=>name.focus());
   }
 
-  document.addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-qmes-partner-register="true"]');
-    if(!button)return;
+  function registrationTypeFromButton(button){
+    if(!button)return '';
     const label=text(button.textContent);
-    openModal(label.includes('공급업체')?'supplier':'customer');
+    if(label==='고객사 등록'||label.includes('고객사 등록'))return 'customer';
+    if(label==='공급업체 등록'||label.includes('공급업체 등록'))return 'supplier';
+    return '';
+  }
+
+  document.addEventListener('click',event=>{
+    const button=event.target.closest?.('button');
+    const type=registrationTypeFromButton(button);
+    if(!type)return;
+    openModal(type);
     /* Important: do not preventDefault/stopPropagation. React keeps working too. */
   },true);
 })(window);
