@@ -1,6 +1,7 @@
 /* QMES Stage 12 operational loader
  * Loads item/recipe master, work-order bridge, recipe UI helper, restored top submenu,
- * sidebar global search/topbar visual alignment, scroll layer protection, and NCR actions.
+ * sidebar global search/topbar visual alignment, scroll layer protection, NCR actions,
+ * and partner registration recovery.
  */
 (function(){
   const files=[
@@ -10,7 +11,8 @@
     "./js/qmes-top-submenu-restore.js?v=20260807-2",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
-    "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2"
+    "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
+    "./js/partners-register-modal-recovery-20260814.js?v=20260814-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
