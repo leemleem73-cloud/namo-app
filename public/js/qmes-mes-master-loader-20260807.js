@@ -1,10 +1,10 @@
 /* QMES Stage 12 operational loader
- * Loads item/recipe master, work-order bridge, recipe UI helper, restored top submenu,
- * sidebar global search/topbar visual alignment, scroll layer protection, NCR actions,
- * and partner registration recovery.
+ * Loads stable runtime helpers. Partner click-layer repair is loaded first so
+ * customer/supplier registration cannot be blocked by later UI refinements.
  */
 (function(){
   const files=[
+    "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
@@ -12,7 +12,7 @@
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
-    "./js/partners-register-modal-recovery-20260814.js?v=20260814-1"
+    "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4"
   ];
   function exists(src){
     const base=src.split("?")[0];
@@ -29,7 +29,10 @@
     script.src=src;
     script.async=false;
     script.onload=()=>load(i+1);
-    script.onerror=()=>console.error("[QMES] MES 마스터 모듈 로드 실패",src);
+    script.onerror=()=>{
+      console.error("[QMES] MES 마스터 모듈 로드 실패",src);
+      load(i+1);
+    };
     document.head.appendChild(script);
   }
   const start=()=>load(0);
