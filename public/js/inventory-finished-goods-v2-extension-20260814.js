@@ -234,8 +234,26 @@
       }catch(error){console.warn("[QMES] 완제품 통합 재고 라우터 패치 실패",error);}
     }
 
+    function installTopDropdown(){
+      const menu=document.getElementById("qmes-all-menu-dropdown");
+      if(!menu||clean(menu.querySelector(".qmes-hover-title")?.textContent)!=="재고관리")return;
+      const current=Array.from(menu.querySelectorAll("button"));
+      const complete=current.length===PAGES.length&&PAGES.every(page=>current.some(button=>button.dataset.inventoryV2View===page.view));
+      if(!complete){
+        current.forEach(button=>button.remove());
+        PAGES.forEach(page=>{
+          const button=document.createElement("button");
+          button.type="button";button.dataset.inventoryV2View=page.view;button.textContent=page.label;menu.appendChild(button);
+        });
+      }
+      menu.classList.add("qmes-inventory-v2-menu");
+      const active=readView();
+      menu.querySelectorAll("[data-inventory-v2-view]").forEach(button=>button.classList.toggle("is-active",button.dataset.inventoryV2View===active));
+    }
+
     function installRouterAndSidebar(){
       patchRouter();
+      installTopDropdown();
       const side=document.getElementById("qmes-sync-sidebar");
       if(!side||clean(side.querySelector(".qmes-side-title")?.textContent)!=="재고관리")return;
       const wrap=side.querySelector(".qmes-side-items");
@@ -255,10 +273,35 @@
       wrap.querySelectorAll("[data-inventory-v2-view]").forEach(button=>button.classList.toggle("is-active",button.dataset.inventoryV2View===active));
     }
 
+    function openInventorySidebar(){
+      try{global.qmesSetGlobalSidebarGroup?.("재고관리");}catch(_error){}
+      installRouterAndSidebar();
+      requestAnimationFrame(()=>installRouterAndSidebar());
+      setTimeout(installRouterAndSidebar,60);setTimeout(installRouterAndSidebar,180);
+    }
+
+    document.addEventListener("pointerover",event=>{
+      const top=event.target.closest?.(".qmes-top-menu-button");
+      if(!top||clean(top.textContent)!=="재고관리"||top.contains(event.relatedTarget))return;
+      openInventorySidebar();
+    },true);
+
     document.addEventListener("click",event=>{
       const top=event.target.closest?.(".qmes-top-menu-button");
       if(top&&clean(top.textContent)==="재고관리"){
-        setTimeout(installRouterAndSidebar,0);setTimeout(installRouterAndSidebar,80);setTimeout(installRouterAndSidebar,220);
+        openInventorySidebar();
+      }
+      const dropdownButton=event.target.closest?.("#qmes-all-menu-dropdown [data-inventory-v2-view]");
+      if(dropdownButton){
+        event.preventDefault();event.stopPropagation();
+        const view=dropdownButton.dataset.inventoryV2View;
+        writeView(view);
+        const inventoryTop=Array.from(document.querySelectorAll(".qmes-top-menu-button")).find(button=>clean(button.textContent)==="재고관리");
+        inventoryTop?.click();
+        document.getElementById("qmes-all-menu-dropdown")?.classList.remove("is-open");
+        const apply=()=>emitView(view);
+        requestAnimationFrame(()=>requestAnimationFrame(apply));setTimeout(apply,80);setTimeout(apply,180);
+        return;
       }
       const oldButton=event.target.closest?.("#qmes-sync-sidebar [data-inventory-view],#qmes-top-hover-bar button[data-label]");
       if(!oldButton)return;
@@ -274,6 +317,8 @@
       .qmes-inv2-finished-form{display:grid;grid-template-columns:150px minmax(230px,1.4fr) minmax(210px,1.2fr) 150px 120px;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid #29445e;border-radius:10px;background:#0d2237}
       .qmes-inv2-finished-form label{display:grid;gap:6px;color:#9fb4c8;font-size:12px;font-weight:800}
       .qmes-inv2-finished-form input,.qmes-inv2-finished-form select{width:100%;height:38px;box-sizing:border-box;border:1px solid #334b65;border-radius:7px;background:#12263c;color:#e2e8f0;padding:0 10px;font:700 12px Pretendard,sans-serif;outline:none}
+      #qmes-all-menu-dropdown.qmes-inventory-v2-menu{max-height:calc(100vh - 120px);overflow-y:auto}
+      #qmes-all-menu-dropdown.qmes-inventory-v2-menu button.is-active{background:#eef7ff;color:#0369a1;font-weight:900}
       @media(max-width:1100px){.qmes-inv2-finished-form{grid-template-columns:1fr 1fr}.qmes-inv2-finished-form>.qmes-inv2-btn{grid-column:1/-1}.qmes-inv2-finished-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:640px){.qmes-inv2-finished-form,.qmes-inv2-finished-summary{grid-template-columns:1fr}}
     `;
