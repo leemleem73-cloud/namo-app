@@ -155,6 +155,7 @@
   }
 
   function installSidebar(){
+    if(window.__QMES_UNIFIED_INVENTORY_V2__)return;
     const side=document.getElementById("qmes-sync-sidebar");
     if(!side||clean(side.querySelector(".qmes-side-title")?.textContent)!=="재고관리")return;
     const wrap=side.querySelector(".qmes-side-items");if(!wrap)return;
@@ -165,6 +166,7 @@
   }
 
   function installRouterPage(){
+    if(window.__QMES_UNIFIED_INVENTORY_V2__)return;
     try{
       if(typeof TABS!=="undefined"&&Array.isArray(TABS)){
         const inv=TABS.find(x=>x&&x.id==="inv");
