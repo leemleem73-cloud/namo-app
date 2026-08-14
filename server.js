@@ -641,9 +641,25 @@ app.post('/api/auth/login', async (req, res) => {
     if (!matched) return fail(res, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
     if (user.status !== 'APPROVED') return fail(res, 403, '승인된 계정만 로그인할 수 있습니다.');
 
+    // 새 로그인은 기존/손상된 세션 ID를 재사용하지 않고 새 세션으로 교체합니다.
+    await new Promise((resolve, reject) => {
+      req.session.regenerate((sessionError) => {
+        if (sessionError) reject(sessionError);
+        else resolve();
+      });
+    });
+
     req.session.user = buildSessionUser(user);
 
-    ok(res, { user: req.session.user }, '로그인 성공');
+    // 로그인 응답 전에 PostgreSQL 세션 저장을 끝내 다른 PC의 즉시 401을 방지합니다.
+    await new Promise((resolve, reject) => {
+      req.session.save((sessionError) => {
+        if (sessionError) reject(sessionError);
+        else resolve();
+      });
+    });
+
+    return ok(res, { user: req.session.user }, '로그인 성공');
   } catch (err) {
     fail(res, 500, err.message);
   }
