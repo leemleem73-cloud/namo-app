@@ -1,6 +1,6 @@
 /* Inventory sidebar compatibility + stable hierarchy — 2026-08-14
- * The old dedicated inventory runtime is intentionally retired.
- * Unified Inventory v2 remains the single owner of inventory pages/data.
+ * Unified Inventory v2 is the single owner of inventory pages/data.
+ * This file only arranges the shared top/left inventory navigation.
  */
 (function(){
   "use strict";
@@ -16,25 +16,23 @@
   const pages=()=>Array.isArray(window.qmesInventoryV2CompletePages)?window.qmesInventoryV2CompletePages:[];
   const activeView=()=>{try{return sessionStorage.getItem(VIEW_KEY)||"overview";}catch(_error){return "overview";}};
 
-  function schedule(delay=0){
-    if(delay){setTimeout(()=>schedule(0),delay);return;}
+  function schedule(){
     if(scheduled)return;
     scheduled=true;
     requestAnimationFrame(()=>{scheduled=false;syncAll();});
   }
 
   function makeParent(top){
-    const node=document.createElement("div");
-    node.setAttribute("role","button");
+    const node=document.createElement("button");
+    node.type="button";
     node.setAttribute("aria-expanded","false");
-    node.tabIndex=0;
-    node.className=top?"qmes-inventory-product-parent-top":"qmes-inventory-product-parent-side";
+    node.className=top?"qmes-inventory-product-parent-top":"qmes-side-item qmes-inventory-product-parent-side";
     node.innerHTML='<span>완제품</span><span class="qmes-inventory-product-arrow">›</span>';
     return node;
   }
 
-  function toggleProduct(force){
-    productExpanded=typeof force==="boolean"?force:!productExpanded;
+  function toggleProduct(){
+    productExpanded=!productExpanded;
     syncAll();
   }
 
@@ -113,17 +111,7 @@
     if(viewButton&&PRODUCT_VIEWS.has(viewButton.dataset.inventoryV2View))productExpanded=true;
 
     const top=event.target.closest?.(".qmes-top-menu-button");
-    if(top&&clean(top.textContent)==="재고관리"){schedule();schedule(70);}
-  },true);
-
-  document.addEventListener("keydown",event=>{
-    const parent=event.target.closest?.(".qmes-inventory-product-parent-side,.qmes-inventory-product-parent-top");
-    if(parent&&(event.key==="Enter"||event.key===" ")){event.preventDefault();toggleProduct();}
-  },true);
-
-  document.addEventListener("pointerover",event=>{
-    const top=event.target.closest?.(".qmes-top-menu-button");
-    if(top&&clean(top.textContent)==="재고관리"&&!top.contains(event.relatedTarget)){schedule();schedule(80);}
+    if(top&&clean(top.textContent)==="재고관리")schedule();
   },true);
 
   window.addEventListener("qmes:inventory-v2-view",event=>{
@@ -131,35 +119,39 @@
     if(PRODUCT_VIEWS.has(view))productExpanded=true;
     schedule();
   });
-  window.addEventListener("qmes:inventory-stage3-ready",()=>schedule(80));
-  window.addEventListener("qmes:auth-ready",()=>schedule(120));
+  window.addEventListener("qmes:inventory-stage3-ready",schedule);
+  window.addEventListener("qmes:auth-ready",schedule);
 
   const style=document.createElement("style");
   style.id="qmes-inventory-menu-hierarchy-style-20260814";
   style.textContent=`
-    #qmes-sync-sidebar .qmes-inventory-product-parent-side{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;min-height:40px;padding:9px 10px 9px 14px;margin:2px 0;box-sizing:border-box;border:0;border-radius:7px;background:transparent;color:#475569;font:700 13px Pretendard,'Noto Sans KR',sans-serif;text-align:left;cursor:pointer}
-    #qmes-sync-sidebar .qmes-inventory-product-parent-side:hover{background:#f4f7fa;color:#172033}
-    #qmes-sync-sidebar .qmes-inventory-product-parent-side.is-active{background:#edf4ff;color:#175cd3}
-    #qmes-sync-sidebar .qmes-inventory-product-parent-side.is-active:before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2563eb}
-    #qmes-sync-sidebar .qmes-inventory-product-arrow{font-size:18px;line-height:1;transition:transform .14s ease}
+    /* Inventory entries use the exact same marker behavior as every other shared sidebar item. */
+    #qmes-sync-sidebar .qmes-side-item[data-inventory-v2-view]::before{content:none!important;display:none!important}
+    #qmes-sync-sidebar .qmes-side-item[data-inventory-v2-view].is-active::before{content:''!important;display:block!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;height:auto!important;margin:0!important;border-radius:0!important;background:#2563eb!important;box-shadow:none!important}
+
+    #qmes-sync-sidebar .qmes-inventory-product-parent-side{justify-content:space-between!important}
+    #qmes-sync-sidebar .qmes-inventory-product-parent-side>span:first-child{display:inline!important}
+    #qmes-sync-sidebar .qmes-inventory-product-parent-side.is-active::before{content:''!important;display:block!important;position:absolute!important;left:0!important;top:8px!important;bottom:8px!important;width:3px!important;height:auto!important;margin:0!important;border-radius:0!important;background:#2563eb!important;box-shadow:none!important}
+    #qmes-sync-sidebar .qmes-inventory-product-arrow{margin-left:auto;font-size:17px;line-height:1;transition:transform .14s ease}
     #qmes-sync-sidebar .qmes-inventory-product-parent-side.is-open .qmes-inventory-product-arrow{transform:rotate(90deg)}
-    #qmes-sync-sidebar .qmes-side-item.qmes-inventory-product-child{padding-left:29px!important;font-weight:650!important}
+    #qmes-sync-sidebar .qmes-side-item.qmes-inventory-product-child{padding-left:29px!important;font-weight:700!important}
     #qmes-sync-sidebar .qmes-side-item.qmes-inventory-product-child[hidden]{display:none!important}
 
     #qmes-all-menu-dropdown .qmes-inventory-product-parent-top{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:39px;padding:9px 11px;box-sizing:border-box;border:0;border-radius:7px;background:transparent;color:#e2e8f0;font:750 13px Pretendard,'Noto Sans KR',sans-serif;text-align:left;cursor:pointer}
     #qmes-all-menu-dropdown .qmes-inventory-product-parent-top:hover{background:#243a57;color:#fff}
     #qmes-all-menu-dropdown .qmes-inventory-product-parent-top.is-active{background:#eef7ff;color:#0369a1;font-weight:900}
-    #qmes-all-menu-dropdown .qmes-inventory-product-parent-top .qmes-inventory-product-arrow{font-size:18px;line-height:1;transition:transform .14s ease}
+    #qmes-all-menu-dropdown .qmes-inventory-product-parent-top .qmes-inventory-product-arrow{margin-left:auto;font-size:17px;line-height:1;transition:transform .14s ease}
     #qmes-all-menu-dropdown .qmes-inventory-product-parent-top.is-open .qmes-inventory-product-arrow{transform:rotate(90deg)}
     #qmes-all-menu-dropdown button.qmes-inventory-product-child-top{padding-left:26px!important}
     #qmes-all-menu-dropdown button.qmes-inventory-product-child-top[hidden]{display:none!important}
   `;
   document.head.appendChild(style);
 
+  /* Short bounded bootstrap only; no continuous DOM observer or long polling. */
   let attempts=0;
   const timer=setInterval(()=>{
-    attempts+=1;syncAll();
-    if(pages().length&&attempts>=12)clearInterval(timer);
-    else if(attempts>=40)clearInterval(timer);
-  },120);
+    attempts+=1;
+    syncAll();
+    if(pages().length||attempts>=8)clearInterval(timer);
+  },150);
 })();
