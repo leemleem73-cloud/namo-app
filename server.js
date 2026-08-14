@@ -641,9 +641,26 @@ app.post('/api/auth/login', async (req, res) => {
     if (!matched) return fail(res, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
     if (user.status !== 'APPROVED') return fail(res, 403, '승인된 계정만 로그인할 수 있습니다.');
 
+    // 새 로그인은 기존/손상된 세션 ID를 재사용하지 않고 새 세션으로 교체합니다.
+    await new Promise((resolve, reject) => {
+      req.session.regenerate((sessionError) => {
+        if (sessionError) reject(sessionError);
+        else resolve();
+      });
+    });
+
     req.session.user = buildSessionUser(user);
 
-    ok(res, { user: req.session.user }, '로그인 성공');
+    // 다른 PC에서 로그인 직후 /api/auth/me가 먼저 호출되어 401이 되는
+    // 세션 저장 경쟁 조건을 막기 위해 저장 완료 후 응답합니다.
+    await new Promise((resolve, reject) => {
+      req.session.save((sessionError) => {
+        if (sessionError) reject(sessionError);
+        else resolve();
+      });
+    });
+
+    return ok(res, { user: req.session.user }, '로그인 성공');
   } catch (err) {
     fail(res, 500, err.message);
   }
