@@ -27,6 +27,11 @@
     {code:"PM-BOX01",name:"포장 BOX",type:"PACK",unit:"EA",safety:100,location:"B-04",iqcRequired:true,inspection:"규격/외관"},
     {code:"PM-FILM01",name:"포장필름",type:"PACK",unit:"ROLL",safety:10,location:"B-05",iqcRequired:false}
   ];
+  const DEFAULT_PACKAGING_BOM=[
+    {code:"PM-DRUM20",name:"20L DRUM",perProduct:1},
+    {code:"PM-LABEL01",name:"제품라벨",perProduct:1},
+    {code:"PM-BOX01",name:"포장 BOX",productsPerUnit:5}
+  ];
   const PASS=new Set(["합격","정상","PASS","OK","적합"]);
   const VIEW_KEY="qmes_inventory_v2_view";
 
@@ -172,8 +177,11 @@
         if(existing)existing.workOrders.push({workOrderNo:workOrder.no,used:quantity,item:workOrder.item||workOrder.product||""});
         productionTransactions.push({key:`auto:${workOrder.no}:${lotNo}:${index}`,kind:"inventory-v2-transaction",type:"생산투입",code:existing?.code||"",name:existing?.name||input.name||input.materialName||"",materialType:existing?.type||"RAW",lotNo,qty:-quantity,unit:existing?.unit||input.unit||"kg",occurredAt:workOrder.completedAt||workOrder.updatedAt||workOrder.date||"",documentNo:workOrder.no,by:workOrder.completedBy||workOrder.by||"생산실적",automatic:true,affectsStock:false});
       });
-      const packRows=Array.isArray(workOrder.packagingBOM)?workOrder.packagingBOM:Array.isArray(workOrder.packagingBom)?workOrder.packagingBom:[];
-      const produced=num(workOrder.actualProductionQty??workOrder.actualQty??workOrder.outputQty??workOrder.productionQty);
+      const batch=(Array.isArray(global.DB?.batches)?global.DB.batches:[]).find(row=>text(row?.no)===text(workOrder.no))||{};
+      const outputUnit=upper(workOrder.productionUnit||workOrder.outputUnit||workOrder.unit||batch.unit);
+      const explicitPackaging=Array.isArray(workOrder.packagingBOM)?workOrder.packagingBOM:Array.isArray(workOrder.packagingBom)?workOrder.packagingBom:[];
+      const packRows=explicitPackaging.length?explicitPackaging:(outputUnit==="EA"?DEFAULT_PACKAGING_BOM:[]);
+      const produced=num(workOrder.actualProductionQty??workOrder.actualQty??workOrder.outputQty??workOrder.productionQty??batch.done??(isCompletedWorkOrder(workOrder)?workOrder.plan:0));
       if(isCompletedWorkOrder(workOrder)&&produced>0){
         packRows.forEach((pack,index)=>{
           const master=masters.find(item=>item.type==="PACK"&&sameMaterial(item,`${pack.code} ${pack.name} ${pack.material}`));
@@ -422,7 +430,10 @@
       const orders=[...domain.workOrders].sort((a,b)=>String(b.completedAt||b.updatedAt||b.date||"").localeCompare(String(a.completedAt||a.updatedAt||a.date||"")));
       const rows=[];
       orders.forEach(workOrder=>{
-        const inputs=Array.isArray(workOrder.inputs)&&workOrder.inputs.length?workOrder.inputs:[{}];
+        const rawInputs=Array.isArray(workOrder.inputs)?workOrder.inputs:[];
+        const packInputs=domain.transactions.filter(tx=>tx.type==="생산투입"&&tx.materialType==="PACK"&&text(tx.documentNo)===text(workOrder.no)).map(tx=>({name:tx.name,materialLot:tx.lotNo,act:Math.abs(num(tx.qty)),unit:tx.unit,automaticPack:true}));
+        const inputs=[...rawInputs,...packInputs];
+        if(!inputs.length)inputs.push({});
         inputs.forEach((input,index)=>{
           const lot=domain.lots.find(row=>upper(row.lotNo)===upper(input.materialLot||input.lot));
           const actual=num(input.act??input.actualQty??input.actual);
@@ -431,7 +442,7 @@
             index===0?h("td",{rowSpan:inputs.length,className:"is-name"},workOrder.item||workOrder.product||"-"):null,
             index===0?h("td",{rowSpan:inputs.length},h(Chip,{kind:isCompletedWorkOrder(workOrder)?"normal":"warning"},workOrder.status||"진행중")):null,
             h("td",null,input.name||input.materialName||lot?.name||"-"),
-            h("td",{className:"is-number"},`${fmt(input.plan??input.plannedQty)} ${input.unit||lot?.unit||"kg"}`),
+            h("td",{className:"is-number"},input.automaticPack?"포장 BOM":`${fmt(input.plan??input.plannedQty)} ${input.unit||lot?.unit||"kg"}`),
             h("td",{className:"is-number is-available"},`${fmt(actual)} ${input.unit||lot?.unit||"kg"}`),
             h("td",{className:"is-code"},input.materialLot||input.lot||"미선택"),
             h("td",null,lot?h(Chip,{kind:lot.hold?"hold":lot.pending?"warning":"normal"},lot.hold?"HOLD":lot.pending?lot.iqc:"사용가능"):h(Chip,{kind:"danger"},"LOT 미확인")),
