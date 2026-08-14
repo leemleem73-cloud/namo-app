@@ -48,6 +48,7 @@
 
   function findTable(){
     return Array.from(document.querySelectorAll("table")).find((table)=>{
+      if(table.closest(".qmes-inventory-v2")) return false;
       const labels=Array.from(table.querySelectorAll("thead th")).map((th)=>text(th.textContent));
       return labels.includes("자재코드")&&labels.includes("현재고")&&labels.includes("안전재고")&&labels.includes("상태");
     })||null;
