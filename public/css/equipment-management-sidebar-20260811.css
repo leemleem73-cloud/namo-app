@@ -43,6 +43,7 @@ html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-summary-unit{display:inline-block!important;margin-left:3px!important;color:#334155!important;font-size:15px!important;line-height:1!important;font-weight:850!important;opacity:1!important;transform:none!important;animation:none!important;}
 @keyframes qmesEquipmentSummaryNumberGlow{0%,100%{transform:translateZ(0) scale(.97);opacity:.78}50%{transform:translateZ(0) scale(1.06);opacity:1}}
 
+
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab{gap:14px!important;width:100%!important;min-width:0!important;max-width:100%!important;}
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div:first-child{min-height:70px!important;padding:14px 18px!important;border:1px solid #d5dee8!important;border-radius:12px!important;background:#fff!important;box-shadow:none!important;}
 .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center{min-height:170px!important;padding:18px 20px 16px!important;border:1px solid #d7e0e8!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important;}
@@ -53,9 +54,9 @@ html body .qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment
 .qmes-ipad-equipment .qmes-equipment-alarm-title{color:#0f2f63!important;font-size:17px!important;font-weight:900!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-count{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:58px!important;min-width:58px!important;height:30px!important;padding:0 9px!important;box-sizing:border-box!important;border:1px solid #fecdd3!important;border-radius:8px!important;background:#fff1f2!important;color:#e11d48!important;-webkit-text-fill-color:#e11d48!important;font-size:13px!important;font-weight:900!important;line-height:1!important;box-shadow:none!important;}
 html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools{display:inline-flex!important;align-items:center!important;gap:10px!important;min-width:0!important;margin:0!important;padding:0!important;white-space:nowrap!important;}
-html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]{width:168px!important;min-width:168px!important;height:32px!important;min-height:32px!important;margin:0!important;padding:0 8px!important;box-sizing:border-box!important;border:1px solid #bfdbfe!important;border-radius:8px!important;background:#f8fbff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;font-size:14px!important;font-weight:850!important;line-height:1!important;outline:none!important;box-shadow:0 1px 3px rgba(37,99,235,.06)!important;}
-html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]:hover{border-color:#93c5fd!important;background:#f0f7ff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;}
-html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]:focus{border-color:#60a5fa!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:0 0 0 2px rgba(96,165,250,.14)!important;}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]{width:168px!important;min-width:168px!important;height:32px!important;min-height:32px!important;margin:0!important;padding:0 8px!important;box-sizing:border-box!important;border:1px solid #bfdbfe!important;border-radius:8px!important;background:#f8fbff!important;color:#1e3a8a!important;-webkit-text-fill-color:#1e3a8a!important;font-size:14px!important;font-weight:850!important;line-height:1!important;outline:none!important;box-shadow:0 1px 3px rgba(37,99,235,.06)!important;}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]:hover{border-color:#93c5fd!important;background:#f0f7ff!important;}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]:focus{border-color:#60a5fa!important;background:#fff!important;box-shadow:0 0 0 2px rgba(96,165,250,.14)!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-table-head,.qmes-ipad-equipment .qmes-equipment-alarm-row{grid-template-columns:120px 120px 110px minmax(0,1fr)!important;padding-left:18px!important;padding-right:18px!important;box-sizing:border-box!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-table-head{display:grid!important;align-items:center!important;min-height:56px!important;margin:0 14px!important;border:1px solid #d7e0e8!important;border-radius:7px!important;background:#f8fafc!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-table-head>span{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;padding:0!important;color:#111827!important;font-size:15px!important;font-weight:850!important;text-align:center!important;}
@@ -68,26 +69,835 @@ html body .qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="dat
 .qmes-ipad-equipment .qmes-equipment-alarm-time,.qmes-ipad-equipment .qmes-equipment-alarm-eq{justify-self:center!important;margin:0!important;padding:0!important;color:#111827!important;font-size:14px!important;font-weight:600!important;text-align:center!important;}
 .qmes-ipad-equipment .qmes-equipment-alarm-message{justify-self:start!important;width:100%!important;margin:0!important;padding-left:0!important;color:#111827!important;font-size:13px!important;font-weight:600!important;line-height:1.35!important;letter-spacing:-.2px!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;text-align:left!important;}
 
-/* 밝은 입력칸 글씨를 검정색으로 통일 */
-html body .qmes-ipad-equipment .qmes-equipment-management-content input,
-html body .qmes-ipad-equipment .qmes-equipment-management-content select,
-html body .qmes-ipad-equipment .qmes-equipment-management-content textarea{
-  color:#111827!important;
-  -webkit-text-fill-color:#111827!important;
+@media(max-width:1180px){.qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:138px minmax(0,1fr)!important;gap:10px!important}.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{width:138px!important;min-width:138px!important;max-width:138px!important}.qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmes-ipad-equipment .qmes-equipment-alarm-table-head,.qmes-ipad-equipment .qmes-equipment-alarm-row{grid-template-columns:112px 110px 100px minmax(0,1fr)!important;padding-left:14px!important;padding-right:14px!important}}
+@media(max-width:900px){.qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:1fr!important;gap:12px!important}.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{position:relative!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;padding:0!important;border-right:0!important;border-bottom:1px solid #dce4ec!important}.qmes-ipad-equipment .qmes-equipment-management-content{grid-column:1!important}.qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmes-ipad-equipment .qmes-equipment-alarm-table-head{display:none!important}.qmes-ipad-equipment .qmes-equipment-alarm-row{grid-template-columns:100px 80px minmax(100px,1fr)!important;gap:8px!important;padding:14px 12px!important;min-height:0!important}.qmes-ipad-equipment .qmes-equipment-alarm-message{grid-column:1/-1!important}}
+
+/* 설비대장·정기점검·고장수리: 좁은 칸의 글자 맞춤 */
+.qmes-ipad-equipment .qmes-equipment-management-content label{min-width:0!important;}
+.qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-field{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  padding-left:7px!important;
+  padding-right:7px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  letter-spacing:-.15px!important;
 }
-html body .qmes-ipad-equipment .qmes-equipment-management-content input::placeholder,
-html body .qmes-ipad-equipment .qmes-equipment-management-content textarea::placeholder{
-  color:#64748b!important;
-  -webkit-text-fill-color:#64748b!important;
-  opacity:1!important;
+.qmes-ipad-equipment .qmes-equipment-management-content input.qmes-equipment-field[type="date"]{
+  padding-left:5px!important;
+  padding-right:3px!important;
+  font-size:10.5px!important;
+  letter-spacing:-.35px!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content select.qmes-equipment-field{
+  padding-left:6px!important;
+  padding-right:18px!important;
+  font-size:11px!important;
+}
+.qmes-ipad-equipment .qmes-equipment-master-table{table-layout:fixed!important;font-size:11px!important;}
+.qmes-ipad-equipment .qmes-equipment-master-table th{
+  padding-left:4px!important;
+  padding-right:4px!important;
+  font-size:10.5px!important;
+  line-height:1.2!important;
+  letter-spacing:-.25px!important;
+  white-space:nowrap!important;
+}
+.qmes-ipad-equipment .qmes-equipment-master-table td{min-width:0!important;padding-left:3px!important;padding-right:3px!important;}
+.qmes-ipad-equipment .qmes-equipment-master-table .qmes-equipment-field{font-size:10.5px!important;}
+.qmes-ipad-equipment .qmes-equipment-schedule-form,
+.qmes-ipad-equipment .qmes-equipment-repair-form{align-items:end!important;}
+.qmes-ipad-equipment .qmes-equipment-schedule-form label,
+.qmes-ipad-equipment .qmes-equipment-repair-form label{
+  overflow:hidden!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  letter-spacing:-.2px!important;
+  white-space:nowrap!important;
+}
+.qmes-ipad-equipment .qmes-equipment-schedule-row{
+  display:grid!important;
+  grid-template-columns:minmax(100px,1.2fr) 68px 86px 72px 58px 58px!important;
+  gap:8px!important;
+  align-items:center!important;
+  font-size:11.5px!important;
+}
+.qmes-ipad-equipment .qmes-equipment-repair-row{
+  display:grid!important;
+  grid-template-columns:minmax(100px,1.1fr) 84px minmax(105px,1.5fr) minmax(105px,1.5fr) 64px 82px!important;
+  gap:8px!important;
+  align-items:center!important;
+  font-size:11.5px!important;
+}
+.qmes-ipad-equipment .qmes-equipment-schedule-row>*,
+.qmes-ipad-equipment .qmes-equipment-repair-row>*{
+  min-width:0!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.qmes-ipad-equipment .qmes-equipment-repair-row>span:nth-of-type(2),
+.qmes-ipad-equipment .qmes-equipment-repair-row>span:nth-of-type(3){
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.3!important;
+}
+.qmes-ipad-equipment .qmes-equipment-schedule-row>button,
+.qmes-ipad-equipment .qmes-equipment-repair-row>button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  padding-left:5px!important;
+  padding-right:5px!important;
+  overflow:visible!important;
+  font-size:10.5px!important;
+}
+.qmes-ipad-equipment .qmes-equipment-small-button{
+  min-width:0!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+}
+@media(max-width:900px){
+  .qmes-ipad-equipment .qmes-equipment-schedule-row{
+    grid-template-columns:minmax(110px,1.3fr) 70px 90px minmax(80px,1fr) 58px 58px!important;
+  }
+  .qmes-ipad-equipment .qmes-equipment-repair-row{
+    grid-template-columns:minmax(105px,1fr) 84px minmax(100px,1.3fr) minmax(100px,1.3fr) 64px 82px!important;
+  }
 }
 
-@media(max-width:1180px){.qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:138px minmax(0,1fr)!important;gap:10px!important}.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{width:138px!important;min-width:138px!important;max-width:138px!important}.qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmes-ipad-equipment .qmes-equipment-alarm-table-head,.qmes-ipad-equipment .qmes-equipment-alarm-row{grid-template-columns:112px 110px 100px minmax(0,1fr)!important;padding-left:14px!important;padding-right:14px!important}}
-@media(max-width:900px){.qmes-ipad-equipment .qmes-equipment-management-layout{grid-template-columns:1fr!important;gap:12px!important}.qmes-ipad-equipment .qmes-equipment-management-sidebar.qmes-equipment-nav-block{position:relative!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;padding:0!important;border-right:0!important;border-bottom:1px solid #dce4ec!important}.qmes-ipad-equipment .qmes-equipment-management-content{grid-column:1!important}.qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmes-ipad-equipment .qmes-equipment-alarm-table-head{display:none!important}.qmes-ipad-equipment .qmes-equipment-alarm-row{grid-template-columns:100px 80px minmax(100px,1fr)!important;gap:8px!important;padding:14px 12px!important;min-height:0!important}.qmes-ipad-equipment .qmes-equipment-alarm-message{grid-column:1/-1!important;white-space:normal!important}.qmes-ipad-equipment .qmes-equipment-alarm-title-tools input[type="date"]{width:145px!important;min-width:145px!important}}
+
+
+/* 순회점검 입력 화면 — NMP 안내문과 동일한 Pretendard 서체 */
+.qmes-ipad-equipment .qmes-equipment-tour-screen,
+.qmes-ipad-equipment .qmes-equipment-tour-screen button,
+.qmes-ipad-equipment .qmes-equipment-tour-screen input,
+.qmes-ipad-equipment .qmes-equipment-tour-screen strong,
+.qmes-ipad-equipment .qmes-equipment-tour-screen span,
+.qmes-ipad-equipment .qmes-equipment-tour-screen p,
+.qmes-ipad-equipment .qmes-equipment-tour-screen div,
+.qmes-ipad-equipment .qmes-equipment-tour-screen h1,
+.qmes-ipad-equipment .qmes-equipment-tour-screen h2,
+.qmes-ipad-equipment .qmes-equipment-tour-screen h3{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-style:normal!important;
+  letter-spacing:-.15px!important;
+}
+
+
+/* 순회점검 동작 버튼 상태 색상 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause{
+  border:1.5px solid #f59e0b!important;
+  background:#fffbeb!important;
+  color:#b45309!important;
+  -webkit-text-fill-color:#b45309!important;
+  font-weight:800!important;
+  box-shadow:0 0 0 2px rgba(245,158,11,.12),0 2px 7px rgba(245,158,11,.18)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause:focus,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause:focus-visible{
+  border-color:#d97706!important;
+  background:#fef3c7!important;
+  box-shadow:0 0 0 3px rgba(245,158,11,.18),0 4px 11px rgba(217,119,6,.20)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok{
+  border:1.5px solid #22c55e!important;
+  background:#f0fdf4!important;
+  color:#15803d!important;
+  -webkit-text-fill-color:#15803d!important;
+  font-weight:800!important;
+  box-shadow:0 0 0 2px rgba(34,197,94,.12)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok:focus,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok:focus-visible,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok.is-selected,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-ok[aria-pressed="true"]{
+  border-color:#16a34a!important;
+  background:#dcfce7!important;
+  color:#166534!important;
+  -webkit-text-fill-color:#166534!important;
+  box-shadow:0 0 0 3px rgba(34,197,94,.16),0 4px 12px rgba(22,163,74,.18)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad{
+  border:1.5px solid #ef4444!important;
+  background:#fef2f2!important;
+  color:#dc2626!important;
+  -webkit-text-fill-color:#dc2626!important;
+  font-weight:800!important;
+  box-shadow:0 0 0 2px rgba(239,68,68,.12)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad:focus,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad:focus-visible,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad.is-selected,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-bad[aria-pressed="true"]{
+  border-color:#dc2626!important;
+  background:#fee2e2!important;
+  color:#b91c1c!important;
+  -webkit-text-fill-color:#b91c1c!important;
+  box-shadow:0 0 0 3px rgba(239,68,68,.16),0 4px 12px rgba(220,38,38,.18)!important;
+}
+
+
+
+/* 이전/다음 설비 버튼은 동일한 테두리형 디자인 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-prev,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-next{
+  min-height:42px!important;
+  border:1.5px solid #64748b!important;
+  background:#fff!important;
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  box-shadow:0 2px 6px rgba(71,85,105,.10)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-prev:hover,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-next:hover,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-prev:focus-visible,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-next:focus-visible{
+  border-color:#475569!important;
+  background:#f8fafc!important;
+  color:#334155!important;
+  -webkit-text-fill-color:#334155!important;
+  box-shadow:0 0 0 3px rgba(100,116,139,.12),0 3px 8px rgba(71,85,105,.12)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-prev.is-disabled{
+  opacity:.45!important;
+  cursor:not-allowed!important;
+}
+
+
+/* 순회점검 항목·기준 문구를 NMP 안내문 서체로 통일 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-label,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-spec{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-style:normal!important;
+  letter-spacing:-.15px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-label{
+  font-size:14px!important;
+  line-height:1.35!important;
+  font-weight:700!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-item-spec{
+  font-size:12px!important;
+  line-height:1.35!important;
+  font-weight:600!important;
+}
+
+/* 판독값·비고 입력 글자와 placeholder 크기 통일 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-note{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-size:14px!important;
+  line-height:1.4!important;
+  font-weight:600!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading::placeholder,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-note::placeholder{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-size:14px!important;
+  line-height:1.4!important;
+  font-weight:600!important;
+}
 
 /* 순회점검 검사자 이름 입력 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  min-height:52px!important;
+  margin:0 0 12px!important;
+  padding:7px 10px!important;
+  box-sizing:border-box!important;
+  border:1px solid #d8e1ea!important;
+  border-radius:9px!important;
+  background:#f8fafc!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector-label,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector-dept{
+  color:#334155!important;
+  -webkit-text-fill-color:#334155!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+}
 html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector-input{
+  width:180px!important;
+  min-width:180px!important;
+  max-width:180px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 11px!important;
+  box-sizing:border-box!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:700!important;
+  text-align:center!important;
+  outline:none!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector-input:focus{
+  border-color:#60a5fa!important;
+  box-shadow:0 0 0 2px rgba(96,165,250,.14)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector-input.is-required-empty{
+  border-color:#ef4444!important;
+  background:#fff1f2!important;
+  box-shadow:0 0 0 2px rgba(239,68,68,.12)!important;
+}
+
+/* 판독값이 스펙을 벗어나면 값과 입력창을 즉시 빨간색으로 표시 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading.is-spec-out,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading[aria-invalid="true"]{
+  border-color:#ef4444!important;
+  background:#fff1f2!important;
+  color:#dc2626!important;
+  -webkit-text-fill-color:#dc2626!important;
+  font-weight:900!important;
+  box-shadow:0 0 0 2px rgba(239,68,68,.14)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading.is-spec-out:focus,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-reading[aria-invalid="true"]:focus{
+  border-color:#dc2626!important;
+  box-shadow:0 0 0 3px rgba(239,68,68,.18)!important;
+}
+@media(max-width:640px){
+  html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector{
+    justify-content:center!important;
+    flex-wrap:wrap!important;
+  }
+  html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-inspector-input{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+}
+
+
+/* 순회점검 상단: 작은 뒤로가기 + 잠시 중단 */
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-head-actions{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  white-space:nowrap!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back{
+  width:84px!important;
+  min-width:84px!important;
+  max-width:84px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 8px!important;
+  border:1px solid #94a3b8!important;
+  background:#fff!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:750!important;
+  box-shadow:none!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back:hover,
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-back:focus-visible{
+  border-color:#64748b!important;
+  background:#f8fafc!important;
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  box-shadow:0 0 0 2px rgba(100,116,139,.12)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-tour-screen .qmes-equipment-tour-pause{
+  width:84px!important;
+  min-width:84px!important;
+  max-width:84px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 8px!important;
+  font-size:11px!important;
+  line-height:1!important;
+}
+
+/* 알람 이력: 조치 필요 제목과 내용의 왼쪽 기준선 통일 */
+html body .qmes-ipad-equipment .qmes-equipment-alarm-table-head>span:last-child{
+  justify-content:flex-start!important;
+  padding-left:14px!important;
+  box-sizing:border-box!important;
+  text-align:left!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-message{
+  justify-self:stretch!important;
+  padding-left:14px!important;
+  box-sizing:border-box!important;
+  text-align:left!important;
+}
+
+
+/* 알람 이력 조치 필요: 제목과 내용을 같은 중앙선에 정렬 */
+html body .qmes-ipad-equipment .qmes-equipment-alarm-table-head>span:last-child{
+  justify-content:center!important;
+  padding-left:0!important;
+  text-align:center!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-alarm-message{
+  justify-self:center!important;
+  padding-left:0!important;
+  text-align:center!important;
+}
+
+
+/* 설비점검 메인 화면 전체 타이포·간격 정돈 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-single,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single button,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single input,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single strong,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single span,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single p,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single div,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single h1,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single h2,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single h3{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+  font-style:normal!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab.qmes-equipment-mode-single{
+  gap:12px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab.qmes-equipment-mode-single>.qmes-equipment-daily-status-cards{
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-daily-status-cards{
+  gap:10px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-daily-status-card{
+  min-height:82px!important;
+  padding:11px 14px!important;
+  border-color:#d8e1ea!important;
+  border-radius:11px!important;
+  box-shadow:0 2px 6px rgba(15,23,42,.045)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-daily-status-title{
+  margin-bottom:4px!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+  font-weight:750!important;
+  letter-spacing:-.15px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-daily-status-value{
+  font-size:20px!important;
+  line-height:1.1!important;
+  font-weight:900!important;
+  letter-spacing:-.2px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-daily-status-sub{
+  margin-top:4px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:600!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-tour-status-row.qmes-daily-guide-only{
+  min-height:52px!important;
+  padding:0 16px!important;
+  border-color:#dbe4ed!important;
+  border-radius:10px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-tour-guide-text,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-tour-guide-text *{
+  font-size:12px!important;
+  line-height:1.35!important;
+  font-weight:650!important;
+  letter-spacing:-.15px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-management-content .qmes-equipment-tab.qmes-equipment-mode-single>.qmes-equipment-home-card{
+  min-height:150px!important;
+  padding:17px 20px!important;
+  border:1px solid #d8e1ea!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 2px 7px rgba(15,23,42,.045)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-home-icon{
+  width:30px!important;
+  height:30px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-home-title{
+  margin-top:8px!important;
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+  font-size:18px!important;
+  line-height:1.25!important;
+  font-weight:850!important;
+  letter-spacing:-.2px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-home-description{
+  margin-top:4px!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:13px!important;
+  line-height:1.4!important;
+  font-weight:550!important;
+  letter-spacing:-.15px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-home-actions{
+  margin-top:14px!important;
+  gap:8px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single button.qmes-equipment-tour-start-safe,
+html body .qmes-ipad-equipment .qmes-equipment-mode-single button.qmes-equipment-history-open{
+  width:150px!important;
+  min-width:150px!important;
+  max-width:150px!important;
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 12px!important;
+  border-radius:8px!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:800!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-alarm-panel{
+  margin:0!important;
+  border-color:#d8e1ea!important;
+  border-radius:12px!important;
+  box-shadow:0 2px 7px rgba(15,23,42,.04)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-single .qmes-equipment-alarm-title{
+  font-size:17px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+  letter-spacing:-.2px!important;
+}
+
+
+/* 설비 점검 기록 화면 정돈 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history button,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history input,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history th,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history td,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history span,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history div{
+  font-family:Pretendard,"Pretendard Variable","Noto Sans KR",system-ui,sans-serif!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-back{
+  min-height:34px!important;
+  padding:0 10px!important;
+  font-size:11px!important;
+  line-height:1!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-print,
+html body .qmes-ipad-equipment .qmes-equipment-history-delete-all{
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 9px!important;
+  font-size:11px!important;
+  line-height:1!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-table{
+  min-width:880px!important;
+  table-layout:auto!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-time-head,
+html body .qmes-ipad-equipment .qmes-equipment-history-time-cell{
+  width:132px!important;
+  min-width:132px!important;
+  padding-left:4px!important;
+  padding-right:4px!important;
+  text-align:center!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-time-cell{
+  font-size:11.5px!important;
+  font-weight:600!important;
+  letter-spacing:-.15px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-manage-head,
+html body .qmes-ipad-equipment .qmes-equipment-history-manage-cell{
+  width:102px!important;
+  min-width:102px!important;
+  max-width:102px!important;
+  padding-left:3px!important;
+  padding-right:3px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-history-row-action{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:43px!important;
+  min-width:43px!important;
+  max-width:43px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0!important;
+  font-size:11px!important;
+  line-height:1!important;
+}
+
+
+/* 점검 기록 뒤로가기 = 순회점검 뒤로가기 동일 디자인 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-back{
+  width:84px!important;
+  min-width:84px!important;
+  max-width:84px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 8px!important;
+  border:1px solid #94a3b8!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:750!important;
+  box-shadow:none!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-back:hover,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-back:focus-visible{
+  border-color:#64748b!important;
+  background:#f8fafc!important;
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  box-shadow:0 0 0 2px rgba(100,116,139,.12)!important;
+}
+
+
+/* 점검 기록 날짜·건수 크기 정리 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-date{
+  width:142px!important;
+  min-width:142px!important;
+  max-width:142px!important;
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  padding:0 8px!important;
+  box-sizing:border-box!important;
+  font-size:13px!important;
+  line-height:1!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-count{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:78px!important;
+  height:30px!important;
+  min-height:30px!important;
+  margin:0!important;
+  padding:0 10px!important;
+  box-sizing:border-box!important;
+  border:1px solid #bfdbfe!important;
+  border-radius:7px!important;
+  background:#eff6ff!important;
+  color:#1d4ed8!important;
+  -webkit-text-fill-color:#1d4ed8!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:800!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+
+
+/* 설비 점검 기록: 날짜가 바뀌어도 제목·기록값 정렬과 간격을 동일하게 유지 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table{
+  width:100%!important;
+  min-width:960px!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td{
+  padding:10px 12px!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th{
+  line-height:1.3!important;
+  white-space:nowrap!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td{
+  line-height:1.45!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(1),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(1){width:14%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(2),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(2){width:12%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(3),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(3){width:17%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(4),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(4){width:12%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(5),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(5){width:9%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(6),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(6){width:12%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(7),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(7){width:14%!important;}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th:nth-child(8),
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(8){width:10%!important;}
+
+
+/* 날짜별 점검 기록~설비 점검 기록: 설비·공정 알람 이력 카드와 동일한 디자인 */
+html body .qmes-ipad-equipment .qmes-equipment-mode-history{
+  gap:12px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-toolbar,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-panel{
+  overflow:hidden!important;
+  margin:0!important;
+  border:1px solid #d8e1ea!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 2px 7px rgba(15,23,42,.04)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-toolbar{
+  min-height:58px!important;
+  padding:11px 16px!important;
+  box-sizing:border-box!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-toolbar-copy{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-toolbar-title{
+  color:#0f2f63!important;
+  -webkit-text-fill-color:#0f2f63!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+  letter-spacing:-.2px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-toolbar-description{
+  margin-top:3px!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+  font-weight:600!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-date{
+  width:168px!important;
+  min-width:168px!important;
+  max-width:168px!important;
+  height:32px!important;
+  min-height:32px!important;
+  max-height:32px!important;
+  border:1px solid #bfdbfe!important;
+  border-radius:8px!important;
+  background:#f8fbff!important;
+  color:#1e3a8a!important;
+  -webkit-text-fill-color:#1e3a8a!important;
+  box-shadow:0 1px 3px rgba(37,99,235,.06)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-panel>div:first-child{
+  min-height:58px!important;
+  padding:11px 16px!important;
+  box-sizing:border-box!important;
+  border-color:#d8e1ea!important;
+  background:#fff!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-panel>div:first-child h3{
+  color:#0f2f63!important;
+  -webkit-text-fill-color:#0f2f63!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+  letter-spacing:-.2px!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-panel>div:first-child span.text-slate-400{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-panel>div:last-child{
+  padding:14px!important;
+  background:#fff!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table-wrap{
+  margin:0!important;
+  padding:0!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table{
+  background:#fff!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table thead,
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table thead tr{
+  border-color:#d7e0e8!important;
+  background:#f8fafc!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table th{
+  height:56px!important;
   color:#111827!important;
   -webkit-text-fill-color:#111827!important;
+  font-size:14px!important;
+  font-weight:850!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table tbody tr{
+  min-height:62px!important;
+  border-color:#d7e0e8!important;
   background:#fff!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table tbody tr:hover{
+  background:#fbfdff!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td{
+  min-height:62px!important;
+  padding-top:12px!important;
+  padding-bottom:12px!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-size:13px!important;
+  font-weight:600!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:keep-all!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:first-child{
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  white-space:nowrap!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td:nth-child(6) div:last-child:not(:first-child){
+  color:#0284c7!important;
+  -webkit-text-fill-color:#0284c7!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-table td span{
+  -webkit-text-fill-color:currentColor!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-history-panel>div:last-child>p{
+  min-height:72px!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  text-align:center!important;
 }
