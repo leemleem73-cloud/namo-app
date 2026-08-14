@@ -1,4 +1,4 @@
-/* NAMO Talk header contrast — 2026-08-14 */
+/* NAMO Talk light header contrast — 2026-08-14 */
 (function(){
   'use strict';
   if(window.__QMES_NAMO_TALK_HEADER_CONTRAST_20260814__) return;
@@ -7,21 +7,30 @@
   style.id='qmes-namo-talk-header-contrast';
   style.textContent=`
     section[aria-label="NAMO Talk"] > header {
-      color:#ffffff!important;
+      color:#172033!important;
     }
     section[aria-label="NAMO Talk"] > header > div:first-child,
-    section[aria-label="NAMO Talk"] > header > div:first-child > div {
-      color:#ffffff!important;
-      -webkit-text-fill-color:#ffffff!important;
-      text-shadow:0 1px 2px rgba(0,0,0,.28)!important;
+    section[aria-label="NAMO Talk"] > header > div:first-child > div,
+    section[aria-label="NAMO Talk"] > header > div:nth-of-type(2) {
+      color:#172033!important;
+      -webkit-text-fill-color:#172033!important;
+      text-shadow:none!important;
+      opacity:1!important;
     }
     section[aria-label="NAMO Talk"] > header > div:nth-of-type(2) {
-      color:#ffffff!important;
-      -webkit-text-fill-color:#ffffff!important;
       font-size:13px!important;
       font-weight:850!important;
-      text-shadow:0 1px 2px rgba(0,0,0,.32)!important;
+    }
+    section[aria-label="NAMO Talk"] > header button,
+    section[aria-label="NAMO Talk"] > header button svg,
+    section[aria-label="NAMO Talk"] > header button span {
+      color:#334155!important;
+      fill:currentColor!important;
       opacity:1!important;
+    }
+    section[aria-label="NAMO Talk"] > header img {
+      opacity:1!important;
+      filter:none!important;
     }
   `;
   document.head.appendChild(style);
