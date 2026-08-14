@@ -20,11 +20,22 @@ function loadLoginSession() {
 }
 
 function saveLoginSession(user) {
-  sessionStorage.setItem(QMES_LOGIN_SESSION_KEY, JSON.stringify(user));
+  try {
+    sessionStorage.setItem(QMES_LOGIN_SESSION_KEY, JSON.stringify(user));
+    return true;
+  } catch (error) {
+    // 저장소가 차단된 PC에서도 서버 로그인 자체는 계속 진행합니다.
+    console.warn("[QMES] 브라우저 로그인 저장소를 사용할 수 없습니다.", error);
+    return false;
+  }
 }
 
 function clearLoginSession() {
-  sessionStorage.removeItem(QMES_LOGIN_SESSION_KEY);
+  try {
+    sessionStorage.removeItem(QMES_LOGIN_SESSION_KEY);
+  } catch (error) {
+    console.warn("[QMES] 브라우저 로그인 정보를 정리하지 못했습니다.", error);
+  }
 }
 
 function QMESLogin({ onLogin }) {
