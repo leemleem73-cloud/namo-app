@@ -1,8 +1,8 @@
 /* QMES inventory hover submenu fix - keeps inventory bridge intact. */
 (function(){
   'use strict';
-  if(window.__QMES_INVENTORY_HOVER_FIX_20260819__) return;
-  window.__QMES_INVENTORY_HOVER_FIX_20260819__=true;
+  if(window.__QMES_INVENTORY_HOVER_FIX_20260819_V2__) return;
+  window.__QMES_INVENTORY_HOVER_FIX_20260819_V2__=true;
 
   const sections=[
     ['overview','재고현황'],
@@ -12,7 +12,6 @@
     ['count','재고실사'],
     ['history','재고이력']
   ];
-  const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
   let menu=null,hideTimer=null,currentButton=null;
 
   function ensureMenu(){
@@ -41,7 +40,8 @@
   }
 
   function inventoryButton(){
-    return Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(b=>clean(b.textContent).startsWith('재고관리'))||null;
+    return document.querySelector('[data-qmes-inventory-menu] .qmes-top-menu-button') ||
+      document.querySelector('.qmes-top-menu-button[data-qmes-inventory-button]') || null;
   }
   function cancelHide(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}}
   function scheduleHide(){cancelHide();hideTimer=setTimeout(hide,180);}
@@ -58,8 +58,8 @@
     if(currentButton)currentButton.setAttribute('aria-expanded','false');currentButton=null;
   }
   function bind(){
-    const b=inventoryButton();if(!b||b.dataset.inventoryHoverBound==='1')return false;
-    b.dataset.inventoryHoverBound='1';b.setAttribute('aria-haspopup','menu');b.setAttribute('aria-expanded','false');
+    const b=inventoryButton();if(!b||b.dataset.inventoryHoverBound==='2')return false;
+    b.dataset.inventoryHoverBound='2';b.setAttribute('aria-haspopup','menu');b.setAttribute('aria-expanded','false');
     b.addEventListener('mouseenter',()=>show(b));
     b.addEventListener('mouseleave',scheduleHide);
     b.addEventListener('focus',()=>show(b));
