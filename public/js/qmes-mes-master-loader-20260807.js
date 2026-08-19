@@ -13,7 +13,8 @@
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
-    "./js/inventory-menu-bridge.js?v=20260819-2"
+    "./js/inventory-menu-bridge.js?v=20260819-2",
+    "./js/inventory-menu-hover-fix-20260819.js?v=20260819-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
