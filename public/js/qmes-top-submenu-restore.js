@@ -22,10 +22,12 @@
     ],
     '현장입력':[{label:'현장 입력 (iPad)',direct:'현장입력'}],
     '재고관리':[
-      {label:'원재료·부자재 재고',direct:'재고관리',inventoryView:'raw'},
-      {label:'완제품 재고 현황',direct:'재고관리',inventoryView:'fg'},
-      {label:'완제품 출고관리',direct:'재고관리',inventoryView:'ship'},
-      {label:'완제품 출고내역',direct:'재고관리',inventoryView:'history'}
+      {label:'재고현황',inventorySection:'overview'},
+      {label:'입출고 관리',inventorySection:'movement'},
+      {label:'LOT별 재고',inventorySection:'lot'},
+      {label:'생산투입/완료',inventorySection:'production'},
+      {label:'재고실사',inventorySection:'count'},
+      {label:'재고이력',inventorySection:'history'}
     ],
     '거래처 현황':[{label:'거래처 현황',direct:'거래처 현황'}],
     '설비관리':[{label:'설비 모니터링',direct:'설비관리'}],
@@ -41,194 +43,62 @@
   const style=document.createElement('style');
   style.id='qmes-top-submenu-restore-style';
   style.textContent=`
-    #qmes-all-menu-dropdown{
-      position:fixed;
-      z-index:9998;
-      display:none;
-      min-width:210px;
-      max-width:280px;
-      padding:0;
-      overflow:hidden;
-      border:1px solid #dbe3ec;
-      border-radius:0;
-      background:#fff;
-      box-shadow:0 8px 20px rgba(15,23,42,.12);
-    }
-    #qmes-all-menu-dropdown.is-open{display:block;}
-    #qmes-all-menu-dropdown .qmes-hover-title{
-      position:relative;
-      padding:10px 12px 10px 16px;
-      margin:0;
-      border-bottom:1px solid #d8e8f8;
-      background:#dcecff;
-      color:#175cd3;
-      font-size:12px;
-      font-weight:800;
-    }
-    #qmes-all-menu-dropdown .qmes-hover-title:before{
-      content:'';
-      position:absolute;
-      left:0;
-      top:7px;
-      bottom:7px;
-      width:4px;
-      background:#2563eb;
-    }
-    #qmes-all-menu-dropdown button{
-      width:100%;
-      display:block;
-      padding:9px 12px;
-      border:0;
-      border-radius:0;
-      background:#fff;
-      color:#334155;
-      font-size:12px;
-      line-height:18px;
-      text-align:left;
-      cursor:pointer;
-    }
-    #qmes-all-menu-dropdown button:hover,
-    #qmes-all-menu-dropdown button:focus-visible{
-      background:#eef7ff;
-      color:#0369a1;
-      outline:none;
-    }
+    #qmes-all-menu-dropdown{position:fixed;z-index:9998;display:none;min-width:210px;max-width:280px;padding:0;overflow:hidden;border:1px solid #dbe3ec;border-radius:0;background:#fff;box-shadow:0 8px 20px rgba(15,23,42,.12)}
+    #qmes-all-menu-dropdown.is-open{display:block}
+    #qmes-all-menu-dropdown .qmes-hover-title{position:relative;padding:10px 12px 10px 16px;margin:0;border-bottom:1px solid #d8e8f8;background:#dcecff;color:#175cd3;font-size:12px;font-weight:800}
+    #qmes-all-menu-dropdown .qmes-hover-title:before{content:'';position:absolute;left:0;top:7px;bottom:7px;width:4px;background:#2563eb}
+    #qmes-all-menu-dropdown button{width:100%;display:block;padding:9px 12px;border:0;border-radius:0;background:#fff;color:#334155;font-size:12px;line-height:18px;text-align:left;cursor:pointer}
+    #qmes-all-menu-dropdown button:hover,#qmes-all-menu-dropdown button:focus-visible{background:#eef7ff;color:#0369a1;outline:none}
   `;
   document.head.appendChild(style);
 
-  let currentButton=null;
-  let closeTimer=null;
-  let hoverFrame=null;
-  const clean=v=>String(v||'').replace(/[›〉]/g,'').replace(/\s+/g,' ').trim();
+  let currentButton=null,closeTimer=null,hoverFrame=null;
+  const clean=v=>String(v||'').replace(/[›〉▣]/g,'').replace(/\s+/g,' ').trim();
   const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
-  const findTopButton=label=>topButtons().find(button=>clean(button.textContent)===label);
+  const buttonLabel=button=>button?.closest('[data-qmes-inventory-menu]')?'재고관리':clean(button?.textContent);
+  const findTopButton=label=>topButtons().find(button=>buttonLabel(button)===label);
 
-  function cancelClose(){
-    if(closeTimer){clearTimeout(closeTimer);closeTimer=null;}
-  }
-
+  function cancelClose(){if(closeTimer){clearTimeout(closeTimer);closeTimer=null;}}
   function ensureMenu(){
-    let menu=document.getElementById('qmes-all-menu-dropdown');
-    if(menu) return menu;
-    menu=document.createElement('div');
-    menu.id='qmes-all-menu-dropdown';
-    menu.setAttribute('role','menu');
-    document.body.appendChild(menu);
-    menu.addEventListener('mouseenter',cancelClose);
-    menu.addEventListener('mouseleave',scheduleClose);
-    return menu;
+    let menu=document.getElementById('qmes-all-menu-dropdown');if(menu)return menu;
+    menu=document.createElement('div');menu.id='qmes-all-menu-dropdown';menu.setAttribute('role','menu');document.body.appendChild(menu);
+    menu.addEventListener('mouseenter',cancelClose);menu.addEventListener('mouseleave',scheduleClose);return menu;
   }
-
-  function closeMenu(){
-    cancelClose();
-    document.getElementById('qmes-all-menu-dropdown')?.classList.remove('is-open');
-    currentButton=null;
-  }
-
-  function scheduleClose(){
-    cancelClose();
-    closeTimer=setTimeout(closeMenu,180);
-  }
-
-  function openInventoryView(view){
-    const top=findTopButton('재고관리');
-    closeMenu();
-    if(top) top.click();
-    const apply=()=>window.dispatchEvent(new CustomEvent('qmes:inventory-view',{detail:{view}}));
-    requestAnimationFrame(()=>requestAnimationFrame(apply));
-    setTimeout(apply,80);
-    setTimeout(apply,180);
-  }
+  function closeMenu(){cancelClose();document.getElementById('qmes-all-menu-dropdown')?.classList.remove('is-open');currentButton=null;}
+  function scheduleClose(){cancelClose();closeTimer=setTimeout(closeMenu,180);}
 
   function clickSub(item){
-    if(item.inventoryView){
-      openInventoryView(item.inventoryView);
+    if(item.inventorySection){
+      closeMenu();
+      if(typeof window.qmesOpenInventorySection==='function')window.qmesOpenInventorySection(item.inventorySection);
       return;
     }
     const findSub=()=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===item.sub);
-    if(item.direct){
-      closeMenu();
-      findTopButton(item.direct)?.click();
-      return;
-    }
-    const existing=findSub();
-    if(existing){existing.click();closeMenu();return;}
-    const group=findTopButton(item.group);
-    if(!group) return;
-    group.click();
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      findSub()?.click();
-      closeMenu();
-    }));
+    if(item.direct){closeMenu();findTopButton(item.direct)?.click();return;}
+    const existing=findSub();if(existing){existing.click();closeMenu();return;}
+    const group=findTopButton(item.group);if(!group)return;
+    group.click();requestAnimationFrame(()=>requestAnimationFrame(()=>{findSub()?.click();closeMenu();}));
   }
 
   function positionMenu(button,menu){
-    const rect=button.getBoundingClientRect();
-    const width=Math.max(210,Math.min(280,menu.offsetWidth||230));
-    menu.style.left=Math.max(8,Math.min(window.innerWidth-width-8,rect.left))+'px';
-    menu.style.top=rect.bottom+'px';
+    const rect=button.getBoundingClientRect();const width=Math.max(210,Math.min(280,menu.offsetWidth||230));
+    menu.style.left=Math.max(8,Math.min(window.innerWidth-width-8,rect.left))+'px';menu.style.top=rect.bottom+'px';
   }
-
   function renderMenu(button){
-    const label=clean(button.textContent);
-    const items=menuMap[label];
-    if(!items?.length) return;
-    cancelClose();
-    currentButton=button;
-    const menu=ensureMenu();
-    menu.innerHTML='';
-    const title=document.createElement('div');
-    title.className='qmes-hover-title';
-    title.textContent=label;
-    menu.appendChild(title);
-    items.forEach(item=>{
-      const row=document.createElement('button');
-      row.type='button';
-      row.textContent=item.label;
-      if(item.inventoryView) row.dataset.inventoryView=item.inventoryView;
-      row.addEventListener('click',event=>{event.stopPropagation();clickSub(item);});
-      menu.appendChild(row);
-    });
-    menu.classList.add('is-open');
-    positionMenu(button,menu);
+    const label=buttonLabel(button);const items=menuMap[label];if(!items?.length)return;
+    cancelClose();currentButton=button;const menu=ensureMenu();menu.innerHTML='';
+    const title=document.createElement('div');title.className='qmes-hover-title';title.textContent=label;menu.appendChild(title);
+    items.forEach(item=>{const row=document.createElement('button');row.type='button';row.textContent=item.label;row.addEventListener('click',event=>{event.stopPropagation();clickSub(item);});menu.appendChild(row);});
+    menu.classList.add('is-open');positionMenu(button,menu);
   }
-
   function openFor(button){
-    cancelClose();
-    if(button===currentButton&&document.getElementById('qmes-all-menu-dropdown')?.classList.contains('is-open')) return;
-    if(hoverFrame) cancelAnimationFrame(hoverFrame);
-    hoverFrame=requestAnimationFrame(()=>{
-      hoverFrame=null;
-      renderMenu(button);
-    });
+    cancelClose();if(button===currentButton&&document.getElementById('qmes-all-menu-dropdown')?.classList.contains('is-open'))return;
+    if(hoverFrame)cancelAnimationFrame(hoverFrame);hoverFrame=requestAnimationFrame(()=>{hoverFrame=null;renderMenu(button);});
   }
 
-  document.addEventListener('click',event=>{
-    const button=event.target.closest('.qmes-top-menu-button');
-    if(button){openFor(button);return;}
-    const menu=document.getElementById('qmes-all-menu-dropdown');
-    if(menu&&!menu.contains(event.target)) closeMenu();
-  },false);
-
-  document.addEventListener('pointerover',event=>{
-    const button=event.target.closest('.qmes-top-menu-button');
-    if(button) openFor(button);
-  },true);
-
-  document.addEventListener('pointerout',event=>{
-    const button=event.target.closest('.qmes-top-menu-button');
-    if(!button) return;
-    const next=event.relatedTarget;
-    if(next&&((next.closest&&next.closest('.qmes-top-menu-button'))||(next.closest&&next.closest('#qmes-all-menu-dropdown')))) return;
-    scheduleClose();
-  },true);
-
-  window.addEventListener('resize',()=>{
-    const menu=document.getElementById('qmes-all-menu-dropdown');
-    if(menu?.classList.contains('is-open')&&currentButton) positionMenu(currentButton,menu);
-  });
-  window.addEventListener('scroll',()=>{
-    const menu=document.getElementById('qmes-all-menu-dropdown');
-    if(menu?.classList.contains('is-open')&&currentButton) positionMenu(currentButton,menu);
-  },true);
+  document.addEventListener('click',event=>{const button=event.target.closest('.qmes-top-menu-button');if(button){openFor(button);return;}const menu=document.getElementById('qmes-all-menu-dropdown');if(menu&&!menu.contains(event.target))closeMenu();},false);
+  document.addEventListener('pointerover',event=>{const button=event.target.closest('.qmes-top-menu-button');if(button)openFor(button);},true);
+  document.addEventListener('pointerout',event=>{const button=event.target.closest('.qmes-top-menu-button');if(!button)return;const next=event.relatedTarget;if(next&&((next.closest&&next.closest('.qmes-top-menu-button'))||(next.closest&&next.closest('#qmes-all-menu-dropdown'))))return;scheduleClose();},true);
+  window.addEventListener('resize',()=>{const menu=document.getElementById('qmes-all-menu-dropdown');if(menu?.classList.contains('is-open')&&currentButton)positionMenu(currentButton,menu);});
+  window.addEventListener('scroll',()=>{const menu=document.getElementById('qmes-all-menu-dropdown');if(menu?.classList.contains('is-open')&&currentButton)positionMenu(currentButton,menu);},true);
 })();
