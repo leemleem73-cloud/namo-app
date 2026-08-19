@@ -62,8 +62,13 @@
     return /검사수량/.test(title) ? 1 : 0;
   }
 
+  function numericOnly(value) {
+    const match = String(value ?? '').replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
+    return match ? match[0] : '0';
+  }
+
   function step(input, delta, title) {
-    const current = Number(String(input.value || '').replace(/,/g, ''));
+    const current = Number(numericOnly(input.value));
     const min = minFor(title);
     const next = Math.max(min, (Number.isFinite(current) ? current : min) + delta);
     setReactInputValue(input, String(next));
@@ -96,7 +101,7 @@
       label.appendChild(box);
 
       function sync() {
-        const raw = String(input.value || minFor(title));
+        const raw = /출하량|출하수량/.test(title) ? numericOnly(input.value) : String(input.value || minFor(title));
         value.textContent = `${raw}${unitFor(title)}`;
       }
       input.addEventListener('input', sync);
