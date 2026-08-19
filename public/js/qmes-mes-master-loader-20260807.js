@@ -14,6 +14,7 @@
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
+    "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
     "./js/inventory-menu-bridge.js?v=20260819-unified-topmenu1"
   ];
   function exists(src){
