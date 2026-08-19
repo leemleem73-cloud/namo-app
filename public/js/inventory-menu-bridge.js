@@ -1,16 +1,18 @@
-/* Inventory menu bridge: adds enterprise inventory to the current QMES shell without rewriting router.jsx. */
+/* Inventory menu bridge: enterprise inventory in the current QMES shell. */
 (function(){
-  let root=null,host=null;
+  let root=null,host=null,current='overview';
+  const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사'],['history','재고이력']];
   const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
   function restore(){if(root){try{root.unmount();}catch(e){}root=null;}host?.remove();host=null;const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(el=>{if(el.dataset.invHidden==='1'){el.style.removeProperty('display');delete el.dataset.invHidden;}});}
+  function decorateSidebar(){const side=document.getElementById('qmes-sync-sidebar');if(!side)return;const title=side.querySelector('.qmes-side-title'),wrap=side.querySelector('.qmes-side-items');if(title)title.textContent='재고관리';if(!wrap)return;wrap.replaceChildren();sections.forEach(([id,label])=>{const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(current===id?' is-active':'');b.textContent=label;b.addEventListener('click',event=>{event.stopPropagation();open(id);});wrap.appendChild(b);});}
   function open(section='overview'){
-    const main=document.querySelector('#root>div>main');if(!main||typeof InventoryEnterpriseTab!=='function')return;
+    current=sections.some(s=>s[0]===section)?section:'overview';const main=document.querySelector('#root>div>main');if(!main||typeof InventoryEnterpriseTab!=='function')return;
     Array.from(main.children).forEach(el=>{if(el!==host){el.dataset.invHidden='1';el.style.setProperty('display','none','important');}});
     if(!host){host=document.createElement('div');host.id='qmes-inventory-host';main.appendChild(host);}
-    if(root)root.unmount();root=ReactDOM.createRoot(host);root.render(React.createElement(InventoryEnterpriseTab,{section}));
+    if(root)root.unmount();root=ReactDOM.createRoot(host);root.render(React.createElement(InventoryEnterpriseTab,{section:current}));
     document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.toggle('is-active',clean(b.textContent)==='재고관리'));
-    try{sessionStorage.setItem('qmes_inventory_section',section);}catch(e){}
-    setTimeout(()=>window.qmesSetGlobalSidebarGroup?.('재고관리'),0);
+    try{sessionStorage.setItem('qmes_inventory_section',current);}catch(e){}
+    if(typeof window.qmesSetGlobalSidebarGroup==='function')window.qmesSetGlobalSidebarGroup('재고관리');setTimeout(decorateSidebar,20);setTimeout(decorateSidebar,180);
   }
   function install(){
     const nav=document.querySelector('.qmes-top-menu');if(!nav||nav.querySelector('[data-qmes-inventory-menu]'))return false;
