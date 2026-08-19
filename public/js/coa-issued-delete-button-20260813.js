@@ -134,3 +134,16 @@
   window.addEventListener('load', enhanceIssuedTable);
   setInterval(enhanceIssuedTable, 750);
 })();
+
+/* 2026-08-20: load the central cross-PC synchronization bootstrap from an
+ * existing index-loaded script so every QMES client uses shared DB pulls. */
+(function loadQmesGlobalCrossPcSync(){
+  'use strict';
+  if (window.__QMES_GLOBAL_CROSS_PC_SYNC_LOADER__) return;
+  window.__QMES_GLOBAL_CROSS_PC_SYNC_LOADER__ = true;
+  var script = document.createElement('script');
+  script.src = './js/qmes-global-cross-pc-sync-20260820.js?v=20260820-1';
+  script.async = false;
+  script.onerror = function(){ console.error('QMES 공용 동기화 모듈 로드 실패'); };
+  document.head.appendChild(script);
+})();
