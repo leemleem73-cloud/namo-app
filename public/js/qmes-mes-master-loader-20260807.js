@@ -13,31 +13,16 @@
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
-    "./js/inventory-menu-bridge.jsx?v=20260819-1"
+    "./js/inventory-menu-bridge.js?v=20260819-2"
   ];
   function exists(src){
     const base=src.split("?")[0];
     return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);
   }
   function load(i){
-    if(i>=files.length){
-      window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
-      return;
-    }
-    const src=files[i];
-    if(exists(src)){load(i+1);return;}
-    const script=document.createElement("script");
-    script.src=src;
-    script.async=false;
-    if(src.endsWith('.jsx')||src.includes('.jsx?')) script.type='text/babel';
-    script.onload=()=>load(i+1);
-    script.onerror=()=>{
-      console.error("[QMES] MES 마스터 모듈 로드 실패",src);
-      load(i+1);
-    };
-    document.head.appendChild(script);
+    if(i>=files.length){window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));return;}
+    const src=files[i];if(exists(src)){load(i+1);return;}
+    const script=document.createElement("script");script.src=src;script.async=false;script.onload=()=>load(i+1);script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);load(i+1);};document.head.appendChild(script);
   }
-  const start=()=>load(0);
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});
-  else start();
+  const start=()=>load(0);if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
