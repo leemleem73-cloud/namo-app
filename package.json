@@ -4,7 +4,7 @@
   "description": "Namo Chemical QMS",
   "main": "server.js",
   "scripts": {
-    "start": "node startup-maintenance.js && node server.js"
+    "start": "node startup-maintenance.js && node -r ./security-bootstrap.js server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
