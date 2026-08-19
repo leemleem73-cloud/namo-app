@@ -12,7 +12,8 @@
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
-    "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4"
+    "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
+    "./js/inventory-menu-bridge.jsx?v=20260819-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
@@ -28,6 +29,7 @@
     const script=document.createElement("script");
     script.src=src;
     script.async=false;
+    if(src.endsWith('.jsx')||src.includes('.jsx?')) script.type='text/babel';
     script.onload=()=>load(i+1);
     script.onerror=()=>{
       console.error("[QMES] MES 마스터 모듈 로드 실패",src);
