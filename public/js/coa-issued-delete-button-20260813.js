@@ -135,15 +135,22 @@
   setInterval(enhanceIssuedTable, 750);
 })();
 
-/* 2026-08-20: load the central cross-PC synchronization bootstrap from an
- * existing index-loaded script so every QMES client uses shared DB pulls. */
-(function loadQmesGlobalCrossPcSync(){
+/* 2026-08-20: load central cross-PC synchronization modules from an existing
+ * index-loaded script so every QMES client receives shared DB updates. */
+(function loadQmesCrossPcSync(){
   'use strict';
-  if (window.__QMES_GLOBAL_CROSS_PC_SYNC_LOADER__) return;
-  window.__QMES_GLOBAL_CROSS_PC_SYNC_LOADER__ = true;
-  var script = document.createElement('script');
-  script.src = './js/qmes-global-cross-pc-sync-20260820.js?v=20260820-1';
-  script.async = false;
-  script.onerror = function(){ console.error('QMES 공용 동기화 모듈 로드 실패'); };
-  document.head.appendChild(script);
+  if (window.__QMES_CROSS_PC_SYNC_LOADER__) return;
+  window.__QMES_CROSS_PC_SYNC_LOADER__ = true;
+
+  function addScript(src, type) {
+    var script = document.createElement('script');
+    script.src = src;
+    script.async = false;
+    if (type) script.type = type;
+    script.onerror = function(){ console.error('QMES 공용 동기화 모듈 로드 실패:', src); };
+    document.head.appendChild(script);
+  }
+
+  addScript('./js/qmes-global-cross-pc-sync-20260820.js?v=20260820-2');
+  addScript('./js/workorder-cross-pc-live-sync-20260820.jsx?v=20260820-2', 'text/babel');
 })();
