@@ -8,13 +8,12 @@
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
-    "./js/qmes-top-submenu-restore.js?v=20260807-2",
+    "./js/qmes-top-submenu-restore.js?v=20260819-unified-topmenu1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
-    "./js/inventory-menu-bridge.js?v=20260819-2",
-    "./js/inventory-menu-hover-fix-20260819.js?v=20260819-1"
+    "./js/inventory-menu-bridge.js?v=20260819-unified-topmenu1"
   ];
   function exists(src){
     const base=src.split("?")[0];
