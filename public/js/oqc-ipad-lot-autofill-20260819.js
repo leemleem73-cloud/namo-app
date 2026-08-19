@@ -1,6 +1,6 @@
 /* QMES OQC iPad LOT auto-select fix - 2026-08-19
  * OQC candidates = existing finished lots + PQC completed/pass lots.
- * This specifically fixes shared/synced PQC records whose LOT is absent from local DB.batches/DB.lots.
+ * Also pulls shared PQC/OQC records so iPad sees inspections created on other PCs.
  */
 (function installOqcIpadLotAutofill(global){
   "use strict";
@@ -10,6 +10,8 @@
   const text=(v)=>String(v??"").trim();
   const upper=(v)=>text(v).toUpperCase();
   const numberText=(v)=>{const m=text(v).replace(/,/g,"").match(/-?\d+(?:\.\d+)?/);return m?m[0]:"";};
+  let pulling=false;
+  let lastPull=0;
 
   function setValue(input,value,force){
     if(!input||value==null||text(value)==="") return false;
@@ -35,6 +37,29 @@
     if(/PQC\s*공정검사/i.test(title)) return "PQC";
     if(/IQC\s*수입검사/i.test(title)) return "IQC";
     return "";
+  }
+
+  async function pullSharedInspections(force=false){
+    const now=Date.now();
+    if(pulling||(!force&&now-lastPull<3000)) return;
+    if(typeof global.qmesSyncPullInspection!=="function"||!global.DB) return;
+    pulling=true;
+    try{
+      global.DB.insp=global.DB.insp||{PQC:[],OQC:[]};
+      const [pqc,oqc]=await Promise.all([
+        global.qmesSyncPullInspection("pqc",global.DB.insp.PQC||[]),
+        global.qmesSyncPullInspection("oqc",global.DB.insp.OQC||[])
+      ]);
+      global.DB.insp.PQC=Array.isArray(pqc)?pqc:global.DB.insp.PQC||[];
+      global.DB.insp.OQC=Array.isArray(oqc)?oqc:global.DB.insp.OQC||[];
+      if(typeof global.dbSave==="function") global.dbSave();
+      lastPull=Date.now();
+      document.dispatchEvent(new CustomEvent("qmes:oqc-shared-pqc-ready"));
+    }catch(error){
+      console.warn("OQC 대상 LOT용 PQC 공용 DB 조회 실패:",error?.message||error);
+    }finally{
+      pulling=false;
+    }
   }
 
   function latestOqcRow(lotNo){
@@ -91,12 +116,12 @@
       const no=text(row?.lot||row?.lotNo||row?.no||key);
       if(!no) return;
       const qty=Number(numberText(row?.qty??row?.currentQty??row?.stock??row?.productionQty)||0);
-      if(qty>0||row?.status==="완료"||row?.completed){
+      if(qty>0||row?.status==="완료"||row?.completed||/PQC\s*합격/.test(text(row?.status))){
         map.set(upper(no),{lot:no,product:text(row?.itemName||row?.item||row?.product),qty});
       }
     });
     (global.DB?.batches||[]).forEach(row=>{
-      const no=text(row?.lot||row?.lotNo||row?.no);
+      const no=text(row?.lot||row?.lotNo||row?.no||row?.workOrder);
       if(!no) return;
       const qty=Number(numberText(row?.qty??row?.actualQty??row?.productionQty)||0);
       if(qty>0||row?.status==="완료"||row?.completed){
@@ -104,7 +129,6 @@
       }
     });
 
-    // Fix: a PQC pass is itself sufficient evidence that this production LOT reached OQC eligibility.
     const pqcRows=Array.isArray(global.DB?.insp?.PQC)?global.DB.insp.PQC:[];
     [...new Set(pqcRows.map(r=>upper(r?.lot)).filter(Boolean))].forEach(no=>{
       if(!pqcPassed(no)) return;
@@ -112,7 +136,6 @@
       map.set(no,{lot:existing.lot||no,product:existing.product||pqcProduct(no),qty:existing.qty||0});
     });
 
-    // Hide LOTs whose OQC is already completed/pass.
     return Array.from(map.values())
       .filter(c=>!latestOqcRow(c.lot)||text(latestOqcRow(c.lot)?.judge)!=="합격")
       .sort((a,b)=>b.lot.localeCompare(a.lot));
@@ -186,14 +209,16 @@
   function sync(){
     const root=document.querySelector(".qmes-ipad-pop");
     if(!root) return;
+    if(mode(root)==="OQC") pullSharedInspections(false).then(()=>installSelector(root));
     installSelector(root);
   }
 
   const observer=new MutationObserver(()=>sync());
   observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
   document.addEventListener("click",()=>setTimeout(sync,0),true);
-  document.addEventListener("qmes:data-updated",()=>setTimeout(sync,0));
-  document.addEventListener("qmes:data-changed",()=>setTimeout(sync,0));
+  document.addEventListener("qmes:data-updated",()=>{pullSharedInspections(true).then(()=>setTimeout(sync,0));});
+  document.addEventListener("qmes:data-changed",()=>{pullSharedInspections(true).then(()=>setTimeout(sync,0));});
+  document.addEventListener("qmes:oqc-shared-pqc-ready",()=>setTimeout(sync,0));
   global.addEventListener("storage",()=>setTimeout(sync,0));
-  setTimeout(sync,250);
+  setTimeout(()=>{pullSharedInspections(true).then(sync);},250);
 })(window);
