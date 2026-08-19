@@ -194,7 +194,7 @@
     nextCandidates.forEach(c=>{
       const o=document.createElement("option");
       o.value=c.lot;
-      o.textContent=`${c.lot} | ${c.product||"제품명 미확인"} | PQC 합격 · 출하검사 대기`;
+      o.textContent=c.lot;
       select.appendChild(o);
     });
     if(text(input.value)) select.value=input.value;
