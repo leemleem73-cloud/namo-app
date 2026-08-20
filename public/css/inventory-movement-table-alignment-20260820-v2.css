@@ -1,0 +1,116 @@
+/* 입출고 관리 화면 전체 정렬 v2, 2026-08-20 */
+#qmes-inventory-host .inv-shell {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+#qmes-inventory-host .inv-title-row,
+#qmes-inventory-host .inv-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#qmes-inventory-host .inv-title-row {
+  align-items: center !important;
+}
+
+#qmes-inventory-host .inv-title-row > div:first-child {
+  min-width: 0 !important;
+}
+
+#qmes-inventory-host .inv-actions {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+}
+
+#qmes-inventory-host .inv-panel {
+  padding: 12px 16px 14px !important;
+  overflow-x: auto !important;
+}
+
+#qmes-inventory-host .inv-panel > h3 {
+  margin: 0 0 10px !important;
+  line-height: 1.35 !important;
+}
+
+.inv-panel .inv-movement-table {
+  width: 100% !important;
+  min-width: 1180px !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+.inv-panel .inv-movement-table col:nth-child(1) { width: 15% !important; }
+.inv-panel .inv-movement-table col:nth-child(2) { width: 7% !important; }
+.inv-panel .inv-movement-table col:nth-child(3) { width: 10% !important; }
+.inv-panel .inv-movement-table col:nth-child(4) { width: 15% !important; }
+.inv-panel .inv-movement-table col:nth-child(5) { width: 10% !important; }
+.inv-panel .inv-movement-table col:nth-child(6) { width: 20% !important; }
+.inv-panel .inv-movement-table col:nth-child(7) { width: 23% !important; }
+
+.inv-panel .inv-movement-table thead tr,
+.inv-panel .inv-movement-table thead th {
+  height: 42px !important;
+}
+
+.inv-panel .inv-movement-table tbody tr,
+.inv-panel .inv-movement-table tbody td {
+  height: 44px !important;
+}
+
+.inv-panel .inv-movement-table th,
+.inv-panel .inv-movement-table td {
+  box-sizing: border-box !important;
+  padding: 0 14px !important;
+  line-height: 1.4 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.inv-panel .inv-movement-table th:nth-child(1),
+.inv-panel .inv-movement-table td:nth-child(1),
+.inv-panel .inv-movement-table th:nth-child(2),
+.inv-panel .inv-movement-table td:nth-child(2) {
+  text-align: center !important;
+}
+
+.inv-panel .inv-movement-table th:nth-child(3),
+.inv-panel .inv-movement-table td:nth-child(3),
+.inv-panel .inv-movement-table th:nth-child(4),
+.inv-panel .inv-movement-table td:nth-child(4),
+.inv-panel .inv-movement-table th:nth-child(6),
+.inv-panel .inv-movement-table td:nth-child(6),
+.inv-panel .inv-movement-table th:nth-child(7),
+.inv-panel .inv-movement-table td:nth-child(7) {
+  text-align: left !important;
+}
+
+.inv-panel .inv-movement-table th:nth-child(5),
+.inv-panel .inv-movement-table td:nth-child(5) {
+  text-align: right !important;
+}
+
+.inv-panel .inv-movement-table td:nth-child(3),
+.inv-panel .inv-movement-table td:nth-child(4),
+.inv-panel .inv-movement-table td:nth-child(6),
+.inv-panel .inv-movement-table td:nth-child(7) {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+@media (max-width: 1280px) {
+  #qmes-inventory-host .inv-shell {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  #qmes-inventory-host .inv-panel {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
