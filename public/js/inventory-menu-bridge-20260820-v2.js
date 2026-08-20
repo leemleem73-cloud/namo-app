@@ -1,4 +1,4 @@
-/* Inventory menu bridge v5.2: restore normal menus, hide orphan IQC receipts, and fix transaction detail layout, 2026-08-21. */
+/* Inventory menu bridge v5.3: restore normal menus, hide orphan IQC receipts, fix transaction detail layout, adaptive label printing, 2026-08-21. */
 (function(){
   let root=null,host=null,current='overview',inventorySession=0;
   const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
@@ -41,6 +41,62 @@
     };
   }
 
+  function getDetailValue(sheet,label){
+    const cell=Array.from(sheet.querySelectorAll('.inv-tx-detail-grid > div')).find(node=>clean(node.querySelector('dt')?.textContent)===label);
+    return clean(cell?.querySelector('dd')?.textContent)||'-';
+  }
+
+  function labelProfile(packaging){
+    const p=clean(packaging).toLowerCase();
+    if(/드럼|drum|ibc|tote|탱크/.test(p))return {name:'대형',w:100,h:70,barcode:22,title:15,body:10,pad:5};
+    if(/말통|pail|캔|can|통|bucket/.test(p))return {name:'중형',w:80,h:60,barcode:19,title:13,body:9,pad:4};
+    if(/포대|bag|sack|봉투|파우치|pouch|박스|box|carton/.test(p))return {name:'중형',w:90,h:60,barcode:19,title:13,body:9,pad:4};
+    if(/병|bottle|소형|vial/.test(p))return {name:'소형',w:70,h:50,barcode:16,title:11,body:8,pad:3.5};
+    return {name:'기본',w:80,h:60,barcode:19,title:13,body:9,pad:4};
+  }
+
+  function adaptivePrintFromDetail(sheet){
+    const packaging=getDetailValue(sheet,'포장형태');
+    const profile=labelProfile(packaging);
+    const values={
+      '문서번호':getDetailValue(sheet,'문서번호'),
+      '구분':getDetailValue(sheet,'구분'),
+      '원료명':getDetailValue(sheet,'원료명'),
+      '원료코드':getDetailValue(sheet,'원료코드'),
+      'LOT':getDetailValue(sheet,'LOT'),
+      '총 수량':getDetailValue(sheet,'총 수량'),
+      '포장형태':packaging,
+      '입고 포장수량':getDetailValue(sheet,'입고 포장수량'),
+      '용기당 중량':getDetailValue(sheet,'용기당 중량'),
+      '이동 방향':getDetailValue(sheet,'이동 방향'),
+      '작업자':getDetailValue(sheet,'작업자'),
+      '비고':getDetailValue(sheet,'비고')
+    };
+    const barcode=sheet.querySelector('.inv-tx-barcode svg');
+    const barcodeHtml=barcode?barcode.outerHTML:'<div class="no-barcode">BARCODE</div>';
+    const win=window.open('','_blank','width=900,height=760');
+    if(!win)return;
+    const doc=win.document;
+    const rows=[['원료명',values['원료명']],['LOT',values['LOT']],['수량',values['총 수량']],['포장',values['포장형태']],['이동',values['이동 방향']],['문서',values['문서번호']]];
+    doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${values['원료명']} ${values['LOT']} 바코드</title><style>
+      @page{size:${profile.w}mm ${profile.h}mm;margin:0}
+      *{box-sizing:border-box}html,body{margin:0;padding:0;width:${profile.w}mm;height:${profile.h}mm;font-family:Arial,"Noto Sans KR",sans-serif;color:#0f172a;background:#fff}
+      .label{width:${profile.w}mm;height:${profile.h}mm;padding:${profile.pad}mm;overflow:hidden;display:flex;flex-direction:column;gap:2.1mm}
+      .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.35mm solid #0f172a;padding-bottom:1.6mm}
+      .brand{font-weight:900;font-size:${profile.title}px;line-height:1.05}.size{font-size:${Math.max(8,profile.body-1)}px;font-weight:800;color:#475569;text-align:right}
+      .grid{display:grid;grid-template-columns:1fr 1fr;border:.25mm solid #cbd5e1;border-radius:2mm;overflow:hidden;flex:1 1 auto;min-height:0}
+      .cell{padding:1.3mm 1.7mm;border-right:.2mm solid #e2e8f0;border-bottom:.2mm solid #e2e8f0;min-height:0;overflow:hidden}.cell:nth-child(2n){border-right:0}.cell:nth-last-child(-n+2){border-bottom:0}
+      .cell small{display:block;font-size:${Math.max(6,profile.body-2)}px;color:#64748b;font-weight:800;margin-bottom:.4mm;white-space:nowrap}.cell strong{display:block;font-size:${profile.body}px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .barcode{border:.25mm dashed #94a3b8;border-radius:2mm;padding:1.2mm 1.6mm;text-align:center;flex:0 0 auto}.barcode b{display:block;font-size:${Math.max(7,profile.body-1)}px;margin-bottom:.7mm}.barcode svg{width:100%!important;height:${profile.barcode}mm!important;max-width:100%!important}.barcode text{font-size:${Math.max(8,profile.body-1)}px!important}.no-barcode{height:${profile.barcode}mm;display:flex;align-items:center;justify-content:center;font-weight:900}
+      .foot{font-size:${Math.max(6,profile.body-2)}px;color:#64748b;text-align:right;white-space:nowrap}
+      @media print{html,body{width:${profile.w}mm;height:${profile.h}mm}.label{page-break-after:always}}
+    </style></head><body><section class="label"><div class="head"><div class="brand">NAMO Chemical<br>${values['원료명']}</div><div class="size">${profile.name} 라벨<br>${profile.w}×${profile.h} mm</div></div><div class="grid">${rows.map(([k,v])=>`<div class="cell"><small>${k}</small><strong>${String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong></div>`).join('')}</div><div class="barcode"><b>원료·LOT·위치 CODE128</b>${barcodeHtml}</div><div class="foot">ERP 연동용 · ${new Date().toLocaleString('ko-KR')}</div></section></body></html>`);
+    doc.close();
+    win.focus();
+    setTimeout(()=>{win.print();win.close();},300);
+  }
+
   function fixTransactionDetailLayout(){
     document.querySelectorAll('.inv-tx-detail-grid').forEach(grid=>{
       const cells=Array.from(grid.children);
@@ -59,12 +115,23 @@
     });
     document.querySelectorAll('.inv-tx-detail-actions .primary').forEach(button=>{
       if(/^바코드\s+\d+매\s+인쇄$/.test(clean(button.textContent)))button.textContent='바코드 인쇄';
+      button.dataset.qmesAdaptivePrint='1';
     });
   }
 
   function installTransactionDetailLayoutFix(){
     fixTransactionDetailLayout();
     new MutationObserver(()=>fixTransactionDetailLayout()).observe(document.documentElement,{childList:true,subtree:true});
+    document.addEventListener('click',event=>{
+      const button=event.target.closest?.('.inv-tx-detail-actions .primary[data-qmes-adaptive-print="1"]');
+      if(!button)return;
+      const sheet=button.closest('.inv-tx-detail-sheet');
+      if(!sheet)return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      adaptivePrintFromDetail(sheet);
+    },true);
   }
 
   function restore(){
