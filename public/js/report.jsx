@@ -262,9 +262,9 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
               <div className="qmes-iqc2-sec">
                 <div className="qmes-iqc2-sec-title">수량정보</div>
                 <table className="qmes-iqc2-table">
-                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불합수량</th><th>비고</th></tr></thead>
+                  <thead><tr><th>포장형태</th><th>입고수량</th><th>검사수량</th><th>불합수량</th><th>비고</th></tr></thead>
                   <tbody><tr>
-                    <td>{record.name || "-"}</td>
+                    <td>{record.packagingType === "기타" ? (record.packagingTypeOther || "기타") : (record.packagingType || "-")}</td>
                     <td>{record.qty || "-"}</td>
                     <td>{record.inspectQty || "-"}</td>
                     <td>{record.defectQty || "0"}</td>
@@ -554,9 +554,9 @@ function InspectionReportsTab() {
               <div className="qmes-iqc2-sec">
                 <div className="qmes-iqc2-sec-title">수량정보</div>
                 <table className="qmes-iqc2-table">
-                  <thead><tr><th>구분</th><th>입고수량</th><th>검사수량</th><th>불합수량</th><th>비고</th></tr></thead>
+                  <thead><tr><th>포장형태</th><th>입고수량</th><th>검사수량</th><th>불합수량</th><th>비고</th></tr></thead>
                   <tbody><tr>
-                    <td>{iqc.name || "-"}</td>
+                    <td>{iqc.packagingType === "기타" ? (iqc.packagingTypeOther || "기타") : (iqc.packagingType || "-")}</td>
                     <td>{iqc.qty || "-"}</td>
                     <td>{iqc.inspectQty || "-"}</td>
                     <td>{iqc.defectQty || "0"}</td>
@@ -810,3 +810,4 @@ function CoaTab() {
 }
 
 /* ──────────────────────────── 수입검사 (IQC) 탭 ──────────────────────────── */
+
