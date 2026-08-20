@@ -1,4 +1,4 @@
-/* Inventory menu bridge v5: restore normal menus after inventory and hide orphan IQC auto-receipts, 2026-08-21. */
+/* Inventory menu bridge v5.1: restore normal menus, hide orphan IQC receipts, and fix transaction detail layout, 2026-08-21. */
 (function(){
   let root=null,host=null,current='overview',inventorySession=0;
   const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
@@ -39,6 +39,28 @@
         return response;
       }
     };
+  }
+
+  function fixTransactionDetailLayout(){
+    document.querySelectorAll('.inv-tx-detail-grid').forEach(grid=>{
+      const cells=Array.from(grid.children);
+      const barcodeCell=cells.find(cell=>clean(cell.querySelector('dt')?.textContent)==='바코드 발행수량');
+      const directionCell=cells.find(cell=>clean(cell.querySelector('dt')?.textContent)==='이동 방향');
+      if(!barcodeCell||!directionCell||barcodeCell.dataset.qmesDirectionMoved==='1')return;
+      const directionValue=clean(directionCell.querySelector('dd')?.textContent)||'-';
+      const dt=barcodeCell.querySelector('dt');
+      const dd=barcodeCell.querySelector('dd');
+      if(dt)dt.textContent='이동 방향';
+      if(dd)dd.textContent=directionValue;
+      barcodeCell.dataset.qmesDirectionMoved='1';
+      barcodeCell.classList.remove('wide');
+      directionCell.remove();
+    });
+  }
+
+  function installTransactionDetailLayoutFix(){
+    fixTransactionDetailLayout();
+    new MutationObserver(()=>fixTransactionDetailLayout()).observe(document.documentElement,{childList:true,subtree:true});
   }
 
   function restore(){
@@ -109,5 +131,6 @@
   }
 
   installInventoryTransactionFilter();
+  installTransactionDetailLayoutFix();
   const timer=setInterval(()=>{if(install())clearInterval(timer);},250);setTimeout(()=>clearInterval(timer),15000);
 })();
