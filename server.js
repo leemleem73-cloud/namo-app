@@ -79,6 +79,9 @@ app.use(
   })
 );
 
+// Register PostgreSQL inventory APIs even when production starts with `node server.js` directly.
+require('./inventory-server').installInventoryRoutes(app);
+
 app.use((req, res, next) => {
   if (req.path === '/' || req.path === '/index.html' || /\.(?:js|jsx|html)$/.test(req.path)) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
