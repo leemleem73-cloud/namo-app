@@ -1,0 +1,54 @@
+/* 입출고 관리 표를 LOT별 재고 표 틀과 통일 v3, 2026-08-20 */
+#qmes-inventory-host .inv-movement-panel {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table {
+  width: 100%;
+  min-width: 980px;
+  table-layout: fixed !important;
+}
+
+#qmes-inventory-host .inv-movement-table col:nth-child(1) { width: 15%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(2) { width: 7%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(3) { width: 12%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(4) { width: 18%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(5) { width: 11%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(6) { width: 18%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(7) { width: 19%; }
+
+#qmes-inventory-host .inv-shell .inv-movement-table th,
+#qmes-inventory-host .inv-shell .inv-movement-table td {
+  vertical-align: middle !important;
+}
+
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(1),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(1),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(2),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(2),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(3),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(3),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(4),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(4),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(6),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(6),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(7),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(7) {
+  text-align: left !important;
+}
+
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(5),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(5) {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(3),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(4),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(6),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(7) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
