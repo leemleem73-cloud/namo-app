@@ -4,7 +4,9 @@
   "description": "Namo Chemical QMS",
   "main": "server.js",
   "scripts": {
-    "start": "node startup-maintenance.js && node -r ./security-bootstrap.js -r ./inventory-server.js -r ./inventory-force-install.js -r ./qmes-extra-sync-server.js server.js"
+    "start": "node startup-maintenance.js && node -r ./security-bootstrap.js -r ./inventory-server.js -r ./inventory-force-install.js -r ./qmes-extra-sync-server.js server.js",
+    "start:dev": "QMES_ENV=development node -r ./dev-environment-bootstrap.js -r ./security-bootstrap.js -r ./inventory-server.js -r ./inventory-force-install.js -r ./qmes-extra-sync-server.js server.js",
+    "start:staging": "QMES_ENV=staging node -r ./dev-environment-bootstrap.js -r ./security-bootstrap.js -r ./inventory-server.js -r ./inventory-force-install.js -r ./qmes-extra-sync-server.js server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
