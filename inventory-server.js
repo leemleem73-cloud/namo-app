@@ -34,6 +34,7 @@ function normalizeInventoryItem(value) {
 }
 function physicalRackForItem(itemCode, itemName) {
   const value = normalizeInventoryItem(`${itemCode || ''} ${itemName || ''}`);
+  if (value.includes('PAI')) return 'A-1-1';
   if (value.includes('SBS') && value.includes('PVDF')) return 'A-1-1';
   if (value.includes('SBS')) return 'A-1-1';
   if (value.includes('SBR')) return 'A-2-1';
@@ -50,17 +51,19 @@ async function migrateLegacyRmBalances() {
   try {
     await client.query('BEGIN');
     const legacy = await client.query(`
-      SELECT b.item_code,b.lot_no,b.quality_status,b.quantity,
+      SELECT b.item_code,b.lot_no,b.location_code AS source_location,
+             b.quality_status,b.quantity,
              COALESCE(i.item_name,b.item_code) AS item_name,
              COALESCE(i.unit,'kg') AS unit
       FROM inventory_balances b
       LEFT JOIN inventory_items i ON i.item_code=b.item_code
-      WHERE b.location_code='RM' AND b.quantity>0
+      WHERE b.location_code IN ('RM','UNASSIGNED') AND b.quantity>0
       FOR UPDATE OF b
     `);
     for (const row of legacy.rows) {
       const targetLocation = physicalRackForItem(row.item_code, row.item_name);
-      const referenceNo = `PHOTO-RACK-MIGRATION-20260820:${row.item_code}:${row.lot_no}:${row.quality_status}`;
+      if (targetLocation === row.source_location) continue;
+      const referenceNo = `PHOTO-RACK-MIGRATION-20260820:${row.source_location}:${row.item_code}:${row.lot_no}:${row.quality_status}`;
       await client.query(`
         INSERT INTO inventory_balances
           (item_code,lot_no,location_code,quality_status,quantity,updated_at)
@@ -75,18 +78,18 @@ async function migrateLegacyRmBalances() {
           (transaction_type,item_code,lot_no,quantity,unit,from_location,to_location,
            from_status,to_status,reference_no,reason,remark,operator_id,operator_name)
         VALUES
-          ('MOVE',$1,$2,$3,$4,'RM',$5,$6,$6,$7,$8,$9,'SYSTEM','SYSTEM')
+          ('MOVE',$1,$2,$3,$4,$5,$6,$7,$7,$8,$9,$10,'SYSTEM','SYSTEM')
       `,[
-        row.item_code,row.lot_no,row.quantity,row.unit,targetLocation,row.quality_status,
-        referenceNo,'사진 기준 기존 RM 위치 이전',
+        row.item_code,row.lot_no,row.quantity,row.unit,row.source_location,targetLocation,
+        row.quality_status,referenceNo,'사진 기준 원료 실제 위치 정정',
         targetLocation===PHOTO_RACK_UNASSIGNED
           ? '사진에서 원료 위치가 확인되지 않아 위치확인으로 이전'
           : '창고 사진 표찰과 현황판 기준 실제 랙으로 이전'
       ]);
       await client.query(`
         DELETE FROM inventory_balances
-        WHERE item_code=$1 AND lot_no=$2 AND location_code='RM' AND quality_status=$3
-      `,[row.item_code,row.lot_no,row.quality_status]);
+        WHERE item_code=$1 AND lot_no=$2 AND location_code=$3 AND quality_status=$4
+      `,[row.item_code,row.lot_no,row.source_location,row.quality_status]);
     }
     await client.query('COMMIT');
   } catch (error) {
