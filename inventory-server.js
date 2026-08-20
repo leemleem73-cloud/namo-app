@@ -131,7 +131,25 @@ function ensureInventorySchema() {
       ('OQC', 'OQC 검사대기', 'QUALITY'),
       ('FG-WH', '완제품창고', 'STORAGE'),
       ('SHIP', '출하대기', 'SHIPPING'),
-      ('HOLD', '보류/격리구역', 'QUARANTINE')
+      ('HOLD', '보류/격리구역', 'QUARANTINE'),
+      ('A-1-1', 'A구역 1번 랙 1층 · 원재료', 'STORAGE'),
+      ('A-1-2', 'A구역 1번 랙 2층 · 원재료', 'STORAGE'),
+      ('A-2-1', 'A구역 2번 랙 1층 · 원재료', 'STORAGE'),
+      ('A-2-2', 'A구역 2번 랙 2층 · 원재료', 'STORAGE'),
+      ('A-3-1', 'A구역 3번 랙 1층 · 원재료', 'STORAGE'),
+      ('A-3-2', 'A구역 3번 랙 2층 · 원재료', 'STORAGE'),
+      ('A-4-1', 'A구역 4번 랙 1층 · 원재료', 'STORAGE'),
+      ('A-4-2', 'A구역 4번 랙 2층 · 원재료', 'STORAGE'),
+      ('A-5-1', 'A구역 5번 랙 1층 · 원재료', 'STORAGE'),
+      ('A-5-2', 'A구역 5번 랙 2층 · 원재료', 'STORAGE'),
+      ('A-6-1', 'A구역 6번 랙 1층 · 원재료', 'STORAGE'),
+      ('A-6-2', 'A구역 6번 랙 2층 · 원재료', 'STORAGE'),
+      ('B-1-1', 'B구역 1번 랙 1층 · 완제품', 'STORAGE'),
+      ('B-1-2', 'B구역 1번 랙 2층 · 완제품', 'STORAGE'),
+      ('B-2-1', 'B구역 2번 랙 1층 · 완제품', 'STORAGE'),
+      ('B-2-2', 'B구역 2번 랙 2층 · 완제품', 'STORAGE'),
+      ('B-3-1', 'B구역 3번 랙 1층 · 완제품', 'STORAGE'),
+      ('B-3-2', 'B구역 3번 랙 2층 · 완제품', 'STORAGE')
     ON CONFLICT (location_code) DO NOTHING;
   `).catch((error) => {
     schemaPromise = null;
