@@ -1,0 +1,49 @@
+/* 입출고 관리 표: 헤더와 본문 열 정렬 및 행 간격 고정, 2026-08-20 */
+.inv-panel .inv-movement-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+
+.inv-panel .inv-movement-table col:nth-child(1) { width: 18% !important; }
+.inv-panel .inv-movement-table col:nth-child(2) { width: 6% !important; }
+.inv-panel .inv-movement-table col:nth-child(3) { width: 10% !important; }
+.inv-panel .inv-movement-table col:nth-child(4) { width: 18% !important; }
+.inv-panel .inv-movement-table col:nth-child(5) { width: 10% !important; }
+.inv-panel .inv-movement-table col:nth-child(6) { width: 20% !important; }
+.inv-panel .inv-movement-table col:nth-child(7) { width: 18% !important; }
+
+.inv-panel .inv-movement-table th,
+.inv-panel .inv-movement-table td {
+  box-sizing: border-box !important;
+  height: 42px !important;
+  padding: 10px 12px !important;
+  line-height: 1.35 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+.inv-panel .inv-movement-table thead th {
+  height: 40px !important;
+  font-weight: 800 !important;
+}
+
+.inv-panel .inv-movement-table th:nth-child(2),
+.inv-panel .inv-movement-table td:nth-child(2) {
+  text-align: center !important;
+}
+
+.inv-panel .inv-movement-table th:nth-child(5),
+.inv-panel .inv-movement-table td:nth-child(5) {
+  text-align: right !important;
+}
+
+.inv-panel .inv-movement-table th:not(:nth-child(2)):not(:nth-child(5)),
+.inv-panel .inv-movement-table td:not(:nth-child(2)):not(:nth-child(5)) {
+  text-align: left !important;
+}
+
+.inv-panel .inv-movement-table td:nth-child(7) {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
