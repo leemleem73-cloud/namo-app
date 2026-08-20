@@ -7,7 +7,7 @@
 }
 
 .qmes-ipad-pop button,
-.qmes-ipad-pop input { font: inherit; touch-action: manipulation; }
+.qmes-ipad-pop input,.qmes-ipad-pop select { font: inherit; touch-action: manipulation; }
 
 .qmes-ipad-hero,.qmes-ipad-work-head { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:112px; padding:22px 26px; border:1px solid #27415f; border-radius:18px; background:linear-gradient(135deg,#122841 0%,#0d1d31 68%,#113850 100%); box-shadow:0 18px 38px rgba(0,0,0,.2); }
 .qmes-ipad-hero span,.qmes-ipad-work-head > div > span { color:#38c8f1; font-size:12px; font-weight:900; letter-spacing:.12em; }
@@ -60,9 +60,9 @@
 .qmes-ipad-form-grid label.wide { grid-column:span 2; }
 .qmes-ipad-form-grid label > span { color:#1f2937; font-size:14px; font-weight:850; }
 .qmes-ipad-form-grid label b { color:#e11d48; }
-.qmes-ipad-form-grid input,.qmes-ipad-triple input,.qmes-ipad-repeat-choice input { width:100%; min-height:54px; box-sizing:border-box; padding:0 14px; border:1px solid #b8c4d0; border-radius:10px; background:#fff; color:#111827; font-size:16px; outline:none; }
+.qmes-ipad-form-grid input,.qmes-ipad-form-grid select,.qmes-ipad-triple input,.qmes-ipad-repeat-choice input { width:100%; min-height:54px; box-sizing:border-box; padding:0 14px; border:1px solid #b8c4d0; border-radius:10px; background:#fff; color:#111827; font-size:16px; outline:none; }
 .qmes-ipad-form-grid input::placeholder,.qmes-ipad-triple input::placeholder,.qmes-ipad-repeat-choice input::placeholder { color:#94a3b8; }
-.qmes-ipad-form-grid input:focus,.qmes-ipad-triple input:focus,.qmes-ipad-repeat-choice input:focus { border-color:#2bc3ec; box-shadow:0 0 0 3px rgba(43,195,236,.12); }
+.qmes-ipad-form-grid input:focus,.qmes-ipad-form-grid select:focus,.qmes-ipad-triple input:focus,.qmes-ipad-repeat-choice input:focus { border-color:#2bc3ec; box-shadow:0 0 0 3px rgba(43,195,236,.12); }
 .qmes-ipad-form-grid input[readonly] { color:#475569; background:#f1f5f9; }
 .qmes-ipad-form-grid input.lot { color:#0369a1; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:19px; font-weight:900; letter-spacing:.04em; }
 .qmes-ipad-gate { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13px; font-weight:800; }
@@ -267,3 +267,4 @@
   border-color:#38bdf8!important;
   box-shadow:0 0 0 3px rgba(56,189,248,.16)!important;
 }
+
