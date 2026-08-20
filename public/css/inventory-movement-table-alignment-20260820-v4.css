@@ -1,0 +1,223 @@
+/* 입출고 관리 표 간격축소·상세 바코드 v4, 2026-08-20 */
+#qmes-inventory-host .inv-movement-panel {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table {
+  width: 100%;
+  min-width: 980px;
+  table-layout: fixed !important;
+}
+
+#qmes-inventory-host .inv-movement-table col:nth-child(1) { width: 14%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(2) { width: 6%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(3) { width: 12%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(4) { width: 12%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(5) { width: 10%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(6) { width: 20%; }
+#qmes-inventory-host .inv-movement-table col:nth-child(7) { width: 26%; }
+
+#qmes-inventory-host .inv-shell .inv-movement-table th,
+#qmes-inventory-host .inv-shell .inv-movement-table td {
+  vertical-align: middle !important;
+}
+
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(1),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(1),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(2),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(2),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(3),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(3),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(4),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(4),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(5),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(5),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(6),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(6),
+#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(7),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(7) {
+  text-align: left !important;
+}
+
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(5) {
+  font-variant-numeric: tabular-nums;
+}
+
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(3),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(4),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(6),
+#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(7) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#qmes-inventory-host .inv-movement-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+#qmes-inventory-host .inv-movement-heading span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+#qmes-inventory-host .inv-tx-detail-link {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #0369a1 !important;
+  box-shadow: none !important;
+  font: inherit !important;
+  font-weight: 750 !important;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+#qmes-inventory-host .inv-tx-detail-link:hover,
+#qmes-inventory-host .inv-tx-detail-link:focus-visible {
+  color: #0284c7 !important;
+  text-decoration-color: currentColor;
+  outline: none;
+}
+
+#qmes-inventory-host .inv-tx-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 13000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, .58);
+  backdrop-filter: blur(3px);
+}
+
+#qmes-inventory-host .inv-tx-detail-sheet {
+  width: min(760px, 96vw);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+  color: #0f172a;
+}
+
+#qmes-inventory-host .inv-tx-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+#qmes-inventory-host .inv-tx-detail-head span {
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+
+#qmes-inventory-host .inv-tx-detail-head h3 {
+  margin: 4px 0 0;
+  font-size: 21px;
+}
+
+#qmes-inventory-host .inv-tx-detail-head > button {
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 25px;
+  line-height: 1;
+}
+
+#qmes-inventory-host .inv-tx-detail-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 22px 0;
+  padding: 12px 14px;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  background: #ecfdf5;
+}
+
+#qmes-inventory-host .inv-tx-detail-status b { color: #047857; }
+#qmes-inventory-host .inv-tx-detail-status span { color: #475569; font-size: 13px; }
+
+#qmes-inventory-host .inv-tx-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 18px 22px;
+  padding: 1px;
+  border-radius: 11px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+#qmes-inventory-host .inv-tx-detail-grid > div {
+  min-width: 0;
+  padding: 12px 14px;
+  background: #f8fafc;
+}
+
+#qmes-inventory-host .inv-tx-detail-grid > .wide { grid-column: 1 / -1; }
+#qmes-inventory-host .inv-tx-detail-grid dt { margin: 0 0 5px; color: #64748b; font-size: 11px; font-weight: 750; }
+#qmes-inventory-host .inv-tx-detail-grid dd { margin: 0; overflow-wrap: anywhere; color: #0f172a; font-size: 14px; font-weight: 750; }
+
+#qmes-inventory-host .inv-tx-barcode {
+  margin: 0 22px;
+  padding: 16px;
+  border: 1px dashed #94a3b8;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+}
+
+#qmes-inventory-host .inv-tx-barcode > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+#qmes-inventory-host .inv-tx-barcode > div span { color: #64748b; font-size: 11px; }
+#qmes-inventory-host .inv-tx-barcode svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+#qmes-inventory-host .inv-tx-barcode code { display: block; padding: 12px; overflow-wrap: anywhere; background: #f8fafc; }
+
+#qmes-inventory-host .inv-tx-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 18px 22px 22px;
+}
+
+#qmes-inventory-host .inv-tx-detail-actions button {
+  min-width: 92px;
+  min-height: 40px;
+}
+
+@media (max-width: 720px) {
+  #qmes-inventory-host .inv-movement-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
+  #qmes-inventory-host .inv-tx-detail-overlay { padding: 10px; }
+  #qmes-inventory-host .inv-tx-detail-sheet { max-height: calc(100vh - 20px); }
+  #qmes-inventory-host .inv-tx-detail-grid { grid-template-columns: 1fr; }
+  #qmes-inventory-host .inv-tx-detail-grid > .wide { grid-column: auto; }
+  #qmes-inventory-host .inv-tx-barcode > div { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
