@@ -1,0 +1,13 @@
+/* Work-order material plan: vertically center note/delete controls in each material row. */
+.qmes-wo-issue-shell
+.qmes-wo-material-compact
+tbody > tr:not(:last-child) > td:nth-child(10) {
+  vertical-align: middle !important;
+}
+
+.qmes-wo-issue-shell
+.qmes-wo-material-compact
+tbody > tr:not(:last-child) > td:nth-child(10) > div {
+  align-items: center !important;
+}
+
