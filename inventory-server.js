@@ -159,6 +159,12 @@ function ensureInventorySchema() {
       work_order_no TEXT DEFAULT '',
       production_lot TEXT DEFAULT '',
       reference_no TEXT DEFAULT '',
+      packaging_type TEXT DEFAULT '',
+      packaging_type_other TEXT DEFAULT '',
+      package_qty INTEGER,
+      unit_weight NUMERIC,
+      calculated_weight NUMERIC,
+      barcode_qty INTEGER,
       reason TEXT DEFAULT '',
       remark TEXT DEFAULT '',
       operator_id TEXT DEFAULT '',
@@ -195,6 +201,12 @@ function ensureInventorySchema() {
     CREATE INDEX IF NOT EXISTS inventory_tx_created_idx ON inventory_transactions(created_at DESC);
     CREATE INDEX IF NOT EXISTS inventory_tx_item_lot_idx ON inventory_transactions(item_code, lot_no, created_at DESC);
     CREATE INDEX IF NOT EXISTS inventory_reservation_active_idx ON inventory_reservations(item_code, status);
+    ALTER TABLE inventory_transactions ADD COLUMN IF NOT EXISTS packaging_type TEXT DEFAULT '';
+    ALTER TABLE inventory_transactions ADD COLUMN IF NOT EXISTS packaging_type_other TEXT DEFAULT '';
+    ALTER TABLE inventory_transactions ADD COLUMN IF NOT EXISTS package_qty INTEGER;
+    ALTER TABLE inventory_transactions ADD COLUMN IF NOT EXISTS unit_weight NUMERIC;
+    ALTER TABLE inventory_transactions ADD COLUMN IF NOT EXISTS calculated_weight NUMERIC;
+    ALTER TABLE inventory_transactions ADD COLUMN IF NOT EXISTS barcode_qty INTEGER;
     INSERT INTO inventory_locations (location_code, location_name, location_type)
     VALUES
       ('IQC', 'IQC 검사대기', 'QUALITY'),
@@ -242,7 +254,51 @@ async function upsertItem(client, body) {
 }
 async function balanceQty(client,itemCode,lotNo,locationCode,status){const r=await client.query(`SELECT quantity FROM inventory_balances WHERE item_code=$1 AND lot_no=$2 AND location_code=$3 AND quality_status=$4 FOR UPDATE`,[itemCode,lotNo,locationCode,status]);return r.rowCount?Number(r.rows[0].quantity):0;}
 async function changeBalance(client,itemCode,lotNo,locationCode,status,delta,allowNegative=false){if(!locationCode||!status||!delta)return;const current=await balanceQty(client,itemCode,lotNo,locationCode,status);const next=current+delta;if(!allowNegative&&next<-.000001)throw new Error(`재고가 부족합니다. 현재고 ${current}, 요청 ${Math.abs(delta)}`);await client.query(`INSERT INTO inventory_balances (item_code,lot_no,location_code,quality_status,quantity,updated_at) VALUES ($1,$2,$3,$4,$5,NOW()) ON CONFLICT (item_code,lot_no,location_code,quality_status) DO UPDATE SET quantity=EXCLUDED.quantity,updated_at=NOW()`,[itemCode,lotNo,locationCode,status,next]);}
-async function postInventoryTransaction(req,payload,options={}){const client=await pool.connect();try{await client.query('BEGIN');const type=txt(payload.transactionType).toUpperCase();if(!VALID_TYPES.has(type))throw new Error('지원하지 않는 재고 처리 유형입니다.');const itemCode=txt(payload.itemCode).toUpperCase(),lotNo=txt(payload.lotNo).toUpperCase(),amount=qty(payload.quantity);if(!itemCode||!lotNo||amount===null||amount<=0)throw new Error('품목, LOT, 0보다 큰 수량은 필수입니다.');const item=await upsertItem(client,payload);let fromLocation=txt(payload.fromLocation).toUpperCase(),toLocation=txt(payload.toLocation).toUpperCase();const fromStatus=txt(payload.fromStatus).toUpperCase(),toStatus=txt(payload.toStatus).toUpperCase();const legacyRack=physicalRackForItem(itemCode,item.item_name);if(toLocation==='RM')toLocation=legacyRack;if(fromStatus&&!VALID_STATUS.has(fromStatus))throw new Error('출고 품질상태가 올바르지 않습니다.');if(toStatus&&!VALID_STATUS.has(toStatus))throw new Error('입고 품질상태가 올바르지 않습니다.');if(fromLocation)await changeBalance(client,itemCode,lotNo,fromLocation,fromStatus||'AVAILABLE',-amount,Boolean(options.allowNegative));if(toLocation)await changeBalance(client,itemCode,lotNo,toLocation,toStatus||'AVAILABLE',amount,false);if(!fromLocation&&!toLocation)throw new Error('출발 또는 도착 위치가 필요합니다.');await client.query(`INSERT INTO inventory_lots (item_code,lot_no,supplier,received_at,expiry_date,reference_no,updated_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()) ON CONFLICT (item_code,lot_no) DO UPDATE SET supplier=COALESCE(NULLIF(EXCLUDED.supplier,''),inventory_lots.supplier),received_at=COALESCE(EXCLUDED.received_at,inventory_lots.received_at),expiry_date=COALESCE(EXCLUDED.expiry_date,inventory_lots.expiry_date),reference_no=COALESCE(NULLIF(EXCLUDED.reference_no,''),inventory_lots.reference_no),updated_at=NOW()`,[itemCode,lotNo,txt(payload.supplier),txt(payload.receivedAt)||null,txt(payload.expiryDate)||null,txt(payload.referenceNo)]);const user=req.session?.user||{};const inserted=await client.query(`INSERT INTO inventory_transactions (transaction_type,item_code,lot_no,quantity,unit,from_location,to_location,from_status,to_status,work_order_no,production_lot,reference_no,reason,remark,operator_id,operator_name) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,[type,itemCode,lotNo,amount,item.unit,fromLocation,toLocation,fromStatus,toStatus,txt(payload.workOrderNo),txt(payload.productionLot),txt(payload.referenceNo),txt(payload.reason),txt(payload.remark),txt(user.uid||user.id),txt(user.name)]);await client.query('COMMIT');return inserted.rows[0];}catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}}
+async function postInventoryTransaction(req,payload,options={}){
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const type=txt(payload.transactionType).toUpperCase();
+    if(!VALID_TYPES.has(type))throw new Error('지원하지 않는 재고 처리 유형입니다.');
+    const itemCode=txt(payload.itemCode).toUpperCase(),lotNo=txt(payload.lotNo).toUpperCase(),amount=qty(payload.quantity);
+    if(!itemCode||!lotNo||amount===null||amount<=0)throw new Error('품목, LOT, 0보다 큰 수량은 필수입니다.');
+    const item=await upsertItem(client,payload);
+    let fromLocation=txt(payload.fromLocation).toUpperCase(),toLocation=txt(payload.toLocation).toUpperCase();
+    const fromStatus=txt(payload.fromStatus).toUpperCase(),toStatus=txt(payload.toStatus).toUpperCase();
+    const legacyRack=physicalRackForItem(itemCode,item.item_name);
+    if(toLocation==='RM')toLocation=legacyRack;
+    if(fromStatus&&!VALID_STATUS.has(fromStatus))throw new Error('출고 품질상태가 올바르지 않습니다.');
+    if(toStatus&&!VALID_STATUS.has(toStatus))throw new Error('입고 품질상태가 올바르지 않습니다.');
+    if(fromLocation)await changeBalance(client,itemCode,lotNo,fromLocation,fromStatus||'AVAILABLE',-amount,Boolean(options.allowNegative));
+    if(toLocation)await changeBalance(client,itemCode,lotNo,toLocation,toStatus||'AVAILABLE',amount,false);
+    if(!fromLocation&&!toLocation)throw new Error('출발 또는 도착 위치가 필요합니다.');
+    await client.query(`INSERT INTO inventory_lots (item_code,lot_no,supplier,received_at,expiry_date,reference_no,updated_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()) ON CONFLICT (item_code,lot_no) DO UPDATE SET supplier=COALESCE(NULLIF(EXCLUDED.supplier,''),inventory_lots.supplier),received_at=COALESCE(EXCLUDED.received_at,inventory_lots.received_at),expiry_date=COALESCE(EXCLUDED.expiry_date,inventory_lots.expiry_date),reference_no=COALESCE(NULLIF(EXCLUDED.reference_no,''),inventory_lots.reference_no),updated_at=NOW()`,[itemCode,lotNo,txt(payload.supplier),txt(payload.receivedAt)||null,txt(payload.expiryDate)||null,txt(payload.referenceNo)]);
+    const packageQty=Number.isInteger(Number(payload.packageQty))&&Number(payload.packageQty)>0?Number(payload.packageQty):null;
+    const unitWeight=qty(payload.unitWeight);
+    const calculatedWeight=qty(payload.calculatedWeight)??(packageQty&&unitWeight?packageQty*unitWeight:null);
+    const barcodeQty=Number.isInteger(Number(payload.barcodeQty))&&Number(payload.barcodeQty)>0?Number(payload.barcodeQty):packageQty;
+    const user=req.session?.user||{};
+    const inserted=await client.query(
+      `INSERT INTO inventory_transactions
+       (transaction_type,item_code,lot_no,quantity,unit,from_location,to_location,from_status,to_status,
+        work_order_no,production_lot,reference_no,packaging_type,packaging_type_other,package_qty,unit_weight,
+        calculated_weight,barcode_qty,reason,remark,operator_id,operator_name)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+       RETURNING *`,
+      [type,itemCode,lotNo,amount,item.unit,fromLocation,toLocation,fromStatus,toStatus,
+       txt(payload.workOrderNo),txt(payload.productionLot),txt(payload.referenceNo),
+       txt(payload.packagingType),txt(payload.packagingTypeOther),packageQty,unitWeight,calculatedWeight,barcodeQty,
+       txt(payload.reason),txt(payload.remark),txt(user.uid||user.id),txt(user.name)]
+    );
+    await client.query('COMMIT');
+    return inserted.rows[0];
+  }catch(error){
+    await client.query('ROLLBACK');
+    throw error;
+  }finally{
+    client.release();
+  }
+}
 
 function installInventoryRoutes(app){
   if(app.__qmesInventoryInstalled)return;

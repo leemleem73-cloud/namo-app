@@ -126,6 +126,7 @@ function FieldInputTab() {
     date:today, recvDate:today, inspectDate:today, shipDate:today,
     lot:"", product:"", material:"", supplier:"",
     qty:"", inspectQty:"1", defectQty:"0",
+    packagingType:"", packagingTypeOther:"", packageQty:"1", unitWeight:"",
     customer:"", shipQty:"", destination:"",
     inspector:inspector, remarks:""
   });
@@ -147,6 +148,7 @@ function FieldInputTab() {
       date:today, recvDate:today, inspectDate:today, shipDate:today,
       lot:"", product:"", material:"", supplier:"",
       qty:"", inspectQty:"1", defectQty:"0",
+      packagingType:"", packagingTypeOther:"", packageQty:"1", unitWeight:"",
       customer:"", shipQty:"", destination:"",
       inspector:inspector, remarks:""
     });
@@ -162,6 +164,15 @@ function FieldInputTab() {
   const lotNo = String(form.lot || "").trim().toUpperCase();
   const lotInfo = qmesIpadLotInfo(lotNo);
   const availableLots = Array.from(new Set((DB.batches || []).map((row) => row.no).filter(Boolean)));
+  const incomingWeight = Number(form.qty);
+  const packageCount = Number(form.packageQty);
+  const packageUnitWeight = Number(form.unitWeight);
+  const calculatedWeight = Number.isInteger(packageCount) && packageCount > 0 && Number.isFinite(packageUnitWeight) && packageUnitWeight > 0
+    ? packageCount * packageUnitWeight
+    : 0;
+  const packagingWeightMismatch = Number.isFinite(incomingWeight) && incomingWeight > 0 && calculatedWeight > 0
+    ? Math.abs(incomingWeight - calculatedWeight) > 0.01
+    : false;
 
   useEffect(() => {
     let active = true;
@@ -218,6 +229,10 @@ function FieldInputTab() {
       const defectQty = Number(form.defectQty);
       if (!String(form.material || "").trim()) errors.push("원자재명을 입력하세요.");
       if (!Number.isFinite(qty) || qty <= 0) errors.push("입고수량을 0보다 크게 입력하세요.");
+      if (!String(form.packagingType || "").trim()) errors.push("포장형태를 선택하세요.");
+      if (form.packagingType === "기타" && !String(form.packagingTypeOther || "").trim()) errors.push("기타 포장형태를 입력하세요.");
+      if (!Number.isInteger(packageCount) || packageCount <= 0) errors.push("입고 포장수량을 1 EA 이상 입력하세요.");
+      if (!Number.isFinite(packageUnitWeight) || packageUnitWeight <= 0) errors.push("용기당 중량을 0보다 크게 입력하세요.");
       if (!Number.isFinite(inspectQty) || inspectQty <= 0) errors.push("검사수량을 0보다 크게 입력하세요.");
       if (!Number.isFinite(defectQty) || defectQty < 0) errors.push("불량수량을 확인하세요.");
       if (Number.isFinite(inspectQty) && Number.isFinite(defectQty) && defectQty > inspectQty) errors.push("불량수량은 검사수량보다 클 수 없습니다.");
@@ -266,6 +281,12 @@ function FieldInputTab() {
       qty:qmesQuantityWithUnit(form.qty, "kg"),
       inspectQty:qmesQuantityWithUnit(form.inspectQty, "EA"),
       defectQty:qmesQuantityWithUnit(form.defectQty, "EA"),
+      packagingType:String(form.packagingType || "").trim(),
+      packagingTypeOther:String(form.packagingTypeOther || "").trim(),
+      packageQty:packageCount,
+      unitWeight:packageUnitWeight,
+      calculatedWeight,
+      barcodeQty:packageCount,
       visual:values.visual,
       label:values.label,
       weight:values.weight,
@@ -659,6 +680,31 @@ function FieldInputTab() {
               <label><span>검사수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.inspectQty} onChange={(e) => patchForm({inspectQty:e.target.value})} /></label>
               <label><span>불량수량 (EA)</span><input inputMode="numeric" value={form.defectQty} onChange={(e) => patchForm({defectQty:e.target.value})} /></label>
               <label><span>검사자</span><input value={form.inspector} onChange={(e) => patchForm({inspector:e.target.value})} placeholder="검사자 입력" /></label>
+              <div className="wide" style={{marginTop:12,padding:"14px 16px",borderTop:"2px solid #0ea5e9",fontWeight:800,color:"#0f3b62"}}>
+                포장·바코드 정보
+              </div>
+              <label><span>포장형태 <b>*</b></span>
+                <select value={form.packagingType} onChange={(e) => patchForm({packagingType:e.target.value, packagingTypeOther:e.target.value === "기타" ? form.packagingTypeOther : ""})}>
+                  <option value="">선택</option>
+                  <option value="드럼">드럼</option>
+                  <option value="포대">포대</option>
+                  <option value="말통">말통</option>
+                  <option value="IBC">IBC</option>
+                  <option value="박스">박스</option>
+                  <option value="벌크">벌크</option>
+                  <option value="기타">기타</option>
+                </select>
+              </label>
+              {form.packagingType === "기타" && <label><span>기타 포장형태 <b>*</b></span><input value={form.packagingTypeOther} onChange={(e) => patchForm({packagingTypeOther:e.target.value})} placeholder="용기 종류 직접 입력" /></label>}
+              <label><span>입고 포장수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.packageQty} onChange={(e) => patchForm({packageQty:e.target.value.replace(/[^0-9]/g,"")})} placeholder="1" /></label>
+              <label><span>용기당 중량 (kg) <b>*</b></span><input inputMode="decimal" value={form.unitWeight} onChange={(e) => patchForm({unitWeight:e.target.value.replace(/[^0-9.]/g,"")})} placeholder="0" /></label>
+              <label><span>계산중량</span><input value={calculatedWeight > 0 ? `${calculatedWeight.toLocaleString()} kg` : ""} readOnly placeholder="포장수량 × 용기당 중량" /></label>
+              <label><span>바코드 발행수량</span><input value={Number.isInteger(packageCount) && packageCount > 0 ? `${packageCount} 매` : ""} readOnly /></label>
+              {packagingWeightMismatch && (
+                <div className="wide" style={{padding:"12px 14px",border:"1px solid #f59e0b",borderRadius:10,background:"#fff7ed",color:"#9a3412",fontWeight:700}}>
+                  중량 확인 필요 — 입고중량 {incomingWeight.toLocaleString()} kg / 포장 계산중량 {calculatedWeight.toLocaleString()} kg / 차이 {(incomingWeight-calculatedWeight).toLocaleString()} kg
+                </div>
+              )}
             </>
           ) : (
             <>

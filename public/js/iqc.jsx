@@ -28,6 +28,10 @@ function IqcTab() {
     qty: "",
     inspectQty: "",
     defectQty: "0",
+    packagingType: "",
+    packagingTypeOther: "",
+    packageQty: "1",
+    unitWeight: "",
     visual: "합격",
     label: "합격",
     weight: "합격",
@@ -93,7 +97,7 @@ function IqcTab() {
     const q = searchTerm.trim().toLowerCase();
     const searchMatch = !q || [
       r.inNo, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
-      r.inspector, r.by, r.judge, r.remarks, r.note
+      r.inspector, r.by, r.judge, r.remarks, r.note, r.packagingType, r.packagingTypeOther
     ].some((v)=>String(v || "").toLowerCase().includes(q));
     return monthMatch && supplierMatch && judgeMatch && materialMatch && searchMatch;
   });
@@ -111,11 +115,12 @@ function IqcTab() {
       window.alert("다운로드할 수입검사 데이터가 없습니다.");
       return;
     }
-    const headers = ["입고번호","입고일자","검사일자","LOT No.","원재료명","업체명","입고수량","검사수량","불량수량","외관","라벨","중량","COA","검사자","종합판정","특이사항"];
+    const headers = ["입고번호","입고일자","검사일자","LOT No.","원재료명","업체명","입고수량","검사수량","불량수량","포장형태","기타 포장형태","입고 포장수량","용기당 중량","계산중량","바코드 발행수량","외관","라벨","중량","COA","검사자","종합판정","특이사항"];
     const csvRows = filteredRows.map((r)=>[
       r.inNo, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
-      r.qty, r.inspectQty, r.defectQty, r.visual, r.label, r.weight,
-      r.coa, r.inspector || r.by, r.judge, r.remarks || r.note || ""
+      r.qty, r.inspectQty, r.defectQty, r.packagingType || "", r.packagingTypeOther || "",
+      r.packageQty ?? "", r.unitWeight ?? "", r.calculatedWeight ?? "", r.barcodeQty ?? "",
+      r.visual, r.label, r.weight, r.coa, r.inspector || r.by, r.judge, r.remarks || r.note || ""
     ]);
     const escapeCsv = (v) => `"${String(v ?? "").replace(/"/g,'""')}"`;
     const csv = "\uFEFF" + [headers, ...csvRows].map((row)=>row.map(escapeCsv).join(",")).join("\r\n");
@@ -168,6 +173,18 @@ function IqcTab() {
   const defectQtyOk = qtyPattern.test(form.defectQty.trim());
   const inspectNum = parseFloat(form.inspectQty);
   const defectNum = parseFloat(form.defectQty);
+  const packageCount = Number(form.packageQty);
+  const packageUnitWeight = Number(form.unitWeight);
+  const incomingWeight = Number(qmesStripQuantityUnit(form.qty || ""));
+  const calculatedWeight = Number.isInteger(packageCount) && packageCount > 0 && Number.isFinite(packageUnitWeight) && packageUnitWeight > 0
+    ? packageCount * packageUnitWeight
+    : 0;
+  const packagingTypeOk = Boolean(String(form.packagingType || "").trim()) && (form.packagingType !== "기타" || Boolean(String(form.packagingTypeOther || "").trim()));
+  const packageCountOk = Number.isInteger(packageCount) && packageCount > 0;
+  const packageUnitWeightOk = Number.isFinite(packageUnitWeight) && packageUnitWeight > 0;
+  const packagingWeightMismatch = Number.isFinite(incomingWeight) && incomingWeight > 0 && calculatedWeight > 0
+    ? Math.abs(incomingWeight - calculatedWeight) > 0.01
+    : false;
   const defectRangeOk = Number.isFinite(inspectNum) && Number.isFinite(defectNum) ? defectNum <= inspectNum : false;
   const inspectorOk = form.inspector.trim().length >= 1;
   const iqcErrors = [];
@@ -182,10 +199,14 @@ function IqcTab() {
   if (tried && form.qty.trim() === "") iqcErrors.push("입고수량을 입력하세요");
   if (tried && form.inspectQty.trim() === "") iqcErrors.push("검사수량을 입력하세요");
   if (tried && form.defectQty.trim() === "") iqcErrors.push("불량수량을 입력하세요");
+  if (tried && !String(form.packagingType || "").trim()) iqcErrors.push("포장형태를 선택하세요");
+  if (tried && form.packagingType === "기타" && !String(form.packagingTypeOther || "").trim()) iqcErrors.push("기타 포장형태를 입력하세요");
+  if (tried && !packageCountOk) iqcErrors.push("입고 포장수량을 1 EA 이상 입력하세요");
+  if (tried && !packageUnitWeightOk) iqcErrors.push("용기당 중량을 0보다 크게 입력하세요");
   if (tried && !form.recvDate) iqcErrors.push("입고일자를 선택하세요");
   if (tried && !form.inspectDate) iqcErrors.push("검사일자를 선택하세요");
   if (tried && !inspectorOk) iqcErrors.push("검사자를 입력하세요");
-  const iqcReady = Boolean(form.recvDate) && Boolean(form.inspectDate) && inNoOk && !duplicateInNo && lotOk && qtyOk && inspectQtyOk && defectQtyOk && defectRangeOk && inspectorOk;
+  const iqcReady = Boolean(form.recvDate) && Boolean(form.inspectDate) && inNoOk && !duplicateInNo && lotOk && qtyOk && inspectQtyOk && defectQtyOk && defectRangeOk && packagingTypeOk && packageCountOk && packageUnitWeightOk && inspectorOk;
 
   const addRow = () => {
     if (!iqcReady) { setTried(true); return; }
@@ -196,6 +217,12 @@ function IqcTab() {
       inNo, recv, inspectedAt: form.inspectDate, lot: form.lot.trim(), code: "-", name: form.name,
       supplier: form.supplier.trim() || "-", qty: qmesQuantityWithUnit(form.qty, "kg"),
       inspectQty: qmesQuantityWithUnit(form.inspectQty, "EA"), defectQty: qmesQuantityWithUnit(form.defectQty, "EA"),
+      packagingType:String(form.packagingType || "").trim(),
+      packagingTypeOther:String(form.packagingTypeOther || "").trim(),
+      packageQty:packageCount,
+      unitWeight:packageUnitWeight,
+      calculatedWeight,
+      barcodeQty:packageCount,
       visual: form.visual, label: form.label, weight: form.weight, coa: form.coa,
       remarks: form.remarks.trim(),
       judge: overall(form),
@@ -231,6 +258,8 @@ function IqcTab() {
       recvDate:(r.recv || today).slice(0,10), inspectDate:(r.inspectedAt || r.recv || today).slice(0,10), inNoMode:"auto", manualInNo:"",
       lot:r.lot, name:r.name, supplier:r.supplier === "-" ? "" : (r.supplier || ""),
       qty:qmesStripQuantityUnit(r.qty || ""), inspectQty:qmesStripQuantityUnit(r.inspectQty || ""), defectQty:qmesStripQuantityUnit(r.defectQty || "0"),
+      packagingType:r.packagingType || "", packagingTypeOther:r.packagingTypeOther || "",
+      packageQty:String(r.packageQty || "1"), unitWeight:String(r.unitWeight || ""),
       visual:r.visual, label:r.label, weight:r.weight, coa:r.coa,
       inspector:r.inspector || r.by || "",
       remarks:r.remarks || ""
@@ -443,6 +472,18 @@ function IqcTab() {
                   <div className="qmes-iqc-field"><span>검사수량</span><input inputMode="decimal" value={form.inspectQty} onFocus={(e)=>setForm({...form,inspectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,inspectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,inspectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="EA"/></div>
                   <div className="qmes-iqc-field"><span>불량수량</span><input inputMode="decimal" value={form.defectQty} onFocus={(e)=>setForm({...form,defectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,defectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,defectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="EA"/></div>
                 </div>
+              </div>
+              <div className="qmes-iqc-modal-section">
+                <h4>포장·바코드 정보</h4>
+                <div className="qmes-iqc-modal-grid">
+                  <div className="qmes-iqc-field"><span>포장형태</span><select value={form.packagingType} onChange={(e)=>setForm({...form,packagingType:e.target.value,packagingTypeOther:e.target.value==="기타"?form.packagingTypeOther:""})}><option value="">선택</option><option value="드럼">드럼</option><option value="포대">포대</option><option value="말통">말통</option><option value="IBC">IBC</option><option value="박스">박스</option><option value="벌크">벌크</option><option value="기타">기타</option></select></div>
+                  {form.packagingType==="기타" && <div className="qmes-iqc-field"><span>기타 포장형태</span><input value={form.packagingTypeOther} onChange={(e)=>setForm({...form,packagingTypeOther:e.target.value})} placeholder="용기 종류 직접 입력"/></div>}
+                  <div className="qmes-iqc-field"><span>입고 포장수량</span><input inputMode="numeric" value={form.packageQty} onChange={(e)=>setForm({...form,packageQty:e.target.value.replace(/[^0-9]/g,"")})} placeholder="EA"/></div>
+                  <div className="qmes-iqc-field"><span>용기당 중량</span><input inputMode="decimal" value={form.unitWeight} onChange={(e)=>setForm({...form,unitWeight:e.target.value.replace(/[^0-9.]/g,"")})} placeholder="kg"/></div>
+                  <div className="qmes-iqc-field"><span>계산중량</span><input value={calculatedWeight>0?`${calculatedWeight.toLocaleString()} kg`:""} readOnly placeholder="포장수량 × 용기당 중량"/></div>
+                  <div className="qmes-iqc-field"><span>바코드 발행수량</span><input value={packageCountOk?`${packageCount} 매`:""} readOnly/></div>
+                </div>
+                {packagingWeightMismatch && <div style={{marginTop:10,padding:"10px 12px",border:"1px solid #f59e0b",borderRadius:8,color:"#fbbf24",background:"rgba(245,158,11,.08)",fontWeight:700}}>중량 확인 필요 — 입고중량 {incomingWeight.toLocaleString()} kg / 포장 계산중량 {calculatedWeight.toLocaleString()} kg / 차이 {(incomingWeight-calculatedWeight).toLocaleString()} kg</div>}
               </div>
               <div className="qmes-iqc-modal-section">
                 <h4>검사정보</h4>
