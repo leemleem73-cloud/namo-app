@@ -67,7 +67,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
     store: new PostgresSessionStore(pool),
-    secret: process.env.SESSION_SECRET || 'change-me-session-secret',
+    secret: process.env.SESSION_SECRET || require('crypto').randomBytes(48).toString('hex'),
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -241,6 +241,12 @@ async function ensureSchema() {
       incoming_qty NUMERIC,
       qty NUMERIC,
       fail NUMERIC DEFAULT 0,
+      packaging_type TEXT DEFAULT '',
+      packaging_type_other TEXT DEFAULT '',
+      package_qty INTEGER,
+      unit_weight NUMERIC,
+      calculated_weight NUMERIC,
+      barcode_qty INTEGER,
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
       sign_writer JSONB DEFAULT '{}'::jsonb,
       sign_reviewer JSONB DEFAULT '{}'::jsonb,
@@ -517,6 +523,12 @@ async function ensureSchema() {
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS packaging_type TEXT DEFAULT '';
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS packaging_type_other TEXT DEFAULT '';
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS package_qty INTEGER;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS unit_weight NUMERIC;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS calculated_weight NUMERIC;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS barcode_qty INTEGER;
 
     ALTER TABLE pqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
@@ -909,6 +921,12 @@ bindCrud('iqc', (b) => ({
   incoming_qty: num(b.incomingQty),
   qty: num(b.qty ?? b.checkQty),
   fail: num(b.fail ?? b.failQty) ?? 0,
+  packaging_type: txt(b.packagingType),
+  packaging_type_other: txt(b.packagingTypeOther),
+  package_qty: num(b.packageQty),
+  unit_weight: num(b.unitWeight),
+  calculated_weight: num(b.calculatedWeight),
+  barcode_qty: num(b.barcodeQty),
   items_json: JSON.stringify(arr(b.items)),
   sign_writer: sign(b.signWriter),
   sign_reviewer: sign(b.signReviewer),
@@ -2104,8 +2122,10 @@ app.get('*', (_req, res) => {
 
 ensureSchema()
   .then(async () => {
-    const adminEmail = (process.env.ADMIN_EMAIL || 'admin@namochemical.com').toLowerCase();
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin1234!';
+    const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    const adminPassword = String(process.env.ADMIN_PASSWORD || '');
+
+    if (adminEmail && adminPassword) {
 
     const existing = await db('SELECT id FROM users WHERE email = $1', [adminEmail]);
     const hash = await bcrypt.hash(adminPassword, 10);
@@ -2134,6 +2154,8 @@ ensureSchema()
       );
     }
 
+    }
+
     const defaultUsers = [
       ['U-0002', '김종혁', '대표', '대표이사'],
       ['U-0003', '김세희', '연구소', '이사'],
@@ -2145,10 +2167,12 @@ ensureSchema()
       ['U-0009', '임흥배', '품질부', '부장'],
       ['U-0010', '박현아', '품질부', '사원'],
     ];
-    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || '1234';
-    const defaultHash = await bcrypt.hash(defaultPassword, 10);
+    const defaultPassword = String(process.env.DEFAULT_USER_PASSWORD || '');
 
-    for (const [uid, name, department, title] of defaultUsers) {
+    if (defaultPassword) {
+      const defaultHash = await bcrypt.hash(defaultPassword, 10);
+
+      for (const [uid, name, department, title] of defaultUsers) {
       const found = await db('SELECT id FROM users WHERE name = $1 OR uid = $2 LIMIT 1', [name, uid]);
       if (found.rowCount) {
         await db(
@@ -2168,6 +2192,8 @@ ensureSchema()
           [name, `${uid.toLowerCase()}@namochemical.local`, defaultHash, department, title, uid]
         );
       }
+    }
+
     }
 
     app.listen(port, () => {
