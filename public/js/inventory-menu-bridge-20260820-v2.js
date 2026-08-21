@@ -1,4 +1,4 @@
-/* Inventory menu bridge v5.7: IQC packaging fallback + larger single-page barcode print, 2026-08-21. */
+/* Inventory menu bridge v5.8: IQC packaging fallback + extra-large single-page barcode print, 2026-08-21. */
 (function(){
   let root=null,host=null,current='overview',inventorySession=0;
   const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
@@ -20,18 +20,11 @@
     const d=upper(doc).replace(/^IQC:/,'');const l=upper(lot);const n=upper(name);
     return iqcRows().find(row=>{const inNo=upper(row?.inNo||row?.in_no||row?.receiptNo||row?.receipt_no);const rowLot=upper(row?.lot||row?.lotNo||row?.lot_no);const rowName=upper(row?.name||row?.material||row?.item||row?.itemName||row?.item_name);return (d&&inNo&&d===inNo)||(l&&rowLot===l&&(!n||!rowName||n===rowName));})||null;
   }
-  function packagingFromRemark(tx){
-    const r=clean(tx?.remark||tx?.reason);
-    const known=['드럼','포대','말통','IBC','박스','벌크','병','캔','파우치','봉투','기타'];
-    return known.find(v=>r.includes(v))||'';
-  }
+  function packagingFromRemark(tx){const r=clean(tx?.remark||tx?.reason);const known=['드럼','포대','말통','IBC','박스','벌크','병','캔','파우치','봉투','기타'];return known.find(v=>r.includes(v))||'';}
   function enrichTxPackaging(tx){
     if(!tx||clean(tx.packaging_type||tx.packagingType))return tx;
-    const ref=clean(tx.reference_no||tx.referenceNo);
-    if(!/^IQC:/i.test(ref))return tx;
-    const linked=findIqcByValues(ref,tx.lot_no||tx.lotNo,tx.item_name||tx.itemName);
-    const label=pickPackaging(linked)||packagingFromRemark(tx);
-    if(!label)return tx;
+    const ref=clean(tx.reference_no||tx.referenceNo);if(!/^IQC:/i.test(ref))return tx;
+    const linked=findIqcByValues(ref,tx.lot_no||tx.lotNo,tx.item_name||tx.itemName);const label=pickPackaging(linked)||packagingFromRemark(tx);if(!label)return tx;
     if(/^기타\(.+\)$/.test(label)){const m=label.match(/^기타\((.+)\)$/);return {...tx,packaging_type:'기타',packaging_type_other:m?.[1]||''};}
     return {...tx,packaging_type:label};
   }
@@ -44,15 +37,15 @@
   }
 
   function getDetailValue(sheet,label){const cell=Array.from(sheet.querySelectorAll('.inv-tx-detail-grid > div')).find(node=>clean(node.querySelector('dt')?.textContent)===label);return clean(cell?.querySelector('dd')?.textContent)||'-';}
-  function labelProfile(packaging){const p=clean(packaging).toLowerCase();if(/드럼|drum|ibc|tote|탱크/.test(p))return{name:'대형',w:100,h:70,barcode:28,title:14,body:9,pad:4};if(/말통|pail|캔|can|통|bucket/.test(p))return{name:'중형',w:80,h:60,barcode:23,title:12,body:8.5,pad:3.5};if(/포대|bag|sack|봉투|파우치|pouch|박스|box|carton/.test(p))return{name:'중형',w:90,h:60,barcode:23,title:12,body:8.5,pad:3.5};if(/병|bottle|소형|vial/.test(p))return{name:'소형',w:70,h:50,barcode:18,title:10,body:7.5,pad:3};return{name:'기본',w:80,h:60,barcode:23,title:12,body:8.5,pad:3.5};}
+  function labelProfile(packaging){const p=clean(packaging).toLowerCase();if(/드럼|drum|ibc|tote|탱크/.test(p))return{name:'대형',w:100,h:70,barcode:36,title:14,body:8.5,pad:3.5};if(/말통|pail|캔|can|통|bucket/.test(p))return{name:'중형',w:80,h:60,barcode:30,title:12,body:8,pad:3};if(/포대|bag|sack|봉투|파우치|pouch|박스|box|carton/.test(p))return{name:'중형',w:90,h:60,barcode:30,title:12,body:8,pad:3};if(/병|bottle|소형|vial/.test(p))return{name:'소형',w:70,h:50,barcode:24,title:10,body:7,pad:2.5};return{name:'기본',w:80,h:60,barcode:30,title:12,body:8,pad:3};}
 
   function adaptivePrintFromDetail(sheet){
     const packaging=getDetailValue(sheet,'포장형태');const profile=labelProfile(packaging);
     const values={'문서번호':getDetailValue(sheet,'문서번호'),'원료명':getDetailValue(sheet,'원료명'),'LOT':getDetailValue(sheet,'LOT'),'총 수량':getDetailValue(sheet,'총 수량'),'포장형태':packaging,'이동 방향':getDetailValue(sheet,'이동 방향')};
     const barcode=sheet.querySelector('.inv-tx-barcode svg');const barcodeHtml=barcode?barcode.outerHTML:'<div class="no-barcode">BARCODE</div>';const win=window.open('','_blank','width=900,height=760');if(!win)return;
     const rows=[['원료명',values['원료명']],['LOT',values['LOT']],['수량',values['총 수량']],['포장',values['포장형태']],['이동',values['이동 방향']],['문서',values['문서번호']]];const esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const gridTop=profile.pad+7,barcodeBottom=profile.pad,gridBottom=profile.barcode+profile.pad+2;
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><style>@page{size:${profile.w}mm ${profile.h}mm;margin:0}*{box-sizing:border-box}html,body{margin:0!important;padding:0!important;width:${profile.w}mm!important;height:${profile.h}mm!important;overflow:hidden!important;background:#fff;font-family:Arial,sans-serif}.label{position:relative;width:${profile.w}mm!important;height:${profile.h}mm!important;overflow:hidden!important;page-break-inside:avoid!important}.head{position:absolute;left:${profile.pad}mm;right:${profile.pad}mm;top:${profile.pad}mm;height:6mm;overflow:hidden;font-size:${profile.title}px;font-weight:900;line-height:1.1;border-bottom:.3mm solid #111;white-space:nowrap;text-overflow:ellipsis}.grid{position:absolute;left:${profile.pad}mm;right:${profile.pad}mm;top:${gridTop}mm;bottom:${gridBottom}mm;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);overflow:hidden}.cell{min-width:0;min-height:0;padding:.7mm 1mm;border:.2mm solid #ddd;overflow:hidden}.cell small{display:block;font-size:7px;line-height:1.05;color:#555;white-space:nowrap}.cell strong{display:block;margin-top:.3mm;font-size:${profile.body}px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.barcode{position:absolute;left:${profile.pad}mm;right:${profile.pad}mm;bottom:${barcodeBottom}mm;height:${profile.barcode}mm!important;overflow:hidden!important;display:flex;align-items:center;justify-content:center}.barcode svg{display:block!important;width:100%!important;max-width:none!important;height:${profile.barcode}mm!important;max-height:none!important;overflow:visible!important}.barcode svg rect{shape-rendering:crispEdges}.no-barcode{font-size:10px;font-weight:700}@media print{html,body,.label{overflow:hidden!important}.label{page-break-after:avoid!important}}</style></head><body><div class="label"><div class="head">NAMO Chemical · ${esc(values['원료명'])}</div><div class="grid">${rows.map(([k,v])=>`<div class="cell"><small>${k}</small><strong>${esc(v)}</strong></div>`).join('')}</div><div class="barcode">${barcodeHtml}</div></div></body></html>`);
+    const gridTop=profile.pad+6.5,barcodeBottom=1.5,gridBottom=profile.barcode+3.2;
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><style>@page{size:${profile.w}mm ${profile.h}mm;margin:0}*{box-sizing:border-box}html,body{margin:0!important;padding:0!important;width:${profile.w}mm!important;height:${profile.h}mm!important;overflow:hidden!important;background:#fff;font-family:Arial,sans-serif}.label{position:relative;width:${profile.w}mm!important;height:${profile.h}mm!important;overflow:hidden!important;page-break-inside:avoid!important}.head{position:absolute;left:${profile.pad}mm;right:${profile.pad}mm;top:${profile.pad}mm;height:5.5mm;overflow:hidden;font-size:${profile.title}px;font-weight:900;line-height:1.05;border-bottom:.3mm solid #111;white-space:nowrap;text-overflow:ellipsis}.grid{position:absolute;left:${profile.pad}mm;right:${profile.pad}mm;top:${gridTop}mm;bottom:${gridBottom}mm;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);overflow:hidden}.cell{min-width:0;min-height:0;padding:.55mm .8mm;border:.2mm solid #ddd;overflow:hidden}.cell small{display:block;font-size:6.5px;line-height:1;color:#555;white-space:nowrap}.cell strong{display:block;margin-top:.2mm;font-size:${profile.body}px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.barcode{position:absolute;left:1.5mm;right:1.5mm;bottom:${barcodeBottom}mm;height:${profile.barcode}mm!important;overflow:hidden!important;display:flex;align-items:center;justify-content:center}.barcode svg{display:block!important;width:100%!important;max-width:none!important;height:${profile.barcode}mm!important;max-height:none!important;overflow:visible!important}.barcode svg rect{shape-rendering:crispEdges}.no-barcode{font-size:10px;font-weight:700}@media print{html,body,.label{overflow:hidden!important}.label{page-break-after:avoid!important}}</style></head><body><div class="label"><div class="head">NAMO Chemical · ${esc(values['원료명'])}</div><div class="grid">${rows.map(([k,v])=>`<div class="cell"><small>${k}</small><strong>${esc(v)}</strong></div>`).join('')}</div><div class="barcode">${barcodeHtml}</div></div></body></html>`);
     win.document.close();win.focus();setTimeout(()=>{win.print();setTimeout(()=>win.close(),300);},450);
   }
 
