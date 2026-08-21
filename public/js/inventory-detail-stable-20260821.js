@@ -98,7 +98,7 @@
       style.textContent=`#qmes-stable-print-root{display:none}@media print{@page{size:60mm 40mm;margin:0}body>*:not(#qmes-stable-print-root){display:none!important}#qmes-stable-print-root{display:block!important}.qmes-stable-label{width:60mm;height:40mm;padding:2mm;box-sizing:border-box;font-family:Arial,'Noto Sans KR',sans-serif;color:#111827}.qmes-stable-label .top{display:flex;justify-content:space-between;border-bottom:.25mm solid #111827;padding-bottom:1mm;font-size:8px}.qmes-stable-label .body{display:grid;grid-template-columns:1fr 24mm;gap:1.5mm;height:30mm;padding-top:1mm}.qmes-stable-label .meta{display:flex;flex-direction:column;justify-content:center;min-width:0}.qmes-stable-label small{font-size:5.5px;color:#64748b;font-weight:700;margin-top:.4mm}.qmes-stable-label strong{font-size:8px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qmes-stable-label img{width:24mm;height:24mm;object-fit:contain;align-self:center}}`;
       const cleanup=()=>{setTimeout(()=>root.remove(),100);window.removeEventListener('afterprint',cleanup);};window.addEventListener('afterprint',cleanup);
       window.print();
-    }finally{button.disabled=false;button.textContent=old||'QR 라벨 인쇄';}
+    }finally{button.disabled=false;button.textContent='인쇄';}
   }
 
   function installSheet(sheet){
@@ -107,7 +107,7 @@
     removeLegacyFields(sheet);
     const button=sheet.querySelector('.inv-tx-detail-actions .primary');
     if(button){
-      button.textContent='QR 라벨 인쇄';button.type='button';
+      button.textContent='인쇄';button.type='button';button.setAttribute('aria-label','인쇄');button.setAttribute('title','인쇄');
       button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();void printQr(sheet,button);},true);
     }
     void ensureQr(sheet);
