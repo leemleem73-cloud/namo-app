@@ -222,3 +222,10 @@
   setTimeout(function () { check(true); }, 300);
   setInterval(function () { check(false); }, CHECK_MS);
 })();
+
+(function loadNamoLeaveRequestDeleteAction(){
+  var script=document.createElement("script");
+  script.src="./js/namo-leave-request-delete-20260821.js?v=20260821-1";
+  script.async=false;
+  document.head.appendChild(script);
+})();
