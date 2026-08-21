@@ -192,3 +192,10 @@ button[title*="메뉴"] svg {
 [class*="qmes-sidebar-search"] {
   border-top: 1px solid #d7dee8 !important;
 }
+
+/* Left side menu should blend into the page without a dark vertical divider. */
+#qmes-sync-sidebar,
+.qmes-sync-sidebar {
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
