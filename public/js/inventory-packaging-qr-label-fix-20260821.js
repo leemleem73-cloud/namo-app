@@ -63,7 +63,8 @@
   }
 
   function localIqcRows(){
-    const db=window.DB||{};
+    let db=window.DB||{};
+    try{if(typeof DB!=='undefined'&&DB)db=DB;}catch(error){}
     const rows=[];
     [db.iqc,db.insp?.IQC,db.iqcRecords,db.inspections?.IQC].forEach(list=>{
       if(Array.isArray(list))list.forEach(row=>{if(row&&!rows.includes(row))rows.push(row);});
