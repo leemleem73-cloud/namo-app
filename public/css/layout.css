@@ -193,9 +193,12 @@ button[title*="메뉴"] svg {
   border-top: 1px solid #d7dee8 !important;
 }
 
-/* Left side menu should blend into the page without a dark vertical divider. */
-#qmes-sync-sidebar,
-.qmes-sync-sidebar {
-  border-right: 0 !important;
+/* Force-remove the runtime sidebar's right divider and shadow. */
+html body #qmes-sync-sidebar#qmes-sync-sidebar,
+html body.qmes-side-open #qmes-sync-sidebar#qmes-sync-sidebar,
+html body .qmes-sync-sidebar.qmes-sync-sidebar {
+  border-right-width: 0 !important;
+  border-right-style: none !important;
+  border-right-color: transparent !important;
   box-shadow: none !important;
 }
