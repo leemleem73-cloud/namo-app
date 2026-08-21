@@ -108,7 +108,7 @@
     ".qar-actions{display:flex;gap:8px;margin-top:14px}" +
     ".qar-actions button{height:38px;border-radius:10px;padding:0 14px;font-size:12px;font-weight:900;cursor:pointer}" +
     ".qar-main{border:0;background:#0f766e;color:#fff}" +
-    ".qar-later{border:1px solid #cbd5e1;background:#fff;color:#334155}";
+    ".qar-later,.qar-close{border:1px solid #cbd5e1;background:#fff;color:#334155}";
   document.head.appendChild(style);
 
   var popup = document.createElement("div");
@@ -170,6 +170,7 @@
       '<div class="qar-actions">' +
       '<button class="qar-main" type="button">' + item.actionLabel + '</button>' +
       '<button class="qar-later" type="button">5분 후</button>' +
+      '<button class="qar-close" type="button">닫기</button>' +
       '</div>';
 
     popup.querySelector(".qar-main").onclick = function () {
@@ -177,6 +178,9 @@
     };
     popup.querySelector(".qar-later").onclick = function () {
       snooze(item.type);
+      popup.classList.remove("show");
+    };
+    popup.querySelector(".qar-close").onclick = function () {
       popup.classList.remove("show");
     };
 
