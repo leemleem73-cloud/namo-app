@@ -1,8 +1,8 @@
 /* QMES partner registration/edit modals - 2026-08-21 */
 (function(global){
   'use strict';
-  if(global.__QMES_PARTNER_REGISTER_MODAL_V5__) return;
-  global.__QMES_PARTNER_REGISTER_MODAL_V5__=true;
+  if(global.__QMES_PARTNER_REGISTER_MODAL_V6__) return;
+  global.__QMES_PARTNER_REGISTER_MODAL_V6__=true;
 
   const text=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
   const nextCode=(prefix,rows)=>`${prefix}${String(Math.max(0,...(rows||[]).map(r=>Number(String((r&&r.code)||'').replace(/\D/g,''))||0))+1).padStart(3,'0')}`;
@@ -16,27 +16,33 @@
 
   try{sessionStorage.removeItem('qmes_partner_form_open');sessionStorage.removeItem('qmes_partner_form_type');}catch(e){}
 
+  const oldStyle=document.getElementById('qmes-partner-register-modal-v5-style');if(oldStyle)oldStyle.remove();
   const style=document.createElement('style');
-  style.id='qmes-partner-register-modal-v5-style';
+  style.id='qmes-partner-register-modal-v6-style';
   style.textContent=`
-    .qmes-partners-page .qmes-partner-form-shell{display:none!important}
-    #qmes-partner-register-modal-v2{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.78);backdrop-filter:blur(3px)}
-    #qmes-partner-register-modal-v2 .qpr-box{width:min(650px,96vw);max-height:90vh;overflow:auto;border:1px solid #475569;border-radius:16px;background:#111f33;box-shadow:0 24px 70px rgba(0,0,0,.58);font-family:Pretendard,sans-serif}
-    #qmes-partner-register-modal-v2 .qpr-head{display:flex;align-items:center;padding:17px 19px;border-bottom:1px solid #334155}
-    #qmes-partner-register-modal-v2 .qpr-title{color:#f8fafc;font-size:18px;font-weight:900}
-    #qmes-partner-register-modal-v2 .qpr-body{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:19px}
-    #qmes-partner-register-modal-v2 .qpr-field{display:grid;gap:6px;color:#cbd5e1;font-size:13px;font-weight:800}
+    #qmes-partner-register-modal-v2{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,rgba(209,213,219,.78) 0%,rgba(100,116,139,.82) 48%,rgba(23,37,84,.88) 100%);backdrop-filter:blur(3px)}
+    #qmes-partner-register-modal-v2 .qpr-box{width:min(690px,96vw);max-height:90vh;overflow:auto;border:1px solid #cbd5e1;border-radius:18px;background:#f8fafc;box-shadow:0 24px 70px rgba(15,23,42,.32);font-family:Pretendard,sans-serif}
+    #qmes-partner-register-modal-v2 .qpr-head{display:flex;align-items:center;padding:22px 24px;border-bottom:1px solid #dbe3ec;background:#ffffff}
+    #qmes-partner-register-modal-v2 .qpr-title{color:#000;font-size:19px;font-weight:900;line-height:1.4}
+    #qmes-partner-register-modal-v2 .qpr-body{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;padding:24px}
+    #qmes-partner-register-modal-v2 .qpr-field{display:grid;gap:8px;color:#000;font-size:13px;font-weight:800;line-height:1.4}
+    #qmes-partner-register-modal-v2 .qpr-field span{color:#000}
     #qmes-partner-register-modal-v2 .qpr-full{grid-column:1/-1}
-    #qmes-partner-register-modal-v2 input,#qmes-partner-register-modal-v2 select,#qmes-partner-register-modal-v2 textarea{width:100%;box-sizing:border-box;border:1px solid #475569;border-radius:8px;background:#0f172a;color:#f8fafc;padding:0 10px;font:700 13px Pretendard,sans-serif;outline:none}
-    #qmes-partner-register-modal-v2 input,#qmes-partner-register-modal-v2 select{height:40px}
-    #qmes-partner-register-modal-v2 textarea{min-height:78px;padding:10px;resize:vertical}
-    #qmes-partner-register-modal-v2 .qpr-code{background:#18263a!important;color:#94a3b8!important}
-    #qmes-partner-register-modal-v2 .qpr-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 19px;border-top:1px solid #334155}
-    #qmes-partner-register-modal-v2 button{height:38px;padding:0 16px;border-radius:8px;font-weight:900;cursor:pointer}
-    #qmes-partner-register-modal-v2 .qpr-cancel{border:1px solid #64748b;background:#17263b;color:#e2e8f0}
-    #qmes-partner-register-modal-v2 .qpr-save{border:0;background:#0e7490;color:#fff}
-    #qmes-partner-register-modal-v2 .qpr-x{margin-left:auto;width:34px;padding:0!important;border:1px solid #475569;background:#17263b;color:#e2e8f0;font-size:22px}
-    @media(max-width:620px){#qmes-partner-register-modal-v2 .qpr-body{grid-template-columns:1fr}}
+    #qmes-partner-register-modal-v2 input,#qmes-partner-register-modal-v2 select,#qmes-partner-register-modal-v2 textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#000;padding:0 12px;font:700 13px Pretendard,sans-serif;outline:none;box-shadow:inset 0 1px 2px rgba(15,23,42,.03)}
+    #qmes-partner-register-modal-v2 input,#qmes-partner-register-modal-v2 select{height:42px}
+    #qmes-partner-register-modal-v2 textarea{min-height:92px;padding:11px 12px;resize:vertical;line-height:1.5}
+    #qmes-partner-register-modal-v2 input::placeholder,#qmes-partner-register-modal-v2 textarea::placeholder{color:#64748b}
+    #qmes-partner-register-modal-v2 input:focus,#qmes-partner-register-modal-v2 select:focus,#qmes-partner-register-modal-v2 textarea:focus{border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.12)}
+    #qmes-partner-register-modal-v2 .qpr-code{background:#eef2f7!important;color:#334155!important}
+    #qmes-partner-register-modal-v2 .qpr-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 20px;border-top:1px solid #dbe3ec;background:#fff}
+    #qmes-partner-register-modal-v2 button{height:40px;padding:0 17px;border-radius:8px;font-weight:900;cursor:pointer;font-family:Pretendard,sans-serif}
+    #qmes-partner-register-modal-v2 .qpr-cancel{border:1px solid #94a3b8;background:#fff;color:#000}
+    #qmes-partner-register-modal-v2 .qpr-cancel:hover{background:#f1f5f9}
+    #qmes-partner-register-modal-v2 .qpr-save{border:1px solid #0891b2;background:#0891b2;color:#fff}
+    #qmes-partner-register-modal-v2 .qpr-save:hover{background:#0e7490}
+    #qmes-partner-register-modal-v2 .qpr-x{margin-left:auto;width:38px;padding:0!important;border:1px solid #cbd5e1;background:#fff;color:#000;font-size:22px;line-height:1}
+    #qmes-partner-register-modal-v2 .qpr-x:hover{background:#f1f5f9}
+    @media(max-width:620px){#qmes-partner-register-modal-v2{padding:14px}#qmes-partner-register-modal-v2 .qpr-body{grid-template-columns:1fr;padding:18px}#qmes-partner-register-modal-v2 .qpr-head{padding:18px}#qmes-partner-register-modal-v2 .qpr-foot{padding:14px 18px 18px}}
   `;
   document.head.appendChild(style);
 
@@ -47,7 +53,7 @@
 
   function openCustomer(row){
     const db=getDb(),editing=!!row,m=baseModal(editing?'고객사 정보 수정':'고객사 등록',editing?'수정 저장':'등록');
-    if(!db){m.body.innerHTML='<div style="grid-column:1/-1;color:#fca5a5;font-weight:800">데이터 저장소를 불러오지 못했습니다.</div>';m.save.disabled=true;return;}
+    if(!db){m.body.innerHTML='<div style="grid-column:1/-1;color:#b91c1c;font-weight:800">데이터 저장소를 불러오지 못했습니다.</div>';m.save.disabled=true;return;}
     const rows=Array.isArray(db.partnerCustomers)&&db.partnerCustomers.length?db.partnerCustomers.slice():defaultCustomers.map(r=>({...r}));
     const code=editing?row.code:nextCode('CUS',rows),codeEl=input('',code),name=input('고객사명',editing?row.name:''),manager=input('담당자명',editing?row.manager:''),phone=input('연락처',editing?row.phone:''),status=select(editing?row.status:'거래중'),note=document.createElement('textarea');
     codeEl.readOnly=true;codeEl.className='qpr-code';note.placeholder='비고 (선택)';note.value=editing?(row.note||''):'';
@@ -58,7 +64,7 @@
 
   function openSupplier(row){
     const db=getDb(),editing=!!row,m=baseModal(editing?'공급업체 정보 수정':'공급업체 등록',editing?'수정 저장':'등록');
-    if(!db){m.body.innerHTML='<div style="grid-column:1/-1;color:#fca5a5;font-weight:800">데이터 저장소를 불러오지 못했습니다.</div>';m.save.disabled=true;return;}
+    if(!db){m.body.innerHTML='<div style="grid-column:1/-1;color:#b91c1c;font-weight:800">데이터 저장소를 불러오지 못했습니다.</div>';m.save.disabled=true;return;}
     const rows=Array.isArray(db.partnerSuppliers)&&db.partnerSuppliers.length?db.partnerSuppliers.slice():defaultSuppliers.map(r=>({...r}));
     const code=editing?row.code:nextCode('SUP',rows),codeEl=input('',code),company=input('공급업체명',editing?row.company:''),material=input('원료명',editing?row.material:''),lot=input('최근 원료 LOT No.',editing?row.lot:''),manager=input('담당자명',editing?row.manager:''),phone=input('연락처',editing?row.phone:''),status=select(editing?row.status:'거래중'),note=document.createElement('textarea');
     codeEl.readOnly=true;codeEl.className='qpr-code';note.placeholder='비고 (선택)';note.value=editing?(row.note||''):'';
