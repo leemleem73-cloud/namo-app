@@ -1,59 +1,139 @@
-/* Inventory hover cleanup + transaction detail click fallback, 2026-08-21. */
+/* Inventory QR runtime recovery + detail layout cleanup, 2026-08-21. */
 (function(){
   'use strict';
+
   document.getElementById('qmes-inventory-hover-menu')?.remove();
-  if(window.__QMES_INV_TX_CLICK_FALLBACK__)return;
-  window.__QMES_INV_TX_CLICK_FALLBACK__=true;
+  if(window.__QMES_INV_QR_RUNTIME_FIX_V3__)return;
+  window.__QMES_INV_QR_RUNTIME_FIX_V3__=true;
 
-  const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
-  const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  function findIqc(lot,name){
-    const db=window.DB||{};
-    const rows=[db.iqc,db.insp?.IQC,db.iqcRecords,db.inspections?.IQC].find(Array.isArray)||[];
-    const L=clean(lot).toUpperCase(),N=clean(name).toUpperCase();
-    return rows.find(r=>clean(r?.lot||r?.lotNo).toUpperCase()===L&&(!N||clean(r?.name||r?.material||r?.item).toUpperCase()===N))||null;
-  }
-  function packaging(row){
-    if(!row)return'-';
-    const type=clean(row.packagingType||row.packaging_type||row.packageType||row.package_type)||'-';
-    const other=clean(row.packagingTypeOther||row.packaging_type_other||row.packageTypeOther||row.package_type_other);
-    return type==='기타'&&other?`기타(${other})`:type;
-  }
-  function fmtDate(v){const s=clean(v);return /^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):(s||'-');}
-  function openFallbackFromRow(row){
-    if(document.querySelector('.inv-tx-detail-overlay'))return;
-    const tds=row.querySelectorAll('td');
-    if(tds.length<7)return;
-    const created=clean(tds[0].textContent),type=clean(tds[1].textContent),name=clean(tds[2].textContent),lot=clean(tds[3].textContent),qty=clean(tds[4].textContent),direction=clean(tds[5].textContent),remark=clean(tds[6].textContent);
-    const iqc=findIqc(lot,name);
-    const pack=packaging(iqc);
-    const packageQty=iqc?.packageQty??iqc?.package_qty??1;
-    const recv=fmtDate(iqc?.recv||iqc?.recvDate||iqc?.receivedAt);
-    const inspect=fmtDate(iqc?.inspectedAt||iqc?.inspectDate||iqc?.inspectionDate);
-    const overlay=document.createElement('div');overlay.className='inv-tx-detail-overlay';
-    const sheet=document.createElement('div');sheet.className='inv-tx-detail-sheet';sheet.innerHTML=`
-      <div class="inv-tx-detail-head"><div><span><img src="/logo.png" alt="NAMO Chemical" style="display:block;height:28px;max-width:240px;object-fit:contain;object-position:left center"></span><h3>입출고 처리 상세</h3></div><button type="button" aria-label="닫기">×</button></div>
-      <div class="inv-tx-detail-status"><b>처리 완료</b><span>${esc(created)}</span></div>
-      <dl class="inv-tx-detail-grid">
-        <div><dt>원료명</dt><dd>${esc(name)}</dd></div><div><dt>구분</dt><dd>${esc(type)}</dd></div>
-        <div><dt>LOT</dt><dd>${esc(lot)}</dd></div><div><dt>포장형태</dt><dd>${esc(pack)}</dd></div>
-        <div><dt>입고일자</dt><dd>${esc(recv)}</dd></div><div><dt>검사일자</dt><dd>${esc(inspect)}</dd></div>
-        <div><dt>총 수량</dt><dd>${esc(qty)}</dd></div><div><dt>입고 포장수량</dt><dd>${esc(packageQty)} EA</dd></div>
-        <div><dt>이동 방향</dt><dd>${esc(direction)}</dd></div><div><dt>작업자</dt><dd>관리부 관리자 (U-0001)</dd></div>
-        <div class="wide"><dt>비고</dt><dd>${esc(remark)}</dd></div>
-      </dl>
-      <div class="inv-tx-barcode"><div><b>원료·LOT·위치·용기 바코드</b><span>ERP 연동용 CODE128</span></div><svg class="qmes-fallback-barcode"></svg></div>
-      <div class="inv-tx-detail-actions"><button type="button" class="qmes-fallback-close">닫기</button><button type="button" class="primary qmes-fallback-print">바코드 인쇄</button></div>`;
-    overlay.appendChild(sheet);document.body.appendChild(overlay);
-    const close=()=>overlay.remove();sheet.querySelector('.inv-tx-detail-head>button').onclick=close;sheet.querySelector('.qmes-fallback-close').onclick=close;overlay.addEventListener('mousedown',e=>{if(e.target===overlay)close();});
-    const code=`ITEM:${name}|LOT:${lot}|LOC:${direction.split('→').pop()?.trim()||'LOCATION'}`;
-    try{if(typeof JsBarcode==='function')JsBarcode(sheet.querySelector('.qmes-fallback-barcode'),code,{format:'CODE128',displayValue:true,height:74,margin:4,fontSize:11});}catch(e){}
-    sheet.querySelector('.qmes-fallback-print').onclick=()=>window.print();
+  const QR_PRIMARY='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  const QR_FALLBACK='https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js';
+  const MODULE_ERROR='QR 생성 모듈을 불러오지 못했습니다.';
+  const clean=value=>String(value??'').replace(/\s+/g,' ').trim();
+  const qrReady=()=>Boolean(
+    window.QRCode&&(
+      typeof window.QRCode.toDataURL==='function'||
+      typeof window.QRCode==='function'
+    )
+  );
+
+  function loadScript(src,key){
+    return new Promise((resolve,reject)=>{
+      if(qrReady()){resolve(window.QRCode);return;}
+      const selector=`script[data-qmes-inventory-qr-source="${key}"]`;
+      const existing=document.querySelector(selector);
+      if(existing){
+        const verify=()=>qrReady()?resolve(window.QRCode):reject(new Error(`QR 모듈 형식 오류: ${key}`));
+        existing.addEventListener('load',verify,{once:true});
+        existing.addEventListener('error',()=>reject(new Error(`QR 모듈 요청 실패: ${key}`)),{once:true});
+        window.setTimeout(verify,1200);
+        return;
+      }
+      const script=document.createElement('script');
+      script.src=src;
+      script.async=true;
+      script.crossOrigin='anonymous';
+      script.dataset.qmesInventoryQrSource=key;
+      script.onload=()=>qrReady()?resolve(window.QRCode):reject(new Error(`QR 모듈 형식 오류: ${key}`));
+      script.onerror=()=>reject(new Error(`QR 모듈 요청 실패: ${key}`));
+      document.head.appendChild(script);
+    });
   }
 
-  document.addEventListener('click',e=>{
-    const link=e.target.closest?.('.inv-tx-detail-link');if(!link)return;
-    const row=link.closest('tr');if(!row)return;
-    setTimeout(()=>{if(!document.querySelector('.inv-tx-detail-overlay'))openFallbackFromRow(row);},80);
-  },true);
+  async function ensureQrLibrary(){
+    if(qrReady())return window.QRCode;
+    try{await loadScript(QR_PRIMARY,'cdnjs-qrcodejs-1.0.0');}
+    catch(error){console.warn('[QMES QR] 기본 모듈 로드 실패',error.message);}
+    if(qrReady())return window.QRCode;
+    try{await loadScript(QR_FALLBACK,'jsdelivr-qrcodejs');}
+    catch(error){console.warn('[QMES QR] 예비 모듈 로드 실패',error.message);}
+    if(qrReady())return window.QRCode;
+    throw new Error(MODULE_ERROR);
+  }
+
+  let qrPromise=null;
+  window.qmesInventoryQrReady=qrReady;
+  window.qmesEnsureInventoryQr=()=>{
+    if(qrReady())return Promise.resolve(window.QRCode);
+    if(!qrPromise){
+      qrPromise=ensureQrLibrary().catch(error=>{
+        qrPromise=null;
+        throw error;
+      });
+    }
+    return qrPromise;
+  };
+
+  function findDetailCell(sheet,label){
+    return Array.from(sheet.querySelectorAll('.inv-tx-detail-grid>div')).find(
+      node=>clean(node.querySelector('dt')?.textContent)===label
+    )||null;
+  }
+
+  function cleanDetailLayout(sheet){
+    const grid=sheet.querySelector('.inv-tx-detail-grid');
+    if(!grid)return;
+
+    Array.from(grid.children).forEach(node=>{
+      const label=clean(node.querySelector('dt')?.textContent);
+      const value=clean(node.querySelector('dd')?.textContent);
+      if(!label&&!value)node.remove();
+    });
+
+    const direction=findDetailCell(sheet,'이동 방향');
+    if(direction){
+      direction.classList.add('wide');
+      direction.style.setProperty('grid-column','1 / -1','important');
+    }
+
+    const remark=findDetailCell(sheet,'비고');
+    if(remark){
+      remark.classList.add('wide');
+      remark.style.setProperty('grid-column','1 / -1','important');
+    }
+
+    const header=sheet.querySelector('.inv-tx-detail-head>div>span');
+    if(header&&header.querySelector('img')){
+      header.replaceChildren(document.createTextNode('INVENTORY TRANSACTION'));
+      header.removeAttribute('style');
+    }
+  }
+
+  function hasQrModuleError(sheet){
+    return Array.from(
+      sheet.querySelectorAll('.inv-tx-barcode code,.inv-tx-barcode div,.inv-tx-barcode span')
+    ).some(node=>clean(node.textContent)===MODULE_ERROR);
+  }
+
+  function requestQrRetry(sheet){
+    if(!qrReady()||!hasQrModuleError(sheet))return;
+    sheet.dataset.qmesQrDone='0';
+    sheet.dataset.qmesQrBusy='0';
+    const marker=document.createElement('i');
+    marker.hidden=true;
+    marker.dataset.qmesQrRetry='1';
+    sheet.appendChild(marker);
+    marker.remove();
+  }
+
+  function repairOpenDetails(){
+    document.querySelectorAll('.inv-tx-detail-sheet').forEach(sheet=>{
+      cleanDetailLayout(sheet);
+      requestQrRetry(sheet);
+    });
+  }
+
+  const observer=new MutationObserver(repairOpenDetails);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('qmes:inventory-qr-ready',repairOpenDetails);
+  window.addEventListener('load',repairOpenDetails,{once:true});
+
+  window.qmesEnsureInventoryQr()
+    .then(()=>{
+      document.dispatchEvent(new CustomEvent('qmes:inventory-qr-ready'));
+      repairOpenDetails();
+    })
+    .catch(error=>console.error('[QMES QR]',error.message));
+
+  repairOpenDetails();
 })();
