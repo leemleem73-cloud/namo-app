@@ -1,8 +1,8 @@
-/* QMES inventory auto-link v8 - guard invalid stock writes and use transaction metadata as source of truth, 2026-08-21 */
+/* QMES inventory auto-link v8.1 - emit refresh only when inventory actually changes, 2026-08-21 */
 (function(){
   'use strict';
-  if(window.__QMES_INV_AUTO_LINK_ALL_V8__)return;
-  window.__QMES_INV_AUTO_LINK_ALL_V8__=true;
+  if(window.__QMES_INV_AUTO_LINK_ALL_V81__)return;
+  window.__QMES_INV_AUTO_LINK_ALL_V81__=true;
 
   const map=window.qmesInventoryPhysicalLocations;
   if(!map)return;
@@ -20,10 +20,7 @@
     Object.entries(d.woDocs||{}).forEach(([k,r])=>{const lot=upper(k||r?.lot||r?.lotNo||r?.no);if(lot)out.set(lot,{...(out.get(lot)||{}),...r,lot});});
     return [...out.values()];
   }
-  function stockQty(rows,lot,location){
-    return rows.filter(r=>upper(r?.lot_no||r?.lotNo)===upper(lot)&&upper(r?.location_code||r?.locationCode)===upper(location)&&upper(r?.quality_status||r?.qualityStatus)==='AVAILABLE')
-      .reduce((sum,r)=>sum+num(r?.available_qty??r?.quantity),0);
-  }
+  function stockQty(rows,lot,location){return rows.filter(r=>upper(r?.lot_no||r?.lotNo)===upper(lot)&&upper(r?.location_code||r?.locationCode)===upper(location)&&upper(r?.quality_status||r?.qualityStatus)==='AVAILABLE').reduce((sum,r)=>sum+num(r?.available_qty??r?.quantity),0);}
   function packagingOf(row){
     const type=text(row?.packagingType||row?.packaging_type||row?.packageType||row?.package_type||row?.packType||row?.packingType||row?.containerType);
     const other=text(row?.packagingTypeOther||row?.packaging_type_other||row?.packageTypeOther);
@@ -40,6 +37,7 @@
   async function sync(){
     if(running||Date.now()-lastRun<5000||typeof window.invApi!=='function')return;
     running=true;
+    let changed=false;
     try{
       const [txsRaw,stockRaw]=await Promise.all([inv('/transactions?limit=1000').catch(()=>[]),inv('/stock').catch(()=>[])]);
       const txs=Array.isArray(txsRaw)?txsRaw:[],stock=Array.isArray(stockRaw)?stockRaw:[];
@@ -54,7 +52,7 @@
         const pack=packagingOf(row),existing=txByRef.get(ref);
         if(existing){
           if(pack.packagingType&&(!text(existing.packaging_type)||Number(existing.package_qty||0)!==pack.packageQty)){
-            try{Object.assign(existing,await safePatch(existing.id,pack)||{});}catch(_e){}
+            try{Object.assign(existing,await safePatch(existing.id,pack)||{});changed=true;}catch(_e){}
           }
           continue;
         }
@@ -63,7 +61,7 @@
         const itemCode=text(row?.code&&row.code!=='-'?row.code:row?.name)||'RM';
         try{
           const inserted=await safePost({transactionType:'RECEIPT',itemCode,itemName,category:'RM',lotNo:lot,quantity:qty,unit:'kg',fromLocation:'',toLocation,fromStatus:'AVAILABLE',toStatus:'AVAILABLE',workOrderNo:'',productionLot:'',referenceNo:ref,supplier:text(row?.supplier&&row.supplier!=='-'?row.supplier:''),receivedAt:text(row?.recv||row?.inspectedAt||row?.date).slice(0,10),expiryDate:'',...pack,reason:`수입검사 합격 자동입고 (${toLocation})`,remark:'IQC 자동연동'});
-          refs.add(ref);txByRef.set(ref,inserted||{});
+          refs.add(ref);txByRef.set(ref,inserted||{});changed=true;
           stock.push({item_code:itemCode,item_name:itemName,lot_no:lot,location_code:toLocation,quality_status:'AVAILABLE',quantity:qty,available_qty:qty});
         }catch(e){console.warn('[QMES inventory] IQC 자동입고 보류',lot,e?.message||e);}
       }
@@ -81,7 +79,7 @@
           if(available+0.000001<used){console.info('[QMES inventory] 원료 자동차감 보류',productionLot,materialLot,`현재고 ${available}, 요청 ${used}`);continue;}
           try{
             await safePost({transactionType:'PRODUCTION_ISSUE',itemCode:text(input?.code||input?.itemCode||input?.name)||'RM',itemName,category:'RM',lotNo:materialLot,quantity:used,unit:text(input?.unit)||'kg',fromLocation,toLocation:'',fromStatus:'AVAILABLE',toStatus:'AVAILABLE',workOrderNo:productionLot,productionLot,referenceNo:ref,supplier:'',receivedAt:'',expiryDate:'',reason:`작업지시 실투입 자동차감 (${fromLocation} → 생산사용)`,remark:'작업지시서 실투입량 자동연동'});
-            refs.add(ref);
+            refs.add(ref);changed=true;
             const s=stock.find(r=>upper(r?.lot_no||r?.lotNo)===materialLot&&upper(r?.location_code||r?.locationCode)===upper(fromLocation)&&upper(r?.quality_status||r?.qualityStatus)==='AVAILABLE');
             if(s){s.quantity=Math.max(0,num(s.quantity)-used);s.available_qty=Math.max(0,num(s.available_qty??s.quantity)-used);}
           }catch(e){console.warn('[QMES inventory] 원료 자동차감 보류',productionLot,materialLot,e?.message||e);}
@@ -96,11 +94,11 @@
         const pack=packagingOf(wo);if(!pack.packagingType)pack.packagingType='드럼';
         try{
           await safePost({transactionType:'PRODUCTION_RECEIPT',itemCode,itemName,category:'FG',lotNo:productionLot,quantity:done,unit:text(wo?.unit)||'kg',fromLocation:'',toLocation,fromStatus:'AVAILABLE',toStatus:'OQC_PENDING',workOrderNo:productionLot,productionLot,referenceNo:ref,supplier:'',receivedAt:text(wo?.date||wo?.due).slice(0,10),expiryDate:'',...pack,reason:`작업지시 완료 자동입고 (생산완료 → ${toLocation})`,remark:'작업지시서 완료 자동연동'});
-          refs.add(ref);
+          refs.add(ref);changed=true;
         }catch(e){console.warn('[QMES inventory] 완제품 자동입고 보류',productionLot,e?.message||e);}
       }
       lastRun=Date.now();
-      document.dispatchEvent(new CustomEvent('qmes:inventory-auto-linked'));
+      if(changed)document.dispatchEvent(new CustomEvent('qmes:inventory-auto-linked'));
     }finally{running=false;}
   }
 
