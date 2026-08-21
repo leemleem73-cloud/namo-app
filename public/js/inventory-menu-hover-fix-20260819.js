@@ -146,9 +146,10 @@
   async function renderPublicPreview(sheet){
     const wrap=sheet.querySelector('.inv-tx-barcode');
     if(!wrap)return;
-    if(wrap.dataset.qmesPublicPreview==='1')return;
-    wrap.dataset.qmesPublicPreview='1';
+    if(wrap.querySelector('[data-qmes-public-preview-content="1"]'))return;
     wrap.replaceChildren();
+    const content=document.createElement('div');
+    content.dataset.qmesPublicPreviewContent='1';
     const info=document.createElement('div');
     const title=document.createElement('b');
     const sub=document.createElement('span');
@@ -158,7 +159,8 @@
     const loading=document.createElement('div');
     loading.textContent='QR을 생성하는 중입니다.';
     loading.style.cssText='padding:18px;text-align:center;color:#64748b;font-weight:700;';
-    wrap.append(info,loading);
+    content.append(info,loading);
+    wrap.appendChild(content);
     try{
       const image=document.createElement('img');
       image.src=await qrData(publicDetailUrl(sheet,1),420);
