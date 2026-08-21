@@ -237,6 +237,17 @@ function IqcTab() {
     }
     auditLog("IQC", editingInNo ? "수정" : "등록", rowData.inNo, `${rowData.lot} / ${rowData.judge}`);
     dbSave();
+    if (typeof window.qmesSyncUpsert === "function") {
+      const lotRecord = DB.lots?.[rowData.lot] || null;
+      const holds = (DB.holds || []).filter((item) => String(item.target || "").includes(rowData.lot));
+      window.qmesSyncUpsert("iqc", rowData.inNo, {
+        mode:"IQC", lotNo:rowData.lot, rows:[rowData], lotRecord, holds,
+        savedAt:new Date().toISOString(), savedBy:rowData.inspector || rowData.by || ""
+      }).catch((error) => console.warn("IQC 공용 DB 저장 실패:", error.message));
+    }
+    document.dispatchEvent(new CustomEvent("qmes:data-updated", {
+      detail:{type:"iqc", key:rowData.inNo, action:editingInNo ? "update" : "create"}
+    }));
     if (previousInNo && previousInNo !== inNo && typeof qmesSyncTombstoneInspection === "function") {
       const oldRecord = rows.find((r) => r.inNo === previousInNo);
       qmesSyncTombstoneInspection(
@@ -517,4 +528,3 @@ function IqcTab() {
 }
 
 /* ────────────────────────────  탭 ──────────────────────────── */
-

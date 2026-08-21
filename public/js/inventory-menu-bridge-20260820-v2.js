@@ -14,7 +14,7 @@
 
   function directId(){try{return clean(new URL(location.href).searchParams.get(QR_KEY));}catch(error){return'';}}
   function clearDirectUrl(){try{const url=new URL(location.href);url.searchParams.delete(QR_KEY);url.searchParams.delete('pkg');url.searchParams.delete('total');history.replaceState(history.state,'',`${url.pathname}${url.search}${url.hash}`);}catch(error){}}
-  function iqcRows(){const db=window.DB||{},rows=[];[db.iqc,db.insp?.IQC,db.iqcRecords,db.inspections?.IQC].forEach(list=>{if(Array.isArray(list))list.forEach(row=>{if(row&&!rows.includes(row))rows.push(row);});});return rows;}
+  function iqcRows(){let db=window.DB||{};try{if(typeof DB!=='undefined'&&DB)db=DB;}catch(error){}const rows=[];[db.iqc,db.insp?.IQC,db.iqcRecords,db.inspections?.IQC].forEach(list=>{if(Array.isArray(list))list.forEach(row=>{if(row&&!rows.includes(row))rows.push(row);});});return rows;}
   function detailCell(sheet,label){return Array.from(sheet.querySelectorAll('.inv-tx-detail-grid>div')).find(node=>clean(node.querySelector('dt')?.textContent)===label)||null;}
   function detailValue(sheet,label){return clean(detailCell(sheet,label)?.querySelector('dd')?.textContent)||'-';}
   function makeCell(label,value,wide=false){const div=document.createElement('div');if(wide){div.className='wide';div.style.setProperty('grid-column','1 / -1','important');}const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value||'-';div.append(dt,dd);return div;}
@@ -94,15 +94,18 @@
 
   function htmlEscape(value){return String(value==null?'-':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   async function printLabels(sheet){
+    const win=open('','_blank','width=780,height=780');
+    if(!win){alert('인쇄 창이 차단되었습니다. 브라우저에서 이 사이트의 팝업을 허용해 주세요.');return;}
+    win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>QR 라벨 준비 중</title></head><body style="font-family:Arial,\'Noto Sans KR\',sans-serif;padding:32px;color:#344054"><b>QR 라벨을 준비하고 있습니다.</b></body></html>');
+    win.document.close();
     const tx=await matchTx(sheet);
-    if(!tx?.id){alert('입출고 거래번호를 찾지 못해 QR을 만들 수 없습니다. 새로고침 후 다시 시도해 주세요.');return;}
+    if(!tx?.id){win.close();alert('입출고 거래번호를 찾지 못해 QR을 만들 수 없습니다. 새로고침 후 다시 시도해 주세요.');return;}
     const data=dataFor(sheet,tx),count=data.packageCount;
     let labels;
     try{
       labels=await Promise.all(Array.from({length:count},async(_,index)=>({no:index+1,qr:await qrData(qrUrl(tx.id,index+1,count))})));
-    }catch(error){alert(error?.message||QR_ERROR);return;}
-    const win=open('','_blank','width=780,height=780');
-    if(!win)return;
+    }catch(error){win.close();alert(error?.message||QR_ERROR);return;}
+    win.document.open();
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${htmlEscape(data.material)} QR 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;font-family:Arial,'Noto Sans KR',sans-serif;color:#111827}.label{position:relative;width:60mm;height:40mm;padding:2.2mm;border:.25mm solid #d0d5dd;overflow:hidden;page-break-after:always}.label:last-child{page-break-after:auto}.top{height:6mm;display:flex;align-items:center;justify-content:space-between;border-bottom:.25mm solid #111827;padding-bottom:1mm}.top img{display:block;width:auto;height:4.8mm;max-width:33mm;object-fit:contain}.pkg{font-size:8px;font-weight:900}.body{display:grid;grid-template-columns:1fr 25mm;gap:1.5mm;height:29mm;padding-top:1.5mm}.meta{display:flex;min-width:0;flex-direction:column;justify-content:center}.meta small{font-size:6px;color:#64748b;font-weight:700;margin-top:.7mm}.meta strong{font-size:9px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qr{display:flex;align-items:center;justify-content:center}.qr img{width:25mm;height:25mm;object-fit:contain}.scan{position:absolute;left:2.2mm;bottom:1.3mm;font-size:5.5px;color:#475467;font-weight:700}@media print{.label{break-inside:avoid}}</style></head><body>${labels.map(label=>`<section class="label"><div class="top"><img src="${MAIN_LOGO}" alt="NAMO Chemical" onerror="this.onerror=null;this.src='${FALLBACK_LOGO}'"><div class="pkg">${label.no} / ${count}</div></div><div class="body"><div class="meta"><small>원료명</small><strong>${htmlEscape(data.material)}</strong><small>LOT</small><strong>${htmlEscape(data.lot)}</strong><small>위치</small><strong>${htmlEscape(data.location)}</strong></div><div class="qr"><img src="${label.qr}" alt="입출고 상세 QR"></div></div><div class="scan">휴대폰 카메라로 QR을 스캔해 상세정보 확인</div></section>`).join('')}</body></html>`);
     win.document.close();
     let done=false;

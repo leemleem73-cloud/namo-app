@@ -9,6 +9,7 @@
   const text=v=>String(v==null?'':v).trim();
   const upper=v=>text(v).toUpperCase();
   const num=v=>{const m=text(v).replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0;};
+  const appDb=()=>{try{return(typeof DB!=='undefined'&&DB)||window.DB||{};}catch(error){return window.DB||{};}};
 
   function removeManualInventoryUi(){
     document.querySelectorAll('.inv-shell button, .inv-modal button').forEach(btn=>{
@@ -20,12 +21,12 @@
   }
 
   function iqcRows(){
-    const db=window.DB||{};
+    const db=appDb();
     return [db.iqc,db.insp?.IQC,db.iqcRecords,db.inspections?.IQC].find(Array.isArray)||[];
   }
 
   function workOrders(){
-    const db=window.DB||{};
+    const db=appDb();
     const map=new Map();
     (Array.isArray(db.batches)?db.batches:[]).forEach(row=>{
       const lot=upper(row?.no||row?.lot||row?.lotNo);
@@ -40,6 +41,7 @@
 
   function refOf(tx){return upper(tx?.reference_no||tx?.referenceNo||'');}
   async function post(form){return invApi('/transactions',{method:'POST',body:JSON.stringify(form)});}
+  async function patchPackaging(id,form){return invApi(`/transactions/${encodeURIComponent(id)}/packaging`,{method:'PATCH',body:JSON.stringify(form)});}
   function rememberStock(stock,row){stock.push({item_code:row.itemCode,item_name:row.itemName,lot_no:row.lotNo,location_code:row.toLocation,quality_status:row.toStatus,quantity:row.quantity,available_qty:row.quantity});}
   function debitStock(stock,location,lotNo,amount){
     const row=stock.find(entry=>upper(entry?.location_code||entry?.locationCode)===upper(location)&&upper(entry?.lot_no||entry?.lotNo)===upper(lotNo)&&upper(entry?.quality_status||entry?.qualityStatus)==='AVAILABLE');
@@ -86,6 +88,7 @@
         invApi('/stock').catch(()=>[])
       ]);
       const refs=new Set((txs||[]).map(refOf).filter(Boolean));
+      const txByRef=new Map((txs||[]).map(tx=>[refOf(tx),tx]).filter(entry=>entry[0]));
       const stockRows=Array.isArray(stock)?stock:[];
       await migrateLegacyLocationStock(stockRows,refs);
 
@@ -96,9 +99,6 @@
         const itemName=text(row?.name||row?.material||row?.item);
         if(!lot||qty<=0) continue;
         const ref=`IQC:${upper(row?.inNo||row?.in_no||lot)}`;
-        if(refs.has(ref)) continue;
-        const toLocation=locationMap.chooseRawReceiptLocation(`${text(row?.code)} ${itemName}`,stockRows);
-        if(!toLocation){console.warn('IQC 자동입고 보류 - 지정 가능한 실제 A구역 위치 없음',lot,itemName);continue;}
         const packagingType=text(row?.packagingType||row?.packaging_type);
         const packagingTypeOther=text(row?.packagingTypeOther||row?.packaging_type_other);
         const packageQty=Math.max(0,Math.trunc(num(row?.packageQty??row?.package_qty)));
@@ -106,8 +106,27 @@
         const calculatedWeight=num(row?.calculatedWeight??row?.calculated_weight)||(packageQty>0&&unitWeight>0?packageQty*unitWeight:0);
         const barcodeQty=Math.max(0,Math.trunc(num(row?.barcodeQty??row?.barcode_qty)||packageQty));
         const packagingLabel=packagingType==='기타'&&packagingTypeOther?`${packagingType}(${packagingTypeOther})`:packagingType;
+        const existingTx=txByRef.get(ref);
+        if(existingTx){
+          const needsPackagingUpdate=packagingType&&(
+            text(existingTx.packaging_type)!==packagingType||
+            text(existingTx.packaging_type_other)!==packagingTypeOther||
+            Number(existingTx.package_qty||0)!==packageQty||
+            Number(existingTx.unit_weight||0)!==unitWeight||
+            Number(existingTx.barcode_qty||0)!==barcodeQty
+          );
+          if(needsPackagingUpdate){
+            try{
+              const updated=await patchPackaging(existingTx.id,{packagingType,packagingTypeOther,packageQty,unitWeight,calculatedWeight,barcodeQty});
+              Object.assign(existingTx,updated||{});
+            }catch(e){console.warn('기존 IQC 포장정보 갱신 실패',lot,e.message);}
+          }
+          continue;
+        }
+        const toLocation=locationMap.chooseRawReceiptLocation(`${text(row?.code)} ${itemName}`,stockRows);
+        if(!toLocation){console.warn('IQC 자동입고 보류 - 지정 가능한 실제 A구역 위치 없음',lot,itemName);continue;}
         const form={transactionType:'RECEIPT',itemCode:text(row?.code&&row.code!=='-'?row.code:row?.name)||'RM',itemName,category:'RM',lotNo:lot,quantity:qty,unit:'kg',fromLocation:'',toLocation,fromStatus:'AVAILABLE',toStatus:'AVAILABLE',workOrderNo:'',productionLot:'',referenceNo:ref,supplier:text(row?.supplier&&row.supplier!=='-'?row.supplier:''),receivedAt:text(row?.recv||row?.inspectedAt||row?.date).slice(0,10),expiryDate:'',packagingType,packagingTypeOther,packageQty,unitWeight,calculatedWeight,barcodeQty,reason:`수입검사 합격 자동입고 (${toLocation})`,remark:`IQC 자동연동 · 실제 랙 위치${packagingLabel?` · ${packagingLabel} ${packageQty}EA · 바코드 ${barcodeQty}매`:''}`};
-        try{await post(form);refs.add(ref);rememberStock(stockRows,form);}catch(e){console.warn('IQC 자동입고 실패',lot,e.message);}
+        try{const inserted=await post(form);refs.add(ref);txByRef.set(ref,inserted||form);rememberStock(stockRows,form);}catch(e){console.warn('IQC 자동입고 실패',lot,e.message);}
       }
 
       for(const wo of workOrders()){

@@ -312,6 +312,34 @@ function installInventoryRoutes(app){
   app.get('/api/inventory/summary',requireLogin,async(_req,res)=>{try{await ensureInventorySchema();const totals=await pool.query(`SELECT COALESCE(i.category,'RM') category,SUM(b.quantity) total_qty,SUM(CASE WHEN b.quality_status='AVAILABLE' THEN b.quantity ELSE 0 END) available_qty,SUM(CASE WHEN b.quality_status IN ('IQC_PENDING','OQC_PENDING') THEN b.quantity ELSE 0 END) pending_qty,SUM(CASE WHEN b.quality_status IN ('HOLD','NONCONFORM') THEN b.quantity ELSE 0 END) hold_qty FROM inventory_balances b LEFT JOIN inventory_items i ON i.item_code=b.item_code GROUP BY COALESCE(i.category,'RM') ORDER BY category`);const alerts=await pool.query(`WITH s AS (SELECT i.item_code,i.item_name,i.category,i.unit,i.safety_stock,COALESCE(SUM(CASE WHEN b.quality_status='AVAILABLE' THEN b.quantity ELSE 0 END),0) available_qty FROM inventory_items i LEFT JOIN inventory_balances b ON b.item_code=i.item_code WHERE i.active=TRUE GROUP BY i.item_code,i.item_name,i.category,i.unit,i.safety_stock) SELECT * FROM s WHERE safety_stock>0 AND available_qty<safety_stock ORDER BY (safety_stock-available_qty) DESC LIMIT 20`);const expiry=await pool.query(`SELECT b.item_code,i.item_name,b.lot_no,l.expiry_date,SUM(b.quantity) quantity FROM inventory_balances b JOIN inventory_lots l ON l.item_code=b.item_code AND l.lot_no=b.lot_no LEFT JOIN inventory_items i ON i.item_code=b.item_code WHERE b.quantity>0 AND l.expiry_date IS NOT NULL AND l.expiry_date<=CURRENT_DATE+INTERVAL '30 days' GROUP BY b.item_code,i.item_name,b.lot_no,l.expiry_date ORDER BY l.expiry_date LIMIT 20`);const pending=await pool.query(`SELECT COUNT(DISTINCT item_code||'|'||lot_no) cnt FROM inventory_balances WHERE quantity>0 AND quality_status IN ('IQC_PENDING','OQC_PENDING')`);ok(res,{totals:totals.rows,safetyAlerts:alerts.rows,expiryAlerts:expiry.rows,pendingLots:Number(pending.rows[0]?.cnt||0)});}catch(e){fail(res,500,e.message);}});
   app.get('/api/inventory/transactions',requireLogin,async(req,res)=>{try{await ensureInventorySchema();const limit=Math.min(1000,Math.max(1,Number(req.query.limit)||300)),q=`%${txt(req.query.q).toLowerCase()}%`;const r=await pool.query(`SELECT * FROM inventory_transactions WHERE ($1='%%' OR LOWER(item_code) LIKE $1 OR LOWER(lot_no) LIKE $1 OR LOWER(reference_no) LIKE $1 OR LOWER(work_order_no) LIKE $1 OR LOWER(production_lot) LIKE $1) ORDER BY created_at DESC LIMIT $2`,[q,limit]);ok(res,r.rows);}catch(e){fail(res,500,e.message);}});
   app.post('/api/inventory/transactions',requireLogin,async(req,res)=>{try{await ensureInventorySchema();const row=await postInventoryTransaction(req,req.body||{});ok(res,row,'재고 처리가 완료되었습니다.');}catch(e){fail(res,400,e.message);}});
+  app.patch('/api/inventory/transactions/:id/packaging',requireLogin,async(req,res)=>{
+    try{
+      await ensureInventorySchema();
+      const id=Number(req.params.id),body=req.body||{},packagingType=txt(body.packagingType);
+      if(!Number.isInteger(id)||id<=0)return fail(res,400,'입출고 거래번호가 올바르지 않습니다.');
+      if(!packagingType)return fail(res,400,'포장형태를 선택하세요.');
+      const packageQty=Number.isInteger(Number(body.packageQty))&&Number(body.packageQty)>0?Number(body.packageQty):null;
+      const unitWeight=qty(body.unitWeight);
+      const calculatedWeight=qty(body.calculatedWeight)??(packageQty&&unitWeight?packageQty*unitWeight:null);
+      const barcodeQty=Number.isInteger(Number(body.barcodeQty))&&Number(body.barcodeQty)>0?Number(body.barcodeQty):packageQty;
+      const result=await pool.query(
+        `UPDATE inventory_transactions
+         SET packaging_type=$2,
+             packaging_type_other=CASE WHEN $2='기타' THEN $3 ELSE '' END,
+             package_qty=COALESCE($4,package_qty),
+             unit_weight=COALESCE($5,unit_weight),
+             calculated_weight=COALESCE($6,calculated_weight),
+             barcode_qty=COALESCE($7,barcode_qty)
+         WHERE id=$1
+         RETURNING *`,
+        [id,packagingType,txt(body.packagingTypeOther),packageQty,unitWeight,calculatedWeight,barcodeQty]
+      );
+      if(!result.rowCount)return fail(res,404,'입출고 거래를 찾을 수 없습니다.');
+      ok(res,result.rows[0],'포장·QR 정보가 저장되었습니다.');
+    }catch(e){
+      fail(res,400,e.message);
+    }
+  });
   app.get('/api/inventory/reservations',requireLogin,async(_req,res)=>{try{await ensureInventorySchema();const r=await pool.query(`SELECT * FROM inventory_reservations WHERE status='ACTIVE' ORDER BY created_at DESC`);ok(res,r.rows);}catch(e){fail(res,500,e.message);}});
   app.post('/api/inventory/reservations',requireLogin,async(req,res)=>{try{await ensureInventorySchema();const b=req.body||{},amount=qty(b.quantity);if(!txt(b.itemCode)||!txt(b.workOrderNo)||amount===null||amount<=0)return fail(res,400,'품목, 작업지시번호, 예약수량이 필요합니다.');const r=await pool.query(`INSERT INTO inventory_reservations(item_code,lot_no,location_code,work_order_no,quantity,reserved_by) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,[txt(b.itemCode).toUpperCase(),txt(b.lotNo).toUpperCase(),txt(b.locationCode).toUpperCase(),txt(b.workOrderNo),amount,txt(req.session.user?.name)]);ok(res,r.rows[0],'생산 예약재고가 등록되었습니다.');}catch(e){fail(res,500,e.message);}});
   app.delete('/api/inventory/reservations/:id',requireLogin,async(req,res)=>{try{await ensureInventorySchema();const r=await pool.query(`UPDATE inventory_reservations SET status='RELEASED',released_at=NOW() WHERE id=$1 AND status='ACTIVE' RETURNING id`,[req.params.id]);if(!r.rowCount)return fail(res,404,'예약재고를 찾을 수 없습니다.');ok(res,null,'예약이 해제되었습니다.');}catch(e){fail(res,500,e.message);}});
