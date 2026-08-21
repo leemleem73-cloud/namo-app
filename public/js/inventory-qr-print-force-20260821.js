@@ -4,6 +4,18 @@
   if(window.__QMES_INV_QR_PRINT_FORCE_20260821__)return;
   window.__QMES_INV_QR_PRINT_FORCE_20260821__=true;
 
+  /* IQC 포장정보는 inventory_transactions 컬럼이 기준이다. 별도 qmes-sync inventory 메타데이터 중복 쓰기는 502/재시도를 만들 수 있어 차단한다. */
+  if(typeof window.qmesSyncUpsert==='function'&&!window.__QMES_INV_METADATA_WRITE_GUARD__){
+    window.__QMES_INV_METADATA_WRITE_GUARD__=true;
+    const originalUpsert=window.qmesSyncUpsert;
+    window.qmesSyncUpsert=async function(type,key,payload){
+      if(String(type||'').toLowerCase()==='inventory'&&payload?.kind==='inventory-iqc-metadata-v1'){
+        return {record_type:'inventory',record_key:String(key||''),payload,updated_at:new Date().toISOString()};
+      }
+      return originalUpsert(type,key,payload);
+    };
+  }
+
   const clean=v=>String(v??'').replace(/\s+/g,' ').trim();
   const esc=v=>String(v??'-').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const field=(sheet,label)=>Array.from(sheet.querySelectorAll('.inv-tx-detail-grid>div')).find(n=>clean(n.querySelector('dt')?.textContent)===label)||null;
