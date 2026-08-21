@@ -1,8 +1,8 @@
-/* Inventory movement list cleanup: remove manual transaction button, add sequence and pagination. */
+/* Inventory movement list cleanup v2: remove manual transaction button, add sequence, pagination and stable columns. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_MOVEMENT_LIST_CLEAN_20260821__)return;
-  window.__QMES_INV_MOVEMENT_LIST_CLEAN_20260821__=true;
+  if(window.__QMES_INV_MOVEMENT_LIST_CLEAN_V2_20260821__)return;
+  window.__QMES_INV_MOVEMENT_LIST_CLEAN_V2_20260821__=true;
 
   const PAGE_SIZE=20;
   let page=1;
@@ -11,11 +11,24 @@
   function clean(v){return String(v??'').replace(/\s+/g,' ').trim();}
 
   function ensureStyle(){
-    if(document.getElementById('qmes-inv-movement-clean-style'))return;
+    if(document.getElementById('qmes-inv-movement-clean-style-v2'))return;
     const style=document.createElement('style');
-    style.id='qmes-inv-movement-clean-style';
+    style.id='qmes-inv-movement-clean-style-v2';
     style.textContent=`
-      .inv-movement-table .qmes-inv-seq{width:64px!important;text-align:center!important;white-space:nowrap!important}
+      #qmes-inventory-host .inv-movement-panel{overflow-x:hidden!important}
+      #qmes-inventory-host table.inv-movement-table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(1){width:5%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(2){width:17%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(3){width:8%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(4){width:13%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(5){width:13%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(6){width:10%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(7){width:22%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(8){width:12%!important}
+      #qmes-inventory-host .inv-movement-table th,#qmes-inventory-host .inv-movement-table td{box-sizing:border-box!important;padding-left:12px!important;padding-right:12px!important;vertical-align:middle!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+      #qmes-inventory-host .inv-movement-table th.qmes-inv-seq,#qmes-inventory-host .inv-movement-table td.qmes-inv-seq{text-align:center!important;padding-left:4px!important;padding-right:4px!important}
+      #qmes-inventory-host .inv-movement-table td:nth-child(6){font-variant-numeric:tabular-nums}
+      #qmes-inventory-host .inv-tx-detail-link{display:block!important;width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
       .qmes-inv-pager{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 8px 4px}
       .qmes-inv-pager button{min-width:38px;height:34px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;font-weight:800;cursor:pointer}
       .qmes-inv-pager button.is-active{background:#0ea5e9;border-color:#0ea5e9;color:#fff}
@@ -34,7 +47,15 @@
     });
   }
 
+  function ensureColgroup(table){
+    let colgroup=table.querySelector(':scope > colgroup');
+    if(!colgroup){colgroup=document.createElement('colgroup');table.prepend(colgroup);}
+    while(colgroup.children.length<8)colgroup.appendChild(document.createElement('col'));
+    while(colgroup.children.length>8)colgroup.lastElementChild.remove();
+  }
+
   function installSequence(table,rows){
+    ensureColgroup(table);
     const head=table.querySelector('thead tr');
     if(head&&!head.querySelector('.qmes-inv-seq')){
       const th=document.createElement('th');
@@ -53,22 +74,13 @@
     const total=rows.length;
     const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
     page=Math.min(Math.max(1,page),pages);
-    rows.forEach((row,index)=>{
-      const visible=index>=(page-1)*PAGE_SIZE&&index<page*PAGE_SIZE;
-      row.style.display=visible?'':'none';
-    });
-
+    rows.forEach((row,index)=>{row.style.display=index>=(page-1)*PAGE_SIZE&&index<page*PAGE_SIZE?'':'none';});
     let pager=panel.querySelector('.qmes-inv-pager');
     if(!pager){pager=document.createElement('div');pager.className='qmes-inv-pager';panel.appendChild(pager);}
     pager.replaceChildren();
-
-    const add=(label,target,disabled=false,active=false)=>{
-      const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;if(active)b.classList.add('is-active');
-      b.addEventListener('click',()=>{page=target;apply();});pager.appendChild(b);
-    };
+    const add=(label,target,disabled=false,active=false)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;if(active)b.classList.add('is-active');b.addEventListener('click',()=>{page=target;apply();});pager.appendChild(b);};
     add('‹',page-1,page===1);
-    const start=Math.max(1,Math.min(page-2,pages-4));
-    const end=Math.min(pages,start+4);
+    const start=Math.max(1,Math.min(page-2,pages-4)),end=Math.min(pages,start+4);
     for(let p=start;p<=end;p++)add(String(p),p,false,p===page);
     add('›',page+1,page===pages);
     const info=document.createElement('span');info.className='qmes-inv-page-info';info.textContent=`총 ${total}건 · 페이지당 ${PAGE_SIZE}건`;pager.appendChild(info);
