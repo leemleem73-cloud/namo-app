@@ -1,4 +1,4 @@
-/* Inventory menu bridge v4.1: stable QR labels, mobile detail link and complete detail layout, 2026-08-21. */
+/* Inventory menu bridge v4.2: stable QR labels, mobile detail link and reliable iframe printing, 2026-08-21. */
 (function(){
   'use strict';
 
@@ -94,29 +94,41 @@
 
   function htmlEscape(value){return String(value==null?'-':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   async function printLabels(sheet){
-    const win=open('','_blank','width=780,height=780');
-    if(!win){alert('인쇄 창이 차단되었습니다. 브라우저에서 이 사이트의 팝업을 허용해 주세요.');return;}
-    win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>QR 라벨 준비 중</title></head><body style="font-family:Arial,\'Noto Sans KR\',sans-serif;padding:32px;color:#344054"><b>QR 라벨을 준비하고 있습니다.</b></body></html>');
-    win.document.close();
-    const tx=await matchTx(sheet);
-    if(!tx?.id){win.close();alert('입출고 거래번호를 찾지 못해 QR을 만들 수 없습니다. 새로고침 후 다시 시도해 주세요.');return;}
-    const data=dataFor(sheet,tx),count=data.packageCount;
-    let labels;
+    const button=sheet.querySelector('[data-qmes-qr-print="1"]');
+    if(button){button.disabled=true;button.dataset.qmesOriginalText=button.textContent;button.textContent='인쇄 준비 중...';}
     try{
-      labels=await Promise.all(Array.from({length:count},async(_,index)=>({no:index+1,qr:await qrData(qrUrl(tx.id,index+1,count))})));
-    }catch(error){win.close();alert(error?.message||QR_ERROR);return;}
-    win.document.open();
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${htmlEscape(data.material)} QR 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;font-family:Arial,'Noto Sans KR',sans-serif;color:#111827}.label{position:relative;width:60mm;height:40mm;padding:2.2mm;border:.25mm solid #d0d5dd;overflow:hidden;page-break-after:always}.label:last-child{page-break-after:auto}.top{height:6mm;display:flex;align-items:center;justify-content:space-between;border-bottom:.25mm solid #111827;padding-bottom:1mm}.top img{display:block;width:auto;height:4.8mm;max-width:33mm;object-fit:contain}.pkg{font-size:8px;font-weight:900}.body{display:grid;grid-template-columns:1fr 25mm;gap:1.5mm;height:29mm;padding-top:1.5mm}.meta{display:flex;min-width:0;flex-direction:column;justify-content:center}.meta small{font-size:6px;color:#64748b;font-weight:700;margin-top:.7mm}.meta strong{font-size:9px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qr{display:flex;align-items:center;justify-content:center}.qr img{width:25mm;height:25mm;object-fit:contain}.scan{position:absolute;left:2.2mm;bottom:1.3mm;font-size:5.5px;color:#475467;font-weight:700}@media print{.label{break-inside:avoid}}</style></head><body>${labels.map(label=>`<section class="label"><div class="top"><img src="${MAIN_LOGO}" alt="NAMO Chemical" onerror="this.onerror=null;this.src='${FALLBACK_LOGO}'"><div class="pkg">${label.no} / ${count}</div></div><div class="body"><div class="meta"><small>원료명</small><strong>${htmlEscape(data.material)}</strong><small>LOT</small><strong>${htmlEscape(data.lot)}</strong><small>위치</small><strong>${htmlEscape(data.location)}</strong></div><div class="qr"><img src="${label.qr}" alt="입출고 상세 QR"></div></div><div class="scan">휴대폰 카메라로 QR을 스캔해 상세정보 확인</div></section>`).join('')}</body></html>`);
-    win.document.close();
-    let done=false;
-    const run=()=>{if(done)return;done=true;setTimeout(()=>{win.focus();win.print();},180);};
-    const images=Array.from(win.document.images),waiting=images.filter(image=>!image.complete);
-    if(!waiting.length)run();
-    else{
-      let left=waiting.length;
-      const one=()=>{left-=1;if(left<=0)run();};
-      waiting.forEach(image=>{image.addEventListener('load',one,{once:true});image.addEventListener('error',one,{once:true});});
-      setTimeout(run,1800);
+      const tx=await matchTx(sheet);
+      if(!tx?.id){alert('입출고 거래번호를 찾지 못해 QR을 만들 수 없습니다. 새로고침 후 다시 시도해 주세요.');return;}
+      const data=dataFor(sheet,tx),count=data.packageCount;
+      const labels=await Promise.all(Array.from({length:count},async(_,index)=>({no:index+1,qr:await qrData(qrUrl(tx.id,index+1,count))})));
+      const html=`<!doctype html><html><head><meta charset="utf-8"><title>${htmlEscape(data.material)} QR 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;font-family:Arial,'Noto Sans KR',sans-serif;color:#111827}.label{position:relative;width:60mm;height:40mm;padding:2.2mm;border:.25mm solid #d0d5dd;overflow:hidden;page-break-after:always}.label:last-child{page-break-after:auto}.top{height:6mm;display:flex;align-items:center;justify-content:space-between;border-bottom:.25mm solid #111827;padding-bottom:1mm}.top img{display:block;width:auto;height:4.8mm;max-width:33mm;object-fit:contain}.pkg{font-size:8px;font-weight:900}.body{display:grid;grid-template-columns:1fr 25mm;gap:1.5mm;height:29mm;padding-top:1.5mm}.meta{display:flex;min-width:0;flex-direction:column;justify-content:center}.meta small{font-size:6px;color:#64748b;font-weight:700;margin-top:.7mm}.meta strong{font-size:9px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qr{display:flex;align-items:center;justify-content:center}.qr img{width:25mm;height:25mm;object-fit:contain}.scan{position:absolute;left:2.2mm;bottom:1.3mm;font-size:5.5px;color:#475467;font-weight:700}@media print{.label{break-inside:avoid}}</style></head><body>${labels.map(label=>`<section class="label"><div class="top"><img src="${MAIN_LOGO}" alt="NAMO Chemical" onerror="this.onerror=null;this.src='${FALLBACK_LOGO}'"><div class="pkg">${label.no} / ${count}</div></div><div class="body"><div class="meta"><small>원료명</small><strong>${htmlEscape(data.material)}</strong><small>LOT</small><strong>${htmlEscape(data.lot)}</strong><small>위치</small><strong>${htmlEscape(data.location)}</strong></div><div class="qr"><img src="${label.qr}" alt="입출고 상세 QR"></div></div><div class="scan">휴대폰 카메라로 QR을 스캔해 상세정보 확인</div></section>`).join('')}</body></html>`;
+      let frame=document.getElementById('qmes-qr-print-frame');
+      if(frame)frame.remove();
+      frame=document.createElement('iframe');
+      frame.id='qmes-qr-print-frame';
+      frame.setAttribute('aria-hidden','true');
+      frame.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:.01;pointer-events:none;';
+      document.body.appendChild(frame);
+      const doc=frame.contentDocument||frame.contentWindow?.document;
+      if(!doc)throw new Error('인쇄 화면을 만들 수 없습니다.');
+      doc.open();doc.write(html);doc.close();
+      const run=()=>{
+        try{frame.contentWindow?.focus();frame.contentWindow?.print();}
+        catch(error){alert('인쇄 창을 열 수 없습니다. 브라우저 인쇄 설정을 확인해 주세요.');}
+        setTimeout(()=>frame.remove(),1500);
+      };
+      const images=Array.from(doc.images||[]),waiting=images.filter(image=>!image.complete);
+      if(!waiting.length)setTimeout(run,120);
+      else{
+        let left=waiting.length;
+        const one=()=>{left-=1;if(left<=0)setTimeout(run,120);};
+        waiting.forEach(image=>{image.addEventListener('load',one,{once:true});image.addEventListener('error',one,{once:true});});
+        setTimeout(run,1800);
+      }
+    }catch(error){
+      alert(error?.message||QR_ERROR);
+    }finally{
+      if(button){button.disabled=false;button.textContent=button.dataset.qmesOriginalText||'QR 라벨 인쇄';delete button.dataset.qmesOriginalText;}
     }
   }
 
