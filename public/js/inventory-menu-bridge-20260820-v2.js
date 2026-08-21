@@ -1,8 +1,8 @@
-/* Inventory menu bridge v5: menu/sidebar host only. Detail modal is owned by React + one stable detail enhancer. */
+/* Inventory menu bridge v5.1: stable menu/sidebar host only. Detail modal stays React-owned. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_MENU_BRIDGE_V5__)return;
-  window.__QMES_INV_MENU_BRIDGE_V5__=true;
+  if(window.__QMES_INV_MENU_BRIDGE_V51__)return;
+  window.__QMES_INV_MENU_BRIDGE_V51__=true;
 
   let root=null,host=null,current='overview';
   const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
@@ -26,13 +26,19 @@
     if(!wrap)return;
     const title=side.querySelector('.qmes-side-title');
     if(title)title.textContent='재고관리';
+    const existing=Array.from(wrap.querySelectorAll('[data-qmes-inv-side]'));
+    if(existing.length===sections.length){
+      existing.forEach(button=>button.classList.toggle('is-active',button.dataset.qmesInvSide===current));
+      return;
+    }
     wrap.replaceChildren();
     sections.forEach(([id,label])=>{
       const button=document.createElement('button');
       button.type='button';
+      button.dataset.qmesInvSide=id;
       button.className=`qmes-side-item${current===id?' is-active':''}`;
       button.textContent=label;
-      button.onclick=event=>{event.stopPropagation();openInventory(id);};
+      button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openInventory(id);});
       wrap.appendChild(button);
     });
   }
@@ -47,10 +53,7 @@
     current=sections.some(item=>item[0]===section)?section:'overview';
     const main=document.querySelector('#root>div>main');
     const Component=component();
-    if(!main||!Component){
-      console.warn('[QMES inventory] 재고 화면 컴포넌트를 아직 불러오지 못했습니다.');
-      return;
-    }
+    if(!main||!Component){console.warn('[QMES inventory] 재고 화면 컴포넌트를 아직 불러오지 못했습니다.');return;}
     Array.from(main.children).forEach(node=>{
       if(node!==host){node.dataset.invHidden='1';node.style.setProperty('display','none','important');}
     });
@@ -61,7 +64,7 @@
     root.render(React.createElement(Component,{section:current}));
     try{sessionStorage.setItem('qmes_inventory_section',current);}catch(error){}
     if(typeof window.qmesSetGlobalSidebarGroup==='function')window.qmesSetGlobalSidebarGroup('재고관리');
-    setTimeout(sidebar,80);
+    setTimeout(sidebar,100);
   }
 
   function install(){
@@ -76,11 +79,12 @@
       button.type='button';
       button.className='qmes-top-menu-button';
       button.innerHTML='<span>▣</span><span>재고관리</span><span>›</span>';
-      button.onclick=()=>{
+      button.addEventListener('click',event=>{
+        event.preventDefault();event.stopPropagation();
         let saved='overview';
         try{saved=sessionStorage.getItem('qmes_inventory_section')||saved;}catch(error){}
         openInventory(saved);
-      };
+      });
       item.appendChild(button);
       const trace=Array.from(nav.children).find(node=>clean(node.textContent).includes('LOT 추적'));
       trace?trace.after(item):nav.appendChild(item);
@@ -92,13 +96,11 @@
   document.addEventListener('click',event=>{
     const target=event.target.closest?.('.qmes-top-menu-button');
     if(target&&!target.closest('[data-qmes-inventory-menu]')&&host)restore();
-  },true);
+  },false);
 
-  let timer=0;
-  new MutationObserver(()=>{
-    clearTimeout(timer);
-    timer=setTimeout(()=>{install();if(host)sidebar();},50);
-  }).observe(document.documentElement,{childList:true,subtree:true});
-
-  install();
+  // Observe only until the top menu exists. Do not rewrite sidebar on every DOM mutation.
+  if(!install()){
+    const observer=new MutationObserver(()=>{if(install())observer.disconnect();});
+    observer.observe(document.documentElement,{childList:true,subtree:true});
+  }
 })();
