@@ -1,116 +1,87 @@
-/* QMES partner registration hard recovery — 2026-08-14
- * Restores the Aug-06 partner register click-layer fix and opens a native fallback modal.
- * Works with current and older partner screens by matching visible button text.
- */
+/* QMES partner registration modal recovery */
 (function(global){
   'use strict';
-  if(global.__QMES_PARTNER_REGISTER_HARD_RECOVERY_V4__) return;
-  global.__QMES_PARTNER_REGISTER_HARD_RECOVERY_V4__=true;
+  if(global.__QMES_PARTNER_REGISTER_MODAL_20260821__) return;
+  global.__QMES_PARTNER_REGISTER_MODAL_20260821__=true;
 
   const text=value=>String(value??'').replace(/\s+/g,' ').trim();
   const typeOf=button=>{
     const label=text(button?.textContent);
-    if(label==='고객사 등록'||label.includes('고객사 등록'))return 'customer';
-    if(label==='공급업체 등록'||label.includes('공급업체 등록'))return 'supplier';
+    if(label.includes('고객사 등록')) return 'customer';
+    if(label.includes('공급업체 등록')) return 'supplier';
     return '';
-  };
-  const normalizeMaterial=name=>{
-    const value=text(name).toUpperCase().replace(/\s+/g,'');
-    if(value.includes('BYK180')||value.includes('BYK-180')||value.includes('분산제')) return 'BYK180 (분산제)';
-    return text(name);
   };
   const nextCode=(prefix,rows)=>`${prefix}${String(Math.max(0,...(rows||[]).map(row=>Number(String(row?.code||'').replace(/\D/g,''))||0))+1).padStart(3,'0')}`;
   const closeModal=()=>document.getElementById('qmes-partner-register-hard-modal')?.remove();
+  const defaultCustomers=[
+    {code:'CUS001',name:'현대자동차',status:'거래중'},
+    {code:'CUS002',name:'삼성SDI',status:'거래중'},
+    {code:'CUS003',name:'LG에너지솔루션',status:'거래중'},
+    {code:'CUS004',name:'SK온',status:'거래중'}
+  ];
 
   const style=document.createElement('style');
-  style.id='qmes-partner-register-hard-recovery-v4-style';
   style.textContent=`
-    button.qmes-partner-register-btn,
-    .qmes-partners-page button.qmes-partner-register-btn{
-      display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
-      min-height:34px!important;padding:6px 12px!important;border:1px solid #0ea5e9!important;border-radius:8px!important;
-      background:#075985!important;color:#fff!important;font-size:12px!important;font-weight:800!important;cursor:pointer!important;
-      pointer-events:auto!important;position:relative!important;z-index:2147482000!important;opacity:1!important;visibility:visible!important;
-      transform:none!important;filter:none!important;
-    }
-    button.qmes-partner-register-btn:hover{background:#0369a1!important;}
+    #qmes-partner-register-hard-modal{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.76);backdrop-filter:blur(3px)}
+    #qmes-partner-register-hard-modal .qpr-box{width:min(610px,96vw);max-height:90vh;overflow:auto;border:1px solid #475569;border-radius:16px;background:#111f33;box-shadow:0 24px 70px rgba(0,0,0,.55);font-family:Pretendard,sans-serif}
+    #qmes-partner-register-hard-modal .qpr-head{display:flex;align-items:center;padding:17px 19px;border-bottom:1px solid #334155}
+    #qmes-partner-register-hard-modal .qpr-title{color:#f8fafc;font-size:18px;font-weight:900}
+    #qmes-partner-register-hard-modal .qpr-body{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:19px}
+    #qmes-partner-register-hard-modal .qpr-field{display:grid;gap:6px;color:#cbd5e1;font-size:13px;font-weight:800}
+    #qmes-partner-register-hard-modal .qpr-field.full{grid-column:1/-1}
+    #qmes-partner-register-hard-modal input,#qmes-partner-register-hard-modal select,#qmes-partner-register-hard-modal textarea{width:100%;box-sizing:border-box;border:1px solid #475569;border-radius:8px;background:#0f172a;color:#f8fafc;padding:0 10px;font:700 13px Pretendard,sans-serif;outline:none}
+    #qmes-partner-register-hard-modal input,#qmes-partner-register-hard-modal select{height:40px}
+    #qmes-partner-register-hard-modal textarea{min-height:78px;padding:10px;resize:vertical}
+    #qmes-partner-register-hard-modal .qpr-code{background:#18263a!important;color:#94a3b8!important}
+    #qmes-partner-register-hard-modal .qpr-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 19px;border-top:1px solid #334155}
+    #qmes-partner-register-hard-modal button{height:38px;padding:0 16px;border-radius:8px;font-weight:900;cursor:pointer}
+    #qmes-partner-register-hard-modal .qpr-cancel{border:1px solid #64748b;background:#17263b;color:#e2e8f0}
+    #qmes-partner-register-hard-modal .qpr-save{border:0;background:#0e7490;color:#fff}
+    #qmes-partner-register-hard-modal .qpr-x{margin-left:auto;width:34px;padding:0;border:1px solid #475569;background:#17263b;color:#e2e8f0;font-size:22px}
+    @media(max-width:620px){#qmes-partner-register-hard-modal .qpr-body{grid-template-columns:1fr}}
   `;
   document.head.appendChild(style);
 
-  function repairRegisterButtons(){
-    document.querySelectorAll('button').forEach(button=>{
-      const type=typeOf(button);if(!type)return;
-      button.classList.remove('qmes-iqc-new-btn');
-      button.classList.add('qmes-partner-register-btn');
-      button.dataset.qmesPartnerRegister='true';
-      button.disabled=false;
-      button.removeAttribute('disabled');
-      button.style.setProperty('pointer-events','auto','important');
-      button.style.setProperty('position','relative','important');
-      button.style.setProperty('z-index','2147482000','important');
-      button.style.setProperty('opacity','1','important');
-      button.style.setProperty('visibility','visible','important');
-      let node=button.parentElement;
-      for(let depth=0;depth<4&&node&&node!==document.body;depth+=1,node=node.parentElement){
-        const css=getComputedStyle(node);
-        if(css.pointerEvents==='none')node.style.setProperty('pointer-events','auto','important');
-      }
-    });
-  }
+  const makeInput=(placeholder,value='')=>{const el=document.createElement('input');el.placeholder=placeholder;el.value=value;return el;};
+  const makeSelect=()=>{const el=document.createElement('select');['거래중','거래중지'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.append(o);});return el;};
+  const field=(label,control,full=false)=>{const wrap=document.createElement('label');wrap.className='qpr-field'+(full?' full':'');const cap=document.createElement('span');cap.textContent=label;wrap.append(cap,control);return wrap;};
+  const saveDb=()=>{try{if(typeof global.dbSave==='function') global.dbSave();}catch(error){console.warn('[QMES] 거래처 저장 실패',error);}};
 
-  function makeInput(placeholder){const el=document.createElement('input');el.placeholder=placeholder;el.style.cssText='width:100%;height:38px;box-sizing:border-box;border:1px solid #475569;border-radius:8px;background:#0f172a;color:#f8fafc;padding:0 10px;font:700 13px Pretendard,sans-serif;outline:none';return el;}
-  function makeSelect(){const el=document.createElement('select');['거래중','거래중지'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.append(o);});el.style.cssText='width:100%;height:38px;box-sizing:border-box;border:1px solid #475569;border-radius:8px;background:#0f172a;color:#f8fafc;padding:0 10px;font:700 13px Pretendard,sans-serif;outline:none';return el;}
-  function field(label,control){const wrap=document.createElement('label');wrap.style.cssText='display:grid;gap:6px;color:#cbd5e1;font-size:13px;font-weight:800';const cap=document.createElement('span');cap.textContent=label;wrap.append(cap,control);return wrap;}
-
-  function saveDb(){try{if(typeof global.dbSave==='function')global.dbSave();}catch(error){console.warn('[QMES] 거래처 저장 실패',error);}}
-  function openModal(type){
+  function openCustomerModal(){
     closeModal();
-    const supplier=type==='supplier';
-    const overlay=document.createElement('div');overlay.id='qmes-partner-register-hard-modal';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',supplier?'신규 공급업체 등록':'신규 고객사 등록');overlay.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,6,23,.82);backdrop-filter:blur(3px);pointer-events:auto';
-    const box=document.createElement('div');box.style.cssText=`width:min(${supplier?'760':'520'}px,96vw);max-height:90vh;overflow:auto;border:1px solid #475569;border-radius:14px;background:#111f33;box-shadow:0 24px 70px rgba(0,0,0,.58);font-family:Pretendard,sans-serif;pointer-events:auto`;
-    const head=document.createElement('div');head.style.cssText='display:flex;align-items:center;padding:16px 18px;border-bottom:1px solid #334155';
-    const title=document.createElement('strong');title.textContent=supplier?'신규 공급업체 등록':'신규 고객사 등록';title.style.cssText='color:#f8fafc;font-size:17px;font-weight:900';
-    const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','닫기');x.style.cssText='margin-left:auto;width:34px;height:34px;border:1px solid #475569;border-radius:8px;background:#17263b;color:#e2e8f0;font-size:22px;cursor:pointer';x.onclick=closeModal;head.append(title,x);
-    const body=document.createElement('div');body.style.cssText=`display:grid;grid-template-columns:${supplier?'1fr 1fr':'1fr 150px'};gap:12px;padding:18px`;
-    const name=makeInput(supplier?'공급업체명':'고객사명'),status=makeSelect();let material=null,lot=null;
-    body.append(field(supplier?'공급업체명':'고객사명',name));
-    if(supplier){material=makeInput('원료명');lot=makeInput('최근 원료 LOT No.');body.append(field('원료명',material),field('최근 원료 LOT No.',lot));}
-    body.append(field('거래상태',status));
-    const foot=document.createElement('div');foot.style.cssText='display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid #334155';
-    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='닫기';cancel.style.cssText='height:38px;padding:0 16px;border:1px solid #64748b;border-radius:8px;background:#17263b;color:#e2e8f0;font-weight:800;cursor:pointer';cancel.onclick=closeModal;
-    const save=document.createElement('button');save.type='button';save.textContent='등록';save.style.cssText='height:38px;padding:0 18px;border:0;border-radius:8px;background:#0e7490;color:#fff;font-weight:900;cursor:pointer';
+    if(!global.DB){alert('데이터 저장소를 불러오지 못했습니다.');return;}
+    const existing=Array.isArray(global.DB.partnerCustomers)&&global.DB.partnerCustomers.length?global.DB.partnerCustomers:defaultCustomers;
+    const code=nextCode('CUS',existing);
+    const overlay=document.createElement('div');overlay.id='qmes-partner-register-hard-modal';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','고객사 등록');
+    const box=document.createElement('div');box.className='qpr-box';
+    const head=document.createElement('div');head.className='qpr-head';
+    const title=document.createElement('strong');title.className='qpr-title';title.textContent='고객사 등록';
+    const x=document.createElement('button');x.type='button';x.className='qpr-x';x.textContent='×';x.onclick=closeModal;head.append(title,x);
+    const body=document.createElement('div');body.className='qpr-body';
+    const codeInput=makeInput('',code);codeInput.readOnly=true;codeInput.className='qpr-code';
+    const name=makeInput('고객사명');
+    const manager=makeInput('담당자명');
+    const phone=makeInput('연락처');
+    const status=makeSelect();
+    const note=document.createElement('textarea');note.placeholder='비고 (선택)';
+    body.append(field('고객사 코드',codeInput),field('고객사명',name),field('담당자',manager),field('연락처',phone),field('거래상태',status),field('비고',note,true));
+    const foot=document.createElement('div');foot.className='qpr-foot';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='qpr-cancel';cancel.textContent='취소';cancel.onclick=closeModal;
+    const save=document.createElement('button');save.type='button';save.className='qpr-save';save.textContent='등록';
     save.onclick=()=>{
-      if(!global.DB){alert('데이터 저장소를 불러오지 못했습니다.');return;}
-      if(supplier){
-        const company=text(name.value),materialName=normalizeMaterial(material.value);if(!company||!materialName){alert('공급업체명과 원료명을 입력하세요.');return;}
-        const rows=Array.isArray(global.DB.partnerSuppliers)?global.DB.partnerSuppliers:[];
-        global.DB.partnerSuppliers=[...rows,{code:nextCode('SUP',rows),company,material:materialName,lot:text(lot.value).toUpperCase(),status:status.value||'거래중'}];
-      }else{
-        const customer=text(name.value);if(!customer){alert('고객사명을 입력하세요.');return;}
-        const rows=Array.isArray(global.DB.partnerCustomers)?global.DB.partnerCustomers:[];
-        if(rows.some(row=>text(row.name).toLowerCase()===customer.toLowerCase())){alert('이미 등록된 고객사입니다.');return;}
-        global.DB.partnerCustomers=[...rows,{code:nextCode('CUS',rows),name:customer,status:status.value||'거래중'}];
-      }
-      saveDb();closeModal();
-      try{global.dispatchEvent(new CustomEvent('qmes:partners-updated'));}catch(error){}
-      setTimeout(()=>location.reload(),50);
+      const customer=text(name.value);if(!customer){alert('고객사명을 입력하세요.');name.focus();return;}
+      const rows=Array.isArray(global.DB.partnerCustomers)&&global.DB.partnerCustomers.length?global.DB.partnerCustomers.slice():defaultCustomers.map(row=>({...row}));
+      if(rows.some(row=>text(row.name).toLowerCase()===customer.toLowerCase())){alert('이미 등록된 고객사입니다.');return;}
+      rows.push({code,name:customer,manager:text(manager.value),phone:text(phone.value),status:status.value||'거래중',note:text(note.value)});
+      global.DB.partnerCustomers=rows;saveDb();closeModal();setTimeout(()=>location.reload(),60);
     };
-    foot.append(cancel,save);box.append(head,body,foot);overlay.append(box);overlay.addEventListener('mousedown',event=>{if(event.target===overlay)closeModal();});document.body.appendChild(overlay);requestAnimationFrame(()=>name.focus());
+    foot.append(cancel,save);box.append(head,body,foot);overlay.append(box);overlay.addEventListener('mousedown',e=>{if(e.target===overlay)closeModal();});document.body.appendChild(overlay);requestAnimationFrame(()=>name.focus());
   }
 
-  document.addEventListener('pointerdown',event=>{
-    const button=event.target.closest?.('button');const type=typeOf(button);if(!type)return;
-    repairRegisterButtons();
-  },true);
   document.addEventListener('click',event=>{
-    const button=event.target.closest?.('button');const type=typeOf(button);if(!type)return;
-    openModal(type);
+    const button=event.target.closest?.('button');
+    if(typeOf(button)!=='customer') return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    openCustomerModal();
   },true);
-
-  let queued=false;
-  const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;repairRegisterButtons();});};
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','disabled']});
-  window.addEventListener('load',schedule);
-  window.addEventListener('focus',schedule);
-  schedule();
 })(window);
