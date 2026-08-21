@@ -206,7 +206,7 @@
     return null;
   }
 
-  function check() {
+  function check(force) {
     var user = currentUser();
     if (isExcludedUser(user)) {
       popup.classList.remove("show");
@@ -214,11 +214,11 @@
     }
 
     var item = getReminder();
-    if (!item || isSnoozed(item.type) || recentlyShown(item.type)) return;
+    if (!item || isSnoozed(item.type) || (!force && recentlyShown(item.type))) return;
     render(item);
   }
 
   requestNotificationPermission();
-  setTimeout(check, 1500);
-  setInterval(check, CHECK_MS);
+  setTimeout(function () { check(true); }, 300);
+  setInterval(function () { check(false); }, CHECK_MS);
 })();
