@@ -8,11 +8,11 @@
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table {
   width: 100%;
   min-width: 0;
-  table-layout: auto !important;
+  table-layout: fixed !important;
 }
 
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table col {
-  width: auto !important;
+  width: 12.5% !important;
   min-width: 0 !important;
   max-width: none !important;
 }
@@ -36,7 +36,7 @@
 #qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(6),
 #qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(7),
 #qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(7) {
-  text-align: left !important;
+  text-align: center !important;
 }
 
 #qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(5) {
