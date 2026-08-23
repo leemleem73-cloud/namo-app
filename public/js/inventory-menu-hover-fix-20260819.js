@@ -12,6 +12,7 @@
   const FALLBACK_LOGO='/assets/namo-header-logo.svg';
   const MODULE_ERROR='QR 생성 모듈을 불러오지 못했습니다.';
   const clean=value=>String(value??'').replace(/\s+/g,' ').trim();
+  const upper=value=>clean(value).toUpperCase();
   const qrReady=()=>Boolean(window.QRCode&&(typeof window.QRCode.toDataURL==='function'||typeof window.QRCode==='function'));
 
   function loadScript(src,key){
@@ -85,6 +86,29 @@
   function parseCount(value){const match=clean(value).replace(/,/g,'').match(/\d+/);return match&&Number(match[0])>0?Math.min(500,Math.trunc(Number(match[0]))):1;}
   function destination(direction){const parts=clean(direction).split('→').map(clean).filter(Boolean);return parts.at(-1)||'-';}
 
+  function localIqcRows(){
+    let db=window.DB||{};
+    try{if(typeof DB!=='undefined'&&DB)db=DB;}catch(_error){}
+    const rows=[];
+    [db.iqc,db.insp?.IQC,db.iqcRecords,db.inspections?.IQC].forEach(list=>{
+      if(Array.isArray(list))list.forEach(row=>{if(row&&!rows.includes(row))rows.push(row);});
+    });
+    return rows;
+  }
+  function iqcDates(sheet){
+    const lot=upper(detailValue(sheet,'LOT'));
+    const material=upper(detailValue(sheet,'원료명'));
+    const rows=localIqcRows();
+    const materialOf=row=>upper(row?.name||row?.material||row?.item||row?.itemName||row?.item_name||row?.code);
+    const lotOf=row=>upper(row?.lot||row?.lotNo||row?.lot_no);
+    const row=rows.find(item=>lotOf(item)===lot&&materialOf(item)===material)||rows.find(item=>lotOf(item)===lot)||null;
+    const date=value=>{const text=clean(value);return text&&text!=='-'?text.slice(0,10):'';};
+    return {
+      recv:date(row?.recv||row?.recvDate||row?.receivedAt||row?.received_at),
+      inspect:date(row?.inspectedAt||row?.inspectDate||row?.inspectionDate||row?.inspection_date)
+    };
+  }
+
   function cleanDetailLayout(sheet){
     const grid=sheet.querySelector('.inv-tx-detail-grid');
     if(!grid)return;
@@ -117,6 +141,9 @@
     const packageCount=total||parseCount(detailValue(sheet,'입고 포장수량'));
     const movement=detailValue(sheet,'이동 방향');
     const tx=sheet.__qmesTx||{};
+    const dates=iqcDates(sheet);
+    const receiptDate=dates.recv||detailValue(sheet,'입고일자');
+    const inspectionDate=dates.inspect||detailValue(sheet,'검사일자');
     return {
       v:1,
       x:clean(tx.id||''),
@@ -124,8 +151,8 @@
       t:detailValue(sheet,'구분'),
       l:detailValue(sheet,'LOT'),
       p:detailValue(sheet,'포장형태'),
-      rd:detailValue(sheet,'입고일자'),
-      id:detailValue(sheet,'검사일자'),
+      rd:receiptDate,
+      id:inspectionDate,
       q:detailValue(sheet,'총 수량'),
       pc:detailValue(sheet,'입고 포장수량'),
       d:movement,
