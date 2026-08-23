@@ -1,8 +1,8 @@
-/* Inventory table alignment v10: consistent headers and row fields across inventory sections. */
+/* Inventory table alignment v11: consistent headers and row fields across inventory sections. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_TABLE_ALIGNMENT_V10_20260824__)return;
-  window.__QMES_INV_TABLE_ALIGNMENT_V10_20260824__=true;
+  if(window.__QMES_INV_TABLE_ALIGNMENT_V11_20260824__)return;
+  window.__QMES_INV_TABLE_ALIGNMENT_V11_20260824__=true;
 
   const PAGE_SIZE=20;
   let page=1;
@@ -12,7 +12,7 @@
   const clean=v=>String(v??'').replace(/\s+/g,' ').trim();
 
   function ensureStyle(){
-    let style=document.getElementById('qmes-inv-table-alignment-style-v10');
+    let style=document.getElementById('qmes-inv-table-alignment-style-v11');
     if(style)return;
     style=document.createElement('style');
     style.id='qmes-inv-table-alignment-style-v8';
@@ -28,54 +28,30 @@
       #qmes-inventory-host .inv-movement-table input,#qmes-inventory-host .inv-movement-table select,#qmes-inventory-host .inv-movement-table textarea{width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}
       #qmes-inventory-host .inv-movement-table td:nth-child(6){font-variant-numeric:tabular-nums}
 
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(1){width:9%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(2){width:16%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(3){width:13%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(4){width:10%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(5){width:13%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(6){width:10%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(7){width:9%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(8){width:9%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table col:nth-child(9){width:11%!important}
+      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
+      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table col{width:11.111111%!important;min-width:0!important;max-width:none!important}
 
       #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table,
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th:nth-child(1){width:18%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th:nth-child(2){width:18%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th:nth-child(3){width:18%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th:nth-child(4){width:14%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th:nth-child(5){width:16%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th:nth-child(6){width:16%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(1){width:16%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(2){width:10%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(3){width:15%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(4){width:14%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(5){width:11%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(6){width:18%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-movement-table col:nth-child(7){width:16%!important}
+      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
+      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table:not(.inv-movement-table) th{width:16.666667%!important}
+      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table.inv-movement-table col{width:14.285714%!important;min-width:0!important;max-width:none!important}
+      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th{width:12.5%!important}
 
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(1){width:14%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(2){width:14%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(3){width:14%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(4){width:12%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(5){width:11%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(6){width:11%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(7){width:10%!important}
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th:nth-child(8){width:14%!important}
-
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table th,
-      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table td,
+      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table th,
+      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td,
+      #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td.num,
       #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table th,
       #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table td,
+      #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table td.num,
       #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table th,
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table td{box-sizing:border-box!important;height:44px!important;padding:8px 10px!important;line-height:1.3!important;vertical-align:middle!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table td,
+      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table td.num{box-sizing:border-box!important;height:44px!important;padding:8px 10px!important;line-height:1.3!important;text-align:center!important;vertical-align:middle!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
       #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table input,
       #qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-table select,
       #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table input,
       #qmes-inventory-host[data-qmes-inventory-section="production"] .inv-panel table select,
       #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table input,
-      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table select{width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}
+      #qmes-inventory-host[data-qmes-inventory-section="count"] .inv-panel table select{width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;text-align:center!important}
 
       #qmes-inventory-host .inv-tx-detail-link{display:block!important;width:100%!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.35!important}
       #qmes-inventory-host .qmes-inv-pager{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 8px 4px}
