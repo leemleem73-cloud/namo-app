@@ -1,4 +1,4 @@
-/* 입출고 관리 표 간격축소·상세 바코드 v4, 2026-08-20 */
+/* 입출고 관리 동일 간격·전체 가운데 정렬 v5, 2026-08-24 */
 #qmes-inventory-host .inv-movement-panel {
   width: 100%;
   box-sizing: border-box;
@@ -17,25 +17,18 @@
   max-width: none !important;
 }
 
-#qmes-inventory-host .inv-shell .inv-movement-table th,
-#qmes-inventory-host .inv-shell .inv-movement-table td {
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table th,
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td,
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td.num {
+  text-align: center !important;
   vertical-align: middle !important;
 }
 
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(1),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(1),
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(2),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(2),
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(3),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(3),
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(4),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(4),
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(5),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(5),
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(6),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(6),
-#qmes-inventory-host .inv-shell .inv-movement-table th:nth-child(7),
-#qmes-inventory-host .inv-shell .inv-movement-table td:nth-child(7) {
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td > button,
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td > a,
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td > span {
+  margin-left: auto !important;
+  margin-right: auto !important;
   text-align: center !important;
 }
 
@@ -72,7 +65,7 @@
   box-shadow: none !important;
   font: inherit !important;
   font-weight: 750 !important;
-  text-align: left;
+  text-align: center !important;
   text-decoration: underline;
   text-decoration-color: transparent;
   text-underline-offset: 3px;
