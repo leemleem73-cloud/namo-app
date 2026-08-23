@@ -1559,6 +1559,17 @@ function IssueWoTab() {
                       <Printer size={13} /> 인쇄
                     </button>
                   )}
+                  <button
+                    type="button"
+                    data-qmes-native-edit="1"
+                    onClick={() => {
+                      editWo(batch);
+                      setViewingWo(null);
+                    }}
+                    className="qmes-wo-preview-edit-btn"
+                  >
+                    수정
+                  </button>
                   <button onClick={() => setViewingWo(null)} className="qmes-modal-close">×</button>
                 </div>
               </div>
