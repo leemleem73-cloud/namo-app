@@ -1,8 +1,8 @@
-/* 입출고 관리 좌우 완전 대칭 정렬 v8, 2026-08-24 */
+/* 입출고 관리 표 전체 왼쪽 미세 이동 v9, 2026-08-24 */
 #qmes-inventory-host .inv-movement-panel {
   width: 100%;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+  padding-left: 10px !important;
+  padding-right: 18px !important;
   box-sizing: border-box;
   overflow-x: hidden;
 }
