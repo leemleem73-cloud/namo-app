@@ -1,5 +1,4 @@
-/* QMES inventory stock table alignment v3, 2026-08-20.
-   Dedicated 9-column layout after the item-code column was removed. */
+/* QMES LOT별 재고 동일 간격·전체 가운데 정렬 v4, 2026-08-24 */
 #qmes-inventory-host .inv-title-row,
 #qmes-inventory-host .inv-filter,
 #qmes-inventory-host .inv-stock-panel{
@@ -7,55 +6,34 @@
   box-sizing:border-box;
 }
 
-#qmes-inventory-host .inv-stock-panel{
-  overflow-x:auto;
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-stock-panel{
+  overflow-x:hidden;
 }
 
-#qmes-inventory-host .inv-shell table.inv-stock-table{
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table{
   width:100%;
-  min-width:980px;
+  min-width:0!important;
   table-layout:fixed!important;
 }
 
-#qmes-inventory-host .inv-stock-table col:nth-child(1){width:7%}
-#qmes-inventory-host .inv-stock-table col:nth-child(2){width:12%}
-#qmes-inventory-host .inv-stock-table col:nth-child(3){width:18%}
-#qmes-inventory-host .inv-stock-table col:nth-child(4){width:9%}
-#qmes-inventory-host .inv-stock-table col:nth-child(5){width:10%}
-#qmes-inventory-host .inv-stock-table col:nth-child(6){width:12%}
-#qmes-inventory-host .inv-stock-table col:nth-child(7){width:8%}
-#qmes-inventory-host .inv-stock-table col:nth-child(8){width:10%}
-#qmes-inventory-host .inv-stock-table col:nth-child(9){width:14%}
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table col{
+  width:11.111111%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
 
-#qmes-inventory-host .inv-shell .inv-stock-table th,
-#qmes-inventory-host .inv-shell .inv-stock-table td{
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table th,
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td,
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td.num{
+  box-sizing:border-box!important;
+  text-align:center!important;
   vertical-align:middle!important;
 }
 
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(1),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(1),
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(2),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(2),
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(3),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(3){
-  text-align:left!important;
-}
-
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(4),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(4),
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(5),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(5),
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(9),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(9){
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td > button,
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td > a,
+#qmes-inventory-host[data-qmes-inventory-section="lot"] .inv-shell table.inv-stock-table td > span{
+  margin-left:auto!important;
+  margin-right:auto!important;
   text-align:center!important;
-}
-
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(6),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(6),
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(7),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(7),
-#qmes-inventory-host .inv-shell .inv-stock-table th:nth-child(8),
-#qmes-inventory-host .inv-shell .inv-stock-table td:nth-child(8){
-  text-align:right!important;
-  font-variant-numeric:tabular-nums;
 }
