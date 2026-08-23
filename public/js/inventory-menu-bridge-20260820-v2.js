@@ -8,6 +8,15 @@
   const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
 
+  function syncTopMenuActive(){
+    document.querySelectorAll('.qmes-top-menu-button').forEach(button=>{
+      const selected=Boolean(button.closest('[data-qmes-inventory-menu]'));
+      button.classList.toggle('is-active',selected);
+      if(selected)button.setAttribute('aria-current','page');
+      else button.removeAttribute('aria-current');
+    });
+  }
+
   function restore(){
     if(root){try{root.unmount();}catch(error){}root=null;}
     if(host){host.remove();host=null;}
@@ -62,6 +71,9 @@
     host.replaceChildren();
     root=ReactDOM.createRoot(host);
     root.render(React.createElement(Component,{section:current}));
+    syncTopMenuActive();
+    requestAnimationFrame(syncTopMenuActive);
+    setTimeout(syncTopMenuActive,120);
     try{sessionStorage.setItem('qmes_inventory_section',current);}catch(error){}
     if(typeof window.qmesSetGlobalSidebarGroup==='function')window.qmesSetGlobalSidebarGroup('재고관리');
     setTimeout(sidebar,100);
