@@ -7,17 +7,15 @@
 
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table {
   width: 100%;
-  min-width: 980px;
-  table-layout: fixed !important;
+  min-width: 0;
+  table-layout: auto !important;
 }
 
-#qmes-inventory-host .inv-movement-table col:nth-child(1) { width: 14%; }
-#qmes-inventory-host .inv-movement-table col:nth-child(2) { width: 6%; }
-#qmes-inventory-host .inv-movement-table col:nth-child(3) { width: 12%; }
-#qmes-inventory-host .inv-movement-table col:nth-child(4) { width: 12%; }
-#qmes-inventory-host .inv-movement-table col:nth-child(5) { width: 10%; }
-#qmes-inventory-host .inv-movement-table col:nth-child(6) { width: 20%; }
-#qmes-inventory-host .inv-movement-table col:nth-child(7) { width: 26%; }
+#qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table col {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
 
 #qmes-inventory-host .inv-shell .inv-movement-table th,
 #qmes-inventory-host .inv-shell .inv-movement-table td {
