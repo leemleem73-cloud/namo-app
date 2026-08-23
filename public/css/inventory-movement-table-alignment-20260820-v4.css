@@ -1,13 +1,17 @@
-/* 입출고 관리 동일 간격·광학 중앙 보정 v6, 2026-08-24 */
+/* 입출고 관리 좌우 여백 균형·광학 중앙 보정 v7, 2026-08-24 */
 #qmes-inventory-host .inv-movement-panel {
   width: 100%;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
   box-sizing: border-box;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table {
   width: 100%;
   min-width: 0;
+  margin-left: auto !important;
+  margin-right: auto !important;
   table-layout: fixed !important;
 }
 
@@ -20,7 +24,7 @@
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table th,
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td,
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td.num {
-  padding: 8px 16px 8px 8px !important;
+  padding: 8px 18px 8px 6px !important;
   text-align: center !important;
   vertical-align: middle !important;
 }
