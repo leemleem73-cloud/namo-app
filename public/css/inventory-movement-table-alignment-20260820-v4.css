@@ -1,4 +1,4 @@
-/* 입출고 관리 동일 간격·전체 가운데 정렬 v5, 2026-08-24 */
+/* 입출고 관리 동일 간격·광학 중앙 보정 v6, 2026-08-24 */
 #qmes-inventory-host .inv-movement-panel {
   width: 100%;
   box-sizing: border-box;
@@ -20,6 +20,7 @@
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table th,
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td,
 #qmes-inventory-host .inv-shell table.inv-stock-table.inv-movement-table td.num {
+  padding: 8px 16px 8px 8px !important;
   text-align: center !important;
   vertical-align: middle !important;
 }
