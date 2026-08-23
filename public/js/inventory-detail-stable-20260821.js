@@ -108,14 +108,14 @@
       const root=document.createElement('div');root.id='qmes-stable-print-root';root.innerHTML=`<section class="qmes-stable-label"><div class="top"><b>NAMO Chemical</b><span>${esc(qty)}</span></div><div class="body"><div class="meta"><small>원료명</small><strong>${esc(material)}</strong><small>LOT</small><strong>${esc(lot)}</strong><small>포장형태</small><strong>${esc(pack)}</strong><small>이동 방향</small><strong>${esc(direction)}</strong></div><img src="${qr}" alt="QR"></div></section>`;document.body.appendChild(root);
       let style=document.getElementById('qmes-stable-print-style');if(!style){style=document.createElement('style');style.id='qmes-stable-print-style';document.head.appendChild(style);}style.textContent=`#qmes-stable-print-root{display:none}@media print{@page{size:60mm 40mm;margin:0}body>*:not(#qmes-stable-print-root){display:none!important}#qmes-stable-print-root{display:block!important}.qmes-stable-label{width:60mm;height:40mm;padding:2mm;box-sizing:border-box;font-family:Arial,'Noto Sans KR',sans-serif;color:#111827}.qmes-stable-label .top{display:flex;justify-content:space-between;border-bottom:.25mm solid #111827;padding-bottom:1mm;font-size:8px}.qmes-stable-label .body{display:grid;grid-template-columns:1fr 24mm;gap:1.5mm;height:30mm;padding-top:1mm}.qmes-stable-label .meta{display:flex;flex-direction:column;justify-content:center;min-width:0}.qmes-stable-label small{font-size:5.5px;color:#64748b;font-weight:700;margin-top:.4mm}.qmes-stable-label strong{font-size:8px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qmes-stable-label img{width:24mm;height:24mm;object-fit:contain;align-self:center}}`;
       const cleanup=()=>{setTimeout(()=>root.remove(),100);window.removeEventListener('afterprint',cleanup);};window.addEventListener('afterprint',cleanup);window.print();
-    }finally{button.disabled=false;button.textContent='인쇄';}
+    }finally{button.disabled=false;button.textContent='QR 인쇄';}
   }
 
   async function installSheet(sheet){
     if(!sheet||sheet.dataset.qmesStableDetailV2==='1')return;sheet.dataset.qmesStableDetailV2='1';
     await normalizeDetail(sheet);
     const button=sheet.querySelector('.inv-tx-detail-actions .primary');
-    if(button){button.textContent='인쇄';button.type='button';button.setAttribute('aria-label','인쇄');button.setAttribute('title','인쇄');button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();void printQr(sheet,button);},true);}
+    if(button){button.textContent='QR 인쇄';button.type='button';button.setAttribute('aria-label','QR 인쇄');button.setAttribute('title','QR 인쇄');button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();void printQr(sheet,button);},true);}
     void ensureQr(sheet);
   }
   function scan(root=document){if(root.matches?.('.inv-tx-detail-sheet'))void installSheet(root);root.querySelectorAll?.('.inv-tx-detail-sheet').forEach(sheet=>void installSheet(sheet));}
