@@ -1,8 +1,8 @@
-/* Inventory movement list cleanup v5: stable pagination, balanced columns, clean row spacing. */
+/* Inventory movement list cleanup v6: stable pagination, balanced columns, clean row spacing. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_MOVEMENT_LIST_CLEAN_V5_20260821__)return;
-  window.__QMES_INV_MOVEMENT_LIST_CLEAN_V5_20260821__=true;
+  if(window.__QMES_INV_MOVEMENT_LIST_CLEAN_V6_20260824__)return;
+  window.__QMES_INV_MOVEMENT_LIST_CLEAN_V6_20260824__=true;
 
   const PAGE_SIZE=20;
   let page=1;
@@ -12,25 +12,30 @@
   const clean=v=>String(v??'').replace(/\s+/g,' ').trim();
 
   function ensureStyle(){
-    let style=document.getElementById('qmes-inv-movement-clean-style-v5');
+    let style=document.getElementById('qmes-inv-movement-clean-style-v6');
     if(style)return;
     style=document.createElement('style');
-    style.id='qmes-inv-movement-clean-style-v5';
+    style.id='qmes-inv-movement-clean-style-v6';
     style.textContent=`
       #qmes-inventory-host .inv-movement-panel{overflow-x:hidden!important}
       #qmes-inventory-host table.inv-movement-table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(1){width:4.5%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(2){width:16%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(3){width:8.5%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(4){width:12.5%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(5){width:12.5%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(6){width:10%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(7){width:18%!important}
-      #qmes-inventory-host .inv-movement-table col:nth-child(8){width:18%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(1){width:4%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(2){width:14%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(3){width:8%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(4){width:11%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(5){width:11%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(6){width:9%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(7){width:15%!important}
+      #qmes-inventory-host .inv-movement-table col:nth-child(8){width:28%!important}
       #qmes-inventory-host .inv-movement-table thead th{height:42px!important;padding:8px 10px!important;line-height:1.25!important;vertical-align:middle!important;border-bottom:1px solid #cbd5e1!important}
       #qmes-inventory-host .inv-movement-table tbody td{height:44px!important;padding:8px 10px!important;line-height:1.35!important;vertical-align:middle!important;border-bottom:1px solid #e2e8f0!important}
       #qmes-inventory-host .inv-movement-table th,#qmes-inventory-host .inv-movement-table td{box-sizing:border-box!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
       #qmes-inventory-host .inv-movement-table th.qmes-inv-seq,#qmes-inventory-host .inv-movement-table td.qmes-inv-seq{text-align:center!important;padding-left:4px!important;padding-right:4px!important}
+      #qmes-inventory-host .inv-movement-table th:nth-child(2),#qmes-inventory-host .inv-movement-table td:nth-child(2){padding-left:10px!important;padding-right:10px!important}
+      #qmes-inventory-host .inv-movement-table th:nth-child(3),#qmes-inventory-host .inv-movement-table td:nth-child(3){padding-left:10px!important;padding-right:10px!important}
+      #qmes-inventory-host .inv-movement-table th:nth-child(4),#qmes-inventory-host .inv-movement-table td:nth-child(4){padding-left:10px!important;padding-right:10px!important}
+      #qmes-inventory-host .inv-movement-table th:nth-child(5),#qmes-inventory-host .inv-movement-table td:nth-child(5){padding-left:10px!important;padding-right:10px!important}
+      #qmes-inventory-host .inv-movement-table th:nth-child(6),#qmes-inventory-host .inv-movement-table td:nth-child(6){padding-left:10px!important;padding-right:10px!important}
       #qmes-inventory-host .inv-movement-table th:nth-child(7),#qmes-inventory-host .inv-movement-table td:nth-child(7){padding-left:12px!important;padding-right:12px!important}
       #qmes-inventory-host .inv-movement-table th:nth-child(8),#qmes-inventory-host .inv-movement-table td:nth-child(8){text-align:left!important;padding-left:14px!important;padding-right:14px!important}
       #qmes-inventory-host .inv-movement-table td:nth-child(6){font-variant-numeric:tabular-nums}
