@@ -234,12 +234,12 @@
     if(!current)return;
     const count=parseCount(detailValue(sheet,'입고 포장수량'));
     if(current.dataset.qmesPublicQrPrint==='1'){
-      current.textContent=`QR 라벨 ${count}매 인쇄`;
+      current.textContent='QR 인쇄';
       return;
     }
     const button=current.cloneNode(true);
     button.type='button';
-    button.textContent=`QR 라벨 ${count}매 인쇄`;
+    button.textContent='QR 인쇄';
     button.dataset.qmesQrPrint='1';
     button.dataset.qmesPublicQrPrint='1';
     current.replaceWith(button);
