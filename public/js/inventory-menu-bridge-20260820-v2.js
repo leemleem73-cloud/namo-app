@@ -5,8 +5,24 @@
   window.__QMES_INV_MENU_BRIDGE_V51__=true;
 
   let root=null,host=null,current='overview';
+  let restoreScheduled=false;
+  const SURFACE_KEY='qmes_current_surface';
+  const SECTION_KEY='qmes_inventory_section';
   const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
+
+  function setSurface(value){
+    try{sessionStorage.setItem(SURFACE_KEY,value);}catch(error){}
+  }
+
+  function savedSurface(){
+    try{
+      const saved=sessionStorage.getItem(SURFACE_KEY);
+      if(saved)return saved;
+      // Migrate sessions opened before screen persistence was added.
+      return sessionStorage.getItem(SECTION_KEY)?'inventory':'native';
+    }catch(error){return 'native';}
+  }
 
   function syncTopMenuActive(){
     document.querySelectorAll('.qmes-top-menu-button').forEach(button=>{
@@ -74,9 +90,28 @@
     syncTopMenuActive();
     requestAnimationFrame(syncTopMenuActive);
     setTimeout(syncTopMenuActive,120);
-    try{sessionStorage.setItem('qmes_inventory_section',current);}catch(error){}
+    try{sessionStorage.setItem(SECTION_KEY,current);}catch(error){}
+    setSurface('inventory');
     if(typeof window.qmesSetGlobalSidebarGroup==='function')window.qmesSetGlobalSidebarGroup('재고관리');
     setTimeout(sidebar,100);
+  }
+
+  function restoreSavedInventory(){
+    if(restoreScheduled||savedSurface()!=='inventory')return;
+    restoreScheduled=true;
+    let attempts=0;
+    const reopen=()=>{
+      if(savedSurface()!=='inventory')return;
+      let saved='overview';
+      try{saved=sessionStorage.getItem(SECTION_KEY)||saved;}catch(error){}
+      if(document.querySelector('#root>div>main')&&component()){
+        openInventory(saved);
+        return;
+      }
+      attempts+=1;
+      if(attempts<80)setTimeout(reopen,50);
+    };
+    requestAnimationFrame(reopen);
   }
 
   function install(){
@@ -94,7 +129,7 @@
       button.addEventListener('click',event=>{
         event.preventDefault();event.stopPropagation();
         let saved='overview';
-        try{saved=sessionStorage.getItem('qmes_inventory_section')||saved;}catch(error){}
+        try{saved=sessionStorage.getItem(SECTION_KEY)||saved;}catch(error){}
         openInventory(saved);
       });
       item.appendChild(button);
@@ -102,12 +137,16 @@
       trace?trace.after(item):nav.appendChild(item);
     }
     window.qmesOpenInventorySection=openInventory;
+    restoreSavedInventory();
     return true;
   }
 
   document.addEventListener('click',event=>{
     const target=event.target.closest?.('.qmes-top-menu-button');
-    if(target&&!target.closest('[data-qmes-inventory-menu]')&&host)restore();
+    if(target&&!target.closest('[data-qmes-inventory-menu]')){
+      setSurface('native');
+      if(host)restore();
+    }
   },false);
 
   // Observe only until the top menu exists. Do not rewrite sidebar on every DOM mutation.
