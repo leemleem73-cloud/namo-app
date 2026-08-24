@@ -114,7 +114,8 @@
     try{sessionStorage.setItem(SECTION_KEY,current);}catch(error){}
     setSurface('inventory');
     if(typeof window.qmesSetGlobalSidebarGroup==='function')window.qmesSetGlobalSidebarGroup('재고관리');
-    setTimeout(sidebar,100);
+    sidebar();
+    requestAnimationFrame(sidebar);
   }
 
   function restoreSavedInventory(){
