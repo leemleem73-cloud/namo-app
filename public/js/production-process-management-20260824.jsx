@@ -620,6 +620,7 @@ function ProductionProcessTab() {
 }
 
 window.ProductionProcessTab=ProductionProcessTab;
+try{window.dispatchEvent(new CustomEvent("qmes:production-process-ready"));}catch(_error){}
 
 (function installProductionProcessMenu(){
   try {
