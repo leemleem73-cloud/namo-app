@@ -1,8 +1,8 @@
-/* Inventory detail stable controller v2: clean fields, IQC packaging link, one QR print path. */
+/* Inventory detail stable controller v3: clean fields, IQC packaging link, one QR print path. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_DETAIL_STABLE_V2__)return;
-  window.__QMES_INV_DETAIL_STABLE_V2__=true;
+  if(window.__QMES_INV_DETAIL_STABLE_V3__)return;
+  window.__QMES_INV_DETAIL_STABLE_V3__=true;
 
   const clean=v=>String(v??'').replace(/\s+/g,' ').trim();
   const upper=v=>clean(v).toUpperCase();
@@ -75,13 +75,13 @@
     if(grid){
       grid.replaceChildren(
         cell('구분',type),cell('원료명',material),
-        cell('LOT',lot),cell('포장형태',pack||'미등록'),
+        cell('LOT',lot),cell('포장형태',pack||'-'),
         cell('총 수량',total),cell('입고 포장수량',`${packageQty} EA`),
         cell('이동 방향',direction,true)
       );
       grid.style.gridTemplateColumns='1fr 1fr';
     }
-    sheet.__qmesDetailPack={label:pack||'미등록',qty:packageQty};
+    sheet.__qmesDetailPack={label:pack||'-',qty:packageQty};
   }
 
   function qrUrl(tx){const url=new URL(location.href);url.hash='';if(tx?.id)url.searchParams.set('inventoryTx',String(tx.id));return url.toString();}
