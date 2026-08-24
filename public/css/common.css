@@ -11738,25 +11738,16 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 .qmes-issued-table-wrap{width:100%;max-width:100%;overflow-x:visible;}
 .qmes-issued-table-v2{width:100%!important;min-width:0!important;table-layout:fixed!important;}
 .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{
-  padding-left:5px!important;padding-right:5px!important;
+  padding-left:2px!important;padding-right:2px!important;
   letter-spacing:0!important;word-spacing:0!important;
   overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
 }
-.qmes-issued-table-v2 th:nth-child(1),.qmes-issued-table-v2 td:nth-child(1){width:9%!important}
-.qmes-issued-table-v2 th:nth-child(2),.qmes-issued-table-v2 td:nth-child(2){width:12%!important}
-.qmes-issued-table-v2 th:nth-child(3),.qmes-issued-table-v2 td:nth-child(3){width:7%!important}
-.qmes-issued-table-v2 th:nth-child(4),.qmes-issued-table-v2 td:nth-child(4){width:7%!important}
-.qmes-issued-table-v2 th:nth-child(5),.qmes-issued-table-v2 td:nth-child(5){width:8%!important}
-.qmes-issued-table-v2 th:nth-child(6),.qmes-issued-table-v2 td:nth-child(6){width:9%!important}
-.qmes-issued-table-v2 th:nth-child(7),.qmes-issued-table-v2 td:nth-child(7){width:9%!important}
-.qmes-issued-table-v2 th:nth-child(8),.qmes-issued-table-v2 td:nth-child(8){width:7%!important}
-.qmes-issued-table-v2 th:nth-child(9),.qmes-issued-table-v2 td:nth-child(9){width:7%!important}
-.qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:8%!important}
+.qmes-issued-table-v2 th:nth-child(-n+10),.qmes-issued-table-v2 td:nth-child(-n+10){width:8.3%!important}
 .qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:17%!important}
 .qmes-issued-table-v2 td:nth-child(11){display:table-cell!important;text-align:center!important;}
 .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
-  display:inline-flex!important;width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;
-  margin:0 1px!important;padding:0 3px!important;font-size:10px!important;letter-spacing:-.03em!important;
+  display:inline-flex!important;width:auto!important;min-width:0!important;height:26px!important;min-height:26px!important;
+  margin:0!important;padding:0 1px!important;font-size:9px!important;letter-spacing:-.05em!important;
 }
 .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{width:auto!important;min-width:0!important;}
 .qmes-issued-table-v2 .qmes-status-select{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;}
@@ -11785,7 +11776,7 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 }
 @media(max-width:1180px){
   .qmes-issued-table-v2{font-size:11px!important;}
-  .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{padding-left:3px!important;padding-right:3px!important;}
+  .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{padding-left:1px!important;padding-right:1px!important;}
   .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{width:auto!important;min-width:0!important;font-size:9px!important;}
   .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{width:auto!important;min-width:0!important;}
 }
