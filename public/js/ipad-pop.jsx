@@ -668,7 +668,15 @@ function FieldInputTab() {
         <div className="qmes-ipad-form-grid">
           {mode === "IQC" ? (
             <>
-              <label><span>입고일자</span><input type="date" value={form.recvDate} onChange={(e) => patchForm({recvDate:e.target.value})} /></label>
+              <div className="wide" style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:12}}>
+                <label><span>계산중량</span><input value={calculatedWeight > 0 ? `${calculatedWeight.toLocaleString()} kg` : ""} readOnly placeholder="포장수량 × 용기당 중량" /></label>
+                <label><span>바코드 발행수량</span><input value={Number.isInteger(packageCount) && packageCount > 0 ? `${packageCount} 매` : ""} readOnly /></label>
+              </div>
+              <div className="wide" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:12}}>
+                <label><span>입고일자</span><input type="date" value={form.recvDate} onChange={(e) => patchForm({recvDate:e.target.value})} /></label>
+                <label><span>입고 포장수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.packageQty} onChange={(e) => patchForm({packageQty:e.target.value.replace(/[^0-9]/g,"")})} placeholder="1" /></label>
+                <label><span>용기당 중량 (kg) <b>*</b></span><input inputMode="decimal" value={form.unitWeight} onChange={(e) => patchForm({unitWeight:e.target.value.replace(/[^0-9.]/g,"")})} placeholder="0" /></label>
+              </div>
               <label><span>원자재명 <b>*</b></span><input value={form.material} onChange={(e) => patchForm({material:e.target.value})} placeholder="원자재명 입력" list="qmes-ipad-materials" /></label>
               <datalist id="qmes-ipad-materials">
                 {[...new Set([...(typeof IQC_MATERIALS !== "undefined" ? IQC_MATERIALS : []), ...(DB.iqcMaterials || [])])].map((name) => <option key={name} value={name} />)}
@@ -679,10 +687,6 @@ function FieldInputTab() {
               <label><span>입고중량 (kg) <b>*</b></span><input inputMode="decimal" value={form.qty} onChange={(e) => patchForm({qty:e.target.value})} placeholder="0" /></label>
               <label><span>검사수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.inspectQty} onChange={(e) => patchForm({inspectQty:e.target.value})} /></label>
               <label><span>불량수량 (EA)</span><input inputMode="numeric" value={form.defectQty} onChange={(e) => patchForm({defectQty:e.target.value})} /></label>
-              <label><span>검사자</span><input value={form.inspector} onChange={(e) => patchForm({inspector:e.target.value})} placeholder="검사자 입력" /></label>
-              <div className="wide" style={{marginTop:12,padding:"14px 16px",borderTop:"2px solid #0ea5e9",fontWeight:800,color:"#0f3b62"}}>
-                포장·바코드 정보
-              </div>
               <label><span>포장형태 <b>*</b></span>
                 <select value={form.packagingType} onChange={(e) => patchForm({packagingType:e.target.value, packagingTypeOther:e.target.value === "기타" ? form.packagingTypeOther : ""})}>
                   <option value="">선택</option>
@@ -696,15 +700,13 @@ function FieldInputTab() {
                 </select>
               </label>
               {form.packagingType === "기타" && <label><span>기타 포장형태 <b>*</b></span><input value={form.packagingTypeOther} onChange={(e) => patchForm({packagingTypeOther:e.target.value})} placeholder="용기 종류 직접 입력" /></label>}
-              <label><span>입고 포장수량 (EA) <b>*</b></span><input inputMode="numeric" value={form.packageQty} onChange={(e) => patchForm({packageQty:e.target.value.replace(/[^0-9]/g,"")})} placeholder="1" /></label>
-              <label><span>용기당 중량 (kg) <b>*</b></span><input inputMode="decimal" value={form.unitWeight} onChange={(e) => patchForm({unitWeight:e.target.value.replace(/[^0-9.]/g,"")})} placeholder="0" /></label>
-              <label><span>계산중량</span><input value={calculatedWeight > 0 ? `${calculatedWeight.toLocaleString()} kg` : ""} readOnly placeholder="포장수량 × 용기당 중량" /></label>
-              <label><span>바코드 발행수량</span><input value={Number.isInteger(packageCount) && packageCount > 0 ? `${packageCount} 매` : ""} readOnly /></label>
+              <label><span>검사자</span><input value={form.inspector} onChange={(e) => patchForm({inspector:e.target.value})} placeholder="검사자 입력" /></label>
               {packagingWeightMismatch && (
                 <div className="wide" style={{padding:"12px 14px",border:"1px solid #f59e0b",borderRadius:10,background:"#fff7ed",color:"#9a3412",fontWeight:700}}>
                   중량 확인 필요 — 입고중량 {incomingWeight.toLocaleString()} kg / 포장 계산중량 {calculatedWeight.toLocaleString()} kg / 차이 {(incomingWeight-calculatedWeight).toLocaleString()} kg
                 </div>
               )}
+              <label className="wide"><span>비고</span><input value={form.remarks} onChange={(e) => patchForm({remarks:e.target.value})} placeholder="특이사항 입력" /></label>
             </>
           ) : (
             <>
@@ -725,7 +727,7 @@ function FieldInputTab() {
             </>
           )}
           {mode !== "IQC" && <label><span>검사자</span><input value={form.inspector} onChange={(e) => patchForm({inspector:e.target.value})} placeholder="검사자 입력" /></label>}
-          <label className="wide"><span>비고</span><input value={form.remarks} onChange={(e) => patchForm({remarks:e.target.value})} placeholder="특이사항 입력" /></label>
+          {mode !== "IQC" && <label className="wide"><span>비고</span><input value={form.remarks} onChange={(e) => patchForm({remarks:e.target.value})} placeholder="특이사항 입력" /></label>}
         </div>
         {mode === "PQC" && lotNo && (
           <div className={`qmes-ipad-gate ${qmesProductionComplete(lotNo) ? "is-open" : "is-blocked"}`}>
