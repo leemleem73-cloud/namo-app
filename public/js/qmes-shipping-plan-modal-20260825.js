@@ -76,13 +76,3 @@
 
   window.qmesOpenShippingPlanModal=openModal;
 })();
-
-/* Load after all sidebar implementations so the unifier wins. */
-(function(){
-  if(window.__QMES_SIDEBAR_UNIFY_LOADER__) return;
-  window.__QMES_SIDEBAR_UNIFY_LOADER__=true;
-  const script=document.createElement('script');
-  script.src='./js/qmes-sidebar-unify-20260825.js?v=20260825-1';
-  script.defer=true;
-  document.body.appendChild(script);
-})();
