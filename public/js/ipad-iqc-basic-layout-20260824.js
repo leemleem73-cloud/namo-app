@@ -6,6 +6,15 @@
 
   const clean=(value)=>String(value||"").replace(/\s+/g," ").trim();
 
+  const style=document.createElement("style");
+  style.id="qmes-ipad-iqc-basic-layout-style-20260824";
+  style.textContent=`
+    .qmes-ipad-pop .qmes-ipad-form-grid > label.qmes-iqc-calculated-weight{grid-column:1!important;}
+    .qmes-ipad-pop .qmes-ipad-form-grid > label.qmes-iqc-barcode-qty{grid-column:2!important;}
+  `;
+  document.getElementById(style.id)?.remove();
+  document.head.appendChild(style);
+
   function labelByText(grid,text){
     return Array.from(grid?.querySelectorAll(":scope > label")||[]).find(label=>clean(label.querySelector("span")?.textContent).startsWith(text));
   }
@@ -26,20 +35,21 @@
     const barcodeQty=labelByText(grid,"바코드 발행수량");
     if(!defect||!packaging||!remarks) return;
 
-    /* 불량수량 바로 다음 칸 = 포장형태 */
     if(defect.nextElementSibling!==packaging){
       defect.insertAdjacentElement("afterend",packaging);
     }
 
-    /* 그 아래 한 줄 전체 폭 = 비고 */
     remarks.classList.add("wide");
     if(packaging.nextElementSibling!==remarks){
       packaging.insertAdjacentElement("afterend",remarks);
     }
 
-    /* 계산중량 바로 오른쪽 칸 = 바코드 발행수량 */
-    if(calculated&&barcodeQty&&calculated.nextElementSibling!==barcodeQty){
-      calculated.insertAdjacentElement("afterend",barcodeQty);
+    if(calculated&&barcodeQty){
+      calculated.classList.add("qmes-iqc-calculated-weight");
+      barcodeQty.classList.add("qmes-iqc-barcode-qty");
+      if(calculated.nextElementSibling!==barcodeQty){
+        calculated.insertAdjacentElement("afterend",barcodeQty);
+      }
     }
   }
 
