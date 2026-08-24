@@ -1,8 +1,8 @@
-/* QMES IPAD/Field PQC/OQC production LOT linked selector - 2026-08-24 v7 */
+/* QMES IPAD/Field PQC/OQC production LOT linked selector - 2026-08-24 v8 */
 (function(){
   "use strict";
-  if(window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V7__) return;
-  window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V7__=true;
+  if(window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V8__) return;
+  window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V8__=true;
 
   const clean=value=>String(value==null?"":value).trim();
   const suffix=/\s*·\s*(?:생산\s*)?(?:완료|미완료)\s*$/i;
@@ -64,10 +64,20 @@
     }
     return Array.from(lots).sort((a,b)=>b.localeCompare(a,"ko"));
   }
-  function productionLotLabel(){
+  function productionLotLabels(){
     const grid=document.querySelector(".qmes-ipad-pop .qmes-ipad-section .qmes-ipad-form-grid");
-    if(!grid)return null;
-    return Array.from(grid.querySelectorAll("label")).find(label=>clean(label.querySelector("span")?.textContent).startsWith("생산 LOT"))||null;
+    if(!grid)return [];
+    return Array.from(grid.querySelectorAll("label")).filter(label=>clean(label.querySelector("span")?.textContent).startsWith("생산 LOT"));
+  }
+  function productionLotLabel(){
+    const labels=productionLotLabels();
+    if(!labels.length)return null;
+    if(currentMode()==="PQC" && labels.length>1){
+      const keep=labels.find(label=>label.classList.contains("qmes-production-lot-linked"))||labels[0];
+      labels.forEach(label=>{if(label!==keep)label.remove();});
+      return keep;
+    }
+    return labels[0];
   }
   function remarksWide(){
     if(currentMode()!=="PQC")return;
