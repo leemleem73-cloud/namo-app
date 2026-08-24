@@ -1,6 +1,5 @@
 /* QMES 현장입력 최종 고정 스타일 — 다른 POP/설비 CSS보다 마지막에 로드 */
 
-/* 현장입력 전체 배경: 오른쪽은 조금 연하게, 왼쪽은 그레이 속 네이비가 은은하게 섞이도록 */
 body > #root > div:has(.qmes-ipad-pop){
   background:
     radial-gradient(ellipse at 7% 14%,rgba(28,48,66,.42) 0%,rgba(28,48,66,.16) 20%,transparent 43%),
@@ -12,65 +11,47 @@ body > #root > div:has(.qmes-ipad-pop){
     radial-gradient(ellipse at 93% 45%,rgba(95,111,124,.19) 0%,rgba(95,111,124,.07) 22%,transparent 46%),
     radial-gradient(ellipse at 87% 84%,rgba(211,215,218,.30) 0%,rgba(211,215,218,.11) 24%,transparent 48%),
     linear-gradient(158deg,#314553 0%,#485966 20%,#69757e 43%,#8e969c 66%,#aeb4b9 82%,#c4c8cb 100%)!important;
-  background-color:#69757e!important;
-  background-attachment:fixed!important;
+  background-color:#69757e!important;background-attachment:fixed!important;
 }
-
-/* 글씨 크기 고정 — 화면 이동/새로고침 후 기본 CSS로 작아지는 현상 방지 */
 .qmes-ipad-pop .qmes-ipad-hero h1{font-size:34px!important;font-weight:900!important;}
 .qmes-ipad-pop .qmes-ipad-home-code{font-size:58px!important;font-weight:950!important;letter-spacing:-.08em!important;}
 .qmes-ipad-pop .qmes-ipad-home-card>strong{font-size:28px!important;font-weight:900!important;}
-.qmes-ipad-pop .qmes-ipad-work-head>div:nth-child(2)>span{
-  display:inline-block!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;
-  font-size:24px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;line-height:1!important;
-  color:#5f7182!important;
-}
+.qmes-ipad-pop .qmes-ipad-work-head>div:nth-child(2)>span{display:inline-block!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;font-size:24px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;line-height:1!important;color:#5f7182!important;}
 .qmes-ipad-pop .qmes-ipad-work-head h1{font-size:24px!important;font-weight:900!important;}
-.qmes-ipad-pop .qmes-ipad-mode-tabs small,.qmes-ipad-pop .qmes-ipad-mode-tabs button>small{
-  font-family:Arial,Helvetica,sans-serif!important;font-size:22px!important;font-weight:900!important;
-  letter-spacing:-.06em!important;word-spacing:0!important;white-space:nowrap!important;
-}
+.qmes-ipad-pop .qmes-ipad-mode-tabs small,.qmes-ipad-pop .qmes-ipad-mode-tabs button>small{font-family:Arial,Helvetica,sans-serif!important;font-size:22px!important;font-weight:900!important;letter-spacing:-.06em!important;word-spacing:0!important;white-space:nowrap!important;}
 .qmes-ipad-pop .qmes-ipad-mode-tabs strong{font-size:19px!important;font-weight:900!important;}
 .qmes-ipad-pop .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title h2{font-size:25px!important;font-weight:950!important;line-height:44px!important;}
 .qmes-ipad-pop .qmes-ipad-section:nth-of-type(2) .qmes-ipad-section-title h2{font-size:21px!important;font-weight:900!important;line-height:44px!important;}
 .qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:16px!important;font-weight:900!important;line-height:1.35!important;color:#17212b!important;}
 .qmes-ipad-pop .qmes-ipad-item-tabs button strong{font-size:18px!important;font-weight:900!important;}
 
-/* IQC 첫 줄은 계산중량 + 바코드 발행수량만 2칸, 아래 행은 원본 3칸 유지 */
+/* IQC: 첫 행은 전체 폭을 2등분, 입고일자 행부터는 다음 줄에서 3등분 */
 .qmes-ipad-pop .qmes-ipad-form-grid > div.wide:first-child{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-column:1 / -1!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:12px!important;
+  width:100%!important;
+  min-width:0!important;
   align-items:end!important;
 }
 .qmes-ipad-pop .qmes-ipad-form-grid > div.wide:first-child > label{
-  grid-column:auto!important;
-  min-width:0!important;
-  width:100%!important;
-  margin:0!important;
+  grid-column:auto!important;width:100%!important;min-width:0!important;margin:0!important;
 }
-.qmes-ipad-pop .qmes-ipad-form-grid > div.wide:nth-child(2) > label{
-  min-width:0!important;
+.qmes-ipad-pop .qmes-ipad-form-grid > div.wide:nth-child(2){
+  grid-column:1 / -1!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
   width:100%!important;
-  margin:0!important;
+  min-width:0!important;
 }
+.qmes-ipad-pop .qmes-ipad-form-grid > div.wide:nth-child(2) > label{width:100%!important;min-width:0!important;margin:0!important;}
 
-/* 설비대장 제목 + 신규등록 버튼: 검정 글씨/검정 테두리로 고정 */
 .qmes-ipad-equipment .qmes-equipment-registry-title{color:#111!important;font-weight:900!important;}
-.qmes-ipad-equipment button.qmes-equipment-new-register{
-  background:#fff!important;color:#111!important;border:1.5px solid #111!important;
-  font-weight:900!important;box-shadow:0 2px 7px rgba(15,23,42,.08)!important;
-}
+.qmes-ipad-equipment button.qmes-equipment-new-register{background:#fff!important;color:#111!important;border:1.5px solid #111!important;font-weight:900!important;box-shadow:0 2px 7px rgba(15,23,42,.08)!important;}
 .qmes-ipad-equipment button.qmes-equipment-new-register *{color:#111!important;}
-.qmes-ipad-equipment button.qmes-equipment-new-register:hover,
-.qmes-ipad-equipment button.qmes-equipment-new-register:focus-visible{background:#f8fafc!important;border-color:#111!important;color:#111!important;}
-
+.qmes-ipad-equipment button.qmes-equipment-new-register:hover,.qmes-ipad-equipment button.qmes-equipment-new-register:focus-visible{background:#f8fafc!important;border-color:#111!important;color:#111!important;}
 @media(max-width:620px){
-  .qmes-ipad-pop .qmes-ipad-hero h1{font-size:28px!important;}
-  .qmes-ipad-pop .qmes-ipad-home-code{font-size:48px!important;}
-  .qmes-ipad-pop .qmes-ipad-home-card>strong{font-size:24px!important;}
-  .qmes-ipad-pop .qmes-ipad-work-head>div:nth-child(2)>span{font-size:21px!important;}
-  .qmes-ipad-pop .qmes-ipad-mode-tabs small,.qmes-ipad-pop .qmes-ipad-mode-tabs button>small{font-size:19px!important;}
-  .qmes-ipad-pop .qmes-ipad-mode-tabs strong{font-size:17px!important;}
-  .qmes-ipad-pop .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title h2{font-size:22px!important;}
-  .qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:15px!important;}
-  .qmes-ipad-pop .qmes-ipad-item-tabs button strong{font-size:16px!important;}
+  .qmes-ipad-pop .qmes-ipad-hero h1{font-size:28px!important;}.qmes-ipad-pop .qmes-ipad-home-code{font-size:48px!important;}.qmes-ipad-pop .qmes-ipad-home-card>strong{font-size:24px!important;}.qmes-ipad-pop .qmes-ipad-work-head>div:nth-child(2)>span{font-size:21px!important;}.qmes-ipad-pop .qmes-ipad-mode-tabs small,.qmes-ipad-pop .qmes-ipad-mode-tabs button>small{font-size:19px!important;}.qmes-ipad-pop .qmes-ipad-mode-tabs strong{font-size:17px!important;}.qmes-ipad-pop .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title h2{font-size:22px!important;}.qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:15px!important;}.qmes-ipad-pop .qmes-ipad-item-tabs button strong{font-size:16px!important;}
 }
