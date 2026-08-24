@@ -77,75 +77,53 @@
   window.qmesOpenShippingPlanModal=openModal;
 })();
 
-/* Safe left-menu bridge: use only the existing hamburger sidebar. */
+/* Contextual left menu for business extension tabs. */
 (function(){
-  if(window.__QMES_SAFE_BUSINESS_SIDEBAR_BRIDGE__) return;
-  window.__QMES_SAFE_BUSINESS_SIDEBAR_BRIDGE__=true;
+  if(window.__QMES_CONTEXTUAL_BUSINESS_SIDE__) return;
+  window.__QMES_CONTEXTUAL_BUSINESS_SIDE__=true;
 
-  const menus=[
-    ['sales','수주 · 납기관리'],
-    ['plan','생산계획 · MRP'],
-    ['purchase','구매 · 발주관리'],
-    ['recipe','Recipe / BOM'],
-    ['shipping','출하 · 납품관리']
-  ];
+  const labels={
+    sales:'수주 · 납기관리',
+    plan:'생산계획 · MRP',
+    purchase:'구매 · 발주관리',
+    recipe:'Recipe / BOM',
+    shipping:'출하 · 납품관리'
+  };
 
   const style=document.createElement('style');
-  style.id='qmes-safe-business-sidebar-style';
-  style.textContent=`
-    #qps-sidebar,#qmes-preview-sidebar{display:none!important;visibility:hidden!important;pointer-events:none!important}
-    #qmes-safe-business-side-group{margin:12px 0 4px;padding-top:10px;border-top:1px solid #e2e8f0}
-    #qmes-safe-business-side-group .qmes-business-side-title{padding:4px 12px 6px;color:#94a3b8;font-size:10px;font-weight:900;letter-spacing:.7px}
-    #qmes-safe-business-side-group .qmes-side-item{display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;padding:9px 10px 9px 14px!important;margin:2px 0!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#475569!important;font-size:13px!important;font-weight:700!important;text-align:left!important;cursor:pointer!important}
-    #qmes-safe-business-side-group .qmes-side-item:hover{background:#f4f7fa!important;color:#172033!important}
-  `;
+  style.id='qmes-contextual-business-side-style';
+  style.textContent='#qps-sidebar,#qmes-preview-sidebar{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
 
-  function syncMain(){
-    const main=document.querySelector('#root>div>main');
-    if(!main) return;
-    const open=document.body.classList.contains('qmes-side-open');
-    if(open){
-      const width=window.matchMedia('(max-width:900px)').matches?'190px':'220px';
-      main.style.setProperty('margin-left',width,'important');
-      main.style.setProperty('width','calc(100% - '+width+')','important');
-    }else{
-      main.style.setProperty('margin-left','0','important');
-      main.style.setProperty('width','100%','important');
-    }
-  }
-
-  function ensureBusinessGroup(){
+  function showContext(id){
+    const label=labels[id];
     const side=document.getElementById('qmes-sync-sidebar');
-    if(!side || document.getElementById('qmes-safe-business-side-group')) return;
-    const group=document.createElement('div');
-    group.id='qmes-safe-business-side-group';
-    const title=document.createElement('div');
-    title.className='qmes-business-side-title';
-    title.textContent='업무 관리';
-    group.appendChild(title);
-    menus.forEach(([id,label])=>{
+    if(!label||!side) return;
+    const title=side.querySelector('.qmes-side-title');
+    const items=side.querySelector('.qmes-side-items');
+    const search=side.querySelector('.qmes-side-search-input');
+    if(search) search.value='';
+    if(title) title.textContent=label;
+    if(items){
+      items.replaceChildren();
       const button=document.createElement('button');
       button.type='button';
-      button.className='qmes-side-item';
+      button.className='qmes-side-item is-active';
       button.textContent=label;
       button.addEventListener('click',()=>{
         const top=document.querySelector(`[data-qbe-menu="${id}"] .qmes-top-menu-button`)||document.querySelector(`[data-qbe-menu="${id}"] button`);
-        if(top) top.click();
-        setTimeout(()=>document.querySelector('#qmes-sync-sidebar .qmes-side-close')?.click(),50);
+        top?.click();
       });
-      group.appendChild(button);
-    });
-    side.appendChild(group);
+      items.appendChild(button);
+    }
+    document.body.classList.add('qmes-side-open');
   }
 
-  function tick(){
-    ensureBusinessGroup();
-    syncMain();
-  }
-
-  setInterval(tick,800);
-  window.addEventListener('resize',syncMain);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tick,{once:true});
-  else tick();
+  document.addEventListener('click',e=>{
+    const top=e.target.closest('[data-qbe-menu] .qmes-top-menu-button,[data-qbe-menu] button');
+    if(!top) return;
+    const item=top.closest('[data-qbe-menu]');
+    const id=item?.dataset.qbeMenu;
+    if(labels[id]) setTimeout(()=>showContext(id),40);
+  },true);
 })();
