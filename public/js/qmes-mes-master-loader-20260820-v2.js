@@ -17,7 +17,7 @@
     "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-2",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
-    "./js/production-downtime-history-20260824.js?v=20260824-1",
+    "./js/production-downtime-history-20260824.js?v=20260824-edit2",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
