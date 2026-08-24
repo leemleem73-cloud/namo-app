@@ -18,7 +18,7 @@
     #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child{padding:12px 16px!important;border-top:1px solid #334155!important;background:#0b1728!important}
     #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button{height:36px!important;padding:0 16px!important;border-radius:6px!important;font-size:13px!important;font-weight:700!important}
     #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button:last-child{background:#0891b2!important;color:#fff!important;cursor:pointer!important;opacity:1!important}
-    .qmes-issued-table-wrap{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+    .qmes-issued-table-wrap{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;container-type:inline-size!important;container-name:qmes-issued-list}
     .qmes-issued-table-v2{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
     .qmes-issued-table-v2 th,.qmes-issued-table-v2 td,.qmes-wo-list-table th,.qmes-wo-list-table td{box-sizing:border-box!important;height:46px!important;padding:9px!important;text-align:center!important;vertical-align:middle!important;letter-spacing:0!important;font-variant-numeric:tabular-nums!important}
     .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{min-width:0!important;padding:8px 5px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
@@ -75,6 +75,34 @@
       .qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:14%!important}
       .qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:18%!important}
       .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{padding-left:2px!important;padding-right:2px!important;font-size:10px!important}
+    }
+    @container qmes-issued-list (max-width:1100px){
+      .qmes-issued-table-v2 th:nth-child(3),.qmes-issued-table-v2 td:nth-child(3),
+      .qmes-issued-table-v2 th:nth-child(5),.qmes-issued-table-v2 td:nth-child(5),
+      .qmes-issued-table-v2 th:nth-child(7),.qmes-issued-table-v2 td:nth-child(7),
+      .qmes-issued-table-v2 th:nth-child(8),.qmes-issued-table-v2 td:nth-child(8),
+      .qmes-issued-table-v2 th:nth-child(9),.qmes-issued-table-v2 td:nth-child(9){display:none!important}
+      .qmes-issued-table-v2 th:nth-child(1),.qmes-issued-table-v2 td:nth-child(1){width:17%!important}
+      .qmes-issued-table-v2 th:nth-child(2),.qmes-issued-table-v2 td:nth-child(2){width:24%!important}
+      .qmes-issued-table-v2 th:nth-child(4),.qmes-issued-table-v2 td:nth-child(4){width:13%!important}
+      .qmes-issued-table-v2 th:nth-child(6),.qmes-issued-table-v2 td:nth-child(6){width:16%!important}
+      .qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:13%!important}
+      .qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:17%!important;white-space:normal!important}
+      .qmes-issued-table-v2 .qmes-status-select{box-sizing:border-box!important;width:100%!important;min-width:0!important;padding-left:4px!important;padding-right:16px!important;font-size:10px!important}
+      .qmes-issued-table-v2 .qmes-manage-btn{width:auto!important;min-width:0!important;margin:1px!important;padding:0 5px!important;font-size:10px!important}
+    }
+    @container qmes-issued-list (max-width:760px){
+      .qmes-issued-table-v2 th:nth-child(4),.qmes-issued-table-v2 td:nth-child(4){display:none!important}
+      .qmes-issued-table-v2 th:nth-child(1),.qmes-issued-table-v2 td:nth-child(1){width:22%!important}
+      .qmes-issued-table-v2 th:nth-child(2),.qmes-issued-table-v2 td:nth-child(2){width:28%!important}
+      .qmes-issued-table-v2 th:nth-child(6),.qmes-issued-table-v2 td:nth-child(6){width:18%!important}
+      .qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:14%!important}
+      .qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:18%!important}
+      .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{padding-left:2px!important;padding-right:2px!important;font-size:10px!important}
+    }
+    @media(max-width:1450px){
+      body.qmes-side-open .qmes-issued-filter{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important}
+      body.qmes-side-open .qmes-issued-filter>div,body.qmes-side-open .qmes-issued-filter>button{min-width:0!important;width:100%!important}
     }
     @media print{
       .qmes-wo-cert-material-table th:first-child,.qmes-wo-cert-material-table td:first-child{writing-mode:horizontal-tb!important;white-space:nowrap!important}
