@@ -39,6 +39,23 @@
     document.head.appendChild(style);
   }
 
+  function labelTitle(label) {
+    return String(label?.querySelector(":scope > span")?.textContent || label?.querySelector("span")?.textContent || "").replace(/\s+/g, " ").trim();
+  }
+
+  function cleanupLeakedMaterialUi() {
+    document.querySelectorAll(`.qmes-ipad-pop label.${"qmes-ipad-material-field"}, .qmes-ipad-pop label:has(.${BUTTON_CLASS})`).forEach((label) => {
+      if (/^원자재명/.test(labelTitle(label))) return;
+      label.querySelectorAll(`.${BUTTON_CLASS}`).forEach((node) => node.remove());
+      label.classList.remove("qmes-ipad-material-field");
+      const input = label.querySelector("input");
+      if (input?.dataset?.qmesListId === "qmes-ipad-materials") delete input.dataset.qmesListId;
+      if (input?.dataset?.qmesCustomList) delete input.dataset.qmesCustomList;
+      label.querySelectorAll(`.${DROPDOWN_CLASS}[data-qmes-for-list="qmes-ipad-materials"]`).forEach((node) => node.remove());
+      if (!label.querySelector(`.${DROPDOWN_CLASS}`)) label.classList.remove("qmes-ipad-custom-list-field");
+    });
+  }
+
   function setReactInputValue(input, value) {
     const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
     if (descriptor && descriptor.set) descriptor.set.call(input, value);
@@ -83,7 +100,7 @@
     const input = document.querySelector('.qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-materials"]');
     if (!input) return;
     const label = input.closest("label");
-    if (!label || label.querySelector(`.${BUTTON_CLASS}`)) return;
+    if (!label || !/^원자재명/.test(labelTitle(label)) || label.querySelector(`.${BUTTON_CLASS}`)) return;
     label.classList.add("qmes-ipad-material-field");
     const button = document.createElement("button");
     button.type = "button"; button.className = BUTTON_CLASS; button.textContent = "+ 추가";
@@ -118,10 +135,11 @@
     const currentListId = input.dataset.qmesListId || "";
     const targetListId = nativeListId && /^(qmes-ipad-materials|qmes-ipad-lots)$/.test(nativeListId) ? nativeListId : currentListId;
     if (!/^(qmes-ipad-materials|qmes-ipad-lots)$/.test(targetListId)) return;
-    if (nativeListId) { input.dataset.qmesListId = nativeListId; input.removeAttribute("list"); }
-    input.dataset.qmesCustomList = "1";
     const label = input.closest("label");
     if (!label) return;
+    if (targetListId === "qmes-ipad-materials" && !/^원자재명/.test(labelTitle(label))) return;
+    if (nativeListId) { input.dataset.qmesListId = nativeListId; input.removeAttribute("list"); }
+    input.dataset.qmesCustomList = "1";
     label.classList.add("qmes-ipad-custom-list-field");
     let dropdown = label.querySelector(`.${DROPDOWN_CLASS}`);
     if (!dropdown) { dropdown = document.createElement("div"); dropdown.className = DROPDOWN_CLASS; dropdown.setAttribute("role", "listbox"); label.appendChild(dropdown); }
@@ -209,10 +227,12 @@
 
   function enhance() {
     ensureStyle();
+    cleanupLeakedMaterialUi();
     enhanceCustomLists();
     enhanceMaterial();
     enhanceShipQty();
     enhanceNumbers();
+    cleanupLeakedMaterialUi();
   }
 
   const observer = new MutationObserver(enhance);
