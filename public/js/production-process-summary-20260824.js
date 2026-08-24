@@ -2,6 +2,23 @@
 (function () {
   const ID = "qpp-production-summary";
   const STYLE_ID = "qpp-production-summary-style";
+  const LAYOUT_STYLE_ID = "qpp-production-layout-stable-style";
+
+  // Production process only: keep the main area at the same width before/after the sidebar opens.
+  // This prevents the first-paint full width -> narrower width jump on refresh.
+  if (!document.getElementById(LAYOUT_STYLE_ID)) {
+    const layoutStyle = document.createElement("style");
+    layoutStyle.id = LAYOUT_STYLE_ID;
+    layoutStyle.textContent = `
+      body.qmes-side-open:has(.qmes-prod-process) #root > div > main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        transition: none !important;
+      }
+    `;
+    document.head.appendChild(layoutStyle);
+  }
 
   function clean(v) { return String(v == null ? "" : v).trim(); }
   function num(v) {
