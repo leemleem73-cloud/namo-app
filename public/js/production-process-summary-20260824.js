@@ -3,9 +3,41 @@
   const ID = "qpp-production-summary";
   const STYLE_ID = "qpp-production-summary-style";
   const LAYOUT_STYLE_ID = "qpp-production-layout-stable-style";
+  let layoutLockScheduled = false;
 
-  // Production process only: keep the main area at the same width before/after the sidebar opens.
-  // This prevents the first-paint full width -> narrower width jump on refresh.
+  function productionRoot() {
+    return document.querySelector(".qmes-prod-process");
+  }
+
+  function stabilizeProductionLayout() {
+    const root = productionRoot();
+    if (!root) return;
+    const main = root.closest("main") || document.querySelector("#root > div > main");
+    if (!main) return;
+
+    const ml = main.style.getPropertyValue("margin-left");
+    const width = main.style.getPropertyValue("width");
+    const maxWidth = main.style.getPropertyValue("max-width");
+    const transition = main.style.getPropertyValue("transition");
+    const mlPriority = main.style.getPropertyPriority("margin-left");
+    const widthPriority = main.style.getPropertyPriority("width");
+
+    if (ml !== "0px" || mlPriority !== "important") main.style.setProperty("margin-left", "0px", "important");
+    if (width !== "100%" || widthPriority !== "important") main.style.setProperty("width", "100%", "important");
+    if (maxWidth !== "none") main.style.setProperty("max-width", "none", "important");
+    if (transition !== "none") main.style.setProperty("transition", "none", "important");
+    main.dataset.qppFullWidth = "1";
+  }
+
+  function scheduleLayoutLock() {
+    if (layoutLockScheduled) return;
+    layoutLockScheduled = true;
+    requestAnimationFrame(() => {
+      layoutLockScheduled = false;
+      stabilizeProductionLayout();
+    });
+  }
+
   if (!document.getElementById(LAYOUT_STYLE_ID)) {
     const layoutStyle = document.createElement("style");
     layoutStyle.id = LAYOUT_STYLE_ID;
@@ -103,8 +135,9 @@
   }
 
   function render() {
-    const root = document.querySelector(".qmes-prod-process");
+    const root = productionRoot();
     if (!root) return;
+    stabilizeProductionLayout();
     const lot = getLot(root);
     if (!lot) {
       document.getElementById(ID)?.remove();
@@ -149,11 +182,22 @@
     requestAnimationFrame(() => { scheduled = false; render(); });
   }
 
-  const observer = new MutationObserver(schedule);
-  observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  const observer = new MutationObserver(mutations => {
+    let shouldRender = false;
+    let shouldLockLayout = false;
+    for (const mutation of mutations) {
+      if (mutation.type === "childList" || mutation.type === "characterData") shouldRender = true;
+      if (mutation.type === "attributes" && (mutation.attributeName === "style" || mutation.attributeName === "class")) shouldLockLayout = true;
+    }
+    if (shouldLockLayout) scheduleLayoutLock();
+    if (shouldRender) schedule();
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["style", "class"] });
+
   document.addEventListener("change", event => { if (event.target?.closest?.(".qmes-prod-process")) schedule(); });
   window.addEventListener("qmes:production-process-updated", schedule);
-  window.addEventListener("load", schedule);
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true });
-  else schedule();
+  window.addEventListener("resize", scheduleLayoutLock);
+  window.addEventListener("load", () => { schedule(); scheduleLayoutLock(); });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { schedule(); scheduleLayoutLock(); }, { once: true });
+  else { schedule(); scheduleLayoutLock(); }
 })();
