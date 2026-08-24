@@ -21,7 +21,7 @@ const TABS = [
   { id:"prod", label:"생산 (배치)", icon:FlaskConical, comp:ProductionTab },
   { id:"wo", label:"", icon:ClipboardList, comp:WoDocTab },
   { id:"woIssue", label:"작업지시서", icon:Plus, comp:IssueWoTab },
-  { id:"prodProcess", label:"생산공정 관리", icon:FlaskConical, comp:QMESProductionProcessRoute },
+  { id:"prodProcess", label:"생산공정 관리", icon:FlaskConical, comp:typeof window.ProductionProcessTab==="function"?window.ProductionProcessTab:QMESProductionProcessRoute },
   { id:"pqc", label:"공정검사 (PQC)", icon:ClipboardCheck, comp:PqcTab },
   { id:"oqc", label:"출하검사 (OQC)", icon:ArrowUpFromLine, comp:OqcTab },
   { id:"lock", label:"품질 인터락 (차단)", icon:Lock, comp:InterlockTab },
