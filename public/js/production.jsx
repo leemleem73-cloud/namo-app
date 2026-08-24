@@ -346,15 +346,15 @@ function WoDocTab() {
           발행된 작업지시 목록에서 LOT No. 또는 품목을 누르거나, 관리의 보기 버튼을 눌러 를 선택하세요.
         </div>
         <div className="qmes-iqc-ledger-wrap overflow-x-auto">
-          <table className="qmes-wo-list-table w-full text-sm min-w-[900px]">
+          <table className="qmes-wo-list-table w-full text-sm">
             <colgroup>
-              <col style={{ width: "150px" }} />
-              <col style={{ width: "250px" }} />
-              <col style={{ width: "170px" }} />
-              <col style={{ width: "125px" }} />
-              <col style={{ width: "130px" }} />
-              <col style={{ width: "110px" }} />
-              <col style={{ width: "110px" }} />
+              <col style={{ width: "14.2857%" }} />
+              <col style={{ width: "14.2857%" }} />
+              <col style={{ width: "14.2857%" }} />
+              <col style={{ width: "14.2857%" }} />
+              <col style={{ width: "14.2857%" }} />
+              <col style={{ width: "14.2857%" }} />
+              <col style={{ width: "14.2857%" }} />
             </colgroup>
             <thead>
               <tr className="text-xs text-slate-400 border-b border-slate-700">
