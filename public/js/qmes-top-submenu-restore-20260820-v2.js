@@ -70,7 +70,9 @@
   function clickSub(item){
     if(item.inventorySection){
       closeMenu();
-      if(typeof window.qmesOpenInventorySection==='function')window.qmesOpenInventorySection(item.inventorySection);
+      try{sessionStorage.setItem('qmes_inventory_section',item.inventorySection)}catch(error){}
+      window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'inv'}}));
+      window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:item.inventorySection}}));
       return;
     }
     const findSub=()=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===item.sub);
