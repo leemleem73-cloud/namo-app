@@ -12,6 +12,16 @@
     return `${Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix || ""}`;
   }
 
+  function ensureProductionSidebar(root) {
+    if (!root || root.dataset.qppSidebarReady === "1") return;
+    const openProductionSidebar = window.qmesSetGlobalSidebarGroup;
+    if (typeof openProductionSidebar !== "function") return;
+    root.dataset.qppSidebarReady = "1";
+    if (!document.body.classList.contains("qmes-side-open")) {
+      openProductionSidebar("생산관리");
+    }
+  }
+
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement("style");
@@ -88,6 +98,7 @@
   function render() {
     const root = document.querySelector(".qmes-prod-process");
     if (!root) return;
+    ensureProductionSidebar(root);
     const lot = getLot(root);
     if (!lot) {
       document.getElementById(ID)?.remove();
@@ -103,16 +114,7 @@
     const abnormal = getAbnormal(root);
     const actionText = abnormal.total > 0 ? `불량 ${fmt(abnormal.defect)} / 비가동 ${fmt(abnormal.downtime, "건")}` : "특이사항 없음";
     const actionCls = abnormal.total > 0 ? "warn" : "good";
-
-    let panel = document.getElementById(ID);
-    if (!panel) {
-      panel = document.createElement("section");
-      panel.id = ID;
-      const firstCard = root.querySelector(".qpp-card");
-      if (!firstCard) return;
-      firstCard.insertAdjacentElement("afterend", panel);
-    }
-    panel.innerHTML = `
+    const html = `
       <div class="qpp-summary-head"><b>생산실적 / 품질 연동 요약</b><span>기존 데이터 자동표시 · 직접입력 없음</span></div>
       <div class="qpp-summary-grid">
         ${cell("작업지시 대비 실적", `${fmt(actual, " kg")} / ${fmt(plan, " kg")}`)}
@@ -122,6 +124,16 @@
         ${cell("LOT 추적", trace.text, trace.cls)}
         ${cell("이상 / 조치 요약", actionText, actionCls)}
       </div>`;
+
+    let panel = document.getElementById(ID);
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = ID;
+      const firstCard = root.querySelector(".qpp-card");
+      if (!firstCard) return;
+      firstCard.insertAdjacentElement("afterend", panel);
+    }
+    if (panel.innerHTML !== html) panel.innerHTML = html;
   }
 
   let scheduled = false;
@@ -135,6 +147,7 @@
   observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
   document.addEventListener("change", event => { if (event.target?.closest?.(".qmes-prod-process")) schedule(); });
   window.addEventListener("qmes:production-process-updated", schedule);
+  window.addEventListener("load", schedule);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true });
   else schedule();
 })();
