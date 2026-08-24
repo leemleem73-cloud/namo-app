@@ -31,7 +31,7 @@
           <div class="qsp-field"><label>출하 예정일</label><input name="shipDate" type="date" required></div>
           <div class="qsp-field"><label>수주번호</label><input name="salesOrder" placeholder="예: SO-260825-01"></div>
           <div class="qsp-field"><label>고객사</label><select name="customer"><option value="">선택</option><option>현대자동차</option><option>삼성SDI</option><option>SK</option><option>기타</option></select></div>
-          <div class="qsp-field"><label>제품</label><select name="product"><option value="">선택</option><option>전도 슬러리 A</option><option>전도 슬러리 B</option><option>Binder Solution</option></select></div>
+          <div class="qsp-field"><label>Grd 제품명</label><input name="grdProductName" placeholder="Grd 제품명을 입력하세요"></div>
           <div class="qsp-field"><label>완제품 LOT</label><input name="lot" placeholder="예: FG-260825-01"></div>
           <div class="qsp-field"><label>출하 수량 (kg)</label><input name="qty" inputmode="decimal" placeholder="예: 2000"></div>
           <div class="qsp-field full"><label>배송 / 배차 정보</label><input name="delivery" placeholder="차량번호, 운송사, 기사 연락처 등"></div>
@@ -82,48 +82,11 @@
   if(window.__QMES_CONTEXTUAL_BUSINESS_SIDE__) return;
   window.__QMES_CONTEXTUAL_BUSINESS_SIDE__=true;
 
-  const labels={
-    sales:'수주 · 납기관리',
-    plan:'생산계획 · MRP',
-    purchase:'구매 · 발주관리',
-    recipe:'Recipe / BOM',
-    shipping:'출하 · 납품관리'
-  };
-
+  const labels={sales:'수주 · 납기관리',plan:'생산계획 · MRP',purchase:'구매 · 발주관리',recipe:'Recipe / BOM',shipping:'출하 · 납품관리'};
   const style=document.createElement('style');
   style.id='qmes-contextual-business-side-style';
   style.textContent='#qps-sidebar,#qmes-preview-sidebar{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
-
-  function showContext(id){
-    const label=labels[id];
-    const side=document.getElementById('qmes-sync-sidebar');
-    if(!label||!side) return;
-    const title=side.querySelector('.qmes-side-title');
-    const items=side.querySelector('.qmes-side-items');
-    const search=side.querySelector('.qmes-side-search-input');
-    if(search) search.value='';
-    if(title) title.textContent=label;
-    if(items){
-      items.replaceChildren();
-      const button=document.createElement('button');
-      button.type='button';
-      button.className='qmes-side-item is-active';
-      button.textContent=label;
-      button.addEventListener('click',()=>{
-        const top=document.querySelector(`[data-qbe-menu="${id}"] .qmes-top-menu-button`)||document.querySelector(`[data-qbe-menu="${id}"] button`);
-        top?.click();
-      });
-      items.appendChild(button);
-    }
-    document.body.classList.add('qmes-side-open');
-  }
-
-  document.addEventListener('click',e=>{
-    const top=e.target.closest('[data-qbe-menu] .qmes-top-menu-button,[data-qbe-menu] button');
-    if(!top) return;
-    const item=top.closest('[data-qbe-menu]');
-    const id=item?.dataset.qbeMenu;
-    if(labels[id]) setTimeout(()=>showContext(id),40);
-  },true);
+  function showContext(id){const label=labels[id];const side=document.getElementById('qmes-sync-sidebar');if(!label||!side)return;const title=side.querySelector('.qmes-side-title');const items=side.querySelector('.qmes-side-items');const search=side.querySelector('.qmes-side-search-input');if(search)search.value='';if(title)title.textContent=label;if(items){items.replaceChildren();const button=document.createElement('button');button.type='button';button.className='qmes-side-item is-active';button.textContent=label;button.addEventListener('click',()=>{const top=document.querySelector(`[data-qbe-menu="${id}"] .qmes-top-menu-button`)||document.querySelector(`[data-qbe-menu="${id}"] button`);top?.click();});items.appendChild(button);}document.body.classList.add('qmes-side-open');}
+  document.addEventListener('click',e=>{const top=e.target.closest('[data-qbe-menu] .qmes-top-menu-button,[data-qbe-menu] button');if(!top)return;const item=top.closest('[data-qbe-menu]');const id=item?.dataset.qbeMenu;if(labels[id])setTimeout(()=>showContext(id),40);},true);
 })();
