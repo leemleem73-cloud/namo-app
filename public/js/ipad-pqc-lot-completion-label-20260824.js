@@ -1,8 +1,8 @@
-/* QMES IPAD/Field PQC production LOT linked selector - 2026-08-24 v4 */
+/* QMES IPAD/Field PQC production LOT linked selector - 2026-08-24 v5 */
 (function(){
   "use strict";
-  if(window.__QMES_IPAD_PQC_LOT_LINKED_SELECTOR_20260824_V4__) return;
-  window.__QMES_IPAD_PQC_LOT_LINKED_SELECTOR_20260824_V4__=true;
+  if(window.__QMES_IPAD_PQC_LOT_LINKED_SELECTOR_20260824_V5__) return;
+  window.__QMES_IPAD_PQC_LOT_LINKED_SELECTOR_20260824_V5__=true;
 
   const clean=value=>String(value==null?"":value).trim();
   const suffix=/\s*·\s*(?:생산\s*)?(?:완료|미완료)\s*$/i;
@@ -76,16 +76,21 @@
     if(!isPqcScreen()) return;
     const label=productionLotLabel(); if(!label) return;
     const input=label.querySelector("input"); if(!input) return;
+
+    /* PQC에서는 직접입력 UI를 완전히 제거하고 선택값 전달용 hidden input만 유지 */
+    input.type="hidden";
+    input.removeAttribute("list");
+    input.removeAttribute("placeholder");
+    input.removeAttribute("inputmode");
+    input.setAttribute("aria-hidden","true");
+
     let select=label.querySelector(".qmes-pqc-linked-lot-select");
     if(!select){
       select=document.createElement("select");
       select.className="qmes-pqc-linked-lot-select";
       select.setAttribute("aria-label","생산 LOT 선택");
-      input.style.setProperty("display","none","important");
       input.insertAdjacentElement("afterend",select);
       select.addEventListener("change",()=>dispatchValue(input,baseLot(select.value)));
-    } else {
-      input.style.setProperty("display","none","important");
     }
 
     const current=baseLot(input.value);
@@ -93,7 +98,8 @@
     const previous=baseLot(select.value);
     select.innerHTML="";
     const placeholder=document.createElement("option");
-    placeholder.value=""; placeholder.textContent=lots.length?"생산 LOT 선택":"연동된 생산 LOT 없음";
+    placeholder.value="";
+    placeholder.textContent=lots.length?"생산 LOT 선택":"연동된 생산 LOT 없음";
     select.appendChild(placeholder);
     lots.forEach(lot=>{
       const option=document.createElement("option");
