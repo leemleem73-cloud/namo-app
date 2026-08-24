@@ -22,6 +22,8 @@
     const defect=labelByText(grid,"불량수량");
     const packaging=labelByText(grid,"포장형태");
     const remarks=labelByText(grid,"비고");
+    const calculated=labelByText(grid,"계산중량");
+    const barcodeQty=labelByText(grid,"바코드 발행수량");
     if(!defect||!packaging||!remarks) return;
 
     /* 불량수량 바로 다음 칸 = 포장형태 */
@@ -33,6 +35,11 @@
     remarks.classList.add("wide");
     if(packaging.nextElementSibling!==remarks){
       packaging.insertAdjacentElement("afterend",remarks);
+    }
+
+    /* 계산중량 바로 오른쪽 칸 = 바코드 발행수량 */
+    if(calculated&&barcodeQty&&calculated.nextElementSibling!==barcodeQty){
+      calculated.insertAdjacentElement("afterend",barcodeQty);
     }
   }
 
