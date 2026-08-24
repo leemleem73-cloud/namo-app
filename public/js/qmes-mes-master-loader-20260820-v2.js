@@ -1,9 +1,10 @@
 /* QMES Stage 12 operational loader v2
- * Loads stable runtime helpers. Partner click-layer repair is loaded first so
- * customer/supplier registration cannot be blocked by later UI refinements.
+ * Loads stable runtime helpers. Production downtime history is loaded first so
+ * its sixth action button is present on the production-process first paint.
  */
 (function(){
   const files=[
+    "./js/production-downtime-history-20260824.js?v=20260824-edit3-firstpaint1",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
@@ -18,7 +19,6 @@
     "./js/ipad-iqc-basic-layout-20260824.js?v=20260824-1",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
-    "./js/production-downtime-history-20260824.js?v=20260824-edit3",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
