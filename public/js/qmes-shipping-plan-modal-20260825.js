@@ -16,7 +16,6 @@
     `;
     document.head.appendChild(style);
   }
-
   function closeModal(){document.querySelector('.qsp-overlay')?.remove();}
   function openModal(){
     ensureStyle();closeModal();const overlay=document.createElement('div');overlay.className='qsp-overlay';
@@ -27,20 +26,24 @@
   window.qmesOpenShippingPlanModal=openModal;
 })();
 
-/* Contextual left menu: use the native hamburger sidebar, never create a second sidebar. */
+/* Contextual business sidebar: open via the native hamburger, then swap only its content. */
 (function(){
   if(window.__QMES_CONTEXTUAL_BUSINESS_SIDE__) return;
   window.__QMES_CONTEXTUAL_BUSINESS_SIDE__=true;
   const labels={sales:'수주 · 납기관리',plan:'생산계획 · MRP',purchase:'구매 · 발주관리',recipe:'Recipe / BOM',shipping:'출하 · 납품관리'};
   const style=document.createElement('style');style.id='qmes-contextual-business-side-style';style.textContent='#qps-sidebar,#qmes-preview-sidebar{display:none!important;visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(style);
-  function showContext(id){
+  function replaceContent(id){
     const label=labels[id],side=document.getElementById('qmes-sync-sidebar');if(!label||!side)return;
     const title=side.querySelector('.qmes-side-title'),items=side.querySelector('.qmes-side-items'),search=side.querySelector('.qmes-side-search-input');
     if(search)search.value='';if(title)title.textContent=label;
     if(items){items.replaceChildren();const button=document.createElement('button');button.type='button';button.className='qmes-side-item is-active';button.textContent=label;button.addEventListener('click',()=>{const top=document.querySelector(`[data-qbe-menu="${id}"] .qmes-top-menu-button`)||document.querySelector(`[data-qbe-menu="${id}"] button`);top?.click();});items.appendChild(button);}
-    side.classList.add('is-open');side.removeAttribute('aria-hidden');
-    document.body.classList.add('qmes-side-open');
-    const main=document.querySelector('#root>div>main');if(main&&window.innerWidth>900){main.style.marginLeft='220px';main.style.width='calc(100% - 220px)';}
   }
-  document.addEventListener('click',e=>{const top=e.target.closest('[data-qbe-menu] .qmes-top-menu-button,[data-qbe-menu] button');if(!top)return;const id=top.closest('[data-qbe-menu]')?.dataset.qbeMenu;if(labels[id])setTimeout(()=>showContext(id),60);},true);
+  function openContext(id){
+    const hamburger=document.getElementById('qmes-sync-hamburger');
+    if(!hamburger)return;
+    if(!document.body.classList.contains('qmes-side-open')) hamburger.click();
+    setTimeout(()=>replaceContent(id),80);
+    setTimeout(()=>replaceContent(id),220);
+  }
+  document.addEventListener('click',e=>{const top=e.target.closest('[data-qbe-menu] .qmes-top-menu-button,[data-qbe-menu] button');if(!top)return;const id=top.closest('[data-qbe-menu]')?.dataset.qbeMenu;if(labels[id])setTimeout(()=>openContext(id),40);},true);
 })();
