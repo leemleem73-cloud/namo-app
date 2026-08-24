@@ -619,6 +619,8 @@ function ProductionProcessTab() {
   );
 }
 
+window.ProductionProcessTab=ProductionProcessTab;
+
 (function installProductionProcessMenu(){
   try {
     if (typeof TABS === "undefined" || typeof TOP_MENUS === "undefined") return;
