@@ -19,7 +19,7 @@
     if(b) b.click();
   }
   function sidebarButton(label,code,type){
-    const b=document.createElement('button');b.type='button';b.className='qps-side-btn';b.dataset.qpsCode=code;
+    const b=document.createElement('button');b.type='button';b.className='qps-side-btn';b.dataset.qpsCode=code;b.dataset.qps=code;
     const ico=document.createElement('span');ico.className='qps-ico';ico.textContent=type==='add'?(code==='plan'?'MRP':code==='purchase'?'PO':code==='sales'?'SO':code==='recipe'?'R':'S'):(code==='dash'?'▦':code==='prod'?'P':code==='iqc'?'Q':code==='pop'?'iP':code==='inv'?'I':code==='partners'?'C':code==='eq'?'E':code==='trace'?'L':'8D');
     const text=document.createElement('span');text.textContent=label;
     b.append(ico,text);
@@ -41,11 +41,24 @@
   function ensureSidebar(){
     const shell=document.querySelector('#root>div');if(!shell)return;
     shell.classList.add('qmes-preview-shell');
-    document.querySelectorAll('#qps-sidebar').forEach(old=>old.remove());
-    let side=document.getElementById('qmes-preview-sidebar');
-    if(!side){side=document.createElement('aside');side.id='qmes-preview-sidebar';side.className='qps-sidebar';document.body.appendChild(side);buildSidebar(side);return;}
-    const missing=[...Object.values(extMap)].some(code=>!side.querySelector(`[data-qps-code="${code}"]`));
-    if(missing||side.querySelector('.qps-mini.add')||[...side.querySelectorAll('.qps-group')].some(g=>/추가 권장/.test(g.textContent)))buildSidebar(side);
+    let side=document.getElementById('qps-sidebar');
+    if(!side){
+      side=document.createElement('aside');
+      side.id='qps-sidebar';
+      side.className='qps-sidebar';
+      shell.appendChild(side);
+    }
+    side.classList.add('qps-sidebar');
+    side.style.position='fixed';
+    side.style.left='0';
+    side.style.top='114px';
+    side.style.bottom='0';
+    side.style.overflowY='auto';
+    side.style.zIndex='20';
+    side.style.display=window.innerWidth>900?'block':'none';
+    const required=[...Object.values(nativeMap),...Object.values(extMap)];
+    const missing=required.some(code=>!side.querySelector(`[data-qps-code="${code}"]`));
+    if(missing||!side.querySelector('.qps-search')||side.querySelectorAll('.qps-side-btn').length!==required.length)buildSidebar(side);
   }
   function decorateHeader(){
     const shell=document.querySelector('#root>div');if(!shell)return;
@@ -74,13 +87,19 @@
   }
   function syncActive(){
     const current=(()=>{try{return sessionStorage.getItem('qmes_business_extension_tab')||sessionStorage.getItem('qmes_current_tab')||'dash'}catch(e){return'dash'}})();
-    document.querySelectorAll('.qps-side-btn').forEach(b=>b.classList.toggle('active',b.dataset.qpsCode===current));
+    document.querySelectorAll('.qps-side-btn').forEach(b=>b.classList.toggle('active',(b.dataset.qpsCode||b.dataset.qps)===current));
     if(current==='dash')showPreviewDashboard();else hidePreviewDashboard();
   }
-  function tick(){decorateHeader();ensureSidebar();syncActive();}
+  function syncLayout(){
+    const main=document.querySelector('#root>div>main');
+    if(main){main.style.marginLeft=window.innerWidth>900?'220px':'0';main.style.width=window.innerWidth>900?'calc(100% - 220px)':'100%';}
+    const nav=document.querySelector('.qmes-top-menu');if(nav&&window.innerWidth>900)nav.style.paddingLeft='34px';
+  }
+  function tick(){decorateHeader();ensureSidebar();syncLayout();syncActive();}
   document.addEventListener('click',e=>{if(e.target.closest('.qmes-top-menu-button'))setTimeout(syncActive,60)},true);
   window.addEventListener('qmes:navigate-tab',()=>setTimeout(syncActive,60));
-  const observer=new MutationObserver(()=>{decorateHeader();ensureSidebar();});
-  function start(){tick();observer.observe(document.documentElement,{childList:true,subtree:true});setInterval(()=>{ensureSidebar();syncActive();},700)}
+  window.addEventListener('resize',()=>{ensureSidebar();syncLayout();});
+  const observer=new MutationObserver(()=>{decorateHeader();ensureSidebar();syncLayout();});
+  function start(){tick();observer.observe(document.documentElement,{childList:true,subtree:true});setInterval(()=>{ensureSidebar();syncLayout();syncActive();},900)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
