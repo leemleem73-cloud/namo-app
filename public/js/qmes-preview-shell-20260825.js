@@ -22,23 +22,30 @@
     const b=document.createElement('button');b.type='button';b.className='qps-side-btn';b.dataset.qpsCode=code;
     const ico=document.createElement('span');ico.className='qps-ico';ico.textContent=type==='add'?(code==='plan'?'MRP':code==='purchase'?'PO':code==='sales'?'SO':code==='recipe'?'R':'S'):(code==='dash'?'▦':code==='prod'?'P':code==='iqc'?'Q':code==='pop'?'iP':code==='inv'?'I':code==='partners'?'C':code==='eq'?'E':code==='trace'?'L':'8D');
     const text=document.createElement('span');text.textContent=label;
-    const mini=document.createElement('span');mini.className='qps-mini '+(type==='add'?'add':'now');mini.textContent=type==='add'?'추가':'현재';
-    b.append(ico,text,mini);
+    b.append(ico,text);
+    if(type!=='add'){
+      const mini=document.createElement('span');mini.className='qps-mini now';mini.textContent='현재';b.appendChild(mini);
+    }
     b.addEventListener('click',()=>{if(type==='add')clickExtension(code);else navigateNative(code);setTimeout(syncActive,40)});
     return b;
   }
-  function ensureSidebar(){
-    if(document.getElementById('qmes-preview-sidebar')) return;
-    const shell=document.querySelector('#root>div');if(!shell)return;
-    shell.classList.add('qmes-preview-shell');
-    const side=document.createElement('aside');side.id='qmes-preview-sidebar';side.className='qps-sidebar';
+  function buildSidebar(side){
+    side.innerHTML='';
     const s=document.createElement('div');s.className='qps-search';s.innerHTML='<input placeholder="메뉴 검색">';side.appendChild(s);
     const g1=document.createElement('div');g1.className='qps-group';g1.textContent='현재 QMES';side.appendChild(g1);
     Object.entries(nativeMap).forEach(([label,code])=>side.appendChild(sidebarButton(label,code,'now')));
-    const g2=document.createElement('div');g2.className='qps-group';g2.textContent='추가 권장';side.appendChild(g2);
+    const g2=document.createElement('div');g2.className='qps-group';g2.textContent='업무 관리';side.appendChild(g2);
     Object.entries(extMap).forEach(([label,code])=>side.appendChild(sidebarButton(label,code,'add')));
-    document.body.appendChild(side);
     const input=side.querySelector('input');input.addEventListener('input',()=>{const q=clean(input.value).toLowerCase();side.querySelectorAll('.qps-side-btn').forEach(b=>b.style.display=!q||clean(b.textContent).toLowerCase().includes(q)?'flex':'none')});
+  }
+  function ensureSidebar(){
+    const shell=document.querySelector('#root>div');if(!shell)return;
+    shell.classList.add('qmes-preview-shell');
+    document.querySelectorAll('#qps-sidebar').forEach(old=>old.remove());
+    let side=document.getElementById('qmes-preview-sidebar');
+    if(!side){side=document.createElement('aside');side.id='qmes-preview-sidebar';side.className='qps-sidebar';document.body.appendChild(side);buildSidebar(side);return;}
+    const missing=[...Object.values(extMap)].some(code=>!side.querySelector(`[data-qps-code="${code}"]`));
+    if(missing||side.querySelector('.qps-mini.add')||[...side.querySelectorAll('.qps-group')].some(g=>/추가 권장/.test(g.textContent)))buildSidebar(side);
   }
   function decorateHeader(){
     const shell=document.querySelector('#root>div');if(!shell)return;
@@ -74,6 +81,6 @@
   document.addEventListener('click',e=>{if(e.target.closest('.qmes-top-menu-button'))setTimeout(syncActive,60)},true);
   window.addEventListener('qmes:navigate-tab',()=>setTimeout(syncActive,60));
   const observer=new MutationObserver(()=>{decorateHeader();ensureSidebar();});
-  function start(){tick();observer.observe(document.documentElement,{childList:true,subtree:true});setInterval(syncActive,700)}
+  function start(){tick();observer.observe(document.documentElement,{childList:true,subtree:true});setInterval(()=>{ensureSidebar();syncActive();},700)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
