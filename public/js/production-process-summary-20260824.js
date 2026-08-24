@@ -3,7 +3,6 @@
   const ID = "qpp-production-summary";
   const STYLE_ID = "qpp-production-summary-style";
   const LAYOUT_STYLE_ID = "qpp-production-layout-stable-style";
-  let layoutLockScheduled = false;
 
   function productionRoot() {
     return document.querySelector(".qmes-prod-process");
@@ -15,27 +14,19 @@
     const main = root.closest("main") || document.querySelector("#root > div > main");
     if (!main) return;
 
-    const ml = main.style.getPropertyValue("margin-left");
-    const width = main.style.getPropertyValue("width");
-    const maxWidth = main.style.getPropertyValue("max-width");
-    const transition = main.style.getPropertyValue("transition");
-    const mlPriority = main.style.getPropertyPriority("margin-left");
-    const widthPriority = main.style.getPropertyPriority("width");
-
-    if (ml !== "0px" || mlPriority !== "important") main.style.setProperty("margin-left", "0px", "important");
-    if (width !== "100%" || widthPriority !== "important") main.style.setProperty("width", "100%", "important");
-    if (maxWidth !== "none") main.style.setProperty("max-width", "none", "important");
-    if (transition !== "none") main.style.setProperty("transition", "none", "important");
+    if (main.style.getPropertyValue("margin-left") !== "0px" || main.style.getPropertyPriority("margin-left") !== "important") {
+      main.style.setProperty("margin-left", "0px", "important");
+    }
+    if (main.style.getPropertyValue("width") !== "100%" || main.style.getPropertyPriority("width") !== "important") {
+      main.style.setProperty("width", "100%", "important");
+    }
+    if (main.style.getPropertyValue("max-width") !== "none" || main.style.getPropertyPriority("max-width") !== "important") {
+      main.style.setProperty("max-width", "none", "important");
+    }
+    if (main.style.getPropertyValue("transition") !== "none" || main.style.getPropertyPriority("transition") !== "important") {
+      main.style.setProperty("transition", "none", "important");
+    }
     main.dataset.qppFullWidth = "1";
-  }
-
-  function scheduleLayoutLock() {
-    if (layoutLockScheduled) return;
-    layoutLockScheduled = true;
-    requestAnimationFrame(() => {
-      layoutLockScheduled = false;
-      stabilizeProductionLayout();
-    });
   }
 
   if (!document.getElementById(LAYOUT_STYLE_ID)) {
@@ -189,15 +180,15 @@
       if (mutation.type === "childList" || mutation.type === "characterData") shouldRender = true;
       if (mutation.type === "attributes" && (mutation.attributeName === "style" || mutation.attributeName === "class")) shouldLockLayout = true;
     }
-    if (shouldLockLayout) scheduleLayoutLock();
+    if (shouldLockLayout) stabilizeProductionLayout();
     if (shouldRender) schedule();
   });
   observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["style", "class"] });
 
   document.addEventListener("change", event => { if (event.target?.closest?.(".qmes-prod-process")) schedule(); });
   window.addEventListener("qmes:production-process-updated", schedule);
-  window.addEventListener("resize", scheduleLayoutLock);
-  window.addEventListener("load", () => { schedule(); scheduleLayoutLock(); });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { schedule(); scheduleLayoutLock(); }, { once: true });
-  else { schedule(); scheduleLayoutLock(); }
+  window.addEventListener("resize", stabilizeProductionLayout);
+  window.addEventListener("load", () => { render(); stabilizeProductionLayout(); });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { render(); stabilizeProductionLayout(); }, { once: true });
+  else { render(); stabilizeProductionLayout(); }
 })();
