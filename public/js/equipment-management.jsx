@@ -93,7 +93,7 @@
                 <label>다음 예정일<input type="date" className={`${inputClass} mt-1`} value={scheduleForm.nextDate} onChange={e=>setScheduleForm({...scheduleForm,nextDate:e.target.value})}/></label>
                 <label>담당<input className={`${inputClass} mt-1`} value={scheduleForm.owner} onChange={e=>setScheduleForm({...scheduleForm,owner:e.target.value})}/></label>
               </div>
-              <div className="qmes-equipment-form-actions"><button type="button" onClick={addSchedule} className={`${smallButton} qmes-equipment-save-register border-sky-500/50 bg-sky-500/10 text-sky-300`}>등록 저장</button><button type="button" onClick={()=>setShowScheduleForm(false)} className={`${smallButton} qmes-equipment-cancel-register border-slate-600 text-slate-300`}>취소</button></div>
+              <div className="qmes-equipment-form-actions"><button type="button" onClick={addSchedule} className={`${smallButton} qmes-equipment-save-register border-sky-500/50 bg-sky-500/10 text-sky-300`}>저장</button><button type="button" onClick={()=>setShowScheduleForm(false)} className={`${smallButton} qmes-equipment-cancel-register border-slate-600 text-slate-300`}>취소</button></div>
             </div>}
             <div className="qmes-equipment-table-wrap">
               <table className="qmes-equipment-unified-table qmes-equipment-schedule-table">
@@ -118,7 +118,7 @@
                 <label>담당<input className={`${inputClass} mt-1`} value={repairForm.owner} onChange={e=>setRepairForm({...repairForm,owner:e.target.value})}/></label>
                 <label>상태<select className={`${inputClass} mt-1`} value={repairForm.status} onChange={e=>setRepairForm({...repairForm,status:e.target.value})}><option>조치중</option><option>사용중지</option><option>완료</option></select></label>
               </div>
-              <div className="qmes-equipment-form-actions"><button type="button" onClick={addRepair} className={`${smallButton} qmes-equipment-save-register border-sky-500/50 bg-sky-500/10 text-sky-300`}>등록 저장</button><button type="button" onClick={()=>setShowRepairForm(false)} className={`${smallButton} qmes-equipment-cancel-register border-slate-600 text-slate-300`}>취소</button></div>
+              <div className="qmes-equipment-form-actions"><button type="button" onClick={addRepair} className={`${smallButton} qmes-equipment-save-register border-sky-500/50 bg-sky-500/10 text-sky-300`}>저장</button><button type="button" onClick={()=>setShowRepairForm(false)} className={`${smallButton} qmes-equipment-cancel-register border-slate-600 text-slate-300`}>취소</button></div>
             </div>}
             <div className="qmes-equipment-table-wrap">
               <table className="qmes-equipment-unified-table qmes-equipment-repair-table">
