@@ -1,6 +1,6 @@
 /* QMES router */
 function QMESProductionProcessRoute(){
-  const Component=window.ProductionProcessTab;
+  const Component=window.ProductionProcessTab || (typeof ProductionProcessTab==="function" ? ProductionProcessTab : null);
   return typeof Component==="function"?<Component/>:<div className="rounded-xl border border-slate-700 bg-slate-900 p-6 text-sm font-bold text-slate-200">생산공정 관리 화면을 불러오는 중입니다.</div>;
 }
 
