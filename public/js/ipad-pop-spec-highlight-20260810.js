@@ -1,4 +1,14 @@
 (function(){
+  const style=document.createElement('style');
+  style.id='qmes-ipad-lot-firstpaint-guard';
+  style.textContent=`
+    .qmes-ipad-pop .qmes-ipad-form-grid input.lot[list="qmes-ipad-lots"]{display:none!important;}
+  `;
+  document.getElementById(style.id)?.remove();
+  document.head.appendChild(style);
+})();
+
+(function(){
   function evaluateInput(input){
     if(!input || !input.closest('.qmes-ipad-pop')) return;
     const wrap=input.closest('.qmes-ipad-triple,.qmes-ipad-repeat-choice');
