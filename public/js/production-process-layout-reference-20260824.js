@@ -17,10 +17,10 @@
     .qmes-prod-process.qpp-ref-layout .qpp-ref-progress{height:6px;margin-top:7px;border-radius:999px;background:#263d54;overflow:hidden}
     .qmes-prod-process.qpp-ref-layout .qpp-ref-progress>i{display:block;height:100%;border-radius:999px;background:#0ea5e9}
     .qmes-prod-process.qpp-ref-layout .qpp-worker{padding:13px 15px!important}
-    .qmes-prod-process.qpp-ref-layout .qpp-grid{display:grid!important;grid-template-columns:minmax(0,1fr) 340px!important;gap:14px!important;align-items:stretch!important}
-    .qmes-prod-process.qpp-ref-layout .qpp-grid>section.qpp-card{min-width:0!important}
-    .qmes-prod-process.qpp-ref-layout .qpp-grid>aside.qpp-card{min-width:0!important;height:100%!important}
-    .qmes-prod-process.qpp-ref-layout .qpp-side{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;padding:14px!important}
+    .qmes-prod-process.qpp-ref-layout .qpp-grid{display:grid!important;grid-template-columns:1fr!important;gap:14px!important;align-items:stretch!important}
+    .qmes-prod-process.qpp-ref-layout .qpp-grid>section.qpp-card{min-width:0!important;width:100%!important;max-width:none!important}
+    .qmes-prod-process.qpp-ref-layout .qpp-grid>aside.qpp-card{min-width:0!important;width:100%!important;height:auto!important}
+    .qmes-prod-process.qpp-ref-layout .qpp-side{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;padding:14px!important}
     .qmes-prod-process.qpp-ref-layout .qpp-sidebox{min-height:112px!important;padding:14px!important}
     .qmes-prod-process.qpp-ref-layout .qpp-table{table-layout:fixed!important}
     .qmes-prod-process.qpp-ref-layout .qpp-table th,.qmes-prod-process.qpp-ref-layout .qpp-table td{width:auto!important;text-align:center!important}
