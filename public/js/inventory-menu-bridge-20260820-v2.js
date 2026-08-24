@@ -1,8 +1,8 @@
-/* Inventory menu bridge v5.2: stable menu/sidebar host only. Detail modal stays React-owned. */
+/* Inventory menu bridge v5.3: stable menu/sidebar host only. Detail modal stays React-owned. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_MENU_BRIDGE_V52__)return;
-  window.__QMES_INV_MENU_BRIDGE_V52__=true;
+  if(window.__QMES_INV_MENU_BRIDGE_V53__)return;
+  window.__QMES_INV_MENU_BRIDGE_V53__=true;
 
   let root=null,host=null,current='overview';
   let restoreScheduled=false;
@@ -38,6 +38,17 @@
     if(!button)return;
     button.classList.remove('is-active');
     button.removeAttribute('aria-current');
+  }
+
+  function activateNativeTopMenu(button,label){
+    const buttons=Array.from(document.querySelectorAll('.qmes-top-menu-button'));
+    const current=button?.isConnected?button:buttons.find(item=>!item.closest('[data-qmes-inventory-menu]')&&clean(item.textContent)===label);
+    buttons.forEach(item=>{
+      const selected=item===current;
+      item.classList.toggle('is-active',selected);
+      if(selected)item.setAttribute('aria-current','page');
+      else item.removeAttribute('aria-current');
+    });
   }
 
   function restore(){
@@ -154,13 +165,14 @@
   document.addEventListener('click',event=>{
     const target=event.target.closest?.('.qmes-top-menu-button');
     if(target&&!target.closest('[data-qmes-inventory-menu]')){
+      const label=clean(target.textContent);
       setSurface('native');
       clearInventoryTopMenuActive();
       if(host)restore();
-      else{
-        requestAnimationFrame(clearInventoryTopMenuActive);
-        setTimeout(clearInventoryTopMenuActive,80);
-      }
+      const activate=()=>activateNativeTopMenu(target,label);
+      activate();
+      requestAnimationFrame(activate);
+      setTimeout(activate,180);
     }
   },false);
 
