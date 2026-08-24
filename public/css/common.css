@@ -8588,8 +8588,8 @@ select.qmes-label-judge-select option[value="불합격"]{
 /* 공정·출하검사 관리: 출력/수정/삭제 버튼 크기 동일 */
 .qmes-pqc-page table .qmes-iqc-action-btn,
 .qmes-oqc-page table .qmes-iqc-action-btn{
-  width:auto!important;
-  min-width:0!important;
+  width:62px!important;
+  min-width:62px!important;
   max-width:62px!important;
   height:30px!important;
   min-height:30px!important;
@@ -11717,8 +11717,8 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
-  width:62px!important;
-  min-width:62px!important;
+  width:auto!important;
+  min-width:0!important;
   height:30px!important;
   min-height:30px!important;
   margin:2px 2px!important;
