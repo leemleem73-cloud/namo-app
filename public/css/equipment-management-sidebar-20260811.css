@@ -1125,3 +1125,49 @@ html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-hist
   }
 }
 
+/* 등록창 항목명·입력칸 겹침 보정 — 2026-08-24 */
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  column-gap:18px!important;
+  row-gap:14px!important;
+  align-items:start!important;
+}
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid label{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:7px!important;
+  min-width:0!important;
+  min-height:66px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  line-height:18px!important;
+  white-space:nowrap!important;
+}
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid .qmes-equipment-field,
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid input.qmes-equipment-field[type="date"],
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid select.qmes-equipment-field{
+  display:block!important;
+  position:static!important;
+  flex:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:40px!important;
+  margin:0!important;
+  line-height:normal!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:900px){
+  .qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:620px){
+  .qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid{
+    grid-template-columns:1fr!important;
+  }
+}
+
