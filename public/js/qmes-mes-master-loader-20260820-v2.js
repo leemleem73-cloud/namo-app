@@ -1,9 +1,10 @@
 /* QMES Stage 12 operational loader v2
- * Loads stable runtime helpers. Production downtime/history and initial process
- * normalization are loaded first to avoid delayed UI correction after entry.
+ * Loads stable runtime helpers. Downtime edit recovery loads first so edit clicks
+ * are captured before any older history handler or cached helper.
  */
 (function(){
   const files=[
+    "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
     "./js/item-recipe-master-20260807.js?v=20260807-1",
