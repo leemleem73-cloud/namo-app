@@ -19,43 +19,6 @@
 .qmes-business-extension .qbe-alerts{display:grid;gap:8px}.qmes-business-extension .qbe-alert{display:flex;justify-content:space-between;gap:10px;padding:10px 11px;border-radius:9px;font-size:12px;font-weight:800}.qmes-business-extension .qbe-alert.red{background:#fff1f2;color:#9f1239}.qmes-business-extension .qbe-alert.orange{background:#fff7e6;color:#92400e}.qmes-business-extension .qbe-alert.blue{background:#eff6ff;color:#1e40af}
 .qmes-business-extension .qbe-box{border:1px solid #dbe3ec;border-radius:10px;background:#fbfdff;padding:12px;margin-top:10px}.qmes-business-extension .qbe-box h3{margin:0 0 9px;color:#111827;font-size:13px;font-weight:900}.qmes-business-extension .qbe-note{color:#64748b;font-size:11px;line-height:1.8}.qmes-business-extension .qbe-stage{display:inline-flex;margin-left:8px;border-radius:999px;background:#ffedd5;color:#c2410c;padding:3px 7px;font-size:10px;font-weight:900;vertical-align:3px}
 .qmes-top-menu{overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}.qmes-top-menu-item{flex:0 0 auto!important}.qmes-top-menu-button.is-extension{background:#fffaf0!important}.qmes-top-menu-button.is-extension:hover{background:#fff3dc!important}.qmes-top-menu-button.is-extension.is-active{background:#fff0d2!important}.qmes-extension-badge{display:inline-flex!important;align-items:center!important;justify-content:center!important;margin-left:2px!important;padding:2px 5px!important;border-radius:999px!important;background:#f59e0b!important;color:#fff!important;font-size:9px!important;font-style:normal!important;font-weight:900!important;line-height:1.2!important}
-
-/* 2026-08-24: main shell changed to match the approved light preview. Existing QMES modules remain unchanged. */
-body{background:#f5f7fb!important;color:#111827!important}
-#root>.min-h-screen.bg-slate-950{background:#f5f7fb!important;color:#111827!important}
-#root>.min-h-screen.bg-slate-950>header{background:#fff!important;border-color:#d7dee8!important;backdrop-filter:none!important;box-shadow:0 1px 8px rgba(15,23,42,.05)!important}
-#root>.min-h-screen.bg-slate-950>header>div:first-child{min-height:66px!important;padding-top:10px!important;padding-bottom:10px!important}
-#root>.min-h-screen.bg-slate-950>header img[alt="NAMO Chemical"]{filter:none!important;height:42px!important;max-width:280px!important}
-#root>.min-h-screen.bg-slate-950 .qmes-header-clock{color:#334155!important;font-weight:800!important}
-#root>.min-h-screen.bg-slate-950 .qmes-header-clock span:first-child{background:#22c55e!important}
-#root>.min-h-screen.bg-slate-950 .qmes-header-controls button,
-#root>.min-h-screen.bg-slate-950 header button[aria-label^="계정 설정"]{color:#334155!important}
-#root>.min-h-screen.bg-slate-950 header button[aria-label^="계정 설정"]:hover,
-#root>.min-h-screen.bg-slate-950 .qmes-header-controls button:hover{background:#f1f5f9!important}
-#root>.min-h-screen.bg-slate-950 header button[aria-label^="계정 설정"]>div:first-child{background:#eef2f7!important;color:#334155!important}
-#root>.min-h-screen.bg-slate-950 header button[aria-label^="계정 설정"] div.hidden{color:#111827!important}
-#root>.min-h-screen.bg-slate-950 .qmes-header-action{background:#fff!important;border-color:#cbd5e1!important;color:#334155!important;border-radius:8px!important;padding:7px 10px!important}
-#root>.min-h-screen.bg-slate-950 header button[aria-label^="NAMO Talk"]{color:#d97706!important}
-#root>.min-h-screen.bg-slate-950 header button[aria-label$="NAMO Talk 열기"],
-#root>.min-h-screen.bg-slate-950 header button[aria-label$="NAMO Talk 닫기"]{background:#eff6ff!important;border-color:#93c5fd!important;color:#1d4ed8!important}
-.qmes-top-menu{background:#fff!important;border-top:1px solid #e2e8f0!important;border-bottom:1px solid #d7dee8!important;min-height:46px!important;padding-left:10px!important;box-shadow:none!important}
-.qmes-top-menu-button{background:#fff!important;color:#111827!important;border-color:transparent!important;border-radius:0!important;min-height:45px!important;padding-left:14px!important;padding-right:14px!important;font-size:13px!important;font-weight:800!important}
-.qmes-top-menu-button:hover{background:#f1f5f9!important;color:#174ea6!important}
-.qmes-top-menu-button.is-active{background:#eef6ff!important;color:#174ea6!important;border-bottom:3px solid #2563eb!important}
-.qmes-top-menu-button.is-extension{background:#fffaf0!important}.qmes-top-menu-button.is-extension.is-active{background:#fff0d2!important;color:#9a5800!important;border-bottom-color:#f59e0b!important}
-#root>.min-h-screen.bg-slate-950>main{background:#f5f7fb!important;color:#111827!important;padding:18px 22px 34px!important;max-width:none!important;width:100%!important}
-#root>.min-h-screen.bg-slate-950>main>div{max-width:none!important}
-#root>.min-h-screen.bg-slate-950>main .bg-slate-900,
-#root>.min-h-screen.bg-slate-950>main .bg-slate-900\/50,
-#root>.min-h-screen.bg-slate-950>main .bg-slate-800{border-color:#e2e8f0!important}
-
-/* Dashboard cards get the same white-card treatment as the preview without changing their data logic. */
-#root>.min-h-screen.bg-slate-950>main [class*="rounded-xl"][class*="border-slate"]{box-shadow:0 8px 24px rgba(15,23,42,.06)}
-#root>.min-h-screen.bg-slate-950>main .text-slate-100,
-#root>.min-h-screen.bg-slate-950>main .text-slate-200{color:#1f2937!important}
-#root>.min-h-screen.bg-slate-950>main .text-slate-300{color:#475569!important}
-#root>.min-h-screen.bg-slate-950>main .text-slate-400{color:#64748b!important}
-
 @media(max-width:1200px){.qmes-business-extension .qbe-kpis{grid-template-columns:repeat(3,1fr)}.qmes-business-extension .qbe-grid2{grid-template-columns:1fr}.qmes-business-extension .qbe-form-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:760px){.qmes-business-extension{padding:12px}.qmes-business-extension .qbe-kpis{grid-template-columns:repeat(2,1fr)}.qmes-business-extension .qbe-split{grid-template-columns:1fr}.qmes-business-extension .qbe-form-grid{grid-template-columns:1fr}#root>.min-h-screen.bg-slate-950>main{padding:12px!important}}
+@media(max-width:760px){.qmes-business-extension{padding:12px}.qmes-business-extension .qbe-kpis{grid-template-columns:repeat(2,1fr)}.qmes-business-extension .qbe-split{grid-template-columns:1fr}.qmes-business-extension .qbe-form-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.qmes-business-extension .qbe-kpis{grid-template-columns:1fr}.qmes-business-extension .qbe-title-row{flex-direction:column}}
