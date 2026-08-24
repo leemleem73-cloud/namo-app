@@ -17,7 +17,7 @@
     "./js/production-top-submenu-hide-20260824.js?v=20260824-1",
     "./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2",
     "./js/production-worker-live-name-sync-20260824.js?v=20260824-1",
-    "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-2",
+    "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-4",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
