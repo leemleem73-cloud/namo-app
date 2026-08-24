@@ -4,14 +4,14 @@
  */
 (function(){
   const files=[
-    "./js/production-downtime-history-20260824.js?v=20260824-edit3-firstpaint1",
+    "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
     "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260824-inventory-native2",
     "./js/production-process-link-fix-20260824.js?v=20260824-1",
-    "./js/production-process-initial-sync-20260824.js?v=20260824-1",
+    "./js/production-process-initial-sync-20260824.js?v=20260824-2",
     "./js/production-worklog-date-retry-20260824.js?v=20260824-1",
     "./js/production-top-submenu-hide-20260824.js?v=20260824-1",
     "./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2",
