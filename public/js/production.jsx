@@ -1501,11 +1501,13 @@ function IssueWoTab() {
                         <option value="완료">완료</option>
                       </select>
                     </td>
-                    <td className="center whitespace-nowrap">
-                      <button onClick={() => openWorkOrderPreview(r.no, "detail")} className="qmes-manage-btn view">미리보기</button>
-                      <button onClick={() => openWorkOrderPreview(r.no, "print")} className="qmes-manage-btn print">출력</button>
-                      <button onClick={() => editWo(r)} className="qmes-manage-btn edit">수정</button>
-                      <button onClick={() => deleteWo(r)} className="qmes-manage-btn delete">삭제</button>
+                    <td className="center">
+                      <div className="qmes-workorder-actions">
+                        <button onClick={() => openWorkOrderPreview(r.no, "detail")} className="qmes-manage-btn view">미리보기</button>
+                        <button onClick={() => openWorkOrderPreview(r.no, "print")} className="qmes-manage-btn print">출력</button>
+                        <button onClick={() => editWo(r)} className="qmes-manage-btn edit">수정</button>
+                        <button onClick={() => deleteWo(r)} className="qmes-manage-btn delete">삭제</button>
+                      </div>
                     </td>
                   </tr>
                 );
