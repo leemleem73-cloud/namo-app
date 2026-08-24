@@ -624,7 +624,12 @@ window.ProductionProcessTab=ProductionProcessTab;
 (function installProductionProcessMenu(){
   try {
     if (typeof TABS === "undefined" || typeof TOP_MENUS === "undefined") return;
-    if (!TABS.some(item => item.id === "prodProcess")) {
+    const existingProcessTab = TABS.find(item => item.id === "prodProcess");
+    if (existingProcessTab) {
+      existingProcessTab.label = "생산공정 관리";
+      existingProcessTab.icon = FlaskConical;
+      existingProcessTab.comp = ProductionProcessTab;
+    } else {
       const workOrderIndex = TABS.findIndex(item => item.id === "woIssue");
       const item = { id:"prodProcess", label:"생산공정 관리", icon:FlaskConical, comp:ProductionProcessTab };
       if (workOrderIndex >= 0) TABS.splice(workOrderIndex + 1, 0, item);
