@@ -12,16 +12,6 @@
     return `${Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix || ""}`;
   }
 
-  function ensureProductionSidebar(root) {
-    if (!root || root.dataset.qppSidebarReady === "1") return;
-    const openProductionSidebar = window.qmesSetGlobalSidebarGroup;
-    if (typeof openProductionSidebar !== "function") return;
-    root.dataset.qppSidebarReady = "1";
-    if (!document.body.classList.contains("qmes-side-open")) {
-      openProductionSidebar("생산관리");
-    }
-  }
-
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement("style");
@@ -98,7 +88,6 @@
   function render() {
     const root = document.querySelector(".qmes-prod-process");
     if (!root) return;
-    ensureProductionSidebar(root);
     const lot = getLot(root);
     if (!lot) {
       document.getElementById(ID)?.remove();
