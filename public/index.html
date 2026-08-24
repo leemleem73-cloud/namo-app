@@ -39,6 +39,7 @@
     #qmes-user-dropdown button:hover,#qmes-user-dropdown button:focus-visible {background:#243a57;outline:none;}
     #qmes-user-dropdown .qmes-dropdown-logout {color:#fda4af;border-top:1px solid rgba(71,85,105,.7);border-radius:0 0 7px 7px;}
     .qmes-submenu-row {display:none!important;}
+    .qmes-submenu-row.qmes-submenu-productionMenu {display:flex!important;}
     #qmes-all-menu-dropdown {position:fixed;z-index:11900;min-width:210px;max-width:280px;padding:7px;border:1px solid rgba(71,85,105,.95);border-radius:10px;background:#132238;box-shadow:0 14px 35px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .12s ease,transform .12s ease,visibility .12s;}
     #qmes-all-menu-dropdown.is-open {opacity:1;visibility:visible;transform:translateY(0);}
     #qmes-all-menu-dropdown .qmes-hover-title {padding:8px 11px 7px;color:#7dd3fc;font-size:12px;font-weight:900;border-bottom:1px solid rgba(71,85,105,.7);margin-bottom:4px;}
@@ -112,7 +113,7 @@
   <script src="./js/namo-attendance-time-patch.js?v=20260814-latest2"></script>
   <script src="./js/qmes-attendance-reminder.js?v=20260814-restore1"></script>
   <script>var useRef=React.useRef;</script>
-  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260824-production-route1"></script>
+  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260824-production-nested-menu1"></script>
   <script type="text/babel" data-presets="react" src="./js/production-process-management-20260824.jsx?v=20260824-production-route1"></script>
   <script type="text/babel" data-presets="react" src="./js/app.jsx?v=20260730-serverauth1"></script>
   <script src="./js/qmes-user-dropdown-restore-20260812.js?v=20260812-1"></script>
