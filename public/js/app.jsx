@@ -37,6 +37,16 @@ function clearLoginSession() {
   }
 }
 
+async function qmesFetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function QMESLogin({ onLogin }) {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
@@ -58,7 +68,7 @@ function QMESLogin({ onLogin }) {
     setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await qmesFetchWithTimeout("/api/auth/login", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -90,7 +100,11 @@ function QMESLogin({ onLogin }) {
       onLogin(normalized);
     } catch (error) {
       console.error("[QMES] 서버 로그인 실패", error);
-      setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+      if (error?.name === "AbortError") {
+        setError("로그인 서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
+      } else {
+        setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -280,7 +294,7 @@ function QMESInitialPasswordChange({ user, onComplete, onLogout }) {
     setSubmitting(true);
     setError("");
     try {
-      const response = await fetch("/api/auth/password", {
+      const response = await qmesFetchWithTimeout("/api/auth/password", {
         method: "PUT",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -300,7 +314,8 @@ function QMESInitialPasswordChange({ user, onComplete, onLogout }) {
       onComplete(nextUser);
     } catch (error) {
       console.error("[QMES] 초기 비밀번호 변경 실패", error);
-      setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+      if (error?.name === "AbortError") setError("서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
+      else setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setSubmitting(false);
     }
@@ -337,7 +352,7 @@ function QMESApp() {
       return () => { active = false; };
     }
 
-    fetch("/api/auth/me", { credentials: "same-origin" })
+    qmesFetchWithTimeout("/api/auth/me", { credentials: "same-origin" }, 10000)
       .then(async (response) => {
         const payload = await response.json().catch(() => ({ success: false }));
         if (!response.ok || !payload.success || !payload.data) {
@@ -380,10 +395,10 @@ function QMESApp() {
   };
 
   const handleLogout = () => {
-    fetch("/api/auth/logout", {
+    qmesFetchWithTimeout("/api/auth/logout", {
       method: "POST",
       credentials: "same-origin",
-    }).catch(() => {});
+    }, 5000).catch(() => {});
     clearLoginSession();
     delete window.__QMES_CURRENT_USER__;
     delete window.__QMES_USER__;
