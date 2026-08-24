@@ -14,6 +14,30 @@ function QMESProductionProcessRoute(){
   return typeof Component==="function"?<Component/>:<div className="rounded-xl border border-slate-700 bg-slate-900 p-6 text-sm font-bold text-slate-200">생산공정 관리 화면을 불러오는 중입니다.</div>;
 }
 
+function qmesSavedInventorySection(){
+  const allowed=["overview","movement","lot","production","count"];
+  try{
+    const saved=sessionStorage.getItem("qmes_inventory_section")||"overview";
+    return allowed.includes(saved)?saved:"overview";
+  }catch(error){return "overview";}
+}
+
+function QMESInventoryRoute(){
+  const [section,setSection]=useState(qmesSavedInventorySection);
+  useEffect(()=>{
+    const handleSection=event=>{
+      const next=String(event?.detail?.section||"");
+      if(!["overview","movement","lot","production","count"].includes(next))return;
+      try{sessionStorage.setItem("qmes_inventory_section",next);}catch(error){}
+      setSection(next);
+    };
+    window.addEventListener("qmes:inventory-section",handleSection);
+    return()=>window.removeEventListener("qmes:inventory-section",handleSection);
+  },[]);
+  const Component=window.InventoryEnterpriseTab;
+  return <div id="qmes-inventory-host">{typeof Component==="function"?<Component section={section}/>:<div className="inv-loading">재고관리 화면을 불러오는 중입니다.</div>}</div>;
+}
+
 const TABS = [
   { id:"dash", label:"종합 대시보드", icon:LayoutDashboard, comp:DashboardTab },
   { id:"pop", label:"현장 입력 (iPad)", icon:Tablet, comp:FieldInputTab },
@@ -27,6 +51,7 @@ const TABS = [
   { id:"lock", label:"품질 인터락 (차단)", icon:Lock, comp:InterlockTab },
   { id:"partners", label:"거래처 현황", icon:Users, comp:PartnersTab },
   { id:"eq", label:"설비 모니터링", icon:Cpu, comp:EquipmentTab },
+  { id:"inv", label:"재고관리", icon:Boxes, comp:QMESInventoryRoute },
   { id:"trace", label:"Lot 추적", icon:GitBranch, comp:TraceTab },
   { id:"spc", label:"SPC (Cpk)", icon:BarChart3, comp:SpcTab },
   { id:"4m", label:"4M 변경관리", icon:Repeat, comp:FourMTab },
@@ -44,6 +69,7 @@ const TOP_MENUS = [
   { id:"partners", label:"거래처 현황", icon:Users },
   { id:"eq", label:"설비관리", icon:Cpu },
   { id:"trace", label:"LOT 추적", icon:GitBranch },
+  { id:"inv", label:"재고관리", icon:Boxes },
   { id:"nonconformityMenu", label:"부적합관리", icon:ShieldAlert, children:["ncr","cc","4m"] },
 ];
 
@@ -57,7 +83,7 @@ function qmesProcessCleanNavigation(value){return String(value==null?"":value).t
 function QMESChemical({user,onLogout}){
   const [tab,setTab]=useState(()=>{
     const saved=safeStorageGet("qmes_current_tab","dash");
-    return saved==="namoTalk"||saved==="inv"?"dash":saved;
+    return saved==="namoTalk"?"dash":saved;
   });
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
