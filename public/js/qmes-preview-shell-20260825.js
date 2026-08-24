@@ -55,7 +55,7 @@
     side.style.bottom='0';
     side.style.overflowY='auto';
     side.style.zIndex='20';
-    side.style.display=window.innerWidth>900?'block':'none';
+    side.style.display='none';
     const required=[...Object.values(nativeMap),...Object.values(extMap)];
     const missing=required.some(code=>!side.querySelector(`[data-qps-code="${code}"]`));
     if(missing||!side.querySelector('.qps-search')||side.querySelectorAll('.qps-side-btn').length!==required.length)buildSidebar(side);
@@ -92,12 +92,17 @@
   }
   function syncLayout(){
     const main=document.querySelector('#root>div>main');
-    if(main){main.style.marginLeft=window.innerWidth>900?'220px':'0';main.style.width=window.innerWidth>900?'calc(100% - 220px)':'100%';}
+    if(main){
+      const sideOpen=document.body.classList.contains('qmes-side-open');
+      const sideWidth=window.matchMedia('(max-width:900px)').matches?'190px':'220px';
+      main.style.marginLeft=sideOpen?sideWidth:'0';
+      main.style.width=sideOpen?`calc(100% - ${sideWidth})`:'100%';
+    }
     const nav=document.querySelector('.qmes-top-menu');if(nav&&window.innerWidth>900)nav.style.paddingLeft='34px';
   }
   function tick(){decorateHeader();ensureSidebar();syncLayout();syncActive();}
-  document.addEventListener('click',e=>{if(e.target.closest('.qmes-top-menu-button'))setTimeout(syncActive,60)},true);
-  window.addEventListener('qmes:navigate-tab',()=>setTimeout(syncActive,60));
+  document.addEventListener('click',e=>{if(e.target.closest('.qmes-top-menu-button'))setTimeout(()=>{syncLayout();syncActive();},60)},true);
+  window.addEventListener('qmes:navigate-tab',()=>setTimeout(()=>{syncLayout();syncActive();},60));
   window.addEventListener('resize',()=>{ensureSidebar();syncLayout();});
   const observer=new MutationObserver(()=>{decorateHeader();ensureSidebar();syncLayout();});
   function start(){tick();observer.observe(document.documentElement,{childList:true,subtree:true});setInterval(()=>{ensureSidebar();syncLayout();syncActive();},900)}
