@@ -1,3 +1,4 @@
+@import url("./qmes-preview-shell-20260825.css?v=20260825-1");
 /* NAMO QMES business extension: sales / planning MRP / purchase / recipe / shipping. */
 .qmes-business-extension{color:#111827;background:#f5f7fb;border-radius:16px;padding:18px;min-height:calc(100vh - 170px);font-family:Pretendard,"Noto Sans KR",system-ui,sans-serif}
 .qmes-business-extension *{box-sizing:border-box}
