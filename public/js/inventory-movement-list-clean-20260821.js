@@ -1,7 +1,7 @@
-/* Inventory table alignment v15: consistent headers and row fields across inventory sections. */
+/* Inventory table first-paint styles v16: React owns sequence and pagination. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_TABLE_ALIGNMENT_V15_20260824__)return;
+  if(window.__QMES_INV_TABLE_FIRST_PAINT_V16_20260824__)return;
   window.__QMES_INV_TABLE_ALIGNMENT_V15_20260824__=true;
 
   const PAGE_SIZE=20;
@@ -64,100 +64,6 @@
     document.head.appendChild(style);
   }
 
-  function removeTransactionButton(host){
-    host.querySelectorAll('.inv-actions button').forEach(button=>{
-      const text=clean(button.textContent);
-      if(text==='입출고 처리'||text==='입출고처리')button.remove();
-    });
-  }
 
-  function ensureColgroup(table){
-    let colgroup=table.querySelector(':scope > colgroup');
-    if(!colgroup){colgroup=document.createElement('colgroup');table.prepend(colgroup);}
-    while(colgroup.children.length<8)colgroup.appendChild(document.createElement('col'));
-    while(colgroup.children.length>8)colgroup.lastElementChild.remove();
-  }
-
-  function ensureSequence(table,rows){
-    ensureColgroup(table);
-    const head=table.querySelector('thead tr');
-    if(head&&!head.querySelector('.qmes-inv-seq')){
-      const th=document.createElement('th');
-      th.className='qmes-inv-seq';
-      th.textContent='순번';
-      head.prepend(th);
-    }
-    rows.forEach((row,index)=>{
-      let td=row.querySelector(':scope > .qmes-inv-seq');
-      if(!td){td=document.createElement('td');td.className='qmes-inv-seq';row.prepend(td);}
-      td.textContent=String(index+1);
-    });
-  }
-
-  function pagerMarkup(total,pages){
-    const start=Math.max(1,Math.min(page-2,Math.max(1,pages-4)));
-    const end=Math.min(pages,start+4);
-    let html=`<button type="button" data-qmes-page="${Math.max(1,page-1)}" ${page===1?'disabled':''}>‹</button>`;
-    for(let p=start;p<=end;p++)html+=`<button type="button" data-qmes-page="${p}" class="${p===page?'is-active':''}">${p}</button>`;
-    html+=`<button type="button" data-qmes-page="${Math.min(pages,page+1)}" ${page===pages?'disabled':''}>›</button>`;
-    html+=`<span class="qmes-inv-page-info">총 ${total}건 · 페이지당 ${PAGE_SIZE}건</span>`;
-    return html;
-  }
-
-  function render(){
-    ensureStyle();
-    const host=document.getElementById('qmes-inventory-host');
-    if(!host)return;
-    const title=clean(host.querySelector('.inv-title-row h2')?.textContent);
-    const section=title.includes('입출고 관리')?'movement':title.includes('LOT별 재고')?'lot':title.includes('생산투입/완료')?'production':title.includes('재고실사')?'count':'';
-    if(section)host.dataset.qmesInventorySection=section;
-    else delete host.dataset.qmesInventorySection;
-    if(section!=='movement')return;
-    removeTransactionButton(host);
-
-    const panel=host.querySelector('.inv-movement-panel');
-    const table=panel?.querySelector('.inv-movement-table');
-    const body=table?.querySelector('tbody');
-    if(!panel||!table||!body)return;
-
-    if(lastTable!==table){page=1;lastTable=table;}
-    const rows=Array.from(body.children).filter(node=>node.tagName==='TR');
-    ensureSequence(table,rows);
-    const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
-    page=Math.min(Math.max(1,page),pages);
-    rows.forEach((row,index)=>{row.hidden=!(index>=(page-1)*PAGE_SIZE&&index<page*PAGE_SIZE);});
-
-    let pager=panel.querySelector('.qmes-inv-pager');
-    if(!pager){pager=document.createElement('div');pager.className='qmes-inv-pager';panel.appendChild(pager);}
-    const nextHtml=pagerMarkup(rows.length,pages);
-    if(pager.innerHTML!==nextHtml)pager.innerHTML=nextHtml;
-  }
-
-  function schedule(){clearTimeout(timer);timer=setTimeout(render,40);}
-
-  document.addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-qmes-page]');
-    if(!button)return;
-    const host=button.closest('#qmes-inventory-host');
-    if(!host)return;
-    event.preventDefault();
-    event.stopPropagation();
-    const next=Number(button.dataset.qmesPage);
-    if(Number.isInteger(next)&&next>0){page=next;render();}
-  },true);
-
-  const observer=new MutationObserver(mutations=>{
-    let relevant=false;
-    for(const mutation of mutations){
-      for(const node of mutation.addedNodes){
-        if(node.nodeType!==1)continue;
-        if(node.matches?.('.inv-shell,.inv-movement-table,.inv-title-row')||node.querySelector?.('.inv-movement-table,.inv-title-row')){relevant=true;break;}
-      }
-      if(relevant)break;
-    }
-    if(relevant)schedule();
-  });
-  observer.observe(document.documentElement,{childList:true,subtree:true});
-  document.addEventListener('qmes:inventory-auto-linked',schedule);
-  schedule();
+  ensureStyle();
 })();
