@@ -23,6 +23,7 @@ const TABS = [
 const TOP_MENUS = [
   { id:"dash", label:"대시보드", icon:LayoutDashboard },
   { id:"productionMenu", label:"생산관리", icon:FlaskConical, children:["prod","woIssue","prodProcess"] },
+  { id:"prodProcess", label:"생산공정 관리", icon:FlaskConical },
   { id:"qualityMenu", label:"품질검사", icon:ClipboardCheck, children:["iqc","pqc","oqc","spc","lock","coa"] },
   { id:"pop", label:"현장입력", icon:Tablet },
   { id:"partners", label:"거래처 현황", icon:Users },
