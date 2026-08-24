@@ -26,9 +26,6 @@
 
   function cleanup(){
     document.querySelectorAll(".qmes-wo-status-save-btn").forEach(button=>button.remove());
-    document.querySelectorAll(".qmes-issued-table-v2 tbody tr").forEach(row=>{
-      row.querySelectorAll(".qmes-manage-btn.view").forEach(button=>button.remove());
-    });
     document.querySelectorAll(".qmes-production-result-shortcut").forEach(button=>{
       if(String(button.textContent||"").trim()==="실적수정") button.textContent="실적입력";
     });
