@@ -1,4 +1,9 @@
 /* QMES router */
+function QMESProductionProcessRoute(){
+  const Component=window.ProductionProcessTab;
+  return typeof Component==="function"?<Component/>:<div className="rounded-xl border border-slate-700 bg-slate-900 p-6 text-sm font-bold text-slate-200">생산공정 관리 화면을 불러오는 중입니다.</div>;
+}
+
 const TABS = [
   { id:"dash", label:"종합 대시보드", icon:LayoutDashboard, comp:DashboardTab },
   { id:"pop", label:"현장 입력 (iPad)", icon:Tablet, comp:FieldInputTab },
@@ -6,6 +11,7 @@ const TABS = [
   { id:"prod", label:"생산 (배치)", icon:FlaskConical, comp:ProductionTab },
   { id:"wo", label:"", icon:ClipboardList, comp:WoDocTab },
   { id:"woIssue", label:"작업지시서", icon:Plus, comp:IssueWoTab },
+  { id:"prodProcess", label:"생산공정 관리", icon:FlaskConical, comp:QMESProductionProcessRoute },
   { id:"pqc", label:"공정검사 (PQC)", icon:ClipboardCheck, comp:PqcTab },
   { id:"oqc", label:"출하검사 (OQC)", icon:ArrowUpFromLine, comp:OqcTab },
   { id:"lock", label:"품질 인터락 (차단)", icon:Lock, comp:InterlockTab },
