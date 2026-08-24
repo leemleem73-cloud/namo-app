@@ -1,6 +1,16 @@
 /* QMES router */
 function QMESProductionProcessRoute(){
-  const Component=window.ProductionProcessTab || (typeof ProductionProcessTab==="function" ? ProductionProcessTab : null);
+  const [Component,setComponent]=useState(()=>typeof window.ProductionProcessTab==="function"?window.ProductionProcessTab:null);
+  useEffect(()=>{
+    const syncComponent=()=>{
+      const next=window.ProductionProcessTab;
+      if(typeof next==="function")setComponent(()=>next);
+    };
+    syncComponent();
+    window.addEventListener("qmes:production-process-ready",syncComponent);
+    const timer=setInterval(syncComponent,250);
+    return()=>{window.removeEventListener("qmes:production-process-ready",syncComponent);clearInterval(timer);};
+  },[]);
   return typeof Component==="function"?<Component/>:<div className="rounded-xl border border-slate-700 bg-slate-900 p-6 text-sm font-bold text-slate-200">생산공정 관리 화면을 불러오는 중입니다.</div>;
 }
 
@@ -42,6 +52,7 @@ function safeStorageGet(key, fallback=null){
 }
 function safeStorageSet(key,value){try{sessionStorage.setItem(key,value);return true;}catch(error){return false;}}
 function safeStorageRemove(key){try{sessionStorage.removeItem(key);}catch(error){}}
+function qmesProcessCleanNavigation(value){return String(value==null?"":value).trim();}
 
 function QMESChemical({user,onLogout}){
   const [tab,setTab]=useState(()=>{
@@ -61,6 +72,16 @@ function QMESChemical({user,onLogout}){
   const [passwordError,setPasswordError]=useState("");
 
   useEffect(()=>{safeStorageSet("qmes_current_tab",tab);},[tab]);
+  useEffect(()=>{
+    const handleTabNavigation=event=>{
+      const nextTab=qmesProcessCleanNavigation(event?.detail?.tab);
+      if(!nextTab||!TABS.some(item=>item.id===nextTab))return;
+      setTab(nextTab);
+      if(event?.detail?.openMenu)setOpenMenu(event.detail.openMenu);
+    };
+    window.addEventListener("qmes:navigate-tab",handleTabNavigation);
+    return()=>window.removeEventListener("qmes:navigate-tab",handleTabNavigation);
+  },[]);
   useEffect(()=>{safeStorageSet("qmes_namo_talk_open",talkOpen?"1":"0");},[talkOpen]);
   useEffect(()=>{
     const updateUnread=event=>setNamoUnread(Math.max(0,Number(event.detail?.count||0)));
