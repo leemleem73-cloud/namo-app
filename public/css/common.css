@@ -11757,8 +11757,8 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 }
 .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn.view{width:auto!important;min-width:0!important;}
 .qmes-issued-table-v2 .qmes-status-select{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;}
-.qmes-workorder-actions{display:flex!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;gap:2px!important;width:100%!important;min-width:0!important;max-width:100%!important;white-space:normal!important;}
-.qmes-workorder-actions .qmes-manage-btn,.qmes-workorder-actions .qmes-manage-btn.view{flex:0 1 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding-left:4px!important;padding-right:4px!important;}
+.qmes-workorder-actions{display:flex!important;align-items:center!important;justify-content:center!important;flex-wrap:nowrap!important;gap:1px!important;width:100%!important;min-width:0!important;max-width:100%!important;white-space:nowrap!important;}
+.qmes-workorder-actions .qmes-manage-btn,.qmes-workorder-actions .qmes-manage-btn.view,.qmes-workorder-actions .qmes-production-result-shortcut{flex:0 1 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;height:26px!important;min-height:26px!important;margin:0!important;padding-left:2px!important;padding-right:2px!important;font-size:9px!important;white-space:nowrap!important;}
 
 /* 일반 미리보기에는 작업지시 정보만, 출력 미리보기에는 성적서 표시 */
 .qmes-wo-output-preview{width:min(1040px,96vw)!important;}
