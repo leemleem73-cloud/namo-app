@@ -3,6 +3,7 @@
  * - Hide deleted work orders from the production-process LOT selector.
  * - Align executable production steps with MES process numbers 30~80.
  * - Migrate previously saved 1~7 process steps without deleting progress.
+ * - Auto-complete process 60 when the linked PQC is fully passed.
  * - Add Production Process Management to the unified Production top menu.
  */
 (function(){
@@ -66,12 +67,9 @@
     ];
   }
 
-  // Existing component calls this global function whenever a new LOT is opened.
   try{window.qmesProcessDefaultSteps=mesSteps;}catch(_error){}
   try{if(typeof qmesProcessDefaultSteps!=="undefined")qmesProcessDefaultSteps=mesSteps;}catch(_error){}
 
-  // Replace only the Production Process screen's work-order reader. Other QMES sync consumers
-  // still receive tombstones, so delete synchronization remains untouched.
   const fixedFetchRows=async function(){
     const response=await fetch("/api/qmes-sync/workorder",{credentials:"same-origin"});
     const payload=await response.json().catch(()=>({success:false,data:[]}));
@@ -91,7 +89,6 @@
         result.push({...row,payload:nextPayload});
         return result;
       }
-      // A real synced work order is a snapshot {lotNo, doc, batch, ...}.
       if(source.deleted||!source.doc) return result;
       const doc=source.doc||{};
       const batch=source.batch||{};
@@ -119,7 +116,6 @@
   try{window.qmesProcessFetchSyncRows=fixedFetchRows;}catch(_error){}
   try{if(typeof qmesProcessFetchSyncRows!=="undefined")qmesProcessFetchSyncRows=fixedFetchRows;}catch(_error){}
 
-  // Keep local MES/dashboard data aware of the latest shared production-process state.
   async function primeProcessState(){
     try{
       const rows=await fixedFetchRows();
@@ -138,7 +134,124 @@
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",primeProcessState,{once:true});else primeProcessState();
 
-  // Unified hover dropdown is built by a separate legacy script. Add the missing row every time it renders.
+  function collectLocalPqcPassLots(target){
+    const rows=Array.isArray(window.DB?.insp?.PQC)?window.DB.insp.PQC:[];
+    const grouped=new Map();
+    rows.forEach(row=>{
+      const lot=clean(row?.lot||row?.lotNo);
+      if(!lot) return;
+      if(!grouped.has(lot)) grouped.set(lot,[]);
+      grouped.get(lot).push(row);
+    });
+    grouped.forEach((items,lot)=>{
+      if(items.length&&items.every(item=>clean(item?.judge)==="합격")) target.add(lot);
+    });
+  }
+
+  async function collectSharedPqcPassLots(target){
+    try{
+      const response=await fetch("/api/qmes-sync/pqc",{credentials:"same-origin"});
+      const data=await response.json().catch(()=>({success:false,data:[]}));
+      if(!response.ok||!data.success) return;
+      (Array.isArray(data.data)?data.data:[]).forEach(record=>{
+        const payload=record?.payload&&typeof record.payload==="object"?record.payload:{};
+        if(payload.deleted) return;
+        const lot=clean(payload.lotNo||payload.lot);
+        const rows=Array.isArray(payload.rows)?payload.rows:[];
+        if(lot&&rows.length&&rows.every(row=>clean(row?.judge)==="합격")) target.add(lot);
+      });
+    }catch(_error){}
+  }
+
+  async function saveProcessPayload(lot,payload){
+    const response=await fetch("/api/qmes-sync/workorder",{
+      method:"POST",
+      credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({key:`${keyPrefix}${lot}`,payload})
+    });
+    const data=await response.json().catch(()=>({success:false}));
+    if(!response.ok||!data.success)throw new Error(data.message||"생산공정 자동 연동 저장 실패");
+    return data.data;
+  }
+
+  let pqcAutoSyncRunning=false;
+  async function autoCompletePqcProcess(){
+    if(pqcAutoSyncRunning) return;
+    pqcAutoSyncRunning=true;
+    try{
+      const passLots=new Set();
+      collectLocalPqcPassLots(passLots);
+      await collectSharedPqcPassLots(passLots);
+      if(!passLots.size) return;
+      const rows=await fixedFetchRows();
+      const changed=[];
+      for(const row of rows){
+        const key=clean(row?.record_key);
+        if(!key.startsWith(keyPrefix)) continue;
+        const source=row?.payload&&typeof row.payload==="object"?row.payload:{};
+        const lot=clean(source.lot||key.slice(keyPrefix.length));
+        if(!lot||!passLots.has(lot)) continue;
+        const localDoc=window.DB?.woDocs?.[lot]||source;
+        const steps=migrateSteps(source.steps,localDoc);
+        const index=steps.findIndex(step=>Number(step?.no)===60);
+        if(index<0||clean(steps[index]?.status)==="완료") continue;
+        const prior=steps.filter(step=>Number(step?.no)<60&&Number(step?.no)>=30);
+        if(prior.some(step=>clean(step?.status)!=="완료")) continue;
+        const now=new Date().toISOString();
+        const nextSteps=steps.map((step,stepIndex)=>stepIndex===index?{
+          ...step,
+          status:"완료",
+          startAt:step.startAt||now,
+          endAt:now,
+          autoLinked:true,
+          autoLinkedBy:"PQC 합격"
+        }:step);
+        const allDone=nextSteps.every(step=>clean(step?.status)==="완료");
+        const next={
+          ...source,
+          lot,
+          steps:nextSteps,
+          status:allDone?"완료":"진행중",
+          pqcStatus:"합격",
+          pqcAutoLinkedAt:now,
+          updatedAt:now,
+          updatedBy:"PQC AUTO LINK"
+        };
+        await saveProcessPayload(lot,next);
+        if(window.DB){
+          DB.productionProcesses=DB.productionProcesses||{};
+          DB.productionProcesses[lot]=next;
+        }
+        changed.push(lot);
+      }
+      if(changed.length){
+        try{
+          if(typeof window.dbSave==="function")window.dbSave();
+          else if(typeof dbSave==="function")dbSave();
+        }catch(_error){}
+        window.dispatchEvent(new CustomEvent("qmes:production-process-updated",{detail:{source:"pqc-auto",lots:changed}}));
+        setTimeout(()=>{
+          const refresh=Array.from(document.querySelectorAll(".qmes-prod-process button")).find(button=>clean(button.textContent)==="새로고침");
+          if(refresh&&!refresh.disabled) refresh.click();
+        },80);
+      }
+    }catch(error){
+      console.warn("[QMES 생산공정] PQC 자동완료 연동 실패",error?.message||error);
+    }finally{
+      pqcAutoSyncRunning=false;
+    }
+  }
+
+  const startPqcAutoSync=()=>{
+    autoCompletePqcProcess();
+    window.setInterval(autoCompletePqcProcess,2500);
+    window.addEventListener("focus",autoCompletePqcProcess);
+    window.addEventListener("qmes:pqc-saved",autoCompletePqcProcess);
+    window.addEventListener("qmes:inspection-saved",autoCompletePqcProcess);
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startPqcAutoSync,{once:true});else startPqcAutoSync();
+
   const topText=element=>clean(element?.textContent).replace(/[›〉▣]/g,"").trim();
   function navigateProductionProcess(){
     const top=Array.from(document.querySelectorAll(".qmes-top-menu-button")).find(button=>topText(button)==="생산관리");
