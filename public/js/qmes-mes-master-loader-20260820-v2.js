@@ -10,6 +10,7 @@
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
     "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260820-5",
     "./js/production-process-link-fix-20260824.js?v=20260824-1",
+    "./js/production-worklog-date-retry-20260824.js?v=20260824-1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
