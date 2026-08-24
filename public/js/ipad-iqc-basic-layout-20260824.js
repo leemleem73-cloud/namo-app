@@ -9,8 +9,22 @@
   const style=document.createElement("style");
   style.id="qmes-ipad-iqc-basic-layout-style-20260824";
   style.textContent=`
-    .qmes-ipad-pop .qmes-ipad-form-grid > label.qmes-iqc-calculated-weight{grid-column:1!important;}
-    .qmes-ipad-pop .qmes-ipad-form-grid > label.qmes-iqc-barcode-qty{grid-column:2!important;}
+    .qmes-ipad-pop .qmes-ipad-form-grid > .qmes-iqc-weight-pair{
+      grid-column:1 / -1!important;
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+      gap:12px!important;
+      width:100%!important;
+      min-width:0!important;
+    }
+    .qmes-ipad-pop .qmes-ipad-form-grid > .qmes-iqc-weight-pair > label{
+      min-width:0!important;
+      width:100%!important;
+      margin:0!important;
+    }
+    @media(max-width:700px){
+      .qmes-ipad-pop .qmes-ipad-form-grid > .qmes-iqc-weight-pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;}
+    }
   `;
   document.getElementById(style.id)?.remove();
   document.head.appendChild(style);
@@ -31,24 +45,29 @@
     const defect=labelByText(grid,"불량수량");
     const packaging=labelByText(grid,"포장형태");
     const remarks=labelByText(grid,"비고");
-    const calculated=labelByText(grid,"계산중량");
-    const barcodeQty=labelByText(grid,"바코드 발행수량");
-    if(!defect||!packaging||!remarks) return;
-
-    if(defect.nextElementSibling!==packaging){
+    if(defect&&packaging&&defect.nextElementSibling!==packaging){
       defect.insertAdjacentElement("afterend",packaging);
     }
-
-    remarks.classList.add("wide");
-    if(packaging.nextElementSibling!==remarks){
-      packaging.insertAdjacentElement("afterend",remarks);
+    if(remarks){
+      remarks.classList.add("wide");
+      if(packaging&&packaging.nextElementSibling!==remarks){
+        packaging.insertAdjacentElement("afterend",remarks);
+      }
     }
 
+    let pair=grid.querySelector(":scope > .qmes-iqc-weight-pair");
+    let calculated=pair?.querySelector("label:first-child")||labelByText(grid,"계산중량");
+    let barcodeQty=pair?.querySelector("label:last-child")||labelByText(grid,"바코드 발행수량");
     if(calculated&&barcodeQty){
-      calculated.classList.add("qmes-iqc-calculated-weight");
-      barcodeQty.classList.add("qmes-iqc-barcode-qty");
-      if(calculated.nextElementSibling!==barcodeQty){
-        calculated.insertAdjacentElement("afterend",barcodeQty);
+      if(!pair){
+        pair=document.createElement("div");
+        pair.className="qmes-iqc-weight-pair";
+        calculated.parentNode.insertBefore(pair,calculated);
+        pair.appendChild(calculated);
+        pair.appendChild(barcodeQty);
+      }else{
+        if(calculated.parentElement!==pair) pair.appendChild(calculated);
+        if(barcodeQty.parentElement!==pair) pair.appendChild(barcodeQty);
       }
     }
   }
