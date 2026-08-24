@@ -27,8 +27,18 @@ function qmesProcessDate(value) {
   return String(value).slice(0, 10);
 }
 
+async function qmesProcessFetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function qmesProcessFetchSyncRows() {
-  const response = await fetch(`/api/qmes-sync/${QMES_PROCESS_SYNC_TYPE}`, { credentials: "same-origin" });
+  const response = await qmesProcessFetchWithTimeout(`/api/qmes-sync/${QMES_PROCESS_SYNC_TYPE}`, { credentials: "same-origin" });
   const payload = await response.json().catch(() => ({ success: false, data: [] }));
   if (!response.ok || !payload.success) throw new Error(payload.message || "생산공정 공용 DB 조회에 실패했습니다.");
   return Array.isArray(payload.data) ? payload.data : [];
@@ -160,7 +170,7 @@ async function qmesProcessCreateWorklog(lot, workOrder, workers, process) {
 function ProductionProcessTab() {
   const [syncRows, setSyncRows] = useState([]);
   const [remoteUsers, setRemoteUsers] = useState([]);
-  const [selectedLot, setSelectedLot] = useState("");
+  const [selectedLot, setSelectedLot] = useState(() => qmesProcessWorkOrdersFromDb()[0]?.lot || "");
   const [process, setProcess] = useState(null);
   const [selectedStep, setSelectedStep] = useState(0);
   const [workerIds, setWorkerIds] = useState([]);
@@ -230,7 +240,7 @@ function ProductionProcessTab() {
     try {
       const [rows, usersResponse] = await Promise.all([
         qmesProcessFetchSyncRows(),
-        fetch("/api/users/signable", { credentials: "same-origin" }).then(async response => {
+        qmesProcessFetchWithTimeout("/api/users/signable", { credentials: "same-origin" }).then(async response => {
           const payload = await response.json().catch(() => ({ success: false, data: [] }));
           return response.ok && payload.success && Array.isArray(payload.data) ? payload.data : [];
         }).catch(() => []),
