@@ -4,7 +4,6 @@
  */
 (function(){
   const files=[
-    "./js/production-process-width-guard-20260824.js?v=20260824-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
@@ -14,7 +13,6 @@
     "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260824-inventory-native2",
     "./js/production-process-link-fix-20260824.js?v=20260824-1",
     "./js/production-process-initial-sync-20260824.js?v=20260824-2",
-    "./js/production-process-layout-reference-20260824.js?v=20260824-fullwidth2",
     "./js/production-worklog-date-retry-20260824.js?v=20260824-1",
     "./js/production-top-submenu-hide-20260824.js?v=20260824-1",
     "./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2",
