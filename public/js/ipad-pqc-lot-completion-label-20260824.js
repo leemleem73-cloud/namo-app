@@ -1,8 +1,8 @@
-/* QMES IPAD/Field PQC/OQC production LOT linked selector - 2026-08-24 v6 */
+/* QMES IPAD/Field PQC/OQC production LOT linked selector - 2026-08-24 v7 */
 (function(){
   "use strict";
-  if(window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V6__) return;
-  window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V6__=true;
+  if(window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V7__) return;
+  window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V7__=true;
 
   const clean=value=>String(value==null?"":value).trim();
   const suffix=/\s*·\s*(?:생산\s*)?(?:완료|미완료)\s*$/i;
@@ -50,11 +50,18 @@
     const result=doc.productionResult||batch.productionResult||db.lots?.[key]?.productionResult||{};
     return !!(result.completedAt||result.completeAt||result.finishedAt||doc.completedAt||batch.completedAt||clean(doc.status)==="완료"||clean(batch.status)==="완료");
   }
-  function lotList(){
+  function lotList(mode){
     const db=getDB();const lots=new Set();
     Object.keys(db.woDocs||{}).forEach(lot=>{const key=baseLot(lot);if(key)lots.add(key);});
-    (db.batches||[]).forEach(row=>{const key=baseLot(row?.no);if(key)lots.add(key);});
-    Object.keys(db.lots||{}).forEach(lot=>{const key=baseLot(lot);if(key)lots.add(key);});
+    (db.batches||[]).forEach(row=>{const key=baseLot(row?.no||row?.lot||row?.lotNo||row?.workOrder);if(key)lots.add(key);});
+    Object.entries(db.lots||{}).forEach(([lot,row])=>{const key=baseLot(row?.lot||row?.lotNo||row?.no||lot);if(key)lots.add(key);});
+    if(mode==="OQC"){
+      const passed=new Set((Array.isArray(db.insp?.OQC)?db.insp.OQC:[])
+        .filter(row=>clean(row?.judge)==="합격")
+        .map(row=>baseLot(row?.lot||row?.lotNo))
+        .filter(Boolean));
+      passed.forEach(lot=>lots.delete(lot));
+    }
     return Array.from(lots).sort((a,b)=>b.localeCompare(a,"ko"));
   }
   function productionLotLabel(){
@@ -91,9 +98,18 @@
       input.insertAdjacentElement("afterend",select);
       select.addEventListener("change",()=>dispatchValue(input,baseLot(select.value)));
     }
-    const current=baseLot(input.value),lots=lotList(),previous=baseLot(select.value);select.innerHTML="";
-    const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent=lots.length?"생산 LOT 선택":"연동된 생산 LOT 없음";select.appendChild(placeholder);
-    lots.forEach(lot=>{const option=document.createElement("option");option.value=lot;option.textContent=`${lot}${isProductionComplete(lot)?" · 완료":" · 미완료"}`;select.appendChild(option);});
+    const current=baseLot(input.value),lots=lotList(mode),previous=baseLot(select.value);select.innerHTML="";
+    const placeholder=document.createElement("option");placeholder.value="";
+    placeholder.textContent=mode==="OQC"
+      ? (lots.length?"출하검사 대기 LOT 선택":"출하검사 대기 LOT 없음")
+      : (lots.length?"생산 LOT 선택":"연동된 생산 LOT 없음");
+    select.appendChild(placeholder);
+    lots.forEach(lot=>{
+      const option=document.createElement("option");option.value=lot;
+      const status=mode==="OQC"?"출하검사 대기중":(isProductionComplete(lot)?"완료":"미완료");
+      option.textContent=`${lot} · ${status}`;
+      select.appendChild(option);
+    });
     const desired=current||previous||"";if(desired&&lots.includes(desired))select.value=desired;
   }
   function apply(){buildSelector();remarksWide();}
