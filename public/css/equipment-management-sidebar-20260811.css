@@ -1239,3 +1239,22 @@ html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-hist
   }
 }
 
+/* 등록창 중복 흰색 박스 제거 및 외곽선 선명화 */
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-box{
+  background:transparent!important;
+  background-color:transparent!important;
+  border:1.5px solid #94a3b8!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-schedule-form,
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-repair-form,
+.qmes-ipad-equipment .qmes-equipment-history-screen .qmes-equipment-register-grid{
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+
