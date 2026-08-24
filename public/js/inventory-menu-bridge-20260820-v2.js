@@ -1,8 +1,8 @@
-/* Inventory menu bridge v5.1: stable menu/sidebar host only. Detail modal stays React-owned. */
+/* Inventory menu bridge v5.2: stable menu/sidebar host only. Detail modal stays React-owned. */
 (function(){
   'use strict';
-  if(window.__QMES_INV_MENU_BRIDGE_V51__)return;
-  window.__QMES_INV_MENU_BRIDGE_V51__=true;
+  if(window.__QMES_INV_MENU_BRIDGE_V52__)return;
+  window.__QMES_INV_MENU_BRIDGE_V52__=true;
 
   let root=null,host=null,current='overview';
   let restoreScheduled=false;
@@ -33,7 +33,15 @@
     });
   }
 
+  function clearInventoryTopMenuActive(){
+    const button=document.querySelector('[data-qmes-inventory-menu] .qmes-top-menu-button');
+    if(!button)return;
+    button.classList.remove('is-active');
+    button.removeAttribute('aria-current');
+  }
+
   function restore(){
+    clearInventoryTopMenuActive();
     if(root){try{root.unmount();}catch(error){}root=null;}
     if(host){host.remove();host=null;}
     const main=document.querySelector('#root>div>main');
@@ -43,6 +51,8 @@
         delete node.dataset.invHidden;
       }
     });
+    requestAnimationFrame(clearInventoryTopMenuActive);
+    setTimeout(clearInventoryTopMenuActive,80);
   }
 
   function sidebar(){
@@ -145,7 +155,12 @@
     const target=event.target.closest?.('.qmes-top-menu-button');
     if(target&&!target.closest('[data-qmes-inventory-menu]')){
       setSurface('native');
+      clearInventoryTopMenuActive();
       if(host)restore();
+      else{
+        requestAnimationFrame(clearInventoryTopMenuActive);
+        setTimeout(clearInventoryTopMenuActive,80);
+      }
     }
   },false);
 
