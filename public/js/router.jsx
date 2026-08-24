@@ -35,7 +35,7 @@ function QMESInventoryRoute(){
     return()=>window.removeEventListener("qmes:inventory-section",handleSection);
   },[]);
   const Component=window.InventoryEnterpriseTab;
-  return <div id="qmes-inventory-host">{typeof Component==="function"?<Component section={section}/>:<div className="inv-loading">재고관리 화면을 불러오는 중입니다.</div>}</div>;
+  return <div id="qmes-inventory-host" data-qmes-inventory-section={section}>{typeof Component==="function"?<Component section={section}/>:<div className="inv-loading">재고관리 화면을 불러오는 중입니다.</div>}</div>;
 }
 
 const TABS = [
@@ -66,10 +66,10 @@ const TOP_MENUS = [
   { id:"productionMenu", label:"생산관리", icon:FlaskConical, children:["prod","woIssue","prodProcess"] },
   { id:"qualityMenu", label:"품질검사", icon:ClipboardCheck, children:["iqc","pqc","oqc","spc","lock","coa"] },
   { id:"pop", label:"현장입력", icon:Tablet },
+  { id:"inv", label:"재고관리", icon:Boxes },
   { id:"partners", label:"거래처 현황", icon:Users },
   { id:"eq", label:"설비관리", icon:Cpu },
   { id:"trace", label:"LOT 추적", icon:GitBranch },
-  { id:"inv", label:"재고관리", icon:Boxes },
   { id:"nonconformityMenu", label:"부적합관리", icon:ShieldAlert, children:["ncr","cc","4m"] },
 ];
 
