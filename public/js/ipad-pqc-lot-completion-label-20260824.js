@@ -1,8 +1,8 @@
-/* QMES IPAD/Field PQC production LOT linked selector - 2026-08-24 v5 */
+/* QMES IPAD/Field PQC/OQC production LOT linked selector - 2026-08-24 v6 */
 (function(){
   "use strict";
-  if(window.__QMES_IPAD_PQC_LOT_LINKED_SELECTOR_20260824_V5__) return;
-  window.__QMES_IPAD_PQC_LOT_LINKED_SELECTOR_20260824_V5__=true;
+  if(window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V6__) return;
+  window.__QMES_IPAD_PQC_OQC_LOT_LINKED_SELECTOR_20260824_V6__=true;
 
   const clean=value=>String(value==null?"":value).trim();
   const suffix=/\s*·\s*(?:생산\s*)?(?:완료|미완료)\s*$/i;
@@ -10,10 +10,11 @@
   const getDB=()=>{try{if(typeof DB!=="undefined"&&DB)return DB;}catch(_error){}return window.DB||{};};
 
   const style=document.createElement("style");
-  style.id="qmes-ipad-pqc-linked-lot-style-20260824";
+  style.id="qmes-ipad-pqc-oqc-linked-lot-style-20260824";
   style.textContent=`
-    .qmes-ipad-pop .qmes-ipad-form-grid .qmes-pqc-linked-lot-select{
-      box-sizing:border-box!important;width:100%!important;min-width:0!important;height:48px!important;
+    .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-production-lot-linked{grid-column:1 / -1!important;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;}
+    .qmes-ipad-pop .qmes-ipad-form-grid .qmes-production-lot-linked-select{
+      box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;height:48px!important;
       border:1px solid #cbd5e1!important;border-radius:10px!important;background:#fff!important;color:#0f172a!important;
       padding:0 14px!important;font-size:15px!important;font-weight:700!important;
     }
@@ -21,17 +22,25 @@
       grid-column:1 / -1!important;grid-row:auto!important;width:100%!important;min-width:0!important;max-width:none!important;
       display:block!important;box-sizing:border-box!important;
     }
-    .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-pqc-remarks-wide input{
+    .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-pqc-remarks-wide input,
+    .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-pqc-remarks-wide textarea{
       display:block!important;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;
     }
   `;
   document.getElementById(style.id)?.remove();
   document.head.appendChild(style);
 
-  function isPqcScreen(){
+  function currentMode(){
     const root=document.querySelector(".qmes-ipad-pop");
-    const title=clean(root?.querySelector(".qmes-ipad-inspection-head h1")?.textContent);
-    return !!root&&title.includes("공정검사");
+    if(!root)return "";
+    const active=root.querySelector('.qmes-ipad-mode-tabs button.is-active');
+    const text=clean(active?.textContent).toUpperCase();
+    if(text.includes('PQC'))return 'PQC';
+    if(text.includes('OQC'))return 'OQC';
+    const title=clean(root.querySelector('.qmes-ipad-inspection-head h1')?.textContent);
+    if(title.includes('공정검사'))return 'PQC';
+    if(title.includes('출하검사'))return 'OQC';
+    return "";
   }
   function isProductionComplete(lot){
     const key=baseLot(lot);if(!key)return false;
@@ -54,7 +63,7 @@
     return Array.from(grid.querySelectorAll("label")).find(label=>clean(label.querySelector("span")?.textContent).startsWith("생산 LOT"))||null;
   }
   function remarksWide(){
-    if(!isPqcScreen())return;
+    if(currentMode()!=="PQC")return;
     const grid=document.querySelector(".qmes-ipad-pop .qmes-ipad-section .qmes-ipad-form-grid");if(!grid)return;
     const remarks=Array.from(grid.querySelectorAll("label")).find(label=>clean(label.querySelector("span")?.textContent).startsWith("비고"));
     if(!remarks)return;
@@ -62,8 +71,6 @@
     remarks.style.setProperty("grid-column","1 / -1","important");
     remarks.style.setProperty("width","100%","important");
     remarks.style.setProperty("max-width","none","important");
-    const input=remarks.querySelector("input,textarea");
-    if(input){input.style.setProperty("width","100%","important");input.style.setProperty("max-width","none","important");}
   }
   function dispatchValue(input,value){
     const setter=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,"value")?.set;
@@ -71,23 +78,28 @@
     input.dispatchEvent(new Event("input",{bubbles:true}));input.dispatchEvent(new Event("change",{bubbles:true}));
   }
   function buildSelector(){
-    if(!isPqcScreen())return;
+    const mode=currentMode();if(mode!=="PQC"&&mode!=="OQC")return;
     const label=productionLotLabel();if(!label)return;
+    label.classList.add('qmes-production-lot-linked');
     const input=label.querySelector("input");if(!input)return;
-    let select=label.querySelector(".qmes-pqc-linked-lot-select");
+    input.style.setProperty("display","none","important");
+    input.removeAttribute('list');
+    const datalist=label.querySelector('datalist');if(datalist)datalist.remove();
+    let select=label.querySelector(".qmes-production-lot-linked-select");
     if(!select){
-      select=document.createElement("select");select.className="qmes-pqc-linked-lot-select";select.setAttribute("aria-label","생산 LOT 선택");
-      input.style.setProperty("display","none","important");input.insertAdjacentElement("afterend",select);
+      select=document.createElement("select");select.className="qmes-production-lot-linked-select";select.setAttribute("aria-label","생산 LOT 선택");
+      input.insertAdjacentElement("afterend",select);
       select.addEventListener("change",()=>dispatchValue(input,baseLot(select.value)));
-    }else input.style.setProperty("display","none","important");
+    }
     const current=baseLot(input.value),lots=lotList(),previous=baseLot(select.value);select.innerHTML="";
     const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent=lots.length?"생산 LOT 선택":"연동된 생산 LOT 없음";select.appendChild(placeholder);
     lots.forEach(lot=>{const option=document.createElement("option");option.value=lot;option.textContent=`${lot}${isProductionComplete(lot)?" · 완료":" · 미완료"}`;select.appendChild(option);});
     const desired=current||previous||"";if(desired&&lots.includes(desired))select.value=desired;
   }
   function apply(){buildSelector();remarksWide();}
-  let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();});}
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
+  let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();[0,30,80,160].forEach(ms=>setTimeout(apply,ms));});}
+  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true});
+  document.addEventListener('click',schedule,true);
   window.addEventListener("qmes:shared-sync-complete",schedule);window.addEventListener("qmes:data-updated",schedule);window.addEventListener("qmes:production-process-updated",schedule);window.addEventListener("focus",schedule);
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",schedule,{once:true});else schedule();
 })();
