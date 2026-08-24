@@ -19,7 +19,7 @@
     "./js/production-worker-live-name-sync-20260824.js?v=20260824-1",
     "./js/inspection-remove-new-buttons-20260810.js?v=20260824-remove1",
     "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
-    "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-7",
+    "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-8",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
