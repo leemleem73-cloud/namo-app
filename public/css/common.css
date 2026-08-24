@@ -573,15 +573,18 @@ aside{display:none!important}
 
 /* Source style block 11 */
 .qmes-issued-filter{
+  width:100%;
+  min-width:0;
   margin-bottom:12px;
   display:grid;
-  grid-template-columns:200px 220px 180px 90px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr) 76px;
   gap:8px;
   align-items:end;
 }
-.qmes-issued-filter>div{display:flex;flex-direction:column;gap:4px}
+.qmes-issued-filter>div{display:flex;min-width:0;flex-direction:column;gap:4px}
 .qmes-issued-filter span{color:#6f8eae;font-size:10px}
 .qmes-issued-filter input{
+  box-sizing:border-box;width:100%;min-width:0;
   height:36px;padding:0 10px;border:1px solid #2b405b;border-radius:7px;
   background:#102138;color:#e7eef7;font-size:12px;outline:none
 }
@@ -604,7 +607,7 @@ aside{display:none!important}
 .qmes-manage-btn.edit{color:#7dd3fc;border-color:rgba(14,165,233,.45)}
 .qmes-manage-btn.delete{color:#fca5a5;border-color:rgba(239,68,68,.45)}
 .qmes-manage-btn:hover{background:rgba(255,255,255,.05)}
-@media(max-width:900px){.qmes-issued-filter{grid-template-columns:repeat(2,minmax(160px,1fr))}}
+@media(max-width:900px){.qmes-issued-filter{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Source style block 12 */
 /* ===== 작업지시 자동 상태 관리 ===== */
@@ -11749,7 +11752,7 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 .qmes-issued-table-v2 th:nth-child(8),.qmes-issued-table-v2 td:nth-child(8){width:7%!important}
 .qmes-issued-table-v2 th:nth-child(9),.qmes-issued-table-v2 td:nth-child(9){width:7%!important}
 .qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){width:8%!important}
-.qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:17%!important;overflow:visible!important}
+.qmes-issued-table-v2 th:nth-child(11),.qmes-issued-table-v2 td:nth-child(11){width:17%!important}
 .qmes-issued-table-v2 td:nth-child(11){display:table-cell!important;text-align:center!important;}
 .qmes-issued-table-v2 td:nth-child(11) .qmes-manage-btn{
   display:inline-flex!important;width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;
