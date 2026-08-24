@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SYNC_SIDEBAR_V12_9__) return;
-  window.__QMES_SYNC_SIDEBAR_V12_9__=true;
+  if(window.__QMES_SYNC_SIDEBAR_V12_10__) return;
+  window.__QMES_SYNC_SIDEBAR_V12_10__=true;
 
   const clean=v=>String(v||"").replace(/[›〉]/g,"").replace(/\s+/g," ").trim();
   const menuMap={
