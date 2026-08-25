@@ -4,7 +4,7 @@
  */
 (function(){
   const files=[
-    "./js/qmes-edit-button-submit-guard-20260825.js?v=20260825-1",
+    "./js/qmes-edit-button-rebuild-20260825.js?v=20260825-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
