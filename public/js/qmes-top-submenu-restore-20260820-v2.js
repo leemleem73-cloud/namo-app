@@ -1,4 +1,4 @@
-/* QMES unified top submenu v2: inventory history entry removed, 2026-08-20. */
+/* QMES unified top submenu v2: hover-only submenu; native top-menu clicks are preserved. */
 (function(){
   "use strict";
   if(window.__QMES_TOP_SUBMENU_RESTORE__) return;
@@ -98,7 +98,12 @@
     if(hoverFrame)cancelAnimationFrame(hoverFrame);hoverFrame=requestAnimationFrame(()=>{hoverFrame=null;renderMenu(button);});
   }
 
-  document.addEventListener('click',event=>{const button=event.target.closest('.qmes-top-menu-button');if(button){openFor(button);return;}const menu=document.getElementById('qmes-all-menu-dropdown');if(menu&&!menu.contains(event.target))closeMenu();},false);
+  /* Important: top-menu click is intentionally NOT handled here.
+     React/native QMES owns click navigation. This helper only supplies hover submenus. */
+  document.addEventListener('click',event=>{
+    const menu=document.getElementById('qmes-all-menu-dropdown');
+    if(menu&&!menu.contains(event.target))closeMenu();
+  },false);
   document.addEventListener('pointerover',event=>{const button=event.target.closest('.qmes-top-menu-button');if(button)openFor(button);},true);
   document.addEventListener('pointerout',event=>{const button=event.target.closest('.qmes-top-menu-button');if(!button)return;const next=event.relatedTarget;if(next&&((next.closest&&next.closest('.qmes-top-menu-button'))||(next.closest&&next.closest('#qmes-all-menu-dropdown'))))return;scheduleClose();},true);
   window.addEventListener('resize',()=>{const menu=document.getElementById('qmes-all-menu-dropdown');if(menu?.classList.contains('is-open')&&currentButton)positionMenu(currentButton,menu);});
