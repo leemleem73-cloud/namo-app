@@ -64,4 +64,4 @@
       if (expose() || attempts >= 100) global.clearInterval(timer);
     }, 50);
   }
-})();
+})(window);
