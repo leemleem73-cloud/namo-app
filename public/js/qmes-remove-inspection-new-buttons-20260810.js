@@ -1,4 +1,4 @@
-/* QMES inspection controls: keep IQC 신규등록, hide PQC/OQC 신규등록, and add IQC 현장입력 바로가기. */
+/* QMES inspection controls: keep IQC 신규등록, hide PQC/OQC 신규등록, and keep 현장입력 바로가기 for all inspection modes. */
 (function installInspectionFieldShortcut(global){
   'use strict';
   if(global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__) return;
@@ -9,7 +9,6 @@
     global.__QMES_INSPECTION_REMOVE_GUARD__=true;
     const nativeRemove=Element.prototype.remove;
     Element.prototype.remove=function(){
-      /* Only IQC 신규등록 is protected. PQC/OQC are intentionally hidden. */
       if(this && this.matches && this.matches('.qmes-iqc-new-btn')) return this;
       return nativeRemove.call(this);
     };
@@ -25,11 +24,18 @@
       .qmes-iqc-new-btn,.qmes-iqc-action-btn,.qmes-iqc-action-print,.qmes-iqc-action-label,.qmes-iqc-action-edit,.qmes-iqc-action-delete{
         display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
       }
-      .qmes-pqc-page .qmes-inspection-new-btn,.qmes-oqc-page .qmes-inspection-new-btn{display:none!important;visibility:hidden!important;}
+      .qmes-pqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut]),
+      .qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut]){
+        display:none!important;visibility:hidden!important;
+      }
+      .qmes-pqc-page [data-qmes-field-shortcut],
+      .qmes-oqc-page [data-qmes-field-shortcut],
+      .qmes-iqc-page [data-qmes-field-shortcut]{
+        display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+      }
       .qmes-iqc-manage-cell,.qmes-iqc-manage-inline,.qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{visibility:visible!important;opacity:1!important;}
       .qmes-iqc-page th:last-child,.qmes-iqc-page td:last-child,.qmes-pqc-page th:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page th:last-child,.qmes-oqc-page td:last-child{position:sticky!important;right:0!important;z-index:4!important;min-width:178px!important;}
       .qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{background:#fff!important;}
-      [data-qmes-field-shortcut]{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
     `;
     document.head.appendChild(style);
   }
@@ -38,7 +44,10 @@
     const target=String(mode||'').toUpperCase();
     if(!['IQC','PQC','OQC'].includes(target)) return;
     try{sessionStorage.setItem(TARGET_KEY,target);}catch(error){}
-    if(global.__QMES_FIELD_NAVIGATION_READY__){global.dispatchEvent(new CustomEvent('qmes:open-field-inspection',{detail:{mode:target}}));return;}
+    if(global.__QMES_FIELD_NAVIGATION_READY__){
+      global.dispatchEvent(new CustomEvent('qmes:open-field-inspection',{detail:{mode:target}}));
+      return;
+    }
     const top=Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn=>String(btn.textContent||'').replace(/\s+/g,'').includes('현장입력'));
     if(top) top.click();
   }
@@ -48,8 +57,11 @@
     const parent=nativeButton.parentElement;
     if(parent.querySelector(`[data-qmes-field-shortcut="${mode}"]`)) return;
     const shortcut=nativeButton.cloneNode(false);
-    shortcut.type='button';shortcut.className=nativeButton.className;shortcut.dataset.qmesFieldShortcut=mode;
-    shortcut.textContent='현장입력 바로가기';shortcut.title='수입검사 현장입력으로 이동';
+    shortcut.type='button';
+    shortcut.className=nativeButton.className;
+    shortcut.dataset.qmesFieldShortcut=mode;
+    shortcut.textContent='현장입력 바로가기';
+    shortcut.title=`${mode==='IQC'?'수입검사':mode==='PQC'?'공정검사':'출하검사'} 현장입력으로 이동`;
     shortcut.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openTargetMode(mode);});
     nativeButton.insertAdjacentElement('afterend',shortcut);
   }
@@ -59,6 +71,14 @@
     document.querySelectorAll('.qmes-iqc-page .qmes-iqc-new-btn').forEach(btn=>{
       const text=String(btn.textContent||'').replace(/\s+/g,'');
       if(text.includes('신규등록')) addShortcut(btn,'IQC');
+    });
+    document.querySelectorAll('.qmes-pqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut])').forEach(btn=>{
+      const text=String(btn.textContent||'').replace(/\s+/g,'');
+      if(text.includes('신규등록')) addShortcut(btn,'PQC');
+    });
+    document.querySelectorAll('.qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut])').forEach(btn=>{
+      const text=String(btn.textContent||'').replace(/\s+/g,'');
+      if(text.includes('신규등록')) addShortcut(btn,'OQC');
     });
   }
 
