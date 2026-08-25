@@ -246,11 +246,27 @@ function ensureInventorySchema() {
 
 async function upsertItem(client, body) {
   const itemCode = txt(body.itemCode).toUpperCase();
-  const itemName = txt(body.itemName) || itemCode;
-  const category = VALID_CATEGORIES.has(txt(body.category).toUpperCase()) ? txt(body.category).toUpperCase() : 'RM';
-  const unit = txt(body.unit) || 'kg';
-  await client.query(`INSERT INTO inventory_items (item_code,item_name,category,unit) VALUES ($1,$2,$3,$4) ON CONFLICT (item_code) DO UPDATE SET item_name = CASE WHEN inventory_items.item_name = inventory_items.item_code THEN EXCLUDED.item_name ELSE inventory_items.item_name END, category = COALESCE(NULLIF(EXCLUDED.category,''), inventory_items.category), unit = COALESCE(NULLIF(EXCLUDED.unit,''), inventory_items.unit), updated_at = NOW()`,[itemCode,itemName,category,unit]);
-  return { itemCode, itemName, category, unit };
+  const requestedName = txt(body.itemName);
+  const requestedCategory = txt(body.category).toUpperCase();
+  const requestedUnit = txt(body.unit);
+  const category = VALID_CATEGORIES.has(requestedCategory) ? requestedCategory : null;
+  const result = await client.query(
+    `INSERT INTO inventory_items (item_code,item_name,category,unit)
+     VALUES ($1,$2,COALESCE($3,'RM'),COALESCE(NULLIF($4,''),'kg'))
+     ON CONFLICT (item_code)
+     DO UPDATE SET
+       item_name = CASE
+         WHEN inventory_items.item_name = inventory_items.item_code AND NULLIF($2,'') IS NOT NULL THEN $2
+         ELSE inventory_items.item_name
+       END,
+       category = COALESCE($3, inventory_items.category),
+       unit = COALESCE(NULLIF($4,''), inventory_items.unit),
+       updated_at = NOW()
+     RETURNING item_name, category, unit`,
+    [itemCode, requestedName || itemCode, category, requestedUnit]
+  );
+  const row = result.rows[0];
+  return { itemCode, itemName: row.item_name, category: row.category, unit: row.unit };
 }
 async function balanceQty(client,itemCode,lotNo,locationCode,status){const r=await client.query(`SELECT quantity FROM inventory_balances WHERE item_code=$1 AND lot_no=$2 AND location_code=$3 AND quality_status=$4 FOR UPDATE`,[itemCode,lotNo,locationCode,status]);return r.rowCount?Number(r.rows[0].quantity):0;}
 async function changeBalance(client,itemCode,lotNo,locationCode,status,delta,allowNegative=false){if(!locationCode||!status||!delta)return;const current=await balanceQty(client,itemCode,lotNo,locationCode,status);const next=current+delta;if(!allowNegative&&next<-.000001)throw new Error(`재고가 부족합니다. 현재고 ${current}, 요청 ${Math.abs(delta)}`);await client.query(`INSERT INTO inventory_balances (item_code,lot_no,location_code,quality_status,quantity,updated_at) VALUES ($1,$2,$3,$4,$5,NOW()) ON CONFLICT (item_code,lot_no,location_code,quality_status) DO UPDATE SET quantity=EXCLUDED.quantity,updated_at=NOW()`,[itemCode,lotNo,locationCode,status,next]);}
