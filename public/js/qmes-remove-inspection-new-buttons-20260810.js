@@ -1,18 +1,16 @@
-/* QMES inspection controls: keep native 신규등록 and add a separate 현장입력 바로가기. */
+/* QMES inspection controls: keep IQC 신규등록, hide PQC/OQC 신규등록, and add IQC 현장입력 바로가기. */
 (function installInspectionFieldShortcut(global){
   'use strict';
   if(global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__) return;
   global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__=true;
   const TARGET_KEY='qmes_field_shortcut_mode';
 
-  /* Compatibility guard: an old cached module used Element.remove() to delete
-     IQC/PQC/OQC 신규등록 buttons whenever React rendered them. Protect only
-     those native controls while leaving normal DOM removal behavior untouched. */
   if(!global.__QMES_INSPECTION_REMOVE_GUARD__){
     global.__QMES_INSPECTION_REMOVE_GUARD__=true;
     const nativeRemove=Element.prototype.remove;
     Element.prototype.remove=function(){
-      if(this && this.matches && this.matches('.qmes-iqc-new-btn,.qmes-pqc-page .qmes-inspection-new-btn,.qmes-oqc-page .qmes-inspection-new-btn')) return this;
+      /* Only IQC 신규등록 is protected. PQC/OQC are intentionally hidden. */
+      if(this && this.matches && this.matches('.qmes-iqc-new-btn')) return this;
       return nativeRemove.call(this);
     };
   }
@@ -22,31 +20,14 @@
     const style=document.createElement('style');
     style.id='qmes-inspection-control-recovery-style';
     style.textContent=`
-      body:has(.qmes-preview-dashboard),
-      #root:has(.qmes-preview-dashboard),
-      main:has(.qmes-preview-dashboard){background:#f5f7fb!important;}
+      body:has(.qmes-preview-dashboard),#root:has(.qmes-preview-dashboard),main:has(.qmes-preview-dashboard){background:#f5f7fb!important;}
       .qmes-preview-dashboard{background:#f5f7fb!important;}
-      .qmes-iqc-new-btn,.qmes-inspection-new-btn,
-      .qmes-iqc-action-btn,.qmes-iqc-action-print,.qmes-iqc-action-label,
-      .qmes-iqc-action-edit,.qmes-iqc-action-delete{
-        display:inline-flex!important;
-        visibility:visible!important;
-        opacity:1!important;
-        pointer-events:auto!important;
+      .qmes-iqc-new-btn,.qmes-iqc-action-btn,.qmes-iqc-action-print,.qmes-iqc-action-label,.qmes-iqc-action-edit,.qmes-iqc-action-delete{
+        display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
       }
-      .qmes-iqc-manage-cell,.qmes-iqc-manage-inline,
-      .qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{
-        visibility:visible!important;
-        opacity:1!important;
-      }
-      .qmes-iqc-page th:last-child,.qmes-iqc-page td:last-child,
-      .qmes-pqc-page th:last-child,.qmes-pqc-page td:last-child,
-      .qmes-oqc-page th:last-child,.qmes-oqc-page td:last-child{
-        position:sticky!important;
-        right:0!important;
-        z-index:4!important;
-        min-width:178px!important;
-      }
+      .qmes-pqc-page .qmes-inspection-new-btn,.qmes-oqc-page .qmes-inspection-new-btn{display:none!important;visibility:hidden!important;}
+      .qmes-iqc-manage-cell,.qmes-iqc-manage-inline,.qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{visibility:visible!important;opacity:1!important;}
+      .qmes-iqc-page th:last-child,.qmes-iqc-page td:last-child,.qmes-pqc-page th:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page th:last-child,.qmes-oqc-page td:last-child{position:sticky!important;right:0!important;z-index:4!important;min-width:178px!important;}
       .qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{background:#fff!important;}
       [data-qmes-field-shortcut]{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
     `;
@@ -57,10 +38,7 @@
     const target=String(mode||'').toUpperCase();
     if(!['IQC','PQC','OQC'].includes(target)) return;
     try{sessionStorage.setItem(TARGET_KEY,target);}catch(error){}
-    if(global.__QMES_FIELD_NAVIGATION_READY__){
-      global.dispatchEvent(new CustomEvent('qmes:open-field-inspection',{detail:{mode:target}}));
-      return;
-    }
+    if(global.__QMES_FIELD_NAVIGATION_READY__){global.dispatchEvent(new CustomEvent('qmes:open-field-inspection',{detail:{mode:target}}));return;}
     const top=Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn=>String(btn.textContent||'').replace(/\s+/g,'').includes('현장입력'));
     if(top) top.click();
   }
@@ -70,11 +48,8 @@
     const parent=nativeButton.parentElement;
     if(parent.querySelector(`[data-qmes-field-shortcut="${mode}"]`)) return;
     const shortcut=nativeButton.cloneNode(false);
-    shortcut.type='button';
-    shortcut.className=nativeButton.className;
-    shortcut.dataset.qmesFieldShortcut=mode;
-    shortcut.textContent='현장입력 바로가기';
-    shortcut.title=`${mode==='IQC'?'수입검사':mode==='PQC'?'공정검사':'출하검사'} 현장입력으로 이동`;
+    shortcut.type='button';shortcut.className=nativeButton.className;shortcut.dataset.qmesFieldShortcut=mode;
+    shortcut.textContent='현장입력 바로가기';shortcut.title='수입검사 현장입력으로 이동';
     shortcut.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openTargetMode(mode);});
     nativeButton.insertAdjacentElement('afterend',shortcut);
   }
@@ -85,22 +60,10 @@
       const text=String(btn.textContent||'').replace(/\s+/g,'');
       if(text.includes('신규등록')) addShortcut(btn,'IQC');
     });
-    document.querySelectorAll('.qmes-pqc-page .qmes-inspection-new-btn').forEach(btn=>{
-      const text=String(btn.textContent||'').replace(/\s+/g,'');
-      if(text.includes('신규등록')) addShortcut(btn,'PQC');
-    });
-    document.querySelectorAll('.qmes-oqc-page .qmes-inspection-new-btn').forEach(btn=>{
-      const text=String(btn.textContent||'').replace(/\s+/g,'');
-      if(text.includes('신규등록')) addShortcut(btn,'OQC');
-    });
   }
 
   let scheduled=false;
-  function schedule(){
-    if(scheduled) return;
-    scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;install();});
-  }
+  function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;install();});}
   const observer=new MutationObserver(schedule);
   function start(){install();observer.observe(document.body,{childList:true,subtree:true});}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
