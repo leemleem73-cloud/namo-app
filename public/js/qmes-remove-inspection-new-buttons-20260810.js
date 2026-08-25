@@ -1,41 +1,31 @@
-/* QMES inspection controls: keep IQC 신규등록, hide PQC/OQC 신규등록, and keep 현장입력 바로가기 for all inspection modes. */
+/* QMES inspection controls — safe version.
+   Keep IQC 신규등록, hide PQC/OQC native 신규등록, and add 현장입력 바로가기.
+   No prototype overrides and no MutationObserver. */
 (function installInspectionFieldShortcut(global){
   'use strict';
-  if(global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__) return;
-  global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__=true;
+  if(global.__QMES_INSPECTION_FIELD_SHORTCUTS_SAFE_READY__) return;
+  global.__QMES_INSPECTION_FIELD_SHORTCUTS_SAFE_READY__=true;
   const TARGET_KEY='qmes_field_shortcut_mode';
 
-  if(!global.__QMES_INSPECTION_REMOVE_GUARD__){
-    global.__QMES_INSPECTION_REMOVE_GUARD__=true;
-    const nativeRemove=Element.prototype.remove;
-    Element.prototype.remove=function(){
-      if(this && this.matches && this.matches('.qmes-iqc-new-btn')) return this;
-      return nativeRemove.call(this);
-    };
-  }
+  function textOf(node){return String(node?.textContent||'').replace(/\s+/g,' ').trim();}
 
   function installStyles(){
-    if(document.getElementById('qmes-inspection-control-recovery-style')) return;
+    if(document.getElementById('qmes-inspection-control-safe-style')) return;
+    document.getElementById('qmes-inspection-control-recovery-style')?.remove();
     const style=document.createElement('style');
-    style.id='qmes-inspection-control-recovery-style';
+    style.id='qmes-inspection-control-safe-style';
     style.textContent=`
-      body:has(.qmes-preview-dashboard),#root:has(.qmes-preview-dashboard),main:has(.qmes-preview-dashboard){background:#f5f7fb!important;}
-      .qmes-preview-dashboard{background:#f5f7fb!important;}
-      .qmes-iqc-new-btn,.qmes-iqc-action-btn,.qmes-iqc-action-print,.qmes-iqc-action-label,.qmes-iqc-action-edit,.qmes-iqc-action-delete{
-        display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+      .qmes-iqc-page .qmes-iqc-new-btn,
+      .qmes-iqc-page .qmes-iqc-action-btn,
+      .qmes-pqc-page .qmes-iqc-action-btn,
+      .qmes-oqc-page .qmes-iqc-action-btn{
+        visibility:visible!important;opacity:1!important;pointer-events:auto!important;
       }
       .qmes-pqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut]),
       .qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut]){
-        display:none!important;visibility:hidden!important;
+        display:none!important;
       }
-      .qmes-pqc-page [data-qmes-field-shortcut],
-      .qmes-oqc-page [data-qmes-field-shortcut],
-      .qmes-iqc-page [data-qmes-field-shortcut]{
-        display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
-      }
-      .qmes-iqc-manage-cell,.qmes-iqc-manage-inline,.qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{visibility:visible!important;opacity:1!important;}
-      .qmes-iqc-page th:last-child,.qmes-iqc-page td:last-child,.qmes-pqc-page th:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page th:last-child,.qmes-oqc-page td:last-child{position:sticky!important;right:0!important;z-index:4!important;min-width:178px!important;}
-      .qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{background:#fff!important;}
+      [data-qmes-field-shortcut]{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
     `;
     document.head.appendChild(style);
   }
@@ -48,44 +38,47 @@
       global.dispatchEvent(new CustomEvent('qmes:open-field-inspection',{detail:{mode:target}}));
       return;
     }
-    const top=Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn=>String(btn.textContent||'').replace(/\s+/g,'').includes('현장입력'));
-    if(top) top.click();
+    const top=Array.from(document.querySelectorAll('.qmes-top-menu-button')).find(btn=>textOf(btn).replace(/\s+/g,'').includes('현장입력'));
+    top?.click();
   }
 
-  function addShortcut(nativeButton,mode){
-    if(!nativeButton||!nativeButton.parentElement) return;
+  function ensureShortcut(nativeButton,mode){
+    if(!nativeButton?.parentElement) return;
     const parent=nativeButton.parentElement;
     if(parent.querySelector(`[data-qmes-field-shortcut="${mode}"]`)) return;
-    const shortcut=nativeButton.cloneNode(false);
+    const shortcut=document.createElement('button');
     shortcut.type='button';
     shortcut.className=nativeButton.className;
     shortcut.dataset.qmesFieldShortcut=mode;
     shortcut.textContent='현장입력 바로가기';
     shortcut.title=`${mode==='IQC'?'수입검사':mode==='PQC'?'공정검사':'출하검사'} 현장입력으로 이동`;
-    shortcut.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openTargetMode(mode);});
+    shortcut.addEventListener('click',()=>openTargetMode(mode));
     nativeButton.insertAdjacentElement('afterend',shortcut);
   }
 
-  function install(){
+  function scan(){
     installStyles();
     document.querySelectorAll('.qmes-iqc-page .qmes-iqc-new-btn').forEach(btn=>{
-      const text=String(btn.textContent||'').replace(/\s+/g,'');
-      if(text.includes('신규등록')) addShortcut(btn,'IQC');
+      if(textOf(btn).includes('신규등록')) ensureShortcut(btn,'IQC');
     });
     document.querySelectorAll('.qmes-pqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut])').forEach(btn=>{
-      const text=String(btn.textContent||'').replace(/\s+/g,'');
-      if(text.includes('신규등록')) addShortcut(btn,'PQC');
+      if(textOf(btn).includes('신규등록')) ensureShortcut(btn,'PQC');
     });
     document.querySelectorAll('.qmes-oqc-page .qmes-inspection-new-btn:not([data-qmes-field-shortcut])').forEach(btn=>{
-      const text=String(btn.textContent||'').replace(/\s+/g,'');
-      if(text.includes('신규등록')) addShortcut(btn,'OQC');
+      if(textOf(btn).includes('신규등록')) ensureShortcut(btn,'OQC');
     });
   }
 
-  let scheduled=false;
-  function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;install();});}
-  const observer=new MutationObserver(schedule);
-  function start(){install();observer.observe(document.body,{childList:true,subtree:true});}
+  function scheduleScan(){requestAnimationFrame(()=>{scan();setTimeout(scan,80);});}
+  function start(){scan();setTimeout(scan,150);setTimeout(scan,500);}
+
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
+  window.addEventListener('qmes:navigate-tab',scheduleScan);
+  window.addEventListener('qmes:mes-master-ready',scheduleScan);
+  window.addEventListener('qmes:open-field-inspection',scheduleScan);
+  document.addEventListener('click',event=>{
+    if(event.target?.closest?.('.qmes-top-menu-button,.qmes-submenu-button')) scheduleScan();
+  },false);
+
   global.qmesOpenFieldInputShortcut=openTargetMode;
 })(window);
