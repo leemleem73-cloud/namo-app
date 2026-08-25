@@ -75,7 +75,9 @@ express.application.post = function patchedPost(routePath, ...handlers) {
     return originalPost.call(this, routePath, authLimiter, ...handlers);
   }
   if (routePath === '/api/auth/reset-password') {
-    return originalPost.call(this, routePath, resetLimiter, requireAdmin, ...handlers);
+    // server.js already verifies name + email + department for the self-service reset flow.
+    // Keep brute-force protection here without forcing an authenticated admin session.
+    return originalPost.call(this, routePath, resetLimiter, ...handlers);
   }
   return originalPost.call(this, routePath, ...handlers);
 };
