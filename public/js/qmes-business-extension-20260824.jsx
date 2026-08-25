@@ -17,7 +17,7 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
   const transitionStyle=document.createElement('style');
   transitionStyle.id='qmes-business-transition-normalize';
   transitionStyle.textContent=`
-    #root>div>main,.qmes-top-menu{transition:none!important}
+    #root>div>main,.qmes-top-menu,#qmes-sync-sidebar,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-top-menu{transition:none!important}
     body.qmes-business-active,body.qmes-business-active #root,body.qmes-business-active #root>div,body.qmes-business-active #root>div>main{background:#f5f7fb!important}
     body.qmes-business-active #qmes-business-extension-host{background:#f5f7fb!important;min-height:calc(100vh - 114px)!important}
   `;
@@ -30,7 +30,6 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
     const top=document.querySelector('.qmes-top-menu');if(top){top.style.removeProperty('transform');top.style.removeProperty('width');top.style.removeProperty('transition');}
   }
   function showBusinessSidebar(label){
-    resetSidebarLayout();
     const side=document.getElementById('qmes-sync-sidebar');
     if(!side)return;
     const title=side.querySelector('.qmes-side-title');
@@ -43,6 +42,8 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
     if(items){items.replaceChildren();const b=document.createElement('button');b.type='button';b.className='qmes-side-item is-active';b.textContent=label;items.appendChild(b);}
     ['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));
     document.body.classList.add('qmes-side-open');
+    const main=document.querySelector('#root>div>main');
+    if(main){const w=window.matchMedia('(max-width:900px)').matches?'190px':'220px';main.style.setProperty('margin-left',w,'important');main.style.setProperty('width',`calc(100% - ${w})`,'important');main.style.setProperty('transition','none','important');main.dataset.qmesSidebarShift='true';}
   }
   function closeExtension(){if(extensionRoot){try{extensionRoot.unmount()}catch(e){}extensionRoot=null}if(host){host.remove();host=null}document.querySelectorAll('.qmes-top-menu-button.is-extension').forEach(b=>b.classList.remove('is-active'));}
   function openExtension(id,label,Component,button){
@@ -54,23 +55,38 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
     extensionRoot=ReactDOM.createRoot(host);extensionRoot.render(<Component/>);
     document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));button?.classList.add('is-active');
     try{sessionStorage.setItem('qmes_business_extension_tab',id)}catch(e){}
-    requestAnimationFrame(()=>showBusinessSidebar(label));
+    showBusinessSidebar(label);
     window.scrollTo({top:0,behavior:'auto'});
   }
-  function restoreNative(){
+  function restoreNative({preserveSidebar=false}={}){
     if(!host&&!document.body.classList.contains('qmes-business-active'))return;
-    closeExtension();document.body.classList.remove('qmes-business-active');resetSidebarLayout();
+    closeExtension();document.body.classList.remove('qmes-business-active');
+    if(!preserveSidebar)resetSidebarLayout();
     const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden}});
     try{sessionStorage.removeItem('qmes_business_extension_tab')}catch(e){}
   }
-  function ensureButtons(){const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;menus.forEach(([id,topLabel,sideLabel,Component])=>{if(nav.querySelector(`[data-qbe-menu="${id}"]`))return;const item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});item.appendChild(b);nav.appendChild(item)});return true;}
+  function ensureButtons(){
+    const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;
+    menus.forEach(([id,topLabel,sideLabel,Component])=>{
+      if(nav.querySelector(`[data-qbe-menu="${id}"]`))return;
+      const item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;
+      const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;
+      b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});
+      item.appendChild(b);nav.appendChild(item);
+    });
+    return menus.every(([id])=>nav.querySelector(`[data-qbe-menu="${id}"]`));
+  }
 
-  /* Native menus already own their own routing/sidebar. Only clean up an active business extension. */
-  document.addEventListener('click',event=>{const b=event.target.closest?.('.qmes-top-menu-button');if(!b||b.classList.contains('is-extension'))return;restoreNative();},true);
+  /* Native menus own their routing/sidebar. Do not close their sidebar before their own handler runs. */
+  document.addEventListener('click',event=>{
+    const b=event.target.closest?.('.qmes-top-menu-button');
+    if(!b||b.classList.contains('is-extension'))return;
+    restoreNative({preserveSidebar:true});
+  },true);
   document.addEventListener('click',event=>{const logoButton=event.target.closest?.('header button');if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;restoreNative();},true);
 
-  /* Install extension buttons once; short retry only until the native top nav exists. */
-  function start(){let tries=0;const timer=setInterval(()=>{tries++;if(ensureButtons()||tries>=20)clearInterval(timer);},50);}
+  /* Reliable but bounded install: wait up to 10 seconds for native top navigation. */
+  function start(){let tries=0;const timer=setInterval(()=>{tries++;if(ensureButtons()||tries>=200)clearInterval(timer);},50);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.qmesCloseBusinessExtension=restoreNative;
 })();
