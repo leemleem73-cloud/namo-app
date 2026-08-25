@@ -80,6 +80,15 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
     restoreNative();
     if(group)setTimeout(()=>window.qmesSetGlobalSidebarGroup?.(group),0);
   },true);
+  document.addEventListener('click',event=>{
+    const logoButton=event.target.closest?.('header button');
+    if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;
+    restoreNative();
+    setTimeout(()=>{
+      const dash=[...document.querySelectorAll('.qmes-top-menu-button')].find(btn=>String(btn.textContent||'').replace(/\s+/g,'').includes('대시보드'));
+      dash?.click();
+    },0);
+  },false);
   const observer=new MutationObserver(()=>ensureButtons());
   function start(){ensureButtons();observer.observe(document.documentElement,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
