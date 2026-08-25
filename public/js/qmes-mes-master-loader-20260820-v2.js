@@ -1,9 +1,10 @@
 /* QMES Stage 12 operational loader v2
- * Loads stable runtime helpers. Downtime edit recovery loads first so edit clicks
- * are captured before any older history handler or cached helper.
+ * Loads stable runtime helpers. ERP navigation is loaded first so F5 does not
+ * show the old menu for several seconds before the integrated menus appear.
  */
 (function(){
   const files=[
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
@@ -29,8 +30,7 @@
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
     "./js/inventory-movement-action-restore-20260821.js?v=20260821-1",
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-1",
-    "./js/qmes-global-menu-preview-theme-20260826.js?v=20260826-1"
+    "./js/qmes-global-menu-preview-theme-20260826.js?v=20260826-2"
   ];
   function exists(src){
     const base=src.split("?")[0];
@@ -38,8 +38,16 @@
   }
   function load(i){
     if(i>=files.length){window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));return;}
-    const src=files[i];if(exists(src)){load(i+1);return;}
-    const script=document.createElement("script");script.src=src;script.async=false;script.onload=()=>load(i+1);script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);load(i+1);};document.head.appendChild(script);
+    const src=files[i];
+    if(exists(src)){load(i+1);return;}
+    const script=document.createElement("script");
+    script.src=src;
+    script.async=false;
+    script.onload=()=>load(i+1);
+    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);load(i+1);};
+    document.head.appendChild(script);
   }
-  const start=()=>load(0);if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+  const start=()=>load(0);
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});
+  else start();
 })();
