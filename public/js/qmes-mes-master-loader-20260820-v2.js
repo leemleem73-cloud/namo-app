@@ -29,7 +29,8 @@
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
     "./js/inventory-movement-action-restore-20260821.js?v=20260821-1",
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-1"
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-1",
+    "./js/qmes-global-menu-preview-theme-20260826.js?v=20260826-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
