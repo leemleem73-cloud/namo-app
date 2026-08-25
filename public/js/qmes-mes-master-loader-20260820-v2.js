@@ -1,7 +1,7 @@
 /* QMES Stage 12 operational loader v2 — stabilized 2026-08-25. */
 (function(){
   const files=[
-    "./js/qmes-modal-foundation-20260825.js?v=20260825-safe3",
+    "./js/qmes-modal-foundation-20260825.js?v=20260825-edit-unblock1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
