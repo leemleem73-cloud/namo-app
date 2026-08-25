@@ -1,10 +1,8 @@
-/* QMES Stage 12 operational loader v2
- * Loads stable runtime helpers. Downtime edit recovery loads first so edit clicks
- * are captured before any older history handler or cached helper.
- */
+/* QMES Stage 12 operational loader v2 — cleaned 2026-08-25. */
 (function(){
   const files=[
-    "./js/qmes-modal-foundation-20260825.js?v=20260825-safe1",
+    "./js/qmes-ui-cleanup-20260825.js?v=20260825-clean2",
+    "./js/qmes-modal-foundation-20260825.js?v=20260825-safe2",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
@@ -25,7 +23,7 @@
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
-    "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
+    "./js/qmes-scroll-layer-guard-20260807.js?v=20260825-safe2",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
@@ -37,9 +35,21 @@
     return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);
   }
   function load(i){
-    if(i>=files.length){window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));return;}
-    const src=files[i];if(exists(src)){load(i+1);return;}
-    const script=document.createElement("script");script.src=src;script.async=false;script.onload=()=>load(i+1);script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);load(i+1);};document.head.appendChild(script);
+    if(i>=files.length){
+      try{window.qmesRunUiCleanup?.();}catch(error){}
+      window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
+      return;
+    }
+    const src=files[i];
+    if(exists(src)){load(i+1);return;}
+    const script=document.createElement("script");
+    script.src=src;
+    script.async=false;
+    script.onload=()=>load(i+1);
+    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);load(i+1);};
+    document.head.appendChild(script);
   }
-  const start=()=>load(0);if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+  const start=()=>load(0);
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});
+  else start();
 })();
