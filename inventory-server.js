@@ -265,7 +265,7 @@ async function postInventoryTransaction(req,payload,options={}){
     const item=await upsertItem(client,payload);
     let fromLocation=txt(payload.fromLocation).toUpperCase(),toLocation=txt(payload.toLocation).toUpperCase();
     const fromStatus=txt(payload.fromStatus).toUpperCase(),toStatus=txt(payload.toStatus).toUpperCase();
-    const legacyRack=physicalRackForItem(itemCode,item.item_name);
+    const legacyRack=physicalRackForItem(itemCode,item.itemName);
     if(toLocation==='RM')toLocation=legacyRack;
     if(fromStatus&&!VALID_STATUS.has(fromStatus))throw new Error('출고 품질상태가 올바르지 않습니다.');
     if(toStatus&&!VALID_STATUS.has(toStatus))throw new Error('입고 품질상태가 올바르지 않습니다.');
