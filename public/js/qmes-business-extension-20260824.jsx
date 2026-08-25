@@ -12,7 +12,6 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
 (function installQmesBusinessExtension(){
   if(window.__QMES_BUSINESS_EXTENSION_INSTALLED__)return;window.__QMES_BUSINESS_EXTENSION_INSTALLED__=true;
   const menus=[['sales','수주·납기','수주 · 납기관리',QBESalesTab],['plan','생산계획·MRP','생산계획 · MRP',QBEPlanTab],['purchase','구매·발주','구매 · 발주관리',QBEPurchaseTab],['recipe','Recipe/BOM','Recipe / BOM',QBERecipeTab],['shipping','출하·납품','출하 · 납품관리',QBEShippingTab]];
-  const nativeGroups={'대시보드':'대시보드','생산관리':'생산관리','품질검사':'품질검사','현장입력':'현장입력','재고관리':'재고관리','거래처현황':'거래처 현황','거래처 현황':'거래처 현황','설비관리':'설비관리','LOT추적':'LOT 추적','LOT 추적':'LOT 추적','부적합관리':'부적합관리','부적합 관리':'부적합관리'};
   let extensionRoot=null,host=null;
 
   const transitionStyle=document.createElement('style');
@@ -41,56 +40,37 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
     if(search)search.value='';
     if(title)title.textContent=label;
     if(head)head.classList.add('is-group-active');
-    if(items){
-      items.replaceChildren();
-      const b=document.createElement('button');b.type='button';b.className='qmes-side-item is-active';b.textContent=label;items.appendChild(b);
-    }
+    if(items){items.replaceChildren();const b=document.createElement('button');b.type='button';b.className='qmes-side-item is-active';b.textContent=label;items.appendChild(b);}
     ['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));
     document.body.classList.add('qmes-side-open');
   }
   function closeExtension(){if(extensionRoot){try{extensionRoot.unmount()}catch(e){}extensionRoot=null}if(host){host.remove();host=null}document.querySelectorAll('.qmes-top-menu-button.is-extension').forEach(b=>b.classList.remove('is-active'));}
   function openExtension(id,label,Component,button){
     const main=document.querySelector('#root>div>main');if(!main)return;
-    closeExtension();
-    resetSidebarLayout();
-    document.body.classList.add('qmes-business-active');
+    closeExtension();resetSidebarLayout();document.body.classList.add('qmes-business-active');
     main.style.setProperty('background','#f5f7fb','important');
     host=document.createElement('div');host.id='qmes-business-extension-host';host.style.width='100%';host.style.background='#f5f7fb';main.prepend(host);
     Array.from(main.children).forEach(child=>{if(child!==host){child.dataset.qbeHidden='1';child.style.display='none'}});
     extensionRoot=ReactDOM.createRoot(host);extensionRoot.render(<Component/>);
     document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));button?.classList.add('is-active');
     try{sessionStorage.setItem('qmes_business_extension_tab',id)}catch(e){}
-    setTimeout(()=>showBusinessSidebar(label),0);
+    requestAnimationFrame(()=>showBusinessSidebar(label));
     window.scrollTo({top:0,behavior:'auto'});
   }
   function restoreNative(){
-    closeExtension();
-    document.body.classList.remove('qmes-business-active');
-    resetSidebarLayout();
+    if(!host&&!document.body.classList.contains('qmes-business-active'))return;
+    closeExtension();document.body.classList.remove('qmes-business-active');resetSidebarLayout();
     const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden}});
     try{sessionStorage.removeItem('qmes_business_extension_tab')}catch(e){}
   }
-  function ensureButtons(){const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;menus.forEach(([id,topLabel,sideLabel,Component])=>{let item=nav.querySelector(`[data-qbe-menu="${id}"]`);if(item)return;item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});item.appendChild(b);nav.appendChild(item)});return true;}
-  document.addEventListener('click',event=>{
-    const b=event.target.closest?.('.qmes-top-menu-button');
-    if(!b||b.classList.contains('is-extension'))return;
-    const raw=String(b.querySelector('span')?.textContent||b.textContent||'').replace(/\s+/g,' ').trim();
-    const compact=raw.replace(/\s+/g,'');
-    const group=nativeGroups[raw]||nativeGroups[compact];
-    restoreNative();
-    if(group)setTimeout(()=>window.qmesSetGlobalSidebarGroup?.(group),0);
-  },true);
-  document.addEventListener('click',event=>{
-    const logoButton=event.target.closest?.('header button');
-    if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;
-    restoreNative();
-    setTimeout(()=>{
-      const dash=[...document.querySelectorAll('.qmes-top-menu-button')].find(btn=>String(btn.textContent||'').replace(/\s+/g,'').includes('대시보드'));
-      dash?.click();
-    },0);
-  },false);
-  const observer=new MutationObserver(()=>ensureButtons());
-  function start(){ensureButtons();observer.observe(document.documentElement,{childList:true,subtree:true});}
+  function ensureButtons(){const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;menus.forEach(([id,topLabel,sideLabel,Component])=>{if(nav.querySelector(`[data-qbe-menu="${id}"]`))return;const item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});item.appendChild(b);nav.appendChild(item)});return true;}
+
+  /* Native menus already own their own routing/sidebar. Only clean up an active business extension. */
+  document.addEventListener('click',event=>{const b=event.target.closest?.('.qmes-top-menu-button');if(!b||b.classList.contains('is-extension'))return;restoreNative();},true);
+  document.addEventListener('click',event=>{const logoButton=event.target.closest?.('header button');if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;restoreNative();},true);
+
+  /* Install extension buttons once; short retry only until the native top nav exists. */
+  function start(){let tries=0;const timer=setInterval(()=>{tries++;if(ensureButtons()||tries>=20)clearInterval(timer);},50);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.qmesCloseBusinessExtension=restoreNative;
 })();
