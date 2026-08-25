@@ -1,19 +1,78 @@
 (function(){
   if(window.__QMES_SHIPPING_PLAN_MODAL__) return;
   window.__QMES_SHIPPING_PLAN_MODAL__=true;
-  function ensureStyle(){if(document.getElementById('qmes-shipping-plan-modal-style'))return;const style=document.createElement('style');style.id='qmes-shipping-plan-modal-style';style.textContent=`.qsp-overlay{position:fixed;inset:0;z-index:15000;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:18px}.qsp-modal{width:min(650px,94vw);background:#fff;border:1px solid #dbe3ec;border-radius:18px;box-shadow:0 24px 70px rgba(15,23,42,.25);padding:24px 28px 28px;color:#111827;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif}.qsp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.qsp-head h2{margin:0;font-size:20px;font-weight:900}.qsp-close{width:32px;height:32px;border:0;background:transparent;color:#64748b;font-size:24px;border-radius:8px}.qsp-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px 18px}.qsp-field{display:flex;flex-direction:column;gap:7px}.qsp-field.full{grid-column:1/-1}.qsp-field label{font-size:13px;font-weight:800;color:#334155}.qsp-field input,.qsp-field select,.qsp-field textarea{width:100%;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#111827;font-size:13px;padding:0 10px}.qsp-field input,.qsp-field select{height:38px}.qsp-field textarea{min-height:68px;padding-top:9px}.qsp-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.qsp-cancel,.qsp-save{min-width:78px;height:38px;border-radius:8px;font-size:13px;font-weight:900}.qsp-cancel{border:1px solid #cbd5e1;background:#fff}.qsp-save{border:1px solid #1d4ed8;background:#2563eb;color:#fff}@media(max-width:640px){.qsp-grid{grid-template-columns:1fr}.qsp-field.full{grid-column:auto}}`;document.head.appendChild(style)}
-  function closeModal(){document.querySelector('.qsp-overlay')?.remove()}
-  function openModal(){ensureStyle();closeModal();const overlay=document.createElement('div');overlay.className='qsp-overlay';overlay.innerHTML=`<div class="qsp-modal"><div class="qsp-head"><h2>출하계획 등록</h2><button type="button" class="qsp-close">×</button></div><form id="qsp-form"><div class="qsp-grid"><div class="qsp-field"><label>출하 예정일</label><input name="shipDate" type="date" required></div><div class="qsp-field"><label>수주번호</label><input name="salesOrder" placeholder="예: SO-260825-01"></div><div class="qsp-field"><label>고객사</label><select name="customer"><option value="">선택</option><option>현대자동차</option><option>삼성SDI</option><option>SK</option><option>기타</option></select></div><div class="qsp-field"><label>Grd 제품명</label><input name="grdProductName"></div><div class="qsp-field"><label>완제품 LOT</label><input name="lot"></div><div class="qsp-field"><label>출하 수량 (kg)</label><input name="qty"></div><div class="qsp-field full"><label>배송 / 배차 정보</label><input name="delivery"></div><div class="qsp-field full"><label>비고</label><textarea name="note"></textarea></div></div><div class="qsp-actions"><button type="button" class="qsp-cancel">취소</button><button type="submit" class="qsp-save">등록</button></div></form></div>`;document.body.appendChild(overlay);overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal()});overlay.querySelector('.qsp-close').onclick=closeModal;overlay.querySelector('.qsp-cancel').onclick=closeModal;overlay.querySelector('#qsp-form').onsubmit=e=>{e.preventDefault();const row=Object.fromEntries(new FormData(e.currentTarget).entries());const list=JSON.parse(localStorage.getItem('qmes-shipping-plans-v1')||'[]');list.unshift({...row,id:'SHIP-'+Date.now(),createdAt:new Date().toISOString(),status:'출하예정'});localStorage.setItem('qmes-shipping-plans-v1',JSON.stringify(list));closeModal();alert('출하계획이 등록되었습니다.')}}
-  document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;const text=(btn.textContent||'').replace(/\s+/g,' ').trim();if(text!=='+ 출하계획'&&text!=='출하계획')return;e.preventDefault();e.stopPropagation();openModal()},true);window.qmesOpenShippingPlanModal=openModal;
-})();
-(function(){if(window.__QMES_CONTEXTUAL_BUSINESS_SIDE__)return;window.__QMES_CONTEXTUAL_BUSINESS_SIDE__=true;const labels={sales:'수주 · 납기관리',plan:'생산계획 · MRP',purchase:'구매 · 발주관리',recipe:'Recipe / BOM',shipping:'출하 · 납품관리'};const style=document.createElement('style');style.textContent='#qps-sidebar,#qmes-preview-sidebar{display:none!important;visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(style);function replaceContent(id){const label=labels[id],side=document.getElementById('qmes-sync-sidebar');if(!label||!side)return;const title=side.querySelector('.qmes-side-title'),items=side.querySelector('.qmes-side-items');if(title)title.textContent=label;if(items){items.replaceChildren();const b=document.createElement('button');b.className='qmes-side-item is-active';b.textContent=label;b.onclick=()=>document.querySelector(`[data-qbe-menu="${id}"] button`)?.click();items.appendChild(b)}}function openContext(id){const h=document.getElementById('qmes-sync-hamburger');if(!h)return;if(!document.body.classList.contains('qmes-side-open'))h.click();setTimeout(()=>replaceContent(id),80)}document.addEventListener('click',e=>{const top=e.target.closest('[data-qbe-menu] button');if(!top)return;const id=top.closest('[data-qbe-menu]')?.dataset.qbeMenu;if(labels[id])setTimeout(()=>openContext(id),40)},true)})();
 
-/* Chemical manufacturing Recipe/BOM screen enhancement */
-(function(){
-  if(window.__QMES_CHEM_RECIPE_UI__)return;window.__QMES_CHEM_RECIPE_UI__=true;
-  const empty=(n,t)=>`<tr><td colspan="${n}" style="text-align:center;color:#94a3b8;padding:24px">${t}</td></tr>`;
-  function html(){return `<div class="qmes-business-extension"><div class="qbe-title-row"><div><h1 class="qbe-title">Recipe / BOM Master</h1><div class="qbe-subtitle">화학 제조 기준으로 Formula · 공정조건 · Revision · 승인 · 생산 LOT 이력을 통합 관리합니다.</div></div><button class="qbe-primary">+ 신규 Revision</button></div><div class="qbe-kpis"><div class="qbe-kpi"><span class="qbe-kpi-label">등록 Recipe</span><b class="qbe-kpi-value">0건</b></div><div class="qbe-kpi orange"><span class="qbe-kpi-label">승인 대기</span><b class="qbe-kpi-value">0건</b></div><div class="qbe-kpi green"><span class="qbe-kpi-label">사용중 Revision</span><b class="qbe-kpi-value">0건</b></div><div class="qbe-kpi red"><span class="qbe-kpi-label">변경 검토</span><b class="qbe-kpi-value">0건</b></div><div class="qbe-kpi slate"><span class="qbe-kpi-label">연결 생산 LOT</span><b class="qbe-kpi-value">0건</b></div></div><div class="qbe-card"><div class="qbe-card-head"><h2>제품 / Recipe 기본정보</h2><span class="qbe-hint">Master Data</span></div><div class="qbe-form-grid"><div class="qbe-field"><label>제품명</label><select><option>선택</option></select></div><div class="qbe-field"><label>제품코드</label><input placeholder="제품코드"></div><div class="qbe-field"><label>고객사</label><select><option>공용 / 선택</option></select></div><div class="qbe-field"><label>제품 Grade</label><input placeholder="Grade / 규격"></div><div class="qbe-field"><label>Recipe No.</label><input placeholder="예: RCP-001"></div><div class="qbe-field"><label>Revision</label><input placeholder="예: Rev.01"></div><div class="qbe-field"><label>기준 Batch Size (kg)</label><input type="number" placeholder="1000"></div><div class="qbe-field"><label>예상 수율 (%)</label><input type="number" placeholder="100.00"></div><div class="qbe-field"><label>적용일</label><input type="date"></div><div class="qbe-field"><label>상태</label><select><option>작성</option><option>검토</option><option>승인</option><option>폐기</option></select></div><div class="qbe-field"><label>작성자</label><input readonly placeholder="로그인 사용자"></div><div class="qbe-field"><label>검토 / 승인</label><input readonly placeholder="전자결재 연동"></div></div></div><div class="qbe-card"><div class="qbe-card-head"><h2>표준 배합표 (Formula)</h2><span class="qbe-hint">배합비 합계 100% 기준</span></div><div class="qbe-table-wrap"><table><thead><tr><th>No</th><th>원료명</th><th>원료코드</th><th>규격 / Grade</th><th>배합비 (%)</th><th>기준 투입량 (kg)</th><th>허용오차 (±%)</th><th>투입순서</th><th>CTQ</th><th>대체원료</th></tr></thead><tbody>${empty(10,'등록된 표준 배합 원료가 없습니다.')}</tbody></table></div></div><div class="qbe-split"><div class="qbe-card"><div class="qbe-card-head"><h2>공정조건</h2><span class="qbe-hint">Process Parameter</span></div><div class="qbe-table-wrap"><table><thead><tr><th>공정단계</th><th>설비</th><th>혼합시간</th><th>RPM</th><th>온도</th><th>관리항목</th></tr></thead><tbody>${empty(6,'등록된 공정조건이 없습니다.')}</tbody></table></div></div><div class="qbe-card"><div class="qbe-card-head"><h2>품질 / CTQ 연계</h2><span class="qbe-hint">PQC · OQC</span></div><div class="qbe-table-wrap"><table><thead><tr><th>검사항목</th><th>규격</th><th>검사단계</th><th>CTQ</th><th>검사기준 연결</th></tr></thead><tbody>${empty(5,'품질 규격을 연결하면 표시됩니다.')}</tbody></table></div></div></div><div class="qbe-split"><div class="qbe-card"><div class="qbe-card-head"><h2>Revision / 변경관리</h2><span class="qbe-hint">4M 변경 연계</span></div><div class="qbe-table-wrap"><table><thead><tr><th>Revision</th><th>적용일</th><th>변경내용</th><th>변경사유</th><th>4M</th><th>승인상태</th></tr></thead><tbody>${empty(6,'등록된 개정 이력이 없습니다.')}</tbody></table></div></div><div class="qbe-card"><div class="qbe-card-head"><h2>생산 LOT 적용 이력</h2><span class="qbe-hint">Traceability</span></div><div class="qbe-table-wrap"><table><thead><tr><th>생산일</th><th>생산 LOT</th><th>Revision</th><th>계획량</th><th>실적량</th><th>LOT 추적</th></tr></thead><tbody>${empty(6,'해당 Recipe로 생산된 LOT가 없습니다.')}</tbody></table></div></div></div><div class="qbe-card"><div class="qbe-card-head"><h2>MRP / 원가 연계</h2><span class="qbe-hint">Recipe → 생산계획 → 소요량 계산</span></div><div class="qbe-alerts"><div class="qbe-alert blue"><span>Recipe 기준 원료 소요량</span><b>생산계획과 자동 연계</b></div><div class="qbe-alert orange"><span>표준량 대비 실제 투입량</span><b>작업지시 / 작업일지 연계</b></div><div class="qbe-alert blue"><span>표준 Batch 예상 원가</span><b>원료단가 연결 시 계산</b></div></div></div></div>`}
-  function enhance(){const item=document.querySelector('[data-qbe-menu="recipe"]');if(!item)return;const host=document.getElementById('qmes-business-extension-host');if(!host)return;setTimeout(()=>{if(document.querySelector('[data-qbe-menu="recipe"] .is-active')||item.querySelector('button')?.classList.contains('is-active'))host.innerHTML=html()},120)}
-  document.addEventListener('click',e=>{if(e.target.closest('[data-qbe-menu="recipe"] button'))enhance()},true);
-  if(sessionStorage.getItem('qmes_business_extension_tab')==='recipe')setTimeout(enhance,500);
+  function ensureStyle(){
+    if(document.getElementById('qmes-shipping-plan-modal-style')) return;
+    const style=document.createElement('style');
+    style.id='qmes-shipping-plan-modal-style';
+    style.textContent=`
+      .qsp-overlay{position:fixed;inset:0;z-index:15000;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:18px}
+      .qsp-modal{width:min(650px,94vw);background:#fff;border:1px solid #dbe3ec;border-radius:18px;box-shadow:0 24px 70px rgba(15,23,42,.25);padding:24px 28px 28px;color:#111827;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif}
+      .qsp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.qsp-head h2{margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px}.qsp-close{width:32px;height:32px;border:0;background:transparent;color:#64748b;font-size:24px;line-height:1;border-radius:8px;cursor:pointer}.qsp-close:hover{background:#f1f5f9}
+      .qsp-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px 18px}.qsp-field{display:flex;flex-direction:column;gap:7px}.qsp-field.full{grid-column:1/-1}.qsp-field label{font-size:13px;font-weight:800;color:#334155}.qsp-field input,.qsp-field select,.qsp-field textarea{width:100%;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#111827;font-size:13px;padding:0 10px;outline:none}.qsp-field input,.qsp-field select{height:38px}.qsp-field textarea{min-height:68px;padding-top:9px;resize:vertical}.qsp-field input:focus,.qsp-field select:focus,.qsp-field textarea:focus{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.08)}
+      .qsp-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.qsp-cancel,.qsp-save{min-width:78px;height:38px;border-radius:8px;font-size:13px;font-weight:900;cursor:pointer}.qsp-cancel{border:1px solid #cbd5e1;background:#fff;color:#334155}.qsp-save{border:1px solid #1d4ed8;background:#2563eb;color:#fff}.qsp-save:hover{background:#1d4ed8}
+      @media(max-width:640px){.qsp-grid{grid-template-columns:1fr}.qsp-field.full{grid-column:auto}.qsp-modal{padding:20px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function closeModal(){document.querySelector('.qsp-overlay')?.remove();}
+
+  function openModal(){
+    ensureStyle();
+    closeModal();
+    const overlay=document.createElement('div');
+    overlay.className='qsp-overlay';
+    overlay.innerHTML=`<div class="qsp-modal" role="dialog" aria-modal="true" aria-label="출하계획 등록">
+      <div class="qsp-head"><h2>출하계획 등록</h2><button type="button" class="qsp-close" aria-label="닫기">×</button></div>
+      <form id="qsp-form">
+        <div class="qsp-grid">
+          <div class="qsp-field"><label>출하 예정일</label><input name="shipDate" type="date" required></div>
+          <div class="qsp-field"><label>수주번호</label><input name="salesOrder" placeholder="예: SO-260825-01"></div>
+          <div class="qsp-field"><label>고객사</label><select name="customer"><option value="">선택</option><option>현대자동차</option><option>삼성SDI</option><option>SK</option><option>기타</option></select></div>
+          <div class="qsp-field"><label>Grd 제품명</label><input name="grdProductName" placeholder="Grd 제품명을 입력하세요"></div>
+          <div class="qsp-field"><label>완제품 LOT</label><input name="lot" placeholder="예: FG-260825-01"></div>
+          <div class="qsp-field"><label>출하 수량 (kg)</label><input name="qty" inputmode="decimal" placeholder="예: 2000"></div>
+          <div class="qsp-field full"><label>배송 / 배차 정보</label><input name="delivery" placeholder="차량번호, 운송사, 기사 연락처 등"></div>
+          <div class="qsp-field full"><label>비고</label><textarea name="note" placeholder="특이사항을 입력하세요."></textarea></div>
+        </div>
+        <div class="qsp-actions"><button type="button" class="qsp-cancel">취소</button><button type="submit" class="qsp-save">등록</button></div>
+      </form>
+    </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
+    overlay.querySelector('.qsp-close').addEventListener('click',closeModal);
+    overlay.querySelector('.qsp-cancel').addEventListener('click',closeModal);
+    overlay.querySelector('#qsp-form').addEventListener('submit',e=>{
+      e.preventDefault();
+      const form=new FormData(e.currentTarget);
+      const row=Object.fromEntries(form.entries());
+      try{
+        const saved=JSON.parse(localStorage.getItem('qmes-shipping-plans-v1')||'[]');
+        const list=Array.isArray(saved)?saved:[];
+        list.unshift({...row,id:'SHIP-'+Date.now(),createdAt:new Date().toISOString(),status:'출하예정'});
+        localStorage.setItem('qmes-shipping-plans-v1',JSON.stringify(list));
+      }catch(err){console.warn('[QMES] shipping plan local save failed',err);}
+      closeModal();
+      alert('출하계획이 등록되었습니다.');
+      window.dispatchEvent(new CustomEvent('qmes:shipping-plan-saved'));
+    });
+    setTimeout(()=>overlay.querySelector('input[name="shipDate"]')?.focus(),0);
+  }
+
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest('button');
+    if(!btn) return;
+    const text=(btn.textContent||'').replace(/\s+/g,' ').trim();
+    if(text!=='+ 출하계획'&&text!=='출하계획') return;
+    const host=btn.closest('.qmes-business-extension')||btn.closest('#qmes-business-extension-host');
+    const title=host?.querySelector('.qbe-title,h1')?.textContent||'';
+    if(!title.includes('출하')&&!document.body.textContent.includes('출하 · 납품관리')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openModal();
+  },true);
+
+  window.qmesOpenShippingPlanModal=openModal;
 })();
