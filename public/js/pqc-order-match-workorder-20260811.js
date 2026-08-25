@@ -40,28 +40,3 @@
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
-
-/* 2026-08-26 standalone edit DB bridge.
-   QMES DB is a global lexical binding in the legacy React/Babel scripts, so it is
-   not guaranteed to exist as window.DB. Standalone plain-JS edit screens read
-   window.DB, therefore expose the exact same object without copying it. */
-(function exposeQmesDbToWindow(global){
-  "use strict";
-  function expose(){
-    try {
-      if (typeof DB !== "undefined" && DB) {
-        global.DB = DB;
-        global.__QMES_DB_WINDOW_BRIDGED__ = true;
-        return true;
-      }
-    } catch (_error) {}
-    return false;
-  }
-  if (!expose()) {
-    let attempts = 0;
-    const timer = global.setInterval(function(){
-      attempts += 1;
-      if (expose() || attempts >= 100) global.clearInterval(timer);
-    }, 50);
-  }
-})(window);
