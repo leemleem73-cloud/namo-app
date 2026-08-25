@@ -1,5 +1,5 @@
 /* QMES inspection compatibility styles only.
-   Do not intercept IQC/PQC/OQC edit clicks or modal rendering. */
+   Keep React in full control of IQC/PQC/OQC edit clicks and modal rendering. */
 (function installInspectionCompatibilityStyles(){
   'use strict';
   if(window.__QMES_INSPECTION_COMPAT_STYLE_READY__) return;
@@ -35,4 +35,20 @@
     }
   `;
   document.head.appendChild(style);
+
+  /*
+   * The native inspection edit controls were created without an explicit type.
+   * If an inspection ledger is ever mounted under a form, HTML treats those
+   * buttons as submit controls and the submit can immediately wipe the edit
+   * state that React just opened.  Change only the edit control's native type;
+   * do not prevent/stop/call the click ourselves.
+   */
+  document.addEventListener('click',function(event){
+    const button=event.target && event.target.closest
+      ? event.target.closest('button.qmes-iqc-action-edit')
+      : null;
+    if(!button) return;
+    if(!button.closest('.qmes-iqc-page,.qmes-pqc-page,.qmes-oqc-page')) return;
+    button.type='button';
+  },true);
 })(window);
