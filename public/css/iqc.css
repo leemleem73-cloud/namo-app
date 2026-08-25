@@ -34,167 +34,127 @@
   white-space:nowrap !important;
 }
 
-#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > div > p {
-  display:none !important;
-}
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > div > p { display:none !important; }
 
 #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button {
-  flex:0 0 auto !important;
-  width:auto !important;
-  min-width:98px !important;
-  height:34px !important;
-  min-height:34px !important;
-  margin:0 !important;
-  padding:0 14px !important;
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:6px !important;
-  border:1px solid #dbe7f3 !important;
-  border-radius:8px !important;
-  background:transparent !important;
-  background-image:none !important;
-  color:#dbe7f3 !important;
-  box-shadow:none !important;
-  text-shadow:none !important;
-  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;
-  font-size:12px !important;
-  line-height:1 !important;
-  font-weight:700 !important;
-  white-space:nowrap !important;
+  flex:0 0 auto !important;width:auto !important;min-width:98px !important;height:34px !important;min-height:34px !important;
+  margin:0 !important;padding:0 14px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:6px !important;
+  border:1px solid #dbe7f3 !important;border-radius:8px !important;background:transparent !important;background-image:none !important;color:#dbe7f3 !important;
+  box-shadow:none !important;text-shadow:none !important;font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;
+  font-size:12px !important;line-height:1 !important;font-weight:700 !important;white-space:nowrap !important;
 }
+#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button:hover {border-color:#fff !important;background:#152b46 !important;color:#fff !important;}
+#root .flex.flex-col.gap-5 > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child:has(> button) > button {color:#f87171 !important;}
+#root .flex.flex-col.gap-5 > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child:has(> button) > button:hover {color:#fca5a5 !important;}
 
-#root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button:hover {
-  border-color:#ffffff !important;
-  background:#152b46 !important;
-  color:#ffffff !important;
+/* ─────────────────────────────────────────────────────────────
+   수입검사 목록 화면 밝은 테마
+   당월 입고~반품 / 수입검사 관리 / 수입검사 관리대장만 밝게 전환
+───────────────────────────────────────────────────────────── */
+#root .qmes-iqc-summary-card,
+#root .qmes-inspection-summary > div,
+#root .qmes-inspection-summary-card {
+  background:#ffffff !important;
+  border-color:#d8dee8 !important;
+  color:#111827 !important;
+  box-shadow:0 1px 3px rgba(15,23,42,.08) !important;
 }
+#root .qmes-iqc-summary-card *,
+#root .qmes-inspection-summary > div *,
+#root .qmes-inspection-summary-card * { color:#111827 !important; }
 
-/* 부적합 신규등록만 동일한 흰색 틀 안에서 빨간 글씨·아이콘으로 강조 */
-#root .flex.flex-col.gap-5 > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child:has(> button) > button {
-  color:#f87171 !important;
+#root .qmes-iqc-quickbar,
+#root .qmes-iqc-quickbar .qmes-management-heading {
+  background:#ffffff !important;
+  border-color:#d8dee8 !important;
+  color:#111827 !important;
 }
+#root .qmes-iqc-quickbar .qmes-iqc-quickbar-kicker { color:#4b5563 !important; }
+#root .qmes-iqc-quickbar .qmes-management-title-row strong { color:#111827 !important; }
+#root .qmes-iqc-quickbar .qmes-iqc-new-btn {
+  background:#ffffff !important;border-color:#9ca3af !important;color:#111827 !important;
+}
+#root .qmes-iqc-quickbar .qmes-iqc-new-btn:hover { background:#f3f4f6 !important;color:#000 !important; }
 
-#root .flex.flex-col.gap-5 > .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child:has(> button) > button:hover {
-  color:#fca5a5 !important;
+#root .qmes-iqc-ledger-section,
+#root .qmes-iqc-ledger-panel,
+#root .qmes-iqc-ledger-panel > div,
+#root .qmes-iqc-ledger-container {
+  background:#ffffff !important;
+  border-color:#d8dee8 !important;
+  color:#111827 !important;
 }
+#root .qmes-iqc-ledger-panel h1,
+#root .qmes-iqc-ledger-panel h2,
+#root .qmes-iqc-ledger-panel h3,
+#root .qmes-iqc-ledger-panel strong { color:#111827 !important; }
+#root .qmes-iqc-record-filter { background:#ffffff !important;border-color:#d8dee8 !important;color:#111827 !important; }
+#root .qmes-iqc-record-filter span { color:#374151 !important; }
+#root .qmes-iqc-record-filter input,
+#root .qmes-iqc-record-filter select {
+  background:#ffffff !important;border-color:#cbd5e1 !important;color:#111827 !important;
+}
+#root .qmes-iqc-record-filter input::placeholder { color:#6b7280 !important; }
+#root .qmes-iqc-ledger-table { background:#ffffff !important;color:#111827 !important; }
+#root .qmes-iqc-ledger-table thead,
+#root .qmes-iqc-ledger-table thead tr,
+#root .qmes-iqc-ledger-table thead th { background:#f8fafc !important;color:#111827 !important;border-color:#d8dee8 !important; }
+#root .qmes-iqc-ledger-table tbody tr,
+#root .qmes-iqc-ledger-table tbody td { background:#ffffff !important;color:#111827 !important;border-color:#e5e7eb !important; }
+#root .qmes-iqc-ledger-table tbody tr:hover td { background:#f8fafc !important; }
+#root .qmes-iqc-empty-row { color:#6b7280 !important; }
+#root .qmes-iqc-action-btn { background:#ffffff !important;color:#111827 !important;border-color:#cbd5e1 !important; }
+#root .qmes-iqc-action-btn:hover { background:#f3f4f6 !important;color:#000 !important; }
 
 /* ─────────────────────────────────────────────────────────────
    부적합·설비관리 신규등록 팝업
-   목록 화면과 등록 화면을 완전히 분리하여 중앙 팝업으로 표시
 ───────────────────────────────────────────────────────────── */
 div:has(> [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"]),
 div:has(> [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"]),
 div:has(> [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"]),
 div:has(> [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"]),
 div:has(> [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"]) {
-  position:fixed !important;
-  inset:0 !important;
-  z-index:22000 !important;
-  width:100vw !important;
-  height:100vh !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  padding:16px !important;
-  overflow:auto !important;
-  background:rgba(2,8,20,.78) !important;
-  backdrop-filter:blur(3px) !important;
-  -webkit-backdrop-filter:blur(3px) !important;
+  position:fixed !important;inset:0 !important;z-index:22000 !important;width:100vw !important;height:100vh !important;display:flex !important;
+  align-items:center !important;justify-content:center !important;padding:16px !important;overflow:auto !important;background:rgba(2,8,20,.78) !important;
+  backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;
 }
-
 [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"],
 [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"],
 [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"],
 [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"],
 [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] {
-  position:relative !important;
-  width:min(920px,calc(100vw - 32px)) !important;
-  max-width:920px !important;
-  max-height:calc(100vh - 32px) !important;
-  margin:auto !important;
-  display:flex !important;
-  flex-direction:column !important;
-  overflow:hidden !important;
-  border:1px solid #304b6c !important;
-  border-radius:14px !important;
-  background:#0a1728 !important;
+  position:relative !important;width:min(920px,calc(100vw - 32px)) !important;max-width:920px !important;max-height:calc(100vh - 32px) !important;margin:auto !important;
+  display:flex !important;flex-direction:column !important;overflow:hidden !important;border:1px solid #304b6c !important;border-radius:14px !important;background:#0a1728 !important;
   box-shadow:0 30px 90px rgba(0,0,0,.65) !important;
 }
-
-[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] {
-  width:min(1040px,calc(100vw - 32px)) !important;
-  max-width:1040px !important;
-}
-
+[role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] {width:min(1040px,calc(100vw - 32px)) !important;max-width:1040px !important;}
 [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:first-child,
 [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:first-child,
 [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:first-child,
 [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:first-child,
-[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:first-child {
-  flex:0 0 auto !important;
-  padding:15px 18px !important;
-  border-bottom:1px solid #263b54 !important;
-  background:#0d2038 !important;
-}
-
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:first-child {flex:0 0 auto !important;padding:15px 18px !important;border-bottom:1px solid #263b54 !important;background:#0d2038 !important;}
 [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:nth-child(2),
 [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:nth-child(2),
 [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:nth-child(2),
 [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:nth-child(2),
-[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) {
-  min-height:0 !important;
-  flex:1 1 auto !important;
-  overflow-y:auto !important;
-  padding:18px !important;
-}
-
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:nth-child(2) {min-height:0 !important;flex:1 1 auto !important;overflow-y:auto !important;padding:18px !important;}
 [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:last-child,
 [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:last-child,
 [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:last-child,
 [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:last-child,
-[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child {
-  flex:0 0 auto !important;
-  width:100% !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:flex-end !important;
-  gap:8px !important;
-  padding:12px 18px !important;
-  border-top:1px solid #263b54 !important;
-  background:#0c1b2e !important;
-}
-
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child {flex:0 0 auto !important;width:100% !important;display:flex !important;align-items:center !important;justify-content:flex-end !important;gap:8px !important;padding:12px 18px !important;border-top:1px solid #263b54 !important;background:#0c1b2e !important;}
 [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"] > div:last-child button,
 [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"] > div:last-child button,
 [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"] > div:last-child button,
 [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"] > div:last-child button,
-[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child button {
-  min-width:78px !important;
-  height:36px !important;
-  min-height:36px !important;
-  padding:0 16px !important;
-  border-radius:7px !important;
-  font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;
-  font-size:12px !important;
-  font-weight:700 !important;
-}
+[role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] > div:last-child button {min-width:78px !important;height:36px !important;min-height:36px !important;padding:0 16px !important;border-radius:7px !important;font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif !important;font-size:12px !important;font-weight:700 !important;}
 
 @media(max-width:680px) {
-  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {
-    flex-wrap:wrap !important;
-  }
-
-  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button {
-    min-width:92px !important;
-  }
-
+  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) {flex-wrap:wrap !important;}
+  #root .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:has(> button) > button {min-width:92px !important;}
   [role="dialog"][aria-modal="true"][aria-label="부적합 신규등록"],
   [role="dialog"][aria-modal="true"][aria-label="설비대장 신규등록"],
   [role="dialog"][aria-modal="true"][aria-label="설비대장 수정"],
   [role="dialog"][aria-modal="true"][aria-label="정기점검·교정 신규등록"],
-  [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] {
-    width:calc(100vw - 20px) !important;
-    max-height:calc(100vh - 20px) !important;
-  }
+  [role="dialog"][aria-modal="true"][aria-label="고장·수리 이력 신규등록"] {width:calc(100vw - 20px) !important;max-height:calc(100vh - 20px) !important;}
 }
