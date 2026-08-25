@@ -144,3 +144,14 @@
   'use strict';
   window.__QMES_CROSS_PC_SYNC_LOADER_DISABLED__ = true;
 })();
+
+/* 2026-08-26: load the completely standalone IQC edit screen. */
+(function loadStandaloneIqcEditScreen(){
+  'use strict';
+  if (document.querySelector('script[data-qmes-iqc-standalone-edit="true"]')) return;
+  const script = document.createElement('script');
+  script.src = './js/iqc-edit-screen-20260826.js?v=20260826-1';
+  script.dataset.qmesIqcStandaloneEdit = 'true';
+  script.async = false;
+  document.body.appendChild(script);
+})();
