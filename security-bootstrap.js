@@ -3,6 +3,7 @@
 // Runtime security hardening for the existing QMS server without rewriting server.js.
 // This module is preloaded with Node's -r option before server.js starts.
 
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const { rateLimit } = require('express-rate-limit');
