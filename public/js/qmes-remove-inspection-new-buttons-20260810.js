@@ -36,6 +36,33 @@
       .qmes-iqc-manage-cell,.qmes-iqc-manage-inline,.qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{visibility:visible!important;opacity:1!important;}
       .qmes-iqc-page th:last-child,.qmes-iqc-page td:last-child,.qmes-pqc-page th:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page th:last-child,.qmes-oqc-page td:last-child{position:sticky!important;right:0!important;z-index:4!important;min-width:178px!important;}
       .qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{background:#fff!important;}
+
+      /* IQC / PQC / OQC edit-register modals must always render above the page shell. */
+      .qmes-modal-backdrop.qmes-iqc-modal-backdrop,
+      .qmes-modal-backdrop.qmes-inspection-modal-backdrop{
+        position:fixed!important;
+        inset:0!important;
+        z-index:30000!important;
+        width:100vw!important;
+        height:100vh!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+        overflow:auto!important;
+      }
+      .qmes-iqc-modal,
+      .qmes-inspection-modal{
+        position:relative!important;
+        z-index:30001!important;
+        display:flex!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+        max-height:calc(100vh - 32px)!important;
+      }
     `;
     document.head.appendChild(style);
   }
