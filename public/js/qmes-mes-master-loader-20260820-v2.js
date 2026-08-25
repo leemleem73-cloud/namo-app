@@ -1,8 +1,7 @@
-/* QMES Stage 12 operational loader v2 — cleaned 2026-08-25. */
+/* QMES Stage 12 operational loader v2 — stabilized 2026-08-25. */
 (function(){
   const files=[
-    "./js/qmes-ui-cleanup-20260825.js?v=20260825-clean2",
-    "./js/qmes-modal-foundation-20260825.js?v=20260825-safe2",
+    "./js/qmes-modal-foundation-20260825.js?v=20260825-safe3",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
@@ -28,8 +27,7 @@
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
-    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1",
-    "./js/qmes-edit-fallback-safe-20260825.js?v=20260825-safe1"
+    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
@@ -37,7 +35,6 @@
   }
   function load(i){
     if(i>=files.length){
-      try{window.qmesRunUiCleanup?.();}catch(error){}
       window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
       return;
     }
