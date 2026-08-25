@@ -1,5 +1,5 @@
 /* QMES inspection compatibility layer.
-   Keep React in control of IQC/PQC/OQC modals and provide a targeted edit-click fallback. */
+   Keep React in control of IQC/PQC/OQC modals and clear stale print state before edit. */
 (function installInspectionCompatibility(){
   'use strict';
   if(window.__QMES_INSPECTION_COMPAT_READY__) return;
@@ -36,18 +36,24 @@
   `;
   document.head.appendChild(style);
 
-  /*
-   * Some legacy page-level click handlers can swallow table action clicks before
-   * React's delegated event listener sees them. For the three inspection edit
-   * buttons only, resolve the React-owned onClick callback directly at capture
-   * time and invoke it once. No DOM mutation or modal styling is performed here.
-   */
+  function clearStalePrintState(){
+    document.body.classList.remove('print-doc','print-label','print-wo','qmes-printing');
+    document.documentElement.classList.remove('print-doc','print-label','print-wo','qmes-printing');
+    const printRoot=document.getElementById('qmes-print-root');
+    if(printRoot){
+      printRoot.setAttribute('aria-hidden','true');
+      printRoot.style.display='';
+    }
+  }
+
   document.addEventListener('click',function(event){
     const button=event.target && event.target.closest
       ? event.target.closest('button.qmes-iqc-action-edit')
       : null;
     if(!button) return;
     if(!button.closest('.qmes-iqc-page,.qmes-pqc-page,.qmes-oqc-page')) return;
+
+    clearStalePrintState();
 
     const propKey=Object.keys(button).find((key)=>key.indexOf('__reactProps$')===0);
     const props=propKey ? button[propKey] : null;
