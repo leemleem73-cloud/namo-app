@@ -14,11 +14,21 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
   const menus=[['sales','수주·납기','수주 · 납기관리',QBESalesTab],['plan','생산계획·MRP','생산계획 · MRP',QBEPlanTab],['purchase','구매·발주','구매 · 발주관리',QBEPurchaseTab],['recipe','Recipe/BOM','Recipe / BOM',QBERecipeTab],['shipping','출하·납품','출하 · 납품관리',QBEShippingTab]];
   const nativeGroups={'대시보드':'대시보드','생산관리':'생산관리','품질검사':'품질검사','현장입력':'현장입력','재고관리':'재고관리','거래처현황':'거래처 현황','거래처 현황':'거래처 현황','설비관리':'설비관리','LOT추적':'LOT 추적','LOT 추적':'LOT 추적','부적합관리':'부적합관리','부적합 관리':'부적합관리'};
   let extensionRoot=null,host=null;
+
+  const transitionStyle=document.createElement('style');
+  transitionStyle.id='qmes-business-transition-normalize';
+  transitionStyle.textContent=`
+    #root>div>main,.qmes-top-menu{transition:none!important}
+    body.qmes-business-active,body.qmes-business-active #root,body.qmes-business-active #root>div,body.qmes-business-active #root>div>main{background:#f5f7fb!important}
+    body.qmes-business-active #qmes-business-extension-host{background:#f5f7fb!important;min-height:calc(100vh - 114px)!important}
+  `;
+  document.head.appendChild(transitionStyle);
+
   function resetSidebarLayout(){
     document.body.classList.remove('qmes-side-open');
     const main=document.querySelector('#root>div>main');
-    if(main){['margin-left','width','box-sizing','transition'].forEach(p=>main.style.removeProperty(p));delete main.dataset.qmesSidebarShift;}
-    const top=document.querySelector('.qmes-top-menu');if(top){top.style.removeProperty('transform');top.style.removeProperty('width');}
+    if(main){['margin-left','width','box-sizing','transition','background','background-color'].forEach(p=>main.style.removeProperty(p));delete main.dataset.qmesSidebarShift;}
+    const top=document.querySelector('.qmes-top-menu');if(top){top.style.removeProperty('transform');top.style.removeProperty('width');top.style.removeProperty('transition');}
   }
   function showBusinessSidebar(label){
     resetSidebarLayout();
@@ -39,8 +49,27 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
     document.body.classList.add('qmes-side-open');
   }
   function closeExtension(){if(extensionRoot){try{extensionRoot.unmount()}catch(e){}extensionRoot=null}if(host){host.remove();host=null}document.querySelectorAll('.qmes-top-menu-button.is-extension').forEach(b=>b.classList.remove('is-active'));}
-  function openExtension(id,label,Component,button){const main=document.querySelector('#root>div>main');if(!main)return;closeExtension();host=document.createElement('div');host.id='qmes-business-extension-host';host.style.width='100%';main.prepend(host);Array.from(main.children).forEach(child=>{if(child!==host){child.dataset.qbeHidden='1';child.style.display='none'}});extensionRoot=ReactDOM.createRoot(host);extensionRoot.render(<Component/>);document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));button?.classList.add('is-active');try{sessionStorage.setItem('qmes_business_extension_tab',id)}catch(e){}setTimeout(()=>showBusinessSidebar(label),0);window.scrollTo({top:0,behavior:'smooth'});}
-  function restoreNative(){closeExtension();resetSidebarLayout();const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden}});try{sessionStorage.removeItem('qmes_business_extension_tab')}catch(e){}}
+  function openExtension(id,label,Component,button){
+    const main=document.querySelector('#root>div>main');if(!main)return;
+    closeExtension();
+    resetSidebarLayout();
+    document.body.classList.add('qmes-business-active');
+    main.style.setProperty('background','#f5f7fb','important');
+    host=document.createElement('div');host.id='qmes-business-extension-host';host.style.width='100%';host.style.background='#f5f7fb';main.prepend(host);
+    Array.from(main.children).forEach(child=>{if(child!==host){child.dataset.qbeHidden='1';child.style.display='none'}});
+    extensionRoot=ReactDOM.createRoot(host);extensionRoot.render(<Component/>);
+    document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));button?.classList.add('is-active');
+    try{sessionStorage.setItem('qmes_business_extension_tab',id)}catch(e){}
+    setTimeout(()=>showBusinessSidebar(label),0);
+    window.scrollTo({top:0,behavior:'auto'});
+  }
+  function restoreNative(){
+    closeExtension();
+    document.body.classList.remove('qmes-business-active');
+    resetSidebarLayout();
+    const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden}});
+    try{sessionStorage.removeItem('qmes_business_extension_tab')}catch(e){}
+  }
   function ensureButtons(){const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;menus.forEach(([id,topLabel,sideLabel,Component])=>{let item=nav.querySelector(`[data-qbe-menu="${id}"]`);if(item)return;item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});item.appendChild(b);nav.appendChild(item)});return true;}
   document.addEventListener('click',event=>{
     const b=event.target.closest?.('.qmes-top-menu-button');
