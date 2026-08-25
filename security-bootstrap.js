@@ -3,6 +3,7 @@
 // Runtime security hardening for the existing QMS server without rewriting server.js.
 // This module is preloaded with Node's -r option before server.js starts.
 
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const { rateLimit } = require('express-rate-limit');
@@ -75,7 +76,9 @@ express.application.post = function patchedPost(routePath, ...handlers) {
     return originalPost.call(this, routePath, authLimiter, ...handlers);
   }
   if (routePath === '/api/auth/reset-password') {
-    return originalPost.call(this, routePath, resetLimiter, requireAdmin, ...handlers);
+    // server.js performs the name + email + department identity check.
+    // Keep brute-force protection without forcing an already authenticated admin session.
+    return originalPost.call(this, routePath, resetLimiter, ...handlers);
   }
   return originalPost.call(this, routePath, ...handlers);
 };
@@ -85,6 +88,19 @@ express.application.get = function patchedGet(routePath, ...handlers) {
   if (routePath === '/api/backup') {
     return originalGet.call(this, routePath, requireAdmin, ...handlers);
   }
+
+  // Register an API-only 404 handler immediately before the SPA catch-all.
+  // Without this guard, an unknown GET /api/* route receives index.html with HTTP 200,
+  // which causes response.json() callers to fail with an HTML parsing error.
+  if (routePath === '*' && !this.__qmesApiFallbackInstalled) {
+    this.__qmesApiFallbackInstalled = true;
+    this.use('/api', (_req, res) => res.status(404).json({
+      success: false,
+      message: 'API를 찾을 수 없습니다.',
+      data: null,
+    }));
+  }
+
   return originalGet.call(this, routePath, ...handlers);
 };
 
