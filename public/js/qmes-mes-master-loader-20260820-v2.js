@@ -17,7 +17,6 @@
     "./js/production-top-submenu-hide-20260824.js?v=20260824-1",
     "./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2",
     "./js/production-worker-live-name-sync-20260824.js?v=20260824-1",
-    "./js/inspection-remove-new-buttons-20260810.js?v=20260824-remove1",
     "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
     "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-8",
     "./js/ipad-pqc-oqc-lot-overlap-cleanup-20260824.js?v=20260824-1",
