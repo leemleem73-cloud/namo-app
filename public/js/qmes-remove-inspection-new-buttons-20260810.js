@@ -5,6 +5,18 @@
   global.__QMES_INSPECTION_FIELD_SHORTCUTS_READY__=true;
   const TARGET_KEY='qmes_field_shortcut_mode';
 
+  /* Compatibility guard: an old cached module used Element.remove() to delete
+     IQC/PQC/OQC 신규등록 buttons whenever React rendered them. Protect only
+     those native controls while leaving normal DOM removal behavior untouched. */
+  if(!global.__QMES_INSPECTION_REMOVE_GUARD__){
+    global.__QMES_INSPECTION_REMOVE_GUARD__=true;
+    const nativeRemove=Element.prototype.remove;
+    Element.prototype.remove=function(){
+      if(this && this.matches && this.matches('.qmes-iqc-new-btn,.qmes-pqc-page .qmes-inspection-new-btn,.qmes-oqc-page .qmes-inspection-new-btn')) return this;
+      return nativeRemove.call(this);
+    };
+  }
+
   function installStyles(){
     if(document.getElementById('qmes-inspection-control-recovery-style')) return;
     const style=document.createElement('style');
@@ -27,6 +39,15 @@
         visibility:visible!important;
         opacity:1!important;
       }
+      .qmes-iqc-page th:last-child,.qmes-iqc-page td:last-child,
+      .qmes-pqc-page th:last-child,.qmes-pqc-page td:last-child,
+      .qmes-oqc-page th:last-child,.qmes-oqc-page td:last-child{
+        position:sticky!important;
+        right:0!important;
+        z-index:4!important;
+        min-width:178px!important;
+      }
+      .qmes-iqc-page td:last-child,.qmes-pqc-page td:last-child,.qmes-oqc-page td:last-child{background:#fff!important;}
       [data-qmes-field-shortcut]{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
     `;
     document.head.appendChild(style);
