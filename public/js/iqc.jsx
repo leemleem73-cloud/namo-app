@@ -367,7 +367,7 @@ function IqcTab() {
               <span>월</span>
               <select value={selectedMonth} onChange={(e)=>setSelectedMonth(e.target.value)}>
                 <option value="전체">전체 월</option>
-                {Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map((m)=><option key={m} value={m}>{Number(m)}월</option>)}
+                {Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map((m)=><option key={m} value={m}>{Number(m)}월</option>) }
               </select>
             </div>
             <button type="button" onClick={resetIqcFilters}
@@ -396,9 +396,10 @@ function IqcTab() {
                     <td><Badge tone={iqcTone(r.judge)}>{r.judge}</Badge></td>
                     <td className="qmes-iqc-manage-cell">
                       <div className="qmes-iqc-manage-inline">
-                        <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
-                        <button onClick={()=>setViewingLabel(r)} title="라벨" className="qmes-iqc-action-btn qmes-iqc-action-label">라벨</button>
-                        <button onClick={()=>deleteIqc(r)} title="삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                        <button type="button" onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
+                        <button type="button" onClick={()=>setViewingLabel(r)} title="라벨" className="qmes-iqc-action-btn qmes-iqc-action-label">라벨</button>
+                        <button type="button" onClick={()=>editIqc(r)} title="수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
+                        <button type="button" onClick={()=>deleteIqc(r)} title="삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                       </div>
                     </td>
                   </tr>
@@ -458,9 +459,9 @@ function IqcTab() {
 
       {iqcModalOpen && (
         <div className="qmes-modal-backdrop qmes-iqc-modal-backdrop" onMouseDown={(e)=>{ if(e.target===e.currentTarget){ setIqcModalOpen(false); setEditingInNo(null); setTried(false); } }}>
-          <div className="qmes-iqc-modal" role="dialog" aria-modal="true" aria-label="수입검사 등록">
+          <div className="qmes-iqc-modal" role="dialog" aria-modal="true" aria-label={editingInNo ? "수입검사 수정" : "수입검사 등록"}>
             <div className="qmes-iqc-modal-head">
-              <div><span>INCOMING INSPECTION</span><strong>{editingInNo ? "수입검사 수정" : "수입검사 신규등록"}</strong></div>
+              <div><span>{editingInNo ? "EDIT INCOMING INSPECTION" : "INCOMING INSPECTION"}</span><strong>{editingInNo ? "수입검사 수정" : "수입검사 신규등록"}</strong></div>
               <button type="button" className="qmes-modal-close" onClick={()=>{setIqcModalOpen(false);setEditingInNo(null);setTried(false);}}>×</button>
             </div>
             <div className="qmes-iqc-modal-body">
