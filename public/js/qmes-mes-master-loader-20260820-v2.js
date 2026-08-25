@@ -29,7 +29,8 @@
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
-    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
+    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1",
+    "./js/qmes-business-extension-runtime-20260825.js?v=20260825-2"
   ];
   function exists(src){
     const base=src.split("?")[0];
