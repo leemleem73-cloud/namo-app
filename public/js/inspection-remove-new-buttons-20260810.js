@@ -1,21 +1,8 @@
-/* QMES quality inspection UI — remove 신규등록 buttons from IQC/PQC/OQC. */
-(function installInspectionNewButtonRemoval(global){
-  function removeNewButtons(){
-    document.querySelectorAll([
-      '.qmes-iqc-new-btn',
-      '.qmes-pqc-page .qmes-inspection-new-btn',
-      '.qmes-oqc-page .qmes-inspection-new-btn'
-    ].join(',')).forEach((button) => button.remove());
-  }
-
-  const observer = new MutationObserver(removeNewButtons);
-  function start(){
-    removeNewButtons();
-    observer.observe(document.body, { childList:true, subtree:true });
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
-  else start();
-
-  global.__QMES_INSPECTION_NEW_BUTTONS_REMOVED__ = true;
+/* Deprecated QMES inspection button-removal module.
+   Kept only for compatibility with stale cached loaders.
+   Native 신규등록 / 수정 / 출력 / 삭제 controls must remain intact. */
+(function disableLegacyInspectionButtonRemoval(global){
+  'use strict';
+  global.__QMES_INSPECTION_NEW_BUTTONS_REMOVED__ = false;
+  global.__QMES_INSPECTION_REMOVE_BUTTONS_DISABLED__ = true;
 })(window);
