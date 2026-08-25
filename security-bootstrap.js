@@ -16,17 +16,24 @@ if (!sessionSecret || sessionSecret === 'change-me-session-secret') {
 }
 
 // Harden express-session options before server.js creates its session middleware.
+// QMES is an all-day operational screen. Keep an authenticated session alive while
+// the user is actively using the system so background PQC/workorder sync does not
+// suddenly start returning 401 after the original fixed expiry time.
 const sessionModulePath = require.resolve('express-session');
 function hardenedSession(options = {}) {
+  const requestedMaxAge = Number(options?.cookie?.maxAge || 0);
+  const activeMaxAge = Math.max(requestedMaxAge, 1000 * 60 * 60 * 12);
   return session({
     ...options,
     secret: sessionSecret,
     proxy: isProduction ? true : options.proxy,
+    rolling: true,
     cookie: {
       ...(options.cookie || {}),
       httpOnly: true,
       sameSite: 'lax',
       secure: isProduction ? 'auto' : false,
+      maxAge: activeMaxAge,
     },
   });
 }
