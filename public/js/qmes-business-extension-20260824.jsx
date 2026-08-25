@@ -10,81 +10,67 @@ function QBEShippingTab(){return <div className="qmes-business-extension"><QBEHe
 window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTab=QBEPurchaseTab;window.QBERecipeTab=QBERecipeTab;window.QBEShippingTab=QBEShippingTab;
 
 (function installQmesBusinessExtension(){
-  if(window.__QMES_BUSINESS_EXTENSION_INSTALLED__)return;window.__QMES_BUSINESS_EXTENSION_INSTALLED__=true;
-  const menus=[['sales','수주·납기','수주 · 납기관리',QBESalesTab],['plan','생산계획·MRP','생산계획 · MRP',QBEPlanTab],['purchase','구매·발주','구매 · 발주관리',QBEPurchaseTab],['recipe','Recipe/BOM','Recipe / BOM',QBERecipeTab],['shipping','출하·납품','출하 · 납품관리',QBEShippingTab]];
+  if(window.__QMES_BUSINESS_EXTENSION_INSTALLED__)return;
+  window.__QMES_BUSINESS_EXTENSION_INSTALLED__=true;
+  const menus=[['sales','수주·납기',QBESalesTab],['plan','생산계획·MRP',QBEPlanTab],['purchase','구매·발주',QBEPurchaseTab],['recipe','Recipe/BOM',QBERecipeTab],['shipping','출하·납품',QBEShippingTab]];
   let extensionRoot=null,host=null;
 
-  const transitionStyle=document.createElement('style');
-  transitionStyle.id='qmes-business-transition-normalize';
-  transitionStyle.textContent=`
-    #root>div>main,.qmes-top-menu,#qmes-sync-sidebar,body.qmes-side-open #root>div>main,body.qmes-side-open .qmes-top-menu{transition:none!important}
-    body.qmes-business-active,body.qmes-business-active #root,body.qmes-business-active #root>div,body.qmes-business-active #root>div>main{background:#f5f7fb!important}
-    body.qmes-business-active #qmes-business-extension-host{background:#f5f7fb!important;min-height:calc(100vh - 114px)!important}
-  `;
-  document.head.appendChild(transitionStyle);
+  const style=document.createElement('style');
+  style.id='qmes-business-switch-stable';
+  style.textContent=`#root>div>main,.qmes-top-menu,#qmes-sync-sidebar{transition:none!important}body.qmes-business-active #root>div>main{background:#f5f7fb!important}`;
+  document.head.appendChild(style);
 
-  function resetSidebarLayout(){
-    document.body.classList.remove('qmes-side-open');
+  function closeExtension(){
+    if(extensionRoot){try{extensionRoot.unmount()}catch(e){}extensionRoot=null;}
+    if(host){host.remove();host=null;}
+    document.body.classList.remove('qmes-business-active');
+    document.querySelectorAll('.qmes-top-menu-button.is-extension').forEach(b=>b.classList.remove('is-active'));
     const main=document.querySelector('#root>div>main');
-    if(main){['margin-left','width','box-sizing','transition','background','background-color'].forEach(p=>main.style.removeProperty(p));delete main.dataset.qmesSidebarShift;}
-    const top=document.querySelector('.qmes-top-menu');if(top){top.style.removeProperty('transform');top.style.removeProperty('width');top.style.removeProperty('transition');}
+    if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden;}});
   }
-  function showBusinessSidebar(label){
-    const side=document.getElementById('qmes-sync-sidebar');
-    if(!side)return;
-    const title=side.querySelector('.qmes-side-title');
-    const head=side.querySelector('.qmes-side-head');
-    const items=side.querySelector('.qmes-side-items');
-    const search=side.querySelector('.qmes-side-search-input');
-    if(search)search.value='';
-    if(title)title.textContent=label;
-    if(head)head.classList.add('is-group-active');
-    if(items){items.replaceChildren();const b=document.createElement('button');b.type='button';b.className='qmes-side-item is-active';b.textContent=label;items.appendChild(b);}
-    ['display','visibility','opacity','pointer-events','transform'].forEach(p=>side.style.removeProperty(p));
-    document.body.classList.add('qmes-side-open');
+
+  function openExtension(id,Component,button){
     const main=document.querySelector('#root>div>main');
-    if(main){const w=window.matchMedia('(max-width:900px)').matches?'190px':'220px';main.style.setProperty('margin-left',w,'important');main.style.setProperty('width',`calc(100% - ${w})`,'important');main.style.setProperty('transition','none','important');main.dataset.qmesSidebarShift='true';}
-  }
-  function closeExtension(){if(extensionRoot){try{extensionRoot.unmount()}catch(e){}extensionRoot=null}if(host){host.remove();host=null}document.querySelectorAll('.qmes-top-menu-button.is-extension').forEach(b=>b.classList.remove('is-active'));}
-  function openExtension(id,label,Component,button){
-    const main=document.querySelector('#root>div>main');if(!main)return;
-    closeExtension();resetSidebarLayout();document.body.classList.add('qmes-business-active');
-    main.style.setProperty('background','#f5f7fb','important');
-    host=document.createElement('div');host.id='qmes-business-extension-host';host.style.width='100%';host.style.background='#f5f7fb';main.prepend(host);
-    Array.from(main.children).forEach(child=>{if(child!==host){child.dataset.qbeHidden='1';child.style.display='none'}});
-    extensionRoot=ReactDOM.createRoot(host);extensionRoot.render(<Component/>);
-    document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));button?.classList.add('is-active');
+    if(!main)return;
+    closeExtension();
+    document.body.classList.add('qmes-business-active');
+    host=document.createElement('div');
+    host.id='qmes-business-extension-host';
+    host.style.width='100%';
+    host.style.minWidth='0';
+    Array.from(main.children).forEach(child=>{child.dataset.qbeHidden='1';child.style.display='none';});
+    main.prepend(host);
+    extensionRoot=ReactDOM.createRoot(host);
+    extensionRoot.render(<Component/>);
+    document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));
+    button?.classList.add('is-active');
     try{sessionStorage.setItem('qmes_business_extension_tab',id)}catch(e){}
-    showBusinessSidebar(label);
     window.scrollTo({top:0,behavior:'auto'});
   }
-  function restoreNative({preserveSidebar=false}={}){
+
+  function restoreNative(){
     if(!host&&!document.body.classList.contains('qmes-business-active'))return;
-    closeExtension();document.body.classList.remove('qmes-business-active');
-    if(!preserveSidebar)resetSidebarLayout();
-    const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden}});
+    closeExtension();
     try{sessionStorage.removeItem('qmes_business_extension_tab')}catch(e){}
   }
+
   function ensureButtons(){
-    const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;
-    menus.forEach(([id,topLabel,sideLabel,Component])=>{
+    const nav=document.querySelector('.qmes-top-menu');
+    if(!nav)return false;
+    menus.forEach(([id,label,Component])=>{
       if(nav.querySelector(`[data-qbe-menu="${id}"]`))return;
       const item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;
-      const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;
-      b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});
-      item.appendChild(b);nav.appendChild(item);
+      const button=document.createElement('button');button.type='button';button.className='qmes-top-menu-button is-extension';button.innerHTML=`<span>${label}</span>`;
+      button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,Component,button)});
+      item.appendChild(button);nav.appendChild(item);
     });
     return menus.every(([id])=>nav.querySelector(`[data-qbe-menu="${id}"]`));
   }
 
-  document.addEventListener('click',event=>{
-    const b=event.target.closest?.('.qmes-top-menu-button');
-    if(!b||b.classList.contains('is-extension'))return;
-    restoreNative({preserveSidebar:true});
-  },true);
-  document.addEventListener('click',event=>{const logoButton=event.target.closest?.('header button');if(!logoButton||!logoButton.querySelector('img[alt="NAMO Chemical"]'))return;restoreNative();},true);
+  document.addEventListener('click',event=>{const b=event.target.closest?.('.qmes-top-menu-button');if(!b||b.classList.contains('is-extension'))return;restoreNative();},true);
+  document.addEventListener('click',event=>{const logo=event.target.closest?.('header button');if(logo?.querySelector('img[alt="NAMO Chemical"]'))restoreNative();},true);
 
-  function start(){let tries=0;const timer=setInterval(()=>{tries++;if(ensureButtons()||tries>=200)clearInterval(timer);},50);}
+  function start(){let tries=0;const timer=setInterval(()=>{tries++;if(ensureButtons()||tries>=120)clearInterval(timer);},50);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.qmesCloseBusinessExtension=restoreNative;
 })();
