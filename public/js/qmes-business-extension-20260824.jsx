@@ -12,6 +12,7 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
 (function installQmesBusinessExtension(){
   if(window.__QMES_BUSINESS_EXTENSION_INSTALLED__)return;window.__QMES_BUSINESS_EXTENSION_INSTALLED__=true;
   const menus=[['sales','수주·납기','수주 · 납기관리',QBESalesTab],['plan','생산계획·MRP','생산계획 · MRP',QBEPlanTab],['purchase','구매·발주','구매 · 발주관리',QBEPurchaseTab],['recipe','Recipe/BOM','Recipe / BOM',QBERecipeTab],['shipping','출하·납품','출하 · 납품관리',QBEShippingTab]];
+  const nativeGroups={'대시보드':'대시보드','생산관리':'생산관리','품질검사':'품질검사','현장입력':'현장입력','재고관리':'재고관리','거래처현황':'거래처 현황','거래처 현황':'거래처 현황','설비관리':'설비관리','LOT추적':'LOT 추적','LOT 추적':'LOT 추적','부적합관리':'부적합관리','부적합 관리':'부적합관리'};
   let extensionRoot=null,host=null;
   function resetSidebarLayout(){
     document.body.classList.remove('qmes-side-open');
@@ -41,7 +42,15 @@ window.QBESalesTab=QBESalesTab;window.QBEPlanTab=QBEPlanTab;window.QBEPurchaseTa
   function openExtension(id,label,Component,button){const main=document.querySelector('#root>div>main');if(!main)return;closeExtension();host=document.createElement('div');host.id='qmes-business-extension-host';host.style.width='100%';main.prepend(host);Array.from(main.children).forEach(child=>{if(child!==host){child.dataset.qbeHidden='1';child.style.display='none'}});extensionRoot=ReactDOM.createRoot(host);extensionRoot.render(<Component/>);document.querySelectorAll('.qmes-top-menu-button').forEach(b=>b.classList.remove('is-active'));button?.classList.add('is-active');try{sessionStorage.setItem('qmes_business_extension_tab',id)}catch(e){}setTimeout(()=>showBusinessSidebar(label),0);window.scrollTo({top:0,behavior:'smooth'});}
   function restoreNative(){closeExtension();resetSidebarLayout();const main=document.querySelector('#root>div>main');if(main)Array.from(main.children).forEach(child=>{if(child.dataset.qbeHidden==='1'){child.style.removeProperty('display');delete child.dataset.qbeHidden}});try{sessionStorage.removeItem('qmes_business_extension_tab')}catch(e){}}
   function ensureButtons(){const nav=document.querySelector('.qmes-top-menu');if(!nav)return false;menus.forEach(([id,topLabel,sideLabel,Component])=>{let item=nav.querySelector(`[data-qbe-menu="${id}"]`);if(item)return;item=document.createElement('div');item.className='qmes-top-menu-item';item.dataset.qbeMenu=id;const b=document.createElement('button');b.type='button';b.className='qmes-top-menu-button is-extension';b.innerHTML=`<span>${topLabel}</span>`;b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openExtension(id,sideLabel,Component,b)});item.appendChild(b);nav.appendChild(item)});return true;}
-  document.addEventListener('click',event=>{const b=event.target.closest?.('.qmes-top-menu-button');if(b&&!b.classList.contains('is-extension'))restoreNative()},true);
+  document.addEventListener('click',event=>{
+    const b=event.target.closest?.('.qmes-top-menu-button');
+    if(!b||b.classList.contains('is-extension'))return;
+    const raw=String(b.querySelector('span')?.textContent||b.textContent||'').replace(/\s+/g,' ').trim();
+    const compact=raw.replace(/\s+/g,'');
+    const group=nativeGroups[raw]||nativeGroups[compact];
+    restoreNative();
+    if(group)setTimeout(()=>window.qmesSetGlobalSidebarGroup?.(group),0);
+  },true);
   const observer=new MutationObserver(()=>ensureButtons());
   function start(){ensureButtons();observer.observe(document.documentElement,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
