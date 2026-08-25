@@ -398,7 +398,6 @@ function IqcTab() {
                       <div className="qmes-iqc-manage-inline">
                         <button onClick={()=>setViewingIqc(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
                         <button onClick={()=>setViewingLabel(r)} title="라벨" className="qmes-iqc-action-btn qmes-iqc-action-label">라벨</button>
-                        <button onClick={()=>editIqc(r)} title="수정" className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
                         <button onClick={()=>deleteIqc(r)} title="삭제" className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                       </div>
                     </td>
