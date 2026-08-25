@@ -1,5 +1,5 @@
 /* QMES inspection compatibility layer.
-   Keep React in control of IQC/PQC/OQC modals and clear stale print state before edit. */
+   Keep React in control of IQC/PQC/OQC edit state and only ensure edit modals are visible. */
 (function installInspectionCompatibility(){
   'use strict';
   if(window.__QMES_INSPECTION_COMPAT_READY__) return;
@@ -42,8 +42,33 @@
     const printRoot=document.getElementById('qmes-print-root');
     if(printRoot){
       printRoot.setAttribute('aria-hidden','true');
-      printRoot.style.display='';
+      printRoot.style.removeProperty('display');
     }
+  }
+
+  function forceVisibleEditModal(){
+    const backdrops=document.querySelectorAll('.qmes-modal-backdrop');
+    backdrops.forEach((backdrop)=>{
+      const dialog=backdrop.querySelector('[role="dialog"],.qmes-iqc-modal,.qmes-inspection-modal');
+      if(!dialog) return;
+      backdrop.style.setProperty('display','flex','important');
+      backdrop.style.setProperty('position','fixed','important');
+      backdrop.style.setProperty('inset','0','important');
+      backdrop.style.setProperty('width','100vw','important');
+      backdrop.style.setProperty('height','100vh','important');
+      backdrop.style.setProperty('align-items','center','important');
+      backdrop.style.setProperty('justify-content','center','important');
+      backdrop.style.setProperty('visibility','visible','important');
+      backdrop.style.setProperty('opacity','1','important');
+      backdrop.style.setProperty('pointer-events','auto','important');
+      backdrop.style.setProperty('z-index','2147483000','important');
+      dialog.style.setProperty('display','block','important');
+      dialog.style.setProperty('visibility','visible','important');
+      dialog.style.setProperty('opacity','1','important');
+      dialog.style.setProperty('pointer-events','auto','important');
+      dialog.style.setProperty('position','relative','important');
+      dialog.style.setProperty('z-index','2147483001','important');
+    });
   }
 
   document.addEventListener('click',function(event){
@@ -55,17 +80,11 @@
 
     clearStalePrintState();
 
-    const propKey=Object.keys(button).find((key)=>key.indexOf('__reactProps$')===0);
-    const props=propKey ? button[propKey] : null;
-    if(!props || typeof props.onClick!=='function') return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
-    try{
-      props.onClick();
-    }catch(error){
-      console.error('QMES inspection edit fallback failed:',error);
-    }
+    /* Let the original React onClick run normally. Then reveal only the modal it creates. */
+    requestAnimationFrame(()=>{
+      forceVisibleEditModal();
+      setTimeout(forceVisibleEditModal,30);
+      setTimeout(forceVisibleEditModal,120);
+    });
   },true);
 })(window);
