@@ -1,51 +1,56 @@
-/* QMES module: dashboard — extracted from index.html without logic changes. */
-
-function qmesProcessStatus() {
-  const iqc = Array.isArray(DB.iqc) ? DB.iqc : [];
-  const batches = Array.isArray(DB.batches) ? DB.batches : [];
-  const oqc = Array.isArray(DB.insp?.OQC) ? DB.insp.OQC : [];
-  const holds = Array.isArray(DB.holds) ? DB.holds : [];
-  const activeHolds = holds.filter((h) => String(h.status || "").includes("차단"));
-  const latestIqc = iqc[0];
-  const latestBatch = batches[0];
-  const activeBatch = batches.find((b) => !["완료", "생산완료", "출하완료"].some((x) => String(b.status || "").includes(x)));
-  const displayBatch = activeBatch || latestBatch;
-  const batchLot = displayBatch?.no || "";
-  const lotOqc = batchLot ? oqc.filter((r) => r.lot === batchLot) : [];
-  const latestOqc = lotOqc[0] || oqc[0];
-  const hasIqcAlarm = iqc.some((r) => r.judge && r.judge !== "합격") || activeHolds.some((h) => String(h.gate || "").includes("IQC"));
-  const hasOqcAlarm = oqc.some((r) => r.judge === "불합격") || activeHolds.some((h) => String(h.gate || "").includes("출하"));
-  const passedIqc = iqc.filter((r) => r.judge === "합격");
-  const batchStatus = String(displayBatch?.status || "");
-  const isIssued = Boolean(displayBatch) && batchStatus.includes("발행");
-  const isBatchComplete = Boolean(displayBatch) && ["완료", "생산완료", "출하완료"].some((x) => batchStatus.includes(x));
-  const isProductionRunning = Boolean(displayBatch) && !isIssued && !isBatchComplete;
-  const oqcAllPass = lotOqc.length > 0 && lotOqc.every((r) => r.judge === "합격");
-  const lotInfo = batchLot ? DB.lots?.[batchLot] : null;
-  const shipped = Boolean(lotInfo?.ship) || batchStatus.includes("출하완료");
-  return [
-    {...PROCESSES[0],status:hasIqcAlarm?"alarm":latestIqc?(latestIqc.judge==="합격"?"done":"inspect"):"idle",key:latestIqc?`${latestIqc.lot||latestIqc.inNo||"-"} · ${latestIqc.judge||"검사중"}`:"검사 등록 대기"},
-    {...PROCESSES[1],status:hasIqcAlarm?"alarm":passedIqc.length?"done":"idle",key:passedIqc.length?`합격 원료 ${passedIqc.length} LOT · 불출 가능`:"IQC 합격 원료 없음"},
-    {...PROCESSES[2],status:isBatchComplete?"done":(isProductionRunning?"run":"idle"),key:displayBatch?`${displayBatch.no} · ${isBatchComplete?"바인더 제조 완료":isIssued?"작업지시 발행 · 대기":"바인더 제조중"}`:"작업지시 없음"},
-    {...PROCESSES[3],status:isBatchComplete?"done":(isProductionRunning?"run":"idle"),key:displayBatch?`${displayBatch.no} · ${isBatchComplete?"슬러리 제조 완료":isIssued?"생산 대기":(displayBatch.tank||"TK 501A/B")}`:"생산 진행 LOT 없음"},
-    {...PROCESSES[4],status:hasOqcAlarm?"alarm":lotOqc.length?(oqcAllPass?"done":"inspect"):(isBatchComplete?"inspect":"idle"),key:latestOqc?`${latestOqc.lot} · OQC ${latestOqc.judge||"검사중"}`:(isBatchComplete?"OQC 등록 대기":"생산 완료 후 검사")},
-    {...PROCESSES[5],status:isBatchComplete?"done":(oqcAllPass?"run":"idle"),key:isBatchComplete?`${batchLot||"-"} · 충진 완료`:(oqcAllPass?`${batchLot} · 충진 진행`:"OQC 합격 후 충진")},
-    {...PROCESSES[6],status:isBatchComplete?"done":"idle",key:isBatchComplete?`${batchLot||"-"} · 완제품 보관`:"충진 완료 후 보관"},
-    {...PROCESSES[7],status:shipped?"done":"idle",key:shipped?`${batchLot||"-"} · 출하 완료`:"출하 등록 대기"}
-  ];
+/* QMES latest integrated dashboard — native DashboardTab, no business top-menu extension. */
+function qmesDashboardNavigate(tab){
+  if(!tab) return;
+  window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab}}));
 }
 
-function ProcessStrip(){const processes=qmesProcessStatus();return <div className="qmes-dashboard-process-grid grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2">{processes.map((p,i)=>{const m=statusMeta[p.status]||statusMeta.idle;return <div key={i} className={`qmes-process-card bg-slate-900 border ${m.ring} rounded-lg px-3 py-2.5`} title={`${p.name}: ${p.key}`}><div className="flex items-center justify-between"><span className="qmes-process-card-text qmes-process-no text-[11px] text-slate-500 font-mono">공정 {p.no}</span><span className="qmes-process-status-wrap flex items-center gap-1.5"><span className={`qmes-process-status-dot rounded-full ${m.dot}`}/><span className={`qmes-process-card-text qmes-process-status-label text-[18px] font-bold leading-none ${m.text}`}>{m.label}</span></span></div><div className="flex items-center gap-1.5 mt-1"><p.icon size={13} className="text-slate-400 shrink-0"/><span className="qmes-process-card-text qmes-process-name text-[13px] text-slate-100 font-medium leading-tight">{p.name}</span></div><div className="qmes-process-card-text qmes-process-key text-[11px] text-slate-400 mt-1.5 tabular-nums truncate">{p.key}</div></div>})}</div>}
+function QMESDashboardFlowStep({tone='now',title,sub,tab}){
+  return <button type="button" className={`qpd-flow-step ${tone}`} onClick={()=>tab&&qmesDashboardNavigate(tab)} disabled={!tab}>
+    <strong>{title}</strong><small>{sub}</small>
+  </button>;
+}
 
 function DashboardTab(){
- const todayKey=localISODate(); const todayBatches=(DB.batches||[]).filter(b=>String(b.due||b.date||b.productionDate||b.startDate||"").slice(0,10)===todayKey); const todayKg=todayBatches.reduce((s,b)=>s+(Number(b.qty||b.amount||b.productionQty||b.done||0)||0),0);
- const currentMonthKey=localISODate().slice(0,7); const monthBatches=(DB.batches||[]).filter(b=>String(b.due||b.date||b.productionDate||b.startDate||"").slice(0,7)===currentMonthKey); const monthPlanKg=monthBatches.reduce((s,b)=>s+(Number(b.plan||b.plannedQty||b.targetQty||0)||0),0); const monthKg=monthBatches.reduce((s,b)=>s+(Number(b.qty||b.amount||b.productionQty||b.done||0)||0),0); const achievementRate=monthPlanKg>0?((monthKg/monthPlanKg)*100).toFixed(1):"—";
- const monthShipmentLots=Object.values(DB.lots||{}).filter(lot=>String(lot?.ship?.shipDate||lot?.ship?.date||"").slice(0,7)===currentMonthKey); const shipmentMap={}; monthShipmentLots.forEach(lot=>{const ship=lot&&lot.ship;if(!ship)return;const customer=ship.customer||"미지정";const qty=Number(ship.qty||ship.shipQty||ship.amount||0)||0;shipmentMap[customer]=(shipmentMap[customer]||0)+qty}); const customerShipments=Object.entries(shipmentMap).map(([customer,qty])=>({customer,qty})).sort((a,b)=>b.qty-a.qty).slice(0,8);
- const hasParetoData=Array.isArray(PARETO)&&PARETO.some(item=>(Number(item?.count)||0)>0);
- return <div className="flex flex-col gap-4"><ProcessStrip/><div className="qmes-dashboard-kpi-grid"><Kpi textOnly label="금일 생산량" value={todayKg.toLocaleString()} unit={`kg · ${todayBatches.length} LOT`} tone="text-sky-400" caption="오늘 등록된 생산 실적"/><Kpi textOnly label="당월 누적 생산량" value={monthKg.toLocaleString()} unit={`kg · ${monthBatches.length} LOT`} tone="text-cyan-400" caption="이번 달 작업지시 생산 실적"/><Kpi textOnly showProgress progressValue={achievementRate==="—"?0:Number(achievementRate)} label="목표 달성률" value={achievementRate} unit="%" tone="text-emerald-400" caption={monthPlanKg>0?`당월 계획 ${monthPlanKg.toLocaleString()} kg 대비`:"당월 생산계획 등록 필요"}/></div>
- <div className="grid lg:grid-cols-3 gap-4">
- <Panel title="입도 관리도 (SPC) — 규격 < 10 μm · CTQ" right={<Badge tone="gray">CTQ</Badge>}><ResponsiveContainer width="100%" height={230}><LineChart data={PARTICLE_SPC}><CartesianGrid stroke="#d1d5db" strokeDasharray="3 3"/><XAxis dataKey="b" stroke="#111827" fontSize={11}/><YAxis stroke="#111827" fontSize={11} domain={[0,11]}/><Tooltip {...chartTooltip} cursor={false}/><ReferenceLine y={10} stroke="#4b5563" strokeWidth={2} strokeDasharray="5 4" label={{value:"USL 10",fill:"#111827",fontSize:11,fontWeight:700,position:"insideTopRight"}}/><Line type="monotone" dataKey="v" name="입도 규격(μm)" stroke="#34d399" strokeWidth={2} dot={props=><SpecDot {...props} hi={10}/>} activeDot={props=><SpecDot {...props} hi={10}/>} /></LineChart></ResponsiveContainer></Panel>
- <Panel title="점도 관리도 (SPC) — 규격 1,500±300 cP · CTQ" right={<Badge tone="gray">CTQ</Badge>}><ResponsiveContainer width="100%" height={230}><LineChart data={VISCO_SPC}><CartesianGrid stroke="#d1d5db" strokeDasharray="3 3"/><XAxis dataKey="b" stroke="#111827" fontSize={11}/><YAxis stroke="#111827" fontSize={11} domain={[1100,1900]}/><Tooltip {...chartTooltip} cursor={false}/><ReferenceLine y={1800} stroke="#4b5563" strokeWidth={2} strokeDasharray="5 4" label={{value:"USL 1,800",fill:"#111827",fontSize:11,fontWeight:700,position:"insideTopRight"}}/><ReferenceLine y={1500} stroke="#6b7280" strokeDasharray="2 4" label={{value:"CL 1,500",fill:"#111827",fontSize:10,position:"insideRight"}}/><ReferenceLine y={1200} stroke="#4b5563" strokeWidth={2} strokeDasharray="5 4" label={{value:"LSL 1,200",fill:"#111827",fontSize:11,fontWeight:700,position:"insideBottomRight"}}/><Line type="monotone" dataKey="v" name="점도(cP)" stroke="#33C1E8" strokeWidth={2} dot={props=><SpecDot {...props} lo={1200} hi={1800}/>} activeDot={props=><SpecDot {...props} lo={1200} hi={1800}/>} /></LineChart></ResponsiveContainer></Panel>
- <Panel title="고형분 관리도 (SPC) — 규격 20.0±1.0 wt% · CTQ" right={<Badge tone="gray">CTQ</Badge>}><ResponsiveContainer width="100%" height={230}><LineChart data={SOLID_SPC}><CartesianGrid stroke="#d1d5db" strokeDasharray="3 3"/><XAxis dataKey="b" stroke="#111827" fontSize={11}/><YAxis stroke="#111827" fontSize={11} domain={[18.5,21.5]}/><Tooltip {...chartTooltip} cursor={false}/><ReferenceLine y={21} stroke="#4b5563" strokeWidth={2} strokeDasharray="5 4" label={{value:"USL 21",fill:"#111827",fontSize:11,fontWeight:700,position:"insideTopRight"}}/><ReferenceLine y={20} stroke="#6b7280" strokeDasharray="2 4" label={{value:"CL 20.0",fill:"#111827",fontSize:10,position:"insideRight"}}/><ReferenceLine y={19} stroke="#4b5563" strokeWidth={2} strokeDasharray="5 4" label={{value:"LSL 19",fill:"#111827",fontSize:11,fontWeight:700,position:"insideBottomRight"}}/><Line type="monotone" dataKey="v" name="고형분(wt%)" stroke="#a78bfa" strokeWidth={2} dot={props=><SpecDot {...props} lo={19} hi={21}/>} activeDot={props=><SpecDot {...props} lo={19} hi={21}/>} /></LineChart></ResponsiveContainer></Panel></div>
- <div className="grid lg:grid-cols-3 gap-4"><Panel title="고객사별 당월 출하량 (출하확정 kg)" right={<span className="text-xs text-slate-400">OQC 합격 저장 시 자동 반영</span>}>{customerShipments.length>0?<ResponsiveContainer width="100%" height={200}><BarChart data={customerShipments} layout="vertical" margin={{left:8,right:18}}><CartesianGrid stroke="#16283E" strokeDasharray="3 3" horizontal={false}/><XAxis type="number" stroke="#8AA3C0" fontSize={11}/><YAxis type="category" dataKey="customer" stroke="#8AA3C0" fontSize={11} width={92}/><Tooltip {...chartTooltip} formatter={value=>[`${Number(value).toLocaleString()} kg`,"출하량"]}/><Bar dataKey="qty" name="출하량(kg)" fill="#33C1E8" radius={[0,4,4,0]} barSize={18}/></BarChart></ResponsiveContainer>:<div className="qmes-dashboard-empty">등록된 고객사별 출하 실적이 없습니다.</div>}</Panel><Panel title="부적합 파레토 (당월)"><ResponsiveContainer width="100%" height={200}><BarChart data={PARETO}><CartesianGrid stroke="#16283E" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="name" stroke="#8AA3C0" fontSize={10} interval={0}/><YAxis stroke="#8AA3C0" fontSize={11} allowDecimals={false}/>{hasParetoData&&<Tooltip {...chartTooltip}/>}<Bar dataKey="count" name="건수" fill="#f87171" radius={[4,4,0,0]} barSize={24}/></BarChart></ResponsiveContainer></Panel><Panel title="실시간 알람" right={<Badge tone="red">{ALARMS.length}건</Badge>}><ul className="flex flex-col gap-3">{ALARMS.length===0&&<li className="qmes-dashboard-empty qmes-dashboard-empty-success">현재 이상 알람이 없습니다.</li>}{ALARMS.map((a,i)=><li key={i} className="flex gap-2.5 items-start"><AlertTriangle size={15} className={`mt-0.5 shrink-0 ${a.level==="심각"?"text-red-400":a.level==="경고"?"text-amber-400":"text-slate-400"}`}/><div className="min-w-0"><div className="flex items-center gap-2"><span className="text-xs text-slate-500 font-mono">{a.time}</span><span className="text-xs text-slate-400">{a.eq}</span></div><p className="text-xs text-slate-200 mt-0.5 leading-relaxed">{a.msg}</p></div></li>)}</ul></Panel></div></div>;
+  return <div className="qmes-preview-dashboard">
+    <style>{`
+      .qmes-preview-dashboard{width:100%;max-width:none;min-width:0;min-height:calc(100vh - 118px);margin:0;padding:20px 22px 34px;color:#111827;background:#f5f7fb;border:0;border-radius:0;box-shadow:none;box-sizing:border-box;font-family:Pretendard,'Noto Sans KR',sans-serif}
+      .qpd-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}.qpd-title-row h1{font-size:25px;letter-spacing:-.5px;margin:0;font-weight:900;line-height:1.25}.qpd-title-row p{color:#64748b;font-size:13px;margin:6px 0 0;line-height:1.5}
+      .qpd-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}.qpd-kpi{position:relative;min-width:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 15px;box-shadow:0 6px 18px rgba(15,23,42,.05);overflow:hidden}.qpd-kpi:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#2563eb}.qpd-kpi.orange:before{background:#f59e0b}.qpd-kpi.green:before{background:#16a34a}.qpd-kpi.red:before{background:#ef4444}.qpd-kpi.slate:before{background:#64748b}.qpd-kpi span{font-size:11px;color:#64748b;font-weight:800}.qpd-kpi b{display:block;font-size:24px;margin-top:7px;line-height:1.2}.qpd-kpi small{display:block;margin-top:4px;color:#94a3b8;font-size:10px}
+      .qpd-card{min-width:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(15,23,42,.05);margin-bottom:14px}.qpd-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.qpd-card-head h2{margin:0;font-size:16px}.qpd-card-head span,.qpd-card-head button{font-size:11px;color:#2563eb;font-weight:850;border:0;background:transparent}
+      .qpd-flow{display:flex;align-items:stretch;gap:6px;overflow-x:auto;padding:3px 0 7px}.qpd-flow-step{min-width:102px;flex:1;background:#f8fafc;border:1px solid #dfe7f0;border-radius:10px;padding:11px 8px;text-align:center;color:#111827;cursor:pointer}.qpd-flow-step.now{background:#edf6ff;border-color:#bfdbfe}.qpd-flow-step.add{background:#fff7e6;border-color:#f3d49a}.qpd-flow-step:disabled{cursor:default;opacity:.82}.qpd-flow-step strong{display:block;font-size:12px}.qpd-flow-step small{font-size:9px;color:#64748b;line-height:1.35;display:block;margin-top:5px}.qpd-flow i{display:grid;place-items:center;color:#2563eb;font-weight:950;font-style:normal}
+      .qpd-grid2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.85fr);gap:14px}.qpd-table-wrap{overflow:auto}.qpd-card table{width:100%;border-collapse:collapse;font-size:12px}.qpd-card th{background:#f8fafc;color:#475569;text-align:left;padding:9px;border-bottom:1px solid #dbe3ec;font-size:11px;white-space:nowrap}.qpd-card td{padding:10px 9px;border-bottom:1px solid #edf2f7;white-space:nowrap}.qpd-status{display:inline-flex;border-radius:999px;padding:4px 7px;font-size:10px;font-weight:950}.qpd-status.green{background:#dcfce7;color:#15803d}.qpd-status.orange{background:#ffedd5;color:#c2410c}.qpd-status.blue{background:#dbeafe;color:#1d4ed8}.qpd-status.red{background:#fee2e2;color:#b91c1c}
+      .qpd-alerts{display:grid;gap:8px}.qpd-alerts>div{display:flex;justify-content:space-between;gap:10px;padding:10px 11px;border-radius:9px;font-size:12px;font-weight:800}.qpd-alerts .red{background:#fff1f2;color:#9f1239}.qpd-alerts .orange{background:#fff7e6;color:#92400e}.qpd-alerts .blue{background:#eff6ff;color:#1e40af}
+      @media(max-width:1100px){.qpd-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.qpd-grid2{grid-template-columns:1fr}}@media(max-width:720px){.qmes-preview-dashboard{padding:16px}.qpd-kpis{grid-template-columns:1fr 1fr}.qpd-title-row{display:block}}
+    `}</style>
+    <div className="qpd-title-row"><div><h1>종합 대시보드</h1><p>QMES 주요 업무 흐름과 생산·품질·재고 현황을 한 화면에서 확인합니다.</p></div></div>
+    <div className="qpd-kpis">
+      <div className="qpd-kpi"><span>금월 수주</span><b>12,500 kg</b><small>5건 / 고객사 3개</small></div>
+      <div className="qpd-kpi orange"><span>생산 예정</span><b>8,400 kg</b><small>금주 작업지시 6건</small></div>
+      <div className="qpd-kpi red"><span>MRP 부족 원료</span><b>3 품목</b><small>NMP · PVDF · 첨가제</small></div>
+      <div className="qpd-kpi green"><span>생산 완료율</span><b>92.4%</b><small>계획 대비 실적</small></div>
+      <div className="qpd-kpi slate"><span>출하 대기</span><b>2,150 kg</b><small>OQC 합격 기준</small></div>
+    </div>
+    <section className="qpd-card"><div className="qpd-card-head"><h2>QMES 통합 업무 흐름</h2><span>파랑 = 기존 / 주황 = 업무 흐름 참고</span></div><div className="qpd-flow">
+      <QMESDashboardFlowStep tone="add" title="수주" sub="고객 PO / 납기"/><i>›</i>
+      <QMESDashboardFlowStep tone="add" title="생산계획" sub="월·주·일 계획"/><i>›</i>
+      <QMESDashboardFlowStep tone="add" title="MRP" sub="소요량 확인"/><i>›</i>
+      <QMESDashboardFlowStep tone="add" title="구매/발주" sub="부족원료 확보"/><i>›</i>
+      <QMESDashboardFlowStep title="IQC" sub="수입검사" tab="iqc"/><i>›</i>
+      <QMESDashboardFlowStep title="원재료 재고" sub="RM / 위치 / LOT" tab="inv"/><i>›</i>
+      <QMESDashboardFlowStep title="작업지시" sub="생산 LOT" tab="woIssue"/><i>›</i>
+      <QMESDashboardFlowStep title="생산공정" sub="계량/배합/충진" tab="prodProcess"/><i>›</i>
+      <QMESDashboardFlowStep title="PQC" sub="공정검사" tab="pqc"/><i>›</i>
+      <QMESDashboardFlowStep title="OQC / CoA" sub="출하검사" tab="oqc"/><i>›</i>
+      <QMESDashboardFlowStep tone="add" title="출하/납품" sub="납품완료"/>
+    </div></section>
+    <div className="qpd-grid2">
+      <section className="qpd-card"><div className="qpd-card-head"><h2>금주 생산계획 / 진행현황</h2></div><div className="qpd-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th>계획량</th><th>진행상태</th></tr></thead><tbody>
+        <tr><td>08-24</td><td>현대자동차</td><td>전도 슬러리 A</td><td>240824-01</td><td>2,000 kg</td><td><span className="qpd-status blue">PQC 진행</span></td></tr>
+        <tr><td>08-25</td><td>삼성SDI</td><td>Binder Solution</td><td>250825-01</td><td>1,500 kg</td><td><span className="qpd-status orange">원료 준비</span></td></tr>
+        <tr><td>08-26</td><td>SK</td><td>전도 슬러리 B</td><td>260826-01</td><td>2,400 kg</td><td><span className="qpd-status green">자재 확보</span></td></tr>
+        <tr><td>08-27</td><td>현대자동차</td><td>Binder Solution</td><td>270827-01</td><td>2,500 kg</td><td><span className="qpd-status red">NMP 부족</span></td></tr>
+      </tbody></table></div></section>
+      <section className="qpd-card"><div className="qpd-card-head"><h2>실행 필요 알림</h2><span>4건</span></div><div className="qpd-alerts"><div className="red"><span>NMP 재고 250kg 부족</span><b>발주 필요</b></div><div className="orange"><span>PVDF 입고예정일 임박</span><b>08/25</b></div><div className="blue"><span>LOT 240824-01 PQC 대기</span><b>검사실</b></div><div className="orange"><span>현대자동차 출하 예정</span><b>08/26</b></div></div></section>
+    </div>
+  </div>;
 }
