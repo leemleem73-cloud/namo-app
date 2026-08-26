@@ -16,20 +16,37 @@
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-name {font-size:14px !important;font-weight:800 !important;}
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-count {font-size:12px !important;font-weight:700 !important;}
 
-/* 관리대장 검색/연도/월 툴: 세 칸 동일한 밝은 색상 */
+/* 관리대장 검색/연도/월 툴 */
 #root .qmes-iqc-record-filter input[type="text"],
 #root .qmes-iqc-record-filter select {
+  box-sizing:border-box !important;
   background:#ffffff !important;
   background-color:#ffffff !important;
   border:1px solid #cbd5e1 !important;
+  outline:0 !important;
   color:#111827 !important;
   box-shadow:none !important;
+}
+/* 검색 input의 공통 CSS inset/부분 테두리 제거 */
+#root .qmes-iqc-record-filter input[type="text"]:focus,
+#root .qmes-iqc-record-filter input[type="text"]:focus-visible,
+#root .qmes-iqc-record-filter select:focus,
+#root .qmes-iqc-record-filter select:focus-visible {
+  border:1px solid #94a3b8 !important;
+  outline:0 !important;
+  box-shadow:0 0 0 1px #94a3b8 !important;
 }
 #root .qmes-iqc-record-filter input[type="text"]::placeholder { color:#6b7280 !important;opacity:1 !important; }
 #root .qmes-iqc-record-filter select option { background:#ffffff !important;color:#111827 !important; }
 
-/* 초기화 버튼: 밝은 툴과 어울리게, 글자는 검정 */
+/* 초기화: 글자 수평/수직 정중앙 */
 #root .qmes-iqc-record-filter button {
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  line-height:1 !important;
   background:#ffffff !important;
   background-color:#ffffff !important;
   border:1px solid #cbd5e1 !important;
@@ -37,3 +54,13 @@
   box-shadow:none !important;
 }
 #root .qmes-iqc-record-filter button:hover { background:#f3f4f6 !important;color:#000000 !important; }
+
+/* 신규등록: 글자 수평/수직 정중앙 */
+#root .qmes-iqc-quickbar .qmes-iqc-new-btn {
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  line-height:1 !important;
+}
