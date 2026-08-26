@@ -18,7 +18,7 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{
   box-sizing:border-box!important;
   margin:-2px 0 0!important;
-  border-top:1px solid #e2e6ec!important;
+  border-top:0!important;
   border-bottom:1px solid #e2e6ec!important;
   box-shadow:none!important;
 }
