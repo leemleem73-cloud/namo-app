@@ -1,0 +1,299 @@
+/* NAMO QMES production-process corporate refinement — 2026-08-26
+ * Fixes the three visually inconsistent areas: linked work-order info,
+ * process status presentation, and bottom action controls.
+ */
+
+/* Overall process page should follow the common light corporate surface. */
+html body #root#root#root main .qmes-prod-process{
+  color:#344054!important;
+}
+
+/* 1) Linked work-order information: remove the dark navy strip. */
+html body #root#root#root main .qmes-prod-process .qpp-card{
+  background:#fff!important;
+  border:1px solid #e2e6ec!important;
+  border-radius:8px!important;
+  box-shadow:0 1px 2px rgba(16,24,40,.04)!important;
+  overflow:hidden!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-card-head{
+  min-height:46px!important;
+  padding:11px 14px!important;
+  background:#fff!important;
+  border-bottom:1px solid #e9edf2!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-card-head b{
+  color:#182230!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-card-head span{
+  color:#667085!important;
+  font-size:12px!important;
+  font-weight:550!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-info{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(110px,1fr))!important;
+  gap:0!important;
+  background:#fff!important;
+  border:0!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-info>div{
+  min-width:0!important;
+  padding:13px 14px!important;
+  background:#fff!important;
+  border-right:1px solid #edf0f3!important;
+  border-bottom:0!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-info>div:last-child{
+  border-right:0!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-info small{
+  display:block!important;
+  margin:0 0 5px!important;
+  color:#98a2b3!important;
+  font-size:10.5px!important;
+  line-height:15px!important;
+  font-weight:600!important;
+  letter-spacing:.01em!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-info strong{
+  display:block!important;
+  color:#243247!important;
+  font-size:13.5px!important;
+  line-height:20px!important;
+  font-weight:650!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-worker{
+  padding:11px 14px!important;
+  background:#fafbfc!important;
+  border-top:1px solid #edf0f3!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-worker small{
+  color:#667085!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-chip{
+  padding:5px 8px!important;
+  border:1px solid #d8e0ea!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#344054!important;
+  font-size:11.5px!important;
+  font-weight:600!important;
+}
+
+/* Process table: clean analytical table, no boxed-cell look. */
+html body #root#root#root main .qmes-prod-process .qpp-grid>section.qpp-card:first-child{
+  min-height:0!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-grid>section.qpp-card:first-child .qpp-table-wrap{
+  min-height:0!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-grid>section.qpp-card:first-child .qpp-table tbody tr{
+  height:54px!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-table{
+  border-collapse:collapse!important;
+  background:#fff!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-table th{
+  height:42px!important;
+  padding:10px 8px!important;
+  background:#f7f8fa!important;
+  color:#667085!important;
+  border-right:0!important;
+  border-bottom:1px solid #dde3ea!important;
+  font-size:12px!important;
+  font-weight:650!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-table td{
+  padding:12px 8px!important;
+  background:#fff!important;
+  color:#344054!important;
+  border-right:0!important;
+  border-bottom:1px solid #edf0f3!important;
+  font-size:13px!important;
+  font-weight:450!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-table tbody tr:hover td{
+  background:#fafcff!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-table tbody tr.active td{
+  background:#f5f9ff!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-table tbody tr.active{
+  box-shadow:inset 3px 0 0 #1769e0!important;
+}
+
+/* 2) Status: no badge border, no dark green pill. Use a calm dot + text. */
+html body #root#root#root main .qmes-prod-process .qpp-status{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:auto!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  font-weight:650!important;
+  line-height:18px!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-status:before{
+  content:""!important;
+  display:inline-block!important;
+  width:6px!important;
+  height:6px!important;
+  margin-right:6px!important;
+  border-radius:999px!important;
+  background:#98a2b3!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-status.done{
+  color:#16794b!important;
+  background:transparent!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-status.done:before{
+  background:#22a06b!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-status.run{
+  color:#1769e0!important;
+  background:transparent!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-status.run:before{
+  background:#3b82f6!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-status.wait{
+  color:#667085!important;
+  background:transparent!important;
+}
+
+/* Side details use the same white, flat card language. */
+html body #root#root#root main .qmes-prod-process .qpp-side{
+  gap:10px!important;
+  padding:12px!important;
+  background:#fff!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-sidebox{
+  padding:12px 13px!important;
+  border:1px solid #e4e7ec!important;
+  border-radius:7px!important;
+  background:#fafbfc!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-sidebox small{
+  color:#98a2b3!important;
+  font-size:11px!important;
+  font-weight:600!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-sidebox strong{
+  color:#243247!important;
+  font-size:14px!important;
+  font-weight:650!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-sidebox p{
+  color:#667085!important;
+  font-size:11.5px!important;
+}
+
+/* 3) Bottom actions: compact command bar, one primary color only. */
+html body #root#root#root main .qmes-prod-process .qpp-actionbar{
+  display:flex!important;
+  grid-template-columns:none!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  margin-top:12px!important;
+  padding:12px 0 0!important;
+  border-top:1px solid #e6eaf0!important;
+  background:transparent!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar button{
+  min-width:118px!important;
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 13px!important;
+  border:1px solid #cfd6df!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#344054!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar button:hover:not(:disabled){
+  background:#f7f8fa!important;
+  border-color:#b8c1cd!important;
+  color:#182230!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar .qpp-btn.primary{
+  background:#1769e0!important;
+  border-color:#1769e0!important;
+  color:#fff!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar .qpp-btn.primary:hover:not(:disabled){
+  background:#1557b8!important;
+  border-color:#1557b8!important;
+  color:#fff!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar .qpp-btn.red{
+  background:#fff!important;
+  border-color:#d8dee6!important;
+  color:#b42318!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar .qpp-btn.red:hover:not(:disabled){
+  background:#fff7f6!important;
+  border-color:#efc5c1!important;
+  color:#912018!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar .qpp-btn.amber{
+  background:#fff!important;
+  border-color:#d8dee6!important;
+  color:#80500a!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar .qpp-btn.amber:hover:not(:disabled){
+  background:#fffaf0!important;
+  border-color:#e7d4ad!important;
+  color:#694108!important;
+}
+html body #root#root#root main .qmes-prod-process .qpp-actionbar button:disabled{
+  opacity:.45!important;
+  cursor:not-allowed!important;
+}
+
+/* General qpp button consistency outside the action bar. */
+html body #root#root#root main .qmes-prod-process .qpp-btn{
+  border-radius:6px!important;
+  box-shadow:none!important;
+}
+
+@media(max-width:1100px){
+  html body #root#root#root main .qmes-prod-process .qpp-info{
+    grid-template-columns:repeat(3,1fr)!important;
+  }
+  html body #root#root#root main .qmes-prod-process .qpp-info>div:nth-child(3n){
+    border-right:0!important;
+  }
+  html body #root#root#root main .qmes-prod-process .qpp-info>div:nth-child(-n+3){
+    border-bottom:1px solid #edf0f3!important;
+  }
+}
+
+@media(max-width:700px){
+  html body #root#root#root main .qmes-prod-process .qpp-info{
+    grid-template-columns:repeat(2,1fr)!important;
+  }
+  html body #root#root#root main .qmes-prod-process .qpp-actionbar{
+    justify-content:stretch!important;
+  }
+  html body #root#root#root main .qmes-prod-process .qpp-actionbar button{
+    flex:1 1 calc(50% - 4px)!important;
+    min-width:0!important;
+  }
+}
