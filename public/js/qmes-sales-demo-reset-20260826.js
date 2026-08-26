@@ -1,8 +1,5 @@
 /* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-26
- * The ERP Sales module must never show demo SO rows. Before the ERP runtime renders,
- * this bridge converts the actual QMES work orders (DB.woDocs / DB.batches) into
- * Sales/Delivery rows, stores them locally and in the shared DB, then resolves a
- * readiness promise consumed by qmes-erp-runtime-loader-20260826.js.
+ * Sales order numbers use SO-YYYYMMDD-NNN and production date remains a separate field.
  */
 (function(){
   "use strict";
@@ -25,10 +22,7 @@
     if(!m) return "";
     return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
   }
-  function shortDate(value){
-    const date=isoDate(value);
-    return date?date.slice(5).replace("-","/"):"";
-  }
+  function compactDate(value){return isoDate(value).replace(/-/g,"");}
   function currentUserName(){
     const user=window.__QMES_CURRENT_USER__||window.__QMES_USER__||{};
     return text(user?.name||user?.uid||user);
@@ -84,7 +78,7 @@
     Object.keys(docs).forEach(id=>{const key=text(id);if(key&&!ids.includes(key))ids.push(key);});
     batches.forEach(row=>{const key=text(row?.no);if(key&&!ids.includes(key))ids.push(key);});
 
-    return ids.map(lot=>{
+    const raw=ids.map(lot=>{
       const doc=docs[lot]||{};
       const batch=batches.find(row=>text(row?.no)===lot)||{};
       const lotRow=db.lots?.[lot]||{};
@@ -94,9 +88,8 @@
       const customer=text(doc.customer||doc.customerName||doc.client||doc.clientName||batch.customer||batch.customerName)||"현대자동차";
       const po=text(doc.customerPo||doc.customerPO||doc.po||doc.poNo||batch.po||batch.poNo)||"-";
       const productionDate=isoDate(doc.date||doc.productionDate||batch.date||batch.productionDate||lotRow.date);
-      const due=productionDate||isoDate(doc.due||doc.deliveryDate||batch.due)||"";
+      const due=isoDate(doc.due||doc.deliveryDate||batch.due||batch.deliveryDate);
       return {
-        id:shortDate(productionDate)||lot,
         customer,
         po,
         product,
@@ -109,7 +102,18 @@
         productionDate,
         workOrderStatus:status
       };
-    }).sort((a,b)=>String(b.productionDate||b.due||"").localeCompare(String(a.productionDate||a.due||""))||String(b.workOrder||"").localeCompare(String(a.workOrder||"")));
+    });
+
+    /* Deterministic daily sequence: SO-YYYYMMDD-001, -002 ... */
+    const counters={};
+    raw.sort((a,b)=>String(a.productionDate||"").localeCompare(String(b.productionDate||""))||String(a.workOrder||"").localeCompare(String(b.workOrder||"")));
+    raw.forEach(row=>{
+      const dateKey=compactDate(row.productionDate)||compactDate(row.due)||new Date().toISOString().slice(0,10).replace(/-/g,"");
+      counters[dateKey]=(counters[dateKey]||0)+1;
+      row.id=`SO-${dateKey}-${String(counters[dateKey]).padStart(3,"0")}`;
+    });
+
+    return raw.sort((a,b)=>String(b.productionDate||b.due||"").localeCompare(String(a.productionDate||a.due||""))||String(b.workOrder||"").localeCompare(String(a.workOrder||"")));
   }
 
   function writeLocal(rows){
@@ -121,10 +125,11 @@
     try{
       await window.qmesSyncUpsert(SYNC_TYPE,RECORD_KEY,{
         module:"erp",
-        schema:1,
+        schema:2,
         kind:"sales",
         rows,
         source:"WORK_ORDER",
+        orderNumberFormat:"SO-YYYYMMDD-NNN",
         updatedAt:new Date().toISOString(),
         updatedBy:currentUserName()
       });
@@ -144,7 +149,6 @@
     return {rows,status};
   }
 
-  /* Wait briefly for production.jsx/common state to become available. */
   let attempts=0;
   const timer=window.setInterval(async()=>{
     attempts+=1;
@@ -161,7 +165,6 @@
     }
   },100);
 
-  /* Keep Sales synchronized when work orders, OQC or shipment data changes later. */
   ["qmes:workorder-saved","qmes:workorder-synced","qmes:workorder-updated","qmes:data-updated","qmes:erp-data-changed"].forEach(name=>{
     window.addEventListener(name,event=>{
       if(name==="qmes:erp-data-changed"&&event?.detail?.kind==="sales"&&event?.detail?.source==="WORK_ORDER") return;
