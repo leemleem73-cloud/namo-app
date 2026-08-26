@@ -1,5 +1,6 @@
-/* QMES Stage 12 operational loader v27
- * Restore the proven Field Input isolation behavior while keeping current operational scripts.
+/* QMES Stage 12 operational loader v28
+ * Stable ERP first paint: the Sales page now renders its final layout directly.
+ * Legacy delayed Sales DOM patchers are intentionally not loaded.
  */
 (function(){
   const STYLE_DEFS=[
@@ -13,7 +14,6 @@
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
-    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"],
     ["qmes-field-shell-header-consistency-20260826","./css/qmes-field-shell-header-consistency-20260826.css?v=20260827-restore1",true]
   ];
 
@@ -35,7 +35,7 @@
   syncThemeState();
 
   const files=[
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-4",
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-stable-firstpaint2",
     "./js/qmes-sales-delete-so-260826-01-once.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
@@ -44,7 +44,7 @@
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
-    "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260826-enterprise2",
+    "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260827-erp-hover1",
     "./js/qmes-field-home-navigation-20260826.js?v=20260826-1",
     "./js/production-process-link-fix-20260824.js?v=20260824-1",
     "./js/production-process-initial-sync-20260824.js?v=20260824-2",
@@ -56,10 +56,7 @@
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
-    "./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise5",
-    "./js/qmes-sales-remark-actions-20260826.js?v=20260826-final2",
-    "./js/qmes-sales-action-header-fix-20260827.js?v=20260827-2",
-    "./js/qmes-sales-order-detail-progress-20260826.js?v=20260826-1",
+    "./js/qmes-sales-order-detail-progress-20260826.js?v=20260827-direct-render1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
@@ -81,7 +78,7 @@
     if(exists(src)){load(i+1);return;}
     const script=document.createElement('script');script.src=src;script.async=false;
     script.onload=()=>load(i+1);
-    script.onerror=()=>{console.error('[QMES] MES 마스터 모듈 로드 실패',src);load(i+1);};
+    script.onerror=()=>{console.error('[QMES] MES master module load failed',src);load(i+1);};
     document.head.appendChild(script);
   }
 
