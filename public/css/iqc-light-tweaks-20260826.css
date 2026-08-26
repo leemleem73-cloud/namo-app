@@ -61,6 +61,37 @@ html body #root#root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel::a
 html body.qmes-side-open #root#root#root#root .qmes-top-menu-bar{margin-left:219px!important;width:calc(100% - 219px)!important;box-sizing:border-box!important;}
 html body.qmes-side-open #root#root#root#root .qmes-top-menu{width:100%!important;padding-left:10px!important;transform:none!important;box-sizing:border-box!important;}
 
+/* 사이드바 찾기 영역과 상단 메뉴바의 위/아래 선을 정확히 연결 */
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search,
+html body .qmes-sync-sidebar.qmes-sync-sidebar .qmes-side-search{
+  box-sizing:border-box!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  padding:4px 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  border-top:1px solid #d7dee8!important;
+  border-bottom:1px solid #d7dee8!important;
+  border-left:0!important;
+  border-right:0!important;
+  box-shadow:none!important;
+  background:#fff!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
+html body .qmes-sync-sidebar.qmes-sync-sidebar .qmes-side-head{
+  border-top:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box,
+html body .qmes-sync-sidebar.qmes-sync-sidebar .qmes-side-search-box{
+  height:36px!important;
+  min-height:36px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+
 @media(max-width:900px){
   html body.qmes-side-open #root#root#root#root .qmes-top-menu-bar{margin-left:189px!important;width:calc(100% - 189px)!important;}
   html body #root#root#root#root main .qmes-iqc-record-filter{flex-wrap:wrap!important;overflow:visible!important;}
