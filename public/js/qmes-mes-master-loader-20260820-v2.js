@@ -1,4 +1,4 @@
-/* QMES Stage 12 operational loader v25
+/* QMES Stage 12 operational loader v26
  * Operational scripts only. Global UI styles are owned by the early bootstrap.
  * This loader must not add, replace, toggle, or restyle global CSS after first paint.
  */
@@ -24,7 +24,6 @@
     "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
-    "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise5",
     "./js/qmes-sales-remark-actions-20260826.js?v=20260826-final2",
