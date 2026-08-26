@@ -41,16 +41,66 @@ html body #root#root#root#root main .qmes-iqc-ledger-panel::after,
 html body #root#root#root#root main .qmes-iqc-ledger-section::before,
 html body #root#root#root#root main .qmes-iqc-ledger-section::after{content:none!important;display:none!important;}
 
-/* 검색 영역: 바깥 search-box 선 하나만, input의 Tailwind border 완전 제거 */
-#root .qmes-iqc-record-filter{background:#fff!important;border:1px solid #d7dee8!important;border-radius:12px!important;outline:0!important;overflow:hidden!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;}
+/* 관리대장 Panel 내부 wrapper에는 외곽선 금지 */
+html body #root#root#root#root main .qmes-iqc-ledger-panel > div{
+  border-left:0!important;
+  border-right:0!important;
+  border-top:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+html body #root#root#root#root main .qmes-iqc-ledger-panel > div:first-child{
+  border-top:0!important;
+}
+
+/* 검색/연도/월/초기화 필터 전체 배치 */
+html body #root#root#root#root main .qmes-iqc-record-filter{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:12px!important;
+  flex-wrap:nowrap!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border:1px solid #d7dee8!important;
+  border-radius:12px!important;
+  outline:0!important;
+  box-shadow:0 4px 14px rgba(15,23,42,.08)!important;
+}
+html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{
+  flex:1 1 auto!important;
+  width:auto!important;
+  min-width:220px!important;
+  max-width:none!important;
+}
+html body #root#root#root#root main .qmes-iqc-record-filter .qmes-oqc-record-filter-field{
+  flex:0 0 188px!important;
+  width:188px!important;
+  min-width:0!important;
+  max-width:188px!important;
+}
+html body #root#root#root#root main .qmes-iqc-record-filter > button{
+  flex:0 0 136px!important;
+  width:136px!important;
+  min-width:136px!important;
+  max-width:136px!important;
+}
+
+/* 검색 영역: 바깥 search-box 선 하나만, input 선 완전 제거 */
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box{
   box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
   height:36px!important;
   display:flex!important;
   align-items:center!important;
   background:#fff!important;
   border:1px solid #cbd5e1!important;
   border-width:1px!important;
+  border-style:solid!important;
   border-radius:8px!important;
   overflow:hidden!important;
   outline:0!important;
@@ -61,10 +111,14 @@ html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-sea
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:active,
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus,
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible{
+  box-sizing:border-box!important;
   height:100%!important;
-  flex:1!important;
+  flex:1 1 auto!important;
+  width:0!important;
   min-width:0!important;
   margin:0!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
   background:transparent!important;
   border:0!important;
   border-width:0!important;
@@ -76,12 +130,24 @@ html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-sea
   border-bottom:0!important;
   border-radius:0!important;
   outline:0!important;
+  outline-width:0!important;
   box-shadow:none!important;
   color:#111827!important;
   appearance:none!important;
   -webkit-appearance:none!important;
 }
-#root .qmes-iqc-record-filter select,#root .qmes-iqc-record-filter>button{box-sizing:border-box!important;height:36px!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;outline:0!important;box-shadow:none!important;color:#111827!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter select,
+html body #root#root#root#root main .qmes-iqc-record-filter>button{
+  box-sizing:border-box!important;
+  height:36px!important;
+  max-width:100%!important;
+  background:#fff!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:8px!important;
+  outline:0!important;
+  box-shadow:none!important;
+  color:#111827!important;
+}
 #root .qmes-iqc-record-filter>button,#root .qmes-iqc-quickbar .qmes-iqc-new-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;}
 
 /* 업체별 IQC: 바깥 wrapper는 무테두리, 내부 실제 Panel만 1px */
@@ -128,6 +194,28 @@ html body.qmes-side-open #root#root#root#root .qmes-top-menu{
   padding-left:10px!important;
   transform:none!important;
   box-sizing:border-box!important;
+}
+
+@media(max-width:1200px){
+  html body #root#root#root#root main .qmes-iqc-record-filter{
+    flex-wrap:wrap!important;
+    overflow:visible!important;
+  }
+  html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{
+    flex:1 1 100%!important;
+    min-width:0!important;
+  }
+  html body #root#root#root#root main .qmes-iqc-record-filter .qmes-oqc-record-filter-field{
+    flex:1 1 180px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+  html body #root#root#root#root main .qmes-iqc-record-filter > button{
+    flex:0 0 120px!important;
+    width:120px!important;
+    min-width:120px!important;
+    max-width:120px!important;
+  }
 }
 @media(max-width:900px){
   html body.qmes-side-open #root#root#root#root .qmes-top-menu-bar{
