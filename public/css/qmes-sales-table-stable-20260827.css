@@ -1,0 +1,163 @@
+/* NAMO QMES — Sales table fixed-grid + full edit modal — 2026-08-27 */
+
+/* Sales list: one stable grid. Header and body share the same fixed columns. */
+.qmes-sales-stable .qerp-table-wrap{
+  width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  border:1px solid #dfe5ec!important;
+  border-radius:10px!important;
+  background:#fff!important;
+}
+.qmes-sales-stable .qerp-table{
+  width:100%!important;
+  min-width:1480px!important;
+  table-layout:fixed!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  margin:0!important;
+}
+.qmes-sales-stable .qerp-table th,
+.qmes-sales-stable .qerp-table td{
+  box-sizing:border-box!important;
+  height:54px!important;
+  padding:9px 8px!important;
+  border-right:1px solid #e2e8f0!important;
+  border-bottom:1px solid #e8edf3!important;
+  vertical-align:middle!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  line-height:1.35!important;
+}
+.qmes-sales-stable .qerp-table th{
+  height:46px!important;
+  background:#f7f9fc!important;
+  color:#334155!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+.qmes-sales-stable .qerp-table tbody td{
+  color:#172033!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  background:#fff!important;
+}
+.qmes-sales-stable .qerp-table th:last-child,
+.qmes-sales-stable .qerp-table td:last-child{border-right:0!important;}
+.qmes-sales-stable .qerp-table tbody tr:last-child td{border-bottom:0!important;}
+.qmes-sales-stable .qerp-table tbody tr:hover td{background:#fbfdff!important;}
+.qmes-sales-stable .qerp-table td:first-child{text-align:left!important;}
+
+/* Fixed column widths. */
+.qmes-sales-stable .qerp-table th:nth-child(1), .qmes-sales-stable .qerp-table td:nth-child(1){width:150px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(2), .qmes-sales-stable .qerp-table td:nth-child(2){width:125px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(3), .qmes-sales-stable .qerp-table td:nth-child(3){width:125px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(4), .qmes-sales-stable .qerp-table td:nth-child(4){width:140px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(5), .qmes-sales-stable .qerp-table td:nth-child(5){width:115px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(6), .qmes-sales-stable .qerp-table td:nth-child(6){width:150px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(7), .qmes-sales-stable .qerp-table td:nth-child(7){width:100px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(8), .qmes-sales-stable .qerp-table td:nth-child(8){width:105px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(9), .qmes-sales-stable .qerp-table td:nth-child(9){width:105px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(10), .qmes-sales-stable .qerp-table td:nth-child(10){width:125px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(11), .qmes-sales-stable .qerp-table td:nth-child(11){width:120px!important;}
+.qmes-sales-stable .qerp-table th:nth-child(12), .qmes-sales-stable .qerp-table td:nth-child(12){width:120px!important;}
+
+/* Remove any leftover legacy delivery pseudo-label. */
+.qmes-sales-stable .qerp-table th[data-qmes-sales-delivery-head]{font-size:11px!important;}
+.qmes-sales-stable .qerp-table th[data-qmes-sales-delivery-head]::after{content:none!important;display:none!important;}
+
+.qmes-sales-stable .qmes-sales-action-wrap{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  width:100%!important;
+}
+.qmes-sales-stable .qmes-sales-edit-btn,
+.qmes-sales-stable .qmes-sales-delete-btn{
+  flex:0 0 auto!important;
+  min-width:42px!important;
+}
+
+/* Full sales edit modal. */
+#qmes-sales-full-edit-20260827{
+  position:fixed!important;
+  inset:0!important;
+  z-index:19000!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:22px!important;
+  background:rgba(15,23,42,.38)!important;
+}
+#qmes-sales-full-edit-20260827 .qse-card{
+  width:min(1120px,96vw)!important;
+  max-height:92vh!important;
+  overflow:auto!important;
+  border:1px solid #d9e1ea!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 28px 90px rgba(15,23,42,.28)!important;
+}
+#qmes-sales-full-edit-20260827 .qse-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:2!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  padding:18px 20px!important;
+  border-bottom:1px solid #e2e8f0!important;
+  background:#fff!important;
+}
+#qmes-sales-full-edit-20260827 .qse-title{margin:0!important;color:#0f172a!important;font-size:20px!important;font-weight:950!important;}
+#qmes-sales-full-edit-20260827 .qse-sub{margin-top:4px!important;color:#64748b!important;font-size:11px!important;font-weight:700!important;}
+#qmes-sales-full-edit-20260827 .qse-close{border:1px solid #cbd5e1!important;border-radius:8px!important;background:#fff!important;color:#334155!important;padding:8px 12px!important;font-size:11px!important;font-weight:900!important;cursor:pointer!important;}
+#qmes-sales-full-edit-20260827 .qse-body{padding:18px 20px 22px!important;}
+#qmes-sales-full-edit-20260827 .qse-status-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin-bottom:18px!important;}
+#qmes-sales-full-edit-20260827 .qse-status{min-height:64px!important;padding:10px 12px!important;border:1px solid #e2e8f0!important;border-radius:9px!important;background:#f8fafc!important;}
+#qmes-sales-full-edit-20260827 .qse-status b{display:block!important;margin-bottom:5px!important;color:#64748b!important;font-size:9px!important;font-weight:900!important;}
+#qmes-sales-full-edit-20260827 .qse-status span{display:block!important;color:#0f172a!important;font-size:12px!important;font-weight:850!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+#qmes-sales-full-edit-20260827 .qse-section-title{margin:0 0 9px!important;color:#334155!important;font-size:12px!important;font-weight:950!important;}
+#qmes-sales-full-edit-20260827 .qse-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 12px!important;margin-bottom:16px!important;}
+#qmes-sales-full-edit-20260827 .qse-field{min-width:0!important;}
+#qmes-sales-full-edit-20260827 .qse-field.span2{grid-column:span 2!important;}
+#qmes-sales-full-edit-20260827 .qse-field.span4{grid-column:1/-1!important;}
+#qmes-sales-full-edit-20260827 .qse-field label{display:block!important;margin-bottom:5px!important;color:#475569!important;font-size:10px!important;font-weight:900!important;}
+#qmes-sales-full-edit-20260827 .qse-field input,
+#qmes-sales-full-edit-20260827 .qse-field select{
+  width:100%!important;
+  height:38px!important;
+  padding:0 10px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:#111827!important;
+  font-size:12px!important;
+  outline:none!important;
+}
+#qmes-sales-full-edit-20260827 .qse-field input:focus,
+#qmes-sales-full-edit-20260827 .qse-field select:focus{border-color:#60a5fa!important;box-shadow:0 0 0 2px rgba(96,165,250,.15)!important;}
+#qmes-sales-full-edit-20260827 .qse-readonly{background:#f8fafc!important;color:#64748b!important;}
+#qmes-sales-full-edit-20260827 .qse-error{display:none;margin:0 0 12px!important;padding:9px 11px!important;border-radius:8px!important;background:#fff1f2!important;color:#b91c1c!important;font-size:11px!important;font-weight:850!important;}
+#qmes-sales-full-edit-20260827 .qse-error.is-open{display:block!important;}
+#qmes-sales-full-edit-20260827 .qse-actions{display:flex!important;justify-content:flex-end!important;gap:8px!important;padding-top:4px!important;}
+#qmes-sales-full-edit-20260827 .qse-actions button{height:38px!important;min-width:88px!important;border-radius:8px!important;padding:0 14px!important;font-size:11px!important;font-weight:900!important;cursor:pointer!important;}
+#qmes-sales-full-edit-20260827 .qse-cancel{border:1px solid #cbd5e1!important;background:#fff!important;color:#334155!important;}
+#qmes-sales-full-edit-20260827 .qse-save{border:1px solid #2563eb!important;background:#2563eb!important;color:#fff!important;}
+
+@media(max-width:900px){
+  #qmes-sales-full-edit-20260827 .qse-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #qmes-sales-full-edit-20260827 .qse-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #qmes-sales-full-edit-20260827 .qse-field.span4{grid-column:1/-1!important;}
+}
+@media(max-width:620px){
+  #qmes-sales-full-edit-20260827{padding:10px!important;align-items:flex-start!important;}
+  #qmes-sales-full-edit-20260827 .qse-status-grid,
+  #qmes-sales-full-edit-20260827 .qse-grid{grid-template-columns:1fr!important;}
+  #qmes-sales-full-edit-20260827 .qse-field.span2,
+  #qmes-sales-full-edit-20260827 .qse-field.span4{grid-column:1!important;}
+}
