@@ -20,6 +20,44 @@ function install(app) {
   if (app.__qmesExtraSyncInstalled) return;
   app.__qmesExtraSyncInstalled = true;
 
+  // Work-order sync payloads are much larger than the other shared records.
+  // The previous generic GET returned the entire historical set at once, which
+  // could exceed the upstream response/time limit and surface as 502. Keep the
+  // database history intact, but bound the operational read to recent work
+  // orders plus the process/worker records used by production management.
+  app.get('/api/qmes-sync/workorder', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
+    try {
+      const result = await pool.query(
+        `WITH recent_orders AS (
+           SELECT record_type, record_key, payload, updated_by, updated_at
+             FROM qmes_sync_records
+            WHERE record_type = 'workorder'
+              AND record_key NOT LIKE 'process:%'
+              AND record_key NOT LIKE 'worker:%'
+            ORDER BY updated_at DESC
+            LIMIT 60
+         ), operational_rows AS (
+           SELECT record_type, record_key, payload, updated_by, updated_at
+             FROM qmes_sync_records
+            WHERE record_type = 'workorder'
+              AND (record_key LIKE 'process:%' OR record_key LIKE 'worker:%')
+            ORDER BY updated_at DESC
+            LIMIT 500
+         )
+         SELECT * FROM recent_orders
+         UNION ALL
+         SELECT * FROM operational_rows
+         ORDER BY updated_at DESC`,
+        []
+      );
+      return res.json({ success:true, message:'OK', data:result.rows });
+    } catch (error) {
+      console.error('qmes workorder sync GET failed:', error);
+      return res.status(500).json({ success:false, message:'작업지시 공용 DB 조회에 실패했습니다.', data:null });
+    }
+  });
+
   app.get('/api/qmes-extra-sync/:type', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     const type = String(req.params.type || '').trim().toLowerCase();
