@@ -1,22 +1,19 @@
-/* NAMO QMES — Sales/Delivery aligned two-row entry layout — 2026-08-26 */
+/* NAMO QMES — Sales/Delivery enterprise aligned entry layout — 2026-08-26 */
 
-/* Keep the input area visually separated from the order list. */
 .qerp:has(.qerp-title) .qerp-card:has(.qerp-sales-compact-form){
   padding:18px 18px 20px!important;
 }
 
 /*
- * Desktop layout
- * Row 1: 고객사 | 고객 PO | 요청 납기 | 제품 | 수량
- * Row 2: 포장형태 | 단위 포장량 | 포장수량 | 비고(2칸)
- * Row 3:                                      취소 | 수주 저장
- *
- * Using the same five equal columns makes the upper/lower field edges line up.
+ * Desktop
+ * Row 1: 고객사 | 고객 PO | 고객 품목코드 | 요청 납기일 | 제품 | 수량
+ * Row 2: 납품처(2칸) | 수주구분 | 포장형태 | 단위 포장량 | 포장수량
+ * Row 3: 비고(4칸)                         | 취소 | 수주 저장
  */
 .qerp-sales-compact-form{
   display:grid!important;
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
-  column-gap:16px!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  column-gap:14px!important;
   row-gap:14px!important;
   align-items:end!important;
   margin:0 0 18px!important;
@@ -24,39 +21,37 @@
   border-bottom:1px solid #e2e8f0!important;
 }
 
-.qerp-sales-compact-form > .qerp-field{
-  min-width:0!important;
-  grid-column:span 1!important;
-}
+.qerp-sales-compact-form > .qerp-field{min-width:0!important;}
 
-/* Row 1 — five exactly aligned columns */
-.qerp-sales-compact-form > .qerp-field:nth-child(1){grid-column:1!important;} /* 고객사 */
-.qerp-sales-compact-form > .qerp-field:nth-child(2){grid-column:2!important;} /* 고객 PO */
-.qerp-sales-compact-form > .qerp-field:nth-child(3){grid-column:3!important;} /* 요청 납기 */
-.qerp-sales-compact-form > .qerp-field:nth-child(4){grid-column:4!important;} /* 제품 */
-.qerp-sales-compact-form > .qerp-field:nth-child(5){grid-column:5!important;} /* 수량 */
+/* Original React fields */
+.qerp-sales-compact-form > .qerp-field:nth-child(1){grid-column:1!important;grid-row:1!important;} /* 고객사 */
+.qerp-sales-compact-form > .qerp-field:nth-child(2){grid-column:2!important;grid-row:1!important;} /* 고객 PO */
+.qerp-sales-compact-form > .qerp-field:nth-child(3){grid-column:4!important;grid-row:1!important;} /* 요청 납기 */
+.qerp-sales-compact-form > .qerp-field:nth-child(4){grid-column:5!important;grid-row:1!important;} /* 제품 */
+.qerp-sales-compact-form > .qerp-field:nth-child(5){grid-column:6!important;grid-row:1!important;} /* 수량 */
 
-/* Row 2 — lower fields start on the same vertical guides as row 1. */
-.qerp-sales-compact-form [data-qmes-sales-meta="type"]{
-  grid-column:1!important;
-  grid-row:2!important;
+/* Enterprise extension fields */
+.qerp-sales-compact-form [data-qmes-sales-meta="customerItemCode"],
+.qerp-sales-compact-form [data-qmes-enterprise-field="customerItemCode"]{
+  grid-column:3!important;grid-row:1!important;
 }
-.qerp-sales-compact-form [data-qmes-sales-meta="unitWeight"]{
-  grid-column:2!important;
-  grid-row:2!important;
+.qerp-sales-compact-form [data-qmes-sales-meta="deliveryPlace"],
+.qerp-sales-compact-form [data-qmes-enterprise-field="deliveryPlace"]{
+  grid-column:1 / 3!important;grid-row:2!important;
 }
-.qerp-sales-compact-form [data-qmes-sales-meta="packageQty"]{
-  grid-column:3!important;
-  grid-row:2!important;
+.qerp-sales-compact-form [data-qmes-sales-meta="orderType"],
+.qerp-sales-compact-form [data-qmes-enterprise-field="orderType"]{
+  grid-column:3!important;grid-row:2!important;
 }
+.qerp-sales-compact-form [data-qmes-sales-meta="type"]{grid-column:4!important;grid-row:2!important;}
+.qerp-sales-compact-form [data-qmes-sales-meta="unitWeight"]{grid-column:5!important;grid-row:2!important;}
+.qerp-sales-compact-form [data-qmes-sales-meta="packageQty"]{grid-column:6!important;grid-row:2!important;}
 .qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{
-  grid-column:4 / 6!important;
-  grid-row:2!important;
+  grid-column:1 / 5!important;grid-row:3!important;
 }
 
-/* Actions get their own third row instead of squeezing beside remarks. */
 .qerp-sales-compact-form .qerp-form-actions{
-  grid-column:1 / -1!important;
+  grid-column:5 / 7!important;
   grid-row:3!important;
   align-self:end!important;
   display:flex!important;
@@ -74,7 +69,6 @@
   color:#475569!important;
   white-space:nowrap!important;
 }
-
 .qerp-sales-compact-form .qerp-field input,
 .qerp-sales-compact-form .qerp-field select{
   width:100%!important;
@@ -83,15 +77,13 @@
   border-radius:8px!important;
   font-size:12px!important;
 }
-
 .qerp-sales-compact-form .qerp-form-actions .qerp-btn{
   height:40px!important;
-  min-width:92px!important;
+  min-width:96px!important;
   padding:0 16px!important;
   border-radius:8px!important;
   font-size:12px!important;
 }
-
 .qerp-sales-compact-form .qerp-error{
   grid-column:1/-1!important;
   grid-row:auto!important;
@@ -99,44 +91,36 @@
   margin:0!important;
 }
 
-/* Give the result list more breathing room as well. */
+/* Sales result table */
 .qerp:has(.qerp-title) .qerp-table-wrap{margin-top:2px!important;}
 .qerp:has(.qerp-title) .qerp-table th{padding-top:10px!important;padding-bottom:10px!important;}
 .qerp:has(.qerp-title) .qerp-table td{padding-top:13px!important;padding-bottom:13px!important;}
 
-/* Medium screens: two columns, but preserve paired alignment. */
-@media(max-width:1180px){
-  .qerp-sales-compact-form{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  }
+@media(max-width:1350px){
+  .qerp-sales-compact-form{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
   .qerp-sales-compact-form > .qerp-field,
   .qerp-sales-compact-form > .qerp-field:nth-child(1),
   .qerp-sales-compact-form > .qerp-field:nth-child(2),
   .qerp-sales-compact-form > .qerp-field:nth-child(3),
   .qerp-sales-compact-form > .qerp-field:nth-child(4),
   .qerp-sales-compact-form > .qerp-field:nth-child(5),
-  .qerp-sales-compact-form [data-qmes-sales-meta="type"],
-  .qerp-sales-compact-form [data-qmes-sales-meta="unitWeight"],
-  .qerp-sales-compact-form [data-qmes-sales-meta="packageQty"]{
-    grid-column:auto!important;
-    grid-row:auto!important;
-  }
-  .qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{
-    grid-column:1/-1!important;
-    grid-row:auto!important;
-  }
-  .qerp-sales-compact-form .qerp-form-actions{
-    grid-column:1/-1!important;
-    grid-row:auto!important;
-  }
+  .qerp-sales-compact-form [data-qmes-sales-meta],
+  .qerp-sales-compact-form [data-qmes-enterprise-field]{grid-column:auto!important;grid-row:auto!important;}
+  .qerp-sales-compact-form [data-qmes-sales-meta="deliveryPlace"],
+  .qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{grid-column:span 2!important;}
+  .qerp-sales-compact-form .qerp-form-actions{grid-column:1/-1!important;grid-row:auto!important;}
+}
+
+@media(max-width:820px){
+  .qerp-sales-compact-form{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .qerp-sales-compact-form [data-qmes-sales-meta="deliveryPlace"],
+  .qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{grid-column:1/-1!important;}
 }
 
 @media(max-width:620px){
   .qerp-sales-compact-form{grid-template-columns:1fr!important;}
   .qerp-sales-compact-form > .qerp-field,
   .qerp-sales-compact-form [data-qmes-sales-meta],
-  .qerp-sales-compact-form .qerp-form-actions{
-    grid-column:1/-1!important;
-    grid-row:auto!important;
-  }
+  .qerp-sales-compact-form [data-qmes-enterprise-field],
+  .qerp-sales-compact-form .qerp-form-actions{grid-column:1/-1!important;grid-row:auto!important;}
 }
