@@ -131,6 +131,14 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   margin-bottom: 18px !important;
 }
 
+/* 공정검사 관리 버튼: 수입검사와 동일하게 버튼 사이 간격 확보 */
+html body #root#root#root main .qmes-pqc-record-table tbody td:last-child .qmes-iqc-action-btn{
+  margin-right:0!important;
+}
+html body #root#root#root main .qmes-pqc-record-table tbody td:last-child .qmes-iqc-action-btn + .qmes-iqc-action-btn{
+  margin-left:6px!important;
+}
+
 /* NAMO Talk 메시지 입력창 안내 문구 제거 */
 section[aria-label="NAMO Talk"] textarea::placeholder {
   color: transparent !important;
