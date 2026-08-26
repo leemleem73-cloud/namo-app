@@ -1,16 +1,18 @@
-/* NAMO QMES — one-time Sales/Delivery reset from current Work Orders — 2026-08-26
- * Removes old demo SO rows and rebuilds Sales/Delivery data from the actual QMES
- * work-order source (DB.woDocs / DB.batches). If no work order exists, Sales shows 0 rows.
+/* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-26
+ * The ERP Sales module must never show demo SO rows. Before the ERP runtime renders,
+ * this bridge converts the actual QMES work orders (DB.woDocs / DB.batches) into
+ * Sales/Delivery rows, stores them locally and in the shared DB, then resolves a
+ * readiness promise consumed by qmes-erp-runtime-loader-20260826.js.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_FROM_WORKORDER_20260826__) return;
-  window.__QMES_SALES_FROM_WORKORDER_20260826__=true;
+  if(window.__QMES_SALES_FROM_WORKORDER_READY__) return;
 
-  const MARKER="qmes-sales-from-workorder-20260826-v2";
   const LOCAL_KEY="qmes-erp-sales-v1";
   const SYNC_TYPE="inventory";
   const RECORD_KEY="erp:sales";
+  let resolveReady;
+  window.__QMES_SALES_FROM_WORKORDER_READY__=new Promise(resolve=>{resolveReady=resolve;});
 
   function text(value){return String(value==null?"":value).trim();}
   function number(value){
@@ -27,14 +29,19 @@
     const user=window.__QMES_CURRENT_USER__||window.__QMES_USER__||{};
     return text(user?.name||user?.uid||user);
   }
-
-  function workOrderStatus(lot,doc,batch){
-    if(typeof window.getAutoWoStatus==="function"){
-      try{return text(window.getAutoWoStatus(lot));}catch(_error){}
-    }
-    return text(doc?.manualStatus||doc?.status||batch?.status||"발행");
+  function getDb(){
+    try{
+      if(typeof DB!=="undefined"&&DB&&typeof DB==="object") return DB;
+    }catch(_error){}
+    return window.DB&&typeof window.DB==="object"?window.DB:null;
   }
 
+  function workOrderStatus(lot,doc,batch){
+    try{
+      if(typeof getAutoWoStatus==="function") return text(getAutoWoStatus(lot));
+    }catch(_error){}
+    return text(doc?.manualStatus||doc?.status||batch?.status||"발행");
+  }
   function planStatus(status){
     if(/완료|검사중|생산중|진행중/.test(status)) return "반영완료";
     return "계획반영";
@@ -47,23 +54,24 @@
   }
 
   function buildRows(){
-    const DB=window.DB;
-    if(!DB||typeof DB!=="object") return null;
-    const docs=DB.woDocs&&typeof DB.woDocs==="object"?DB.woDocs:{};
-    const batches=Array.isArray(DB.batches)?DB.batches:[];
+    const db=getDb();
+    if(!db) return null;
+    const docs=db.woDocs&&typeof db.woDocs==="object"?db.woDocs:{};
+    const batches=Array.isArray(db.batches)?db.batches:[];
     const ids=[];
-    Object.keys(docs).forEach(id=>{if(text(id)&&!ids.includes(text(id))) ids.push(text(id));});
-    batches.forEach(row=>{const id=text(row?.no);if(id&&!ids.includes(id)) ids.push(id);});
+    Object.keys(docs).forEach(id=>{const key=text(id);if(key&&!ids.includes(key))ids.push(key);});
+    batches.forEach(row=>{const key=text(row?.no);if(key&&!ids.includes(key))ids.push(key);});
 
     return ids.map(lot=>{
       const doc=docs[lot]||{};
       const batch=batches.find(row=>text(row?.no)===lot)||{};
-      const product=text(doc.item||batch.item||DB.lots?.[lot]?.itemName||DB.lots?.[lot]?.item)||"-";
-      const qty=number(doc.plan??doc.qty??batch.plan??batch.qty);
+      const lotRow=db.lots?.[lot]||{};
       const status=workOrderStatus(lot,doc,batch);
+      const product=text(doc.item||batch.item||lotRow.itemName||lotRow.item)||"-";
+      const qty=number(doc.plan??doc.qty??batch.plan??batch.qty);
       const customer=text(doc.customer||doc.customerName||doc.client||doc.clientName||batch.customer||batch.customerName)||"-";
       const po=text(doc.customerPo||doc.customerPO||doc.po||doc.poNo||batch.po||batch.poNo)||"-";
-      const due=isoDate(doc.due||doc.deliveryDate||batch.due||doc.date||batch.date)||isoDate(doc.date)||"";
+      const due=isoDate(doc.due||doc.deliveryDate||batch.due||doc.date||batch.date)||"";
       return {
         id:lot,
         customer,
@@ -85,7 +93,7 @@
   }
 
   async function writeShared(rows){
-    if(typeof window.qmesSyncUpsert!=="function") return false;
+    if(typeof window.qmesSyncUpsert!=="function") return "local";
     try{
       await window.qmesSyncUpsert(SYNC_TYPE,RECORD_KEY,{
         module:"erp",
@@ -94,42 +102,42 @@
         rows,
         source:"WORK_ORDER",
         updatedAt:new Date().toISOString(),
-        updatedBy:currentUserName(),
-        resetReason:"sales rows rebuilt from current work orders"
+        updatedBy:currentUserName()
       });
-      return true;
+      return "shared";
     }catch(error){
-      console.warn("[QMES] work-order sales sync failed",error);
-      return false;
+      console.warn("[QMES] work-order sales shared sync failed",error);
+      return "local";
     }
   }
 
   async function apply(){
     const rows=buildRows();
-    if(rows===null) return false;
+    if(rows===null) return null;
     writeLocal(rows);
-    const shared=await writeShared(rows);
-    if(shared){
-      try{localStorage.setItem(MARKER,"done");}catch(_error){}
-    }
+    const status=await writeShared(rows);
     window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{detail:{kind:"sales",source:"WORK_ORDER",rows:rows.length}}));
-    return true;
+    return {rows,status};
   }
 
-  /* Wait until production/work-order DB and shared sync helpers are loaded. */
-  let attempt=0;
+  /* Wait briefly for production.jsx/common state to become available. */
+  let attempts=0;
   const timer=window.setInterval(async()=>{
-    attempt+=1;
-    const ready=window.DB&&typeof window.DB==="object"&&window.DB.woDocs&&Array.isArray(window.DB.batches);
-    if(!ready){
-      if(attempt>=80) window.clearInterval(timer);
+    attempts+=1;
+    const result=await apply();
+    if(result!==null){
+      window.clearInterval(timer);
+      resolveReady(result);
       return;
     }
-    const done=await apply();
-    if(done||attempt>=80) window.clearInterval(timer);
-  },125);
+    if(attempts>=80){
+      window.clearInterval(timer);
+      writeLocal([]);
+      resolveReady({rows:[],status:"local"});
+    }
+  },100);
 
-  /* Rebuild again whenever a work order is saved/synchronized in the same session. */
+  /* Keep Sales synchronized when a work order changes later in the same session. */
   ["qmes:workorder-saved","qmes:workorder-synced","qmes:workorder-updated"].forEach(name=>{
     window.addEventListener(name,()=>{apply();});
   });
