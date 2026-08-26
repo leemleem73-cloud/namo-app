@@ -79,7 +79,7 @@
     insertHead(h,"납기상태","data-qmes-sales-due-head","생산계획");
     insertHead(h,"납품정보","data-qmes-sales-delivery-head","__END__");
     insertHead(h,"비고","data-qmes-sales-remark-head","__END__");
-    insertHead(h,"관리","data-qmes-sales-manage-head","__END__");
+    insertHead(h,"","data-qmes-sales-manage-head","__END__");
 
     t.querySelectorAll("tbody tr").forEach(tr=>{
       const id=clean(tr.children[0]?.textContent);if(!id)return;const row=rowData(id),meta=metaFor(id);
