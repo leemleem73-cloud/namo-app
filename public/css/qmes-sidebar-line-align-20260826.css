@@ -9,7 +9,7 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
   display:flex!important;
   align-items:center!important;
   background:#fff!important;
-  border-top:0!important;
+  border-top:1px solid #e2e6ec!important;
   border-bottom:1px solid #e2e6ec!important;
   border-left:0!important;
   border-right:0!important;
@@ -69,6 +69,11 @@ html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filt
   width:100%!important;
   height:36px!important;
   box-sizing:border-box!important;
+  border:1px solid #cfd6df!important;
+  border-radius:6px!important;
+  box-shadow:none!important;
+  outline:0!important;
+  background:#fff!important;
 }
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-icon{
   position:static!important;
@@ -77,13 +82,30 @@ html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filt
   margin:0!important;
   pointer-events:none!important;
 }
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input{
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input,
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:hover,
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus,
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus-visible{
   flex:1 1 auto!important;
   width:0!important;
   min-width:0!important;
-  padding-left:0!important;
-  padding-right:0!important;
+  height:100%!important;
+  padding:0!important;
   margin:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-width:0!important;
+  border-style:none!important;
+  border-color:transparent!important;
+  border-left:0!important;
+  border-right:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
 }
 @media(max-width:900px){
   html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;overflow:visible!important;}
