@@ -1,179 +1,83 @@
 /* ============================================================================
-   NAMO QMES WORK ORDER PRINT OUTLINE SYSTEM — 2026-08-26
-   Purpose: make the work-order preview/print form look like one professional
-   controlled document. Strong outer/section lines, lighter internal grid lines.
+   NAMO QMES WORK ORDER PREVIEW OUTLINE — 2026-08-26
+   SCREEN ONLY.
+   Print rules intentionally removed to restore the original stable work-order
+   print pipeline from common.css / print.css / workorder-print-cleanup.js.
    ============================================================================ */
 
 :root{
   --wo-line-strong:#475569;
   --wo-line-mid:#94a3b8;
   --wo-line-soft:#cbd5e1;
-  --wo-line-faint:#e2e8f0;
   --wo-navy:#244878;
   --wo-head-bg:#f8fafc;
   --wo-text:#111827;
 }
 
-/* ---------- on-screen document preview ---------- */
-html body .qmes-issued-preview-cert.qmes-wo-cert,
-html body .qmes-wo-output-preview .qmes-issued-preview-cert.qmes-wo-cert{
-  color:var(--wo-text)!important;
-  border:1px solid var(--wo-line-mid)!important;
-  border-radius:0!important;
-  box-shadow:0 10px 30px rgba(15,23,42,.16)!important;
-  background:#fff!important;
-}
-
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header{
-  border-bottom:1px solid var(--wo-line-mid)!important;
-}
-
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sec-title{
-  background:var(--wo-navy)!important;
-  color:#fff!important;
-  border:1px solid var(--wo-navy)!important;
-  border-radius:0!important;
-  box-shadow:none!important;
-}
-
-/* Tables: strong perimeter, calm internal grid. */
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table{
-  border-collapse:collapse!important;
-  border:1.25px solid var(--wo-line-strong)!important;
-  outline:0!important;
-}
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table th,
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table td{
-  border:.65px solid var(--wo-line-soft)!important;
-  color:var(--wo-text)!important;
-  box-shadow:none!important;
-}
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table th{
-  background:var(--wo-head-bg)!important;
-  border-bottom:1px solid var(--wo-line-mid)!important;
-  font-weight:700!important;
-}
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-cert-total-row td{
-  border-top:1.25px solid var(--wo-line-strong)!important;
-  background:#f8fafc!important;
-  font-weight:700!important;
-}
-
-/* Remarks / barcode / approval use the same outline hierarchy. */
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-remarks,
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-code-box{
-  border:1.25px solid var(--wo-line-strong)!important;
-  border-radius:0!important;
-  box-shadow:none!important;
-  background:#fff!important;
-}
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table{
-  border-collapse:collapse!important;
-  border:1.25px solid var(--wo-line-strong)!important;
-  border-radius:0!important;
-  box-shadow:none!important;
-}
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table th,
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table td{
-  border:.65px solid var(--wo-line-soft)!important;
-  color:var(--wo-text)!important;
-}
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table th{
-  background:var(--wo-head-bg)!important;
-  border-bottom:1px solid var(--wo-line-mid)!important;
-}
-
-/* Remove accidental double borders between section title and first table. */
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sec-title + .qmes-iqc2-table,
-html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sec-title + div .qmes-iqc2-table{
-  margin-top:0!important;
-}
-
-/* ---------- physical print ---------- */
-@media print{
-  html,body{
-    -webkit-print-color-adjust:exact!important;
-    print-color-adjust:exact!important;
-  }
-
-  body.print-doc #qmes-print-root .qmes-issued-preview-cert.qmes-wo-cert,
-  body.print-doc #qmes-print-root .doc-paper.qmes-wo-cert{
-    border:0!important; /* paper edge itself is the outer boundary */
+@media screen{
+  html body .qmes-issued-preview-cert.qmes-wo-cert,
+  html body .qmes-wo-output-preview .qmes-issued-preview-cert.qmes-wo-cert{
+    color:var(--wo-text)!important;
+    border:1px solid var(--wo-line-mid)!important;
     border-radius:0!important;
-    box-shadow:none!important;
-    color:#111!important;
+    box-shadow:0 10px 30px rgba(15,23,42,.16)!important;
     background:#fff!important;
   }
 
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-header{
-    border-bottom:.3mm solid var(--wo-line-mid)!important;
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-header{
+    border-bottom:1px solid var(--wo-line-mid)!important;
   }
 
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec-title{
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sec-title{
     background:var(--wo-navy)!important;
     color:#fff!important;
-    border:.3mm solid var(--wo-navy)!important;
+    border:1px solid var(--wo-navy)!important;
     border-radius:0!important;
     box-shadow:none!important;
   }
 
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table{
-    width:100%!important;
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table{
     border-collapse:collapse!important;
-    border:.35mm solid var(--wo-line-strong)!important;
+    border:1.25px solid var(--wo-line-strong)!important;
     outline:0!important;
   }
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{
-    border:.18mm solid var(--wo-line-soft)!important;
-    color:#111!important;
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table th,
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table td{
+    border:.65px solid var(--wo-line-soft)!important;
+    color:var(--wo-text)!important;
     box-shadow:none!important;
   }
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th{
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-table th{
     background:var(--wo-head-bg)!important;
-    border-bottom:.28mm solid var(--wo-line-mid)!important;
+    border-bottom:1px solid var(--wo-line-mid)!important;
+    font-weight:700!important;
   }
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-wo-cert-total-row td{
-    border-top:.35mm solid var(--wo-line-strong)!important;
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-wo-cert-total-row td{
+    border-top:1.25px solid var(--wo-line-strong)!important;
     background:#f8fafc!important;
+    font-weight:700!important;
   }
 
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks,
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-code-box{
-    border:.35mm solid var(--wo-line-strong)!important;
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-remarks,
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-code-box{
+    border:1.25px solid var(--wo-line-strong)!important;
     border-radius:0!important;
     box-shadow:none!important;
     background:#fff!important;
   }
-
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table{
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table{
     border-collapse:collapse!important;
-    border:.35mm solid var(--wo-line-strong)!important;
+    border:1.25px solid var(--wo-line-strong)!important;
     border-radius:0!important;
     box-shadow:none!important;
   }
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th,
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table td{
-    border:.18mm solid var(--wo-line-soft)!important;
-    color:#111!important;
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table th,
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table td{
+    border:.65px solid var(--wo-line-soft)!important;
+    color:var(--wo-text)!important;
   }
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sign-table th{
+  html body .qmes-issued-preview-cert.qmes-wo-cert .qmes-iqc2-sign-table th{
     background:var(--wo-head-bg)!important;
-    border-bottom:.28mm solid var(--wo-line-mid)!important;
-  }
-
-  /* Footer is separated by one quiet rule, not a boxed frame. */
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-doc-footer{
-    border:0!important;
-    border-top:.18mm solid var(--wo-line-soft)!important;
-  }
-
-  /* Prevent old generic print rules from turning every line into the same dark 1px. */
-  body.print-doc #qmes-print-root .qmes-wo-cert table,
-  body.print-doc #qmes-print-root .qmes-wo-cert th,
-  body.print-doc #qmes-print-root .qmes-wo-cert td,
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-remarks,
-  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-code-box{
-    box-shadow:none!important;
+    border-bottom:1px solid var(--wo-line-mid)!important;
   }
 }
