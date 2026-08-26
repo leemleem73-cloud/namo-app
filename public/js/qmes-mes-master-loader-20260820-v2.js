@@ -1,4 +1,4 @@
-/* QMES Stage 12 operational loader v21
+/* QMES Stage 12 operational loader v22
  * Stable operational modules + single sales UI owner.
  */
 (function(){
@@ -12,7 +12,8 @@
     ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1"],
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
-    ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"]
+    ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
+    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"]
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
@@ -53,7 +54,7 @@
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise5",
-    "./js/qmes-sales-remark-actions-20260826.js?v=20260826-stable1",
+    "./js/qmes-sales-remark-actions-20260826.js?v=20260826-final2",
     "./js/qmes-sales-order-detail-progress-20260826.js?v=20260826-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
