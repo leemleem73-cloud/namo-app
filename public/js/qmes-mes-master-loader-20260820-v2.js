@@ -1,18 +1,19 @@
-/* QMES Stage 12 operational loader v8
- * Loads stable runtime helpers. Modern corporate UI is the final visual layer,
- * with sidebar alignment, production-process refinement, work-order issued-list
- * readability, global text sharpness, and SPC selected-tab contrast applied after it.
+/* QMES Stage 12 operational loader v9
+ * Loads runtime helpers and enterprise visual layers.
+ * Field input keeps the verified 2026-08-24 layout as the final startup-only layer.
+ * No MutationObserver or click-time stylesheet reordering is used here.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
   const SHELL_OFFSET_STYLE="./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1";
-  const READABLE_SIZE_STYLE="./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable1";
+  const READABLE_SIZE_STYLE="./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable2";
   const MODERN_CORPORATE_STYLE="./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern1";
   const SIDEBAR_LINE_STYLE="./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2";
   const PROCESS_CORPORATE_STYLE="./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2";
   const WORKORDER_ISSUED_STYLE="./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1";
   const TEXT_SHARPNESS_STYLE="./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1";
   const SPC_READABILITY_STYLE="./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1";
+  const FIELD_STABLE_STYLE="./css/qmes-field-input-stable-20260824.css?v=20260826-fieldstable1";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
@@ -39,6 +40,7 @@
     ensureStyle("qmes-workorder-issued-clean-20260826",WORKORDER_ISSUED_STYLE,moveToEnd);
     ensureStyle("qmes-text-sharpness-20260826",TEXT_SHARPNESS_STYLE,moveToEnd);
     ensureStyle("qmes-spc-readability-fix-20260826",SPC_READABILITY_STYLE,moveToEnd);
+    ensureStyle("qmes-field-input-stable-20260824",FIELD_STABLE_STYLE,moveToEnd);
   }
 
   ensureFinalStyles(false);
