@@ -1,0 +1,159 @@
+/* ============================================================================
+   NAMO QMES SPC READABILITY FIX — 2026-08-26
+   - Makes SPC metric selector text crisp and dark when inactive.
+   - Forces ALL text inside the selected blue metric button to white.
+   - Reinforces SPC summary-card and chart-label readability.
+   Loaded after qmes-text-sharpness so selected-state contrast always wins.
+   ============================================================================ */
+
+/* -------------------------------------------------------------------------- */
+/* Selected/active blue controls: child spans/small text must stay white.      */
+/* This is intentionally global for true primary/selected blue buttons because */
+/* old text-sky/text-blue utilities otherwise override the button text color.   */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main button[aria-selected="true"],
+html body #root#root#root main button[aria-pressed="true"],
+html body #root#root#root main button[class*="bg-blue-500"],
+html body #root#root#root main button[class*="bg-blue-600"],
+html body #root#root#root main button[class*="bg-blue-700"],
+html body #root#root#root main button[class*="bg-sky-500"],
+html body #root#root#root main button[class*="bg-sky-600"],
+html body #root#root#root main button[class*="bg-sky-700"]{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  font-weight:800!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main button[aria-selected="true"] *,
+html body #root#root#root main button[aria-pressed="true"] *,
+html body #root#root#root main button[class*="bg-blue-500"] *,
+html body #root#root#root main button[class*="bg-blue-600"] *,
+html body #root#root#root main button[class*="bg-blue-700"] *,
+html body #root#root#root main button[class*="bg-sky-500"] *,
+html body #root#root#root main button[class*="bg-sky-600"] *,
+html body #root#root#root main button[class*="bg-sky-700"] *{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+
+/* Common active-state class names used by SPA tabs/buttons. */
+html body #root#root#root main button.active[class*="bg-"],
+html body #root#root#root main button.is-active[class*="bg-"],
+html body #root#root#root main .active[role="tab"],
+html body #root#root#root main .is-active[role="tab"]{
+  font-weight:800!important;
+  opacity:1!important;
+}
+html body #root#root#root main button.active[class*="bg-blue"] *,
+html body #root#root#root main button.is-active[class*="bg-blue"] *,
+html body #root#root#root main button.active[class*="bg-sky"] *,
+html body #root#root#root main button.is-active[class*="bg-sky"] *,
+html body #root#root#root main .active[role="tab"][class*="bg-blue"] *,
+html body #root#root#root main .is-active[role="tab"][class*="bg-blue"] *{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Inactive SPC-like selector chips.                                           */
+/* The SPC metric row uses compact bordered buttons. Old muted/sky utilities    */
+/* made their specification text look washed out.                              */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main button[class*="border-slate"]:not([aria-selected="true"]):not([aria-pressed="true"]):not([class*="bg-blue"]):not([class*="bg-sky"]),
+html body #root#root#root main button[class*="border-gray"]:not([aria-selected="true"]):not([aria-pressed="true"]):not([class*="bg-blue"]):not([class*="bg-sky"]){
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-weight:700!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main button[class*="border-slate"]:not([aria-selected="true"]):not([aria-pressed="true"]):not([class*="bg-blue"]):not([class*="bg-sky"]) *,
+html body #root#root#root main button[class*="border-gray"]:not([aria-selected="true"]):not([aria-pressed="true"]):not([class*="bg-blue"]):not([class*="bg-sky"]) *{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+
+/* Compact tab/metric labels: keep main label and spec line readable. */
+html body #root#root#root main [role="tab"]{
+  font-size:13px!important;
+  font-weight:750!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main [role="tab"] small,
+html body #root#root#root main [role="tab"] span{
+  opacity:1!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main [role="tab"]:not([aria-selected="true"]) small,
+html body #root#root#root main [role="tab"]:not([aria-selected="true"]) span{
+  color:#1f2937!important;
+  -webkit-text-fill-color:#1f2937!important;
+}
+html body #root#root#root main [role="tab"][aria-selected="true"],
+html body #root#root#root main [role="tab"][aria-selected="true"] *{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  font-weight:800!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* SPC page numbers/summary cards/chart labels: stronger contrast.             */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main .qmes-spc-dashboard,
+html body #root#root#root main [class*="spc-dashboard"],
+html body #root#root#root main [class*="spc-page"],
+html body #root#root#root main [data-page="spc"]{
+  color:#111827!important;
+}
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) button{
+  opacity:1!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) h1,
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) h2,
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) h3{
+  color:#111827!important;
+  font-weight:800!important;
+  opacity:1!important;
+}
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) .text-slate-400,
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) .text-slate-500,
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) .text-slate-600{
+  color:#374151!important;
+  -webkit-text-fill-color:#374151!important;
+  opacity:1!important;
+}
+
+/* Summary cards such as 평균/표준편차/Cp/Cpk/공정능력 판정. */
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) [class*="rounded"] strong,
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) [class*="rounded"] b{
+  color:#111827!important;
+  font-weight:800!important;
+  opacity:1!important;
+}
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) [class*="rounded"] small,
+html body #root#root#root main :is(.qmes-spc-dashboard,[class*="spc-dashboard"],[class*="spc-page"],[data-page="spc"]) [class*="rounded"] label{
+  color:#374151!important;
+  font-weight:700!important;
+  opacity:1!important;
+}
+
+/* If an old utility paints a secondary line blue/sky inside an active blue button,
+   these last rules deliberately override it. */
+html body #root#root#root main button[aria-selected="true"] [class*="text-blue"],
+html body #root#root#root main button[aria-selected="true"] [class*="text-sky"],
+html body #root#root#root main button[aria-pressed="true"] [class*="text-blue"],
+html body #root#root#root main button[aria-pressed="true"] [class*="text-sky"],
+html body #root#root#root main button[class*="bg-blue"] [class*="text-blue"],
+html body #root#root#root main button[class*="bg-blue"] [class*="text-sky"],
+html body #root#root#root main button[class*="bg-sky"] [class*="text-blue"],
+html body #root#root#root main button[class*="bg-sky"] [class*="text-sky"]{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+}
