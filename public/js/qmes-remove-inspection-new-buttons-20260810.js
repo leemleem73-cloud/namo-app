@@ -188,8 +188,18 @@
   }
 
   function ensureInspectionHeaderInspector(){
-    const header = document.querySelector('.qmes-ipad-inspection-head'); const box = header?.querySelector('.qmes-ipad-field-inspector'); if (!header || !box) return;
     const mode = getInspectionMode(); if (!mode) return;
+    const header = document.querySelector('.qmes-ipad-inspection-head') || document.querySelector('.qmes-ipad-pop .qmes-ipad-work-head:not(.qmes-ipad-equipment-head)');
+    const box = header?.querySelector('.qmes-ipad-field-inspector') || header?.querySelector('.qmes-ipad-inspector');
+    if (!header || !box) return;
+    header.classList.add('qmes-ipad-inspection-head');
+    box.classList.add('qmes-ipad-field-inspector');
+    if (!box.querySelector('.qmes-ipad-inspector-label')) {
+      const label = document.createElement('span');
+      label.className = 'qmes-ipad-inspector-label';
+      label.textContent = '검사자 :';
+      box.insertBefore(label, box.firstChild);
+    }
     const detailLabels = inspectorDetailInputs(); detailLabels.forEach((label) => label.classList.add('qmes-field-inspector-duplicate'));
     const sourceInput = detailLabels.map((label) => label.querySelector('input')).find(Boolean) || null;
     let dept = box.querySelector('.qmes-field-inspector-dept');
