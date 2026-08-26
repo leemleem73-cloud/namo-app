@@ -1,6 +1,7 @@
 /* QMES Stage 12 operational loader v8
  * Loads stable runtime helpers. Modern corporate UI is the final visual layer,
- * with sidebar alignment and production-process refinement applied after it.
+ * with sidebar alignment, production-process refinement, and work-order issued-list
+ * readability applied after it.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
@@ -9,6 +10,7 @@
   const MODERN_CORPORATE_STYLE="./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern1";
   const SIDEBAR_LINE_STYLE="./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2";
   const PROCESS_CORPORATE_STYLE="./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2";
+  const WORKORDER_ISSUED_STYLE="./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
@@ -32,6 +34,7 @@
     ensureStyle("qmes-modern-corporate-ui-20260826",MODERN_CORPORATE_STYLE,moveToEnd);
     ensureStyle("qmes-sidebar-line-align-20260826",SIDEBAR_LINE_STYLE,moveToEnd);
     ensureStyle("qmes-production-process-corporate-fix-20260826",PROCESS_CORPORATE_STYLE,moveToEnd);
+    ensureStyle("qmes-workorder-issued-clean-20260826",WORKORDER_ISSUED_STYLE,moveToEnd);
   }
 
   ensureFinalStyles(false);
