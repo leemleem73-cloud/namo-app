@@ -167,11 +167,15 @@
   function ensureTableColumns(root){
     const table=tableFor(root);if(!table)return;
     const head=table.querySelector("thead tr");if(!head)return;
+
+    /* Remove the old management column completely. Edit/Delete controls live under remarks. */
+    head.querySelectorAll('[data-qmes-sales-manage-head]').forEach(node=>node.remove());
+    table.querySelectorAll('tbody tr').forEach(tr=>tr.querySelectorAll('[data-qmes-sales-manage-cell]').forEach(node=>node.remove()));
+
     insertHeader(head,"포장정보","data-qmes-sales-pack-head","납기일");
     insertHeader(head,"납기상태","data-qmes-sales-due-head","생산계획");
     insertHeader(head,"납품정보","data-qmes-sales-delivery-head",null);
     insertHeader(head,"비고","data-qmes-sales-remark-head",null);
-    insertHeader(head,"관리","data-qmes-sales-manage-head",null);
 
     table.querySelectorAll("tbody tr").forEach(tr=>{
       const id=clean(tr.children[0]?.textContent);if(!id)return;
@@ -202,13 +206,6 @@
       if(remark){
         let remarkSpan=remark.querySelector("span");if(!remarkSpan){remarkSpan=document.createElement("span");remarkSpan.className="qmes-sales-remark-text";remark.appendChild(remarkSpan);}
         const remarkText=resolveRemark(id)||"-";if(remarkSpan.textContent!==remarkText)remarkSpan.textContent=remarkText;remarkSpan.title=remarkText==="-"?"":remarkText;
-      }
-
-      const manage=ensureCellAtHeader(tr,head,"data-qmes-sales-manage-head","data-qmes-sales-manage-cell");
-      if(manage){
-        let button=manage.querySelector(".qmes-sales-delete-btn");
-        if(!button){button=document.createElement("button");button.type="button";button.className="qmes-sales-delete-btn";button.textContent="삭제";manage.appendChild(button);}
-        if(button.dataset.salesId!==id)button.dataset.salesId=id;
       }
 
       ensureProductSubtext(tr,id);
