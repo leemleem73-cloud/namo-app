@@ -25,9 +25,11 @@
   const today=()=>new Date().toISOString().slice(0,10);
 
   function dueStatus(row){
-    if(/출하완료/.test(clean(row.shipping)))return ["완료","done"];
-    if(!/^20\d{2}-\d{2}-\d{2}$/.test(clean(row.due)))return ["-","neutral"];
-    const d=Math.round((new Date(row.due+"T00:00:00")-new Date(today()+"T00:00:00"))/86400000);
+    const shipping=clean(row.shipping);
+    if(/출하완료/.test(shipping))return ["완료","done"];
+    const due=clean(row.due);
+    if(!/^20\d{2}-\d{2}-\d{2}$/.test(due))return ["미설정","neutral"];
+    const d=Math.round((new Date(due+"T00:00:00")-new Date(today()+"T00:00:00"))/86400000);
     if(d<0)return [`지연 ${Math.abs(d)}일`,"bad"];
     if(d<=7)return [`임박 D-${d}`,"warn"];
     return ["정상","good"];
@@ -70,28 +72,67 @@
     const target=tr.children[idx]||null;if(target)tr.insertBefore(td,target);else tr.appendChild(td);return td;
   }
 
+  function styleActionButton(button,type){
+    button.style.cssText=type==="edit"
+      ? "border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:6px;padding:3px 7px;font-size:9px;font-weight:900;cursor:pointer;white-space:nowrap"
+      : "border:1px solid #fecaca;background:#fff;color:#b91c1c;border-radius:6px;padding:3px 7px;font-size:9px;font-weight:900;cursor:pointer;white-space:nowrap";
+  }
+
+  function editSales(id){
+    const row=rowData(id);if(!row){window.alert("수주 데이터를 찾을 수 없습니다.");return;}
+    const meta=metaFor(id),pack=packagingFor(id)||{},remark=remarkFor(id);
+    const customer=window.prompt("고객사",clean(meta.customerOverride)||clean(row.customer));if(customer===null)return;
+    const po=window.prompt("고객 PO",clean(meta.poOverride)||clean(row.po));if(po===null)return;
+    const due=window.prompt("요청 납기일 (YYYY-MM-DD)",clean(meta.requestedDue)||clean(row.due));if(due===null)return;
+    const product=window.prompt("제품",clean(meta.productOverride)||clean(row.product));if(product===null)return;
+    const qty=window.prompt("수량 (kg)",String(meta.qtyOverride||row.qty||""));if(qty===null)return;
+    const note=window.prompt("비고",remark);if(note===null)return;
+
+    const qtyNum=Number(String(qty).replace(/,/g,""));
+    if(!customer.trim()||!product.trim()||!Number.isFinite(qtyNum)||qtyNum<=0){window.alert("고객사·제품·수량을 확인하세요.");return;}
+    if(due.trim()&&!/^20\d{2}-\d{2}-\d{2}$/.test(due.trim())){window.alert("요청 납기일은 YYYY-MM-DD 형식으로 입력하세요.");return;}
+
+    const m=map(META_KEY),key=clean(row.workOrder)||id;
+    const nextMeta={...meta,customerOverride:customer.trim(),poOverride:po.trim()||"-",productOverride:product.trim(),qtyOverride:qtyNum,requestedDue:due.trim(),savedAt:new Date().toISOString()};
+    m[id]=nextMeta;m[key]=nextMeta;write(META_KEY,m);
+    const rm=map(REMARK_KEY);rm[id]=note.trim();if(key)rm[key]=note.trim();write(REMARK_KEY,rm);
+    if(typeof window.qmesSalesFromWorkOrderApply==="function")window.qmesSalesFromWorkOrderApply();
+    window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{detail:{kind:"sales",source:"SALES_EDIT",id}}));
+    setTimeout(()=>window.location.reload(),160);
+  }
+
   function ensureTable(r){
     const t=table(r);if(!t)return;
-    if(t.dataset.qmesEnterpriseFixed==="1")return;
+    if(t.dataset.qmesEnterpriseFixed==="2")return;
     resetCustomColumns(t);
     const h=t.querySelector("thead tr");if(!h)return;
     insertHead(h,"포장정보","data-qmes-sales-pack-head","납기일");
     insertHead(h,"납기상태","data-qmes-sales-due-head","생산계획");
     insertHead(h,"납품정보","data-qmes-sales-delivery-head","__END__");
     insertHead(h,"비고","data-qmes-sales-remark-head","__END__");
-    insertHead(h,"","data-qmes-sales-manage-head","__END__");
 
     t.querySelectorAll("tbody tr").forEach(tr=>{
       const id=clean(tr.children[0]?.textContent);if(!id)return;const row=rowData(id),meta=metaFor(id);
       const p=insertCellByHeader(tr,h,"data-qmes-sales-pack-head","data-qmes-sales-pack-cell");if(p){p.textContent=packageText(packagingFor(id));p.className=packageText(packagingFor(id))==="포장정보 미입력"?"qmes-sales-packaging-empty":"qmes-sales-packaging-text";}
       const d=insertCellByHeader(tr,h,"data-qmes-sales-due-head","data-qmes-sales-due-cell");if(d){const [label,cls]=dueStatus(row),s=document.createElement("span");s.className=`qmes-sales-due-badge ${cls}`;s.textContent=label;d.appendChild(s);}
       const di=insertCellByHeader(tr,h,"data-qmes-sales-delivery-head","data-qmes-sales-delivery-cell");if(di)di.textContent=[clean(meta.orderType),clean(meta.deliveryPlace)].filter(Boolean).join(" · ")||"-";
-      const rm=insertCellByHeader(tr,h,"data-qmes-sales-remark-head","data-qmes-sales-remark-cell");if(rm)rm.textContent=remarkFor(id)||"-";
-      const mg=insertCellByHeader(tr,h,"data-qmes-sales-manage-head","data-qmes-sales-manage-cell");if(mg){const b=document.createElement("button");b.type="button";b.className="qmes-sales-delete-btn";b.dataset.salesId=id;b.textContent="삭제";mg.appendChild(b);}
+      const rm=insertCellByHeader(tr,h,"data-qmes-sales-remark-head","data-qmes-sales-remark-cell");if(rm){
+        rm.style.minWidth="120px";
+        const textWrap=document.createElement("div");textWrap.textContent=remarkFor(id)||"-";textWrap.style.cssText="margin-bottom:5px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#475569";rm.appendChild(textWrap);
+        const actions=document.createElement("div");actions.style.cssText="display:flex;gap:5px;align-items:center";
+        const edit=document.createElement("button");edit.type="button";edit.textContent="수정";edit.dataset.qmesSalesEdit=id;styleActionButton(edit,"edit");actions.appendChild(edit);
+        const del=document.createElement("button");del.type="button";del.textContent="삭제";del.className="qmes-sales-delete-btn";del.dataset.salesId=id;styleActionButton(del,"delete");actions.appendChild(del);
+        rm.appendChild(actions);
+      }
       const code=clean(meta.customerItemCode);if(code&&tr.children[3]&&!tr.children[3].querySelector(".qmes-sales-subtext")){const s=document.createElement("span");s.className="qmes-sales-subtext";s.textContent=`고객품번 ${code}`;tr.children[3].appendChild(s);}
     });
-    t.dataset.qmesEnterpriseFixed="1";
+    t.dataset.qmesEnterpriseFixed="2";
   }
+
+  document.addEventListener("click",e=>{
+    const edit=e.target.closest?.("[data-qmes-sales-edit]");
+    if(edit){e.preventDefault();e.stopPropagation();editSales(edit.dataset.qmesSalesEdit||"");}
+  },true);
 
   document.addEventListener("submit",e=>{
     const f=e.target;if(!(f instanceof HTMLFormElement)||!f.classList.contains("qerp-form"))return;
