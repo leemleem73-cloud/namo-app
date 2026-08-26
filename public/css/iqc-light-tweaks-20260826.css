@@ -10,45 +10,44 @@
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small{color:#111827!important;font-size:13px!important;font-weight:800!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light{width:11px!important;height:11px!important;opacity:1!important;}
 
-/* 모든 밝은 카드: 둥근 모서리 안쪽 흰색 삐져나옴 방지 */
-#root .qmes-iqc-quickbar,
-#root .qmes-iqc-ledger-panel,
-#root .qmes-iqc-record-filter,
-#root .qmes-iqc-rank-panel{
-  position:relative!important;
-  background:#fff!important;
-  background-clip:padding-box!important;
-  border:1px solid #d7dee8!important;
-  outline:0!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-}
-#root .qmes-iqc-quickbar,#root .qmes-iqc-ledger-panel,#root .qmes-iqc-rank-panel{border-radius:14px!important;}
-#root .qmes-iqc-record-filter{border-radius:12px!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;}
-#root .qmes-iqc-quickbar::before,#root .qmes-iqc-quickbar::after,
-#root .qmes-iqc-ledger-panel::before,#root .qmes-iqc-ledger-panel::after,
-#root .qmes-iqc-record-filter::before,#root .qmes-iqc-record-filter::after,
-#root .qmes-iqc-rank-panel::before,#root .qmes-iqc-rank-panel::after{content:none!important;display:none!important;}
-#root .qmes-iqc-quickbar .qmes-management-heading,#root .qmes-iqc-ledger-panel>div{background:#fff!important;border:0!important;outline:0!important;box-shadow:none!important;}
+/* 수입검사 관리 */
+#root .qmes-iqc-quickbar{position:relative!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;outline:0!important;overflow:hidden!important;box-shadow:none!important;background-clip:padding-box!important;}
+#root .qmes-iqc-quickbar .qmes-management-heading{background:#fff!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;}
 
-/* 업체별 IQC 합격률: 네 모서리 완전히 같은 14px */
-#root .qmes-iqc-rank-panel{border-radius:14px!important;overflow:hidden!important;}
-#root .qmes-iqc-rank-panel>div:first-child{border-radius:13px 13px 0 0!important;overflow:hidden!important;}
-#root .qmes-iqc-rank-panel>div:last-child{border-radius:0 0 13px 13px!important;overflow:hidden!important;}
-#root .qmes-iqc-rank-panel>div,
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-card,
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer{background:#fff!important;color:#111827!important;border-color:#d7dee8!important;background-clip:padding-box!important;}
-#root .qmes-iqc-rank-panel h3,#root .qmes-iqc-rank-panel strong{color:#111827!important;}
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,#root .qmes-iqc-rank-panel .qmes-iqc-donut-count,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer{color:#4b5563!important;}
+/* 수입검사 관리대장: 바깥 section은 완전히 투명, 실제 Panel 한 겹만 테두리 담당 */
+#root .qmes-iqc-ledger-section{background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;padding:0!important;overflow:visible!important;}
+#root .qmes-iqc-ledger-section::before,#root .qmes-iqc-ledger-section::after{content:none!important;display:none!important;}
+#root .qmes-iqc-ledger-panel{position:relative!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;outline:0!important;overflow:hidden!important;box-shadow:none!important;background-clip:padding-box!important;isolation:isolate!important;}
+#root .qmes-iqc-ledger-panel::before,#root .qmes-iqc-ledger-panel::after{content:none!important;display:none!important;}
+#root .qmes-iqc-ledger-panel>div,#root .qmes-iqc-ledger-panel>header,#root .qmes-iqc-ledger-panel>section{background:#fff!important;outline:0!important;box-shadow:none!important;}
+#root .qmes-iqc-ledger-container{background:#fff!important;border:0!important;outline:0!important;box-shadow:none!important;}
 
 /* 검색 툴 */
+#root .qmes-iqc-record-filter{position:relative!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:12px!important;outline:0!important;overflow:hidden!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;background-clip:padding-box!important;}
 #root .qmes-iqc-record-filter .qmes-inspection-search-box{box-sizing:border-box!important;height:36px!important;display:flex!important;align-items:center!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
 #root .qmes-iqc-record-filter .qmes-inspection-search-box input,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:hover,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:active,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:focus,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible{height:100%!important;flex:1!important;min-width:0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;color:#111827!important;appearance:none!important;}
 #root .qmes-iqc-record-filter select,#root .qmes-iqc-record-filter>button{box-sizing:border-box!important;height:36px!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;outline:0!important;box-shadow:none!important;color:#111827!important;}
 #root .qmes-iqc-record-filter>button{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;}
 #root .qmes-iqc-quickbar .qmes-iqc-new-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;}
 
-/* 판정/관리 동일 */
+/* 업체별 IQC 합격률: 바깥 래퍼는 선 제거, 안쪽 Panel만 1px */
+#root .qmes-iqc-chart-only{background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;}
+#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel{background:transparent!important;border:0!important;border-radius:14px!important;outline:0!important;box-shadow:none!important;overflow:visible!important;padding:0!important;}
+#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel>div{background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;outline:0!important;box-shadow:none!important;overflow:hidden!important;background-clip:padding-box!important;}
+#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel>div>div{border-left-width:0!important;border-right-width:0!important;}
+#root .qmes-iqc-rank-panel .qmes-iqc-donut-card,#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer{background:#fff!important;color:#111827!important;border-color:#d7dee8!important;}
+#root .qmes-iqc-rank-panel h3,#root .qmes-iqc-rank-panel strong{color:#111827!important;}
+#root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,#root .qmes-iqc-rank-panel .qmes-iqc-donut-count,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer{color:#4b5563!important;}
+
+/* 판정 / 관리 헤더 동일 */
 #root .qmes-iqc-ledger-table thead th:nth-last-child(2),#root .qmes-iqc-ledger-table thead th:last-child{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',system-ui,sans-serif!important;font-size:12px!important;font-weight:600!important;line-height:18px!important;letter-spacing:0!important;color:#111827!important;vertical-align:middle!important;text-align:center!important;}
+
+/* 판정 배지: 형광광/글로우 제거, 일반 초록·빨강 */
+#root .qmes-iqc-ledger-table tbody td:nth-last-child(2) span[class*="emerald"],
+#root .qmes-iqc-ledger-table tbody td:nth-last-child(2) span[class*="green"]{
+  background:#16a34a!important;background-color:#16a34a!important;border-color:#16a34a!important;color:#fff!important;box-shadow:none!important;text-shadow:none!important;filter:none!important;
+}
+#root .qmes-iqc-ledger-table tbody td:nth-last-child(2) span[class*="red"],
+#root .qmes-iqc-ledger-table tbody td:nth-last-child(2) span[class*="rose"]{
+  background:#dc2626!important;background-color:#dc2626!important;border-color:#dc2626!important;color:#fff!important;box-shadow:none!important;text-shadow:none!important;filter:none!important;
+}
