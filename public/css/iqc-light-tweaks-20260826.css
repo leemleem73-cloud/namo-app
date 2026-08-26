@@ -5,12 +5,10 @@
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-items{gap:0!important;padding:0!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;overflow:hidden!important;box-shadow:none!important;}
 html body #root#root#root#root main .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item{margin:0!important;background:#fff!important;border:0!important;border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;color:#111827!important;box-sizing:border-box!important;}
 html body #root#root#root#root main .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item + .qmes-simple-summary-item{border:0!important;border-left:1px solid #d7dee8!important;box-shadow:none!important;}
-html body #root#root#root#root main .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item::before,
-html body #root#root#root#root main .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item::after{content:none!important;display:none!important;border:0!important;box-shadow:none!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label{color:#111827!important;font-size:15px!important;font-weight:800!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong{color:#050b14!important;font-size:30px!important;font-weight:900!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small{color:#111827!important;font-size:13px!important;font-weight:800!important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light{width:11px!important;height:11px!important;opacity:1!important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light{width:11px!important;height:11px!important;opacity:1;animation:qmes-summary-dot-float 1.35s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,opacity!important;}
 
 /* 수입검사 관리 */
 #root .qmes-iqc-quickbar{background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
