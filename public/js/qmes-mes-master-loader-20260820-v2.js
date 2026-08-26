@@ -1,4 +1,4 @@
-/* QMES Stage 12 operational loader v22
+/* QMES Stage 12 operational loader v23
  * Stable operational modules + single sales UI owner.
  */
 (function(){
@@ -13,7 +13,8 @@
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
-    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"]
+    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"],
+    ["qmes-field-shell-header-consistency-20260826","./css/qmes-field-shell-header-consistency-20260826.css?v=20260826-1",true]
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
@@ -25,7 +26,10 @@
   }
   function syncThemeState(){
     const disabled=fieldInputActive();
-    STYLE_DEFS.forEach(([id,href])=>{const link=ensureStyle(id,href);link.media=disabled?'not all':'all';});
+    STYLE_DEFS.forEach(([id,href,keepDuringField])=>{
+      const link=ensureStyle(id,href);
+      link.media=disabled&&!keepDuringField?'not all':'all';
+    });
   }
 
   syncThemeState();
