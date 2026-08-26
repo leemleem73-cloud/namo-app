@@ -1,44 +1,14 @@
 /* Sidebar search/top navigation line alignment — 2026-08-26 */
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
-  box-sizing:border-box!important;
-  height:46px!important;
-  min-height:46px!important;
-  max-height:46px!important;
-  margin:0!important;
-  padding:4px 12px!important;
-  display:flex!important;
-  align-items:center!important;
-  background:#fff!important;
-  border-top:1px solid #e2e6ec!important;
-  border-bottom:1px solid #e2e6ec!important;
-  border-left:0!important;
-  border-right:0!important;
-  box-shadow:none!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{
-  box-sizing:border-box!important;
-  margin:0!important;
-  border-top:0!important;
-  border-bottom:0!important;
-  box-shadow:none!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
-  box-sizing:border-box!important;
-  height:36px!important;
-  min-height:36px!important;
-  margin:0!important;
-}
-html body #root#root#root .qmes-top-menu-bar{
-  height:46px!important;
-  min-height:46px!important;
-  max-height:46px!important;
-  border-top:1px solid #e2e6ec!important;
-  border-bottom:1px solid #e2e6ec!important;
-  box-shadow:none!important;
-}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{box-sizing:border-box!important;height:46px!important;min-height:46px!important;max-height:46px!important;margin:0!important;padding:4px 12px!important;display:flex!important;align-items:center!important;background:#fff!important;border-top:1px solid #e2e6ec!important;border-bottom:1px solid #e2e6ec!important;border-left:0!important;border-right:0!important;box-shadow:none!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{box-sizing:border-box!important;margin:0!important;border-top:0!important;border-bottom:0!important;box-shadow:none!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{box-sizing:border-box!important;height:36px!important;min-height:36px!important;margin:0!important;}
+html body #root#root#root .qmes-top-menu-bar{height:46px!important;min-height:46px!important;max-height:46px!important;border-top:1px solid #e2e6ec!important;border-bottom:1px solid #e2e6ec!important;box-shadow:none!important;}
 
-/* 공정검사 / 출하검사 검색필터를 수입검사와 동일 배치 */
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;gap:8px!important;flex-wrap:nowrap!important;overflow:hidden!important;}
+/* 수입/공정/출하 KPI 움직이는 원 효과 복구 */
+html body #root#root#root main .qmes-simple-summary-light{animation:qmes-summary-dot-float 1.35s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,opacity!important;}
+
+/* 공정검사 / 출하검사 검색필터: 큰 바깥 박스 제거 */
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){box-sizing:border-box!important;display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;gap:8px!important;flex-wrap:nowrap!important;overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;padding:0!important;}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{flex:0 0 360px!important;width:360px!important;min-width:300px!important;max-width:360px!important;}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-oqc-record-filter-field{flex:0 0 108px!important;width:108px!important;min-width:108px!important;max-width:108px!important;}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > button{flex:0 0 88px!important;width:88px!important;min-width:88px!important;max-width:88px!important;}
