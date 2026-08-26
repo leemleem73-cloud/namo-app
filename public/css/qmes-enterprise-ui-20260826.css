@@ -1,105 +1,562 @@
-/* NAMO QMES Enterprise UI layer - 2026-08-26 */
-:root{--qe-bg:#f4f6f9;--qe-surface:#fff;--qe-soft:#f8fafc;--qe-line:#d8e0ea;--qe-line2:#e8edf3;--qe-text:#172033;--qe-text2:#344054;--qe-muted:#667085;--qe-blue:#2563eb;--qe-blue2:#175cd3;--qe-blue-soft:#eef5ff;--qe-shadow:0 4px 14px rgba(15,23,42,.06);--qe-font:Pretendard,"Pretendard Variable","Noto Sans KR","Malgun Gothic",Arial,sans-serif}
-html body{background:var(--qe-bg)!important;color:var(--qe-text)!important;font-family:var(--qe-font)!important;font-size:13px!important;letter-spacing:-.012em}
+/* NAMO QMES Enterprise UI System — 2026-08-26 v2
+ * One consistent visual language for all menus and modules.
+ * Loaded before first React render and re-appended after runtime helpers.
+ */
+:root{
+  color-scheme:light;
+  --qe-bg:#f4f6f9;
+  --qe-surface:#ffffff;
+  --qe-soft:#f8fafc;
+  --qe-soft2:#f1f5f9;
+  --qe-line:#d8e0ea;
+  --qe-line2:#e8edf3;
+  --qe-text:#172033;
+  --qe-text2:#344054;
+  --qe-muted:#667085;
+  --qe-muted2:#98a2b3;
+  --qe-blue:#2563eb;
+  --qe-blue2:#175cd3;
+  --qe-blue-soft:#eef5ff;
+  --qe-green:#15803d;
+  --qe-green-soft:#ecfdf3;
+  --qe-amber:#b45309;
+  --qe-amber-soft:#fff7ed;
+  --qe-red:#b42318;
+  --qe-red-soft:#fff1f2;
+  --qe-shadow:0 4px 14px rgba(15,23,42,.055);
+  --qe-shadow-menu:0 14px 34px rgba(15,23,42,.13);
+  --qe-font:Pretendard,"Pretendard Variable","Noto Sans KR","Malgun Gothic",Arial,sans-serif;
+}
+
+html,html body{
+  margin:0!important;
+  background:var(--qe-bg)!important;
+  color:var(--qe-text)!important;
+  font-family:var(--qe-font)!important;
+  font-size:13px!important;
+  line-height:1.5!important;
+  letter-spacing:-.012em;
+}
 html body button,html body input,html body select,html body textarea{font-family:var(--qe-font)!important}
+html body #root#root#root,html body #root#root#root>div{min-height:100vh!important;background:var(--qe-bg)!important;color:var(--qe-text)!important}
 
-/* header */
-html body #root#root#root>div>header{background:#fff!important;color:var(--qe-text)!important;border-bottom:1px solid var(--qe-line)!important;box-shadow:0 1px 0 rgba(15,23,42,.03)!important;backdrop-filter:none!important}
-html body #root#root#root>div>header>div:first-child{height:62px!important;min-height:62px!important;max-height:62px!important;padding:0 18px!important;gap:12px!important;background:#fff!important}
-html body #root#root#root>div>header img[alt="NAMO Chemical"]{height:35px!important;max-height:35px!important;max-width:245px!important;width:auto!important;filter:none!important;object-fit:contain!important}
-html body #root#root#root .qmes-header-clock{font-family:var(--qe-font)!important;font-size:12px!important;font-weight:600!important;color:#475467!important}
-html body #root#root#root .qmes-header-action{height:34px!important;padding:0 11px!important;border:1px solid #cfd8e3!important;border-radius:8px!important;background:#fff!important;color:#344054!important;font-size:12px!important;font-weight:600!important;box-shadow:none!important}
-html body #root#root#root button[aria-label*="NAMO Talk"]{height:36px!important;padding:0 12px!important;border:1px solid #cfd8e3!important;border-radius:9px!important;background:#fff!important;color:#172033!important;font-size:12.5px!important;font-weight:650!important;box-shadow:none!important}
-html body #root#root#root button[aria-label^="계정 설정"]{min-height:38px!important;padding:3px 6px!important;background:#fff!important;color:#172033!important;border-radius:9px!important}
-html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{width:30px!important;height:30px!important;background:#eef2f7!important;color:#263548!important;font-size:12px!important}
-html body #root#root#root button[aria-label^="계정 설정"] div,html body #root#root#root button[aria-label^="계정 설정"] span{color:#172033!important}
+/* ========================================================================== */
+/* HEADER */
+/* ========================================================================== */
+html body #root#root#root>div>header{
+  background:#fff!important;
+  color:var(--qe-text)!important;
+  border-bottom:1px solid var(--qe-line)!important;
+  box-shadow:0 1px 0 rgba(15,23,42,.025)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html body #root#root#root>div>header>div:first-child{
+  height:62px!important;min-height:62px!important;max-height:62px!important;
+  padding:0 16px!important;gap:10px!important;
+  background:#fff!important;border:0!important;box-sizing:border-box!important;
+}
+html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+  width:auto!important;height:34px!important;max-height:34px!important;max-width:235px!important;
+  object-fit:contain!important;filter:none!important;
+}
+html body #root#root#root .qmes-header-clock,
+html body #root#root#root .qmes-header-clock span{
+  color:#475467!important;font-size:12px!important;font-weight:600!important;
+}
+html body #root#root#root .qmes-header-clock .animate-pulse{width:7px!important;height:7px!important;background:#34d399!important;box-shadow:none!important}
+html body #root#root#root .qmes-header-controls{gap:6px!important;color:var(--qe-text2)!important}
+html body #root#root#root .qmes-header-action{
+  height:34px!important;min-height:34px!important;padding:0 10px!important;
+  border:1px solid #cfd8e3!important;border-radius:8px!important;
+  background:#fff!important;color:#344054!important;font-size:12px!important;font-weight:600!important;box-shadow:none!important;
+}
+html body #root#root#root .qmes-header-action:hover{background:#f8fafc!important;border-color:#b9c6d5!important;color:#172033!important}
+html body #root#root#root button[aria-label*="NAMO Talk"]{
+  height:36px!important;min-height:36px!important;padding:0 12px!important;
+  border:1px solid #cfd8e3!important;border-radius:9px!important;
+  background:#fff!important;color:#172033!important;font-size:12.5px!important;font-weight:650!important;box-shadow:none!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]{
+  min-height:38px!important;padding:3px 5px!important;border:0!important;border-radius:9px!important;background:#fff!important;color:#172033!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]:hover{background:#f8fafc!important}
+html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
+  width:30px!important;height:30px!important;background:#eef2f7!important;color:#263548!important;font-size:12px!important;font-weight:700!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"] div,
+html body #root#root#root button[aria-label^="계정 설정"] span{color:#172033!important}
 
-/* top navigation */
-html body #root#root#root .qmes-top-menu-bar{height:44px!important;min-height:44px!important;max-height:44px!important;background:#fff!important;border-top:1px solid #eef2f6!important;border-bottom:1px solid var(--qe-line)!important;box-shadow:none!important}
-html body #root#root#root .qmes-top-menu{height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 12px 0 48px!important;display:flex!important;align-items:stretch!important;gap:2px!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;background:#fff!important;width:100%!important;transform:none!important;scrollbar-width:none!important}
+/* ========================================================================== */
+/* TOP NAVIGATION */
+/* ========================================================================== */
+html body #root#root#root .qmes-top-menu-bar{
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  background:#fff!important;border-top:1px solid #eef2f6!important;border-bottom:1px solid var(--qe-line)!important;box-shadow:none!important;
+}
+html body #root#root#root .qmes-top-menu{
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  padding:0 10px 0 46px!important;gap:1px!important;
+  display:flex!important;align-items:stretch!important;flex-wrap:nowrap!important;
+  overflow-x:auto!important;overflow-y:hidden!important;background:#fff!important;
+  width:100%!important;transform:none!important;transition:none!important;scrollbar-width:none!important;
+}
 html body #root#root#root .qmes-top-menu::-webkit-scrollbar{display:none!important}
 html body #root#root#root .qmes-top-menu-item{height:44px!important;min-height:44px!important;max-height:44px!important;flex:0 0 auto!important}
-html body #root#root#root .qmes-top-menu-button{height:44px!important;min-height:44px!important;max-height:44px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;padding:0 10px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:#fff!important;color:#344054!important;font-size:12.5px!important;line-height:1!important;font-weight:650!important;white-space:nowrap!important;box-shadow:none!important}
-html body #root#root#root .qmes-top-menu-button svg{width:14px!important;height:14px!important;min-width:14px!important;color:#667085!important;stroke-width:1.9!important;fill:none!important}
+html body #root#root#root .qmes-top-menu-button{
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  padding:0 10px!important;gap:6px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;
+  background:#fff!important;color:#344054!important;
+  font-size:13px!important;line-height:1!important;font-weight:600!important;white-space:nowrap!important;box-shadow:none!important;
+}
+html body #root#root#root .qmes-top-menu-button svg{
+  width:15px!important;height:15px!important;min-width:15px!important;color:#667085!important;stroke-width:1.9!important;fill:none!important;
+}
 html body #root#root#root .qmes-top-menu-button span{display:inline!important;visibility:visible!important;opacity:1!important;color:inherit!important;font:inherit!important;white-space:nowrap!important}
-html body #root#root#root .qmes-top-menu-button .qmes-menu-arrow{width:11px!important;height:11px!important;color:#98a2b3!important}
-html body #root#root#root .qmes-top-menu-button:hover{background:#f7f9fc!important;color:#1f2937!important}
-html body #root#root#root .qmes-top-menu-button.is-active,html body #root#root#root .qmes-top-menu-button[aria-current="page"]{background:#f5f9ff!important;color:var(--qe-blue2)!important;border-bottom-color:var(--qe-blue)!important;font-weight:700!important}
-html body #root#root#root .qmes-top-menu-button.is-active svg{color:var(--qe-blue)!important}
-html body.qmes-side-open #root#root#root .qmes-top-menu,html body:not(.qmes-side-open) #root#root#root .qmes-top-menu{transform:none!important;width:100%!important;padding-left:48px!important}
+html body #root#root#root .qmes-top-menu-button .qmes-menu-arrow{width:11px!important;height:11px!important;color:#98a2b3!important;margin-left:-1px!important}
+html body #root#root#root .qmes-top-menu-button:hover,
+html body #root#root#root .qmes-top-menu-button:focus-visible{background:#f7f9fc!important;color:#172033!important;outline:none!important}
+html body #root#root#root .qmes-top-menu-button:hover svg{color:#475467!important}
+html body #root#root#root .qmes-top-menu-button.is-active,
+html body #root#root#root .qmes-top-menu-button[aria-current="page"]{
+  background:#f5f9ff!important;color:var(--qe-blue2)!important;border-bottom-color:var(--qe-blue)!important;font-weight:700!important;
+}
+html body #root#root#root .qmes-top-menu-button.is-active svg,
+html body #root#root#root .qmes-top-menu-button[aria-current="page"] svg{color:var(--qe-blue)!important}
+html body.qmes-side-open #root#root#root .qmes-top-menu,
+html body:not(.qmes-side-open) #root#root#root .qmes-top-menu{transform:none!important;width:100%!important;padding-left:46px!important}
 
-/* hover submenu */
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown{min-width:228px!important;max-width:270px!important;padding:7px!important;border:1px solid #d9e1ea!important;border-radius:11px!important;background:#fff!important;color:#172033!important;box-shadow:0 14px 34px rgba(15,23,42,.13)!important;overflow:hidden!important}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{position:static!important;margin:0 0 4px!important;padding:7px 9px 6px!important;border:0!important;border-bottom:1px solid #edf1f5!important;background:#fff!important;color:#667085!important;font-size:10.5px!important;line-height:16px!important;font-weight:700!important;letter-spacing:.02em!important}
+/* ========================================================================== */
+/* HOVER SUBMENU */
+/* ========================================================================== */
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown{
+  position:fixed!important;z-index:13050!important;
+  min-width:220px!important;max-width:270px!important;padding:6px!important;
+  border:1px solid #d9e1ea!important;border-radius:10px!important;
+  background:#fff!important;color:#172033!important;box-shadow:var(--qe-shadow-menu)!important;overflow:hidden!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
+  position:static!important;margin:0 0 4px!important;padding:7px 9px 6px!important;
+  border:0!important;border-bottom:1px solid #edf1f5!important;background:#fff!important;
+  color:#667085!important;font-size:11px!important;line-height:16px!important;font-weight:700!important;letter-spacing:0!important;
+}
 html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title:before{display:none!important}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:38px!important;padding:8px 10px 8px 24px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;font-size:12.5px!important;line-height:18px!important;font-weight:550!important;text-align:left!important}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:before{content:""!important;position:absolute!important;left:10px!important;top:50%!important;width:5px!important;height:5px!important;margin-top:-2.5px!important;border-radius:50%!important;background:#cbd5e1!important}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover{background:#f5f9ff!important;color:#175cd3!important}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover:before{background:#2563eb!important}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button{
+  position:relative!important;display:flex!important;align-items:center!important;
+  width:100%!important;min-height:38px!important;padding:8px 10px 8px 24px!important;
+  border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;
+  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:before{
+  content:""!important;position:absolute!important;left:10px!important;top:50%!important;
+  width:5px!important;height:5px!important;margin-top:-2.5px!important;border-radius:50%!important;background:#cbd5e1!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover,
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible{background:#f5f9ff!important;color:#175cd3!important;outline:none!important}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover:before,
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible:before{background:#2563eb!important}
 html body #root#root#root .qmes-submenu-row{display:none!important}
 
-/* left sidebar */
-html body #qmes-sync-sidebar#qmes-sync-sidebar{width:228px!important;padding:0 10px 14px!important;background:#fff!important;color:#344054!important;border-right:1px solid var(--qe-line)!important;box-shadow:4px 0 14px rgba(15,23,42,.035)!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{height:48px!important;min-height:48px!important;margin:0 -10px!important;padding:7px 10px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{height:34px!important;padding:0 9px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;background:#f8fafc!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{height:32px!important;background:transparent!important;color:#344054!important;font-size:12px!important;font-weight:500!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{min-height:46px!important;margin:0 -10px 8px!important;padding:0 13px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important}
+/* ========================================================================== */
+/* USER MENU */
+/* ========================================================================== */
+html body #qmes-user-dropdown#qmes-user-dropdown{
+  width:196px!important;padding:6px!important;border:1px solid #d9e1ea!important;border-radius:10px!important;
+  background:#fff!important;box-shadow:var(--qe-shadow-menu)!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button{
+  width:100%!important;min-height:38px!important;padding:8px 10px!important;
+  border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;
+  font-size:13px!important;line-height:18px!important;font-weight:600!important;text-align:left!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button:hover,
+html body #qmes-user-dropdown#qmes-user-dropdown button:focus-visible{background:#f7f9fc!important;color:#172033!important;outline:none!important}
+html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;padding-top:9px!important;border-top:1px solid #edf1f5!important;color:#b42318!important}
+
+/* ========================================================================== */
+/* LEFT SIDEBAR */
+/* ========================================================================== */
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  width:220px!important;padding:0 10px 14px!important;background:#fff!important;color:#344054!important;
+  border-right:1px solid var(--qe-line)!important;box-shadow:4px 0 14px rgba(15,23,42,.035)!important;filter:none!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
+  height:48px!important;min-height:48px!important;margin:0 -10px!important;padding:7px 10px!important;
+  background:#fff!important;border-bottom:1px solid #edf1f5!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
+  height:34px!important;padding:0 9px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;background:#f8fafc!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
+  height:32px!important;background:transparent!important;color:#344054!important;font-size:12.5px!important;font-weight:500!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input::placeholder{color:#98a2b3!important;font-weight:450!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-icon{width:24px!important;height:24px!important;background:transparent!important;color:#667085!important;font-size:15px!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
+  min-height:46px!important;margin:0 -10px 8px!important;padding:0 13px!important;
+  background:#fff!important;border-bottom:1px solid #edf1f5!important;
+}
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active:before{display:none!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{color:#475467!important;font-size:12px!important;line-height:18px!important;font-weight:700!important;letter-spacing:-.01em!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;margin:2px 0!important;padding:9px 10px 9px 13px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#475467!important;font-size:12.5px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{content:""!important;position:static!important;display:block!important;flex:0 0 auto!important;width:5px!important;height:5px!important;margin-right:9px!important;border-radius:50%!important;background:#cbd5e1!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
+  color:#475467!important;font-size:12px!important;line-height:18px!important;font-weight:700!important;letter-spacing:-.01em!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close{
+  width:28px!important;height:28px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#98a2b3!important;font-size:18px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close:hover{background:#f1f5f9!important;color:#475467!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-items{padding:0 1px!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;
+  min-height:40px!important;margin:2px 0!important;padding:9px 10px 9px 12px!important;
+  border:0!important;border-radius:8px!important;background:#fff!important;color:#475467!important;
+  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{
+  content:""!important;position:static!important;display:block!important;flex:0 0 auto!important;
+  width:5px!important;height:5px!important;margin-right:9px!important;border-radius:50%!important;background:#cbd5e1!important;
+}
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{background:#f7f9fc!important;color:#172033!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover:before{background:#94a3b8!important}
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{background:#eef5ff!important;color:#175cd3!important;font-weight:650!important}
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active:before{background:#2563eb!important}
-html body #qmes-sync-hamburger#qmes-sync-hamburger{width:32px!important;height:32px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;background:#fff!important;color:#475467!important;box-shadow:none!important;font-size:16px!important}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-empty{padding:18px 10px!important;color:#98a2b3!important;font-size:12px!important;text-align:center!important}
+html body #qmes-sync-hamburger#qmes-sync-hamburger{
+  width:32px!important;height:32px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;
+  background:#fff!important;color:#475467!important;box-shadow:none!important;font-size:16px!important;
+}
+html body #qmes-sync-hamburger#qmes-sync-hamburger:hover{background:#f7f9fc!important;border-color:#c8d2df!important;color:#172033!important}
 
-/* user dropdown */
-html body #qmes-user-dropdown#qmes-user-dropdown{width:196px!important;padding:7px!important;border:1px solid #d9e1ea!important;border-radius:11px!important;background:#fff!important;box-shadow:0 14px 34px rgba(15,23,42,.13)!important}
-html body #qmes-user-dropdown#qmes-user-dropdown button{width:100%!important;min-height:38px!important;padding:8px 10px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;font-size:12.5px!important;font-weight:600!important;text-align:left!important}
-html body #qmes-user-dropdown#qmes-user-dropdown button:hover{background:#f7f9fc!important;color:#172033!important}
-html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;border-top:1px solid #edf1f5!important;color:#b42318!important}
-
-/* page typography */
-html body #root#root#root>div>main{background:var(--qe-bg)!important;color:var(--qe-text)!important;padding-top:18px!important;padding-bottom:28px!important}
+/* ========================================================================== */
+/* PAGE TYPOGRAPHY / SPACING */
+/* ========================================================================== */
+html body #root#root#root>div>main{background:var(--qe-bg)!important;color:var(--qe-text)!important;padding-top:16px!important;padding-bottom:28px!important}
 html body #root#root#root main h1{color:#172033!important;font-size:22px!important;line-height:30px!important;font-weight:720!important;letter-spacing:-.025em!important}
-html body #root#root#root main h2{color:#172033!important;font-size:16px!important;line-height:24px!important;font-weight:700!important}
+html body #root#root#root main h2{color:#172033!important;font-size:16px!important;line-height:24px!important;font-weight:700!important;letter-spacing:-.018em!important}
 html body #root#root#root main h3{color:#172033!important;font-size:14px!important;line-height:21px!important;font-weight:680!important}
 html body #root#root#root main h4{color:#344054!important;font-size:13px!important;line-height:20px!important;font-weight:650!important}
+html body #root#root#root main [class~="text-xs"]{font-size:12px!important;line-height:18px!important}
+html body #root#root#root main [class~="text-sm"]{font-size:13px!important;line-height:20px!important}
+html body #root#root#root main [class*="text-[9px]"]{font-size:11px!important;line-height:16px!important}
+html body #root#root#root main [class*="text-[10px]"]{font-size:11px!important;line-height:16px!important}
+html body #root#root#root main [class*="text-[11px]"]{font-size:11.5px!important;line-height:17px!important}
 
-/* convert legacy dark surfaces */
-html body #root#root#root main [class~="bg-slate-950"],html body #root#root#root main [class~="bg-slate-900"],html body #root#root#root main [class~="bg-slate-900/80"]{background:#fff!important;background-image:none!important;color:#172033!important;border-color:var(--qe-line)!important;box-shadow:var(--qe-shadow)!important}
-html body #root#root#root main [class~="bg-slate-800"],html body #root#root#root main [class~="bg-slate-800/70"],html body #root#root#root main [class~="bg-slate-800/60"],html body #root#root#root main [class~="bg-slate-800/50"],html body #root#root#root main [class~="bg-slate-800/40"],html body #root#root#root main [class~="bg-slate-700"]{background:#f8fafc!important;background-image:none!important;color:#344054!important}
-html body #root#root#root main [class~="border-slate-900"],html body #root#root#root main [class~="border-slate-800"],html body #root#root#root main [class~="border-slate-800/60"],html body #root#root#root main [class~="border-slate-700"],html body #root#root#root main [class~="border-slate-700/60"],html body #root#root#root main [class~="border-slate-600"]{border-color:var(--qe-line)!important}
-html body #root#root#root main [class~="text-slate-100"],html body #root#root#root main [class~="text-slate-200"],html body #root#root#root main [class~="text-slate-300"]{color:#344054!important}
-html body #root#root#root main [class~="text-slate-400"],html body #root#root#root main [class~="text-slate-500"],html body #root#root#root main [class~="text-slate-600"]{color:#667085!important}
+/* ========================================================================== */
+/* LEGACY DARK UTILITIES -> LIGHT */
+/* ========================================================================== */
+html body #root#root#root main [class~="bg-slate-950"],
+html body #root#root#root main [class~="bg-slate-900"],
+html body #root#root#root main [class~="bg-slate-900/80"]{
+  background:#fff!important;background-color:#fff!important;background-image:none!important;
+  color:#172033!important;border-color:var(--qe-line)!important;box-shadow:var(--qe-shadow)!important;
+}
+html body #root#root#root main [class~="bg-slate-800"],
+html body #root#root#root main [class~="bg-slate-800/70"],
+html body #root#root#root main [class~="bg-slate-800/60"],
+html body #root#root#root main [class~="bg-slate-800/50"],
+html body #root#root#root main [class~="bg-slate-800/40"],
+html body #root#root#root main [class~="bg-slate-700"]{
+  background:#f8fafc!important;background-color:#f8fafc!important;background-image:none!important;color:#344054!important;
+}
+html body #root#root#root main [class~="border-slate-900"],
+html body #root#root#root main [class~="border-slate-800"],
+html body #root#root#root main [class~="border-slate-800/70"],
+html body #root#root#root main [class~="border-slate-800/60"],
+html body #root#root#root main [class~="border-slate-700"],
+html body #root#root#root main [class~="border-slate-700/60"],
+html body #root#root#root main [class~="border-slate-600"]{border-color:var(--qe-line)!important}
+html body #root#root#root main [class~="text-slate-100"],
+html body #root#root#root main [class~="text-slate-200"],
+html body #root#root#root main [class~="text-slate-300"]{color:#344054!important}
+html body #root#root#root main [class~="text-slate-400"],
+html body #root#root#root main [class~="text-slate-500"],
+html body #root#root#root main [class~="text-slate-600"]{color:#667085!important}
+html body #root#root#root main :not(button):not(a):not([role="button"])[class~="text-white"]{color:#172033!important}
+html body #root#root#root main [class~="divide-slate-800/60"]>:not([hidden])~:not([hidden]){border-color:var(--qe-line2)!important}
 
-/* common cards and KPIs */
-html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"],html body #root#root#root main section[class~="bg-slate-900"][class~="border-slate-800"],html body #root#root#root main .qmes-iqc-quickbar,html body #root#root#root main .qmes-iqc-ledger-panel,html body #root#root#root main .qmes-iqc-ledger-section,html body #root#root#root main .qmes-iqc-chart-panel,html body #root#root#root main .qmes-equipment-alarm-panel,html body #root#root#root main .qmes-prod-process .qpp-card{background:#fff!important;background-image:none!important;color:#172033!important;border:1px solid var(--qe-line)!important;border-radius:10px!important;box-shadow:var(--qe-shadow)!important}
-html body #root#root#root main .qmes-hybrid-kpi-card,html body #root#root#root main .qmes-text-kpi-card,html body #root#root#root main .qmes-iqc-kpi-card,html body #root#root#root main .qmes-pqc-kpi-grid>div,html body #root#root#root main .qmes-oqc-kpi-grid>div{min-height:90px!important;padding:14px 16px!important;background:#fff!important;background-image:none!important;color:#172033!important;border:1px solid var(--qe-line)!important;border-radius:10px!important;clip-path:none!important;box-shadow:var(--qe-shadow)!important;transform:none!important}
-html body #root#root#root main .qmes-hybrid-kpi-card:before,html body #root#root#root main .qmes-hybrid-kpi-card:after,html body #root#root#root main .qmes-hybrid-copy:before,html body #root#root#root main .qmes-hybrid-copy:after{display:none!important;content:none!important}
-html body #root#root#root main .qmes-hybrid-label{color:#667085!important;font-size:11px!important;font-weight:600!important;text-shadow:none!important}
-html body #root#root#root main .qmes-hybrid-value{color:#172033!important;font-size:22px!important;font-weight:720!important;text-shadow:none!important}
-html body #root#root#root main .qmes-hybrid-unit,html body #root#root#root main .qmes-hybrid-caption{color:#98a2b3!important;font-size:10px!important}
+/* ========================================================================== */
+/* COMMON CARDS / PANELS */
+/* ========================================================================== */
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"],
+html body #root#root#root main section[class~="bg-slate-900"][class~="border-slate-800"],
+html body #root#root#root main .qmes-iqc-ledger-panel,
+html body #root#root#root main .qmes-iqc-ledger-section,
+html body #root#root#root main .qmes-iqc-chart-panel,
+html body #root#root#root main .qmes-prod-process .qpp-card,
+html body #root#root#root main .qmes-equipment-alarm-panel{
+  background:#fff!important;background-image:none!important;color:#172033!important;
+  border:1px solid var(--qe-line)!important;border-radius:10px!important;box-shadow:var(--qe-shadow)!important;
+}
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"]>div[class~="border-b"],
+html body #root#root#root main section[class~="bg-slate-900"][class~="border-slate-800"]>div[class~="border-b"]{background:#fff!important;border-color:var(--qe-line2)!important}
 
-/* forms */
-html body #root#root#root main input:not([type="checkbox"]):not([type="radio"]),html body #root#root#root main select,html body #root#root#root main textarea{min-height:36px;border:1px solid #cfd8e3!important;border-radius:7px!important;background:#fff!important;color:#27364a!important;font-size:12.5px!important;font-weight:450!important;box-shadow:none!important}
-html body #root#root#root main input::placeholder,html body #root#root#root main textarea::placeholder{color:#98a2b3!important;opacity:1!important}
-html body #root#root#root main input:focus,html body #root#root#root main select:focus,html body #root#root#root main textarea:focus{border-color:#7aa7f8!important;box-shadow:0 0 0 3px rgba(37,99,235,.08)!important;outline:none!important}
+/* ========================================================================== */
+/* IQC / PQC / OQC SUMMARY */
+/* ========================================================================== */
+html body #root#root#root main .qmes-simple-summary{
+  overflow:hidden!important;border:1px solid var(--qe-line)!important;border-radius:10px!important;
+  background:#fff!important;background-image:none!important;box-shadow:var(--qe-shadow)!important;color:#172033!important;
+}
+html body #root#root#root main .qmes-simple-summary-head{
+  min-height:58px!important;padding:11px 14px!important;background:#fff!important;border-bottom:1px solid var(--qe-line2)!important;
+}
+html body #root#root#root main .qmes-simple-summary-title>span{color:#667085!important;font-size:10px!important;font-weight:650!important;letter-spacing:.08em!important}
+html body #root#root#root main .qmes-simple-summary-title>strong{color:#172033!important;font-size:15px!important;font-weight:700!important}
+html body #root#root#root main .qmes-simple-summary-items{background:#fff!important;border:0!important}
+html body #root#root#root main .qmes-simple-summary-item{
+  min-height:86px!important;padding:12px 14px!important;background:#fff!important;border-right:1px solid var(--qe-line2)!important;border-bottom:0!important;
+}
+html body #root#root#root main .qmes-simple-summary-item:last-child{border-right:0!important}
+html body #root#root#root main .qmes-simple-summary-label{color:#667085!important;font-size:11.5px!important;font-weight:600!important}
+html body #root#root#root main .qmes-simple-summary-value strong{color:#172033!important;font-size:22px!important;font-weight:720!important;text-shadow:none!important}
+html body #root#root#root main .qmes-simple-summary-value small{color:#98a2b3!important;font-size:10.5px!important;font-weight:550!important}
+html body #root#root#root main .qmes-simple-summary-light{width:6px!important;height:6px!important;margin-bottom:4px!important;box-shadow:none!important;animation:none!important}
+
+/* Old hybrid KPI rules used by a few modules */
+html body #root#root#root main .qmes-hybrid-kpi-card,
+html body #root#root#root main .qmes-text-kpi-card,
+html body #root#root#root main .qmes-iqc-kpi-card,
+html body #root#root#root main .qmes-pqc-kpi-grid>div,
+html body #root#root#root main .qmes-oqc-kpi-grid>div,
+html body #root#root#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 > .qmes-hybrid-kpi-card{
+  min-height:86px!important;padding:12px 14px!important;
+  background:#fff!important;background-color:#fff!important;background-image:none!important;
+  color:#172033!important;border:1px solid var(--qe-line)!important;border-radius:10px!important;
+  box-shadow:var(--qe-shadow)!important;clip-path:none!important;-webkit-clip-path:none!important;transform:none!important;
+}
+html body #root#root#root main .qmes-hybrid-kpi-card:before,
+html body #root#root#root main .qmes-hybrid-kpi-card:after,
+html body #root#root#root main .qmes-hybrid-copy:before,
+html body #root#root#root main .qmes-hybrid-copy:after{display:none!important;content:none!important}
+html body #root#root#root main .qmes-hybrid-label,
+html body #root#root#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-label{color:#667085!important;font-size:11.5px!important;font-weight:600!important;text-shadow:none!important}
+html body #root#root#root main .qmes-hybrid-value,
+html body #root#root#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-value{color:#172033!important;font-size:22px!important;font-weight:720!important;text-shadow:none!important}
+html body #root#root#root main .qmes-hybrid-unit,
+html body #root#root#root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-slate-800.pb-4:first-child > button) > .grid.grid-cols-2.gap-3 .qmes-hybrid-unit{color:#98a2b3!important;font-size:10.5px!important;text-shadow:none!important}
+html body #root#root#root main .qmes-hybrid-ring-inner{background:#fff!important;border-color:#e2e8f0!important;box-shadow:none!important}
+
+/* ========================================================================== */
+/* IQC / PQC / OQC MANAGEMENT QUICKBAR */
+/* ========================================================================== */
+html body #root#root#root main .qmes-iqc-quickbar,
+html body #root#root#root main .qmes-pqc-quickbar,
+html body #root#root#root main .qmes-oqc-quickbar,
+html body #root#root#root main .qmes-inspection-quickbar{
+  width:100%!important;min-height:72px!important;padding:13px 15px!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;
+  background:#fff!important;background-image:none!important;border:1px solid var(--qe-line)!important;border-left:1px solid var(--qe-line)!important;
+  border-radius:10px!important;box-shadow:var(--qe-shadow)!important;color:#172033!important;
+}
+html body #root#root#root main .qmes-management-heading{display:flex!important;flex-direction:column!important;gap:3px!important;width:auto!important}
+html body #root#root#root main .qmes-management-heading>span,
+html body #root#root#root main .qmes-iqc-quickbar-kicker,
+html body #root#root#root main .qmes-inspection-quickbar>div>span{
+  color:#667085!important;font-size:10px!important;line-height:15px!important;font-weight:700!important;letter-spacing:.08em!important;
+}
+html body #root#root#root main .qmes-management-title-row{display:flex!important;align-items:center!important;gap:10px!important}
+html body #root#root#root main .qmes-management-title-row strong,
+html body #root#root#root main .qmes-iqc-quickbar strong,
+html body #root#root#root main .qmes-inspection-quickbar strong{
+  margin:0!important;color:#172033!important;font-size:15px!important;line-height:22px!important;font-weight:700!important;
+}
+html body #root#root#root main .qmes-iqc-new-btn,
+html body #root#root#root main .qmes-inspection-new-btn{
+  width:auto!important;height:34px!important;min-height:34px!important;padding:0 12px!important;gap:5px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  border:1px solid #b9c8dc!important;border-radius:7px!important;background:#fff!important;background-image:none!important;
+  color:#344054!important;font-size:12px!important;font-weight:650!important;box-shadow:none!important;
+}
+html body #root#root#root main .qmes-iqc-new-btn:hover,
+html body #root#root#root main .qmes-inspection-new-btn:hover{background:#f5f9ff!important;border-color:#9bb7e4!important;color:#175cd3!important}
+
+/* ========================================================================== */
+/* PQC / OQC RECORD FILTER */
+/* ========================================================================== */
+html body #root#root#root main .qmes-inspection-record-filter{
+  width:100%!important;max-width:none!important;margin:0 0 12px!important;padding:10px!important;
+  display:grid!important;grid-template-columns:minmax(260px,1fr) 120px 120px 84px!important;gap:8px!important;align-items:end!important;
+  border:1px solid var(--qe-line)!important;border-radius:9px!important;
+  background:#f8fafc!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important;overflow:visible!important;
+}
+html body #root#root#root main .qmes-inspection-record-filter:before{display:none!important;content:none!important}
+html body #root#root#root main .qmes-inspection-record-filter>div:first-child{width:auto!important;flex:auto!important}
+html body #root#root#root main .qmes-inspection-record-filter .qmes-oqc-record-filter-field{width:auto!important;flex:auto!important;min-width:0!important}
+html body #root#root#root main .qmes-inspection-record-filter>div:first-child>span,
+html body #root#root#root main .qmes-inspection-record-filter .qmes-oqc-record-filter-field>span{
+  min-height:16px!important;margin:0 0 4px 1px!important;display:block!important;
+  color:#667085!important;font-size:10.5px!important;line-height:16px!important;font-weight:600!important;
+}
+html body #root#root#root main .qmes-inspection-record-filter>div:first-child>span:before,
+html body #root#root#root main .qmes-inspection-record-filter .qmes-oqc-record-filter-field>span:before{display:none!important}
+html body #root#root#root main .qmes-inspection-record-filter .qmes-inspection-search-box{
+  height:36px!important;border:1px solid #cfd8e3!important;border-radius:7px!important;background:#fff!important;box-shadow:none!important;
+}
+html body #root#root#root main .qmes-inspection-record-filter .qmes-inspection-search-box:focus-within{border-color:#7aa7f8!important;box-shadow:0 0 0 3px rgba(37,99,235,.07)!important}
+html body #root#root#root main .qmes-inspection-record-filter .qmes-inspection-search-box input{
+  height:34px!important;padding:0 28px 0 31px!important;border:0!important;background:transparent!important;color:#344054!important;font-size:12px!important;
+}
+html body #root#root#root main .qmes-inspection-record-filter .qmes-inspection-search-icon{left:10px!important;width:14px!important;height:14px!important;color:#667085!important}
+html body #root#root#root main .qmes-inspection-record-filter .qmes-oqc-record-filter-field select{
+  width:100%!important;height:36px!important;padding:0 26px 0 9px!important;
+  border:1px solid #cfd8e3!important;border-radius:7px!important;background:#fff!important;color:#344054!important;font-size:12px!important;font-weight:500!important;
+}
+html body #root#root#root main .qmes-inspection-record-filter>button{
+  width:84px!important;height:36px!important;padding:0!important;gap:4px!important;
+  border:1px solid #cfd8e3!important;border-radius:7px!important;background:#fff!important;background-image:none!important;
+  color:#475467!important;font-size:12px!important;font-weight:600!important;box-shadow:none!important;
+}
+html body #root#root#root main .qmes-inspection-record-filter>button:hover{background:#f7f9fc!important;border-color:#b9c6d5!important;color:#172033!important}
+
+/* ========================================================================== */
+/* INSPECTION MODALS */
+/* ========================================================================== */
+html body #root#root#root .qmes-inspection-modal,
+html body #root#root#root .qmes-iqc-modal{
+  background:#fff!important;background-image:none!important;color:#172033!important;
+  border:1px solid #d8e0ea!important;border-radius:12px!important;box-shadow:0 24px 64px rgba(15,23,42,.20)!important;
+}
+html body #root#root#root .qmes-inspection-modal-head,
+html body #root#root#root .qmes-iqc-modal-head{
+  padding:13px 16px!important;background:#fff!important;background-image:none!important;border-bottom:1px solid #e8edf3!important;color:#172033!important;
+}
+html body #root#root#root .qmes-inspection-modal-head span,
+html body #root#root#root .qmes-iqc-modal-head span{color:#667085!important;font-size:10px!important;font-weight:700!important;letter-spacing:.08em!important}
+html body #root#root#root .qmes-inspection-modal-head strong,
+html body #root#root#root .qmes-iqc-modal-head strong{color:#172033!important;font-size:16px!important;font-weight:700!important}
+html body #root#root#root .qmes-inspection-modal-body,
+html body #root#root#root .qmes-iqc-modal-body{background:#f8fafc!important;color:#172033!important}
+html body #root#root#root .qmes-inspection-modal input,
+html body #root#root#root .qmes-inspection-modal select,
+html body #root#root#root .qmes-inspection-modal textarea,
+html body #root#root#root .qmes-iqc-modal input,
+html body #root#root#root .qmes-iqc-modal select,
+html body #root#root#root .qmes-iqc-modal textarea{
+  background:#fff!important;color:#344054!important;border-color:#cfd8e3!important;
+}
+
+/* ========================================================================== */
+/* FORMS / BUTTONS */
+/* ========================================================================== */
+html body #root#root#root main input:not([type="checkbox"]):not([type="radio"]),
+html body #root#root#root main select,
+html body #root#root#root main textarea{
+  min-height:36px;border:1px solid #cfd8e3!important;border-radius:7px!important;
+  background:#fff!important;color:#27364a!important;font-size:12.5px!important;font-weight:450!important;box-shadow:none!important;
+}
+html body #root#root#root main input::placeholder,
+html body #root#root#root main textarea::placeholder{color:#98a2b3!important;opacity:1!important}
+html body #root#root#root main input:focus,
+html body #root#root#root main select:focus,
+html body #root#root#root main textarea:focus{border-color:#7aa7f8!important;box-shadow:0 0 0 3px rgba(37,99,235,.07)!important;outline:none!important}
 html body #root#root#root main label{color:#475467!important;font-size:11.5px!important;font-weight:600!important}
+html body #root#root#root main button{font-size:12.5px;font-weight:600}
+html body #root#root#root main button[class~="bg-slate-800"],
+html body #root#root#root main button[class~="bg-slate-700"],
+html body #root#root#root main button[class~="border-slate-700"]:not([class*="bg-sky"]):not([class*="bg-blue"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-green"]):not([class*="bg-amber"]){
+  background:#fff!important;color:#344054!important;border-color:#cfd8e3!important;box-shadow:none!important;
+}
+html body #root#root#root main button[class~="bg-slate-800"]:hover,
+html body #root#root#root main button[class~="bg-slate-700"]:hover{background:#f7f9fc!important;color:#172033!important}
 
-/* tables */
-html body #root#root#root main table{color:#344054!important;font-size:12.5px!important}
-html body #root#root#root main table thead,html body #root#root#root main table thead tr,html body #root#root#root main table thead th{background:#f8fafc!important;color:#475467!important;border-color:#dde4ec!important}
-html body #root#root#root main table thead th{padding-top:9px!important;padding-bottom:9px!important;font-size:11.5px!important;line-height:17px!important;font-weight:650!important}
-html body #root#root#root main table tbody,html body #root#root#root main table tbody tr,html body #root#root#root main table tbody td{background:#fff!important;color:#344054!important;border-color:#e8edf3!important}
+/* Primary/semantic buttons preserve readable white text. */
+html body #root#root#root main :is(button,a,[role="button"])[class*="bg-sky"][class~="text-white"],
+html body #root#root#root main :is(button,a,[role="button"])[class*="bg-blue"][class~="text-white"],
+html body #root#root#root main :is(button,a,[role="button"])[class*="bg-red"][class~="text-white"],
+html body #root#root#root main :is(button,a,[role="button"])[class*="bg-emerald"][class~="text-white"],
+html body #root#root#root main :is(button,a,[role="button"])[class*="bg-green"][class~="text-white"]{color:#fff!important}
+
+/* ========================================================================== */
+/* TABLES */
+/* ========================================================================== */
+html body #root#root#root main table{width:100%;color:#344054!important;font-size:12.5px!important}
+html body #root#root#root main table thead,
+html body #root#root#root main table thead tr,
+html body #root#root#root main table thead th{
+  background:#f8fafc!important;color:#475467!important;border-color:#dde4ec!important;
+}
+html body #root#root#root main table thead th{
+  padding-top:9px!important;padding-bottom:9px!important;font-size:11.5px!important;line-height:17px!important;font-weight:650!important;letter-spacing:-.01em!important;
+}
+html body #root#root#root main table tbody,
+html body #root#root#root main table tbody tr,
+html body #root#root#root main table tbody td{
+  background:#fff!important;color:#344054!important;border-color:#e8edf3!important;
+}
 html body #root#root#root main table tbody td{font-size:12.5px!important;line-height:19px!important;font-weight:450!important}
-html body #root#root#root main table tbody tr:hover,html body #root#root#root main table tbody tr:hover td{background:#fafcff!important}
+html body #root#root#root main table tbody tr:hover,
+html body #root#root#root main table tbody tr:hover td{background:#fafcff!important}
 
-/* semantic badges */
-html body #root#root#root main [class~="bg-emerald-500/10"],html body #root#root#root main [class~="bg-emerald-500/20"]{background:#ecfdf3!important}html body #root#root#root main [class~="text-emerald-400"],html body #root#root#root main [class~="text-emerald-300"]{color:#15803d!important}
-html body #root#root#root main [class~="bg-red-500/10"],html body #root#root#root main [class~="bg-red-500/20"]{background:#fff1f2!important}html body #root#root#root main [class~="text-red-400"],html body #root#root#root main [class~="text-red-300"]{color:#b91c1c!important}
-html body #root#root#root main [class~="bg-amber-500/10"],html body #root#root#root main [class~="bg-amber-500/5"]{background:#fff7ed!important}html body #root#root#root main [class~="text-amber-400"],html body #root#root#root main [class~="text-amber-300"]{color:#b45309!important}
-html body #root#root#root main [class~="bg-sky-500/10"],html body #root#root#root main [class~="bg-sky-500/15"],html body #root#root#root main [class~="bg-sky-500/20"]{background:#eff6ff!important}html body #root#root#root main [class~="text-sky-400"],html body #root#root#root main [class~="text-sky-300"]{color:#2563eb!important}
+/* ========================================================================== */
+/* EQUIPMENT */
+/* ========================================================================== */
+/* The wrapper summary duplicated the original daily summary. Hide the wrapper row. */
+html body #root#root#root main .qmes-equipment-management-summary{display:none!important}
+html body #root#root#root main .qmes-equipment-management-content{color:#172033!important}
+html body #root#root#root main .qmes-equipment-management-content h1,
+html body #root#root#root main .qmes-equipment-management-content h2,
+html body #root#root#root main .qmes-equipment-management-content h3,
+html body #root#root#root main .qmes-equipment-management-content strong{color:#172033!important}
+html body #root#root#root main .qmes-equipment-management-content>.qmes-equipment-management-summary>div,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-tab>div:first-child,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center,
+html body #root#root#root main [class*="qmes-equipment-"][class*="card"],
+html body #root#root#root main [class*="qmes-equipment-"][class*="panel"]{
+  background:#fff!important;background-image:none!important;color:#172033!important;border-color:var(--qe-line)!important;box-shadow:var(--qe-shadow)!important;
+}
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-summary-number,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-summary-unit,
+html body #root#root#root main .qmes-equipment-alarm-title,
+html body #root#root#root main .qmes-equipment-alarm-time,
+html body #root#root#root main .qmes-equipment-alarm-eq,
+html body #root#root#root main .qmes-equipment-alarm-message{color:#172033!important;-webkit-text-fill-color:#172033!important}
+html body #root#root#root main .qmes-equipment-management-content button{border-radius:7px!important}
 
-@media(max-width:1200px){html body #root#root#root .qmes-top-menu-button{padding:0 8px!important;font-size:12px!important;gap:5px!important}html body #root#root#root .qmes-top-menu-button svg{width:13px!important;height:13px!important;min-width:13px!important}}
-@media(max-width:900px){html body #root#root#root>div>header>div:first-child{height:58px!important;min-height:58px!important;max-height:58px!important;padding:0 12px!important}html body #root#root#root>div>header img[alt="NAMO Chemical"]{height:31px!important;max-height:31px!important;max-width:205px!important}html body #root#root#root .qmes-top-menu{padding-left:44px!important}html body #qmes-sync-sidebar#qmes-sync-sidebar{width:210px!important}}
+/* ========================================================================== */
+/* LOT / NCR / GQMS / 4M / PARTNERS / INVENTORY */
+/* ========================================================================== */
+html body #root#root#root main :is([class*="qmes-ncr-"],[class*="qmes-complaint-"],[class*="qmes-4m-"],[class*="qmes-lot-"],[class*="qmes-trace-"],[class*="qmes-partner-"],[class*="qmes-inventory-"]):is([class*="card"],[class*="panel"],[class*="section"]){
+  background:#fff!important;background-image:none!important;color:#172033!important;border-color:var(--qe-line)!important;box-shadow:var(--qe-shadow)!important;
+}
+
+/* ========================================================================== */
+/* STATUS COLORS */
+/* ========================================================================== */
+html body #root#root#root main [class~="bg-emerald-500/10"],html body #root#root#root main [class~="bg-emerald-500/20"]{background:var(--qe-green-soft)!important}
+html body #root#root#root main [class~="text-emerald-400"],html body #root#root#root main [class~="text-emerald-300"]{color:var(--qe-green)!important}
+html body #root#root#root main [class~="bg-red-500/10"],html body #root#root#root main [class~="bg-red-500/20"]{background:var(--qe-red-soft)!important}
+html body #root#root#root main [class~="text-red-400"],html body #root#root#root main [class~="text-red-300"]{color:var(--qe-red)!important}
+html body #root#root#root main [class~="bg-amber-500/10"],html body #root#root#root main [class~="bg-amber-500/5"]{background:var(--qe-amber-soft)!important}
+html body #root#root#root main [class~="text-amber-400"],html body #root#root#root main [class~="text-amber-300"]{color:var(--qe-amber)!important}
+html body #root#root#root main [class~="bg-sky-500/10"],html body #root#root#root main [class~="bg-sky-500/15"],html body #root#root#root main [class~="bg-sky-500/20"]{background:#eff6ff!important}
+html body #root#root#root main [class~="text-sky-400"],html body #root#root#root main [class~="text-sky-300"]{color:#2563eb!important}
+html body #root#root#root main [class~="text-violet-400"],html body #root#root#root main [class~="text-violet-300"]{color:#7c3aed!important}
+
+/* ========================================================================== */
+/* RESPONSIVE */
+/* ========================================================================== */
+@media(max-width:1200px){
+  html body #root#root#root .qmes-top-menu-button{padding:0 8px!important;font-size:12.5px!important;gap:5px!important}
+  html body #root#root#root .qmes-top-menu-button svg{width:14px!important;height:14px!important;min-width:14px!important}
+}
+@media(max-width:900px){
+  html body #root#root#root>div>header>div:first-child{height:58px!important;min-height:58px!important;max-height:58px!important;padding:0 12px!important}
+  html body #root#root#root>div>header img[alt="NAMO Chemical"]{height:31px!important;max-height:31px!important;max-width:205px!important}
+  html body #root#root#root .qmes-top-menu{padding-left:44px!important}
+  html body #qmes-sync-sidebar#qmes-sync-sidebar{width:190px!important}
+  html body #root#root#root main .qmes-inspection-record-filter{grid-template-columns:1fr 110px 110px!important}
+  html body #root#root#root main .qmes-inspection-record-filter>button{grid-column:3!important}
+}
+@media(max-width:620px){
+  html body #root#root#root main .qmes-inspection-record-filter{grid-template-columns:1fr!important}
+  html body #root#root#root main .qmes-inspection-record-filter>button{grid-column:auto!important;width:100%!important}
+  html body #root#root#root main .qmes-simple-summary-items{grid-template-columns:1fr!important}
+  html body #root#root#root main .qmes-simple-summary-item{border-right:0!important;border-bottom:1px solid var(--qe-line2)!important}
+}
+
+@media print{
+  body.print-doc #qmes-print-root,body.print-doc #qmes-print-root *{font-family:Arial,"Malgun Gothic",sans-serif!important}
+}
