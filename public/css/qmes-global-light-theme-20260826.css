@@ -28,9 +28,17 @@ html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filt
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input{box-sizing:border-box!important;flex:1 1 auto!important;width:0!important;min-width:0!important;height:100%!important;margin:0!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)::before,html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)::after{content:none!important;display:none!important}
 
-/* 수입 / 공정 / 출하 검사대장: 칸 안 글자를 살짝 키우고 행간·자간 통일 */
-html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) th{font-size:13px!important;line-height:1.35!important;letter-spacing:.01em!important;vertical-align:middle!important;}
-html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) td{font-size:13px!important;line-height:1.45!important;letter-spacing:.01em!important;vertical-align:middle!important;}
+/* 수입 / 공정 / 출하 검사대장: 글자를 한 단계 더 키우고 간격 통일 */
+html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) th{font-size:14px!important;line-height:1.4!important;letter-spacing:.01em!important;vertical-align:middle!important;}
+html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) td{font-size:14px!important;line-height:1.5!important;letter-spacing:.01em!important;vertical-align:middle!important;}
 html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) td :is(span,strong,button){font-size:inherit;line-height:inherit;letter-spacing:inherit;}
+
+/* 수입검사 관리대장 / 공정검사 검사 기록 / 출하검사 검사 기록 제목 통일 */
+html body #root#root#root main .qmes-iqc-ledger-panel h2,
+html body #root#root#root main .qmes-iqc-ledger-panel h3,
+html body #root#root#root main .qmes-pqc-page div:has(> .qmes-pqc-record-filter) > div:first-child h2,
+html body #root#root#root main .qmes-pqc-page div:has(> .qmes-pqc-record-filter) > div:first-child h3,
+html body #root#root#root main .qmes-oqc-page div:has(> .qmes-oqc-record-filter) > div:first-child h2,
+html body #root#root#root main .qmes-oqc-page div:has(> .qmes-oqc-record-filter) > div:first-child h3{font-size:18px!important;font-weight:800!important;line-height:1.35!important;letter-spacing:-.01em!important;color:#111827!important;}
 
 @media(max-width:1050px){html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;overflow:visible!important}html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>.flex.flex-col.gap-1{flex:1 1 100%!important;min-width:0!important}}
