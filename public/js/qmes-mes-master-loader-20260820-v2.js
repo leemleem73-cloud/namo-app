@@ -1,6 +1,7 @@
-/* QMES Stage 12 operational loader v12
+/* QMES Stage 12 operational loader v13
  * Enterprise visual layers stay inactive while the field-input page is mounted.
- * This prevents late stylesheet reordering from changing field sizes after first paint.
+ * Field layout and production LOT controls are owned by ipad-pop.jsx; legacy
+ * post-render LOT/remarks correction scripts are intentionally not loaded.
  */
 (function(){
   const STYLE_DEFS=[
@@ -45,8 +46,6 @@
     "./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2",
     "./js/production-worker-live-name-sync-20260824.js?v=20260824-1",
     "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
-    "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-8",
-    "./js/ipad-pqc-oqc-lot-overlap-cleanup-20260824.js?v=20260824-1",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
