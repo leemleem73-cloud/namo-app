@@ -1,5 +1,5 @@
-/* QMES Stage 12 operational loader v16
- * Stable operational modules + sales remarks/delete + one-time duplicate sales cleanup.
+/* QMES Stage 12 operational loader v17
+ * Stable operational modules + sales remarks/delete + spacious sales form layout.
  */
 (function(){
   const STYLE_DEFS=[
@@ -11,7 +11,8 @@
     ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2"],
     ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1"],
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
-    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"]
+    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
+    ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-1"]
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
