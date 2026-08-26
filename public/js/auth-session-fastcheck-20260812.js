@@ -32,7 +32,8 @@
     ["qmes-modern-corporate-ui-20260826","./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern1"],
     ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2"],
     ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
-    ["qmes-workorder-preview-light-20260826","./css/qmes-workorder-preview-light-20260826.css?v=20260826-workorderpreview1"]
+    ["qmes-workorder-preview-light-20260826","./css/qmes-workorder-preview-light-20260826.css?v=20260826-workorderpreview1"],
+    ["qmes-workorder-print-outline-20260826","./css/qmes-workorder-print-outline-20260826.css?v=20260826-outline1"]
   ];
   styles.forEach(([id,href])=>{
     let link=document.getElementById(id);
