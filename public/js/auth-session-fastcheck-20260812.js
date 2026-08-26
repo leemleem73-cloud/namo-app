@@ -12,14 +12,10 @@
     const url=typeof input==="string"?input:(input&&input.url)||"";
     if(!/\/api\/auth\/me(?:\?|$)/.test(url)) return nativeFetch(input,init);
 
-    // Do not force-abort the login-session check. A slow DB/network response must not
-    // be interpreted by app.jsx as an expired login and send the user back to login.
     const options={...(init||{})};
     if(!options.credentials) options.credentials="same-origin";
     options.cache="no-store";
 
-    // Retry only transport failures once. HTTP 401/403 responses are returned as-is so
-    // genuinely expired sessions are still handled normally by the application.
     return nativeFetch(input,options).catch((firstError)=>
       new Promise((resolve)=>global.setTimeout(resolve,700))
         .then(()=>nativeFetch(input,options))
@@ -28,9 +24,7 @@
   };
 })(window);
 
-/* Load only the current UI assets, once, before application components render.
- * These hrefs are the canonical versions used by the current shell.
- */
+/* Load only the current UI assets, once, before application components render. */
 (function installCurrentUiBeforeRender(){
   "use strict";
   if(window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return;
@@ -45,8 +39,7 @@
     ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2"],
     ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1"],
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
-    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
-    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"]
+    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"]
   ];
 
   styles.forEach(([id,href])=>{
