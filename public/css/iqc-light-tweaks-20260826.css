@@ -14,26 +14,53 @@
 #root .qmes-iqc-quickbar{background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
 #root .qmes-iqc-quickbar .qmes-management-heading{background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;}
 
-/* 관리대장: border를 사용하지 않고 inset 1px 한 줄만 그려 중첩 방지 */
-#root .qmes-iqc-ledger-section,#root .qmes-iqc-ledger-container{background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;overflow:visible!important;}
-#root .qmes-iqc-ledger-section{padding:0!important;}
-#root .qmes-iqc-ledger-panel{box-sizing:border-box!important;background:#fff!important;border:0!important;border-radius:14px!important;outline:0!important;box-shadow:inset 0 0 0 1px #d7dee8!important;overflow:hidden!important;}
-#root .qmes-iqc-ledger-panel::before,#root .qmes-iqc-ledger-panel::after,#root .qmes-iqc-ledger-section::before,#root .qmes-iqc-ledger-section::after{content:none!important;display:none!important;}
-#root .qmes-iqc-ledger-panel>div,#root .qmes-iqc-ledger-panel>header,#root .qmes-iqc-ledger-panel>section{background:transparent!important;outline:0!important;box-shadow:none!important;border-left:0!important;border-right:0!important;}
+/* 공통 global theme보다 높은 우선순위로 IQC 외곽선 중복 제거 */
+html body #root#root#root main .qmes-iqc-ledger-section,
+html body #root#root#root main .qmes-iqc-ledger-container,
+html body #root#root#root main .qmes-iqc-chart-only{
+  background:transparent!important;border:0!important;border-width:0!important;outline:0!important;box-shadow:none!important;
+}
+html body #root#root#root main .qmes-iqc-ledger-section{padding:0!important;}
 
-/* 검색 툴 */
+/* 관리대장: Panel 자체 선 하나만 */
+html body #root#root#root main .qmes-iqc-ledger-panel{
+  box-sizing:border-box!important;background:#fff!important;border:1px solid #d7dee8!important;border-width:1px!important;border-style:solid!important;border-radius:14px!important;outline:0!important;box-shadow:none!important;overflow:hidden!important;
+}
+html body #root#root#root main .qmes-iqc-ledger-panel::before,
+html body #root#root#root main .qmes-iqc-ledger-panel::after{content:none!important;display:none!important;}
+html body #root#root#root main .qmes-iqc-ledger-panel>div,
+html body #root#root#root main .qmes-iqc-ledger-panel>header,
+html body #root#root#root main .qmes-iqc-ledger-panel>section{
+  background:transparent!important;outline:0!important;box-shadow:none!important;border-left:0!important;border-right:0!important;
+}
+
+/* 검색영역 */
 #root .qmes-iqc-record-filter{background:#fff!important;border:1px solid #d7dee8!important;border-radius:12px!important;outline:0!important;overflow:hidden!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;}
-#root .qmes-iqc-record-filter .qmes-inspection-search-box{box-sizing:border-box!important;height:36px!important;display:flex!important;align-items:center!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
-#root .qmes-iqc-record-filter .qmes-inspection-search-box input,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:hover,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:active,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:focus,#root .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible{height:100%!important;flex:1!important;min-width:0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;color:#111827!important;appearance:none!important;}
+html body #root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box{
+  box-sizing:border-box!important;height:36px!important;display:flex!important;align-items:center!important;background:#fff!important;border:1px solid #cbd5e1!important;border-width:1px!important;border-radius:8px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;
+}
+html body #root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input,
+html body #root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:hover,
+html body #root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:active,
+html body #root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus,
+html body #root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible{
+  height:100%!important;flex:1!important;min-width:0!important;margin:0!important;background:transparent!important;border:0!important;border-width:0!important;border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;color:#111827!important;appearance:none!important;-webkit-appearance:none!important;
+}
 #root .qmes-iqc-record-filter select,#root .qmes-iqc-record-filter>button{box-sizing:border-box!important;height:36px!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;outline:0!important;box-shadow:none!important;color:#111827!important;}
 #root .qmes-iqc-record-filter>button,#root .qmes-iqc-quickbar .qmes-iqc-new-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;}
 
-/* 업체별 IQC: 모든 border 제거 후 panel 자체 inset 1px만 사용 */
-#root .qmes-iqc-chart-only{background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;}
-#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel{box-sizing:border-box!important;background:#fff!important;border:0!important;border-radius:14px!important;outline:0!important;box-shadow:inset 0 0 0 1px #d7dee8!important;overflow:hidden!important;padding:0!important;}
-#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel::before,#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel::after{content:none!important;display:none!important;}
-#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel>div{background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;}
-#root .qmes-iqc-chart-panel.qmes-iqc-rank-panel>div *{outline:0!important;}
+/* 업체별 IQC: wrapper/Panel 중복선 제거, 가장 바깥 rank-panel 선 하나만 */
+html body #root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel{
+  box-sizing:border-box!important;background:#fff!important;border:1px solid #d7dee8!important;border-width:1px!important;border-style:solid!important;border-radius:14px!important;outline:0!important;box-shadow:none!important;overflow:hidden!important;padding:0!important;
+}
+html body #root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel::before,
+html body #root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel::after{content:none!important;display:none!important;}
+html body #root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel>div{
+  background:transparent!important;border:0!important;border-width:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;
+}
+html body #root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel>div[class~="bg-slate-900"][class~="border-slate-800"]{
+  border:0!important;border-width:0!important;box-shadow:none!important;background:transparent!important;
+}
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-card,#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer{background:#fff!important;color:#111827!important;box-shadow:none!important;}
 #root .qmes-iqc-rank-panel h3,#root .qmes-iqc-rank-panel strong{color:#111827!important;}
 #root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,#root .qmes-iqc-rank-panel .qmes-iqc-donut-count,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer{color:#4b5563!important;}
