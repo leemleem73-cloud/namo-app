@@ -1,38 +1,129 @@
 /* IQC bright-theme refinements — 2026-08-26 */
 
-/* 수입검사 상단 5개 KPI */
+/* 상단 5개 KPI: 바깥 테두리 1개 + 내부 구분선만 1개 */
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) { background:transparent !important; }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-items { gap:12px !important; }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item { background:#ffffff !important;border:1px solid #d7dee8 !important;box-shadow:0 2px 7px rgba(15,23,42,.10) !important;color:#111827 !important; }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label { color:#111827 !important;font-size:15px !important;font-weight:800 !important;letter-spacing:-.01em !important; }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong { color:#050b14 !important;font-size:30px !important;line-height:1 !important;font-weight:900 !important; }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small { color:#111827 !important;font-size:13px !important;font-weight:800 !important; }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light { width:11px !important;height:11px !important;opacity:1 !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-items {
+  gap:0 !important;
+  background:#ffffff !important;
+  border:1px solid #d7dee8 !important;
+  border-radius:14px !important;
+  overflow:hidden !important;
+  box-shadow:0 2px 7px rgba(15,23,42,.08) !important;
+}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item {
+  background:#ffffff !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  color:#111827 !important;
+}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item + .qmes-simple-summary-item {
+  border-left:1px solid #d7dee8 !important;
+}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label {color:#111827 !important;font-size:15px !important;font-weight:800 !important;letter-spacing:-.01em !important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong {color:#050b14 !important;font-size:30px !important;line-height:1 !important;font-weight:900 !important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small {color:#111827 !important;font-size:13px !important;font-weight:800 !important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light {width:11px !important;height:11px !important;opacity:1 !important;}
+
+/* 수입검사 관리/관리대장 패널 모서리와 테두리 통일 */
+#root .qmes-iqc-quickbar,
+#root .qmes-iqc-quickbar .qmes-management-heading,
+#root .qmes-iqc-ledger-panel {
+  border-color:#d7dee8 !important;
+  box-shadow:none !important;
+}
+#root .qmes-iqc-quickbar {border-radius:14px !important;overflow:hidden !important;}
+#root .qmes-iqc-ledger-panel {border-radius:14px !important;overflow:hidden !important;}
 
 /* 업체별 IQC 합격률 */
-#root .qmes-iqc-rank-panel,#root .qmes-iqc-rank-panel > div,#root .qmes-iqc-rank-panel .qmes-iqc-donut-card,#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer { background:#ffffff !important;border-color:#d7dee8 !important;color:#111827 !important; }
+#root .qmes-iqc-rank-panel,#root .qmes-iqc-rank-panel > div,#root .qmes-iqc-rank-panel .qmes-iqc-donut-card,#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer {background:#ffffff !important;border-color:#d7dee8 !important;color:#111827 !important;}
 #root .qmes-iqc-rank-panel h3,#root .qmes-iqc-rank-panel strong {color:#111827 !important;}
 #root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,#root .qmes-iqc-rank-panel .qmes-iqc-donut-count,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer {color:#4b5563 !important;}
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-name {font-size:14px !important;font-weight:800 !important;}
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-count {font-size:12px !important;font-weight:700 !important;}
 
-/* 관리대장 검색/연도/월 툴 */
-#root .qmes-iqc-record-filter input[type="text"],#root .qmes-iqc-record-filter select {box-sizing:border-box !important;background:#ffffff !important;background-color:#ffffff !important;border:1px solid #cbd5e1 !important;outline:none !important;color:#111827 !important;box-shadow:none !important;}
-#root .qmes-iqc-record-filter input[type="text"],#root .qmes-iqc-record-filter input[type="text"]:hover,#root .qmes-iqc-record-filter input[type="text"]:active,#root .qmes-iqc-record-filter input[type="text"]:focus,#root .qmes-iqc-record-filter input[type="text"]:focus-visible {border-color:#cbd5e1 !important;outline:none !important;outline-width:0 !important;outline-offset:0 !important;box-shadow:none !important;-webkit-appearance:none !important;appearance:none !important;}
-#root .qmes-iqc-record-filter input[type="text"]::placeholder {color:#6b7280 !important;opacity:1 !important;}
+/* 검색/연도/월/초기화 영역 */
+#root .qmes-iqc-record-filter {
+  background:#ffffff !important;
+  border:1px solid #d7dee8 !important;
+  border-radius:12px !important;
+  box-shadow:0 4px 14px rgba(15,23,42,.08) !important;
+  overflow:visible !important;
+}
+
+/* 검색창은 바깥 search-box 하나만 테두리 담당 */
+#root .qmes-iqc-record-filter .qmes-inspection-search-box {
+  box-sizing:border-box !important;
+  height:36px !important;
+  display:flex !important;
+  align-items:center !important;
+  background:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  border-radius:8px !important;
+  overflow:hidden !important;
+  box-shadow:none !important;
+  outline:none !important;
+}
+#root .qmes-iqc-record-filter .qmes-inspection-search-box input,
+#root .qmes-iqc-record-filter .qmes-inspection-search-box input:hover,
+#root .qmes-iqc-record-filter .qmes-inspection-search-box input:active,
+#root .qmes-iqc-record-filter .qmes-inspection-search-box input:focus,
+#root .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible {
+  box-sizing:border-box !important;
+  height:100% !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  margin:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+  outline:0 !important;
+  outline-width:0 !important;
+  outline-offset:0 !important;
+  box-shadow:none !important;
+  color:#111827 !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+}
+#root .qmes-iqc-record-filter .qmes-inspection-search-box input::placeholder {color:#6b7280 !important;opacity:1 !important;}
+#root .qmes-iqc-record-filter .qmes-inspection-search-icon {color:#0ea5e9 !important;flex:0 0 auto !important;}
+
+/* 연도/월은 동일한 한 겹 테두리 */
+#root .qmes-iqc-record-filter select {
+  box-sizing:border-box !important;
+  height:36px !important;
+  background:#ffffff !important;
+  background-color:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  border-radius:8px !important;
+  outline:none !important;
+  color:#111827 !important;
+  box-shadow:none !important;
+}
+#root .qmes-iqc-record-filter select:focus,
+#root .qmes-iqc-record-filter select:focus-visible {border-color:#cbd5e1 !important;outline:none !important;box-shadow:none !important;}
 #root .qmes-iqc-record-filter select option {background:#ffffff !important;color:#111827 !important;}
 
 /* 초기화 */
-#root .qmes-iqc-record-filter button {box-sizing:border-box !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;line-height:1 !important;background:#ffffff !important;background-color:#ffffff !important;border:1px solid #cbd5e1 !important;color:#111827 !important;box-shadow:none !important;}
-#root .qmes-iqc-record-filter button:hover {background:#f3f4f6 !important;color:#000000 !important;}
+#root .qmes-iqc-record-filter > button {
+  box-sizing:border-box !important;
+  height:36px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  line-height:1 !important;
+  background:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  border-radius:8px !important;
+  color:#111827 !important;
+  box-shadow:none !important;
+}
+#root .qmes-iqc-record-filter > button:hover {background:#f3f4f6 !important;color:#000000 !important;}
 
 /* 신규등록 */
 #root .qmes-iqc-quickbar .qmes-iqc-new-btn {box-sizing:border-box !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;line-height:1 !important;}
 
-/* 관리 헤더를 바로 옆 판정 헤더와 동일한 굵기/정렬로 */
-#root .qmes-iqc-ledger-table thead th:last-child {
-  font-size:inherit !important;
-  font-weight:inherit !important;
-  line-height:inherit !important;
-  letter-spacing:inherit !important;
-}
+/* 관리 헤더 = 판정 헤더 굵기 */
+#root .qmes-iqc-ledger-table thead th:last-child {font-size:inherit !important;font-weight:inherit !important;line-height:inherit !important;letter-spacing:inherit !important;}
