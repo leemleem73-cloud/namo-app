@@ -1,8 +1,8 @@
-/* QMES unified top submenu v3 — stable hover mapping for enterprise UI. */
+/* QMES unified top submenu v4 — stable hover mapping for enterprise UI + ERP menus. */
 (function(){
   "use strict";
-  if(window.__QMES_TOP_SUBMENU_RESTORE_V3__)return;
-  window.__QMES_TOP_SUBMENU_RESTORE_V3__=true;
+  if(window.__QMES_TOP_SUBMENU_RESTORE_V4__)return;
+  window.__QMES_TOP_SUBMENU_RESTORE_V4__=true;
   window.__QMES_TOP_SUBMENU_RESTORE__=true;
 
   const menuMap={
@@ -38,7 +38,12 @@
       {label:"부적합 (8D)",group:"부적합관리",sub:"부적합 (8D)"},
       {label:"고객불만 (GQMS)",group:"부적합관리",sub:"고객불만 (GQMS)"},
       {label:"4M 변경관리",group:"부적합관리",sub:"4M 변경관리"}
-    ]
+    ],
+    "수주·납기":[{label:"수주 · 납기관리",tab:"erpSales"}],
+    "생산계획·MRP":[{label:"생산계획 · MRP",tab:"erpPlan"}],
+    "구매·발주":[{label:"구매 · 발주관리",tab:"erpPurchase"}],
+    "Recipe/BOM":[{label:"Recipe / BOM",tab:"erpMaster"}],
+    "출하·납품":[{label:"출하 · 납품관리",tab:"erpShipping"}]
   };
 
   const clean=value=>String(value||"").replace(/[›〉▣]/g,"").replace(/\s+/g," ").trim();
@@ -73,7 +78,7 @@
   }
   function cancelClose(){if(closeTimer){clearTimeout(closeTimer);closeTimer=null;}}
   function closeMenu(){cancelClose();const menu=document.getElementById("qmes-all-menu-dropdown");menu?.classList.remove("is-open");activeButton=null;activeLabel="";}
-  function scheduleClose(){cancelClose();closeTimer=setTimeout(closeMenu,150);}
+  function scheduleClose(){cancelClose();closeTimer=setTimeout(closeMenu,180);}
 
   function positionMenu(button,menu){
     if(!button||!menu)return;
