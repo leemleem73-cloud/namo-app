@@ -1,23 +1,32 @@
-/* QMES Stage 12 operational loader v3
- * Loads stable runtime helpers. The Enterprise UI is the ONLY final visual layer.
+/* QMES Stage 12 operational loader v4
+ * Loads stable runtime helpers. Enterprise UI is the final visual layer, with a
+ * dedicated shell-offset guard so an open sidebar never covers top navigation.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
-  function ensureEnterpriseStyle(moveToEnd){
-    let link=document.getElementById("qmes-enterprise-ui-20260826");
+  const SHELL_OFFSET_STYLE="./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1";
+
+  function ensureStyle(id,href,moveToEnd){
+    let link=document.getElementById(id);
     if(!link){
       link=document.createElement("link");
-      link.id="qmes-enterprise-ui-20260826";
+      link.id=id;
       link.rel="stylesheet";
-      link.href=ENTERPRISE_STYLE;
+      link.href=href;
       document.head.appendChild(link);
       return link;
     }
-    if(!String(link.getAttribute("href")||"").includes("enterprise2"))link.href=ENTERPRISE_STYLE;
+    if(String(link.getAttribute("href")||"")!==href)link.href=href;
     if(moveToEnd&&link.parentNode===document.head)document.head.appendChild(link);
     return link;
   }
-  ensureEnterpriseStyle(false);
+
+  function ensureFinalStyles(moveToEnd){
+    ensureStyle("qmes-enterprise-ui-20260826",ENTERPRISE_STYLE,moveToEnd);
+    ensureStyle("qmes-shell-offset-fix-20260826",SHELL_OFFSET_STYLE,moveToEnd);
+  }
+
+  ensureFinalStyles(false);
 
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
@@ -47,27 +56,31 @@
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
     "./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
   ];
+
   function exists(src){
     const base=src.split("?")[0];
     return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);
   }
+
   function finish(){
     document.getElementById("qmes-global-menu-preview-theme-20260826")?.remove();
-    ensureEnterpriseStyle(true);
+    ensureFinalStyles(true);
     window.dispatchEvent(new CustomEvent("qmes:enterprise-ui-ready"));
     window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
   }
+
   function load(i){
     if(i>=files.length){finish();return;}
     const src=files[i];
-    if(exists(src)){ensureEnterpriseStyle(true);load(i+1);return;}
+    if(exists(src)){ensureFinalStyles(true);load(i+1);return;}
     const script=document.createElement("script");
     script.src=src;
     script.async=false;
-    script.onload=()=>{ensureEnterpriseStyle(true);load(i+1);};
-    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);ensureEnterpriseStyle(true);load(i+1);};
+    script.onload=()=>{ensureFinalStyles(true);load(i+1);};
+    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);ensureFinalStyles(true);load(i+1);};
     document.head.appendChild(script);
   }
+
   const start=()=>load(0);
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});
   else start();
