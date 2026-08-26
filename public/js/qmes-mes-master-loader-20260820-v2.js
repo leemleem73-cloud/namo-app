@@ -1,7 +1,6 @@
-/* QMES Stage 12 operational loader v13
- * Enterprise visual layers stay inactive while the field-input page is mounted.
- * Field layout and production LOT controls are owned by ipad-pop.jsx; legacy
- * post-render LOT/remarks correction scripts are intentionally not loaded.
+/* QMES Stage 12 operational loader v14
+ * Enterprise shell styling stays stable on every tab. Field-input layout is
+ * isolated by its own CSS selectors instead of toggling whole stylesheets.
  */
 (function(){
   const STYLE_DEFS=[
@@ -16,19 +15,16 @@
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"]
   ];
 
-  function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
   function ensureStyle(id,href){
     let link=document.getElementById(id);
     if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
     else if(String(link.getAttribute('href')||'')!==href)link.href=href;
+    link.media='all';
     return link;
   }
-  function syncThemeState(){
-    const disabled=fieldInputActive();
-    STYLE_DEFS.forEach(([id,href])=>{const link=ensureStyle(id,href);link.media=disabled?'not all':'all';});
-  }
+  function ensureStyles(){STYLE_DEFS.forEach(([id,href])=>ensureStyle(id,href));}
 
-  syncThemeState();
+  ensureStyles();
 
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
@@ -62,7 +58,7 @@
   function exists(src){const base=src.split('?')[0];return Array.from(document.scripts).some(s=>(s.getAttribute('src')||'').split('?')[0]===base);}
   function finish(){
     document.getElementById('qmes-global-menu-preview-theme-20260826')?.remove();
-    syncThemeState();
+    ensureStyles();
     window.dispatchEvent(new CustomEvent('qmes:enterprise-ui-ready'));
     window.dispatchEvent(new CustomEvent('qmes:mes-master-ready'));
   }
@@ -74,12 +70,6 @@
     script.onload=()=>load(i+1);
     script.onerror=()=>{console.error('[QMES] MES 마스터 모듈 로드 실패',src);load(i+1);};
     document.head.appendChild(script);
-  }
-
-  const root=document.getElementById('root');
-  if(root){
-    let queued=false;
-    new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;syncThemeState();});}).observe(root,{childList:true,subtree:true});
   }
 
   const start=()=>load(0);
