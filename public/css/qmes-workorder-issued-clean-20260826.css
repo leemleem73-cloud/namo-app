@@ -1,0 +1,202 @@
+/* NAMO QMES work-order issued-list refinement — 2026-08-26
+ * Requested: darker/readable filter labels, slightly smaller overall issued-list
+ * density, and unified black-border/black-text management buttons.
+ */
+
+/* Scope the compact treatment to the issued work-order list panel. */
+html body #root#root#root main div.bg-slate-900.border.border-slate-800.rounded-lg:has(.qmes-status-guide){
+  border-radius:7px!important;
+  box-shadow:0 1px 2px rgba(16,24,40,.035)!important;
+}
+html body #root#root#root main div.bg-slate-900.border.border-slate-800.rounded-lg:has(.qmes-status-guide)>div:first-child{
+  min-height:40px!important;
+  padding:9px 12px!important;
+}
+html body #root#root#root main div.bg-slate-900.border.border-slate-800.rounded-lg:has(.qmes-status-guide)>div:first-child h3{
+  font-size:13.5px!important;
+  line-height:20px!important;
+  color:#111827!important;
+}
+
+/* Status guide: all explanatory text must be readable on white. */
+html body #root#root#root main .qmes-status-guide{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:11px!important;
+  margin:0 0 8px!important;
+  padding:0!important;
+  color:#111111!important;
+  font-size:12.5px!important;
+  line-height:18px!important;
+}
+html body #root#root#root main .qmes-status-guide span,
+html body #root#root#root main .qmes-status-guide em{
+  color:#111111!important;
+  -webkit-text-fill-color:#111111!important;
+  font-size:12.5px!important;
+  line-height:18px!important;
+  font-weight:600!important;
+  font-style:normal!important;
+  opacity:1!important;
+}
+html body #root#root#root main .qmes-status-guide em{
+  font-weight:500!important;
+  color:#303030!important;
+  -webkit-text-fill-color:#303030!important;
+}
+html body #root#root#root main .qmes-status-guide .status-dot{
+  width:7px!important;
+  height:7px!important;
+  margin-right:5px!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+/* Search labels: LOT No. / 품목 / 생산일자 — black and clearly visible. */
+html body #root#root#root main .qmes-issued-filter{
+  display:grid!important;
+  grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) minmax(250px,.95fr) auto!important;
+  align-items:end!important;
+  gap:9px!important;
+  margin:0 0 8px!important;
+}
+html body #root#root#root main .qmes-issued-filter>div{
+  min-width:0!important;
+}
+html body #root#root#root main .qmes-issued-filter>div>span{
+  display:block!important;
+  margin:0 0 4px!important;
+  padding:0!important;
+  color:#111111!important;
+  -webkit-text-fill-color:#111111!important;
+  font-size:13px!important;
+  line-height:18px!important;
+  font-weight:700!important;
+  opacity:1!important;
+}
+html body #root#root#root main .qmes-issued-filter input,
+html body #root#root#root main .qmes-issued-filter select{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 9px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  color:#111111!important;
+  -webkit-text-fill-color:#111111!important;
+  font-size:12.5px!important;
+  line-height:32px!important;
+  font-weight:500!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-issued-filter input::placeholder{
+  color:#6b7280!important;
+  -webkit-text-fill-color:#6b7280!important;
+  opacity:1!important;
+}
+html body #root#root#root main .qmes-issued-filter button{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 11px!important;
+  border:1px solid #111111!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  color:#111111!important;
+  -webkit-text-fill-color:#111111!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-issued-filter button:hover{
+  background:#f5f5f5!important;
+}
+
+/* Issued work-order table: reduce visual density slightly. */
+html body #root#root#root main div:has(>.qmes-status-guide)~div table,
+html body #root#root#root main .qmes-issued-table{
+  font-size:12.5px!important;
+}
+html body #root#root#root main .qmes-issued-table thead th,
+html body #root#root#root main table:has(.qmes-workorder-actions) thead th{
+  padding-top:8px!important;
+  padding-bottom:8px!important;
+  font-size:11.5px!important;
+  line-height:17px!important;
+  color:#1f2937!important;
+  font-weight:650!important;
+}
+html body #root#root#root main .qmes-issued-table tbody td,
+html body #root#root#root main table:has(.qmes-workorder-actions) tbody td{
+  padding-top:8px!important;
+  padding-bottom:8px!important;
+  font-size:12.5px!important;
+  line-height:18px!important;
+  color:#1f2937!important;
+}
+html body #root#root#root main table:has(.qmes-workorder-actions) select{
+  min-height:32px!important;
+  height:32px!important;
+  padding:0 8px!important;
+  font-size:12px!important;
+  color:#111111!important;
+  border-color:#9ca3af!important;
+  border-radius:5px!important;
+}
+
+/* Management actions: one visual language — white, black border, black text. */
+html body #root#root#root main .qmes-workorder-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+}
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.view,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.print,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.edit,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.delete{
+  min-width:0!important;
+  min-height:30px!important;
+  height:30px!important;
+  padding:0 9px!important;
+  border:1px solid #111111!important;
+  border-radius:5px!important;
+  background:#ffffff!important;
+  background-image:none!important;
+  color:#111111!important;
+  -webkit-text-fill-color:#111111!important;
+  font-size:12px!important;
+  line-height:28px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn:hover,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.view:hover,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.print:hover,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.edit:hover,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.delete:hover{
+  background:#f3f4f6!important;
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+  border-color:#000000!important;
+}
+
+@media(max-width:1200px){
+  html body #root#root#root main .qmes-issued-filter{
+    grid-template-columns:1fr 1fr minmax(220px,1fr) auto!important;
+    gap:8px!important;
+  }
+}
+
+@media(max-width:820px){
+  html body #root#root#root main .qmes-issued-filter{
+    grid-template-columns:1fr!important;
+  }
+  html body #root#root#root main .qmes-workorder-actions{
+    flex-wrap:wrap!important;
+  }
+}
