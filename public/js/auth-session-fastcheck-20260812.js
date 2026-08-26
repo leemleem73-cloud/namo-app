@@ -31,7 +31,8 @@
     ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
     ["qmes-workorder-preview-light-20260826","./css/qmes-workorder-preview-light-20260826.css?v=20260826-workorderpreview1"],
     ["qmes-workorder-print-outline-20260826","./css/qmes-workorder-print-outline-20260826.css?v=20260826-outline2"],
-    ["qmes-workorder-print-final-20260826","./css/qmes-workorder-print-final-20260826.css?v=20260826-restored1"]
+    ["qmes-workorder-print-final-20260826","./css/qmes-workorder-print-final-20260826.css?v=20260826-restored1"],
+    ["qmes-print-action-restore-20260826","./css/qmes-print-action-restore-20260826.css?v=20260826-printaction1"]
   ];
   styles.forEach(([id,href])=>{
     let link=document.getElementById(id);
@@ -48,15 +49,16 @@
   document.documentElement.style.setProperty("color-scheme","light");
 })();
 
-/* Work-order print is taller than the inspection reports. Load its own print wrapper
- * so the existing shared printDoc can stay unchanged for IQC/PQC/OQC/CoA. */
-(function loadWorkOrderPrintFit(){
-  if(document.querySelector('script[data-qmes-workorder-print-fit]')) return;
+/* Restore the original print-only rendering for ALL printable documents.
+ * Work order, IQC, PQC, OQC, CoA and other reports all use the same clean print path.
+ * The previous work-order-only fit wrapper is deliberately no longer loaded. */
+(function loadGlobalPrintRestore(){
+  if(document.querySelector('script[data-qmes-global-print-restore]')) return;
   const script=document.createElement("script");
-  script.src="./js/qmes-workorder-print-fit-20260826.js?v=20260826-fit2";
+  script.src="./js/qmes-print-legacy-restore-20260826.js?v=20260826-legacy1";
   script.async=false;
-  script.dataset.qmesWorkorderPrintFit="true";
-  script.onerror=()=>console.warn("[QMES] 작업지시서 A4 인쇄 보정 로드 실패");
+  script.dataset.qmesGlobalPrintRestore="true";
+  script.onerror=()=>console.warn("[QMES] 공통 인쇄 복구 로드 실패");
   document.head.appendChild(script);
 })();
 
